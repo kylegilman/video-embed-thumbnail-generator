@@ -61,4 +61,6 @@ Because I am not a great programmer, and this was too much for me to figure out.
 
 == Changelog ==
 
+0.2.1 Check made to ensure iPhone/iPod/Android compatible encode video height is an even number when HTML5 video encodes are made. 
+
 0.2 First Release
