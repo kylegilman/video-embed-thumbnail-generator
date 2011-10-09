@@ -1,6 +1,6 @@
 === Plugin Name ===
 Contributors: kylegilman
-Tags: video, html5, shortcode, thumbnail
+Tags: video, html5, shortcode, thumbnail, ffmpeg
 Requires at least: 3.0
 Tested up to: 3.2.1
 Stable tag: 0.2
