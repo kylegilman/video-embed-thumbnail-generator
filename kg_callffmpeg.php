@@ -170,6 +170,7 @@ if ($action == generate || $action == encode ) {
 
 				if ( ! file_exists($ipodfilepath) ) {
 					$ipod_movie_height = strval(round(floatval($movie_height) / floatval($movie_width) * 640));
+					if ($ipod_movie_height % 2 != 0) { $ipod_movie_height++; }
 					if ( strpos($movie_info['configuration'], 'enable-libfaac') &&  strpos($movie_info['configuration'], 'enable-libx264') ) {
 						$ffmpeg_ipod_options = " -acodec libfaac -ab 128k -s 640x".$ipod_movie_height." -vcodec libx264 -vpre slow -vpre ipod640 -b 800k -bt 800k -threads 0 -f ipod ".$ipodfilepath;
 						echo "<strong> Encoding iPod... </strong>";
