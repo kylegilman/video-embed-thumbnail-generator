@@ -1,18 +1,25 @@
 <?php
 
 $ffmpegPath = $_POST['ffmpeg']."/ffmpeg";
+$encodeogg = $_POST['encodeogg'];
+$encodewebm = $_POST['encodewebm'];
 $movieurl = $_POST['movieurl'];
 $numberofthumbs = $_POST['numberofthumbs'];
-$randomize = $_POST['randomize'];
+//$randomize = $_POST['randomize'];
 $action = $_POST['action'];
 $poster = $_POST['poster'];
-$uploads = $_POST['uploads'];
+$uploads['path'] = $_POST['uploads_path'];
+$uploads['url'] = $_POST['uploads_url'];
+$uploads['basedir'] = $_POST['uploads_basedir'];
+$postID = $_POST['attachmentID'];
+$thumbtimecode = $_POST['thumbtimecode'];
+$dofirstframe = $_POST['dofirstframe'];
+$generate_button = $_POST['generate_button'];
 
 $moviefilepath = str_replace(" ", "%20", $movieurl);
 $movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
 $moviefilebasename = basename($movieurl,'.'.$movie_extension);
-$moviefilebasename = str_replace(" ", "_", $moviefilebasename);
-$thumbnailfilebase = $uploads[url]."/thumb_tmp/".$moviefilebasename;
+$thumbnailfilebase = $uploads['url']."/thumb_tmp/".$moviefilebasename;
 
 class Process{
     private $pid;
@@ -26,6 +33,7 @@ class Process{
     }
     private function runCom(){
         $command = 'nohup '.$this->command.' > /dev/null 2>&1 & echo $!';
+        //$command = 'nohup '.$this->command.' 1> /home/kylegilm/output.txt 2>&1';
         exec($command ,$op);
         $this->pid = (int)$op[0];
     }
@@ -68,7 +76,7 @@ class Process{
 */
 function get_video_dimensions($video = false) {
 	global $ffmpegPath;
-	$command = $ffmpegPath . ' -i ' . $video . ' -vstats 2>&1';
+	$command = $ffmpegPath . ' -i "' . $video . '" -vstats 2>&1';
 
 	exec ( $command, $output );
 	$output = implode("\n", $output);
@@ -123,40 +131,61 @@ if ($action == generate || $action == encode ) {
 
 			if ($action == generate) {
 
-				//chdir($uploads['path']);
-				rrmdir($uploads['path'].'/thumb_tmp');
+				//rrmdir($uploads['path'].'/thumb_tmp');
 				if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
-				//foreach (glob($moviefilebasename."*.jpg") as $filename) {
-				//	unlink($filename); // delete the old thumbnails
-				//}
 
 				$thumbnailheight = strval(round(floatval($movie_height) / floatval($movie_width) * 200));
-				$jpgpath = $uploads[path]."/thumb_tmp/";
+				$jpgpath = $uploads['path']."/thumb_tmp/";
 
 				$i = 1;
 				$increaser = 0;
+
+				$thumbnaildisplaycode = '<p><strong>Choose Thumbnail:</strong></p><div style="border-style:solid; border-color:#ccc; border-width:1px; width:425px; text-align:center; margin-bottom:10px; padding:5px;">';
 
 				while ($i <= $numberofthumbs) {
 				
 					$iincreaser = $i + $increaser;
 					$movieoffset = round(($movie_duration_seconds * $iincreaser) / ($numberofthumbs * 2));
 
-					if ($randomize == 1) { //adjust offset random amount
+					if ($generate_button == "random") { //adjust offset random amount
 						$movieoffset = $movieoffset - rand(0, round($movie_duration_seconds / $numberofthumbs));
 					}
 
-					$thumbnailfilename[$i] = $jpgpath.$moviefilebasename.$i.".jpg";
-					$ffmpeg_options = "-ss $movieoffset -i ".$moviefilepath." -vframes 1 ".$thumbnailfilename[$i];
-					$thumbnailurl = $thumbnailfilebase.$i.'.jpg';
+					if ($thumbtimecode) { //if a specific thumbnail timecode is set
+						if ($thumbtimecode == "firstframe") { $thumbtimecode = "0"; }
+						$timecode_array = explode(":", $thumbtimecode);
+						$timecode_array = array_reverse($timecode_array);
+						$thumbtimecode = $timecode_array[0] + ($timecode_array[1] * 60) + ($timecode_array[2] * 3600);
+						$movieoffset = $thumbtimecode;
+						$i = $numberofthumbs + 1;
+					}
 
-					//$process = new Process($ffmpegPath." ".$ffmpeg_options);
-					//sleep(1);
+					if ($dofirstframe == "true" && $i == 1) { 
+						$movieoffset = "0";
+					}
+
+					$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".$i.".jpg";
+					$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
+					$ffmpeg_options = '-ss '.$movieoffset.' -i "'.$moviefilepath.'" -vframes 1 "'.$thumbnailfilename[$i].'"';
+					$thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
+					$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
+
 					exec($ffmpegPath." ".$ffmpeg_options);
-					$thumbnaildisplaycode = $thumbnaildisplaycode.'<div style="text-align:center; display:inline-block; margin:2px;"><label for="kgflashmedia-thumb'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'"></label><br /><input type="radio" name="kgflashmedia-thumb" id="kgflashmedia-thumb'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="getElementById(\'kgflashmediaplayer-poster\').value = this.value;"></div>';
+
+					if (floatval($movieoffset) > 60) {
+						$movieoffset_minutes = sprintf("%02s", intval(intval($movieoffset) / 60) );
+						$movieoffset_seconds = sprintf("%02s", round(fmod( floatval($movieoffset), 60), 2) );
+						$movieoffset_display = $movieoffset_minutes.":".$movieoffset_seconds;
+					}
+					else { $movieoffset_display = "00:".sprintf("%02s", $movieoffset); }
+
+					$thumbnaildisplaycode = $thumbnaildisplaycode.'<div style="text-align:center; display:inline-block; margin:2px;"><label for="kgflashmedia-thumb'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'"></label><br /><input type="radio" name="kgflashmedia-thumb" id="kgflashmedia-thumb'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="getElementById(\'attachments['. $postID .'][kgflashmediaplayer-poster]\').value = this.value; getElementById(\'attachments['. $postID .'][thumbtime]\').value = \''. $movieoffset_display .'\'; getElementById(\'attachments_'. $postID .'_numberofthumbs\').value =\'1\';"></div>';
 
 					$increaser++;
 					$i++;
-				}
+				} //end thumbnail loop
+
+				//$thumbnaildisplaycode = $thumbnaildisplaycode.'<p><input type="button" id="attachments['. $postID .'][confirmbutton]" class="button-secondary" value="Confirm" name="confirmbutton" onclick="kg_generate_thumb('. $postID .', \'confirm\');"/></p>';
 
 				$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "movie_width"=>$movie_width, "movie_height"=>$movie_height );
 
@@ -164,35 +193,72 @@ if ($action == generate || $action == encode ) {
 			}//if generate
 
 			if ($action == encode) {
-				$encodepath = $uploads[path]."/";
+
+				//preferred encode path is the directory of the original file (likely in the wp_upload dir)
+				$encodepath = "";
+				$url_parts = parse_url($uploads['url']);
+				if ( strpos($moviefilepath, $url_parts['host']) != "" ) { //if we're on the same server
+					$home_path = substr(strrev(strstr(strrev($uploads['basedir']), strrev("public_html"))), 0, -strlen("public_html")); //home path of the current server
+					$moviefiledirectory = dirname(parse_url($moviefilepath, PHP_URL_PATH)); //gets file's directory
+					$encodepath = $home_path."public_html".$moviefiledirectory."/";
+				}
+				if ( !is_writable($encodepath) ) { //if the original directory is not writable use a directory in base wp_upload
+					$encodepath = $uploads['basedir']."/html5encodes/";
+					if ( !file_exists($encodepath) ) { mkdir($encodepath); }
+				}
+
 				$ipodfilepath = $encodepath.$moviefilebasename."-ipod.m4v";
 				$ogvfilepath = $encodepath.$moviefilebasename.".ogv";
+				$webmfilepath = $encodepath.$moviefilebasename.".webm";
 
-				if ( ! file_exists($ipodfilepath) ) {
+				if ( ! file_exists($ipodfilepath) || filesize($webmfilepath) < 102400 ) {
 					$ipod_movie_height = strval(round(floatval($movie_height) / floatval($movie_width) * 640));
 					if ($ipod_movie_height % 2 != 0) { $ipod_movie_height++; }
 					if ( strpos($movie_info['configuration'], 'enable-libfaac') &&  strpos($movie_info['configuration'], 'enable-libx264') ) {
-						$ffmpeg_ipod_options = " -acodec libfaac -ab 128k -s 640x".$ipod_movie_height." -vcodec libx264 -vpre slow -vpre ipod640 -b 800k -bt 800k -threads 0 -f ipod ".$ipodfilepath;
-						echo "<strong> Encoding iPod... </strong>";
+						$ffmpeg_ipod_options = ' -acodec libfaac -ab 128k -s 640x'.$ipod_movie_height.' -vcodec libx264 -vpre slow -vpre ipod640 -b 800k -bt 800k -threads 0 -f ipod "'.$ipodfilepath.'"';
+						$embed_display .= "<strong> Encoding Mobile M4V... </strong>";
 					}//if the proper FFMPEG libraries are enabled
-					else { echo "<strong>FFMPEG missing library 'libfaac' or 'libx264' required for iPod encoding. </strong></strong>"; }
+					else { $embed_display .= "<strong>FFMPEG missing library 'libfaac' or 'libx264' required for iPod encoding. </strong>"; }
 				}//if iPod file doesn't already exist
-				else { echo "<strong>iPod Already Encoded! </strong>"; }
+				else { $embed_display .= "<strong>Mobile M4V Already Encoded! </strong>"; }
 
-				if ( ! file_exists($ogvfilepath) ) {
+				if ($encodeogg == "true") {
+				if ( ! file_exists($ogvfilepath) || filesize($webmfilepath) < 102400 ) {
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libtheora') ) {
 						$ogvbitrate = $movie_height * 3;
-						$ffmpeg_ogv_options = " -acodec libvorbis -ab 128k -vcodec libtheora -b ".$ogvbitrate."k -threads 0 ".$ogvfilepath;
-						echo "<strong> Encoding OGG... </strong>";
+						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k -threads 0 "'.$ogvfilepath.'"';
+						$embed_display .= "<strong> Encoding OGG... </strong>";
 					}//if the proper FFMPEG libraries are enabled
-					else { echo "<strong>FFMPEG missing library 'libvorbis' or 'libtheora' required for ogv encoding.</strong></strong>"; }
+					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libtheora' required for ogv encoding. </strong>"; }
 				}//if ogv doesn't already exist
-				else { echo "<strong>OGG Already Encoded!</strong>"; }
+				else { $embed_display .= "<strong>OGG Already Encoded! </strong>"; }
+				}//if encodeogg is checked
 
-				if ( ! file_exists($ogvfilepath) || ! file_exists($ipodfilepath) ) {
-					$ffmpeg_options = "-i ".$moviefilepath.$ffmpeg_ipod_options.$ffmpeg_ogv_options;
-					$process = new Process($ffmpegPath." ".$ffmpeg_options);
-				}//if both HTML5 videos don't exist
+				if ($encodewebm == "true") {
+				if ( ! file_exists($webmfilepath) || filesize($webmfilepath) < 102400 ) {
+					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libvpx') ) {
+						$webmbitrate = $movie_height * 3;
+						$ffmpeg_webm_options = ' -ab 128k -b '.$webmbitrate.'k -threads 0 "'.$webmfilepath.'"';
+						$embed_display .= "<strong> Encoding WEBM... </strong>";
+					}//if the proper FFMPEG libraries are enabled
+					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libvpx' required for webm encoding. </strong>"; }
+				}//if webm doesn't already exist
+				else { $embed_display .= "<strong>WEBM Already Encoded! </strong>"; }
+				}//if encodewebm is checked
+
+
+				if ( ! file_exists($ogvfilepath) || ! file_exists($ipodfilepath) || ! file_exists($webmfilepath) ) {
+					$ffmpeg_options = '-i "'.$moviefilepath.'"'.$ffmpeg_ipod_options.$ffmpeg_ogv_options.$ffmpeg_webm_options;
+					exec('ps -aux', $pslist);
+					$pslist = print_r($pslist, true);
+					if ( strpos($pslist, $ffmpegPath) ) { $embed_display = "<strong>FFMPEG is busy. You'll have to wait until it's finished. Sorry, there's no queue.<strong>"; }
+					else { $process = new Process($ffmpegPath." ".$ffmpeg_options); }
+
+				}//if any HTML5 videos don't already exist
+				//$embed_display .= $ffmpeg_options;
+				$arr = array ( "embed_display"=>$embed_display );
+
+				echo json_encode($arr);
 
 			}//if encode
 
@@ -215,17 +281,32 @@ if ($action == generate || $action == encode ) {
 
 if ($action == delete) { 
 
+	if ($poster) { 
+		$posterfile = pathinfo($poster, PATHINFO_BASENAME);
+		$posterpath = $uploads['path'].'/'.$posterfile;
+		if ( file_exists($posterpath) ) { unlink($posterpath); }
+	}
 	rrmdir($uploads['path'].'/thumb_tmp');
-	echo ("<strong>Thumbnails Deleted</strong>");
+	$thumbnaildisplaycode = "<strong>Thumbnails Deleted</strong>";
+	$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode );
+	echo json_encode($arr);
 
 }//if delete
+
 
 if ($action == submit) { 
 
 	$posterfile = pathinfo($poster, PATHINFO_BASENAME);
-	copy($uploads['path'].'/thumb_tmp/'.$posterfile, $uploads['path'].'/'.$posterfile);
-	//rrmdir($uploads['path'].'/thumb_tmp');
+	$tmp_posterpath = $uploads["path"].'/thumb_tmp/'.$posterfile;
+	$final_posterpath = $uploads["path"].'/'.$posterfile;
+	if ( is_file($tmp_posterpath) ) { copy($tmp_posterpath, $final_posterpath); }
+	rrmdir($uploads['path'].'/thumb_tmp');
+
+	//$arr = array ( "posterfile"=>$posterfile, "tmp_posterpath"=>$tmp_posterpath, "final_posterpath"=>$final_posterpath );
+	echo json_encode($arr);
+
 
 }//if submit
+
 
 ?>
