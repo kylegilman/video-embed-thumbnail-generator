@@ -58,9 +58,6 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 
 Some of it will work without FFMPEG. You can generate embed codes for your videos on any host because that part of the plugin is JavaScript running in your browser. Without FFMPEG you won't be able to generate thumbnails or generate HTML5 videos. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that.
 
-= Why do I have to upload the video separately and then copy and paste the URL? =
-
-Because I am not a great programmer, and this was too much for me to figure out. In the future I'm hoping to integrate the plugin with the upload dialog box to streamline the process.
 
 == Screenshots ==
 
