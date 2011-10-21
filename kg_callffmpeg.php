@@ -166,7 +166,7 @@ if ($action == generate || $action == encode ) {
 
 					$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".$i.".jpg";
 					$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
-					$ffmpeg_options = '-ss '.$movieoffset.' -i "'.$moviefilepath.'" -vframes 1 "'.$thumbnailfilename[$i].'"';
+					$ffmpeg_options = '-y -ss '.$movieoffset.' -i "'.$moviefilepath.'" -vframes 1 "'.$thumbnailfilename[$i].'"';
 					$thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
 					$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 
@@ -211,11 +211,11 @@ if ($action == generate || $action == encode ) {
 				$ogvfilepath = $encodepath.$moviefilebasename.".ogv";
 				$webmfilepath = $encodepath.$moviefilebasename.".webm";
 
-				if ( ! file_exists($ipodfilepath) || filesize($webmfilepath) < 102400 ) {
+				if ( ! file_exists($ipodfilepath) || filesize($webmfilepath) < 24576 ) {
 					$ipod_movie_height = strval(round(floatval($movie_height) / floatval($movie_width) * 640));
 					if ($ipod_movie_height % 2 != 0) { $ipod_movie_height++; }
 					if ( strpos($movie_info['configuration'], 'enable-libfaac') &&  strpos($movie_info['configuration'], 'enable-libx264') ) {
-						$ffmpeg_ipod_options = ' -acodec libfaac -ab 128k -s 640x'.$ipod_movie_height.' -vcodec libx264 -vpre slow -vpre ipod640 -b 800k -bt 800k -threads 0 -f ipod "'.$ipodfilepath.'"';
+						$ffmpeg_ipod_options = ' -acodec libfaac -ab 128k -s 640x'.$ipod_movie_height.' -vcodec libx264 -vpre slow -vpre ipod640 -b 800k -bt 800k -threads 1 -f ipod "'.$ipodfilepath.'"';
 						$embed_display .= "<strong> Encoding Mobile M4V... </strong>";
 					}//if the proper FFMPEG libraries are enabled
 					else { $embed_display .= "<strong>FFMPEG missing library 'libfaac' or 'libx264' required for iPod encoding. </strong>"; }
@@ -223,10 +223,11 @@ if ($action == generate || $action == encode ) {
 				else { $embed_display .= "<strong>Mobile M4V Already Encoded! </strong>"; }
 
 				if ($encodeogg == "true") {
-				if ( ! file_exists($ogvfilepath) || filesize($webmfilepath) < 102400 ) {
+				if ( ! file_exists($ogvfilepath) || filesize($webmfilepath) < 24576 ) {
+
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libtheora') ) {
 						$ogvbitrate = $movie_height * 3;
-						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k -threads 0 "'.$ogvfilepath.'"';
+						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k -threads 1 "'.$ogvfilepath.'"';
 						$embed_display .= "<strong> Encoding OGG... </strong>";
 					}//if the proper FFMPEG libraries are enabled
 					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libtheora' required for ogv encoding. </strong>"; }
@@ -235,10 +236,10 @@ if ($action == generate || $action == encode ) {
 				}//if encodeogg is checked
 
 				if ($encodewebm == "true") {
-				if ( ! file_exists($webmfilepath) || filesize($webmfilepath) < 102400 ) {
+				if ( ! file_exists($webmfilepath) || filesize($webmfilepath) < 24576 ) {
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libvpx') ) {
 						$webmbitrate = $movie_height * 3;
-						$ffmpeg_webm_options = ' -ab 128k -b '.$webmbitrate.'k -threads 0 "'.$webmfilepath.'"';
+						$ffmpeg_webm_options = ' -ab 128k -b '.$webmbitrate.'k -threads 1 "'.$webmfilepath.'"';
 						$embed_display .= "<strong> Encoding WEBM... </strong>";
 					}//if the proper FFMPEG libraries are enabled
 					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libvpx' required for webm encoding. </strong>"; }
@@ -248,14 +249,12 @@ if ($action == generate || $action == encode ) {
 
 
 				if ( ! file_exists($ogvfilepath) || ! file_exists($ipodfilepath) || ! file_exists($webmfilepath) ) {
-					$ffmpeg_options = '-i "'.$moviefilepath.'"'.$ffmpeg_ipod_options.$ffmpeg_ogv_options.$ffmpeg_webm_options;
-					exec('ps -aux', $pslist);
-					$pslist = print_r($pslist, true);
-					if ( strpos($pslist, $ffmpegPath) ) { $embed_display = "<strong>FFMPEG is busy. You'll have to wait until it's finished. Sorry, there's no queue.<strong>"; }
-					else { $process = new Process($ffmpegPath." ".$ffmpeg_options); }
+					$ffmpeg_options = '-y -i "'.$moviefilepath.'"'.$ffmpeg_ipod_options.$ffmpeg_ogv_options.$ffmpeg_webm_options;
+
+					$process = new Process($ffmpegPath." ".$ffmpeg_options);
 
 				}//if any HTML5 videos don't already exist
-				//$embed_display .= $ffmpeg_options;
+
 				$arr = array ( "embed_display"=>$embed_display );
 
 				echo json_encode($arr);
