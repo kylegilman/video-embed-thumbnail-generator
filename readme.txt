@@ -67,6 +67,9 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 
 == Changelog ==
 1.0.1 Quick fix to add mdetect.php to the plugin package from Wordpress
+
 1.0 Huge re-write. Integrated with Wordpress Media Library and added WEBM support. Increased control over thumbnail generation. Added tab to Insert Video dialog box for adding by URL (like the old version).
+
 0.2.1 Check made to ensure iPhone/iPod/Android compatible encode video height is an even number when HTML5 video encodes are made. 
+
 0.2 First Release
