@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generate video thumbnails, HTML5-compliant videos, and video embed shortcodes. Some functions require FFMPEG.
-Version: 1.0.2	
+Version: 1.0.3	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -873,7 +873,7 @@ function kg_addPostSave($post_id) {
 
         $form_fields["generator"]["label"] = __("Thumbnails");
         $form_fields["generator"]["input"] = "html";
-        $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div><input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="4" maxlength="2" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';"><input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" /><input type="button" id="attachments['. $post->ID .'][deletebutton]" class="button-secondary" value="Delete" name="deletebutton" onclick="kg_generate_thumb('. $post->ID .', \'delete\');"/> <input type="checkbox" id="attachments_'. $post->ID .'_firstframe"><label for="attachments_'. $post->ID .'_firstframe">Force 1st Frame Thumbnail</label>';
+        $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div><input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="4" maxlength="1" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';"><input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" /><input type="button" id="attachments['. $post->ID .'][deletebutton]" class="button-secondary" value="Delete" name="deletebutton" onclick="kg_generate_thumb('. $post->ID .', \'delete\');"/> <input type="checkbox" id="attachments_'. $post->ID .'_firstframe"><label for="attachments_'. $post->ID .'_firstframe">Force 1st Frame Thumbnail</label>';
 
         $form_fields["thumbtime"]["label"] = __("Thumbnail Timecode");
         $form_fields["thumbtime"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true);
@@ -920,13 +920,19 @@ function kg_addPostSave($post_id) {
         // $attachment part of the form $_POST ($_POST[attachments][postID])  
         // $post attachments wp post array - will be saved after returned  
         //     $post['post_type'] == 'attachment'  
-        if( isset($attachment['kgflashmediaplayer-poster']) ) { 
-                if ( !url_exists($attachment['kgflashmediaplayer-poster']) ) {
-			$uploads = wp_upload_dir();
-			$posterfile = pathinfo($attachment['kgflashmediaplayer-poster'], PATHINFO_BASENAME);
-			$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
-			if ( is_file($tmp_posterpath) ) { copy($tmp_posterpath, $uploads['path'].'/'.$posterfile); }
-			rrmdir($uploads['path'].'/thumb_tmp');
+        if( isset($attachment['kgflashmediaplayer-poster']) ) {
+		$uploads = wp_upload_dir();
+		$posterfile = pathinfo($attachment['kgflashmediaplayer-poster'], PATHINFO_BASENAME);
+		$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
+                if ( !is_file($uploads['path'].'/'.$posterfile) ) {
+			if ( is_file($tmp_posterpath) ) { 
+				copy($tmp_posterpath, $uploads['path'].'/'.$posterfile);
+				$thumb_base = substr($tmp_posterpath, 0, -5);
+				foreach (glob($thumb_base."?.jpg") as $thumbfilename) {
+				   unlink($thumbfilename);
+				}
+			}
+			rmdir($uploads['path'].'/thumb_tmp');
 		}
 		update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $attachment['kgflashmediaplayer-poster']); 
 	}

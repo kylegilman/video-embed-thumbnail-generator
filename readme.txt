@@ -66,12 +66,24 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 
 == Changelog ==
 
-1.0.2 Fixed a shocking number of unenclosed stings in get_options() calls. Bad programming. Didn't affect functionality, but will stop generating errors. Removed clumsy check for FFMPEG running. Was preventing encoding if ANY user on the server was running FFMPEG. Be wary of overusing your system resources though.
+= 1.0.3 =
+* Revised thumbnail cleanup to make sure temp files aren't deleted when generating thumbnails for more than one video at a time. Still a little shaky.
 
-1.0.1 Quick fix to add mdetect.php to the plugin package from Wordpress
+= 1.0.2 - October 21, 2011 =
+* Fixed a shocking number of unenclosed stings in get_options() calls. Bad programming. Didn't affect functionality, but will stop generating errors. 
+* Removed clumsy check for FFMPEG running. Was preventing encoding if ANY user on the server was running FFMPEG. Be wary of overusing your system resources though.
 
-1.0 Huge re-write. Integrated with Wordpress Media Library and added WEBM support. Increased control over thumbnail generation. Added tab to Insert Video dialog box for adding by URL (like the old version).
+= 1.0.1 - October 21, 2011 =
+* Quick fix to add mdetect.php to the plugin package from Wordpress
 
-0.2.1 Check made to ensure iPhone/iPod/Android compatible encode video height is an even number when HTML5 video encodes are made. 
+= 1.0 - October 20, 2011 =
+* Huge re-write. 
+* Integrated with Wordpress Media Library and added WEBM support.
+* Increased control over thumbnail generation.
+* Added tab to Insert Video dialog box for adding by URL (like the old version).
 
-0.2 First Release
+= 0.2.1 - October 9, 2011 =
+* Check made to ensure iPhone/iPod/Android compatible encode video height is an even number when HTML5 video encodes are made. 
+
+= 0.2 - January 18, 2011 =
+* First Release
