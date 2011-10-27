@@ -2,16 +2,12 @@
 Contributors: kylegilman
 Tags: video, html5, shortcode, thumbnail, ffmpeg
 Requires at least: 3.0
-Tested up to: 3.2.1
+Tested up to: 3.3
 Stable tag: 1.0.2
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
 == Description ==
-
-This is a big re-write. You no longer have to manually choose the video URL. The visual-editor plugin with my icon is gone. Just click "Insert Video" to get things started.
-
-I would appreciate any feedback you have.
 
 A plugin for the Wordpress visual editor to make embedding videos, generating thumbnails, and encoding HTML5-compliant files a little bit easier.
 
