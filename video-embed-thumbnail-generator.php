@@ -277,14 +277,14 @@ function FMP_shortcode($atts, $content = ''){
 		}
 
 		return $code;
-	}
-
+}
+add_shortcode('FMP', 'FMP_shortcode');
 	
-	function addFMPOptionsPage() {
+function addFMPOptionsPage() {
 		add_options_page('Video Embed & Thumbnail Generator', 'Video Embed & Thumbnail Generator', 8, basename(__FILE__), 'FMPOptionsPage');
 	}	
 
-	function FMPOptionsPage() {
+function FMPOptionsPage() {
 
 		if (isset($_POST['wp_FMP_reset'])) {
 			update_option(wp_FMP_swfobject, wp_FMP_swfobject_default);
@@ -785,7 +785,7 @@ function kg_addPostSave($post_id) {
 	}//if post not already saved
 	$flag = 1;
 }
-
+add_action('save_post', 'kg_addPostSave');
 
 
     /** 
@@ -867,6 +867,7 @@ function kg_addPostSave($post_id) {
 		}
 		else { if ( !url_exists($thumbnail_url) ) { $thumbnail_url = ""; } }
 
+	$thumbnail_html = "";
         if ($thumbnail_url != "" ) { 		
 		$thumbnail_html = '<div style="border-style:solid; border-color:#ccc; border-width:3px; width:200px; text-align:center; margin:10px;"><img width="200" src="'.$thumbnail_url.'"></div>'; 
 	}
@@ -1051,7 +1052,7 @@ media_upload_header();
 			<tr class="submit">
 				<td></td>
 				<td>
-					<input type="submit" onclick="kg_insert_shortcode();" name="insertonlybutton" id="insertonlybutton" class="button" value="Insert into Post"  />
+					<input type="submit" onclick="kg_generate_thumb('singleurl', 'submit'); kg_insert_shortcode();" name="insertonlybutton" id="insertonlybutton" class="button" value="Insert into Post"  />
 				</td>
 			</tr>
 </tbody></table>
@@ -1077,22 +1078,36 @@ $maxwidth = get_option('wp_FMP_width');
 </form>
 
 <?php
-}
+} //end media_embedurl_process
+
 function kg_embedurl_handle() {
     return wp_iframe( 'media_embedurl_process');
 }
 add_action('media_upload_embedurl', 'kg_embedurl_handle');
 
 
-function enqueue_kg_script() {
+
+
+function kg_cleanup_generated_thumbnails_handler($posterurl) {
+	$uploads = wp_upload_dir();
+	rrmdir($uploads['path'].'/thumb_tmp'); //remove the whole tmp file directory
+}
+add_action('kg_cleanup_generated_thumbnails','kg_cleanup_generated_thumbnails_handler');
+
+function kg_schedule_cleanup_generated_files() { //schedules deleting all tmp thumbnails if no thumbnails are generated in an hour
+	$timestamp = wp_next_scheduled( 'kg_cleanup_generated_thumbnails' );
+	wp_unschedule_event($timestamp, 'kg_cleanup_generated_thumbnails' );
+	wp_schedule_single_event(time()+3600, 'kg_cleanup_generated_thumbnails');
+	die(); // this is required to return a proper result
+}
+add_action('wp_ajax_kg_schedule_cleanup_generated_files', 'kg_schedule_cleanup_generated_files');
+
+function enqueue_kg_script() { //loads plugin-related javascripts
     wp_enqueue_script( 'video_embed_thumbnail_generator_script', plugins_url('/kg_video_plugin.js', __FILE__) );
 }
+add_action('admin_enqueue_scripts', 'enqueue_kg_script');
 
 add_action('wp_head', 'addSWFObject');
 add_action('admin_menu', 'addFMPOptionsPage');
-add_action('save_post', 'kg_addPostSave');
-add_action('admin_enqueue_scripts', 'enqueue_kg_script');
-
-add_shortcode('FMP', 'FMP_shortcode');
 
 ?>

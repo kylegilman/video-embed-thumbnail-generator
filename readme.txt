@@ -3,7 +3,7 @@ Contributors: kylegilman
 Tags: video, html5, shortcode, thumbnail, ffmpeg
 Requires at least: 3.0
 Tested up to: 3.3
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -45,6 +45,12 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 
 1. Upload the unzipped folder `video-embed-thumbnail-generator` to the `/wp-content/plugins/` directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
+1. Make sure you have all your MIME types configured correctly. Many servers don't have .mp4, .m4v, .ogv configured, and even more don't have .webm. There are a number of ways to do this. In your public_html directory you can edit your .htaccess file and add the following lines:
+
+`AddType video/ogg .ogv
+AddType video/mp4 .mp4
+AddType video/mp4 .m4v
+AddType video/webm .webm`
 1. Follow instructions on the Description page.
 
 == Frequently Asked Questions ==
@@ -63,7 +69,7 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 == Changelog ==
 
 = 1.0.3 =
-* Revised thumbnail cleanup to make sure temp files aren't deleted when generating thumbnails for more than one video at a time. Still a little shaky.
+* Revised thumbnail cleanup to make sure temp files aren't deleted when generating thumbnails for more than one video at a time.
 
 = 1.0.2 - October 21, 2011 =
 * Fixed a shocking number of unenclosed stings in get_options() calls. Bad programming. Didn't affect functionality, but will stop generating errors. 

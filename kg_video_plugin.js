@@ -84,6 +84,8 @@ function kg_generate_thumb(postID, buttonPushed) {
 
 	}, "json");
 
+jQuery.post( ajaxurl ,  { action:"kg_schedule_cleanup_generated_files" } );
+
 }
 
 function kg_insert_shortcode() {

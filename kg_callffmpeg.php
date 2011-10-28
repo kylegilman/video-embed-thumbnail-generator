@@ -299,11 +299,14 @@ if ($action == submit) {
 	$tmp_posterpath = $uploads["path"].'/thumb_tmp/'.$posterfile;
 	$final_posterpath = $uploads["path"].'/'.$posterfile;
 	if ( is_file($tmp_posterpath) ) { copy($tmp_posterpath, $final_posterpath); }
-	rrmdir($uploads['path'].'/thumb_tmp');
+
+	$thumb_base = substr($tmp_posterpath, 0, -5);
+	foreach (glob($thumb_base."?.jpg") as $thumbfilename) {
+	   unlink($thumbfilename);
+	}
 
 	//$arr = array ( "posterfile"=>$posterfile, "tmp_posterpath"=>$tmp_posterpath, "final_posterpath"=>$final_posterpath );
-	echo json_encode($arr);
-
+	//echo json_encode($arr);
 
 }//if submit
 
