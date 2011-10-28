@@ -68,7 +68,7 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 
 == Changelog ==
 
-= 1.0.3 =
+= 1.0.3 - October 27, 2011 =
 * Revised thumbnail cleanup to make sure temp files aren't deleted when generating thumbnails for more than one video at a time.
 
 = 1.0.2 - October 21, 2011 =
