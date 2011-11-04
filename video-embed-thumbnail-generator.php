@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generate video thumbnails, HTML5-compliant videos, and video embed shortcodes. Some functions require FFMPEG.
-Version: 1.0.3	
+Version: 1.0.4	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -238,15 +238,18 @@ function FMP_shortcode($atts, $content = ''){
 
 			$code = "<div id=\"flashcontent".$div_suffix."\">";
 			$code .= "<video ";
+			if ($query_atts["loop"] == 'true') { $code .= "loop='loop' " ;}
+			if ($query_atts["autoplay"] == 'true') { $code .= "autoplay='autoplay' " ;}
+			if ($query_atts["controls"] != 'none') { $code .= "controls='controls' " ;}
 			if ($isAndroid) { $code .= "onclick='this.play();' "; }
-			$code .= "controls='controls'";
+			$code .= "preload='metadata' ";
 				if($query_atts["poster"] != '' && !$isAndroid) {
-					$code .= " poster='".$query_atts["poster"]."' ";
+					$code .= "poster='".$query_atts["poster"]."' ";
 				}
 				if($query_atts["poster"] != '' && $isAndroid) {
-					$code .= " poster='".plugins_url('', __FILE__)."/images/androidthumb.php?src=".$query_atts["poster"]."' ";
+					$code .= "poster='".plugins_url('', __FILE__)."/images/androidthumb.php?src=".$query_atts["poster"]."' ";
 				}
-			$code .= " width='".$query_atts["width"]."' height='".$query_atts["height"]."'";
+			$code .= "width='".$query_atts["width"]."' height='".$query_atts["height"]."'";
 			$code .= ">\n";
 
 			if ( in_array($moviefiletype, $h264compatible) ) {
@@ -743,23 +746,33 @@ function FMPOptionsPage() {
 
 }
 
-function kg_addPostSave($post_id) {
+function kg_addPostSave($post_id) { //saves the poster image as an attachment
 	global $flag;
-	if ($flag == 1) { //if draft already saved
+	if ($flag == 1) { //if draft already saved. Helps prevent duplicates.
 		$current_post = get_post($post_id);
-		preg_match_all('/poster="([^"\r\n]*)"/', $current_post->post_content, $matches);
 		$uploads = wp_upload_dir();
 
-		$post_children =& get_children('post_parent='.$post_id);
-		$existing_attachment = array();
-		$i=0;
-		foreach ($post_children as $child) { 
-			$existing_attachment[$i] = $child->guid;
-			$i++; 
-		}
+		preg_match_all('/poster="([^"\r\n]*)"/', $current_post->post_content, $matches);
+
+		if (!empty($matches[1])) {
+			$args = array( 'post_type' => 'attachment', 'numberposts' => -1, 'post_status' => null, 'post_parent' => null, 'post_mime_type' => 'image' ); 
+			$post_children = get_posts( $args );
+			$existing_attachment = array();
+			$i=0;
+			foreach ($post_children as $child) { 
+				$existing_attachment[$i] = $child->guid;
+				$i++;
+				$kg_image_sizes = get_intermediate_image_sizes();
+				foreach ($kg_image_sizes as $size_name) {
+					$current_image_size_src = wp_get_attachment_image_src($child->ID, $size_name);
+					$existing_attachment[$i] = $current_image_size_src[0];
+					$i++;
+				}//each image size URL
+			}//each attachment
+		}//if there are any poster urls set in the post
 
 		foreach ($matches[1] as $url) {
-			if(!in_array($url, $existing_attachment)) { 
+			if(!in_array($url, $existing_attachment) && !is_local_attachment($url) ) { 
 				$filename_baseurl = substr($url, 0, strlen($uploads['baseurl']));
 				if ( $filename_baseurl == $uploads['baseurl'] ) {
 					$filename = str_replace($filename_baseurl, $uploads['basedir'], $url);
@@ -872,9 +885,12 @@ add_action('save_post', 'kg_addPostSave');
 		$thumbnail_html = '<div style="border-style:solid; border-color:#ccc; border-width:3px; width:200px; text-align:center; margin:10px;"><img width="200" src="'.$thumbnail_url.'"></div>'; 
 	}
 
+	if (get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true) != "") { $numberofthumbs_value = "1"; }
+	else { $numberofthumbs_value = "4"; }
+
         $form_fields["generator"]["label"] = __("Thumbnails");
         $form_fields["generator"]["input"] = "html";
-        $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div><input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="4" maxlength="1" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';"><input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" /><input type="button" id="attachments['. $post->ID .'][deletebutton]" class="button-secondary" value="Delete" name="deletebutton" onclick="kg_generate_thumb('. $post->ID .', \'delete\');"/> <input type="checkbox" id="attachments_'. $post->ID .'_firstframe"><label for="attachments_'. $post->ID .'_firstframe">Force 1st Frame Thumbnail</label>';
+        $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div><input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="'.$numberofthumbs_value.'" maxlength="1" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';"><input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" /> <input type="checkbox" id="attachments_'. $post->ID .'_firstframe"><label for="attachments_'. $post->ID .'_firstframe">Force 1st Frame Thumbnail</label>';
 
         $form_fields["thumbtime"]["label"] = __("Thumbnail Timecode");
         $form_fields["thumbtime"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true);
@@ -933,7 +949,7 @@ add_action('save_post', 'kg_addPostSave');
 				   unlink($thumbfilename);
 				}
 			}
-			rmdir($uploads['path'].'/thumb_tmp');
+			if ( is_dir($uploads['path'].'/thumb_tmp') ) { rmdir($uploads['path'].'/thumb_tmp'); }
 		}
 		update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $attachment['kgflashmediaplayer-poster']); 
 	}
@@ -993,7 +1009,7 @@ $kgIM = new kgInsertMedia();
 //add_filter('video_send_to_editor_url', 'kg_filter_video_url', 20, 3);
 
 //function kg_filter_video_url($html, $href, $title) { //when inserting via URL only
-//    $html = '[FMP]'.$href.'"[/FMP]';
+    $html = '[FMP]'.$href.'"[/FMP]';
 //    return $html;
 //}
 
@@ -1024,7 +1040,7 @@ media_upload_header();
 			</tr>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="numberofthumbs">Thumbnails</label></span></th>
-				<td class="field"><div id="attachments_singleurl_thumbnailplaceholder"></div><input id="attachments_singleurl_numberofthumbs" type="text" value="4" maxlength="2" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById('attachments[singleurl][thumbtime]').value='';"><input type="button" id="attachments[singleurl][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('singleurl', 'generate');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('singleurl', 'random');" /><input type="button" id="attachments['singleurl'][deletebutton]" class="button-secondary" value="Delete" name="deletebutton" onclick="kg_generate_thumb('singleurl', 'delete');"/> <input type="checkbox" id="attachments_singleurl_firstframe"><label for="attachments_1_firstframe">Force 1st Frame Thumbnail</label></td>
+				<td class="field"><div id="attachments_singleurl_thumbnailplaceholder"></div><input id="attachments_singleurl_numberofthumbs" type="text" value="4" maxlength="2" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById('attachments[singleurl][thumbtime]').value='';"><input type="button" id="attachments[singleurl][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('singleurl', 'generate');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('singleurl', 'random');" /> <input type="checkbox" id="attachments_singleurl_firstframe"><label for="attachments_singleurl_firstframe">Force 1st Frame Thumbnail</label></td>
 			</tr>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments[singleurl][thumbtime]">Thumbnail Timecode</span></label><br class="clear" /></th>
