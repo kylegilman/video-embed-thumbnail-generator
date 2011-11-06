@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generate video thumbnails, HTML5-compliant videos, and video embed shortcodes. Some functions require FFMPEG.
-Version: 1.0.4	
+Version: 1.0.5	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -949,7 +949,7 @@ add_action('save_post', 'kg_addPostSave');
 				   unlink($thumbfilename);
 				}
 			}
-			if ( is_dir($uploads['path'].'/thumb_tmp') ) { rmdir($uploads['path'].'/thumb_tmp'); }
+			if ( is_dir($uploads['path'].'/thumb_tmp') && ($files = @scandir($uploads['path'].'/thumb_tmp') && (count($files) < 2)) ) { rmdir($uploads['path'].'/thumb_tmp'); }
 		}
 		update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $attachment['kgflashmediaplayer-poster']); 
 	}
@@ -1009,7 +1009,7 @@ $kgIM = new kgInsertMedia();
 //add_filter('video_send_to_editor_url', 'kg_filter_video_url', 20, 3);
 
 //function kg_filter_video_url($html, $href, $title) { //when inserting via URL only
-    $html = '[FMP]'.$href.'"[/FMP]';
+//    $html = '[FMP]'.$href.'"[/FMP]';
 //    return $html;
 //}
 
@@ -1068,7 +1068,7 @@ media_upload_header();
 			<tr class="submit">
 				<td></td>
 				<td>
-					<input type="submit" onclick="kg_generate_thumb('singleurl', 'submit'); kg_insert_shortcode();" name="insertonlybutton" id="insertonlybutton" class="button" value="Insert into Post"  />
+					<input type="button" onclick="kg_insert_shortcode();" name="insertonlybutton" id="insertonlybutton" class="button" value="Insert into Post"  />
 				</td>
 			</tr>
 </tbody></table>

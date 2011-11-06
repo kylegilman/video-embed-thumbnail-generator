@@ -295,15 +295,18 @@ if ($action == delete) {
 
 if ($action == submit) { 
 
-	$posterfile = pathinfo($poster, PATHINFO_BASENAME);
-	$tmp_posterpath = $uploads["path"].'/thumb_tmp/'.$posterfile;
-	$final_posterpath = $uploads["path"].'/'.$posterfile;
-	if ( is_file($tmp_posterpath) ) { copy($tmp_posterpath, $final_posterpath); }
-
-	$thumb_base = substr($tmp_posterpath, 0, -5);
-	foreach (glob($thumb_base."?.jpg") as $thumbfilename) {
-	   unlink($thumbfilename);
-	}
+		$posterfile = pathinfo($poster, PATHINFO_BASENAME);
+		$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
+                if ( !is_file($uploads['path'].'/'.$posterfile) ) {
+			if ( is_file($tmp_posterpath) ) { 
+				copy($tmp_posterpath, $uploads['path'].'/'.$posterfile);
+				$thumb_base = substr($tmp_posterpath, 0, -5);
+				foreach (glob($thumb_base."?.jpg") as $thumbfilename) {
+				   unlink($thumbfilename);
+				}
+			}
+			if ( is_dir($uploads['path'].'/thumb_tmp') && ($files = @scandir($uploads['path'].'/thumb_tmp') && (count($files) < 2)) ) { rmdir($uploads['path'].'/thumb_tmp'); }
+		}
 
 	//$arr = array ( "posterfile"=>$posterfile, "tmp_posterpath"=>$tmp_posterpath, "final_posterpath"=>$final_posterpath );
 	//echo json_encode($arr);
