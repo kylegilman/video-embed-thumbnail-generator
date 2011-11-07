@@ -3,7 +3,7 @@ Contributors: kylegilman
 Tags: video, html5, shortcode, thumbnail, ffmpeg
 Requires at least: 3.0
 Tested up to: 3.3
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -84,6 +84,9 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 3. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 1.0.6 - November 6, 2011 =
+* Resetting to defaults on the plugin settings page resets to actual values now, instead of undefined constants.
 
 = 1.0.5 - November 6, 2011 =
 * Fixed "Embed from URL" thumbnail creation. Generated thumbnails don't disappear anymore.

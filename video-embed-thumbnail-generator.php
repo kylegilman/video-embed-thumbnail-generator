@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generate video thumbnails, HTML5-compliant videos, and video embed shortcodes. Some functions require FFMPEG.
-Version: 1.0.5	
+Version: 1.0.6	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -289,28 +289,50 @@ function addFMPOptionsPage() {
 
 function FMPOptionsPage() {
 
+   define("wp_FMP_swfobject_default", "true", true);
+   define("wp_FMP_flashplayer_default", "<strong>Please upgrade Flash Player</strong> This content is shown when the user does not have a correct Flash Player version installed.", true);
+   define("wp_FMP_default_width", "480", true);
+   define("wp_FMP_default_height", "360", true);
+   define("wp_FMP_default_HTML5", "true", true);
+   define("wp_FMP_default_controlbar_style", "docked", true);
+   define("wp_FMP_default_poster", "", true);
+   define("wp_FMP_default_autohide", "true", true);
+   define("wp_FMP_default_autoplay", "false", true);
+   define("wp_FMP_default_loop", "false", true);
+   define("wp_FMP_default_playbutton", "true", true);
+   define("wp_FMP_default_http_streaming", "false", true);
+   define("wp_FMP_default_stream_type", "liveOrRecorded", true);
+   define("wp_FMP_default_scale_mode", "letterbox", true);
+   define("wp_FMP_default_bgcolor", "", true);
+   define("wp_FMP_default_configuration", "", true);
+   define("wp_FMP_default_skin", "", true);
+   define("wp_FMP_default_ffmpeg", "/usr/local/bin", true);
+   define("wp_FMP_default_encodeogg", "false", true);
+   define("wp_FMP_default_encodewebm", "true", true);
+
 		if (isset($_POST['wp_FMP_reset'])) {
-			update_option(wp_FMP_swfobject, wp_FMP_swfobject_default);
-			update_option(wp_FMP_HTML5, wp_FMP_default_HTML5);
-			update_option(wp_FMP_width, wp_FMP_default_width);
-			update_option(wp_FMP_height, wp_FMP_default_height);
-			update_option(wp_FMP_flashplayer, wp_FMP_flashplayer_default);
-			update_option(wp_FMP_controlbar_style, wp_FMP_default_controlbar_style);
-			update_option(wp_FMP_poster, wp_FMP_default_poster);
-			update_option(wp_FMP_autohide, wp_FMP_default_autohide);
-			update_option(wp_FMP_autoplay, wp_FMP_default_autoplay);
-			update_option(wp_FMP_loop, wp_FMP_default_loop);
-			update_option(wp_FMP_playbutton, wp_FMP_default_playbutton);
-			update_option(wp_FMP_http_streaming, wp_FMP_default_http_streaming);
-			update_option(wp_FMP_stream_type, wp_FMP_default_stream_type);
-			update_option(wp_FMP_scale_mode, wp_FMP_default_scale_mode);
-			update_option(wp_FMP_bgcolor, wp_FMP_default_bgcolor);
-			update_option(wp_FMP_configuration, wp_FMP_default_configuration);
-			update_option(wp_FMP_skin, wp_FMP_default_skin);	
-			update_option(wp_FMP_ffmpeg, wp_FMP_default_ffmpeg);
-			update_option(wp_FMP_encodeogg, wp_FMP_default_encodeogg);				
+			update_option('wp_FMP_swfobject', wp_FMP_swfobject_default);
+			update_option('wp_FMP_HTML5', wp_FMP_default_HTML5);
+			update_option('wp_FMP_width', wp_FMP_default_width);
+			update_option('wp_FMP_height', wp_FMP_default_height);
+			update_option('wp_FMP_flashplayer', wp_FMP_flashplayer_default);
+			update_option('wp_FMP_controlbar_style', wp_FMP_default_controlbar_style);
+			update_option('wp_FMP_poster', wp_FMP_default_poster);
+			update_option('wp_FMP_autohide', wp_FMP_default_autohide);
+			update_option('wp_FMP_autoplay', wp_FMP_default_autoplay);
+			update_option('wp_FMP_loop', wp_FMP_default_loop);
+			update_option('wp_FMP_playbutton', wp_FMP_default_playbutton);
+			update_option('wp_FMP_http_streaming', wp_FMP_default_http_streaming);
+			update_option('wp_FMP_stream_type', wp_FMP_default_stream_type);
+			update_option('wp_FMP_scale_mode', wp_FMP_default_scale_mode);
+			update_option('wp_FMP_bgcolor', wp_FMP_default_bgcolor);
+			update_option('wp_FMP_configuration', wp_FMP_default_configuration);
+			update_option('wp_FMP_skin', wp_FMP_default_skin);	
+			update_option('wp_FMP_ffmpeg', wp_FMP_default_ffmpeg);
+			update_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);	
+			update_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);			
 			
-			echo "<div class='updated'><p><strong>Flash Media Playback plugin reset to default settings</strong></p></div>";	
+			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin reset to default settings</strong></p></div>";	
 		}	
 	
 		if (isset($_POST['wp_FMP_update'])) {
@@ -500,7 +522,7 @@ function FMPOptionsPage() {
 						<th></th>
 						<td></td>
 						<td align="left"><br />
-								<div style="align:left"><input name="wp_FMP_update" value="Save Changes" type="submit" />&nbsp;&nbsp;&nbsp;<input name="wp_FMP_reset" value="Reset defaults" type="submit" /></div>
+								<div style="align:left"><input name="wp_FMP_update" value="Save Changes" type="submit" />&nbsp;&nbsp;&nbsp;<input name="wp_FMP_reset" value="Reset to defaults" type="submit" /></div>
 						</td>
 					</tr>					
 					<tr>
@@ -734,7 +756,7 @@ function FMPOptionsPage() {
 						<th></th>
 						<td></td>
 						<td align="left"><br />
-								<div style="align:left"><input name="wp_FMP_update" value="Save Changes" type="submit" />&nbsp;&nbsp;&nbsp;<input name="wp_FMP_reset" value="Reset defaults" type="submit" /></div><br />&nbsp;<br />
+								<div style="align:left"><input name="wp_FMP_update" value="Save Changes" type="submit" />&nbsp;&nbsp;&nbsp;<input name="wp_FMP_reset" value="Reset to defaults" type="submit" /></div><br />&nbsp;<br />
 						</td>
 					</tr>
 				</table>
