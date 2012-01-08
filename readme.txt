@@ -2,26 +2,26 @@
 Contributors: kylegilman
 Tags: video, html5, shortcode, thumbnail, ffmpeg
 Requires at least: 3.0
-Tested up to: 3.3
-Stable tag: 1.0.6
+Tested up to: 3.3.1
+Stable tag: 1.1
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
 == Description ==
 
-= A plugin for the Wordpress visual editor to make embedding videos, generating thumbnails, and encoding HTML5-compliant files a little bit easier. =
+= A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compliant files a little bit easier. =
 
-The plugin adds several fields to any video attachment in the Media Library:
+The plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options and click Insert into Post to and you'll get a shortcode in your post that will embed a flexible Flash & HTML5 video player with a preview image into your post.
 
 The embedded player will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use an HTML5 video element. I highly recommend H.264 video and AAC audio in an MP4 container. If you're encoding with Apple's Compressor, the "Streaming" setting should be "Fast Start" (NOT Fast Start - Compressed Header). I've written up my recommended video encode settings in <a href="http://www.kylegilman.net/2011/02/25/making-mp4-h-264-videos-in-apple-compressor/">a post on my website</a>.
 
 The plugin uses FFMPEG to generate thumbnails and encode HTML5/mobile videos. By default the plugin looks for FFMPEG in `/usr/local/bin` but if FFMPEG is installed in a different place on your server, you can point it to the correct place in the plugin settings.
 
-If FFMPEG is installed on your server, you can generate thumbnails using either the "Generate" or "Randomize" buttons. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. If you want really fine control you can enter timecode in the "Thumbnail Timecode" field. Use mm:ss format. If you want even more control you can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need. The unused thumbnails will be deleted once you click "Insert into Post" or "Save Changes."
+If FFMPEG is installed on your server, you can generate thumbnails using either the "Generate" or "Randomize" buttons. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. If you want really fine control you can enter timecode in the "Thumbnail Timecode" field. Use mm:ss format. If you want even more control you can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 9 at a time). The unused thumbnails will be deleted once you click "Insert into Post" or "Save Changes."
 
 In the plugin settings you can set the default maximum width based on the width of your particular template and those values will be filled in when you open the window. If you generate thumbnails, the video display dimensions will be automatically adjusted to match the size and aspect ratio of the video file. You can make further adjustments if you want.
 
-The "Encode" button is still a bit experimental. If you have FFMPEG on your server, clicking the button will start encoding an iPod/iPad/Android compliant H.264 video (which will also work in Safari and IE 9) and a Firefox/Chrome-compatible WEBM video in the same directory as your original file. You can choose to also encode OGV or turn off WEBM encoding in the Video Embed & Thumbnail Generator plugin's settings page. Anyone using a modern browser who doesn't have a Flash plugin will see these files instead of the original. The files will encode in the background and will take several minutes to complete, depending on your server setup and the length and size of your video. Currently, if something goes wrong after the encode starts, the plugin will not tell you. It also won't tell you when the files are done. You just have to wait.
+The "Encode" button is still a bit experimental. If you have FFMPEG on your server, clicking the button will start encoding an iPod/iPad/Android compliant H.264 video (which will also work in Safari and IE 9), or a Firefox/Chrome-compatible WEBM or OGV video in the same directory as your original file. Anyone using a modern browser who doesn't have a Flash plugin will see these files instead of the original. The files will encode in the background and will take several minutes to complete, depending on your server setup and the length and size of your video. Currently, if something goes wrong after the encode starts, the plugin will not tell you. It also won't tell you when the files are done. You just have to wait.
 
 The plugin is currently favoring Flash instead of HTML5 because Flash is a better user experience in most cases. I'm particularly not a fan of some browsers' tendencies to auto-download HTML5 video elements. I may eventually include the option to favor HTML5. However, if you embed a non-Flash compatible file (like an ogv or webm file) then you will only get the HTML5 video element. If you want to make ogv, webm, or H.264 files available and can't use the FFMPEG encode button, you can upload your own files to the same directory as the original and the plugin will automatically find them. For example, if your main file is awesomevid.mp4, the plugin will look for awesomevid.webm and awesomevid.ogv as well. If you want to embed a high-res H.264 video but also make a mobile-compatible version available, add -ipod.m4v to the end of the filename (awesomevid-ipod.m4v) and it will be served up to most smartphones and tablets instead of the original.
 
@@ -29,9 +29,7 @@ Android viewers who don't use Flash will see a play button superimposed on the t
 
 If you want to make it easier for people to save the video to their computers, you can choose to include a link by checking the "Generate Download Link Below Video" button.
 
-Sometimes for various reasons you might need to embed video files that are not saved in the Wordpress Media Library. Maybe your file is too large to upload through the media upload form, or maybe it's hosted on another server. Either way, you can use the new tab "Embed from URL" which works much like the 0.2 of this plugin.
-
-Just enter the Video URL manually, and all other steps are the same as the Media Library options. If the video is in a directory that isn't writable, any encodes you make will go to an "html5encodes" subdirectory in the Wordpress uploads directory.
+Sometimes for various reasons you might need to embed video files that are not saved in the Wordpress Media Library. Maybe your file is too large to upload through the media upload form, or maybe it's hosted on another server. Either way, you can use the tab "Embed from URL" in the Add Media window. Just enter the Video URL manually, and all other steps are the same as the Media Library options. If the video is in a directory that isn't writable, any encodes you make will go to an "html5encodes" subdirectory in the Wordpress uploads directory.
 
 = Once you've filled in all your options, click "Insert Flash Media Player" and you'll get a shortcode in the visual editor like this =
 
@@ -73,6 +71,14 @@ AddType video/webm .webm`
 
 == Frequently Asked Questions ==
 
+= Why doesn't my video play? =
+
+Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. mp4s with MPEG-4 video will not play in the Flash player, and if you don't use AAC audio you won't get any audio.
+
+= Why doesn't this work with YouTube? =
+
+WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in system for embedding videos from YouTube, Vimeo, Dailymotion, etc</a>. Just put the URL into your post and WordPress will automatically convert it to an embedded video using oEmbed. You don't need this plugin to do that. If you're trying to generate new thumbnails from YouTube videos, I'm not going to risk Google's wrath by providing that functionality. I'm not even sure I could figure out how to do it anyway.
+
 = I'm on shared hosting and can't install software. Does this work without FFMPEG? =
 
 Some of it will work without FFMPEG. You can generate embed codes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or generate HTML5 videos. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that.
@@ -80,13 +86,17 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 == Screenshots ==
 
 1. Thumbnail & Embed Options in the Media Library/Insert Video page.
-2. New "Embed by Url" tab.
+2. "Embed by Url" tab.
 3. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
 
-= 1.0.6 - November 6, 2011 =
-* Resetting to defaults on the plugin settings page resets to actual values now, instead of undefined constants.
+= 1.1 - January 8, 2012 =
+* Includes Strobe Media Playback files so Flash Player is now hosted locally, which allows skinning.
+* Added skin with new, more modern looking play button. Upgraders should check the plugin settings for more details.
+* Fixed "Insert into Post" button in "Embed from URL" tab when editor is in HTML view mode. Used to do nothing! Now does something.
+* Added option to override default Mobile/HTML5 encode formats for each video
+* Added check for FFMPEG. Generate & Encode buttons are disabled if FFMPEG isn't found.
 
 = 1.0.5 - November 6, 2011 =
 * Fixed "Embed from URL" thumbnail creation. Generated thumbnails don't disappear anymore.

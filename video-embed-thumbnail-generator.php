@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generate video thumbnails, HTML5-compliant videos, and video embed shortcodes. Some functions require FFMPEG.
-Version: 1.0.6	
+Version: 1.1	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -21,9 +21,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-1) Includes Jeroen Wijering's FLV Media Player (Creative Commons "BY-NC-SA" License) v5.1
-   Website: http://www.jeroenwijering.com/?item=JW_FLV_Player
-   License: http://creativecommons.org/licenses/by-nc-sa/2.0/
+1) Includes Strobe Media Playback Flash Player
+   Website: http://osmf.org/strobe_mediaplayback.html
+   License: http://creativecommons.org/licenses/by-nc/3.0/
 2) Includes Geoff Stearns' SWFObject Javascript Library (MIT License) v2.1
    Website: http://code.google.com/p/swfobject/
    License: http://www.opensource.org/licenses/mit-license.php
@@ -76,7 +76,7 @@ function video_embed_thumbnail_generator_activate() {
 
    define("wp_FMP_swfobject_default", "true", true);
    define("wp_FMP_flashplayer_default", "<strong>Please upgrade Flash Player</strong> This content is shown when the user does not have a correct Flash Player version installed.", true);
-   define("wp_FMP_default_width", "480", true);
+   define("wp_FMP_default_width", "640", true);
    define("wp_FMP_default_height", "360", true);
    define("wp_FMP_default_HTML5", "true", true);
    define("wp_FMP_default_controlbar_style", "docked", true);
@@ -85,13 +85,14 @@ function video_embed_thumbnail_generator_activate() {
    define("wp_FMP_default_autoplay", "false", true);
    define("wp_FMP_default_loop", "false", true);
    define("wp_FMP_default_playbutton", "true", true);
-   define("wp_FMP_default_http_streaming", "false", true);
    define("wp_FMP_default_stream_type", "liveOrRecorded", true);
    define("wp_FMP_default_scale_mode", "letterbox", true);
    define("wp_FMP_default_bgcolor", "", true);
    define("wp_FMP_default_configuration", "", true);
-   define("wp_FMP_default_skin", "", true);
+   define("wp_FMP_default_skin", plugins_url("", __FILE__)."/flash/skin/kg_skin.xml", true);
    define("wp_FMP_default_ffmpeg", "/usr/local/bin", true);
+   define("wp_FMP_default_ffmpeg_exists", "notchecked", true);
+   define("wp_FMP_default_encodemobile", "true", true);
    define("wp_FMP_default_encodeogg", "false", true);
    define("wp_FMP_default_encodewebm", "true", true);
 
@@ -106,22 +107,29 @@ function video_embed_thumbnail_generator_activate() {
    add_option('wp_FMP_autoplay', wp_FMP_default_autoplay);
    add_option('wp_FMP_loop', wp_FMP_default_loop);
    add_option('wp_FMP_playbutton', wp_FMP_default_playbutton);
-   add_option('wp_FMP_http_streaming', wp_FMP_default_http_streaming);
    add_option('wp_FMP_stream_type', wp_FMP_default_stream_type);
    add_option('wp_FMP_scale_mode', wp_FMP_default_scale_mode);
    add_option('wp_FMP_bgcolor', wp_FMP_default_bgcolor);
    add_option('wp_FMP_configuration', wp_FMP_default_configuration);
    add_option('wp_FMP_skin', wp_FMP_default_skin);
    add_option('wp_FMP_ffmpeg', wp_FMP_default_ffmpeg);
+   add_option('wp_FMP_ffmpeg_exists', wp_FMP_default_ffmpeg_exists);
+   add_option('wp_FMP_encodemobile', wp_FMP_default_encodemobile);
    add_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);
    add_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);
+
+	exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
+	if ($returnvalue < 126 ) { //if FFMPEG executed
+		update_option('wp_FMP_ffmpeg_exists', "true");
+	}
+	else { update_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
 }
 
 register_activation_hook( __FILE__, 'video_embed_thumbnail_generator_activate' );
 
 function addSWFObject() {
 	if(get_option('wp_FMP_swfobject') == "true") {
-		echo "\n<script src=\"http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js\" type=\"text/javascript\"></script>\n";
+		echo "\n<script src=\"".plugins_url("", __FILE__)."/flash/swfobject.js\" type=\"text/javascript\"></script>\n";
 	}
 }
 
@@ -148,13 +156,9 @@ function FMP_shortcode($atts, $content = ''){
 
 		$div_suffix = substr(uniqid(rand(), true),0,4);
 
-		if(get_option('wp_FMP_http_streaming') != "true") {
-			$video_swf = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback.swf";
-			$minimum_flash = "10.0.0";
-		} else {
-			$video_swf = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
-			$minimum_flash = "10.1.0";
-		}
+
+		$video_swf = plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf";
+		$minimum_flash = "10.1.0";
 		
 		$flashvars = "{src:'".urlencode(trim($content))."'";
 		
@@ -194,7 +198,7 @@ function FMP_shortcode($atts, $content = ''){
 		
 		$flashvars .= "}";
 		
-		$params = "{allowfullscreen:'true', allowscriptaccess:'always'}";
+		$params = "{allowfullscreen:'true', allowscriptaccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
 		
 		if(get_option('wp_FMP_HTML5') == "true") {
 			include_once dirname( __FILE__ ) .'/mdetect.php';
@@ -275,7 +279,7 @@ function FMP_shortcode($atts, $content = ''){
 		
 		if ( in_array($moviefiletype, $flashcompatible) ) { 
 			$code .= "<script type=\"text/javascript\">\n\t";
-			$code .= "swfobject.embedSWF('".$video_swf."', 'flashcontent".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '".$minimum_flash."', '".plugins_url("", __FILE__)."/expressinstall.swf', $flashvars, $params)\n";
+			$code .= "swfobject.embedSWF('".$video_swf."', 'flashcontent".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '".$minimum_flash."', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params)\n";
 			$code .= "</script>\n";
 		}
 
@@ -291,7 +295,7 @@ function FMPOptionsPage() {
 
    define("wp_FMP_swfobject_default", "true", true);
    define("wp_FMP_flashplayer_default", "<strong>Please upgrade Flash Player</strong> This content is shown when the user does not have a correct Flash Player version installed.", true);
-   define("wp_FMP_default_width", "480", true);
+   define("wp_FMP_default_width", "640", true);
    define("wp_FMP_default_height", "360", true);
    define("wp_FMP_default_HTML5", "true", true);
    define("wp_FMP_default_controlbar_style", "docked", true);
@@ -300,13 +304,13 @@ function FMPOptionsPage() {
    define("wp_FMP_default_autoplay", "false", true);
    define("wp_FMP_default_loop", "false", true);
    define("wp_FMP_default_playbutton", "true", true);
-   define("wp_FMP_default_http_streaming", "false", true);
    define("wp_FMP_default_stream_type", "liveOrRecorded", true);
    define("wp_FMP_default_scale_mode", "letterbox", true);
    define("wp_FMP_default_bgcolor", "", true);
    define("wp_FMP_default_configuration", "", true);
-   define("wp_FMP_default_skin", "", true);
+   define("wp_FMP_default_skin", plugins_url("", __FILE__)."/flash/skin/kg_skin.xml", true);
    define("wp_FMP_default_ffmpeg", "/usr/local/bin", true);
+   define("wp_FMP_default_encodemobile", "true", true);
    define("wp_FMP_default_encodeogg", "false", true);
    define("wp_FMP_default_encodewebm", "true", true);
 
@@ -322,17 +326,27 @@ function FMPOptionsPage() {
 			update_option('wp_FMP_autoplay', wp_FMP_default_autoplay);
 			update_option('wp_FMP_loop', wp_FMP_default_loop);
 			update_option('wp_FMP_playbutton', wp_FMP_default_playbutton);
-			update_option('wp_FMP_http_streaming', wp_FMP_default_http_streaming);
 			update_option('wp_FMP_stream_type', wp_FMP_default_stream_type);
 			update_option('wp_FMP_scale_mode', wp_FMP_default_scale_mode);
 			update_option('wp_FMP_bgcolor', wp_FMP_default_bgcolor);
 			update_option('wp_FMP_configuration', wp_FMP_default_configuration);
 			update_option('wp_FMP_skin', wp_FMP_default_skin);	
 			update_option('wp_FMP_ffmpeg', wp_FMP_default_ffmpeg);
+			update_option('wp_FMP_encodemobile', wp_FMP_default_encodemobile);
 			update_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);	
-			update_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);			
-			
-			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin reset to default settings</strong></p></div>";	
+			update_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);	
+		
+			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin reset to default settings</strong></p></div>";
+
+			exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
+			if ($returnvalue < 126 ) { //if FFMPEG executed
+				update_option('wp_FMP_ffmpeg_exists', "true");
+			}
+			else { 
+				echo "<div class='error'><p><strong>FFMPEG not found at ".get_option('wp_FMP_ffmpeg').". Embed codes will work, but video thumbnail generation and Mobile/HTML5 encoding will not.</strong></p></div>"; 
+				update_option('wp_FMP_ffmpeg_exists', "notinstalled"); 
+			}
+	
 		}	
 	
 		if (isset($_POST['wp_FMP_update'])) {
@@ -343,7 +357,7 @@ function FMPOptionsPage() {
 			$use_autoplay = $_POST[wp_FMP_autoplay];
 			$use_loop = $_POST[wp_FMP_loop];
 			$use_playbutton = $_POST[wp_FMP_playbutton];
-			$use_http_streaming = $_POST[wp_FMP_http_streaming];
+			$use_encodemobile = $_POST[wp_FMP_encodemobile];
 			$use_encodeogg = $_POST[wp_FMP_encodeogg];
 			$use_encodewebm = $_POST[wp_FMP_encodewebm];
 			
@@ -383,11 +397,12 @@ function FMPOptionsPage() {
 				update_option(wp_FMP_playbutton, "false");
 			}	
 
-			if ($use_http_streaming == 'use') {
-				update_option(wp_FMP_http_streaming, "true");
+
+			if ($use_encodemobile == 'use') {
+				update_option(wp_FMP_encodemobile, "true");
 			} else {
-				update_option(wp_FMP_http_streaming, "false");
-			}	
+				update_option(wp_FMP_encodemobile, "false");
+			}
 
 			if ($use_encodeogg == 'use') {
 				update_option(wp_FMP_encodeogg, "true");
@@ -401,19 +416,28 @@ function FMPOptionsPage() {
 				update_option(wp_FMP_encodewebm, "false");
 			}		
 			
-			update_option(wp_FMP_width, $_POST[wp_FMP_width]);
-			update_option(wp_FMP_height, $_POST[wp_FMP_height]);
-			update_option(wp_FMP_bgcolor, $_POST[wp_FMP_bgcolor]);
-			update_option(wp_FMP_configuration, $_POST[wp_FMP_configuration]);
-			update_option(wp_FMP_skin, $_POST[wp_FMP_skin]);
-			update_option(wp_FMP_flashplayer, $_POST[wp_FMP_flashplayer]);
-			update_option(wp_FMP_controlbar_style, $_POST[wp_FMP_controlbar_style]);
-			update_option(wp_FMP_stream_type, $_POST[wp_FMP_stream_type]);
-			update_option(wp_FMP_scale_mode, $_POST[wp_FMP_scale_mode]);
-			update_option(wp_FMP_poster, $_POST[wp_FMP_poster]);
-			update_option(wp_FMP_ffmpeg, $_POST[wp_FMP_ffmpeg]);
-			
+			update_option('wp_FMP_width', $_POST[wp_FMP_width]);
+			update_option('wp_FMP_height', $_POST[wp_FMP_height]);
+			update_option('wp_FMP_bgcolor', $_POST[wp_FMP_bgcolor]);
+			update_option('wp_FMP_configuration', $_POST[wp_FMP_configuration]);
+			update_option('wp_FMP_skin', $_POST[wp_FMP_skin]);
+			update_option('wp_FMP_flashplayer', $_POST[wp_FMP_flashplayer]);
+			update_option('wp_FMP_controlbar_style', $_POST[wp_FMP_controlbar_style]);
+			update_option('wp_FMP_stream_type', $_POST[wp_FMP_stream_type]);
+			update_option('wp_FMP_scale_mode', $_POST[wp_FMP_scale_mode]);
+			update_option('wp_FMP_poster', $_POST[wp_FMP_poster]);
+			update_option('wp_FMP_ffmpeg', $_POST[wp_FMP_ffmpeg]);
+
 			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin settings updated</strong></p></div>";
+
+			exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
+			if ($returnvalue < 126 ) { //if FFMPEG executed
+				update_option('wp_FMP_ffmpeg_exists', "true");
+			}
+			else { 
+				echo "<div class='error'><p><strong>FFMPEG not found at ".get_option('wp_FMP_ffmpeg').". Embed codes will work, but video thumbnail generation and Mobile/HTML5 encoding will not.</strong></p></div>"; 
+				update_option('wp_FMP_ffmpeg_exists', "false"); 
+			}
 		}
 
 ?>	
@@ -461,27 +485,18 @@ function FMPOptionsPage() {
 					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
-							<label>Generate OGV:</label>
+							<label>Default Mobile/HTML5 Video Encode Formats:</label>
 						</th>
 						<td width="10"></td>
 						<td>
 							<?php
-								echo "<input type='checkbox' name='wp_FMP_encodeogg' id='wp_FMP_encodeogg' value='use' ";
-								if(get_option('wp_FMP_encodeogg') == "true") {
+								echo "<input type='checkbox' name='wp_FMP_encodemobile' id='wp_FMP_encodemobile' value='use' ";
+								if(get_option('wp_FMP_encodemobile') == "true") {
 									echo "checked";
 								}
 								echo " />\n";
 							?>
-							Check to generate OGV files when encoding HTML5/Mobile videos.<br />
-							<small><em>Turned off by default because OGV is becoming obsolete.</em></small>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row" valign="top" align="left">
-							<label>Generate WEBM:</label>
-						</th>
-						<td width="10"></td>
-						<td>
+							H264/Mobile <small><em>(iOS, Android, Safari, IE 9)</em></small><br />
 							<?php
 								echo "<input type='checkbox' name='wp_FMP_encodewebm' id='wp_FMP_encodewebm' value='use' ";
 								if(get_option('wp_FMP_encodewebm') == "true") {
@@ -489,25 +504,28 @@ function FMPOptionsPage() {
 								}
 								echo " />\n";
 							?>
-							Check to generate WEBM files when encoding HTML5/Mobile videos.<br />
-						</td>
-					</tr>
-					<tr>
-						<th scope="row" valign="top" align="left">
-							<label>Enable HTTP Streaming or Flash Access 2.0:</label>
-						</th>
-						<td width="10"></td>
-						<td>
+							WEBM <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small><br />
 							<?php
-								echo "<input type='checkbox' name='wp_FMP_http_streaming' id='wp_FMP_http_streaming' value='use' ";
-								if(get_option('wp_FMP_http_streaming') == "true") {
+								echo "<input type='checkbox' name='wp_FMP_encodeogg' id='wp_FMP_encodeogg' value='use' ";
+								if(get_option('wp_FMP_encodeogg') == "true") {
 									echo "checked";
 								}
 								echo " />\n";
 							?>
-							Check to support HTTP Streaming or Flash Access 2.0 (requires Flash Player 10.1)
+							OGV <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small><br />
+							<em>Requires FFMPEG.</em>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row" valign="top" align="left">
+							<label>Path to FFMPEG:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<input name="wp_FMP_ffmpeg" id="wp_FMP_ffmpeg" type="text" value="<?php echo get_option('wp_FMP_ffmpeg') ?>" /><br />
+							<em>Don't include trailing slash. Example: /usr/local/bin</em>
 						</td>	
-					</tr>					
+					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
 							<label>Flash Player not installed message:</label>
@@ -526,18 +544,17 @@ function FMPOptionsPage() {
 						</td>
 					</tr>					
 					<tr>
+						<th colspan="2"><h3>Default video playback settings</h3></th><td>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row" valign="top" align="left">
-							<label>Path to FFMPEG:</label>
+							<label>Default poster image:</label>
 						</th>
 						<td width="10"></td>
 						<td>
-							<input name="wp_FMP_ffmpeg" id="wp_FMP_ffmpeg" type="text" value="<?php echo get_option('wp_FMP_ffmpeg') ?>" /><br />
-							<em><small>Don't include trailing slash. Example: /usr/local/bin</small></em>
+							<input type='text' name='wp_FMP_poster' id='wp_FMP_poster' size='50' value='<?php echo get_option('wp_FMP_poster') ?>' />
 						</td>	
-					</tr>
-					<tr>
-						<th colspan="2"><h3>Default argument values</h3></th><td>
-						</td>
 					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
@@ -559,11 +576,74 @@ function FMPOptionsPage() {
 					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
+							<label>Default controlbar style:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<select name="wp_FMP_controlbar_style" id="wp_FMP_controlbar_style">
+								<?php 
+									$docked = "";
+									$floating = "";
+									$none = "";
+									if(get_option('wp_FMP_controlbar_style') == "docked") {
+										$docked = " selected=\"selected\"";
+									}
+									if(get_option('wp_FMP_controlbar_style') == "floating") {
+										$floating = " selected=\"selected\"";
+									}
+									if(get_option('wp_FMP_controlbar_style') == "none") {
+										$none = " selected=\"selected\"";
+									}
+								?>
+								<option value="docked"<?php echo $docked ?>>docked</option>
+								<option value="floating"<?php echo $floating ?>>floating</option>
+								<option value="none"<?php echo $none ?>>none</option>
+							</select> HTML5 videos only respond to the "none" option.
+						</td>	
+					</tr>
+					<tr>
+						<th scope="row" valign="top" align="left">
+							<label>Default autoplay behavior:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<?php
+								echo "<input type='checkbox' name='wp_FMP_autoplay' id='wp_FMP_autoplay' value='use' ";
+								if(get_option('wp_FMP_autoplay') == "true") {
+									echo "checked";
+								}
+								echo " />\n";
+							?>
+							Check if you want video to automatically play when loaded
+						</td>	
+					</tr>
+					<tr>
+						<th scope="row" valign="top" align="left">
+							<label>Default loop behavior:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<?php
+								echo "<input type='checkbox' name='wp_FMP_loop' id='wp_FMP_loop' value='use' ";
+								if(get_option('wp_FMP_loop') == "true") {
+									echo "checked";
+								}
+								echo " />\n";
+							?>
+							Check if you want video to loop
+						</td>	
+					</tr>
+					<tr>
+						<th colspan="3"><h4>The following options will only affect Flash playback</h4></th><td>
+						</td>
+					</tr>				
+					<tr>
+						<th scope="row" valign="top" align="left">
 							<label>Default background color:</label>
 						</th>
 						<td width="10"></td>
 						<td>
-							<input name="wp_FMP_bgcolor" id="wp_FMP_bgcolor" type="text" value="<?php echo get_option('wp_FMP_bgcolor') ?>" />
+							<input name="wp_FMP_bgcolor" id="wp_FMP_bgcolor" type="text" value="<?php echo get_option('wp_FMP_bgcolor') ?>" /> #rrggbb
 						</td>	
 					</tr>
 					<tr>
@@ -581,7 +661,9 @@ function FMPOptionsPage() {
 						</th>
 						<td width="10"></td>
 						<td>
-							<input name="wp_FMP_skin" id="wp_FMP_skin" type="text" size="50" value="<?php echo get_option('wp_FMP_skin') ?>" />
+							<input name="wp_FMP_skin" id="wp_FMP_skin" type="text" size="50" value="<?php echo get_option('wp_FMP_skin') ?>" /><br />
+<em><small>Use <?php echo plugins_url("", __FILE__)."/flash/skin/kg_skin.xml" ?> for a modern, circular play button.<br />
+Leave blank for the older, square play button.</small></em>
 						</td>	
 					</tr>					
 					<tr>
@@ -654,42 +736,6 @@ function FMPOptionsPage() {
 					</tr>					
 					<tr>
 						<th scope="row" valign="top" align="left">
-							<label>Default controlbar style:</label>
-						</th>
-						<td width="10"></td>
-						<td>
-							<select name="wp_FMP_controlbar_style" id="wp_FMP_controlbar_style">
-								<?php 
-									$docked = "";
-									$floating = "";
-									$none = "";
-									if(get_option('wp_FMP_controlbar_style') == "docked") {
-										$docked = " selected=\"selected\"";
-									}
-									if(get_option('wp_FMP_controlbar_style') == "floating") {
-										$floating = " selected=\"selected\"";
-									}
-									if(get_option('wp_FMP_controlbar_style') == "none") {
-										$none = " selected=\"selected\"";
-									}
-								?>
-								<option value="docked"<?php echo $docked ?>>docked</option>
-								<option value="floating"<?php echo $floating ?>>floating</option>
-								<option value="none"<?php echo $none ?>>none</option>
-							</select>
-						</td>	
-					</tr>
-					<tr>
-						<th scope="row" valign="top" align="left">
-							<label>Default poster image:</label>
-						</th>
-						<td width="10"></td>
-						<td>
-							<input type='text' name='wp_FMP_poster' id='wp_FMP_poster' size='50' value='<?php echo get_option('wp_FMP_poster') ?>' />
-						</td>	
-					</tr>
-					<tr>
-						<th scope="row" valign="top" align="left">
 							<label>Default autohide behavior:</label>
 						</th>
 						<td width="10"></td>
@@ -702,38 +748,6 @@ function FMPOptionsPage() {
 								echo " />\n";
 							?>
 							Uncheck if you do not want controlbar to hide when video is playing
-						</td>	
-					</tr>					
-					<tr>
-						<th scope="row" valign="top" align="left">
-							<label>Default autoplay behavior:</label>
-						</th>
-						<td width="10"></td>
-						<td>
-							<?php
-								echo "<input type='checkbox' name='wp_FMP_autoplay' id='wp_FMP_autoplay' value='use' ";
-								if(get_option('wp_FMP_autoplay') == "true") {
-									echo "checked";
-								}
-								echo " />\n";
-							?>
-							Check if you want video to automatically play when loaded
-						</td>	
-					</tr>
-					<tr>
-						<th scope="row" valign="top" align="left">
-							<label>Default loop behavior:</label>
-						</th>
-						<td width="10"></td>
-						<td>
-							<?php
-								echo "<input type='checkbox' name='wp_FMP_loop' id='wp_FMP_loop' value='use' ";
-								if(get_option('wp_FMP_loop') == "true") {
-									echo "checked";
-								}
-								echo " />\n";
-							?>
-							Check if you want video to loop
 						</td>	
 					</tr>					
 					<tr>
@@ -839,11 +853,20 @@ add_action('save_post', 'kg_addPostSave');
         $form_fields["kgflashmediaplayer-ffmpeg_path"]["input"] = "hidden";
         $form_fields["kgflashmediaplayer-ffmpeg_path"]["value"] = get_option('wp_FMP_ffmpeg');
 
-        $form_fields["kgflashmediaplayer-encodeogg"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-encodeogg"]["value"] = get_option('wp_FMP_encodeogg');
+        $encodemobileset = get_post_meta($post->ID, "_kgflashmediaplayer-encodemobile", true);
+        if ($encodemobileset == "") { $encodemobileset = get_option('wp_FMP_encodemobile'); }
+        $form_fields["kgflashmediaplayer-encodemobile"]["input"] = "hidden";
+        $form_fields["kgflashmediaplayer-encodemobile"]["value"] = $encodemobileset;
 
+        $encodeoggset = get_post_meta($post->ID, "_kgflashmediaplayer-encodeogg", true);
+        if ($encodeoggset == "") { $encodeoggset = get_option('wp_FMP_encodeogg'); }
+        $form_fields["kgflashmediaplayer-encodeogg"]["input"] = "hidden";
+        $form_fields["kgflashmediaplayer-encodeogg"]["value"] = $encodeoggset;
+
+        $encodewebmset = get_post_meta($post->ID, "_kgflashmediaplayer-encodewebm", true);
+        if ($encodewebmset == "") { $encodewebmset = get_option('wp_FMP_encodewebm'); }
         $form_fields["kgflashmediaplayer-encodewebm"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-encodewebm"]["value"] = get_option('wp_FMP_encodewebm');
+        $form_fields["kgflashmediaplayer-encodewebm"]["value"] = $encodewebmset;
 
         $form_fields["kgflashmediaplayer-plugin_dir"]["input"] = "hidden";
         $form_fields["kgflashmediaplayer-plugin_dir"]["value"] = plugins_url("", __FILE__);
@@ -910,9 +933,24 @@ add_action('save_post', 'kg_addPostSave');
 	if (get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true) != "") { $numberofthumbs_value = "1"; }
 	else { $numberofthumbs_value = "4"; }
 
-        $form_fields["generator"]["label"] = __("Thumbnails");
+	if ( get_option('wp_FMP_ffmpeg_exists') == false ) { //make sure the new ffmpeg_exists option exists
+		exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
+		if ($returnvalue < 126 ) { //if FFMPEG executed
+			add_option('wp_FMP_ffmpeg_exists', "true");
+		}
+		else { add_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
+	}
+
+	if ( get_option('wp_FMP_ffmpeg_exists') == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="FFMPEG not found at '.get_option('wp_FMP_ffmpeg').'"'; }
+
+	$form_fields["generator"]["label"] = __("Thumbnails");
         $form_fields["generator"]["input"] = "html";
-        $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div><input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="'.$numberofthumbs_value.'" maxlength="1" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';"><input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" /> <input type="checkbox" id="attachments_'. $post->ID .'_firstframe"><label for="attachments_'. $post->ID .'_firstframe">Force 1st Frame Thumbnail</label>';
+        $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div>
+        <input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="'.$numberofthumbs_value.'" maxlength="1" size="4" style="width:25px;" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';" '.$ffmpeg_disabled_text.'/>
+        <input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
+        <input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/> 
+        <input type="checkbox" id="attachments_'. $post->ID .'_firstframe" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';" '.$ffmpeg_disabled_text.'/>
+        <label for="attachments_'. $post->ID .'_firstframe">Force 1st Frame Thumbnail</label>';
 
         $form_fields["thumbtime"]["label"] = __("Thumbnail Timecode");
         $form_fields["thumbtime"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true);
@@ -924,13 +962,32 @@ add_action('save_post', 'kg_addPostSave');
 
         $form_fields["kgflashmediaplayer-dimensions"]["label"] = __("Video Embed Dimensions");
         $form_fields["kgflashmediaplayer-dimensions"]["input"] = "html";
-        $form_fields["kgflashmediaplayer-dimensions"]["html"] = 'Width: <input name="attachments_'. $post->ID .'_kgflashmediaplayer-width" type="text" value="'.$widthset.'" id="attachments_'. $post->ID .'_kgflashmediaplayer-width" type="text" style="width:50px;" onchange="kg_set_dimension('.$post->ID.', \'height\', this.value);" onkeyup="kg_set_dimension('.$post->ID.', \'height\', this.value);"> Height: <input id="attachments_'. $post->ID .'_kgflashmediaplayer-height" type="text" value="'.$heightset.'" style="width:50px;" onchange="kg_set_dimension('.$post->ID.', \'width\', this.value);" onkeyup="kg_set_dimension('.$post->ID.', \'width\', this.value);"> <input type="checkbox" id="attachments_'. $post->ID .'_kgflashmediaplayer-lockaspect" onclick="kg_set_aspect('.$post->ID.', this.checked);" checked> <label for="attachments_'. $post->ID .'_kgflashmediaplayer-lockaspect"><small>Lock to Aspect Ratio</small></label>';
+        $form_fields["kgflashmediaplayer-dimensions"]["html"] = 'Width: <input name="attachments_'. $post->ID .'_kgflashmediaplayer-width" type="text" value="'.$widthset.'" id="attachments_'. $post->ID .'_kgflashmediaplayer-width" type="text" style="width:50px;" onchange="kg_set_dimension('.$post->ID.', \'height\', this.value);" onkeyup="kg_set_dimension('.$post->ID.', \'height\', this.value);"> Height: 
+        <input id="attachments_'. $post->ID .'_kgflashmediaplayer-height" type="text" value="'.$heightset.'" style="width:50px;" onchange="kg_set_dimension('.$post->ID.', \'width\', this.value);" onkeyup="kg_set_dimension('.$post->ID.', \'width\', this.value);"> 
+        <input type="checkbox" id="attachments_'. $post->ID .'_kgflashmediaplayer-lockaspect" onclick="kg_set_aspect('.$post->ID.', this.checked);" checked> 
+        <label for="attachments_'. $post->ID .'_kgflashmediaplayer-lockaspect"><small>Lock to Aspect Ratio</small></label>';
         $form_fields["kgflashmediaplayer-dimensions"]["helps"] = "<small>Leave blank to use <a href='options-general.php?page=video-embed-thumbnail-generator.php' target='_blank'>default dimensions</a>.</small>";
 
+        if ($encodemobileset == "false") { $mobilechecked = ""; }
+        else { $mobilechecked = "checked"; }
+        if ($encodeoggset == "false") { $oggchecked = ""; }
+        else { $oggchecked = "checked"; }
+        if ($encodewebmset == "false") { $webmchecked = ""; }
+        else { $webmchecked = "checked"; }
         $form_fields["kgflashmediaplayer-encode"]["label"] = __("HTML5 & Mobile");
         $form_fields["kgflashmediaplayer-encode"]["input"] = "html";
-        $form_fields["kgflashmediaplayer-encode"]["html"] = '<input type="button" id="attachments['. $post->ID .'][kgflasmediaplayer-encode]" name="attachments['. $post->ID .'][kgflasmediaplayer-encode]" class="button-secondary" value="Encode" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'encode\');"/><div style="display:inline-block;" id="attachments_'. $post->ID .'_encodeplaceholder"></div>';
-        $form_fields["kgflashmediaplayer-encode"]["helps"] = "<small>(Experimental) Uses FFMPEG to enocde an H.264/M4V file compatible with most mobile browsers and either a WEBM or OGV depending on <a href='options-general.php?page=video-embed-thumbnail-generator.php' target='_blank'>settings</a>.</small>";
+        $form_fields["kgflashmediaplayer-encode"]["html"] = '<input type="button" id="attachments['. $post->ID .'][kgflashmediaplayer-encode]" name="attachments['. $post->ID .'][kgflashmediaplayer-encode]" class="button-secondary" value="Encode" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'encode\');" '.$ffmpeg_disabled_text.'/> 
+
+	<input type="checkbox" id="attachments['. $post->ID .'][kgflashmediaplayer-encodemobilecheck]" name="attachments['. $post->ID .'][kgflashmediaplayer-encodemobilecheck]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodemobile]\').value = \'true\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodemobile]\').value = \'false\'; }" '.$mobilechecked.' '.$ffmpeg_disabled_text.'>
+	<label for="attachments['. $post->ID .'][kgflashmediaplayer-encodemobilecheck]">Mobile/H.264</label> 
+
+	<input type="checkbox" id="attachments['. $post->ID .'][kgflashmediaplayer-encodewebmcheck]" name="attachments['. $post->ID .'][kgflashmediaplayer-encodewebmcheck]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodewebm]\').value = \'true\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodewebm]\').value = \'false\'; }" '.$webmchecked.' '.$ffmpeg_disabled_text.'>
+	<label for="attachments['. $post->ID .'][kgflashmediaplayer-encodewebmcheck]">WEBM</label> 
+
+	<input type="checkbox" id="attachments['. $post->ID .'][kgflashmediaplayer-encodeoggcheck]" name="attachments['. $post->ID .'][kgflashmediaplayer-encodeoggcheck]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodeogg]\').value = \'true\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodeogg]\').value = \'false\'; }" '.$oggchecked.' '.$ffmpeg_disabled_text.'>
+	<label for="attachments['. $post->ID .'][kgflashmediaplayer-encodeoggcheck]">OGV</label>
+
+	<div style="display:inline-block;" id="attachments_'. $post->ID .'_encodeplaceholder"></div><br /><small><em>(Experimental) Generates video files compatible with most mobile & HTML5-compatible browsers.</em></small>';
 
         $showtitlechecked = get_post_meta($post->ID, "_kgflashmediaplayer-showtitle", true);
         $downloadlinkchecked = get_post_meta($post->ID, "_kgflashmediaplayer-download", true);
@@ -939,7 +996,14 @@ add_action('save_post', 'kg_addPostSave');
         else { $embedchecked = "checked"; }
         $form_fields["kgflashmediaplayer-options"]["label"] = __("Video Embed Options");
         $form_fields["kgflashmediaplayer-options"]["input"] = "html";
-        $form_fields["kgflashmediaplayer-options"]["html"] = '<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-showtitle]" id="attachments[{$post->ID}][kgflashmediaplayer-showtitle]" value="checked" onclick="document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = this.value;" '.$showtitlechecked.'> <label for="attachments[{$post->ID}][kgflashmediaplayer-showtitle]">Include Title Above Video</label><br /><input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]" id="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]" value="checked" onclick="document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = this.value;" '.$downloadlinkchecked.'> <label for="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]">Generate Download Link Below Video<em><small>(Makes it easier for users to download video file)</em></small></label><br /><input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-embed]" id="attachments[{$post->ID}][kgflashmediaplayer-embed]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'unchecked\'; }"'.$embedchecked.'> <label for="attachments[{$post->ID}][kgflashmediaplayer-embed]">Generate Embed Shortcode <em><small>(Turn off checkbox to use default WordPress video embedding)</small></em></label>';
+        $form_fields["kgflashmediaplayer-options"]["html"] = '<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-showtitle]" id="attachments[{$post->ID}][kgflashmediaplayer-showtitle]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = \'unchecked\'; }"" '.$showtitlechecked.'> 
+	<label for="attachments[{$post->ID}][kgflashmediaplayer-showtitle]">Include Title Above Video</label><br />
+
+	<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]" id="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = \'unchecked\'; }" '.$downloadlinkchecked.'> 
+	<label for="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]">Generate Download Link Below Video<em><small>(Makes it easier for users to download video file)</em></small></label><br />
+
+	<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-embed]" id="attachments[{$post->ID}][kgflashmediaplayer-embed]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'unchecked\'; }" '.$embedchecked.'> 
+	<label for="attachments[{$post->ID}][kgflashmediaplayer-embed]">Generate Embed Shortcode <em><small>(Turn off checkbox to use default WordPress video embedding)</small></em></label>';
 
         //$form_fields["kgflashmediaplayer-attachment"]["label"] = __("All Meta");
         //$form_fields["kgflashmediaplayer-attachment"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-attachment", true);
@@ -979,6 +1043,9 @@ add_action('save_post', 'kg_addPostSave');
         if( isset($attachment['kgflashmediaplayer-widthsave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-width', $attachment['kgflashmediaplayer-widthsave']); }
         if( isset($attachment['kgflashmediaplayer-heightsave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-height', $attachment['kgflashmediaplayer-heightsave']); }
         if( isset($attachment['kgflashmediaplayer-aspect']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-aspect', $attachment['kgflashmediaplayer-aspect']); }
+        if( isset($attachment['kgflashmediaplayer-encodemobile']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-encodemobile', $attachment['kgflashmediaplayer-encodemobile']); }
+        if( isset($attachment['kgflashmediaplayer-encodeogg']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-encodeogg', $attachment['kgflashmediaplayer-encodeogg']); }
+        if( isset($attachment['kgflashmediaplayer-encodewebm']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-encodewebm', $attachment['kgflashmediaplayer-encodewebm']); }
         if( isset($attachment['kgflashmediaplayer-embedsave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-embed', $attachment['kgflashmediaplayer-embedsave']); }
         if( isset($attachment['kgflashmediaplayer-downloadsave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-download', $attachment['kgflashmediaplayer-downloadsave']); }
         if( isset($attachment['kgflashmediaplayer-showtitlesave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-showtitle', $attachment['kgflashmediaplayer-showtitlesave']); }
@@ -1042,6 +1109,21 @@ return array_merge($tabs, $newtab);
 add_filter('media_upload_tabs', 'kg_embedurl_menu');
 
 function media_embedurl_process() {
+
+if ( get_option('wp_FMP_ffmpeg_exists') == false ) { //make sure the new ffmpeg_exists option exists
+	exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
+	if ($returnvalue < 126 ) { //if FFMPEG executed
+		add_option('wp_FMP_ffmpeg_exists', "true");
+	}
+	else { add_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
+}
+
+if ( get_option('wp_FMP_ffmpeg_exists') == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="FFMPEG not found at '.get_option('wp_FMP_ffmpeg').'"'; }
+
+if ( get_option('wp_FMP_encodemobile') == "true" ) { $mobilechecked = "checked";  }
+if ( get_option('wp_FMP_encodeogg') == "true" ) { $oggchecked = "checked";  }
+if ( get_option('wp_FMP_encodewebm') == "true" ) { $webmchecked = "checked";  }
+
 media_upload_header();
 ?>
 <form class="media-upload-form type-form validate" id="video-form" enctype="multipart/form-data" method="post" action="">
@@ -1062,7 +1144,11 @@ media_upload_header();
 			</tr>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="numberofthumbs">Thumbnails</label></span></th>
-				<td class="field"><div id="attachments_singleurl_thumbnailplaceholder"></div><input id="attachments_singleurl_numberofthumbs" type="text" value="4" maxlength="2" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById('attachments[singleurl][thumbtime]').value='';"><input type="button" id="attachments[singleurl][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('singleurl', 'generate');"/><input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('singleurl', 'random');" /> <input type="checkbox" id="attachments_singleurl_firstframe"><label for="attachments_singleurl_firstframe">Force 1st Frame Thumbnail</label></td>
+				<td class="field"><div id="attachments_singleurl_thumbnailplaceholder"></div>
+<input id="attachments_singleurl_numberofthumbs" type="text" value="4" maxlength="2" size="4" style="width:25px;" title="Number of Thumbnails" onchange="document.getElementById('attachments[singleurl][thumbtime]').value='';" <?php echo $ffmpeg_disabled_text; ?> />
+<input type="button" id="attachments[singleurl][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('singleurl', 'generate');" <?php echo $ffmpeg_disabled_text; ?> />
+<input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('singleurl', 'random');" <?php echo $ffmpeg_disabled_text; ?> /> 
+<input type="checkbox" id="attachments_singleurl_firstframe" onchange="document.getElementById('attachments[singleurl][thumbtime]').value ='';" <?php echo $ffmpeg_disabled_text; ?> /><label for="attachments_singleurl_firstframe">Force 1st Frame Thumbnail</label></td>
 			</tr>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments[singleurl][thumbtime]">Thumbnail Timecode</span></label><br class="clear" /></th>
@@ -1080,13 +1166,25 @@ media_upload_header();
 				<p class="help"><small>Leave blank to use <a href="options-general.php?page=video-embed-thumbnail-generator.php" target="_blank">default dimensions</a>.</small></p></td>
 			</tr>
 			<tr>
+				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="html5">HTML5 & Mobile</span></label></th>
+				<td><input type="button" id="html5" class="button-secondary" value="Encode" name="html5" onclick="kg_generate_thumb('singleurl', 'encode');" <?php echo $ffmpeg_disabled_text; ?> />
+
+	<input type="checkbox" id="attachments[singleurl][kgflashmediaplayer-encodemobilecheck]" name="attachments[singleurl][kgflashmediaplayer-encodemobilecheck]" value="checked" onclick="if(this.checked) { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodemobile]').value = 'true'; } else { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodemobile]').value = 'false'; }" <?php echo ($mobilechecked." ".$ffmpeg_disabled_text); ?> />
+	<label for="attachments[singleurl][kgflashmediaplayer-encodemobilecheck]">Mobile/H.264</label> 
+
+	<input type="checkbox" id="attachments[singleurl][kgflashmediaplayer-encodewebmcheck]" name="attachments[singleurl][kgflashmediaplayer-encodewebmcheck]" value="checked" onclick="if(this.checked) { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodewebm]').value = 'true'; } else { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodewebm]').value = 'false'; }" <?php echo ($webmchecked." ".$ffmpeg_disabled_text); ?> />
+	<label for="attachments[singleurl][kgflashmediaplayer-encodewebmcheck]">WEBM</label> 
+
+	<input type="checkbox" id="attachments[singleurl][kgflashmediaplayer-encodeoggcheck]" name="attachments[singleurl][kgflashmediaplayer-encodeoggcheck]" value="checked" onclick="if(this.checked) { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodeogg]').value = 'true'; } else { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodeogg]').value = 'false'; }" <?php echo ($oggchecked." ".$ffmpeg_disabled_text); ?> />
+	<label for="attachments[singleurl][kgflashmediaplayer-encodeoggcheck]">OGV</label>
+
+<div id="attachments_singleurl_encodeplaceholder" name="attachments_singleurl_encodeplaceholder" style="display:inline-block;"></div><br />
+				<small><em>(Experimental) Generates video files compatible with most mobile & HTML5-compatible browsers.</em></small></td>
+			</tr>
+			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label>Options</span></label></th>
 				<td><input type="checkbox" name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink">Generate Download Link Below Video <small>(Makes it easier for users to download video file)</small></label></td>				
 			</tr>
-			<tr>
-				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="html5">HTML5 & Mobile</span></label></th>
-				<td><input type="button" id="html5" class="button-secondary" value="Encode" name="html5" onclick="kg_generate_thumb('singleurl', 'encode');" /><div id="attachments_singleurl_encodeplaceholder" name="attachments_singleurl_encodeplaceholder" style="display:inline-block;"></div><br />
-				<small>(Experimental) Uses FFMPEG to enocde an H.264/M4V file compatible with most mobile browsers and either a WEBM or OGV depending on <a href='options-general.php?page=video-embed-thumbnail-generator.php' target='_blank'>settings</a>.</small></td>
 			<tr class="submit">
 				<td></td>
 				<td>
@@ -1104,6 +1202,7 @@ $maxwidth = get_option('wp_FMP_width');
 ?>
 
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-ffmpeg_path]' id='attachments[singleurl][kgflashmediaplayer-ffmpeg_path]' value='<?php echo get_option('wp_FMP_ffmpeg'); ?>' />
+<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-encodemobile]' id='attachments[singleurl][kgflashmediaplayer-encodemobile]' value='<?php echo get_option('wp_FMP_encodemobile'); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-encodeogg]' id='attachments[singleurl][kgflashmediaplayer-encodeogg]' value='<?php echo get_option('wp_FMP_encodeogg'); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-encodewebm]' id='attachments[singleurl][kgflashmediaplayer-encodewebm]' value='<?php echo get_option('wp_FMP_encodewebm'); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-plugin_dir]' id='attachments[singleurl][kgflashmediaplayer-plugin_dir]' value='<?php echo plugins_url("", __FILE__); ?>' />

@@ -19,6 +19,7 @@ if (checked) { document.getElementById('attachments['+postID+'][kgflashmediaplay
 function kg_generate_thumb(postID, buttonPushed) {
 
 	var kg_ffmpeg_path = document.getElementById('attachments['+postID+'][kgflashmediaplayer-ffmpeg_path]').value;
+	var kg_encodemobile = document.getElementById('attachments['+postID+'][kgflashmediaplayer-encodemobile]').value;
 	var kg_encodeogg = document.getElementById('attachments['+postID+'][kgflashmediaplayer-encodeogg]').value;
 	var kg_encodewebm = document.getElementById('attachments['+postID+'][kgflashmediaplayer-encodewebm]').value;
 	var kg_plugin_dir = document.getElementById('attachments['+postID+'][kgflashmediaplayer-plugin_dir]').value;
@@ -58,7 +59,7 @@ function kg_generate_thumb(postID, buttonPushed) {
 		jQuery(encodeplaceholderid).empty();
 	}
 
-	jQuery.post(kg_plugin_dir + '/kg_callffmpeg.php', { movieurl: attachmentURL, numberofthumbs: howmanythumbs, action: actionName, ffmpeg: kg_ffmpeg_path, encodeogg: kg_encodeogg, encodewebm: kg_encodewebm, uploads_path: kg_upload_dir_path, uploads_url: kg_upload_dir_url, uploads_basedir: kg_upload_dir_basedir, attachmentID: postID, generate_button: buttonPushed, thumbtimecode: specifictimecode, dofirstframe: firstframethumb, poster: posterurl }, function(data) { 
+	jQuery.post(kg_plugin_dir + '/kg_callffmpeg.php', { movieurl: attachmentURL, numberofthumbs: howmanythumbs, action: actionName, ffmpeg: kg_ffmpeg_path, encodemobile: kg_encodemobile, encodeogg: kg_encodeogg, encodewebm: kg_encodewebm, uploads_path: kg_upload_dir_path, uploads_url: kg_upload_dir_url, uploads_basedir: kg_upload_dir_basedir, attachmentID: postID, generate_button: buttonPushed, thumbtimecode: specifictimecode, dofirstframe: firstframethumb, poster: posterurl }, function(data) { 
 
 		if (buttonPushed != "encode") {
 			jQuery(thumbnailplaceholderid).empty(); 
@@ -105,7 +106,5 @@ function kg_insert_shortcode() {
 		shortcode += ']' + document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value + '[/FMP] '; }
 		if (document.getElementById('downloadlink').checked) { shortcode += '<br /><a href="' + document.getElementById("attachments[singleurl][kgflashmediaplayer-url]").value + '">Right-click or ctrl-click this link to download</a>'; }
 
-	parent.tinyMCE.activeEditor.execCommand('mceInsertContent', 0, shortcode);
-	//Close window
-	parent.jQuery("#TB_closeWindowButton").click();
+	parent.send_to_editor(shortcode);
 }

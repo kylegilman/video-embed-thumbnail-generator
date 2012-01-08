@@ -1,6 +1,7 @@
 <?php
 
 $ffmpegPath = $_POST['ffmpeg']."/ffmpeg";
+$encodemobile = $_POST['encodemobile'];
 $encodeogg = $_POST['encodeogg'];
 $encodewebm = $_POST['encodewebm'];
 $movieurl = $_POST['movieurl'];
@@ -211,6 +212,7 @@ if ($action == generate || $action == encode ) {
 				$ogvfilepath = $encodepath.$moviefilebasename.".ogv";
 				$webmfilepath = $encodepath.$moviefilebasename.".webm";
 
+				if ($encodemobile == "true") {
 				if ( ! file_exists($ipodfilepath) || filesize($webmfilepath) < 24576 ) {
 					$ipod_movie_height = strval(round(floatval($movie_height) / floatval($movie_width) * 640));
 					if ($ipod_movie_height % 2 != 0) { $ipod_movie_height++; }
@@ -221,19 +223,7 @@ if ($action == generate || $action == encode ) {
 					else { $embed_display .= "<strong>FFMPEG missing library 'libfaac' or 'libx264' required for iPod encoding. </strong>"; }
 				}//if iPod file doesn't already exist
 				else { $embed_display .= "<strong>Mobile M4V Already Encoded! </strong>"; }
-
-				if ($encodeogg == "true") {
-				if ( ! file_exists($ogvfilepath) || filesize($webmfilepath) < 24576 ) {
-
-					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libtheora') ) {
-						$ogvbitrate = $movie_height * 3;
-						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k -threads 1 "'.$ogvfilepath.'"';
-						$embed_display .= "<strong> Encoding OGG... </strong>";
-					}//if the proper FFMPEG libraries are enabled
-					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libtheora' required for ogv encoding. </strong>"; }
-				}//if ogv doesn't already exist
-				else { $embed_display .= "<strong>OGG Already Encoded! </strong>"; }
-				}//if encodeogg is checked
+				}//if mobile is checked
 
 				if ($encodewebm == "true") {
 				if ( ! file_exists($webmfilepath) || filesize($webmfilepath) < 24576 ) {
@@ -242,10 +232,23 @@ if ($action == generate || $action == encode ) {
 						$ffmpeg_webm_options = ' -ab 128k -b '.$webmbitrate.'k -threads 1 "'.$webmfilepath.'"';
 						$embed_display .= "<strong> Encoding WEBM... </strong>";
 					}//if the proper FFMPEG libraries are enabled
-					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libvpx' required for webm encoding. </strong>"; }
+					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libvpx' required for WEBM encoding. </strong>"; }
 				}//if webm doesn't already exist
 				else { $embed_display .= "<strong>WEBM Already Encoded! </strong>"; }
 				}//if encodewebm is checked
+
+				if ($encodeogg == "true") {
+				if ( ! file_exists($ogvfilepath) || filesize($webmfilepath) < 24576 ) {
+
+					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libtheora') ) {
+						$ogvbitrate = $movie_height * 3;
+						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k -threads 1 "'.$ogvfilepath.'"';
+						$embed_display .= "<strong> Encoding OGV... </strong>";
+					}//if the proper FFMPEG libraries are enabled
+					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libtheora' required for OGV encoding. </strong>"; }
+				}//if ogv doesn't already exist
+				else { $embed_display .= "<strong>OGV Already Encoded! </strong>"; }
+				}//if encodeogg is checked
 
 
 				if ( ! file_exists($ogvfilepath) || ! file_exists($ipodfilepath) || ! file_exists($webmfilepath) ) {

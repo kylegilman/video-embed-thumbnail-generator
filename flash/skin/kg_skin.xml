@@ -1,0 +1,8 @@
+<skin>
+<elements basePath="skin/images/">
+	<element id="controlBarBackdrop" src="backDrop_center.png"/>
+	<element id = "playButtonOverlayNormal" src = "PlayNormal.png"/>
+	<element id = "playButtonOverlayOver" src = "Play_Over.png"/>
+	<element id = "playButtonOverlayDown" src = "Play_Down.png"/>
+</elements>
+</skin>
