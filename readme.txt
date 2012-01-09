@@ -86,7 +86,7 @@ Some of it will work without FFMPEG. You can generate embed codes for your video
 == Screenshots ==
 
 1. Thumbnail & Embed Options in the Media Library/Insert Video page.
-2. "Embed by Url" tab.
+2. "Embed from Url" tab.
 3. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
