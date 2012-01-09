@@ -31,7 +31,7 @@ If you want to make it easier for people to save the video to their computers, y
 
 Sometimes for various reasons you might need to embed video files that are not saved in the Wordpress Media Library. Maybe your file is too large to upload through the media upload form, or maybe it's hosted on another server. Either way, you can use the tab "Embed from URL" in the Add Media window. Just enter the Video URL manually, and all other steps are the same as the Media Library options. If the video is in a directory that isn't writable, any encodes you make will go to an "html5encodes" subdirectory in the Wordpress uploads directory.
 
-= Once you've filled in all your options, click "Insert Flash Media Player" and you'll get a shortcode in the visual editor like this =
+= Once you've filled in all your options, click "Insert into Post" and you'll get a shortcode in the visual editor like this =
 
 `[FMP poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg" 
 width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web.mp4[/FMP]`
