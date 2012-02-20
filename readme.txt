@@ -62,7 +62,7 @@ After you save the post, the thumbnail file will be registered in the Wordpress 
 * `configuration="http://www.example.com/config.xml"` Lets you specify all these flashvars in an XML file.
 * `skin="http://www.example.com/skin.xml"` Completely change the look of the video player. <a href="http://www.longtailvideo.com/support/jw-player/jw-player-for-flash-v5/14/building-skins">Instructions here.</a>
 
-I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback in the comments. I'm developing the plugin on a VPS and I haven't tested it on any other FFMPEG-enabled servers yet, so I'm sure there are all kinds of things that only work because of my particular server setup.
+I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback in the comments.
 
 == Installation ==
 
