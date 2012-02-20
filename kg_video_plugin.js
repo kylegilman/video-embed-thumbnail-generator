@@ -13,19 +13,16 @@ function kg_set_dimension(postID, valuetochange, currentvalue) {
 }
 
 function kg_set_aspect(postID, checked) {
-if (checked) { document.getElementById('attachments['+postID+'][kgflashmediaplayer-aspect]').value = document.getElementById('attachments_'+postID+'_kgflashmediaplayer-height').value / document.getElementById('attachments_'+postID+'_kgflashmediaplayer-width').value; }
+	if (checked) { document.getElementById('attachments['+postID+'][kgflashmediaplayer-aspect]').value = document.getElementById('attachments_'+postID+'_kgflashmediaplayer-height').value / document.getElementById('attachments_'+postID+'_kgflashmediaplayer-width').value; 
+	}
 }
 
 function kg_generate_thumb(postID, buttonPushed) {
 
-	var kg_ffmpeg_path = document.getElementById('attachments['+postID+'][kgflashmediaplayer-ffmpeg_path]').value;
+	var kgflashmediaplayersecurity = document.getElementById('attachments['+postID+'][kgflashmediaplayer-security]').value;
 	var kg_encodemobile = document.getElementById('attachments['+postID+'][kgflashmediaplayer-encodemobile]').value;
 	var kg_encodeogg = document.getElementById('attachments['+postID+'][kgflashmediaplayer-encodeogg]').value;
 	var kg_encodewebm = document.getElementById('attachments['+postID+'][kgflashmediaplayer-encodewebm]').value;
-	var kg_plugin_dir = document.getElementById('attachments['+postID+'][kgflashmediaplayer-plugin_dir]').value;
-	var kg_upload_dir_url = document.getElementById('attachments['+postID+'][kgflashmediaplayer-upload_url]').value;
-	var kg_upload_dir_path = document.getElementById('attachments['+postID+'][kgflashmediaplayer-upload_path]').value;
-	var kg_upload_dir_basedir = document.getElementById('attachments['+postID+'][kgflashmediaplayer-upload_basedir]').value;
 	var attachmentURL = document.getElementById('attachments['+postID+'][kgflashmediaplayer-url]').value;
 	var howmanythumbs = document.getElementById('attachments_'+postID+'_numberofthumbs').value;
 	var firstframethumb = document.getElementById('attachments_'+postID+'_firstframe').checked;
@@ -34,6 +31,10 @@ function kg_generate_thumb(postID, buttonPushed) {
 	if (specifictimecode === "0") { specifictimecode = "firstframe"; }
 	var thumbnailplaceholderid = "#attachments_"+postID+"_thumbnailplaceholder";
 	var encodeplaceholderid = "#attachments_"+postID+"_encodeplaceholder";
+	var encodeprogressplaceholderid = "#attachments_"+postID+"_encodeprogressplaceholder";
+	var altembedselectid = "#attachments_"+postID+"_altembedselect";
+	var thumbnailboxID = "#attachments_"+postID+"_kgflashmediaplayer-thumbnailbox";
+	var thumbnailboxoverlayID = "#attachments_"+postID+"_kgflashmediaplayer-thumbnailboxoverlay";
 	var widthID = 'attachments_'+postID+'_kgflashmediaplayer-width';
 	var heightID = 'attachments_'+postID+'_kgflashmediaplayer-height';
 	var widthsaveID = 'attachments['+postID+'][kgflashmediaplayer-widthsave]';
@@ -41,58 +42,97 @@ function kg_generate_thumb(postID, buttonPushed) {
 	var maxwidthID = 'attachments['+postID+'][kgflashmediaplayer-maxwidth]';
 	var maxheightID = 'attachments['+postID+'][kgflashmediaplayer-maxheight]';
 
-
-	if (buttonPushed == "generate" || buttonPushed == "random" ) { actionName = "generate"; }
-	else { actionName = buttonPushed; }
-
-	if (buttonPushed == "delete") { 
-		document.getElementById('attachments['+postID+'][kgflashmediaplayer-poster]').value = ""; 
-		document.getElementById('attachments['+postID+'][thumbtime]').value = "";
+	if (buttonPushed == "generate" || buttonPushed == "random" ) { 
+		actionName = "generate";
+		if (specifictimecode != 0 ) { howmanythumbs = 1; }
+	}
+	else { 
+		actionName = buttonPushed; 
+		howmanythumbs = 1;
 	}
 
 	if (buttonPushed != "encode") {
 		jQuery(thumbnailplaceholderid).empty();
-		jQuery(thumbnailplaceholderid).append('<strong>Loading...</strong>');
+		jQuery(thumbnailplaceholderid).append('<p><strong>Choose Thumbnail:</strong></p><div id="attachments_'+postID+'_kgflashmediaplayer-thumbnailboxoverlay" name="attachments_'+postID+'_kgflashmediaplayer-thumbnailboxoverlay" class="kg_thumbnail_overlay"><div id="attachments_'+postID+'_kgflashmediaplayer-ajaxloading" name="attachments_'+postID+'_kgflashmediaplayer-ajaxloading" class="kg_ajax_loading"></div><div name="attachments_'+postID+'_kgflashmediaplayer-thumbnailbox" id="attachments_'+postID+'_kgflashmediaplayer-thumbnailbox" class="kg_thumbnail_box"></div></div>');
 	}
 
 	if (buttonPushed == "encode") {
 		jQuery(encodeplaceholderid).empty();
+		jQuery(encodeprogressplaceholderid).empty();
+		jQuery(encodeplaceholderid).append('<strong>Encoding...</strong>');
 	}
 
-	jQuery.post(kg_plugin_dir + '/kg_callffmpeg.php', { movieurl: attachmentURL, numberofthumbs: howmanythumbs, action: actionName, ffmpeg: kg_ffmpeg_path, encodemobile: kg_encodemobile, encodeogg: kg_encodeogg, encodewebm: kg_encodewebm, uploads_path: kg_upload_dir_path, uploads_url: kg_upload_dir_url, uploads_basedir: kg_upload_dir_basedir, attachmentID: postID, generate_button: buttonPushed, thumbtimecode: specifictimecode, dofirstframe: firstframethumb, poster: posterurl }, function(data) { 
 
-		if (buttonPushed != "encode") {
-			jQuery(thumbnailplaceholderid).empty(); 
-			jQuery(thumbnailplaceholderid).append(data.thumbnaildisplaycode);
-		}
+	var i=1;
+	var increaser = 0;
+	var iincreaser = 0;
 
-		if (actionName == "generate") { 
-			kg_aspect = data.movie_height/data.movie_width;
-			document.getElementById('attachments['+postID+'][kgflashmediaplayer-aspect]').value = kg_aspect;
-			if (parseInt(data.movie_width) < parseInt(document.getElementById(maxwidthID).value) ) { document.getElementById(widthID).value = data.movie_width; }
-			else { document.getElementById(widthID).value = document.getElementById(maxwidthID).value; }
-			if (parseInt(data.movie_width) > parseInt(document.getElementById(maxwidthID).value) ) { document.getElementById(heightID).value = Math.round(kg_aspect*parseInt(document.getElementById(maxwidthID).value)); } 
-			else { document.getElementById(heightID).value = data.movie_height; }
-			if(postID != "singleurl") { 
-				document.getElementById(widthsaveID).value = document.getElementById(widthID).value;
-				document.getElementById(heightsaveID).value = document.getElementById(heightID).value;
+	//for (i=1; i<=howmanythumbs; i++) { //loop until thumbnails are generated
+
+	function kg_do_post() {
+
+		iincreaser = i + increaser;
+
+		jQuery.post(ajaxurl, { action:"kg_callffmpeg", security: kgflashmediaplayersecurity, movieurl: attachmentURL, numberofthumbs: howmanythumbs, thumbnumber:i, thumbnumberplusincreaser:iincreaser, ffmpeg_action: actionName, encodemobile: kg_encodemobile, encodeogg: kg_encodeogg, encodewebm: kg_encodewebm, attachmentID: postID, generate_button: buttonPushed, thumbtimecode: specifictimecode, dofirstframe: firstframethumb, poster: posterurl }, function(data) { 
+	
+			if (buttonPushed != "encode") {
+				jQuery(thumbnailboxID).append(data.thumbnaildisplaycode);
+				var thumbnailselectID = "#attachments_"+postID+"_thumb"+i;
+				jQuery(thumbnailselectID).css({display:"none"});
+				//jQuery(thumbnailselectID).fadeIn(1000);
+				jQuery(thumbnailselectID).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000);
+				//jQuery(thumbnailselectID).animate({display:"inline-block"}, 2000);
+				if (data.lastthumbnumber != "break") { i = parseInt(data.lastthumbnumber); }
+				else { i = howmanythumbs + 1; }
+				increaser++;
+				if ( i <= howmanythumbs ) { setTimeout(function(){kg_do_post()}, 1000); }
+				else { jQuery(thumbnailboxoverlayID).fadeTo(2000, 1); }
+
+				kg_aspect = data.movie_height/data.movie_width;
+				document.getElementById('attachments['+postID+'][kgflashmediaplayer-aspect]').value = kg_aspect;
+				if (parseInt(data.movie_width) < parseInt(document.getElementById(maxwidthID).value) ) { document.getElementById(widthID).value = data.movie_width; }
+				else { document.getElementById(widthID).value = document.getElementById(maxwidthID).value; }
+				if (parseInt(data.movie_width) > parseInt(document.getElementById(maxwidthID).value) ) { document.getElementById(heightID).value = Math.round(kg_aspect*parseInt(document.getElementById(maxwidthID).value)); } 
+				else { document.getElementById(heightID).value = data.movie_height; }
+				if(postID != "singleurl") { 
+					document.getElementById(widthsaveID).value = document.getElementById(widthID).value;
+					document.getElementById(heightsaveID).value = document.getElementById(heightID).value;
+				}
+				jQuery.post( ajaxurl ,  { action:"kg_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
 			}
-		}
+	
+			if (buttonPushed == "encode") {
+				jQuery(encodeplaceholderid).empty();
+				jQuery(encodeprogressplaceholderid).empty();
+				jQuery(encodeplaceholderid).append(data.embed_display);
+				jQuery(altembedselectid).empty();
+				jQuery(altembedselectid).append(data.altembedselect);
+				if ( data.encode_anything == "true" ) {
+					var kg_start_time = new Date().getTime(); 
+					jQuery.post( ajaxurl ,  { action:"kg_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, logfile:data.logfile } );
+					if (data.serverOS != "windows" ) { 
+						jQuery(encodeprogressplaceholderid).append('<div class="meter"><span style="width:0%;"></span></div>');
+						setTimeout(function(){kg_check_encode_progress(postID, data.pid, data.logfile, data.movie_duration, data.altembedselect, kg_start_time)}, 1000);
+					}
+					else { //if it's Windows skip the progress bar
+						jQuery(encodeprogressplaceholderid).append('<div class="meter_finished"><span style="width:100%;">100%</span></div>');
+						jQuery(encodeplaceholderid).empty();
+						jQuery(encodeplaceholderid).append('<strong>Encoding Complete</strong>');
+					}
+				}
+			}
+		}, "json");
 
-		if (buttonPushed == "encode") {
-			jQuery(encodeplaceholderid).append(data.embed_display);
-		}
+	}// end kg_do_post function
 
-	}, "json");
-
-jQuery.post( ajaxurl ,  { action:"kg_schedule_cleanup_generated_files" } );
-
+	kg_do_post(); //actually call the loop
 }
 
 function kg_insert_shortcode() {
 
-	jQuery.post(document.getElementById('attachments[singleurl][kgflashmediaplayer-plugin_dir]').value + '/kg_callffmpeg.php', { 
-		movieurl: document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value, action:'submit', poster: document.getElementById('attachments[singleurl][kgflashmediaplayer-poster]').value, uploads_path: document.getElementById('attachments[singleurl][kgflashmediaplayer-upload_path]').value }, function(data) {
+	var kgflashmediaplayersecurity = document.getElementById('attachments[singleurl][kgflashmediaplayer-security]').value;
+
+	jQuery.post(ajaxurl, { action:'kg_callffmpeg', security: kgflashmediaplayersecurity, attachmentID: 'singleurl', movieurl: document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value, ffmpeg_action:'submit', poster: document.getElementById('attachments[singleurl][kgflashmediaplayer-poster]').value }, function(data) {
 		jQuery('attachments_singleurl_thumbnailplaceholder').empty();
 	}, "json" );
 
@@ -107,4 +147,85 @@ function kg_insert_shortcode() {
 		if (document.getElementById('downloadlink').checked) { shortcode += '<br /><a href="' + document.getElementById("attachments[singleurl][kgflashmediaplayer-url]").value + '">Right-click or ctrl-click this link to download</a>'; }
 
 	parent.send_to_editor(shortcode);
+}
+
+function kg_check_encode_progress(postID, kg_pid, kg_logfile, kg_movie_duration, kg_altembedselect, kg_start_time) {
+	var encodeprogressplaceholderid = "#attachments_"+postID+"_encodeprogressplaceholder";
+	var encodeplaceholderid = "#attachments_"+postID+"_encodeplaceholder";
+	var altembedselectid = "#attachments_"+postID+"_altembedselect";
+	var kgflashmediaplayersecurity = document.getElementById('attachments['+postID+'][kgflashmediaplayer-security]').value;
+	var stopChecking = false;
+
+	jQuery.post(ajaxurl, { action:"kg_check_encode_progress", security: kgflashmediaplayersecurity, pid: kg_pid, logfile: kg_logfile, movie_duration: kg_movie_duration }, function(data) {
+
+		var display_percent = "";
+		if ( data.percent_done > 7 ) { display_percent = data.percent_done+"%"; }
+
+		var kg_current_time = new Date().getTime();
+		var kg_time_elapsed = Math.round( (kg_current_time - kg_start_time) / 1000 );
+		if ( kg_time_elapsed >= 60 ) {
+			kg_time_elapsed_minutes = Math.floor(kg_time_elapsed/60);
+			kg_time_elapsed_seconds = kg_time_elapsed%60;
+			kg_time_elapsed_seconds = (kg_time_elapsed_seconds < 10) ? ("0" + kg_time_elapsed_seconds) : kg_time_elapsed_seconds;
+			kg_time_elapsed_display = kg_time_elapsed_minutes+':'+kg_time_elapsed_seconds;
+		}
+		else { kg_time_elapsed_display = kg_time_elapsed+' seconds'; }
+
+		if ( data.percent_done != "" && data.percent_done != "100" ) {
+			var kg_time_remaining = Math.floor( (kg_time_elapsed / (data.percent_done/100) ) - kg_time_elapsed);
+			if ( kg_time_remaining >= 60 ) {
+				kg_time_remaining_minutes = Math.round(kg_time_remaining/60);
+				kg_time_remaining_seconds = kg_time_remaining%60;
+				kg_time_remaining_seconds = (kg_time_remaining_seconds < 10) ? ("0" + kg_time_remaining_seconds) : kg_time_remaining_seconds;
+				kg_time_remaining_display = kg_time_remaining_minutes+':'+kg_time_remaining_seconds;
+			}
+			else { kg_time_remaining_display = kg_time_remaining+' seconds'; }
+			jQuery(encodeprogressplaceholderid).empty();
+			jQuery(encodeprogressplaceholderid).append('<div class="meter"><span style="width:'+data.percent_done+'%;">'+display_percent+'</span></div><div class="kg_cancel_button"><input type="button" id="attachments_'+postID+'_kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel" name="attachments_'+postID+'_cancelencode" onclick="kg_cancel_encode('+kg_pid+', \''+postID+'\');"></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed_display+'. Estimated Remaining: '+kg_time_remaining_display+'. FPS:'+data.fps+'</small></div>');
+		}
+
+		if (data.other_message != "") { 
+			clearTimeout(percent_timeout);
+			stopChecking = true;
+			jQuery(encodeplaceholderid).empty();
+			jQuery(encodeplaceholderid).append('<strong>Encoding Halted</strong>');
+			jQuery(encodeprogressplaceholderid).empty();
+			jQuery(encodeprogressplaceholderid).append('<strong><span style="color:red;">Message from FFMPEG: '+data.other_message+'</span></strong>');
+		}
+
+		if ( data.percent_done == "100" ) { 
+			clearTimeout(percent_timeout);
+			stopChecking = true;
+			//delete window.kg_start_time_over;
+			jQuery(encodeprogressplaceholderid).empty();
+			jQuery(encodeprogressplaceholderid).append('<div class="meter_finished"><span style="width:100%;">100%</span></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed+' seconds. Estimated Remaining: 0 seconds.</small></div>');
+			jQuery(encodeplaceholderid).empty();
+			jQuery(encodeplaceholderid).append('<strong>Encoding Complete</strong>');
+		}
+		//jQuery(encodeplaceholderid).empty();
+		//jQuery(encodeplaceholderid).append(data.embed_display);
+
+		if ( data.fps !== "" ) { 
+			var kg_timetowait = Math.round(30000/parseInt(data.fps)); 
+			if (kg_timetowait < 1000) { kg_timetowait = 1000; } 
+		}
+		else { var kg_timetowait = 2000; }
+
+		if ( stopChecking != true ) { 
+			percent_timeout = setTimeout(function(){kg_check_encode_progress(postID, kg_pid, kg_logfile, kg_movie_duration, kg_altembedselect, kg_start_time)}, kg_timetowait);
+		}
+
+	}, "json" );
+}
+
+function kg_cancel_encode(kg_pid, postID) {
+
+	var kgflashmediaplayersecurity = document.getElementById('attachments['+postID+'][kgflashmediaplayer-security]').value;
+	var cancelbuttonID = 'attachments_'+postID+'_kgflashmediaplayer-cancelencode';
+
+	document.getElementById(cancelbuttonID).disabled = true;
+	document.getElementById(cancelbuttonID).title = "Command sent. Be patient";
+	
+	jQuery.post(ajaxurl, { action:"kg_cancel_encode", security: kgflashmediaplayersecurity, kg_pid: kg_pid } );
+
 }

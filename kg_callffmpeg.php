@@ -1,26 +1,28 @@
 <?php
+global $ffmpegPath;
+$ffmpegPath = get_option('wp_FMP_ffmpeg')."/ffmpeg";
+$mobile_res = get_option('wp_FMP_mobile_res');
+$uploads = wp_upload_dir();
+if (isset($_POST['encodemobile'])) { $encodemobile = $_POST['encodemobile']; }
+if (isset($_POST['encodeogg'])) { $encodeogg = $_POST['encodeogg']; }
+if (isset($_POST['encodewebm'])) { $encodewebm = $_POST['encodewebm']; }
+if (isset($_POST['movieurl'])) { $movieurl = $_POST['movieurl']; }
+if (isset($_POST['numberofthumbs'])) { $numberofthumbs = $_POST['numberofthumbs']; }
+if (isset($_POST['thumbnumber'])) { $i = $_POST['thumbnumber']; }
+if (isset($_POST['thumbnumberplusincreaser'])) { $iincreaser = $_POST['thumbnumberplusincreaser']; }
+if (isset($_POST['ffmpeg_action'])) { $action = $_POST['ffmpeg_action']; }
+if (isset($_POST['poster'])) { $poster = $_POST['poster']; }
+if (isset($_POST['attachmentID'])) { $postID = $_POST['attachmentID']; }
+if (isset($_POST['thumbtimecode'])) { $thumbtimecode = $_POST['thumbtimecode']; }
+if (isset($_POST['dofirstframe'])) { $dofirstframe = $_POST['dofirstframe']; }
+if (isset($_POST['generate_button'])) { $generate_button = $_POST['generate_button']; }
 
-$ffmpegPath = $_POST['ffmpeg']."/ffmpeg";
-$encodemobile = $_POST['encodemobile'];
-$encodeogg = $_POST['encodeogg'];
-$encodewebm = $_POST['encodewebm'];
-$movieurl = $_POST['movieurl'];
-$numberofthumbs = $_POST['numberofthumbs'];
-//$randomize = $_POST['randomize'];
-$action = $_POST['action'];
-$poster = $_POST['poster'];
-$uploads['path'] = $_POST['uploads_path'];
-$uploads['url'] = $_POST['uploads_url'];
-$uploads['basedir'] = $_POST['uploads_basedir'];
-$postID = $_POST['attachmentID'];
-$thumbtimecode = $_POST['thumbtimecode'];
-$dofirstframe = $_POST['dofirstframe'];
-$generate_button = $_POST['generate_button'];
-
-$moviefilepath = str_replace(" ", "%20", $movieurl);
+if ($postID != "singleurl") { $moviefilepath = get_attached_file($postID); }
+else { $moviefilepath = str_replace(" ", "%20", $movieurl); }
 $movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
 $moviefilebasename = basename($movieurl,'.'.$movie_extension);
 $thumbnailfilebase = $uploads['url']."/thumb_tmp/".$moviefilebasename;
+
 
 class Process{
     private $pid;
@@ -33,10 +35,23 @@ class Process{
         }
     }
     private function runCom(){
-        $command = 'nohup '.$this->command.' > /dev/null 2>&1 & echo $!';
-        //$command = 'nohup '.$this->command.' 1> /home/kylegilm/output.txt 2>&1';
-        exec($command ,$op);
-        $this->pid = (int)$op[0];
+
+           //$command = 'nohup '.$this->command.' > /dev/null 2>&1 & echo $!'; //this is the original command
+
+           $sys = strtoupper(PHP_OS); // Get OS Name
+           if(substr($sys,0,3) == "WIN") { 
+ 	        $command = $this->command; 
+		$this->OS = "windows";
+           } //exec this way if it's Windows
+
+           else { 
+		$command = 'nohup '.$this->command;
+		$this->OS = "linux";
+	   }
+
+           exec($command ,$op);
+           $this->output = $op;
+           if(substr($sys,0,3) != "WIN") { $this->pid = (int)$op[0]; }
     }
 
     public function setPid($pid){
@@ -77,9 +92,12 @@ class Process{
 */
 function get_video_dimensions($video = false) {
 	global $ffmpegPath;
+
 	$command = $ffmpegPath . ' -i "' . $video . '" -vstats 2>&1';
 
 	exec ( $command, $output );
+	$lastline = end($output);
+	$lastline = prev($output)."<br />".$lastline;  
 	$output = implode("\n", $output);
 
 	$result = ereg ( '[0-9]?[0-9][0-9][0-9]x[0-9][0-9][0-9][0-9]?', $output, $regs );
@@ -92,36 +110,26 @@ function get_video_dimensions($video = false) {
 		$duration = $matches[1];
 		preg_match('/configuration: (.*?)\n/', $output, $matches);
 		$configuration = $matches[1];
-		return array ('width' => $width, 'height' => $height, 'duration' => $duration, 'configuration' => $configuration );
+		preg_match('/rotate          : (.*?)\n/', $output, $matches);
+		if ( array_key_exists(1, $matches) == true ) { $rotate = $matches[1]; }
+		else $rotate = "0";
+		return array ('width' => $width, 'height' => $height, 'duration' => $duration, 'configuration' => $configuration, 'rotate' => $rotate, 'worked'=>true );
 	} else {
-		return false;
+		return array ('output'=>$lastline, 'worked'=>false);
 	}
 
 }
 
-function rrmdir($dir) {
-   if (is_dir($dir)) {
-     $objects = scandir($dir);
-     foreach ($objects as $object) {
-       if ($object != "." && $object != "..") {
-         if (filetype($dir."/".$object) == "dir") rrmdir($dir."/".$object); else unlink($dir."/".$object);
-       }
-     }
-     reset($objects);
-     rmdir($dir);
-   }
-}
+if ($action == "generate" || $action == "encode" ) {
 
+	//exec($ffmpegPath.' /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
+	$ffmpeg_info = kg_check_ffmpeg_exists();
 
-if ($action == generate || $action == encode ) {
-
-	exec($ffmpegPath.' /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
-
-	if ($returnvalue < 126 ) { //if FFMPEG executed
+	if ( $ffmpeg_info['ffmpeg_exists'] == true ) { //if FFMPEG executed
 
 		$movie_info = get_video_dimensions($moviefilepath);
 
-		if ($movie_info != false) { //if FFMPEG was able to open the file
+		if ($movie_info['worked'] == true) { //if FFMPEG was able to open the file
 
 			$movie_duration_hours = intval(substr($movie_info['duration'], -11, 2));
 			$movie_duration_minutes = intval(substr($movie_info['duration'], -8, 2));
@@ -130,107 +138,129 @@ if ($action == generate || $action == encode ) {
 			$movie_width = $movie_info['width'];
 			$movie_height = $movie_info['height'];
 
-			if ($action == generate) {
+			switch ($movie_info['rotate']) {
+				case "90": $movie_rotate = '-vf "transpose=1"'; break;
+				case "180": $movie_rotate = '-vf "hflip,vflip"'; break;
+				case "270": $movie_rotate = '-vf "transpose=2"'; break;
+				default: $movie_rotate = ""; break;
+			}
 
-				//rrmdir($uploads['path'].'/thumb_tmp');
+			if ($action == "generate") {
+
 				if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
 
 				$thumbnailheight = strval(round(floatval($movie_height) / floatval($movie_width) * 200));
+
+				switch ($movie_info['rotate']) { //if it's a sideways iPhone video
+					case "90";
+					case "270": $thumbnailheight = strval(round(floatval($movie_width) / floatval($movie_height) * 200));
+				}
+
 				$jpgpath = $uploads['path']."/thumb_tmp/";
-
-				$i = 1;
-				$increaser = 0;
-
-				$thumbnaildisplaycode = '<p><strong>Choose Thumbnail:</strong></p><div style="border-style:solid; border-color:#ccc; border-width:1px; width:425px; text-align:center; margin-bottom:10px; padding:5px;">';
-
-				while ($i <= $numberofthumbs) {
 				
-					$iincreaser = $i + $increaser;
-					$movieoffset = round(($movie_duration_seconds * $iincreaser) / ($numberofthumbs * 2));
+				$movieoffset = round(($movie_duration_seconds * $iincreaser) / ($numberofthumbs * 2));
 
-					if ($generate_button == "random") { //adjust offset random amount
-						$movieoffset = $movieoffset - rand(0, round($movie_duration_seconds / $numberofthumbs));
-					}
+				if ($generate_button == "random") { //adjust offset random amount
+					$movieoffset = $movieoffset - rand(0, round($movie_duration_seconds / $numberofthumbs));
+					if ($movieoffset < 0) { $movieoffset = "0"; }
+				}
 
-					if ($thumbtimecode) { //if a specific thumbnail timecode is set
-						if ($thumbtimecode == "firstframe") { $thumbtimecode = "0"; }
-						$timecode_array = explode(":", $thumbtimecode);
-						$timecode_array = array_reverse($timecode_array);
-						$thumbtimecode = $timecode_array[0] + ($timecode_array[1] * 60) + ($timecode_array[2] * 3600);
-						$movieoffset = $thumbtimecode;
-						$i = $numberofthumbs + 1;
-					}
+				if ($thumbtimecode) { //if a specific thumbnail timecode is set
+					if ($thumbtimecode == "firstframe") { $thumbtimecode = "0"; }
+					$timecode_array = explode(":", $thumbtimecode);
+					$timecode_array = array_reverse($timecode_array);
+					$thumbtimecode = $timecode_array[0] + ($timecode_array[1] * 60) + ($timecode_array[2] * 3600);
+					$movieoffset = $thumbtimecode;
+					$i = $numberofthumbs + 1;
+				}
 
-					if ($dofirstframe == "true" && $i == 1) { 
-						$movieoffset = "0";
-					}
+				if ($dofirstframe == "true" && $i == 1) { 
+					$movieoffset = "0";
+				}
 
-					$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".$i.".jpg";
-					$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
-					$ffmpeg_options = '-y -ss '.$movieoffset.' -i "'.$moviefilepath.'" -vframes 1 "'.$thumbnailfilename[$i].'"';
-					$thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
-					$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
+				$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".$i.".jpg";
+				$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
+				$ffmpeg_options = '-y -ss '.$movieoffset.' -i "'.$moviefilepath.'" '.$movie_rotate.' -vframes 1 "'.$thumbnailfilename[$i].'"';
+				$thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
+				$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 
-					exec($ffmpegPath." ".$ffmpeg_options);
+				exec($ffmpegPath." ".$ffmpeg_options);
 
-					if (floatval($movieoffset) > 60) {
-						$movieoffset_minutes = sprintf("%02s", intval(intval($movieoffset) / 60) );
-						$movieoffset_seconds = sprintf("%02s", round(fmod( floatval($movieoffset), 60), 2) );
-						$movieoffset_display = $movieoffset_minutes.":".$movieoffset_seconds;
-					}
-					else { $movieoffset_display = "00:".sprintf("%02s", $movieoffset); }
+				if (floatval($movieoffset) > 60) {
+					$movieoffset_minutes = sprintf("%02s", intval(intval($movieoffset) / 60) );
+					$movieoffset_seconds = sprintf("%02s", round(fmod( floatval($movieoffset), 60), 2) );
+					$movieoffset_display = $movieoffset_minutes.":".$movieoffset_seconds;
+				}
+				else { $movieoffset_display = "00:".sprintf("%02s", $movieoffset); }
 
-					$thumbnaildisplaycode = $thumbnaildisplaycode.'<div style="text-align:center; display:inline-block; margin:2px;"><label for="kgflashmedia-thumb'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'"></label><br /><input type="radio" name="kgflashmedia-thumb" id="kgflashmedia-thumb'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="getElementById(\'attachments['. $postID .'][kgflashmediaplayer-poster]\').value = this.value; getElementById(\'attachments['. $postID .'][thumbtime]\').value = \''. $movieoffset_display .'\'; getElementById(\'attachments_'. $postID .'_numberofthumbs\').value =\'1\';"></div>';
+				$thumbnaildisplaycode = '<div class="kg_thumbnail_select" name="attachments_'.$postID.'_thumb'.$i.'" id="attachments_'.$postID.'_thumb'.$i.'"><label for="kgflashmedia-thumb'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kg_thumbnail"></label><br /><input type="radio" name="kgflashmedia-thumb" id="kgflashmedia-thumb'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="getElementById(\'attachments['. $postID .'][kgflashmediaplayer-poster]\').value = this.value; getElementById(\'attachments['. $postID .'][thumbtime]\').value = \''. $movieoffset_display .'\'; getElementById(\'attachments_'. $postID .'_numberofthumbs\').value =\'1\';"></div>';
 
-					$increaser++;
-					$i++;
-				} //end thumbnail loop
+				switch ($movie_info['rotate']) {
+					case "90";
+					case "270": $movie_width ^= $movie_height ^= $movie_width ^= $movie_height; break; //swap height & width
+				}
 
-				//$thumbnaildisplaycode = $thumbnaildisplaycode.'<p><input type="button" id="attachments['. $postID .'][confirmbutton]" class="button-secondary" value="Confirm" name="confirmbutton" onclick="kg_generate_thumb('. $postID .', \'confirm\');"/></p>';
+				$i++;
 
-				$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "movie_width"=>$movie_width, "movie_height"=>$movie_height );
+				$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "movie_width"=>$movie_width, "movie_height"=>$movie_height, "lastthumbnumber"=>$i, "movieoffset"=>$movieoffset );
 
 				echo json_encode($arr);
 			}//if generate
 
-			if ($action == encode) {
+			if ($action == "encode") {
 
 				//preferred encode path is the directory of the original file (likely in the wp_upload dir)
 				$encodepath = "";
-				$url_parts = parse_url($uploads['url']);
-				if ( strpos($moviefilepath, $url_parts['host']) != "" ) { //if we're on the same server
-					$home_path = substr(strrev(strstr(strrev($uploads['basedir']), strrev("public_html"))), 0, -strlen("public_html")); //home path of the current server
-					$moviefiledirectory = dirname(parse_url($moviefilepath, PHP_URL_PATH)); //gets file's directory
-					$encodepath = $home_path."public_html".$moviefiledirectory."/";
-				}
-				if ( !is_writable($encodepath) ) { //if the original directory is not writable use a directory in base wp_upload
-					$encodepath = $uploads['basedir']."/html5encodes/";
-					if ( !file_exists($encodepath) ) { mkdir($encodepath); }
-				}
+				$embed_display = "";
+				$ffmpeg_ipod_options = "";
+				$ffmpeg_ogv_options = "";
+				$ffmpeg_webm_options = "";
+				$logfile = "";
+				$processPID = "";
+				$serverOS = "";
+								
+				$encode_anything = "false";
 
-				$ipodfilepath = $encodepath.$moviefilebasename."-ipod.m4v";
-				$ogvfilepath = $encodepath.$moviefilebasename.".ogv";
-				$webmfilepath = $encodepath.$moviefilebasename.".webm";
+				$encodevideo_info = kg_encodevideo_info($movieurl, $postID);
 
 				if ($encodemobile == "true") {
-				if ( ! file_exists($ipodfilepath) || filesize($webmfilepath) < 24576 ) {
-					$ipod_movie_height = strval(round(floatval($movie_height) / floatval($movie_width) * 640));
-					if ($ipod_movie_height % 2 != 0) { $ipod_movie_height++; }
-					if ( strpos($movie_info['configuration'], 'enable-libfaac') &&  strpos($movie_info['configuration'], 'enable-libx264') ) {
-						$ffmpeg_ipod_options = ' -acodec libfaac -ab 128k -s 640x'.$ipod_movie_height.' -vcodec libx264 -vpre slow -vpre ipod640 -b 800k -bt 800k -threads 1 -f ipod "'.$ipodfilepath.'"';
-						$embed_display .= "<strong> Encoding Mobile M4V... </strong>";
+				if ( ! $encodevideo_info['mobile_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info['mobilefilepath']) < 24576) ) {
+
+					switch($mobile_res) {
+						case "480": $ipod_movie_max_width = 640; break;
+						case "720": $ipod_movie_max_width = 1280; break;
+						case "1080": $ipod_movie_max_width = 1920; break;
+						default: $ipod_movie_max_width = 640;
+					}
+
+					if ( floatval($movie_width)  > $ipod_movie_max_width ) { $ipod_movie_width = strval($ipod_movie_max_width); }
+					else { $ipod_movie_width = $movie_width; }
+					$ipod_movie_height = strval(round(floatval($movie_height) / floatval($movie_width) * $ipod_movie_width)); 
+					if ($ipod_movie_height % 2 != 0) { $ipod_movie_height++; } //make sure it's an even number
+
+					if ( strpos($movie_info['configuration'], 'enable-libfaac') || strpos($movie_info['configuration'], 'enable-libvo-aacenc') &&  strpos($movie_info['configuration'], 'enable-libx264') ) {
+
+						if ( strpos($movie_info['configuration'], 'enable-libfaac') ) { $aaclib = "libfaac"; }
+						else { $aaclib = "libvo_aacenc"; }
+
+						$ipodbitrate = $movie_height * 3;
+
+						$ffmpeg_ipod_options = ' -acodec '.$aaclib.' -ab 128k -s '.$ipod_movie_width.'x'.$ipod_movie_height.' -vcodec libx264 -threads 1 '.$movie_rotate.' -b:v '.$ipodbitrate.'k -bt 800k -f ipod "'.$encodevideo_info['mobilefilepath'].'"';
+						$encode_anything = "true";
+						$embed_display .= "<strong> Encoding Mobile M4V. </strong>";
 					}//if the proper FFMPEG libraries are enabled
-					else { $embed_display .= "<strong>FFMPEG missing library 'libfaac' or 'libx264' required for iPod encoding. </strong>"; }
-				}//if iPod file doesn't already exist
+					else { $embed_display .= "<strong>FFMPEG missing library 'libfaac' 'libvo-aacenc' or 'libx264' required for Mobile M4V encoding. </strong>"; }
+				}//if mobile file doesn't already exist
 				else { $embed_display .= "<strong>Mobile M4V Already Encoded! </strong>"; }
 				}//if mobile is checked
 
 				if ($encodewebm == "true") {
-				if ( ! file_exists($webmfilepath) || filesize($webmfilepath) < 24576 ) {
+				if ( ! $encodevideo_info['webm_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info['webmfilepath']) < 24576) ) {
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libvpx') ) {
 						$webmbitrate = $movie_height * 3;
-						$ffmpeg_webm_options = ' -ab 128k -b '.$webmbitrate.'k -threads 1 "'.$webmfilepath.'"';
-						$embed_display .= "<strong> Encoding WEBM... </strong>";
+						$ffmpeg_webm_options = ' -ab 128k -b:v '.$webmbitrate.'k '.$movie_rotate.' -threads 1 "'.$encodevideo_info['webmfilepath'].'"';
+						$encode_anything = "true";
+						$embed_display .= "<strong> Encoding WEBM. </strong>";
 					}//if the proper FFMPEG libraries are enabled
 					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libvpx' required for WEBM encoding. </strong>"; }
 				}//if webm doesn't already exist
@@ -238,12 +268,13 @@ if ($action == generate || $action == encode ) {
 				}//if encodewebm is checked
 
 				if ($encodeogg == "true") {
-				if ( ! file_exists($ogvfilepath) || filesize($webmfilepath) < 24576 ) {
+				if ( ! $encodevideo_info['ogg_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info['oggfilepath']) < 24576) ) {
 
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libtheora') ) {
 						$ogvbitrate = $movie_height * 3;
-						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k -threads 1 "'.$ogvfilepath.'"';
-						$embed_display .= "<strong> Encoding OGV... </strong>";
+						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b:v '.$ogvbitrate.'k '.$movie_rotate.' -threads 1 "'.$encodevideo_info['oggfilepath'].'"';
+						$encode_anything = "true";
+						$embed_display .= "<strong> Encoding OGV. </strong>";
 					}//if the proper FFMPEG libraries are enabled
 					else { $embed_display .= "<strong>FFMPEG missing library 'libvorbis' or 'libtheora' required for OGV encoding. </strong>"; }
 				}//if ogv doesn't already exist
@@ -251,37 +282,65 @@ if ($action == generate || $action == encode ) {
 				}//if encodeogg is checked
 
 
-				if ( ! file_exists($ogvfilepath) || ! file_exists($ipodfilepath) || ! file_exists($webmfilepath) ) {
-					$ffmpeg_options = '-y -i "'.$moviefilepath.'"'.$ffmpeg_ipod_options.$ffmpeg_ogv_options.$ffmpeg_webm_options;
+				if ( $encode_anything == "true" ) {
 
-					$process = new Process($ffmpegPath." ".$ffmpeg_options);
+					if ( ! file_exists($encodevideo_info['encodepath']) ) { mkdir($encodevideo_info['encodepath']); }			
+
+					$ffmpeg_options = '-y -i "'.$moviefilepath.'" '.$ffmpeg_ipod_options.$ffmpeg_ogv_options.$ffmpeg_webm_options;
+					$logfile = $encodevideo_info['encodepath'].str_replace(" ", "_", $moviefilebasename)."_".sprintf("%04s",mt_rand(1, 1000))."_encode.txt";
+					$cmd = escapeshellcmd($ffmpegPath." ".$ffmpeg_options);
+					$cmd = $cmd." > ".$logfile." 2>&1 & echo $!";
+					
+					$process = new Process($cmd);
+
+					sleep(1);
+
+					$processPID = $process->getPid();
+					$serverOS = $process->OS;
+					$encodevideo_info = kg_encodevideo_info($movieurl, $postID); //update after encoding starts
+
+					$embed_display .= " <em><small>(continues if window is closed)</small></em>";
+
+					//$output_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($process->output), array_values($process->output));
+					//$output_implode = implode($output_map);
+					
+					//$embed_display .= "Command: ".$cmd." Status: ".$process->status()." Output: ".$output_implode;
 
 				}//if any HTML5 videos don't already exist
 
-				$arr = array ( "embed_display"=>$embed_display );
+				$replaceoptions = "";
+				if ( $encodevideo_info['mobile_exists'] ) { $replaceoptions .= '<option value="'.$encodevideo_info['mobileurl'].'">Mobile/H.264</option>'; }
+				if ( $encodevideo_info['webm_exists'] ) { $replaceoptions .= '<option value="'.$encodevideo_info['webmurl'].'">WEBM</option>'; }
+				if ( $encodevideo_info['ogg_exists'] ) { $replaceoptions .= '<option value="'.$encodevideo_info['oggurl'].'">OGV</option>'; }
 
+				$altembedselect = '<span class="kg_embedselect">Embed <select name="attachments['.$postID.'][kgflashmediaplayer-altembed]" id="attachments['.$postID.'][kgflashmediaplayer-altembed]"><option value="'.$movieurl.'">original</option>'.$replaceoptions.'</select></span>';
+
+				//$encodevideo_info_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($encodevideo_info), array_values($encodevideo_info));
+				//$encodevideo_info_implode = implode($encodevideo_info_map);
+
+				$arr = array ( "embed_display"=>$embed_display, "pid"=>$processPID, "logfile"=>$logfile, "movie_duration"=>$movie_duration_seconds, "encode_anything"=>$encode_anything, "altembedselect"=>$altembedselect, "serverOS"=>$serverOS );
 				echo json_encode($arr);
-
+				
 			}//if encode
 
 		}//if ffmpeg can open movie
 
-		else { $thumbnaildisplaycode = '<strong>Can\'t open movie file.</strong>' ; 
-			$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode );
+		else { $thumbnaildisplaycode = '<strong>Can\'t open movie file.</strong><br />'.$movie_info['output'];
+			$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "embed_display"=>$thumbnaildisplaycode, "lastthumbnumber"=>"break" );
 			echo json_encode($arr);
 		} //can't open movie
 
 	}//if ffmpeg exists
 
 	else { $thumbnaildisplaycode = '<strong>Error: FFMPEG not found. Verify that FFMPEG is installed and check the <a href="options-general.php?page=video-embed-thumbnail-generator.php">path to FFMPEG plugin setting</a>.</strong>' ; 
-		$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode );
+		$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "embed_display"=>$thumbnaildisplaycode, "lastthumbnumber"=>"break" );
 		echo json_encode($arr);
 	} //no ffmpeg
 
 
 }// if encoding or generating
 
-if ($action == delete) { 
+if ($action == "delete") { 
 
 	if ($poster) { 
 		$posterfile = pathinfo($poster, PATHINFO_BASENAME);
@@ -296,7 +355,7 @@ if ($action == delete) {
 }//if delete
 
 
-if ($action == submit) { 
+if ($action == "submit") { 
 
 		$posterfile = pathinfo($poster, PATHINFO_BASENAME);
 		$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
@@ -308,7 +367,8 @@ if ($action == submit) {
 				   unlink($thumbfilename);
 				}
 			}
-			if ( is_dir($uploads['path'].'/thumb_tmp') && ($files = @scandir($uploads['path'].'/thumb_tmp') && (count($files) < 2)) ) { rmdir($uploads['path'].'/thumb_tmp'); }
+
+			if ( is_empty_dir($uploads["path"].'/thumb_tmp') ) { rrmdir($uploads["path"].'/thumb_tmp'); }
 		}
 
 	//$arr = array ( "posterfile"=>$posterfile, "tmp_posterpath"=>$tmp_posterpath, "final_posterpath"=>$final_posterpath );

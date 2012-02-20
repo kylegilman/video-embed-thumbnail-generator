@@ -2,8 +2,8 @@
 /*
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
-Description: Generate video thumbnails, HTML5-compliant videos, and video embed shortcodes. Some functions require FFMPEG.
-Version: 1.1	
+Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
+Version: 2.0	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -57,6 +57,43 @@ function url_exists($url) {
     return is_array($hdrs) ? preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/',$hdrs[0]) : false;
 }
 
+function is_empty_dir($dir)
+{
+    if ($dh = @opendir($dir))
+    {
+        while ($file = readdir($dh))
+        {
+            if ($file != '.' && $file != '..') {
+                closedir($dh);
+                return false;
+            }
+        }
+        closedir($dh);
+        return true;
+    }
+    else return false; // whatever the reason is : no such dir, not a dir, not readable
+}
+
+function kg_explodeX($delimiters,$string)
+{
+    $return_array = Array($string); // The array to return
+    $d_count = 0;
+    while (isset($delimiters[$d_count])) // Loop to loop through all delimiters
+    {
+        $new_return_array = Array();
+        foreach($return_array as $el_to_split) // Explode all returned elements by the next delimiter
+        {
+            $put_in_new_return_array = explode($delimiters[$d_count],$el_to_split);
+            foreach($put_in_new_return_array as $substr) // Put all the exploded elements in array to return
+            {
+                $new_return_array[] = $substr;
+            }
+        }
+        $return_array = $new_return_array; // Replace the previous return array by the next version
+        $d_count++;
+    }
+    return $return_array; // Return the exploded elements
+} 
 
 function rrmdir($dir) {
    if (is_dir($dir)) {
@@ -71,6 +108,135 @@ function rrmdir($dir) {
    }
 }
 
+function kg_check_ffmpeg_exists() {
+
+		$exec_enabled = false;
+		$ffmpeg_exists = false;
+		$output = array();
+
+		if(function_exists('exec')) { 
+			exec(get_option('wp_FMP_ffmpeg').'/ffmpeg 2>&1', $output, $returnvalue); 
+			$exec_enabled = true; 
+		} //attempt to execute FFMPEG
+
+		if ( $exec_enabled == true && strpos(end($output), 'even better') != false ) { //if FFMPEG executed
+			update_option('wp_FMP_ffmpeg_exists', "true");
+			$ffmpeg_exists = true;
+		}
+		else { 	update_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
+
+		$output_output = implode("/n", $output);
+
+		$arr = array ("exec_enabled"=>$exec_enabled, "ffmpeg_exists"=>$ffmpeg_exists, "return_value"=>$returnvalue, "output"=>$output_output);
+
+		return $arr;
+}
+
+function kg_encodevideo_info($movieurl, $postID) {
+
+	$uploads = wp_upload_dir();
+	$movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
+	$encodevideo_info['moviefilebasename'] = basename($movieurl,'.'.$movie_extension);
+	$moviefilepath = str_replace(" ", "%20", $movieurl);
+
+	if ($postID != "singleurl") { //if it's an attachment, not from URL
+		$moviefile = get_attached_file($postID);
+		$path_parts = pathinfo($moviefile);
+		$encodevideo_info['encodepath'] = $path_parts['dirname']."/";
+		$encodevideo_info['sameserver'] = true;
+	}
+	else { 
+		$url_parts = parse_url($uploads['url']);
+		if ( strpos($moviefilepath, $url_parts['host']) != "" ) { //if we're on the same server
+			$encodevideo_info['sameserver'] = true;
+			$filename = urldecode($moviefilepath);
+			$parsed_url= parse_url($filename);
+			$fileinfo = pathinfo($filename);
+			$parsed_url['extension'] = $fileinfo['extension'];
+			$parsed_url['filename'] = $fileinfo['basename'];
+			$parsed_url['localpath'] = $_SERVER['DOCUMENT_ROOT'].$parsed_url['path'];
+			// just in case there is a double slash created when joining document_root and path
+			$parsed_url['localpath'] = preg_replace('/\/\//', '/', $parsed_url['localpath']);
+
+			$encodevideo_info['encodepath'] = rtrim($parsed_url['localpath'], $parsed_url['filename']);
+		}
+		else {
+			$encodevideo_info['sameserver'] = false; 
+			$encodevideo_info['encodepath'] = $uploads['basedir']."/html5encodes/";
+		}
+	}
+
+	$movieurl_noextension = preg_replace("/\\.[^.\\s]{3,4}$/", "", $movieurl);
+	$encodevideo_info['mobileurl'] = $movieurl_noextension."-ipod.m4v";
+	$encodevideo_info['oggurl'] = $movieurl_noextension.".ogv";
+	$encodevideo_info['webmurl'] = $movieurl_noextension.".webm";
+
+	if ( !is_writable($encodevideo_info['encodepath']) ) { //if the original directory is not writable use a directory in base wp_upload
+		$encodevideo_info['encodepath'] = $uploads['basedir']."/html5encodes/";
+		$encodevideo_info['html5encodes'] = true;
+		$encodevideo_info['mobileurl'] = $uploads['baseurl']."/html5encodes/".$encodevideo_info['moviefilebasename']."-ipod.m4v";
+		$encodevideo_info['oggurl'] = $uploads['baseurl']."/html5encodes/".$encodevideo_info['moviefilebasename'].".ogv";
+		$encodevideo_info['webmurl'] = $uploads['baseurl']."/html5encodes/".$encodevideo_info['moviefilebasename'].".webm";
+	}
+
+	$encodevideo_info['mobilefilepath'] = $encodevideo_info['encodepath'].$encodevideo_info['moviefilebasename']."-ipod.m4v";
+	$encodevideo_info['oggfilepath'] = $encodevideo_info['encodepath'].$encodevideo_info['moviefilebasename'].".ogv";
+	$encodevideo_info['webmfilepath'] = $encodevideo_info['encodepath'].$encodevideo_info['moviefilebasename'].".webm";
+
+	$encodevideo_info['mobilefilepath_html5encodes'] = $uploads['basedir']."/html5encodes/".$encodevideo_info['moviefilebasename']."-ipod.m4v";
+	$encodevideo_info['oggfilepath_html5encodes'] = $uploads['basedir']."/html5encodes/".$encodevideo_info['moviefilebasename'].".ogv";
+	$encodevideo_info['webmfilepath_html5encodes'] = $uploads['basedir']."/html5encodes/".$encodevideo_info['moviefilebasename'].".webm";
+
+	if ( file_exists($encodevideo_info['mobilefilepath']) ) { $encodevideo_info['mobile_exists'] = true; }
+	else { 
+		if ( file_exists($encodevideo_info['mobilefilepath_html5encodes']) ) { 
+			$encodevideo_info['mobilefilepath'] = $encodevideo_info['mobilefilepath_html5encodes'];
+			$encodevideo_info['mobile_exists'] = true;
+		}
+		else { $encodevideo_info['mobile_exists'] = false; }
+	}
+	if ( file_exists($encodevideo_info['oggfilepath']) ) { $encodevideo_info['ogg_exists'] = true; }
+	else { 
+		if ( file_exists($encodevideo_info['oggfilepath_html5encodes']) ) { 
+			$encodevideo_info['oggfilepath'] = $encodevideo_info['oggfilepath_html5encodes'];
+			$encodevideo_info['ogg_exists'] = true;
+		}
+		else { $encodevideo_info['ogg_exists'] = false; }
+	}
+	if ( file_exists($encodevideo_info['webmfilepath']) ) { $encodevideo_info['webm_exists'] = true; }
+	else { 
+		if ( file_exists($encodevideo_info['webmfilepath_html5encodes']) ) { 
+			$encodevideo_info['webmfilepath'] = $encodevideo_info['webmfilepath_html5encodes'];
+			$encodevideo_info['webm_exists'] = true;
+		}
+		else { $encodevideo_info['webm_exists'] = false; }
+	}
+
+	if ( !$encodevideo_info['sameserver'] ) { //last resort if it's not on the same server, check url_exists
+		if ( !file_exists($encodevideo_info['mobilefilepath']) ) { 
+			if ( url_exists($movieurl_noextension."-ipod.m4v") ) { 
+				$encodevideo_info['mobile_exists'] = true;
+				$encodevideo_info['mobileurl'] = $movieurl_noextension."-ipod.m4v"; ;
+			}
+			else { $encodevideo_info['mobile_exists'] = false; }
+		}
+		if ( !file_exists($encodevideo_info['oggfilepath']) ) { 
+			if ( url_exists($movieurl_noextension.".ogv") ) { 
+				$encodevideo_info['ogg_exists'] = true;
+				$encodevideo_info['oggurl'] = $movieurl_noextension.".ogv"; ;
+			}
+			else { $encodevideo_info['ogg_exists'] = false; }
+		}
+		if ( !file_exists($encodevideo_info['webmfilepath']) ) { 
+			if ( url_exists($movieurl_noextension.".webm") ) { 
+				$encodevideo_info['webm_exists'] = true;
+				$encodevideo_info['webmurl'] = $movieurl_noextension.".webm"; ;
+			}
+		}
+	}
+
+	return $encodevideo_info;
+}
 
 function video_embed_thumbnail_generator_activate() {
 
@@ -93,6 +259,7 @@ function video_embed_thumbnail_generator_activate() {
    define("wp_FMP_default_ffmpeg", "/usr/local/bin", true);
    define("wp_FMP_default_ffmpeg_exists", "notchecked", true);
    define("wp_FMP_default_encodemobile", "true", true);
+   define("wp_FMP_default_mobile_res", "480", true);
    define("wp_FMP_default_encodeogg", "false", true);
    define("wp_FMP_default_encodewebm", "true", true);
 
@@ -114,15 +281,13 @@ function video_embed_thumbnail_generator_activate() {
    add_option('wp_FMP_skin', wp_FMP_default_skin);
    add_option('wp_FMP_ffmpeg', wp_FMP_default_ffmpeg);
    add_option('wp_FMP_ffmpeg_exists', wp_FMP_default_ffmpeg_exists);
+   add_option('wp_FMP_mobile_res', wp_FMP_default_mobile_res);
    add_option('wp_FMP_encodemobile', wp_FMP_default_encodemobile);
    add_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);
    add_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);
 
-	exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
-	if ($returnvalue < 126 ) { //if FFMPEG executed
-		update_option('wp_FMP_ffmpeg_exists', "true");
-	}
-	else { update_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
+   kg_check_ffmpeg_exists();
+
 }
 
 register_activation_hook( __FILE__, 'video_embed_thumbnail_generator_activate' );
@@ -211,40 +376,13 @@ function FMP_shortcode($atts, $content = ''){
 			$flashcompatible = array("flv", "f4v", "mp4", "mov", "m4v");
 			$h264compatible = array("mp4", "mov", "m4v");
 
-			//look for encoded files in the same directory as the movie, or in the encodes folder
-			$originalurl = dirname(trim($content))."/".$moviefilebasename;
-			$uploads = wp_upload_dir();
-			$url_parts = parse_url($uploads['baseurl']);
-			$moviefiledirectory = dirname(parse_url(trim($content), PHP_URL_PATH));
-			$home_path = substr(strrev(strstr(strrev($uploads['basedir']), strrev("public_html"))), 0, -strlen("public_html"));
-			if ( strpos( dirname(trim($content)), $url_parts['host']) != "" ) { //if it's on the current server
-				$originalpath = $home_path."public_html".$moviefiledirectory."/".$moviefilebasename;
-			}
-			$encodeurl = $uploads['baseurl']."/html5encodes/".$moviefilebasename;
-			$encodepath = $uploads['basedir']."/html5encodes/".$moviefilebasename;
-
-			$html5type = array("-ipod.m4v", ".ogv", ".webm");
-
-			foreach ($html5type as $extension) {
-				$existing_url = "";
-				if ( ".".$moviefiletype == $extension ) { $existing_url = $content; }
-				if ($existing_url == "") { //search on the server for matching filename
-					if ( file_exists($originalpath.$extension) ) { $existing_url = $originalurl.$extension; } 
-				}
-				if ($existing_url == "") { //search in the wp_upload html5encodes directory
-					if ( file_exists($encodepath.$extension) ) { $existing_url = $encodeurl.$extension; } 
-				}
-				if ($existing_url == "" && $originalpath == "") { //if the file's not on the server, search wherever it is
-					if ( url_exists($originalurl.$extension) ) { $existing_url = $originalurl.$extension; } 
-				}
-				$html5file[$extension] = $existing_url;
-			}
+			$encodevideo_info = kg_encodevideo_info(trim($content), 'singleurl');
 
 			$code = "<div id=\"flashcontent".$div_suffix."\">";
 			$code .= "<video ";
 			if ($query_atts["loop"] == 'true') { $code .= "loop='loop' " ;}
 			if ($query_atts["autoplay"] == 'true') { $code .= "autoplay='autoplay' " ;}
-			if ($query_atts["controls"] != 'none') { $code .= "controls='controls' " ;}
+			if ($query_atts["controlbar"] != 'none') { $code .= "controls='controls' " ;}
 			if ($isAndroid) { $code .= "onclick='this.play();' "; }
 			$code .= "preload='metadata' ";
 				if($query_atts["poster"] != '' && !$isAndroid) {
@@ -257,20 +395,20 @@ function FMP_shortcode($atts, $content = ''){
 			$code .= ">\n";
 
 			if ( in_array($moviefiletype, $h264compatible) ) {
-				if ( $html5file["-ipod.m4v"] !="" && $isTierIphone ) { 
-					$code .= "<source src='".$html5file['-ipod.m4v']."'";
+				if ( $encodevideo_info["mobile_exists"] && $isTierIphone ) { 
+					$code .= "<source src='".$encodevideo_info["mobileurl"]."'";
 				}
-				else { $code .= "<source src='".$content."'"; }
+				else { $code .= "<source src='".trim($content)."'"; }
 				if (!$isAndroid) { $code.= " type='video/mp4'";	} 
 				$code .=">\n";
 			}
-			else { if ($html5file["-ipod.m4v"] != "") { 
-				$code .= "<source src='".$html5file['-ipod.m4v']."'";
+			else { if ( $encodevideo_info["mobile_exists"] ) { 
+				$code .= "<source src='".$encodevideo_info["mobileurl"]."'";
 				if (!$isAndroid) { $code.= " type='video/mp4'";	} 
 				$code .=">\n";
 			} }
-			if ($html5file[".webm"] != "") { $code .= "<source src='".$html5file['.webm']."' type='video/webm'>\n"; }
-			if ($html5file[".ogv"] != "") { $code .= "<source src='".$html5file['.ogv']."' type='video/ogg'>\n"; }
+			if ( $encodevideo_info["webm_exists"] ) { $code .= "<source src='".$encodevideo_info["webmurl"]."' type='video/webm'>\n"; }
+			if ( $encodevideo_info["ogg_exists"] ) { $code .= "<source src='".$encodevideo_info["oggurl"]."' type='video/ogg'>\n"; }
 			$code .= "</video>\n";
 			$code .= "</div>\n\n";
 		} else {
@@ -310,6 +448,7 @@ function FMPOptionsPage() {
    define("wp_FMP_default_configuration", "", true);
    define("wp_FMP_default_skin", plugins_url("", __FILE__)."/flash/skin/kg_skin.xml", true);
    define("wp_FMP_default_ffmpeg", "/usr/local/bin", true);
+   define("wp_FMP_default_mobile_res", "480", true);
    define("wp_FMP_default_encodemobile", "true", true);
    define("wp_FMP_default_encodeogg", "false", true);
    define("wp_FMP_default_encodewebm", "true", true);
@@ -332,19 +471,20 @@ function FMPOptionsPage() {
 			update_option('wp_FMP_configuration', wp_FMP_default_configuration);
 			update_option('wp_FMP_skin', wp_FMP_default_skin);	
 			update_option('wp_FMP_ffmpeg', wp_FMP_default_ffmpeg);
+			update_option('wp_FMP_mobile_res', wp_FMP_default_mobile_res);
 			update_option('wp_FMP_encodemobile', wp_FMP_default_encodemobile);
 			update_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);	
 			update_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);	
 		
 			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin reset to default settings</strong></p></div>";
 
-			exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
-			if ($returnvalue < 126 ) { //if FFMPEG executed
-				update_option('wp_FMP_ffmpeg_exists', "true");
+			$ffmpeg_info = kg_check_ffmpeg_exists();
+
+			if ( $ffmpeg_info['exec_enabled'] == false ) {
+				echo "<div class='error'><p><strong>EXEC function is disabled in PHP settings. Embed codes will work, but video thumbnail generation and Mobile/HTML5 encoding will not. Contact your System Administrator to find out if you can enable EXEC</strong></p></div>"; 
 			}
-			else { 
+			elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) { 
 				echo "<div class='error'><p><strong>FFMPEG not found at ".get_option('wp_FMP_ffmpeg').". Embed codes will work, but video thumbnail generation and Mobile/HTML5 encoding will not.</strong></p></div>"; 
-				update_option('wp_FMP_ffmpeg_exists', "notinstalled"); 
 			}
 	
 		}	
@@ -415,7 +555,8 @@ function FMPOptionsPage() {
 			} else {
 				update_option(wp_FMP_encodewebm, "false");
 			}		
-			
+
+			update_option('wp_FMP_mobile_res', $_POST[wp_FMP_mobile_res]);			
 			update_option('wp_FMP_width', $_POST[wp_FMP_width]);
 			update_option('wp_FMP_height', $_POST[wp_FMP_height]);
 			update_option('wp_FMP_bgcolor', $_POST[wp_FMP_bgcolor]);
@@ -430,13 +571,14 @@ function FMPOptionsPage() {
 
 			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin settings updated</strong></p></div>";
 
-			exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
-			if ($returnvalue < 126 ) { //if FFMPEG executed
-				update_option('wp_FMP_ffmpeg_exists', "true");
+
+			$ffmpeg_info = kg_check_ffmpeg_exists();
+
+			if ( $ffmpeg_info['exec_enabled'] == false ) {
+				echo "<div class='error'><p><strong>EXEC function is disabled in PHP settings. Embed codes will work, but video thumbnail generation and Mobile/HTML5 encoding will not. Contact your System Administrator to find out if you can enable EXEC</strong></p></div>"; 
 			}
-			else { 
+			elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) { 
 				echo "<div class='error'><p><strong>FFMPEG not found at ".get_option('wp_FMP_ffmpeg').". Embed codes will work, but video thumbnail generation and Mobile/HTML5 encoding will not.</strong></p></div>"; 
-				update_option('wp_FMP_ffmpeg_exists', "false"); 
 			}
 		}
 
@@ -480,7 +622,7 @@ function FMPOptionsPage() {
 								}
 								echo " />\n";
 							?>
-							Uncheck if you don't want HTML5 video fallback.
+							Uncheck if you don't want HTML5 video fallback when Flash isn't installed.
 						</td>
 					</tr>
 					<tr>
@@ -515,6 +657,34 @@ function FMPOptionsPage() {
 							OGV <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small><br />
 							<em>Requires FFMPEG.</em>
 						</td>
+					</tr>
+					<tr>
+						<th scope="row" valign="top" align="left">
+							<label>Maximum H.264/Mobile Encode Resolution:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<select name="wp_FMP_mobile_res" id="wp_FMP_mobile_res">
+								<?php 
+									$res_480 = "";
+									$res_720 = "";
+									$res_1080 = "";
+									if(get_option('wp_FMP_mobile_res') == "480") {
+										$res_480 = " selected=\"selected\"";
+									}
+									if(get_option('wp_FMP_mobile_res') == "720") {
+										$res_720 = " selected=\"selected\"";
+									}
+									if(get_option('wp_FMP_mobile_res') == "1080") {
+										$res_1080 = " selected=\"selected\"";
+									}
+								?>
+								<option value="480"<?php echo $res_480 ?>>480p</option>
+								<option value="720"<?php echo $res_720 ?>>720p</option>
+								<option value="1080"<?php echo $res_1080 ?>>1080p</option>
+							</select> 
+							<em>Newer mobile devices can display HD video (iPhone 4/iPad 1/some Android play 720p, iPhone 4s/iPad 2 play 1080p) but many older devices (iPhone 3Gs/older Android) can't play higher than 480p. Increase at your own risk.</em>
+						</td>	
 					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
@@ -847,11 +1017,12 @@ add_action('save_post', 'kg_addPostSave');
     function kg_image_attachment_fields_to_edit($form_fields, $post) {  
       if( substr($post->post_mime_type, 0, 5) == 'video' ){ 
 
-        $form_fields["kgflashmediaplayer-url"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-url"]["value"] = wp_get_attachment_url($post->ID);
+        $form_fields["kgflashmediaplayer-security"]["input"] = "hidden";
+        $form_fields["kgflashmediaplayer-security"]["value"] = wp_create_nonce('video-embed-thumbnail-generator-nonce');
 
-        $form_fields["kgflashmediaplayer-ffmpeg_path"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-ffmpeg_path"]["value"] = get_option('wp_FMP_ffmpeg');
+        $movieurl = wp_get_attachment_url($post->ID);
+        $form_fields["kgflashmediaplayer-url"]["input"] = "hidden";
+        $form_fields["kgflashmediaplayer-url"]["value"] = $movieurl;
 
         $encodemobileset = get_post_meta($post->ID, "_kgflashmediaplayer-encodemobile", true);
         if ($encodemobileset == "") { $encodemobileset = get_option('wp_FMP_encodemobile'); }
@@ -868,18 +1039,9 @@ add_action('save_post', 'kg_addPostSave');
         $form_fields["kgflashmediaplayer-encodewebm"]["input"] = "hidden";
         $form_fields["kgflashmediaplayer-encodewebm"]["value"] = $encodewebmset;
 
-        $form_fields["kgflashmediaplayer-plugin_dir"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-plugin_dir"]["value"] = plugins_url("", __FILE__);
-
-        $uploads = wp_upload_dir();
-        $form_fields["kgflashmediaplayer-upload_url"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-upload_url"]["value"] = $uploads['url'];
-
-        $form_fields["kgflashmediaplayer-upload_path"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-upload_path"]["value"] = $uploads['path'];
-
-        $form_fields["kgflashmediaplayer-upload_basedir"]["input"] = "hidden";
-        $form_fields["kgflashmediaplayer-upload_basedir"]["value"] = $uploads['basedir'];
+        $encoded = get_post_meta($post->ID, "_kgflashmediaplayer-encoded", true);
+        $form_fields["kgflashmediaplayer-encoded"]["input"] = "hidden";
+        $form_fields["kgflashmediaplayer-encoded"]["value"] = $encoded;
 
         $maxwidth = get_option('wp_FMP_width');
         $widthset = get_post_meta($post->ID, "_kgflashmediaplayer-width", true);
@@ -915,6 +1077,7 @@ add_action('save_post', 'kg_addPostSave');
 
         $thumbnail_url = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
 
+		$uploads = wp_upload_dir();
 		$url_parts = parse_url($uploads['baseurl']);
 		$moviefiledirectory = dirname(parse_url(trim($thumbnail_url), PHP_URL_PATH));
 		$moviefilebasename = pathinfo(trim($thumbnail_url), PATHINFO_BASENAME);
@@ -933,15 +1096,10 @@ add_action('save_post', 'kg_addPostSave');
 	if (get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true) != "") { $numberofthumbs_value = "1"; }
 	else { $numberofthumbs_value = "4"; }
 
-	if ( get_option('wp_FMP_ffmpeg_exists') == false ) { //make sure the new ffmpeg_exists option exists
-		exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
-		if ($returnvalue < 126 ) { //if FFMPEG executed
-			add_option('wp_FMP_ffmpeg_exists', "true");
-		}
-		else { add_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
-	}
+	if ( get_option('wp_FMP_ffmpeg_exists') == false ) { kg_check_ffmpeg_exists(); } //make sure the new ffmpeg_exists option exists
 
 	if ( get_option('wp_FMP_ffmpeg_exists') == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="FFMPEG not found at '.get_option('wp_FMP_ffmpeg').'"'; }
+	else { $ffmpeg_disabled_text = ""; }
 
 	$form_fields["generator"]["label"] = __("Thumbnails");
         $form_fields["generator"]["input"] = "html";
@@ -974,6 +1132,26 @@ add_action('save_post', 'kg_addPostSave');
         else { $oggchecked = "checked"; }
         if ($encodewebmset == "false") { $webmchecked = ""; }
         else { $webmchecked = "checked"; }
+
+        $replaceoptions = "";
+
+	$altembedset = get_post_meta($post->ID, "_kgflashmediaplayer-altembed", true);
+	$encodevideo_info = kg_encodevideo_info($movieurl, $post->ID);
+
+	$altembedselect = "";
+        $selected = ' selected="selected" ';
+        $mobileselected = "";
+        $oggselected = "";
+        $webmselected = "";
+        if ($altembedset == $encodevideo_info['mobileurl']) { $mobileselected = $selected; }
+        if ($altembedset == $encodevideo_info['oggurl']) { $oggselected = $selected; }
+        if ($altembedset == $encodevideo_info['webmurl']) { $webmselected = $selected; }
+
+        if ( $encodevideo_info['mobile_exists'] ) { $replaceoptions .= '<option '.$mobileselected.' value="'.$encodevideo_info['mobileurl'].'">Mobile/H.264</option>'; }
+        if ( $encodevideo_info['webm_exists'] ) { $replaceoptions .= '<option '.$webmselected.' value="'.$encodevideo_info['webmurl'].'">WEBM</option>'; }
+        if ( $encodevideo_info['ogg_exists'] ) { $replaceoptions .= '<option '.$oggselected.' value="'.$encodevideo_info['oggurl'].'">OGV</option>'; }
+        if ( $encodevideo_info['mobile_exists'] || $encodevideo_info['webm_exists'] || $encodevideo_info['ogg_exists'] ) { $altembedselect ='<span class="kg_embedselect">Embed <select name="attachments['.$post->ID.'][kgflashmediaplayer-altembed]" id="attachments['.$post->ID.'][kgflashmediaplayer-altembed]"><option value="'.$movieurl.'">original</option>'.$replaceoptions.'</select></span>'; }
+
         $form_fields["kgflashmediaplayer-encode"]["label"] = __("HTML5 & Mobile");
         $form_fields["kgflashmediaplayer-encode"]["input"] = "html";
         $form_fields["kgflashmediaplayer-encode"]["html"] = '<input type="button" id="attachments['. $post->ID .'][kgflashmediaplayer-encode]" name="attachments['. $post->ID .'][kgflashmediaplayer-encode]" class="button-secondary" value="Encode" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'encode\');" '.$ffmpeg_disabled_text.'/> 
@@ -987,7 +1165,11 @@ add_action('save_post', 'kg_addPostSave');
 	<input type="checkbox" id="attachments['. $post->ID .'][kgflashmediaplayer-encodeoggcheck]" name="attachments['. $post->ID .'][kgflashmediaplayer-encodeoggcheck]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodeogg]\').value = \'true\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-encodeogg]\').value = \'false\'; }" '.$oggchecked.' '.$ffmpeg_disabled_text.'>
 	<label for="attachments['. $post->ID .'][kgflashmediaplayer-encodeoggcheck]">OGV</label>
 
-	<div style="display:inline-block;" id="attachments_'. $post->ID .'_encodeplaceholder"></div><br /><small><em>(Experimental) Generates video files compatible with most mobile & HTML5-compatible browsers.</em></small>';
+	<div style="display:inline;" id="attachments_'. $post->ID .'_altembedselect">'.$altembedselect.'</div>
+	<div style="display:block;" id="attachments_'. $post->ID .'_encodeplaceholder"></div>
+	<div style="display:block;" id="attachments_'. $post->ID .'_encodeprogressplaceholder"></div>
+
+<small><em>(Experimental) Generates video files compatible with most mobile & HTML5-compatible browsers.</em></small>';
 
         $showtitlechecked = get_post_meta($post->ID, "_kgflashmediaplayer-showtitle", true);
         $downloadlinkchecked = get_post_meta($post->ID, "_kgflashmediaplayer-download", true);
@@ -996,14 +1178,14 @@ add_action('save_post', 'kg_addPostSave');
         else { $embedchecked = "checked"; }
         $form_fields["kgflashmediaplayer-options"]["label"] = __("Video Embed Options");
         $form_fields["kgflashmediaplayer-options"]["input"] = "html";
-        $form_fields["kgflashmediaplayer-options"]["html"] = '<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-showtitle]" id="attachments[{$post->ID}][kgflashmediaplayer-showtitle]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = \'unchecked\'; }"" '.$showtitlechecked.'> 
-	<label for="attachments[{$post->ID}][kgflashmediaplayer-showtitle]">Include Title Above Video</label><br />
+        $form_fields["kgflashmediaplayer-options"]["html"] = '<input type="checkbox" name="attachments['.$post->ID.'][kgflashmediaplayer-showtitle]" id="attachments['.$post->ID.'][kgflashmediaplayer-showtitle]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-showtitlesave]\').value = \'unchecked\'; }"" '.$showtitlechecked.'> 
+	<label for="attachments['.$post->ID.'][kgflashmediaplayer-showtitle]">Include Title Above Video</label><br />
 
-	<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]" id="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = \'unchecked\'; }" '.$downloadlinkchecked.'> 
-	<label for="attachments[{$post->ID}][kgflashmediaplayer-downloadlink]">Generate Download Link Below Video<em><small>(Makes it easier for users to download video file)</em></small></label><br />
+	<input type="checkbox" name="attachments['.$post->ID.'][kgflashmediaplayer-downloadlink]" id="attachments['.$post->ID.'][kgflashmediaplayer-downloadlink]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-downloadsave]\').value = \'unchecked\'; }" '.$downloadlinkchecked.'> 
+	<label for="attachments['.$post->ID.'][kgflashmediaplayer-downloadlink]">Generate Download Link Below Video<em><small>(Makes it easier for users to download video file)</em></small></label><br />
 
-	<input type="checkbox" name="attachments[{$post->ID}][kgflashmediaplayer-embed]" id="attachments[{$post->ID}][kgflashmediaplayer-embed]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'unchecked\'; }" '.$embedchecked.'> 
-	<label for="attachments[{$post->ID}][kgflashmediaplayer-embed]">Generate Embed Shortcode <em><small>(Turn off checkbox to use default WordPress video embedding)</small></em></label>';
+	<input type="checkbox" name="attachments['.$post->ID.'][kgflashmediaplayer-embed]" id="attachments['.$post->ID.'][kgflashmediaplayer-embed]" value="checked" onclick="if(this.checked) { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'checked\'; } else { document.getElementById(\'attachments['.$post->ID.'][kgflashmediaplayer-embedsave]\').value = \'unchecked\'; }" '.$embedchecked.'> 
+	<label for="attachments['.$post->ID.'][kgflashmediaplayer-embed]">Generate Embed Shortcode <em><small>(Turn off checkbox to use default WordPress video embedding)</small></em></label>';
 
         //$form_fields["kgflashmediaplayer-attachment"]["label"] = __("All Meta");
         //$form_fields["kgflashmediaplayer-attachment"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-attachment", true);
@@ -1035,7 +1217,7 @@ add_action('save_post', 'kg_addPostSave');
 				   unlink($thumbfilename);
 				}
 			}
-			if ( is_dir($uploads['path'].'/thumb_tmp') && ($files = @scandir($uploads['path'].'/thumb_tmp') && (count($files) < 2)) ) { rmdir($uploads['path'].'/thumb_tmp'); }
+			if ( is_empty_dir($uploads["path"].'/thumb_tmp') ) { rrmdir($uploads["path"].'/thumb_tmp'); }
 		}
 		update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $attachment['kgflashmediaplayer-poster']); 
 	}
@@ -1049,7 +1231,8 @@ add_action('save_post', 'kg_addPostSave');
         if( isset($attachment['kgflashmediaplayer-embedsave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-embed', $attachment['kgflashmediaplayer-embedsave']); }
         if( isset($attachment['kgflashmediaplayer-downloadsave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-download', $attachment['kgflashmediaplayer-downloadsave']); }
         if( isset($attachment['kgflashmediaplayer-showtitlesave']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-showtitle', $attachment['kgflashmediaplayer-showtitlesave']); }
-
+        if( isset($attachment['kgflashmediaplayer-altembed']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-altembed', $attachment['kgflashmediaplayer-altembed']); }
+       /* if( isset($attachment['kgflashmediaplayer-encoded']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-encoded', $attachment['kgflashmediaplayer-encoded']); } */
 
         //$attachment_printr = print_r($attachment, true);
         //update_post_meta($post['ID'], '_kgflashmediaplayer-attachment', $attachment_printr );
@@ -1073,7 +1256,9 @@ class kgInsertMedia {
 
     if ($attachment['embed'] == "checked" || $attachment_id == "singleurl" ) {
         $output = "";
-        $attachment['url'] = wp_get_attachment_url($attachment_id);
+        $attachment['altembed'] = get_post_meta($attachment_id, "_kgflashmediaplayer-altembed", true);
+        if ( $attachment['altembed'] != "" ) { $attachment['url'] = $attachment['altembed']; } 
+        else { $attachment['url'] = wp_get_attachment_url($attachment_id); }
         $attachment['title'] = get_the_title($attachment_id);
         $attachment['poster'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster", true);
         $attachment['width'] = get_post_meta($attachment_id, "_kgflashmediaplayer-width", true);
@@ -1110,19 +1295,17 @@ add_filter('media_upload_tabs', 'kg_embedurl_menu');
 
 function media_embedurl_process() {
 
-if ( get_option('wp_FMP_ffmpeg_exists') == false ) { //make sure the new ffmpeg_exists option exists
-	exec(get_option('wp_FMP_ffmpeg').'/ffmpeg /dev/null 2>&1', $output, $returnvalue); //attempt to execute FFMPEG
-	if ($returnvalue < 126 ) { //if FFMPEG executed
-		add_option('wp_FMP_ffmpeg_exists', "true");
-	}
-	else { add_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
-}
+if ( get_option('wp_FMP_ffmpeg_exists') == false ) { kg_check_ffmpeg_exists(); } //make sure the new ffmpeg_exists option exists
 
 if ( get_option('wp_FMP_ffmpeg_exists') == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="FFMPEG not found at '.get_option('wp_FMP_ffmpeg').'"'; }
+else { $ffmpeg_disabled_text = ""; }
 
 if ( get_option('wp_FMP_encodemobile') == "true" ) { $mobilechecked = "checked";  }
+else { $mobilechecked = ""; }
 if ( get_option('wp_FMP_encodeogg') == "true" ) { $oggchecked = "checked";  }
+else { $oggchecked = ""; }
 if ( get_option('wp_FMP_encodewebm') == "true" ) { $webmchecked = "checked";  }
+else { $webmchecked = ""; }
 
 media_upload_header();
 ?>
@@ -1178,8 +1361,11 @@ media_upload_header();
 	<input type="checkbox" id="attachments[singleurl][kgflashmediaplayer-encodeoggcheck]" name="attachments[singleurl][kgflashmediaplayer-encodeoggcheck]" value="checked" onclick="if(this.checked) { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodeogg]').value = 'true'; } else { document.getElementById('attachments[singleurl][kgflashmediaplayer-encodeogg]').value = 'false'; }" <?php echo ($oggchecked." ".$ffmpeg_disabled_text); ?> />
 	<label for="attachments[singleurl][kgflashmediaplayer-encodeoggcheck]">OGV</label>
 
-<div id="attachments_singleurl_encodeplaceholder" name="attachments_singleurl_encodeplaceholder" style="display:inline-block;"></div><br />
-				<small><em>(Experimental) Generates video files compatible with most mobile & HTML5-compatible browsers.</em></small></td>
+	<div style="display:inline;" id="attachments_singleurl_altembedselect"></div>
+	<div style="display:block;" id="attachments_singleurl_encodeplaceholder"></div>
+	<div style="display:block;" id="attachments_singleurl_encodeprogressplaceholder"></div>
+
+	<small><em>(Experimental) Generates video files compatible with most mobile & HTML5-compatible browsers.</em></small></td>
 			</tr>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label>Options</span></label></th>
@@ -1201,14 +1387,10 @@ $maxheight = get_option('wp_FMP_height');
 $maxwidth = get_option('wp_FMP_width');
 ?>
 
-<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-ffmpeg_path]' id='attachments[singleurl][kgflashmediaplayer-ffmpeg_path]' value='<?php echo get_option('wp_FMP_ffmpeg'); ?>' />
+<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-security]' id='attachments[singleurl][kgflashmediaplayer-security]' value='<?php echo wp_create_nonce('video-embed-thumbnail-generator-nonce'); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-encodemobile]' id='attachments[singleurl][kgflashmediaplayer-encodemobile]' value='<?php echo get_option('wp_FMP_encodemobile'); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-encodeogg]' id='attachments[singleurl][kgflashmediaplayer-encodeogg]' value='<?php echo get_option('wp_FMP_encodeogg'); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-encodewebm]' id='attachments[singleurl][kgflashmediaplayer-encodewebm]' value='<?php echo get_option('wp_FMP_encodewebm'); ?>' />
-<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-plugin_dir]' id='attachments[singleurl][kgflashmediaplayer-plugin_dir]' value='<?php echo plugins_url("", __FILE__); ?>' />
-<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-upload_url]' id='attachments[singleurl][kgflashmediaplayer-upload_url]' value='<?php echo $uploads['url']; ?>' />
-<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-upload_path]' id='attachments[singleurl][kgflashmediaplayer-upload_path]' value='<?php echo $uploads['path']; ?>' />
-<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-upload_basedir]' id='attachments[singleurl][kgflashmediaplayer-upload_basedir]' value='<?php echo $uploads['basedir']; ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-maxheight]' id='attachments[singleurl][kgflashmediaplayer-maxheight]' value='<?php echo($maxheight); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-maxwidth]' id='attachments[singleurl][kgflashmediaplayer-maxwidth]' value='<?php echo($maxwidth); ?>' />
 <input type='hidden' name='attachments[singleurl][kgflashmediaplayer-aspect]' id='attachments[singleurl][kgflashmediaplayer-aspect]' value='<?php  echo($maxheight/$maxwidth); ?>' />
@@ -1222,27 +1404,164 @@ function kg_embedurl_handle() {
 }
 add_action('media_upload_embedurl', 'kg_embedurl_handle');
 
+function kg_cleanup_generated_logfiles_handler($logfile) {
+	$lastmodified = "";
+	if ( file_exists($logfile) ) { $lastmodified = filemtime($logfile); }
+		if ( $lastmodified != false ) {
+			if ( time() - $lastmodified > 120 ) { unlink($logfile); }
+			else {
+				$timestamp = wp_next_scheduled( 'kg_cleanup_generated_logfiles' );
+				wp_unschedule_event($timestamp, 'kg_cleanup_generated_logfiles' );
+				$args = array('logfile'=>$logfile);
+				wp_schedule_single_event(time()+600, 'kg_cleanup_generated_logfiles', $args);
+			}
+		}
+}
+add_action('kg_cleanup_generated_logfiles','kg_cleanup_generated_logfiles_handler');
 
-
-
-function kg_cleanup_generated_thumbnails_handler($posterurl) {
+function kg_cleanup_generated_thumbnails_handler() {
 	$uploads = wp_upload_dir();
 	rrmdir($uploads['path'].'/thumb_tmp'); //remove the whole tmp file directory
 }
 add_action('kg_cleanup_generated_thumbnails','kg_cleanup_generated_thumbnails_handler');
 
-function kg_schedule_cleanup_generated_files() { //schedules deleting all tmp thumbnails if no thumbnails are generated in an hour
-	$timestamp = wp_next_scheduled( 'kg_cleanup_generated_thumbnails' );
-	wp_unschedule_event($timestamp, 'kg_cleanup_generated_thumbnails' );
-	wp_schedule_single_event(time()+3600, 'kg_cleanup_generated_thumbnails');
+function kg_schedule_cleanup_generated_files() { //schedules deleting all tmp thumbnails or logfiles if no files are generated in an hour	
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if (isset($_POST['thumbs'])) { 
+		$timestamp = wp_next_scheduled( 'kg_cleanup_generated_thumbnails' );
+		wp_unschedule_event($timestamp, 'kg_cleanup_generated_thumbnails' );
+		wp_schedule_single_event(time()+3600, 'kg_cleanup_generated_thumbnails');
+	}
+
+	if (isset($_POST['logfile'])) { 
+		$timestamp = wp_next_scheduled( 'kg_cleanup_generated_logfiles' );
+		wp_unschedule_event($timestamp, 'kg_cleanup_generated_logfiles' );
+		$args = array('logfile'=>$_POST['logfile']);
+		wp_schedule_single_event(time()+600, 'kg_cleanup_generated_logfiles', $args);
+	}
 	die(); // this is required to return a proper result
 }
 add_action('wp_ajax_kg_schedule_cleanup_generated_files', 'kg_schedule_cleanup_generated_files');
+
+function kg_callffmpeg() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+	global $wpdb;
+	include_once dirname( __FILE__ ) .'/kg_callffmpeg.php'; 
+	die(); // this is required to return a proper result
+}
+
+add_action('wp_ajax_kg_callffmpeg', 'kg_callffmpeg');
+
+function kg_check_encode_progress() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+	global $wpdb;
+	$pid = $_POST['pid'];
+	$logfile = $_POST['logfile'];
+	$movie_duration = $_POST['movie_duration'];
+	$embed_display = "";
+	$percent_done = "";
+	$other_message = "";
+	$logfilecontents = "";
+	$lastline = "";
+
+	if ( is_file($logfile) ) {
+
+		$logfilecontents = file_get_contents($logfile);
+		$fp = fopen($logfile, 'w');
+		fclose($fp);
+		$lastlines = kg_explodeX(array("\r","\n"), $logfilecontents);
+		$lastlines_output = print_r($lastlines, true);
+		$lastline = end($lastlines);
+		if ( $lastline == "" ) { $lastline = prev($lastlines); }
+	
+		$last_match = "";
+		$time_matches = "";
+		$video_matches = "";
+		$libx264_matches = "";
+		$fps_matches = "";
+		$fps_match = "";
+		$basename = "";
+	
+		preg_match('/time=(.*?) /', $lastline, $time_matches);
+	
+		if ( array_key_exists(1, $time_matches) != true ) {
+			preg_match('/video:(.*?) /', $lastline, $video_matches);
+			preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
+		}
+	
+		if ( array_key_exists(1, $time_matches) == true ) {
+			$current_hours = intval(substr($time_matches[1], -11, 2));
+			$current_minutes = intval(substr($time_matches[1], -8, 2));
+			$current_seconds = intval(substr($time_matches[1], -5, 2));
+			$current_seconds = ($current_hours * 60 * 60) + ($current_minutes * 60) + $current_seconds; 
+			$percent_done = round(intval($current_seconds)/intval($movie_duration)*100);
+	
+			preg_match('/fps=\s+(.*?) /', $lastline, $fps_matches);
+			if ( array_key_exists(1, $fps_matches) == true ) { $fps_match = $fps_matches[1]; }
+			else {  $fps_match = "10"; }
+		}
+		elseif ( array_key_exists(1, $video_matches) == true || array_key_exists(1, $libx264_matches) == true ) {
+			$percent_done = 100;
+		}
+		else { 
+			$other_message = $lastline;
+			$basename = substr($logfile, 0, -16);
+			if ( is_file($basename."-ipod.m4v") ) { 
+				if ( (time() - filemtime($basename."-ipod.m4v")) < 30 ) { unlink($basename."-ipod.m4v"); }
+			}
+			if ( is_file($basename.".ogv") ) { 
+				if ( (time() - filemtime($basename.".ogv")) < 30 ) { unlink($basename.".ogv"); }
+			}
+			if ( is_file($basename.".webm") ) { 
+				if ( (time() - filemtime($basename.".webm")) < 30 ) { //unlink($basename.".webm"); 
+}
+			}
+		}
+	
+		if ( $percent_done == "100" || $other_message != "" ) { if ( file_exists($logfile) ) { unlink($logfile); } }
+	
+		$embed_display .= $lastline;
+		$arr = array ( "embed_display"=>$embed_display, "percent_done"=>$percent_done, "other_message"=>$other_message, "fps"=>$fps_match );
+	}
+	else { $arr = array ( "other_message"=>"Encoding Failed" ); }
+
+	echo json_encode($arr);
+
+	die(); // this is required to return a proper result
+}
+add_action('wp_ajax_kg_check_encode_progress', 'kg_check_encode_progress');
+
+function kg_cancel_encode() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	if (isset($_POST['kg_pid'])) { 
+		$kg_pid = $_POST['kg_pid'];
+		if ( intval($kg_pid) > 0 ) {
+			//$command = escapeshellcmd('kill '.$kg_pid);
+			//exec($command);
+			posix_kill($kg_pid, 15);
+		}
+	}
+
+	die(); // this is required to return a proper result
+}
+add_action('wp_ajax_kg_cancel_encode', 'kg_cancel_encode');
 
 function enqueue_kg_script() { //loads plugin-related javascripts
     wp_enqueue_script( 'video_embed_thumbnail_generator_script', plugins_url('/kg_video_plugin.js', __FILE__) );
 }
 add_action('admin_enqueue_scripts', 'enqueue_kg_script');
+
+function enqueue_kg_style() { //loads plugin-related CSS
+	$myStyleUrl = plugins_url('video-embed-thumbnail-generator.css', __FILE__);
+	wp_enqueue_style('kg_progressbar_style', $myStyleUrl);
+}
+add_action('admin_print_styles', 'enqueue_kg_style');
 
 add_action('wp_head', 'addSWFObject');
 add_action('admin_menu', 'addFMPOptionsPage');
