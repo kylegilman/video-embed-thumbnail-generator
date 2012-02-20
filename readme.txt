@@ -88,7 +88,7 @@ WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in sys
 
 Some of it will work without FFMPEG. You can generate embed codes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or generate HTML5 videos. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that.
 
-= Why doesn't the encoding progress bar work on Windows? =
+= Why doesn't the encoding progress bar work on Windows servers? =
 
 Because I can't figure out how to do it. Windows works a little differently from Linux, and I don't understand it enough to get it to work.
 
@@ -109,6 +109,7 @@ Because I can't figure out how to do it. Windows works a little differently from
 * Videos recorded on phones in portrait mode (tall and skinny) will not end up sideways if FFMPEG version .10 or later is installed.
 * Thumbnail generation process uses fancy jQuery animation.
 * Better check for FFMPEG. Should actually work in Windows now.
+* Fixed unenclosed generate, embed, submit, delete strings in kg_call_ffmpeg
 
 = 1.1 - January 8, 2012 =
 * Includes Strobe Media Playback files so Flash Player is now hosted locally, which allows skinning.
