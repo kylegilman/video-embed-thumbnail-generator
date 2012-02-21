@@ -101,6 +101,9 @@ Because I can't figure out how to do it. Windows works a little differently from
 
 == Changelog ==
 
+= 2.0.2 - February 21, 2012 =
+* Fixed check for FFMPEG again, to work with Windows.
+
 = 2.0.1 - February 21, 2012 =
 * Fixed check for FFMPEG again. Should be more universal.
 
