@@ -103,12 +103,14 @@ Because I can't figure out how to do it. Windows works a little differently from
 
 = 2.0 - February 20, 2012 =
 * Large rewrite to fix several security issues. Full server paths are no longer exposed in the Media Upload form, all AJAX calls are handled through wp_ajax, and nonces are checked.
-* Video encoding shows progress bar on Linux servers.
-* Ability to cancel encoding added.
-* Option to encode 720p or 1080p H.264 videos.
+* Added video encoding progress bar on Linux servers.
+* Added button to cancel encoding.
+* Added option to encode 720p or 1080p H.264 videos.
+* Changed requirements for AAC encoding. Will work with libfaac or libvo-aacenc.
+* Improved error reporting to help diagnose problems.
 * Videos recorded on phones in portrait mode (tall and skinny) will not end up sideways if FFMPEG version .10 or later is installed.
 * Thumbnail generation process uses fancy jQuery animation.
-* Better check for FFMPEG. Should actually work in Windows now.
+* Fixed check for FFMPEG. Should actually work in Windows now.
 * Fixed unenclosed generate, embed, submit, delete strings in kg_call_ffmpeg
 
 = 1.1 - January 8, 2012 =
