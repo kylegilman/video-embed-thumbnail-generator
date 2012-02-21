@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, html5, shortcode, thumbnail, ffmpeg, embed, mobile, webm, ogg, h.264
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable tag: 2.0
+Stable tag: 2.0.1
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -100,6 +100,9 @@ Because I can't figure out how to do it. Windows works a little differently from
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 2.0.1 - February 21, 2012 =
+* Fixed check for FFMPEG again. Should be more universal.
 
 = 2.0 - February 20, 2012 =
 * Large rewrite to fix several security issues. Full server paths are no longer exposed in the Media Upload form, all AJAX calls are handled through wp_ajax, and nonces are checked.

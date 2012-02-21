@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 2.0	
+Version: 2.0.1	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -114,12 +114,9 @@ function kg_check_ffmpeg_exists() {
 		$ffmpeg_exists = false;
 		$output = array();
 
-		if(function_exists('exec')) { 
-			exec(get_option('wp_FMP_ffmpeg').'/ffmpeg 2>&1', $output, $returnvalue); 
-			$exec_enabled = true; 
-		} //attempt to execute FFMPEG
+		if(function_exists('exec')) { $exec_enabled = true; } 
 
-		if ( $exec_enabled == true && strpos(end($output), 'even better') != false ) { //if FFMPEG executed
+		if ( $exec_enabled == true && is_file(get_option('wp_FMP_ffmpeg').'/ffmpeg') ) { //if FFMPEG exists
 			update_option('wp_FMP_ffmpeg_exists', "true");
 			$ffmpeg_exists = true;
 		}
