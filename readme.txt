@@ -101,7 +101,7 @@ Because I can't figure out how to do it. Windows works a little differently from
 
 == Changelog ==
 
-= 2.0 - February 20, 2012=
+= 2.0 - February 20, 2012 =
 * Large rewrite to fix several security issues. Full server paths are no longer exposed in the Media Upload form, all AJAX calls are handled through wp_ajax, and nonces are checked.
 * Video encoding shows progress bar on Linux servers.
 * Ability to cancel encoding added.
