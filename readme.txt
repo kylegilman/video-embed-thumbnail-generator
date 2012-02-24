@@ -107,6 +107,7 @@ Because I can't figure out how to do it. Windows works a little differently from
 * Cosmetic changes in encoding progress bar.
 * No longer deleting encoded files if progress can't be properly established.
 * Added "nice" to the encode commond (not on Windows) to prevent FFMPEG from overusing system resources.
+* Updated plugin settings panel generation function to require "Administrator" role instead of deprecated capability number system.
 
 = 2.0.2 - February 21, 2012 =
 * Fixed check for FFMPEG again, to work with Windows.
