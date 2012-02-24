@@ -172,16 +172,22 @@ function kg_check_encode_progress(postID, kg_pid, kg_logfile, kg_movie_duration,
 		else { kg_time_elapsed_display = kg_time_elapsed+' seconds'; }
 
 		if ( data.percent_done != "" && data.percent_done != "100" ) {
-			var kg_time_remaining = Math.floor( (kg_time_elapsed / (data.percent_done/100) ) - kg_time_elapsed);
-			if ( kg_time_remaining >= 60 ) {
-				kg_time_remaining_minutes = Math.round(kg_time_remaining/60);
-				kg_time_remaining_seconds = kg_time_remaining%60;
-				kg_time_remaining_seconds = (kg_time_remaining_seconds < 10) ? ("0" + kg_time_remaining_seconds) : kg_time_remaining_seconds;
-				kg_time_remaining_display = kg_time_remaining_minutes+':'+kg_time_remaining_seconds;
+			if ( parseInt(data.percent_done) < 100 ) { 
+				var kg_time_remaining = Math.floor( (kg_time_elapsed / (data.percent_done/100) ) - kg_time_elapsed);
+				if ( kg_time_remaining >= 60 ) {
+					kg_time_remaining_minutes = Math.round(kg_time_remaining/60);
+					kg_time_remaining_seconds = kg_time_remaining%60;
+					kg_time_remaining_seconds = (kg_time_remaining_seconds < 10) ? ("0" + kg_time_remaining_seconds) : kg_time_remaining_seconds;
+					kg_time_remaining_display = kg_time_remaining_minutes+':'+kg_time_remaining_seconds;
+				}
+				else { kg_time_remaining_display = kg_time_remaining+' seconds'; }
+				jQuery(encodeprogressplaceholderid).empty();
+				jQuery(encodeprogressplaceholderid).append('<div class="meter"><span style="width:'+data.percent_done+'%;">'+display_percent+'</span></div><div class="kg_cancel_button"><input type="button" id="attachments_'+postID+'_kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel" name="attachments_'+postID+'_cancelencode" onclick="kg_cancel_encode('+kg_pid+', \''+postID+'\');"></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed_display+'. Estimated Remaining: '+kg_time_remaining_display+'. FPS:'+data.fps+'</small></div>');
 			}
-			else { kg_time_remaining_display = kg_time_remaining+' seconds'; }
-			jQuery(encodeprogressplaceholderid).empty();
-			jQuery(encodeprogressplaceholderid).append('<div class="meter"><span style="width:'+data.percent_done+'%;">'+display_percent+'</span></div><div class="kg_cancel_button"><input type="button" id="attachments_'+postID+'_kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel" name="attachments_'+postID+'_cancelencode" onclick="kg_cancel_encode('+kg_pid+', \''+postID+'\');"></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed_display+'. Estimated Remaining: '+kg_time_remaining_display+'. FPS:'+data.fps+'</small></div>');
+			else {
+				jQuery(encodeprogressplaceholderid).empty();
+				jQuery(encodeprogressplaceholderid).append('<div class="kg_cancel_button"><input type="button" id="attachments_'+postID+'_kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel" name="attachments_'+postID+'_cancelencode" onclick="kg_cancel_encode('+kg_pid+', \''+postID+'\');"></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed_display+'. FPS:'+data.fps+'</small></div>');
+			}
 		}
 
 		if (data.other_message != "") { 
@@ -198,7 +204,7 @@ function kg_check_encode_progress(postID, kg_pid, kg_logfile, kg_movie_duration,
 			stopChecking = true;
 			//delete window.kg_start_time_over;
 			jQuery(encodeprogressplaceholderid).empty();
-			jQuery(encodeprogressplaceholderid).append('<div class="meter_finished"><span style="width:100%;">100%</span></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed+' seconds. Estimated Remaining: 0 seconds.</small></div>');
+			jQuery(encodeprogressplaceholderid).append('<div class="meter_finished"><span style="width:100%;">100%</span></div><div style="display:block;"><small>Elapsed: '+kg_time_elapsed_display+'. Estimated Remaining: 0 seconds.</small></div>');
 			jQuery(encodeplaceholderid).empty();
 			jQuery(encodeplaceholderid).append('<strong>Encoding Complete</strong>');
 		}

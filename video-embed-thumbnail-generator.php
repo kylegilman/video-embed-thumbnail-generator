@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 2.0.2	
+Version: 2.0.3	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -425,7 +425,7 @@ function FMP_shortcode($atts, $content = ''){
 add_shortcode('FMP', 'FMP_shortcode');
 	
 function addFMPOptionsPage() {
-		add_options_page('Video Embed & Thumbnail Generator', 'Video Embed & Thumbnail Generator', 8, basename(__FILE__), 'FMPOptionsPage');
+		add_options_page('Video Embed & Thumbnail Generator', 'Video Embed & Thumbnail Generator', 'administrator', basename(__FILE__), 'FMPOptionsPage');
 	}	
 
 function FMPOptionsPage() {
@@ -1138,10 +1138,14 @@ add_action('save_post', 'kg_addPostSave');
 	$encodevideo_info = kg_encodevideo_info($movieurl, $post->ID);
 
 	$altembedselect = "";
+	$originalselect = "";
         $selected = ' selected="selected" ';
         $mobileselected = "";
         $oggselected = "";
         $webmselected = "";
+	$original_extension = pathinfo($movieurl, PATHINFO_EXTENSION);
+	$embeddable = array("flv", "f4v", "mp4", "mov", "m4v", "ogv", "ogg", "webm");
+	if ( in_array($original_extension, $embeddable) ) { $originalselect = '<option value="'.$movieurl.'">original</option>'; }
         if ($altembedset == $encodevideo_info['mobileurl']) { $mobileselected = $selected; }
         if ($altembedset == $encodevideo_info['oggurl']) { $oggselected = $selected; }
         if ($altembedset == $encodevideo_info['webmurl']) { $webmselected = $selected; }
@@ -1149,7 +1153,7 @@ add_action('save_post', 'kg_addPostSave');
         if ( $encodevideo_info['mobile_exists'] ) { $replaceoptions .= '<option '.$mobileselected.' value="'.$encodevideo_info['mobileurl'].'">Mobile/H.264</option>'; }
         if ( $encodevideo_info['webm_exists'] ) { $replaceoptions .= '<option '.$webmselected.' value="'.$encodevideo_info['webmurl'].'">WEBM</option>'; }
         if ( $encodevideo_info['ogg_exists'] ) { $replaceoptions .= '<option '.$oggselected.' value="'.$encodevideo_info['oggurl'].'">OGV</option>'; }
-        if ( $encodevideo_info['mobile_exists'] || $encodevideo_info['webm_exists'] || $encodevideo_info['ogg_exists'] ) { $altembedselect ='<span class="kg_embedselect">Embed <select name="attachments['.$post->ID.'][kgflashmediaplayer-altembed]" id="attachments['.$post->ID.'][kgflashmediaplayer-altembed]"><option value="'.$movieurl.'">original</option>'.$replaceoptions.'</select></span>'; }
+        if ( $encodevideo_info['mobile_exists'] || $encodevideo_info['webm_exists'] || $encodevideo_info['ogg_exists'] ) { $altembedselect ='<span class="kg_embedselect">Embed <select name="attachments['.$post->ID.'][kgflashmediaplayer-altembed]" id="attachments['.$post->ID.'][kgflashmediaplayer-altembed]">'.$originalselect.$replaceoptions.'</select></span>'; }
 
         $form_fields["kgflashmediaplayer-encode"]["label"] = __("HTML5 & Mobile");
         $form_fields["kgflashmediaplayer-encode"]["input"] = "html";
@@ -1510,18 +1514,20 @@ function kg_check_encode_progress() {
 			$other_message = $lastline;
 			$basename = substr($logfile, 0, -16);
 			if ( is_file($basename."-ipod.m4v") ) { 
-				if ( (time() - filemtime($basename."-ipod.m4v")) < 30 ) { unlink($basename."-ipod.m4v"); }
+				if ( (time() - filemtime($basename."-ipod.m4v")) < 30 ) { //unlink($basename."-ipod.m4v"); 
+				}
 			}
 			if ( is_file($basename.".ogv") ) { 
-				if ( (time() - filemtime($basename.".ogv")) < 30 ) { unlink($basename.".ogv"); }
+				if ( (time() - filemtime($basename.".ogv")) < 30 ) { //unlink($basename.".ogv"); 
+				}
 			}
 			if ( is_file($basename.".webm") ) { 
 				if ( (time() - filemtime($basename.".webm")) < 30 ) { //unlink($basename.".webm"); 
-}
+				}
 			}
 		}
 	
-		if ( $percent_done == "100" || $other_message != "" ) { if ( file_exists($logfile) ) { unlink($logfile); } }
+		//if ( $percent_done == "100" || $other_message != "" ) { if ( file_exists($logfile) ) { unlink($logfile); } }
 	
 		$embed_display .= $lastline;
 		$arr = array ( "embed_display"=>$embed_display, "percent_done"=>$percent_done, "other_message"=>$other_message, "fps"=>$fps_match );

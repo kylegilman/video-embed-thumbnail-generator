@@ -45,7 +45,7 @@ class Process{
            } //exec this way if it's Windows
 
            else { 
-		$command = 'nohup '.$this->command;
+		$command = 'nohup nice '.$this->command;
 		$this->OS = "linux";
 	   }
 
@@ -245,7 +245,7 @@ if ($action == "generate" || $action == "encode" ) {
 
 						$ipodbitrate = $movie_height * 3;
 
-						$ffmpeg_ipod_options = ' -acodec '.$aaclib.' -ab 128k -s '.$ipod_movie_width.'x'.$ipod_movie_height.' -vcodec libx264 -threads 1 '.$movie_rotate.' -b:v '.$ipodbitrate.'k -bt 800k -f ipod "'.$encodevideo_info['mobilefilepath'].'"';
+						$ffmpeg_ipod_options = ' -acodec '.$aaclib.' -ab 128k -s '.$ipod_movie_width.'x'.$ipod_movie_height.' -vcodec libx264 -threads 1 '.$movie_rotate.' -b '.$ipodbitrate.'k -bt 800k -f ipod "'.$encodevideo_info['mobilefilepath'].'"';
 						$encode_anything = "true";
 						$embed_display .= "<strong> Encoding Mobile M4V. </strong>";
 					}//if the proper FFMPEG libraries are enabled
@@ -258,7 +258,7 @@ if ($action == "generate" || $action == "encode" ) {
 				if ( ! $encodevideo_info['webm_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info['webmfilepath']) < 24576) ) {
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libvpx') ) {
 						$webmbitrate = $movie_height * 3;
-						$ffmpeg_webm_options = ' -ab 128k -b:v '.$webmbitrate.'k '.$movie_rotate.' -threads 1 "'.$encodevideo_info['webmfilepath'].'"';
+						$ffmpeg_webm_options = ' -ab 128k -b '.$webmbitrate.'k '.$movie_rotate.' -threads 1 "'.$encodevideo_info['webmfilepath'].'"';
 						$encode_anything = "true";
 						$embed_display .= "<strong> Encoding WEBM. </strong>";
 					}//if the proper FFMPEG libraries are enabled
@@ -272,7 +272,7 @@ if ($action == "generate" || $action == "encode" ) {
 
 					if ( strpos($movie_info['configuration'], 'enable-libvorbis') &&  strpos($movie_info['configuration'], 'enable-libtheora') ) {
 						$ogvbitrate = $movie_height * 3;
-						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b:v '.$ogvbitrate.'k '.$movie_rotate.' -threads 1 "'.$encodevideo_info['oggfilepath'].'"';
+						$ffmpeg_ogv_options = ' -acodec libvorbis -ab 128k -vcodec libtheora -b '.$ogvbitrate.'k '.$movie_rotate.' -threads 1 "'.$encodevideo_info['oggfilepath'].'"';
 						$encode_anything = "true";
 						$embed_display .= "<strong> Encoding OGV. </strong>";
 					}//if the proper FFMPEG libraries are enabled
@@ -309,11 +309,15 @@ if ($action == "generate" || $action == "encode" ) {
 				}//if any HTML5 videos don't already exist
 
 				$replaceoptions = "";
+				$originalselect = "";
+				$original_extension = pathinfo($movieurl, PATHINFO_EXTENSION);
+				$embeddable = array("flv", "f4v", "mp4", "mov", "m4v", "ogv", "ogg", "webm");
+				if ( in_array($original_extension, $embeddable) ) { $originalselect = '<option value="'.$movieurl.'">original</option>'; }
 				if ( $encodevideo_info['mobile_exists'] ) { $replaceoptions .= '<option value="'.$encodevideo_info['mobileurl'].'">Mobile/H.264</option>'; }
 				if ( $encodevideo_info['webm_exists'] ) { $replaceoptions .= '<option value="'.$encodevideo_info['webmurl'].'">WEBM</option>'; }
 				if ( $encodevideo_info['ogg_exists'] ) { $replaceoptions .= '<option value="'.$encodevideo_info['oggurl'].'">OGV</option>'; }
 
-				$altembedselect = '<span class="kg_embedselect">Embed <select name="attachments['.$postID.'][kgflashmediaplayer-altembed]" id="attachments['.$postID.'][kgflashmediaplayer-altembed]"><option value="'.$movieurl.'">original</option>'.$replaceoptions.'</select></span>';
+				$altembedselect = '<span class="kg_embedselect">Embed <select name="attachments['.$postID.'][kgflashmediaplayer-altembed]" id="attachments['.$postID.'][kgflashmediaplayer-altembed]">'.$originalselect.$replaceoptions.'</select></span>';
 
 				//$encodevideo_info_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($encodevideo_info), array_values($encodevideo_info));
 				//$encodevideo_info_implode = implode($encodevideo_info_map);

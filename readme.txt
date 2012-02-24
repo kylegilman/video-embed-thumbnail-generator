@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, html5, shortcode, thumbnail, ffmpeg, embed, mobile, webm, ogg, h.264
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -100,6 +100,12 @@ Because I can't figure out how to do it. Windows works a little differently from
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 2.0.3 - February 24, 2012 =
+* When working with file formats that can't be embedded (WMV, AVI, etc) the option to embed the original file will be disabled if Mobile/H.264, WEBM, or OGV files are found.
+* Changed encoding bitrate flag back to -b instead of -b:v to retain compatibility with older versions of FFMPEG.
+* Cosmetic changes in encoding progress bar.
+* No longer deleting encoded files if progress can't be properly established.
 
 = 2.0.2 - February 21, 2012 =
 * Fixed check for FFMPEG again, to work with Windows.
