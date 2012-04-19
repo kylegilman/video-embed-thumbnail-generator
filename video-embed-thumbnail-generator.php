@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 2.0.3	
+Version: 2.0.4	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -48,9 +48,7 @@ function kg_add_upload_mimes ( $existing_mimes=array() ) {
 	return $existing_mimes;
  
 }
-
 add_filter('upload_mimes', 'kg_add_upload_mimes');
-
 
 function url_exists($url) {
     $hdrs = @get_headers($url);
@@ -113,14 +111,18 @@ function kg_check_ffmpeg_exists() {
 		$exec_enabled = false;
 		$ffmpeg_exists = false;
 		$output = array();
-
-		if(function_exists('exec')) { $exec_enabled = true; } 
-
 		$ffmpeg_path = get_option('wp_FMP_ffmpeg');
+		$uploads = wp_upload_dir();
 
-		if ( $exec_enabled == true && ( file_exists($ffmpeg_path.'/ffmpeg') || file_exists($ffmpeg_path.'/ffmpeg.exe') ) ) { //if FFMPEG exists
+		if(function_exists('exec')) { 
+			$exec_enabled = true; 
+			exec ( get_option('wp_FMP_ffmpeg').'/ffmpeg -i '.plugins_url("", __FILE__).'/flash/skin/images/PlayNormal.png '.$uploads['path'].'/ffmpeg_exists_test.jpg', $output, $returnvalue );
+		} 
+
+		if ( $exec_enabled == true && file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has executed successfully
 			update_option('wp_FMP_ffmpeg_exists', "true");
 			$ffmpeg_exists = true;
+			unlink($uploads['path'].'/ffmpeg_exists_test.jpg');
 		}
 		else { 	update_option('wp_FMP_ffmpeg_exists', "notinstalled"); }
 
@@ -146,7 +148,7 @@ function kg_encodevideo_info($movieurl, $postID) {
 	}
 	else { 
 		$url_parts = parse_url($uploads['url']);
-		if ( strpos($moviefilepath, $url_parts['host']) != "" ) { //if we're on the same server
+		if ( strpos($moviefilepath, $url_parts['host']) != false ) { //if we're on the same server
 			$encodevideo_info['sameserver'] = true;
 			$filename = urldecode($moviefilepath);
 			$parsed_url= parse_url($filename);
@@ -261,6 +263,8 @@ function video_embed_thumbnail_generator_activate() {
    define("wp_FMP_default_mobile_res", "480", true);
    define("wp_FMP_default_encodeogg", "false", true);
    define("wp_FMP_default_encodewebm", "true", true);
+   define("wp_FMP_default_vpre", "false", true);
+   define("wp_FMP_default_template", "false", true);
 
    add_option('wp_FMP_swfobject', wp_FMP_swfobject_default);
    add_option('wp_FMP_flashplayer', wp_FMP_flashplayer_default);
@@ -284,6 +288,8 @@ function video_embed_thumbnail_generator_activate() {
    add_option('wp_FMP_encodemobile', wp_FMP_default_encodemobile);
    add_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);
    add_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);
+   add_option('wp_FMP_vpre', wp_FMP_default_vpre);
+   add_option('wp_FMP_template', wp_FMP_default_template);
 
    kg_check_ffmpeg_exists();
 
@@ -297,8 +303,8 @@ function addSWFObject() {
 	}
 }
 
-
 function FMP_shortcode($atts, $content = ''){
+
 	
 		// workaround for relative video URL (contributed by Lee Fernandes)
 		if(substr($content, 0, 1) == '/') $content = get_bloginfo('url').$content;
@@ -320,49 +326,56 @@ function FMP_shortcode($atts, $content = ''){
 
 		$div_suffix = substr(uniqid(rand(), true),0,4);
 
+		global $wpdb;
+		$query = "SELECT ID FROM {$wpdb->posts} WHERE guid='$content'";
+		$id = $wpdb->get_var($query);
+			
+		if ($id != "") { $encodevideo_info = kg_encodevideo_info(trim($content), $id); }
+		else { $encodevideo_info = kg_encodevideo_info(trim($content), 'singleurl'); }
 
 		$video_swf = plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf";
 		$minimum_flash = "10.1.0";
 		
-		$flashvars = "{src:'".urlencode(trim($content))."'";
+		if ( in_array($moviefiletype, $flashcompatible) ) { $flashvars = "{src:'".urlencode(trim($content))."'"; }
+		else { $flashvars = "{'src':'".urlencode(trim($encodevideo_info['mobileurl']))."'"; }
 		
 		if($query_atts["controlbar"] != '') {
-			$flashvars .= ", controlBarMode:'".$query_atts["controlbar"]."'";
+			$flashvars .= ", 'controlBarMode':'".$query_atts["controlbar"]."'";
 		}
 		if($query_atts["autohide"] != '') {
-			$flashvars .= ", controlBarAutoHide:'".$query_atts["autohide"]."'";
+			$flashvars .= ", 'controlBarAutoHide':'".$query_atts["autohide"]."'";
 		}
 		if($query_atts["poster"] != '') {
-			$flashvars .= ", poster:'".$query_atts["poster"]."'";
+			$flashvars .= ", 'poster':'".urlencode(trim($query_atts["poster"]))."'";
 		}
 		if($query_atts["playbutton"] != '') {
-			$flashvars .= ", playButtonOverlay:'".$query_atts["playbutton"]."'";
+			$flashvars .= ", 'playButtonOverlay':'".$query_atts["playbutton"]."'";
 		}
 		if($query_atts["loop"] != '') {
-			$flashvars .= ", loop:'".$query_atts["loop"]."'";
+			$flashvars .= ", 'loop':'".$query_atts["loop"]."'";
 		}
 		if($query_atts["autoplay"] != '') {
-			$flashvars .= ", autoPlay:'".$query_atts["autoplay"]."'";
+			$flashvars .= ", 'autoPlay':'".$query_atts["autoplay"]."'";
 		}
 		if($query_atts["streamtype"] != '') {
-			$flashvars .= ", streamType:'".$query_atts["streamtype"]."'";
+			$flashvars .= ", 'streamType':'".$query_atts["streamtype"]."'";
 		}
 		if($query_atts["scalemode"] != '') {
-			$flashvars .= ", scaleMode:'".$query_atts["scalemode"]."'";
+			$flashvars .= ", 'scaleMode':'".$query_atts["scalemode"]."'";
 		}
 		if($query_atts["backgroundcolor"] != '') {
-			$flashvars .= ", backgroundColor:'".$query_atts["backgroundcolor"]."'";
+			$flashvars .= ", 'backgroundColor':'".$query_atts["backgroundcolor"]."'";
 		}	
 		if($query_atts["configuration"] != '') {
-			$flashvars .= ", configuration:'".urlencode($query_atts["configuration"])."'";
+			$flashvars .= ", 'configuration':'".urlencode($query_atts["configuration"])."'";
 		}
 		if($query_atts["skin"] != '') {
-			$flashvars .= ", skin:'".urlencode($query_atts["skin"])."'";
+			$flashvars .= ", 'skin':'".urlencode($query_atts["skin"])."'";
 		}		
 		
 		$flashvars .= "}";
 		
-		$params = "{allowfullscreen:'true', allowscriptaccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
+		$params = "{'allowfullscreen':'true', 'allowscriptaccess':'always', 'base':'".plugins_url("", __FILE__)."/flash/'}";
 		
 		if(get_option('wp_FMP_HTML5') == "true") {
 			include_once dirname( __FILE__ ) .'/mdetect.php';
@@ -370,13 +383,10 @@ function FMP_shortcode($atts, $content = ''){
 			$isAndroid = $uagent_obj->DetectAndroid(); //determine if we're running on an Android device
 			$isTierIphone = $uagent_obj->DetectTierIphone(); //determine if we're running on a mobile device that plays iPhone-optimized video
 			$moviefilebasename = pathinfo(trim($content), PATHINFO_FILENAME);
-			//$moviefilebasename = str_replace(" ", "_", $moviefilebasename);
 			$moviefiletype = pathinfo(trim($content), PATHINFO_EXTENSION);
 			$flashcompatible = array("flv", "f4v", "mp4", "mov", "m4v");
 			$h264compatible = array("mp4", "mov", "m4v");
-
-			$encodevideo_info = kg_encodevideo_info(trim($content), 'singleurl');
-
+			
 			$code = "<div id=\"flashcontent".$div_suffix."\">";
 			$code .= "<video ";
 			if ($query_atts["loop"] == 'true') { $code .= "loop='loop' " ;}
@@ -408,8 +418,27 @@ function FMP_shortcode($atts, $content = ''){
 			} }
 			if ( $encodevideo_info["webm_exists"] ) { $code .= "<source src='".$encodevideo_info["webmurl"]."' type='video/webm'>\n"; }
 			if ( $encodevideo_info["ogg_exists"] ) { $code .= "<source src='".$encodevideo_info["oggurl"]."' type='video/ogg'>\n"; }
+			if ( !in_array($moviefiletype, $flashcompatible) && $encodevideo_info["mobile_exists"] ) { // Flash fallback if WEBM/OGV embed
+				$flashvars_remove = array("{", "}", "'");
+				$flashvars_reformat = str_replace($flashvars_remove, "", $flashvars);
+				$flashvars_reformat = str_replace(":", "=", $flashvars_reformat);
+				$flashvars_reformat = str_replace(", ", "&", $flashvars_reformat);
+				$code .= '<object width="'.trim($query_atts["width"]).'" height="'.trim($query_atts["height"]).'" type="application/x-shockwave-flash" data="'.$video_swf.'">'."\n";
+				$code .= '<param name="movie" value="'.$video_swf.'" /></param>'."\n";
+				$code .= '<param name="flashvars" value="'.$flashvars_reformat.'" /></param>'."\n";
+				$code .= '<param name="base" value="'.plugins_url('', __FILE__).'/flash/" /></param>'."\n";
+				$code .= '<param name="allowFullScreen" value="true" /></param>'."\n";
+				$code .= '<param name="allowscriptaccess" value="always" /></param>'."\n";
+				$code .= '</object>';
+			}
 			$code .= "</video>\n";
 			$code .= "</div>\n\n";
+
+			/* if ($id !="") {
+			   $iframeurl = site_url('/')."?attachment_id=".$id;
+			   $iframecode = '<iframe src="'.$iframeurl.'" frameborder="0" scrolling="no" width="'.$query_atts['width'].'" height="'.$query_atts["height"].'"></iframe>';
+			   $code .= "<div style='background-color:#e8e8e8; width:".$query_atts['width']."px; height:25px; margin-top:-25px; padding:5px; font-size:8pt;'>Embed code: <input style='height:10px; background-color:#f4f4f4;' type='text' value='".$iframecode."' width='10' onClick='this.select();'></div>\n";
+			} */
 		} else {
 			if ( in_array($moviefiletype, $flashcompatible) ) { $code = "<div id=\"flashcontent".$div_suffix."\">".get_option('wp_FMP_flashplayer')."</div>\n\n"; }
 		}
@@ -451,6 +480,8 @@ function FMPOptionsPage() {
    define("wp_FMP_default_encodemobile", "true", true);
    define("wp_FMP_default_encodeogg", "false", true);
    define("wp_FMP_default_encodewebm", "true", true);
+   define("wp_FMP_default_vpre", "false", true);
+   define("wp_FMP_default_template", "false", true);
 
 		if (isset($_POST['wp_FMP_reset'])) {
 			update_option('wp_FMP_swfobject', wp_FMP_swfobject_default);
@@ -473,7 +504,9 @@ function FMPOptionsPage() {
 			update_option('wp_FMP_mobile_res', wp_FMP_default_mobile_res);
 			update_option('wp_FMP_encodemobile', wp_FMP_default_encodemobile);
 			update_option('wp_FMP_encodeogg', wp_FMP_default_encodeogg);	
-			update_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);	
+			update_option('wp_FMP_encodewebm', wp_FMP_default_encodewebm);
+			update_option('wp_FMP_vpre', wp_FMP_default_vpre);
+			update_option('wp_FMP_template', wp_FMP_default_template);
 		
 			echo "<div class='updated'><p><strong>Video Embed & Thumbnail Generator plugin reset to default settings</strong></p></div>";
 
@@ -499,6 +532,8 @@ function FMPOptionsPage() {
 			$use_encodemobile = $_POST[wp_FMP_encodemobile];
 			$use_encodeogg = $_POST[wp_FMP_encodeogg];
 			$use_encodewebm = $_POST[wp_FMP_encodewebm];
+			$use_vpre = $_POST[wp_FMP_vpre];
+			$use_template = $_POST[wp_FMP_template];
 			
 			if ($use_swfobject == 'use') {
 				update_option(wp_FMP_swfobject, "true");
@@ -536,7 +571,6 @@ function FMPOptionsPage() {
 				update_option(wp_FMP_playbutton, "false");
 			}	
 
-
 			if ($use_encodemobile == 'use') {
 				update_option(wp_FMP_encodemobile, "true");
 			} else {
@@ -553,7 +587,19 @@ function FMPOptionsPage() {
 				update_option(wp_FMP_encodewebm, "true");
 			} else {
 				update_option(wp_FMP_encodewebm, "false");
-			}		
+			}
+
+			if ($use_vpre == 'use') {
+				update_option(wp_FMP_vpre, "true");
+			} else {
+				update_option(wp_FMP_vpre, "false");
+			}
+
+			if ($use_template == 'use') {
+				update_option(wp_FMP_template, "true");
+			} else {
+				update_option(wp_FMP_template, "false");
+			}			
 
 			update_option('wp_FMP_mobile_res', $_POST[wp_FMP_mobile_res]);			
 			update_option('wp_FMP_width', $_POST[wp_FMP_width]);
@@ -626,6 +672,23 @@ function FMPOptionsPage() {
 					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
+							<label>Attachment Template Override:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<?php
+								echo "<input type='checkbox' name='wp_FMP_template' id='wp_FMP_template' value='use' ";
+								if(get_option('wp_FMP_template') == "true") {
+									echo "checked";
+								}
+								echo " />\n";
+							?>
+							Check to enable experimental minimalist video attachment template.<br />
+							<em><small>Allows easy iframe embedding on other sites. Will override any existing video attachment template page.</small></em>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row" valign="top" align="left">
 							<label>Default Mobile/HTML5 Video Encode Formats:</label>
 						</th>
 						<td width="10"></td>
@@ -682,7 +745,7 @@ function FMPOptionsPage() {
 								<option value="720"<?php echo $res_720 ?>>720p</option>
 								<option value="1080"<?php echo $res_1080 ?>>1080p</option>
 							</select> 
-							<em>Newer mobile devices can display HD video (iPhone 4/iPad 1/some Android play 720p, iPhone 4s/iPad 2 play 1080p) but many older devices (iPhone 3Gs/older Android) can't play higher than 480p. Increase at your own risk.</em>
+							<em>Newer mobile devices can display HD video (iPhone 4/iPad 1/some Android play 720p, iPhone 4s/iPad 2+ play 1080p) but many older devices (iPhone 3Gs/older Android) can't play higher than 480p. Increase at your own risk.</em>
 						</td>	
 					</tr>
 					<tr>
@@ -694,6 +757,23 @@ function FMPOptionsPage() {
 							<input name="wp_FMP_ffmpeg" id="wp_FMP_ffmpeg" type="text" value="<?php echo get_option('wp_FMP_ffmpeg') ?>" /><br />
 							<em>Don't include trailing slash. Example: /usr/local/bin</em>
 						</td>	
+					</tr>
+					<tr>
+						<th scope="row" valign="top" align="left">
+							<label>FFMPEG Options:</label>
+						</th>
+						<td width="10"></td>
+						<td>
+							<?php
+								echo "<input type='checkbox' name='wp_FMP_vpre' id='wp_FMP_vpre' value='use' ";
+								if(get_option('wp_FMP_vpre') == "true") {
+									echo "checked";
+								}
+								echo " />\n";
+							?>
+							Enable FFMPEG 'vpre' flags.<br />
+							<em><small>Check this if your installed version of FFMPEG is old enough that libx264 requires vpre flags to operate (Dreamhost users must turn this on).<br />This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It will cause newer versions of FFMPEG to fail and probably won't work on Windows servers.</em></small>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row" valign="top" align="left">
@@ -1103,7 +1183,7 @@ add_action('save_post', 'kg_addPostSave');
 	$form_fields["generator"]["label"] = __("Thumbnails");
         $form_fields["generator"]["input"] = "html";
         $form_fields["generator"]["html"] = '<div id="attachments_'. $post->ID .'_thumbnailplaceholder">'. $thumbnail_html .'</div>
-        <input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="'.$numberofthumbs_value.'" maxlength="1" size="4" style="width:25px;" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';" '.$ffmpeg_disabled_text.'/>
+        <input id="attachments_'. $post->ID .'_numberofthumbs" type="text" value="'.$numberofthumbs_value.'" maxlength="2" size="4" style="width:25px;" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';" '.$ffmpeg_disabled_text.'/>
         <input type="button" id="attachments['. $post->ID .'][thumbgenerate]" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kg_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
         <input type="button" id="thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kg_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/> 
         <input type="checkbox" id="attachments_'. $post->ID .'_firstframe" onchange="document.getElementById(\'attachments['.$post->ID.'][thumbtime]\').value =\'\';" '.$ffmpeg_disabled_text.'/>
@@ -1407,6 +1487,33 @@ function kg_embedurl_handle() {
 }
 add_action('media_upload_embedurl', 'kg_embedurl_handle');
 
+
+function kg_video_attachment_template() {
+
+	global $post;
+	$embed_enabled = get_post_meta($post->ID, "_kgflashmediaplayer-embed", true);
+	$poster = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
+	$width = get_post_meta($post->ID, "_kgflashmediaplayer-width", true);
+	$height = get_post_meta($post->ID, "_kgflashmediaplayer-height", true);
+	$url = wp_get_attachment_url($post->ID);
+
+	if ($embed_enabled == "checked" ) {
+		$shortcode = '[FMP';
+		if ($poster !="" ) { $shortcode .= ' poster="'.$poster.'"';}
+		if ($width !="" ) { $shortcode .= ' width="'.$width.'"';}
+		if ($height !="" ) { $shortcode .= ' height="'.$height.'"';}
+		$shortcode .= ']'.$url.'[/FMP]';
+		echo "<html>\n<head>";
+		echo "\n<script src=\"".plugins_url("", __FILE__)."/flash/swfobject.js\" type=\"text/javascript\"></script>\n";
+		echo "</head>\n<body>";
+		echo do_shortcode( $shortcode );
+		echo '</body></html>';
+		exit;
+	}
+}
+if ( get_option('wp_FMP_template') == 'true' ) { add_action('template_redirect', 'kg_video_attachment_template'); }
+
+
 function kg_cleanup_generated_logfiles_handler($logfile) {
 	$lastmodified = "";
 	if ( file_exists($logfile) ) { $lastmodified = filemtime($logfile); }
@@ -1497,10 +1604,14 @@ function kg_check_encode_progress() {
 		}
 	
 		if ( array_key_exists(1, $time_matches) == true ) {
-			$current_hours = intval(substr($time_matches[1], -11, 2));
-			$current_minutes = intval(substr($time_matches[1], -8, 2));
-			$current_seconds = intval(substr($time_matches[1], -5, 2));
-			$current_seconds = ($current_hours * 60 * 60) + ($current_minutes * 60) + $current_seconds; 
+			if ( strpos($time_matches[1], ':') !== false ) {
+				$current_hours = intval(substr($time_matches[1], -11, 2));
+				$current_minutes = intval(substr($time_matches[1], -8, 2));
+				$current_seconds = intval(substr($time_matches[1], -5, 2));
+				$current_seconds = ($current_hours * 60 * 60) + ($current_minutes * 60) + $current_seconds;
+			}
+			else { $current_seconds = $time_matches[1]; }
+
 			$percent_done = round(intval($current_seconds)/intval($movie_duration)*100);
 	
 			preg_match('/fps=\s+(.*?) /', $lastline, $fps_matches);

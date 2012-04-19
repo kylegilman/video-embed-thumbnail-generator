@@ -244,8 +244,10 @@ if ($action == "generate" || $action == "encode" ) {
 						else { $aaclib = "libvo_aacenc"; }
 
 						$ipodbitrate = $movie_height * 3;
+						$vpre_flags = "";
+						if ( get_option('wp_FMP_vpre') == 'true' ) { $vpre_flags = '-vpre slow -vpre ipod640'; }
 
-						$ffmpeg_ipod_options = ' -acodec '.$aaclib.' -ab 128k -s '.$ipod_movie_width.'x'.$ipod_movie_height.' -vcodec libx264 -threads 1 '.$movie_rotate.' -b '.$ipodbitrate.'k -bt 800k -f ipod "'.$encodevideo_info['mobilefilepath'].'"';
+						$ffmpeg_ipod_options = ' -acodec '.$aaclib.' -ab 128k -s '.$ipod_movie_width.'x'.$ipod_movie_height.' -vcodec libx264 '.$vpre_flags.' -threads 1 '.$movie_rotate.' -b '.$ipodbitrate.'k -bt 800k -f ipod "'.$encodevideo_info['mobilefilepath'].'"';
 						$encode_anything = "true";
 						$embed_display .= "<strong> Encoding Mobile M4V. </strong>";
 					}//if the proper FFMPEG libraries are enabled
@@ -301,10 +303,10 @@ if ($action == "generate" || $action == "encode" ) {
 
 					$embed_display .= " <em><small>(continues if window is closed)</small></em>";
 
-					//$output_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($process->output), array_values($process->output));
-					//$output_implode = implode($output_map);
+					$output_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($process->output), array_values($process->output));
+					$output_implode = implode($output_map);
 					
-					//$embed_display .= "Command: ".$cmd." Status: ".$process->status()." Output: ".$output_implode;
+					//$embed_display .= "Command: ".$cmd." Output: ".$output_implode;
 
 				}//if any HTML5 videos don't already exist
 

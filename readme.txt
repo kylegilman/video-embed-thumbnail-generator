@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, html5, shortcode, thumbnail, ffmpeg, embed, mobile, webm, ogg, h.264
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -43,6 +43,10 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 
 After you save the post, the thumbnail file will be registered in the Wordpress Media Library and added to the post's attachments. Thumbnails are saved in the current Wordpress uploads directory. Encoded videos are not yet registered with the media library.
 
+= To embed videos on other sites = turn on the Attachment Template Override in the plugin settings. This will replace your video attachment template with a page that only has enough code to display the video. You can then embed the video using code like this
+
+`<iframe width="960" height="540" frameborder="0" scrolling="no" src="http://www.kylegilman.net/?attachment_id=1906"></iframe>`
+
 = If you want to further modify the way the Flash video player works, you can add the following options inside the [FMP] tag. These will override anything you’ve set in the plugin settings. =
 
 * `poster="http://www.example.com/image.jpg"` sets the thumbnail
@@ -78,7 +82,7 @@ AddType video/webm .webm`
 
 = Why doesn't my video play? =
 
-Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. mp4s with MPEG-4 video will not play in the Flash player, and if you don't use AAC audio you won't get any audio.
+Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. mp4s with MPEG-4 video will not play in the Flash player, and if you don't use AAC audio you won't get any audio. The Flash player will not play mp4/m4v/mov files that don't have the MooV atom at the head of the file. FFMPEG puts the MooV atom at the end of the file, so this can be a problem. I'm working on a solution for an upcoming version of the plugin.
 
 = Why doesn't this work with YouTube? =
 
@@ -86,7 +90,7 @@ WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in sys
 
 = I'm on shared hosting and can't install software. Does this work without FFMPEG? =
 
-Some of it will work without FFMPEG. You can generate embed codes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or generate HTML5 videos. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that.
+Some of it will work without FFMPEG. You can generate embed codes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or generate HTML5 videos. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that. Dreamhost is one of the few shared hosts I know of that has FFMPEG installed and available for users.
 
 = Why doesn't the encoding progress bar work on Windows servers? =
 
@@ -100,6 +104,13 @@ Because I can't figure out how to do it. Windows works a little differently from
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 2.0.4 - April 19, 2012 =
+* Once again changed the process checking for FFMPEG installations. Should be universal now.
+* Added setting to turn on vpre flags for users with installed versions of FFMPEG old enough that libx264 requires vpre flags to operate.
+* Added setting to replace the video attachment template with a page containing only the code necessary to display the video. Makes embedding your hosted videos on other sites easier.
+* Fixed progress bar for older versions of FFMPEG
+* Added Flash fallback when OGV or WEBM videos are embedded
 
 = 2.0.3 - February 24, 2012 =
 * When working with file formats that can't be embedded (WMV, AVI, etc) the option to embed the original file will be disabled if Mobile/H.264, WEBM, or OGV files are found.

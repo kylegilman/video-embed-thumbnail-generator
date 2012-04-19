@@ -1,3 +1,6 @@
+var kgthumbnailTimeout = new Array();
+var kgstopthumb;
+
 function kg_set_dimension(postID, valuetochange, currentvalue) {
 	var kg_aspect = (document.getElementById('attachments['+postID+'][kgflashmediaplayer-aspect]').value);
 	var changeaspect = kg_aspect;
@@ -35,12 +38,17 @@ function kg_generate_thumb(postID, buttonPushed) {
 	var altembedselectid = "#attachments_"+postID+"_altembedselect";
 	var thumbnailboxID = "#attachments_"+postID+"_kgflashmediaplayer-thumbnailbox";
 	var thumbnailboxoverlayID = "#attachments_"+postID+"_kgflashmediaplayer-thumbnailboxoverlay";
+	var cancelthumbdivID = '#attachments_'+postID+'_kgflashmediaplayer-cancelthumbsdiv';
 	var widthID = 'attachments_'+postID+'_kgflashmediaplayer-width';
 	var heightID = 'attachments_'+postID+'_kgflashmediaplayer-height';
 	var widthsaveID = 'attachments['+postID+'][kgflashmediaplayer-widthsave]';
 	var heightsaveID = 'attachments['+postID+'][kgflashmediaplayer-heightsave]';
 	var maxwidthID = 'attachments['+postID+'][kgflashmediaplayer-maxwidth]';
 	var maxheightID = 'attachments['+postID+'][kgflashmediaplayer-maxheight]';
+	kgstopthumb = false;
+	var i=1;
+	var increaser = 0;
+	var iincreaser = 0;
 
 	if (buttonPushed == "generate" || buttonPushed == "random" ) { 
 		actionName = "generate";
@@ -52,8 +60,9 @@ function kg_generate_thumb(postID, buttonPushed) {
 	}
 
 	if (buttonPushed != "encode") {
+
 		jQuery(thumbnailplaceholderid).empty();
-		jQuery(thumbnailplaceholderid).append('<p><strong>Choose Thumbnail:</strong></p><div id="attachments_'+postID+'_kgflashmediaplayer-thumbnailboxoverlay" name="attachments_'+postID+'_kgflashmediaplayer-thumbnailboxoverlay" class="kg_thumbnail_overlay"><div id="attachments_'+postID+'_kgflashmediaplayer-ajaxloading" name="attachments_'+postID+'_kgflashmediaplayer-ajaxloading" class="kg_ajax_loading"></div><div name="attachments_'+postID+'_kgflashmediaplayer-thumbnailbox" id="attachments_'+postID+'_kgflashmediaplayer-thumbnailbox" class="kg_thumbnail_box"></div></div>');
+		jQuery(thumbnailplaceholderid).append('<strong>Choose Thumbnail: </strong><div style="display:inline-block;" id="attachments_'+postID+'_kgflashmediaplayer-cancelthumbsdiv" name="attachments_'+postID+'_kgflashmediaplayer-cancelthumbsdiv">	<input type="button" id="attachments_'+postID+'_kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel Generating" name="attachments_'+postID+'_cancelencode" onclick="kg_cancel_thumbs(\''+postID+'\');kgstopthumb=true;"></div><div id="attachments_'+postID+'_kgflashmediaplayer-thumbnailboxoverlay" name="attachments_'+postID+'_kgflashmediaplayer-thumbnailboxoverlay" class="kg_thumbnail_overlay"><div name="attachments_'+postID+'_kgflashmediaplayer-thumbnailbox" id="attachments_'+postID+'_kgflashmediaplayer-thumbnailbox" class="kg_thumbnail_box"></div></div>');
 	}
 
 	if (buttonPushed == "encode") {
@@ -61,13 +70,6 @@ function kg_generate_thumb(postID, buttonPushed) {
 		jQuery(encodeprogressplaceholderid).empty();
 		jQuery(encodeplaceholderid).append('<strong>Encoding...</strong>');
 	}
-
-
-	var i=1;
-	var increaser = 0;
-	var iincreaser = 0;
-
-	//for (i=1; i<=howmanythumbs; i++) { //loop until thumbnails are generated
 
 	function kg_do_post() {
 
@@ -82,11 +84,14 @@ function kg_generate_thumb(postID, buttonPushed) {
 				//jQuery(thumbnailselectID).fadeIn(1000);
 				jQuery(thumbnailselectID).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000);
 				//jQuery(thumbnailselectID).animate({display:"inline-block"}, 2000);
-				if (data.lastthumbnumber != "break") { i = parseInt(data.lastthumbnumber); }
+				if (data.lastthumbnumber != "break" && kgstopthumb == false) { i = parseInt(data.lastthumbnumber); }
 				else { i = howmanythumbs + 1; }
 				increaser++;
-				if ( i <= howmanythumbs ) { setTimeout(function(){kg_do_post()}, 1000); }
-				else { jQuery(thumbnailboxoverlayID).fadeTo(2000, 1); }
+				if ( i <= howmanythumbs ) { kgthumbnailTimeout[i] = setTimeout(function(){kg_do_post()}, 750); }
+				else { 
+					jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
+					jQuery(cancelthumbdivID).animate({opacity: 0}, 500);
+				}
 
 				kg_aspect = data.movie_height/data.movie_width;
 				document.getElementById('attachments['+postID+'][kgflashmediaplayer-aspect]').value = kg_aspect;
@@ -131,19 +136,31 @@ function kg_generate_thumb(postID, buttonPushed) {
 function kg_insert_shortcode() {
 
 	var kgflashmediaplayersecurity = document.getElementById('attachments[singleurl][kgflashmediaplayer-security]').value;
+	var url = document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value;
+	var alturl = "";
 
-	jQuery.post(ajaxurl, { action:'kg_callffmpeg', security: kgflashmediaplayersecurity, attachmentID: 'singleurl', movieurl: document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value, ffmpeg_action:'submit', poster: document.getElementById('attachments[singleurl][kgflashmediaplayer-poster]').value }, function(data) {
+	if ( document.getElementById('attachments[singleurl][kgflashmediaplayer-altembed]') ) { alturl = document.getElementById('attachments[singleurl][kgflashmediaplayer-altembed]').value; }
+	if ( alturl != "" ) { url = alturl; }
+	var validExtensions = new Array(".flv", ".f4v", ".mp4", ".mov", ".m4v", ".webm", ".ogg", ".ogv");
+	var extension;
+	var extensionExists = false;
+	for (extension in validExtensions) {
+		if (url.indexOf(extension) != -1) { extensionExists = true; break; }
+	}
+	if (extensionExists == false) { alert("Please enter a URL that points to a valid video file. Video sharing sites are not supported by this plugin.\nTo embed from YouTube, Vimeo, etc, just paste the link directly into the post window and WordPress will handle the rest."); return; }
+
+	jQuery.post(ajaxurl, { action:'kg_callffmpeg', security: kgflashmediaplayersecurity, attachmentID: 'singleurl', movieurl: url, ffmpeg_action:'submit', poster: document.getElementById('attachments[singleurl][kgflashmediaplayer-poster]').value }, function(data) {
 		jQuery('attachments_singleurl_thumbnailplaceholder').empty();
 	}, "json" );
 
 	var shortcode = "";
 	if (document.getElementById('videotitle').value != "") { shortcode += '<strong>' + document.getElementById('videotitle').value + '</strong><br />'; }
-	if (document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value !="") {
+	if (url !="") {
 		shortcode += ' [FMP';
 		if (document.getElementById('attachments[singleurl][kgflashmediaplayer-poster]').value !="") { shortcode += ' poster="' + document.getElementById("attachments[singleurl][kgflashmediaplayer-poster]").value + '"'; }
 		if (document.getElementById('attachments_singleurl_kgflashmediaplayer-width').value !="") { shortcode += ' width="' + document.getElementById("attachments_singleurl_kgflashmediaplayer-width").value + '"'; }
 		if (document.getElementById('attachments_singleurl_kgflashmediaplayer-height').value !="") { shortcode += ' height="' + document.getElementById("attachments_singleurl_kgflashmediaplayer-height").value + '"'; }
-		shortcode += ']' + document.getElementById('attachments[singleurl][kgflashmediaplayer-url]').value + '[/FMP] '; }
+		shortcode += ']' + url + '[/FMP] '; }
 		if (document.getElementById('downloadlink').checked) { shortcode += '<br /><a href="' + document.getElementById("attachments[singleurl][kgflashmediaplayer-url]").value + '">Right-click or ctrl-click this link to download</a>'; }
 
 	parent.send_to_editor(shortcode);
@@ -235,3 +252,13 @@ function kg_cancel_encode(kg_pid, postID) {
 	jQuery.post(ajaxurl, { action:"kg_cancel_encode", security: kgflashmediaplayersecurity, kg_pid: kg_pid } );
 
 }
+
+
+function kg_cancel_thumbs(postID) {
+		for( key in kgthumbnailTimeout ){ clearTimeout(kgthumbnailTimeout[key]); }
+		var thumbnailboxoverlayID = "#attachments_"+postID+"_kgflashmediaplayer-thumbnailboxoverlay";
+		jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
+		var cancelthumbdivID = '#attachments_'+postID+'_kgflashmediaplayer-cancelthumbsdiv';
+		jQuery(cancelthumbdivID).animate({opacity: 0}, 500);
+		jQuery(cancelthumbdivID).remove;
+	}
