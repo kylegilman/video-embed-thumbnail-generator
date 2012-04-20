@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 2.0.4	
+Version: 2.0.5	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -329,6 +329,8 @@ function FMP_shortcode($atts, $content = ''){
 		global $wpdb;
 		$query = "SELECT ID FROM {$wpdb->posts} WHERE guid='$content'";
 		$id = $wpdb->get_var($query);
+		$moviefiletype = pathinfo(trim($content), PATHINFO_EXTENSION);
+		$flashcompatible = array("flv", "f4v", "mp4", "mov", "m4v");
 			
 		if ($id != "") { $encodevideo_info = kg_encodevideo_info(trim($content), $id); }
 		else { $encodevideo_info = kg_encodevideo_info(trim($content), 'singleurl'); }
@@ -383,8 +385,6 @@ function FMP_shortcode($atts, $content = ''){
 			$isAndroid = $uagent_obj->DetectAndroid(); //determine if we're running on an Android device
 			$isTierIphone = $uagent_obj->DetectTierIphone(); //determine if we're running on a mobile device that plays iPhone-optimized video
 			$moviefilebasename = pathinfo(trim($content), PATHINFO_FILENAME);
-			$moviefiletype = pathinfo(trim($content), PATHINFO_EXTENSION);
-			$flashcompatible = array("flv", "f4v", "mp4", "mov", "m4v");
 			$h264compatible = array("mp4", "mov", "m4v");
 			
 			$code = "<div id=\"flashcontent".$div_suffix."\">";

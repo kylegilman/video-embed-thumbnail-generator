@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, html5, shortcode, thumbnail, ffmpeg, embed, mobile, webm, ogg, h.264
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable tag: 2.0.4
+Stable tag: 2.0.5
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -113,12 +113,16 @@ Because I can't figure out how to do it. Windows works a little differently from
 
 == Changelog ==
 
+= 2.0.5 - April 20, 2012 =
+* Fixed "Wrong datatype for second argument" error on line 339 and subsequent automatic replacement of original videos with Mobile/H.264 versions whether they exist or not.
+
 = 2.0.4 - April 19, 2012 =
 * Once again changed the process checking for FFMPEG installations. Should be universal now.
 * Added setting to turn on vpre flags for users with installed versions of FFMPEG old enough that libx264 requires vpre flags to operate.
 * Added setting to replace the video attachment template with a page containing only the code necessary to display the video. Makes embedding your hosted videos on other sites easier.
 * Fixed progress bar for older versions of FFMPEG.
 * Added Flash fallback when OGV or WEBM videos are embedded.
+* Removed restriction on number of thumbnails that can be generated at once and added a cancel button while generating thumbnails.
 
 = 2.0.3 - February 24, 2012 =
 * When working with file formats that can't be embedded (WMV, AVI, etc) the option to embed the original file will be disabled if Mobile/H.264, WEBM, or OGV files are found.
