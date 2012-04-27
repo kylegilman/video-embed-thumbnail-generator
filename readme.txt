@@ -47,9 +47,9 @@ After you save the post, the thumbnail file will be registered in the Wordpress 
 
 `<iframe width="960" height="540" frameborder="0" scrolling="no" src="http://www.kylegilman.net/?attachment_id=1906"></iframe>`
 
-= If you want to further modify the way the Flash video player works, you can add the following options inside the [FMP] tag. These will override anything you’ve set in the plugin settings. =
+= If you want to further modify the way the video player works, you can add the following options inside the [FMP] tag. These will override anything you’ve set in the plugin settings. =
 
-* `poster="http://www.example.com/image.jpg"` sets the thumbnail
+* `poster="http://www.example.com/image.jpg"` sets the thumbnail.
 * `width="xxx"`
 * `height="xxx"`
 * `controlbar="docked/floating/none"` sets the controlbar position. HTML5 videos only respond to the "none" option.
@@ -58,6 +58,7 @@ After you save the post, the thumbnail file will be registered in the Wordpress 
 
 = These options will only affect Flash video elements. They will have no effect on HTML5 videos. =
 
+* `endofvideooverlay="http://www.example.com/end_image.jpg` sets the image shown when the video ends.
 * `autohide="true/false"` specify whether to autohide the control bar after a few seconds.
 * `playbutton="true/false"` turns the big play button overlay in the middle of the video on or off.
 * `streamtype="live/recorded/DVR"` I honestly don’t know what this is for.
