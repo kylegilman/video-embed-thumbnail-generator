@@ -154,7 +154,20 @@ function kg_insert_shortcode() {
 	}, "json" );
 
 	var shortcode = "";
-	if (document.getElementById('videotitle').value != "") { shortcode += '<strong>' + document.getElementById('videotitle').value + '</strong><br />'; }
+	if (document.getElementById('videotitle').value != "") {
+		var titlecode = unescape(document.getElementById('attachments[singleurl][kgflashmediaplayer-titlecode]').value);
+		titlecode=titlecode.replace(/\\'/g,'\'');
+		titlecode=titlecode.replace(/\\"/g,'"');
+		titlecode=titlecode.replace(/\\0/g,'\0');
+		titlecode=titlecode.replace(/\\\\/g,'\\');
+		if ( titlecode.substr(0,1) != '<' ) { titlecode = '<'+titlecode; }
+		if ( titlecode.substr(-1,1) != '>' ) { titlecode = titlecode+'>'; }
+		var endtitlecode = titlecode.replace('<', '</');
+		endtitlecode = endtitlecode.split(' ');
+		endtitlecode = endtitlecode[0];
+		if ( endtitlecode.substr(-1,1) != '>' ) { endtitlecode = endtitlecode+'>'; }
+		shortcode += titlecode + document.getElementById('videotitle').value + endtitlecode + '<br />';
+	}
 	if (url !="") {
 		shortcode += ' [FMP';
 		if (document.getElementById('attachments[singleurl][kgflashmediaplayer-poster]').value !="") { shortcode += ' poster="' + document.getElementById("attachments[singleurl][kgflashmediaplayer-poster]").value + '"'; }

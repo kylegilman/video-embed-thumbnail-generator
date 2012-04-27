@@ -3,8 +3,8 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/
 Tags: video, html5, shortcode, thumbnail, ffmpeg, embed, mobile, webm, ogg, h.264
 Requires at least: 3.0
-Tested up to: 3.3.1
-Stable tag: 2.0.5
+Tested up to: 3.3.2
+Stable tag: 2.0.6
 
 Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes.
 
@@ -112,6 +112,12 @@ Because I can't figure out how to do it. Windows works a little differently from
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 2.0.6 - April 27, 2012 =
+* Removed swfobject.js from the plugin package. Now using the one included with WordPress. WordPress 3.3.2 contains a security fix for swfobject.js and the plugin will use the fixed version if you have upgraded WordPress (which is highly recommended).
+* Added setting to customize the formatting of titles inserted by the plugin.
+* Added settings to display a custom image when videos end instead of the first frame of the video (Flash only).
+* Fixed problem with embedded FLV files giving message "Argument Error Ð Invalid parameter passed to method" when loading poster images.
 
 = 2.0.5 - April 20, 2012 =
 * Fixed "Wrong datatype for second argument" error on line 339 and subsequent automatic replacement of original videos with Mobile/H.264 versions whether they exist or not.
