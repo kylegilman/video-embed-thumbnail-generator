@@ -1,17 +1,17 @@
-.kg_video_gallery_thumb {
+.kgvid_video_gallery_thumb {
 	position: relative; 
 	display:inline-block; 
 	margin:10px; 
 }
 
-.kg_video_gallery_thumb img { 
+.kgvid_video_gallery_thumb img { 
 	width: 100%;
 	max-width:none !important; //fixes conflict with some themes
 	padding:0px; 
 	margins:0px; 
 }
 
-.kg_video_gallery_thumb span { 
+.kgvid_video_gallery_thumb span { 
 	position:absolute; 
 	padding-top:10px; 
 	bottom:4px; 
@@ -26,7 +26,7 @@
 	font-size:10pt;
 }
 
-#kg_GalleryVideo {
+#kgvid_GalleryVideo {
 	position:relative;
 	top:5px;
 	left:5px;
