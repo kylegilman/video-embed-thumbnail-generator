@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.5
 Tested up to: 3.5
-Stable tag: 3.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,7 +126,10 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
-= 3.0 - January 23, 2012 =
+= 3.0.1 - January 24, 2013 =
+* Fixed bug that inserted empty options into gallery shortcodes.
+
+= 3.0 - January 23, 2013 =
 * Updated to provide compatibility with several media changes in WordPress 3.5. With this version, thumbnail generating & video encoding will only work in WordPress 3.5 and above.
 * Added popup video gallery.
 * Changed shortcode tag to [KGVID]. Retained [FMP] for backwards compatibility.
@@ -227,6 +230,9 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 * First Release
 
 == Upgrade Notice ==
+
+= 3.0.1 =
+Fixes thumbnails & encodes in WP 3.5. Not compatible with earlier WP versions.
 
 = 3.0 =
 Fixes thumbnails & encodes in WP 3.5. Not compatible with earlier WP versions.
