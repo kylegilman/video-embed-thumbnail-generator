@@ -33,7 +33,7 @@ function kgvid_SetVideo(source, width, height) {
 	jQuery('#kgvid_GalleryPlayerDiv').closest('.ui-dialog').height(parseInt(height))
 	//jQuery('#kgvid_GalleryPlayerDiv').dialog("option", "height", parseInt(height)+30);
 	jQuery('#kgvid_GalleryPlayerDiv').dialog('open');
-	jQuery('.ui-widget-overlay').click(function () { $('#kgvid_GalleryPlayerDiv').dialog('close'); });
+	jQuery('.ui-widget-overlay').click(function () { jQuery('#kgvid_GalleryPlayerDiv').dialog('close'); });
 }
 
 function kgvid_video_counter(id, plays, ends, event) {
