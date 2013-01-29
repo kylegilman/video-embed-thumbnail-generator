@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 3.0.3	
+Version: 3.0.4	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -282,7 +282,7 @@ function kgvid_get_video_dimensions($video = false) {
 	
 	$video = str_replace("https://", "http://",  $video);
 
-	$command = $ffmpegPath . ' -i "' . $video . '" -codecs 2>&1';
+	$command = $ffmpegPath . ' -i "' . $video . '" 2>&1';
 
 	exec ( $command, $output );
 	$lastline = end($output);
@@ -300,6 +300,10 @@ function kgvid_get_video_dimensions($video = false) {
 		preg_match('/rotate          : (.*?)\n/', $output, $matches);
 		if ( array_key_exists(1, $matches) == true ) { $rotate = $matches[1]; }
 		else $rotate = "0";
+		
+		$command = $ffmpegPath . ' -i "' . $video . '" -codecs 2>&1';
+		exec ( $command, $output );
+		$output = implode("\n", $output);
 		$configuration = array();
 		$lib_list = array('libfaac', 'libvo_aacenc', 'libtheora', 'libvorbis', 'libvpx', 'libx264');
 		foreach ($lib_list as $lib) {
