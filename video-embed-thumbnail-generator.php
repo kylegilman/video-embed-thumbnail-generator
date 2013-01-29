@@ -536,11 +536,11 @@ function KGVID_shortcode($atts, $content = ''){
 		}
 
 		$code .= "<div id=\"video_".$div_suffix."_div\" class=\"kgvid_videodiv\">";
+		if ( $options['embed_method'] == "Video.js"  ) { $code .= "<div class='kgvid_watermark'><img src='http://www.kylegilman.net/dev/wp-content/uploads/2013/01/Camera-Noise-Logo-Transparent.png'></div>"; } //&& !empty($options['watermark'])
 		$code .= "<video id=\"video_".$div_suffix."\" ";
 		if ($query_atts["loop"] == 'true') { $code .= "loop " ;}
 		if ($query_atts["autoplay"] == 'true') { $code .= "autoplay " ;}
 		if ($query_atts["controlbar"] != 'none') { $code .= "controls " ;}
-		//if ($isAndroid) { $code .= "onclick='this.play();' "; }
 		$code .= "preload='metadata' ";
 		if($query_atts["poster"] != '' ) { $code .= "poster='".$query_atts["poster"]."' "; }
 		$code .= "width='".$query_atts["width"]."' height='".$query_atts["height"]."'";
@@ -569,7 +569,7 @@ function KGVID_shortcode($atts, $content = ''){
 		}
 		$code .= "</video>\n";
 		$code .= "</div>\n\n";
-		//if ( $options['embed_method'] == "Video.js" ) {	$code .= "<script type='text/javascript'>_V_('video_".$div_suffix."').ready(kgvid_set_mp4_src($JSON_mp4_srcs));</script>\n"; }
+
 		if ( $options['embed_method'] == "Video.js" ) {	
 			if ($id != "") { 
 				$plays = intval(get_post_meta($id, "_kgflashmediaplayer-starts", true));
@@ -581,15 +581,12 @@ function KGVID_shortcode($atts, $content = ''){
 			}
 			$aspect_ratio = round($query_atts["height"] / $query_atts["width"], 3);
 			
-			$volume_code = "";
-			if ( !empty($query_atts["volume"]) ) { $volume_code = "this.volume(".$query_atts['volume'].")"; }
-			
 			$code .= "<input type='hidden' id='".$div_suffix."_played' value='not_played'><script type='text/javascript'>
 			_V_('video_".$div_suffix."').ready(function(){
 			var width = document.getElementById(this.id).parentElement.offsetWidth;
-			if ( width < ".$query_atts["width"]." ) { this.width(width).height( width * ".$aspect_ratio." ); }
-			".$volume_code."
-			this.addEvent('play', function(){
+			if ( width < ".$query_atts["width"]." ) { this.width(width).height( Math.round(width * ".$aspect_ratio.") ); }";
+			if ( !empty($query_atts["volume"]) ) { $code .= "\n\t\t\t"."this.volume(".$query_atts['volume'].");"."\n\t\t\t"; }
+			$code .= "this.addEvent('play', function(){
 			kgvid_video_counter('".$div_suffix."', '".$plays."', '".$ends."', 'play');
 			if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', 'Play Start', '".get_the_title($id)."']); }
 			});

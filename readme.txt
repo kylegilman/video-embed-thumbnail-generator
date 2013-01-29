@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -125,6 +125,10 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 3.0.3 - January 29, 2013 =
+* Fixed bug that added a blank line to JavaScript embedded in the page if "volume" wasn't set in the short code (Video.js only).
+* If video player is set larger than the containing DIV and the player size is reduced to fit, the height is now rounded to the nearest integer.
 
 = 3.0.2 - January 24, 2013 =
 * Fixed bug that permanently disabled buttons on the Embed Video from URL tab.
