@@ -310,7 +310,6 @@ function kgvid_get_video_dimensions($video = false) {
 			if ( strpos($output, $lib) !== false ) { $configuration[$lib] = "true"; }
 			else { $configuration[$lib] = "false"; }
 		}
-
 		return array ('width' => $width, 'height' => $height, 'duration' => $duration, 'configuration' => $configuration, 'rotate' => $rotate, 'worked'=>true );
 	} else {
 		return array ('output'=>$lastline, 'worked'=>false);
@@ -791,7 +790,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page) {
 			if ( $encodevideo_info[$format.'_exists'] ) { //if the video file exists
 				if ( $format_stats['status'] != "encoding" ) { // not currently encoding
 					if ( $format_stats['status'] == "notchecked" ) { $meta[$format] = ' <strong>Encoded</strong>'; }
-					$meta[$format] .= '<a id="delete-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_delete_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\');" href="javascript:void(0)">Delete Permanently</a>';
+					if ( $format_stats['status'] != "canceling" ) { $meta[$format] .= '<a id="delete-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_delete_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\');" href="javascript:void(0)">Delete Permanently</a>'; }
 					$disabled[$format] = ' disabled title="Format already exists"';
 					$checked[$format] = '';
 				}
@@ -2311,7 +2310,6 @@ function kgvid_encode_videos() {
 				
 				$cmd = escapeshellcmd($ffmpegPath." ".$ffmpeg_args);
 				$cmd = $cmd." > ".$logfile." 2>&1 & echo $!";
-			
 				$process = new kgvid_Process($cmd);
 		
 				sleep(1);
@@ -2345,7 +2343,7 @@ function kgvid_encode_videos() {
 
 				//$encoding = $video['encode_formats'][$queued_format];
 	
-				//$embed_display .= " <em><small>".$cmd."</small></em>";
+				$embed_display .= "<script type='text/javascript'>alert('".$cmd."');</script>";
 				
 			} //end if there's stuff to encode
 
