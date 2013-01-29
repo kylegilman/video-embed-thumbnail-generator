@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) )
 	die( "Can't load this file directly" );
 	
 function kgvid_default_options_fn() {
-	$options = array("version"=>3.0,
+	$options = array("version"=>3.04,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"encode_1080"=>"on",
@@ -52,6 +52,7 @@ function kgvid_default_options_fn() {
 		"app_path"=>"/usr/local/bin",
 		"video_app" => "ffmpeg",
 		"ffmpeg_exists"=>"notchecked",
+		"video_bitrate_flag"=>false,
 		"ffmpeg_vpre"=>false,
 		"moov"=>"none",
 		"generate_thumbs"=>4,
@@ -174,8 +175,6 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 
 	if(function_exists('exec')) { 
 		$exec_enabled = true;
-		//$plugin_url = plugins_url("", __FILE__);
-		//$plugin_url = str_replace("https://", "http://",  $plugin_url);
 		exec ( $options['app_path'].'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'/flash/skin/images/PlayNormal.png '.$uploads['path'].'/ffmpeg_exists_test.jpg', $output, $returnvalue );
 	} 
 
@@ -377,6 +376,7 @@ class kgvid_Process{
 
 function kgvid_video_embed_enqueue_scripts() {
 	$options = get_option('kgvid_video_embed_options');
+	
 	if ( $options['embed_method'] == "Strobe Media Playback" ) {
 		wp_enqueue_script( 'swfobject' );
 	}
@@ -387,6 +387,7 @@ function kgvid_video_embed_enqueue_scripts() {
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css' );
 	}
 
+	wp_enqueue_style( 'kgvid_video_gallery', plugins_url("", __FILE__).'/css/kgvid_styles.css' );
 	wp_enqueue_script( 'jquery-ui-dialog' );
 	wp_enqueue_script( 'kgvid_video_embed', plugins_url("", __FILE__).'/js/kgvid_video_embed.js' );
 	wp_localize_script( 'kgvid_video_embed', 'ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) ); // setting ajaxurl
@@ -639,7 +640,6 @@ function KGVID_shortcode($atts, $content = ''){
 			}
 			$code .= '<div id="kgvid_GalleryPlayerDiv"><iframe id="kgvid_GalleryVideo" src="" width="640" height="360" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe></div>';
 			$code .=  '<script type="text/javascript">jQuery(document).ready(function() { 
-					jQuery(\'head\').append(\'<link rel="stylesheet" href="'.plugins_url("", __FILE__).'/css/kgvid_video_gallery.css" type="text/css" />\'); 
 					jQuery(\'#kgvid_GalleryPlayerDiv\').dialog({ 
 						zIndex: 10000, 
 						autoOpen: false, 
@@ -1027,6 +1027,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('encode_formats', 'Default Mobile/HTML5 Video encode formats:', 'kgvid_encode_formats_callback', __FILE__, 'kgvid_video_embed_plugin_settings');
 	add_settings_field('app_path', 'Path to applications on server:', 'kgvid_app_path_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'app_path' ) );
 	add_settings_field('video_app', 'Application for thumbnails & encoding:', 'kgvid_video_app_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'video_app' ) );
+	add_settings_field('video_bitrate_flag', 'FFMPEG Options:', 'kgvid_video_bitrate_flag_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'video_bitrate_flag' ) );
 	add_settings_field('ffmpeg_vpre', 'FFMPEG Options:', 'kgvid_ffmpeg_vpre_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'ffmpeg_vpre' ) );
 	add_settings_field('moov', 'Application to fix encoded H.264 headers for streaming:', 'kgvid_moov_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'moov' ) );
 	add_settings_field('generate_thumbs', 'Default number of thumbnails to generate:', 'kgvid_generate_thumbs_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
@@ -1102,6 +1103,13 @@ function kgvid_update_settings() {
 			$options['embed_method'] = "Strobe Media Playback";
 		}
 		
+		update_option('kgvid_video_embed_options', $options);	
+	}
+	
+	elseif ( $options['version'] < 3.04 ) {
+		$options['version'] = 3.04;
+		if ( $options['ffmpeg_vpre'] == "on" ) { $options['video_bitrate_flag'] = "on"; } //if user has ffmpeg_vpre turned on, they need the old bitrate flags too
+		else { $options['video_bitrate_flag'] = false; }
 		update_option('kgvid_video_embed_options', $options);	
 	}
 }
@@ -1185,6 +1193,11 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> <a class='kgvid_tooltip' href='#'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>FFMPEG split into two separate branches in 2011. The new branch is called LIBAV. Both are still actively developed. Debian & Ubuntu users probably have LIBAV installed.</span></a>";
+	}
+	
+	function kgvid_video_bitrate_flag_callback() {
+		$options = get_option('kgvid_video_embed_options');
+		echo "<input ".checked( $options['video_bitrate_flag'], "on", false )." id='video_bitrate_flag' name='kgvid_video_embed_options[video_bitrate_flag]' type='checkbox' /> <label for='video_bitrate_flag'>Enable legacy FFMPEG '-b' and '-ba' bitrate flags.</label> <a class='kgvid_tooltip' href='#'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Enable if your installed version of FFMPEG is old enough that you can't use the newer -b:v flags (Dreamhost users must turn this on). It will cause newer versions of FFMPEG to fail.</span></a>";
 	}
 	
 	function kgvid_ffmpeg_vpre_callback() {
@@ -2221,12 +2234,12 @@ function kgvid_encode_videos() {
 		
 			if ( ! file_exists($encodevideo_info['encodepath']) ) { mkdir($encodevideo_info['encodepath']); }
 			
-			if ( $options['video_app'] == "avconv" ) { 
+			if ( $options['video_app'] == "avconv" || $options['video_bitrate_flag'] == false ) { 
 				$video_bitrate_flag = "b:v";
 				$audio_bitrate_flag = "b:a";
 			}
 			
-			if ( $options['video_app'] == "ffmpeg" ) { 
+			else { 
 				$video_bitrate_flag = "b";
 				$audio_bitrate_flag = "ab";
 			}
@@ -2309,7 +2322,11 @@ function kgvid_encode_videos() {
 				$logfile = $encodevideo_info['encodepath'].str_replace(" ", "_", $encodevideo_info['moviefilebasename'])."_".$queued_format."_".sprintf("%04s",mt_rand(1, 1000))."_encode.txt";
 				
 				$cmd = escapeshellcmd($ffmpegPath." ".$ffmpeg_args);
-				$cmd = $cmd." > ".$logfile." 2>&1 & echo $!";
+				if ( !empty($cmd) ) { $cmd = $cmd." > ".$logfile." 2>&1 & echo $!"; }
+				else {
+					$arr = array ( "embed_display"=>"<span style='color:red;'>Error: Command escapeshellcmd is disabled.</span>" );
+					return $arr;
+				} 
 				$process = new kgvid_Process($cmd);
 		
 				sleep(1);
@@ -2319,7 +2336,7 @@ function kgvid_encode_videos() {
 
 				$args = array('logfile'=>$logfile);
 				wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);
-				//wp_schedule_single_event(time()+604800, 'kgvid_cleanup_queue');
+				wp_schedule_event( time()+86400, 'daily', 'kgvid_cleanup_queue');
 				
 				//update_post_meta($video['attachmentID'], '_kgflashmediaplayer-encode'.$format, 'on');
 
@@ -2341,10 +2358,8 @@ function kgvid_encode_videos() {
 				);
 
 				$video_embed_queue[$video_key] = $queue_entry;
-
-				//$encoding = $video['encode_formats'][$queued_format];
 	
-				$embed_display .= "<script type='text/javascript'>alert('".$ffmpegPath." ".$ffmpeg_args."');</script>";
+				//$embed_display .= "<script type='text/javascript'>alert('".$ffmpegPath." ".$ffmpeg_args."');</script>";
 				
 			} //end if there's stuff to encode
 
@@ -2530,7 +2545,7 @@ function kgvid_ajax_encode_progress() {
 }
 add_action('wp_ajax_kgvid_encode_progress', 'kgvid_ajax_encode_progress');
 
-function kgvid_clear_completed_queue() {
+function kgvid_clear_completed_queue($type) {
 
 	$video_embed_queue = get_option('kgvid_video_embed_queue');
 	
@@ -2545,6 +2560,12 @@ function kgvid_clear_completed_queue() {
 					if ( $value['status'] == "queued" || $value['status'] == "encoding" ) {
 						$keep[$video_key] = true;
 						break;
+					}
+					if ( $type == "scheduled" && $value['status'] == "Encoding Complete" ) {
+						if ( time() - intval($value['ended']) < 604800 ) { //if it finished less than a week ago
+							$keep[$video_key] = true;
+							break;
+						}
 					}
 				}
 			}
@@ -2565,7 +2586,7 @@ function kgvid_ajax_clear_completed_queue() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 	global $wpdb;
-	kgvid_clear_completed_queue();
+	kgvid_clear_completed_queue('manual');
 	$table = kgvid_generate_queue_table();	
 	echo ($table);
 	die();
@@ -2591,6 +2612,11 @@ function kgvid_ajax_clear_queue_entry() {
 }
 add_action('wp_ajax_kgvid_clear_queue_entry', 'kgvid_ajax_clear_queue_entry');
 
+function kgvid_cleanup_queue_handler() {
+	kgvid_clear_completed_queue('scheduled');
+}
+add_action('kgvid_cleanup_queue', 'kgvid_cleanup_queue_handler');
+
 function kgvid_fix_moov_atom($video_key, $format) {
 
 	$options = get_option('kgvid_video_embed_options');
@@ -2613,10 +2639,7 @@ function kgvid_fix_moov_atom($video_key, $format) {
 		if ( $options['moov'] == 'MP4Box' ) {
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." -inter 500 ".$filepath);
 			exec($cmd);
-		}//if MP4Box is selected	
-		
-		//$video_embed_queue[$video_key][$format]['status'] = "moov_fixed";
-		//update_option('kgvid_video_embed_options');
+		}//if MP4Box is selected
 			
 	}//if there is an application selected for fixing moov atoms on libx264-encoded files.
 
@@ -2688,5 +2711,10 @@ function kgvid_count_play() {
 	echo 'ajax submitted';
 	die(); // stop executing script
 }
+
+function kgvid_deactivate() {
+	wp_clear_scheduled_hook('kgvid_cleanup_queue');
+}
+register_deactivation_hook( __FILE__, 'kgvid_deactivate' );
 
 ?>

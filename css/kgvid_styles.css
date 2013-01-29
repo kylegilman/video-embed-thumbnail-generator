@@ -1,3 +1,13 @@
+div.kgvid_watermark {
+	display: block;
+	position: absolute;
+	bottom: 25px;
+	right: 5px;
+	z-index: 1001;
+	margin: 0px;
+}
+
+
 .kgvid_video_gallery_thumb {
 	position: relative; 
 	display:inline-block; 
