@@ -2319,6 +2319,7 @@ function kgvid_encode_videos() {
 
 				$args = array('logfile'=>$logfile);
 				wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);
+				//wp_schedule_single_event(time()+604800, 'kgvid_cleanup_queue');
 				
 				//update_post_meta($video['attachmentID'], '_kgflashmediaplayer-encode'.$format, 'on');
 
@@ -2343,7 +2344,7 @@ function kgvid_encode_videos() {
 
 				//$encoding = $video['encode_formats'][$queued_format];
 	
-				$embed_display .= "<script type='text/javascript'>alert('".$cmd."');</script>";
+				$embed_display .= "<script type='text/javascript'>alert('".$ffmpegPath." ".$ffmpeg_args."');</script>";
 				
 			} //end if there's stuff to encode
 
