@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 3.0.4	
+Version: 3.1	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) )
 	die( "Can't load this file directly" );
 	
 function kgvid_default_options_fn() {
-	$options = array("version"=>3.04,
+	$options = array("version"=>3.1,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"encode_1080"=>"on",
@@ -58,6 +58,7 @@ function kgvid_default_options_fn() {
 		"generate_thumbs"=>4,
 		"titlecode"=>"<strong>",
 		"poster"=>"",
+		"watermark"=>"",
 		"width"=>"640",
 		"height"=>"360",
 		"gallery_width"=>"960",
@@ -418,6 +419,7 @@ function KGVID_shortcode($atts, $content = ''){
 						  'controlbar' => $options['controlbar_style'],
 						  'autohide' => $options['autohide'],
 						  'poster' => $options['poster'],
+						  'watermark' => $options['watermark'],
 						  'endOfVideoOverlay' => $options['endOfVideoOverlay'],
 						  'endOfVideoOverlaySame' => $options['endOfVideoOverlaySame'],
 						  'playbutton' => $options['playbutton'],
@@ -535,12 +537,7 @@ function KGVID_shortcode($atts, $content = ''){
 		
 		$code = "";
 
-		if ($id !="") {
-			if ( !empty($attachment_info->post_excerpt) ) { $code .= '<div id="attachment_'.$id.'" class="wp-caption alignnone">'; }
-		}
-
 		$code .= "<div id=\"video_".$div_suffix."_div\" class=\"kgvid_videodiv\">";
-		if ( $options['embed_method'] == "Video.js"  ) { $code .= "<div class='kgvid_watermark'><img src='http://www.kylegilman.net/dev/wp-content/uploads/2013/01/Camera-Noise-Logo-Transparent.png'></div>"; } //&& !empty($options['watermark'])
 		$code .= "<video id=\"video_".$div_suffix."\" ";
 		if ($query_atts["loop"] == 'true') { $code .= "loop " ;}
 		if ($query_atts["autoplay"] == 'true') { $code .= "autoplay " ;}
@@ -585,9 +582,10 @@ function KGVID_shortcode($atts, $content = ''){
 			}
 			$aspect_ratio = round($query_atts["height"] / $query_atts["width"], 3);
 			
-			$code .= "<input type='hidden' id='".$div_suffix."_played' value='not_played'><script type='text/javascript'>
-			_V_('video_".$div_suffix."').ready(function(){
-			var width = document.getElementById(this.id).parentElement.offsetWidth;
+			$code .= "<script type='text/javascript'>
+			_V_('video_".$div_suffix."').ready(function(){";
+			if ( !empty($query_atts["watermark"]) ) { $code .= "\n\t\t\t"."jQuery('#video_".$div_suffix."').prepend(\"<div class='kgvid_watermark'><img src='".$query_atts["watermark"]."'></div>\");"."\n\t\t\t"; }
+			$code .= "var width = document.getElementById(this.id).parentElement.offsetWidth;
 			if ( width < ".$query_atts["width"]." ) { this.width(width).height( Math.round(width * ".$aspect_ratio.") ); }";
 			if ( !empty($query_atts["volume"]) ) { $code .= "\n\t\t\t"."this.volume(".$query_atts['volume'].");"."\n\t\t\t"; }
 			$code .= "this.addEvent('play', function(){
@@ -602,12 +600,12 @@ function KGVID_shortcode($atts, $content = ''){
 			</script>\n"; 
 		}
 	
-		if ($id !="") {
+		/* if ($id !="") {
 		   $iframeurl = site_url('/')."?attachment_id=".$id;
 		   $iframecode = '<iframe src="'.$iframeurl.'" frameborder="0" scrolling="no" width="'.$query_atts['width'].'" height="'.$query_atts["height"].'"></iframe>';
 		   $code .= "<div class='kgvid_embed_code' type='text' value='".$iframecode."' width='10' onClick='this.select();'></div>\n";
 		   if ( !empty($attachment_info->post_excerpt) ) { $code .= '<p class="wp-caption-text">'.$attachment_info->post_excerpt.'</p></div>'; }
-		}
+		} */
 			
 		if ( in_array($moviefiletype, $flashcompatible) && $options['embed_method'] == "Strobe Media Playback" ) { 
 			$code .= "<script type=\"text/javascript\">\n\t";
@@ -714,13 +712,14 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page) {
 	
 		if ( is_numeric($post_id) ) { 
 			$post_mime_type = get_post_mime_type($post_id);
+			if ( $post_mime_type == "video/m4v" || $post_mime_type == "video/quicktime" ) { $post_mime_type = "video/mp4"; }
 			$actualwidth = get_post_meta($post_id, "_kgflashmediaplayer-actualwidth", true);
 			$actualheight = get_post_meta($post_id, "_kgflashmediaplayer-actualheight", true);
 		}
 		else {
 			
 			$post_mime_type = pathinfo($movieurl, PATHINFO_EXTENSION);
-			if ( $post_mime_type == "m4v" ) { $post_mime_type = "mp4"; }
+			if ( $post_mime_type == "m4v" || $post_mime_type == "mov" ) { $post_mime_type = "mp4"; }
 
 			if ( !empty($video_embed_queue) ) {
 				foreach ($video_embed_queue as $video_key => $video_entry) {
@@ -995,7 +994,8 @@ function kgvid_FMPOptionsPage() {
 		<?php settings_fields('kgvid_video_embed_options'); ?>
 		<?php do_settings_sections(__FILE__); ?>
      	<p class='submit'>
-   		   <?php submit_button('Save Changes', 'primary', 'submit', false); submit_button('Reset Options', 'secondary', 'video-embed-thumbnail-generator-reset', false); ?>
+   		   <?php submit_button('Save Changes', 'primary', 'submit', false); ?>
+   		   <?php submit_button('Reset Options', 'secondary', 'video-embed-thumbnail-generator-reset', false); ?>
    		</p>
 		</form>
 		<script type="text/javascript">
@@ -1033,6 +1033,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('generate_thumbs', 'Default number of thumbnails to generate:', 'kgvid_generate_thumbs_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
 	add_settings_field('titlecode', 'Video Title Text HTML Formatting:', 'kgvid_titlecode_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
 	add_settings_field('poster', 'Poster image:', 'kgvid_poster_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
+	add_settings_field('watermark', 'Watermark image:', 'kgvid_watermark_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
 	add_settings_field('width', 'Max video width:', 'kgvid_width_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('height', 'Max video height:', 'kgvid_height_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'height' ) );
 	add_settings_field('gallery_width', 'Max gallery video width:', 'kgvid_gallery_width_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
@@ -1106,10 +1107,11 @@ function kgvid_update_settings() {
 		update_option('kgvid_video_embed_options', $options);	
 	}
 	
-	elseif ( $options['version'] < 3.04 ) {
-		$options['version'] = 3.04;
+	elseif ( $options['version'] < 3.1 ) {
+		$options['version'] = 3.1;
 		if ( $options['ffmpeg_vpre'] == "on" ) { $options['video_bitrate_flag'] = "on"; } //if user has ffmpeg_vpre turned on, they need the old bitrate flags too
 		else { $options['video_bitrate_flag'] = false; }
+		$options['watermark'] = "";
 		update_option('kgvid_video_embed_options', $options);	
 	}
 }
@@ -1229,6 +1231,11 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	function kgvid_poster_callback() {
 		$options = get_option('kgvid_video_embed_options');
 		echo "<input id='poster' name='kgvid_video_embed_options[poster]' size='60' type='text' value='".$options['poster']."' />";
+	}
+	
+	function kgvid_watermark_callback() {
+		$options = get_option('kgvid_video_embed_options');
+		echo "<input id='watermark' name='kgvid_video_embed_options[watermark]' size='60' type='text' value='".$options['watermark']."' />";
 	}
 	
 	function kgvid_width_callback() {
@@ -1689,7 +1696,7 @@ class kgInsertMedia {
         $attachment['poster'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster", true);
         $attachment['width'] = get_post_meta($attachment_id, "_kgflashmediaplayer-width", true);
         $attachment['height'] = get_post_meta($attachment_id, "_kgflashmediaplayer-height", true);
-        $attachment['downloadlink'] = get_post_meta($attachment_id, "_kgflashmediaplayer-download", true);
+        $attachment['downloadlink'] = get_post_meta($attachment_id, "_kgflashmediaplayer-downloadlink", true);
         $attachment['showtitle'] = get_post_meta($attachment_id, "_kgflashmediaplayer-showtitle", true);
         if ($attachment['showtitle'] =="checked") {
 		$titlecode = html_entity_decode(stripslashes($options['titlecode']));
@@ -1925,12 +1932,6 @@ function kgvid_schedule_cleanup_generated_files() { //schedules deleting all tmp
 		wp_unschedule_event($timestamp, 'kgvid_cleanup_generated_logfiles' );
 		$args = array('logfile'=>$_POST['logfile']);
 		wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);	
-	}
-	
-	if (isset($_POST['queue'])) { 
-		$timestamp = wp_next_scheduled( 'kgvid_cleanup_queue' );
-		wp_unschedule_event($timestamp, 'kgvid_cleanup_queue' );
-		wp_schedule_single_event(time()+86400, 'kgvid_cleanup_queue');
 	}
 	
 	die(); // this is required to return a proper result
@@ -2336,7 +2337,9 @@ function kgvid_encode_videos() {
 
 				$args = array('logfile'=>$logfile);
 				wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);
-				wp_schedule_event( time()+86400, 'daily', 'kgvid_cleanup_queue');
+				if ( !wp_next_scheduled( 'kgvid_cleanup_queue' ) ) {
+					wp_schedule_event( time()+86400, 'daily', 'kgvid_cleanup_queue');
+				}
 				
 				//update_post_meta($video['attachmentID'], '_kgflashmediaplayer-encode'.$format, 'on');
 
@@ -2714,6 +2717,7 @@ function kgvid_count_play() {
 
 function kgvid_deactivate() {
 	wp_clear_scheduled_hook('kgvid_cleanup_queue');
+	delete_option('kgvid_video_embed_queue');
 }
 register_deactivation_hook( __FILE__, 'kgvid_deactivate' );
 

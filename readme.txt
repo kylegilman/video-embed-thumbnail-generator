@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 3.0.3
+Stable tag: 3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 
 = These options will only affect Video.js playback =
 
+* `watermark="http://www.example.com/image.png"` sets watermark for video. Overrides default watermark in plugin settings.
 * `skin="example-css-class"` Completely change the look of the video player. <a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">Instructions here.</a>
 * `volume="0.5"` Pre-set the volume for unusually loud videos. Value between 0 and 1.
 
@@ -125,6 +126,20 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 3.1 - January 29, 2013 =
+* Added video watermark overlay option. (Video.js only)
+* Changed front-end CSS file name to kgvid_styles.css and made it always available, not just when galleries are on the page.
+* Removed my watermark testing logo which was accidentally inserted above videos in version 3.0.3.
+* Added option to choose -b:v or legacy -b flags when encoding. Recent FFMPEG versions only accept -b:v.
+* Added automatic encode queue cleanup. Any completed entry older than a week will be removed.
+* Added deactivation hook to remove queue and scheduled queue cleanup on deactivation.
+* Added uninstall.php to remove settings from the database on uninstall.
+* Disabled "Delete Permanently" link while encoding is canceling.
+* Checked for escapeshellcmd. If it's disabled on the server, encoding can't start.
+* Fixed insert title and download link checkboxes. They will actually insert something now.
+* Changed method for determining if a video has been played or paused and played again, for counting purposes.
+* Fixed check for mime type when generating H.264 video encode checkboxes to avoid showing options for QuickTime files that are higher resolution than the original video.
 
 = 3.0.3 - January 29, 2013 =
 * Fixed bug that added a blank line to JavaScript embedded in the page if "volume" wasn't set in the short code (Video.js only).

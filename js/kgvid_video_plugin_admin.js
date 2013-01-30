@@ -358,11 +358,13 @@ function kgvid_encode_queue(action, order) {
 function kgvid_hide_plugin_settings(selected_option) {
 	if (selected_option == "Video.js") {
 		jQuery("table:contains(End of video image)").hide();
+		jQuery("tr:contains(Watermark)").show();
 		jQuery("h3:contains(The following options will only affect Flash playback)").hide();
 		jQuery("tr:contains(Skin Class)").show();
 	}
 	if (selected_option == "Strobe Media Playback") {
 		jQuery("table:contains(End of video image)").show();
+		jQuery("tr:contains(Watermark)").hide();
 		jQuery("h3:contains(The following options will only affect Flash playback)").show();
 		jQuery("tr:contains(Skin Class)").hide();
 	}

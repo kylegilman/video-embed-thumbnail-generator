@@ -1,12 +1,15 @@
 div.kgvid_watermark {
 	display: block;
 	position: absolute;
-	bottom: 25px;
-	right: 5px;
+	bottom: 10px;
+	right: 10px;
 	z-index: 1001;
 	margin: 0px;
 }
 
+.vjs-controls {
+	z-index:1002;
+}
 
 .kgvid_video_gallery_thumb {
 	position: relative; 
