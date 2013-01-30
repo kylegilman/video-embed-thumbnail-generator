@@ -127,7 +127,7 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
-= 3.1 - January 29, 2013 =
+= 3.1 - January 30, 2013 =
 * Added video watermark overlay option. (Video.js only)
 * Changed front-end CSS file name to kgvid_styles.css and made it always available, not just when galleries are on the page.
 * Removed my watermark testing logo which was accidentally inserted above videos in version 3.0.3.
