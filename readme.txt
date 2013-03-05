@@ -2,7 +2,7 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
-Requires at least: 3.5
+Requires at least: 3.2
 Tested up to: 3.5.1
 Stable tag: 3.1
 License: GPLv2 or later
@@ -126,6 +126,28 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 3.2 - February 16, 2013 =
+* Added backwards compatibility for WordPress versions 3.2 and above.
+* Redesigned settings page to save through AJAX, and added a sample video player so changes are seen immediately.
+* Added options to display video title and embed code overlays on video player, and captions and view counts below videos.
+* Added option for a video attachment page that modifies the user's attachment template to display the video instead of WordPress's default behavior of just showing the title of the video. 
+* Added watermark, view counts, volume attribute, and Google Analytics event tracking for Strobe Media Playback player. (Note: watermark shows on top of controls in Strobe Media Playback. I can't fix this.)
+* Added alignment option to center or right justify videos.
+* Revised video player setup to properly resize the video player and resize again if the window size changes (or orientation changes on Android).
+* If Strobe Media Playback player is selected, the Video.js player is used for situations where Flash doesn't work (webm, ogg playback) instead of the ugly default browser players.
+* No matter which player is selected, iOS now displays the built-in controls so AirPlay works.
+* Added schema.org videoobject markup for better SEO.
+* Fixed FLV embedding with Video.js player and improved selection of embedded formats for Strobe Media Playback.
+* Adjusted video gallery CSS for better margins.
+* Adjusted watermark CSS so the logo doesn't overwhelm small videos.
+* Set Video.js controls to fade out on autoplay and on iOS, without having to mouseover the video.
+* Fixed endless "loading" spinner shown at the end of videos in some browsers in Video.js player.
+* Clicking Insert into post immediately after upload without changing any options now inserts shortcode instead of just the title of the video.
+* Inserting shortcode without a thumbnail no longer attempts to save the nonexistent thumbnail. Thumbnail cleanup is handled better.
+* Escaped all shell commands for increased security and added check for escapeshellcmd function.
+* Fixed missing argument for kgvid_clear_completed_queue() when scheduling cleanup.
+* Fixed broken uninstall.php
 
 = 3.1 - January 30, 2013 =
 * Added video watermark overlay option. (Video.js only)

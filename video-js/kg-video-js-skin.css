@@ -241,7 +241,7 @@
 ---------------------------------------------------------*/
 .kg-video-js-skin .vjs-big-play-button {
   display: block; /* Start hidden */ z-index: 2;
-  position: absolute; top: 50%; left: 50%; width: 8.0em; height: 8.0em; margin: -42px 0 0 -42px; text-align: center; vertical-align: center; cursor: pointer !important;
+  position: absolute; top: 49%; left: 49%; width: 8.0em; height: 8.0em; margin: -42px 0 0 -42px; text-align: center; vertical-align: center; cursor: pointer !important;
   border: 0.8em solid #fff; opacity: 0.7;
   -webkit-border-radius: 50px; -moz-border-radius: 50px; border-radius: 50px;
 

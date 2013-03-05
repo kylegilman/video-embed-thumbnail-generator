@@ -1,20 +1,129 @@
-div.kgvid_watermark {
+.kgvid_wrapper {
+	margin: 1em 0px;
+	width:100%;
+}
+
+.kgvid_videodiv {
+	position: relative;
+}
+
+.kgvid_watermark img {
 	display: block;
 	position: absolute;
-	bottom: 10px;
-	right: 10px;
+	bottom: 7%;
+	right: 5%;
 	z-index: 1001;
 	margin: 0px;
+	max-width: 10%;
 }
 
 .vjs-controls {
 	z-index:1002;
 }
 
+.kgvid_ios_novideo {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index:1003;
+	width: 71px;
+	height: 71px;
+	background-image: url(images/ios_novideo.png);
+}
+
+.kgvid_video_meta {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	line-height: normal;
+	color: white;
+	display: block;
+	position: absolute;
+	top: 0px;
+	z-index: 1003;
+	margin: 0px;
+	width: 100%;
+	height: 32px;
+	background: #242424; /* Old browsers */
+	background: -moz-linear-gradient(top, #242424 50%, #1f1f1f 50%, #171717 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(50%,#242424), color-stop(50%,#1f1f1f), color-stop(100%,#171717)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #242424 50%,#1f1f1f 50%,#171717 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #242424 50%,#1f1f1f 50%,#171717 100%); /* Opera11.10+ */
+	background: -ms-linear-gradient(top, #242424 50%,#1f1f1f 50%,#171717 100%); /* IE10+ */
+	/* Filter was causing a lot of weird issues in IE. Elements would stop showing up, or other styles would break. */
+	/*filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#242424', endColorstr='#171717',GradientType=0 );*/ /* IE6-9 */
+	background: linear-gradient(top, #242424 50%,#1f1f1f 50%,#171717 100%); /* W3C */
+	visibility: hidden;
+ 	opacity: 0;
+ 	-webkit-transition: visibility 1s linear, opacity 1s linear; 
+ 	-moz-transition: visibility 1s linear, opacity 1s linear; 
+ 	-o-transition: visibility 1s linear, opacity 1s linear;
+}
+
+.kgvid_video_meta_hover {
+	opacity: 1;
+	visibility: visible;
+}
+
+.kgvid_video_meta div {
+	display:inline-block;
+	margin: 6px;
+}
+
+.kgvid_title {
+	height: 18px;
+	font-size: 10pt;
+	overflow: hidden;
+	padding-top: 1px;
+	padding-left: 4px;
+}
+
+#content .kgvid_video_meta input { //clears some settings that the #content ID would otherwise override
+	font: inherit;
+	color: #eee;
+	line-height: 1.6em;
+}
+
+.kgvid_video_meta input {
+	color: #eee;
+	width: 100px;
+	font: 10px "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+	line-height: 1.6em;
+	background-color: #999;
+	border: none;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	padding: 2px;
+}
+
+.kgvid_share {
+	font-size: 10px;
+	float: right;
+}
+
+.kgvid_below_video {
+	margin: 2px 6px 0px 4px;
+	min-height: 20px;
+	clear: both;
+}
+
+.kgvid_below_video div {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.kgvid-viewcount {
+	float: right;
+}
+
+.kgvid-caption {
+	font-size: 85%;
+	font-style: italic;
+}
+
 .kgvid_video_gallery_thumb {
 	position: relative; 
 	display:inline-block; 
-	margin:10px; 
+	margin:10px;
+	cursor: pointer; !important
 }
 
 .kgvid_video_gallery_thumb img { 
@@ -60,7 +169,7 @@ div.kgvid_watermark {
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; left:10px; top:-10px; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close:hover, .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
-.kgvid_gallery .ui-dialog .ui-dialog-content { position: relative; border: 0; padding: 0px; background: none; overflow: hidden; zoom: 1; }
+.kgvid_gallery .ui-dialog .ui-dialog-content { position: relative; border: 0; padding-top: 5px; padding-left: 5px; padding-bottom: 3px; background: none; overflow: hidden; zoom: 1; }
 .kgvid_gallery .ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }
 .kgvid_gallery .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
 .kgvid_gallery .ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }
