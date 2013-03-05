@@ -149,7 +149,7 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 * Fixed missing argument for kgvid_clear_completed_queue() when scheduling cleanup.
 * Fixed broken uninstall.php
 
-= 3.1 - March 5, 2013 =
+= 3.1.1 - March 5, 2013 =
 * Fixed missing ) in uninstall.php
 
 = 3.1 - January 30, 2013 =
