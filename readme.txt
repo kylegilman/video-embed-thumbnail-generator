@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.2
 Tested up to: 3.5.1
-Stable tag: 3.1
+Stable tag: 3.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -148,6 +148,9 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 * Escaped all shell commands for increased security and added check for escapeshellcmd function.
 * Fixed missing argument for kgvid_clear_completed_queue() when scheduling cleanup.
 * Fixed broken uninstall.php
+
+= 3.1 - March 5, 2013 =
+* Fixed missing ) in uninstall.php
 
 = 3.1 - January 30, 2013 =
 * Added video watermark overlay option. (Video.js only)
