@@ -58,6 +58,7 @@ function kgvid_default_options_fn() {
 		"ffmpeg_vpre"=>false,
 		"moov"=>"none",
 		"generate_thumbs"=>4,
+		"featured"=>"on",
 		"titlecode"=>"<strong>",
 		"poster"=>"",
 		"watermark"=>"",
@@ -222,7 +223,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 	$moviefilepath = str_replace(" ", "%20", $movieurl);
 	$video_formats = kgvid_video_formats();
 
-	if ( is_numeric($postID) ) { //if it's an attachment, not from URL
+	if ( get_post_type($postID) == "attachment" ) { //if it's an attachment, not from URL
 		$moviefile = get_attached_file($postID);
 		$path_parts = pathinfo($moviefile);
 		$encodevideo_info['encodepath'] = $path_parts['dirname']."/";
@@ -272,15 +273,31 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 		}
 
 		if ( !$encodevideo_info['sameserver'] ) { //last resort if it's not on the same server, check url_exists
-			if ( !file_exists($encodevideo_info[$format.'filepath']) ) { 
-				if ( kgvid_url_exists($movieurl_noextension.$format_stats['suffix']) ) { 
-					$encodevideo_info[$format.'_exists'] = true;
-					$encodevideo_info[$format.'url'] = $movieurl_noextension.$format_stats['suffix']; ;
+
+			if ( !file_exists($encodevideo_info[$format.'filepath']) ) {
+				$already_checked_url = get_post_meta($postID, '_kgflashmediaplayer-'.$encodevideo_info['moviefilebasename'].'-'.$format, true);
+				if ( empty($already_checked_url) ) {
+					if ( kgvid_url_exists($movieurl_noextension.$format_stats['suffix']) ) { 
+						$encodevideo_info[$format.'_exists'] = true;
+						$encodevideo_info[$format.'url'] = $movieurl_noextension.$format_stats['suffix'];
+						update_post_meta($postID, '_kgflashmediaplayer-'.$encodevideo_info['moviefilebasename'].'-'.$format, $encodevideo_info[$format.'url']);
+					}
+					else { 
+						$encodevideo_info[$format.'_exists'] = false; 
+						update_post_meta($postID, '_kgflashmediaplayer-'.$encodevideo_info['moviefilebasename'].'-'.$format, 'not found');
+					}
 				}
-				else { $encodevideo_info[$format.'_exists'] = false; }
+				else {
+					
+					if ( substr($already_checked_url, 0, 4) == 'http' ) { //if it smells like a URL...
+						$encodevideo_info[$format.'_exists'] = true;
+						$encodevideo_info[$format.'url'] = $already_checked_url;
+					}
+					else { $encodevideo_info[$format.'_exists'] = false; }
+				}
 			}
-		}
-	}
+		}//end if not on same server
+	}//end loop
 
 	return $encodevideo_info;
 }
@@ -530,7 +547,7 @@ function KGVID_shortcode($atts, $content = ''){
 		}
 		else { //video is not in the database
 			$div_suffix = substr(uniqid(rand(), true),0,4);
-			$encodevideo_info = kgvid_encodevideo_info($content, 'singleurl');
+			$encodevideo_info = kgvid_encodevideo_info($content, $post_ID); //send the id of the post the video's embedded in
 			if ( $query_atts['title'] == "true" ) { 
 				$query_atts['title'] = "false";  
 			}
@@ -626,7 +643,7 @@ function KGVID_shortcode($atts, $content = ''){
 		$code .= "width='".$query_atts["width"]."' height='".$query_atts["height"]."'";
 		//if ( $options['embed_method'] == "Video.js" ) {
 			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
-			if ( !empty($atts) ) {
+			if ( is_array($atts) ) {
 				if ( array_key_exists('skin', $atts) ) { $options['js_skin'] = $atts['skin']; } //allows user to set skin for individual videos using the skin="" attribute
 			}
 			$code .= " class='video-js ".$options['js_skin']."' data-setup='{}'"; 
@@ -1133,6 +1150,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('ffmpeg_options', 'FFMPEG Options:', 'kgvid_ffmpeg_options_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'video_bitrate_flag' ) );
 	add_settings_field('moov', 'Application to fix encoded H.264 headers for streaming:', 'kgvid_moov_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'moov' ) );
 	add_settings_field('generate_thumbs', 'Default number of thumbnails to generate:', 'kgvid_generate_thumbs_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
+	add_settings_field('featured', 'Featured Post Image:', 'kgvid_featured_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
 	add_settings_field('titlecode', 'Video title text HTML formatting:', 'kgvid_titlecode_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
 	add_settings_field('template', 'Attachment template filter:', 'kgvid_template_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template_gentle' ) );
 	
@@ -1243,6 +1261,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<div class='kgvid_video_app_required'>"; 
 		echo "<input class='small-text' id='generate_thumbs' name='kgvid_video_embed_options[generate_thumbs]' maxlength='2' type='text' value='".strval($options['generate_thumbs'])."' />";
 		echo "</div>";
+	}
+	
+	function kgvid_featured_callback() {
+		$options = get_option('kgvid_video_embed_options');
+		echo "<input ".checked( $options['featured'], "on", false )." id='featured' name='kgvid_video_embed_options[featured]' type='checkbox' /> <label for='featured'>Set video thumbnail as featured post image.</label>";
 	}
 	
 	function kgvid_titlecode_callback() {
@@ -1432,6 +1455,7 @@ function kgvid_update_settings() {
 			$options['overlay_embedcode'] = false;
 			$options['view_count'] = false;
 			$options['align'] = "left";
+			$options['featured'] = "on";
 			$checkbox_convert = array ( "autohide", "endOfVideoOverlaySame", "playbutton", "loop", "autoplay", "title", "embedcode");
 			foreach ( $checkbox_convert as $option ) {
 				if ( $options[$option] == "true" ) { $options[$option] = "on"; } //some checkboxes were incorrectly set to "true" in older versions
@@ -1596,6 +1620,11 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		}
 		
 		$forcefirstchecked = get_post_meta($post->ID, "_kgflashmediaplayer-forcefirst", true);
+		
+		$featuredchecked = get_post_meta($post->ID, "_kgflashmediaplayer-featured", true);
+		if ( empty($featuredchecked) ) { $featuredchecked = $options['featured']; }
+		if ( $featuredchecked == "on" ) { $featuredchecked = "checked"; }
+		else { $featuredchecked = ""; }
 	
 		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.strtoupper($options['video_app']).' not found at '.$options['app_path'].'"'; }
 		else { $ffmpeg_disabled_text = ""; }
@@ -1619,8 +1648,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		<input id="attachments-'. $post->ID .'-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$numberofthumbs_value.'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.'/>
 		<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
 		<input type="button" id="attachments-'. $post->ID .'-thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kgvid_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/> <br />
-		<input type="checkbox" id="attachments-'. $post->ID .'-firstframe" name="attachments['.$post->ID.'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" value="checked" '.$forcefirstchecked.' '.$ffmpeg_disabled_text.'/>
-		<label for="attachments-'. $post->ID .'-firstframe">Force 1st Frame Thumbnail</label>';
+		<input type="checkbox" id="attachments-'. $post->ID .'-firstframe" name="attachments['.$post->ID.'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" value="checked" '.$forcefirstchecked.' '.$ffmpeg_disabled_text.'/> <label for="attachments-'. $post->ID .'-firstframe">Force 1st frame thumbnail</label><br />
+		<input type="checkbox" id="attachments-'. $post->ID .'-featured" name="attachments['.$post->ID.'][kgflashmediaplayer-featured]" '.$featuredchecked.' '.$ffmpeg_disabled_text.'/> <label for="attachments-'. $post->ID .'-featured">Set thumbnail as featured image</label>';
 	
 		$form_fields["thumbtime"]["label"] = __("Thumbnail Time");
 		$form_fields["thumbtime"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true);
@@ -1639,7 +1668,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-dimensions"]["html"] = 'Width: <input name="attachments['. $post->ID .'][kgflashmediaplayer-width]" id="attachments-'. $post->ID .'-kgflashmediaplayer-width" type="text" value="'.$widthset.'" style="width:50px;" onchange="kgvid_set_dimension('.$post->ID.', \'height\', this.value);" onkeyup="kgvid_set_dimension('.$post->ID.', \'height\', this.value);"> Height: 
 		<input name="attachments['. $post->ID .'][kgflashmediaplayer-height]" id="attachments-'. $post->ID .'-kgflashmediaplayer-height" type="text" value="'.$heightset.'" style="width:50px;" onchange="kgvid_set_dimension('.$post->ID.', \'width\', this.value);" onkeyup="kgvid_set_dimension('.$post->ID.', \'width\', this.value);"> <br />
 		<input type="checkbox" name="attachments['. $post->ID .'][kgflashmediaplayer-lockaspect]" id="attachments-'. $post->ID .'-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('.$post->ID.', this.checked);" value="checked" '.$lockaspectchecked.'> 
-		<label for="attachments-'. $post->ID .'-kgflashmediaplayer-lockaspect"><small>Lock to Aspect Ratio</small></label>';
+		<label for="attachments-'. $post->ID .'-kgflashmediaplayer-lockaspect"><small>Lock to aspect ratio</small></label>';
 		$form_fields["kgflashmediaplayer-dimensions"]["helps"] = "<small>Leave blank to use <a href='options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php' target='_blank'>default dimensions</a>.</small>";
 	
 		$checkboxes = kgvid_generate_encode_checkboxes($movieurl, $post->ID, "attachment");
@@ -1665,10 +1694,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-options"]["label"] = __("Video Embed Options");
 		$form_fields["kgflashmediaplayer-options"]["input"] = "html";
 		$form_fields["kgflashmediaplayer-options"]["html"] = '<input type="checkbox" name="attachments['.$post->ID.'][kgflashmediaplayer-showtitle]" id="attachments-'.$post->ID.'-kgflashmediaplayer-showtitle" value="checked" '.$showtitlechecked.'> 
-		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-showtitle">Include Title Above Video</label><br />
+		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-showtitle">Insert title above video</label><br />
 	
 		<input type="checkbox" name="attachments['.$post->ID.'][kgflashmediaplayer-downloadlink]" id="attachments-'.$post->ID.'-kgflashmediaplayer-downloadlink" value="checked" '.$downloadlinkchecked.'> 
-		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-downloadlink">Generate Download Link Below Video<em><small>(Makes it easier for users to download video file)</em></small></label><br />
+		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-downloadlink">Insert download link below video<em><small><br />Makes it easier for users to download file.</em></small></label><br />
 		'.$shortcode_select.'
 		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-embed">Insert</small></em></label><script type="text/javascript">window.onload=kgvid_hide_standard_wordpress_display_settings('.$post->ID.');</script>';
 		
@@ -1767,7 +1796,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url) {
 			require_once(ABSPATH . 'wp-admin/includes/image.php');
 			$attach_data = wp_generate_attachment_metadata( $thumb_id, $uploads['path'].'/'.$posterfile );
 			wp_update_attachment_metadata( $thumb_id, $attach_data );
-		} else { //not in uploads so we'll have to sideload it
+		} 
+		else { //not in uploads so we'll have to sideload it
 			$tmp = download_url( $thumb_url );
 
 			// Set variables for storage
@@ -1802,6 +1832,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url) {
 	if(!is_wp_error($thumb_id)) {
 		$thumb_id = intval( $thumb_id );
 		update_post_meta($post_id, '_kgflashmediaplayer-poster-id', $thumb_id);
+		return $thumb_id;
 	}
 
 }
@@ -1816,16 +1847,22 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 	// $post attachments wp post array - will be saved after returned  
 	//     $post['post_type'] == 'attachment'  
 	if( !empty($post['ID']) ) {
+		$thumb_id = "";
 		if( isset($attachment['kgflashmediaplayer-poster']) ) {
 			
 			$thumb_url = $attachment['kgflashmediaplayer-poster'];
-			if ( !empty($thumb_url) ) { kgvid_save_thumb($post['ID'], $post['post_name'], $thumb_url); }
+			if ( !empty($thumb_url) ) { $thumb_id = kgvid_save_thumb($post['ID'], $post['post_name'], $thumb_url); }
 			update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $thumb_url);
 			
 		}
 		if( isset($attachment['kgflashmediaplayer-numberofthumbs']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-numberofthumbs', $attachment['kgflashmediaplayer-numberofthumbs']); }
 		if( isset($attachment['kgflashmediaplayer-forcefirst']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-forcefirst', $attachment['kgflashmediaplayer-forcefirst']); }
 		else { update_post_meta($post['ID'], '_kgflashmediaplayer-forcefirst', ""); }
+		if( isset($attachment['kgflashmediaplayer-featured']) ) { 
+			update_post_meta($post['ID'], '_kgflashmediaplayer-featured', $attachment['kgflashmediaplayer-featured']);
+			if ( !empty($thumb_id) ) { update_post_meta($post['post_parent'], '_thumbnail_id', $thumb_id); }
+		}
+		else { update_post_meta($post['ID'], '_kgflashmediaplayer-featured', "notchecked"); }
 		if( isset($attachment['thumbtime']) ) {update_post_meta($post['ID'], '_kgflashmediaplayer-thumbtime', $attachment['thumbtime']); }
 		if( isset($attachment['kgflashmediaplayer-width']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-width', $attachment['kgflashmediaplayer-width']); }
 		if( isset($attachment['kgflashmediaplayer-height']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-height', $attachment['kgflashmediaplayer-height']); }
@@ -2239,7 +2276,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		
 		$field_id = kgvid_backwards_compatible($postID);
 
-		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia_'.$postID.'_thumb'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="kgflashmedia-thumb" id="kgflashmedia_'.$postID.'_thumb'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="getElementById(\''.$field_id['poster'].'\').value = this.value; getElementById(\''.$field_id['thumbtime'].'\').value = \''. $movieoffset_display .'\'; getElementById(\'attachments-'. $postID .'-numberofthumbs\').value =\'1\';"></div>';
+		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio'.$i.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="getElementById(\''.$field_id['poster'].'\').value = this.value; getElementById(\''.$field_id['thumbtime'].'\').value = \''. $movieoffset_display .'\'; getElementById(\'attachments-'. $postID .'-numberofthumbs\').value =\'1\';"></div>';
 
 		switch ($movie_info['rotate']) {
 			case "90";

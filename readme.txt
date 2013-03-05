@@ -127,27 +127,28 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
-= 3.2 - February 16, 2013 =
+= 3.2 - March 6, 2013 =
 * Added backwards compatibility for WordPress versions 3.2 and above.
-* Redesigned settings page to save through AJAX, and added a sample video player so changes are seen immediately.
+* Redesigned settings page to save form using AJAX, and added a sample video player so changes are seen immediately.
 * Added options to display video title and embed code overlays on video player, and captions and view counts below videos.
-* Added option for a video attachment page that modifies the user's attachment template to display the video instead of WordPress's default behavior of just showing the title of the video. 
+* Added option to set post's featured image to most recently generated thumbnail.
+* Added option for a video attachment page that modifies the user's attachment template to display the video instead of WordPress's default behavior of just showing the title of the video. For backwards compatibility retained old method of completely replacing the video attachment template with a video player.
 * Added watermark, view counts, volume attribute, and Google Analytics event tracking for Strobe Media Playback player. (Note: watermark shows on top of controls in Strobe Media Playback. I can't fix this.)
 * Added alignment option to center or right justify videos.
-* Revised video player setup to properly resize the video player and resize again if the window size changes (or orientation changes on Android).
-* If Strobe Media Playback player is selected, the Video.js player is used for situations where Flash doesn't work (webm, ogg playback) instead of the ugly default browser players.
+* Revised video player setup to properly resize the player and resize again if the window size changes (or orientation changes on Android).
+* If Strobe Media Playback player is selected, the Video.js player is used in situations where Flash doesn't work (webm, ogg playback) instead of the ugly default browser players.
 * No matter which player is selected, iOS now displays the built-in controls so AirPlay works.
-* Added schema.org videoobject markup for better SEO.
+* Added schema.org videoobject markup for improved SEO.
 * Fixed FLV embedding with Video.js player and improved selection of embedded formats for Strobe Media Playback.
 * Adjusted video gallery CSS for better margins.
 * Adjusted watermark CSS so the logo doesn't overwhelm small videos.
 * Set Video.js controls to fade out on autoplay and on iOS, without having to mouseover the video.
 * Fixed endless "loading" spinner shown at the end of videos in some browsers in Video.js player.
-* Clicking Insert into post immediately after upload without changing any options now inserts shortcode instead of just the title of the video.
+* Clicking "Insert into post" immediately after upload without changing any options now inserts shortcode instead of just the title of the video.
 * Inserting shortcode without a thumbnail no longer attempts to save the nonexistent thumbnail. Thumbnail cleanup is handled better.
+* Checks only one time for alternate video sources for videos embedded from other servers. This should speed up load times considerably.
 * Escaped all shell commands for increased security and added check for escapeshellcmd function.
 * Fixed missing argument for kgvid_clear_completed_queue() when scheduling cleanup.
-* Fixed broken uninstall.php
 
 = 3.1.1 - March 5, 2013 =
 * Fixed missing ) in uninstall.php
