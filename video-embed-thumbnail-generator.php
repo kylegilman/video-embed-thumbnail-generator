@@ -512,6 +512,7 @@ function KGVID_shortcode($atts, $content = ''){
 		$id = $wpdb->get_var($query);
 
 		$moviefiletype = pathinfo($content, PATHINFO_EXTENSION);
+		if ( $moviefiletype == "mov" ) { $moviefiletype = "mp4"; }
 		$video_formats = array(
 			"original" => $moviefiletype,
 			"1080" => "mp4",
@@ -684,25 +685,26 @@ function KGVID_shortcode($atts, $content = ''){
 		else { $kgvid_meta = false; }
 		if ( !empty($query_atts["watermark"]) ) { $code .= "<div style=\"display:none;\" id='video_".$div_suffix."_watermark' class='kgvid_watermark'><img src='".$query_atts["watermark"]."' alt='watermark'></div>"; } //generate watermark
 		$code .= "</div>"; //end kgvid_XXXX_wrapper div
+		
+		if ( $query_atts['autoplay'] == "true" ) { $timeout = "0"; }
+		else { $timeout = "500"; }
 			
 		$code .= "<script type='text/javascript'>
 			var id = '".$div_suffix."';
 			var player_type = '".$options['embed_method']."';";
 		if ( $options['embed_method'] == "Video.js" || ($options['embed_method'] == "Strobe Media Playback" && !$flash_source_found) ) {
-		$code .= "_V_('video_".$div_suffix."').ready(function(){
+		$code .= "\n\t\t\t"."_V_('video_".$div_suffix."').ready(function(){
 			kgvid_setup_video(id, player_type, '".$query_atts["volume"]."');
 			this.addEvent('play', function(){";
 			if ( $kgvid_meta ) {
-				if ( $query_atts['autoplay'] == "true" ) { $timeout = "0"; }
-				else { $timeout = "500"; }
 				$code .= "\n\t\t\t"."jQuery('#video_'+id+'_div').hover(function(){ jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); },function(){ jQuery('#video_".$div_suffix."_meta').removeClass('kgvid_video_meta_hover'); });
-			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-			setTimeout(function() { _V_('video_".$div_suffix."').controlBar.fadeOut(); }, $timeout);"; 
+			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');"; 
 			} //end if kgvid_meta
-			$code .= "\n\t\t\t"."kgvid_video_counter(id, '".$plays."', '".$ends."', 'play', '".$stats_title."');
+			$code .= "\n\t\t\t"."setTimeout(function() { _V_('video_".$div_suffix."').controlBar.fadeOut(); }, ".$timeout.");
+			kgvid_video_counter(id, '".$plays."', '".$ends."', 'play', '".esc_js($stats_title)."');
 			});
 			this.addEvent('ended', function(){ 
-				kgvid_video_counter(id, '".$plays."', '".$ends."', 'end', '".$stats_title."');
+				kgvid_video_counter(id, '".$plays."', '".$ends."', 'end', '".esc_js($stats_title)."');
 				setTimeout(function() { jQuery('#video_".$div_suffix." > .vjs-loading-spinner').hide(); }, 250);
 			});
 			});";
@@ -720,7 +722,7 @@ function KGVID_shortcode($atts, $content = ''){
 				player_type = 'iOS'; 
 				document.getElementById('video_'+id).addEventListener('play',function(){ 
 					jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-					kgvid_video_counter(id, '".$plays."', '".$ends."', 'play', '".$stats_title."');
+					kgvid_video_counter(id, '".$plays."', '".$ends."', 'play', '".esc_js($stats_title)."');
 				});
 			}
 			kgvid_resize_video(id, player_type, '".$query_atts["width"]."', '".$query_atts["height"]."');
@@ -1202,10 +1204,21 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	
 	function kgvid_embed_method_callback() { }
 
-	function kgvid_template_callback() {
+	/* function kgvid_template_callback() {
 		$options = get_option('kgvid_video_embed_options');
 		echo "<input ".checked( $options['template_gentle'], "on", false )." id='template_gentle' name='kgvid_video_embed_options[template_gentle]' type='checkbox' /> <label for='template_gentle'>Show video player on attachment pages instead of just the title.</label><br />";
 		echo "<input ".checked( $options['template'], "on", false )." id='template' name='kgvid_video_embed_options[template]' type='checkbox' /> <label for='template'>Enable minimalist video attachment template <strong>(deprecated)</strong>.</label><a class='kgvid_tooltip' href='#'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Completely overrides any existing video attachment template page. Only enable this if you were using it with iframe embeds in previous versions.</span></a>";
+	} */
+	
+	function kgvid_template_callback() {
+		$options = get_option('kgvid_video_embed_options');
+		$items = array("Video title (WP default)"=>"none", "Video in existing template"=>"gentle", "Video only (deprecated)"=>"old");
+		echo "<select id='template' name='kgvid_video_embed_options[template]'>";
+		foreach($items as $name => $value) {
+			$selected = ($options['template']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
+		}
+		echo "</select> <a class='kgvid_tooltip' href='#'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>By default WordPress only displays a video's title on the attachment page. This plugin can filter your attachment page to display the video, or completely replace your attachment template to show only the video. If you were one of the few people using iframe embed codes before version 3.2 of this plugin then you should continue to use 'Video only' but otherwise it's not recommended.</span></a>";
 	}
 	
 	function kgvid_encode_formats_callback() {
@@ -1450,12 +1463,13 @@ function kgvid_update_settings() {
 		}
 		if ( $options['version'] < 3.2 ) {
 			$options['version'] = 3.2;
-			$options['template_gentle'] = "on";
 			$options['overlay_title'] = false;
 			$options['overlay_embedcode'] = false;
 			$options['view_count'] = false;
 			$options['align'] = "left";
 			$options['featured'] = "on";
+			if ( $options['template'] == "on" ) { $options['template'] = "old"; }
+			else { $options['template'] = "gentle"; }
 			$checkbox_convert = array ( "autohide", "endOfVideoOverlaySame", "playbutton", "loop", "autoplay", "title", "embedcode");
 			foreach ( $checkbox_convert as $option ) {
 				if ( $options[$option] == "true" ) { $options[$option] = "on"; } //some checkboxes were incorrectly set to "true" in older versions
@@ -2107,7 +2121,7 @@ function kgvid_filter_video_attachment_content($content) {
 	global $post;
 	$options = get_option('kgvid_video_embed_options');
 	
-	if ( $options['template_gentle'] == "on" && strpos($post->post_mime_type,"video") !== false ) {
+	if ( $options['template'] == "gentle" && strpos($post->post_mime_type,"video") !== false ) {
 		$kgvid_video_embed = array(); //no query set
 		$content = kgvid_generate_attachment_shortcode($kgvid_video_embed);
 		$content .= '<p>'.$post->post_content.'</p>';
@@ -2122,11 +2136,13 @@ function kgvid_video_attachment_template() {
 	global $wp_query;
 	$options = get_option('kgvid_video_embed_options');
 	
-	$kgvid_video_embed = array();
+	$kgvid_video_embed = array ( 'enable' => 'false' ); //turned off by default
 	if ( isset($wp_query->query_vars['kgvid_video_embed']) ) { $kgvid_video_embed = $wp_query->query_vars['kgvid_video_embed']; }
-	if ( !is_array($kgvid_video_embed) && $kgvid_video_embed = "true" ) { $kgvid_video_embed = array ( 'enable' => 'true' ); }
+	if ( $options['template'] == "old" ) { $kgvid_video_embed['enable'] = 'true'; } //regardless of any query settings, if we're using the old method it's turned on
+	if ( (!is_array($kgvid_video_embed) && $kgvid_video_embed == "true") ) { $kgvid_video_embed = array ( 'enable' => 'true' ); } //maintain backwards compatibility
+
 	
-	if ( !empty($kgvid_video_embed) && (strpos($post->post_mime_type,"video") !== false || array_key_exists('sample', $kgvid_video_embed)) ) {
+	if ( $kgvid_video_embed['enable'] == 'true' && (strpos($post->post_mime_type,"video") !== false || array_key_exists('sample', $kgvid_video_embed)) ) {
 	
 		remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
 		
