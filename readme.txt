@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 3.1.1
+Stable tag: 4.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,13 +16,13 @@ Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted
 
 The plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options and click Insert into Post and you'll get a shortcode in the post editor that will embed a flexible HTML5/Flash video player with a preview image.
 
-The plugin gives you the option to use either the lightweight, flexible Video.js HTML5 player or Adobe's Strobe Media Playback flash player. The HTML5 player is styled the same in all browsers and is easily customizable. The Strobe Media Playback option will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.
+The plugin gives you the option to use either the lightweight, flexible Video.js HTML5 player or Adobe's Strobe Media Playback Flash player. The HTML5 player is styled the same in all browsers and is easily customizable. The Strobe Media Playback option will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"][/KGVID]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page.
 
 If you have them installed on your server, the plugin can use FFMPEG or LIBAV to generate thumbnails and encode HTML5/mobile videos. By default the plugin looks for FFMPEG in `/usr/local/bin` but if the application is installed in a different place on your server, you can point it to the correct place in the plugin settings. Users running WordPress on Windows servers should try using Linux-style paths (with forward slashes instead of backslashes and a forward slash `/` instead of `C:\`)
 
-If FFMPEG is installed on your server, you can generate thumbnails using either the "Generate" or "Randomize" buttons. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. If you want really fine control you can enter timecode in the "Thumbnail Timecode" field. Use `mm:ss` format. If you want even more control you can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time). The unused thumbnails will be deleted after you click "Insert into Post" or "Save Changes."
+If FFMPEG or LIBAV is set up correctly, you can generate thumbnails using either the "Generate" or "Randomize" buttons. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. If you want really fine control you can enter timecode in the "Thumbnail Timecode" field. Use `mm:ss` format. If you want even more control you can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time). The unused thumbnails will be deleted after you click "Insert into Post" or "Save Changes."
 
 In the plugin settings you can set the default maximum width and height based on the dimensions of your particular template and those values will be filled in when you open the window. If you generate thumbnails, the video display dimensions will be adjusted automatically to match the size and aspect ratio of the video file. You can make further adjustments if you want. After you choose a thumbnail it will be registered in the Wordpress Media Library and added to the post's attachments.
 
@@ -40,12 +40,18 @@ If you want to make it easier for people to save the video to their computers, y
 
 Sometimes for various reasons you might need to embed video files that are not saved in the Wordpress Media Library. Maybe your file is too large to upload through the media upload form (if it is, I suggest the excellent "Add From Server" plugin), or maybe it's hosted on another server. Either way, you can use the tab "Embed Video From URL" in the Add Media window. Just enter the Video URL manually, and all other steps are the same as the Media Library options. The plugin will look for alternate encoded files in the same directory as the original, but this takes a long time when the video is on another server so it will only check for them once. If you add additional formats you can click the "Re-scan External Server" button in the meta box below the post you've embedded the video in to check again.
 
+=To embed videos on other sites= you can use code like this.
+
+<iframe src='http://www.kylegilman.net/?attachment_id=1906&kgvid_video_embed[enable]=true' frameborder='0' scrolling='no' width='640' height='360'></iframe>
+
+<iframe width="960" height="540" frameborder="0" scrolling="no" src="http://www.kylegilman.net/?attachment_id=1906"></iframe>
+
 = Once you've filled in all your options, click "Insert into Post" and you'll get a shortcode in the visual editor like this =
 
 `[KGVID poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg" 
 width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web.mp4[/KGVID]`
 
-= If you want to further modify the way the video player works, you can add the following options inside the [KGVID] tag. These will override anything you've set in the plugin settings. =
+= If you want to further modify the way the video player works, you can add the following options inside the [KGVID] tag. These will override anything you've set in the plugin settings or attachment details. =
 
 * `poster="http://www.example.com/image.jpg"` sets the thumbnail.
 * `width="xxx"`
@@ -55,12 +61,12 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
 * `autoplay="true/false"`
-* `watermark="http://www.example.com/image.png"` overrides default watermark in plugin settings.
-* `title="Video Title"` overrides title displayed in the title overlay.
-* `embedcode="html code"` overrides text displayed in the embed code overlay in order to provide a custom method for embedding a video.
-* `view_count="true/false"` turns the view count on or off
-* `caption="Caption"` overrides the video's caption
-* `description="Description"` overrides the video's description (used for metadata only)
+* `watermark="http://www.example.com/image.png"`
+* `title="Video Title"`
+* `embedcode="html code"` changes text displayed in the embed code overlay in order to provide a custom method for embedding a video.
+* `view_count="true/false"` turns the view count on or off.
+* `caption="Caption"`
+* `description="Description"` Used for metadata only.
 
 = These options will only affect Video.js playback =
 
@@ -130,7 +136,7 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
-= 4.0 - April 22, 2013 =
+= 4.0.1 - April 23, 2013 =
 * Added options to display video title and embed code overlays on video player, and captions and view counts below videos.
 * Added option to filter your theme's video attachment page template to display the video instead of WordPress's default behavior of just showing the title of the video. For backwards compatibility retained old method of completely replacing the video attachment template with a video player.
 * Redesigned settings page to save using AJAX, and added a sample video player so changes are seen immediately.
@@ -161,6 +167,9 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 * Escaped all shell commands for increased security.
 * Fixed bug that made "Encode" button disappear if all formats were checked.
 * Fixed missing argument for kgvid_clear_completed_queue() when scheduling cleanup.
+
+= 4.0 - April 22, 2013 =
+* Accidental release caused by programmer's incompetence.
 
 = 3.1.1 - March 5, 2013 =
 * Fixed missing ) in uninstall.php

@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 4.0	
+Version: 4.0.1	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) )
 	
 function kgvid_default_options_fn() {
 	$options = array(
-		"version"=>4.0,
+		"version"=>4.01,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -518,10 +518,11 @@ function kgvid_video_embed_enqueue_scripts() {
 		wp_enqueue_script( 'swfobject' );
 	}
 	
+	//Video.js script and skins
 	wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '3.2.0' );
 	wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '3.2.0' );
-	wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', number_format(intval($options['version']), 1) );
-
+	wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
+	//plugin-related frontend scripts and styles
 	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), '', $options['version'] );
 	wp_enqueue_script( 'jquery-ui-dialog' );
 	wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), '', $options['version'] );
@@ -1532,10 +1533,10 @@ function kgvid_update_settings() {
 	global $wpdb;
 	
 	$options = get_option('kgvid_video_embed_options');
+	$default_options = kgvid_default_options_fn();
 	
 	if ( empty($options) ) { // run if the new settings don't exist yet (before version 3.0)
-
-		$default_options = kgvid_default_options_fn();
+		
 		$options = array();
 
 		$old_setting_equivalents = array (
@@ -1588,7 +1589,7 @@ function kgvid_update_settings() {
 			$options['watermark'] = "";	
 		}
 		if ( $options['version'] < 4.0 ) {
-			$options['version'] = 4.0;
+			$options['version'] = 4.01;
 			$options['overlay_title'] = false;
 			$options['overlay_embedcode'] = false;
 			$options['view_count'] = false;
