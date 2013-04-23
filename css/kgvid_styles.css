@@ -1,6 +1,7 @@
 .kgvid_wrapper {
 	margin: 1em 0px;
-	width:100%;
+	display: inline-block;
+	position: relative;
 }
 
 .kgvid_videodiv {
@@ -15,20 +16,26 @@
 	z-index: 1001;
 	margin: 0px;
 	max-width: 10%;
+	box-shadow: none;
 }
 
 .vjs-controls {
 	z-index:1002;
 }
 
-.kgvid_ios_novideo {
-	position: absolute;
-	top: 50%;
-	left: 50%;
+div.kgvid_ios_novideo {
 	z-index:1003;
-	width: 71px;
-	height: 71px;
-	background-image: url(images/ios_novideo.png);
+	position:absolute;
+	width:100%;
+	height:100%;
+	background: url(images/ios_novideo.png) center center no-repeat;
+	background-size: 50px;
+}
+
+img.kgvid_ios_novideo {
+	width:100%;
+	height:100%;
+	max-width:100%;
 }
 
 .kgvid_video_meta {
@@ -76,7 +83,7 @@
 	padding-left: 4px;
 }
 
-#content .kgvid_video_meta input { //clears some settings that the #content ID would otherwise override
+#content .kgvid_video_meta input {
 	font: inherit;
 	color: #eee;
 	line-height: 1.6em;
@@ -128,24 +135,32 @@
 
 .kgvid_video_gallery_thumb img { 
 	width: 100%;
-	max-width:none !important; //fixes conflict with some themes
+	max-width:none !important;
 	padding:0px; 
-	margins:0px; 
+	margin:0px; 
 }
 
-.kgvid_video_gallery_thumb span { 
+.kgvid_video_gallery_thumb .titlebackground { 
 	position:absolute; 
-	padding-top:10px; 
-	bottom:4px; 
+	bottom:10px; 
 	left:0px; 
-	height:25px; 
 	width:100%; 
-	text-align:center; 
-	color:white; 
-	background-color: rgba(0,0,0,0.5); 
-	vertical-align:middle; 
+	padding:0px;   
+	background-color: rgba(0,0,0,0.4); 
+	overflow:hidden;
+}
+
+.kgvid_video_gallery_thumb:hover .titlebackground {
+	background-color: rgba(0,0,0,0.8); 
+}
+
+.kgvid_video_gallery_thumb .videotitle {
+	color:white;
 	letter-spacing:0.05em; 
-	font-size:10pt;
+	font-size:14px;
+	line-height: 1.5em;
+	text-align:center;
+	padding:4px; 
 }
 
 #kgvid_GalleryVideo {
@@ -163,12 +178,13 @@
  *
  * http://docs.jquery.com/UI/Dialog#theming
  */
-.kgvid_gallery .ui-dialog { position: absolute; width: 300px; background-color:black; }
+.kgvid_gallery .ui-dialog { position: absolute; width: 300px; background-color:black; z-index:10001; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar { position: relative; float:right; }
 .kgvid_gallery .ui-dialog .ui-dialog-title { float: left; } 
-.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; left:10px; top:-10px; }
-.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }
-.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close:hover, .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }
+.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; left:10px; top:-10px; background: none; border: none; text-indent: -9999999px; }
+.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close span { display: block; }
+.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close span:focus {  }
+.kgvid_gallery .ui-dialog .ui-dialog-titlebar-close:hover, .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; outline: none; }
 .kgvid_gallery .ui-dialog .ui-dialog-content { position: relative; border: 0; padding-top: 5px; padding-left: 5px; padding-bottom: 3px; background: none; overflow: hidden; zoom: 1; }
 .kgvid_gallery .ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }
 .kgvid_gallery .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }
@@ -177,7 +193,7 @@
 .kgvid_gallery .ui-draggable .ui-dialog-titlebar { }
 
 /* Overlays */
-.kgvid_gallery .ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.kgvid_gallery .ui-widget-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index:10000; }
 
 /* Component containers
 ----------------------------------*/

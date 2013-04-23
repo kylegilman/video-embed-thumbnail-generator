@@ -1,6 +1,5 @@
 function kgvid_SetVideo(suffix, site_url, id, width, height) {
-	//jQuery('#kgvid_GalleryPlayerDiv_'+suffix).load(site_url+'?attachment_id='+id+'&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height);
-	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).html('<iframe id="kgvid_GalleryVideo_'+id+'" src="'+site_url+'?attachment_id='+id+'&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height+'" scrolling="no" width="'+width+'" height="'+height+'" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe>');
+	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).html('<iframe id="kgvid_GalleryVideo_'+id+'" src="'+site_url+'?attachment_id='+id+'&kgvid_video_embed[enable]=true&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height+'" scrolling="no" width="'+width+'" height="'+height+'" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe>');
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "width", parseInt(width)+6);
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('open');
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "height", parseInt(height)+10);
@@ -9,7 +8,6 @@ function kgvid_SetVideo(suffix, site_url, id, width, height) {
 
 function kgvid_setup_video(id, player_type, set_volume) {
 	var player = _V_('video_'+id);
-	
 	if ( player_type == "Video.js" ) {
 		if ( set_volume != "" ) { player.volume(set_volume); }
 	}
@@ -18,9 +16,9 @@ function kgvid_setup_video(id, player_type, set_volume) {
 		jQuery('#video_'+id+'_div').hover(function(){ jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); },function(){ jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); });
 	}
 	jQuery('#video_'+id+'_div').prepend(jQuery('#video_'+id+'_watermark'));
-	jQuery('#video_'+id+'_watermark').removeAttr('style'); //shows the hidden watermark div
+	jQuery('#video_'+id+'_watermark').attr('style', ''); //shows the hidden watermark div
 	jQuery('#video_'+id+'_div').prepend(jQuery('#video_'+id+'_meta'));
-	jQuery('#video_'+id+'_meta').removeAttr('style'); //shows the hidden meta div
+	jQuery('#video_'+id+'_meta').attr('style', ''); //shows the hidden meta div
 }
 
 function kgvid_ios_player(id) {
@@ -38,7 +36,7 @@ function kgvid_ios_player(id) {
 		ios_video += '\><source src="'+source+'" type="video/mp4" /></video>';
 	}
 	else { var ios_video = '<div id="video_'+id+'" style="background-color:black;"><div class="kgvid_ios_novideo"></div>';
-		if ( poster != null ) { ios_video += '<img src="'+poster+'">'; }
+		if ( poster != null ) { ios_video += '<img class="kgvid_ios_novideo" src="'+poster+'">'; }
 		ios_video += '</div>'; 
 	}
 	jQuery(player.el).remove();
@@ -47,9 +45,8 @@ function kgvid_ios_player(id) {
 }
 
 function kgvid_resize_video(id, player_type, set_width, set_height) {
-
 	var aspect_ratio = Math.round(set_height/set_width*1000)/1000
-	var parent_width = document.getElementById('kgvid_'+id+'_wrapper').parentElement.offsetWidth;
+	var parent_width = jQuery('#kgvid_'+id+'_wrapper').parent().width();
 	if ( parent_width < set_width ) { set_width = parent_width; }
 	set_width = parseInt(set_width);
 
@@ -59,6 +56,10 @@ function kgvid_resize_video(id, player_type, set_width, set_height) {
 		var set_height = Math.round(set_width * aspect_ratio);
 		if ( player_type == "Video.js" ) {
 			_V_('video_'+id).width(set_width).height(set_height);
+			if ( set_width < 500 ) {
+				var scale = Math.round(100*set_width/500)/100;
+				jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').css('-webkit-transform','scale('+scale+')').css('-o-transform','scale('+scale+')').css('-ms-transform','scale('+scale+')').css('transform','scale('+scale+')');
+			}
 		}
 		if ( player_type == "Strobe Media Playback" ) {
 			jQuery('#video_'+id+'_div').height(set_height);
