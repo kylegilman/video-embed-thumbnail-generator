@@ -72,7 +72,7 @@ img.kgvid_ios_novideo {
 
 .kgvid_video_meta div {
 	display:inline-block;
-	margin: 6px;
+	margin: 6px !important;
 }
 
 .kgvid_title {
@@ -83,22 +83,18 @@ img.kgvid_ios_novideo {
 	padding-left: 4px;
 }
 
-#content .kgvid_video_meta input {
-	font: inherit;
-	color: #eee;
-	line-height: 1.6em;
-}
-
 .kgvid_video_meta input {
-	color: #eee;
-	width: 100px;
+	display: inline-block !important;
+	color: #eee !important;
+	width: 100px !important;
 	font: 10px "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-	line-height: 1.6em;
-	background-color: #999;
-	border: none;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	padding: 2px;
+	line-height: 1.6em !important;
+	background-color: #999 !important;
+	border: none !important;
+	-moz-border-radius: 5px !important;
+	border-radius: 5px !important;
+	padding: 2px !important;
+	margin: 0px !important;
 }
 
 .kgvid_share {

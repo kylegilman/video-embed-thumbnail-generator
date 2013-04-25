@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -135,6 +135,10 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.0.2 - April 25, 2013 =
+* Plugin settings are no longer re-saved to the database on every page load. Should speed things up a little.
+* Changed CSS to discourage theme styles from overriding embed code overlay styles.
 
 = 4.0.1 - April 23, 2013 =
 * Added options to display video title and embed code overlays on video player, and captions and view counts below videos.

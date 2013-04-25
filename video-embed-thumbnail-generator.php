@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 4.0.1	
+Version: 4.0.2	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) )
 	
 function kgvid_default_options_fn() {
 	$options = array(
-		"version"=>4.01,
+		"version"=>4.02,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -1533,6 +1533,7 @@ function kgvid_update_settings() {
 	global $wpdb;
 	
 	$options = get_option('kgvid_video_embed_options');
+	$options_old = $options; //save the values that are in the db
 	$default_options = kgvid_default_options_fn();
 	
 	if ( empty($options) ) { // run if the new settings don't exist yet (before version 3.0)
@@ -1589,7 +1590,7 @@ function kgvid_update_settings() {
 			$options['watermark'] = "";	
 		}
 		if ( $options['version'] < 4.0 ) {
-			$options['version'] = 4.01;
+			$options['version'] = 4.0;
 			$options['overlay_title'] = false;
 			$options['overlay_embedcode'] = false;
 			$options['view_count'] = false;
@@ -1609,7 +1610,8 @@ function kgvid_update_settings() {
 			}
 			
 		}
-		update_option('kgvid_video_embed_options', $options);
+		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
+		if ( $options !== $options_old ) { update_option('kgvid_video_embed_options', $options); }
 	}
 }
 add_action('init', 'kgvid_update_settings' );
