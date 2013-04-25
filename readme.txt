@@ -144,6 +144,7 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 * Added options to display video title and embed code overlays on video player, and captions and view counts below videos.
 * Added option to filter your theme's video attachment page template to display the video instead of WordPress's default behavior of just showing the title of the video. For backwards compatibility retained old method of completely replacing the video attachment template with a video player.
 * Redesigned settings page to save using AJAX, and added a sample video player so changes are seen immediately.
+* Added validation to settings page to require maximum width & height values for embedded videos.
 * Added iframe method to embed your videos on other websites.
 * Additional video formats encoded by the plugin are now added to the WordPress database as video attachments. To avoid a Russian nesting doll scenario these child attachments do not have the fields for creating thumbnails and encoding additional formats.
 * Changed encoded H.264 extensions from .m4v to .mp4 to increase compatibility with WordPress 3.6's new video capabilities. Existing M4V files will still work.

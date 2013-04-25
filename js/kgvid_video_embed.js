@@ -19,6 +19,7 @@ function kgvid_setup_video(id, player_type, set_volume) {
 	jQuery('#video_'+id+'_watermark').attr('style', ''); //shows the hidden watermark div
 	jQuery('#video_'+id+'_div').prepend(jQuery('#video_'+id+'_meta'));
 	jQuery('#video_'+id+'_meta').attr('style', ''); //shows the hidden meta div
+	jQuery('#video_'+id).bind('contextmenu',function() { return false; });
 }
 
 function kgvid_ios_player(id) {
