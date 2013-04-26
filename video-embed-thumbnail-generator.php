@@ -1710,14 +1710,27 @@ function kgvid_ajax_save_settings() {
 }
 add_action('wp_ajax_kgvid_save_settings', 'kgvid_ajax_save_settings');
 
-/* function kgvid_add_attachment_handler($post_id) { // This will start thumbnail generating automatically in a future version
+function kgvid_add_attachment_handler($post_id) { // This will start encoding and thumbnail generating automatically in a future version
 
 	$options = get_option('kgvid_video_embed_options');
-	$movieurl = wp_get_attachment_url($post_id);
-	kgvid_make_thumbs($post_id, $movieurl, $options['generate_thumbs'], 1, 1, '', '', 'generate');
-		
+	$post = get_post($post_id);
+	if ( substr($post->post_mime_type, 0, 5) == 'video' && (empty($post->post_parent) || (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == false)) ) {
+		$movieurl = wp_get_attachment_url($post_id);
+		$video_formats = kgvid_video_formats();
+		$encode_checked = array();
+		unset($video_formats['rotated']);
+		$encode_checked['rotated'] = "false";
+		foreach ( $video_formats as $name => $format_stats ) {
+			if ( $options['encode_'.$name] == "on" ) { $encode_checked[$name] = "true"; }
+			else { $encode_checked[$name] = "false"; }
+		}
+		//kgvid_make_thumbs($post_id, $movieurl, $options['generate_thumbs'], 1, 1, '', '', 'generate');
+		kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
+		kgvid_encode_videos();
+	}
+	error_log($post_id);
 }
-add_action('add_attachment', 'kgvid_add_attachment_handler'); */
+add_action('add_attachment', 'kgvid_add_attachment_handler');
 
 /** 
  * Adding our custom fields to the $form_fields array 
@@ -2606,7 +2619,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 		$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "embed_display"=>$thumbnaildisplaycode, "lastthumbnumber"=>"break" );
 		echo json_encode($arr);
 	} //can't open movie	
-}//if enqueue
+}
 
 function kgivd_save_singleurl_poster($parent_id, $poster, $movieurl) { //called by the "Embed Video from URL" tab when submitting
 
