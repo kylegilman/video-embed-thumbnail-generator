@@ -1715,22 +1715,33 @@ function kgvid_add_attachment_handler($post_id) { // This will start encoding an
 	$options = get_option('kgvid_video_embed_options');
 	$post = get_post($post_id);
 	if ( substr($post->post_mime_type, 0, 5) == 'video' && (empty($post->post_parent) || (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == false)) ) {
-		$movieurl = wp_get_attachment_url($post_id);
-		$video_formats = kgvid_video_formats();
-		$encode_checked = array();
-		unset($video_formats['rotated']);
-		$encode_checked['rotated'] = "false";
-		foreach ( $video_formats as $name => $format_stats ) {
-			if ( $options['encode_'.$name] == "on" ) { $encode_checked[$name] = "true"; }
-			else { $encode_checked[$name] = "false"; }
-		}
-		//kgvid_make_thumbs($post_id, $movieurl, $options['generate_thumbs'], 1, 1, '', '', 'generate');
-		kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
-		kgvid_encode_videos();
+		$args = array($post_id);
+		wp_schedule_single_event(time(), 'kgvid_cron_new_attachment', $args);
 	}
-	error_log($post_id);
+	
 }
 add_action('add_attachment', 'kgvid_add_attachment_handler');
+
+function kgvid_cron_new_attachment_handler($post_id) {
+
+	$timestamp = wp_next_scheduled( 'kgvid_cron_new_attachment' );
+	$args = array($post_id);
+	wp_unschedule_event($timestamp, 'kgvid_cron_new_attachment', $args );
+	error_log($post_id);
+	/*$movieurl = wp_get_attachment_url($post_id);
+	$video_formats = kgvid_video_formats();
+	$encode_checked = array();
+	unset($video_formats['rotated']);
+	$encode_checked['rotated'] = "false";
+	foreach ( $video_formats as $name => $format_stats ) {
+		if ( $options['encode_'.$name] == "on" ) { $encode_checked[$name] = "true"; }
+		else { $encode_checked[$name] = "false"; }
+	}
+	//kgvid_make_thumbs($post_id, $movieurl, $options['generate_thumbs'], 1, 1, '', '', 'generate');
+	$output = kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
+	$output = kgvid_encode_videos(); */
+}
+add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler');
 
 /** 
  * Adding our custom fields to the $form_fields array 
