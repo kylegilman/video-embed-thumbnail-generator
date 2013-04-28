@@ -136,6 +136,10 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
+= 4.1 - May 01, 2013 =
+* Added option to automatically start encoding as soon as a video is uploaded.
+* Changed method for saving video plays and complete views to the database.
+
 = 4.0.2 - April 25, 2013 =
 * Plugin settings are no longer re-saved to the database on every page load. Should speed things up a little.
 * Changed CSS to discourage theme styles from overriding embed code overlay styles.
