@@ -34,16 +34,20 @@ function kgvid_ios_player(id) {
 		if ( poster != null ) { ios_video += ' poster="'+poster+'" '; }
 		ios_video += '\><source src="'+source+'" type="video/mp4" /></video>';
 	}
-	else { var ios_video = '<div id="video_'+id+'" style="background-color:black;"><div class="kgvid_ios_novideo"></div>';
+	else { 
+		var ios_video = '<div id="video_'+id+'" style="background-color:black;"><div class="kgvid_ios_novideo"></div>';
 		if ( poster != null ) { ios_video += '<img class="kgvid_ios_novideo" src="'+poster+'">'; }
-		ios_video += '</div>'; 
+		ios_video += '</div>';
 	}
 	jQuery(player.el).remove();
+	console.log(ios_video);
 	jQuery('#video_'+id+'_div').prepend(ios_video);
 	if ( source != "" ) { document.getElementById('video_'+id).load(); }
 }
 
 function kgvid_resize_video(id, player_type, set_width, set_height) {
+	var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false );
+	if ( iOS ) { player_type = "iOS"; }
 	var aspect_ratio = Math.round(set_height/set_width*1000)/1000
 	var parent_width = jQuery('#kgvid_'+id+'_wrapper').parent().width();
 	if ( parent_width < set_width ) { set_width = parent_width; }

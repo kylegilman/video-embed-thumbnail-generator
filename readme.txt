@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video gallery, html5, shortcode, thumbnail, ffmpeg, libav, embed, mobile, webm, ogg, h.264
 Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 4.0.2
+Stable tag: 4.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,9 +136,9 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
-= 4.1 - May 01, 2013 =
-* Added option to automatically start encoding as soon as a video is uploaded.
-* Changed method for saving video plays and complete views to the database.
+= 4.0.3 - May 01, 2013 =
+* Fixed bug that caused video control text to display below videos on iPhones.
+* Changed method for saving video plays to the database. Now more secure and accurate.
 
 = 4.0.2 - April 25, 2013 =
 * Plugin settings are no longer re-saved to the database on every page load. Should speed things up a little.
