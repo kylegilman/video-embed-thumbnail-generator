@@ -441,7 +441,7 @@ function kgvid_get_video_dimensions($video = false) {
 		exec ( $command, $output );
 		$output = implode("\n", $output);
 		$configuration = array();
-		$lib_list = array('libfaac', 'libvo_aacenc', 'libtheora', 'libvorbis', 'libvpx', 'libx264');
+		$lib_list = array('libfaac', 'libvo_aacenc', 'libfdk_aac', 'libtheora', 'libvorbis', 'libvpx', 'libx264');
 		foreach ($lib_list as $lib) {
 			if ( strpos($output, $lib) !== false ) { $configuration[$lib] = "true"; }
 			else { $configuration[$lib] = "false"; }
@@ -2126,7 +2126,7 @@ class kgInsertMedia {
         if ($attachment['width'] !="") { $output .= ' width="'.$attachment["width"].'"'; }
         if ($attachment['height'] !="") { $output .= ' height="'.$attachment["height"].'"'; }
         $output .= ']'.$attachment["url"].'[/KGVID]<br />';
-        if ($attachment['downloadlink'] == "checked") { $output .= '<a href="'.$attachment["url"].'">Right-click or ctrl-click this link to download.</a><br />'; }
+        if ($attachment['downloadlink'] == "checked") { $output .= '<p><a href="'.$attachment["url"].'">Right-click or ctrl-click this link to download.</a></p>'; }
     } //if embed code is enabled
     
     if ($attachment['embed'] == "Video Gallery" ) {
@@ -2737,7 +2737,7 @@ function kgvid_encode_videos() {
 				$audio_bitrate_flag = "ab";
 			}
 	
-			if ( ($movie_info['configuration']['libfaac'] == "true" || $movie_info['configuration']['libvo_aacenc'] == "true" ) &&  $movie_info['configuration']['libx264'] == "true" ) {
+			if ( ($movie_info['configuration']['libfaac'] == "true" || $movie_info['configuration']['libvo_aacenc'] == "true" || $movie_info['configuration']['libfdk_aac'] == "true" ) &&  $movie_info['configuration']['libx264'] == "true" ) {
 				foreach( $video_formats as $format => $format_stats ) {
 					if ( $queued_format == $format && $format_stats['type'] == "h264" ) {
 						if ( ! $encodevideo_info[$format.'_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$format.'filepath']) < 24576) ) {

@@ -136,6 +136,10 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
+= 4.x =
+* Tweaked video resize method.
+* Added support for AAC library libfdk_aac.
+
 = 4.0.3 - May 01, 2013 =
 * Fixed bug that caused video control text to display below videos on iPhones.
 * Changed method for saving video plays to the database. Now more secure and accurate.

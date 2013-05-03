@@ -49,7 +49,9 @@ function kgvid_resize_video(id, player_type, set_width, set_height) {
 	var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false );
 	if ( iOS ) { player_type = "iOS"; }
 	var aspect_ratio = Math.round(set_height/set_width*1000)/1000
-	var parent_width = jQuery('#kgvid_'+id+'_wrapper').parent().width();
+	var reference_div = jQuery('#kgvid_'+id+'_wrapper').parent().children().first();
+	if ( reference_div.attr('id') == 'kgvid_'+id+'_wrapper' ) { reference_div = jQuery('#kgvid_'+id+'_wrapper').parent(); }
+	parent_width = reference_div.width();
 	if ( parent_width < set_width ) { set_width = parent_width; }
 	set_width = parseInt(set_width);
 
