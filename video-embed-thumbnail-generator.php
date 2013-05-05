@@ -708,7 +708,7 @@ function KGVID_shortcode($atts, $content = ''){
 				if($query_atts["backgroundcolor"] != '') { $flashvars .= ", backgroundColor:'".$query_atts["backgroundcolor"]."'"; }	
 				if($query_atts["configuration"] != '') { $flashvars .= ", configuration:'".urlencode($query_atts["configuration"])."'"; }
 				if($query_atts["skin"] != '') { $flashvars .= ", skin:'".urlencode($query_atts["skin"])."'"; }		
-				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == \"buffering\" || player.getState() == \"playing\" ) { kgvid_video_counter(\"".$div_suffix."\", '".$countable."', \"play\" '".esc_js($stats_title)."'); } }'"; //apparently this is necessary to turn on the js API
+				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == \"buffering\" || player.getState() == \"playing\" ) { kgvid_video_counter(\"".$div_suffix."\", ".$countable.", \"play\", \"".esc_js($stats_title)."\"); } }'"; //apparently this is necessary to turn on the js API
 				$flashvars .= "}";
 				
 				$params = "{wmode:'opaque', allowfullscreen:'true', allowScriptAccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
