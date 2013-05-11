@@ -136,7 +136,9 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 == Changelog ==
 
-= 4.x =
+= 4.0.4 =
+* Fixed bug that disabled Strobe Media Playback player and caused "TypeError: Error #1034" messages.
+* Removed square shadow behind Video.js play button in IE.
 * Tweaked video resize method.
 * Added support for AAC library libfdk_aac.
 

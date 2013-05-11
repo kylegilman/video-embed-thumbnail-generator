@@ -251,7 +251,6 @@
   background: -webkit-linear-gradient(top, #454545 0%,#232323 50%,#161616 50%,#3f3f3f 100%);
   background: -o-linear-gradient(top, #454545 0%,#232323 50%,#161616 50%,#3f3f3f 100%);
   background: -ms-linear-gradient(top, #454545 0%,#232323 50%,#161616 50%,#3f3f3f 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#454545', endColorstr='#3f3f3f',GradientType=0 );
   background: linear-gradient(top, #454545 0%,#232323 50%,#161616 50%,#3f3f3f 100%);
 
 }

@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 4.0.3	
+Version: 4.0.4	
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -42,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) )
 	
 function kgvid_default_options_fn() {
 	$options = array(
-		"version"=>4.03,
+		"version"=>4.04,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -708,7 +708,8 @@ function KGVID_shortcode($atts, $content = ''){
 				if($query_atts["backgroundcolor"] != '') { $flashvars .= ", backgroundColor:'".$query_atts["backgroundcolor"]."'"; }	
 				if($query_atts["configuration"] != '') { $flashvars .= ", configuration:'".urlencode($query_atts["configuration"])."'"; }
 				if($query_atts["skin"] != '') { $flashvars .= ", skin:'".urlencode($query_atts["skin"])."'"; }		
-				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == \"buffering\" || player.getState() == \"playing\" ) { kgvid_video_counter(\"".$div_suffix."\", ".$countable.", \"play\", \"".esc_js($stats_title)."\"); } }'"; //apparently this is necessary to turn on the js API
+				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == &quot;buffering&quot; || player.getState() == &quot;playing&quot; ) { kgvid_video_counter(&quot;".$div_suffix."&quot;, &quot;play&quot;, &quot;".$countable."&quot;, &quot;".esc_js($stats_title)."&quot;); } }'"; //apparently this is necessary to turn on the js API
+				//$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var state=document.getElementById(id).getState(); if(typeof(state) == &quot;string&quot; ) {console.log(1);} }'"; //apparently this is necessary to turn on the js API
 				$flashvars .= "}";
 				
 				$params = "{wmode:'opaque', allowfullscreen:'true', allowScriptAccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
@@ -2332,11 +2333,11 @@ function kgvid_video_attachment_template() {
 		
 		echo '<html><head>';
 		echo (wp_head());
-		echo '<style>body { margin:0px; font-family: sans-serif; padding:0px; ';
+		echo '<style>.kgvid_wrapper { margin:0; }</style>';
+		echo '</head><body class="content" style="margin:0px; font-family: sans-serif; padding:0px;';
 		if ( array_key_exists('gallery', $kgvid_video_embed) ) { echo 'background:black; '; }
 		else { echo 'background:white; '; }
-		echo '} .kgvid_wrapper { margin:0; }</style>';
-		echo '</head><body class="content">';
+		echo '">';
 		echo (do_shortcode( $shortcode ));
 		echo '</body></html>';
 		exit;
