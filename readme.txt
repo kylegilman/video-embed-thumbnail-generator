@@ -119,13 +119,17 @@ The Strobe Media Playback Flash player will not play mp4/m4v/mov files that don'
 
 WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in system for embedding videos from YouTube, Vimeo, Dailymotion, etc</a>. Just put the URL into your post and WordPress will automatically convert it to an embedded video using oEmbed. You don't need this plugin to do that. If you're trying to generate new thumbnails from YouTube videos, I'm not going to risk Google's wrath by providing that functionality. I'm not even sure I could figure out how to do it anyway.
 
-= I'm on shared hosting and can't install software. Does this work without FFMPEG? =
+= I'm getting an error message `FFMPEG not found at /usr/local/bin/. You can embed existing videos, but video thumbnail generation and Mobile/HTML5 video encoding is not possible without FFMPEG.` =
 
-Many of the features of the plugin will work without FFMPEG. You can generate embed shortcodes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or encode alternate formats. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that. Dreamhost is one of the few shared hosts I know of that has FFMPEG installed and available for users.
+First off, don't panic.
+
+This plugin can use FFMPEG or LIBAV to make thumbnails and create alternate video formats compatible with HTML5 videos players. Unfortunately most servers don't have FFMPEG installed and most shared hosting plans don't allow you to install FFMPEG because of the system resources it requires. You're getting this error message because you don't have FFMPEG installed in the most common directory. If you know you have FFMPEG installed on your server, you'll need to find the actual path to the program and enter it in the plugin settings field `Path to applications on server`
+
+Many of the features of the plugin will work without FFMPEG. You can generate embed shortcodes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or encode alternate formats on the server. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that. Dreamhost is one of the few shared hosts I know of that has FFMPEG installed and available for users.
 
 = How can I encode videos in directories protected by .htaccess passwords? =
 
-Use the "Embed from URL" tab. Use the format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
+Use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
 
 == Screenshots ==
 
@@ -138,9 +142,12 @@ Use the "Embed from URL" tab. Use the format http://username:password@yourdomain
 
 = 4.0.4 =
 * Fixed bug that disabled Strobe Media Playback player and caused "TypeError: Error #1034" messages.
+* Fixed bug that caused view count to be replaced by complete views when the end of the video is reached.
 * Removed square shadow behind Video.js play button in IE.
-* Tweaked video resize method.
+* Tweaked video resize method to support more kinds of themes.
+* Added ability to turn off watermark on individual videos by entering `watermark="false"` in the shortcode.
 * Added support for AAC library libfdk_aac.
+* Renamed "Poster image" setting to "Default thumbnail"
 
 = 4.0.3 - May 01, 2013 =
 * Fixed bug that caused video control text to display below videos on iPhones.

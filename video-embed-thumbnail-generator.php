@@ -708,8 +708,7 @@ function KGVID_shortcode($atts, $content = ''){
 				if($query_atts["backgroundcolor"] != '') { $flashvars .= ", backgroundColor:'".$query_atts["backgroundcolor"]."'"; }	
 				if($query_atts["configuration"] != '') { $flashvars .= ", configuration:'".urlencode($query_atts["configuration"])."'"; }
 				if($query_atts["skin"] != '') { $flashvars .= ", skin:'".urlencode($query_atts["skin"])."'"; }		
-				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == &quot;buffering&quot; || player.getState() == &quot;playing&quot; ) { kgvid_video_counter(&quot;".$div_suffix."&quot;, &quot;play&quot;, &quot;".$countable."&quot;, &quot;".esc_js($stats_title)."&quot;); } }'"; //apparently this is necessary to turn on the js API
-				//$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var state=document.getElementById(id).getState(); if(typeof(state) == &quot;string&quot; ) {console.log(1);} }'"; //apparently this is necessary to turn on the js API
+				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == \"buffering\" || player.getState() == \"playing\" ) { kgvid_video_counter(\"".$div_suffix."\", \"play\", \"".$countable."\", \"".esc_js($stats_title)."\"); } }'"; //apparently this is necessary to turn on the js API
 				$flashvars .= "}";
 				
 				$params = "{wmode:'opaque', allowfullscreen:'true', allowScriptAccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
@@ -788,7 +787,7 @@ function KGVID_shortcode($atts, $content = ''){
 			$code .= "</div>";
 		}
 		else { $kgvid_meta = false; }
-		if ( !empty($query_atts["watermark"]) ) { $code .= "<div style=\"display:none;\" id='video_".$div_suffix."_watermark' class='kgvid_watermark'><img src='".$query_atts["watermark"]."' alt='watermark'></div>"; } //generate watermark
+		if ( !empty($query_atts["watermark"]) && $query_atts["watermark"] != "false" ) { $code .= "<div style=\"display:none;\" id='video_".$div_suffix."_watermark' class='kgvid_watermark'><img src='".$query_atts["watermark"]."' alt='watermark'></div>"; } //generate watermark
 		$code .= "</div>"; //end kgvid_XXXX_wrapper div
 		
 		if ( $query_atts['autoplay'] == "true" ) { $timeout = "0"; }
@@ -1266,7 +1265,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_section('kgvid_video_embed_flash_settings', 'The following options will only affect Flash playback', 'kgvid_plugin_flash_settings_section_callback', __FILE__);
 	add_settings_section('kgvid_video_embed_plugin_settings', 'Plugin Settings', 'kgvid_plugin_settings_section_callback', __FILE__);
 	
-	add_settings_field('poster', 'Poster image:', 'kgvid_poster_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
+	add_settings_field('poster', 'Default thumbnail:', 'kgvid_poster_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
 	add_settings_field('watermark', 'Watermark image:', 'kgvid_watermark_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
 	add_settings_field('align', 'Video alignment:', 'kgvid_align_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'align' ) );
 	add_settings_field('dimensions', 'Max embedded video dimensions:', 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
@@ -2334,7 +2333,7 @@ function kgvid_video_attachment_template() {
 		echo '<html><head>';
 		echo (wp_head());
 		echo '<style>.kgvid_wrapper { margin:0; }</style>';
-		echo '</head><body class="content" style="margin:0px; font-family: sans-serif; padding:0px;';
+		echo '</head><body class="content" style="margin:0px; font-family: sans-serif; padding:0px; border:none;';
 		if ( array_key_exists('gallery', $kgvid_video_embed) ) { echo 'background:black; '; }
 		else { echo 'background:white; '; }
 		echo '">';
