@@ -1,6 +1,11 @@
 var kgvid_video_vars = {};
 
 function kgvid_SetVideo(suffix, site_url, id, width, height) {
+	var aspect_ratio = Math.round(height/width*1000)/1000
+	if ( width > screen.width ) { 
+		width = screen.width-6; 
+		height = Math.round(width * aspect_ratio);
+	}
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).html('<iframe id="kgvid_GalleryVideo_'+id+'" src="'+site_url+'?attachment_id='+id+'&kgvid_video_embed[enable]=true&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height+'" scrolling="no" width="'+width+'" height="'+height+'" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe>');
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "width", parseInt(width)+6);
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('open');
