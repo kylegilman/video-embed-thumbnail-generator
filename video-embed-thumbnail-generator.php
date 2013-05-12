@@ -708,9 +708,8 @@ function KGVID_shortcode($atts, $content = ''){
 				if($query_atts["backgroundcolor"] != '') { $flashvars .= ", backgroundColor:'".$query_atts["backgroundcolor"]."'"; }	
 				if($query_atts["configuration"] != '') { $flashvars .= ", configuration:'".urlencode($query_atts["configuration"])."'"; }
 				if($query_atts["skin"] != '') { $flashvars .= ", skin:'".urlencode($query_atts["skin"])."'"; }		
-				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){ var player=document.getElementById(id); if ( player.getState() == \"buffering\" || player.getState() == \"playing\" ) { kgvid_video_counter(\"".$div_suffix."\", \"play\", \"".$countable."\", \"".esc_js($stats_title)."\"); } }'"; //apparently this is necessary to turn on the js API
+				$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){kgvid_strobemedia_counter(".$div_suffix.");}'"; //this is necessary to turn on the js API
 				$flashvars .= "}";
-				
 				$params = "{wmode:'opaque', allowfullscreen:'true', allowScriptAccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
 			}
 		} //if Strobe Media Playback
@@ -792,47 +791,29 @@ function KGVID_shortcode($atts, $content = ''){
 		
 		if ( $query_atts['autoplay'] == "true" ) { $timeout = "0"; }
 		else { $timeout = "500"; }
+		
+		$video_variables = array(
+			'id' => $div_suffix,
+			'player_type' => $options['embed_method'],
+			'width' => $query_atts['width'],
+			'height' => $query_atts['height'],
+			'countable' => $countable,
+			'title' => esc_js($stats_title),
+			'timeout' => $timeout,
+			'set_volume' => $query_atts["volume"],
+			'meta' => $kgvid_meta
+		);
+		$json_video_variables = json_encode( $video_variables, JSON_FORCE_OBJECT );
 			
-		$code .= "<script type='text/javascript'>";
+		$code .= "\n\t\t"."<script type='text/javascript'>
+			kgvid_video_vars['".$div_suffix."'] = jQuery.parseJSON ( '".$json_video_variables."' );";
 		if ( $options['embed_method'] == "Video.js" || ($options['embed_method'] == "Strobe Media Playback" && !$flash_source_found) ) {
-		$code .= "\n\t\t\t"."_V_('video_".$div_suffix."').ready(function(){
-			kgvid_setup_video('".$div_suffix."', '".$options['embed_method']."', '".$query_atts["volume"]."');
-			this.addEvent('play', function(){";
-			if ( $kgvid_meta ) {
-				$code .= "\n\t\t\t"."jQuery('#video_".$div_suffix."_div').hover(function(){ jQuery('#video_".$div_suffix."_meta').addClass('kgvid_video_meta_hover'); },function(){ jQuery('#video_".$div_suffix."_meta').removeClass('kgvid_video_meta_hover'); });
-			jQuery('#video_".$div_suffix."_meta').removeClass('kgvid_video_meta_hover');"; 
-			} //end if kgvid_meta
-			$code .= "\n\t\t\t"."setTimeout(function() { _V_('video_".$div_suffix."').controlBar.fadeOut(); }, ".$timeout.");
-			kgvid_video_counter('".$div_suffix."', 'play', '".$countable."', '".esc_js($stats_title)."');
-			});
-			this.addEvent('ended', function(){ 
-				kgvid_video_counter('".$div_suffix."', 'end', '".$countable."', '".esc_js($stats_title)."');
-				setTimeout(function() { jQuery('#video_".$div_suffix." > .vjs-loading-spinner').hide(); }, 250);
-			});
-			});";
+		$code .= "\n\t\t\t"."_V_('video_".$div_suffix."').ready(function(){ kgvid_setup_video('".$div_suffix."'); });";
 		}
 		if ( $options['embed_method'] == "Strobe Media Playback" && $flash_source_found ) {
-			$code .= "swfobject.embedSWF('".$video_swf."', 'video_".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '".$minimum_flash."', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params, '', function() {
-			kgvid_setup_video('".$div_suffix."', '".$options['embed_method']."', '".$query_atts["volume"]."');
-			kgvid_resize_video('".$div_suffix."', '".$options['embed_method']."', '".$query_atts["width"]."', '".$query_atts["height"]."');
-			});
-			jQuery('#kgvid_".$div_suffix."_wrapper').hover(
-				function() { jQuery('#video_".$div_suffix."_watermark').fadeOut(100); },
-				function() { setTimeout(function(){jQuery('#video_".$div_suffix."_watermark').fadeIn('slow');},3000); }
-			);";
-		}
-		$code .= "\n\t\t\t"."var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false );
-			if (iOS) {
-				console.log('iOS');
-				if ( '".$options['embed_method']."' == 'Strobe Media Playback' ) { kgvid_setup_video('".$div_suffix."', 'Video.js', '".$query_atts["volume"]."'); }
-				kgvid_ios_player('".$div_suffix."');
-				document.getElementById('video_".$div_suffix."').addEventListener('play',function(){ 
-					jQuery('#video_".$div_suffix."_meta').removeClass('kgvid_video_meta_hover');
-					kgvid_video_counter('".$div_suffix."', 'play', '".$countable."', '".esc_js($stats_title)."');
-				});
-			}
-			kgvid_resize_video('".$div_suffix."', '".$options['embed_method']."', '".$query_atts["width"]."', '".$query_atts["height"]."');
-			window.addEventListener('resize', resize_".$div_suffix."=function(){ kgvid_resize_video('".$div_suffix."', '".$options['embed_method']."', '".$query_atts["width"]."', '".$query_atts["height"]."'); }, false);";
+			$code .= "\n\t\t\t"."swfobject.embedSWF('".$video_swf."', 'video_".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '".$minimum_flash."', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params, '', function() { kgvid_setup_video(".$div_suffix."); });";
+		} //if Strobe Media
+			
 		/* if ( $query_atts["video_security"] == "on" ) { $code .= "\n\t\t\t"."jQuery('#video_".$div_suffix."').bind('contextmenu',function() { return false; });"; } */
 		$code .= "\n\t\t"."</script>";
 		
