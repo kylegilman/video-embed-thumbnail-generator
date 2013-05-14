@@ -17,7 +17,7 @@ function kgvid_setup_video(id) {
 	var video_vars = kgvid_video_vars[id];
 	var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false );
 	if (iOS) { video_vars.player_type = "Video.js"; }
-	var player = _V_('video_'+id);
+	var player = videojs('video_'+id);
 	if ( video_vars.player_type == "Video.js" ) {
 		if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
 	}
@@ -32,15 +32,15 @@ function kgvid_setup_video(id) {
 
 	if ( video_vars.player_type == "Video.js" ) {
 	
-		player.addEvent('play', function(){
+		player.on('play', function(){
 			if ( video_vars.meta ) {
 				jQuery('#video_'+id+'_div').hover(function(){ jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); },function(){ jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); });
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 			}
-			setTimeout(function() { _V_('video_'+id).controlBar.fadeOut(); }, video_vars.timeout);
+			//setTimeout(function() { videojs('video_'+id).controlBar.fadeOut(); }, video_vars.timeout);
 			kgvid_video_counter(id, 'play');
 		});
-		player.addEvent('ended', function(){ 
+		player.on('ended', function(){ 
 			kgvid_video_counter(id, 'end');
 			setTimeout(function() { jQuery('#video_'+id+' > .vjs-loading-spinner').hide(); }, 250);
 		});
@@ -59,7 +59,7 @@ function kgvid_setup_video(id) {
 }
 
 function kgvid_ios_player(id) {
-	var player = _V_('video_'+id);
+	var player = videojs('video_'+id);
 	var source = document.getElementById('video_'+id+'_html5_api').src
 	var poster = player.options.poster;
 	if ( source != "" ) {
@@ -111,7 +111,7 @@ function kgvid_resize_video(id) {
 		jQuery('#kgvid_'+id+'_wrapper').width(set_width);
 		var set_height = Math.round(set_width * aspect_ratio);
 		if (  video_vars.player_type == "Video.js" ) {
-			_V_('video_'+id).width(set_width).height(set_height);
+			videojs('video_'+id).width(set_width).height(set_height);
 			if ( set_width < 500 ) {
 				var scale = Math.round(100*set_width/500)/100;
 				jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').css('-webkit-transform','scale('+scale+')').css('-o-transform','scale('+scale+')').css('-ms-transform','scale('+scale+')').css('transform','scale('+scale+')');
