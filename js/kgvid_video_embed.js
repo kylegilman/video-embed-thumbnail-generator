@@ -45,6 +45,15 @@ function kgvid_setup_video(id) {
 			setTimeout(function() { jQuery('#video_'+id+' > .vjs-loading-spinner').hide(); }, 250);
 		});
 		
+		player.on('fullscreenchange', function(){
+			var classList = document.getElementById('video_2550').className.split(/\s+/);
+			for (var i = 0; i < classList.length; i++) {
+			   if (classList[i] === 'vjs-fullscreen') {
+				 console.log('fullscreen');
+				}
+			}
+		});
+		
 	} //end if Video.js
 	
 	if ( video_vars.player_type == "Strobe Media Playback" ) {

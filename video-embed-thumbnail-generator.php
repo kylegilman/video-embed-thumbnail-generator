@@ -863,11 +863,9 @@ function KGVID_shortcode($atts, $content = ''){
 				
 				if ( !$thumbnail_aspect ) { $thumbnail_aspect = round($video_height/$video_width, 4); } //if the thumbnail's not an attachment, set the aspect ratio to the video's
 				
-				$play_offset_left = strval(intval($query_atts["gallery_thumb"])/2-21);
-				$play_offset_top = strval((intval($query_atts["gallery_thumb"])*$thumbnail_aspect/2)-30);
 				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/600,2) );
 				
-				$code .= '<div onclick="kgvid_SetVideo(\''.$div_suffix.'\', \''.site_url('/').'\', \''.$attachment->ID.'\', \''.$video_width.'\', \''.$video_height.'\');return false;" class="kgvid_video_gallery_thumb" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'"><div class="'.$options['js_skin'].'" ><div class="vjs-big-play-button" style="-webkit-transform: scale('.$play_scale.'); -o-transform: scale('.$play_scale.'); -ms-transform: scale('.$play_scale.'); transform: scale('.$play_scale.'); top: '.$play_offset_top.'px; left: '.$play_offset_left.'px;"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
+				$code .= '<div onclick="kgvid_SetVideo(\''.$div_suffix.'\', \''.site_url('/').'\', \''.$attachment->ID.'\', \''.$video_width.'\', \''.$video_height.'\');return false;" class="kgvid_video_gallery_thumb" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'"><div class="'.$options['js_skin'].'" ><div class="vjs-big-play-button" style="-webkit-transform: scale('.$play_scale.') translateY(-15px); -o-transform: scale('.$play_scale.') translateY(-15px); -ms-transform: scale('.$play_scale.') translateY(-15px); transform: scale('.$play_scale.') translateY(-15px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
 			}
 			
 			$code .= '</div>'; //end wrapper div
