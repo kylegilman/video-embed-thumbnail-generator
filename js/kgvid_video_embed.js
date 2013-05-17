@@ -62,7 +62,7 @@ function kgvid_setup_video(id) {
 				function() { setTimeout(function(){jQuery('#video_'+id+'_watermark').fadeIn('slow');},3000); }
 		);
 	}
-	if (iOS) { kgvid_ios_player(id); }
+	//if (iOS) { kgvid_ios_player(id); }
 	kgvid_resize_video(id);
 	window.addEventListener('resize', kgvid_resize_all_videos, false);
 }
