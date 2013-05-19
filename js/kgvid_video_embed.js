@@ -34,11 +34,9 @@ function kgvid_setup_video(id) {
 				jQuery('#video_'+id+'_div').hover(
 					function(){ 
 						jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
-						jQuery('#video_'+id+'_watermark').fadeOut(100);
 					},
 					function(){ 
 						jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-						setTimeout(function(){jQuery('#video_'+id+'_watermark').fadeIn(1000);},2000);
 					}
 				);
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
@@ -53,7 +51,42 @@ function kgvid_setup_video(id) {
 		});
 		
 		player.on('fullscreenchange', function(){
-				jQuery('#video_'+id).removeClass('vjs-fullscreen');
+		
+			var
+				fullScreenApi = {
+					supportsFullScreen: false,
+					isFullScreen: function() { return false; },
+					requestFullScreen: function() {},
+					cancelFullScreen: function() {},
+					fullScreenEventName: '',
+					prefix: ''
+				},
+				browserPrefixes = 'webkit moz o ms khtml'.split(' ');
+		 
+			// check for native support
+			if (typeof document.cancelFullScreen != 'undefined') {
+				fullScreenApi.supportsFullScreen = true;
+			} else {
+				// check for fullscreen support by vendor prefix
+				for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
+					fullScreenApi.prefix = browserPrefixes[i];
+					if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
+						fullScreenApi.supportsFullScreen = true;
+						break;
+					}
+				}
+			}
+	
+			if ( fullScreenApi.supportsFullScreen == true ) { jQuery('#video_'+id).removeClass('vjs-fullscreen'); }
+			else if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
+				jQuery('#video_'+id+'_meta').hide();
+				jQuery('#video_'+id+'_watermark img').css('position', 'fixed');
+			}
+			else { 
+				jQuery('#video_'+id+'_meta').show(); 
+				jQuery('#video_'+id+'_watermark img').css('position', 'absolute');
+			}
+				
 		});
 		
 	} //end if Video.js
