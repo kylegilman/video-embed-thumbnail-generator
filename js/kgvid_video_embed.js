@@ -22,7 +22,7 @@ function kgvid_setup_video(id) {
 		if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
 	}
 	if ( video_vars.player_type == "Strobe Media Playback" ) {
-		if ( video_vars.set_volume != "" ) { document.getElementById('video_'+id+'html5_api').setVolume(video_vars.set_volume); }
+		if ( video_vars.set_volume != "" ) { var kgvid_volume_timeout = setTimeout(function() {document.getElementById('video_'+id).setVolume(video_vars.set_volume);},500); }
 		jQuery('#video_'+id+'_div').hover(function(){ jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); },function(){ jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); });
 	}
 	jQuery('#video_'+id+'_div').prepend(jQuery('#video_'+id+'_watermark'));
@@ -37,7 +37,7 @@ function kgvid_setup_video(id) {
 				jQuery('#video_'+id+'_div').hover(function(){ jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); },function(){ jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); });
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 			}
-			//setTimeout(function() { videojs('video_'+id).controlBar.fadeOut(); }, video_vars.timeout);
+			if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+' > .vjs-control-bar').removeClass('vjs-fade-in'); }
 			kgvid_video_counter(id, 'play');
 		});
 		player.on('ended', function(){ 
@@ -46,12 +46,9 @@ function kgvid_setup_video(id) {
 		});
 		
 		player.on('fullscreenchange', function(){
-			var classList = document.getElementById('video_2550').className.split(/\s+/);
-			for (var i = 0; i < classList.length; i++) {
-			   if (classList[i] === 'vjs-fullscreen') {
-				 console.log('fullscreen');
-				}
-			}
+
+				jQuery('#video_'+id).removeClass('vjs-fullscreen');
+
 		});
 		
 	} //end if Video.js

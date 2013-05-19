@@ -128,7 +128,6 @@ function kgvid_enqueue_video_encode(postID) {
 		kgvid_encode[formats] = "";
 		if ( jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+formats).length > 0) { 
 			kgvid_encode[formats] = document.getElementById('attachments-'+postID+'-kgflashmediaplayer-encode'+formats).checked;
-			console.log('attachments-'+postID+'-kgflashmediaplayer-encode'+formats);
 		}
 	});
 	JSON.stringify(kgvid_encode);

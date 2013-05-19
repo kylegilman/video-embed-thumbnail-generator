@@ -92,6 +92,7 @@ by Kyle Gilman (http://www.kylegilman.net/)
   font-style: normal;
   font-weight: normal;
   font-family: Arial, sans-serif;
+  z-index: 1002;
 }
 
 /* General styles for individual controls. */
