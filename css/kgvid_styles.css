@@ -123,6 +123,7 @@ img.kgvid_ios_novideo {
 
 .kgvid_video_gallery_thumb {
 	position: relative; 
+	float: left;
 	display:inline-block; 
 	margin:10px;
 	cursor: pointer; !important
