@@ -40,11 +40,9 @@ If you want to make it easier for people to save the video to their computers, y
 
 Sometimes for various reasons you might need to embed video files that are not saved in the Wordpress Media Library. Maybe your file is too large to upload through the media upload form (if it is, I suggest the excellent "Add From Server" plugin), or maybe it's hosted on another server. Either way, you can use the tab "Embed Video From URL" in the Add Media window. Just enter the Video URL manually, and all other steps are the same as the Media Library options. The plugin will look for alternate encoded files in the same directory as the original, but this takes a long time when the video is on another server so it will only check for them once. If you add additional formats you can click the "Re-scan External Server" button in the meta box below the post you've embedded the video in to check again.
 
-=To embed videos on other sites= you can use code like this.
+To embed videos on other sites you can use code like this.
 
-<iframe src='http://www.kylegilman.net/?attachment_id=1906&kgvid_video_embed[enable]=true' frameborder='0' scrolling='no' width='640' height='360'></iframe>
-
-<iframe width="960" height="540" frameborder="0" scrolling="no" src="http://www.kylegilman.net/?attachment_id=1906"></iframe>
+`<iframe src='http://www.kylegilman.net/?attachment_id=1906&kgvid_video_embed[enable]=true' frameborder='0' scrolling='no' width='640' height='360'></iframe>`
 
 = Once you've filled in all your options, click "Insert into Post" and you'll get a shortcode in the visual editor like this =
 
@@ -57,7 +55,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 * `width="xxx"`
 * `height="xxx"`
 * `align="left/right/center"`
-* `inline="true/false" allow other content on the same line as the video
+* `inline="true/false"` allow other content on the same line as the video
 * `volume="0.x"` pre-sets the volume for unusually loud videos. Value between 0 and 1.
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
