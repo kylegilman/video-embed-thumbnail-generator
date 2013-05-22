@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 4.1.1
+Version: 4.1.2
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) )
 	
 function kgvid_default_options_fn() {
 	$options = array(
-		"version"=>4.11,
+		"version"=>4.12,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -235,7 +235,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 	if(function_exists('exec')) { 
 		if (function_exists('escapeshellcmd')) {
 			$exec_enabled = true;
-			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'/flash/skin/images/PlayNormal.png '.$uploads['path'].'/ffmpeg_exists_test.jpg');
+			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'/images/sample-video-h264.mp4 -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
 			exec ( $cmd, $output, $returnvalue );
 		}
 		else { $function = "ESCAPESHELLCMD"; }
@@ -2481,7 +2481,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".$movieoffset.".jpg";
 		$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
-		$ffmpeg_options = '-y -ss '.$movieoffset.' -i "'.$moviefilepath.'" '.$movie_info['rotate'].' -qscale 1 -vframes 1 "'.$thumbnailfilename[$i].'"';
+		$ffmpeg_options = '-y -ss '.$movieoffset.' -i "'.$moviefilepath.'" '.$movie_info['rotate'].' -qscale 1 -vframes 1 -f mjpeg "'.$thumbnailfilename[$i].'"';
 		$thumbnailurl = $thumbnailfilebase."_thumb".$movieoffset.'.jpg';
 		$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 

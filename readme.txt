@@ -139,6 +139,10 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
+= 4.1.2 May 22, 2013 =
+* Changed check for FFMPEG to use the H.264 sample video as input and avoid any PNG-related red herrings
+* Added `-f mjpeg` to thumbnail-generating command to maintain compatibility with versions of FFMPEG that can't figure it out on their own.
+
 = 4.1.1 May 21, 2013 =
 * Removed second argument from json_encode() which caused video setup & resizing features to fail when servers were running PHP 5.2.
 
