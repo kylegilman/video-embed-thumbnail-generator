@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
 Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 4.1.1
+Stable tag: 4.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,8 +139,8 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
-= 4.1.2 May 22, 2013 =
-* Changed check for FFMPEG to use the H.264 sample video as input and avoid any PNG-related red herrings
+= 4.1.2 May 23, 2013 =
+* Changed check for FFMPEG to use the H.264 sample video as input to avoid any PNG-related red herrings.
 * Added `-f mjpeg` to thumbnail-generating command to maintain compatibility with versions of FFMPEG that can't figure it out on their own.
 
 = 4.1.1 May 21, 2013 =
