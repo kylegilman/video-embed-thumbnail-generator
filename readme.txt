@@ -2,7 +2,7 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
-Requires at least: 3.2
+Requires at least: 3.3
 Tested up to: 3.6
 Stable tag: 4.1.2
 License: GPLv2 or later
@@ -52,6 +52,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 = If you want to further modify the way the video player works, you can add the following options inside the [KGVID] tag. These will override anything you've set in the plugin settings or attachment details. =
 
 * `poster="http://www.example.com/image.jpg"` sets the thumbnail.
+* `endofvideooverlay="http://www.example.com/end_image.jpg` sets the image shown when the video ends.
 * `width="xxx"`
 * `height="xxx"`
 * `align="left/right/center"`
@@ -66,6 +67,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 * `view_count="true/false"` turns the view count on or off.
 * `caption="Caption"`
 * `description="Description"` Used for metadata only.
+* `downloadlink="true/false"` generates a link below the video to make it easier for users to save the video file to their computers.
 
 = These options will only affect Video.js playback =
 
@@ -73,7 +75,6 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 
 = These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on HTML5 or Video.js playback. =
 
-* `endofvideooverlay="http://www.example.com/end_image.jpg` sets the image shown when the video ends.
 * `autohide="true/false"` specify whether to autohide the control bar after a few seconds.
 * `playbutton="true/false"` turns the big play button overlay in the middle of the video on or off.
 * `streamtype="live/recorded/DVR"` I honestly don't know what this is for.
@@ -118,7 +119,7 @@ The Strobe Media Playback Flash player will not play mp4/m4v/mov files that don'
 
 WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in system for embedding videos from YouTube, Vimeo, Dailymotion, etc</a>. Just put the URL into your post and WordPress will automatically convert it to an embedded video using oEmbed. You don't need this plugin to do that. If you're trying to generate new thumbnails from YouTube videos, I'm not going to risk Google's wrath by providing that functionality. I'm not even sure I could figure out how to do it anyway.
 
-= I'm getting an error message `FFMPEG not found at /usr/local/bin/. You can embed existing videos, but video thumbnail generation and Mobile/HTML5 video encoding is not possible without FFMPEG.` =
+= I'm getting an error message FFMPEG not found at /usr/local/bin/. You can embed existing videos, but video thumbnail generation and Mobile/HTML5 video encoding is not possible without FFMPEG. =
 
 First off, don't panic.
 
@@ -138,6 +139,13 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.1.3 May 24, 2013 =
+* Updated Video.js to version 4.0.2 which is supposed to solve IE play-button loading issues.
+* Added option to show image at end of video in Video.js player.
+* Fixed bug that ignored gallery_id setting in gallery shortcodes and was preventing gallery_include for videos that are not children of the current post.
+* Brought download link into shortcode rather than old method of inserting it into the post as text below the shortcode.
+* Adjusted pop-up gallery window size to display captions, view counts, and download links.
 
 = 4.1.2 May 23, 2013 =
 * Changed check for FFMPEG to use the H.264 sample video as input to avoid any PNG-related red herrings.

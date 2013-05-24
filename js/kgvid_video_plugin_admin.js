@@ -427,7 +427,7 @@ function kgvid_hide_plugin_settings() {
 	var ffmpeg_exists = jQuery('#app_path').data('ffmpeg_exists');
 			
 	if (playback_option == "Video.js") {
-		jQuery("table:contains(End of video image)").hide();
+		jQuery("table:contains(XML configuration file)").hide();
 		jQuery("h3:contains(The following options will only affect Flash playback)").hide();
 	}
 	if (playback_option == "Strobe Media Playback") {
