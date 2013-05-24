@@ -10,7 +10,7 @@ by Kyle Gilman (http://www.kylegilman.net/)
 @font-face{
   font-family: 'VideoJS';
   src: url('font/vjs.eot');
-  src: url('font/vjs.eot') format('embedded-opentype'),
+  src: url('font/vjs.eot?#iefix') format('embedded-opentype'),
   url('font/vjs.woff') format('woff'),
   url('font/vjs.ttf') format('truetype');
   font-weight: normal;
