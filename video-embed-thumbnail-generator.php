@@ -563,8 +563,8 @@ function KGVID_shortcode($atts, $content = ''){
 						  'autohide' => $options['autohide'],
 						  'poster' => $options['poster'],
 						  'watermark' => $options['watermark'],
-						  'endOfVideoOverlay' => $options['endOfVideoOverlay'],
-						  'endOfVideoOverlaySame' => $options['endOfVideoOverlaySame'],
+						  'endofvideooverlay' => $options['endOfVideoOverlay'],
+						  'endofvideooverlaysame' => $options['endOfVideoOverlaySame'],
 						  'playbutton' => $options['playbutton'],
 						  'loop' => $options['loop'],
 						  'autoplay' => $options['autoplay'],
@@ -589,8 +589,8 @@ function KGVID_shortcode($atts, $content = ''){
 						  'inline' => $options['inline'],
 						  'downloadlink' => 'false'
 						  ), $atts);
-						  
-	$checkbox_convert = array ( "autohide", "endOfVideoOverlaySame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline");
+			  
+	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline");
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
 		if ( $query_atts[$query] == false ) { $query_atts[$query] = "false"; }
@@ -670,7 +670,7 @@ function KGVID_shortcode($atts, $content = ''){
 		}
 		else { $encodevideo_info["original_exists"] = false; }
 		
-		if($query_atts["endOfVideoOverlaySame"] == "true") { $query_atts["endOfVideoOverlay"] = $query_atts["poster"]; }
+		if($query_atts["endofvideooverlaysame"] == "true") { $query_atts["endofvideooverlay"] = $query_atts["poster"]; }
 		
 		/* if ( $query_atts['video_security'] && !empty($id) ) {
 		
@@ -703,7 +703,7 @@ function KGVID_shortcode($atts, $content = ''){
 			}
 			if ( $flash_source_found ) {
 				if($query_atts["poster"] != '') { $flashvars .= ", poster:'".urlencode(trim($query_atts["poster"]))."'"; }
-				if($query_atts["endOfVideoOverlay"] != '') { $flashvars .= ", endOfVideoOverlay:'".urlencode(trim($query_atts["endOfVideoOverlay"]))."'"; }
+				if($query_atts["endofvideooverlay"] != '') { $flashvars .= ", endOfVideoOverlay:'".urlencode(trim($query_atts["endofvideooverlay"]))."'"; }
 				if($query_atts["controlbar"] != '') { $flashvars .= ", controlBarMode:'".$query_atts["controlbar"]."'";	}
 				if($query_atts["autohide"] != '') { $flashvars .= ", controlBarAutoHide:'".$query_atts["autohide"]."'"; }
 				if($query_atts["playbutton"] != '') { $flashvars .= ", playButtonOverlay:'".$query_atts["playbutton"]."'"; }
@@ -803,7 +803,7 @@ function KGVID_shortcode($atts, $content = ''){
 		else { $kgvid_meta = false; }
 		if ( !empty($query_atts["watermark"]) && $query_atts["watermark"] != "false" ) { $code .= "<div style=\"display:none;\" id='video_".$div_suffix."_watermark' class='kgvid_watermark'><img src='".$query_atts["watermark"]."' alt='watermark'></div>"; } //generate watermark
 		$code .= "</div>"; //end kgvid_XXXX_wrapper div
-		
+
 		$video_variables = array(
 			'id' => $div_suffix,
 			'player_type' => $options['embed_method'],
@@ -814,7 +814,7 @@ function KGVID_shortcode($atts, $content = ''){
 			'autoplay' => $query_atts['autoplay'],
 			'set_volume' => $query_atts["volume"],
 			'meta' => $kgvid_meta,
-			'endOfVideoOverlay' => $query_atts['endOfVideoOverlay']
+			'endofvideooverlay' => $query_atts['endofvideooverlay']
 		);
 		$json_video_variables = json_encode( $video_variables );
 			

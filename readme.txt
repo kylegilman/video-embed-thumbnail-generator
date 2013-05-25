@@ -2,9 +2,9 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
-Requires at least: 3.3
+Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 4.1.2
+Stable tag: 4.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,7 +78,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 * `autohide="true/false"` specify whether to autohide the control bar after a few seconds.
 * `playbutton="true/false"` turns the big play button overlay in the middle of the video on or off.
 * `streamtype="live/recorded/DVR"` I honestly don't know what this is for.
-* `scalemode="letterbox/none/stretch/zoom"` If the video display size isn’t the same as the video file, this determines how the video will be scaled.
+* `scalemode="letterbox/none/stretch/zoom"` If the video display size isn't the same as the video file, this determines how the video will be scaled.
 * `backgroundcolor="#rrggbb"` set the background color to whatever hex code you want.
 * `configuration="http://www.example.com/config.xml"` Lets you specify all these flashvars in an XML file.
 * `skin="http://www.example.com/skin.xml"` Completely change the look of the video player. <a href="http://www.longtailvideo.com/support/jw-player/jw-player-for-flash-v5/14/building-skins">Instructions here.</a>
@@ -140,12 +140,14 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
-= 4.1.3 May 24, 2013 =
+= 4.1.3 May 25, 2013 =
 * Updated Video.js to version 4.0.2 which is supposed to solve IE play-button loading issues.
-* Added option to show image at end of video in Video.js player.
-* Fixed bug that ignored gallery_id setting in gallery shortcodes and was preventing gallery_include for videos that are not children of the current post.
+* Added option to show image at end of video in Video.js player (similar to the feature already available in Strobe Media Playback).
+* Fixed bug that ignored `gallery_id` setting in gallery shortcodes and was preventing `gallery_include` setting for videos that are not children of the current post.
 * Brought download link into shortcode rather than old method of inserting it into the post as text below the shortcode.
-* Adjusted pop-up gallery window size to display captions, view counts, and download links.
+* Automatically adjust pop-up gallery window height to display captions, view counts, and download links.
+* Rolled back responsive video resize method. Only the width of the immediate container will be used to calculate the correct size.
+* For very small videos, Video.js controls are now selectively removed as the width drops below 260 pixels to prevent them from dropping outside of the video window.
 
 = 4.1.2 May 23, 2013 =
 * Changed check for FFMPEG to use the H.264 sample video as input to avoid any PNG-related red herrings.
