@@ -138,7 +138,6 @@ function kgvid_resize_video(id) {
 	reference_div = jQuery('#kgvid_'+id+'_wrapper').parent();
 	parent_width = reference_div.width();
 	if ( parent_width < set_width ) { set_width = parent_width; }
-	set_width = parseInt(set_width);
 
 	if ( set_width != 0 ) {
 
