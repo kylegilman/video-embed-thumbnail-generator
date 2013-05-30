@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
 Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 4.1.3
+Stable tag: 4.1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -145,7 +145,7 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 * Restored ability to use percentages for video width (I didn't even know you could do this before and I apologize for breaking it arbitrarily).
 * Fixed Video.js play button triangle vertical alignment problem on many themes (where were all the complaints on this one?) and tweaked the :hover settings.
 * Moved play button overlay behind gallery thumbnail title if they happen to overlap.
-* Changed WordPress user capability required to access plugin settings from 'administrator' to 'manage_options' to allow access to multisite Super Admins and anyone else who has the manage_options capability.
+* Changed WordPress user capability required to access plugin settings menu page from 'administrator' to 'manage_options' to allow access to multisite Super Admins and anyone else who has the manage_options capability.
 
 = 4.1.3 - May 25, 2013 =
 * Updated Video.js to version 4.0.2 which is supposed to solve IE play-button loading issues.
