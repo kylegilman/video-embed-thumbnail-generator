@@ -344,10 +344,14 @@ by Kyle Gilman (http://www.kylegilman.net/)
   vertical-align: middle;
   cursor: pointer;
   opacity: 1;
+  box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  
 
   /* Need a slightly gray bg so it can be seen on black backgrounds */
   background-color: rgb(40, 40, 40);
-  background-color: rgba(40, 40, 40, 0.7);
+  background-color: rgba(40, 40, 40, 0.6);
 
   border: 0.6em solid rgb(255, 255, 255);
   border-color: rgba(255, 255, 255, 0.7);
@@ -356,10 +360,10 @@ by Kyle Gilman (http://www.kylegilman.net/)
      -moz-border-radius: 100px;
           border-radius: 100px;
 
-  -webkit-transition: border 0.4s, -webkit-box-shadow 0.4s, -webkit-transform 0.4s;
-     -moz-transition: border 0.4s,    -moz-box-shadow 0.4s,    -moz-transform 0.4s;
-       -o-transition: border 0.4s,      -o-box-shadow 0.4s,      -o-transform 0.4s;
-          transition: border 0.4s,         box-shadow 0.4s,         transform 0.4s;
+  -webkit-transition: border 0.4s, -webkit-box-shadow 0.4s, -webkit-transform 0.4s, background-color 0.4s;
+     -moz-transition: border 0.4s,    -moz-box-shadow 0.4s,    -moz-transform 0.4s, background-color 0.4s;
+       -o-transition: border 0.4s,      -o-box-shadow 0.4s,      -o-transform 0.4s, background-color 0.4s;
+          transition: border 0.4s,         box-shadow 0.4s,         transform 0.4s, background-color 0.4s;
 }
 
 .kg-video-js-skin:hover .vjs-big-play-button,
@@ -369,21 +373,28 @@ by Kyle Gilman (http://www.kylegilman.net/)
   border-color: rgba(255, 255, 255, 1);
   /* IE8 needs a non-glow hover state */
   background-color: rgb(80, 80, 80);
-  background-color: rgba(50, 50, 50, 0.75);
+  background-color: rgba(50, 50, 50, 0.8);
 
-  -webkit-transition: border 0s, -webkit-box-shadow 0s, -webkit-transform 0s;
-     -moz-transition: border 0s,    -moz-box-shadow 0s,    -moz-transform 0s;
-       -o-transition: border 0s,      -o-box-shadow 0s,      -o-transform 0s;
-          transition: border 0s,         box-shadow 0s,         transform 0s;
+  -webkit-transition: border 0s, -webkit-box-shadow 0s, -webkit-transform 0s, background-color 0s;
+     -moz-transition: border 0s,    -moz-box-shadow 0s,    -moz-transform 0s, background-color 0s;
+       -o-transition: border 0s,      -o-box-shadow 0s,      -o-transform 0s, background-color 0s;
+          transition: border 0s,         box-shadow 0s,         transform 0s, background-color 0s;
+}
+
+.kg-video-js-skin:hover .vjs-big-play-button:before {
+	color: white;
+	transition-property: color;
+	transition-duration: 0s;
 }
 
 .kg-video-js-skin .vjs-big-play-button:before {
   content: "\e001"; /* Play icon */
   font-family: VideoJS;
   font-size: 4em;
-  line-height: 1.8;
+  line-height: 200%;
   text-align: center; /* Needed for IE8 */
-
+  transition-property: color;
+  transition-duration: 0.4s;
   position: absolute;
   left: 0;
   width: 100%;

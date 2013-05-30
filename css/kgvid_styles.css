@@ -144,6 +144,7 @@ img.kgvid_ios_novideo {
 	padding:0px;   
 	background-color: rgba(0,0,0,0.4); 
 	overflow:hidden;
+	z-index: 3;
 }
 
 .kgvid_video_gallery_thumb:hover .titlebackground {
