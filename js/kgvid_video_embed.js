@@ -61,7 +61,7 @@ function kgvid_setup_video(id) {
 			}
 		});
 		
-		player.on('fullscreenchange', function(){
+		/* player.on('fullscreenchange', function(){
 		
 			var
 				fullScreenApi = {
@@ -98,7 +98,7 @@ function kgvid_setup_video(id) {
 				jQuery('#video_'+id+'_watermark img').css('position', 'absolute');
 			}
 				
-		});
+		}); */
 		
 	} //end if Video.js
 	

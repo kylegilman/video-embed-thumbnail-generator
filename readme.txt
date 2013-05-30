@@ -140,6 +140,11 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
+= 4.1.4 May 30, 2013 =
+* Updated Video.js to version 4.0.3 which integrates fixes when hitting esc to exit fullscreen that this plugin was previously doing itself.
+* Restored ability to use percentages for video width.
+* Changed capability required to access plugins settings from 'administrator' to 'manage_options' to allow access to super admins and anyone else who has the manage_options capability.
+
 = 4.1.3 May 25, 2013 =
 * Updated Video.js to version 4.0.2 which is supposed to solve IE play-button loading issues.
 * Added option to show image at end of video in Video.js player (similar to the feature already available in Strobe Media Playback).

@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG for thumbnails and encodes. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/">Donate</a>
-Version: 4.1.3
+Version: 4.1.4
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) )
 	
 function kgvid_default_options_fn() {
 	$options = array(
-		"version"=>4.13,
+		"version"=>4.14,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -522,8 +522,8 @@ function kgvid_video_embed_enqueue_scripts() {
 	}
 
 	//Video.js script and skins
-	wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.0.2' );
-	wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.0.2' );
+	wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.0.3' );
+	wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.0.3' );
 	wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 
 	//plugin-related frontend scripts and styles
@@ -544,7 +544,7 @@ add_action('admin_enqueue_scripts', 'enqueue_kgvid_script');
 
 function kgvid_video_embed_print_scripts() {
 
-	echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf"</script>'."\n";
+	echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?3.0.2"</script>'."\n";
 
 }
 add_action('wp_head', 'kgvid_video_embed_print_scripts');
@@ -1176,7 +1176,7 @@ return $html;
 function kgvid_add_FFMPEG_Queue_Page() {
 	$options = get_option('kgvid_video_embed_options');
 	if ( $options['ffmpeg_exists'] == "on" ) { //only add the queue page if FFMPEG is installed
-		add_submenu_page('tools.php', 'Video Embed & Thumbnail Generator Encoding Queue', 'Video Encode Queue', 'administrator', 'kgvid_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
+		add_submenu_page('tools.php', 'Video Embed & Thumbnail Generator Encoding Queue', 'Video Encode Queue', 'manage_options', 'kgvid_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
 	}
 }
 add_action('admin_menu', 'kgvid_add_FFMPEG_Queue_Page');
