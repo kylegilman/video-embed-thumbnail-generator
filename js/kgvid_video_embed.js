@@ -29,6 +29,10 @@ function kgvid_setup_video(id) {
 	if ( video_vars.player_type == "Video.js" ) {
 	
 		var player = videojs('video_'+id);
+		
+		if ( jQuery('#video_'+id+'_flash_api').parent().is('.fluid-width-video-wrapper') ) {
+			jQuery('#video_'+id+'_flash_api').unwrap(); //disables fitVids.js
+		}
 	
 		if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
 	
