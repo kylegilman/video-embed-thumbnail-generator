@@ -821,7 +821,8 @@ function KGVID_shortcode($atts, $content = ''){
 		$code .= "\n\t\t"."<script type='text/javascript'>
 			kgvid_video_vars['".$div_suffix."'] = jQuery.parseJSON ( '".$json_video_variables."' );";
 		if ( $options['embed_method'] == "Video.js" || ($options['embed_method'] == "Strobe Media Playback" && !$flash_source_found) ) {
-		$code .= "\n\t\t\t"."videojs('video_".$div_suffix."').ready(function(){ kgvid_setup_video('".$div_suffix."'); });";
+		$code .= "\n\t\t\t"."if(typeof(jQuery)=='function'){(function($){\$.fn.fitVids=function(){}})(jQuery)};
+			videojs('video_".$div_suffix."').ready(function(){ kgvid_setup_video('".$div_suffix."'); });";
 		}
 		if ( $options['embed_method'] == "Strobe Media Playback" && $flash_source_found ) {
 			$code .= "\n\t\t\t"."swfobject.embedSWF('".$video_swf."', 'video_".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '".$minimum_flash."', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params, '', function(e) { kgvid_setup_video(".$div_suffix."); });";
@@ -883,7 +884,7 @@ function KGVID_shortcode($atts, $content = ''){
 				$downloadlink = get_post_meta($attachment->ID, "_kgflashmediaplayer-downloadlink", true);
 				if ( empty($query_atts['caption']) ) { $query_atts['caption'] = $attachment->post_excerpt; }
 				$below_video = 0;
-				if ( !empty($query_atts['caption']) || $query_atts['view_count'] == "true" ) { $below_video = 1; }
+				if ( !empty($query_atts['caption']) ) { $below_video = 1; }
 				if ( $downloadlink == "checked" ) { ++$below_video; }
 				
 				$code .= '<div onclick="kgvid_SetVideo(\''.$div_suffix.'\', \''.site_url('/').'\', \''.$attachment->ID.'\', \''.$video_width.'\', \''.$video_height.'\', '.$below_video.');return false;" class="kgvid_video_gallery_thumb" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'"><div class="'.$options['js_skin'].'" ><div class="vjs-big-play-button" style="-webkit-transform: scale('.$play_scale.') translateY(-30px); -o-transform: scale('.$play_scale.') translateY(-30px); -ms-transform: scale('.$play_scale.') translateY(-30px); transform: scale('.$play_scale.') translateY(-30px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";

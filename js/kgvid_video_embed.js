@@ -1,15 +1,18 @@
 var kgvid_video_vars = {};
 
-function kgvid_SetVideo(suffix, site_url, id, width, height) {
+function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 	var aspect_ratio = Math.round(height/width*1000)/1000
 	if ( width > screen.width ) { 
 		width = screen.width-6; 
 		height = Math.round(width * aspect_ratio);
 	}
-	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).html('<iframe id="kgvid_GalleryVideo_'+id+'" src="'+site_url+'?attachment_id='+id+'&kgvid_video_embed[enable]=true&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height+'" scrolling="no" width="'+width+'" height="'+height+'" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe>');
+	var iframe_height = height;
+	if ( meta > 0 ) { iframe_height = parseInt(height)+Math.round(20*meta); }
+	console.log(iframe_height+" "+meta);
+	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).html('<iframe id="kgvid_GalleryVideo_'+id+'" src="'+site_url+'?attachment_id='+id+'&kgvid_video_embed[enable]=true&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height+'" scrolling="no" width="'+width+'" height="'+iframe_height+'" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe>');
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "width", parseInt(width)+6);
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('open');
-	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "height", parseInt(height)+10);
+	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "height", parseInt(iframe_height)+10);
 	jQuery('.ui-widget-overlay').click(function () { jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('close'); });
 }
 function kgvid_timeupdate() {
@@ -30,8 +33,8 @@ function kgvid_setup_video(id) {
 	
 		var player = videojs('video_'+id);
 		
-		if ( jQuery('#video_'+id+'_flash_api').parent().is('.fluid-width-video-wrapper') ) {
-			jQuery('#video_'+id+'_flash_api').unwrap(); //disables fitVids.js
+		if ( jQuery('#video_'+id+'_flash_api').parent().is('.fluid-width-video-wrapper') ) { //disables fitVids.js
+			jQuery('#video_'+id+'_flash_api').unwrap(); 
 		}
 	
 		if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
