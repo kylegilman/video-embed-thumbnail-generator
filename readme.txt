@@ -140,7 +140,7 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
-= 4.1.5 - June 03, 2013 =
+= 4.1.5 - June 04, 2013 =
 * Restored missing code to show captions and download links in gallery pop-ups.
 * Fixed conflict with fitVids.js by disabling the function whenever a video is embedded with the KGVID shortcode. fitVid.js is not compatible with the Video.js player and is not necessary to make videos responsive when you are using this plugin.
 
