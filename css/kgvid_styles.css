@@ -22,6 +22,9 @@
 	z-index:1002;
 }
 
+.video-js {padding-top: 55.25%}
+.vjs-fullscreen {padding-top: 0px}
+
 div.kgvid_ios_novideo {
 	z-index:1003;
 	position:absolute;
