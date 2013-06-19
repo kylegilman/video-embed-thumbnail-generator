@@ -22,7 +22,6 @@
 	z-index:1002;
 }
 
-.video-js {padding-top: 55.25%}
 .vjs-fullscreen {padding-top: 0px}
 
 div.kgvid_ios_novideo {
@@ -51,6 +50,7 @@ img.kgvid_ios_novideo {
 	margin: 0px;
 	width: 100%;
 	height: 32px;
+    overflow: hidden;
 	background: #242424; /* Old browsers */
 	background: -moz-linear-gradient(top, #242424 50%, #1f1f1f 50%, #171717 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(50%,#242424), color-stop(50%,#1f1f1f), color-stop(100%,#171717)); /* Chrome,Safari4+ */

@@ -733,10 +733,19 @@ function KGVID_shortcode($atts, $content = ''){
 			if ( $query_atts['inline'] == "true" ) { $aligncode .= 'display:inline-block;'; }
 		}
 		else { $aligncode = ""; }
+        
+        if ( strpos($query_atts["width"], '%') === false ) {
+            $aspect_percent = round($query_atts["height"] / $query_atts["width"] * 100, 2);
+            $max_width = $query_atts["width"].'px';
+        }
+        else {
+            $aspect_percent = 56.25;
+            $max_width = $query_atts["width"];
+        }
 		
 		$code = "";
 
-		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper" style="max-width:'.$query_atts["width"].'px;'.$aligncode.'">';
+		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper" style="max-width:'.$max_width.';'.$aligncode.'">';
 		$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" itemscope itemtype="http://schema.org/VideoObject">';
 		if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailURL" content="'.$query_atts["poster"].'" />'; }
 		if ( !empty($id) ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
@@ -757,7 +766,7 @@ function KGVID_shortcode($atts, $content = ''){
 		if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
 		//$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
 		$code .= 'width="auto" height="auto"';
-		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\''; 
+		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\' style="padding-top:'.$aspect_percent.'%;"';
 		$code .= ">\n";
 		
 		$code .= implode("\n", $sources); //add the <source> tags created earlier
