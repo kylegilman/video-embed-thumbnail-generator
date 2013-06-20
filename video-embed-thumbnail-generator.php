@@ -745,6 +745,8 @@ function KGVID_shortcode($atts, $content = ''){
 		
 		$code = "";
 
+        $code .= '<style>#video_'.$div_suffix.'{padding-top:'.$aspect_percent.'%;}</style>';
+        
 		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper" style="max-width:'.$max_width.';'.$aligncode.'">';
 		$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" itemscope itemtype="http://schema.org/VideoObject">';
 		if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailURL" content="'.$query_atts["poster"].'" />'; }
@@ -766,7 +768,7 @@ function KGVID_shortcode($atts, $content = ''){
 		if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
 		//$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
 		$code .= 'width="auto" height="auto"';
-		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\' style="padding-top:'.$aspect_percent.'%;"';
+		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\'';
 		$code .= ">\n";
 		
 		$code .= implode("\n", $sources); //add the <source> tags created earlier

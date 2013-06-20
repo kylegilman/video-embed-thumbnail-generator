@@ -74,7 +74,6 @@ img.kgvid_ios_novideo {
 
 .kgvid_video_meta div {
 	display:inline-block;
-	margin: 6px !important;
 }
 
 .kgvid_title {
@@ -83,6 +82,7 @@ img.kgvid_ios_novideo {
 	overflow: hidden;
 	padding-top: 1px;
 	padding-left: 4px;
+    margin: 6px -145px 6px 6px;
 }
 
 .kgvid_video_meta input {
@@ -102,6 +102,7 @@ img.kgvid_ios_novideo {
 .kgvid_share {
 	font-size: 10px;
 	float: right;
+    margin: 6px;
 }
 
 .kgvid_below_video {
