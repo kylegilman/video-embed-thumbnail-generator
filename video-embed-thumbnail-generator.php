@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) )
 	
 function kgvid_default_options_fn() {
 	$options = array(
-		"version"=>4.14,
+		"version"=>4.15,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -728,26 +728,17 @@ function KGVID_shortcode($atts, $content = ''){
 		}
 		
 		if ( $query_atts['align'] != "left" || $query_atts['inline'] == "true" ) { 
-			if ( $query_atts['align'] != "left" ) { $aligncode .= 'margin-left:auto;'; }
-			if ( $query_atts['align'] == "center" ) { $aligncode .= 'margin-right:auto;'; }
+			$aligncode = ' style="';
+			if ( $query_atts['align'] != "left" ) { $aligncode .= 'margin-left:auto; '; }
+			if ( $query_atts['align'] == "center" ) { $aligncode .= ' margin-right:auto;'; }
 			if ( $query_atts['inline'] == "true" ) { $aligncode .= 'display:inline-block;'; }
+			$aligncode .= '" ';
 		}
 		else { $aligncode = ""; }
-        
-        if ( strpos($query_atts["width"], '%') === false ) {
-            $aspect_percent = round($query_atts["height"] / $query_atts["width"] * 100, 2);
-            $max_width = $query_atts["width"].'px';
-        }
-        else {
-            $aspect_percent = 56.25;
-            $max_width = $query_atts["width"];
-        }
 		
 		$code = "";
 
-        $code .= '<style>#video_'.$div_suffix.'{padding-top:'.$aspect_percent.'%;}</style>';
-        
-		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper" style="max-width:'.$max_width.';'.$aligncode.'">';
+		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper"'.$aligncode.'>';
 		$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" itemscope itemtype="http://schema.org/VideoObject">';
 		if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailURL" content="'.$query_atts["poster"].'" />'; }
 		if ( !empty($id) ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
@@ -766,16 +757,16 @@ function KGVID_shortcode($atts, $content = ''){
 		if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
 		$code .= 'preload="metadata" ';
 		if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
-		//$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
-		$code .= 'width="auto" height="auto"';
-		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\'';
+		$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
+		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\''; 
 		$code .= ">\n";
 		
 		$code .= implode("\n", $sources); //add the <source> tags created earlier
 
 		$code .= "</video>\n";
-		$show_views = false;
 		$code .= "</div>";
+
+		$show_views = false;
 		if ( !empty($id) || !empty($query_atts['caption']) || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
 			$view_count = number_format(intval(get_post_meta($id, "_kgflashmediaplayer-starts", true)));
 			if ( empty($view_count) ) { $view_count = "0"; } 
