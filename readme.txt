@@ -143,7 +143,7 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 = 4.1.5 - June 30, 2013 =
 * Updated Video.js to version 4.1.0
 * Restored code to show captions and download links in gallery pop-ups.
-* Fixed conflict with fitVids.js by disabling the function whenever a video is embedded with the KGVID shortcode. fitVid.js is not compatible with the Video.js player and is not necessary to make videos responsive when you are using this plugin.
+* Fixed conflict with fitVids.js by disabling the function whenever a video is embedded with the KGVID shortcode. fitVids.js is not compatible with the Video.js player and is not necessary to make videos responsive when you are using this plugin.
 * Increased bitrate of encoded videos.
 * Increased play button circle thickness and triangle size.
 * Made video title overlay background slightly transparent and the title width fluid through CSS rather than JS.
