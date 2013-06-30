@@ -177,14 +177,6 @@ function kgvid_resize_video(id) {
 		}
 
 	}
-	
-	var width_remove = 10;
-	if ( jQuery('#video_'+id+'_embed').length ) {  width_remove = 180; }
-	jQuery('#video_'+id+'_title').width(set_width-width_remove); //truncates long titles
-	
-	width_remove = 0;
-	if ( jQuery('#video_'+id+'_viewcount').length ) { width_remove = jQuery('#video_'+id+'_viewcount').width()+20; }
-	jQuery('#video_'+id+'_caption').width(set_width-width_remove); //wraps long captions
 
 }
 

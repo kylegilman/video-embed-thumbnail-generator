@@ -390,13 +390,13 @@ by Kyle Gilman (http://www.kylegilman.net/)
 .kg-video-js-skin .vjs-big-play-button:before {
   content: "\e001"; /* Play icon */
   font-family: VideoJS;
-  font-size: 4em;
-  line-height: 200%;
+  font-size: 5.5em;
+  line-height: 1.5em;
   text-align: center; /* Needed for IE8 */
   transition-property: color;
   transition-duration: 0.4s;
   position: absolute;
-  left: 0;
+  left: 2px;
   width: 100%;
   height: 100%;
 }

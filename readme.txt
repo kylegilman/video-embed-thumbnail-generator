@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
 Requires at least: 3.2
 Tested up to: 3.6
-Stable tag: 4.1.4
+Stable tag: 4.1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -140,11 +140,13 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
-= 4.1.5 - June 04, 2013 =
-* Updated Video.js to version 4.0.4
+= 4.1.5 - June 29, 2013 =
+* Updated Video.js to version 4.1.0
 * Restored code to show captions and download links in gallery pop-ups.
 * Fixed conflict with fitVids.js by disabling the function whenever a video is embedded with the KGVID shortcode. fitVid.js is not compatible with the Video.js player and is not necessary to make videos responsive when you are using this plugin.
-* Increased play button triangle size.
+* Increased bitrate of encoded videos.
+* Increased play button circle thickness and triangle size.
+* Made video title overlay background slightly transparent and the title width fluid through CSS rather than JS.
 
 = 4.1.4 - May 30, 2013 =
 * Updated Video.js to version 4.0.3 which includes fixes when hitting esc to exit fullscreen that this plugin had previously dealt with through additional JavaScript.
