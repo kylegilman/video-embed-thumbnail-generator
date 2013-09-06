@@ -141,7 +141,7 @@ div.kgvid_thumbnail_select {
 	display:inline-block; 
 }
 
-img.kgvid_thumbnail {
+img.kgvid_thumbnail, canvas.kgvid_thumbnail {
 	margin:2px;
 }
 
@@ -156,6 +156,16 @@ div.kgvid_cancel_button {
 	vertical-align:top;
 	margin-top:7px;
 	padding-left:5px;
+}
+
+.kgvid_gray_text {
+color: #aaa;
+}
+
+#ffmpeg_output {
+background: #eee;
+outline: 2px solid #aaa;
+resize: none;
 }
 
 .kgvid_setting_nearvid div {

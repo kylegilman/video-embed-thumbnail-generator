@@ -2,7 +2,7 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
-Requires at least: 3.2
+Requires at least: 3.5
 Tested up to: 3.6
 Stable tag: 4.1.5
 License: GPLv2 or later
@@ -139,6 +139,12 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.2 =
+* Added in-browser thumbnail generation. Any video that can be played in the current browser can now be used to generate thumbnails without installing FFMPEG or LIBAV on your server.
+* Added advanced FFMPEG/LIBAV encoding options and a test output on the settings page for easier troubleshooting.
+* Revised method for determining if a video URL refers to an attachment in the database.
+
 
 = 4.1.5 - June 30, 2013 =
 * Updated Video.js to version 4.1.0
