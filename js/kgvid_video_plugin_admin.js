@@ -32,58 +32,6 @@ function kgvid_set_aspect(postID, checked) {
 	}
 }
 
-function kgvid_generate_thumb_html5(postID, buttonPushed) { //make thumbnails with HTML5 <video> element
-
-		var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
-		var increaser = 0;
-		var iincreaser = 0;
-		var i = 1;
-		
-		var howmanythumbs = document.getElementById('attachments-'+postID+'-numberofthumbs').value;
-		var video = document.getElementById('thumb_video_'+postID);
-		var video_width = video.videoWidth;
-		var video_height = video.videoHeight;
-		var video_aspect = video_height/video_width;
-		
-		var thumbnails = [];
-		
-		jQuery('#canvas_holder_'+postID).empty();
-		
-		jQuery('#thumb_video_'+postID).on('seeked.kgvid', function(){ //when the video is finished seeking
-		
-			var thumbnail_saved = jQuery(video).data('thumbnail_data');
-			if ( thumbnail_saved.length > 0 ) { //if there are any thumbnails that haven't been generated
-				time_id = Math.round(video.currentTime);
-				jQuery('#canvas_holder_'+postID).append('<div class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="Update this to the URL" onchange="document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-poster\').value = this.value; document.getElementById(\'attachments-'+postID+'-thumbtime\').value = \''+video.currentTime+'\'; document.getElementById(\'attachments-'+postID+'-numberofthumbs\').value =\'1\';"></div>');
-				var canvas = document.getElementById(postID+'_thumb_'+time_id);
-				canvas.width = video_width;
-				canvas.height = video_height;
-				var context = canvas.getContext('2d');
-				context.fillRect(0, 0, video_width, video_height);
-				context.drawImage(video, 0, 0, video_width, video_height);
-				
-				var png64dataURL = canvas.toDataURL();
-				jQuery.post(ajaxurl, { action:"kgvid_save_html5_thumb", security: kgflashmediaplayersecurity, raw_png: png64dataURL } );
-
-				thumbnail_saved.splice(0,1);
-				jQuery(video).data('thumbnail_data', thumbnail_saved);
-				if ( thumbnail_saved.length > 0 ) { video.currentTime = thumbnail_saved[0]; }
-				else { jQuery('#thumb_video_'+postID).off('seeked.kgvid'); }
-			}
-			
-		});
-		
-		for (i; i<=howmanythumbs; i++) {
-			iincreaser = i + increaser;
-			increaser++;
-			var movieoffset = Math.round((video.duration * iincreaser) / (howmanythumbs * 2));
-			thumbnails.push(movieoffset);
-		}
-		video.currentTime = thumbnails[0];
-		jQuery(video).data('thumbnail_data', thumbnails);
-		
-}
-
 function kgvid_generate_thumb(postID, buttonPushed) {
 
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
@@ -154,9 +102,10 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	}// end kgvid_do_post function
 	
-	var video = document.getElementById('thumb_video_'+postID);
+	var video = {};
+	if ( jQuery('#thumb_video_'+postID).length > 0 )  { video = document.getElementById('thumb_video_'+postID); }
 	
-	if ( video.networkState == 1 || video.networkState == 2 ) { //if the browser can load the video, use it to make thumbnails
+	if ( !jQuery.isEmptyObject(video) && (video.networkState == 1 || video.networkState == 2) ) { //if the browser can load the video, use it to make thumbnails
 		var video_width = video.videoWidth;
 		var video_height = video.videoHeight;
 		var video_aspect = video_height/video_width;
@@ -220,7 +169,6 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			jQuery.each(timecode_array,function() {
 				thumbtimecode += parseFloat(this);
 			});
-			console.log(thumbtimecode);
 			thumbnails = [thumbtimecode];
 		}
 		video.currentTime = thumbnails[0];
@@ -738,69 +686,4 @@ function kgvid_check_cms_progress(total, cms_type) {
 			}
 		}, "text" );
 	}
-}
-
-function kgvid_update_ffmpeg_options() {
-
-		var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
-		
-		jQuery('#ffmpeg_output').html('');
-		var old_string = jQuery('#ffmpeg_h264_sample').html();
-		var video_path = old_string.match(/'(.*?)'/g);
-		
-		var nice_text = "";
-		if ( jQuery('#nice').is(':checked') ) {
-			nice_text = "nice ";
-		}
-		
-		var vpre_flags = "";
-		if ( jQuery('#ffmpeg_vpre').is(':checked') == true ) { vpre_flags = '-vpre fast -vpre ipod640'; }
-		console.log(vpre_flags)
-		
-		if ( jQuery('#video_app').val() == "avconv" || jQuery('#video_bitrate_flag').is(':checked') == false ) { 
-			var video_bitrate_flag = "b:v";
-			var audio_bitrate_flag = "b:a";
-			var profile_flag = "profile:v";
-			var level_flag = "level:v";
-			var qscale_flag = "q:v";
-		}
-		
-		else { 
-			var video_bitrate_flag = "b";
-			var audio_bitrate_flag = "ab";
-			var profile_flag = "profile";
-			var level_flag = "level";
-			var qscale_flag = "qscale";
-		}
-		
-		var movflags = "";
-		if ( jQuery('#moov').val() == "movflag" ) {
-			movflags = " -movflags faststart";
-		}
-		
-		var rate_control = jQuery('#rate_control').val();
-		if ( rate_control == "crf" ) {
-			rate_control_flag = " -crf "+jQuery('#x264_CRF').val();
-		}
-		else {
-			rate_control_flag = " -"+video_bitrate_flag+" "+jQuery('#360_bitrate').html()+"k";
-		}
-		
-		var profile_text = "";
-		if ( jQuery('#h264_profile').val() != "none" ) {
-			profile_text = " -"+profile_flag+" "+jQuery('#h264_profile').val();
-		}
-		
-		var level_text = "";
-		if ( jQuery('#h264_level').val() != "none" ) {
-			level_text = " -"+level_flag+" "+jQuery('#h264_level').val();
-		}
-			
-		var new_string = nice_text+jQuery('#app_path').val()+"/"+jQuery('#video_app').val()+" -y -i "+video_path[0]+" -acodec libfaac -"+audio_bitrate_flag+" "+jQuery('#audio_bitrate').val()+"k -s 640x360 -vcodec libx264 "+vpre_flags+" -threads "+jQuery('#threads').val()+rate_control_flag+movflags+profile_text+level_text+" "+video_path[1];
-		
-		jQuery('#ffmpeg_h264_sample').html(new_string);
-		
-		jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity, command: new_string }, function(output) {
-			jQuery('#ffmpeg_output').html(output);
-		}, "html" );
 }

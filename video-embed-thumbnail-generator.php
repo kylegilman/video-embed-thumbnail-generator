@@ -97,7 +97,10 @@ function kgvid_default_options_fn() {
 		"browser_thumbnails"=>"on",
 		"rate_control"=>"crf",
 		"h264_profile"=>"baseline",
-		"h264_level"=>"3.0"
+		"h264_level"=>"3.0",
+		"auto_encode"=>false,
+		"auto_thumb"=>false,
+		"auto_thumb_position"=>50
 	);
 	return $options;
 }
@@ -900,21 +903,6 @@ function KGVID_shortcode($atts, $content = ''){
 		}
 		else { $aligncode = ""; }
 		
-		if ( $options['embed_method'] == "WordPress Default" ) {
-			$code = "[video ";
-			foreach ($video_formats as $name => $type) {
-				if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
-				if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = $type.'="'.$encodevideo_info[$name."url"].'" '; }
-			}
-			$code .= implode($sources);
-			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
-			$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
-			if ( $query_atts["loop"] == 'true') { $code .= 'loop="true" '; }
-			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay="true" '; }
-			$code .= "]";
-			return do_shortcode($code);
-		}
-		
 		$code = "";
 
 		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper"'.$aligncode.'>';
@@ -930,20 +918,41 @@ function KGVID_shortcode($atts, $content = ''){
 		else { $description = ""; }
 		if ( !empty($description) ) { $code .= '<meta itemprop="description" content="'.esc_attr($description).'" />'; }
 
-		$code .= '<video id="video_'.$div_suffix.'" ';
-		if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
-		if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
-		if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
-		$code .= 'preload="metadata" ';
-		if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
-		$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
-		$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\''; 
-		$code .= ">\n";
+		if ( $options['embed_method'] == "WordPress Default" ) {
 		
-		$code .= implode("\n", $sources); //add the <source> tags created earlier
+			$wp_shortcode = "[video ";
+			foreach ($video_formats as $name => $type) {
+				if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
+				if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = $type.'="'.$encodevideo_info[$name."url"].'" '; }
+			}
+			$wp_shortcode .= implode($sources);
+			if ( $query_atts["poster"] != '' ) { $wp_shortcode .= 'poster="'.$query_atts["poster"].'" '; }
+			$wp_shortcode .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
+			if ( $query_atts["loop"] == 'true') { $wp_shortcode .= 'loop="true" '; }
+			if ( $query_atts["autoplay"] == 'true') { $wp_shortcode .= 'autoplay="true" '; }
+			$wp_shortcode .= "]";
+			$code .= do_shortcode($wp_shortcode);
+			
+		}
 
-		$code .= "</video>\n";
-		$code .= "</div>";
+		else { //if it's not the WordPress default player
+
+			$code .= '<video id="video_'.$div_suffix.'" ';
+			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
+			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
+			if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
+			$code .= 'preload="metadata" ';
+			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
+			$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
+			$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\''; 
+			$code .= ">\n";
+		
+			$code .= implode("\n", $sources); //add the <source> tags created earlier
+
+			$code .= "</video>\n";
+			$code .= "</div>";
+
+		}
 
 		$show_views = false;
 		if ( !empty($id) || !empty($query_atts['caption']) || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
@@ -1007,6 +1016,9 @@ function KGVID_shortcode($atts, $content = ''){
 		if ( $options['embed_method'] == "Strobe Media Playback" && $flash_source_found ) {
 			$code .= "\n\t\t\t"."swfobject.embedSWF('".$video_swf."', 'video_".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '".$minimum_flash."', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params, '', function(e) { kgvid_setup_video(".$div_suffix."); });";
 		} //if Strobe Media
+		else {
+			$code .= "\n\t\t\t"."jQuery(document).ready(function(){ kgvid_setup_video('".$div_suffix."'); });";
+		}
 			
 		/* if ( $query_atts["video_security"] == "on" ) { $code .= "\n\t\t\t"."jQuery('#video_".$div_suffix."').bind('contextmenu',function() { return false; });"; } */
 		$code .= "\n\t\t"."</script>";
@@ -2182,12 +2194,13 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 		}
 		
-		$video_for_thumbs = '<video onloadedmetadata="document.getElementById(\'attachments-'.$post->ID.'-thumbgenerate\').disabled=false; document.getElementById(\'attachments-'.$post->ID.'-thumbgenerate\').setAttribute(\'title\', \'\'); document.getElementById(\'attachments-'.$post->ID.'-thumbrandomize\').disabled=false; document.getElementById(\'attachments-'.$post->ID.'-thumbrandomize\').setAttribute(\'title\', \'\');" id="thumb_video_'.$post->ID.'" controls><source src="'.wp_get_attachment_url($post->ID).'"</src></video>';
-
+		$video_for_thumbs = "";
+		if ( $options['browser_thumbnails'] == "on" ) {
+			$video_for_thumbs = '<div id="thumb_video_div" style="display:none;"><video onloadedmetadata="document.getElementById(\'attachments-'.$post->ID.'-thumbgenerate\').disabled=false; document.getElementById(\'attachments-'.$post->ID.'-thumbgenerate\').setAttribute(\'title\', \'\'); document.getElementById(\'attachments-'.$post->ID.'-thumbrandomize\').disabled=false; document.getElementById(\'attachments-'.$post->ID.'-thumbrandomize\').setAttribute(\'title\', \'\');" id="thumb_video_'.$post->ID.'" controls><source src="'.wp_get_attachment_url($post->ID).'"</src></video></div>';
+		}
 		$form_fields["generator"]["label"] = __("Thumbnails");
 		$form_fields["generator"]["input"] = "html";
-		$form_fields["generator"]["html"] = '<div id="thumb_video_div" style="display:none;">'.$video_for_thumbs.'</div>
-		<input type="hidden" name="attachments['.$post->ID.'][kgflashmediaplayer-security]" id="attachments-'.$post->ID.'-kgflashmediaplayer-security" value="'.$nonce.'" /><div id="attachments-'.$post->ID.'-thumbnailplaceholder">'. $thumbnail_html .'</div>
+		$form_fields["generator"]["html"] = $video_for_thumbs.'<input type="hidden" name="attachments['.$post->ID.'][kgflashmediaplayer-security]" id="attachments-'.$post->ID.'-kgflashmediaplayer-security" value="'.$nonce.'" /><div id="attachments-'.$post->ID.'-thumbnailplaceholder">'. $thumbnail_html .'</div>
 		<input id="attachments-'. $post->ID .'-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$numberofthumbs_value.'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.'/>
 		<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
 		<input type="button" id="attachments-'. $post->ID .'-thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kgvid_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/> <br />
@@ -2715,7 +2728,8 @@ function kgvid_video_attachment_template() {
 	
 	if ( array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true' && (strpos($post->post_mime_type,"video") !== false || array_key_exists('sample', $kgvid_video_embed)) ) {
 	
-		remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
+		//remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
+		add_filter( 'show_admin_bar', '__return_false' );
 		
 		$shortcode = kgvid_generate_attachment_shortcode($kgvid_video_embed);
 		
@@ -2729,6 +2743,7 @@ function kgvid_video_attachment_template() {
 		else { echo 'background-color:transparent; '; }
 		echo '">';
 		echo (do_shortcode( $shortcode ));
+		echo (wp_footer());
 		echo '</body></html>';
 		exit;
 	}

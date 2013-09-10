@@ -109,7 +109,7 @@ function kgvid_setup_video(id) {
 		
 	} //end if Video.js
 	
-	if ( video_vars.player_type == "Strobe Media Playback" ) {
+	if ( video_vars.player_type == "Strobe Media Playback" || video_vars.player_type == "WordPress Default" ) {
 		
 		if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); }
 		jQuery('#video_'+id+'_div').hover(
