@@ -162,10 +162,13 @@ div.kgvid_cancel_button {
 color: #aaa;
 }
 
-#ffmpeg_output {
+.ffmpeg_sample_code {
 background: #eee;
 outline: 2px solid #aaa;
-resize: none;
+}
+
+strong.video_app_name {
+font-weight: normal;
 }
 
 .kgvid_setting_nearvid div {

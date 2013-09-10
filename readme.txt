@@ -140,10 +140,18 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 
 == Changelog ==
 
-= 4.2 =
-* Added in-browser thumbnail generation. Any video that can be played in the current browser can now be used to generate thumbnails without installing FFMPEG or LIBAV on your server.
-* Added advanced FFMPEG/LIBAV encoding options and a test output on the settings page for easier troubleshooting.
-* Revised method for determining if a video URL refers to an attachment in the database.
+= 5.0 =
+* Added in-browser thumbnail generation. Any video that can be played natively in the current browser can now be used to generate thumbnails without requiring FFMPEG or LIBAV on your server.
+* Added option to use the WordPress default video player introduced in WordPress version 3.6.
+* Updated Video.js to version 4.2.0 and updated the included skin to work with it.
+* Added advanced FFMPEG/LIBAV encoding options. New options include choice between Constant Rate Factor and Average Bit Rate, H.264 profiles and levels, audio bit rate, disabling `nice` on Linux, and the ability to encode with more than one thread.
+* Add a test output on the settings page for easier troubleshooting
+* Added `-movflags faststart` option available in newer versions of FFMPEG/LIBAV, eliminating the need for qt-faststart or MP4Box.
+* Split plugin settings page in to two tabs.
+* No longer starting video encodes using `nohup` command on Linux servers.
+* FFMPEG vpre flag switched from slow to fast.
+* Enabled actual support for libfdk_aac and the experimental built-in aac encoder as a last resort.
+* Revised method for determining if a video URL refers to an attachment in the WordPress database to account for differences between urls using http and https and filenames that slip into the database with spaces intact.
 
 
 = 4.1.5 - June 30, 2013 =

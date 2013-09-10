@@ -537,6 +537,8 @@ function kgvid_save_plugin_settings(input_obj) {
 	if ( jQuery(input_obj).parents(".kgvid_video_app_required").length ) { jQuery(input_obj).parents(".kgvid_video_app_required").append(save_span); }
 	else { jQuery(input_obj).parents("td:first").append(save_span); }
 	
+	if ( jQuery(input_obj).hasClass('affects_ffmpeg') == true ) { jQuery('#ffmpeg_h264_sample,#ffmpeg_output').html('Saving...');  }
+	
 	jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: input_obj.id, value: setting_value }, function(data) {
 		jQuery(input_obj).val(data.validated_value);
 		if ( data.error_message != "" ) { jQuery(input_obj).parents("td:first").append('<div class="error settings-error"><p><strong>'+data.error_message+'</strong></p>'); }
@@ -551,7 +553,16 @@ function kgvid_save_plugin_settings(input_obj) {
 			jQuery('#app_path').data('ffmpeg_exists', data.ffmpeg_exists)
 			kgvid_hide_plugin_settings();
 		}
-		jQuery( '#kgvid_samplevideo' ).attr( 'src', function ( i, val ) { return val; }); //reload the video iframe
+		if ( jQuery(input_obj).hasClass('affects_player') == true ) {
+			jQuery( '#kgvid_samplevideo' ).attr( 'src', function ( i, val ) { return val; }); //reload the video iframe
+		}
+		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg') == true ) {
+			jQuery('#ffmpeg_output').html('Running test...');
+			jQuery('#ffmpeg_h264_sample').html(data.encode_string);
+			jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity, command: data.encode_string }, function(output) {
+				jQuery('#ffmpeg_output').html(output);
+			}, "html" );
+		}
 		jQuery( '.spinner' ).css('display', 'none');
 		jQuery( '.saved').css('display', 'inline-block');
 		var save_timeout = jQuery( '#wpbody-content' ).data('saving');
@@ -561,30 +572,81 @@ function kgvid_save_plugin_settings(input_obj) {
 	}, "json" );
 }
 
+function kgvid_switch_settings_tab(tab) {
+
+	if ( tab == "general" ) {
+	
+		var playback_option = jQuery('#embed_method').val();
+	
+		jQuery("#general_tab").addClass("nav-tab-active");
+		jQuery("#encoding_tab").removeClass("nav-tab-active");
+		jQuery("h3:contains(Default Video Playback Settings)").show();
+		jQuery("table:contains(Video player:)").show();
+		jQuery(".kgvid_setting_nearvid").show();
+		jQuery("table:contains(End of video image)").show();
+		jQuery("h3:contains(Plugin Settings)").show();
+		jQuery("table:contains(Default number of thumbnails to generate)").show();
+		jQuery("h3:contains(Video Encoding Settings)").hide();
+		jQuery("table:contains(Path to applications on server)").hide();
+	}
+	
+	if ( tab == "encoding" ) {
+		
+		jQuery("#general_tab").removeClass("nav-tab-active");
+		jQuery("#encoding_tab").addClass("nav-tab-active");
+		jQuery("h3:contains(Default Video Playback Settings)").hide();
+		jQuery("table:contains(Video player:)").hide();
+		jQuery(".kgvid_setting_nearvid").hide();
+		jQuery("table:contains(End of video image)").hide();
+		jQuery("h3:contains(Plugin Settings)").hide();
+		jQuery("table:contains(Default number of thumbnails to generate)").hide();
+		jQuery("table:contains(XML configuration file)").hide();
+		jQuery("h3:contains(The following options will only affect Flash playback)").hide();
+		jQuery("h3:contains(Video Encoding Settings)").show();
+		jQuery("table:contains(Path to applications on server)").show();
+		
+		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery('#ffmpeg_output').html() == "" ) {
+			jQuery('#ffmpeg_output').html('Running test...')
+			var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
+			jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity, command: jQuery('#ffmpeg_h264_sample').html() }, function(output) {
+				jQuery('#ffmpeg_output').html(output);
+			}, "html" );
+		}
+	}
+	
+	kgvid_hide_plugin_settings();
+	kgvid_hide_ffmpeg_settings();
+
+}
+
 function kgvid_hide_plugin_settings() {
 
 	var playback_option = jQuery('#embed_method').val();
 	var ffmpeg_exists = jQuery('#app_path').data('ffmpeg_exists');
+	var general_tab = jQuery('#general_tab').hasClass('nav-tab-active');
+	var encoding_tab = jQuery('#encoding_tab').hasClass('nav-tab-active');
 			
-	if (playback_option == "Video.js") {
+	if ( playback_option != "Strobe Media Playback" || encoding_tab ) {
 		jQuery("table:contains(XML configuration file)").hide();
 		jQuery("h3:contains(The following options will only affect Flash playback)").hide();
 	}
-	if (playback_option == "Strobe Media Playback") {
-		jQuery("table:contains(End of video image)").show();
+	if ( playback_option == "Strobe Media Playback" && general_tab ) {
+		jQuery("table:contains(XML configuration file)").show();
 		jQuery("h3:contains(The following options will only affect Flash playback)").show();
 	}
-	
+
 	if ( ffmpeg_exists == "notinstalled" ) {
 		jQuery(".kgvid_video_app_required").addClass("kgvid_thumbnail_overlay");
 		jQuery(".kgvid_video_app_required").attr('title', 'FFMPEG or LIBAV required for these functions');
-		jQuery(".kgvid_video_app_required input").attr('disabled', 'disabled');
-		
+		jQuery(".kgvid_video_app_required :input").attr('disabled', 'disabled');
+		jQuery("#ffmpeg_sample_div").slideUp(1000);
+	
 	}
 	if ( ffmpeg_exists == "on" ) {
 		jQuery(".kgvid_video_app_required").removeClass("kgvid_thumbnail_overlay");
-		jQuery(".kgvid_video_app_required input").removeAttr('disabled');
+		jQuery(".kgvid_video_app_required :input").removeAttr('disabled');
 		jQuery(".kgvid_video_app_required").removeAttr('title');
+		jQuery("#ffmpeg_sample_div").slideDown(1000);
 	}
 }
 
@@ -593,11 +655,26 @@ function kgvid_hide_ffmpeg_settings() {
 	var video_app = jQuery('#video_app').val();
 	
 	if (video_app == "ffmpeg") {
-		jQuery("tr:contains(FFMPEG Options)").show();
+		jQuery("tr:contains(FFMPEG legacy options)").show();
 	}
 	if (video_app == "avconv") {
-		jQuery("tr:contains(FFMPEG Options)").hide();
+		jQuery("tr:contains(FFMPEG legacy options)").hide();
 	}
+	
+	jQuery('.video_app_name').html(video_app.toUpperCase());
+	
+	var rate_control = jQuery('#rate_control').val();
+	
+	if ( rate_control == "crf" ) {
+		jQuery("tr:contains(Constant Rate Factors)").show();
+		jQuery("tr:contains(Average Bit Rate:)").hide();
+	}
+	
+	if ( rate_control == "abr" ) {
+		jQuery("tr:contains(Constant Rate Factors)").hide();
+		jQuery("tr:contains(Average Bit Rate:)").show();
+	}
+	
 }
 
 function kgvid_set_bitrate_display() {
@@ -606,7 +683,7 @@ function kgvid_set_bitrate_display() {
 	var multiplier = jQuery('#bitrate_multiplier').val(); 
 	for (var i=0;i<resolutions.length;i++) {
 		var video_width = Math.round(resolutions[i] * 1.7777);
-		jQuery('#'+resolutions[i]+'_bitrate').html(Math.round(resolutions[i]*video_width*24*multiplier/1024));
+		jQuery('#'+resolutions[i]+'_bitrate').html(Math.round(resolutions[i]*video_width*30*multiplier/1024));
 	}
 
 }
@@ -677,29 +754,49 @@ function kgvid_update_ffmpeg_options() {
 		}
 		
 		var vpre_flags = "";
-		if ( jQuery('#ffmpeg_vpre').is(':checked') ) { vpre_flags = '-vpre fast -vpre ipod640'; }
+		if ( jQuery('#ffmpeg_vpre').is(':checked') == true ) { vpre_flags = '-vpre fast -vpre ipod640'; }
+		console.log(vpre_flags)
 		
 		if ( jQuery('#video_app').val() == "avconv" || jQuery('#video_bitrate_flag').is(':checked') == false ) { 
 			var video_bitrate_flag = "b:v";
 			var audio_bitrate_flag = "b:a";
 			var profile_flag = "profile:v";
+			var level_flag = "level:v";
+			var qscale_flag = "q:v";
 		}
 		
 		else { 
 			var video_bitrate_flag = "b";
 			var audio_bitrate_flag = "ab";
 			var profile_flag = "profile";
+			var level_flag = "level";
+			var qscale_flag = "qscale";
 		}
 		
 		var movflags = "";
-		if ( jQuery('#moov').val() == "FFMPEG movflag" || jQuery('#moov').val() == "LIBAV movflag" ) {
+		if ( jQuery('#moov').val() == "movflag" ) {
 			movflags = " -movflags faststart";
 		}
 		
-		var maxrate = "";
-		if ( jQuery('#bitrate_multiplier').val() != 0 ) { maxrate = " -maxrate "+jQuery('#360_bitrate').html()+"k"; }
+		var rate_control = jQuery('#rate_control').val();
+		if ( rate_control == "crf" ) {
+			rate_control_flag = " -crf "+jQuery('#x264_CRF').val();
+		}
+		else {
+			rate_control_flag = " -"+video_bitrate_flag+" "+jQuery('#360_bitrate').html()+"k";
+		}
+		
+		var profile_text = "";
+		if ( jQuery('#h264_profile').val() != "none" ) {
+			profile_text = " -"+profile_flag+" "+jQuery('#h264_profile').val();
+		}
+		
+		var level_text = "";
+		if ( jQuery('#h264_level').val() != "none" ) {
+			level_text = " -"+level_flag+" "+jQuery('#h264_level').val();
+		}
 			
-		var new_string = nice_text+jQuery('#app_path').val()+"/"+jQuery('#video_app').val()+" -y -i "+video_path[0]+" -acodec libfaac -"+audio_bitrate_flag+" "+jQuery('#audio_bitrate').val()+"k -s 640x360 -vcodec libx264 "+vpre_flags+" -threads "+jQuery('#threads').val()+maxrate+" -crf "+jQuery('#x264_CRF').val()+movflags+" -"+profile_flag+" main "+video_path[1];
+		var new_string = nice_text+jQuery('#app_path').val()+"/"+jQuery('#video_app').val()+" -y -i "+video_path[0]+" -acodec libfaac -"+audio_bitrate_flag+" "+jQuery('#audio_bitrate').val()+"k -s 640x360 -vcodec libx264 "+vpre_flags+" -threads "+jQuery('#threads').val()+rate_control_flag+movflags+profile_text+level_text+" "+video_path[1];
 		
 		jQuery('#ffmpeg_h264_sample').html(new_string);
 		
