@@ -229,6 +229,10 @@ font-weight: normal;
 	background-color:#f3f3ff;   
 }
 
+.widefat tr.kgvid_complete {
+	background-color: #F0F0F0;
+}
+
 .widefat td.queue_encode_formats {
 	width:40%;
 }
