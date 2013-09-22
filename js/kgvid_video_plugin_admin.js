@@ -62,7 +62,6 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 	document.getElementById('attachments-'+postID+'-thumbgenerate').setAttribute('title', ''); 
 	document.getElementById('attachments-'+postID+'-thumbrandomize').disabled=false; 
 	document.getElementById('attachments-'+postID+'-thumbrandomize').setAttribute('title', '');
-
 		
 	jQuery('#thumb-video-'+postID+'-container').show();
 	
@@ -101,10 +100,6 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 	   var percentage = 100 * currentPos / maxduration; //in %
 	   playProgress.css('width', percentage+'%');
 	   seekHandle.css('left', percentage+'%');
-	   if (video.currentTime != 0) {
-		   var thumbtimecode = kgvid_convert_to_timecode(video.currentTime);
-		   jQuery('#attachments-'+postID+'-thumbtime').val(thumbtimecode);
-	   }
 	});
 	
 	
@@ -148,10 +143,22 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 function kgvid_reveal_thumb_video(postID) {
 	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
 	var text = jQuery('#show-thumb-video-'+postID+' :nth-child(2)');
-	if ( text.html() == "Show video..." ) { text.html('Hide video...'); }
-	else { text.html('Show video...'); }
-	jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 1000);
-	
+	if ( text.html() == "Choose from video..." ) { //video is being revealed
+		text.html('Hide video...'); 
+		jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
+			if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
+			   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
+			   jQuery('#attachments-'+postID+'-thumbtime').val(thumbtimecode);
+			}
+		});
+	}
+	else { //video is being hidden
+		text.html('Choose from video...');
+		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
+	}
+	jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 500);
+	jQuery('#generate-thumb-'+postID+'-container').animate({opacity: 'toggle', height: 'toggle'}, 500);
+
 }
 
 function kgvid_generate_thumb(postID, buttonPushed) {
@@ -164,8 +171,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	var specifictimecode = document.getElementsByName('attachments['+postID+'][thumbtime]')[0].value;
 	if (specifictimecode === "0") { specifictimecode = "firstframe"; firstframethumb = true; }
+	if (buttonPushed == "random" || howmanythumbs > 1) { specifictimecode = 0; }
 	if (specifictimecode != 0 ) { howmanythumbs = 1; }
-	if (buttonPushed == "random") { specifictimecode = 0; }
 	
 	var thumbnailplaceholderid = "#attachments-"+postID+"-thumbnailplaceholder";
 	var thumbnailboxID = "#attachments-"+postID+"-kgflashmediaplayer-thumbnailbox";
@@ -181,14 +188,14 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var page = "attachment";
 	
 	jQuery(thumbnailplaceholderid).empty();
-	jQuery(thumbnailplaceholderid).append('<strong>Choose Thumbnail: </strong><div style="display:inline-block;" id="attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv" name="attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv">	<input type="button" id="attachments-'+postID+'-kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel Generating" name="attachments-'+postID+'-cancelencode" onclick="kgvid_cancel_thumbs(\''+postID+'\');"></div><div id="attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay" name="attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay" class="kgvid_thumbnail_overlay"><div name="attachments-'+postID+'-kgflashmediaplayer-thumbnailbox" id="attachments-'+postID+'-kgflashmediaplayer-thumbnailbox" class="kgvid_thumbnail_box"></div></div>');
+	jQuery(thumbnailplaceholderid).append('<strong>Choose Thumbnail: </strong><div style="display:inline-block;" id="attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv" name="attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv"> <input type="button" id="attachments-'+postID+'-kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel Generating" name="attachments-'+postID+'-cancelencode" onclick="kgvid_cancel_thumbs(\''+postID+'\');"></div><div id="attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay" name="attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay" class="kgvid_thumbnail_overlay"><div name="attachments-'+postID+'-kgflashmediaplayer-thumbnailbox" id="attachments-'+postID+'-kgflashmediaplayer-thumbnailbox" class="kgvid_thumbnail_box"></div></div>');
 
 	function kgvid_do_post() {
 
 		iincreaser = i + increaser;
 
 		jQuery.post(ajaxurl, { action:"kgvid_callffmpeg", security: kgflashmediaplayersecurity, movieurl: attachmentURL, numberofthumbs: howmanythumbs, thumbnumber:i, thumbnumberplusincreaser:iincreaser, ffmpeg_action: 'generate', attachmentID: postID, generate_button: buttonPushed, thumbtimecode: specifictimecode, dofirstframe: firstframethumb, poster: posterurl }, function(data) { 
-	
+
 			kgthumbnailTimeout = jQuery(thumbnailplaceholderid).data("kgthumbnailTimeouts") || null;
 			jQuery(thumbnailboxID).append(data.thumbnaildisplaycode);
 			var thumbnailselectID = "#attachments-"+postID+"-thumb"+i;
@@ -207,7 +214,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			}
 			else { 
 				jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
-				jQuery(cancelthumbdivID).animate({opacity: 0}, 500);
+				jQuery(cancelthumbdivID).animate({opacity: 'toggle', height: 'toggle'}, 500);
 				jQuery(thumbnailplaceholderid).data("kgthumbnailTimeouts", null);
 			}
 
@@ -224,9 +231,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	}// end kgvid_do_post function
 	
-	var video = document.getElementById('thumb-video-'+postID);
-	
-	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" && (video.networkState == 1 || video.networkState == 2) ) { //if the browser can load the video, use it to make thumbnails
+	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" && (document.getElementById('thumb-video-'+postID).networkState == 1 || document.getElementById('thumb-video-'+postID).networkState == 2) ) { //if the browser can load the video, use it to make thumbnails
+		var video = document.getElementById('thumb-video-'+postID);
 		var video_width = video.videoWidth;
 		var video_height = video.videoHeight;
 		var video_aspect = video_height/video_width;
@@ -255,7 +261,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				else { 
 					jQuery('#thumb-video-'+postID).off('seeked.kgvid'); 
 					jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
-					jQuery(cancelthumbdivID).animate({opacity: 0}, 500);
+					jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
 				}
 			}
 			
@@ -298,7 +304,8 @@ function kgvid_save_canvas_thumb(postID, time_id) {
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	var png64dataURL = canvas.toDataURL(); //this is what saves the image. Do this after selection.
 	jQuery.post(ajaxurl, { action:"kgvid_save_html5_thumb", security: kgflashmediaplayersecurity, raw_png: png64dataURL, url: video_url, offset: time_id }, function(thumb_url) {
-		jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(thumb_url);
+		jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(thumb_url).change();
+		jQuery.post( ajaxurl , { action:"kgvid_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
 	}, "text");
 	
 }
@@ -309,7 +316,7 @@ function kgvid_thumb_video_manual(postID) {
 	var time_id = Math.round(video.currentTime);
 	var time_display = kgvid_convert_to_timecode(video.currentTime);
 	document.getElementById('attachments-'+postID+'-thumbtime').value = time_display;
-	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<canvas style="width:200px;" id="'+postID+'_thumb_'+time_id+'"></canvas>');
+	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas id="'+postID+'_thumb_'+time_id+'"></canvas></div>');
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	canvas.width = video.videoWidth;
 	canvas.height = video.videoHeight;
@@ -383,8 +390,16 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 		}
 	});
 	jQuery('#kgflashmediaplayer-table').data("kgvid_attachment_id", basename);
-	document.getElementById('attachments-'+oldbasename+'-kgflashmediaplayer-encodeboxes').id = 'attachments-'+basename+'-kgflashmediaplayer-encodeboxes';
+	/* document.getElementById('thumb-video-'+oldbasename).setAttribute("onloadedmetadata", "kgvid_thumb_video_loaded('"+basename+"')");
+	document.getElementById('thumb-video-'+oldbasename).id = 'thumb-video-'+basename;
+	document.getElementById('manual-thumbnail').setAttribute("onclick", "kgvid_thumb_video_manual('"+basename+"');");
+	document.getElementById('thumb-video-'+oldbasename+'-container').id = 'thumb-video-'+basename+'-container';
+	document.getElementById('show-thumb-video-'+oldbasename).setAttribute("onclick", "kgvid_reveal_thumb_video('"+basename+"');");
+	document.getElementById('show-thumb-video-'+oldbasename).id = 'show-thumb-video-'+basename;
+	document.getElementById('thumb-video-'+oldbasename+'-player').id = 'thumb-video-'+basename+'-player'; */
+	jQuery('#attachments-'+oldbasename+'-kgflashmediaplayer-encodeboxes').attr('id', 'attachments-'+basename+'-kgflashmediaplayer-encodeboxes');
 	document.getElementById('attachments-'+oldbasename+'-thumbnailplaceholder').id = 'attachments-'+basename+'-thumbnailplaceholder';
+	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
 	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
 	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="Randomize" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
 	
@@ -455,9 +470,10 @@ function kgvid_insert_shortcode() {
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+basename+'][kgflashmediaplayer-security]')[0].value;
 	var url = document.getElementById('attachments-'+basename+'-kgflashmediaplayer-url').value;
 	var posterurl = document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value;
-	var postid = parent.document.getElementById('post_ID').value
+	var postid = parent.document.getElementById('post_ID').value;
+	var set_featured = jQuery('#attachments-'+basename+'-featured').val();
 
-	jQuery.post(ajaxurl, { action:'kgvid_callffmpeg', security: kgflashmediaplayersecurity, attachmentID: basename, movieurl: url, ffmpeg_action:'submit', poster: posterurl, parent_id: postid }, function(data) {
+	jQuery.post(ajaxurl, { action:'kgvid_callffmpeg', security: kgflashmediaplayersecurity, attachmentID: basename, movieurl: url, ffmpeg_action:'submit', poster: posterurl, parent_id: postid, set_featured: set_featured }, function(data) {
 		//jQuery('attachments-singleurl-thumbnailplaceholder').empty();
 	}, "json" );
 
@@ -529,17 +545,20 @@ function kgvid_delete_video(movieurl, postID, format, childID) {
 }
 
 function kgvid_cancel_thumbs(postID) {
+
 		var thumbnailplaceholderid = "#attachments-"+postID+"-thumbnailplaceholder";
 		var thumbnailboxoverlayID = "#attachments-"+postID+"-kgflashmediaplayer-thumbnailboxoverlay";
 		var cancelthumbdivID = '#attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv';
 		var kgthumbnailTimeout = jQuery(thumbnailplaceholderid).data("kgthumbnailTimeouts");
 		
 		for( key in kgthumbnailTimeout ){ clearTimeout(kgthumbnailTimeout[key]); }
-		
+		jQuery('#thumb-video-'+postID).off('seeked.kgvid'); 
+		jQuery('#thumb-video-'+postID).data('thumbnail_data', []);	
 		jQuery(thumbnailplaceholderid).data("kgthumbnailTimeouts", null);
+		
 		jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
-		jQuery(cancelthumbdivID).animate({opacity: 0}, 500);
-		jQuery(cancelthumbdivID).remove;
+		jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
+
 }
 
 function kgvid_redraw_encode_checkboxes(movieurl, postID, page) {
@@ -598,12 +617,14 @@ function kgvid_save_plugin_settings(input_obj) {
 	var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
 	var setting_value = input_obj.value;
 	
+	var all_settings = jQuery('form').serialize();
+	
 	if ( input_obj.type == "checkbox" ) {
 		if ( input_obj.checked ) { setting_value = "on"; }
 		else { setting_value = false; }
 	}
 	jQuery('.settings-error').fadeOut(); //clear error messages
-	//jQuery('.settings-save-status').remove();
+
 	var save_span = '<span id="save_'+input_obj.id+'" class="settings-save-status kgvid_spinner"><span class="spinner" style="display:inline-block;"></span><span class="saved" style="display:none;">Saved.</span></span>';
 	if ( jQuery(input_obj).parents(".kgvid_video_app_required").length ) { jQuery(input_obj).parents(".kgvid_video_app_required").append(save_span); }
 	else { jQuery(input_obj).parents("td:first").append(save_span); }
@@ -612,7 +633,7 @@ function kgvid_save_plugin_settings(input_obj) {
 	
 	function kgvid_ajax_save() {
 		
-		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value }, function(data) {
+		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value, all_settings: all_settings }, function(data) {
 			jQuery(input_obj).val(data.validated_value);
 			if ( data.error_message != "" ) { jQuery(input_obj).parents("td:first").append('<div class="error settings-error"><p><strong>'+data.error_message+'</strong></p>'); }
 			if ( save_queue[0].id == "width" || save_queue[0].id == "height" ) {

@@ -119,13 +119,44 @@ div.kgvid_cancel_button input {
 	width: auto;  
 }
 
+#poststuff .nav-tab-wrapper.kgvid-tabs {
+	margin-top: 0;
+	padding: 0;
+}
+
+.kgvid-tabs > .nav-tab {
+	font-size: 14px;
+	padding: 2px 6px;
+	color: #aaa;
+}
+
+.kgvid-tabs >  .nav-tab-active {
+	border-width: 1px;
+	color: #464646;
+}
+
+div.kgvid-tabs-content {
+	margin: 5px 0;
+}
+
 div.kgvid_thumbnail_box {
 	border-style:solid; 
 	border-color:#ccc; 
 	border-width:1px; 
 	text-align:center; 
-	margin-bottom:10px; 
+	margin:12px 0; 
 	padding:5px;
+}
+
+div.kgvid_chosen_thumbnail_box {
+	border-width:6px;
+	width: 200px;
+	padding: 0;
+}
+
+.kgvid_chosen_thumbnail_box img, .kgvid_chosen_thumbnail_box canvas {
+	display: block;
+	width: 200px;
 }
 
 div.kgvid_thumbnail_overlay {
@@ -289,6 +320,13 @@ div.kgvid_post_meta_boxes {
 
 .kgvid-reveal-thumb-video {
 	cursor:pointer;
+	width: 200px;
+	text-align: left;
+}
+
+.kgvid-thumb-video {
+	width: 100%;
+	margin: 5px 0 5px 0;
 }
 
 .kgvid-play-pause {
@@ -318,7 +356,7 @@ div.kgvid_post_meta_boxes {
 {
 	display: inline-block;
 	position: relative;
-	width: 184px;
+	width: 90%;
 	height: 10px;
 	background-color: #F5F5F5;
 	border: 1px solid #dfdfdf;
