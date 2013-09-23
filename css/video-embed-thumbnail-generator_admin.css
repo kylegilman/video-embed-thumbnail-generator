@@ -327,6 +327,11 @@ div.kgvid_post_meta_boxes {
 .kgvid-thumb-video {
 	width: 100%;
 	margin: 5px 0 5px 0;
+	background-color: black;
+}
+
+.kgvid-video-controls {
+	white-space: nowrap;
 }
 
 .kgvid-play-pause {
@@ -356,7 +361,7 @@ div.kgvid_post_meta_boxes {
 {
 	display: inline-block;
 	position: relative;
-	width: 90%;
+	width: 89%;
 	height: 10px;
 	background-color: #F5F5F5;
 	border: 1px solid #dfdfdf;

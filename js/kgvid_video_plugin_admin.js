@@ -144,7 +144,8 @@ function kgvid_reveal_thumb_video(postID) {
 	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
 	var text = jQuery('#show-thumb-video-'+postID+' :nth-child(2)');
 	if ( text.html() == "Choose from video..." ) { //video is being revealed
-		text.html('Hide video...'); 
+		text.html('Hide video...');
+		jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
 		jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
 			if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
 			   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
@@ -313,10 +314,11 @@ function kgvid_save_canvas_thumb(postID, time_id) {
 function kgvid_thumb_video_manual(postID) {
 
 	var video = document.getElementById('thumb-video-'+postID);
+	var video_aspect = video.videoHeight/video.videoWidth;
 	var time_id = Math.round(video.currentTime);
 	var time_display = kgvid_convert_to_timecode(video.currentTime);
 	document.getElementById('attachments-'+postID+'-thumbtime').value = time_display;
-	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas id="'+postID+'_thumb_'+time_id+'"></canvas></div>');
+	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas style="height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></div>');
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	canvas.width = video.videoWidth;
 	canvas.height = video.videoHeight;
@@ -400,6 +402,7 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 	jQuery('#attachments-'+oldbasename+'-kgflashmediaplayer-encodeboxes').attr('id', 'attachments-'+basename+'-kgflashmediaplayer-encodeboxes');
 	document.getElementById('attachments-'+oldbasename+'-thumbnailplaceholder').id = 'attachments-'+basename+'-thumbnailplaceholder';
 	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
+	document.getElementById('attachments-'+basename+'-numberofthumbs').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
 	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
 	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="Randomize" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
 	
@@ -471,7 +474,8 @@ function kgvid_insert_shortcode() {
 	var url = document.getElementById('attachments-'+basename+'-kgflashmediaplayer-url').value;
 	var posterurl = document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value;
 	var postid = parent.document.getElementById('post_ID').value;
-	var set_featured = jQuery('#attachments-'+basename+'-featured').val();
+	if ( jQuery('#attachments-'+basename+'-featured').is(':checked') ) { var set_featured = "on"; }
+	else { var set_featured = false; }
 
 	jQuery.post(ajaxurl, { action:'kgvid_callffmpeg', security: kgflashmediaplayersecurity, attachmentID: basename, movieurl: url, ffmpeg_action:'submit', poster: posterurl, parent_id: postid, set_featured: set_featured }, function(data) {
 		//jQuery('attachments-singleurl-thumbnailplaceholder').empty();

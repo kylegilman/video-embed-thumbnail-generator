@@ -1022,7 +1022,6 @@ function KGVID_shortcode($atts, $content = ''){
 			if ( !empty($description) ) { $code .= '<meta itemprop="description" content="'.esc_attr($description).'" />'; }
 
 			if ( $options['embed_method'] == "WordPress Default" ) {
-		
 				$wp_shortcode = "[video ";
 				foreach ($video_formats as $name => $type) {
 					if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
@@ -1030,12 +1029,11 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 				$wp_shortcode .= implode($sources);
 				if ( $query_atts["poster"] != '' ) { $wp_shortcode .= 'poster="'.$query_atts["poster"].'" '; }
-				$wp_shortcode .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
+				$wp_shortcode .= 'width='.$query_atts["width"].' height='.$query_atts["height"].' ';
 				if ( $query_atts["loop"] == 'true') { $wp_shortcode .= 'loop="true" '; }
 				if ( $query_atts["autoplay"] == 'true') { $wp_shortcode .= 'autoplay="true" '; }
 				$wp_shortcode .= "]";
 				$code .= do_shortcode($wp_shortcode);
-			
 			}
 
 			else { //if it's not the WordPress default player
@@ -1053,10 +1051,9 @@ function KGVID_shortcode($atts, $content = ''){
 				$code .= implode("\n", $sources); //add the <source> tags created earlier
 
 				$code .= "</video>\n";
-				$code .= "</div>";
 
 			}
-
+			$code .= "</div>";
 			$show_views = false;
 			if ( !empty($id) || !empty($query_atts['caption']) || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
 				$view_count = number_format(intval(get_post_meta($id, "_kgflashmediaplayer-starts", true)));
@@ -2423,12 +2420,14 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$generate_content = "";
 		$thumbnail_timecode = "";
 		
-		if ( current_user_can('make_video_thumbnails') ) { 
-		
+		if ( current_user_can('make_video_thumbnails') ) {
+			$attachment_url = wp_get_attachment_url($post->ID);
+			$moviefiletype = pathinfo($attachment_url, PATHINFO_EXTENSION);
+			if ( $moviefiletype == "mov" || $moviefiletype == "m4v" ) { $moviefiletype = "mp4"; }
 			$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" style="display:none;" id="thumb-video-'.$post->ID.'-container">
 				<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">Choose from video...</span></div>
 				<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-					<video class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded('.$post->ID.')" id="thumb-video-'.$post->ID.'" controls><source src="'.wp_get_attachment_url($post->ID).'"</src></video>
+					<video class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded('.$post->ID.')" id="thumb-video-'.$post->ID.'" controls><source src="'.$attachment_url.'" type="video/'.$moviefiletype.'"></src></video>
 					<div class="kgvid-video-controls">
 						<div class="kgvid-play-pause"></div>
 						<div class="kgvid-seek-bar">
@@ -2511,8 +2510,9 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 		<input type="checkbox" name="attachments['.$post->ID.'][kgflashmediaplayer-downloadlink]" id="attachments-'.$post->ID.'-kgflashmediaplayer-downloadlink" value="checked" '.$downloadlinkchecked.'> 
 		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-downloadlink">Insert download link below video<em><small><br />Makes it easier for users to download file.</em></small></label><br />
+		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-embed">Insert</label>
 		'.$shortcode_select.'
-		<label for="attachments-'.$post->ID.'-kgflashmediaplayer-embed">Insert</small></em></label><script type="text/javascript">window.onload=kgvid_hide_standard_wordpress_display_settings('.$post->ID.');</script>';
+		<script type="text/javascript">window.onload=kgvid_hide_standard_wordpress_display_settings('.$post->ID.');</script>';
 
 		if ( get_post_meta($post->ID, "_kgflashmediaplayer-embed", true) == "Video Gallery" ) {
 
@@ -2802,7 +2802,7 @@ class kgInsertMedia {
     	if ( !empty($attachment['gallery_orderby']) && $attachment['gallery_orderby'] != "menu_order" ) { $output .= ' gallery_orderby="'.$attachment["gallery_orderby"].'"'; }
     	if ( !empty($attachment['gallery_order']) && $attachment['gallery_order'] != "ASC" ) { $output .= ' gallery_order="'.$attachment["gallery_order"].'"'; }
     	if ( !empty($attachment['gallery_id']) && $attachment['gallery_id'] != $parent_id ) { $output .= ' gallery_id="'.$attachment["gallery_id"].'"'; }
-    	$output .= '][/KGVID]';
+    	$output .= ']';
     }
     
     return $output;  
@@ -2860,7 +2860,7 @@ function media_embedurl_process() {
 						<input type="button" id="attachments-singleurl-thumbrandomize" class="button-secondary" value="Randomize" name="thumbrandomize" onclick="kgvid_generate_thumb('singleurl', 'random');" disabled title="Please enter a valid video URL" /> 
 						<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe">Force 1st Frame Thumbnail</label><br>
 						<span>Thumbnail timecode:</span> <input name="attachments[singleurl][thumbtime]" id="attachments-singleurl-thumbtime" type="text" value="" style="width:60px;"><br>
-						<input type="checkbox" <?php echo checked( $options['featured'], "on", false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> Set thumbnail as featured image
+						<input type="checkbox" <?php echo checked( $options["featured"], "on", false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> Set thumbnail as featured image
 					</td>
 				</tr>
 				<?php } ?>
@@ -2975,6 +2975,8 @@ function kgvid_video_attachment_template() {
 
 	global $post;
 	global $wp_query;
+	global $content_width;
+	$content_width = 2048;
 	$options = get_option('kgvid_video_embed_options');
 
 	$kgvid_video_embed = array ( 'enable' => 'false' ); //turned off by default
