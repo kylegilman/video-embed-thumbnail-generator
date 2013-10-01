@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation/
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, responsive
 Requires at least: 3.5
-Tested up to: 3.6
+Tested up to: 3.7
 Stable tag: 4.1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -24,7 +24,7 @@ If your video can be played natively in your browser, you can generate thumbnail
 
 In the plugin settings you can set the default maximum width and height based on the dimensions of your particular template and those values will be filled in when you open the window. If you generate thumbnails, the video display dimensions will be adjusted automatically to match the size and aspect ratio of the video file. You can make further adjustments if you want. After you choose a thumbnail it will be registered in the Wordpress Media Library and added to the post's attachments.
 
-I highly recommend starting with H.264 video and AAC audio in an MP4 container. If you're encoding with Apple's Compressor, the "Streaming" setting should be "Fast Start" (NOT Fast Start - Compressed Header). I've written up my recommended video encode settings in <a href="http://www.kylegilman.net/2011/02/25/making-mp4-h-264-videos-in-apple-compressor/">a post on my website</a>.
+I highly recommend starting with H.264 video and AAC audio in an MP4 container. If you're encoding with Handbrake, make sure that "Web Optimized" is checked. Using Apple's Compressor, the "Streaming" setting should be "Fast Start" (not Fast Start - Compressed Header). I've written up my recommended video encode settings in <a href="http://www.kylegilman.net/2011/02/25/making-mp4-h-264-videos-in-apple-compressor/">a post on my website</a>.
 
 If you have them installed on your server, the plugin can use FFMPEG or LIBAV to encode videos and make thumbnails. By default the plugin looks for FFMPEG in `/usr/local/bin` but if the application is installed in a different place on your server, you can point it to the correct place in the plugin settings. Users running WordPress on Windows servers should try using Linux-style paths (with forward slashes instead of backslashes and a forward slash `/` instead of `C:\`).
 
@@ -34,7 +34,7 @@ The files will encode in the background and will take several minutes to complet
 
 Encoded H.264 files can be fixed for streaming using "movflags faststart" introduced in recent versions of FFMPEG/LIBAV, or qt-faststart or MP4Box if you have one of them installed in the same directory as your encoder and select it in the plugin settings. Without one of these options enabled, FFMPEG/LIBAV will place moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start and prevents the Strobe Media player from playing them at all. 
 
-If you want to make ogv, webm, or H.264 files available and can't use the FFMPEG encode button, you can upload your own files to the same directory as the original and the plugin will automatically find them. For example, if your main file is awesomevid.mp4, the plugin will look for awesomevid-1080.mp4, awesomevid-720.mp4, awesomevid-480.mp4 (up to 480p H.264), awesomevid.webm and awesomevid.ogv as well.
+If you want to make ogv, webm, or H.264 files available and can't use the FFMPEG encode button, you can upload your own files to the same directory as the original and the plugin will automatically find them. For example, if your main file is awesomevid.mp4, the plugin will look for awesomevid-1080.mp4, awesomevid-720.mp4, awesomevid-480.mp4 (up to 480p H.264), awesomevid.webm and awesomevid.ogv as well. No matter what format your original video is, you can use it in the shortcode and the plugin will attempt to find all compatible formats related to it. For example, you might have an AVI called awesomevid.avi which is not compatible with any browser, but
 
 If you want to make it easier for people to save the video to their computers, you can choose to include a link by checking the "Generate Download Link Below Video" button.
 
@@ -68,14 +68,16 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2011/10/Re
 * `caption="Caption"`
 * `description="Description"` Used for metadata only.
 * `downloadlink="true/false"` generates a link below the video to make it easier for users to save the video file to their computers.
-* `right_click="true/false"`
-* `resize`="true/false"`
+* `right_click="true/false"` allow or disable right-clicking on the video player.
+* `resize="true/false"` allow or disable responsive resizing.
+* `id="xxx"` video attachment ID (instead of using a URL).
+* `videos="x"` number of attached videos to display if no URL or id is given.
 
 = These options will only affect Video.js playback =
 
 * `skin="example-css-class"` Completely change the look of the video player. <a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">Instructions here.</a>
 
-= These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on HTML5 or Video.js playback. =
+= These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players. =
 
 * `autohide="true/false"` specify whether to autohide the control bar after a few seconds.
 * `playbutton="true/false"` turns the big play button overlay in the middle of the video on or off.
@@ -132,11 +134,11 @@ First off, don't panic.
 
 This plugin can use FFMPEG or LIBAV to make thumbnails and create alternate video formats. Unfortunately most servers don't have FFMPEG installed and most shared hosting plans don't allow you to install FFMPEG because of the system resources it requires. You're getting this error message because you don't have FFMPEG installed in the most common directory. If you know you have FFMPEG installed on your server, you'll need to find the actual path to the program and enter it in the plugin settings field `Path to applications on server`
 
-Many of the features of the plugin will work without FFMPEG. You can generate embed shortcodes for your videos on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to generate thumbnails or encode alternate formats on the server. There is no way around this. A program has to read the video files in order to generate the thumbnails, and FFMPEG is the best one I've found to do that. Dreamhost is one of the few shared hosts I know of that has FFMPEG installed and available for users.
+Many of the features of the plugin will work without FFMPEG. You can generate embed shortcodes for your videos and make thumbnails on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to automatically generate thumbnails or encode alternate formats on the server. If you don't have your own VPS or dedicated server, Dreamhost is one of the few shared hosts I know of that has FFMPEG installed and available for users.
 
 = How can I encode videos in directories protected by .htaccess passwords? =
 
-Use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
+Enter the username & password in the plugin settings "FFMPEG Settings" tab, or use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
 
 == Screenshots ==
 
@@ -150,13 +152,18 @@ Use the "Embed from URL" tab and enter the URL in this format http://username:pa
 = 4.2 =
 * THUMBNAILS FOR EVERYBODY! Added in-browser thumbnail generation. Any video in the media library that can be played natively in the current browser can now be used to generate thumbnails without requiring special software on your server.
 * Updated shortcode to support the simplest possible implementation: [KGVID]. Without any additional information, it will automatically find and display all videos attached to the post.
+* Added "id" and "videos" attributes to shortcode to display specific video IDs or show a specific number of attached videos.
+* If a video thumbnail is set, the video will now use its thumbnail as an icon in the WordPress admin area instead of the generic "video" icon.
+* To avoid clutter, additional video formats encoded by the plugin are now hidden from lists of media, unless "Video" is specifically selected.
+* When a master video is deleted and additional video formats are not deleted, the next highest quality format automatically becomes the master video.
 * Updated Video.js to version 4.2.1, updated the included skin to work with it, and removed the unused image video-js.png.
+* Added option to use the WordPress default video player introduced in WordPress version 3.6.
 * Added buttons to choose thumbnails, end of video image, and watermark from the media library.
 * Added option to add Open Graph tags for posting videos on Facebook. However, for the many Facebook users who browse with https, your own videos must be served via https in order to work.
-* Added options to automatically generate a thumbnail and encode videos to multiple formats as soon as they are uploaded.
-* Added option to use the WordPress default video player introduced in WordPress version 3.6.
+* Added options to automatically generate a thumbnail and encode videos to multiple formats as soon as they are uploaded (FFMPEG/LIBAV only).
 * Added option to disable responsive video resizing.
 * Added options to restrict thumbnail making and video encoding to particular user roles.
+* Added option to enter username and password to give FFMPEG/LIBAV access to .htaccess protected videos.
 * Added option to disable right-clicking on videos.
 * Added option to replace original video file with an H.264 video of the same resolution.
 * Added advanced FFMPEG/LIBAV encoding options. New options include choice between Constant Rate Factor and Average Bit Rate, H.264 profiles and levels, audio bit rate, disabling `nice` on Linux, and the ability to encode with more than one thread.

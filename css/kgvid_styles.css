@@ -12,14 +12,14 @@
 	position: absolute;
 	bottom: 7%;
 	right: 5%;
-	z-index: 1001;
+	z-index: 1;
 	margin: 0px;
 	max-width: 10%;
 	box-shadow: none;
 }
 
-.vjs-controls {
-	z-index:1002;
+.vjs-control-bar, .mejs-controls {
+	z-index:2;
 }
 
 .vjs-fullscreen {padding-top: 0px}
