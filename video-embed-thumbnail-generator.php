@@ -1469,7 +1469,6 @@ function kgvid_generate_queue_table() {
 	$html = "";
 
 	$video_embed_queue = get_option('kgvid_video_embed_queue');
-	$nonce = wp_create_nonce('video-embed-thumbnail-generator-nonce');
 
 	if ( !empty($video_embed_queue) ) {
 	
@@ -1519,7 +1518,7 @@ function kgvid_generate_queue_table() {
 			$file_name =  basename($moviefilepath,'.'.$path_info['extension']);
 			$html .= "\t\t\t\t\t<td><a id='".$moviefilepath."' href='".$attachmentlink."'>".urldecode($file_name)."</a><input type='hidden' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-url]' value='".$video_entry['movieurl']."'></td>\n";
 			$html .= "\t\t\t\t\t<td class='queue_encode_formats' id='formats_".$video_entry['attachmentID']."'>";
-			$html .= "<input type='hidden' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-security]' value='".$nonce."' />";
+			$html .= "<input type='hidden' id='attachments-".$video_entry['attachmentID']."-kgflashmediaplayer-security' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-security]' value='".$nonce."' />";
 			$html .= kgvid_generate_encode_checkboxes($video_entry['movieurl'], $video_entry['attachmentID'], 'queue');
 			$html .= "</td>\n";
 			$html .= "\t\t\t\t\t<td>";
