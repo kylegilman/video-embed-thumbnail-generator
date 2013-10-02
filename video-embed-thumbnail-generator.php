@@ -2409,7 +2409,6 @@ function kgvid_cron_new_attachment_handler($post_id) {
 				$dofirstframe = false;
 				break;
 		}
-
 			
 		$thumb_output = kgvid_make_thumbs($post_id, $movieurl, $numberofthumbs, 1, $iincreaser, $thumbtimecode, $dofirstframe, 'generate');
 		$thumb_id = kgvid_save_thumb($post_id, $post->post_title, $thumb_output['thumb_url']);
@@ -2417,8 +2416,7 @@ function kgvid_cron_new_attachment_handler($post_id) {
 		update_post_meta($post_id, '_kgflashmediaplayer-poster-id', $thumb_id);
 		if( $options['featured'] == "on" ) { 
 			if ( !empty($thumb_id) && $post->post_parent ) { set_post_thumbnail($post->post_parent, $thumb_id); }
-		}
-		
+		}	
 		
 	}
 	
@@ -2805,6 +2803,7 @@ function kgvid_ajax_save_html5_thumb() {
 		error_log($post_name);
 		$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
 	}
+	kgvid_schedule_cleanup_generated_files('thumbs');
 	echo ($thumb_url);
 	die();
 
@@ -3314,26 +3313,22 @@ function kgvid_cleanup_generated_thumbnails_handler() {
 }
 add_action('kgvid_cleanup_generated_thumbnails','kgvid_cleanup_generated_thumbnails_handler');
 
-function kgvid_schedule_cleanup_generated_files() { //schedules deleting all tmp thumbnails or logfiles if no files are generated in an hour	
+function kgvid_schedule_cleanup_generated_files($arg) { //schedules deleting all tmp thumbnails or logfiles if no files are generated in an hour	
 
-	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-
-	if (isset($_POST['thumbs'])) { 
+	if ( $arg == 'thumbs' ) { 
 		$timestamp = wp_next_scheduled( 'kgvid_cleanup_generated_thumbnails' );
 		wp_unschedule_event($timestamp, 'kgvid_cleanup_generated_thumbnails' );
 		wp_schedule_single_event(time()+3600, 'kgvid_cleanup_generated_thumbnails');
 	}
 
-	if (isset($_POST['logfile'])) { 
+	else { 
 		$timestamp = wp_next_scheduled( 'kgvid_cleanup_generated_logfiles' );
 		wp_unschedule_event($timestamp, 'kgvid_cleanup_generated_logfiles' );
-		$args = array('logfile'=>$_POST['logfile']);
+		$args = array('logfile'=>$arg);
 		wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);	
 	}
 	
-	die(); // this is required to return a proper result
 }
-add_action('wp_ajax_kgvid_schedule_cleanup_generated_files', 'kgvid_schedule_cleanup_generated_files');
 
 function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser, $thumbtimecode, $dofirstframe, $generate_button) {
 
@@ -3426,6 +3421,8 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 
 		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options));
+		
+		kgvid_schedule_cleanup_generated_files('thumbs');
 
 		if (floatval($movieoffset) > 60) {
 			$movieoffset_minutes = sprintf("%02s", intval(intval($movieoffset) / 60) );

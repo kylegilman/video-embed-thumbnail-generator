@@ -227,7 +227,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			else { document.getElementById(widthID).value = document.getElementsByName(maxwidthID)[0].value; }
 			if (parseInt(data.movie_width) > parseInt(document.getElementsByName(maxwidthID)[0].value) ) { document.getElementById(heightID).value = Math.round(kgvid_aspect*parseInt(document.getElementsByName(maxwidthID)[0].value)); } 
 			else { document.getElementById(heightID).value = data.movie_height; }
-			jQuery.post( ajaxurl , { action:"kgvid_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
+			//jQuery.post( ajaxurl , { action:"kgvid_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
 			kgvid_redraw_encode_checkboxes(attachmentURL, postID, page);
 
 		}, "json");
@@ -319,7 +319,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 		.done( function(thumb_url) {
 			if ( total == 1 ) {
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(thumb_url).change();
-				jQuery.post( ajaxurl , { action:"kgvid_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
+				//jQuery.post( ajaxurl , { action:"kgvid_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
 			}
 			else {
 				kgvid_thumbnail_saveall_progress(postID, total);
@@ -1001,7 +1001,7 @@ function kgvid_pick_image(button) {
 					// Grab the selected attachment.
 					var attachment = frame.state().get('selection').first()
 					jQuery('#'+$el.data('change')).val(attachment.attributes.url);
-					if ( $el.data('change').substr(-25) == "kgflashmediaplayer-poster" ) { jQuery('#'+$el.data('change').slice(0, -25)+'thumbnailplaceholder').html('<div style="border-style:solid; border-color:#ccc; border-width:3px; width:200px; text-align:center; margin:10px;"><img width="200" src="'+attachment.attributes.url+'"></div>'); }
+					if ( $el.data('change').substr(-25) == "kgflashmediaplayer-poster" ) { jQuery('#'+$el.data('change').slice(0, -25)+'thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'+attachment.attributes.url+'"></div>'); }
 					jQuery('#'+$el.data('change')).change();
 				});
 
