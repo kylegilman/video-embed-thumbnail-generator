@@ -712,8 +712,6 @@ function kgvid_save_plugin_settings(input_obj) {
 	jQuery('#setting-error-options-reset').fadeOut() //if settings were reset previously, clear the warning
 	var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
 	var setting_value = input_obj.value;
-
-	var all_settings = jQuery('form').serialize();
 	
 	if ( input_obj.type == "checkbox" ) {
 		if ( input_obj.checked ) { setting_value = "on"; }
@@ -729,9 +727,11 @@ function kgvid_save_plugin_settings(input_obj) {
 	if ( jQuery(input_obj).hasClass('affects_ffmpeg') == true ) { jQuery('#ffmpeg_h264_sample,#ffmpeg_output').html('Saving...');  }
 	
 	function kgvid_ajax_save() {
-		
+		var all_settings = jQuery('form').serialize();
+		console.log(save_queue[0].id+': '+setting_value);
 		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value, all_settings: all_settings }, function(data) {
 			jQuery(input_obj).val(data.validated_value);
+			console.log(save_queue[0].id+': '+data.validated_value);
 			if ( data.error_message != "" ) { jQuery(input_obj).parents("td:first").append('<div class="error settings-error"><p><strong>'+data.error_message+'</strong></p>'); }
 			if ( save_queue[0].id == "width" || save_queue[0].id == "height" ) {
 				var dimension = "";
