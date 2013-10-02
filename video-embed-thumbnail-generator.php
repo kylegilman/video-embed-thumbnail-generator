@@ -739,9 +739,10 @@ function kgvid_video_embed_enqueue_scripts() {
 add_action('wp_enqueue_scripts', 'kgvid_video_embed_enqueue_scripts', 12);
 
 function enqueue_kgvid_script() { //loads plugin-related scripts in the admin area
-
-    wp_enqueue_script( 'video_embed_thumbnail_generator_script', plugins_url('/js/kgvid_video_plugin_admin.js', __FILE__) );
-    wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url('/css/video-embed-thumbnail-generator_admin.css', __FILE__) );
+	$options = get_option('kgvid_video_embed_options');
+	
+    wp_enqueue_script( 'video_embed_thumbnail_generator_script', plugins_url('/js/kgvid_video_plugin_admin.js', __FILE__), '', $options['version'] );
+    wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url('/css/video-embed-thumbnail-generator_admin.css', __FILE__), '', $options['version'] );
     
 }
 add_action('admin_enqueue_scripts', 'enqueue_kgvid_script');
