@@ -125,17 +125,34 @@ function kgvid_setup_video(id) {
 	} //end if Strobe Media Playback
 	
 	if ( video_vars.player_type == "WordPress Default" ) {
+	
+		player = jQuery('#video_'+id+'_div video');
 		
 		if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); }
-		jQuery('#video_'+id+'_div').hover(
-			function(){ 
-				jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); 
 
-			},
-			function(){ 
-				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');		
-			}
-		);
+		if ( video_vars.meta ) {
+			jQuery('#video_'+id+'_div').hover(
+				function(){ 
+					jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); 
+
+				},
+				function(){ 
+					jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');		
+				}
+			);
+		}
+		
+		if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
+	
+		player.on('play', function kgvid_play_start(){
+			kgvid_video_counter(id, 'play');
+		});
+		
+		player.on('ended', function kgvid_play_end(){ 
+			kgvid_video_counter(id, 'end');
+		});
+		
+		
 	} //end if WordPress Default
 	
 	if ( video_vars.resize == "true" ) {	
