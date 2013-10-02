@@ -245,9 +245,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 		
 			var thumbnail_saved = jQuery(video).data('thumbnail_data');
 			if ( thumbnail_saved.length > 0 ) { //if there are any thumbnails that haven't been generated
-				console.log(video.currentTime);
-				time_id = Math.round(video.currentTime*100);
 
+				time_id = Math.round(video.currentTime*100);
 				var time_display = kgvid_convert_to_timecode(video.currentTime);
 
 				jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
@@ -727,11 +726,13 @@ function kgvid_save_plugin_settings(input_obj) {
 	if ( jQuery(input_obj).hasClass('affects_ffmpeg') == true ) { jQuery('#ffmpeg_h264_sample,#ffmpeg_output').html('Saving...');  }
 	
 	function kgvid_ajax_save() {
+	
 		var all_settings = jQuery('form').serialize();
-		console.log(save_queue[0].id+': '+setting_value);
+
 		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value, all_settings: all_settings }, function(data) {
+
 			jQuery(input_obj).val(data.validated_value);
-			console.log(save_queue[0].id+': '+data.validated_value);
+
 			if ( data.error_message != "" ) { jQuery(input_obj).parents("td:first").append('<div class="error settings-error"><p><strong>'+data.error_message+'</strong></p>'); }
 			if ( save_queue[0].id == "width" || save_queue[0].id == "height" ) {
 				var dimension = "";

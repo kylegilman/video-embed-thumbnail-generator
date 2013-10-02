@@ -2799,7 +2799,6 @@ function kgvid_ajax_save_html5_thumb() {
 	unlink($tmp_posterpath);
 	if ( $total > 1 ) {
 		$post_name = get_the_title($post_id);
-		error_log($post_name);
 		$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
 	}
 	kgvid_schedule_cleanup_generated_files('thumbs');
@@ -3748,7 +3747,7 @@ function kgvid_encode_videos() {
 				$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename'])."_".$queued_format."_".sprintf("%04s",mt_rand(1, 1000))."_encode.txt";
 				
 				$cmd = escapeshellcmd($encode_string);
-				error_log($cmd);
+				
 				if ( !empty($cmd) ) { $cmd = $cmd." > ".$logfile." 2>&1 & echo $!"; }
 				else {
 					$arr = array ( "embed_display"=>"<span style='color:red;'>Error: Command 'escapeshellcmd' is disabled on your server.</span>" );
