@@ -3283,7 +3283,7 @@ add_action('template_redirect', 'kgvid_video_attachment_template');
 		else { $video_id = get_post_meta($kgvid_video_embed['id'], '_kgflashmediaplayer-format', $kgvid_video_embed['format'] ); }
 		$url = wp_get_attachment_url($video_id);
 		$type = get_post_mime_type($video_id);
-		error_log($url);
+
 		header('Location: ' .$url);
 		header('Content-type: '.$type);
 		exit(0);
@@ -3654,7 +3654,7 @@ function kgvid_encode_videos() {
 				}
 			}
 		}
-		
+
 		if ( !empty($queued_format) ) {
 	
 			$options = get_option('kgvid_video_embed_options');
@@ -3665,7 +3665,6 @@ function kgvid_encode_videos() {
 				$moviefilepath = str_replace(" ", "%20", esc_url_raw($video['movieurl'])); 
 				$moviefilepath = str_replace("https://", "http://",  $moviefilepath);
 			}
-			
 			
 			$movie_info = $video['movie_info'];
 			$encodevideo_info = kgvid_encodevideo_info($video['movieurl'], $video['attachmentID']);
@@ -3692,55 +3691,61 @@ function kgvid_encode_videos() {
 			foreach ( $aac_array as $aaclib ) { //cycle through available AAC encoders in order of quality
 				if ( $movie_info['configuration'][$aaclib] == "true" ) { $aac_available = true; break; }
 			}
-	
-			if ( $movie_info['configuration']['libx264'] == "true" && $aac_available ) {				
-				foreach( $video_formats as $format => $format_stats ) {
-					if ( $queued_format == $format && $format_stats['type'] == "h264" ) {
+								
+			foreach( $video_formats as $format => $format_stats ) {
+				if ( $queued_format == $format && $format_stats['type'] == "h264" ) {
+					if ( $movie_info['configuration']['libx264'] == "true" && $aac_available ) {
+						
 						if ( ! $encodevideo_info[$format.'_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$format.'filepath']) < 24576) ) {
-		
+	
 							if ( intval($movie_info['width']) > $format_stats['width'] ) { $h264_movie_width = $format_stats['width']; }
 							else { $h264_movie_width = $movie_info['width']; }
 							$h264_movie_height = strval(round(floatval($movie_info['height']) / floatval($movie_info['width']) * $h264_movie_width));
 							if ( intval($h264_movie_height) > $format_stats['height'] ) { $h264_movie_height = $format_stats['height']; }
 							$h264_movie_width = strval(round(floatval($movie_info['width']) / floatval($movie_info['height']) * $h264_movie_height));
-						
+					
 							if ($h264_movie_height % 2 != 0) { $h264_movie_height++; } //if it's odd, increase by 1 to make sure it's an even number
 							if ($h264_movie_width % 2 != 0) { $h264_movie_width--; } //if it's odd, decrease by 1 to make sure it's an even number
-							
+						
 							$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$format.'filepath'], $movie_info['configuration'], $queued_format, $h264_movie_width, $h264_movie_height, $movie_info['rotate']);
-							
+						
 						}//if file doesn't already exist
-						else { $embed_display .= "<strong>".$format_stats['name']." already encoded. </strong>"; }
+						else { $embed_display = $format_stats['name']." already encoded"; }
 						break; //don't bother looping through the rest if we already found the format
-					}//if format is chosen for encoding
-				}//H.264 format loop
-			}//if the x264 library and an aac library is enabled
-			else {
-				$embed_display .= "<strong>".strtoupper($options['video_app'])." missing library libx264 required for H.264 encoding";
-				if ( !$aac_available ) {
-					array_pop($aac_array); //get rid of the built-in "aac" encoder since it can't really be "installed"
-					$lastaac = array_pop($aac_array);
-					$aac_list = implode(", ", $aac_array);
-					$aac_list .= " or ".$lastaac;
-					$embed_display .= " and missing an AAC encoding library. Please install and enable ".$aac_list;
-				}
-				$embed_display .= ". </strong>";
-			}
+					}//if the x264 library and an aac library is enabled
+					else {
+						$lastline = strtoupper($options['video_app'])." missing library libx264 required for H.264 encoding";
+						if ( !$aac_available ) {
+							array_pop($aac_array); //get rid of the built-in "aac" encoder since it can't really be "installed"
+							$lastaac = array_pop($aac_array);
+							$aac_list = implode(", ", $aac_array);
+							$aac_list .= " or ".$lastaac;
+							$lastline .= " and missing an AAC encoding library. Please install and enable libx264 and ".$aac_list;
+						}
+						$video_embed_queue[$video_key]['encode_formats'][$format]['status'] = "error";
+						$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
+						$embed_display = "Missing libraries";
+					}
+				}//if format is chosen for encoding 
+			}//H.264 format loop
 	
 			if ( $queued_format == "webm" || $queued_format == "ogg" ) { //if it's not H.264 they both work essentially the same
 				if ( ! $encodevideo_info[$queued_format.'_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$queued_format.'filepath']) < 24576) ) {
 					if ( $movie_info['configuration']['libvorbis'] == "true" && $movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == "true" ) {
 						$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format.'filepath'], $movie_info['configuration'], $queued_format, $movie_info['width'], $movie_info['height'], $movie_info['rotate']);
-						$embed_display .= "<strong>Encoding ".$video_formats[$queued_format]['name'].". </strong>";
+						$embed_display = "Encoding ".$video_formats[$queued_format]['name'];
 					}//if the necessary libraries are enabled
 					else {
 						$missing_libraries = array();
 						if($movie_info['configuration']['libvorbis'] == 'false') { $missing_libraries[] = 'libvorbis'; }
 						if($movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == 'false') { $missing_libraries[] = $video_formats[$queued_format]['vcodec']; }
-						$embed_display .= "<strong>".strtoupper($options['video_app'])." missing library ".implode(', ', $missing_libraries)."required for ".$video_formats[$queued_format]['name']." encoding. </strong>"; 
+						$lastline = strtoupper($options['video_app'])." missing library ".implode(', ', $missing_libraries)." required for ".$video_formats[$queued_format]['name']." encoding.";
+						$video_embed_queue[$video_key]['encode_formats'][$queued_format]['status'] = "error";
+						$video_embed_queue[$video_key]['encode_formats'][$queued_format]['lastline'] = $lastline;
+						$embed_display = "Missing libraries";
 					}
 				}//if file doesn't already exist
-				else { $embed_display .= "<strong>".$video_formats[$queued_format]['vcodec']." already encoded. </strong>"; }
+				else { $embed_display = $video_formats[$queued_format]['vcodec']." already encoded."; }
 			}//if format is queued
 	
 			if ( !empty($encode_string) ) {
@@ -3797,14 +3802,14 @@ function kgvid_encode_videos() {
 			//$output_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($process->output), array_values($process->output));
 			//$output_implode = implode($output_map);
 			//$embed_display .= "Command: ".$cmd." Output: ".$output_implode;
-
+			
 			update_option('kgvid_video_embed_queue', $video_embed_queue);
 			kgvid_encode_progress($video_key, $queued_format, "attachment");
 
 		} //if there's a format to encode
 		
 	} //if there's a queue
-	$arr = array ( "embed_display"=>$embed_display, "video_key"=>$video_key, "format"=>$queued_format, "actualwidth"=>$movie_info['width'], "actualheight"=>$movie_info['height'] );
+	$arr = array ( "embed_display"=>"<strong>".$embed_display."</strong>", "video_key"=>$video_key, "format"=>$queued_format, "actualwidth"=>$movie_info['width'], "actualheight"=>$movie_info['height'] );
 	return $arr;
 
 }
@@ -3840,8 +3845,21 @@ function kgvid_encode_progress($video_key, $format, $page) {
 	
 	if ( is_array($video_embed_queue) && array_key_exists($video_key, $video_embed_queue) ) {
 
+		$video_entry = $video_embed_queue[$video_key];
+		$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'")';
+	
+		if ( $video_entry['encode_formats'][$format]['status'] == "error" ) {
+			$embed_display = '<strong>Error: </strong><span style="color:red;">'.$video_entry['encode_formats'][$format]['lastline'].'.</span>';
+			$next_video = kgvid_encode_videos(); //start the next queued video
+			if ( !empty($next_video['format']) ) {
+				$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
+				$args = array($next_video['video_key'], $next_video['format'], $page);
+				wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
+			}
+		}
+
 		if ( array_key_exists('logfile', $video_embed_queue[$video_key]['encode_formats'][$format]) ) {
-			$video_entry = $video_embed_queue[$video_key];
+			
 			$pid = $video_entry['encode_formats'][$format]['PID'];
 			$logfile = $video_entry['encode_formats'][$format]['logfile'];
 			$started = $video_entry['encode_formats'][$format]['started'];
@@ -3854,7 +3872,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 			$lastline = "";
 
 			if ( $video_entry['encode_formats'][$format]['status'] != "Encoding Complete" ) {
-	
+			
 				if ( is_file($logfile) ) {
 
 					$fp = fopen($logfile, 'r');
@@ -3882,7 +3900,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 					$fps_match = "";
 					$basename = "";
 					
-					$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'")';
+					
 		
 					preg_match('/time=(.*?) /', $lastline, $time_matches);
 		
@@ -4026,9 +4044,10 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
 						update_option('kgvid_video_embed_queue', $video_embed_queue);
 						$other_message = $lastline;
-						$embed_display = '<strong>Error: </strong><span style="color:red;">'.$lastline.'.</span> <script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
+						$embed_display = '<strong>Error: </strong><span style="color:red;">'.$lastline.'.</span>';
 						$next_video = kgvid_encode_videos(); //start the next queued video
 						if ( !empty($next_video['format']) ) {
+							$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
 							$args = array($next_video['video_key'], $next_video['format'], $page);
 							wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
 						}
