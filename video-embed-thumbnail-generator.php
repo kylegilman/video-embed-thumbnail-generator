@@ -4270,6 +4270,14 @@ function kgvid_delete_video_attachment($video_id) {
 		if ( !empty($video_embed_queue) ) { //remove any encode queue entry related to this attachment
 			foreach ($video_embed_queue as $video_key => $video_entry) {
 				if ( $video_entry['attachmentID'] == $video_id ) {
+					
+					foreach ( $video_entry['encode_formats'] as $format => $value ) {
+						if ( $value['status'] == "encoding" ) {
+							if ( intval($value['PID']) > 0 ) { posix_kill($value['PID'], 15); }
+							if ( file_exists($value['filepath']) ) { unlink($value['filepath']); }
+						}
+					}
+					
 					unset($video_embed_queue[$video_key]);
 					sort($video_embed_queue);
 					update_option('kgvid_video_embed_queue', $video_embed_queue);
