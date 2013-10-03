@@ -78,6 +78,7 @@ function kgvid_default_options_fn() {
 		"align"=>"left",
 		"width"=>"640",
 		"height"=>"360",
+		"minimum_width"=>false,
 		"gallery_width"=>"960",
 		"gallery_height"=>"540",
 		"gallery_thumb"=>"250",
@@ -903,11 +904,6 @@ function KGVID_shortcode($atts, $content = ''){
 			$query_atts = kgvid_shortcode_atts($atts); //reset values so they can be different with multiple videos
 			$content = $original_content;
 			$sources = array();
-			
-			if ( empty($content) ) { 
-				$content = wp_get_attachment_url($id);
-				if ( $content == false ) { echo "Invalid video ID"; continue; }
-			}
 
 			$moviefiletype = pathinfo($content, PATHINFO_EXTENSION);
 			if ( $moviefiletype == "mov" || $moviefiletype == "m4v" ) { $moviefiletype = "mp4"; }
@@ -924,12 +920,27 @@ function KGVID_shortcode($atts, $content = ''){
 			$h264compatible = array("mp4", "mov", "m4v");
 			
 			if ( !empty($id) ) { //if the video is an attachment in the WordPress db
+			
+				if ( empty($content) ) { 
+					$content = wp_get_attachment_url($id);
+					if ( $content == false ) { echo "Invalid video ID"; continue; }
+				}
+			
 				$div_suffix = $id;
 				$encodevideo_info = kgvid_encodevideo_info($content, $id);
 				$attachment_info = get_post( $id );
 
-				$widthset = get_post_meta($id, "_kgflashmediaplayer-width", true);
-				$heightset = get_post_meta($id, "_kgflashmediaplayer-height", true);
+				$video_meta = "";
+				$moviefile = get_attached_file($id);
+				
+				if ( function_exists('wp_read_video_metadata') ) { $video_meta = wp_read_video_metadata($moviefile); }
+				
+				if ( $video_meta && array_key_exists('width', $video_meta) ) { $widthset = $video_meta['width']; }
+				else { $widthset = get_post_meta($id, "_kgflashmediaplayer-actualwidth", true); }
+
+				if ( $video_meta && array_key_exists('height', $video_meta) ) { $heightset = $video_meta['height']; } 
+				else { $heightset = get_post_meta($id, "_kgflashmediaplayer-actualheight", true); }
+				
 				if ( !empty($widthset) && !empty($heightset) ) {
 					$aspect_ratio = $heightset/$widthset;
 					$query_atts['height'] = round($query_atts['width']*$aspect_ratio);
@@ -1758,7 +1769,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	
 	function kgvid_dimensions_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		echo "Width: <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='".$options['width']."' /> Height: <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='".$options['height']."' />";
+		echo "Width: <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='".$options['width']."' /> Height: <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='".$options['height']."' /> ";
+		echo "<input ".checked( $options['minimum_width'], "on", false )." id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>Enlarge lower resolution videos to max width.</label> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Usually if a video's resolution is less than the max width, the video player is set to the actual width of the video. This will set the same width regardless of the quality of the video. You can always override these numbers by setting the dimensions manually.</span></a>";
 	}
 	
 	function kgvid_gallery_dimensions_callback() {
@@ -1809,7 +1821,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	
 	function kgvid_skin_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		echo "<input class='regular-text affects_player' id='skin' name='kgvid_video_embed_options[skin]' type='text' value='".$options['skin']."' /><br /><em><small>Use <code>".plugins_url("", __FILE__)."/flash/skin/kgvid_skin.xml</code> for a modern, circular play button.<br /> Leave blank for the older style square play button.</small></em>";
+		echo "<input class='regular-text affects_player' id='skin' name='kgvid_video_embed_options[skin]' type='text' value='".$options['skin']."' /><br /><em><small>Use <code>".plugins_url("", __FILE__)."/flash/skin/kgvid_skin.xml</code> for a modern, circular play button.<br /> Leave blank for the off-center square play button.</small></em>";
 	}
 	
 	function kgvid_stream_type_callback() {
@@ -2249,6 +2261,7 @@ function kgvid_update_settings() {
 			$options["resize"] = "on";
 			$options["htaccess_login"] = "";
 			$options["htaccess_password"] = "";
+			$options["minimum_width"] = false;
 			
 			$upload_capable = kgvid_upload_capable();
 			$options["capabilities"]["make_video_thumbnails"] = $upload_capable;
@@ -2448,7 +2461,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		&& (empty($post->post_parent) || (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == false)) 
 	) { //if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
 
-		wp_enqueue_media();
+		wp_enqueue_media(); //allows using the media modal in the Media Library
 	
 		$field_id = kgvid_backwards_compatible($post->ID);
 		$movieurl = wp_get_attachment_url($post->ID);
@@ -2460,8 +2473,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-url"]["value"] = $movieurl;
 
 		$maxwidth = $options['width'];
-		$widthset = get_post_meta($post->ID, "_kgflashmediaplayer-width", true);
-		
+		if ( $options['minimum_width'] == "on" ) { $widthset = $maxwidth; }
+		else { $widthset = get_post_meta($post->ID, "_kgflashmediaplayer-width", true); }		
 		if ($widthset == "") {
 			if ( $video_meta && array_key_exists('width', $video_meta) ) { $widthset = $video_meta['width']; } 
 			else { $widthset = $maxwidth; }
@@ -2471,7 +2484,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-maxwidth"]["value"] = $maxwidth;
 
 		$maxheight = $options['height'];
-		$heightset = get_post_meta($post->ID, "_kgflashmediaplayer-height", true);
+		if ( $options['minimum_width'] == "on" ) { $heightset = $maxheight; }
+		else { $heightset = get_post_meta($post->ID, "_kgflashmediaplayer-height", true); }
 		if ($heightset == "") {
 			if ( $video_meta && array_key_exists('height', $video_meta) ) { $heightset = $video_meta['height']; } 
 			else { $heightset = $maxheight; }
@@ -3719,7 +3733,7 @@ function kgvid_encode_videos() {
 							array_pop($aac_array); //get rid of the built-in "aac" encoder since it can't really be "installed"
 							$lastaac = array_pop($aac_array);
 							$aac_list = implode(", ", $aac_array);
-							$aac_list .= " or ".$lastaac;
+							$aac_list .= ", or ".$lastaac;
 							$lastline .= " and missing an AAC encoding library. Please install and enable libx264 and ".$aac_list;
 						}
 						$video_embed_queue[$video_key]['encode_formats'][$format]['status'] = "error";
