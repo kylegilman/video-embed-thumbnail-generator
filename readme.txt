@@ -14,13 +14,15 @@ Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted
 
 = A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compliant files a little bit easier. =
 
-The plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options and click Insert into Post and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5/Flash video player with a preview image.
+The plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options and click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5/Flash video player with a preview image.
 
-You have the option to use either the lightweight, flexible Video.js HTML5 player, the WordPress default player, or Adobe's Strobe Media Playback Flash player. The Video.js player is styled the same in all browsers and is easily customizable. The Strobe Media Playback option will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback. No matter which player you use, the video will resize on the fly to fit the container it's in.
+You have the option to use either the lightweight, flexible Video.js HTML5 player, the WordPress default player (introduced in WordPress version 3.6), or Adobe's Strobe Media Playback Flash player. The Video.js player is styled the same in all desktop browsers and is easily customizable. The Strobe Media Playback option is not recommended. It will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback. No matter which player you use, the video will resize on the fly to fit the container it's in.
 
-You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page.
+You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode using the options listed below.
 
-If your video can be played natively in your browser, you can generate thumbnails using either the "Generate" or "Randomize" buttons. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. Or click "Choose from video…" to select the frame you want. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. If you want even more control you can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time). The unused thumbnails will be deleted after you click "Insert into Post" or "Save Changes."
+If your video can be played natively in your browser, or if you have FFMPEG or LIBAV installed on your server, you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them, you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. After creating an array of thumbnails you can save them all using the "Save all thumbnails" button.
+
+If you know which thumbnail you want, click "Choose from video…" to select the frame manually. This will only work for videos that can be played natively in your browser. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. You can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time). Unused thumbnails will be deleted."
 
 In the plugin settings you can set the default maximum width and height based on the dimensions of your particular template and those values will be filled in when you open the window. If you generate thumbnails, the video display dimensions will be adjusted automatically to match the size and aspect ratio of the video file. You can make further adjustments if you want. After you choose a thumbnail it will be registered in the Wordpress Media Library and added to the post's attachments.
 
@@ -149,7 +151,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 5.0 - In Development =
+= 5.0 - October 2, 2013 =
 * THUMBNAILS FOR EVERYBODY! Added in-browser thumbnail generation. Any video in the media library that can be played natively in the current browser can now be used to generate thumbnails without requiring special software on your server.
 * Updated shortcode to support the simplest possible implementation: [KGVID]. Without any additional information, it will automatically find and display all videos attached to the post.
 * Added "id" and "videos" attributes to shortcode to display specific video IDs or show a specific number of attached videos.
@@ -174,6 +176,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * No longer starting video encodes using `nohup` command on Linux servers.
 * FFMPEG vpre flag switched from slow to fast.
 * Enabled actual support for encoding with libfdk_aac, and the experimental built-in aac encoder as a last resort.
+* Fixed cases where the encode queue would not advance if an unexpected error happened.
+* Fixed encoding library messages so the errors are saved to the encode queue and don't disappear immediately.
 * Revised method for determining if a video URL refers to an attachment in the WordPress database to account for differences between urls using http and https and filenames that slip into the database with spaces intact.
 
 = 4.1.5 - June 30, 2013 =
@@ -225,7 +229,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Removed post meta box below post editing window until I can work out a way to generate them without disabling video encode status monitoring in media modal popup when the same video is already in the post edit window.
 * Replaced deprecated ereg PHP function with preg_match and used a more precise regular expression when determining the height and width of videos.
 
-= 4.0.3 - May 01, 2013 =
+= 4.0.3 - May 1, 2013 =
 * Fixed bug that caused video control text to display below videos on iPhones.
 * Changed method for saving video plays to the database. Now more secure and accurate.
 
