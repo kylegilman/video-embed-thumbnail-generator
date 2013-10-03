@@ -2604,10 +2604,10 @@ display: inline-block;">Loading thumbnail...</span></div>'; }
 				if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = '<source src="'.$encodevideo_info[$name."url"].'" type="video/'.$type.'">'; }
 			}
 			
-			$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" style="display:none;" id="thumb-video-'.$post->ID.'-container">
+			$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
 				<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">Choose from video...</span></div>
 				<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-					<video class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded('.$post->ID.')" id="thumb-video-'.$post->ID.'" controls>'.
+					<video preload="none" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded('.$post->ID.')" id="thumb-video-'.$post->ID.'" controls>'.
 					implode("\n", $sources).'
 					</video>
 					<div class="kgvid-video-controls">
@@ -2877,6 +2877,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 		
 	//insert the $thumb_url into the media library if it does not already exist
 	
+	usleep(250000);
+	
 	$args = array(
 		'numberposts' => '-1',
 		'post_type' => 'attachment',
@@ -2887,9 +2889,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 	$posts = get_posts($args);
 	
 	if ( $posts ) { $thumb_id = $posts[0]->ID; }
-	else { $thumb_id = false; }
 	
-	if ( !$thumb_id ) {
+	else { //no existing post with this filename
 	
 		$desc = $post_name . ' thumbnail';
 		if ( $index ) { $desc .= ' '.$index; }

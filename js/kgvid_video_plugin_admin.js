@@ -143,17 +143,30 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 function kgvid_reveal_thumb_video(postID) {
 	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
 	var text = jQuery('#show-thumb-video-'+postID+' :nth-child(2)');
+	video = document.getElementById('thumb-video-'+postID);
+	
 	if ( text.html() == "Choose from video..." ) { //video is being revealed
-		text.html('Hide video...');
-		jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
-		jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
-			if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
-			   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
-			   jQuery('#attachments-'+postID+'-thumbtime').val(thumbtimecode);
-			}
-		});
+
+		if ( video.preload == "none" ) { 
+			jQuery(video).attr("preload", "metadata");
+			video.load();
+		}
+		
+		if ( video.networkState == 1 || video.networkState == 2 ) {
+			text.html('Hide video...');
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
+			jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
+				if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
+				   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
+				   jQuery('#attachments-'+postID+'-thumbtime').val(thumbtimecode);
+				}
+			});
+		}
+		else { text.html('Can\'t load video'); }
 	}
 	else { //video is being hidden
+		video.preload = "none";
+		video.load();
 		text.html('Choose from video...');
 		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
 	}
@@ -234,67 +247,85 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	}// end kgvid_do_post function
 	
-	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" && (document.getElementById('thumb-video-'+postID).networkState == 1 || document.getElementById('thumb-video-'+postID).networkState == 2) ) { //if the browser can load the video, use it to make thumbnails
-		var video = document.getElementById('thumb-video-'+postID);
-		var video_width = video.videoWidth;
-		var video_height = video.videoHeight;
-		var video_aspect = video_height/video_width;
-		var thumbnails = [];
+	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" ) {
+
+		video = document.getElementById('thumb-video-'+postID);
+
+		if ( video.preload == "none" ) {
+			jQuery(video).attr("preload", "metadata");
+			video.load();
+			jQuery(video).on( "loadedmetadata.kgvid", function() { kgvid_make_canvas_thumbs_loop(); } );
+		}
+		else { kgvid_make_canvas_thumbs_loop(); }
+		
+		function kgvid_make_canvas_thumbs_loop() {
+		
+			if (video.networkState == 1 || video.networkState == 2 ) { //if the browser can load the video, use it to make thumbnails
+
+				var video_width = video.videoWidth;
+				var video_height = video.videoHeight;
+				var video_aspect = video_height/video_width;
+				var thumbnails = [];
 				
-		jQuery('#thumb-video-'+postID).on('seeked.kgvid', function(){ //when the video is finished seeking
+				jQuery('#thumb-video-'+postID).on('seeked.kgvid', function(){ //when the video is finished seeking
 		
-			var thumbnail_saved = jQuery(video).data('thumbnail_data');
-			if ( thumbnail_saved.length > 0 ) { //if there are any thumbnails that haven't been generated
+					var thumbnail_saved = jQuery(video).data('thumbnail_data');
+					if ( thumbnail_saved.length > 0 ) { //if there are any thumbnails that haven't been generated
 
-				time_id = Math.round(video.currentTime*100);
-				var time_display = kgvid_convert_to_timecode(video.currentTime);
+						time_id = Math.round(video.currentTime*100);
+						var time_display = kgvid_convert_to_timecode(video.currentTime);
 
-				jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
-				var canvas = document.getElementById(postID+'_thumb_'+time_id);
-				canvas.width = video_width;
-				canvas.height = video_height;
-				var context = canvas.getContext('2d');
-				context.fillRect(0, 0, video_width, video_height);
-				context.drawImage(video, 0, 0, video_width, video_height);
-				jQuery('#attachments-'+postID+'-thumb'+time_id).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000); 
+						jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
+						var canvas = document.getElementById(postID+'_thumb_'+time_id);
+						canvas.width = video_width;
+						canvas.height = video_height;
+						var context = canvas.getContext('2d');
+						context.fillRect(0, 0, video_width, video_height);
+						context.drawImage(video, 0, 0, video_width, video_height);
+						jQuery('#attachments-'+postID+'-thumb'+time_id).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000); 
 
-				thumbnail_saved.splice(0,1);
-				jQuery(video).data('thumbnail_data', thumbnail_saved);
-				if ( thumbnail_saved.length > 0 ) { video.currentTime = thumbnail_saved[0]; }
-				else { 
-					jQuery('#thumb-video-'+postID).off('seeked.kgvid'); 
-					jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
-					jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
-					jQuery(thumbnailboxID).prepend('<div id="saveallthumbs-'+postID+'-div"><input style="display:none;" type="button" id="attachments-'+postID+'-saveallthumbs" class="button-secondary kgvid-centered-block" value="Save All Thumbnails" name="attachments-'+postID+'-saveallthumbs" onclick="kgvid_saveall_thumbs(\''+postID+'\');"></div>');
-					jQuery('#attachments-'+postID+'-saveallthumbs').animate({opacity: 'toggle', height: 'toggle'}, 500);
+						thumbnail_saved.splice(0,1);
+						jQuery(video).data('thumbnail_data', thumbnail_saved);
+						if ( thumbnail_saved.length > 0 ) { video.currentTime = thumbnail_saved[0]; }
+						else { 
+							jQuery(video).off('seeked.kgvid');
+							jQuery(video).off('loadedmetadata.kgvid');
+							video.preload="none";
+							video.load();
+							jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
+							jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
+							jQuery(thumbnailboxID).prepend('<div id="saveallthumbs-'+postID+'-div"><input style="display:none;" type="button" id="attachments-'+postID+'-saveallthumbs" class="button-secondary kgvid-centered-block" value="Save All Thumbnails" name="attachments-'+postID+'-saveallthumbs" onclick="kgvid_saveall_thumbs(\''+postID+'\');"></div>');
+							jQuery('#attachments-'+postID+'-saveallthumbs').animate({opacity: 'toggle', height: 'toggle'}, 500);
+						}
+					}
+			
+				});
+		
+				for (i; i<=howmanythumbs; i++) {
+					iincreaser = i + increaser;
+					increaser++;
+					var movieoffset = Math.round((video.duration * iincreaser) / (howmanythumbs * 2)*100)/100;
+
+					if (buttonPushed == "random") { //adjust offset random amount
+						var random_offset = Math.round(Math.random() * video.duration / howmanythumbs);
+						movieoffset = movieoffset - random_offset;
+						if (movieoffset < 0) { movieoffset = 0; }
+					}
+			
+					thumbnails.push(movieoffset); //add offset to array
 				}
-			}
-			
-		});
 		
-		for (i; i<=howmanythumbs; i++) {
-			iincreaser = i + increaser;
-			increaser++;
-			var movieoffset = Math.round((video.duration * iincreaser) / (howmanythumbs * 2)*100)/100;
-
-			if (buttonPushed == "random") { //adjust offset random amount
-				var random_offset = Math.round(Math.random() * video.duration / howmanythumbs);
-				movieoffset = movieoffset - random_offset;
-				if (movieoffset < 0) { movieoffset = 0; }
-			}
-			
-			thumbnails.push(movieoffset); //add offset to array
-		}
+				if ( firstframethumb ) { thumbnails[0] = 0; }
 		
-		if ( firstframethumb ) { thumbnails[0] = 0; }
-		
-		if ( specifictimecode ) {
-			var thumbtimecode = kgvid_convert_from_timecode(specifictimecode);
-			thumbnails = [thumbtimecode];
-		}
-		video.currentTime = thumbnails[0];
-		jQuery(video).data('thumbnail_data', thumbnails);
+				if ( specifictimecode ) {
+					var thumbtimecode = kgvid_convert_from_timecode(specifictimecode);
+					thumbnails = [thumbtimecode];
+				}
+				video.currentTime = thumbnails[0];
+				jQuery(video).data('thumbnail_data', thumbnails);
 	
+			}
+		}//end canvas thumb function
 	}
 	else {
 		kgvid_do_post(); //call the FFMPEG loop if the browser can't do it
@@ -347,7 +378,7 @@ function kgvid_saveall_thumbs(postID) {
 	var thumbnails = jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailbox').find('.kgvid_thumbnail');
 	var total = thumbnails.length;
 	
-	jQuery('#saveallthumbs-'+postID+'-div').append('<div style="margin-left:5px;" id="saving_thumbs_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="saving_thumbs_status"> Saving...</span>');
+	jQuery('#saveallthumbs-'+postID+'-div').append('<div style="margin:5px;" id="saving_thumbs_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="saving_thumbs_status"> Saving...</span>');
 		
 	jQuery.each(thumbnails, function(key, value) {
 		if ( value.tagName.toLowerCase() == "canvas" ) {
