@@ -672,16 +672,17 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page) {
 
 function kgvid_redraw_thumbnail_box(postID) {
 	
-	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
+	var kgflashmediaplayersecurity = jQuery('#attachments-'+postID+'-kgflashmediaplayer-security').val();
+
+	if ( kgflashmediaplayersecurity ) {
 	
-	jQuery.post(ajaxurl, { action:"kgvid_redraw_thumbnail_box", security: kgflashmediaplayersecurity, post_id: postID }, function(thumbnail_url) {
-		if ( thumbnail_url ) {
-			if ( jQuery('#attachments-'+postID+'-thumbnailplaceholder').children().length == 0 ) {
+		jQuery.post(ajaxurl, { action:"kgvid_redraw_thumbnail_box", security: kgflashmediaplayersecurity, post_id: postID }, function(thumbnail_url) {
+			if ( thumbnail_url ) {
 				jQuery('#attachments-'+postID+'-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'+thumbnail_url+'"></div>');
 			}
-		}
-	}, "text" );
-	
+		}, "text" );
+
+	}
 }
 
 function kgvid_encode_queue(action, order, id) {

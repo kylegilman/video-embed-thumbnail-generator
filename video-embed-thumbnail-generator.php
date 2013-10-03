@@ -2557,7 +2557,9 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				$update_script .= 'percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$movieurl.'", "'.$post->ID.'", "attachment") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);';
 			}
 			if ( $options['auto_thumb'] == "on" ) {
-				$update_script .= 'setTimeout(function(){ kgvid_redraw_thumbnail_box("'.$post->ID.'") }, 1000);';
+				if ( !$thumbnail_url ) { $thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;
+display: inline-block;">Generating thumbnail...</span></div>'; }
+				$update_script .= ' setTimeout(function(){ kgvid_redraw_thumbnail_box("'.$post->ID.'") }, 3000);';
 			}
 			$update_script .= '});</script>';
 		}
@@ -4136,6 +4138,7 @@ function kgvid_replace_video ( $video_key, $format ) {
 
 	if ( file_exists($encoded_filename) ) { 
 		rename($encoded_filename, $new_filename);
+		if ( file_exists($original_filename) ) { unlink($original_filename); }
 	}
 	$video_embed_queue[$video_key]['encode_formats'][$format]['url'] = $new_url;
 	update_option('kgvid_video_embed_queue', $video_embed_queue);
