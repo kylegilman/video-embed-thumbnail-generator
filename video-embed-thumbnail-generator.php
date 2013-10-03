@@ -4152,7 +4152,7 @@ function kgvid_replace_video ( $video_key, $format ) {
 
 	if ( file_exists($encoded_filename) ) { 
 		rename($encoded_filename, $new_filename);
-		if ( file_exists($original_filename) ) { unlink($original_filename); }
+		if ( file_exists($original_filename) && $original_filename != $new_filename ) { unlink($original_filename); }
 	}
 	$video_embed_queue[$video_key]['encode_formats'][$format]['url'] = $new_url;
 	update_option('kgvid_video_embed_queue', $video_embed_queue);
