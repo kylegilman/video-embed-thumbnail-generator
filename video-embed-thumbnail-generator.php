@@ -2865,9 +2865,17 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 		
 	//insert the $thumb_url into the media library if it does not already exist
 	
-	global $wpdb;
-	$query = "SELECT ID FROM {$wpdb->posts} WHERE guid='".$thumb_url."'"; //check for existing entry in the db
-	$thumb_id = $wpdb->get_var($query);
+	$args = array(
+		'numberposts' => '-1',
+		'post_type' => 'attachment',
+		'meta_key' => '_wp_attached_file',
+		'meta_value' => ltrim($uploads['subdir'],'/').'/'.$posterfile
+	);
+	
+	$posts = get_posts($args);
+	
+	if ( $posts ) { $thumb_id = $posts[0]->ID; }
+	else { $thumb_id = false; }
 	
 	if ( !$thumb_id ) {
 	
