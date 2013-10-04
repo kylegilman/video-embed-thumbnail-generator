@@ -1778,7 +1778,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_dimensions_callback() {
 		$options = get_option('kgvid_video_embed_options');
 		echo "Width: <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='".$options['width']."' /> Height: <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='".$options['height']."' /> ";
-		echo "<input ".checked( $options['minimum_width'], "on", false )." id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>Enlarge lower resolution videos to max width.</label> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Usually if a video's resolution is less than the max width, the video player is set to the actual width of the video. This will set the same width regardless of the quality of the video. You can always override these numbers by setting the dimensions manually.</span></a>";
+		echo "<input ".checked( $options['minimum_width'], "on", false )." id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>Enlarge lower resolution videos to max width.</label> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Usually if a video's resolution is less than the max width, the video player is set to the actual width of the video. Enabling this will always set the same width regardless of the quality of the video. When necessary you can override by setting the dimensions manually.</span></a>";
 	}
 	
 	function kgvid_gallery_dimensions_callback() {
@@ -2569,7 +2569,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			if ( $options['auto_thumb'] == "on" ) {
 				if ( !$thumbnail_url ) { $thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;
 display: inline-block;">Loading thumbnail...</span></div>'; }
-				$update_script .= ' setTimeout(function(){ kgvid_redraw_thumbnail_box("'.$post->ID.'") }, 3000);';
+				$update_script .= ' setTimeout(function(){ kgvid_redraw_thumbnail_box("'.$post->ID.'") }, 5000);';
 			}
 			$update_script .= '});</script>';
 		}
@@ -2996,9 +2996,13 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 				$thumb_id = kgvid_save_thumb($post['ID'], $post['post_title'], $thumb_url);
 				if ( $thumb_id ) { update_post_meta($post['ID'], '_kgflashmediaplayer-poster-id', $thumb_id); }
 			}
-			update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $thumb_url);
-			
+			else { 
+				delete_post_meta($post['ID'], '_kgflashmediaplayer-poster'); 
+				delete_post_meta($post['ID'], '_kgflashmediaplayer-poster-id'); 
+			}
+			update_post_meta($post['ID'], '_kgflashmediaplayer-poster', $thumb_url);	
 		}
+
 		if( isset($attachment['kgflashmediaplayer-numberofthumbs']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-numberofthumbs', $attachment['kgflashmediaplayer-numberofthumbs']); }
 		if( isset($attachment['kgflashmediaplayer-forcefirst']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-forcefirst', $attachment['kgflashmediaplayer-forcefirst']); }
 		else { update_post_meta($post['ID'], '_kgflashmediaplayer-forcefirst', ""); }

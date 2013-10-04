@@ -743,6 +743,9 @@ function kgvid_redraw_thumbnail_box(postID) {
 			if ( thumbnail_url ) {
 				jQuery('#attachments-'+postID+'-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'+thumbnail_url+'"></div>');
 			}
+			
+			else { setTimeout(function(){ kgvid_redraw_thumbnail_box(postID) }, 5000); }
+			
 		}, "text" );
 
 	}
@@ -1076,7 +1079,7 @@ function kgvid_pick_image(button) {
 }
 
 function kgvid_media_library_icon_overlay() {
-	var thumbnails = jQuery('.attachment-80x60');
+	var thumbnails = jQuery('.attachment-80x60, .attachment-preview.type-video .icon');
 	jQuery.each(thumbnails, function(key, value) {
 		if ( value.src.split("?")[1] == "kgvid" ) {
 			jQuery(value).wrap('<div class="kgvid-media-icon-overlay"></div>')
