@@ -58,14 +58,37 @@ function kgvid_convert_from_timecode(timecode) {
 }
 
 function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for making thumbnails
+
 	document.getElementById('attachments-'+postID+'-thumbgenerate').disabled=false; 
 	document.getElementById('attachments-'+postID+'-thumbgenerate').setAttribute('title', ''); 
 	document.getElementById('attachments-'+postID+'-thumbrandomize').disabled=false; 
 	document.getElementById('attachments-'+postID+'-thumbrandomize').setAttribute('title', '');
-		
+	document.getElementById('attachments-'+postID+'-numberofthumbs').disabled=false; 
+	document.getElementById('attachments-'+postID+'-numberofthumbs').setAttribute('title', '');
+	
 	jQuery('#thumb-video-'+postID+'-container').show();
 	
 	var video = document.getElementById('thumb-video-'+postID);
+	
+	if(typeof wp !== 'undefined'){
+		ed_id = wp.media.editor.id();
+		var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
+		ed_media = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
+		
+		var kgvid_break_video_on_close = function() {
+		
+				if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == "Hide video..." ) { 
+					kgvid_reveal_thumb_video(postID); //hide the video if it's open
+				} 	
+				video.preload = "none";
+				video.src = "";
+				video.load();
+			};
+		
+		if ( ed_media ) {
+			ed_media.on('escape', kgvid_break_video_on_close);
+		}
+	}
 	
 	video.removeAttribute("controls");
 	video.muted=true;
@@ -101,7 +124,6 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 	   playProgress.css('width', percentage+'%');
 	   seekHandle.css('left', percentage+'%');
 	});
-	
 	
 	var timeDrag = false;   /* Drag status */
 	seekBar.mousedown(function(e) {
@@ -147,10 +169,9 @@ function kgvid_reveal_thumb_video(postID) {
 	
 	if ( text.html() == "Choose from video..." ) { //video is being revealed
 
-		if ( video.preload == "none" ) { 
-			jQuery(video).attr("preload", "metadata");
-			video.load();
-		}
+		jQuery(video).removeAttr('src');		
+		jQuery(video).attr("preload", "metadata");
+		video.load();
 		
 		if ( video.networkState == 1 || video.networkState == 2 ) {
 			text.html('Hide video...');
@@ -165,10 +186,20 @@ function kgvid_reveal_thumb_video(postID) {
 		else { text.html('Can\'t load video'); }
 	}
 	else { //video is being hidden
-		video.preload = "none";
-		video.load();
-		text.html('Choose from video...');
+	
+		video.pause();
 		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
+		text.html('Choose from video...');
+		
+		/* if(typeof wp !== 'undefined'){
+			ed_id = wp.media.editor.id();
+			var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
+			ed_media = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
+			if ( ed_media ) {
+				ed_media.off('escape', kgvid_hide_video_on_close);
+			}
+		}*/
+		
 	}
 	jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 500);
 	jQuery('#generate-thumb-'+postID+'-container').animate({opacity: 'toggle', height: 'toggle'}, 500);
@@ -252,6 +283,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 		video = document.getElementById('thumb-video-'+postID);
 
 		if ( video.preload == "none" ) {
+			jQuery(video).removeAttr('src');
 			jQuery(video).attr("preload", "metadata");
 			video.load();
 			jQuery(video).on( "loadedmetadata.kgvid", function() { kgvid_make_canvas_thumbs_loop(); } );
