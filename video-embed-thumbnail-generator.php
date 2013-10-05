@@ -751,9 +751,10 @@ add_action('admin_enqueue_scripts', 'enqueue_kgvid_script');
 function kgvid_admin_print_scripts() {
     $screen = get_current_screen();
 
-    if ( $screen->base == "upload" ) {
+	if ( $screen->base == "upload" ) {
 		echo '<script type="text/javascript">jQuery(document).ready(kgvid_media_library_icon_overlay());</script>'."\n";
 	}
+
 }
 add_action('admin_print_footer_scripts', 'kgvid_admin_print_scripts');
 
@@ -2563,10 +2564,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$created_time = time()-get_post_time('U', true, $post->ID);
 		if ( $created_time < 60 && ($options['auto_encode'] == "on" || $options['auto_thumb'] == "on") ) {
 			$update_script = '<script type="text/javascript">jQuery(document).ready(function() { ';
-			if ( $options['auto_encode'] == "on" ) {
+			if ( $options['ffmpeg_exists'] == "on" && $options['auto_encode'] == "on" ) {
 				$update_script .= 'percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$movieurl.'", "'.$post->ID.'", "attachment") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);';
 			}
-			if ( $options['auto_thumb'] == "on" ) {
+			if ( $options['ffmpeg_exists'] == "on" && $options['auto_thumb'] == "on" ) {
 				if ( !$thumbnail_url ) { $thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;
 display: inline-block;">Loading thumbnail...</span></div>'; }
 				$update_script .= ' setTimeout(function(){ kgvid_redraw_thumbnail_box("'.$post->ID.'") }, 5000);';
@@ -4140,7 +4141,7 @@ function kgvid_replace_video ( $video_key, $format ) {
 		$new_url = $sanitized_url['noextension'].".mp4";
 		$video_embed_queue[$video_key]['movieurl'] = $new_url;
 		global $wpdb;
-		$query = "SELECT ID FROM {$wpdb->posts} WHERE `post_content` LIKE '%".$sanitized_url['basename'].".".$path_parts['extension']."%'";
+		$query = "SELECT ID FROM {$wpdb->posts} WHERE `post_content` LIKE '%".$sanitized_url['basename'].".".$path_parts['extension']."%'"; //find posts that use the old filename
 		$results = $wpdb->get_results($query);
 		if ( $results ) {
 			foreach ( $results as $result ) {
@@ -4172,6 +4173,11 @@ function kgvid_replace_video ( $video_key, $format ) {
 	wp_update_attachment_metadata( $video_id, $attach_data );
 	update_attached_file( $video_id, $new_filename );
 
+	$new_mime = wp_check_filetype( $new_filename );
+	$post = get_post($video_id);
+	$post->guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
+	$post->post_mime_type = $new_mime['type'];
+	wp_update_post($post);
 }
 
 function kgvid_clear_completed_queue($type) {
