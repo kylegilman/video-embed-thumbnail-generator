@@ -2535,7 +2535,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 		$thumbnail_html = "";
 		if ($thumbnail_url != "" ) {
-			$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'?'.rand().'"></div>';
+			$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'"></div>';
 		}
 
 		$numberofthumbs_value = get_post_meta($post->ID, "_kgflashmediaplayer-numberofthumbs", true);
