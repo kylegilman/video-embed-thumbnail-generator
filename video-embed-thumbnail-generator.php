@@ -2874,23 +2874,20 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 	if ( !is_file($final_posterpath) ) { //if the file doesn't already exist
 		if ( is_file($tmp_posterpath) ) {
 			copy($tmp_posterpath, $final_posterpath);
-			/*$thumb_base = substr($tmp_posterpath, 0, strpos($tmp_posterpath, '_thumb'));
-			foreach (glob($thumb_base."*.jpg") as $thumbfilename) {
-			   unlink($thumbfilename);
-			}*/
 		}
-		if ( kgvid_is_empty_dir($uploads["path"].'/thumb_tmp') ) { kgvid_rrmdir($uploads["path"].'/thumb_tmp'); }
 	}
 
 	//insert the $thumb_url into the media library if it does not already exist
 
 	usleep(250000);
 
+	$relative_upload_path = array_pop(explode($uploads['baseurl'].'/', $thumb_url));
+
 	$args = array(
 		'numberposts' => '-1',
 		'post_type' => 'attachment',
 		'meta_key' => '_wp_attached_file',
-		'meta_value' => ltrim($uploads['subdir'],'/').'/'.$posterfile
+		'meta_value' => $relative_upload_path
 	);
 
 	$posts = get_posts($args);
