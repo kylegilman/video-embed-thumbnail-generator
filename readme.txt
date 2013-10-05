@@ -153,7 +153,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 5.0 - October 5, 2013 =
+= 4.2 - October 5, 2013 =
 * THUMBNAILS FOR EVERYBODY! Added in-browser thumbnail generation. Any video in the media library that can be played natively in the current browser can now be used to generate thumbnails without requiring special software on your server.
 * Updated shortcode to support the simplest possible implementation: [KGVID]. Without any additional information, it will automatically find and display all videos attached to the post.
 * Added "id" and "videos" attributes to shortcode to display specific video IDs or show a specific number of attached videos.
