@@ -798,7 +798,7 @@ function kgvid_save_plugin_settings(input_obj) {
 
 		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value, all_settings: all_settings }, function(data) {
 
-			jQuery(input_obj).val(data.validated_value);
+			if ( input_obj.type != "checkbox" ) { jQuery(input_obj).val(data.validated_value); }
 
 			if ( data.error_message != "" ) { jQuery(input_obj).parents("td:first").append('<div class="error settings-error"><p><strong>'+data.error_message+'</strong></p>'); }
 			if ( save_queue[0].id == "width" || save_queue[0].id == "height" ) {
