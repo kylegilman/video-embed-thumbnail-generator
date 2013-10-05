@@ -59,107 +59,107 @@ function kgvid_convert_from_timecode(timecode) {
 
 function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for making thumbnails
 
-	document.getElementById('attachments-'+postID+'-thumbgenerate').disabled=false;
-	document.getElementById('attachments-'+postID+'-thumbgenerate').setAttribute('title', '');
-	document.getElementById('attachments-'+postID+'-thumbrandomize').disabled=false;
-	document.getElementById('attachments-'+postID+'-thumbrandomize').setAttribute('title', '');
-	document.getElementById('attachments-'+postID+'-numberofthumbs').disabled=false;
-	document.getElementById('attachments-'+postID+'-numberofthumbs').setAttribute('title', '');
+	jQuery('#attachments-'+postID+'-thumbgenerate').prop('disabled', false).attr('title', '');
+	jQuery('#attachments-'+postID+'-thumbrandomize').prop('disabled', false).attr('title', '');
+	jQuery('#attachments-'+postID+'-numberofthumbs').prop('disabled', false).attr('title', '');
 
 	jQuery('#thumb-video-'+postID+'-container').show();
 
 	var video = document.getElementById('thumb-video-'+postID);
 
-	if(typeof wp !== 'undefined'){
-		ed_id = wp.media.editor.id();
-		var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
-		ed_media = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
+	if ( video != null ) {
 
-		var kgvid_break_video_on_close = function() {
+		if ( typeof wp !== 'undefined' ) {
+			ed_id = wp.media.editor.id();
+			var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
+			ed_media = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
 
-				if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == "Hide video..." ) {
-					kgvid_reveal_thumb_video(postID); //hide the video if it's open
-				}
-				video.preload = "none";
-				video.src = "";
-				video.load();
-			};
+			var kgvid_break_video_on_close = function() {
 
-		if ( ed_media ) {
-			ed_media.on('escape', kgvid_break_video_on_close);
+					if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == "Hide video..." ) {
+						kgvid_reveal_thumb_video(postID); //hide the video if it's open
+					}
+					video.preload = "none";
+					video.src = "";
+					video.load();
+				};
+
+			if ( ed_media ) {
+				ed_media.on('escape', kgvid_break_video_on_close);
+			}
 		}
+
+		video.removeAttribute("controls");
+		video.muted=true;
+		var playButton = jQuery(".kgvid-play-pause");
+		var seekBar = jQuery(".kgvid-seek-bar");
+		var playProgress = jQuery(".kgvid-play-progress");
+		var seekHandle = jQuery(".kgvid-seek-handle");
+
+		playButton.on("click", function() {
+		  if (video.paused == true) {
+			// Play the video
+			video.play();
+
+		  } else {
+			// Pause the video
+			video.pause();
+		  }
+		});
+
+		video.addEventListener('play', function() {
+			playButton.addClass('kgvid-playing');
+		});
+
+		video.addEventListener('pause', function() {
+			playButton.removeClass('kgvid-playing');
+		});
+
+		//update HTML5 video current play time
+		video.addEventListener('timeupdate', function() {
+		   var currentPos = video.currentTime; //Get currenttime
+		   var maxduration = video.duration; //Get video duration
+		   var percentage = 100 * currentPos / maxduration; //in %
+		   playProgress.css('width', percentage+'%');
+		   seekHandle.css('left', percentage+'%');
+		});
+
+		var timeDrag = false;   /* Drag status */
+		seekBar.mousedown(function(e) {
+			video.pause();
+
+		   timeDrag = true;
+		   updatebar(e.pageX);
+		});
+		jQuery(document).mouseup(function(e) {
+		   if(timeDrag) {
+			  timeDrag = false;
+			  updatebar(e.pageX);
+		   }
+		});
+		jQuery(document).mousemove(function(e) {
+		   if(timeDrag) {
+			  updatebar(e.pageX);
+		   }
+		});
+		//update Progress Bar control
+		var updatebar = function(x) {
+		   var maxduration = video.duration; //Video duraiton
+		   var position = x - seekBar.offset().left; //Click pos
+		   var percentage = 100 * position / seekBar.width();
+		   //Check within range
+		   if(percentage > 100) {
+			  percentage = 100;
+		   }
+		   if(percentage < 0) {
+			  percentage = 0;
+		   }
+		   //Update progress bar and video currenttime
+		   playProgress.css('width', percentage+'%');
+		   seekHandle.css('left', percentage+'%');
+		   video.currentTime = maxduration * percentage / 100;
+		};
 	}
-
-	video.removeAttribute("controls");
-	video.muted=true;
-	var playButton = jQuery(".kgvid-play-pause");
-	var seekBar = jQuery(".kgvid-seek-bar");
-	var playProgress = jQuery(".kgvid-play-progress");
-	var seekHandle = jQuery(".kgvid-seek-handle");
-
-	playButton.on("click", function() {
-	  if (video.paused == true) {
-		// Play the video
-		video.play();
-
-	  } else {
-		// Pause the video
-		video.pause();
-	  }
-	});
-
-	video.addEventListener('play', function() {
-		playButton.addClass('kgvid-playing');
-	});
-
-	video.addEventListener('pause', function() {
-		playButton.removeClass('kgvid-playing');
-	});
-
-	//update HTML5 video current play time
-	video.addEventListener('timeupdate', function() {
-	   var currentPos = video.currentTime; //Get currenttime
-	   var maxduration = video.duration; //Get video duration
-	   var percentage = 100 * currentPos / maxduration; //in %
-	   playProgress.css('width', percentage+'%');
-	   seekHandle.css('left', percentage+'%');
-	});
-
-	var timeDrag = false;   /* Drag status */
-	seekBar.mousedown(function(e) {
-		video.pause();
-
-	   timeDrag = true;
-	   updatebar(e.pageX);
-	});
-	jQuery(document).mouseup(function(e) {
-	   if(timeDrag) {
-		  timeDrag = false;
-		  updatebar(e.pageX);
-	   }
-	});
-	jQuery(document).mousemove(function(e) {
-	   if(timeDrag) {
-		  updatebar(e.pageX);
-	   }
-	});
-	//update Progress Bar control
-	var updatebar = function(x) {
-	   var maxduration = video.duration; //Video duraiton
-	   var position = x - seekBar.offset().left; //Click pos
-	   var percentage = 100 * position / seekBar.width();
-	   //Check within range
-	   if(percentage > 100) {
-		  percentage = 100;
-	   }
-	   if(percentage < 0) {
-		  percentage = 0;
-	   }
-	   //Update progress bar and video currenttime
-	   playProgress.css('width', percentage+'%');
-	   seekHandle.css('left', percentage+'%');
-	   video.currentTime = maxduration * percentage / 100;
-	};
 }
 
 function kgvid_reveal_thumb_video(postID) {
