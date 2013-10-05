@@ -986,11 +986,7 @@ function KGVID_shortcode($atts, $content = ''){
 			}
 			else { $encodevideo_info["original_exists"] = false; }
 
-			error_log($query_atts["endofvideooverlaysame"]);
-
 			if($query_atts["endofvideooverlaysame"] == "true") { $query_atts["endofvideooverlay"] = $query_atts["poster"]; }
-
-			error_log($query_atts["endofvideooverlay"]);
 
 			/* if ( $query_atts['video_security'] == "on" && !empty($id) ) {
 
@@ -3032,7 +3028,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 		$video_formats = kgvid_video_formats();
 		foreach ( $video_formats as $format => $format_stats ) {
 			if( isset($attachment['kgflashmediaplayer-encode'.$format]) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-encode'.$format, "on"); }
-			else { delete_post_meta($post['ID'], '_kgflashmediaplayer-encode'.$format); } //if it used to be checked, delete that meta value
+			else { update_post_meta($post['ID'], '_kgflashmediaplayer-encode'.$format, "false"); }
 		}
 
 		if( isset($attachment['kgflashmediaplayer-showtitle']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-showtitle', $attachment['kgflashmediaplayer-showtitle']); }
