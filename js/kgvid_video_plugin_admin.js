@@ -191,15 +191,6 @@ function kgvid_reveal_thumb_video(postID) {
 		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
 		text.html('Choose from video...');
 
-		/* if(typeof wp !== 'undefined'){
-			ed_id = wp.media.editor.id();
-			var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
-			ed_media = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
-			if ( ed_media ) {
-				ed_media.off('escape', kgvid_hide_video_on_close);
-			}
-		}*/
-
 	}
 	jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 500);
 	jQuery('#generate-thumb-'+postID+'-container').animate({opacity: 'toggle', height: 'toggle'}, 500);
@@ -922,6 +913,11 @@ function kgvid_hide_plugin_settings() {
 		jQuery("table:contains(XML configuration file)").show();
 		jQuery("h3:contains(The following options will only affect Flash playback)").show();
 	}
+
+	if ( playback_option == "WordPress Default" && general_tab ) {
+		jQuery("tr:contains(Skin Class)").hide();
+	}
+	else { jQuery("tr:contains(Skin Class)").show(); }
 
 	if ( ffmpeg_exists == "notinstalled" ) {
 		jQuery(".kgvid_video_app_required").addClass("kgvid_thumbnail_overlay");
