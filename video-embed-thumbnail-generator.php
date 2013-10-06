@@ -2514,11 +2514,22 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-aspect"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-aspect"]["value"] = $heightset/$widthset;
 
+		$nonce = wp_create_nonce('video-embed-thumbnail-generator-nonce');
+
 		$embedset = get_post_meta($post->ID, "_kgflashmediaplayer-embed", true);
 		if ($embedset == "") {
 			$embedset = "Single Video";
 			update_post_meta($post->ID, '_kgflashmediaplayer-embed', $embedset); //make sure at least this value is set before attachment is inserted into post
 		}
+
+		$starts = intval(get_post_meta($post->ID, "_kgflashmediaplayer-starts", true));
+		$completeviews = intval(get_post_meta($post->ID, "_kgflashmediaplayer-completeviews", true));
+
+		$form_fields["views"]["label"] = __("Video Stats");
+		$form_fields["views"]["input"] = "html";
+		$form_fields["views"]["html"] = $starts." Starts, ".$completeviews." Complete Views";
+
+		// ** Thumbnail section **//
 
 		$thumbnail_url = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
 
@@ -2542,9 +2553,19 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if (get_post_meta($post->ID, "_kgflashmediaplayer-thumbtime", true) != "") { $numberofthumbs_value = "1"; }
 		if ( empty($numberofthumbs_value) ) { $numberofthumbs_value = $options['generate_thumbs']; }
 
+		$args = array(
+			'mime_type' => 'image/jpeg',
+			'methods' => array(
+				'save'
+			)
+		);
+		$img_editor_works = wp_image_editor_supports($args);
+
 		if ( !isset($options['ffmpeg_exists']) || $options['ffmpeg_exists'] == "notchecked" ) {
 			kgvid_check_ffmpeg_exists($options, true);
 		}
+		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.strtoupper($options['video_app']).' not found at '.$options['app_path'].' and server doesn\'t support ImageMagick or GD"'; }
+		else { $ffmpeg_disabled_text = ""; }
 
 		$randomizechecked = get_post_meta($post->ID, "_kgflashmediaplayer-randomize", true);
 		$forcefirstchecked = get_post_meta($post->ID, "_kgflashmediaplayer-forcefirst", true);
@@ -2553,18 +2574,6 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if ( empty($featuredchecked) ) { $featuredchecked = $options['featured']; }
 		if ( $featuredchecked == "on" ) { $featuredchecked = "checked"; }
 		else { $featuredchecked = ""; }
-
-		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.strtoupper($options['video_app']).' not found at '.$options['app_path'].'"'; }
-		else { $ffmpeg_disabled_text = ""; }
-
-		$nonce = wp_create_nonce('video-embed-thumbnail-generator-nonce');
-
-		$starts = intval(get_post_meta($post->ID, "_kgflashmediaplayer-starts", true));
-		$completeviews = intval(get_post_meta($post->ID, "_kgflashmediaplayer-completeviews", true));
-
-		$form_fields["views"]["label"] = __("Video Stats");
-		$form_fields["views"]["input"] = "html";
-		$form_fields["views"]["html"] = $starts." Starts, ".$completeviews." Complete Views";
 
 		$update_script = "";
 		$created_time = time()-get_post_time('U', true, $post->ID);
@@ -2611,22 +2620,23 @@ display: inline-block;">Loading thumbnail...</span></div>'; }
 				if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = '<source src="'.$encodevideo_info[$name."url"].'" type="video/'.$type.'">'; }
 			}
 
-			$choose_from_video_content = '<div style="display:none;" class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
-				<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">Choose from video...</span></div>
-				<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-					<video preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
-					implode("\n", $sources).'
-					</video>
-					<div class="kgvid-video-controls">
-						<div class="kgvid-play-pause"></div>
-						<div class="kgvid-seek-bar">
-							<div class="kgvid-play-progress"></div>
-							<div class="kgvid-seek-handle"></div></div>
+			if ( $img_editor_works ) {
+				$choose_from_video_content = '<div style="display:none;" class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
+					<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">Choose from video...</span></div>
+					<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
+						<video preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
+						implode("\n", $sources).'
+						</video>
+						<div class="kgvid-video-controls">
+							<div class="kgvid-play-pause"></div>
+							<div class="kgvid-seek-bar">
+								<div class="kgvid-play-progress"></div>
+								<div class="kgvid-seek-handle"></div></div>
+						</div>
+						<span id="manual-thumbnail" class="button-secondary" onclick="kgvid_thumb_video_manual('.$post->ID.');">Use this frame</span>
 					</div>
-					<span id="manual-thumbnail" class="button-secondary" onclick="kgvid_thumb_video_manual('.$post->ID.');">Use this frame</span>
-				</div>
-			</div>';
-
+				</div>';
+			}
 			$generate_content = '<div id="generate-thumb-'.$post->ID.'-container" class="kgvid-tabs-content">
 			<input id="attachments-'. $post->ID .'-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$numberofthumbs_value.'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.'/>
 			<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button-secondary" value="Generate" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
