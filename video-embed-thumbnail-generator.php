@@ -661,7 +661,7 @@ function kgvid_generate_encode_string($input, $output, $libraries, $format, $wid
 			$input = substr_replace($input, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
 		}
 
-		$encode_string = $nice.$options['app_path']."/".$options['video_app']." -y -i '".$input."' ".$ffmpeg_options.$rate_control_flag.$rotate." -threads ".$options['threads']." '".$output."'";
+		$encode_string = $nice.$options['app_path']."/".$options['video_app'].' -y -i "'.$input.'" '.$ffmpeg_options.$rate_control_flag.$rotate." -threads ".$options['threads'].' "'.$output.'"';
 
 	} //if FFMPEG is found
 
