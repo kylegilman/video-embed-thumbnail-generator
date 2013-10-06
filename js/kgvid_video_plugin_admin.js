@@ -785,7 +785,10 @@ function kgvid_save_plugin_settings(input_obj) {
 
 	function kgvid_ajax_save() {
 
+		var disabled_fields = jQuery('form :disabled'); //temporarily enable disabled fields so they can be serialized
+		disabled_fields.prop('disabled', false);
 		var all_settings = jQuery('form').serialize();
+		disabled_fields.prop('disabled', true);
 
 		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value, all_settings: all_settings }, function(data) {
 
