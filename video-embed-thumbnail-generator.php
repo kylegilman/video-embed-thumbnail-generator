@@ -2131,7 +2131,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		if ( $options['ffmpeg_exists'] != "on" ) { $display_div = " style='display:none;'"; }
 
 		echo "<div id='ffmpeg_sample_div'".$display_div."><p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> sample H.264 encode command:<br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".$encode_string."</textarea></p>";
-		echo "<p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> test output:<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea></p></div>\n\t";
+		echo "<p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> test output:<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>If everything is working correctly, this should end with several lines that start with <code>[libx264</code>.<br>For help interpreting this output, <a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>try our Wiki page on Github</a>.</p></div>\n\t";
 	}
 
 //end of settings page callback functions
