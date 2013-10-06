@@ -8,7 +8,7 @@ Stable tag: 4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for thumbnails and encodes.
+Generates thumbnails, encodes HTML5-compliant videos, and embeds locally hosted videos. Requires FFMPEG or LIBAV for encoding.
 
 == Description ==
 
