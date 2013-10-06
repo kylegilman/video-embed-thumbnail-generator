@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation">Donate</a>
-Version: 4.2
+Version: 4.2.1
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -3001,7 +3001,10 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 	// $attachment part of the form $_POST ($_POST[attachments][postID])
 	// $post attachments wp post array - will be saved after returned
 	//     $post['post_type'] == 'attachment'
-	if( !empty($post['ID']) ) {
+	static $flag = 0;
+
+	if( !empty($post['ID']) && $flag < 1 ) {
+
 		$thumb_id = "";
 		if( isset($attachment['kgflashmediaplayer-poster']) ) {
 
@@ -3022,7 +3025,18 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 		else { update_post_meta($post['ID'], '_kgflashmediaplayer-forcefirst', ""); }
 		if( isset($attachment['kgflashmediaplayer-featured']) ) {
 			update_post_meta($post['ID'], '_kgflashmediaplayer-featured', $attachment['kgflashmediaplayer-featured']);
-			if ( !empty($thumb_id) && array_key_exists('post_parent', $post) ) { set_post_thumbnail($post['post_parent'], $thumb_id); }
+			if ( !empty($thumb_id) ) {
+				if ( isset($_POST['action']) && $_POST['action'] == 'save-attachment-compat' && isset($_POST['post_id']) ) { //if this is in the media modal
+					$post_parent = $_POST['post_id'];
+				}
+				elseif ( array_key_exists('post_parent', $post) ) {
+					$post_parent = $post['post_parent'];
+				}
+
+				if ( isset($post_parent) ) {
+					set_post_thumbnail($post_parent, $thumb_id);
+				}
+			}
 		}
 		else { update_post_meta($post['ID'], '_kgflashmediaplayer-featured', "notchecked"); }
 		if( isset($attachment['thumbtime']) ) {update_post_meta($post['ID'], '_kgflashmediaplayer-thumbtime', $attachment['thumbtime']); }
@@ -3053,16 +3067,17 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 		if( isset($attachment['kgflashmediaplayer-gallery_id']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-gallery_id', $attachment['kgflashmediaplayer-gallery_id']); }
 
 	}
+	$flag++;
 	return $post;
 }
 add_filter("attachment_fields_to_save", "kgvid_video_attachment_fields_to_save", null, 2);
 
-function kgvid_sync_thumbnail_with_featured ( $meta_id, $post_id, $meta_key, $meta_value ) {
+/* function kgvid_sync_thumbnail_with_featured ( $meta_id, $post_id, $meta_key, $meta_value ) {
 
 	if ( $meta_key == "_kgflashmediaplayer-poster-id" ) { set_post_thumbnail($post_id, $meta_value); }
 
 }
-add_action( 'updated_post_meta', 'kgvid_sync_thumbnail_with_featured', 10, 4 );
+add_action( 'updated_post_meta', 'kgvid_sync_thumbnail_with_featured', 10, 4 ); */
 
 class kgInsertMedia {
   //class constructor
