@@ -153,6 +153,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.1 - October 6, 2013 =
+* Rounded offset values when generating thumbnails with FFMPEG and LIBAV for backwards compatibility with older versions of FFMPEG.
+* Added check to ensure server supports ImageMagick or GD libraries necessary to save thumbnails created in the browser.
+* Added check to avoid saving thumbnails twice.
+
 = 4.2 - October 5, 2013 =
 * THUMBNAILS FOR EVERYBODY! Added in-browser thumbnail generation. Any video in the media library that can be played natively in the current browser can now be used to generate thumbnails without requiring special software on your server.
 * Updated shortcode to support the simplest possible implementation: [KGVID]. Without any additional information, it will automatically find and display all videos attached to the post.
