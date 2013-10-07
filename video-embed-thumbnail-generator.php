@@ -3310,7 +3310,7 @@ function kgvid_video_attachment_template() {
 	global $post;
 	global $wp_query;
 	global $content_width;
-	$content_width = 2048;
+
 	$options = get_option('kgvid_video_embed_options');
 
 	$kgvid_video_embed = array ( 'enable' => 'false' ); //turned off by default
@@ -3321,6 +3321,9 @@ function kgvid_video_attachment_template() {
 	if ( $options['embeddable'] == 'false' && !array_key_exists('sample', $kgvid_video_embed) && !array_key_exists('gallery', $kgvid_video_embed) ) { $kgvid_video_embed['enable'] = 'false'; }
 
 	if ( array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true' && (strpos($post->post_mime_type,"video") !== false || array_key_exists('sample', $kgvid_video_embed)) ) {
+
+		$content_width_save = $content_width;
+		$content_width = 2048;
 
 		remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
 		add_filter( 'show_admin_bar', '__return_false' );
@@ -3339,6 +3342,7 @@ function kgvid_video_attachment_template() {
 		echo (do_shortcode( $shortcode ));
 		echo (wp_footer());
 		echo '</body></html>';
+		$content_width = $content_width_save; //reset $content_width
 		exit;
 	}
 }
