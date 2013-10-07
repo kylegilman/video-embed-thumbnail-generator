@@ -22,7 +22,7 @@ You can also use the plugin to create a popup video gallery. The shortcode uses 
 
 If your video can be played natively in your browser, or if you have FFMPEG or LIBAV installed on your server, you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them, you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. After creating an array of thumbnails you can save them all using the "Save all thumbnails" button.
 
-If you know which frame you want to use, click "Choose from video…" to select it from the video. This will only work for videos that can be played natively in your browser. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. You can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time).
+If you know which frame you want to use, click "Choose from video..." to select it from the video. This will only work for videos that can be played natively in your browser. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. You can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time).
 
 After you select a thumbnail it will be registered in the Wordpress Media Library and added to the video's attachments. Unused thumbnails will be deleted.
 
@@ -101,7 +101,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Re
 * `gallery_order="ASC/DESC"` sort order
 * `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post
 
-I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback in the comments.
+I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
 
 == Installation ==
 
@@ -154,6 +154,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.2.1 - October 6, 2013 =
+* Featured images are now set for the post currently being edited, which does not have to be the video's parent.
 * Rounded offset values when generating thumbnails with FFMPEG and LIBAV for backwards compatibility with older versions of FFMPEG.
 * Added check to ensure server supports ImageMagick or GD libraries necessary to save thumbnails created in the browser.
 * Added check to avoid saving thumbnails twice.
