@@ -3,6 +3,10 @@
 	position: relative;
 }
 
+.kgvid_gallerywrapper {
+	display: inline-block;
+}
+
 .kgvid_videodiv {
 	position: relative;
 }
@@ -54,8 +58,8 @@ img.kgvid_ios_novideo {
 	background-color: rgba(40, 40, 40, 0.95);
 	visibility: hidden;
  	opacity: 0;
- 	-webkit-transition: visibility 1s linear, opacity 1s linear; 
- 	-moz-transition: visibility 1s linear, opacity 1s linear; 
+ 	-webkit-transition: visibility 1s linear, opacity 1s linear;
+ 	-moz-transition: visibility 1s linear, opacity 1s linear;
  	-o-transition: visibility 1s linear, opacity 1s linear;
 }
 
@@ -114,42 +118,42 @@ img.kgvid_ios_novideo {
 }
 
 .kgvid_video_gallery_thumb {
-	position: relative; 
+	position: relative;
 	float: left;
-	display:inline-block; 
-	margin:10px;
+	display:inline-block;
+	margin: 3px 7px;
 	cursor: pointer; !important
 }
 
-.kgvid_video_gallery_thumb img { 
+.kgvid_video_gallery_thumb img {
 	width: 100%;
 	max-width:none !important;
-	padding:0px; 
-	margin:0px; 
+	padding:0px;
+	margin:0px;
 }
 
-.kgvid_video_gallery_thumb .titlebackground { 
-	position:absolute; 
-	bottom:10px; 
-	left:0px; 
-	width:100%; 
-	padding:0px;   
-	background-color: rgba(0,0,0,0.4); 
+.kgvid_video_gallery_thumb .titlebackground {
+	position:absolute;
+	bottom:10px;
+	left:0px;
+	width:100%;
+	padding:0px;
+	background-color: rgba(0,0,0,0.4);
 	overflow:hidden;
 	z-index: 3;
 }
 
 .kgvid_video_gallery_thumb:hover .titlebackground {
-	background-color: rgba(0,0,0,0.8); 
+	background-color: rgba(0,0,0,0.8);
 }
 
 .kgvid_video_gallery_thumb .videotitle {
 	color:white;
-	letter-spacing:0.05em; 
+	letter-spacing:0.05em;
 	font-size:14px;
 	line-height: 1.5em;
 	text-align:center;
-	padding:4px; 
+	padding:4px;
 }
 
 #kgvid_GalleryVideo {
@@ -169,7 +173,7 @@ img.kgvid_ios_novideo {
  */
 .kgvid_gallery .ui-dialog { position: absolute; width: 300px; background-color:black; z-index:10001; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar { position: relative; float:right; }
-.kgvid_gallery .ui-dialog .ui-dialog-title { float: left; } 
+.kgvid_gallery .ui-dialog .ui-dialog-title { float: left; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; left:10px; top:-10px; background: none; border: none; text-indent: -9999999px; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close span { display: block; }
 .kgvid_gallery .ui-dialog .ui-dialog-titlebar-close span:focus {  }
