@@ -519,13 +519,6 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 		}
 	});
 	jQuery('#kgflashmediaplayer-table').data("kgvid_attachment_id", basename);
-	/* document.getElementById('thumb-video-'+oldbasename).setAttribute("onloadedmetadata", "kgvid_thumb_video_loaded('"+basename+"')");
-	document.getElementById('thumb-video-'+oldbasename).id = 'thumb-video-'+basename;
-	document.getElementById('manual-thumbnail').setAttribute("onclick", "kgvid_thumb_video_manual('"+basename+"');");
-	document.getElementById('thumb-video-'+oldbasename+'-container').id = 'thumb-video-'+basename+'-container';
-	document.getElementById('show-thumb-video-'+oldbasename).setAttribute("onclick", "kgvid_reveal_thumb_video('"+basename+"');");
-	document.getElementById('show-thumb-video-'+oldbasename).id = 'show-thumb-video-'+basename;
-	document.getElementById('thumb-video-'+oldbasename+'-player').id = 'thumb-video-'+basename+'-player'; */
 	jQuery('#attachments-'+oldbasename+'-kgflashmediaplayer-encodeboxes').attr('id', 'attachments-'+basename+'-kgflashmediaplayer-encodeboxes');
 	document.getElementById('attachments-'+oldbasename+'-thumbnailplaceholder').id = 'attachments-'+basename+'-thumbnailplaceholder';
 	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
