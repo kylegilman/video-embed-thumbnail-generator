@@ -153,6 +153,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.3 - October 8, 2013 =
+* Fixed bug that only disabled right-clicking when using the Video.js player.
+* Fixed bug that prevented encoding videos from the External URL tab.
+* Better error reporting when auto thumbnail creation fails.
+
 = 4.2.2 - October 7, 2013 =
 * Fixed bug that was setting the global $content_width to 2048 on every page.
 
