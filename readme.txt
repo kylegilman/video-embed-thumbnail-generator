@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4
 Requires at least: 3.5
 Tested up to: 3.7
-Stable tag: 4.2.2
+Stable tag: 4.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,9 +154,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.2.3 - October 8, 2013 =
+* Fixed bug that caused encoding on Windows servers to hang and not show progress.
 * Fixed bug that only disabled right-clicking when using the Video.js player.
 * Fixed bug that prevented encoding videos from the External URL tab.
-* Better error reporting when auto thumbnail creation fails.
+* Fixed bug that showed an empty "Replace original with H.264" checkbox if the filename changed.
+* Better error reporting when encoding or auto thumbnail creation fails.
+* Modified method for determining video's dimensions from FFMPEG/LIBAV output. This will cause videos with single-digit resolutions to fail.
+* Adjusted video gallery CSS.
 
 = 4.2.2 - October 7, 2013 =
 * Fixed bug that was setting the global $content_width to 2048 on every page.
