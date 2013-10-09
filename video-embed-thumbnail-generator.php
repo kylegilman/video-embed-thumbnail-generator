@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation">Donate</a>
-Version: 4.2.3
+Version: 4.2.4
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -1644,6 +1644,21 @@ function kgvid_FMPOptionsPage() {
    		   <?php submit_button('Reset Options', 'secondary', 'video-embed-thumbnail-generator-reset', false); ?>
    		</p>
 		</form>
+
+		<div class="kgvid-blue-box">
+		<span>If you’re getting some use out of this plugin, please consider donating a few dollars to support its future development.</span>
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+			<input type="hidden" name="cmd" value="_donations">
+			<input type="hidden" name="business" value="kylegilman@gmail.com">
+			<input type="hidden" name="lc" value="US">
+			<input type="hidden" name="item_name" value="Video Embed & Thumbnail Generator Plugin Donation">
+			<input type="hidden" name="currency_code" value="USD">
+			<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHosted">
+			<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+		</form>
+		</div>
+
 		<?php echo "<script type='text/javascript'>
 			jQuery(document).ready(function() {
 					jQuery('#app_path').data('ffmpeg_exists', '".$options['ffmpeg_exists']."');

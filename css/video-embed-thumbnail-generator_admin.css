@@ -471,3 +471,21 @@ td.media-icon img {
 	height: 100%;
 	padding: 0;
 }
+
+.kgvid-blue-box {
+	width: 454px;
+	margin: 30px 0;
+	padding: 20px 20px 0 20px;
+	background-color: #F0F8FF;
+	border: 2px solid #ddd;
+}
+
+.kgvid-blue-box > * {
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	text-align: center;
+	font-size: 13pt;
+	line-height: 17pt;
+	margin-bottom: 10px;
+}
