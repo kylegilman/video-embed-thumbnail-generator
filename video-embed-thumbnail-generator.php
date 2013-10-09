@@ -4113,7 +4113,8 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						}
 						elseif ( $video_embed_queue[$video_key]['encode_formats']['fullres']['status'] == "Encoding Complete" ) { //if there's nothing left to encode and we're replacing the original
 
-							kgvid_replace_video( $video_key, 'fullres' );
+							$new_movie_url = kgvid_replace_video( $video_key, 'fullres' );
+							$script_function = 'kgvid_redraw_encode_checkboxes("'.$new_movie_url.'", "'.$video_entry['attachmentID'].'", "'.$page.'")';
 
 							if ( $video_embed_queue[$video_key]['movie_info']['rotate'] != "" ) { //if the video needed rotating
 								$video_embed_queue[$video_key]['movie_info']['rotate'] = ""; //clear rotation because we've just fixed that problem
@@ -4131,6 +4132,9 @@ function kgvid_encode_progress($video_key, $format, $page) {
 								}
 								update_option('kgvid_video_embed_queue', $video_embed_queue);
 							}
+
+							$embed_display = '<strong>Encoding Complete</strong> <script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
+
 						}
 
 					}
@@ -4240,6 +4244,8 @@ function kgvid_replace_video ( $video_key, $format ) {
 	$post->guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
 	$post->post_mime_type = $new_mime['type'];
 	wp_update_post($post);
+
+	return $new_url;
 }
 
 function kgvid_clear_completed_queue($type) {
