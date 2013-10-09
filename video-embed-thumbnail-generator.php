@@ -532,15 +532,14 @@ function kgvid_get_video_dimensions($video = false) {
 	$lastline = prev($output)."<br />".$lastline;
 	$movie_info['output'] = $lastline;
 	$output = implode("\n", $output);
-
-	$regex = "/Video: ([^,]*), ([^,]*), ([0-9]{1,4})x([0-9]{1,4})/";
+	$regex = "/([0-9]{2,4})x([0-9]{2,4})/";
 	if (preg_match($regex, $output, $regs)) { $result = $regs[0]; }
 	else {	$result = ""; }
 
 	if ( !empty($result) ) {
 		$movie_info['worked'] = true;
-		$movie_info['width'] = $regs [3] ? $regs [3] : null;
-		$movie_info['height'] = $regs [4] ? $regs [4] : null;
+		$movie_info['width'] = $regs [1] ? $regs [1] : null;
+		$movie_info['height'] = $regs [2] ? $regs [2] : null;
 		preg_match('/Duration: (.*?),/', $output, $matches);
 		$duration = $matches[1];
 		$movie_duration_hours = intval(substr($duration, -11, 2));
@@ -690,9 +689,14 @@ class kgvid_Process{
 		else { $this->OS = "linux";	}
 
 		$command = $this->command;
-		exec($command ,$op);
-		$this->output = $op;
-		if(substr($sys,0,3) != "WIN") { $this->pid = (int)$op[0]; }
+		if ($this->OS != "windows") {
+			exec($command ,$op);
+			$this->output = $op;
+			$this->pid = (int)$op[0];
+		}
+		else {
+			proc_close(proc_open ('start /B '.$command, array(), $foo));
+		}
     }
 
     public function setPid($pid){
@@ -1427,7 +1431,11 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page) {
 					if ( $format_stats['status'] == "notchecked" ) { $meta[$format] = ' <strong>Encoded</strong>'; }
 					if ( $format_stats['status'] != "canceling" ) {
 						if ( array_key_exists($format.'id', $encodevideo_info) ) { $child_id[$format] = $encodevideo_info[$format.'id']; }
-						if ( $encodevideo_info[$format.'_writable'] && current_user_can('encode_videos') ) { $meta[$format] .= '<a id="delete-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_delete_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\', \''.$child_id[$format].'\');" href="javascript:void(0)">Delete Permanently</a>'; }
+						if ( $encodevideo_info[$format.'_writable']
+						&& current_user_can('encode_videos')
+						&& $format != "fullres" ) {
+							$meta[$format] .= '<a id="delete-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_delete_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\', \''.$child_id[$format].'\');" href="javascript:void(0)">Delete Permanently</a>';
+						}
 					}
 					$disabled[$format] = ' disabled title="Format already exists"';
 					$checked[$format] = '';
@@ -1950,7 +1958,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_app_path_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		echo "<input class='affects_ffmpeg regular-text code' id='app_path' name='kgvid_video_embed_options[app_path]' type='text' value='".stripslashes($options['app_path'])."' /><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Don't include trailing slash. Example: <code>/usr/local/bin</code>. On Windows servers, use / instead of C:\\"."\n\t";
+		echo "<input class='affects_ffmpeg regular-text code' id='app_path' name='kgvid_video_embed_options[app_path]' type='text' value='".$options['app_path']."' /><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Don't include trailing slash. Example: <code>/usr/local/bin</code>. On Windows servers, use / instead of C:\\"."\n\t";
 	}
 
 	function kgvid_video_app_callback() {
@@ -3507,6 +3515,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		}
 
 		$ffmpeg_options = '-y -ss '.round($movieoffset).' -i "'.$moviefilepath.'"'.$movie_info['rotate'].' -qscale 1 -vframes 1 -f mjpeg "'.$thumbnailfilename[$i].'"';
+
 		$thumbnailurl = $thumbnailfilebase."_thumb".round($movieoffset).'.jpg';
 		$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 
@@ -3846,6 +3855,7 @@ function kgvid_encode_videos() {
 				$cmd = escapeshellcmd($encode_string);
 
 				if ( !empty($cmd) ) { $cmd = $cmd." > ".$logfile." 2>&1 & echo $!"; }
+
 				else {
 					$arr = array ( "embed_display"=>"<span style='color:red;'>Error: Command 'escapeshellcmd' is disabled on your server.</span>" );
 					return $arr;
@@ -3862,8 +3872,6 @@ function kgvid_encode_videos() {
 				if ( !wp_next_scheduled('kgvid_cleanup_queue', array ( 'scheduled' )) ) {
 					wp_schedule_event( time()+86400, 'daily', 'kgvid_cleanup_queue', array ( 'scheduled' ) );
 				}
-
-				//update_post_meta($video['attachmentID'], '_kgflashmediaplayer-encode'.$format, 'on');
 
 				$video['encode_formats'][$queued_format] = array (
 					'name' => $video_formats[$queued_format]['name'],
@@ -3889,10 +3897,6 @@ function kgvid_encode_videos() {
 				//$embed_display .= "<script type='text/javascript'>alert('".$ffmpegPath." ".$ffmpeg_args."');</script>";
 
 			} //end if there's stuff to encode
-
-			//$output_map = array_map(create_function('$key, $value', 'return $key.":".$value." # ";'), array_keys($process->output), array_values($process->output));
-			//$output_implode = implode($output_map);
-			//$embed_display .= "Command: ".$cmd." Output: ".$output_implode;
 
 			update_option('kgvid_video_embed_queue', $video_embed_queue);
 			kgvid_encode_progress($video_key, $queued_format, "attachment");
@@ -4034,7 +4038,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 
 						$embed_display = '<strong>'.ucwords($video_entry['encode_formats'][$format]['status']).'</strong> <div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
 
-						if ( current_user_can('encode_videos') ) {
+						if ( current_user_can('encode_videos') && $pid ) {
 							$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.$video_entry["attachmentID"].'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.$pid.', \''.$video_entry["attachmentID"].'\', \''.$video_key.'\', \''.$format.'\');">Cancel</a>';
 						}
 
@@ -4136,22 +4140,29 @@ function kgvid_encode_progress($video_key, $format, $page) {
 							$lastline = "Encoding was canceled.";
 						}
 						$video_embed_queue[$video_key]['encode_formats'][$format]['status'] = "error";
-						$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
-						update_option('kgvid_video_embed_queue', $video_embed_queue);
-						$other_message = $lastline;
-						$embed_display = '<strong>Error: </strong><span style="color:red;">'.$lastline.'.</span>';
-						$next_video = kgvid_encode_videos(); //start the next queued video
-						if ( !empty($next_video['format']) ) {
-							$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
-							$args = array($next_video['video_key'], $next_video['format'], $page);
-							wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
-						}
+
 					}
 
-					//$embed_display .= $lastline;
 					$arr = array ( "embed_display"=>$embed_display );
+				} //if logfile
+				else {
+
+					$video_embed_queue[$video_key]['encode_formats'][$format]['status'] = "error";
+					$lastline = "No log file";
+
 				}
-				else { $arr = array ( "embed_display"=>"<strong>No log file</strong>" ); }
+
+				if ( $video_embed_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
+					$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
+					update_option('kgvid_video_embed_queue', $video_embed_queue);
+					$embed_display = '<strong>Error: </strong><span style="color:red;">'.$lastline.'.</span>';
+					$next_video = kgvid_encode_videos(); //start the next queued video
+					if ( !empty($next_video['format']) ) {
+						$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
+						$args = array($next_video['video_key'], $next_video['format'], $page);
+						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
+					}
+				}
 
 			}//if not completed
 			else { $arr = array ( "embed_display"=>"<strong>".ucwords($video_embed_queue[$video_key]['encode_formats'][$format]['status'])."</strong>" ); }
