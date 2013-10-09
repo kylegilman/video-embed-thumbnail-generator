@@ -153,7 +153,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.2.3 - October 8, 2013 =
+= 4.2.3 - October 9, 2013 =
 * Fixed bug that caused encoding on Windows servers to hang and not show progress.
 * Fixed bug that only disabled right-clicking when using the Video.js player.
 * Fixed bug that prevented encoding videos from the External URL tab.
