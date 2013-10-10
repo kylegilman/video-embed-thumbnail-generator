@@ -1640,7 +1640,7 @@ function kgvid_FMPOptionsPage() {
 		<input type="hidden" id="kgvid_settings_security" value="<?php echo wp_create_nonce('video-embed-thumbnail-generator-nonce'); ?>">
 		<?php do_settings_sections(__FILE__); ?>
      	<p class='submit'>
-   		   <?php submit_button('Save Changes', 'primary', 'kgvid_submit', false); ?>
+   		   <?php submit_button('Save Changes', 'primary', 'kgvid_submit', false, array( 'onclick' => "jQuery('form :disabled').prop('disabled', false);" ) ); ?>
    		   <?php submit_button('Reset Options', 'secondary', 'video-embed-thumbnail-generator-reset', false); ?>
    		</p>
 		</form>
