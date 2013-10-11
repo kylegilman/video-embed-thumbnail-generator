@@ -812,7 +812,7 @@ function kgvid_save_plugin_settings(input_obj) {
 				jQuery( '.kgvid_setting_nearvid' ).width( jQuery('#width').val() );
 			}
 			if ( save_queue[0].id == "app_path" || save_queue[0].id == "video_app" ) {
-				jQuery('#app_path').data('ffmpeg_exists', data.ffmpeg_exists)
+				jQuery('#app_path').val(data.app_path).data('ffmpeg_exists', data.ffmpeg_exists);
 				kgvid_hide_plugin_settings();
 			}
 			if ( jQuery(input_obj).hasClass('affects_player') == true ) {

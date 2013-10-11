@@ -347,19 +347,33 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 	if(function_exists('exec')) {
 		if (function_exists('escapeshellcmd')) {
 			$exec_enabled = true;
-			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4 -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
+			$test_path = rtrim($options['app_path'], '/');
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4 -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
 			exec ( $cmd, $output, $returnvalue );
+
 		}
 		else { $function = "ESCAPESHELLCMD"; }
 	}
 	else { $function = "EXEC"; }
 
-	if ( $exec_enabled == true && file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has executed successfully
-		$ffmpeg_exists = true;
-		unlink($uploads['path'].'/ffmpeg_exists_test.jpg');
+	if ( $exec_enabled == true ) {
+
+		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
+			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4 -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
+			error_log($cmd);
+			exec ( $cmd, $output, $returnvalue );
+		}
+
+		if ( file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //FFMEG has executed successfully
+			$ffmpeg_exists = true;
+			unlink($uploads['path'].'/ffmpeg_exists_test.jpg');
+			$options['app_path'] = $test_path;
+		}
+
 	}
 
-	if ( $save == true ) {
+	if ( $save ) {
 		if ( $ffmpeg_exists == true ) { $options['ffmpeg_exists'] = "on"; }
 		else {
 			$options['ffmpeg_exists'] = "notinstalled";
@@ -369,7 +383,13 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 	}
 
 	$output_output = implode("/n", $output);
-	$arr = array ("exec_enabled"=>$exec_enabled, "ffmpeg_exists"=>$ffmpeg_exists, "output"=>$output_output, "function"=>$function);
+	$arr = array (
+		"exec_enabled"=>$exec_enabled,
+		"ffmpeg_exists"=>$ffmpeg_exists,
+		"output"=>$output_output,
+		"function"=>$function,
+		"app_path"=>$options['app_path']
+	);
 	return $arr;
 }
 
@@ -1715,7 +1735,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('titlecode', 'Video title text HTML formatting:', 'kgvid_titlecode_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
 	add_settings_field('template', 'Attachment template display:', 'kgvid_template_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template' ) );
 
-	add_settings_field('app_path', 'Path to applications on server:', 'kgvid_app_path_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'app_path' ) );
+	add_settings_field('app_path', 'Path to applications folder on server:', 'kgvid_app_path_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'app_path' ) );
 	add_settings_field('video_app', 'Application for thumbnails & encoding:', 'kgvid_video_app_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_app' ) );
 	add_settings_field('browser_thumbnails', 'Enable in-browser thumbnails:', 'kgvid_browser_thumbnails_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'browser_thumbnails' ) );
 	add_settings_field('encode_formats', 'Default video encode formats:', 'kgvid_encode_formats_callback', __FILE__, 'kgvid_video_embed_encode_settings');
@@ -1973,7 +1993,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_app_path_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		echo "<input class='affects_ffmpeg regular-text code' id='app_path' name='kgvid_video_embed_options[app_path]' type='text' value='".$options['app_path']."' /><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Don't include trailing slash. Example: <code>/usr/local/bin</code>. On Windows servers, use / instead of C:\\"."\n\t";
+		echo "<input class='affects_ffmpeg regular-text code' id='app_path' name='kgvid_video_embed_options[app_path]' type='text' value='".$options['app_path']."' /><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn't usually end with <code><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong></code> Example: <code>/usr/local/bin</code>."."\n\t";
 	}
 
 	function kgvid_video_app_callback() {
@@ -2024,7 +2044,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_htaccess_callback() {
 		$options = get_option('kgvid_video_embed_options');
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<table class='kgvid_htaccess'><tbody><tr><td>User Name:</td><td><input class='regular-text affects_ffmpeg' id='htaccess_login' name='kgvid_video_embed_options[htaccess_login]' type='text' value='".$options['htaccess_login']."' /></td></tr>";
+		echo "<table class='kgvid_htaccess'><tbody><tr><td>Username:</td><td><input class='regular-text affects_ffmpeg' id='htaccess_login' name='kgvid_video_embed_options[htaccess_login]' type='text' value='".$options['htaccess_login']."' /></td></tr>";
 		echo "<tr><td>Password:</td><td><input class='regular-text affects_ffmpeg' id='htaccess_password' name='kgvid_video_embed_options[htaccess_password]' type='text' value='".$options['htaccess_password']."' /> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>If your videos are htaccess protected, <strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> will access them using these credentials.</span></a></td></tr></tbody></table>";
 		echo "</div>\n\t";
 	}
@@ -2321,17 +2341,23 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 		add_settings_error( __FILE__, "options-reset", "Video Embed & Thumbnail Generator settings reset to default values.", "updated" );
 	}
 
-	$ffmpeg_info = kgvid_check_ffmpeg_exists($input, false);
+	if ( $input['app_path'] != $options['app_path'] || $input['video_app'] != $options['video_app'] ) {
 
-	if ( $ffmpeg_info['exec_enabled'] == false ) {
-		add_settings_error( __FILE__, "ffmpeg-disabled", $ffmpeg_info['function']." is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable ".$ffmpeg_info['function'].".", "updated");
-		$input['ffmpeg_exists'] = "notinstalled";
+		$ffmpeg_info = kgvid_check_ffmpeg_exists($input, false);
+
+		$input['app_path'] = $ffmpeg_info['app_path'];
+
+
+		if ( $ffmpeg_info['exec_enabled'] == false ) {
+			add_settings_error( __FILE__, "ffmpeg-disabled", $ffmpeg_info['function']." is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable ".$ffmpeg_info['function'].".", "updated");
+			$input['ffmpeg_exists'] = "notinstalled";
+		}
+		elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) {
+			add_settings_error( __FILE__, "ffmpeg-disabled", strtoupper($input['video_app'])." not found at ".$input['app_path'].". You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without ".strtoupper($input['video_app']).".", "updated");
+			$input['ffmpeg_exists'] = "notinstalled";
+		}
+		if ( $ffmpeg_info['ffmpeg_exists'] == true ) { $input['ffmpeg_exists'] = "on"; }
 	}
-	elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) {
-		add_settings_error( __FILE__, "ffmpeg-disabled", strtoupper($input['video_app'])." not found at ".$input['app_path'].". You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without ".strtoupper($input['video_app']).".", "updated");
-		$input['ffmpeg_exists'] = "notinstalled";
-	}
-	if ( $ffmpeg_info['ffmpeg_exists'] == true ) { $input['ffmpeg_exists'] = "on"; }
 
 	if ( empty($input['width']) ) {
 		add_settings_error( __FILE__, "width-zero", "You must enter a value for the maximum video width.");
@@ -2387,7 +2413,7 @@ function kgvid_ajax_save_settings() {
 			$encode_string = kgvid_generate_encode_string(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264-480p.mp4", $movie_info['configuration'], 'mobile', 640, 360, '');
 		}
 		if ( strpos($setting, 'capability') !== false ) { $validated_options[$setting] = $value; }
-		$arr = array ( "error_message" => $error_message, "validated_value" => $validated_options[$setting], "ffmpeg_exists" => $validated_options['ffmpeg_exists'], "encode_string" => $encode_string );
+		$arr = array ( "error_message" => $error_message, "validated_value" => $validated_options[$setting], "ffmpeg_exists" => $validated_options['ffmpeg_exists'], "encode_string" => $encode_string, "app_path" => $validated_options['app_path'] );
 		echo json_encode($arr);
 		die();
 	}
@@ -3913,11 +3939,17 @@ function kgvid_test_ffmpeg() {
 	exec ( $cmd.' 2>&1', $output );
 	$output = implode("\n", $output);
 
-	if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
-		$output .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264-480p.mp4");
-	}
 
-	if ( file_exists($uploads['path']."/sample-video-h264-480p.mp4") ) { unlink($uploads['path']."/sample-video-h264-480p.mp4"); }
+
+	if ( file_exists($uploads['path']."/sample-video-h264-480p.mp4") ) {
+
+		if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
+			$output .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264-480p.mp4");
+		}
+
+		unlink($uploads['path']."/sample-video-h264-480p.mp4");
+
+	}
 
 	echo $output;
 	die;
