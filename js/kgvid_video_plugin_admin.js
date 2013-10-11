@@ -57,6 +57,27 @@ function kgvid_convert_from_timecode(timecode) {
 
 }
 
+function kgvid_break_video_on_close(postID) {
+
+	var video = document.getElementById('thumb-video-'+postID);
+
+	if ( video != null ) {
+
+		var playButton = jQuery(".kgvid-play-pause");
+
+		/* if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == "Hide video..." ) {
+			kgvid_reveal_thumb_video(postID); //hide the video if it's open
+		} */
+		playButton.off("click.kgvid");
+		video.preload = "none";
+		video.src = "";
+		video.load();
+		jQuery(video).data('setup', false);
+		jQuery(video).data('busy', false);
+	}
+
+};
+
 function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for making thumbnails
 
 	jQuery('#attachments-'+postID+'-thumbgenerate').prop('disabled', false).attr('title', '');
@@ -67,41 +88,40 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 
 	var video = document.getElementById('thumb-video-'+postID);
 
-	if ( video != null ) {
+	if ( video != null && jQuery(video).data('setup') != true ) {
 
 		if ( typeof wp !== 'undefined' ) {
 			ed_id = wp.media.editor.id();
 			var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
 			ed_media = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
 
-			var kgvid_break_video_on_close = function() {
-
-					if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == "Hide video..." ) {
-						kgvid_reveal_thumb_video(postID); //hide the video if it's open
-					}
-					video.preload = "none";
-					video.src = "";
-					video.load();
-				};
-
 			if ( ed_media ) {
-				ed_media.on('escape', kgvid_break_video_on_close);
+				ed_media.on( 'escape',
+				function(postID) {
+					return function() {
+						if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == "Hide video..." ) {
+							kgvid_reveal_thumb_video(postID);
+						}
+						//kgvid_break_video_on_close(postID);
+					}
+				}(postID) );
 			}
 		}
 
 		video.removeAttribute("controls");
 		video.muted=true;
+
 		var playButton = jQuery(".kgvid-play-pause");
 		var seekBar = jQuery(".kgvid-seek-bar");
 		var playProgress = jQuery(".kgvid-play-progress");
 		var seekHandle = jQuery(".kgvid-seek-handle");
 
-		playButton.on("click", function() {
+		playButton.on("click.kgvid", function() {
 		  if (video.paused == true) {
 			// Play the video
 			video.play();
-
-		  } else {
+		  }
+		  else {
 			// Pause the video
 			video.pause();
 		  }
@@ -159,6 +179,9 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		   seekHandle.css('left', percentage+'%');
 		   video.currentTime = maxduration * percentage / 100;
 		};
+
+		jQuery(video).data('setup', true);
+		if ( jQuery(video).data('busy') != true ) { kgvid_break_video_on_close(postID); }
 	}
 }
 
@@ -168,7 +191,7 @@ function kgvid_reveal_thumb_video(postID) {
 	video = document.getElementById('thumb-video-'+postID);
 
 	if ( text.html() == "Choose from video..." ) { //video is being revealed
-
+		jQuery(video).data('busy', true);
 		jQuery(video).removeAttr('src');
 		jQuery(video).attr("preload", "metadata");
 		video.load();
@@ -189,6 +212,7 @@ function kgvid_reveal_thumb_video(postID) {
 
 		video.pause();
 		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
+		kgvid_break_video_on_close(postID);
 		text.html('Choose from video...');
 
 	}
@@ -272,6 +296,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" ) {
 
 		video = document.getElementById('thumb-video-'+postID);
+		jQuery(video).data('busy', true);
 
 		if ( video.preload == "none" ) {
 			jQuery(video).removeAttr('src');
@@ -319,6 +344,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 							jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
 							jQuery(thumbnailboxID).prepend('<div id="saveallthumbs-'+postID+'-div"><input style="display:none;" type="button" id="attachments-'+postID+'-saveallthumbs" class="button-secondary kgvid-centered-block" value="Save All Thumbnails" name="attachments-'+postID+'-saveallthumbs" onclick="kgvid_saveall_thumbs(\''+postID+'\');"></div>');
 							jQuery('#attachments-'+postID+'-saveallthumbs').animate({opacity: 'toggle', height: 'toggle'}, 500);
+							kgvid_break_video_on_close(postID);
 						}
 					}
 
