@@ -2492,17 +2492,22 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$field_id = kgvid_backwards_compatible($post->ID);
 		$movieurl = wp_get_attachment_url($post->ID);
 		$moviefile = get_attached_file($post->ID);
+		$widthsaved = get_post_meta($post->ID, "_kgflashmediaplayer-width", true);
+		$heightsaved = get_post_meta($post->ID, "_kgflashmediaplayer-height", true);
 		$video_meta = array();
+		$video_aspect = NULL;
 		if ( function_exists('wp_read_video_metadata') ) { $video_meta = wp_read_video_metadata($moviefile); }
+		if ( array_key_exists('width', $video_meta) && array_key_exists('height', $video_meta) ) { $video_aspect = $video_meta['height']/$video_meta['width']; }
+		elseif ( $widthsaved && $heightsaved ) { $video_aspect = intval($heightsaved)/intval($widthsaved); }
 
 		$form_fields["kgflashmediaplayer-url"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-url"]["value"] = $movieurl;
 
-		$widthsaved = get_post_meta($post->ID, "_kgflashmediaplayer-width", true);
+
 		$maxwidth = $options['width'];
-		if ( $options['minimum_width'] == "on" ) { $widthset = $maxwidth; }
-		else { $widthset = $widthsaved; }
-		if ($widthset == "") {
+		if ( $widthsaved ) { $widthset = $widthsaved; }
+		elseif ( $options['minimum_width'] == "on" ) { $widthset = $maxwidth; }
+		else {
 			if ( $video_meta && array_key_exists('width', $video_meta) ) { $widthset = $video_meta['width']; }
 			else { $widthset = $maxwidth; }
 		}
@@ -2511,11 +2516,14 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-maxwidth"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-maxwidth"]["value"] = $maxwidth;
 
-		$heightsaved = get_post_meta($post->ID, "_kgflashmediaplayer-height", true);
+
 		$maxheight = $options['height'];
-		if ( $options['minimum_width'] == "on" ) { $heightset = $maxheight; }
-		else { $heightset = $heightsaved; }
-		if ($heightset == "") {
+
+		if ( $heightsaved ) {
+			$heightset = $heightsaved;
+		}
+		elseif ( $video_aspect ) { $heightset = round($widthset*$video_aspect); }
+		else {
 			if ( $video_meta && array_key_exists('height', $video_meta) ) { $heightset = $video_meta['height']; }
 			else { $heightset = $maxheight; }
 		}
