@@ -153,6 +153,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.4 - October 11, 2013 =
+* Fixed bug that ignored "Enlarge lower resolution videos to max width" plugin setting after thumbnails were generated.
+* Fixed bug that lost disabled plugin settings if the "Save Changes" button was pressed.
+* Added legacy FFMPEG libx264 flags manually so we don't have to rely on finding vpre files.
+* Now multiplying H.264 level flags by 10 for backwards compatibility.
+* Removed unnecessary & inconsistent check for existing thumbnail files on attachment pages.
+
 = 4.2.3 - October 9, 2013 =
 * Fixed bug that caused encoding on Windows servers to hang and not show progress.
 * Fixed bug that only disabled right-clicking when using the Video.js player.
