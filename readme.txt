@@ -156,6 +156,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.2.4 - October 11, 2013 =
 * Fixed bug that ignored "Enlarge lower resolution videos to max width" plugin setting after thumbnails were generated.
 * Fixed bug that lost disabled plugin settings if the "Save Changes" button was pressed.
+* Fixed bug that fixed moov atom incorrectly when using qt-faststart.
+* Added "Fixing moov atom for streaming" section FFMPEG test output.
 * Added legacy FFMPEG libx264 flags manually so we don't have to rely on finding vpre files.
 * Now multiplying H.264 level flags by 10 for backwards compatibility.
 * Removed unnecessary & inconsistent check for existing thumbnail files on attachment pages.

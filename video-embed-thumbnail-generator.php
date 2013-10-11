@@ -2161,7 +2161,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		if ( $options['ffmpeg_exists'] != "on" ) { $display_div = " style='display:none;'"; }
 
 		echo "<div id='ffmpeg_sample_div'".$display_div."><p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> sample H.264 encode command:<br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".$encode_string."</textarea></p>";
-		echo "<p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> test output:<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>If everything is working correctly, this should end with several lines that start with <code>[libx264</code> or one that starts with <code>video:</code>.<br>For help interpreting this output, <a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>try our Wiki page on Github</a>.</p></div>\n\t";
+		echo "<p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> test output:<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>For help interpreting this output, <a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>try our Wiki page on Github</a>.</p></div>\n\t";
 	}
 
 //end of settings page callback functions
@@ -2169,32 +2169,6 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 function kgvid_update_settings() {
 
 	global $wpdb;
-
-
-/*	$labels = array(
-        'name'              => 'Video Info',
-        'singular_name'     => 'Video Info',
-        'search_items'      => 'Search Video Info',
-        'all_items'         => 'All Video Info',
-        'parent_item'       => 'Parent Video Info',
-        'parent_item_colon' => 'Parent Video Info:',
-        'edit_item'         => 'Edit Video Info',
-        'update_item'       => 'Update Video Info',
-        'add_new_item'      => 'Add New Video Info',
-        'new_item_name'     => 'New Video Info',
-        'menu_name'         => 'Video Info',
-    );
-
-    $args = array(
-        'labels' => $labels,
-        'hierarchical' => true,
-        'query_var' => 'true',
-        'rewrite' => 'true',
-        'show_admin_column' => 'true',
-        'show_tagcloud' => 'false'
-    );
-
-    register_taxonomy( 'kgvid-video-info', 'attachment', $args ); */
 
 	$options = get_option('kgvid_video_embed_options');
 	$options_old = $options; //save the values that are in the db
@@ -3916,11 +3890,11 @@ function kgvid_encode_videos() {
 
 function kgvid_ajax_encode_videos() {
 
-		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		global $wpdb;
-		$arr = kgvid_encode_videos();
-		echo json_encode($arr);
-		die();
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+	global $wpdb;
+	$arr = kgvid_encode_videos();
+	echo json_encode($arr);
+	die();
 
 }
 add_action('wp_ajax_kgvid_ajax_encode_videos', 'kgvid_ajax_encode_videos');
@@ -3928,12 +3902,21 @@ add_action('wp_ajax_kgvid_ajax_encode_videos', 'kgvid_ajax_encode_videos');
 function kgvid_test_ffmpeg() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+	$options = get_option('kgvid_video_embed_options');
+	$uploads = wp_upload_dir();
+
 	$cmd = $_POST['command'];
 	$cmd=escapeshellcmd(stripcslashes($cmd));
 	exec ( $cmd.' 2>&1', $output );
-	$uploads = wp_upload_dir();
+	$output = implode("\n", $output);
+
+	if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
+		$output .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264-480p.mp4");
+	}
+
 	if ( file_exists($uploads['path']."/sample-video-h264-480p.mp4") ) { unlink($uploads['path']."/sample-video-h264-480p.mp4"); }
-	echo implode("\n", $output);
+
+	echo $output;
 	die;
 
 }
@@ -4060,7 +4043,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						$time_elapsed = $ended - $started;
 						$time_remaining = "0";
 						$fps_match = "10";
-						if ( array_key_exists(1, $libx264_matches) ) { kgvid_fix_moov_atom($video_key, $format); } //fix the moov atom if the file was encoded by libx264
+						if ( array_key_exists(1, $libx264_matches) ) { $moov_output = kgvid_fix_moov_atom($video_embed_queue[$video_key]['encode_formats'][$format]['filepath']); } //fix the moov atom if the file was encoded by libx264
 						$video_embed_queue[$video_key]['encode_formats'][$format]['status'] = "Encoding Complete";
 						$video_embed_queue[$video_key]['encode_formats'][$format]['ended'] = $ended;
 						$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
@@ -4329,19 +4312,21 @@ function kgvid_cleanup_queue_handler() {
 }
 add_action('kgvid_cleanup_queue', 'kgvid_cleanup_queue_handler');
 
-function kgvid_fix_moov_atom($video_key, $format) {
+function kgvid_fix_moov_atom($filepath) {
 
 	$options = get_option('kgvid_video_embed_options');
+	$output = "";
 
 	if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
 
-		$video_embed_queue = get_option('kgvid_video_embed_queue');
-		$filepath = $video_embed_queue[$video_key][$format]['filepath'];
+		$output = "\nFixing moov atom for streaming";
 
 		if ( $options['moov'] == 'qt-faststart' && file_exists($filepath) ) {
-			$faststart_tmp_file = str_replace('.m4v', '-faststart.m4v', $filepath);
+			$faststart_tmp_file = str_replace('.mp4', '-faststart.mp4', $filepath);
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." ".$filepath." ".$faststart_tmp_file);
-			exec($cmd);
+			$output .= "\n".$cmd."\n";
+			exec($cmd, $qtfaststart_output, $returnvalue);
+			$output .= implode("\n", $qtfaststart_output);
 			if ( file_exists($faststart_tmp_file) ) {
 				unlink($filepath);
 				rename($faststart_tmp_file, $filepath);
@@ -4350,10 +4335,14 @@ function kgvid_fix_moov_atom($video_key, $format) {
 
 		if ( $options['moov'] == 'MP4Box' ) {
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." -inter 500 ".$filepath);
-			exec($cmd);
+			$output .= "\n".$cmd."\n";
+			exec($cmd, $mp4box_output, $returnvalue);
+			$output .= implode("\n", $mp4box_output);
 		}//if MP4Box is selected
 
 	}//if there is an application selected for fixing moov atoms on libx264-encoded files.
+
+	return $output;
 
 }
 
