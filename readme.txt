@@ -132,6 +132,8 @@ WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in sys
 
 If you're like most users and don't have FFMPEG installed on your server, the plugin relies on your browser's built-in ability to play videos. Google Chrome is best when making thumbnails because it supports the most formats. Wikipedia has <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">a great chart that explains which browsers work with which video formats</a>.
 
+If you were able to make thumbnails using FFMPEG before updating to version 4.2, try disabling in-browser thumbnail creation in the FFMPEG Settings tab of the plugin settings.
+
 = I'm getting an error message FFMPEG not found at /usr/local/bin/. You can embed existing videos, but video thumbnail generation and Mobile/HTML5 video encoding is not possible without FFMPEG. =
 
 First off, don't panic.
@@ -157,6 +159,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that ignored "Enlarge lower resolution videos to max width" plugin setting after thumbnails were generated.
 * Fixed bug that lost disabled plugin settings if the "Save Changes" button was pressed.
 * Fixed bug that fixed moov atom incorrectly when using qt-faststart.
+* Added verification of the "Path to applications folder on server" setting to strip extra slashes and unnecessary subfolders.
 * Added "Fixing moov atom for streaming" section FFMPEG test output.
 * Added legacy FFMPEG libx264 flags manually so we don't have to rely on finding vpre files.
 * Now multiplying H.264 level flags by 10 for backwards compatibility.
