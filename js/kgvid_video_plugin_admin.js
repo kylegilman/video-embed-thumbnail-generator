@@ -258,11 +258,11 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 			kgvid_aspect = data.movie_height/data.movie_width;
 			document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-aspect]')[0].value = kgvid_aspect;
-			if (parseInt(data.movie_width) < parseInt(document.getElementsByName(maxwidthID)[0].value) ) { document.getElementById(widthID).value = data.movie_width; }
+
+			if (parseInt(data.movie_width) < parseInt(document.getElementsByName(maxwidthID)[0].value) && jQuery('#attachments-'+postID+'-kgflashmediaplayer-width').data('minimum') != 'on' ) { document.getElementById(widthID).value = data.movie_width; }
 			else { document.getElementById(widthID).value = document.getElementsByName(maxwidthID)[0].value; }
-			if (parseInt(data.movie_width) > parseInt(document.getElementsByName(maxwidthID)[0].value) ) { document.getElementById(heightID).value = Math.round(kgvid_aspect*parseInt(document.getElementsByName(maxwidthID)[0].value)); }
-			else { document.getElementById(heightID).value = data.movie_height; }
-			//jQuery.post( ajaxurl , { action:"kgvid_schedule_cleanup_generated_files", security:kgflashmediaplayersecurity, thumbs:"true" } );
+			document.getElementById(heightID).value = Math.round(kgvid_aspect*parseInt(document.getElementById(widthID).value));
+
 			kgvid_redraw_encode_checkboxes(attachmentURL, postID, page);
 
 		}, "json");
@@ -353,6 +353,13 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	else {
 		kgvid_do_post(); //call the FFMPEG loop if the browser can't do it
 	}
+}
+
+function kgvid_select_thumbnail(thumb_url, post_id, movieoffset) {
+	jQuery('[name="attachments['+post_id+'][kgflashmediaplayer-poster]"]').val(thumb_url); //get this by name because it's the same before WP v3.5
+	var time_display = kgvid_convert_to_timecode(movieoffset);
+	document.getElementById('attachments-'+post_id+'-thumbtime').value = time_display;
+	document.getElementById('attachments-'+post_id+'-numberofthumbs').value = '1';
 }
 
 function kgvid_save_canvas_thumb(postID, time_id, total, index) {

@@ -2524,24 +2524,28 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-url"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-url"]["value"] = $movieurl;
 
+		$widthsaved = get_post_meta($post->ID, "_kgflashmediaplayer-width", true);
 		$maxwidth = $options['width'];
 		if ( $options['minimum_width'] == "on" ) { $widthset = $maxwidth; }
-		else { $widthset = get_post_meta($post->ID, "_kgflashmediaplayer-width", true); }
+		else { $widthset = $widthsaved; }
 		if ($widthset == "") {
 			if ( $video_meta && array_key_exists('width', $video_meta) ) { $widthset = $video_meta['width']; }
 			else { $widthset = $maxwidth; }
 		}
+		if ( !$widthsaved ) { update_post_meta($post->ID, '_kgflashmediaplayer-width', $widthset); }
 
 		$form_fields["kgflashmediaplayer-maxwidth"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-maxwidth"]["value"] = $maxwidth;
 
+		$heightsaved = get_post_meta($post->ID, "_kgflashmediaplayer-height", true);
 		$maxheight = $options['height'];
 		if ( $options['minimum_width'] == "on" ) { $heightset = $maxheight; }
-		else { $heightset = get_post_meta($post->ID, "_kgflashmediaplayer-height", true); }
+		else { $heightset = $heightsaved; }
 		if ($heightset == "") {
 			if ( $video_meta && array_key_exists('height', $video_meta) ) { $heightset = $video_meta['height']; }
 			else { $heightset = $maxheight; }
 		}
+		if ( !$heightsaved ) { update_post_meta($post->ID, '_kgflashmediaplayer-height', $heightset); }
 
 		$form_fields["kgflashmediaplayer-maxheight"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-maxheight"]["value"] = $maxheight;
@@ -2572,12 +2576,6 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$url_parts = parse_url($uploads['baseurl']);
 		$moviefiledirectory = dirname(parse_url(trim($thumbnail_url), PHP_URL_PATH));
 		$moviefilebasename = pathinfo(trim($thumbnail_url), PATHINFO_BASENAME);
-		$home_path = substr(strrev(strstr(strrev($uploads['basedir']), strrev("public_html"))), 0, -strlen("public_html"));
-		if ( strpos( dirname(trim($thumbnail_url)), $url_parts['host']) != "" ) { //if it's on the current server
-			$originalpath = $home_path."public_html".$moviefiledirectory."/".$moviefilebasename;
-			if ( !file_exists($originalpath) ) { $thumbnail_url = ""; }
-		}
-		else { if ( !kgvid_url_exists($thumbnail_url) ) { $thumbnail_url = ""; } }
 
 		$thumbnail_html = "";
 		if ($thumbnail_url != "" ) {
@@ -2702,7 +2700,7 @@ display: inline-block;">Loading thumbnail...</span></div>';
 
 		$form_fields["kgflashmediaplayer-dimensions"]["label"] = __("Video Embed Dimensions");
 		$form_fields["kgflashmediaplayer-dimensions"]["input"] = "html";
-		$form_fields["kgflashmediaplayer-dimensions"]["html"] = 'Width: <input name="attachments['. $post->ID .'][kgflashmediaplayer-width]" id="attachments-'. $post->ID .'-kgflashmediaplayer-width" type="text" value="'.$widthset.'" style="width:50px;" onchange="kgvid_set_dimension('.$post->ID.', \'height\', this.value);" onkeyup="kgvid_set_dimension('.$post->ID.', \'height\', this.value);"> Height:
+		$form_fields["kgflashmediaplayer-dimensions"]["html"] = 'Width: <input name="attachments['. $post->ID .'][kgflashmediaplayer-width]" id="attachments-'. $post->ID .'-kgflashmediaplayer-width" type="text" value="'.$widthset.'" style="width:50px;" data-minimum="'.$options['minimum_width'].'" onchange="kgvid_set_dimension('.$post->ID.', \'height\', this.value);" onkeyup="kgvid_set_dimension('.$post->ID.', \'height\', this.value);"> Height:
 		<input name="attachments['. $post->ID .'][kgflashmediaplayer-height]" id="attachments-'. $post->ID .'-kgflashmediaplayer-height" type="text" value="'.$heightset.'" style="width:50px;" onchange="kgvid_set_dimension('.$post->ID.', \'width\', this.value);" onkeyup="kgvid_set_dimension('.$post->ID.', \'width\', this.value);"> <br />
 		<input type="checkbox" name="attachments['. $post->ID .'][kgflashmediaplayer-lockaspect]" id="attachments-'. $post->ID .'-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('.$post->ID.', this.checked);" value="checked" '.$lockaspectchecked.'>
 		<label for="attachments-'. $post->ID .'-kgflashmediaplayer-lockaspect"><small>Lock to aspect ratio</small></label>';
@@ -2926,7 +2924,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 	usleep(250000);
 
-	$relative_upload_path = array_pop(explode($uploads['baseurl'].'/', $thumb_url));
+	$exploded_url = explode($uploads['baseurl'].'/', $thumb_url);
+	$relative_upload_path = array_pop($exploded_url);
 
 	$args = array(
 		'numberposts' => '-1',
@@ -3538,16 +3537,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		if ( is_file($thumbnailfilename[$i]) )
 		kgvid_schedule_cleanup_generated_files('thumbs');
 
-		if (floatval($movieoffset) > 60) {
-			$movieoffset_minutes = sprintf("%02s", intval(intval($movieoffset) / 60) );
-			$movieoffset_seconds = sprintf("%02s", round(fmod( floatval($movieoffset), 60), 2) );
-			$movieoffset_display = $movieoffset_minutes.":".$movieoffset_seconds;
-		}
-		else { $movieoffset_display = "00:".sprintf("%02s", $movieoffset); }
-
-		$field_id = kgvid_backwards_compatible($postID);
-
-		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio'.$i.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="document.getElementById(\''.$field_id['poster'].'\').value = this.value; document.getElementById(\''.$field_id['thumbtime'].'\').value = \''. $movieoffset_display .'\'; document.getElementById(\'attachments-'. $postID .'-numberofthumbs\').value =\'1\';"></div>';
+		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio'.$i.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.');"></div>';
 
 		$i++;
 
