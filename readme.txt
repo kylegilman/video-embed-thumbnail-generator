@@ -162,9 +162,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that lost disabled plugin settings if the "Save Changes" button was pressed.
 * Fixed bug that fixed moov atom incorrectly when using qt-faststart.
 * Added verification of the "Path to applications folder on server" setting to strip extra slashes and unnecessary subfolders.
-* Added "Fixing moov atom for streaming" section FFMPEG test output.
+* Added "Fixing moov atom for streaming" section to FFMPEG test output.
 * Added legacy FFMPEG libx264 flags manually so we don't have to rely on finding vpre files.
-* Now multiplying H.264 level flags by 10 for backwards compatibility.
+* Now multiplying H.264 level flags by 10 for better compatibility.
 * Removed unnecessary & inconsistent check for existing thumbnail files on attachment pages.
 
 = 4.2.3 - October 9, 2013 =
