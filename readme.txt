@@ -158,6 +158,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.2.4 - October 12, 2013 =
 * Fixed bug that ignored "Enlarge lower resolution videos to max width" plugin setting after thumbnails were generated.
 * Fixed bug that caused in-browser thumbnail generation to fail after switching between several attachments in Chrome.
+* Fixed bug that prevented fallback to FFMPEG/LIBAV when the video format was not compatible with the browser.
 * Fixed bug that lost disabled plugin settings if the "Save Changes" button was pressed.
 * Fixed bug that fixed moov atom incorrectly when using qt-faststart.
 * Added verification of the "Path to applications folder on server" setting to strip extra slashes and unnecessary subfolders.

@@ -293,7 +293,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	}// end kgvid_do_post function
 
-	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" ) {
+	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" && jQuery('#thumb-video-'+postID).data('setup') != undefined ) {
 
 		video = document.getElementById('thumb-video-'+postID);
 		jQuery(video).data('busy', true);
