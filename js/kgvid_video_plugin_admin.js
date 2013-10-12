@@ -838,7 +838,8 @@ function kgvid_save_plugin_settings(input_obj) {
 				jQuery( '.kgvid_setting_nearvid' ).width( jQuery('#width').val() );
 			}
 			if ( save_queue[0].id == "app_path" || save_queue[0].id == "video_app" ) {
-				jQuery('#app_path').val(data.app_path).data('ffmpeg_exists', data.ffmpeg_exists);
+				jQuery('#app_path').val(data.app_path);
+				jQuery('#app_path').data('ffmpeg_exists', data.ffmpeg_exists);
 				kgvid_hide_plugin_settings();
 			}
 			if ( jQuery(input_obj).hasClass('affects_player') == true ) {
@@ -904,7 +905,7 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery("h3:contains(Plugin Settings)").show();
 		jQuery("table:contains(Default number of thumbnails to generate)").show();
 		jQuery("h3:contains(Video Encoding Settings)").hide();
-		jQuery("table:contains(Path to applications on server)").hide();
+		jQuery("table:contains(Path to applications folder on server)").hide();
 	}
 
 	if ( tab == "encoding" ) {
@@ -920,7 +921,7 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery("table:contains(XML configuration file)").hide();
 		jQuery("h3:contains(The following options will only affect Flash playback)").hide();
 		jQuery("h3:contains(Video Encoding Settings)").show();
-		jQuery("table:contains(Path to applications on server)").show();
+		jQuery("table:contains(Path to applications folder on server)").show();
 
 		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery('#ffmpeg_output').html() == "" ) {
 			jQuery('#ffmpeg_output').html('Running test...')

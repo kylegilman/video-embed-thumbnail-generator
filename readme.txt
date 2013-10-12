@@ -155,6 +155,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.5 - October 12, 2013 =
+* Fixed bug that disabled FFMPEG when other plugin settings were changed.
+
 = 4.2.4 - October 12, 2013 =
 * Fixed bug that ignored "Enlarge lower resolution videos to max width" plugin setting after thumbnails were generated.
 * Fixed bug that caused in-browser thumbnail generation to fail after switching between several attachments in Chrome.

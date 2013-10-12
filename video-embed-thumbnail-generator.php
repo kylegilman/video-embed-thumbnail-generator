@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding. <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">Settings</a> | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation">Donate</a>
-Version: 4.2.4
+Version: 4.2.5
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -47,7 +47,7 @@ function kgvid_default_options_fn() {
 	$upload_capable = kgvid_upload_capable();
 
 	$options = array(
-		"version"=>4.24,
+		"version"=>4.25,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
@@ -361,7 +361,6 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4 -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
-			error_log($cmd);
 			exec ( $cmd, $output, $returnvalue );
 		}
 
@@ -1680,7 +1679,6 @@ function kgvid_FMPOptionsPage() {
 
 		<?php echo "<script type='text/javascript'>
 			jQuery(document).ready(function() {
-					jQuery('#app_path').data('ffmpeg_exists', '".$options['ffmpeg_exists']."');
 					kgvid_switch_settings_tab('general');
 					jQuery('form :input').change(function() {
   						kgvid_save_plugin_settings(this);
@@ -1992,7 +1990,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_app_path_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		echo "<input class='affects_ffmpeg regular-text code' id='app_path' name='kgvid_video_embed_options[app_path]' type='text' value='".$options['app_path']."' /><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn't usually end with <code><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong></code> Example: <code>/usr/local/bin</code>."."\n\t";
+		echo "<input class='affects_ffmpeg regular-text code' id='app_path' data-ffmpeg_exists='".$options['ffmpeg_exists']."' name='kgvid_video_embed_options[app_path]' type='text' value='".$options['app_path']."' /><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn't usually end with <code><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong></code> Example: <code>/usr/local/bin</code>."."\n\t";
 	}
 
 	function kgvid_video_app_callback() {
@@ -2273,7 +2271,6 @@ function kgvid_update_settings() {
 			$options['inline'] = "on";
 		}
 		if ( $options['version'] < 4.2 ) {
-
 			$options['version'] = 4.2;
 			$options["bitrate_multiplier"] = 0.1;
 			$options["h264_CRF"] = 23;
@@ -2322,7 +2319,10 @@ function kgvid_update_settings() {
 				}
 			}
 		}
-
+		if ( $options['version'] < 4.25 ) {
+			$options['version'] = 4.25;
+			kgvid_check_ffmpeg_exists($options, true);
+		}
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
 		if ( $options !== $options_old ) { update_option('kgvid_video_embed_options', $options); }
 	}
@@ -2343,9 +2343,8 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	if ( $input['app_path'] != $options['app_path'] || $input['video_app'] != $options['video_app'] ) {
 
 		$ffmpeg_info = kgvid_check_ffmpeg_exists($input, false);
-
+		if ( $ffmpeg_info['ffmpeg_exists'] == true ) { $input['ffmpeg_exists'] = "on"; }
 		$input['app_path'] = $ffmpeg_info['app_path'];
-
 
 		if ( $ffmpeg_info['exec_enabled'] == false ) {
 			add_settings_error( __FILE__, "ffmpeg-disabled", $ffmpeg_info['function']." is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable ".$ffmpeg_info['function'].".", "updated");
@@ -2355,8 +2354,9 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 			add_settings_error( __FILE__, "ffmpeg-disabled", strtoupper($input['video_app'])." not found at ".$input['app_path'].". You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without ".strtoupper($input['video_app']).".", "updated");
 			$input['ffmpeg_exists'] = "notinstalled";
 		}
-		if ( $ffmpeg_info['ffmpeg_exists'] == true ) { $input['ffmpeg_exists'] = "on"; }
+
 	}
+	else { $input['ffmpeg_exists'] = $options['ffmpeg_exists']; }
 
 	if ( empty($input['width']) ) {
 		add_settings_error( __FILE__, "width-zero", "You must enter a value for the maximum video width.");
