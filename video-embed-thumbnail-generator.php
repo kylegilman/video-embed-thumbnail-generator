@@ -662,7 +662,6 @@ function kgvid_generate_encode_string($input, $output, $libraries, $format, $wid
 
 			$level_text = "";
 			if ( $options['h264_level'] != "none" ) {
-				if ( $options['video_app'] == "avconv" ) { $options['h264_level'] = round(floatval($options['h264_level'])*10); }
 				$level_text = " -".$level_flag." ".round(floatval($options['h264_level'])*10);
 			}
 
