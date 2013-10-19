@@ -1125,7 +1125,7 @@ function KGVID_shortcode($atts, $content = ''){
 					if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
 					if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = "\t\t\t\t\t".'<source src="'.$encodevideo_info[$name."url"].'" type="video/'.$type.'">'."\n"; }
 				}
-error_log(print_r($encodevideo_info,true));
+
 				$code .= '<video id="video_'.$div_suffix.'" ';
 				if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 				if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
