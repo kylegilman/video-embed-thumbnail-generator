@@ -155,6 +155,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.7 - October 22, 2013 =
+* Fixed several video sizing issues.
+* Restored [/KGVID] closing tag to inserted gallery shortcodes to avoid confusion if more than one [KGVID] is in the post.
+* Changed Settings and Donate links on Installed Plugins admin page and fixed 404 error on network dashboards.
+
 = 4.2.6 - October 19, 2013 =
 * Fixed bug that broke playback in some cases when using the shortcode without a URL.
 * Fixed bug that ignored width and height saved in the attachment meta if width and height were not set in the shortcode.
