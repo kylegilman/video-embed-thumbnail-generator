@@ -2910,6 +2910,11 @@ function kgvid_ajax_save_html5_thumb() {
 		$success = file_put_contents($tmp_posterpath, $decoded_png);
 
 		$editor = wp_get_image_editor( $tmp_posterpath );
+		$thumb_dimensions = $editor->get_size();
+		if ( $thumb_dimensions ) {
+			update_post_meta($post_id, '_kgflashmediaplayer-actualwidth', $thumb_dimensions['width']);
+			update_post_meta($post_id, '_kgflashmediaplayer-actualheight', $thumb_dimensions['height']);
+		}
 		$new_image_info = $editor->save( $uploads['path'].'/thumb_tmp/'.$posterfile.'.jpg', 'image/jpeg' );
 		unlink($tmp_posterpath);
 		if ( $total > 1 ) {
