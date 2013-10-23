@@ -2959,9 +2959,11 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 	$posterfile = pathinfo($thumb_url, PATHINFO_BASENAME);
 	$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
 	$final_posterpath = $uploads['path'].'/'.$posterfile;
+
+	$success = false;
 	if ( !is_file($final_posterpath) ) { //if the file doesn't already exist
 		if ( is_file($tmp_posterpath) ) {
-			copy($tmp_posterpath, $final_posterpath);
+			$success = copy($tmp_posterpath, $final_posterpath);
 		}
 	}
 
@@ -2983,7 +2985,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 	if ( $posts ) { $thumb_id = $posts[0]->ID; }
 
-	else { //no existing post with this filename
+	elseif ( $success ) { //no existing post with this filename
 
 		$desc = $post_name . ' thumbnail';
 		if ( $index ) { $desc .= ' '.$index; }
@@ -3047,10 +3049,9 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 		$thumb_id = intval( $thumb_id );
 		update_post_meta($post_id, '_kgflashmediaplayer-poster-id', $thumb_id);
-		//set_post_thumbnail($post_id, $thumb_id);
 		update_post_meta($thumb_id, '_kgflashmediaplayer-video-id', $video->ID);
 
-	} //end get_attachment_id_from_src
+	}//end else no existing db entry
 
 	if(!is_wp_error($thumb_id)) {
 
@@ -3490,8 +3491,8 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 	if ( get_post_type($postID) == "attachment" ) {
 		$moviefilepath = get_attached_file($postID);
-		$dimensions = kgvid_set_video_dimensions($postID);
-		if ( empty($dimensions['actualwidth']) ) {
+		$duration = get_post_meta($postID, '_kgflashmediaplayer-duration', true);
+		if ( !$duration ) {
 			$movie_info = kgvid_get_video_dimensions($moviefilepath);
 			if ( !empty($movie_info['width']) ) { update_post_meta($postID, '_kgflashmediaplayer-actualwidth', $movie_info['width']); }
 			if ( !empty($movie_info['height']) ) { update_post_meta($postID, '_kgflashmediaplayer-actualheight', $movie_info['height']); }
