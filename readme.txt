@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4
 Requires at least: 3.5
 Tested up to: 3.7
-Stable tag: 4.2.6
+Stable tag: 4.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -157,6 +157,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.2.7 - October 22, 2013 =
 * Fixed several video sizing issues.
+* Updated Video.js to version 4.2.2.
+* Removed Video.js files when using the WordPress Default player.
 * Restored [/KGVID] closing tag to inserted gallery shortcodes to avoid confusion if more than one [KGVID] is in the post.
 * Changed Settings and Donate links on Installed Plugins admin page and fixed 404 error on network dashboards.
 
