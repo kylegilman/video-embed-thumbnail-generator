@@ -167,7 +167,6 @@ function kgvid_setup_video(id) {
 			}
 		});
 
-
 	} //end if WordPress Default
 
 	if ( video_vars.resize == "true" ) {

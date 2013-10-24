@@ -812,9 +812,11 @@ function kgvid_video_embed_enqueue_scripts() {
 	}
 
 	//Video.js script and skins
-	wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.2.1' );
-	wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.2.1' );
-	wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
+	if ( $options['embed_method'] != "WordPress Default" ) {
+		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.2.2' );
+		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.2.2' );
+		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
+	}
 
 	//plugin-related frontend scripts and styles
 	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), '', $options['version'] );
@@ -851,7 +853,9 @@ function kgvid_video_embed_print_scripts() {
 	$pattern = get_shortcode_regex();
 	$options = get_option('kgvid_video_embed_options');
 
-	echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.2.1"</script>'."\n";
+	if ( $options['embed_method'] != "WordPress Default" ) {
+		echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.2.2"</script>'."\n";
+	}
 
 	foreach ( $posts as $post ) {
 		if ( $options['open_graph'] == "on"

@@ -158,7 +158,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.2.7 - October 22, 2013 =
 * Fixed several video sizing issues.
 * Updated Video.js to version 4.2.2.
-* Removed Video.js files when using the WordPress Default player.
+* No longer loading Video.js files when using the WordPress Default player.
 * Restored [/KGVID] closing tag to inserted gallery shortcodes to avoid confusion if more than one [KGVID] is in the post.
 * Changed Settings and Donate links on Installed Plugins admin page and fixed 404 error on network dashboards.
 
