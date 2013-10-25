@@ -6,13 +6,15 @@ Then there's FFMPEG. This is an amazing program that is even more complicated an
 
 But I want to help you. So please help me out and follow these rules when creating new issues:
 
-*For front-end problems* (your videos won't play, the player looks funny, etc)
+### For front-end problems ###
+_Videos won't play, the player looks funny, etc_
 
 1. Post a link to your website so I can see the problem. Please don't be shy. It's really difficult to guess at what your problem is. Most problems can be solved if I can just look at them. If you don't want to post your site publicly, email it to me at kylegilman@gmail.com
 1. Tell me very specifically what browsers you're having a problem with. You're not having an "IE problem," you're having an "IE 9 problem." You're not having a "mobile problem." You're having an "iPad 2 running iOS 7 problem."
 1. Give me as much information as you can about how your videos were created. What program did you use to compress them and what settings did you use in that program? You would be surprised how many flavors of "H.264" there are.
 
-*For back-end problems* (can't make thumbnails, can't encode videos, etc)
+### For back-end problems ###
+_Can't make thumbnails, can't encode videos, etc_
 
 1. If the plugin can't find FFMPEG at the path you entered, connect to your server via SSH and enter this command:
 `/usr/local/bin/ffmpeg -i /path/to/wordpress/wp-content/plugins/video-embed-thumbnail-generator/images/sample-video-h264.mp4 -vframes 1 -f mjpeg /path/to/wordpress/wp-content/uploads/2013/10/ffmpeg_exists_test.jpg`
