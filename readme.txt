@@ -157,6 +157,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.2.8 - October 25, 2013 =
 * Fixed an embedded video sizing issue.
+* Removed shortcode text from feeds.
 
 = 4.2.7 - October 24, 2013 =
 * Fixed several video sizing issues.
