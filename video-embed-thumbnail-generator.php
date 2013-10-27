@@ -373,7 +373,6 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$test_path = rtrim($options['app_path'], '/');
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i '.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4 -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
 			exec ( $cmd, $output, $returnvalue );
-
 		}
 		else { $function = "ESCAPESHELLCMD"; }
 	}
@@ -2463,7 +2462,7 @@ function kgvid_ajax_save_settings() {
 }
 add_action('wp_ajax_kgvid_save_settings', 'kgvid_ajax_save_settings');
 
-function kgvid_add_attachment_handler($post_id) { // This will start encoding and thumbnail generating automatically in a future version
+function kgvid_add_attachment_handler($post_id) {
 
 	$options = get_option('kgvid_video_embed_options');
 
@@ -3626,7 +3625,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 		$movie_width = $movie_info['width'];
 		$movie_height = $movie_info['height'];
 		if ( get_post_type($postID) == "attachment" ) {
-			update_post_meta($postID, '_kgflashmediaplayer-actualheight', $movie_width);
+			update_post_meta($postID, '_kgflashmediaplayer-actualwidth', $movie_width);
 			update_post_meta($postID, '_kgflashmediaplayer-actualheight', $movie_height);
 			update_post_meta($postID, '_kgflashmediaplayer-duration', $movie_info['duration']);
 			update_post_meta($postID, '_kgflashmediaplayer-rotate', $movie_info['rotate']);
