@@ -156,8 +156,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.2.8 - October 25, 2013 =
-* Fixed an embedded video sizing issue.
-* Removed shortcode text from feeds.
+* Fixed embedded video auto-sizing bug.
+* Fixed bug that would cause divide by zero errors when generating thumbnails from .mpg videos that had already encoded an alternate format with FFMPEG.
+* Removed shortcode text from RSS feeds.
 
 = 4.2.7 - October 24, 2013 =
 * Fixed several video sizing issues.
