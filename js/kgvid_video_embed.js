@@ -169,7 +169,7 @@ function kgvid_setup_video(id) {
 
 	} //end if WordPress Default
 
-	if ( video_vars.resize == "true" ) {
+	if ( video_vars.resize == "true" || window.location.search.indexOf("kgvid_video_embed[enable]=true") !== false ) {
 		kgvid_resize_video(id);
 		window.addEventListener('resize', kgvid_resize_all_videos, false);
 	}
@@ -213,6 +213,7 @@ function kgvid_resize_video(id) {
 					}
 				}
 			}
+			else { jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').removeAttr('style'); }
 		}
 		if ( video_vars.player_type == "Strobe Media Playback" ) {
 			jQuery('#video_'+id+'_div').height(set_height);
