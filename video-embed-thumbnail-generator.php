@@ -1859,7 +1859,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_resize_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		echo "<input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>Make video player  responsive.</label>\n\t";
+		echo "<input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>Make video player responsive.</label>\n\t";
 	}
 
 	function kgvid_inline_callback() {
@@ -2958,6 +2958,8 @@ add_action('wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb');
 
 function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
+	global $user_ID;
+
 	$options = get_option('kgvid_video_embed_options');
 	$uploads = wp_upload_dir();
 
@@ -3006,13 +3008,15 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 		if ( FALSE !== strpos( $thumb_url, $upload_dir['baseurl'] ) ) {
 			$wp_filetype = wp_check_filetype(basename($thumb_url), null );
 			$filename = preg_replace('/\.[^.]+$/', '', basename($thumb_url));
-
+			if ( $user_ID == 0 ) { $user_ID = $video->post_author; }
+error_log($user_ID);
 			$attachment = array(
 			   'guid' => $thumb_url,
 			   'post_mime_type' => $wp_filetype['type'],
 			   'post_title' => $desc,
 			   'post_content' => '',
-			   'post_status' => 'inherit'
+			   'post_status' => 'inherit',
+			   'post_author' => $user_ID
 			);
 
 			$thumb_id = wp_insert_attachment( $attachment, $uploads['path'].'/'.$posterfile, $post_id );
