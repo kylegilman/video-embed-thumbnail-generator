@@ -3009,7 +3009,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 			$wp_filetype = wp_check_filetype(basename($thumb_url), null );
 			$filename = preg_replace('/\.[^.]+$/', '', basename($thumb_url));
 			if ( $user_ID == 0 ) { $user_ID = $video->post_author; }
-error_log($user_ID);
+
 			$attachment = array(
 			   'guid' => $thumb_url,
 			   'post_mime_type' => $wp_filetype['type'],
