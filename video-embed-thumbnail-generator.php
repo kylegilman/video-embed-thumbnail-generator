@@ -1157,7 +1157,7 @@ if ( !is_feed() ) {
 				if ( $query_atts["loop"] == 'true') { $wp_shortcode .= 'loop="true" '; }
 				if ( $query_atts["autoplay"] == 'true') { $wp_shortcode .= 'autoplay="true" '; }
 				$wp_shortcode .= "]";
-				$content_width = $query_atts['width']; //override for themes that don't set this properly
+				$content_width = $query_atts['width'];
 				$executed_shortcode = do_shortcode($wp_shortcode);
 				$content_width = $content_width_save;
 				if ( $sources_hack ) { //insert remaining mp4 sources manually
@@ -2648,7 +2648,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if ( !isset($options['ffmpeg_exists']) || $options['ffmpeg_exists'] == "notchecked" ) {
 			kgvid_check_ffmpeg_exists($options, true);
 		}
-		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.strtoupper($options['video_app']).' not found at '.$options['app_path'].' and server doesn\'t support ImageMagick or GD"'; }
+		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.strtoupper($options['video_app']).' not found at '.$options['app_path'].' and unable to load video in browser for thumbnail generation."'; }
 		else { $ffmpeg_disabled_text = ""; }
 
 		$randomizechecked = get_post_meta($post->ID, "_kgflashmediaplayer-randomize", true);
@@ -2708,7 +2708,7 @@ display: inline-block;">Loading thumbnail...</span></div>';
 				$choose_from_video_content = '<div style="display:none;" class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
 					<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">Choose from video...</span></div>
 					<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-						<video preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
+						<video crossorigin preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
 						implode("\n", $sources).'
 						</video>
 						<div class="kgvid-video-controls">

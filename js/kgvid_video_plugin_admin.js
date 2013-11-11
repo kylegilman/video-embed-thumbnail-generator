@@ -374,6 +374,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				jQuery(video).data('thumbnail_data', thumbnails);
 
 			}
+
 		}//end canvas thumb function
 	}
 	else {
