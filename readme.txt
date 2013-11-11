@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4
 Requires at least: 3.5
 Tested up to: 3.7
-Stable tag: 4.2.7
+Stable tag: 4.2.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -155,13 +155,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.2.8 - November 8, 2013 =
+= 4.2.8 - November 11, 2013 =
 * Updated Video.js to version 4.3.0.
-* Fixed embedded video auto-sizing bug.
+* Fixed iframe embedded video auto-sizing bug.
 * Improved sizing of videos using the WordPress Default player.
+* Removed shortcode text from RSS feeds.
+* Now checking for cross-origin when making thumbnails. If video files are hosted on a different domain FFMPEG will make thumbnails to avoid cross-origin errors when saving canvas elements.
 * Fixed bug that assigned auto-generated thumbnails to nobody.
 * Fixed bug that would cause divide by zero errors when generating thumbnails from .mpg videos that had already encoded an alternate format with FFMPEG.
-* Removed shortcode text from RSS feeds.
 
 = 4.2.7 - October 24, 2013 =
 * Fixed several video sizing issues.
