@@ -889,44 +889,44 @@ function kgvid_shortcode_atts($atts) {
 	else { $post_ID = 1; }
 
 	$query_atts = shortcode_atts(
-					array(
-						'id' => '',
-						'videos' => -1,
-						'width' => $options['width'],
-						'height' => $options['height'],
-						'align' => $options['align'],
-						'controlbar' => $options['controlbar_style'],
-						'autohide' => $options['autohide'],
-						'poster' => $options['poster'],
-						'watermark' => $options['watermark'],
-						'endofvideooverlay' => $options['endofvideooverlay'],
-						'endofvideooverlaysame' => $options['endofvideooverlaysame'],
-						'playbutton' => $options['playbutton'],
-						'loop' => $options['loop'],
-						'autoplay' => $options['autoplay'],
-						'streamtype' => $options['stream_type'],
-						'scalemode' => $options['scale_mode'],
-						'backgroundcolor' => $options['bgcolor'],
-						'configuration' => $options['configuration'],
-						'skin' => $options['skin'],
-						'gallery' => 'false',
-						'gallery_thumb' => $options['gallery_thumb'],
-						'gallery_orderby' => 'menu_order',
-						'gallery_order' => 'ASC',
-						'gallery_exclude' => '',
-						'gallery_include' => '',
-						'gallery_id' => $post_ID,
-						'volume' => '',
-						'title' => $options['overlay_title'],
-						'embedcode' => $options['overlay_embedcode'],
-						'view_count' => $options['view_count'],
-						'caption' => '',
-						'description' => '',
-						'inline' => $options['inline'],
-						'downloadlink' => 'false',
-						'right_click' => $options['right_click'],
-						'resize' => $options['resize']
-					), $atts);
+		array(
+			'id' => '',
+			'videos' => -1,
+			'width' => $options['width'],
+			'height' => $options['height'],
+			'align' => $options['align'],
+			'controlbar' => $options['controlbar_style'],
+			'autohide' => $options['autohide'],
+			'poster' => $options['poster'],
+			'watermark' => $options['watermark'],
+			'endofvideooverlay' => $options['endofvideooverlay'],
+			'endofvideooverlaysame' => $options['endofvideooverlaysame'],
+			'playbutton' => $options['playbutton'],
+			'loop' => $options['loop'],
+			'autoplay' => $options['autoplay'],
+			'streamtype' => $options['stream_type'],
+			'scalemode' => $options['scale_mode'],
+			'backgroundcolor' => $options['bgcolor'],
+			'configuration' => $options['configuration'],
+			'skin' => $options['skin'],
+			'gallery' => 'false',
+			'gallery_thumb' => $options['gallery_thumb'],
+			'gallery_orderby' => 'menu_order',
+			'gallery_order' => 'ASC',
+			'gallery_exclude' => '',
+			'gallery_include' => '',
+			'gallery_id' => $post_ID,
+			'volume' => '',
+			'title' => $options['overlay_title'],
+			'embedcode' => $options['overlay_embedcode'],
+			'view_count' => $options['view_count'],
+			'caption' => '',
+			'description' => '',
+			'inline' => $options['inline'],
+			'downloadlink' => 'false',
+			'right_click' => $options['right_click'],
+			'resize' => $options['resize']
+		), $atts);
 
 	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize");
 	foreach ( $checkbox_convert as $query ) {
@@ -944,6 +944,10 @@ function kgvid_shortcode_atts($atts) {
 }
 
 function KGVID_shortcode($atts, $content = ''){
+
+	global $content_width;
+	$content_width_save = $content_width;
+
 $code = "";
 if ( !is_feed() ) {
 	$options = get_option('kgvid_video_embed_options');
@@ -1153,7 +1157,9 @@ if ( !is_feed() ) {
 				if ( $query_atts["loop"] == 'true') { $wp_shortcode .= 'loop="true" '; }
 				if ( $query_atts["autoplay"] == 'true') { $wp_shortcode .= 'autoplay="true" '; }
 				$wp_shortcode .= "]";
+				$content_width = $query_atts['width']; //override for themes that don't set this properly
 				$executed_shortcode = do_shortcode($wp_shortcode);
+				$content_width = $content_width_save;
 				if ( $sources_hack ) { //insert remaining mp4 sources manually
 					$position = strpos($executed_shortcode, $search_string) + strlen($search_string);
 					$executed_shortcode = substr_replace( $executed_shortcode, $sources_hack, $position, 0 );

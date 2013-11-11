@@ -158,6 +158,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.2.8 - November 8, 2013 =
 * Updated Video.js to version 4.3.0.
 * Fixed embedded video auto-sizing bug.
+* Improved sizing of videos using the WordPress Default player.
 * Fixed bug that assigned auto-generated thumbnails to nobody.
 * Fixed bug that would cause divide by zero errors when generating thumbnails from .mpg videos that had already encoded an alternate format with FFMPEG.
 * Removed shortcode text from RSS feeds.

@@ -11,6 +11,10 @@
 	position: relative;
 }
 
+.wp-video-shortcode {
+	max-width: 100%;
+}
+
 .kgvid_watermark img {
 	display: block;
 	position: absolute;
