@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.2.8
+Version: 4.2.9
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 
@@ -812,8 +812,8 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js script and skins
 	if ( $options['embed_method'] != "WordPress Default" ) {
-		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.2.2' );
-		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.2.2' );
+		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.3.0' );
+		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.3.0' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -853,7 +853,7 @@ function kgvid_video_embed_print_scripts() {
 	$options = get_option('kgvid_video_embed_options');
 
 	if ( $options['embed_method'] != "WordPress Default" ) {
-		echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.2.2"</script>'."\n";
+		echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.0.0"</script>'."\n";
 	}
 
 	foreach ( $posts as $post ) {
@@ -3128,6 +3128,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 		if( isset($attachment['kgflashmediaplayer-featured']) ) {
 			update_post_meta($post['ID'], '_kgflashmediaplayer-featured', $attachment['kgflashmediaplayer-featured']);
 			if ( !empty($thumb_id) ) {
+
 				if ( isset($_POST['action']) && $_POST['action'] == 'save-attachment-compat' && isset($_POST['post_id']) ) { //if this is in the media modal
 					$post_parent = $_POST['post_id'];
 				}
@@ -3138,6 +3139,8 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 				if ( isset($post_parent) ) {
 					set_post_thumbnail($post_parent, $thumb_id);
 				}
+
+				set_post_thumbnail($post['ID'], $thumb_id); //set the video's featured image as well as the post's featured image
 			}
 		}
 		else { update_post_meta($post['ID'], '_kgflashmediaplayer-featured', "notchecked"); }

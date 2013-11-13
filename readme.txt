@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4
 Requires at least: 3.5
-Tested up to: 3.7
+Tested up to: 3.8
 Stable tag: 4.2.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -53,7 +53,7 @@ To embed videos on other sites you can use code like this.
 `[KGVID poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg"
 width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
 
-= If you want to further modify the way the video player works, you can add the following options inside the [KGVID] tag. These will override anything you've set in the plugin settings or attachment details. =
+= If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. =
 
 * `id="xxx"` video attachment ID (instead of using a URL).
 * `videos="x"` number of attached videos to display if no URL or id is given.
