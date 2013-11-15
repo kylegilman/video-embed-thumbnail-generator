@@ -2839,6 +2839,7 @@ add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit",
 function kgvid_hide_video_children($wp_query_obj) {
 
 	if ( is_admin()
+		&& is_array($wp_query_obj->query_vars)
 		&& ( array_key_exists('post_type', $wp_query_obj->query_vars) && $wp_query_obj->query_vars['post_type'] == 'attachment' ) //only deal with attachments
 		&& !array_key_exists('post_mime_type', $wp_query_obj->query_vars) //show children when specifically displaying videos
 		&& ( array_key_exists('posts_per_page', $wp_query_obj->query_vars) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) //hide children only when showing paged content (makes sure that -1 will actually return all attachments)
@@ -4156,19 +4157,28 @@ function kgvid_encode_progress($video_key, $format, $page) {
 							}
 
 							global $wpdb;
+							global $user_ID;
 							$query = "SELECT ID FROM {$wpdb->posts} WHERE guid='".$video_embed_queue[$video_key]['encode_formats'][$format]['url']."'"; //check for existing entry in the db
 							$video_id = $wpdb->get_var($query);
 							if ( !$video_id ) {
 								$wp_filetype = wp_check_filetype(basename($video_entry['encode_formats'][$format]['filepath']), null );
 								$video_formats = kgvid_video_formats();
 								$title .= " ".$video_formats[$format]['name'];
+
+								if ( $user_ID == 0 ) {
+									$parent_post = get_post($parent_id);
+									$user_ID = $parent_post->post_author;
+								}
+
 								$attachment = array(
 								   'guid' => $video_entry['encode_formats'][$format]['url'],
 								   'post_mime_type' => $wp_filetype['type'],
 								   'post_title' => $title,
 								   'post_content' => '',
-								   'post_status' => 'inherit'
+								   'post_status' => 'inherit',
+								   'post_author' => $user_ID
 								);
+
 								$new_id = wp_insert_attachment( $attachment, $video_entry['encode_formats'][$format]['filepath'], $parent_id );
 								// you must first include the image.php file
 								// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
