@@ -2839,9 +2839,10 @@ add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit",
 function kgvid_hide_video_children($wp_query_obj) {
 
 	if ( is_admin()
+		&& ( array_key_exists('post_type', $wp_query_obj->query_vars) && $wp_query_obj->query_vars['post_type'] == 'attachment' ) //only deal with attachments
 		&& !array_key_exists('post_mime_type', $wp_query_obj->query_vars) //show children when specifically displaying videos
-		&& array_key_exists('posts_per_page', $wp_query_obj->query_vars)
-		&& $wp_query_obj->query_vars['posts_per_page'] > 0 ) { //hide children only when showing paged content (makes sure that -1 will actually return all attachments)
+		&& ( array_key_exists('posts_per_page', $wp_query_obj->query_vars) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) //hide children only when showing paged content (makes sure that -1 will actually return all attachments)
+	) {
 		$wp_query_obj->set(
 			'meta_query',
 			array(
@@ -2852,7 +2853,7 @@ function kgvid_hide_video_children($wp_query_obj) {
 			)
 		);
 
-	}
+	}//end if
 
 }
 add_action('pre_get_posts','kgvid_hide_video_children');

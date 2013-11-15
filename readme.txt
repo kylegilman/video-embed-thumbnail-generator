@@ -155,6 +155,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.9 - November 15, 2013 =
+* Fixed bug that interfered with database queries that do not have post_meta (The Events Calendar revealed the bug, but it likely had an effect on other plugins)
+* Fixed bug that did not assign an author to auto-generated thumbnails.
+
 = 4.2.8 - November 11, 2013 =
 * Updated Video.js to version 4.3.0.
 * Fixed iframe embedded video auto-sizing bug.
