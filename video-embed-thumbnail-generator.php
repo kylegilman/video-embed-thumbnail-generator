@@ -47,7 +47,7 @@ function kgvid_default_options_fn() {
 	$upload_capable = kgvid_upload_capable();
 
 	$options = array(
-		"version"=>4.28,
+		"version"=>4.29,
 		"embed_method"=>"Video.js",
 		"template"=>false,
 		"template_gentle"=>"on",
