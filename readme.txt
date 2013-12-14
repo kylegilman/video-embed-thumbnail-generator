@@ -155,6 +155,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.2.10 - December XX, 2013 =
+* Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
+
 = 4.2.9 - November 15, 2013 =
 * Fixed bug that interfered with database queries that do not have post_meta (The Events Calendar revealed the bug, but it likely had an effect on other plugins).
 * Fixed bug that assigned auto-encoded videos to nobody.
