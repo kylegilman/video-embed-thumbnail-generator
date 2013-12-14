@@ -54,7 +54,7 @@ img.kgvid_ios_novideo {
 	display: block;
 	position: absolute;
 	top: 0px;
-	z-index: 1003;
+	z-index: 3;
 	margin: 0px;
 	width: 100%;
 	height: 32px;
