@@ -85,6 +85,7 @@ function kgvid_default_options_fn() {
 		"controlbar_style"=>"docked",
 		"autoplay"=>false,
 		"loop"=>false,
+		"preload"=>"metadata",
 		"endofvideooverlay"=>false,
 		"endofvideooverlaysame"=>"",
 		"bgcolor"=>"",
@@ -1178,7 +1179,7 @@ if ( !is_feed() ) {
 				if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 				if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
 				if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
-				$code .= 'preload="metadata" ';
+				$code .= 'preload="'.$options['preload'].'" ';
 				if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
 				$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
 				$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\'';
@@ -1762,6 +1763,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('controlbar_style', 'Controlbar style:', 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
 	add_settings_field('autoplay', 'Autoplay:', 'kgvid_autoplay_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'autoplay' ) );
 	add_settings_field('loop', 'Loop:', 'kgvid_loop_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'loop' ) );
+	add_settings_field('preload', 'Preload:', 'kgvid_preload_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'preload' ) );
 	add_settings_field('js_skin', 'Skin Class:', 'kgvid_js_skin_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
 
 	add_settings_field('bgcolor', 'Background color:', 'kgvid_bgcolor_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'bgcolor' ) );
@@ -1908,6 +1910,17 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_loop_callback() {
 		$options = get_option('kgvid_video_embed_options');
 		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>Loop to beginning when video ends.</label>\n\t";
+	}
+	
+	function kgvid_preload_callback() {
+		$options = get_option('kgvid_video_embed_options');
+		$items = array("metadata", "auto", "none");
+		echo "<select class='affects_player' id='preload' name='kgvid_video_embed_options[preload]'>";
+		foreach($items as $item) {
+			$selected = ($options['preload']==$item) ? 'selected="selected"' : '';
+			echo "<option value='$item' $selected>$item</option>";
+		}
+		echo "</select><a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting \"metadata\" will load the height and width and format information along with a few seconds of the video in some desktop browsers. \"Auto\" will preload nearly a minute of video in most desktop browsers. \"None\" will prevent all data from preloading.</span></a>\n\t";
 	}
 
 	function kgvid_js_skin_callback() {
@@ -2372,6 +2385,10 @@ function kgvid_update_settings() {
 			$options['version'] = 4.25;
 			kgvid_check_ffmpeg_exists($options, true);
 		}
+		if ( $options['version'] < 4210 ) {
+			$options['preload'] = "metadata";
+		}
+		
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
 		if ( $options !== $options_old ) { update_option('kgvid_video_embed_options', $options); }
 	}
