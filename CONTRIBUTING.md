@@ -2,6 +2,8 @@ Hello and welcome! I'm glad you're using my plugin and I'm really sorry if you'r
 
 This is a plugin that I developed for my own use in 2010 and since then it has grown larger and more complicated than I ever planned. I'm a film editor by day and I work on this in my spare time. I have made a valiant effort to add as many features as my own programming skills can provide. However, the world of web video is a scary and complicated place. Every browser handles things just a little bit differently. I try to make things work on every desktop browser, even in Internet Explorer, and on iOS and Android devices. Windows Mobile I'm not sure about. It might work but I don't know anyone who's tried it.
 
+### I will not provide support to anyone I suspect of using my plugin to break US copyright laws. I'm concerned about opening myself up to legal action from the copyright holders and as a filmmaker I am personally opposed to any reposting of people's videos. I explained this on my blog in 2008 and my feelings back then have not changed: http://www.kylegilman.net/2008/08/04/why-its-not-ok-to-repost-videos/ ###
+
 Then there's FFMPEG. This is an amazing program that is even more complicated and varied than the user experience of HTML5 video. I try to support as many versions and configurations of FFMPEG as possible on Linux and Windows servers. Most of you are on shared hosting and don't have the option to install FFMPEG. Those of you that have set up FFMPEG are in the minority. Unfortunately I don't have access to your server and I don't know how it's configured.
 
 But I want to help you. So please help me out and follow these rules when creating new issues:
