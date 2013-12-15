@@ -3933,11 +3933,11 @@ function kgvid_encode_videos() {
 
 			if ( !empty($encode_string) ) {
 
-				$logfile = '"' . $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt"';
+				$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt';
 
 				$cmd = escapeshellcmd($encode_string);
 
-				if ( !empty($cmd) ) { $cmd = $cmd." > ".$logfile." 2>&1 & echo $!"; }
+				if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
 
 				else {
 					$arr = array ( "embed_display"=>"<span style='color:red;'>Error: Command 'escapeshellcmd' is disabled on your server.</span>" );
