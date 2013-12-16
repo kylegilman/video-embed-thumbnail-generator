@@ -489,3 +489,11 @@ td.media-icon img {
 	line-height: 17pt;
 	margin-bottom: 10px;
 }
+
+.kgvid_warning {
+	color:red;
+}
+
+.kgvid_50_width {
+	width: 50px;
+}

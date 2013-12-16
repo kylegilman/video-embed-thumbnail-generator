@@ -1492,7 +1492,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page) {
 		if ( $format_stats['status'] != "notchecked" ) { //File is in queue
 			$meta[$format] = ' <strong>'.ucfirst($format_stats['status']).'</strong>';
 			if ( $format_stats['status'] == "error" ) {
-				$meta[$format] .= ': <span style="color:red;">'.$video_embed_queue[$video_key]['encode_formats'][$format]['lastline']."</span>";
+				$meta[$format] .= ': <span class="kgvid_warning">'.$video_embed_queue[$video_key]['encode_formats'][$format]['lastline']."</span>";
 			}
 		}
 
@@ -2841,12 +2841,12 @@ display: inline-block;">Loading thumbnail...</span></div>';
 
 			$form_fields["kgflashmediaplayer-gallery"]["label"] = __("Gallery Settings (all optional)");
 			$form_fields["kgflashmediaplayer-gallery"]["input"] = "html";
-			$form_fields["kgflashmediaplayer-gallery"]["html"] = '<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_thumb_width]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width" type ="text" value="'.$gallery_thumb_width.'" style="width:50px;"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width">Thumbnail Width</label><br />
+			$form_fields["kgflashmediaplayer-gallery"]["html"] = '<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_thumb_width]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width" type ="text" value="'.$gallery_thumb_width.'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width">Thumbnail Width</label><br />
 			'.$gallery_orderby_select.' Order By<br />
 			'.$gallery_order_select.' Sort Order<br />
-			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_exclude]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_exclude" type ="text" value="'.$gallery_exclude.'" style="width:50px;"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_exclude">Exclude</label><br />
-			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_include]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_include" type ="text" value="'.$gallery_include.'" style="width:50px;"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_include">Include</label><br />
-			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_id]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_id" type ="text" value="'.$gallery_id.'" style="width:50px;"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_id">Post ID</label>
+			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_exclude]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_exclude" type ="text" value="'.$gallery_exclude.'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_exclude">Exclude</label><br />
+			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_include]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_include" type ="text" value="'.$gallery_include.'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_include">Include</label><br />
+			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_id]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_id" type ="text" value="'.$gallery_id.'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_id">Post ID</label>
 			';
 
 		}//if video gallery
@@ -3332,7 +3332,7 @@ function media_embedurl_process() {
 				</tr>
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments-singleurl-kgflashmediaplayer-width">Dimensions</label></span></th>
-					<td class="field">Width: <input name="attachments[singleurl][kgflashmediaplayer-width]" type="text" value="<?php echo $maxwidth; ?>" id="attachments-singleurl-kgflashmediaplayer-width" type="text" style="width:50px;" onchange="kgvid_set_dimension('singleurl', 'height', this.value);" onkeyup="kgvid_set_dimension('singleurl', 'height', this.value);"> Height: <input name="attachments[singleurl][kgflashmediaplayer-height]" id="attachments-singleurl-kgflashmediaplayer-height" type="text" value="<?php echo $maxheight; ?>" style="width:50px;" onchange="kgvid_set_dimension('singleurl', 'width', this.value);" onkeyup="kgvid-set-dimension('singleurl', 'width', this.value);"> <input type="checkbox" name="attachments[singleurl][kgflashmediaplayer-lockaspect]" id="attachments-singleurl-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('singleurl', this.checked);" checked> <label for="attachments-singleurl-kgflashmediaplayer-lockaspect"><small>Lock to Aspect Ratio</small></label>
+					<td class="field">Width: <input name="attachments[singleurl][kgflashmediaplayer-width]" type="text" value="<?php echo $maxwidth; ?>" id="attachments-singleurl-kgflashmediaplayer-width" type="text" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'height', this.value);" onkeyup="kgvid_set_dimension('singleurl', 'height', this.value);"> Height: <input name="attachments[singleurl][kgflashmediaplayer-height]" id="attachments-singleurl-kgflashmediaplayer-height" type="text" value="<?php echo $maxheight; ?>" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'width', this.value);" onkeyup="kgvid-set-dimension('singleurl', 'width', this.value);"> <input type="checkbox" name="attachments[singleurl][kgflashmediaplayer-lockaspect]" id="attachments-singleurl-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('singleurl', this.checked);" checked> <label for="attachments-singleurl-kgflashmediaplayer-lockaspect"><small>Lock to Aspect Ratio</small></label>
 					<p class="help"><small>Leave blank to use <a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php" target="_blank">default dimensions</a>.</small></p></td>
 				</tr>
 				<?php if ( current_user_can('encode_videos') ) { ?>
@@ -3943,7 +3943,7 @@ function kgvid_encode_videos() {
 				if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
 
 				else {
-					$arr = array ( "embed_display"=>"<span style='color:red;'>Error: Command 'escapeshellcmd' is disabled on your server.</span>" );
+					$arr = array ( "embed_display"=>"<span class='kgvid_warning'>Error: Command 'escapeshellcmd' is disabled on your server.</span>" );
 					return $arr;
 				}
 				$process = new kgvid_Process($cmd);
@@ -4045,7 +4045,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 		$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'")';
 
 		if ( $video_entry['encode_formats'][$format]['status'] == "error" ) {
-			$embed_display = '<strong>Error: </strong><span style="color:red;">'.$video_entry['encode_formats'][$format]['lastline'].'.</span>';
+			$embed_display = '<strong>Error: </strong><span class="kgvid_warning">'.$video_entry['encode_formats'][$format]['lastline'].'.</span>';
 			$next_video = kgvid_encode_videos(); //start the next queued video
 			if ( !empty($next_video['format']) ) {
 				$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
@@ -4269,7 +4269,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 				if ( $video_embed_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
 					$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
 					update_option('kgvid_video_embed_queue', $video_embed_queue);
-					$embed_display = '<strong>Error: </strong><span style="color:red;">'.$lastline.'.</span>';
+					$embed_display = '<strong>Error: </strong><span class="kgvid_warning">'.$lastline.'.</span>';
 					$next_video = kgvid_encode_videos(); //start the next queued video
 					if ( !empty($next_video['format']) ) {
 						$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
