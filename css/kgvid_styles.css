@@ -3,6 +3,28 @@
 	position: relative;
 }
 
+.kgvid_wrapper_auto_left {
+	margin-left: auto;
+}
+
+.kgvid_wrapper_auto_right {
+	margin-right: auto;
+}
+
+.kgvid_wrapper_inline {
+	display: inline-block;
+}
+
+.kgvid_wrapper_inline_left {
+	float: left;
+	margin: 1em 1em 0 0;
+}
+
+.kgvid_wrapper_inline_right {
+	float: right;
+	margin: 1em 0 0 1em;
+}
+
 .kgvid_gallerywrapper {
 	display: inline-block;
 }

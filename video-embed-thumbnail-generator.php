@@ -1111,16 +1111,19 @@ if ( !is_feed() ) {
 				}
 			} //if Strobe Media Playback
 
-			if ( $query_atts['align'] != "left" || $query_atts['inline'] == "true" ) {
-				$aligncode = ' style="';
-				if ( $query_atts['align'] != "left" ) { $aligncode .= 'margin-left:auto; '; }
-				if ( $query_atts['align'] == "center" ) { $aligncode .= ' margin-right:auto;'; }
-				if ( $query_atts['inline'] == "true" ) { $aligncode .= 'display:inline-block;'; }
-				$aligncode .= '" ';
+			if ( $query_atts['inline'] == "true" ) {
+				$aligncode = ' kgvid_wrapper_inline';
+				if ( $query_atts['align'] == "left" ) { $aligncode .= ' kgvid_wrapper_inline_left'; }
+				if ( $query_atts['align'] == "center" ) { $aligncode .= ' kgvid_wrapper_auto_left kgvid_wrapper_auto_right'; }
+				if ( $query_atts['align'] == "right" ) { $aligncode .= ' kgvid_wrapper_inline_right'; }
 			}
-			else { $aligncode = ""; }
+			else {
+				if ( $query_atts['align'] == "left" ) { $aligncode = ''; }
+				if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_wrapper_auto_left kgvid_wrapper_auto_right'; }
+				if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_wrapper_auto_left'; }
+			}
 
-			$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper"'.$aligncode.'>'."\n\t\t\t";
+			$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper'.$aligncode.'">'."\n\t\t\t";
 			$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" itemscope itemtype="http://schema.org/VideoObject">';
 			if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailURL" content="'.$query_atts["poster"].'" />'; }
 			if ( !empty($id) ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
