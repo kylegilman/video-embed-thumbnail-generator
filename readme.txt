@@ -156,8 +156,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.2.10 - December XX, 2013 =
+* Added setting to choose video preload attribute.
 * Added float to inline videos to allow text to wrap around it.
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
+* Changed video title overlay z-index from 1003 to 3 to avoid floating over other elements.
 
 = 4.2.9 - November 15, 2013 =
 * Fixed bug that interfered with database queries that do not have post_meta (The Events Calendar revealed the bug, but it likely had an effect on other plugins).
