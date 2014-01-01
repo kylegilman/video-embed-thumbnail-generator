@@ -4,7 +4,7 @@ This is a plugin that I developed for my own use in 2010 and since then it has g
 
 ### I will not provide support to anyone I suspect of using my plugin to break US copyright laws. I'm concerned about opening myself up to legal action from the copyright holders and as a filmmaker I am personally opposed to any reposting of people's videos. I explained this on my blog in 2008 and my feelings back then have not changed: http://www.kylegilman.net/2008/08/04/why-its-not-ok-to-repost-videos/ ###
 
-Then there's FFMPEG. This is an amazing program that is even more complicated and varied than the user experience of HTML5 video. I try to support as many versions and configurations of FFMPEG as possible on Linux and Windows servers. Most of you are on shared hosting and don't have the option to install FFMPEG. Those of you that have set up FFMPEG are in the minority. Unfortunately I don't have access to your server and I don't know how it's configured.
+This plugin uses FFMPEG or LIBAV for some advanced features. This is an amazing program that is even more complicated and varied than the user experience of HTML5 video. I try to support as many versions and configurations of FFMPEG as possible on Linux and Windows servers. Most of you are on shared hosting and don't have the option to install FFMPEG. Those of you that have set up FFMPEG are in the minority. Unfortunately I don't have access to your server and I don't know how it's configured and I can not provide installation support.
 
 But I want to help you. So please help me out and follow these rules when creating new issues:
 
