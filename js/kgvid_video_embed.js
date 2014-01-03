@@ -171,7 +171,12 @@ function kgvid_setup_video(id) {
 
 	if ( video_vars.resize == "true" || window.location.search.indexOf("kgvid_video_embed[enable]=true") !== false ) {
 		kgvid_resize_video(id);
-		window.addEventListener('resize', kgvid_resize_all_videos, false);
+		if ( !window.addEventListener ) {
+			window.attachEvent('onresize', kgvid_resize_all_videos);
+		}
+		else {
+			window.addEventListener('resize', kgvid_resize_all_videos, false);
+		}
 	}
 }
 
