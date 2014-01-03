@@ -368,7 +368,21 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 	$function = "";
 	$uploads = wp_upload_dir();
 
-	if(function_exists('exec')) {
+	$exec_available = true;
+	if (ini_get('safe_mode')) {
+		$exec_available = false;
+	} else {
+		$d = ini_get('disable_functions');
+		$s = ini_get('suhosin.executor.func.blacklist');
+		if ("$d$s") {
+			$array = preg_split('/,\s*/', "$d,$s");
+			if (in_array('exec', $array)) {
+				$exec_available = false;
+			}
+		}
+	}
+
+	if($exec_available) {
 		if (function_exists('escapeshellcmd')) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
@@ -1914,7 +1928,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = get_option('kgvid_video_embed_options');
 		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>Loop to beginning when video ends.</label>\n\t";
 	}
-	
+
 	function kgvid_preload_callback() {
 		$options = get_option('kgvid_video_embed_options');
 		$items = array("metadata", "auto", "none");
@@ -2391,7 +2405,7 @@ function kgvid_update_settings() {
 		if ( $options['version'] < 4210 ) {
 			$options['preload'] = "metadata";
 		}
-		
+
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
 		if ( $options !== $options_old ) { update_option('kgvid_video_embed_options', $options); }
 	}
