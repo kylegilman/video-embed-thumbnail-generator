@@ -622,7 +622,7 @@ function kgvid_get_video_dimensions($video = false) {
 	exec ( $command, $output );
 	$lastline = end($output);
 	$lastline = prev($output)."<br />".$lastline;
-	$movie_info['output'] = $lastline;
+	$movie_info['output'] = addslashes($lastline);
 	$output = implode("\n", $output);
 	$regex = "/([0-9]{2,4})x([0-9]{2,4})/";
 	if (preg_match($regex, $output, $regs)) { $result = $regs[0]; }
@@ -1506,7 +1506,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page) {
 		if ( $format_stats['status'] != "notchecked" ) { //File is in queue
 			$meta[$format] = ' <strong>'.ucfirst($format_stats['status']).'</strong>';
 			if ( $format_stats['status'] == "error" ) {
-				$meta[$format] .= ': <span class="kgvid_warning">'.$video_embed_queue[$video_key]['encode_formats'][$format]['lastline']."</span>";
+				$meta[$format] .= ': <span class="kgvid_warning">'.stripslashes($video_embed_queue[$video_key]['encode_formats'][$format]['lastline'])."</span>";
 			}
 		}
 
@@ -4059,7 +4059,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 		$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'")';
 
 		if ( $video_entry['encode_formats'][$format]['status'] == "error" ) {
-			$embed_display = '<strong>Error: </strong><span class="kgvid_warning">'.$video_entry['encode_formats'][$format]['lastline'].'.</span>';
+			$embed_display = '<strong>Error: </strong><span class="kgvid_warning">'.stripslashes($video_entry['encode_formats'][$format]['lastline']).'.</span>';
 			$next_video = kgvid_encode_videos(); //start the next queued video
 			if ( !empty($next_video['format']) ) {
 				$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
@@ -4115,9 +4115,6 @@ function kgvid_encode_progress($video_key, $format, $page) {
 					if ( array_key_exists(1, $time_matches) != true ) { //if something other than the regular FFMPEG encoding output check for these
 						preg_match('/video:(.*?) /', $lastline, $video_matches);
 						preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
-						//preg_match('/h264 (.*?) /', $lastline, $h264_matches);
-						//preg_match('/Press (.*?) /', $lastline, $Press_matches);
-						//preg_match('/buffer (.*?) /', $lastline, $buffer_matches);
 					}
 					if ( array_key_exists(1, $time_matches) == true ) { //still encoding
 
@@ -4281,9 +4278,9 @@ function kgvid_encode_progress($video_key, $format, $page) {
 				}
 
 				if ( $video_embed_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
-					$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
+					$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = addslashes($lastline);
 					update_option('kgvid_video_embed_queue', $video_embed_queue);
-					$embed_display = '<strong>Error: </strong><span class="kgvid_warning">'.$lastline.'.</span>';
+					$embed_display = '<strong>Error: </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
 					$next_video = kgvid_encode_videos(); //start the next queued video
 					if ( !empty($next_video['format']) ) {
 						$embed_display .= '<script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';

@@ -160,6 +160,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added float to inline videos to allow text to wrap around it.
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
 * Fixed bug that generated an error if the exec function was disabled on the server using suhosin or safe mode.
+* Fixed bug that caused video encode problems when FFMPEG output contained special characters.
 * Changed video title overlay z-index from 1003 to 3 to avoid floating over other elements.
 
 = 4.2.9 - November 15, 2013 =
