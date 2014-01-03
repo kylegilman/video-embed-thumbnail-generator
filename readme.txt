@@ -157,7 +157,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.2.10 - January XX, 2014 =
 * Added setting to choose video preload attribute.
-* Added float to inline videos to allow text to wrap around it.
+* Added float to inline videos to allow text to wrap around them.
+* Fixed bug that broke responsive resizing for videos with apostrophes in their titles.
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
 * Fixed bug that generated an error if the exec function was disabled on the server using suhosin or safe mode.
 * Fixed bug that caused video encode problems when FFMPEG output contained special characters.

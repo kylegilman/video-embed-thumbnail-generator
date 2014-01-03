@@ -1253,7 +1253,7 @@ if ( !is_feed() ) {
 				'width' => $query_atts['width'],
 				'height' => $query_atts['height'],
 				'countable' => $countable,
-				'title' => esc_js($stats_title),
+				'title' => $stats_title,
 				'autoplay' => $query_atts['autoplay'],
 				'set_volume' => $query_atts["volume"],
 				'meta' => $kgvid_meta,
@@ -1261,6 +1261,7 @@ if ( !is_feed() ) {
 				'resize' => $query_atts['resize']
 			);
 			$json_video_variables = json_encode( $video_variables );
+			$json_video_variables = str_replace( "'", "\'", $json_video_variables );
 
 			$code .= "\n\t\t"."<script type='text/javascript'>
 			kgvid_video_vars['".$div_suffix."'] = jQuery.parseJSON ( '".$json_video_variables."' );";
