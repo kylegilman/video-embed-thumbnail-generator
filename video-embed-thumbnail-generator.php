@@ -475,6 +475,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 	$movieurl = $sanitized_url['movieurl'];
 
 	$encodevideo_info['moviefilebasename'] = $sanitized_url['basename'];
+
 	$encodevideo_info['encodepath'] = $uploads['path'];
 	if ( get_post_type($postID) == "attachment" ) { //if it's an attachment, not from URL
 		$moviefile = get_attached_file($postID);
@@ -2202,14 +2203,14 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['h264_profile']==$item) ? 'selected="selected"' : '';
 			echo "<option value='$item' $selected>$item</option>";
 		}
-		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Lower profiles will increase file sizes. This mostly depends on your need for compatability with Android devices. Main profile seems to work on recent phones, although officially Android only supports baseline. High profile is not recommended for mobile or Flash compatibility, and anything above high is designed for professional video and probably incompatible with consumer devices. Older versions of FFMPEG might ignore this setting altogether.</span></a><br />";
+		echo "</select> profile <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>Lower profiles will increase file sizes. This mostly depends on your need for compatability with Android devices. Main profile seems to work on recent phones, although officially Android only supports baseline. High profile is not recommended for mobile or Flash compatibility, and anything above high is designed for professional video and probably incompatible with consumer devices. Older versions of FFMPEG might ignore this setting altogether.</span></a><br />";
 		echo "<select id='h264_level' name='kgvid_video_embed_options[h264_level]' class='affects_ffmpeg'>";
 		$items = array("none", "1", "1.1", "1.2", "1.3", "2", "2.1", "2.2", "3", "3.1", "3.2", "4", "4.1", "4.2", "5", "5.1");
 		foreach($items as $item) {
 			$selected = ($options['h264_level']==$item) ? 'selected="selected"' : '';
 			echo "<option value='$item' $selected>$item</option>";
 		}
-		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>3.0 is default. Lower levels will lower maximum bit rates and decoding complexity. This mostly depends on your need for compatability with mobile devices. Older versions of FFMPEG might ignore this setting altogether.</span></a>";
+		echo "</select> level <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>3.0 is default. Lower levels will lower maximum bit rates and decoding complexity. This mostly depends on your need for compatability with mobile devices. Older versions of FFMPEG might ignore this setting altogether.</span></a>";
 		echo "</div>\n\t";
 	}
 
@@ -3052,6 +3053,17 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 			$wp_filetype = wp_check_filetype(basename($thumb_url), null );
 			$filename = preg_replace('/\.[^.]+$/', '', basename($thumb_url));
 			if ( $user_ID == 0 ) { $user_ID = $video->post_author; }
+			
+			
+			/*$file_array = array(
+				'name' => basename($posterfile),
+				'tmp_name' => $tmp_posterpath,
+			);
+
+			//$return = apply_filters( 'wp_handle_upload', array( 'file' => $uploads['path'].'/'.$posterfile, 'url' => $thumb_url, 'type' => $wp_filetype['type'] ), 'sideload' );
+			//$thumb_id = media_handle_sideload( $file_array, $post_id, $desc );
+
+			error_log(print_r($thumb_id,true)); */
 
 			$attachment = array(
 			   'guid' => $thumb_url,
@@ -3063,8 +3075,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 			);
 
 			$thumb_id = wp_insert_attachment( $attachment, $uploads['path'].'/'.$posterfile, $post_id );
-			// you must first include the image.php file
-			// for the function wp_generate_attachment_metadata() to work
+			//you must first include the image.php file
+			//for the function wp_generate_attachment_metadata() to work
 			require_once(ABSPATH . 'wp-admin/includes/image.php');
 			$attach_data = wp_generate_attachment_metadata( $thumb_id, $uploads['path'].'/'.$posterfile );
 			wp_update_attachment_metadata( $thumb_id, $attach_data );
@@ -3105,9 +3117,10 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 	}//end else no existing db entry
 
-	if(!is_wp_error($thumb_id)) {
+	if( !empty($thumb_id) && !is_wp_error($thumb_id) ) {
 
 		return $thumb_id;
+		
 	}
 
 }

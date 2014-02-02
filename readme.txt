@@ -155,7 +155,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.2.10 - January XX, 2014 =
+= 4.2.10 - February XX, 2014 =
 * Added setting to choose video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
 * Fixed bug that broke responsive resizing in IE 8 and for all videos with apostrophes in their titles.
