@@ -148,6 +148,39 @@ div.kgvid_thumbnail_box {
 	padding:5px;
 }
 
+div.kgvid_track_box {
+	text-align:left;
+}
+
+div.kgvid_track_box:hover {
+	background-color: #F7F7F7;
+}
+
+.compat-item .field .kgvid_track_box input {
+	margin-top: 3px;
+}
+
+.kgvid_track_box_removeable {
+	width: 15px;
+	height: 15px;
+	float: right;
+}
+
+.kgvid_track_box_removeable:hover:before {
+	color: red;
+}
+
+.kgvid_track_box_removeable:before {
+	content: '\f158';
+	font: normal 15px/1 'dashicons';
+	speak: none;
+	vertical-align: middle;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: #BC0B0B;
+	float: right;
+}
+
 div.kgvid_chosen_thumbnail_box {
 	border-width:6px;
 	width: 200px;

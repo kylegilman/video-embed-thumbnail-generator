@@ -71,7 +71,7 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Re
 * `title="Video Title"` or `"false"` to disable.
 * `embedcode="html code"` changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or `"false"` to disable.
 * `view_count="true/false"` turns the view count on or off.
-* `caption="Caption"`
+* `caption="Caption"` text that is displayed below the video (not subtitles or closed captioning)
 * `description="Description"` Used for metadata only.
 * `downloadlink="true/false"` generates a link below the video to make it easier for users to save the video file to their computers.
 * `right_click="true/false"` allow or disable right-clicking on the video player.
@@ -156,7 +156,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.2.10 - February XX, 2014 =
-* Added setting to choose video preload attribute.
+* Added video subtitle/captions support.
+* Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
 * Fixed bug that broke responsive resizing in IE 8 and for all videos with apostrophes in their titles.
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.

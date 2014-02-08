@@ -1114,6 +1114,49 @@ function kgvid_pick_image(button) {
 
 }
 
+function kgvid_pick_attachment(button) {
+
+		var frame;
+
+		jQuery( function() {
+
+			// Build the choose from library frame.
+
+				var $el = jQuery(button);
+				event.preventDefault();
+
+				// If the media frame already exists, reopen it.
+				if ( frame ) {
+					frame.open();
+					return;
+				}
+
+				// Create the media frame.
+				frame = wp.media.frames.customHeader = wp.media({
+					// Set the title of the modal.
+					title: $el.data('choose'),
+
+					// Customize the submit button.
+					button: {
+						// Set the text of the button.
+						text: $el.data('update'),
+						close: true
+					}
+				});
+
+				// When an image is selected, run a callback.
+				frame.on( 'select', function() {
+					// Grab the selected attachment.
+					var attachment = frame.state().get('selection').first()
+					jQuery('#'+$el.data('change')).val(attachment.attributes.url);
+					jQuery('#'+$el.data('change')).change();
+				});
+
+				frame.open();
+		});
+
+}
+
 function kgvid_media_library_icon_overlay() {
 	var thumbnails = jQuery('.attachment-80x60, .attachment-preview.type-video .icon');
 	jQuery.each(thumbnails, function(key, value) {
@@ -1122,4 +1165,12 @@ function kgvid_media_library_icon_overlay() {
 		}
 	});
 	jQuery('.kgvid-media-icon-overlay').prepend('<div class="kgvid-media-icon-play"><span></span></div>');
+}
+
+function kgvid_add_subtitles(id) {
+	var tracks = jQuery('#kgflashmediaplayer-'+id+'-trackdiv');
+	track_number = tracks.children().length;
+	track_label = track_number+1;
+	tracks.append('<div id="kgflashmediaplayer-'+id+'-trackdiv-'+track_number+'" class="kgvid_thumbnail_box kgvid_track_box"><strong>Track '+track_label+'</strong><span class="kgvid_track_box_removeable"></span><br />Track type: <select name="attachments['+id+'][kgflashmediaplayer-track]['+track_number+'][kind]" id="attachments-'+id+'-kgflashmediaplayer-track_'+track_number+'_kind]"><option value="subtitles">subtitles</option><option value="captions">captions</option><option value="chapters">chapters</option></select><br /><span id="pick-track'+track_number+'" class="button-secondary" style="margin:10px 0;" data-choose="Choose a Text File" data-update="Set as track source" data-change="attachments-'+id+'-kgflashmediaplayer-track_'+track_number+'_src" onclick="kgvid_pick_attachment(this);">Choose from Library</span><br />URL: <input name="attachments['+id+'][kgflashmediaplayer-track]['+track_number+'][src]" id="attachments-'+id+'-kgflashmediaplayer-track_'+track_number+'_src" type="text" value="" class="text"><br />Language code: <input name="attachments['+id+'][kgflashmediaplayer-track]['+track_number+'][srclang]" id="attachments-'+id+'-kgflashmediaplayer-track_'+track_number+'_srclang" type="text" value="" maxlength="2" style="width:4'+track_number+'px;"><br />Label: <input name="attachments['+id+'][kgflashmediaplayer-track]['+track_number+'][label]" id="attachments-'+id+'-kgflashmediaplayer-track_'+track_number+'_label" type="text" value="" class="text"></div>');
+	jQuery('.kgvid_track_box_removeable').click(function() { jQuery(this).parent().remove(); jQuery('form.compat-item input').first().change(); });
 }
