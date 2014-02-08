@@ -375,9 +375,9 @@ easily in the skin designer. http://designer.videojs.com/
   vertical-align: middle;
   cursor: pointer;
   opacity: 1;
-  box-sizing: content-box;
-  -moz-box-sizing: content-box;
-  -webkit-box-sizing: content-box;
+  box-sizing: content-box !important;
+  -moz-box-sizing: content-box !important;
+  -webkit-box-sizing: content-box !important;
   /* Need a slightly gray bg so it can be seen on black backgrounds */
   /* background-color-with-alpha */
   background-color: rgb(40, 40, 40);
