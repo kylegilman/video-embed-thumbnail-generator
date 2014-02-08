@@ -3265,7 +3265,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 			else { update_post_meta($post['ID'], '_kgflashmediaplayer-encode'.$format, "false"); }
 		}
 
-		if( isset($attachment['kgflashmediaplayer-track']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-track', $attachment['kgflashmediaplayer-track']); }
+		if( isset($attachment['kgflashmediaplayer-track']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-track', array_values($attachment['kgflashmediaplayer-track'])); }
 		else { delete_post_meta($post['ID'], '_kgflashmediaplayer-track'); }
 
 		if( isset($attachment['kgflashmediaplayer-showtitle']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-showtitle', $attachment['kgflashmediaplayer-showtitle']); }
