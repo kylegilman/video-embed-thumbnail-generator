@@ -28,6 +28,8 @@ After you select a thumbnail it will be registered in the Wordpress Media Librar
 
 In the plugin settings you can set the default maximum width and height based on the dimensions of your particular template and those values will be filled in when you open the window. If you generate thumbnails, the video display dimensions will be adjusted automatically to match the size and aspect ratio of the video file. You can make further adjustments if you want.
 
+You can add subtitle and caption tracks by choosing properly formatted WebVTT files from the media library or entering a URL directly. Enter the two-letter language code and the label text that will be shown to users. Currently the Video.js and WordPress default players do not work with the "default" attribute but I will add the option to turn a text track on by default if that changes in the future. The WordPress default player does not differentiate between captions and subtitles, but Video.js will show a different icon depending on the selection.
+
 I highly recommend starting with H.264 video and AAC audio in an MP4 container. If you're encoding with Handbrake, make sure that "Web Optimized" is checked. Using Apple's Compressor, the "Streaming" setting should be "Fast Start" (not Fast Start - Compressed Header). I've written up my recommended video encode settings in <a href="http://www.kylegilman.net/2011/02/25/making-mp4-h-264-videos-in-apple-compressor/">a post on my website</a>.
 
 The plugin can use FFMPEG or LIBAV to encode videos and make thumbnails if you have them installed on your server. By default the plugin looks for FFMPEG in `/usr/local/bin` but if the application is installed in a different place on your server, you can point it to the correct place in the plugin settings. Users running WordPress on Windows servers should try using Linux-style paths (with forward slashes instead of backslashes and a forward slash `/` instead of `C:\`).
@@ -76,6 +78,13 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Re
 * `downloadlink="true/false"` generates a link below the video to make it easier for users to save the video file to their computers.
 * `right_click="true/false"` allow or disable right-clicking on the video player.
 * `resize="true/false"` allow or disable responsive resizing.
+
+= These options will add a subtitle/caption track =
+
+* `track_src="http://www.example.com/subtitles.vtt_.txt"` URL of the WebVTT file.
+* `track_kind=subtitles/captions/chapters`
+* `track_srclang=xx` the track's two-character language code (en, fr, es, etc)
+* `track_label="Track Label"` text that will be shown to the user when selecting the track.
 
 = These options will only affect Video.js playback =
 
@@ -163,6 +172,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
 * Fixed bug that generated an error if the exec function was disabled on the server using suhosin or safe mode.
 * Fixed bug that caused video encode problems when FFMPEG output contained special characters.
+* Fixed bug that generated misaligned play button arrows in some themes when using the Video.js player.
 * Changed video title overlay z-index from 1003 to 3 to avoid floating over other elements.
 
 = 4.2.9 - November 15, 2013 =
