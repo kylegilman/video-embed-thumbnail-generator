@@ -145,9 +145,9 @@ img.kgvid_ios_novideo {
 
 .kgvid_video_gallery_thumb {
 	position: relative;
-	float: left;
+	vertical-align: bottom;
 	display:inline-block;
-	margin: 3px 7px;
+	margin: 7px 7px;
 	cursor: pointer; !important
 }
 
