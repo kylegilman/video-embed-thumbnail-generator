@@ -4960,6 +4960,66 @@ function kgvid_count_play() {
 add_action( 'wp_ajax_kgvid_count_play', 'kgvid_count_play' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_count_play', 'kgvid_count_play' ); // ajax for not logged in users
 
+function kgvid_add_contextual_help_tab() {
+
+	get_current_screen()->add_help_tab( array(
+        'id'        => 'kgvid-help-tab',
+        'title'     => __( 'Video Embed & Thumbnail Generator Shortcode Reference' ),
+        'content'   => __( '<p><strong>Use these optional attributes in the [KGVID] shortcode:</strong></p>
+<ul><li><code>id="xxx"</code> video attachment ID (instead of using a URL).</li>
+<li><code>videos="x"</code> number of attached videos to display if no URL or id is given.</li>
+<li><code>poster="http://www.example.com/image.jpg"</code> sets the thumbnail.</li>
+<li><code>endofvideooverlay="http://www.example.com/end_image.jpg</code> sets the image shown when the video ends.</li>
+<li><code>width="xxx"</code></li>
+<li><code>height="xxx"</code></li>
+<li><code>align="left/right/center"</code></li>
+<li><code>inline="true/false"</code> allow other content on the same line as the video</li>
+<li><code>volume="0.x"</code> pre-sets the volume for unusually loud videos. Value between 0 and 1.</li>
+<li><code>controlbar="docked/floating/none"</code> sets the controlbar position. Video.js only responds to the "none" option.</li>
+<li><code>loop="true/false"</code></li>
+<li><code>autoplay="true/false"</code></li>
+<li><code>watermark="http://www.example.com/image.png"</code> or <code>"false"</code> to disable.</li>
+<li><code>title="Video Title"</code> or <code>"false"</code> to disable.</li>
+<li><code>embedcode="html code"</code> changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or <code>"false"</code> to disable.</li>
+<li><code>view_count="true/false"</code> turns the view count on or off.</li>
+<li><code>caption="Caption"</code> text that is displayed below the video (not subtitles or closed captioning)</li>
+<li><code>description="Description"</code> Used for metadata only.</li>
+<li><code>downloadlink="true/false"</code> generates a link below the video to make it easier for users to save the video file to their computers.</li>
+<li><code>right_click="true/false"</code> allow or disable right-clicking on the video player.</li>
+<li><code>resize="true/false"</code> allow or disable responsive resizing.</li></ul>
+
+<p><strong>These options will add a subtitle/caption track</strong></p>
+<ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> URL of the WebVTT file.</li>
+<li><code>track_kind=subtitles/captions/chapters</code></li>
+<li><code>track_srclang=xx</code> the track\'s two-character language code (en, fr, es, etc)</li>
+<li><code>track_label="Track Label"</code> text that will be shown to the user when selecting the track.</li></ul>
+
+<p><strong>These options will only affect Video.js playback</strong></p>
+<ul><li><code>skin="example-css-class"</code> Completely change the look of the video player. <a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">Instructions here.</a></li></ul>
+
+<p><strong>These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players.</p></strong>
+<ul><li><code>autohide="true/false"</code> specify whether to autohide the control bar after a few seconds.</li>
+<li><code>playbutton="true/false"</code> turns the big play button overlay in the middle of the video on or off.</li>
+<li><code>streamtype="live/recorded/DVR"</code> I honestly don\'t know what this is for.</li>
+<li><code>scalemode="letterbox/none/stretch/zoom"</code> If the video display size isn\'t the same as the video file, this determines how the video will be scaled.</li>
+<li><code>backgroundcolor="#rrggbb"</code> set the background color to whatever hex code you want.</li>
+<li><code>configuration="http://www.example.com/config.xml"</code> Lets you specify all these flashvars in an XML file.</li>
+<li><code>skin="http://www.example.com/skin.xml"</code> Completely change the look of the video player. <a href="http://www.longtailvideo.com/support/jw-player/jw-player-for-flash-v5/14/building-skins">Instructions here.</a></li></ul>
+
+<p><strong>These options are available for video galleries (options work the same as standard WordPress image galleries)</p></strong>
+<ul><li><code>gallery="true"</code> turns on the gallery</li>
+<li><code>gallery_thumb="xxx"</code> width in pixels to display gallery thumbnails</li>
+<li><code>gallery_exclude="15"</code> comma separated video attachment IDs. Excludes the videos from the gallery.</li>
+<li><code>gallery_include="65"</code> comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.</li>
+<li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> criteria for sorting the gallery</li>
+<li><code>gallery_order="ASC/DESC"</code> sort order</li>
+<li><code>gallery_id="241"</code> post ID to display a gallery made up of videos associated with a different post.</li></ul>' )
+    ) );
+    
+}
+add_action( 'admin_head-post.php', 'kgvid_add_contextual_help_tab' );
+
+
 function kgvid_deactivate() {
 	$options = get_option('kgvid_video_embed_options');
 	wp_clear_scheduled_hook('kgvid_cleanup_queue', array( 'scheduled' ) );
