@@ -169,6 +169,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added list of shortcode attribute options to the post edit help tab.
 * Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
+* Revised and simplified video gallery popup method.
+* Added nonce check when recording video play counts for increased security.
 * Fixed bug that broke responsive resizing in IE 8 and for all videos with apostrophes in their titles.
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
 * Fixed bug that generated an error if the exec function was disabled on the server using suhosin or safe mode.

@@ -835,9 +835,10 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//plugin-related frontend scripts and styles
 	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), '', $options['version'] );
-	wp_enqueue_script( 'jquery-ui-dialog' );
+	//wp_enqueue_script( 'jquery-ui-dialog' );
 	wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), '', $options['version'] );
-	wp_localize_script( 'kgvid_video_embed', 'ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) ); // setting ajaxurl
+	wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.4.min.js", __FILE__), '', $options['version'] );
+	wp_localize_script( 'kgvid_video_embed', 'ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
 }
 add_action('wp_enqueue_scripts', 'kgvid_video_embed_enqueue_scripts', 12);
 
@@ -872,27 +873,29 @@ function kgvid_video_embed_print_scripts() {
 		echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.0.0"</script>'."\n";
 	}
 
-	foreach ( $posts as $post ) {
-		if ( $options['open_graph'] == "on"
-		&& preg_match_all( '/'. $pattern .'/s', $post->post_content, $matches )
-        && array_key_exists( 2, $matches ) && array_key_exists( 5, $matches )
-        && !empty($matches[5][0])
-        && ( in_array( 'KGVID', $matches[2] ) || in_array( 'FMP', $matches[2] ) ) ) { //if KGVID or FMP shortcode is in posts on this page.
+	if ( !empty($posts) && is_array($posts) ) {
+		foreach ( $posts as $post ) {
+			if ( $options['open_graph'] == "on"
+			&& preg_match_all( '/'. $pattern .'/s', $post->post_content, $matches )
+			&& array_key_exists( 2, $matches ) && array_key_exists( 5, $matches )
+			&& !empty($matches[5][0])
+			&& ( in_array( 'KGVID', $matches[2] ) || in_array( 'FMP', $matches[2] ) ) ) { //if KGVID or FMP shortcode is in posts on this page.
 
-			echo '<meta property="og:video" content="'.$matches[5][0].'" />'."\n";
+				echo '<meta property="og:video" content="'.$matches[5][0].'" />'."\n";
 
-			if ( array_key_exists( 3, $matches ) ) {
-				$attributes = shortcode_parse_atts($matches[3][0]);
-				if ( is_array($attributes) && array_key_exists( 'width', $attributes ) ) {
-					echo '<meta property="og:video:width" content="'.$attributes['width'].'" />'."\n";
-					if ( array_key_exists( 'height', $attributes ) ) {
-						echo '<meta property="og:video:height" content="'.$attributes['height'].'" />'."\n";
+				if ( array_key_exists( 3, $matches ) ) {
+					$attributes = shortcode_parse_atts($matches[3][0]);
+					if ( is_array($attributes) && array_key_exists( 'width', $attributes ) ) {
+						echo '<meta property="og:video:width" content="'.$attributes['width'].'" />'."\n";
+						if ( array_key_exists( 'height', $attributes ) ) {
+							echo '<meta property="og:video:height" content="'.$attributes['height'].'" />'."\n";
+						}
 					}
 				}
-			}
-			break;
-		}
-	}
+				break;
+			}//end if shortcode is in post
+		}//end post loop
+	}//end if posts
 
 }
 add_action('wp_head', 'kgvid_video_embed_print_scripts', 99);
@@ -1202,6 +1205,7 @@ if ( !is_feed() ) {
 				if ( $query_atts["autoplay"] == 'true') { $wp_shortcode .= 'autoplay="true" '; }
 				$wp_shortcode .= "]";
 				$content_width = $query_atts['width'];
+				error_log($wp_shortcode);
 				$executed_shortcode = do_shortcode($wp_shortcode);
 				$content_width = $content_width_save;
 				if ( $sources_hack ) { //insert remaining mp4 sources manually
@@ -1360,29 +1364,11 @@ if ( !is_feed() ) {
 			}
 
 			$code .= '</div>'; //end wrapper div
-			$code .= '<div id="kgvid_GalleryPlayerDiv_'.$div_suffix.'"></div>';
-			$code .=  '<script type="text/javascript">jQuery(document).ready(function() {
-					jQuery(\'#kgvid_GalleryPlayerDiv_'.$div_suffix.'\').dialog({
-						zIndex: 1000,
-						autoOpen: false,
-						modal: true,
-						resizable: false,
-						dialogClass: \'notitle\',
-						create: function(event, ui){
-							jQuery(\'.ui-dialog\').wrap(\'<div class="kgvid_gallery" />\');
-						},
-						open: function(event, ui){
-							jQuery(\'.ui-widget-overlay\').wrap(\'<div class="kgvid_gallery" />\');
-						},
-						close: function(event, ui){
-							jQuery(\'#kgvid_GalleryPlayerDiv_'.$div_suffix.'\').empty();
-							jQuery(".kgvid_gallery").filter(function(){
-								if (jQuery(this).text() == "") { return true; }
-								return false;
-							}).remove();
-						}
-					});
-				}); </script>';
+			$code .= '<div id="kgvid_GalleryPlayerDiv_'.$div_suffix.'" style="display:none;"></div>';
+			
+			if ( $options['embed_method'] == "WordPress Default" ) {
+				do_shortcode('[video][/video]');
+			}
 
 		} //if there are attachments
 	} //if gallery
@@ -4946,6 +4932,9 @@ function kgvid_ajax_rescan_external_server() {
 add_action('wp_ajax_kgvid_rescan_external_server', 'kgvid_ajax_rescan_external_server');
 
 function kgvid_count_play() {
+
+	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
+	
 	$post_id = $_POST['post_id'];
 	$event = $_POST['video_event'];
 	if ( $event == "play" ) { $event = "starts"; }
@@ -4959,6 +4948,24 @@ function kgvid_count_play() {
 }
 add_action( 'wp_ajax_kgvid_count_play', 'kgvid_count_play' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_count_play', 'kgvid_count_play' ); // ajax for not logged in users
+
+function kgvid_set_gallery_video_code() {
+
+	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
+	$id = $_POST['video_id'];
+	$width = $_POST['video_width'];
+	$height = $_POST['video_height'];
+	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$width.'" height="'.$height.'"][/KGVID]';
+	error_log($shortcode);
+	$code = do_shortcode($shortcode);
+	$code = str_replace('600', $width, $code);
+	echo $code;
+	die();
+
+}
+add_action( 'wp_ajax_kgvid_set_gallery_video', 'kgvid_set_gallery_video_code' ); // ajax for logged in users
+add_action( 'wp_ajax_nopriv_kgvid_set_gallery_video', 'kgvid_set_gallery_video_code' ); // ajax for not logged in users
+
 
 function kgvid_add_contextual_help_tab() {
 
