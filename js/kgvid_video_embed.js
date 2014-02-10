@@ -17,9 +17,9 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "height", parseInt(iframe_height)+10);
 	jQuery('.ui-widget-overlay').click(function () { jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('close'); }); */
 	
-	jQuery.post(ajax_object.ajaxurl, {
+	jQuery.post(kgvid_ajax_object.ajaxurl, {
 			action: 'kgvid_set_gallery_video',
-			security: ajax_object.ajax_nonce,
+			security: kgvid_ajax_object.ajax_nonce,
 			video_id: id,
 			video_width: width,
 			video_height: height
@@ -325,9 +325,9 @@ function kgvid_video_counter(id, event) {
 		if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', 'Complete View', video_vars.title]); }
 	}
 	if ( changed == true ) {
-		jQuery.post(ajax_object.ajaxurl, {
+		jQuery.post(kgvid_ajax_object.ajaxurl, {
 			action: 'kgvid_count_play',
-			security: ajax_object.ajax_nonce,
+			security: kgvid_ajax_object.ajax_nonce,
 			post_id: id,
 			video_event: event
 		}, function(data) {
