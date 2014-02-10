@@ -828,7 +828,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js script and skins
 	if ( $options['embed_method'] != "WordPress Default" ) {
-		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.3.0' );
+		//wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.3.0' );
 		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.3.0' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
@@ -836,9 +836,9 @@ function kgvid_video_embed_enqueue_scripts() {
 	//plugin-related frontend scripts and styles
 	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), '', $options['version'] );
 	//wp_enqueue_script( 'jquery-ui-dialog' );
-	wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), '', $options['version'] );
-	wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.4.min.js", __FILE__), '', $options['version'] );
-	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
+	//wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), '', $options['version'] );
+	//wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.4.min.js", __FILE__), '', $options['version'] );
+	//wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
 }
 add_action('wp_enqueue_scripts', 'kgvid_video_embed_enqueue_scripts', 12);
 
@@ -869,9 +869,9 @@ function kgvid_video_embed_print_scripts() {
 	$pattern = get_shortcode_regex();
 	$options = get_option('kgvid_video_embed_options');
 
-	if ( $options['embed_method'] != "WordPress Default" ) {
+	/* if ( $options['embed_method'] != "WordPress Default" ) {
 		echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.0.0"</script>'."\n";
-	}
+	} */
 
 	if ( !empty($posts) && is_array($posts) ) {
 		foreach ( $posts as $post ) {
@@ -899,6 +899,27 @@ function kgvid_video_embed_print_scripts() {
 
 }
 add_action('wp_head', 'kgvid_video_embed_print_scripts', 99);
+
+function kgvid_video_embed_print_footer() {
+
+    $posts = $wp_query->posts;
+	$pattern = get_shortcode_regex();
+	$options = get_option('kgvid_video_embed_options');
+
+	if ( !empty($posts) && is_array($posts) ) {
+		foreach ( $posts as $post ) {
+			if ( $options['embed_method'] != "WordPress Default"
+			&& preg_match_all( '/'. $pattern .'/s', $post->post_content, $matches )
+			&& array_key_exists( 2, $matches ) && array_key_exists( 5, $matches )
+			&& !empty($matches[5][0])
+			&& ( in_array( 'KGVID', $matches[2] ) || in_array( 'FMP', $matches[2] ) ) ) {
+				echo '<script type="text/javascript">videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.0.0"</script>'."\n";
+			}
+		}
+	}
+	
+}
+add_action('wp_footer', 'kgvid_video_embed_print_footer', 99);
 
 function kgvid_shortcode_atts($atts) {
 
@@ -973,7 +994,16 @@ function KGVID_shortcode($atts, $content = ''){
 
 $code = "";
 if ( !is_feed() ) {
+
 	$options = get_option('kgvid_video_embed_options');
+	
+	wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), '', $options['version'] );
+	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
+	
+	if ( $options['embed_method'] != "WordPress Default" ) {
+		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.3.0' );
+	}
+	
 	if ( in_the_loop() ) { $post_ID = get_the_ID(); }
 	else { $post_ID = 1; }
 
@@ -1318,6 +1348,8 @@ if ( !is_feed() ) {
 	} //if not gallery
 
 	else { //if gallery
+
+		wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.4.min.js", __FILE__), '', $options['version'] );
 
 		$args = array(
 			'post_type' => 'attachment',
