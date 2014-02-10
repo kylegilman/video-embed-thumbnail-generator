@@ -29,6 +29,14 @@
 	display: inline-block;
 }
 
+.kgvid_textalign_right {
+	text-align:right;
+}
+
+.kgvid_textalign_center {
+	text-align:center;
+}
+
 .kgvid_videodiv {
 	position: relative;
 }

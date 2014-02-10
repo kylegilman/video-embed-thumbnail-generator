@@ -1335,9 +1335,11 @@ if ( !is_feed() ) {
 		}
 		$attachments = get_posts($args);
 		if ($attachments) {
-
+			if ( $query_atts['align'] == "left" ) { $aligncode = ''; }
+			if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_textalign_center'; }
+			if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_textalign_right'; }
 			$div_suffix = substr(uniqid(rand(), true),0,4);
-			$code .= '<div class="kgvid_gallerywrapper">';
+			$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'">';
 			foreach ( $attachments as $attachment ) {
 				$thumbnail_url = get_post_meta($attachment->ID, "_kgflashmediaplayer-poster", true);
 				$poster_id = get_post_meta($attachment->ID, '_kgflashmediaplayer-poster-id', true);
