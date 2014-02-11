@@ -1,5 +1,15 @@
 var kgvid_video_vars = {};
 
+for (element in window) {
+	if (element.substring(0,17) == 'kgvid_video_vars_') {
+		var parsed_kgvid_video_vars = jQuery.parseJSON(window[element]);
+		video_id = parsed_kgvid_video_vars.id;
+		kgvid_video_vars[video_id] = parsed_kgvid_video_vars;
+		kgvid_setup_video(video_id);
+	}
+}
+
+
 function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 	var aspect_ratio = Math.round(height/width*1000)/1000
 	if ( width > screen.width ) {
@@ -10,7 +20,7 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 	if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(20*meta); }
 	var frame_width = parseInt(width) + 10;
 	frame_height = parseInt(frame_height) + 10;
-	
+
 	jQuery.post(kgvid_ajax_object.ajaxurl, {
 			action: 'kgvid_set_gallery_video',
 			security: kgvid_ajax_object.ajax_nonce,
@@ -21,19 +31,19 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 			jQuery.modal(data, {
 				overlayId: 'kgvid-simplemodal-overlay',
 				containerId: 'kgvid-simplemodal-container',
-				opacity:70, 
-				minWidth:frame_width, 
-				maxWidth:frame_width, 
-				minHeight:frame_height, 
-				maxHeight:frame_height, 
-				overlayClose:true, 
+				opacity:70,
+				minWidth:frame_width,
+				maxWidth:frame_width,
+				minHeight:frame_height,
+				maxHeight:frame_height,
+				overlayClose:true,
 				onShow: function() {
 					var video_vars = kgvid_video_vars[id];
 					kgvid_setup_video(id);
 					if ( video_vars.player_type == "Video.js" ) {
 						videojs('video_'+id).load();
 						videojs('video_'+id).play();
-						
+
 					}
 					if ( video_vars.player_type == "WordPress Default" ) {
 						jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
@@ -55,11 +65,11 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 						videojs('video_'+id).dispose();
 					}
 					jQuery.modal.close();
-				}			
+				}
 			});
-			
+
 		},"html");
-		
+
 }
 
 function kgvid_timeupdate() {
@@ -68,7 +78,11 @@ function kgvid_timeupdate() {
 }
 
 function kgvid_setup_video(id) {
+
 	var video_vars = kgvid_video_vars[id];
+
+	if ( typeof (jQuery) == 'function' ) { jQuery.fn.fitVids=function(){}; }; //disable fitvids
+
 	var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false );
 	if (iOS && video_vars.player_type == "Strobe Media Playback" ) { video_vars.player_type = "Video.js"; }
 
@@ -76,6 +90,10 @@ function kgvid_setup_video(id) {
 	jQuery('#video_'+id+'_watermark').attr('style', ''); //shows the hidden watermark div
 	jQuery('#video_'+id+'_div').prepend(jQuery('#video_'+id+'_meta'));
 	jQuery('#video_'+id+'_meta').attr('style', ''); //shows the hidden meta div
+
+	if ( video_vars.right_click != "on" ) {
+		jQuery('#video_'+id+'_div').bind('contextmenu',function() { return false; });
+	}
 
 	if ( video_vars.player_type == "Video.js" ) {
 
