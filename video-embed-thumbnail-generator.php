@@ -1243,7 +1243,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= 'preload="'.$options['preload'].'" ';
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.$query_atts["poster"].'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'"';
-					$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{"ready" : "kgvid_setup_video('.$div_suffix.')"}\'';
+					$code .= ' class="video-js '.$options['js_skin'].'" data-setup=\'{}\'';
 					$code .= ">\n";
 
 					$code .= implode("\n", $sources); //add the <source> tags created earlier
@@ -1312,9 +1312,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 				if ( $options['embed_method'] == "Strobe Media Playback" && $flash_source_found ) {
 					$code .= "\n\t\t\t"."<script type='text/javascript'>jQuery(document).ready( function() { swfobject.embedSWF('".plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf', 'video_".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '10.1.0', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params, '', function(e) { kgvid_setup_video(".$div_suffix."); }); });</script>\n";
-					} //if Strobe Media
-
-				//add_action('wp_footer', 'kgvid_print_video_setup_scripts', 99, 5);
+				} //if Strobe Media
 
 			} //end id_array loop
 
