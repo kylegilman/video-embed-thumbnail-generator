@@ -10,12 +10,6 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 	if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(20*meta); }
 	var frame_width = parseInt(width) + 10;
 	frame_height = parseInt(frame_height) + 10;
-
-	/*jQuery('#kgvid_GalleryPlayerDiv_'+suffix).html('<iframe id="kgvid_GalleryVideo_'+id+'" src="'+site_url+'?attachment_id='+id+'&kgvid_video_embed[enable]=true&kgvid_video_embed[gallery]=true&kgvid_video_embed[width]='+width+'&kgvid_video_embed[height]='+height+'" scrolling="no" width="'+width+'" height="'+iframe_height+'" frameborder="0" webkitallowfullscreen="" allowfullscreen=""></iframe>');
-	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "width", parseInt(width)+6);
-	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('open');
-	jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog("option", "height", parseInt(iframe_height)+10);
-	jQuery('.ui-widget-overlay').click(function () { jQuery('#kgvid_GalleryPlayerDiv_'+suffix).dialog('close'); }); */
 	
 	jQuery.post(kgvid_ajax_object.ajaxurl, {
 			action: 'kgvid_set_gallery_video',
@@ -38,6 +32,8 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 					kgvid_setup_video(id);
 					if ( video_vars.player_type == "Video.js" ) {
 						videojs('video_'+id).load();
+						videojs('video_'+id).play();
+						
 					}
 					if ( video_vars.player_type == "WordPress Default" ) {
 						jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
@@ -61,9 +57,6 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 					jQuery.modal.close();
 				}			
 			});
-			
-			
-			
 			
 		},"html");
 		

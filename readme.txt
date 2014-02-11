@@ -166,11 +166,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.2.10 - February XX, 2014 =
 * Added video subtitle/captions support.
+* Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
 * Added list of shortcode attribute options to the post edit help tab.
 * Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
-* Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
+* Added play button overlay to gallery thumbnails when using WordPress Default player.
 * Applied video alignment setting to video galleries.
+* Now only loading plugin-related JavaScripts when the shortcode is used on the page and moved links to the footer to speed up page loading.
 * Added nonce check when recording video play counts for increased security.
 * Fixed bug that broke responsive resizing in IE 8 and for all videos with apostrophes in their titles.
 * Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
