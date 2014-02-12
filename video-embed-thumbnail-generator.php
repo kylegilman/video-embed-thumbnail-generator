@@ -1297,7 +1297,6 @@ function KGVID_shortcode($atts, $content = ''){
 					'width' => $query_atts['width'],
 					'height' => $query_atts['height'],
 					'countable' => $countable,
-					'title' => $stats_title,
 					'autoplay' => $query_atts['autoplay'],
 					'set_volume' => $query_atts["volume"],
 					'meta' => $kgvid_meta,
@@ -1306,7 +1305,7 @@ function KGVID_shortcode($atts, $content = ''){
 					'right_click' => $query_atts['right_click']
 				);
 				$json_video_variables = json_encode( $video_variables );
-				$json_video_variables = str_replace( "'", "\'", $json_video_variables );
+				//$json_video_variables = str_replace( "'", "\'", $json_video_variables );
 
 				wp_localize_script( 'kgvid_video_embed', 'kgvid_video_vars_'.$div_suffix, $json_video_variables );
 

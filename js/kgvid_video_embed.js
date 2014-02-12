@@ -321,6 +321,7 @@ function kgvid_video_counter(id, event) {
 
 	var video_vars = kgvid_video_vars[id];
 	var changed = false;
+	var title = jQuery('#video_'+id+'_title').html();
 
 	var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 	if ( played == "not played" ) {
@@ -328,13 +329,13 @@ function kgvid_video_counter(id, event) {
 			changed = true;
 			jQuery('#video_'+id+'_div').data("played", "played");
 		}
-		if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", "Play Start", video_vars.title]); }
+		if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", "Play Start", title]); }
 	}
 	if ( event == "end" ) {
 		if (video_vars.countable) { //video is in the db
 			changed = true;
 		}
-		if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', 'Complete View', video_vars.title]); }
+		if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', 'Complete View', title]); }
 	}
 	if ( changed == true ) {
 		jQuery.post(kgvid_ajax_object.ajaxurl, {
