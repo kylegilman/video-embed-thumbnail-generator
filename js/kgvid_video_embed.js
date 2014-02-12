@@ -9,7 +9,6 @@ for (element in window) {
 	}
 }
 
-
 function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 	var aspect_ratio = Math.round(height/width*1000)/1000
 	if ( width > screen.width ) {
@@ -28,7 +27,8 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 			video_width: width,
 			video_height: height
 		}, function(data) {
-			jQuery.modal(data, {
+			kgvid_video_vars[id] = data.kgvid_video_vars;
+			jQuery.modal(data.code, {
 				overlayId: 'kgvid-simplemodal-overlay',
 				containerId: 'kgvid-simplemodal-container',
 				opacity:70,
@@ -37,7 +37,8 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 				minHeight:frame_height,
 				maxHeight:frame_height,
 				overlayClose:true,
-				onShow: function() {
+				onShow: function(dialog) {
+					dialog.wrap.css('overflow','hidden');
 					var video_vars = kgvid_video_vars[id];
 					kgvid_setup_video(id);
 					if ( video_vars.player_type == "Video.js" ) {
@@ -68,7 +69,7 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 				}
 			});
 
-		},"html");
+		},"json");
 
 }
 

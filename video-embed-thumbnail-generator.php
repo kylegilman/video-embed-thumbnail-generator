@@ -978,8 +978,6 @@ function KGVID_shortcode($atts, $content = ''){
 
 		$options = get_option('kgvid_video_embed_options');
 
-		wp_enqueue_script( 'kgvid_video_embed' );
-
 		if ( $options['embed_method'] != "WordPress Default" ) {
 			wp_enqueue_script( 'video-js' );
 			add_action('wp_footer', 'kgvid_print_vidojs_footer', 99);
@@ -988,6 +986,8 @@ function KGVID_shortcode($atts, $content = ''){
 		if ( $options['embed_method'] == "Strobe Media Playback" ) {
 			wp_enqueue_script( 'swfobject' );
 		}
+
+		wp_enqueue_script( 'kgvid_video_embed' );
 
 		if ( in_the_loop() ) { $post_ID = get_the_ID(); }
 		else { $post_ID = 1; }
@@ -4967,13 +4967,34 @@ add_action( 'wp_ajax_nopriv_kgvid_count_play', 'kgvid_count_play' ); // ajax for
 function kgvid_set_gallery_video_code() {
 
 	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
+	$options = get_option('kgvid_video_embed_options');
 	$id = $_POST['video_id'];
 	$width = $_POST['video_width'];
 	$height = $_POST['video_height'];
 	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$width.'" height="'.$height.'"][/KGVID]';
 	$code = do_shortcode($shortcode);
 	$code = str_replace('600', $width, $code);
-	echo $code;
+
+	$post = get_post($id);
+
+	$video_variables = array(
+		'id' => $id,
+		'player_type' => $options['embed_method'],
+		'width' => $width,
+		'height' => $height,
+		'countable' => true,
+		'title' => $post->post_title,
+		'autoplay' => true,
+		'set_volume' => '',
+		'meta' => true,
+		'endofvideooverlay' => $options['endofvideooverlay'],
+		'resize' => $options['resize'],
+		'right_click' => $options['right_click']
+	);
+
+	$data = array( 'kgvid_video_vars' => $video_variables, 'code' => $code );
+	$data = json_encode($data);
+	echo $data;
 	die();
 
 }
