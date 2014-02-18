@@ -202,7 +202,7 @@ img.kgvid_ios_novideo {
 /* IE6 hack */
 #kgvid-simplemodal-container a.modalCloseImg {background:none; right:-14px; width:22px; height:26px; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/x.png',sizingMethod='scale');}
 
-#kgvid-simplemodal-container {color:#white; background-color:#000; }
+#kgvid-simplemodal-container {color:#white; background-color:#000; height:auto; }
 #kgvid-simplemodal-container .simplemodal-data {margin-top:-1em; padding:5px;}
 #kgvid-simplemodal-container a {color:#white;}
 #kgvid-simplemodal-container a.modalCloseImg {background:url(images/x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}

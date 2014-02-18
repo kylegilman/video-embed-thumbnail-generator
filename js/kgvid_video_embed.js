@@ -9,25 +9,36 @@ for (element in window) {
 	}
 }
 
-function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
-	var aspect_ratio = Math.round(height/width*1000)/1000
-	if ( width > screen.width ) {
-		width = screen.width-6;
-		height = Math.round(width * aspect_ratio);
-	}
-	var frame_height = height;
-	if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(20*meta); }
-	var frame_width = parseInt(width) + 10;
-	frame_height = parseInt(frame_height) + 10;
+jQuery(document).ready(kgvid_addevent_setvideo());
+
+function kgvid_addevent_setvideo() {
+	jQuery('.kgvid_video_gallery_thumb').each(function(index){
+		var id = jQuery(this).data('id');
+		var meta = jQuery(this).data('meta');
+		jQuery(this).on('click', function() { kgvid_SetVideo(id, meta); } );
+	});
+}
+
+function kgvid_SetVideo(id, meta) {
 
 	jQuery.post(kgvid_ajax_object.ajaxurl, {
 			action: 'kgvid_set_gallery_video',
 			security: kgvid_ajax_object.ajax_nonce,
-			video_id: id,
-			video_width: width,
-			video_height: height
+			video_id: id
 		}, function(data) {
 			kgvid_video_vars[id] = data.kgvid_video_vars;
+			height = kgvid_video_vars[id].height;
+			width = kgvid_video_vars[id].width;
+			var aspect_ratio = Math.round(height/width*1000)/1000
+			if ( width > window.outerWidth ) {
+				width = window.outerWidth-40;
+				height = Math.round(width * aspect_ratio);
+			}
+			var frame_height = height;
+			if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(20*meta); }
+			var frame_width = parseInt(width) + 10;
+			frame_height = parseInt(frame_height) + 10;
+
 			jQuery.modal(data.code, {
 				overlayId: 'kgvid-simplemodal-overlay',
 				containerId: 'kgvid-simplemodal-container',
@@ -36,6 +47,7 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 				maxWidth:frame_width,
 				minHeight:frame_height,
 				maxHeight:frame_height,
+				autoResize: true,
 				overlayClose:true,
 				onShow: function(dialog) {
 					dialog.wrap.css('overflow','hidden');
@@ -74,7 +86,6 @@ function kgvid_SetVideo(suffix, site_url, id, width, height, meta) {
 }
 
 function kgvid_timeupdate() {
-
 	jQuery('#'+this.id()+' > .vjs-poster').fadeOut();
 }
 
@@ -246,6 +257,7 @@ function kgvid_setup_video(id) {
 }
 
 function kgvid_resize_all_videos() {
+
 	for (var id in kgvid_video_vars) {
 		kgvid_resize_video(id);
 	}
@@ -301,6 +313,10 @@ function kgvid_resize_video(id) {
 		}
 
 	}
+
+	var extra_meta_height = 0;
+	jQuery('#kgvid-simplemodal-container').width(parseInt(set_width)+10);
+	jQuery('#kgvid-simplemodal-container').height(parseInt(set_height)+10+extra_meta_height);
 
 }
 

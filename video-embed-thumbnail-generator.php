@@ -1354,8 +1354,6 @@ function KGVID_shortcode($atts, $content = ''){
 					if (!$thumbnail_url) { $thumbnail_url = $options['poster']; } //use the default poster if no thumbnail set
 					if (!$thumbnail_url) { $thumbnail_url = plugins_url('/images/nothumbnail.jpg', __FILE__);} //use the blank image if no other option
 
-					$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
-
 					$downloadlink = get_post_meta($attachment->ID, "_kgflashmediaplayer-downloadlink", true);
 					if ( empty($query_atts['caption']) ) { $query_atts['caption'] = $attachment->post_excerpt; }
 					$below_video = 0;
@@ -1375,11 +1373,10 @@ function KGVID_shortcode($atts, $content = ''){
 						$play_translate = 30;
 					}
 
-					$code .= '<div onclick="kgvid_SetVideo(\''.$div_suffix.'\', \''.site_url('/').'\', \''.$attachment->ID.'\', \''.$dimensions['width'].'\', \''.$dimensions['height'].'\', '.$below_video.');return false;" class="kgvid_video_gallery_thumb" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'" alt="'.$attachment->post_title.'"><div class="'.$options['js_skin'].'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
+					$code .= '<div class="kgvid_video_gallery_thumb" data-id="'.$attachment->ID.'" data-meta="'.$below_video.'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'" alt="'.$attachment->post_title.'"><div class="'.$options['js_skin'].'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
 				}
 
 				$code .= '</div>'; //end wrapper div
-				$code .= '<div id="kgvid_GalleryPlayerDiv_'.$div_suffix.'" style="display:none;"></div>';
 
 			} //if there are attachments
 		} //if gallery
@@ -4968,21 +4965,19 @@ function kgvid_set_gallery_video_code() {
 	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
 	$options = get_option('kgvid_video_embed_options');
 	$id = $_POST['video_id'];
-	$width = $_POST['video_width'];
-	$height = $_POST['video_height'];
-	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$width.'" height="'.$height.'"][/KGVID]';
+	$dimensions = kgvid_set_video_dimensions($id, true);
+	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"][/KGVID]';
 	$code = do_shortcode($shortcode);
-	$code = str_replace('600', $width, $code);
+	$code = str_replace('600', $dimensions['width'], $code);
 
 	$post = get_post($id);
 
 	$video_variables = array(
 		'id' => $id,
 		'player_type' => $options['embed_method'],
-		'width' => $width,
-		'height' => $height,
+		'width' => $dimensions['width'],
+		'height' => $dimensions['height'],
 		'countable' => true,
-		'title' => $post->post_title,
 		'autoplay' => true,
 		'set_volume' => '',
 		'meta' => true,
