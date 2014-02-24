@@ -824,7 +824,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] != "WordPress Default" ) {
-		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.3.0' );
+		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.4.1' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -862,7 +862,7 @@ function kgvid_video_embed_print_scripts() {
 	$options = get_option('kgvid_video_embed_options');
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.3.0', true );
+	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.4.1', true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.4.min.js", __FILE__), '', $options['version'], true );
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
@@ -1373,7 +1373,7 @@ function KGVID_shortcode($atts, $content = ''){
 						$play_translate = 30;
 					}
 
-					$code .= '<div class="kgvid_video_gallery_thumb" data-id="'.$attachment->ID.'" data-meta="'.$below_video.'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'" alt="'.$attachment->post_title.'"><div class="'.$options['js_skin'].'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
+					$code .= '<div class="kgvid_video_gallery_thumb" id="kgvid_video_gallery_thumb_'.$attachment->ID.'" data-id="'.$attachment->ID.'" data-meta="'.$below_video.'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'" alt="'.$attachment->post_title.'"><div class="'.$options['js_skin'].'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
 				}
 
 				$code .= '</div>'; //end wrapper div
@@ -4968,7 +4968,12 @@ function kgvid_set_gallery_video_code() {
 	$options = get_option('kgvid_video_embed_options');
 	$id = $_POST['video_id'];
 	$dimensions = kgvid_set_video_dimensions($id, true);
-	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"][/KGVID]';
+	$downloadlink = get_post_meta($id, "_kgflashmediaplayer-downloadlink", true);
+
+	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"';
+	if ($downloadlink == "checked") { $shortcode .= ' downloadlink="true"'; }
+	$shortcode .= '][/KGVID]';
+
 	$code = do_shortcode($shortcode);
 	$code = str_replace('600', $dimensions['width'], $code);
 

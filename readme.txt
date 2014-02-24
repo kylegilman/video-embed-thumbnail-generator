@@ -167,6 +167,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.2.10 - February XX, 2014 =
 * Added video subtitle/captions support.
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
+* Updated Video.js to version 4.4.1
 * Added list of shortcode attribute options to the post edit help tab.
 * Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
