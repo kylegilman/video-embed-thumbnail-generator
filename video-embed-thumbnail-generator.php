@@ -2466,6 +2466,8 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	}
 	else { $input['ffmpeg_exists'] = $options['ffmpeg_exists']; }
 
+	if ( $input['ffmpeg_exists'] == "notinstalled" ) { $input['browser_thumbnails'] = "on"; } //in case a user had FFMPEG installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
+
 	if ( empty($input['width']) ) {
 		add_settings_error( __FILE__, "width-zero", "You must enter a value for the maximum video width.");
 		$input['width'] = $options['width'];
