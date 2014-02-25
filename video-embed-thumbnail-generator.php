@@ -1111,36 +1111,45 @@ function KGVID_shortcode($atts, $content = ''){
 
 				if ( $options['embed_method'] == "Strobe Media Playback" ) {
 
+					$flashvars = array();
+
 					if ( in_array($moviefiletype, $flashcompatible) ) { //if the original video is Flash video player compatible
-						$flashvars = "{src:'".urlencode($content)."'";
+						$flashvars['src'] = urlencode($content);
 						$flash_source_found = true;
 					}
 					else {
 						$flash_source_found = false;
 						foreach ($video_formats as $name => $type) { //check if there's an H.264 format available and pick the highest quality one
 							if ( $encodevideo_info[$name."_exists"] && $type == "mp4" ) {
-								$flashvars = "{src:'".urlencode(trim($encodevideo_info[$name.'url']))."'";
+								$flashvars['src'] = urlencode(trim($encodevideo_info[$name.'url']));
 								$flash_source_found = true;
 								break;
 							}
 						}
 					}
 					if ( $flash_source_found ) {
-						if($query_atts["poster"] != '') { $flashvars .= ", poster:'".urlencode(trim($query_atts["poster"]))."'"; }
-						if($query_atts["endofvideooverlay"] != '') { $flashvars .= ", endofvideooverlay:'".urlencode(trim($query_atts["endofvideooverlay"]))."'"; }
-						if($query_atts["controlbar"] != '') { $flashvars .= ", controlBarMode:'".$query_atts["controlbar"]."'";	}
-						if($query_atts["autohide"] != '') { $flashvars .= ", controlBarAutoHide:'".$query_atts["autohide"]."'"; }
-						if($query_atts["playbutton"] != '') { $flashvars .= ", playButtonOverlay:'".$query_atts["playbutton"]."'"; }
-						if($query_atts["loop"] != '') {	$flashvars .= ", loop:'".$query_atts["loop"]."'"; }
-						if($query_atts["autoplay"] != '') { $flashvars .= ", autoPlay:'".$query_atts["autoplay"]."'"; }
-						if($query_atts["streamtype"] != '') { $flashvars .= ", streamType:'".$query_atts["streamtype"]."'";	}
-						if($query_atts["scalemode"] != '') { $flashvars .= ", scaleMode:'".$query_atts["scalemode"]."'"; }
-						if($query_atts["backgroundcolor"] != '') { $flashvars .= ", backgroundColor:'".$query_atts["backgroundcolor"]."'"; }
-						if($query_atts["configuration"] != '') { $flashvars .= ", configuration:'".urlencode($query_atts["configuration"])."'"; }
-						if($query_atts["skin"] != '') { $flashvars .= ", skin:'".urlencode($query_atts["skin"])."'"; }
-						$flashvars .= ", verbose:'true', javascriptCallbackFunction:'function(id){kgvid_strobemedia_callback(".$div_suffix.");}'"; //this is necessary to turn on the js API
-						$flashvars .= "}";
-						$params = "{wmode:'opaque', allowfullscreen:'true', allowScriptAccess:'always', base:'".plugins_url("", __FILE__)."/flash/'}";
+
+						if($query_atts["poster"] != '') { $flashvars['poster'] = urlencode(trim($query_atts["poster"])); }
+						if($query_atts["endofvideooverlay"] != '') { $flashvars['endofvideooverlay'] = urlencode(trim($query_atts["endofvideooverlay"])); }
+						if($query_atts["controlbar"] != '') { $flashvars['controlBarMode'] = $query_atts["controlbar"];	}
+						if($query_atts["autohide"] != '') { $flashvars['controlBarAutoHide'] = $query_atts["autohide"]; }
+						if($query_atts["playbutton"] != '') { $flashvars['playButtonOverlay'] = $query_atts["playbutton"]; }
+						if($query_atts["loop"] != '') {	$flashvars['loop'] = $query_atts["loop"]; }
+						if($query_atts["autoplay"] != '') { $flashvars['autoPlay'] = $query_atts["autoplay"]; }
+						if($query_atts["streamtype"] != '') { $flashvars['streamType'] = $query_atts["streamtype"];	}
+						if($query_atts["scalemode"] != '') { $flashvars['scaleMode'] = $query_atts["scalemode"]; }
+						if($query_atts["backgroundcolor"] != '') { $flashvars['backgroundColor'] = $query_atts["backgroundcolor"]; }
+						if($query_atts["configuration"] != '') { $flashvars['configuration'] = urlencode($query_atts["configuration"]); }
+						if($query_atts["skin"] != '') { $flashvars['skin'] = urlencode($query_atts["skin"]); }
+						$flashvars['verbose'] = 'true';
+						$flashvars['javascriptCallbackFunction'] = "function(id){kgvid_strobemedia_callback(".$div_suffix.");}"; //this is necessary to turn on the js API
+
+						$params = array(
+							'wmode' => 'opaque',
+							'allowfullscreen' => 'true',
+							'allowScriptAccess' => 'always',
+							'base' => plugins_url("", __FILE__).'/flash/'
+						);
 					}
 				} //if Strobe Media Playback
 
@@ -1157,7 +1166,7 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 
 				$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper'.$aligncode.'">'."\n\t\t\t";
-				$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" itemscope itemtype="http://schema.org/VideoObject">';
+				$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" data-id="'.$div_suffix.'" itemscope itemtype="http://schema.org/VideoObject">';
 				if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailURL" content="'.$query_atts["poster"].'" />'; }
 				if ( !empty($id) ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 				else { $schema_embedURL = $content; }
@@ -1304,14 +1313,17 @@ function KGVID_shortcode($atts, $content = ''){
 					'resize' => $query_atts['resize'],
 					'right_click' => $query_atts['right_click']
 				);
-				$json_video_variables = json_encode( $video_variables );
-				//$json_video_variables = str_replace( "'", "\'", $json_video_variables );
-
-				wp_localize_script( 'kgvid_video_embed', 'kgvid_video_vars_'.$div_suffix, $json_video_variables );
 
 				if ( $options['embed_method'] == "Strobe Media Playback" && $flash_source_found ) {
-					$code .= "\n\t\t\t"."<script type='text/javascript'>jQuery(document).ready( function() { swfobject.embedSWF('".plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf', 'video_".$div_suffix."', '".trim($query_atts['width'])."', '".trim($query_atts['height'])."', '10.1.0', '".plugins_url("", __FILE__)."/flash/expressInstall.swf', $flashvars, $params, '', function(e) { kgvid_setup_video(".$div_suffix."); }); });</script>\n";
+
+					$video_variables['swfurl'] = plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf";
+					$video_variables['expressinstallswfurl'] = plugins_url("", __FILE__)."/flash/expressInstall.swf";
+					$video_variables['flashvars'] = $flashvars;
+					$video_variables['params'] = $params;
+
 				} //if Strobe Media
+
+				wp_localize_script( 'kgvid_video_embed', 'kgvid_video_vars_'.$div_suffix, $video_variables ); //add video variables in footer
 
 			} //end id_array loop
 

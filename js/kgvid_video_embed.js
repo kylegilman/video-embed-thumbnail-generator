@@ -1,22 +1,26 @@
-var kgvid_video_vars = {};
+kgvid_video_vars = {};
 
-for (element in window) {
-	if (element.substring(0,17) == 'kgvid_video_vars_') {
-		var parsed_kgvid_video_vars = jQuery.parseJSON(window[element]);
-		video_id = parsed_kgvid_video_vars.id;
-		kgvid_video_vars[video_id] = parsed_kgvid_video_vars;
-		kgvid_setup_video(video_id);
-	}
-}
+jQuery(document).ready(function() {
 
-jQuery(document).ready(kgvid_addevent_setvideo());
+	jQuery('.kgvid_videodiv').each(function(){ //setup individual videos
+		var id = jQuery(this).data('id');
+		var video_variable_name = 'kgvid_video_vars_'+id;
+		kgvid_video_vars[id] = eval(video_variable_name);
 
-function kgvid_addevent_setvideo() {
-	jQuery('.kgvid_video_gallery_thumb').each(function(index){
+		if ( kgvid_video_vars[id].player_type == "Strobe Media Playback" ) {
+			swfobject.embedSWF(kgvid_video_vars[id].swfurl, 'video_'+id, kgvid_video_vars[id].width, kgvid_video_vars[id].height, '10.1.0', kgvid_video_vars[id].expressinstallswfurl, kgvid_video_vars[id].flashvars, kgvid_video_vars[id].params);
+		}
+
+		kgvid_setup_video(id);
+
+	});
+
+	jQuery('.kgvid_video_gallery_thumb').each(function(){ //add onclick for gallery thumbnails
 		var id = jQuery(this).data('id');
 		jQuery(this).on('click', function() { kgvid_SetVideo(id); } );
 	});
-}
+
+});
 
 function kgvid_SetVideo(id) {
 

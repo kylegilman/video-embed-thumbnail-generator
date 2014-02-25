@@ -1,6 +1,7 @@
 .kgvid_wrapper {
 	margin: 1em 0px;
 	position: relative;
+	max-width: 100%
 }
 
 .kgvid_wrapper_auto_left {
@@ -27,6 +28,7 @@
 
 .kgvid_gallerywrapper {
 	display: inline-block;
+	max-width: 100%;
 }
 
 .kgvid_textalign_right {
