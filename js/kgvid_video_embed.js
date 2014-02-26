@@ -24,74 +24,83 @@ jQuery(document).ready(function() {
 
 function kgvid_SetVideo(id) {
 
-	jQuery.post(kgvid_ajax_object.ajaxurl, {
-			action: 'kgvid_set_gallery_video',
-			security: kgvid_ajax_object.ajax_nonce,
-			video_id: id
-		}, function(data) {
-			kgvid_video_vars[id] = data.kgvid_video_vars;
-			height = kgvid_video_vars[id].height;
-			width = kgvid_video_vars[id].width;
-			var aspect_ratio = Math.round(height/width*1000)/1000
-			if ( width > window.outerWidth ) {
-				width = window.outerWidth-40;
-				height = Math.round(width * aspect_ratio);
-			}
-			var frame_height = height;
-			var meta = jQuery('#kgvid_video_gallery_thumb_'+id).data('meta');
-			if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(20*meta); }
-			var frame_width = parseInt(width) + 10;
-			frame_height = parseInt(frame_height) + 10;
+	var width = jQuery('#kgvid_video_gallery_thumb_'+id).data('width');
+	var height = jQuery('#kgvid_video_gallery_thumb_'+id).data('height');
+	var aspect_ratio = Math.round(height/width*1000)/1000
+	if ( width > window.outerWidth ) {
+		width = window.outerWidth-40;
+		height = Math.round(width * aspect_ratio);
+	}
+	var frame_height = height;
+	var meta = jQuery('#kgvid_video_gallery_thumb_'+id).data('meta');
+	if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(20*meta); }
+	var frame_width = parseInt(width) + 10;
+	frame_height = parseInt(frame_height) + 10;
 
-			jQuery.modal(data.code, {
-				overlayId: 'kgvid-simplemodal-overlay',
-				containerId: 'kgvid-simplemodal-container',
-				opacity:70,
-				minWidth:frame_width,
-				maxWidth:frame_width,
-				minHeight:frame_height,
-				maxHeight:frame_height,
-				autoResize: true,
-				overlayClose:true,
-				onShow: function(dialog) {
-					dialog.wrap.css('overflow', 'hidden');
-					var video_vars = kgvid_video_vars[id];
-					kgvid_setup_video(id);
-					if ( video_vars.player_type == "Video.js" ) {
-						videojs('video_'+id).load();
-						videojs('video_'+id).play();
-					}
+	jQuery.modal("", {
+		overlayId: 'kgvid-simplemodal-overlay',
+		containerId: 'kgvid-simplemodal-container',
+		opacity:70,
+		minWidth:frame_width,
+		maxWidth:frame_width,
+		minHeight:frame_height,
+		maxHeight:frame_height,
+		autoResize: true,
+		overlayClose:true,
+		zIndex:10000,
+		onShow: function(dialog) {
+			dialog.wrap.css('overflow', 'hidden');
 
-					if ( video_vars.player_type == "WordPress Default" ) {
-						jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
-							success: function(mediaElement, domObject) {
-								if (mediaElement.pluginType == 'flash') {
-									mediaElement.addEventListener('canplay', function() {
-										// Player is ready
-										mediaElement.play();
-									}, false);
-								}
-								else { mediaElement.play(); }
-							}
-						});
-					}
+			jQuery.post(kgvid_ajax_object.ajaxurl, {
+				action: 'kgvid_set_gallery_video',
+				security: kgvid_ajax_object.ajax_nonce,
+				video_id: id
+			}, function(data) {
 
-				}, //end onShow function
-				onClose: function(dialog) {
+				kgvid_video_vars[id] = data.kgvid_video_vars;
+				var video_vars = data.kgvid_video_vars;
 
-					var video_vars = kgvid_video_vars[id];
-					if ( video_vars.player_type == "Video.js" ) {
-						videojs('video_'+id).dispose();
-					}
-					try{
-						delete kgvid_video_vars[id];
-					}catch(e){} //gets around error thrown in IE 8
-					jQuery(window).off('resize', kgvid_resize_video(id));
-					jQuery.modal.close();
+				jQuery('#simplemodal-data').prepend(data.code);
+
+				if ( kgvid_video_vars[id].player_type == "Strobe Media Playback" ) {
+							swfobject.embedSWF(kgvid_video_vars[id].swfurl, 'video_'+id, kgvid_video_vars[id].width, kgvid_video_vars[id].height, '10.1.0', kgvid_video_vars[id].expressinstallswfurl, kgvid_video_vars[id].flashvars, kgvid_video_vars[id].params);
 				}
-			});
 
-		},"json");
+				kgvid_setup_video(id);
+
+				if ( video_vars.player_type == "Video.js" ) {
+					videojs('video_'+id).load();
+					videojs('video_'+id).play();
+				}//end if Video.js
+
+				if ( video_vars.player_type == "WordPress Default" ) {
+					jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
+						success: function(mediaElement, domObject) {
+							if (mediaElement.pluginType == 'flash') {
+								mediaElement.addEventListener('canplay', function() {
+									// Player is ready
+									mediaElement.play();
+								}, false);
+							}
+							else { mediaElement.play(); }
+						}
+					});
+				}//end if WordPress Default
+			},"json"); //end .post
+		}, //end onShow function
+		onClose: function(dialog) {
+
+			var video_vars = kgvid_video_vars[id];
+			if ( video_vars.player_type == "Video.js" ) {
+				videojs('video_'+id).dispose();
+			}
+			try{
+				delete kgvid_video_vars[id];
+			}catch(e){} //gets around error thrown in IE 8
+			jQuery(window).off('resize', kgvid_resize_video(id));
+			jQuery.modal.close();
+		}
+	}); //end modal call
 
 }
 

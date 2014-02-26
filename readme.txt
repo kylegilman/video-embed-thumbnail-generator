@@ -58,7 +58,9 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Re
 = If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. =
 
 * `id="xxx"` video attachment ID (instead of using a URL).
-* `videos="x"` number of attached videos to display if no URL or id is given.
+* `videos="x"` number of attached videos to display if no URL or ID is given.
+* `orderby="menu_order/title/post_date/rand/ID"` criteria for sorting attached videos if no URL or ID is given.
+* `order="ASC/DESC"` sort order.
 * `poster="http://www.example.com/image.jpg"` sets the thumbnail.
 * `endofvideooverlay="http://www.example.com/end_image.jpg` sets the image shown when the video ends.
 * `width="xxx"`
@@ -169,6 +171,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
 * Updated Video.js to version 4.4.1
 * Added list of shortcode attribute options to the post edit help tab.
+* Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
 * Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
 * Added play button overlay to gallery thumbnails when using WordPress Default player.
