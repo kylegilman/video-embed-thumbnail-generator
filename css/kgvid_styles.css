@@ -174,13 +174,25 @@ img.kgvid_ios_novideo {
 	left:0px;
 	width:100%;
 	padding:0px;
-	background-color: rgba(0,0,0,0.4);
+	background:rgb(0,0,0);
+	background: transparent\9;
+	background:rgba(0,0,0,0.4);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#66000000,endColorstr=#66000000);
+	zoom: 1;
 	overflow:hidden;
 	z-index: 3;
 }
 
+.kgvid_video_gallery_thumb:nth-child(n) {
+	filter: none;
+}
+
 .kgvid_video_gallery_thumb:hover .titlebackground {
-	background-color: rgba(0,0,0,0.8);
+	background:rgb(0,0,0);
+	background: transparent\9;
+	background:rgba(0,0,0,0.8);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#cc000000,endColorstr=#cc000000);
+	zoom: 1;
 }
 
 .kgvid_video_gallery_thumb .videotitle {
@@ -203,7 +215,6 @@ img.kgvid_ios_novideo {
 
 /* IE6 hack */
 #kgvid-simplemodal-container a.modalCloseImg {background:none; right:-14px; width:22px; height:26px; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/x.png',sizingMethod='scale');}
-
 #kgvid-simplemodal-container {color:#white; background-color:#000; height:auto; }
 #kgvid-simplemodal-container .simplemodal-data {margin-top:-1em; padding:5px;}
 #kgvid-simplemodal-container a {color:#white;}
