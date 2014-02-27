@@ -849,9 +849,15 @@ function kgvid_save_plugin_settings(input_obj) {
 			if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg') == true ) {
 				jQuery('#ffmpeg_output').html('Running test...');
 				jQuery('#ffmpeg_h264_sample').html(data.encode_string);
-				jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity, command: data.encode_string }, function(output) {
-					jQuery('#ffmpeg_output').html(output);
-				}, "html" );
+
+				jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity }, function(data) {
+					jQuery('#ffmpeg_output').html(data.output);
+					jQuery('#ffmpeg_watermark_example').empty();
+					if ( 'watermark_preview' in data ) {
+						jQuery('#ffmpeg_watermark_example').append('<img src="'+data.watermark_preview+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">');
+					}
+
+				}, "json" );
 			}
 
 			jQuery( '#save_'+save_queue[0].id+' > .spinner' ).fadeOut(500).delay(500).next().delay(500).fadeIn(500).delay(1500).fadeOut(1000, function(){ jQuery(this).remove(); });
@@ -927,9 +933,13 @@ function kgvid_switch_settings_tab(tab) {
 		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery('#ffmpeg_output').html() == "" ) {
 			jQuery('#ffmpeg_output').html('Running test...')
 			var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
-			jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity, command: jQuery('#ffmpeg_h264_sample').html() }, function(output) {
-				jQuery('#ffmpeg_output').html(output);
-			}, "html" );
+			jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity }, function(data) {
+				jQuery('#ffmpeg_output').html(data.output);
+				jQuery('#ffmpeg_watermark_example').empty();
+				if ( 'watermark_preview' in data ) {
+					jQuery('#ffmpeg_watermark_example').append('<img src="'+data.watermark_preview+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">');
+				}
+			}, "json" );
 		}
 	}
 
