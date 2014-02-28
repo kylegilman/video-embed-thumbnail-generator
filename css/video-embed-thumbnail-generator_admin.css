@@ -530,3 +530,19 @@ td.media-icon img {
 .kgvid_50_width {
 	width: 50px;
 }
+
+.kgvid_user_roles {
+	display: inline-block;
+	margin: 0 45px 15px 0;
+}
+
+.kgvid_user_roles strong {
+	padding-bottom: 5px;
+	display: inline-block;
+}
+
+.kgvid_queue_message {
+	font-size: 129%;
+	margin-left: 10px;
+	color: #298CBA;
+}

@@ -44,7 +44,8 @@ if ( ! defined( 'ABSPATH' ) )
 
 function kgvid_default_options_fn() {
 
-	$upload_capable = kgvid_upload_capable();
+	$upload_capable = kgvid_check_if_capable('upload_files');
+	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
 		"version"=>4210,
@@ -112,7 +113,7 @@ function kgvid_default_options_fn() {
 		"auto_thumb_position"=>50,
 		"right_click"=>"on",
 		"resize"=>"on",
-		"capabilities"=>array("make_video_thumbnails"=>$upload_capable, "encode_videos"=>$upload_capable),
+		"capabilities"=>array( "make_video_thumbnails"=>$upload_capable, "encode_videos"=>$upload_capable, "edit_others_video_encodes"=>$edit_others_capable ),
 		"open_graph"=>"on",
 		"htaccess_login"=>"",
 		"htaccess_password"=>"",
@@ -220,16 +221,16 @@ function kgvid_video_formats() {
 
 }
 
-function kgvid_upload_capable() {
+function kgvid_check_if_capable($capability) {
 	global $wp_roles;
-	$upload_capable = array();
+	$capable = array();
 	foreach ( $wp_roles->roles as $role => $role_info ) {
-		if ( array_key_exists('upload_files', $role_info['capabilities']) && $role_info['capabilities']['upload_files'] == 1 ) {
-			$upload_capable[$role] = "on";
+		if ( array_key_exists($capability, $role_info['capabilities']) && $role_info['capabilities'][$capability] == 1 ) {
+			$capable[$role] = "on";
 		}
-		else { $upload_capable[$role] = false; }
+		else { $capable[$role] = false; }
 	}
-	return $upload_capable;
+	return $capable;
 }
 
 function kgvid_set_capabilities($capabilities) {
@@ -1442,8 +1443,13 @@ function KGVID_shortcode($atts, $content = ''){
 					if ( $downloadlink == "checked" ) { ++$below_video; }
 
 					if ( $options['embed_method'] == "WordPress Default" ) {
-						wp_enqueue_style( 'wp-mediaelement' ); //necessary because the [video] shortcode isn't called when rendering the gallery
-						wp_enqueue_script( 'wp-mediaelement' );
+
+						$library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
+						if ( 'mediaelement' === $library && did_action( 'init' ) ) {
+							wp_enqueue_style( 'wp-mediaelement' );
+							wp_enqueue_script( 'wp-mediaelement' );
+						}
+
 						$play_button_class = "mejs-overlay-button";
 						$play_scale = strval( round(intval($query_atts["gallery_thumb"])/400,2) );
 						$play_translate = 5;
@@ -1694,7 +1700,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page) {
 function kgvid_generate_queue_table() {
 
 	$html = "";
-
+	$current_user = wp_get_current_user();
 	$video_embed_queue = get_option('kgvid_video_embed_queue');
 
 	if ( !empty($video_embed_queue) ) {
@@ -1726,36 +1732,46 @@ function kgvid_generate_queue_table() {
 			else { $html .= " class='kgvid_complete' "; }
 
 			$html .= ">";
+			//Order
 			$html .= "<td id='td_".$video_entry['attachmentID']."'>".strval(intval($order)+1)."</td>\n";
-			$thumbnail_url = get_post_meta($video_entry['attachmentID'], "_kgflashmediaplayer-poster", true);
-			$thumbnail_html = "";
-			if ($thumbnail_url != "" ) {
-				$thumbnail_html = '<img width="100" src="'.$thumbnail_url.'">';
-			}
-			if ( get_post_type($video_entry['attachmentID']) == "attachment" ) {
-				$moviefilepath = get_attached_file($video_entry['attachmentID']);
-				$attachmentlink = "media.php?attachment_id=".$video_entry['attachmentID']."&action=edit";
-			}
-			else {
-				$moviefilepath = $video_entry['movieurl'];
-				$attachmentlink = $video_entry['movieurl'];
-			}
-			$html .= "\t\t\t\t\t<td><a href='".$attachmentlink."'> ".$thumbnail_html."</a></td>\n";
-			$path_info = pathinfo($moviefilepath);
-			$file_name =  basename($moviefilepath,'.'.$path_info['extension']);
-			$html .= "\t\t\t\t\t<td><a id='".$moviefilepath."' href='".$attachmentlink."'>".urldecode($file_name)."</a><input type='hidden' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-url]' value='".$video_entry['movieurl']."'></td>\n";
-			$html .= "\t\t\t\t\t<td class='queue_encode_formats' id='formats_".$video_entry['attachmentID']."'>";
-			$html .= "<input type='hidden' id='attachments-".$video_entry['attachmentID']."-kgflashmediaplayer-security' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-security]' value='".$nonce."' />";
-			$html .= kgvid_generate_encode_checkboxes($video_entry['movieurl'], $video_entry['attachmentID'], 'queue');
-			$html .= "</td>\n";
-			$html .= "\t\t\t\t\t<td>";
-			$html .= "<a id='clear_".$video_entry['attachmentID']."' class='submitdelete' href='javascript:void(0)' onclick='kgvid_encode_queue(\"delete\", ".$order.", ".$video_entry['attachmentID'].")'";
-			if ( $currently_encoding[$order] ) { $html .= " style='display:none;'"; }
-			$html .= ">Clear</a>";
+			//User
+			if ( $current_user == $video_entry['user'] || current_user_can('edit_others_video_encodes') ) {
+				$html .= "<td>".$video_entry['user']."</td>\n";
+				//Thumbnail
+				$thumbnail_url = get_post_meta($video_entry['attachmentID'], "_kgflashmediaplayer-poster", true);
+				$thumbnail_html = "";
+				if ($thumbnail_url != "" ) {
+					$thumbnail_html = '<img width="100" src="'.$thumbnail_url.'">';
+				}
+				//File
+				if ( get_post_type($video_entry['attachmentID']) == "attachment" ) {
+					$moviefilepath = get_attached_file($video_entry['attachmentID']);
+					$attachmentlink = "media.php?attachment_id=".$video_entry['attachmentID']."&action=edit";
+				}
+				else {
+					$moviefilepath = $video_entry['movieurl'];
+					$attachmentlink = $video_entry['movieurl'];
+				}
+				$html .= "\t\t\t\t\t<td><a href='".$attachmentlink."'> ".$thumbnail_html."</a></td>\n";
+				$path_info = pathinfo($moviefilepath);
+				$file_name =  basename($moviefilepath,'.'.$path_info['extension']);
+				$html .= "\t\t\t\t\t<td><a id='".$moviefilepath."' href='".$attachmentlink."'>".urldecode($file_name)."</a><input type='hidden' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-url]' value='".$video_entry['movieurl']."'></td>\n";
+				//Formats
+				$html .= "\t\t\t\t\t<td class='queue_encode_formats' id='formats_".$video_entry['attachmentID']."'>";
+				$html .= "<input type='hidden' id='attachments-".$video_entry['attachmentID']."-kgflashmediaplayer-security' name='attachments[".$video_entry['attachmentID']."][kgflashmediaplayer-security]' value='".$nonce."' />";
+				$html .= kgvid_generate_encode_checkboxes($video_entry['movieurl'], $video_entry['attachmentID'], 'queue');
+				$html .= "</td>\n";
+				//Actions
+				$html .= "\t\t\t\t\t<td>";
+				$html .= "<a id='clear_".$video_entry['attachmentID']."' class='submitdelete' href='javascript:void(0)' onclick='kgvid_encode_queue(\"delete\", ".$order.", ".$video_entry['attachmentID'].")'";
+				if ( $currently_encoding[$order] ) { $html .= " style='display:none;'"; }
+				$html .= ">Clear</a>";
+			}//end if current user can see this stuff
+			else { $html .= "<td colspan='5'><strong class='kgvid_queue_message'>Other user's video</strong></td>"; }
 			$html .= "</td></tr>\n";
 		}
 	}
-	else { $html = "\t<tr><td colspan='5'>Queue is Empty</td></tr>\n"; }
+	else { $html = "\t<tr><td colspan='6'><strong class='kgvid_queue_message'>Queue is Empty</strong></td></tr>\n"; }
 
 return $html;
 
@@ -1782,6 +1798,7 @@ function kgvid_FFMPEG_Queue_Page() {
 			<thead>
 				<tr>
 				<th>Order</th>
+				<th>User</th>
 				<th>Thumbnail</th>
 				<th>File</th>
 				<th>Formats</th>
@@ -1790,6 +1807,7 @@ function kgvid_FFMPEG_Queue_Page() {
 			<tfoot>
 				<tr>
 				<th>Order</th>
+				<th>User</th>
 				<th>Thumbnail</th>
 				<th>File</th>
 				<th>Formats</th>
@@ -2108,18 +2126,19 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		global $wp_roles;
 		$options = get_option('kgvid_video_embed_options');
 		$capabilities_checkboxes = array();
-		$capabilities = array('make_video_thumbnails'=>'make thumbnails', 'encode_videos'=>'encode videos');
+		$capabilities = array('make_video_thumbnails'=>'make thumbnails', 'encode_videos'=>'encode videos', 'edit_others_video_encodes' => 'view other users encode queue');
 		foreach ( $capabilities as $capability => $capability_name ) {
-			$capabilities_checkboxes[] = "<strong>Can ".$capability_name.":</strong>";
+			$capabilities_checkboxes[] = "<div class='kgvid_user_roles'><strong>Can ".$capability_name.":</strong><br>";
 			foreach ( $wp_roles->roles as $role => $role_info ) {
 
 				$capability_enabled = false;
 				if ( array_key_exists($role, $options['capabilities'][$capability]) && $options['capabilities'][$capability][$role] == "on" ) { $capability_enabled = true; }
-				$capabilities_checkboxes[] = "<input type='checkbox' ".checked( $capability_enabled, true, false )." id='capability-".$capability."-".$role."' name='kgvid_video_embed_options[capabilities][".$capability."][".$role."]'> <label for='capability-".$capability."-".$role."'>".$role_info['name']."</label>";
+				$capabilities_checkboxes[] = "<input type='checkbox' ".checked( $capability_enabled, true, false )." id='capability-".$capability."-".$role."' name='kgvid_video_embed_options[capabilities][".$capability."][".$role."]'> <label for='capability-".$capability."-".$role."'>".$role_info['name']."</label><br>";
 
 			} //role loop
+			$capabilities_checkboxes[] = "</div>";
 		}// capability loop
-		echo implode("<br>", $capabilities_checkboxes)."\n\t";
+		echo implode("", $capabilities_checkboxes)."\n\t";
 	}
 
 	function kgvid_security_callback() {
@@ -2520,7 +2539,7 @@ function kgvid_update_settings() {
 			$options["endofvideooverlay"] = $options["endOfVideoOverlay"];
 			unset($options["endOfVideoOverlaySame"]);
 
-			$upload_capable = kgvid_upload_capable();
+			$upload_capable = kgvid_check_if_capable('upload_files');
 			$options["capabilities"]["make_video_thumbnails"] = $upload_capable;
 			$options["capabilities"]["encode_videos"] = $upload_capable;
 			kgvid_set_capabilities($options["capabilities"]);
@@ -2549,6 +2568,10 @@ function kgvid_update_settings() {
 			$options['preload'] = "metadata";
 			$options['sample_format'] = "mobile";
 			$options['ffmpeg_watermark'] = array("url" => "", "scale" => "8", "align" => "right", "x" => "4", "y" => "3");
+
+			$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
+			$options["capabilities"]["edit_others_video_encodes"] = $edit_others_capable;
+			kgvid_set_capabilities($options["capabilities"]);
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -3907,12 +3930,16 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 		if ( !empty($encode_list) ) {
 			$video_embed_queue = get_option('kgvid_video_embed_queue');
 			if ( empty($parent_id) ) { $parent_id = get_post($postID)->post_parent; }
+
+			$current_user = wp_get_current_user();
+
 			$queue_entry = array (
 				'attachmentID'=>$postID,
 				'parent_id'=>$parent_id,
 				'movieurl' => $movieurl,
 				'encode_formats'=> $encode_formats,
-				'movie_info' => $movie_info
+				'movie_info' => $movie_info,
+				'user' => $current_user->user_login
 			);
 			$already_queued = false;
 			if ( !empty($video_embed_queue ) ) {
@@ -4175,12 +4202,15 @@ function kgvid_encode_videos() {
 					'started' => time()
 				);
 
+				$current_user = wp_get_current_user();
+
 				$queue_entry = array (
 					'attachmentID'=> $video['attachmentID'],
 					'parent_id'=>$video['parent_id'],
 					'movieurl' => $video['movieurl'],
 					'encode_formats'=> $video['encode_formats'],
-					'movie_info' => $video['movie_info']
+					'movie_info' => $video['movie_info'],
+					'user' => $current_user->user_login
 				);
 
 				$video_embed_queue[$video_key] = $queue_entry;
