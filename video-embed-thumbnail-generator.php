@@ -692,7 +692,7 @@ function kgvid_get_video_dimensions($video = false) {
 	return $movie_info;
 }
 
-function kgvid_generate_flashvars($content, $query_atts, $encodevideo_info) {
+function kgvid_generate_flashvars($content, $query_atts, $encodevideo_info, $id) {
 
 	$flashvars = array();
 	$moviefiletype = pathinfo($content, PATHINFO_EXTENSION);
@@ -727,7 +727,7 @@ function kgvid_generate_flashvars($content, $query_atts, $encodevideo_info) {
 		if($query_atts["configuration"] != '') { $flashvars['configuration'] = urlencode($query_atts["configuration"]); }
 		if($query_atts["skin"] != '') { $flashvars['skin'] = urlencode($query_atts["skin"]); }
 		$flashvars['verbose'] = 'true';
-		$flashvars['javascriptCallbackFunction'] = "function(id){kgvid_strobemedia_callback(".$div_suffix.");}"; //this is necessary to turn on the js API
+		$flashvars['javascriptCallbackFunction'] = "function(id){kgvid_strobemedia_callback(".$id.");}"; //this is necessary to turn on the js API
 
 		$params = array(
 			'wmode' => 'opaque',
@@ -1042,6 +1042,7 @@ function kgvid_shortcode_atts($atts) {
 			'gallery_exclude' => '',
 			'gallery_include' => '',
 			'gallery_id' => $post_ID,
+			'gallery_end' => '',
 			'volume' => '',
 			'title' => $options['overlay_title'],
 			'embedcode' => $options['overlay_embedcode'],
@@ -1217,7 +1218,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 				if ( $options['embed_method'] == "Strobe Media Playback" ) {
 
-					$flash_settings = kgvid_generate_flashvars($content, $query_atts, $encodevideo_info);
+					$flash_settings = kgvid_generate_flashvars($content, $query_atts, $encodevideo_info, $div_suffix);
 
 				} //if Strobe Media Playback
 
@@ -1455,7 +1456,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 					$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
 
-					$code .= '<div class="kgvid_video_gallery_thumb" id="kgvid_video_gallery_thumb_'.$attachment->ID.'" data-id="'.$attachment->ID.'" data-width="'.$dimensions['width'].'" data-height="'.$dimensions['height'].'" data-meta="'.$below_video.'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'" alt="'.$attachment->post_title.'"><div class="'.$options['js_skin'].'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
+					$code .= '<div class="kgvid_video_gallery_thumb" id="kgvid_video_gallery_thumb_'.$attachment->ID.'" data-id="'.$attachment->ID.'" data-width="'.$dimensions['width'].'" data-height="'.$dimensions['height'].'" data-meta="'.$below_video.'" data-gallery_end="'.$query_atts['gallery_end'].'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.$thumbnail_url.'" alt="'.$attachment->post_title.'"><div class="'.$options['js_skin'].'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
 				}
 
 				$code .= '</div>'; //end wrapper div
@@ -1940,11 +1941,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		else { $embed_disabled = ""; }
 
 		$items = array("Video.js", "Strobe Media Playback");
-		if ( $wp_version >= 3.6 ) { $items = array("Video.js", "WordPress Default", "Strobe Media Playback"); }
+		if ( $wp_version >= 3.6 ) { $items = array("Video.js" => "Video.js", "WordPress Default" => "WordPress Default", "Strobe Media Playback (deprecated)" => "Strobe Media Playback"); }
 		echo "<table class='form-table'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>Video player:</label></th><td><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='embed_method' name='kgvid_video_embed_options[embed_method]'>";
-		foreach($items as $item) {
-			$selected = ($options['embed_method']==$item) ? 'selected="selected"' : '';
-			echo "<option value='$item' $selected>$item</option>";
+		foreach($items as $name => $value) {
+			$selected = ($options['embed_method']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>This plugin used Strobe Media Playback for Flash playback in the past, but you can choose to use the newer and lighter Video.js method which will give priority to HTML5 and only use Flash as a fallback or if you're running WordPress version 3.6 or later you can use the built-in MediaElement.js video player.</span></a></td></tr></tbody></table>\n";
 
@@ -5106,7 +5107,7 @@ function kgvid_set_gallery_video_code() {
 
 		$content = wp_get_attachment_url($id);
 		$encodevideo_info = kgvid_encodevideo_info($content, $id);
-		$flash_settings = kgvid_generate_flashvars($content, $video_variables, $encodevideo_info);
+		$flash_settings = kgvid_generate_flashvars($content, $video_variables, $encodevideo_info, $id);
 
 		$video_variables['swfurl'] = plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf";
 		$video_variables['expressinstallswfurl'] = plugins_url("", __FILE__)."/flash/expressInstall.swf";

@@ -108,9 +108,10 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Re
 * `gallery_thumb="xxx"` width in pixels to display gallery thumbnails
 * `gallery_exclude="15"` comma separated video attachment IDs. Excludes the videos from the gallery.
 * `gallery_include="65"` comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.
-* `gallery_orderby="menu_order/title/post_date/rand/ID"` criteria for sorting the gallery
-* `gallery_order="ASC/DESC"` sort order
-* `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post
+* `gallery_orderby="menu_order/title/post_date/rand/ID"` criteria for sorting the gallery.
+* `gallery_order="ASC/DESC"` sort order.
+* `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post.
+* `gallery_end="close/next"` either close the pop-up or start playing the next video when the current video finishes playing.
 
 I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
 
@@ -170,8 +171,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added video subtitle/captions support.
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
 * Updated Video.js to version 4.4.1
+* Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
 * Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
 * Added list of shortcode attribute options to the post edit help tab.
+* Added "gallery_ended" shortcode attribute to set an action when a pop-up video gallery video ends.
 * Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
 * Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
