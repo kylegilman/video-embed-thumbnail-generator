@@ -81,15 +81,14 @@ function kgvid_SetVideo(id) {
 									// Player is ready
 									mediaElement.play();
 								}, false);
-;
+
 								mediaElement.addEventListener('ended', function() {
 									if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" ) {
 										kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
 									}
 								}, false);
-							}
+							}//end if flash or silverlight
 							else { mediaElement.play(); }
-
 						}
 					});
 				}//end if WordPress Default
@@ -282,6 +281,7 @@ function kgvid_setup_video(id) {
 				kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
 			}
 		});
+
 
 	} //end if WordPress Default
 
