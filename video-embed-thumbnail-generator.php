@@ -1129,7 +1129,7 @@ function KGVID_shortcode($atts, $content = ''){
 				$content = trim($content);
 				$guid_convert = substr(str_replace(' ', '', $content), 12 );
 				global $wpdb;
-				$query = "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE '%{$guid_convert}'"; //GUID seems to be the only way to get a video URL
+				$query = $wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid LIKE '%%%s'", $guid_convert); //GUID seems to be the only way to get a video URL
 				$id_array[0] = $wpdb->get_var($query);
 			}
 
@@ -1475,8 +1475,6 @@ function kgvid_no_texturize_shortcode($shortcodes){
 add_filter( 'no_texturize_shortcodes', 'kgvid_no_texturize_shortcode' );
 
 function kgvid_ajax_generate_encode_checkboxes() {
-
-	global $wpdb;
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
@@ -2448,7 +2446,7 @@ function kgvid_update_settings() {
 				delete_option($old_setting);
 			}
 		}
-		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'" );
+		$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'") );
 
 		foreach ( $default_options as $key => $value ) { //apply default values for any settings that didn't exist before
 			if ( !array_key_exists($key, $options) ) { $options[$key] = $value; }
@@ -2625,12 +2623,13 @@ function kgvid_ajax_save_settings() {
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
 	if ( current_user_can('manage_options') ) {
+
 		$setting = $_POST['setting'];
 		$value = $_POST['value'];
 		parse_str($_POST['all_settings'], $all_settings);
 		$error_message = "";
-		global $wpdb;
 		global $wp_settings_errors;
+
 		$validated_options = kgvid_video_embed_options_validate($all_settings['kgvid_video_embed_options']);
 		$options_updated = update_option('kgvid_video_embed_options', $validated_options);
 		if ( !empty($wp_settings_errors) ) { $error_message = $wp_settings_errors[0]['message']; }
@@ -3969,7 +3968,6 @@ function kgivd_save_singleurl_poster($parent_id, $poster, $movieurl, $set_featur
 function kgvid_callffmpeg() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-	global $wpdb;
 
 	$options = get_option('kgvid_video_embed_options');
 
@@ -4201,7 +4199,6 @@ function kgvid_encode_videos() {
 function kgvid_ajax_encode_videos() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-	global $wpdb;
 	$arr = kgvid_encode_videos();
 	echo json_encode($arr);
 	die();
@@ -4272,6 +4269,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 			$logfile = $video_entry['encode_formats'][$format]['logfile'];
 			$started = $video_entry['encode_formats'][$format]['started'];
 			$movie_duration = $video_entry['movie_info']['duration'];
+			$filepath = $video_entry['encode_formats'][$format]['filepath'];
 			$embed_display = "";
 			$percent_done = "";
 			$time_remaining = "";
@@ -4354,7 +4352,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 
 						$embed_display .= '<div style="display:block;"><small>Elapsed: '.date('H:i:s',$time_elapsed).'. Remaining: '.$time_remaining.'. FPS:'.$fps_match.'</small></div><script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, '.$time_to_wait.');</script>';
 					}
-					elseif ( time() - $started < 10 || time() - filemtime($video_entry['encode_formats'][$format]['filepath']) < 10 ) { //not enough time has passed, so check again later
+					elseif ( time() - $started < 10 || ( file_exists($filepath) && time() - filemtime($filepath) < 10 ) ) { //not enough time has passed, so check again later
 						$args = array($video_key, $format, $page);
 						$embed_display = '<strong>Encoding</strong> <script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
 						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
@@ -4365,7 +4363,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						$time_elapsed = $ended - $started;
 						$time_remaining = "0";
 						$fps_match = "10";
-						if ( array_key_exists(1, $libx264_matches) ) { $moov_output = kgvid_fix_moov_atom($video_embed_queue[$video_key]['encode_formats'][$format]['filepath']); } //fix the moov atom if the file was encoded by libx264
+						if ( array_key_exists(1, $libx264_matches) ) { $moov_output = kgvid_fix_moov_atom($filepath); } //fix the moov atom if the file was encoded by libx264
 						$video_embed_queue[$video_key]['encode_formats'][$format]['status'] = "Encoding Complete";
 						$video_embed_queue[$video_key]['encode_formats'][$format]['ended'] = $ended;
 						$video_embed_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
@@ -4387,10 +4385,10 @@ function kgvid_encode_progress($video_key, $format, $page) {
 
 							global $wpdb;
 							global $user_ID;
-							$query = "SELECT ID FROM {$wpdb->posts} WHERE guid='".$video_embed_queue[$video_key]['encode_formats'][$format]['url']."'"; //check for existing entry in the db
+							$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s'", $video_embed_queue[$video_key]['encode_formats'][$format]['url'] ); //check for existing entry in the db
 							$video_id = $wpdb->get_var($query);
 							if ( !$video_id ) {
-								$wp_filetype = wp_check_filetype(basename($video_entry['encode_formats'][$format]['filepath']), null );
+								$wp_filetype = wp_check_filetype(basename($filepath), null );
 								$video_formats = kgvid_video_formats();
 								$title .= " ".$video_formats[$format]['name'];
 
@@ -4408,14 +4406,14 @@ function kgvid_encode_progress($video_key, $format, $page) {
 								   'post_author' => $user_ID
 								);
 
-								$new_id = wp_insert_attachment( $attachment, $video_entry['encode_formats'][$format]['filepath'], $parent_id );
+								$new_id = wp_insert_attachment( $attachment, $filepath, $parent_id );
 								// you must first include the image.php file
 								// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
 								require_once(ABSPATH . 'wp-admin/includes/image.php');
 								global $wp_version;
 								if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
 								require_once(ABSPATH . 'wp-admin/includes/media.php');
-								$attach_data = wp_generate_attachment_metadata( $new_id, $video_entry['encode_formats'][$format]['filepath'] );
+								$attach_data = wp_generate_attachment_metadata( $new_id, $filepath );
 								wp_update_attachment_metadata( $new_id, $attach_data );
 								update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
 								if ( get_post_type($video_entry['attachmentID']) == false ) { update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $video_entry['movieurl'] ); } //connect new video to external url
@@ -4504,7 +4502,6 @@ function kgvid_ajax_encode_progress() {
 	$video_key = $_POST['video_key'];
 	$format = $_POST['format'];
 	$page = $_POST['page'];
-	global $wpdb;
 	$progress = kgvid_encode_progress($video_key, $format, $page);
 	echo json_encode($progress);
 	die();
@@ -4526,7 +4523,7 @@ function kgvid_replace_video ( $video_key, $format ) {
 		$new_url = $sanitized_url['noextension'].".mp4";
 		$video_embed_queue[$video_key]['movieurl'] = $new_url;
 		global $wpdb;
-		$query = "SELECT ID FROM {$wpdb->posts} WHERE `post_content` LIKE '%".$sanitized_url['basename'].".".$path_parts['extension']."%'"; //find posts that use the old filename
+		$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE `post_content` LIKE '%%%s%%'", $sanitized_url['basename'].".".$path_parts['extension'] ); //find posts that use the old filename
 		$results = $wpdb->get_results($query);
 		if ( $results ) {
 			foreach ( $results as $result ) {
@@ -4552,7 +4549,6 @@ function kgvid_replace_video ( $video_key, $format ) {
 	// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
 	require_once(ABSPATH . 'wp-admin/includes/image.php');
 	global $wp_version;
-	global $wpdb;
 	if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
 	$attach_data = wp_generate_attachment_metadata( $video_id, $new_filename );
 	wp_update_attachment_metadata( $video_id, $attach_data );
@@ -4608,7 +4604,6 @@ function kgvid_ajax_clear_completed_queue() {
 
 	if ( current_user_can('encode_videos') ) {
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		global $wpdb;
 		kgvid_clear_completed_queue('manual');
 		$table = kgvid_generate_queue_table();
 		echo ($table);
@@ -4622,7 +4617,6 @@ function kgvid_ajax_clear_queue_entry() {
 
 	if ( current_user_can('encode_videos') ) {
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		global $wpdb;
 		$video_key = $_POST['index'];
 		$video_embed_queue = get_option('kgvid_video_embed_queue');
 		if ( array_key_exists($video_key, $video_embed_queue) ) {
@@ -4703,7 +4697,6 @@ function kgvid_ajax_delete_video() {
 
 	if ( current_user_can('encode_videos') ) {
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		global $wpdb;
 		$deleted = false;
 		$attachment_id = "";
 		if ( isset($_POST['movieurl']) ) { $movieurl = $_POST['movieurl']; }
@@ -4730,7 +4723,6 @@ add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
 function kgvid_delete_video_attachment($video_id) {
 
 	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false ) { //only do this for videos
-		global $wpdb;
 		$parent_post = get_post($video_id);
 		$options = get_option('kgvid_video_embed_options');
 		$video_embed_queue = get_option('kgvid_video_embed_queue');
@@ -4828,17 +4820,6 @@ add_action('delete_attachment', 'kgvid_delete_video_attachment');
 function kgvid_get_set_featured() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-
-	global $wpdb;
-
-	/* $querystr = "
-		SELECT $wpdb->posts.*
-		FROM $wpdb->posts, $wpdb->postmeta
-		WHERE $wpdb->posts.ID = $wpdb->postmeta.post_id
-		AND $wpdb->postmeta.meta_key = '_kgflashmediaplayer-poster-id'
-		ORDER BY $wpdb->posts.post_date ASC
- 	";
-	$videoposts = $wpdb->get_results($querystr, OBJECT); */
 
 	$args = array(
 		'post_type' => null,
@@ -5019,7 +5000,7 @@ function kgvid_singleurl_inner_custom_box($post) {
 		$nonce = wp_create_nonce('video-embed-thumbnail-generator-nonce');
 		echo '<h4>Alternate formats of embedded videos</h4>';
 		foreach ( $urls as $movieurl ) {
-			$query = "SELECT ID FROM {$wpdb->posts} WHERE guid='{$movieurl}'"; //GUID seems to be the only way to get a video URL
+			$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s'", $movieurl ); //GUID seems to be the only way to get a video URL
 			$video_id = $wpdb->get_var($query);
 
 			echo '<div class="kgvid_post_meta_boxes">';
