@@ -853,8 +853,10 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		if ( !empty($options['htaccess_login']) && strpos($input, 'http://') === 0 ) {
 			$input = substr_replace($input, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
 		}
-
-		$encode_string = $nice.$options['app_path']."/".$options['video_app'].' -y -i "'.$input.'" '.$watermark_input.$ffmpeg_options.$rate_control_flag.$rotate." -threads ".$options['threads'].$watermark_filter.' "'.$output.'"';
+		$encode_string = array();
+		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].' -y -i "'.$input.'" '.$watermark_input.$ffmpeg_options.$rate_control_flag.$rotate." -threads ".$options['threads'];
+		$encode_string[2] = $watermark_filter;
+		$encode_string[3] = ' "'.$output.'"';
 
 		$options['encode_string'] = $encode_string;
 		update_option('kgvid_video_embed_options', $options);
@@ -2396,7 +2398,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 		$sample_format_select .= "</select>";
 
-		echo "<div id='ffmpeg_sample_div'".$display_div."><p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> sample ".$sample_format_select." encode command:<br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".$encode_string."</textarea></p>";
+		echo "<div id='ffmpeg_sample_div'".$display_div."><p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> sample ".$sample_format_select." encode command:<br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".implode('',$encode_string)."</textarea></p>";
 		echo "<p><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong> test output:<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>For help interpreting this output, <a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>try our Wiki page on Github</a>.</p></div>\n\t";
 	}
 
@@ -2633,7 +2635,7 @@ function kgvid_ajax_save_settings() {
 		$validated_options = kgvid_video_embed_options_validate($all_settings['kgvid_video_embed_options']);
 		$options_updated = update_option('kgvid_video_embed_options', $validated_options);
 		if ( !empty($wp_settings_errors) ) { $error_message = $wp_settings_errors[0]['message']; }
-		$encode_string = "";
+		$encode_string = array();
 		if ( $validated_options['ffmpeg_exists'] == "on" ) {
 			$movie_info = kgvid_get_video_dimensions(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4");
 			$uploads = wp_upload_dir();
@@ -2645,7 +2647,7 @@ function kgvid_ajax_save_settings() {
 			$encode_string = kgvid_generate_encode_string(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
 		}
 		if ( strpos($setting, 'capability') !== false || strpos($setting, 'ffmpeg_watermark') !== false ) { $validated_options[$setting] = $value; }
-		$arr = array ( "error_message" => $error_message, "validated_value" => $validated_options[$setting], "ffmpeg_exists" => $validated_options['ffmpeg_exists'], "encode_string" => $encode_string, "app_path" => $validated_options['app_path'] );
+		$arr = array ( "error_message" => $error_message, "validated_value" => $validated_options[$setting], "ffmpeg_exists" => $validated_options['ffmpeg_exists'], "encode_string" => implode('', $encode_string), "app_path" => $validated_options['app_path'] );
 		echo json_encode($arr);
 		die();
 	}
@@ -4017,6 +4019,7 @@ function kgvid_encode_videos() {
 	$video_key = "";
 	$queued_format = "";
 	$encoding = "";
+	$encode_string = array();
 	$uploads = wp_upload_dir();
 	$movie_info = array("width"=>"", "height"=>"");
 	$video_embed_queue = get_option('kgvid_video_embed_queue');
@@ -4139,7 +4142,7 @@ function kgvid_encode_videos() {
 
 				$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt';
 
-				$cmd = escapeshellcmd($encode_string);
+				$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
 
 				if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
 
@@ -4214,7 +4217,8 @@ function kgvid_test_ffmpeg() {
 	$video_formats = kgvid_video_formats();
 	$suffix = $video_formats[$options['sample_format']]['suffix'];
 
-	$cmd = $options['encode_string'];
+	$encode_string = $options['encode_string'];
+	$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
 	exec ( $cmd.' 2>&1', $output );
 	$arr['output'] = implode("\n", $output);
 
