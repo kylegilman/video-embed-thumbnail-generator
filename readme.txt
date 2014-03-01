@@ -190,6 +190,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that generated misaligned play button arrows in some themes when using the Video.js player.
 * Fixed bug that sometimes generated jagged rows in galleries with mixed aspect ratios.
 * Fixed bug that attempted to generate thumbnails using FFMPEG if a user had previously installed FFMPEG, disabled in-browser thumbnails, then disabled FFMPEG.
+* Fixed bug that would prevent disabling plugin user capabilities if no users were assigned to the capability.
 * Changed video title overlay z-index from 1003 to 3 to avoid floating over other elements.
 
 = 4.2.9 - November 15, 2013 =

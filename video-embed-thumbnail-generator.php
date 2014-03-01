@@ -234,7 +234,16 @@ function kgvid_check_if_capable($capability) {
 }
 
 function kgvid_set_capabilities($capabilities) {
+
 	global $wp_roles;
+
+	$default_options = kgvid_default_options_fn();
+	foreach ( $default_options['capabilities'] as $default_capability => $default_enabled ) {
+		if ( !array_key_exists($default_capability, $capabilities) ) {
+			$capabilities[$default_capability] = array();
+		}
+	}
+
 	foreach ( $capabilities as $capability => $enabled_roles ) {
 		foreach ( $wp_roles->roles as $role => $role_info ) { //check all roles
 			if ( !array_key_exists($capability, $role_info['capabilities']) && array_key_exists($role, $enabled_roles) && $enabled_roles[$role] == "on" ) {
@@ -245,6 +254,7 @@ function kgvid_set_capabilities($capabilities) {
 			}
 		}
 	}
+
 }
 
 function kgvid_aac_encoders() {
@@ -1735,7 +1745,7 @@ function kgvid_generate_queue_table() {
 			//Order
 			$html .= "<td id='td_".$video_entry['attachmentID']."'>".strval(intval($order)+1)."</td>\n";
 			//User
-			if ( $current_user == $video_entry['user'] || current_user_can('edit_others_video_encodes') ) {
+			if ( $current_user->user_login == $video_entry['user'] || current_user_can('edit_others_video_encodes') ) {
 				$html .= "<td>".$video_entry['user']."</td>\n";
 				//Thumbnail
 				$thumbnail_url = get_post_meta($video_entry['attachmentID'], "_kgflashmediaplayer-poster", true);
@@ -2126,13 +2136,16 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		global $wp_roles;
 		$options = get_option('kgvid_video_embed_options');
 		$capabilities_checkboxes = array();
-		$capabilities = array('make_video_thumbnails'=>'make thumbnails', 'encode_videos'=>'encode videos', 'edit_others_video_encodes' => 'view other users encode queue');
+		$capabilities = array('make_video_thumbnails'=>'make thumbnails', 'encode_videos'=>'encode videos', 'edit_others_video_encodes' => 'view & modify other users encode queue');
 		foreach ( $capabilities as $capability => $capability_name ) {
 			$capabilities_checkboxes[] = "<div class='kgvid_user_roles'><strong>Can ".$capability_name.":</strong><br>";
 			foreach ( $wp_roles->roles as $role => $role_info ) {
 
 				$capability_enabled = false;
-				if ( array_key_exists($role, $options['capabilities'][$capability]) && $options['capabilities'][$capability][$role] == "on" ) { $capability_enabled = true; }
+				if ( array_key_exists($capability, $wp_roles->roles[$role]['capabilities'])
+				&& $wp_roles->roles[$role]['capabilities'][$capability] = 1 ) {
+					$capability_enabled = true;
+				}
 				$capabilities_checkboxes[] = "<input type='checkbox' ".checked( $capability_enabled, true, false )." id='capability-".$capability."-".$role."' name='kgvid_video_embed_options[capabilities][".$capability."][".$role."]'> <label for='capability-".$capability."-".$role."'>".$role_info['name']."</label><br>";
 
 			} //role loop
