@@ -387,13 +387,13 @@ function kgvid_video_counter(id, event) {
 			changed = true;
 			jQuery('#video_'+id+'_div').data("played", "played");
 		}
-		if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", "Play Start", title]); }
+		if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", kgvidL10n_frontend.playstart, title]); }
 	}
 	if ( event == "end" ) {
 		if (video_vars.countable) { //video is in the db
 			changed = true;
 		}
-		if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', 'Complete View', title]); }
+		if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', kgvidL10n_frontend.completeview, title]); }
 	}
 	if ( changed == true ) {
 		jQuery.post(kgvid_ajax_object.ajaxurl, {

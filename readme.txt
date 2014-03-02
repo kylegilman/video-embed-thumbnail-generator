@@ -170,6 +170,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.3 - March XX, 2014 =
 * Added video subtitle/captions support.
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
+* Prepared plugin for internationalization. Translators needed!
 * Updated Video.js to version 4.4.1
 * Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
 * Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
