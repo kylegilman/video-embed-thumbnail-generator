@@ -528,7 +528,7 @@ td.media-icon img {
 }
 
 .kgvid_50_width {
-	width: 50px;
+	max-width: 50px;
 }
 
 .kgvid_user_roles {
