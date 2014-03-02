@@ -83,7 +83,7 @@ function kgvid_SetVideo(id) {
 								}, false);
 
 								mediaElement.addEventListener('ended', function() {
-									if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" ) {
+									if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
 										kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
 									}
 								}, false);
@@ -177,7 +177,7 @@ function kgvid_setup_video(id) {
 				player.on('timeupdate', kgvid_timeupdate);
 
 			}
-			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" ) {
+			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
 				kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
 			}
 		});
@@ -277,7 +277,7 @@ function kgvid_setup_video(id) {
 					}
 				} );
 			}
-			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" ) {
+			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
 				kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
 			}
 		});
@@ -379,7 +379,7 @@ function kgvid_video_counter(id, event) {
 
 	var video_vars = kgvid_video_vars[id];
 	var changed = false;
-	var title = jQuery('#video_'+id+'_title').html();
+	var title = jQuery('#kgvid_'+id+'_wrapper meta[itemprop=name]').attr('content');
 
 	var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 	if ( played == "not played" ) {
