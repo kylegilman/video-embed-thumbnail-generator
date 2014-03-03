@@ -65,7 +65,7 @@
 .vjs-fullscreen {padding-top: 0px}
 
 div.kgvid_ios_novideo {
-	z-index:1003;
+	z-index:3;
 	position:absolute;
 	width:100%;
 	height:100%;
@@ -86,7 +86,7 @@ img.kgvid_ios_novideo {
 	display: block;
 	position: absolute;
 	top: 0px;
-	z-index: 3;
+	z-index: 103;
 	margin: 0px;
 	width: 100%;
 	height: 32px;

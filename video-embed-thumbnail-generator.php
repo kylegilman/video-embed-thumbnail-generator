@@ -51,6 +51,7 @@ function kgvid_default_options_fn() {
 	$options = array(
 		"version"=>4.3,
 		"embed_method"=>"Video.js",
+		"jw_player_id"=>"",
 		"template"=>false,
 		"template_gentle"=>"on",
 		"encode_fullres"=>false,
@@ -1364,29 +1365,44 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= $executed_shortcode;
 				}
 
-				elseif ( $options['embed_method'] == "JW Player" ) {
+				if ( $options['embed_method'] == "JW Player" ) {
 
+					if ( class_exists('JWP6_Shortcode') ) {
 
-					foreach ($video_formats as $name => $type) {
-						if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
-						if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = '{ file:\''.esc_attr($encodevideo_info[$name."url"]).'\'}'; }
+						foreach ($video_formats as $name => $type) {
+							if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
+							if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = '{ file:\''.esc_attr($encodevideo_info[$name."url"]).'\'}'; }
+						}
+
+						$jw_shortcode = "[jwplayer ";
+						$jw_shortcode .= 'sources="';
+						$jw_shortcode .= implode(',', $sources);
+						$jw_shortcode .= '" ';
+						if ( $query_atts["poster"] != '' ) { $jw_shortcode .= 'image="'.esc_attr($query_atts["poster"]).'" '; }
+						$jw_shortcode .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'" ';
+						if ( $query_atts["loop"] == 'true' ) { $jw_shortcode .= 'repeat="true" '; }
+						if ( $query_atts["autoplay"] == 'true' ) { $jw_shortcode .= 'autostart="true" '; }
+						if ( $query_atts['title'] != "false" ) { $jw_shortcode .= ' title="'.$query_atts['title'].'" '; }
+						if ( $options['jw_player_id'] != "") {
+							$jw_player_config = get_option('jwp6_player_config_'.$options['jw_player_id']);
+							if ( !empty($jw_player_config) ) { $jw_shortcode .= ' player="'.$options['jw_player_id'].'" '; }
+						}
+						$jw_shortcode = trim($jw_shortcode);
+						$jw_shortcode .= ']';
+
+						$executed_shortcode = do_shortcode($jw_shortcode); //just in case the shortcode is active
+						//this is JW Player's hack for executing without registering a WP shortcode
+						$tag_regex = '/(.?)\[(jwplayer)\b(.*?)(?:(\/))?\](?:(.+?)\[\/\2\])?(.?)/s';
+        				$executed_shortcode = preg_replace_callback($tag_regex,  array("JWP6_Shortcode", "tag_parser"), $jw_shortcode);
+
+						$code .= $executed_shortcode;
+
 					}
+					else { $options['embed_method'] = "Video.js"; }
 
-					$jw_shortcode = "[jwplayer ";
-					$jw_shortcode .= 'sources="';
-					$jw_shortcode .= implode(',', $sources);
-					$jw_shortcode .= '" ';
-					if ( $query_atts["poster"] != '' ) { $jw_shortcode .= 'image="'.esc_attr($query_atts["poster"]).'" '; }
-					$jw_shortcode .= 'width='.$query_atts["width"].' height='.$query_atts["height"].' ';
-					if ( $query_atts["loop"] == 'true' ) { $jw_shortcode .= 'loop="true" '; }
-					if ( $query_atts["autoplay"] == 'true' ) { $jw_shortcode .= 'repeat="true" '; }
-					if ( $query_atts['title'] != "false" ) { $jw_shortcode .= ' title="'.$query_atts['title'].'" '; }
-					$jw_shortcode .= ']';
-					$executed_shortcode = do_shortcode($jw_shortcode);
-					$code .= $executed_shortcode;
 				}
 
-				else { //if it's not the WordPress default player or JW Player
+				if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 
 					foreach ($video_formats as $name => $type) {
 						if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
@@ -1430,7 +1446,8 @@ function KGVID_shortcode($atts, $content = ''){
 					}
 				}
 
-				if ( $query_atts['title'] != "false" || $query_atts['embedcode'] != "false" ) { //generate content overlaid on video
+				if ( ( $query_atts['title'] != "false" && $options['embed_method'] != "JW Player" )
+				|| $query_atts['embedcode'] != "false" ) { //generate content overlaid on video
 					$kgvid_meta = true;
 					$code .= "\t\t\t<div style=\"display:none;\" id=\"video_".$div_suffix."_meta\" class=\"kgvid_video_meta kgvid_video_meta_hover\">\n";
 					if ( $query_atts['embedcode'] != "false" ) {
@@ -1439,7 +1456,7 @@ function KGVID_shortcode($atts, $content = ''){
 						$iframecode = "<iframe src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
 						$code .= "\t\t\t\t<div id=\"video_".$div_suffix."_embed\" class=\"kgvid_share\"><span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><input type=\"text\" value=\"".esc_attr($iframecode)."\" onClick=\"this.select();\"></div>\n";
 					}
-					if ( $query_atts['title'] != "false" ) {
+					if ( $query_atts['title'] != "false" && $options['embed_method'] != "JW Player" ) {
 						$code .= "\t\t\t\t<div id='video_".$div_suffix."_title' class='kgvid_title'>".$query_atts['title']."</div>\n";
 					}
 					$code .= "\t\t\t</div>\n";
@@ -2041,7 +2058,27 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 		$players["Video.js"] = "Video.js";
 		if ( $wp_version >= 3.6 ) { $players[__("WordPress Default", 'video-embed-thumbnail-generator')] = "WordPress Default"; }
-		if ( is_plugin_active('jw-player-plugin-for-wordpress/jwplayermodule.php') ) { $players["JW Player"] = "JW Player"; }
+
+		//add the JW Player if available
+		$jw_player_select = "";
+		if ( class_exists('JWP6_Shortcode') ) {
+			$players["JW Player"] = "JW Player";
+			$jw_players = get_option('jwp6_players');
+			if ( count($jw_players) > 1 ) {
+				$jw_player_select = " <div style='display:none;' id='jw_player_id_select'><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='jw_player_id' name='kgvid_video_embed_options[jw_player_id]'>";
+				foreach( $jw_players as $jw_player_id ) {
+					$selected = ($options['jw_player_id']==$jw_player_id) ? 'selected="selected"' : '';
+					$jw_player_config = get_option('jwp6_player_config_'.$jw_player_id);
+					if ( is_array($jw_player_config)
+					&& array_key_exists('description', $jw_player_config)
+					&& !empty($jw_player_config['description']) ) { $jw_player_config_description = $jw_player_config['description']; }
+					else { $jw_player_config_description = $jw_player_id; }
+					$jw_player_select .= "<option value='$jw_player_id' $selected>".stripcslashes($jw_player_config_description)."</option>";
+				}
+				$jw_player_select .= "</select> JW Player player</div>";
+			}
+		}
+
 		$players["Strobe Media Playback ".__('(deprecated)', 'video-embed-thumbnail-generator')] = "Strobe Media Playback";
 
 		echo "<table class='form-table'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>".__('Video player:', 'video-embed-thumbnail-generator')."</label></th><td><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='embed_method' name='kgvid_video_embed_options[embed_method]'>";
@@ -2049,7 +2086,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['embed_method']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>".__('Video.js is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. In the past this plugin used Adobe\'s Strobe Media Playback Flash player, which hasn\'t been updated since 2011 and is not recommended.', 'video-embed-thumbnail-generator')."</span></a></td></tr></tbody></table>\n";
+		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='../wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>".__('Video.js is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. If the JW Player WordPress plugin is active it should be available as a video player. In the past this plugin used Adobe\'s Strobe Media Playback Flash player, which hasn\'t been updated since 2011 and is not recommended. It should still work, but new plugin functions are not guaranteed to be compatible.', 'video-embed-thumbnail-generator')."</span></a>".$jw_player_select."</td></tr></tbody></table>\n";
 
 		$sampleheight = intval($options['height']) + 25;
 		echo "<div class='kgvid_setting_nearvid' style='width:".$options['width']."px;'>";
@@ -2656,6 +2693,7 @@ function kgvid_update_settings() {
 			kgvid_check_ffmpeg_exists($options, true);
 		}
 		if ( $options['version'] < 4.3 ) {
+			$options['jw_player_id'] = '';
 			$options['preload'] = "metadata";
 			$options['sample_format'] = "mobile";
 			$options['ffmpeg_watermark'] = array("url" => "", "scale" => "8", "align" => "right", "x" => "4", "y" => "3");
@@ -5215,10 +5253,10 @@ function kgvid_set_gallery_video_code() {
 		'player_type' => $options['embed_method'],
 		'width' => $dimensions['width'],
 		'height' => $dimensions['height'],
-		'countable' => true,
-		'autoplay' => true,
+		'countable' => "true",
+		'autoplay' => "true",
 		'set_volume' => '',
-		'meta' => true,
+		'meta' => "true",
 		'endofvideooverlay' => $options['endofvideooverlay'],
 		'resize' => $options['resize'],
 		'right_click' => $options['right_click']
@@ -5304,7 +5342,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>gallery_include="65"</code> '.__('comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.', 'video-embed-thumbnail-generator').'</li>
 <li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting the gallery', 'video-embed-thumbnail-generator').'</li>
 <li><code>gallery_order="ASC/DESC"</code> '.__('sort order', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_id="241"</code> '.__('post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator').'</li></ul>'
+<li><code>gallery_id="241"</code> '.__('post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_end="close/next"</code> '.__('either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator').'</li></ul>'
     ) );
 
 }

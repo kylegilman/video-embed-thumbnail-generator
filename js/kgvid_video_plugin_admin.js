@@ -948,15 +948,28 @@ function kgvid_hide_plugin_settings() {
 		jQuery('table:eq(2)').hide();
 		jQuery('h3:eq(1)').hide();
 	}
-	if ( playback_option == "Strobe Media Playback" && general_tab ) {
-		jQuery('table:eq(2)').show();
-		jQuery('h3:eq(1)').show();
-	}
 
-	if ( playback_option == "WordPress Default" && general_tab ) {
-		jQuery('#js_skin').parents().eq(1).hide();
+	if ( general_tab ) {
+
+		if ( playback_option == "Strobe Media Playback" ) {
+			jQuery('table:eq(2)').show();
+			jQuery('h3:eq(1)').show();
+		}
+
+		if ( playback_option == "WordPress Default" || playback_option == "JW Player" ) {
+			jQuery('#js_skin').parents().eq(1).hide();
+		}
+
+		if ( playback_option == "Video.js" || playback_option == "Strobe Media Playback" ) {
+			jQuery('#js_skin').parents().eq(1).show();
+		}
+
+		if ( playback_option == "JW Player" ) {
+			jQuery('#jw_player_id_select').fadeIn();
+		}
+		else { jQuery('#jw_player_id_select').fadeOut(); }
+
 	}
-	else { jQuery('#js_skin').parents().eq(1).show(); }
 
 	if ( ffmpeg_exists == "notinstalled" ) {
 		jQuery(".kgvid_video_app_required").addClass("kgvid_thumbnail_overlay");
