@@ -168,9 +168,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3 - March XX, 2014 =
-* Added video subtitle/captions support.
-* Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
 * Prepared plugin for internationalization. Translators needed!
+* Added JW Player option if the JW Player WordPress plugin is active.
+* Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
+* Added video subtitle/captions support.
 * Updated Video.js to version 4.4.1
 * Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
 * Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
@@ -191,7 +192,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that generated misaligned play button arrows in some themes when using the Video.js player.
 * Fixed bug that sometimes generated jagged rows in galleries with mixed aspect ratios.
 * Fixed bug that attempted to generate thumbnails using FFMPEG if a user had previously installed FFMPEG, disabled in-browser thumbnails, then disabled FFMPEG.
-* Fixed bug that would prevent disabling plugin user capabilities if no users were assigned to the capability.
+* Fixed bug that prevented disabling plugin user capabilities if no users were assigned to the capability and on plugin deactivation.
 * Changed video title overlay z-index from 1003 to 3 to avoid floating over other elements.
 
 = 4.2.9 - November 15, 2013 =
