@@ -57,14 +57,13 @@ function kgvid_SetVideo(id) {
 
 			//build next/previous buttons
 
-			var nav_code = '<span class="kgvid_gallery_nav">';
+			var nav_code = '';
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).prev('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ) {
-				nav_code += '<a class="kgvid_gallery_prev" title="Previous">&larr;</a>';
+				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_prev" title="'+kgvidL10n_frontend.previous+'">&#8592;</a>';
 			}
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).next('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ) {
-				nav_code += '<a class="kgvid_gallery_next" title="Next">&rarr;</a>';
+				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_next" title="'+kgvidL10n_frontend.next+'">&#8594;</a>';
 			}
-			nav_code += '</span>';
 
 			jQuery('#kgvid-simplemodal-container').prepend(nav_code);
 
@@ -277,18 +276,6 @@ function kgvid_setup_video(id) {
 
 		player = jQuery('#video_'+id+'_div video');
 
-		if ( video_vars.meta ) {
-			jQuery('#video_'+id+'_div').hover(
-				function(){
-					jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
-
-				},
-				function(){
-					jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-				}
-			);
-		}
-
 		if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 
 		player.on('play', function kgvid_play_start(){
@@ -319,13 +306,26 @@ function kgvid_setup_video(id) {
 	} //end if WordPress Default
 
 	if (  kgvid_video_vars[id].player_type == "JW Player" ) {
-
-		var player = jwplayer(jQuery('#kgvid_'+id+'_wrapper .jwplayer').attr('id'));
+		player_id = jQuery('#video_'+id+'_div').children('div[id^="jwplayer"]').attr('id');
+		var player = jwplayer(player_id);
 
 		if ( video_vars.set_volume != "" ) { player.setVolume(Math.round(video_vars.set_volume*100)); }
 
 		player.onPlay( function() {
 			kgvid_video_counter(id, 'play');
+
+			if ( video_vars.meta ) {
+				jQuery('#video_'+id+'_div').hover(
+					function(){
+						jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
+					},
+					function(){
+						jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
+					}
+				);
+				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
+			}
+
 		});
 
 		player.onComplete( function() {

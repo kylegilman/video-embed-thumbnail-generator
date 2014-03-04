@@ -276,6 +276,7 @@ function kgvid_add_upload_mimes ( $existing_mimes=array() ) {
 
 	// allows uploading .webm videos
 	$existing_mimes['webm'] = 'video/webm';
+	$existing_mimes['vtt'] = 'text/vtt';
 	return $existing_mimes;
 
 }
@@ -721,9 +722,10 @@ function kgvid_generate_flashvars($content, $query_atts, $encodevideo_info, $id)
 	}
 	else {
 		$flash_source_found = false;
-		foreach ($video_formats as $name => $type) { //check if there's an H.264 format available and pick the highest quality one
-			if ( $encodevideo_info[$name."_exists"] && $type == "mp4" ) {
-				$flashvars['src'] = urlencode(trim($encodevideo_info[$name.'url']));
+		$video_formats = kgvid_video_formats();
+		foreach ($video_formats as $format => $format_stats) { //check if there's an H.264 format available and pick the highest quality one
+			if ( $encodevideo_info[$format."_exists"] && $format_stats['type'] == "mp4" ) {
+				$flashvars['src'] = urlencode(trim($encodevideo_info[$format.'url']));
 				$flash_source_found = true;
 				break;
 			}
@@ -1025,7 +1027,9 @@ function kgvid_video_embed_print_scripts() {
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
 			'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-			'completeview' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator')
+			'completeview' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+			'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
+			'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator')
 	) );
 
 	echo '<script type="text/javascript">document.createElement(\'video\');document.createElement(\'audio\');</script>'."\n";
@@ -1257,14 +1261,10 @@ function KGVID_shortcode($atts, $content = ''){
 
 				$moviefiletype = pathinfo($content, PATHINFO_EXTENSION);
 				if ( $moviefiletype == "mov" || $moviefiletype == "m4v" ) { $moviefiletype = "mp4"; }
-				$video_formats = array(
-					"original" => $moviefiletype,
-					"1080" => "mp4",
-					"720" => "mp4",
-					"mobile" => "mp4",
-					"webm" => "webm",
-					"ogg" => "ogg"
-				);
+
+				$video_formats = kgvid_video_formats();
+				unset($video_formats['fullres']);
+				$video_formats['original'] = array( "type" => $moviefiletype, "name" => "Full" );
 
 				if ( in_array($moviefiletype, $compatible) ) {
 					$encodevideo_info["original_exists"] = true;
@@ -1330,18 +1330,18 @@ function KGVID_shortcode($atts, $content = ''){
 					$wp_shortcode = "[video ";
 					$mp4already = false;
 					$sources_hack = "";
-					foreach ($video_formats as $name => $type) {
-						if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
-						if ( $encodevideo_info[$name."_exists"] ) {
-							if ( $type != "mp4" || !$mp4already ) {
-								$shortcode_type = wp_check_filetype( $encodevideo_info[$name."url"], wp_get_mime_types() );
-								$sources[$name] = $shortcode_type['ext'].'="'.$encodevideo_info[$name."url"].'" ';
-								if ( $type == "mp4" ) { //WordPress built-in shortcode doesn't support multiple videos of the same type but we'll hack it in later
-									$search_string = '<source type="video/mp4" src="'.esc_attr($encodevideo_info[$name."url"]).'" />';
+					foreach ($video_formats as $format => $format_stats) {
+						if ( $format != "original" && $encodevideo_info[$format."url"] == $content ) { unset($sources['original']); }
+						if ( $encodevideo_info[$format."_exists"] ) {
+							if ( $format_stats['type'] != "mp4" || !$mp4already ) {
+								$shortcode_type = wp_check_filetype( $encodevideo_info[$format."url"], wp_get_mime_types() );
+								$sources[$format] = $shortcode_type['ext'].'="'.$encodevideo_info[$format."url"].'" ';
+								if ( $format_stats['type'] == "mp4" ) { //WordPress built-in shortcode doesn't support multiple videos of the same type but we'll hack it in later
+									$search_string = '<source type="video/mp4" src="'.esc_attr($encodevideo_info[$format."url"]).'" />';
 									$mp4already = true;
 								}
 							}
-							else { $sources_hack .= '<source type="video/'.$type.'" src="'.esc_attr($encodevideo_info[$name."url"]).'" />'; }
+							else { $sources_hack .= '<source type="video/'.$format_stats['type'].'" src="'.esc_attr($encodevideo_info[$format."url"]).'" />'; }
 						}
 					}
 
@@ -1369,24 +1369,45 @@ function KGVID_shortcode($atts, $content = ''){
 
 					if ( class_exists('JWP6_Shortcode') ) {
 
-						foreach ($video_formats as $name => $type) {
-							if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
-							if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = '{ file:\''.esc_attr($encodevideo_info[$name."url"]).'\'}'; }
+						$jw_video_formats = array( 'mobile' => '480p',
+							'720' => '720p',
+							'1080' => '1080p',
+							'original' => 'Full',
+							'webm' => 'WEBM',
+							'ogg' => 'OGV'
+						);
+						foreach ($jw_video_formats as $format => $name) {
+							if ( $format != "original" && $encodevideo_info[$format."url"] == $content ) { unset($sources['original']); }
+							if ( $encodevideo_info[$format."_exists"] ) {
+								$sources[$format] = '{ file:\''.esc_attr($encodevideo_info[$format."url"]).'\', label:\''.$name.'\'';
+								if ( $format == "original" ) { $sources[$format] .= ', default:\'true\''; }
+								$sources[$format] .= '}';
+							}
+						}
+
+						if ( !empty($track_option[0]['src']) ) {
+							foreach ( $track_option as $track => $track_attribute ) {
+								foreach ( $track_attribute as $attribute => $value ) {
+									if ( empty($value) ) { $track_attribute[$attribute] = $query_atts['track_'.$attribute]; }
+								}
+								$jw_tracks[] = '{ file:\''.esc_attr($track_attribute['src']).'\', kind:\''.esc_attr($track_attribute['kind']).'\', label:\''.esc_attr($track_attribute['label']).'\'}';
+							}
 						}
 
 						$jw_shortcode = "[jwplayer ";
-						$jw_shortcode .= 'sources="';
-						$jw_shortcode .= implode(',', $sources);
-						$jw_shortcode .= '" ';
+						$jw_shortcode .= 'sources="'.implode(',', $sources).'" ';
+						$jw_shortcode .= 'tracks="'.implode(',', $jw_tracks).'" ';
 						if ( $query_atts["poster"] != '' ) { $jw_shortcode .= 'image="'.esc_attr($query_atts["poster"]).'" '; }
-						$jw_shortcode .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'" ';
+						//$jw_shortcode .= 'width="'.$query_atts["width"].'" height="'.$query_atts["height"].'" ';
 						if ( $query_atts["loop"] == 'true' ) { $jw_shortcode .= 'repeat="true" '; }
 						if ( $query_atts["autoplay"] == 'true' ) { $jw_shortcode .= 'autostart="true" '; }
+						if ( $query_atts["controlbar"] == 'none') { $jw_shortcode .= 'controls="false" '; }
 						if ( $query_atts['title'] != "false" ) { $jw_shortcode .= ' title="'.$query_atts['title'].'" '; }
 						if ( $options['jw_player_id'] != "") {
 							$jw_player_config = get_option('jwp6_player_config_'.$options['jw_player_id']);
 							if ( !empty($jw_player_config) ) { $jw_shortcode .= ' player="'.$options['jw_player_id'].'" '; }
 						}
+
 						$jw_shortcode = trim($jw_shortcode);
 						$jw_shortcode .= ']';
 
@@ -1404,9 +1425,9 @@ function KGVID_shortcode($atts, $content = ''){
 
 				if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 
-					foreach ($video_formats as $name => $type) {
-						if ( $name != "original" && $encodevideo_info[$name."url"] == $content ) { unset($sources['original']); }
-						if ( $encodevideo_info[$name."_exists"] ) { $sources[$name] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$name."url"]).'" type="video/'.$type.'">'."\n"; }
+					foreach ($video_formats as $format => $format_stats) {
+						if ( $format != "original" && $encodevideo_info[$format."url"] == $content ) { unset($sources['original']); }
+						if ( $encodevideo_info[$format."_exists"] ) { $sources[$format] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format."url"]).'" type="video/'.$format_stats['type'].'">'."\n"; }
 					}
 
 					$code .= '<video id="video_'.$div_suffix.'" ';
@@ -1419,7 +1440,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= ' class="'.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{}\'';
 					$code .= ">\n";
 
-					$code .= implode("\n", $sources); //add the <source> tags created earlier
+					$code .= implode("", $sources); //add the <source> tags created earlier
 					$code .= $track_code; //if there's a text track
 					$code .= "\t\t\t\t</video>\n";
 
