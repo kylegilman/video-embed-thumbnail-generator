@@ -24,6 +24,8 @@ jQuery(document).ready(function() {
 
 function kgvid_SetVideo(id) {
 
+	var gallery_id = jQuery('#kgvid_video_gallery_thumb_'+id).parent().attr('id');
+
 	var width = jQuery('#kgvid_video_gallery_thumb_'+id).data('width');
 	var height = jQuery('#kgvid_video_gallery_thumb_'+id).data('height');
 	var aspect_ratio = Math.round(height/width*1000)/1000
@@ -47,10 +49,36 @@ function kgvid_SetVideo(id) {
 		maxHeight:frame_height,
 		autoResize: true,
 		overlayClose:true,
+		closeHTML:'<a class="modalCloseImg simplemodal-close" title="Close">X</a>',
 		zIndex:10000,
 		onShow: function(dialog) {
-			dialog.wrap.css('overflow', 'hidden');
 
+			dialog.wrap.css('overflow', 'hidden'); //disable scroll bars
+
+			//build next/previous buttons
+
+			var nav_code = '<span class="kgvid_gallery_nav">';
+			if ( jQuery('#kgvid_video_gallery_thumb_'+id).prev('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ) {
+				nav_code += '<a class="kgvid_gallery_prev" title="Previous">&larr;</a>';
+			}
+			if ( jQuery('#kgvid_video_gallery_thumb_'+id).next('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ) {
+				nav_code += '<a class="kgvid_gallery_next" title="Next">&rarr;</a>';
+			}
+			nav_code += '</span>';
+
+			jQuery('#kgvid-simplemodal-container').prepend(nav_code);
+
+			jQuery('.kgvid_gallery_next').click( function() {
+				jQuery.modal.close();
+				jQuery('#kgvid_video_gallery_thumb_'+id).next('.kgvid_video_gallery_thumb').trigger('click');
+			});
+
+			jQuery('.kgvid_gallery_prev').click( function() {
+				jQuery.modal.close();
+				jQuery('#kgvid_video_gallery_thumb_'+id).prev('.kgvid_video_gallery_thumb').trigger('click');
+			});
+
+			//load the video player embed code
 			jQuery.post(kgvid_ajax_object.ajaxurl, {
 				action: 'kgvid_set_gallery_video',
 				security: kgvid_ajax_object.ajax_nonce,

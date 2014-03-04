@@ -845,12 +845,11 @@ function kgvid_save_plugin_settings(input_obj) {
 			if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg') == true ) {
 				jQuery('#ffmpeg_output').html(kgvidL10n.runningtest);
 				jQuery('#ffmpeg_h264_sample').html(data.encode_string);
-
+				jQuery('#ffmpeg_watermark_example').slideUp('slow');
 				jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity }, function(data) {
 					jQuery('#ffmpeg_output').html(data.output);
-					jQuery('#ffmpeg_watermark_example').empty();
 					if ( 'watermark_preview' in data ) {
-						jQuery('#ffmpeg_watermark_example').append('<img src="'+data.watermark_preview+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">');
+						jQuery('#ffmpeg_watermark_example').empty().append('<img src="'+data.watermark_preview+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">').slideDown('slow');
 					}
 
 				}, "json" );
@@ -920,7 +919,7 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery('table:eq(4)').show();
 
 		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery('#ffmpeg_output').html() == "" ) {
-			jQuery('#ffmpeg_output').html('Running test...')
+			jQuery('#ffmpeg_output').html('Running test...');
 			var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
 			jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg", security: kgflashmediaplayersecurity }, function(data) {
 				jQuery('#ffmpeg_output').html(data.output);

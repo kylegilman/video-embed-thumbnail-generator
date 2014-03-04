@@ -1498,6 +1498,8 @@ function KGVID_shortcode($atts, $content = ''){
 
 			wp_enqueue_script( 'simplemodal' );
 
+			static $kgvid_gallery_id = 0;
+
 			$args = array(
 				'post_type' => 'attachment',
 				'orderby' => $query_atts['gallery_orderby'],
@@ -1518,7 +1520,7 @@ function KGVID_shortcode($atts, $content = ''){
 				if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_textalign_center'; }
 				if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_textalign_right'; }
 				$div_suffix = substr(uniqid(rand(), true),0,4);
-				$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'">';
+				$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'">';
 				foreach ( $attachments as $attachment ) {
 					$thumbnail_url = get_post_meta($attachment->ID, "_kgflashmediaplayer-poster", true);
 					$poster_id = get_post_meta($attachment->ID, '_kgflashmediaplayer-poster-id', true);
@@ -1561,6 +1563,8 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 
 				$code .= '</div>'; //end wrapper div
+
+				$kgvid_gallery_id++;
 
 			} //if there are attachments
 		} //if gallery
