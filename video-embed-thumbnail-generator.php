@@ -944,7 +944,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] != "WordPress Default" ) {
-		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.4.1' );
+		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.4.2' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -1018,7 +1018,7 @@ function kgvid_video_embed_print_scripts() {
 	$options = get_option('kgvid_video_embed_options');
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.4.1', true );
+	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.4.2', true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
