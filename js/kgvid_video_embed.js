@@ -125,13 +125,20 @@ function kgvid_SetVideo(id) {
 		onClose: function(dialog) {
 
 			var video_vars = kgvid_video_vars[id];
-			if ( video_vars.player_type == "Video.js" ) {
-				videojs('video_'+id).dispose();
+			if ( video_vars !== undefined ) {
+				if ( video_vars.player_type == "Video.js" ) {
+					videojs('video_'+id).dispose();
+				}
+				if ( video_vars.player_type == "JW Player" ) {
+					jwplayer(jQuery('#kgvid_'+id+'_wrapper .jwplayer').attr('id')).stop();
+				}
 			}
 			try{
 				delete kgvid_video_vars[id];
 			}catch(e){} //gets around error thrown in IE 8
+
 			jQuery(window).off('resize', kgvid_resize_video(id));
+
 			jQuery.modal.close();
 		}
 	}); //end modal call
@@ -141,7 +148,7 @@ function kgvid_SetVideo(id) {
 function kgvid_video_gallery_end_action(id, action) {
 	jQuery.modal.close();
 	if ( action == "next" ) {
-		jQuery('#kgvid_video_gallery_thumb_'+id).next('.kgvid_video_gallery_thumb').trigger('click')
+		jQuery('#kgvid_video_gallery_thumb_'+id).next('#'+jQuery('#kgvid_video_gallery_thumb_'+id).parent().attr('id')+' .kgvid_video_gallery_thumb').trigger('click')
 	}
 }
 
