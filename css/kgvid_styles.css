@@ -219,7 +219,7 @@ img.kgvid_ios_novideo {
 	width: 17px;
 	height: 17px;
 	display: inline;
-	z-index: 3200;
+	z-index: 10003;
 	position: absolute;
 	top: -22px;
 	right: -20px;
@@ -230,35 +230,41 @@ img.kgvid_ios_novideo {
 	border-radius: 5px;
 	background-color: #666;
 	color: #ccc;
-	font-family: Arial;
+	font-family: Arial, sans-serif;
 	line-height: 17px;
-	font-weight: bold;
+	font-weight: 900;
+	text-decoration: none;
 }
 
-#kgvid-simplemodal-container span.kgvid_gallery_nav {
-	z-index: 3200;
-	position: absolute;
-	top: -20px;
-	right: 6px;
-}
-
-#kgvid-simplemodal-container .kgvid_gallery_nav a {
+#kgvid-simplemodal-container .kgvid_gallery_nav {
 	cursor: pointer;
 	display: inline-block;
-	margin-left: 8px;
 	width: 26px;
 	height: 14px;
 	background-color: #666;
 	text-align: center;
 	color: #ccc;
 	border-radius: 5px;
-	font-family: sans-serif;
+	font-family: Arial, sans-serif;
 	font-size: 16px;
-	line-height: 16px;
-	font-weight: bold;
+	font-weight: 900;
 	border: 1px solid #888;
-	}
+	line-height: 12px;
+	z-index: 10003;
+	position: absolute;
+	text-decoration: none;
+}
 
-#kgvid-simplemodal-container a.modalCloseImg:hover, #kgvid-simplemodal-container .kgvid_gallery_nav a:hover {
+.kgvid_gallery_prev {
+	top: -20px;
+	right: 40px;
+}
+
+.kgvid_gallery_next {
+	top: -20px;
+	right: 6px;
+}
+
+#kgvid-simplemodal-container a.modalCloseImg:hover, #kgvid-simplemodal-container .kgvid_gallery_nav:hover {
 	background-color: #555;
 }
