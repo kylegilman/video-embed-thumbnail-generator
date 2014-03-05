@@ -177,6 +177,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Updated Video.js to version 4.4.2
 * Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
 * Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
+* Added option to automatically generate multiple thumbnails when a video is uploaded.
 * Added list of shortcode attribute options to the post edit help tab.
 * Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
 * Added option to set video preload attribute.
