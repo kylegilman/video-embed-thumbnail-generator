@@ -483,7 +483,7 @@ function kgvid_set_video_dimensions($id, $gallery = false) {
 
 	$heightset = round(intval($widthset)*$aspect_ratio);
 
-	$dimensions = array( 'width' => $widthset, 'height' => $heightset, 'actualwidth' => $widthactual, 'actualheight' => $heightactual );
+	$dimensions = array( 'width' => strval($widthset), 'height' => strval($heightset), 'actualwidth' => strval($widthactual), 'actualheight' => strval($heightactual) );
 	return $dimensions;
 
 }
@@ -1419,7 +1419,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 						$code .= $executed_shortcode;
 
-					}
+					}// if class exists
 					else { $options['embed_method'] = "Video.js"; }
 
 				}
@@ -5365,9 +5365,12 @@ function kgvid_set_gallery_video_code() {
 	$shortcode .= '][/KGVID]';
 
 	$code = do_shortcode($shortcode);
-	$code = str_replace('600', $dimensions['width'], $code);
-
+	$width = $dimensions['width'];
+	$code = preg_replace('/width: (.*?)px/i', "width: ".$width."px", $code); //WordPress thinks we're in the Admin area so it sets the content_width the same every time
+	$code = preg_replace('/width="(.*?)"/i', 'width='.$width.'"', $code);
 	$post = get_post($id);
+
+	if ( $options['embed_method'] == "JW Player" && !class_exists('JWP6_Shortcode') ) { $options['embed_method'] = "Video.js"; }
 
 	$video_variables = array(
 		'id' => $id,
@@ -5379,7 +5382,7 @@ function kgvid_set_gallery_video_code() {
 		'set_volume' => '',
 		'meta' => "true",
 		'endofvideooverlay' => $options['endofvideooverlay'],
-		'resize' => $options['resize'],
+		'resize' => "true",
 		'right_click' => $options['right_click']
 	);
 
