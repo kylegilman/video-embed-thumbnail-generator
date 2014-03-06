@@ -121,7 +121,7 @@ function kgvid_default_options_fn() {
 		"htaccess_login"=>"",
 		"htaccess_password"=>"",
 		"sample_format"=>"mobile",
-		"ffmpeg_watermark"=>array("url" => "", "scale" => "8", "align" => "right", "valign"=> "bottom", "x" => "4", "y" => "3")
+		"ffmpeg_watermark"=>array("url" => "", "scale" => "9", "align" => "right", "valign"=> "bottom", "x" => "6", "y" => "5")
 	);
 	return $options;
 }
@@ -2749,7 +2749,7 @@ function kgvid_update_settings() {
 			$options['jw_player_id'] = '';
 			$options['preload'] = "metadata";
 			$options['sample_format'] = "mobile";
-			$options['ffmpeg_watermark'] = array("url" => "", "scale" => "8", "align" => "right", "x" => "4", "y" => "3");
+			$options['ffmpeg_watermark'] = array("url" => "", "scale" => "9", "align" => "right", "valign"=> "bottom", "x" => "6", "y" => "5");
 			$options['auto_thumb_number'] = 1;
 
 			$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
@@ -2912,9 +2912,9 @@ function kgvid_cron_new_attachment_handler($post_id) {
 		$thumb_output = array();
 		$thumb_id = array();
 		$numberofthumbs = intval($options['auto_thumb_number']);
-error_log('Number of thumbs: '.$numberofthumbs);
+
 		if ( $numberofthumbs == 1 ) {
-error_log('Just one thumbnail!');
+
 			switch ( $options['auto_thumb_position'] ) {
 				case 0:
 					$imaginary_numberofthumbs = 1;
@@ -2948,7 +2948,7 @@ error_log('Just one thumbnail!');
 		}//end if just one auto_thumb
 
 		if ( $numberofthumbs > 1 ) {
-error_log('Actually there are this many: '.$numberofthumbs );
+
 			$thumb_key = intval($options['auto_thumb_position']);
 
 			$i = 1;
