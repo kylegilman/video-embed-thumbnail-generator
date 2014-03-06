@@ -970,9 +970,13 @@ function kgvid_hide_plugin_settings() {
 		}
 
 		if ( playback_option == "JW Player" ) {
+			jQuery('#endofvideooverlay').parents().eq(1).hide();
 			jQuery('#jw_player_id_select').fadeIn();
 		}
-		else { jQuery('#jw_player_id_select').fadeOut(); }
+		else {
+			jQuery('#endofvideooverlay').parents().eq(1).show();
+			jQuery('#jw_player_id_select').fadeOut();
+		}
 
 	}
 

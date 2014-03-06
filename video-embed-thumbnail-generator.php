@@ -2024,11 +2024,11 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('dimensions', __('Max embedded video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_dimensions', __('Max gallery video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
 	add_settings_field('gallery_thumb', __('Gallery thumbnail width:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_thumb_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_thumb' ) );
-	add_settings_field('controlbar_style', __('Controlbar style:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
+	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
 	add_settings_field('autoplay', __('Autoplay:', 'video-embed-thumbnail-generator'), 'kgvid_autoplay_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'autoplay' ) );
 	add_settings_field('loop', _x('Loop:', 'verb', 'video-embed-thumbnail-generator'), 'kgvid_loop_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'loop' ) );
 	add_settings_field('preload', __('Preload:', 'video-embed-thumbnail-generator'), 'kgvid_preload_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'preload' ) );
-	add_settings_field('js_skin', _x('Skin Class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
+	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
 
 	add_settings_field('bgcolor', __('Background color:', 'video-embed-thumbnail-generator'), 'kgvid_bgcolor_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'bgcolor' ) );
 	add_settings_field('configuration', __('XML configuration file:', 'video-embed-thumbnail-generator'), 'kgvid_configuration_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'configuration' ) );
@@ -2182,13 +2182,16 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_controlbar_style_callback() {
 		$options = get_option('kgvid_video_embed_options');
-		$items = array(__("docked", 'video-embed-thumbnail-generator') => "docked", __("floating", 'video-embed-thumbnail-generator') => "floating", __("none", 'video-embed-thumbnail-generator') => "none");
+		$items = array();
+		$items[__("docked", 'video-embed-thumbnail-generator')] = "docked";
+		if ( $options['embed_method'] == "Strobe Media Playback" ) { $items[__("floating", 'video-embed-thumbnail-generator')] = "floating"; }
+		$items[__("none", 'video-embed-thumbnail-generator')] = "none";
 		echo "<select class='affects_player' id='controlbar_style' name='kgvid_video_embed_options[controlbar_style]'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['controlbar_style']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> ".__('"Floating" option only works with Strobe Media Playback.', 'video-embed-thumbnail-generator')."\n\t";
+		echo "</select>\n\t";
 	}
 
 	function kgvid_autoplay_callback() {
