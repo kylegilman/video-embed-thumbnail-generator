@@ -157,8 +157,8 @@ img.kgvid_ios_novideo {
 	position: relative;
 	vertical-align: bottom;
 	display:inline-block;
+	cursor: pointer !important;
 	margin: 7px 7px;
-	cursor: pointer; !important
 }
 
 .kgvid_video_gallery_thumb img {
@@ -213,7 +213,7 @@ img.kgvid_ios_novideo {
 /* SimpleModal styles */
 #kgvid-simplemodal-overlay {background-color:#000;}
 
-#kgvid-simplemodal-container {background-color:#000; height:auto; }
+#kgvid-simplemodal-container { color:black; background-color:#000; height:auto; }
 #kgvid-simplemodal-container .simplemodal-data {margin-top:-1em; padding:5px;}
 #kgvid-simplemodal-container a.modalCloseImg {
 	width: 17px;
@@ -222,7 +222,7 @@ img.kgvid_ios_novideo {
 	z-index: 10003;
 	position: absolute;
 	top: -22px;
-	right: -20px;
+	right: 0px;
 	cursor: pointer;
 	text-align: center;
 	font-size: 10px;
@@ -257,12 +257,12 @@ img.kgvid_ios_novideo {
 
 .kgvid_gallery_prev {
 	top: -20px;
-	right: 40px;
+	right: 58px;
 }
 
 .kgvid_gallery_next {
 	top: -20px;
-	right: 6px;
+	right: 25px;
 }
 
 #kgvid-simplemodal-container a.modalCloseImg:hover, #kgvid-simplemodal-container .kgvid_gallery_nav:hover {
