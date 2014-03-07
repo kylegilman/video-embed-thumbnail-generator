@@ -164,21 +164,14 @@ div.kgvid_track_box:hover {
 	width: 15px;
 	height: 15px;
 	float: right;
-}
-
-.kgvid_track_box_removeable:hover:before {
-	color: red;
-}
-
-.kgvid_track_box_removeable:before {
-	content: '\f158';
-	font: normal 15px/1 'dashicons';
-	speak: none;
-	vertical-align: middle;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+	text-align: right;
+	font-weight: bold;
 	color: #BC0B0B;
-	float: right;
+	cursor: pointer;
+}
+
+.kgvid_track_box_removeable:hover {
+	color: red;
 }
 
 div.kgvid_chosen_thumbnail_box {
