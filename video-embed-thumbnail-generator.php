@@ -1596,7 +1596,7 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 				$code .= "\t\t\t</div>\n";
 				$show_views = false;
-				if ( !empty($id) || !empty($query_atts['caption']) || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
+				if ( !empty($id) || !empty($query_atts['caption']) || $query_atts['downloadlink'] == "true" || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
 					$view_count = number_format(intval(get_post_meta($id, "_kgflashmediaplayer-starts", true)));
 					if ( empty($view_count) ) { $view_count = "0"; }
 					if ( $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { $view_count = "XX"; }
@@ -3538,7 +3538,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if ( !isset($options['ffmpeg_exists']) || $options['ffmpeg_exists'] == "notchecked" ) {
 			kgvid_check_ffmpeg_exists($options, true);
 		}
-		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.sprintf( __(strtoupper('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.'), $options['video_app'], 'video-embed-thumbnail-generator'), $options['app_path'] ).'"'; }
+		if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.sprintf( __(strtoupper('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.'), 'video-embed-thumbnail-generator'), $options['video_app'], $options['app_path'] ).'"'; }
 		else { $ffmpeg_disabled_text = ""; }
 
 		$randomizechecked = get_post_meta($post->ID, "_kgflashmediaplayer-randomize", true);
@@ -4260,7 +4260,7 @@ function kgvid_media_embedurl_process() {
 				<?php } ?>
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label>Options</span></label></th>
-					<td><input type="checkbox" name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink"><?php _e('Generate Download Link Below Video', 'video-embed-thumbnail-generator') ?><br /><small></em><?php _e('Makes it easier for users to download video file', 'video-embed-thumbnail-generator') ?></em></small></label></td>
+					<td><input type="checkbox" <?php echo checked( $options["downloadlink"], "on", false ); ?> name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink"><?php _e('Generate Download Link Below Video', 'video-embed-thumbnail-generator') ?><br /><small></em><?php _e('Makes it easier for users to download video file', 'video-embed-thumbnail-generator') ?></em></small></label></td>
 				</tr>
 				<tr class="submit">
 					<td></td>

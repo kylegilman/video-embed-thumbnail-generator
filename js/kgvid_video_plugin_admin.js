@@ -556,8 +556,8 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 	document.getElementById('attachments-'+oldbasename+'-thumbnailplaceholder').id = 'attachments-'+basename+'-thumbnailplaceholder';
 	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
 	document.getElementById('attachments-'+basename+'-numberofthumbs').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
-	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="'+kgvidL10n.generate+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
-	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="'+kgvidL10n.randomize+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
+	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="'+kgvidL10n.generate+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
+	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="'+kgvidL10n.randomize+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
 
 
 	if ( document.getElementById('attachments-'+basename+'-kgflashmediaplayer-ffmpegexists').value == "on" ) {
@@ -654,8 +654,8 @@ function kgvid_insert_shortcode() {
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value !="") { shortcode += ' poster="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value + '"'; }
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').value !="") { shortcode += ' width="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').value + '"'; }
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').value !="") { shortcode += ' height="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').value + '"'; }
+		if (document.getElementById('downloadlink').checked ) { shortcode += ' downloadlink="true"'; }
 		shortcode += ']' + url + '[/KGVID] '; }
-		if (document.getElementById('downloadlink').checked) { shortcode += '<br /><a href="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-url').value + '">'+kgvidL10n.rightclick+'</a>'; }
 
 	parent.send_to_editor(shortcode);
 }
