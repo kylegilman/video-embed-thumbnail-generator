@@ -3640,33 +3640,34 @@ display: inline-block;">Loading thumbnail...</span></div>';
 		$form_fields["kgflashmediaplayer-encode"]["html"] = $checkboxes['checkboxes'];
 
 		$track_option = get_post_meta($post->ID, "_kgflashmediaplayer-track", true);
-		if ( !is_array($track_option) ) {
+		/*if ( !is_array($track_option) ) {
 			$track_option = array();
 			$track_option[0] = array ( 'kind' => '', 'srclang' => '', 'src' => '', 'label' => '' );
-		}
+		}*/
 
-		$tracks_html = '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv">';
-		foreach ( $track_option as $track => $track_attribute ) {
-			$items = array(__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles", __("captions", 'video-embed-thumbnail-generator')=>"captions", __("chapters", 'video-embed-thumbnail-generator')=>"chapters");
-			$track_type_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-track]['.$track.'][kind]" id="attachments-'.$post->ID.'-kgflashmediaplayer-track_'.$track.'_kind]">';
-			foreach($items as $name=>$value) {
-				$selected = ($track_option[$track]['kind']==$value) ? 'selected="selected"' : '';
-				$track_type_select .= "<option value='$value'>$name</option>";
+		$tracks_html = '';
+		if ( is_array($track_option) ) {
+			foreach ( $track_option as $track => $track_attribute ) {
+				$items = array(__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles", __("captions", 'video-embed-thumbnail-generator')=>"captions", __("chapters", 'video-embed-thumbnail-generator')=>"chapters");
+				$track_type_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-track]['.$track.'][kind]" id="attachments-'.$post->ID.'-kgflashmediaplayer-track_'.$track.'_kind]">';
+				foreach($items as $name=>$value) {
+					$selected = ($track_option[$track]['kind']==$value) ? 'selected="selected"' : '';
+					$track_type_select .= "<option value='$value'>$name</option>";
+				}
+				$track_type_select .= "</select>";
+
+				$tracks_html .= '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv-'.$track.'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.strval($track+1).'</strong><span class="kgvid_track_box_removeable" onclick="jQuery(this).parent().remove();jQuery(\'form.compat-item input\').first().change();">X</span><br />
+				'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />
+				<span id="pick-track'.$track.'" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
+				URL: <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][src]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" type="text" value="'.$track_option[$track]['src'].'" class="text"><br />
+				'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][srclang]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_srclang" type="text" value="'.$track_option[$track]['srclang'].'" maxlength="2" style="width:40px;"><br />
+				'.__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][label]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_label" type="text" value="'.$track_option[$track]['label'].'" class="text"></div>';
 			}
-			$track_type_select .= "</select>";
-
-			$tracks_html .= '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv-'.$track.'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'Like video track', 'video-embed-thumbnail-generator').' '.strval($track+1).'</strong><span class="kgvid_track_box_removeable" onclick="jQuery(this).parent().remove();jQuery(\'form.compat-item input\').first().change();">X</span><br />
-			'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />
-			<span id="pick-track'.$track.'" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
-			URL: <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][src]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" type="text" value="'.$track_option[$track]['src'].'" class="text"><br />
-			'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][srclang]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_srclang" type="text" value="'.$track_option[$track]['srclang'].'" maxlength="2" style="width:40px;"><br />
-			'.__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][label]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_label" type="text" value="'.$track_option[$track]['label'].'" class="text"></div>';
 		}
-		$tracks_html .= '</div>';
 
 		$form_fields["kgflashmediaplayer-track"]["label"] = __("Subtitles & Captions", 'video-embed-thumbnail-generator');
 		$form_fields["kgflashmediaplayer-track"]["input"] = "html";
-		$form_fields["kgflashmediaplayer-track"]["html"] = $tracks_html.'<span class="button-secondary" id="kgflashmediaplayer-add_track" onclick="kgvid_add_subtitles('.$post->ID.')">'.__('Add track', 'video-embed-thumbnail-generator').'</span>';
+		$form_fields["kgflashmediaplayer-track"]["html"] = '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv">'.$tracks_html.'</div><span class="button-secondary" id="kgflashmediaplayer-add_track" onclick="kgvid_add_subtitles('.$post->ID.')">'.__('Add track', 'video-embed-thumbnail-generator').'</span>';
 
 
 		$showtitlechecked = get_post_meta($post->ID, "_kgflashmediaplayer-showtitle", true);
