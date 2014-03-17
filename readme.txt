@@ -175,12 +175,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
 * Added "gallery_ended" shortcode attribute to set an action when a pop-up video gallery video ends.
 * Added next and previous buttons to navigate between pop-up video gallery items.
-* Updated Video.js to version 4.4.2
+* Updated Video.js to version 4.4.3
 * Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
 * Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
 * Added option to automatically generate multiple thumbnails when a video is uploaded.
+* Added option to encode more than one video at the same time.
 * Added list of shortcode attribute options to the post edit help tab.
 * Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
+* Added option to turn on video download link by default.
 * Added option to set video preload attribute.
 * Added float to inline videos to allow text to wrap around them.
 * Added play button overlay to gallery thumbnails when using WordPress Default player.

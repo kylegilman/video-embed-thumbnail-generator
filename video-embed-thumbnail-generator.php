@@ -75,6 +75,7 @@ function kgvid_default_options_fn() {
 		"watermark"=>"",
 		"overlay_title"=>"on",
 		"overlay_embedcode"=>false,
+		"downloadlink"=>false,
 		"view_count"=>false,
 		"embeddable"=>"on",
 		"inline"=>false,
@@ -1093,7 +1094,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] != "WordPress Default" ) {
-		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.4.2' );
+		wp_enqueue_style( 'video-js-css', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.4.3' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -1167,7 +1168,7 @@ function kgvid_video_embed_print_scripts() {
 	$options = kgvid_get_options();
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.4.2', true );
+	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.4.3', true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
@@ -1260,7 +1261,7 @@ function kgvid_shortcode_atts($atts) {
 			'caption' => '',
 			'description' => '',
 			'inline' => $options['inline'],
-			'downloadlink' => 'false',
+			'downloadlink' => $options['downloadlink'],
 			'right_click' => $options['right_click'],
 			'resize' => $options['resize'],
 			'track_kind' => 'subtitles',
@@ -1269,7 +1270,7 @@ function kgvid_shortcode_atts($atts) {
 			'track_label' => get_bloginfo('language')
 		), $atts);
 
-	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize");
+	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink");
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
 		if ( $query_atts[$query] == false ) { $query_atts[$query] = "false"; }
@@ -2480,12 +2481,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='".network_site_url()."wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>".__('Video.js is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. If the JW Player WordPress plugin is active it should be available as a video player. In the past this plugin used Adobe\'s Strobe Media Playback Flash player, which hasn\'t been updated since 2011 and is not recommended. It should still work, but new plugin functions are not guaranteed to be compatible.', 'video-embed-thumbnail-generator')."</span></a>".$jw_player_select."</td></tr></tbody></table>\n";
 
-		$sampleheight = intval($options['height']) + 25;
+		$sampleheight = intval($options['height']) + 50;
 		echo "<div class='kgvid_setting_nearvid' style='width:".$options['width']."px;'>";
 		echo "<div style='float:left;'><input class='affects_player' ".checked( $options['overlay_title'], "on", false )." id='overlay_title' name='kgvid_video_embed_options[overlay_title]' type='checkbox' /> <label for='overlay_title'>".__('Overlay video title', 'video-embed-thumbnail-generator')."</label></div>";
 		echo "<div style='float:right;'><input class='affects_player' ".checked( $options['overlay_embedcode'], "on", false )." id='overlay_embedcode' name='kgvid_video_embed_options[overlay_embedcode]' type='checkbox' ".$embed_disabled."/> <label for='overlay_embedcode'>".__('Overlay embed code', 'video-embed-thumbnail-generator')."</label></div>";
 		$iframeurl = site_url('/')."?kgvid_video_embed[enable]=true&kgvid_video_embed[sample]=true";
 		echo "<iframe id='kgvid_samplevideo' style='border:2px;' src='".$iframeurl."' scrolling='no' width='".$options['width']."' height='".$sampleheight."'></iframe>";
+		echo "<div style='float:left;'><input class='affects_player' ".checked( $options['downloadlink'], "on", false )." id='downloadlink' name='kgvid_video_embed_options[downloadlink]' type='checkbox' /> <label for='downloadlink'>".__('Show download link', 'video-embed-thumbnail-generator')."</label></div>";
 		echo "<div style='float:right;'><input class='affects_player' ".checked( $options['view_count'], "on", false )." id='view_count' name='kgvid_video_embed_options[view_count]' type='checkbox' /> <label for='view_count'>".__('Show view count', 'video-embed-thumbnail-generator')."</label></div>";
 		echo "</div>\n\t";
 	}
@@ -3155,6 +3157,7 @@ function kgvid_update_settings() {
 			$options['ffmpeg_watermark'] = array("url" => "", "scale" => "9", "align" => "right", "valign"=> "bottom", "x" => "6", "y" => "5");
 			$options['auto_thumb_number'] = 1;
 			$options['simultaneous_encodes'] = 1;
+			$options['downloadlink'] = false;
 
 			$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 			$options["capabilities"]["edit_others_video_encodes"] = $edit_others_capable;
@@ -3683,6 +3686,8 @@ display: inline-block;">Loading thumbnail...</span></div>';
 		$showtitlechecked = get_post_meta($post->ID, "_kgflashmediaplayer-showtitle", true);
 		if ( $showtitlechecked == "notchecked" ) { $showtitlechecked = ""; }
 		$downloadlinkchecked = get_post_meta($post->ID, "_kgflashmediaplayer-downloadlink", true);
+		if ( empty($downloadlinkchecked) ) { $downloadlinkchecked = $options['downloadlink']; }
+		if ( $downloadlinkchecked == "on" ) { $downloadlinkchecked = "checked"; }
 		if ( $downloadlinkchecked == "notchecked" ) { $downloadlinkchecked = ""; }
 		$embed_option = get_post_meta($post->ID, "_kgflashmediaplayer-embed", true);
 
@@ -4312,9 +4317,10 @@ function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 	if ( $downloadlink == "checked" ) { $shortcode .= ' downloadlink="true"'; }
 	if (is_array($kgvid_video_embed) && array_key_exists('gallery', $kgvid_video_embed)) { $shortcode .= ' autoplay="true"'; }
 	if (is_array($kgvid_video_embed) && array_key_exists('sample', $kgvid_video_embed)) {
-		if ( $options['overlay_title'] == "on" ) { $shortcode .= ' title="'._x('Sample Video', 'Sample like example', 'video-embed-thumbnail-generator').'"'; }
+		if ( $options['overlay_title'] == "on" ) { $shortcode .= ' title="'._x('Sample Video', 'example video', 'video-embed-thumbnail-generator').'"'; }
 		if ( $options['overlay_embedcode'] == "on" ) { $shortcode .= ' embedcode="'.__('Sample Embed Code', 'video-embed-thumbnail-generator').'"'; }
 		$shortcode .= ' caption="'.__('If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator').'"';
+		if ( $options['downloadlink'] == "on" ) { $shortcode .= ' downloadlink="true"'; }
 	}
 	//else { $shortcode .= ' view_count="false"'; }
 	$shortcode .= ']'.$url.'[/KGVID]';
