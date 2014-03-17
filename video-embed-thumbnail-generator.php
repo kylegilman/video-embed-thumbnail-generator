@@ -1124,7 +1124,6 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 			'ffmpegnotfound' => sprintf( __('%s not found', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']) ),
 			'validurlalert' => __("Please enter a URL that points to a valid video file. Video sharing sites are not supported by this plugin.\nTo embed from YouTube, Vimeo, etc, just paste the link directly into the post window and WordPress will handle the rest.", 'video-embed-thumbnail-generator'),
 			'pleasevalidurl' => __('Please enter a valid video URL', 'video-embed-thumbnail-generator'),
-			'rightclick' => __('Right-click or ctrl-click this link to download', 'video-embed-thumbnail-generator'),
 			'deletemessage' => __("You are about to permanently delete the encoded video.\n 'Cancel' to stop, 'OK' to delete.", 'video-embed-thumbnail-generator'),
 			'saved' => __('Saved.', 'video-embed-thumbnail-generator'),
 			'runningtest' => __('Running test...', 'video-embed-thumbnail-generator'),
@@ -2004,13 +2003,14 @@ function kgvid_generate_queue_table() {
 	$current_user = wp_get_current_user();
 	$video_encode_queue = kgvid_get_encode_queue();
 
+	if ( is_network_admin() ) { $total_columns = 8; }
+	else { $total_columns = 7; }
+
 	if ( !empty($video_encode_queue) ) {
 
 		$video_formats = kgvid_video_formats();
 		$currently_encoding = array();
 		$queued = array();
-		if ( is_network_admin() ) { $total_columns = 8; }
-		else { $total_columns = 7; }
 		$nonce = wp_create_nonce('video-embed-thumbnail-generator-nonce');
 		$html .= "<input type='hidden' name='attachments[kgflashmediaplayer-security]' value='".$nonce."' />";
 
@@ -2268,7 +2268,7 @@ function kgvid_settings_page() {
 			) { ?>
 		<h2 class="nav-tab-wrapper">
 			<a href="#" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
-			<a href="#" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><span class='video_app_name'><?php echo strtoupper($video_app); ?></span> <?php _ex('Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator'); ?></a>
+			<a href="#" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( _x('%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator'), "<span class='video_app_name'>".strtoupper($video_app)."</span>" ); ?></a>
 		</h2>
 		<?php } ?>
 		<form method="post" action="options.php">
