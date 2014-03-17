@@ -169,6 +169,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.3 - March XX, 2014 =
 * Prepared plugin for internationalization. Translators needed!
+* Finally paying attention to multisite. Several FFMPEG settings and the encode queue are now controlled at the network level if the plugin is network activated.
 * Added JW Player option if the JW Player WordPress plugin is active.
 * Added video subtitle/captions support.
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
