@@ -852,7 +852,7 @@ function kgvid_save_plugin_settings(input_obj) {
 				jQuery('#auto_thumb_label :input').change(function() { kgvid_save_plugin_settings(this); } );
 			}
 
-			if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg') == true ) {
+			if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg') == true && jQuery('#ffmpeg_output').length != 0 ) {
 				jQuery('#ffmpeg_output').html(kgvidL10n.runningtest);
 				jQuery('#ffmpeg_h264_sample').html(data.encode_string);
 				jQuery('#ffmpeg_watermark_example').slideUp('slow');

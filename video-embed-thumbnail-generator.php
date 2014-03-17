@@ -2238,6 +2238,7 @@ function kgvid_network_settings_page() {
 		</div>
 		<script type='text/javascript'>
 				jQuery(document).ready(function() {
+						kgvid_hide_plugin_settings();
 						jQuery('form :input').change(function() {
 							kgvid_save_plugin_settings(this);
 						});
@@ -2367,11 +2368,8 @@ function kgvid_video_embed_options_init() {
 	add_settings_section('kgvid_video_embed_playback_settings', __('Default Video Playback Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_playback_settings_section_callback', __FILE__);
 	add_settings_section('kgvid_video_embed_flash_settings', __('The following options will only affect Flash playback', 'video-embed-thumbnail-generator'), 'kgvid_plugin_flash_settings_section_callback', __FILE__);
 	add_settings_section('kgvid_video_embed_plugin_settings', __('Plugin Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_settings_section_callback', __FILE__);
-	if ( !is_multisite()
-	|| ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && $options['ffmpeg_exists'] == "on" )
-	) {
-		add_settings_section('kgvid_video_embed_encode_settings', __('Video Encoding Settings', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', __FILE__);
-	}
+	add_settings_section('kgvid_video_embed_encode_settings', __('Video Encoding Settings', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', __FILE__);
+
 	add_settings_field('poster', __('Default thumbnail:', 'video-embed-thumbnail-generator'), 'kgvid_poster_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
 	add_settings_field('endofvideooverlay', __('End of video image:', 'video-embed-thumbnail-generator'), 'kgvid_endofvideooverlay_callback', __FILE__, 'kgvid_video_embed_playback_settings' );
 	add_settings_field('watermark', __('Watermark overlay:', 'video-embed-thumbnail-generator'), 'kgvid_watermark_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
@@ -2978,12 +2976,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	}
 
-	function kgvid_test_ffmpeg_options_callback() {
+	function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 
 		$options = kgvid_get_options();
 		$video_formats = kgvid_video_formats();
 		$encode_string = "";
 		if ( $options['ffmpeg_exists'] == "on" ) {
+
 			$movie_info = kgvid_get_video_dimensions(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4");
 			$uploads = wp_upload_dir();
 			if ( $video_formats[$options['sample_format']]['type'] == 'h264' ) {
@@ -2992,6 +2991,9 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			else { $encode_dimensions = array( 'width' => $movie_info['width'], 'height' => $movie_info['height'] ); }
 			$encode_string = kgvid_generate_encode_string(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
 		}
+
+		if ( is_array($encode_string) ) { $encode_string_implode = implode('' , $encode_string); }
+		else { $encode_string_implode = ''; }
 
 		$display_div = "";
 		if ( $options['ffmpeg_exists'] != "on" ) { $display_div = " style='display:none;'"; }
@@ -3003,7 +3005,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 		$sample_format_select .= "</select>";
 
-		echo "<div id='ffmpeg_sample_div'".$display_div."><p>".sprintf( __('%1$s sample %2$s encode command', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>", $sample_format_select).":<br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".implode('',$encode_string)."</textarea></p>";
+		echo "<div id='ffmpeg_sample_div'".$display_div."><p>".sprintf( __('%1$s sample %2$s encode command', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>", $sample_format_select).":<br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".$encode_string_implode."</textarea></p>";
 		echo "<p>".sprintf( __('%s test output:', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>")."<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>".sprintf( __('For help interpreting this output, %s try our Wiki page on Github', 'video-embed-thumbnail-generator'), "<a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>")."</a>.</p></div>\n\t";
 	}
 
@@ -3201,7 +3203,7 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 		add_settings_error( __FILE__, "options-reset", __("Video Embed & Thumbnail Generator settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
 	}
 
-	if ( $input['app_path'] != $options['app_path'] || $input['video_app'] != $options['video_app'] ) {
+	if ( $input['app_path'] != $options['app_path'] || strtoupper($input['video_app']) != strtoupper($options['video_app']) ) {
 		$input = kgvid_validate_ffmpeg_settings($input);
 	}
 	else { $input['ffmpeg_exists'] = $options['ffmpeg_exists']; }
