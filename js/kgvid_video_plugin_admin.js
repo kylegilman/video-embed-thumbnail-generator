@@ -525,8 +525,11 @@ function kgvid_enqueue_video_encode(postID) {
 		jQuery.post( ajaxurl , { action:"kgvid_ajax_encode_videos", security:kgflashmediaplayersecurity } , function(data) {
 			jQuery(encodeprogressplaceholderid).empty();
 			jQuery(encodeplaceholderid).append(data.embed_display);
-			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
-			kgvid_redraw_encode_checkboxes(attachmentURL, postID, page);
+
+			setTimeout(function(){
+				jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
+				kgvid_redraw_encode_checkboxes(attachmentURL, postID, page);
+			}, 2000);
 		}, "json");
 
 	}, "json");
