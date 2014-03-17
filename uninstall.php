@@ -8,6 +8,7 @@
     else {
 
     	delete_site_option( 'kgvid_video_embed_network_options' );
+    	delete_site_option( 'kgvid_video_embed_queue' );
 
     	$sites = wp_get_sites();
 

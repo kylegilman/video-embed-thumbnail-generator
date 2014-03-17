@@ -5927,6 +5927,8 @@ function kgvid_clear_cron_and_roles() {
 
 	$options = kgvid_default_options_fn();
 	wp_clear_scheduled_hook('kgvid_cleanup_queue', array( 'scheduled' ) );
+	wp_clear_scheduled_hook('kgvid_cleanup_generated_thumbnails');
+	kgvid_cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
 	global $wp_roles;
 	foreach ( $options['capabilities'] as $capability => $roles ) {
 		foreach ( $wp_roles->roles as $role => $role_info ) {
