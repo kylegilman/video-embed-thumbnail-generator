@@ -193,6 +193,10 @@ div.kgvid_thumbnail_overlay {
     filter: alpha(opacity = 50); /* required for opacity to work in IE */
 }
 
+div.kgvid_video_app_required {
+	background: inherit;
+}
+
 div.kgvid_thumbnail_select {
 	text-align:center;
 	display:inline-block;
