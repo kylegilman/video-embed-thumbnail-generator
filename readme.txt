@@ -12,17 +12,25 @@ Generates thumbnails, encodes HTML5-compliant videos, and embeds locally hosted 
 
 == Description ==
 
-= A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compliant files a little bit easier. =
+= A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compatible files a little bit easier. =
 
-The plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options and click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers, and a preview image.
+This plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options, make thumbnails, click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers.
 
-You have the option to use either the lightweight, flexible Video.js HTML5 player, the WordPress default player (introduced in WordPress version 3.6), or Adobe's Strobe Media Playback Flash player. The Video.js player is styled the same in all desktop browsers and is easily customizable. The Strobe Media Playback option is not recommended. It will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback. No matter which player you use, the video will resize on the fly to fit the container it's in.
+You have the option to use a few different video players:
+* Video.js
+* The WordPress default player using MediaElement.js, which was introduced in WordPress version 3.6
+* JW Player (if <a href="http://wordpress.org/plugins/jw-player-plugin-for-wordpress/">their plugin</a> is installed)
+* Adobe's Strobe Media Playback Flash player.
 
-You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode using the options listed below.
+<em>The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
 
-If your video can be played natively in your browser, or if you have FFMPEG or LIBAV installed on your server, you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them, you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. After creating an array of thumbnails you can save them all using the "Save all thumbnails" button.
+No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break responsive resizing for some players if it's running on your site.
 
-If you know which frame you want to use, click "Choose from video..." to select it from the video. This will only work for videos that can be played natively in your browser. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. You can use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time).
+You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode.
+
+If your video can be <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">played natively in your browser</a>, or if you have FFMPEG or LIBAV installed on your server, you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them, you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. After creating an array of thumbnails you can save them all using the "Save all thumbnails" button.
+
+If you know which frame you want to use for your thumbnail, click "Choose from video..." to select it from the video. This will only work for <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">videos that can be played natively in your browser</a>. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. Use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time).
 
 After you select a thumbnail it will be registered in the Wordpress Media Library and added to the video's attachments. Unused thumbnails will be deleted.
 
@@ -55,7 +63,11 @@ To embed videos on other sites you can use code like this.
 `[KGVID poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg"
 width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
 
-= If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. =
+I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
+
+== Shortcode Reference ==
+
+= If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. If the plugin is installed on your site, this information is also available in the post edit help screen. =
 
 * `id="xxx"` video attachment ID (instead of using a URL).
 * `videos="x"` number of attached videos to display if no URL or ID is given.
@@ -113,8 +125,6 @@ width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Re
 * `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post.
 * `gallery_end="close/next"` either close the pop-up or start playing the next video when the current video finishes playing.
 
-I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
-
 == Installation ==
 
 1. Upload the unzipped folder `video-embed-thumbnail-generator` to the `/wp-content/plugins/` directory.
@@ -132,9 +142,15 @@ Optional: `AddType video/mp4 .mov` will help with IE playback of .mov files but 
 
 Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. mp4s with MPEG-4 video will not play in the Flash player, and if you don't use AAC audio you won't get any audio.
 
-If you recorded the video using a Samsung Galaxy S II phone, even though most programs will tell you it's H.264 video with AAC audio, there's a good chance that it's actually recorded in 3gp4 format, which won't work with the Flash player. Use MediaInfo Library to get really detailed information about your media files.
+Use <a href="http://mediaarea.net/en/MediaInfo">MediaInfo</a> to get really detailed information about your media files.
 
-The Strobe Media Playback Flash player will not play mp4/m4v/mov files that don't have the moov atom at the head of the file. FFMPEG puts the moov atom at the end of the file, so this can be a problem. The plugin will fix this problem on newly encoded H.264 videos if you have qt-faststart or MP4Box installed on your server.
+= Why does my video have to download completely before it starts playing? =
+
+mp4/m4v/mov files have something called a moov atom that gives the video player information about the content of the video (dimensions, duration, codecs, etc). Depending on the program you used to make your video, the moov atom can be at the beginning or the end of the file. Most video players will wait until they find the moov atom before starting playback. Otherwise it doesn't know how to display the information it's downloading. If it's at the beginning of the file, playback starts very soon after the user hits the play button. If it's at the end of the file, the whole video has to download before playback starts.
+
+There are a number of ways to fix this problem. Most video encoding programs have an option like "Web optimized," "Streaming," "Fast start," or "Progressive download." Try to find and enable that option in your program. If you can't do that, there are programs designed to move the moov atom to the head of the file. Try <a href="http://renaun.com/blog/code/qtindexswapper/">QTIndexSwapper</a> for Adobe Air (cross platform), <a href="http://www.datagoround.com/lab/">MP4 Faststart</a> for Windows, or <a href="http://mac.softpedia.com/get/Video/QTFastStart.shtml">QTFastStart</a> for Mac.
+
+FFMPEG puts the moov atom at the end of the file, so this can be a problem. The plugin will fix this problem on newly encoded H.264 videos if you have a recent version of FFMPEG and enable the "movflags" option in the plugin settings or if you have qt-faststart or MP4Box installed on your server.
 
 = Why doesn't this work with YouTube? =
 
@@ -167,8 +183,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.3 - March XX, 2014 =
-* Prepared plugin for internationalization. Translators needed!
+= 4.3 - March 18, 2014 =
+* Prepared plugin for internationalization. Translators welcome!
 * Finally paying attention to multisite. Several FFMPEG settings and the encode queue are now controlled at the network level if the plugin is network activated.
 * Added JW Player option if the JW Player WordPress plugin is active.
 * Added video subtitle/captions support.
@@ -180,13 +196,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
 * Added option to automatically generate multiple thumbnails when a video is uploaded.
 * Added option to encode more than one video at the same time.
-* Added list of shortcode attribute options to the post edit help tab.
-* Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
 * Added option to turn on video download link by default.
 * Added option to set video preload attribute.
+* Added list of shortcode attribute options to the post edit help tab.
+* Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
 * Added float to inline videos to allow text to wrap around them.
 * Added play button overlay to gallery thumbnails when using WordPress Default player.
-* Applied video alignment setting to video galleries.
+* Applied video alignment setting to video galleries for center and right justifying galleries.
 * Now only loading plugin-related JavaScripts when the shortcode is used on the page and moved links to the footer to speed up page loading.
 * Added wpdb->prepare to all database queries for increased security.
 * Added nonce check when recording video play counts for increased security.
