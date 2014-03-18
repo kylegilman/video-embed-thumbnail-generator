@@ -2008,13 +2008,13 @@ function kgvid_generate_queue_table_header() {
 
 }
 
-function kgvid_generate_queue_table() {
+function kgvid_generate_queue_table( $scope = 'site' ) {
 
 	$html = "";
 	$current_user = wp_get_current_user();
 	$video_encode_queue = kgvid_get_encode_queue();
 
-	if ( is_network_admin() ) { $total_columns = 8; }
+	if ( is_network_admin() || 'network' == $scope ) { $total_columns = 8; }
 	else { $total_columns = 7; }
 
 	if ( !empty($video_encode_queue) ) {
@@ -2054,13 +2054,12 @@ function kgvid_generate_queue_table() {
 			$html .= "<td id='td_".$video_entry['attachmentID']."'>".strval(intval($order)+1)."</td>\n";
 
 			//User
-			if ( is_network_admin() && $blog_id ) { switch_to_blog($blog_id); }
+			if ( (is_network_admin() || 'network' == $scope) && $blog_id ) { switch_to_blog($blog_id); }
 			$post = get_post( $video_entry['attachmentID'] );
 
-			if ( is_network_admin()
+			if ( ( is_network_admin() || 'network' == $scope )
 				|| $current_user->ID == $post->post_author
-				|| ( current_user_can('edit_others_video_encodes')
-				&& ( $blog_id && get_current_blog_id() == $blog_id || !$blog_id ) )
+				|| ( current_user_can('edit_others_video_encodes') && ( $blog_id && get_current_blog_id() == $blog_id || !$blog_id ) )
 				) {
 
 
@@ -2068,7 +2067,7 @@ function kgvid_generate_queue_table() {
 				$html .= "<td>".$user->display_name."</td>\n";
 
 				//Site
-				if ( is_network_admin() && $blog_id ) {
+				if ( (is_network_admin() || 'network' == $scope) && $blog_id ) {
 					$blog_details = get_bloginfo();
 					$html .= "<td>".$blog_details."</td>\n";
 				}
@@ -2110,7 +2109,7 @@ function kgvid_generate_queue_table() {
 
 			}//end if current user can see this stuff
 
-			if ( is_network_admin() && $blog_id ) { restore_current_blog(); }
+			if ( (is_network_admin() || 'network' == $scope) && $blog_id ) { restore_current_blog(); }
 
 			else { $html .= "<td colspan='".strval($total_columns-1)."'><strong class='kgvid_queue_message'>".__("Other user's video", 'video-embed-thumbnail-generator')."</strong></td>"; }
 			$html .= "</td></tr>\n";
@@ -4628,9 +4627,10 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 				$encode_formats[$format]['status'] = "notchecked";
 				update_post_meta($postID, '_kgflashmediaplayer-encode'.$format, 'notchecked');
 			}
-		}
+		}//end loop through video formats
 
-		if ( !empty($encode_list) ) {
+		if ( !empty($encode_list) ) { //if there's anything to encode
+
 			$video_encode_queue = kgvid_get_encode_queue();
 			if ( empty($parent_id) ) { $parent_id = get_post($postID)->post_parent; }
 
@@ -4651,13 +4651,30 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 					if ( $entry['movieurl'] == $movieurl ) {
 						$already_queued = $index;
 						foreach ( $entry['encode_formats'] as $format => $value ) {
-							if ( $value['status'] == "queued" && array_key_exists($format, $encode_list) ) { unset($encode_list[$format]); }
-							if ( $value['status'] == "encoding" || $encode_checked[$format] != "true" ) { $queue_entry['encode_formats'][$format] = $entry['encode_formats'][$format]; } //don't edit queue entry for anything that's currently encoding or not checked
-							if ( $parent_id == "check" ) { $parent_id = $entry['parent_id']; $queue_entry['parent_id'] = $entry['parent_id']; }
+
+							if ( $value['status'] == "queued" && array_key_exists($format, $encode_list) ) {
+								unset($encode_list[$format]);
+							}
+
+							if ( $value['status'] == "encoding" || $encode_checked[$format] != "true" ) {
+								$queue_entry['encode_formats'][$format] = $entry['encode_formats'][$format];
+							} //don't edit queue entry for anything that's currently encoding or not checked
+
+							if ( $parent_id == "check" ) {
+								$parent_id = $entry['parent_id'];
+								$queue_entry['parent_id'] = $entry['parent_id'];
+							}
+
+						}//loop through formats
+
+						if ( array_key_exists('blog_id', $entry) ) { //reset the ids in case this is the network queue
+							$queue_entry['parent_id'] = $entry['parent_id'];
+							$queue_entry['blog_id'] = $entry['blog_id'];
 						}
-					}
-				}
-			}
+
+					}//url matches existing queue entry
+				}//loop through queue
+			}//if there's already a queue
 
 			$imploded_encode_list = implode(", " , $encode_list);
 
@@ -5303,7 +5320,7 @@ function kgvid_replace_video ( $video_key, $format ) {
 	return $new_url;
 }
 
-function kgvid_clear_completed_queue($type) {
+function kgvid_clear_completed_queue($type, $scope = 'site') {
 
 	$video_encode_queue = kgvid_get_encode_queue();
 
@@ -5325,7 +5342,7 @@ function kgvid_clear_completed_queue($type) {
 							break;
 						}
 					}
-					if ( !is_network_admin() && array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() ) { //only clear entries from current blog
+					if ( !is_network_admin() && $scope == 'site' && array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() ) { //only clear entries from current blog
 						$keep[$video_key] = true;
 						break;
 					}
@@ -5348,8 +5365,9 @@ function kgvid_ajax_clear_completed_queue() {
 
 	if ( current_user_can('encode_videos') ) {
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		kgvid_clear_completed_queue('manual');
-		$table = kgvid_generate_queue_table();
+		$scope = $_POST['scope'];
+		kgvid_clear_completed_queue('manual', $scope);
+		$table = kgvid_generate_queue_table($scope);
 		echo ($table);
 		die();
 	}
@@ -5362,13 +5380,15 @@ function kgvid_ajax_clear_queue_entry() {
 	if ( current_user_can('encode_videos') ) {
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 		$video_key = $_POST['index'];
+		$scope = $_POST['scope'];
 		$video_encode_queue = kgvid_get_encode_queue();
 		if ( is_array($video_encode_queue) && array_key_exists($video_key, $video_encode_queue) ) {
 			unset($video_encode_queue[$video_key]);
 			sort($video_encode_queue);
 		}
 		kgvid_save_encode_queue($video_encode_queue);
-		$table = kgvid_generate_queue_table();
+
+		$table = kgvid_generate_queue_table($scope);
 		echo ($table);
 		die();
 	}

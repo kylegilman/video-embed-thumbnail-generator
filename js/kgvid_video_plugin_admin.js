@@ -739,7 +739,7 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes').append(data.checkboxes);
 				if ( page == "queue" ) {
 					jQuery('#tr_'+postID+'.currently_encoding').removeClass('currently_encoding');
-					jQuery('#tr_'+postID+'.currently_encoding #clear_'+postID).css("display", "block");
+					jQuery('#tr_'+postID+' #clear_'+postID).css("display", "block");
 					if ( data.encoding == true ) {
 						jQuery('#clear_'+postID).css("display", "none");
 						jQuery('#tr_'+postID).addClass('currently_encoding');
@@ -784,16 +784,19 @@ function kgvid_encode_queue(action, order, id) {
 	var CheckboxTimeout = jQuery('#wpwrap').data("KGVIDCheckboxTimeout") || null;
 	if ( CheckboxTimeout ) { clearTimeout(CheckboxTimeout); }
 
+	var scope = 'blog';
+	if ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) { scope = 'network' }
+
 	if ( action == "delete" ) {
 		jQuery('#tr_'+id).fadeTo('slow', 0.5);
-		jQuery.post(ajaxurl, { action:"kgvid_clear_queue_entry", security: kgflashmediaplayersecurity, index: order }, function(data) {
+		jQuery.post(ajaxurl, { action:"kgvid_clear_queue_entry", security: kgflashmediaplayersecurity, index: order, scope: scope }, function(data) {
 			jQuery('table.widefat > tbody').replaceWith("<tbody class='rows'>"+data+"</tbody>");
 		}, "html" );
 	}
 
 	if ( action == "clear_completed" ) {
 		jQuery('tbody > .kgvid_complete').fadeTo('slow', 0.5);
-		jQuery.post(ajaxurl, { action:"kgvid_clear_completed_queue", security: kgflashmediaplayersecurity }, function(data) {
+		jQuery.post(ajaxurl, { action:"kgvid_clear_completed_queue", security: kgflashmediaplayersecurity, scope: scope }, function(data) {
 			jQuery('table.widefat > tbody').replaceWith("<tbody class='rows'>"+data+"</tbody>");
 		}, "html" );
 	}
