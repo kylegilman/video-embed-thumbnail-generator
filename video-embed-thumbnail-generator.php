@@ -3491,7 +3491,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if ( $widthsaved ) { $widthset = $widthsaved; }
 		elseif ( $options['minimum_width'] == "on" ) { $widthset = $maxwidth; }
 		else {
-			if ( is_array($video_meta) && array_key_exists('width', $video_meta) ) { $widthset = $video_meta['width']; }
+			if ( is_array($video_meta) && array_key_exists('width', $video_meta) && intval($video_meta['width']) <= intval($maxwidth) ) { $widthset = $video_meta['width']; }
 			else { $widthset = $maxwidth; }
 		}
 		if ( !$widthsaved ) { update_post_meta($post->ID, '_kgflashmediaplayer-width', $widthset); }
@@ -3507,7 +3507,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		}
 		elseif ( $video_aspect ) { $heightset = round($widthset*$video_aspect); }
 		else {
-			if ( is_array($video_meta) && array_key_exists('height', $video_meta) ) { $heightset = $video_meta['height']; }
+			if ( is_array($video_meta) && array_key_exists('height', $video_meta) && intval($video_meta['height']) <= intval($maxheight) ) { $heightset = $video_meta['height']; }
 			else { $heightset = $maxheight; }
 		}
 		if ( !$heightsaved ) { update_post_meta($post->ID, '_kgflashmediaplayer-height', $heightset); }
