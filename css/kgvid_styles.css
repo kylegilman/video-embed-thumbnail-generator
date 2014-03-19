@@ -31,6 +31,10 @@
 	max-width: 100%;
 }
 
+.kgvid_textalign_left {
+	text-align:left;
+}
+
 .kgvid_textalign_right {
 	text-align:right;
 }

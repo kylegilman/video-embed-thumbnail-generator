@@ -50,7 +50,7 @@ The files will encode in the background and will take some time to complete, dep
 
 Encoded H.264 files can be fixed for streaming using "movflags faststart" introduced in recent versions of FFMPEG/LIBAV, or qt-faststart or MP4Box if you have one of them installed in the same directory as your encoder and select it in the plugin settings. Without one of these options enabled, FFMPEG/LIBAV will place moov atoms at the end of H.264 encoded files, which in some cases forces the entire file to download before playback can start.
 
-If you want to make ogv, webm, or H.264 files available and can't use the FFMPEG encode button, you can upload your own files to the same directory as the original and the plugin will automatically find them. For example, if your main file is awesomevid.mp4, the plugin will look for awesomevid-1080.mp4, awesomevid-720.mp4, awesomevid-480.mp4 (up to 480p H.264), awesomevid.webm and awesomevid.ogv as well. No matter what format your original video is, you can use it in the shortcode and the plugin will attempt to find all compatible formats related to it. For example, you might have an AVI called awesomevid.avi which is not compatible with any browser, but if you have other formats encoded already, [KGVID]http://yoursite.com/awesomevid.avi[/KGVID] will ignore the incompatible AVI file, but find those other formats and embed them.
+If you want to make ogv, webm, or H.264 files available and can't use the FFMPEG encode button, you can upload your own files to the same directory as the original and the plugin will automatically find them. For example, if your main file is awesomevid.mp4, the plugin will look for awesomevid-1080.mp4, awesomevid-720.mp4, awesomevid-480.mp4 (up to 480p H.264), awesomevid.webm and awesomevid.ogv as well. No matter what format your original video is, you can use it in the shortcode and the plugin will attempt to find all compatible formats related to it. For example, you might have an AVI called awesomevid.avi which is not compatible with any browser, but if you have other formats encoded already, `[KGVID]http://yoursite.com/awesomevid.avi[/KGVID]` will ignore the incompatible AVI file, but find those other formats and embed them.
 
 If you want to make it easier for users to save your videos to their computers, you can choose to include a link by checking the "Generate Download Link Below Video" button.
 
@@ -182,6 +182,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.3.1 - March 19, 2014 =
+Added text-align left to left-aligned galleries.
 
 = 4.3 - March 18, 2014 =
 * Prepared plugin for internationalization. Translators welcome!
