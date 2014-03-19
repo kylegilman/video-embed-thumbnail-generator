@@ -17,6 +17,7 @@ Generates thumbnails, encodes HTML5-compliant videos, and embeds locally hosted 
 This plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options, make thumbnails, click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers.
 
 You have the option to use a few different video players:
+
 * Video.js
 * The WordPress default player using MediaElement.js, which was introduced in WordPress version 3.6
 * JW Player (if <a href="http://wordpress.org/plugins/jw-player-plugin-for-wordpress/">their plugin</a> is installed)
@@ -184,7 +185,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3.1 - March 19, 2014 =
-Added text-align left to left-aligned galleries.
+Added text-align:left to left-aligned galleries.
 
 = 4.3 - March 18, 2014 =
 * Prepared plugin for internationalization. Translators welcome!
