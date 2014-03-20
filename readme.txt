@@ -185,15 +185,18 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3.1 - March 19, 2014 =
-Added text-align:left to left-aligned galleries.
+* Added text-align:left to left-aligned galleries.
+* Added gettext calls to some text for translation.
+* Removed duplicate bitrate setting for WEBM encoding when using average bitrate.
 
 = 4.3 - March 18, 2014 =
 * Prepared plugin for internationalization. Translators welcome!
 * Finally paying attention to multisite. Several FFMPEG settings and the encode queue are now controlled at the network level if the plugin is network activated.
+* Added option to encode more than one video at a time.
 * Added JW Player option if the JW Player WordPress plugin is active.
 * Added video subtitle/captions support.
 * Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
-* Added "gallery_ended" shortcode attribute to set an action when a pop-up video gallery video ends.
+* Added "gallery_end" shortcode attribute to set an action when a pop-up video gallery video ends.
 * Added next and previous buttons to navigate between pop-up video gallery items.
 * Updated Video.js to version 4.4.3
 * Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
