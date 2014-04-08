@@ -184,7 +184,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.3.1 - March 19, 2014 =
+= 4.3.1 - April 8, 2014 =
+* Fixed errors when activating plugin for the first time and opening settings page in non-multisite installations.
+* Updated Video.js to version 4.5.1
 * Added text-align:left to left-aligned galleries.
 * Added gettext calls to some text for translation.
 * Removed duplicate bitrate setting for WEBM encoding when using average bitrate.
