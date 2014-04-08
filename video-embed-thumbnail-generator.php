@@ -2195,10 +2195,21 @@ function kgvid_network_settings_page() {
 
 	if (isset($_POST['action']) && $_POST['action'] == 'update_kgvid_network_settings') {
 
-		check_admin_referer('save_network_settings', 'video-embed-thumbnail-generator-nonce');
-		$input = $_POST['kgvid_video_embed_options'];
-		$validated_options = kgvid_validate_network_settings($input);
-		$options_updated = update_site_option( 'kgvid_video_embed_network_options', $validated_options );
+		$nonce = $_POST['kgvid_settings_security'];
+		if ( ! wp_verify_nonce( $nonce, 'video-embed-thumbnail-generator-nonce' ) ) { die; }
+		else {
+
+			if (isset ($_POST["video-embed-thumbnail-generator-reset"])) { //reset button pressed
+				$default_network_options = kgvid_default_network_options();
+				$options_updated = update_site_option( 'kgvid_video_embed_network_options', $default_network_options );
+				add_settings_error( __FILE__, "options-reset", __("Video Embed & Thumbnail Generator network settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
+			}
+			else { //save button pressed
+				$input = $_POST['kgvid_video_embed_options'];
+				$validated_options = kgvid_validate_network_settings($input);
+				$options_updated = update_site_option( 'kgvid_video_embed_network_options', $validated_options );
+			}
+		}
 
 	}
 
@@ -2206,9 +2217,10 @@ function kgvid_network_settings_page() {
 	<div class="wrap">
 		<div class="icon32" id="icon-options-general"><br></div>
 		<h2>Video Embed & Thumbnail Generator Network Settings</h2>
+		<?php settings_errors( __FILE__ ); ?>
 		<form method="post">
 		<input type="hidden" name="action" value="update_kgvid_network_settings" />
-		<input type="hidden" id="kgvid_settings_security" value="<?php echo wp_create_nonce('video-embed-thumbnail-generator-nonce'); ?>">
+		<input type="hidden" name="kgvid_settings_security" id="kgvid_settings_security" value="<?php echo wp_create_nonce('video-embed-thumbnail-generator-nonce'); ?>">
 		<table class='form-table'>
 			<tbody>
 				<tr valign='middle'>
@@ -2682,6 +2694,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 				if ( $page_scope == 'network' ) {
 					$option_name = 'default_capabilities';
 					if ( array_key_exists('default_capabilities', $options)
+					&& array_key_exists($capability, $options['default_capabilities'])
 					&& array_key_exists($role, $options['default_capabilities'][$capability])
 					&& $options['default_capabilities'][$capability][$role] == "on" ) {
 						$capability_enabled = true;

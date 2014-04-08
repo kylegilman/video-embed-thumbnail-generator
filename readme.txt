@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, preview, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4, jwplayer
 Requires at least: 3.5
-Tested up to: 3.9
+Tested up to: 3.8.2
 Stable tag: 4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -185,8 +185,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3.1 - April 8, 2014 =
-* Fixed errors when activating plugin for the first time and opening settings page in non-multisite installations.
+* Fixed errors when activating plugin for the first time and saving settings page in non-multisite installations.
 * Updated Video.js to version 4.5.1
+* Fixed pop-up gallery bug for users with FORCE_SSL_ADMIN enabled.
+* Fixed error on network settings page when pressing the "Save Changes" button and resetting network settings using "Reset Options" button.
 * Added text-align:left to left-aligned galleries.
 * Added gettext calls to some text for translation.
 * Removed duplicate bitrate setting for WEBM encoding when using average bitrate.
