@@ -327,7 +327,7 @@ function kgvid_video_embed_activation_hook( $network_wide ) {
 	else { // Running on a single blog
 
 		$options = kgvid_register_default_options_fn();
-		kgvid_set_capabilities($options['default_capabilities']);
+		kgvid_set_capabilities($options['capabilities']);
 
 	}
 
@@ -1105,7 +1105,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.4.3' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.5.1' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -1178,10 +1178,10 @@ function kgvid_video_embed_print_scripts() {
 	$options = kgvid_get_options();
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.4.3', true );
+	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.5.1', true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
-	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
+	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php', 'http' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
 			'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
@@ -3199,6 +3199,14 @@ function kgvid_update_settings() {
 			$options["capabilities"]["edit_others_video_encodes"] = $edit_others_capable;
 			kgvid_set_capabilities($options["capabilities"]);
 
+		}
+
+		if ( $options['version'] < 4.301 ) {
+			$options['version'] = 4.301;
+			if ( !array_key_exists('capabilities', $options ) ) { //fix bug in 4.3 that didn't create capabilties for single installs
+				$options['capabilities'] = $default_options['capabilities'];
+			}
+			kgvid_set_capabilities($options['capabilities']);
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
