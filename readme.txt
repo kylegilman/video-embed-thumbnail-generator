@@ -187,7 +187,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.3.1 - April 8, 2014 =
 * Fixed errors when activating plugin for the first time and saving settings page in non-multisite installations.
 * Updated Video.js to version 4.5.1
-* Fixed pop-up gallery bug for users with FORCE_SSL_ADMIN enabled.
+* Fixed pop-up gallery cross-origin bug for users with FORCE_SSL_ADMIN enabled.
 * Fixed error on network settings page when pressing the "Save Changes" button and resetting network settings using "Reset Options" button.
 * Added text-align:left to left-aligned galleries.
 * Added gettext calls to some text for translation.

@@ -1181,7 +1181,7 @@ function kgvid_video_embed_print_scripts() {
 	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.5.1', true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
-	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php', 'http' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
+	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
 			'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
