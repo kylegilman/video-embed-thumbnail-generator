@@ -1105,7 +1105,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.5.1' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.6.3' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -1178,7 +1178,7 @@ function kgvid_video_embed_print_scripts() {
 	$options = kgvid_get_options();
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.5.1', true );
+	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.6.3', true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
@@ -1222,7 +1222,7 @@ add_action('wp_head', 'kgvid_video_embed_print_scripts', 99);
 
 function kgvid_print_vidojs_footer() { //called by the shortcode if Video.js is used
 
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.4.0"; }</script>'."\n";
+	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.4.1"; }</script>'."\n";
 
 }
 
@@ -4626,16 +4626,17 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 	$h264extensions = array("mp4", "m4v", "mov");
 	$video_formats = kgvid_video_formats();
 	$sanitized_url = kgvid_sanitize_url($movieurl);
-	//$movieurl = esc_url_raw(str_replace(" ", "%20", $movieurl));
 	$movieurl = $sanitized_url['movieurl'];
 	$movieurl = str_replace("https://", "http://",  $movieurl);
 	$movie_info = kgvid_get_video_dimensions($movieurl);
+	$filepath = "";
 
 	if ($movie_info['worked'] == true) { //if FFMPEG was able to open the file
 
 		$movie_width = $movie_info['width'];
 		$movie_height = $movie_info['height'];
-		if ( get_post_type($postID) == "attachment" ) {
+
+		if ( get_post_type($postID) == "attachment" ) { //if the video is in the database
 			update_post_meta($postID, '_kgflashmediaplayer-actualwidth', $movie_width);
 			update_post_meta($postID, '_kgflashmediaplayer-actualheight', $movie_height);
 			update_post_meta($postID, '_kgflashmediaplayer-duration', $movie_info['duration']);
@@ -4674,8 +4675,8 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 			if ( empty($parent_id) ) { $parent_id = get_post($postID)->post_parent; }
 
 			$queue_entry = array (
-				'attachmentID'=>$postID,
-				'parent_id'=>$parent_id,
+				'attachmentID' => $postID,
+				'parent_id' => $parent_id,
 				'movieurl' => $movieurl,
 				'encode_formats'=> $encode_formats,
 				'movie_info' => $movie_info
