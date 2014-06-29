@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.3.1
+Version: 4.3.2
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -49,7 +49,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.301,
+		"version" => 4.302,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -1452,7 +1452,7 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 
 				$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper'.$aligncode.'">'."\n\t\t\t";
-				$code .= '<div id="video_'.$div_suffix.'_div" class="kgvid_videodiv" data-id="'.$div_suffix.'" itemscope itemtype="http://schema.org/VideoObject">';
+				$code .= '<div id="video_'.$div_suffix.'_div" class="fitvidsignore kgvid_videodiv" data-id="'.$div_suffix.'" itemscope itemtype="http://schema.org/VideoObject">';
 				if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailURL" content="'.esc_attr($query_atts["poster"]).'" />'; }
 				if ( !empty($id) ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 				else { $schema_embedURL = $content; }
@@ -1596,7 +1596,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= 'preload="'.$options['preload'].'" ';
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
-					$code .= ' class="'.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{}\'';
+					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{}\'';
 					$code .= ">\n";
 
 					$code .= implode("", $sources); //add the <source> tags created earlier
@@ -1633,7 +1633,7 @@ function KGVID_shortcode($atts, $content = ''){
 					if ( $query_atts['embedcode'] != "false" ) {
 						if ( $query_atts['embedcode'] == "true" ) { $iframeurl = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 						else { $iframeurl = $query_atts['embedcode']; }
-						$iframecode = "<iframe src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
+						$iframecode = "<iframe allowfullscreen src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
 						$code .= "\t\t\t\t<div id=\"video_".$div_suffix."_embed\" class=\"kgvid_share\"><span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><input type=\"text\" value=\"".esc_attr($iframecode)."\" onClick=\"this.select();\"></div>\n";
 					}
 					if ( $query_atts['title'] != "false" && $options['embed_method'] != "JW Player" ) {
@@ -3654,7 +3654,7 @@ display: inline-block;">Loading thumbnail...</span></div>';
 
 			if ( $img_editor_works ) {
 				$choose_from_video_content = '<div style="display:none;" class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
-					<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">Choose from video...</span></div>
+					<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">'.__('Choose from video...', 'video-embed-thumbnail-generator').'</span></div>
 					<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
 						<video crossorigin preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
 						implode("\n", $sources).'

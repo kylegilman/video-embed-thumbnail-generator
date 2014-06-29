@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, preview, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4, jwplayer
 Requires at least: 3.5
-Tested up to: 3.8.2
+Tested up to: 3.9.1
 Stable tag: 4.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -25,7 +25,7 @@ You have the option to use a few different video players:
 
 <em>The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
 
-No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break responsive resizing for some players if it's running on your site.
+No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode.
 
@@ -145,6 +145,8 @@ Most of the time your video doesn't play because it's not encoded in the right f
 
 Use <a href="http://mediaarea.net/en/MediaInfo">MediaInfo</a> to get really detailed information about your media files.
 
+If your theme loads FitVids.js, it will break playback in Firefox. If you can figure out how to prevent your theme from loading FitVids.js you will not miss it.
+
 = Why does my video have to download completely before it starts playing? =
 
 mp4/m4v/mov files have something called a moov atom that gives the video player information about the content of the video (dimensions, duration, codecs, etc). Depending on the program you used to make your video, the moov atom can be at the beginning or the end of the file. Most video players will wait until they find the moov atom before starting playback. Otherwise it doesn't know how to display the information it's downloading. If it's at the beginning of the file, playback starts very soon after the user hits the play button. If it's at the end of the file, the whole video has to download before playback starts.
@@ -162,6 +164,34 @@ WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in sys
 If you're like most users and don't have FFMPEG installed on your server, the plugin relies on your browser's built-in ability to play videos. Google Chrome is best when making thumbnails because it supports the most formats. Wikipedia has <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">a great chart that explains which browsers work with which video formats</a>.
 
 If you were able to make thumbnails using FFMPEG before updating to version 4.2, try disabling in-browser thumbnail creation in the FFMPEG Settings tab of the plugin settings.
+
+= How can I change the watermark's size or position? =
+
+The watermark option is a simple image overlay and is styled using CSS. The default styling is
+
+`.kgvid_watermark img {
+  display: block;
+  position: absolute;
+  bottom: 7%;
+  right: 5%;
+  z-index: 1;
+  margin: 0px;
+  max-width: 10%;
+  box-shadow: none;
+}`
+
+You can override any of those settings in either your theme's custom CSS area or using the Jetpack "Custom CSS" module. If you want to make the watermark bigger, try something like
+
+`.kgvid_watermark img {
+  max-width: 20%;
+}`
+
+If you want to put it in the upper left instead of the lower right, try something like this:
+
+`.kgvid_watermark img {
+  top: 7%;
+  left: 5%;
+}`
 
 = I'm getting an error message FFMPEG not found at /usr/local/bin/. You can embed existing videos, but video thumbnail generation and Mobile/HTML5 video encoding is not possible without FFMPEG. =
 
@@ -183,6 +213,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.3.2 - June xx, 2014 =
+* Added Spanish & French translations.
+* Added allowfullscreen to iframe embed codes.
+* Added fitvidsignore class to Video.js videos to help defeat FitVids.js-induced playback problems.
+* Added gettext calls to some text for translation.
 
 = 4.3.1 - April 8, 2014 =
 * Fixed errors when activating plugin for the first time and saving settings page in non-multisite installations.
