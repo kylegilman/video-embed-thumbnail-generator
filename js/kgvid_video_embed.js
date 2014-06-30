@@ -197,6 +197,8 @@ function kgvid_setup_video(id) {
 			jQuery('#video_'+id+'_flash_api').unwrap();
 		}
 
+		if ( video_vars.resolutions_plugin == true ) { player.resolutions(true); }
+
 		if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
 
 		player.on('play', function kgvid_play_start(){
