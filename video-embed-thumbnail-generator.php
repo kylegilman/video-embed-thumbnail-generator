@@ -2454,7 +2454,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('thumb_parent', __('Attach thumbnails to:', 'video-embed-thumbnail-generator'), 'kgvid_thumb_parent_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
 	add_settings_field('delete_children', __('Delete associated attachments:', 'video-embed-thumbnail-generator'), 'kgvid_delete_children_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'delete_children' ) );
 	add_settings_field('titlecode', __('Video title text HTML formatting:', 'video-embed-thumbnail-generator'), 'kgvid_titlecode_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
-	add_settings_field('template', __('Attachment template display:', 'video-embed-thumbnail-generator'), 'kgvid_template_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template' ) );
+	add_settings_field('template', __('Attachment page design:', 'video-embed-thumbnail-generator'), 'kgvid_template_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template' ) );
 
 	if ( !is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
 		add_settings_field('app_path', __('Path to applications folder on server:', 'video-embed-thumbnail-generator'), 'kgvid_app_path_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'app_path' ) );
@@ -2784,13 +2784,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_template_callback() {
 		$options = kgvid_get_options();
-		$items = array(__("Video title (WP default)", 'video-embed-thumbnail-generator')=>"none", __("Video in existing template", 'video-embed-thumbnail-generator')=>"gentle", __("Video only (deprecated)", 'video-embed-thumbnail-generator')=>"old");
+		$items = array(__("Match plugin settings", 'video-embed-thumbnail-generator')=>"gentle", __("WordPress default", 'video-embed-thumbnail-generator')=>"none", __("Video only (deprecated)", 'video-embed-thumbnail-generator')=>"old");
 		echo "<select id='template' name='kgvid_video_embed_options[template]'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['template']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='".network_site_url()."/wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>".__('By default WordPress only displays a video\'s title on the attachment page. This plugin can filter your attachment page to display the video, or completely replace your attachment template to show only the video. If you were one of the few people using iframe embed codes before version 4.0 of this plugin then you should continue to use "Video only" but otherwise it\'s not recommended.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo "</select> <a class='kgvid_tooltip' href='javascript:void(0);'><img src='".network_site_url()."/wp-includes/images/blank.gif'><span class='kgvid_tooltip_classic'>".__('The plugin can filter your media attachment page to display videos using your chosen settings, or completely replace your attachment template to show only the video. If you were one of the few people using iframe embed codes before version 4.0 of this plugin then you should continue to use "Video only" but otherwise it\'s not recommended.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
 	function kgvid_encode_settings_section_callback() {
