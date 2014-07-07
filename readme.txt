@@ -219,6 +219,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Spanish, French, and Belgian translations.
 * Added multisite option to restrict FFMPEG settings access to super admins only.
 * Added better error reporting when FFMPEG isn't executing.
+* Added subtitles/captions fields to "Embed Video from URL" tab.
 * Added allowfullscreen to iframe embed codes.
 * Added fitvidsignore class to Video.js videos to help defeat FitVids.js-induced playback problems.
 * Added contentUrl schema.org metadata.
@@ -509,7 +510,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Removed swfobject.js from the plugin package. Now using the one included with WordPress. WordPress 3.3.2 contains a security fix for swfobject.js and the plugin will use the fixed version if you have upgraded WordPress (which is highly recommended).
 * Added setting to customize the formatting of titles inserted by the plugin.
 * Added settings to display a custom image when videos end instead of the first frame of the video (Flash only).
-* Fixed problem with embedded FLV files giving message "Argument Error Ð Invalid parameter passed to method" when loading poster images.
+* Fixed problem with embedded FLV files giving message "Argument Error - Invalid parameter passed to method" when loading poster images.
 
 = 2.0.5 - April 20, 2012 =
 * Fixed "Wrong datatype for second argument" error on line 339 and subsequent automatic replacement of original videos with Mobile/H.264 versions whether they exist or not.

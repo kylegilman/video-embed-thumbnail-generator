@@ -545,3 +545,7 @@ td.media-icon img {
 #jw_player_id_select {
 	margin-top: 5px;
 }
+
+#kgflashmediaplayer-table input {
+width: auto;
+}
