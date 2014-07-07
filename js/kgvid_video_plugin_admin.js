@@ -558,7 +558,10 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 	document.getElementById('attachments-'+basename+'-numberofthumbs').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
 	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="'+kgvidL10n.generate+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
 	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="'+kgvidL10n.randomize+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
-
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').setAttribute("onchange", "kgvid_set_dimension('"+basename+"', 'height', this.value);")
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').setAttribute("onkeyup", "kgvid_set_dimension('"+basename+"', 'height', this.value);");
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').setAttribute("onchange", "kgvid_set_dimension('"+basename+"', 'height', this.value);")
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').setAttribute("onkeyup", "kgvid_set_dimension('"+basename+"', 'height', this.value);");
 
 	if ( document.getElementById('attachments-'+basename+'-kgflashmediaplayer-ffmpegexists').value == "on" ) {
 		document.getElementById('attachments-'+basename+'-thumbgenerate').disabled = false;
