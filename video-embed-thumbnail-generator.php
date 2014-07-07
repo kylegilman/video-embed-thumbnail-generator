@@ -3290,7 +3290,7 @@ function kgvid_validate_ffmpeg_settings($input) {
 	elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) {
 
 		$textarea = '';
-		if ( count($ffmpeg_info['output']) > 1 ) { $textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">'.implode($ffmpeg_info['output'], "\n").'</textarea>'; }
+		if ( count($ffmpeg_info['output']) > 2 ) { $textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">'.implode($ffmpeg_info['output'], "\n").'</textarea>'; }
 
 		add_settings_error( __FILE__, "ffmpeg-disabled", sprintf( __('%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator'), strtoupper($input['video_app']), $input['app_path'] ).'<br /><br />'.__('Error message:', 'video-embed-thumbnail-generator').' '.implode(array_slice($ffmpeg_info['output'], -2, 2), " ").$textarea, "updated");
 		$input['ffmpeg_exists'] = "notinstalled";
