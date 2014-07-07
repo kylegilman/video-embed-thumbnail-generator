@@ -566,7 +566,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		if (function_exists('escapeshellcmd')) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
-			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg').' 2>&1';
 			exec ( $cmd, $output, $returnvalue );
 		}
 		else { $function = "ESCAPESHELLCMD"; }
@@ -578,7 +578,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
-			exec ( $cmd, $output, $returnvalue );
+			exec ( $cmd );
 		}
 
 		if ( file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //FFMEG has executed successfully
@@ -601,11 +601,10 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 
 	}
 
-	$output_output = implode("/n", $output);
 	$arr = array (
 		"exec_enabled"=>$exec_enabled,
 		"ffmpeg_exists"=>$ffmpeg_exists,
-		"output"=>$output_output,
+		"output"=>$output,
 		"function"=>$function,
 		"app_path"=>$options['app_path']
 	);
@@ -2313,7 +2312,6 @@ function kgvid_network_settings_page() {
 function kgvid_superadmin_capabilities_callback() {
 
 	$network_options = get_site_option('kgvid_video_embed_network_options');
-	error_log(print_r($network_options,true));
 	echo "<input ".checked( $network_options['superadmin_only_ffmpeg_settings'], "on", false )." id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>".sprintf( _x('%s settings tab.', 'FFMPEG settings tab', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" )."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__( sprintf( 'Only Super admins will be allowed to view and modify %s settings.', "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" ), 'video-embed-thumbnail-generator' )."</span></a>\n\t";
 
 }
@@ -3290,7 +3288,11 @@ function kgvid_validate_ffmpeg_settings($input) {
 		$input['ffmpeg_exists'] = "notinstalled";
 	}
 	elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) {
-		add_settings_error( __FILE__, "ffmpeg-disabled", sprintf( __('%1$s not found at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator'), strtoupper($input['video_app']), $input['app_path'] ), "updated");
+
+		$textarea = '';
+		if ( count($ffmpeg_info['output']) > 1 ) { $textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">'.implode($ffmpeg_info['output'], "\n").'</textarea>'; }
+
+		add_settings_error( __FILE__, "ffmpeg-disabled", sprintf( __('%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator'), strtoupper($input['video_app']), $input['app_path'] ).'<br /><br />'.__('Error message:', 'video-embed-thumbnail-generator').' '.implode(array_slice($ffmpeg_info['output'], -2, 2), " ").$textarea, "updated");
 		$input['ffmpeg_exists'] = "notinstalled";
 	}
 
