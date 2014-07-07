@@ -560,8 +560,10 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="'+kgvidL10n.randomize+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
 	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').setAttribute("onchange", "kgvid_set_dimension('"+basename+"', 'height', this.value);")
 	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').setAttribute("onkeyup", "kgvid_set_dimension('"+basename+"', 'height', this.value);");
-	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').setAttribute("onchange", "kgvid_set_dimension('"+basename+"', 'height', this.value);")
-	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').setAttribute("onkeyup", "kgvid_set_dimension('"+basename+"', 'height', this.value);");
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').setAttribute("onchange", "kgvid_set_dimension('"+basename+"', 'width', this.value);");
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').setAttribute("onkeyup", "kgvid_set_dimension('"+basename+"', 'width', this.value);");
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-lockaspect').setAttribute("onclick", "kgvid_set_aspect('"+basename+"', this.checked);");
+	document.getElementById('singleurl-lockaspect-label').setAttribute("for", "attachments-"+basename+"-kgflashmediaplayer-lockaspect");
 
 	if ( document.getElementById('attachments-'+basename+'-kgflashmediaplayer-ffmpegexists').value == "on" ) {
 		document.getElementById('attachments-'+basename+'-thumbgenerate').disabled = false;
