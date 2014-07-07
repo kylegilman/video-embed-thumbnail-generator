@@ -215,10 +215,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3.2 - June xx, 2014 =
-* Added Spanish & French translations.
+* Added Spanish, French, and Belgian translations.
+* Added multisite option to restrict FFMPEG settings access to super admins only.
 * Added allowfullscreen to iframe embed codes.
 * Added fitvidsignore class to Video.js videos to help defeat FitVids.js-induced playback problems.
-* Added gettext calls to some text for translation.
+* Added contentUrl schema.org metadata.
+* Fixed some gettext calls for translation.
+* Fixed bug that set alternate resolution H.264 videos to type "video/h264" instead of "video/mp4".
+* Fixed missing help icons on settings pages.
 
 = 4.3.1 - April 8, 2014 =
 * Fixed errors when activating plugin for the first time and saving settings page in non-multisite installations.
