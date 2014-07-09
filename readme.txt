@@ -225,6 +225,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added contentUrl schema.org metadata.
 * Fixed some gettext calls for translation.
 * Fixed bug that set alternate resolution H.264 videos to type "video/h264" instead of "video/mp4".
+* Fixed bug that incorrectly added "Other user's video" to video encode queue entries.
 * Fixed missing help icons on settings pages.
 * Fixed bug that disabled aspect ratio locking in the "Embed Video from URL" tab.
 
