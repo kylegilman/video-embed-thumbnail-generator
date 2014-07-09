@@ -38,6 +38,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 7) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
 	Website: http://www.amiaud.org/tag/video/
 
+Translators
+Spanish: Andrew Kurtis, Webhostinghub http://www.webhostinghub.com/
+French: F.R. "Friss" Ferry
+Hungarian: Emil Georgiev
+
 */
 
 if ( ! defined( 'ABSPATH' ) )
@@ -1281,7 +1286,7 @@ function kgvid_shortcode_atts($atts) {
 			'track_srclang' => substr(get_bloginfo('language'), 0, 2),
 			'track_src' => '',
 			'track_label' => get_bloginfo('language')
-		), $atts);
+		), $atts, 'KGVID');
 
 	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink");
 	foreach ( $checkbox_convert as $query ) {
@@ -1562,6 +1567,8 @@ function KGVID_shortcode($atts, $content = ''){
 							}
 						}
 
+
+
 						$jw_shortcode = "[jwplayer ";
 						$jw_shortcode .= 'sources="'.implode(',', $sources).'" ';
 						$jw_shortcode .= 'tracks="'.implode(',', $jw_tracks).'" ';
@@ -1573,6 +1580,13 @@ function KGVID_shortcode($atts, $content = ''){
 						if ( $options['jw_player_id'] != "") {
 							$jw_player_config = get_option('jwp6_player_config_'.$options['jw_player_id']);
 							if ( !empty($jw_player_config) ) { $jw_shortcode .= ' player="'.$options['jw_player_id'].'" '; }
+						}
+
+						$jw_config_options = array_diff($atts, $query_atts); //whatever isn't a KGVID attribute could be a JWPLAYER attribute
+						if ( !empty($jw_config_options) && is_array($jw_config_options) ) {
+							foreach ( $jw_config_options as $jw_param => $jw_setting ) {
+								$jw_shortcode .= ' '.$jw_param.'="'.$jw_setting.'" ';
+							}
 						}
 
 						$jw_shortcode = trim($jw_shortcode);
@@ -2135,10 +2149,11 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 			}//end if current user can see this stuff
 
-			if ( (is_network_admin() || 'network' == $scope) && $blog_id ) { restore_current_blog(); }
-
 			else { $html .= "<td colspan='".strval($total_columns-1)."'><strong class='kgvid_queue_message'>".__("Other user's video", 'video-embed-thumbnail-generator')."</strong></td>"; }
 			$html .= "</td></tr>\n";
+
+			if ( (is_network_admin() || 'network' == $scope) && $blog_id ) { restore_current_blog(); }
+
 		}
 	}
 	else { $html = "\t<tr><td colspan='".strval($total_columns)."'><strong class='kgvid_queue_message'>".__('Queue is empty', 'video-embed-thumbnail-generator')."</strong></td></tr>\n"; }
