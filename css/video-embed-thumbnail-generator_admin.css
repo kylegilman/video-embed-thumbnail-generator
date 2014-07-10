@@ -547,5 +547,9 @@ td.media-icon img {
 }
 
 #kgflashmediaplayer-table input {
-width: auto;
+	width: auto;
+}
+
+.attachment-preview.type-video .thumbnail {
+	z-index: 0;
 }
