@@ -38,10 +38,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 7) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
 	Website: http://www.amiaud.org/tag/video/
 
-Translators
+=Translators=
 Spanish: Andrew Kurtis, Webhostinghub http://www.webhostinghub.com/
-French: F.R. "Friss" Ferry
-Hungarian: Emil Georgiev
+French: F.R. "Friss" Ferry, friss.designs@gmail.com
+Bulgarian: Emil Georgiev
 
 */
 
