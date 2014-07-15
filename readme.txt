@@ -215,7 +215,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3.2 - July 15, 2014 =
-* Updated Video.js to version 4.6.3
+* Updated Video.js to version 4.6.4
 * Added Spanish, French, and Bulgarian translations.
 * Added ability to send advanced configuration attributes to JW Player. Any attributes added to the [KGVID] shortcode will be passed on without change.
 * Added multisite option to restrict FFMPEG settings access to super admins only.
