@@ -41,7 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 =Translators=
 Spanish: Andrew Kurtis, Webhostinghub http://www.webhostinghub.com/
 French: F.R. "Friss" Ferry, friss.designs@gmail.com
-Bulgarian: Emil Georgiev
+Bulgarian: Emil Georgiev, svinqvmraka@gmail.com
 
 */
 
