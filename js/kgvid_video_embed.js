@@ -355,6 +355,12 @@ function kgvid_setup_video(id) {
 
 		});
 
+		if ( video_vars.right_click != "on" ) {
+			player.onReady( function() {
+				jQuery('#video_'+id+'_div .jwclick').remove();
+			});
+		}
+
 	}
 
 	if ( video_vars.resize == "true" || window.location.search.indexOf("kgvid_video_embed[enable]=true") !== false ) {

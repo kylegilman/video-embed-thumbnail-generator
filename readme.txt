@@ -214,6 +214,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.3.3 - July xx, 2014 =
+* Disabled JW Player custom context menu when right-clicking is disabled.
+
 = 4.3.2 - July 15, 2014 =
 * Updated Video.js to version 4.6.4
 * Added Spanish, French, and Bulgarian translations.
