@@ -66,6 +66,12 @@ To embed videos on other sites you can use code like this.
 `[KGVID poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg"
 width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
 
+= Translations included:=
+
+* Español por Andrew Kurtis de <a href="http://www.webhostinghub.com/">WebHostingHub</a>.
+* Français par F.R. 'Friss' Ferry, friss.designs@gmail.com
+* Българска от Емил Георгиев, svinqvmraka@gmail.com
+
 I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
 
 = If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. If the plugin is installed on your site, this information is also available in the post edit help screen. =
@@ -103,7 +109,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 
 = These options will only affect Video.js playback =
 
-* `skin="example-css-class"` Completely change the look of the video player. <a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">Instructions here.</a>
+* `skin="example-css-class"` Completely change the look of the video player. <a href="http://designer.videojs.com/">Video.js provides a custom skin designer here.</a>
 
 = These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players. =
 
@@ -216,6 +222,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.3.3 - July xx, 2014 =
 * Disabled JW Player custom context menu when right-clicking is disabled.
+* Fixed Video.js volume slider appearance when using the custom skin.
 
 = 4.3.2 - July 15, 2014 =
 * Updated Video.js to version 4.6.4
