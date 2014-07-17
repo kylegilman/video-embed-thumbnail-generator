@@ -217,11 +217,19 @@ fonts to show/hide properly.
   top: 0;
   left: 0;
   height: 0.5em;
+  /* assuming volume starts at 1.0 */
+
+  width: 100%;
   background: #66a8cc url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAP0lEQVQIHWWMAQoAIAgDR/QJ/Ub//04+w7ZICBwcOg5FZi5iBB82AGzixEglJrd4TVK5XUJpskSTEvpdFzX9AB2pGziSQcvAAAAAAElFTkSuQmCC) -50% 0 repeat;
 }
 .kg-video-js-skin .vjs-volume-bar .vjs-volume-handle {
   width: 0.5em;
   height: 0.5em;
+  /* Assumes volume starts at 1.0. If you change the size of the
+     handle relative to the volume bar, you'll need to update this value
+     too. */
+
+  left: 4.5em;
 }
 .kg-video-js-skin .vjs-volume-handle:before {
   font-size: 0.9em;
