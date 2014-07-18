@@ -1273,6 +1273,7 @@ function kgvid_shortcode_atts($atts) {
 			'gallery_id' => $post_ID,
 			'gallery_end' => '',
 			'volume' => '',
+			'mute' => '',
 			'title' => $options['overlay_title'],
 			'embedcode' => $options['overlay_embedcode'],
 			'view_count' => $options['view_count'],
@@ -1688,7 +1689,8 @@ function KGVID_shortcode($atts, $content = ''){
 					'height' => $query_atts['height'],
 					'countable' => $countable,
 					'autoplay' => $query_atts['autoplay'],
-					'set_volume' => $query_atts["volume"],
+					'set_volume' => $query_atts['volume'],
+					'mute' => $query_atts['mute'],
 					'meta' => $kgvid_meta,
 					'endofvideooverlay' => $query_atts['endofvideooverlay'],
 					'resize' => $query_atts['resize'],
@@ -6021,6 +6023,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>align="left/right/center"</code></li>
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
+<li><code>mute="true/false"</code> '.__('Sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
 <li><code>controlbar="docked/floating/none"</code> '.__('sets the controlbar position. "Floating" option only works with Strobe Media Playback.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
@@ -6065,6 +6068,7 @@ function kgvid_add_contextual_help_tab() {
 
 }
 add_action( 'admin_head-post.php', 'kgvid_add_contextual_help_tab' );
+add_action( 'admin_head-post-new.php', 'kgvid_add_contextual_help_tab' );
 
 
 function kgvid_clear_cron_and_roles() {

@@ -87,6 +87,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `align="left/right/center"`
 * `inline="true/false"` allow other content on the same line as the video
 * `volume="0.x"` pre-sets the volume for unusually loud videos. Value between 0 and 1.
+* `mute="true/false"` sets the mute button on or off.
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
 * `autoplay="true/false"`
@@ -221,8 +222,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.3.3 - July xx, 2014 =
-* Disabled JW Player custom context menu when right-clicking is disabled.
+* Added "mute" shortcode attribute.
+* Fixed WordPress default player volume setting.
 * Fixed Video.js volume slider appearance when using the custom skin.
+* Disabled JW Player custom context menu when right-clicking is disabled.
+
 
 = 4.3.2 - July 15, 2014 =
 * Updated Video.js to version 4.6.4
