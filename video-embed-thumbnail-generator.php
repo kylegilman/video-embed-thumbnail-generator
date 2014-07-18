@@ -94,6 +94,8 @@ function kgvid_default_options_fn() {
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
+		"volume" => 1,
+		"mute" => false,
 		"preload" => "metadata",
 		"endofvideooverlay" => false,
 		"endofvideooverlaysame" => "",
@@ -101,6 +103,7 @@ function kgvid_default_options_fn() {
 		"configuration" => "",
 		"skin" => plugins_url("", __FILE__)."/flash/skin/kg_skin.xml",
 		"js_skin" => "kg-video-js-skin",
+		"custom_attributes" => "",
 		"stream_type" => "liveOrRecorded",
 		"scale_mode" => "letterbox",
 		"autohide" => "on",
@@ -1241,55 +1244,69 @@ function kgvid_shortcode_atts($atts) {
 	if ( in_the_loop() ) { $post_ID = get_the_ID(); }
 	else { $post_ID = 1; }
 
-	$query_atts = shortcode_atts(
-		array(
-			'id' => '',
-			'orderby' => 'menu_order',
-			'order' => 'ASC',
-			'videos' => -1,
-			'width' => $options['width'],
-			'height' => $options['height'],
-			'align' => $options['align'],
-			'controlbar' => $options['controlbar_style'],
-			'autohide' => $options['autohide'],
-			'poster' => $options['poster'],
-			'watermark' => $options['watermark'],
-			'endofvideooverlay' => $options['endofvideooverlay'],
-			'endofvideooverlaysame' => $options['endofvideooverlaysame'],
-			'playbutton' => $options['playbutton'],
-			'loop' => $options['loop'],
-			'autoplay' => $options['autoplay'],
-			'streamtype' => $options['stream_type'],
-			'scalemode' => $options['scale_mode'],
-			'backgroundcolor' => $options['bgcolor'],
-			'configuration' => $options['configuration'],
-			'skin' => $options['skin'],
-			'gallery' => 'false',
-			'gallery_thumb' => $options['gallery_thumb'],
-			'gallery_orderby' => 'menu_order',
-			'gallery_order' => 'ASC',
-			'gallery_exclude' => '',
-			'gallery_include' => '',
-			'gallery_id' => $post_ID,
-			'gallery_end' => '',
-			'volume' => '',
-			'mute' => '',
-			'title' => $options['overlay_title'],
-			'embedcode' => $options['overlay_embedcode'],
-			'view_count' => $options['view_count'],
-			'caption' => '',
-			'description' => '',
-			'inline' => $options['inline'],
-			'downloadlink' => $options['downloadlink'],
-			'right_click' => $options['right_click'],
-			'resize' => $options['resize'],
-			'track_kind' => 'subtitles',
-			'track_srclang' => substr(get_bloginfo('language'), 0, 2),
-			'track_src' => '',
-			'track_label' => get_bloginfo('language')
-		), $atts, 'KGVID');
+	$default_atts = array(
+		'id' => '',
+		'orderby' => 'menu_order',
+		'order' => 'ASC',
+		'videos' => -1,
+		'width' => $options['width'],
+		'height' => $options['height'],
+		'align' => $options['align'],
+		'controlbar' => $options['controlbar_style'],
+		'autohide' => $options['autohide'],
+		'poster' => $options['poster'],
+		'watermark' => $options['watermark'],
+		'endofvideooverlay' => $options['endofvideooverlay'],
+		'endofvideooverlaysame' => $options['endofvideooverlaysame'],
+		'playbutton' => $options['playbutton'],
+		'loop' => $options['loop'],
+		'autoplay' => $options['autoplay'],
+		'streamtype' => $options['stream_type'],
+		'scalemode' => $options['scale_mode'],
+		'backgroundcolor' => $options['bgcolor'],
+		'configuration' => $options['configuration'],
+		'skin' => $options['skin'],
+		'gallery' => 'false',
+		'gallery_thumb' => $options['gallery_thumb'],
+		'gallery_orderby' => 'menu_order',
+		'gallery_order' => 'ASC',
+		'gallery_exclude' => '',
+		'gallery_include' => '',
+		'gallery_id' => $post_ID,
+		'gallery_end' => '',
+		'volume' => $options['volume'],
+		'mute' => $options['mute'],
+		'title' => $options['overlay_title'],
+		'embedcode' => $options['overlay_embedcode'],
+		'view_count' => $options['view_count'],
+		'caption' => '',
+		'description' => '',
+		'inline' => $options['inline'],
+		'downloadlink' => $options['downloadlink'],
+		'right_click' => $options['right_click'],
+		'resize' => $options['resize'],
+		'track_kind' => 'subtitles',
+		'track_srclang' => substr(get_bloginfo('language'), 0, 2),
+		'track_src' => '',
+		'track_label' => get_bloginfo('language')
+	);
 
-	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink");
+	$custom_atts_return = array();
+	if ( !empty($options['custom_attributes']) ) {
+		preg_match_all('/(\w+)\s*=\s*(["\'])((?:(?!\2).)*)\2/', $options['custom_attributes'], $custom_atts, PREG_SET_ORDER);
+		if ( !empty($custom_atts) && is_array($custom_atts) ) {
+			foreach ( $custom_atts as $custom_att ) {
+				if ( array_key_exists($custom_att[1], $default_atts) ) {
+					$default_atts[$custom_att[1]] = $custom_att[3];
+				}
+				else { $default_atts['custom_atts'][$custom_att[1]] = $custom_att[3]; }
+			}
+		}
+	}
+
+	$query_atts = shortcode_atts($default_atts, $atts, 'KGVID');
+
+	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink", "mute");
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
 		if ( $query_atts[$query] == false ) { $query_atts[$query] = "false"; }
@@ -1530,6 +1547,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$wp_shortcode .= 'width='.$query_atts["width"].' height='.$query_atts["height"].' ';
 					if ( $query_atts["loop"] == 'true') { $wp_shortcode .= 'loop="true" '; }
 					if ( $query_atts["autoplay"] == 'true') { $wp_shortcode .= 'autoplay="true" '; }
+					$wp_shortcode .= 'preload="'.$options['preload'].'"';
 					$wp_shortcode .= "]";
 					$content_width = $query_atts['width'];
 					$executed_shortcode = do_shortcode($wp_shortcode);
@@ -1568,8 +1586,6 @@ function KGVID_shortcode($atts, $content = ''){
 							}
 						}
 
-
-
 						$jw_shortcode = "[jwplayer ";
 						$jw_shortcode .= 'sources="'.implode(',', $sources).'" ';
 						$jw_shortcode .= 'tracks="'.implode(',', $jw_tracks).'" ';
@@ -1583,9 +1599,8 @@ function KGVID_shortcode($atts, $content = ''){
 							if ( !empty($jw_player_config) ) { $jw_shortcode .= ' player="'.$options['jw_player_id'].'" '; }
 						}
 
-						$jw_config_options = array_diff($atts, $query_atts); //whatever isn't a KGVID attribute could be a JWPLAYER attribute
-						if ( !empty($jw_config_options) && is_array($jw_config_options) ) {
-							foreach ( $jw_config_options as $jw_param => $jw_setting ) {
+						if ( !empty($query_atts['custom_atts']) && is_array($query_atts['custom_atts']) ) {
+							foreach ( $query_atts['custom_atts'] as $jw_param => $jw_setting ) {
 								$jw_shortcode .= ' '.$jw_param.'="'.$jw_setting.'" ';
 							}
 						}
@@ -2478,8 +2493,10 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
 	add_settings_field('autoplay', __('Autoplay:', 'video-embed-thumbnail-generator'), 'kgvid_autoplay_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'autoplay' ) );
 	add_settings_field('loop', _x('Loop:', 'verb', 'video-embed-thumbnail-generator'), 'kgvid_loop_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'loop' ) );
+	add_settings_field('audio', __('Volume:', 'video-embed-thumbnail-generator'), 'kgvid_audio_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'volume' ) );
 	add_settings_field('preload', __('Preload:', 'video-embed-thumbnail-generator'), 'kgvid_preload_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'preload' ) );
 	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
+	add_settings_field('custom_attributes', __('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
 
 	add_settings_field('bgcolor', __('Background color:', 'video-embed-thumbnail-generator'), 'kgvid_bgcolor_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'bgcolor' ) );
 	add_settings_field('configuration', __('XML configuration file:', 'video-embed-thumbnail-generator'), 'kgvid_configuration_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'configuration' ) );
@@ -2666,6 +2683,14 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop to beginning when video ends.', 'video-embed-thumbnail-generator')."</label>\n\t";
 	}
 
+	function kgvid_audio_callback() {
+		$options = kgvid_get_options();
+		echo "<input type='range' min='0' max='1' value='".$options['volume']."' step='0.05' class='affects_player' style='vertical-align: middle;
+margin-right: 10px;' onchange='document.getElementById(\"volume_number\").value=this.value*100+\"%\"' oninput='document.getElementById(\"volume_number\").value=this.value*100+\"%\"' name='kgvid_video_embed_options[volume]' id='volume' /><input disabled id='volume_number' class='small-text' style='font-size:90%' value='". floatval($options['volume'])*100 ."%' /><br />\n\t";
+		echo "<input class='affects_player' ".checked( $options['mute'], "on", false )." id='mute' name='kgvid_video_embed_options[mute]' type='checkbox' /> <label for='mute'>".__('Mute', 'video-embed-thumbnail-generator')."</label>\n\t";
+
+	}
+
 	function kgvid_preload_callback() {
 		$options = kgvid_get_options();
 		$items = array(
@@ -2683,6 +2708,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_js_skin_callback() {
 		$options = kgvid_get_options();
 		echo "<input class='regular-text code affects_player' id='js_skin' name='kgvid_video_embed_options[js_skin]' type='text' value='".$options['js_skin']."' /><br /><em><small>".sprintf( __('Use %s for a nice, circular play button. Leave blank for the default square play button.', 'video-embed-thumbnail-generator')." <a href='http://videojs.com/docs/skins/'>".__('Or build your own CSS skin.', 'video-embed-thumbnail-generator'), '<code>kg-video-js-skin</code>')."</a></small></em>\n\t";
+	}
+
+	function kgvid_custom_attributes_callback() {
+		$options = kgvid_get_options();
+		echo "<input class='regular-text code affects_player' id='custom_attributes' name='kgvid_video_embed_options[custom_attributes]' type='text' value='".$options['custom_attributes']."' /><br /><em><small>".sprintf( __('Space-separated list to add to all videos. Example: %s', 'video-embed-thumbnail-generator'), '<code>orderby="title" order="DESC" startparam="start"</code>' )."</small></em>\n\t";
 	}
 
 	function kgvid_bgcolor_callback() {
@@ -3278,13 +3308,19 @@ function kgvid_update_settings() {
 			kgvid_set_capabilities($options["capabilities"]);
 
 		}
-
 		if ( $options['version'] < 4.301 ) {
 			$options['version'] = 4.301;
 			if ( !array_key_exists('capabilities', $options ) ) { //fix bug in 4.3 that didn't create capabilties for single installs
 				$options['capabilities'] = $default_options['capabilities'];
 			}
 			kgvid_set_capabilities($options['capabilities']);
+		}
+
+		if ( $options['version'] < 4.303 ) {
+			$options['version'] = 4.303;
+			$options['volume'] = 1;
+			$options['mute'] = false;
+			$options['custom_attributes'] = '';
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -6023,7 +6059,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>align="left/right/center"</code></li>
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
-<li><code>mute="true/false"</code> '.__('Sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
+<li><code>mute="true/false"</code> '.__('sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
 <li><code>controlbar="docked/floating/none"</code> '.__('sets the controlbar position. "Floating" option only works with Strobe Media Playback.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>

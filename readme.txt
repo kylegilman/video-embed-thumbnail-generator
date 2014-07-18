@@ -223,10 +223,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.3.3 - July xx, 2014 =
 * Added "mute" shortcode attribute.
-* Fixed WordPress default player volume setting.
+* Added default volume and mute options.
+* Added option to set custom default shortcode attributes.
+* Fixed WordPress default player volume and preload settings.
 * Fixed Video.js volume slider appearance when using the custom skin.
 * Disabled JW Player custom context menu when right-clicking is disabled.
-
 
 = 4.3.2 - July 15, 2014 =
 * Updated Video.js to version 4.6.4
