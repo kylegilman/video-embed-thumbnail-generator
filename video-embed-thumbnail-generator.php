@@ -216,6 +216,7 @@ function kgvid_video_formats() {
 			"width" => 4096,
 			"height" => 2304,
 			"type" => "h264",
+			"mime" => "video/mp4",
 			"suffix" => "-fullres.mp4",
 			"vcodec" => "libx264"
 		),
@@ -224,6 +225,7 @@ function kgvid_video_formats() {
 			"width" => 1920,
 			"height" => 1080,
 			"type" => "h264",
+			"mime" => "video/mp4",
 			"suffix" => "-1080.mp4",
 			"old_suffix" => "-1080.m4v",
 			"vcodec" => "libx264"
@@ -233,6 +235,7 @@ function kgvid_video_formats() {
 			"width" => 1280,
 			"height" => 720,
 			"type" => "h264",
+			"mime" => "video/mp4",
 			"suffix" => "-720.mp4",
 			"old_suffix" => "-720.m4v",
 			"vcodec" => "libx264"
@@ -243,6 +246,7 @@ function kgvid_video_formats() {
 			"height" => 480,
 			"type" => "h264",
 			"suffix" => "-480.mp4",
+			"mime" => "video/mp4",
 			"old_suffix" => "-ipod.m4v",
 			"vcodec" => "libx264"
 		),
@@ -251,6 +255,7 @@ function kgvid_video_formats() {
 			"width" => 0,
 			"height" => 0,
 			"type" => "webm",
+			"mime" => "video/webm",
 			"suffix" => ".webm",
 			"vcodec" => "libvpx",
 		),
@@ -259,6 +264,7 @@ function kgvid_video_formats() {
 			"width" => 0,
 			"height" => 0,
 			"type" => "ogv",
+			"mime" => "video/ogg",
 			"suffix" => ".ogv",
 			"vcodec" => "libtheora"
 		)
@@ -1456,14 +1462,21 @@ function KGVID_shortcode($atts, $content = ''){
 					$countable = false;
 				}
 
-				$moviefiletype = pathinfo($content, PATHINFO_EXTENSION);
-				if ( $moviefiletype == "mov" || $moviefiletype == "m4v" ) { $moviefiletype = "mp4"; }
+				$mime_type_check = wp_check_filetype($content);
+				if ( in_array($mime_type_check['ext'], $h264compatible) ) {
+					$format_type = "h264";
+					$mime_type = "video/mp4";
+				}
+				else {
+					$format_type = $mime_type_check['ext'];
+					$mime_type = $mime_type_check['type'];
+				}
 
 				$video_formats = kgvid_video_formats();
 				unset($video_formats['fullres']);
-				$video_formats = array('original' => array( "type" => $moviefiletype, "name" => "Full" ) ) + $video_formats;
+				$video_formats = array('original' => array( "type" => $format_type, "mime" => $mime_type, "name" => "Full" ) ) + $video_formats;
 
-				if ( in_array($moviefiletype, $compatible) ) {
+				if ( in_array($mime_type_check['ext'], $compatible) ) {
 					$encodevideo_info["original_exists"] = true;
 					$encodevideo_info["originalurl"] = $content;
 				}
@@ -1530,15 +1543,14 @@ function KGVID_shortcode($atts, $content = ''){
 					foreach ($video_formats as $format => $format_stats) {
 						if ( $format != "original" && $encodevideo_info[$format."url"] == $content ) { unset($sources['original']); }
 						if ( $encodevideo_info[$format."_exists"] ) {
-							if ( $format_stats['type'] != "mp4" || !$mp4already ) {
+							if ( $format_stats['type'] != "h264" || !$mp4already ) {
 								$shortcode_type = wp_check_filetype( $encodevideo_info[$format."url"], wp_get_mime_types() );
 								$sources[$format] = $shortcode_type['ext'].'="'.$encodevideo_info[$format."url"].'" ';
-								if ( $format_stats['type'] == "mp4" ) { //WordPress built-in shortcode doesn't support multiple videos of the same type but we'll hack it in later
-									$search_string = '<source type="video/mp4" src="'.esc_attr($encodevideo_info[$format."url"]).'" />';
+								if ( $format_stats['type'] == "h264" ) { //WordPress built-in shortcode doesn't support multiple videos of the same type but we'll hack it in later
 									$mp4already = true;
 								}
 							}
-							else { $sources_hack .= '<source type="video/'.$format_stats['type'].'" src="'.esc_attr($encodevideo_info[$format."url"]).'" />'; }
+							else { $sources_hack .= '<source type="'.$format_stats['mime'].'" src="'.esc_attr($encodevideo_info[$format."url"]).'" />'; }
 						}
 					}
 
@@ -1553,7 +1565,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$executed_shortcode = do_shortcode($wp_shortcode);
 					$content_width = $content_width_save;
 					if ( $sources_hack ) { //insert remaining mp4 sources manually
-						$position = strpos($executed_shortcode, $search_string) + strlen($search_string);
+						$position = strpos($executed_shortcode, '<a href=');
 						$executed_shortcode = substr_replace( $executed_shortcode, $sources_hack, $position, 0 );
 					}
 					if ( !empty($track_code) ) { //insert track code manually
@@ -1627,8 +1639,8 @@ function KGVID_shortcode($atts, $content = ''){
 					foreach ($video_formats as $format => $format_stats) {
 						if ( $format != "original" && $encodevideo_info[$format."url"] == $content ) { unset($sources['original']); }
 						if ( $encodevideo_info[$format."_exists"] ) {
-							$mime_type = wp_check_filetype($encodevideo_info[$format."url"]);
-							$sources[$format] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format."url"]).'" type="'.$mime_type['type'].'"';
+
+							$sources[$format] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format."url"]).'" type="'.$format_stats["mime"].'"';
 							/* if ( $format_stats['type'] == 'mp4' ) {
 								$sources[$format] .= ' data-res="'.$video_format_labels[$format].'"';
 								if ( $mp4already ) { //there is more than one resolution available

@@ -221,10 +221,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.3.3 - July xx, 2014 =
+= 4.3.3 - July 20, 2014 =
+* Changed .mov files back to type "video/mp4" to fix "No compatible source was found for this video" errors.
 * Added "mute" shortcode attribute.
 * Added default volume and mute options.
 * Added option to set custom default shortcode attributes.
+* Fixed WordPress default player alternate H.264 sources.
 * Fixed WordPress default player volume and preload settings.
 * Fixed Video.js volume slider appearance when using the custom skin.
 * Disabled JW Player custom context menu when right-clicking is disabled.
