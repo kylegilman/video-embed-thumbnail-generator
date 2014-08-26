@@ -223,6 +223,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.3.4 - August xx, 2014 =
 * Removed a few instances in which a video or watermark in the WordPress database would be input to FFMPEG through http instead of using the file path. Should fix some I/O errors, particularly with SSL.
+* Now setting the thumbnail as the featured image for the video attachment regardless of plugin settings.
 
 = 4.3.3 - July 20, 2014 =
 * Changed .mov files back to type "video/mp4" to fix "No compatible source was found for this video" errors.

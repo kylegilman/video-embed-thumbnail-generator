@@ -845,13 +845,20 @@ function kgvid_get_video_dimensions($video = false) {
 	$ffmpegPath = $options['app_path']."/".$options['video_app'];
 	$movie_info = array();
 
-	$video_path = url_to_postid($video);
-	if ( $video_path ) { $video = $video_path; }
-	else { //not in the database
-		$video = str_replace("https://", "http://",  $video);
+	$video = str_replace("https://", "http://",  $video);
 
-		if ( !empty($options['htaccess_login']) && strpos($video, 'http://') === 0 ) {
-			$video = substr_replace($video, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
+	if ( strpos($video, 'http://') === 0 ) { //if it's a URL
+		$video_id = url_to_postid($video);
+		if ( $video_id ) {
+			$video_path = get_attached_file($video_id);
+			$video = $video_path;
+		}
+		else { //not in the database
+
+			if ( !empty($options['htaccess_login']) && strpos($video, 'http://') === 0 ) {
+				$video = substr_replace($video, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
+			}
+
 		}
 	}
 
@@ -1528,7 +1535,7 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 
 				$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper'.$aligncode.'">'."\n\t\t\t";
-				$code .= '<div id="video_'.$div_suffix.'_div" class="fitvidsignore kgvid_videodiv" data-id="'.$div_suffix.'" itemscope itemtype="http://schema.org/VideoObject">';
+				$code .= '<div id="video_'.$div_suffix.'_div" class="fitvidsignore kgvid_videodiv" data-id="'.$div_suffix.'" itemprop="video" itemscope itemtype="https://schema.org/VideoObject">';
 				if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailUrl" content="'.esc_attr($query_atts["poster"]).'" />'; }
 				if ( !empty($id) ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 				else { $schema_embedURL = $content; }
@@ -4274,10 +4281,14 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 					set_post_thumbnail($post_parent, $thumb_id);
 				}
 
-				set_post_thumbnail($post['ID'], $thumb_id); //set the video's featured image as well as the post's featured image
 			}
 		}
 		else { update_post_meta($post['ID'], '_kgflashmediaplayer-featured', "notchecked"); }
+
+		if ( !empty($thumb_id) ) { //always set the video's featured image regardless of the plugin setting
+			set_post_thumbnail($post['ID'], $thumb_id);
+		}
+
 		if( isset($attachment['thumbtime']) ) {update_post_meta($post['ID'], '_kgflashmediaplayer-thumbtime', $attachment['thumbtime']); }
 		if( isset($attachment['kgflashmediaplayer-width']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-width', $attachment['kgflashmediaplayer-width']); }
 		if( isset($attachment['kgflashmediaplayer-height']) ) { update_post_meta($post['ID'], '_kgflashmediaplayer-height', $attachment['kgflashmediaplayer-height']); }
