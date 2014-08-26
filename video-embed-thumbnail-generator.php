@@ -393,7 +393,7 @@ function kgvid_plugin_meta_links( $links, $file ) {
 	if ( $file == $plugin ) {
 		return array_merge(
 			$links,
-			array( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation">Donate</a>' )
+			array( '<a href="http://www.kylegilman.net/plugin-donation/">Donate</a>' )
 		);
 	}
 	return $links;
@@ -2361,16 +2361,7 @@ function kgvid_network_settings_page() {
    		</form>
    		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 		<span><?php _e('If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator') ?></span>
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-			<input type="hidden" name="cmd" value="_donations">
-			<input type="hidden" name="business" value="kylegilman@gmail.com">
-			<input type="hidden" name="lc" value="US">
-			<input type="hidden" name="item_name" value="Video Embed & Thumbnail Generator Plugin Donation">
-			<input type="hidden" name="currency_code" value="USD">
-			<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHosted">
-			<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-		</form>
+		<a href="http://www.kylegilman.net/plugin-donation/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</div>
 		<script type='text/javascript'>
 				jQuery(document).ready(function() {
@@ -2426,15 +2417,7 @@ function kgvid_settings_page() {
 		</form>
 		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 		<span><?php _e('If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator') ?></span>
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-			<input type="hidden" name="cmd" value="_donations">
-			<input type="hidden" name="business" value="kylegilman@gmail.com">
-			<input type="hidden" name="lc" value="US">
-			<input type="hidden" name="item_name" value="Video Embed & Thumbnail Generator Plugin Donation">
-			<input type="hidden" name="currency_code" value="USD">
-			<input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHosted">
-			<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-			<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+		<a href="http://www.kylegilman.net/plugin-donation/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</form>
 		</div>
 		<script type='text/javascript'>
