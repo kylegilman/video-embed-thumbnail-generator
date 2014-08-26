@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.3.3
+Version: 4.3.4
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -54,7 +54,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.303,
+		"version" => 4.304,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -91,6 +91,7 @@ function kgvid_default_options_fn() {
 		"gallery_width" => "960",
 		"gallery_height" => "540",
 		"gallery_thumb" => "250",
+		"gallery_end" => "",
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -1314,7 +1315,7 @@ function kgvid_shortcode_atts($atts) {
 		'gallery_exclude' => '',
 		'gallery_include' => '',
 		'gallery_id' => $post_ID,
-		'gallery_end' => '',
+		'gallery_end' => $options['gallery_end'],
 		'volume' => $options['volume'],
 		'mute' => $options['mute'],
 		'title' => $options['overlay_title'],
@@ -2517,6 +2518,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('dimensions', __('Max embedded video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_dimensions', __('Max gallery video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
 	add_settings_field('gallery_thumb', __('Gallery thumbnail width:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_thumb_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_thumb' ) );
+	add_settings_field('gallery_end', __('Gallery playback end action:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_end_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_end' ) );
 	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
 	add_settings_field('autoplay', __('Autoplay:', 'video-embed-thumbnail-generator'), 'kgvid_autoplay_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'autoplay' ) );
 	add_settings_field('loop', _x('Loop:', 'verb', 'video-embed-thumbnail-generator'), 'kgvid_loop_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'loop' ) );
@@ -2684,6 +2686,21 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_gallery_thumb_callback() {
 		$options = kgvid_get_options();
 		echo "<input class='small-text' id='gallery_thumb' name='kgvid_video_embed_options[gallery_thumb]' type='text' value='".$options['gallery_thumb']."' />\n\t";
+	}
+
+	function kgvid_gallery_end_callback() {
+		$options = kgvid_get_options();
+		$items = array();
+		$items = array(
+			__('Stop, but leave popup window open', 'video-embed-thumbnail-generator') => "",
+			__('Autoplay next video in the gallery', 'video-embed-thumbnail-generator') => "next",
+			__('Close popup window', 'video-embed-thumbnail-generator') => "close");
+		echo "<select id='gallery_end' name='kgvid_video_embed_options[gallery_end]'>";
+		foreach($items as $name => $value) {
+			$selected = ($options['gallery_end']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
+		}
+		echo "</select> when current gallery video finishes.\n\t";
 	}
 
 	function kgvid_controlbar_style_callback() {
@@ -3348,6 +3365,10 @@ function kgvid_update_settings() {
 			$options['volume'] = 1;
 			$options['mute'] = false;
 			$options['custom_attributes'] = '';
+		}
+		if ( $options['version'] < 4.304 ) {
+			$options['version'] = 4.304;
+			$options['gallery_end'] = "";
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
