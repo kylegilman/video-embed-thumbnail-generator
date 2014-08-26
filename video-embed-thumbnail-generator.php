@@ -454,6 +454,27 @@ function kgvid_add_upload_mimes ( $existing_mimes=array() ) {
 }
 add_filter('upload_mimes', 'kgvid_add_upload_mimes');
 
+function kgvid_url_to_id($url) {
+
+	global $wpdb;
+	$post_id = false;
+	$uploads = wp_upload_dir();
+
+	$url = str_replace(' ', '', $url); //in case a url with spaces got through
+	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
+ 	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
+	// Get the path to search postmeta for
+ 	$search_url = explode( $uploads['baseurl'] . '/', $search_url );
+
+ 	if ( is_array($search_url) && array_key_exists(1, $search_url) ) {
+		$post_id = (int)$wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_value LIKE '%%%s'", $search_url[1] ) );
+	}
+
+	if ( $post_id ) { return $post_id; }
+	else { return false; }
+
+}
+
 function kgvid_url_exists($url) {
     $hdrs = @get_headers($url);
     return is_array($hdrs) ? preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/',$hdrs[0]) : false;
@@ -824,10 +845,14 @@ function kgvid_get_video_dimensions($video = false) {
 	$ffmpegPath = $options['app_path']."/".$options['video_app'];
 	$movie_info = array();
 
-	$video = str_replace("https://", "http://",  $video);
+	$video_path = url_to_postid($video);
+	if ( $video_path ) { $video = $video_path; }
+	else { //not in the database
+		$video = str_replace("https://", "http://",  $video);
 
-	if ( !empty($options['htaccess_login']) && strpos($video, 'http://') === 0 ) {
-		$video = substr_replace($video, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
+		if ( !empty($options['htaccess_login']) && strpos($video, 'http://') === 0 ) {
+			$video = substr_replace($video, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
+		}
 	}
 
 	$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '"');
@@ -991,6 +1016,9 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 				$watermark_valign = "main_h/2-overlay_h/2-";
 			}
 			else { $watermark_valign = ""; } //top justified
+
+			$watermark_id = kgvid_url_to_id($options['ffmpeg_watermark']['url']);
+			if ( $watermark_id ) { $options['ffmpeg_watermark']['url'] = get_attached_file($watermark_id); }
 
 			$watermark_input = '-i "'.$options['ffmpeg_watermark']['url'].'" ';
 			$watermark_filter = ' -filter_complex "[1:v]scale='.$watermark_width.':-1[watermark];[0:v][watermark]overlay='.$watermark_align.'main_w*'.round($options['ffmpeg_watermark']['x']/100, 3).':'.$watermark_valign.'main_w*'.round($options['ffmpeg_watermark']['y']/100, 3).'"';
@@ -1392,10 +1420,7 @@ function KGVID_shortcode($atts, $content = ''){
 				// workaround for relative video URL (contributed by Lee Fernandes)
 				if(substr($content, 0, 1) == '/') $content = get_bloginfo('url').$content;
 				$content = trim($content);
-				$guid_convert = substr(str_replace(' ', '', $content), 12 );
-				global $wpdb;
-				$query = $wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid LIKE '%%%s'", $guid_convert); //GUID seems to be the only way to get a video URL
-				$id_array[0] = $wpdb->get_var($query);
+				$id_array[0] = kgvid_url_to_id($content);
 			}
 
 			$original_content = $content;
@@ -3143,7 +3168,7 @@ margin-right: 10px;' onchange='document.getElementById(\"volume_number\").value=
 				$encode_dimensions = kgvid_set_h264_encode_dimensions($movie_info, $video_formats[$options['sample_format']]);
 			}
 			else { $encode_dimensions = array( 'width' => $movie_info['width'], 'height' => $movie_info['height'] ); }
-			$encode_string = kgvid_generate_encode_string(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
+			$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
 		}
 
 		if ( is_array($encode_string) ) { $encode_string_implode = implode('' , $encode_string); }
@@ -3468,7 +3493,7 @@ function kgvid_ajax_save_settings() {
 					$encode_dimensions = kgvid_set_h264_encode_dimensions($movie_info, $video_formats[$validated_options['sample_format']]);
 				}
 				else { $encode_dimensions = array( 'width' => $movie_info['width'], 'height' => $movie_info['height'] ); }
-				$encode_string = kgvid_generate_encode_string(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
+				$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
 				$auto_thumb_label = kgvid_generate_auto_thumb_label();
 			}
 		}
@@ -4745,7 +4770,6 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 	$video_formats = kgvid_video_formats();
 	$sanitized_url = kgvid_sanitize_url($movieurl);
 	$movieurl = $sanitized_url['movieurl'];
-	$movieurl = str_replace("https://", "http://",  $movieurl);
 	$movie_info = kgvid_get_video_dimensions($movieurl);
 	$filepath = "";
 
@@ -5295,10 +5319,8 @@ function kgvid_encode_progress($video_key, $format, $page) {
 								$title = $sanitized_url['basename'];
 							}
 
-							global $wpdb;
 							global $user_ID;
-							$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s'", $video_encode_queue[$video_key]['encode_formats'][$format]['url'] ); //check for existing entry in the db
-							$video_id = $wpdb->get_var($query);
+							$video_id = kgvid_url_to_id($video_encode_queue[$video_key]['encode_formats'][$format]['url']);
 							if ( !$video_id ) {
 								$wp_filetype = wp_check_filetype(basename($filepath), null );
 								$video_formats = kgvid_video_formats();
