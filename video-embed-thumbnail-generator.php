@@ -849,17 +849,15 @@ function kgvid_get_video_dimensions($video = false) {
 	$video = str_replace("https://", "http://",  $video);
 
 	if ( strpos($video, 'http://') === 0 ) { //if it's a URL
-		$video_id = url_to_postid($video);
+		$video_id = kgvid_url_to_id($video);
 		if ( $video_id ) {
 			$video_path = get_attached_file($video_id);
 			$video = $video_path;
 		}
 		else { //not in the database
-
 			if ( !empty($options['htaccess_login']) && strpos($video, 'http://') === 0 ) {
 				$video = substr_replace($video, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
 			}
-
 		}
 	}
 
@@ -1025,8 +1023,12 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 			}
 			else { $watermark_valign = ""; } //top justified
 
-			$watermark_id = kgvid_url_to_id($options['ffmpeg_watermark']['url']);
-			if ( $watermark_id ) { $options['ffmpeg_watermark']['url'] = get_attached_file($watermark_id); }
+			$options['ffmpeg_watermark']['url'] = str_replace("https://", "http://",  $options['ffmpeg_watermark']['url']);
+			if ( strpos($options['ffmpeg_watermark']['url'], 'http://') === 0 ) {
+				$watermark_id = false;
+				$watermark_id = kgvid_url_to_id($options['ffmpeg_watermark']['url']);
+				if ( $watermark_id ) { $options['ffmpeg_watermark']['url'] = get_attached_file($watermark_id); }
+			}
 
 			$watermark_input = '-i "'.$options['ffmpeg_watermark']['url'].'" ';
 			$watermark_filter = ' -filter_complex "[1:v]scale='.$watermark_width.':-1[watermark];[0:v][watermark]overlay='.$watermark_align.'main_w*'.round($options['ffmpeg_watermark']['x']/100, 3).':'.$watermark_valign.'main_w*'.round($options['ffmpeg_watermark']['y']/100, 3).'"';
@@ -3169,7 +3171,7 @@ margin-right: 10px;' onchange='document.getElementById(\"volume_number\").value=
 		$encode_string = "";
 		if ( $options['ffmpeg_exists'] == "on" ) {
 
-			$movie_info = kgvid_get_video_dimensions(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4");
+			$movie_info = kgvid_get_video_dimensions(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4");
 			$uploads = wp_upload_dir();
 			if ( $video_formats[$options['sample_format']]['type'] == 'h264' ) {
 				$encode_dimensions = kgvid_set_h264_encode_dimensions($movie_info, $video_formats[$options['sample_format']]);
@@ -3497,7 +3499,7 @@ function kgvid_ajax_save_settings() {
 			$options_updated = update_option('kgvid_video_embed_options', $validated_options);
 
 			if ( $validated_options['ffmpeg_exists'] == "on" ) {
-				$movie_info = kgvid_get_video_dimensions(plugin_dir_url(__FILE__)."images/sample-video-h264.mp4");
+				$movie_info = kgvid_get_video_dimensions(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4");
 				$uploads = wp_upload_dir();
 				$video_formats = kgvid_video_formats();
 				if ( $video_formats[$validated_options['sample_format']]['type'] == 'h264' ) {
@@ -3632,13 +3634,19 @@ function kgvid_cron_new_attachment_handler($post_id) {
 
 	if ( $options['auto_encode'] == "on" ) {
 		$video_formats = kgvid_video_formats();
+		$something_to_encode = false;
 		$encode_checked = array();
 		foreach ( $video_formats as $format => $format_stats ) {
-			if ( $options['encode_'.$format] == "on" ) { $encode_checked[$format] = "true"; }
+			if ( $options['encode_'.$format] == "on" ) {
+				$encode_checked[$format] = "true";
+				$something_to_encode = true;
+			}
 			else { $encode_checked[$format] = "notchecked"; }
 		}
-		$output = kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
-		$output = kgvid_encode_videos();
+		if ( $something_to_encode ) {
+			$output = kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
+			$output = kgvid_encode_videos();
+		}
 	}
 }
 add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler');
