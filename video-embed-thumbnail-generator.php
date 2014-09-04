@@ -4793,8 +4793,10 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id) {
 	$video_formats = kgvid_video_formats();
 	$sanitized_url = kgvid_sanitize_url($movieurl);
 	$movieurl = $sanitized_url['movieurl'];
-	$movie_info = kgvid_get_video_dimensions($movieurl);
-	$filepath = "";
+
+	if ( get_post_type($postID) == "attachment" ) { $filepath = get_attached_file($postID); }
+	else { $filepath = $movieurl; }
+	$movie_info = kgvid_get_video_dimensions($filepath);
 
 	if ($movie_info['worked'] == true) { //if FFMPEG was able to open the file
 
