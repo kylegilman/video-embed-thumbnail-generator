@@ -4068,6 +4068,7 @@ function kgvid_ajax_save_html5_thumb() {
 			update_post_meta($post_id, '_kgflashmediaplayer-actualwidth', $thumb_dimensions['width']);
 			update_post_meta($post_id, '_kgflashmediaplayer-actualheight', $thumb_dimensions['height']);
 		}
+		$editor->set_quality( 90 );
 		$new_image_info = $editor->save( $uploads['path'].'/thumb_tmp/'.$posterfile.'.jpg', 'image/jpeg' );
 		unlink($tmp_posterpath);
 		if ( $total > 1 ) {
