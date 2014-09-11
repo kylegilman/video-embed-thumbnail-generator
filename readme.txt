@@ -221,10 +221,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.3.4 - August xx, 2014 =
-* Updated Video.js to version 4.7.3
+= 4.3.4 - September xx, 2014 =
+* Updated Video.js to version 4.8.1
 * Added default gallery end option to play the next video or close the popup window.
 * Restored watermark overlay in fullscreen for Video.js and WordPress Default players.
+* Restored browser thumbnail generation quality in WordPress 4.0.
+* Fixed bug that prevented choosing thumbnails from the small video player in the new media library popup window in WordPress 4.0.
 * Removed instances in which a video or watermark in the WordPress database would be input to FFMPEG through http instead of using the file path. Should fix some I/O errors, particularly with SSL.
 * Now setting the thumbnail as the featured image for the video attachment regardless of plugin settings.
 
