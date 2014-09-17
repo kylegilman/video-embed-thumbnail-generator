@@ -77,6 +77,8 @@ function kgvid_break_video_on_close(postID) {
 
 function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for making thumbnails
 
+	var video = document.getElementById('thumb-video-'+postID);
+
 	jQuery('#attachments-'+postID+'-thumbgenerate').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-thumbrandomize').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-numberofthumbs').prop('disabled', false).attr('title', '');
@@ -84,11 +86,12 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) {  //this is the Media Library pop-up introduced in WordPress 4.0
 		var mep_id = jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id');
 		mejs.players[mep_id].remove();
+		var current_source = video.currentSrc;
+		video.src = current_source.split("?")[0];
+		video.load();
 	}
 
 	jQuery('#thumb-video-'+postID+'-container').show();
-
-	var video = document.getElementById('thumb-video-'+postID);
 
 	if ( video != null && jQuery(video).data('setup') != true ) {
 
