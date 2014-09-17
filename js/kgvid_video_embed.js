@@ -22,7 +22,7 @@ jQuery(document).ready(function() {
 
 });
 
-function kgvid_SetVideo(id) {
+function kgvid_SetVideo(id) { //for galleries
 
 	//set the viewport meta tag so the gallery fits in iOS
 	var viewport_meta = jQuery('meta[name="viewport"]').first();
@@ -425,6 +425,9 @@ function kgvid_resize_video(id) {
 				jQuery('#video_'+id+'_div').height(set_height);
 				jQuery('#video_'+id).attr('width',set_width).attr('height',set_height);
 				jQuery('#video_'+id+'_html5_api').attr('width',set_width).attr('height',set_height);
+			}
+			if ( video_vars.player_type == "WordPress Default" ) {
+				jQuery('#kgvid_'+id+'_wrapper').find('.wp-video').attr('style', 'width:'+set_width+'px; height:'+set_height+'px;');
 			}
 
 			if ( video_vars.player_type == "iOS" ) {
