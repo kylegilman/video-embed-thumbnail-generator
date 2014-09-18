@@ -221,6 +221,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.3.5 - September 17, 2014 =
+* Fixed responsive height for videos using WordPress Default player.
+* Better fix for bug that prevented choosing thumbnails from the small video player in the new media library popup window in WordPress 4.0.
+
 = 4.3.4 - September 10, 2014 =
 * Updated Video.js to version 4.8.1
 * Added default gallery end option to play the next video or close the popup window.
