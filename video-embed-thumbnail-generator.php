@@ -5113,7 +5113,7 @@ function kgvid_encode_videos() {
 
 					$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
 
-					if ( !empty($cmd) ) { $cmd = $cmd.' </dev/null > "'.$logfile.'" 2>&1 & echo $!'; }
+					if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
 
 					else {
 						$arr = array ( "embed_display"=>"<span class='kgvid_warning'>".__("Error: Command 'escapeshellcmd' is disabled on your server.", 'video-embed-thumbnail-generator')."</span>" );
