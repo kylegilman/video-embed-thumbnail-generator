@@ -1844,7 +1844,16 @@ function KGVID_shortcode($atts, $content = ''){
 					$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
 
 					$code .= '<div class="kgvid_video_gallery_thumb" id="kgvid_video_gallery_thumb_'.$attachment->ID.'" data-id="'.$attachment->ID.'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
-				}
+
+					$shortcode = '[KGVID autoplay="true" id="'.$attachment->ID.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"';
+					if ($downloadlink == "checked") { $shortcode .= ' downloadlink="true"'; }
+					$shortcode .= '][/KGVID]';
+
+					$popup_code = do_shortcode($shortcode);
+
+					wp_localize_script( 'kgvid_video_embed', 'kgvid_video_popup_code_'.$attachment->ID, $popup_code ); //add popup video code in footer
+
+				} //end attachment loop
 
 				$code .= '</div>'; //end wrapper div
 
@@ -6043,63 +6052,6 @@ function kgvid_count_play() {
 }
 add_action( 'wp_ajax_kgvid_count_play', 'kgvid_count_play' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_count_play', 'kgvid_count_play' ); // ajax for not logged in users
-
-function kgvid_set_gallery_video_code() {
-
-	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
-	$options = kgvid_get_options();
-	$id = $_POST['video_id'];
-	$dimensions = kgvid_set_video_dimensions($id, true);
-	$downloadlink = get_post_meta($id, "_kgflashmediaplayer-downloadlink", true);
-
-	$shortcode = '[KGVID autoplay="true" id="'.$id.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"';
-	if ($downloadlink == "checked") { $shortcode .= ' downloadlink="true"'; }
-	$shortcode .= '][/KGVID]';
-
-	$code = do_shortcode($shortcode);
-	$width = $dimensions['width'];
-	$code = preg_replace('/width: (.*?)px/i', "width: ".$width."px", $code); //WordPress thinks we're in the Admin area so it sets the content_width the same every time
-	$code = preg_replace('/width="(.*?)"/i', 'width='.$width.'"', $code);
-	$post = get_post($id);
-
-	if ( $options['embed_method'] == "JW Player" && !class_exists('JWP6_Shortcode') ) { $options['embed_method'] = "Video.js"; }
-
-	$video_variables = array(
-		'id' => $id,
-		'player_type' => $options['embed_method'],
-		'width' => $dimensions['width'],
-		'height' => $dimensions['height'],
-		'countable' => "true",
-		'autoplay' => "true",
-		'set_volume' => '',
-		'meta' => "true",
-		'endofvideooverlay' => $options['endofvideooverlay'],
-		'resize' => "true",
-		'right_click' => $options['right_click']
-	);
-
-	if ( $options['embed_method'] == "Strobe Media Playback" ) {
-
-		$content = wp_get_attachment_url($id);
-		$encodevideo_info = kgvid_encodevideo_info($content, $id);
-		$flash_settings = kgvid_generate_flashvars($content, $video_variables, $encodevideo_info, $id);
-
-		$video_variables['swfurl'] = plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf";
-		$video_variables['expressinstallswfurl'] = plugins_url("", __FILE__)."/flash/expressInstall.swf";
-		$video_variables['flashvars'] = $flash_settings['flashvars'];
-		$video_variables['params'] = $flash_settings['params'];
-
-	} //if Strobe Media
-
-	$data = array( 'kgvid_video_vars' => $video_variables, 'code' => $code );
-	$data = json_encode($data);
-	echo $data;
-	die();
-
-}
-add_action( 'wp_ajax_kgvid_set_gallery_video', 'kgvid_set_gallery_video_code' ); // ajax for logged in users
-add_action( 'wp_ajax_nopriv_kgvid_set_gallery_video', 'kgvid_set_gallery_video_code' ); // ajax for not logged in users
-
 
 function kgvid_add_contextual_help_tab() {
 
