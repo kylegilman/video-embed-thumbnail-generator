@@ -40,8 +40,10 @@ function kgvid_SetVideo(id) { //for galleries
 	var width = jQuery('#kgvid_video_gallery_thumb_'+id).data('width');
 	var height = jQuery('#kgvid_video_gallery_thumb_'+id).data('height');
 	var aspect_ratio = Math.round(height/width*1000)/1000
-	if ( width > window.innerWidth ) {
-		width = window.innerWidth-60;
+	var window_width = window.outerWidth;
+	if ( window.outerWidth == 0 ) { window_width = window.innerWidth; }
+	if ( width > window_width ) {
+		width = window_width-60;
 		height = Math.round(width * aspect_ratio);
 	}
 	var frame_height = height;
@@ -394,7 +396,11 @@ function kgvid_resize_video(id) {
 		var aspect_ratio = Math.round(set_height/set_width*1000)/1000
 		var reference_div = jQuery('#kgvid_'+id+'_wrapper').parent();
 		if ( reference_div.is('body') ) { parent_width = window.innerWidth; }
-		if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) { parent_width = window.innerWidth-40; }
+		if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) {
+			var window_width = document.clientWidth;
+			if ( window.outerWidth == 0 ) { window_width = window.innerWidth; }
+			parent_width = window_width-40;
+		}
 		else { parent_width = reference_div.width(); }
 		if ( parent_width < set_width ) { set_width = parent_width; }
 
