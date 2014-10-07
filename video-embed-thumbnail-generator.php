@@ -1778,7 +1778,7 @@ function KGVID_shortcode($atts, $content = ''){
 				} //if Strobe Media
 
 				wp_localize_script( 'kgvid_video_embed', 'kgvid_video_vars_'.$div_suffix, $video_variables ); //add video variables in footer
-error_log($kgvid_video_id.": ".$id);
+
 				$kgvid_video_id++;
 
 			} //end id_array loop
@@ -5284,7 +5284,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 					if ( is_array($time_matches) && array_key_exists(1, $time_matches) != true ) { //if something other than the regular FFMPEG encoding output check for these
 						preg_match('/video:(.*?) /', $lastline, $video_matches);
 						preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
-						preg_match('/frames left in the queue on closing/', $lastline, $queue_matches)
+						preg_match('/frames left in the queue on closing/', $lastline, $queue_matches);
 					}
 					if ( is_array($time_matches) && array_key_exists(1, $time_matches) == true ) { //still encoding
 
