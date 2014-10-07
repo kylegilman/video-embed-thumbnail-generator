@@ -1158,7 +1158,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.8.1' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.9.0' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -1231,7 +1231,7 @@ function kgvid_video_embed_print_scripts() {
 	$options = kgvid_get_options();
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.8.1', true );
+	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.9.0', true );
 	//wp_register_script( 'video-js-resolutions', plugins_url("", __FILE__).'/video-js/resolutions/video-js-resolutions.js', array('video-js'), $options['version'], true );
 	//wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector/video-quality-selector.js', array('video-js'), $options['version'], true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
@@ -1277,7 +1277,7 @@ add_action('wp_head', 'kgvid_video_embed_print_scripts', 99);
 
 function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
 
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.4.3"; }</script>'."\n";
+	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.5.0"; }</script>'."\n";
 
 }
 
@@ -1368,6 +1368,9 @@ function kgvid_shortcode_atts($atts) {
 function KGVID_shortcode($atts, $content = ''){
 
 	global $content_width;
+	static $kgvid_video_id;
+	if ( !$kgvid_video_id ) { $kgvid_video_id = 0; }
+
 	$content_width_save = $content_width;
 
 	$code = "";
@@ -1437,6 +1440,8 @@ function KGVID_shortcode($atts, $content = ''){
 
 			foreach ( $id_array as $id ) { //loop through videos
 
+				$div_suffix = 'kgvid_'.strval($kgvid_video_id);
+
 				$query_atts = kgvid_shortcode_atts($atts); //reset values so they can be different with multiple videos
 				$content = $original_content;
 				$sources = array();
@@ -1452,7 +1457,6 @@ function KGVID_shortcode($atts, $content = ''){
 						if ( $content == false ) { echo "Invalid video ID"; continue; }
 					}
 
-					$div_suffix = $id;
 					$encodevideo_info = kgvid_encodevideo_info($content, $id);
 					$attachment_info = get_post( $id );
 
@@ -1484,7 +1488,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$countable = true;
 				}
 				else { //video is not in the database
-					$div_suffix = substr(uniqid(rand(), true),0,4);
+
 					$encodevideo_info = kgvid_encodevideo_info($content, $post_ID); //send the id of the post the video's embedded in
 					if ( $query_atts['title'] == "true" ) {
 						$query_atts['title'] = "false";
@@ -1746,6 +1750,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 				$video_variables = array(
 					'id' => $div_suffix,
+					'attachment_id' => $id,
 					'player_type' => $options['embed_method'],
 					'width' => $query_atts['width'],
 					'height' => $query_atts['height'],
@@ -1773,6 +1778,8 @@ function KGVID_shortcode($atts, $content = ''){
 				} //if Strobe Media
 
 				wp_localize_script( 'kgvid_video_embed', 'kgvid_video_vars_'.$div_suffix, $video_variables ); //add video variables in footer
+error_log($kgvid_video_id.": ".$id);
+				$kgvid_video_id++;
 
 			} //end id_array loop
 
@@ -1843,7 +1850,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 					$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
 
-					$code .= '<div class="kgvid_video_gallery_thumb" id="kgvid_video_gallery_thumb_'.$attachment->ID.'" data-id="'.$attachment->ID.'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
+					$code .= '<div class="kgvid_video_gallery_thumb" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id).'" data-id="kgvid_'.strval($kgvid_video_id).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" style="width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
 
 					$shortcode = '[KGVID autoplay="true" id="'.$attachment->ID.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"';
 					if ($downloadlink == "checked") { $shortcode .= ' downloadlink="true"'; }
@@ -1851,7 +1858,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 					$popup_code = do_shortcode($shortcode);
 
-					wp_localize_script( 'kgvid_video_embed', 'kgvid_video_popup_code_'.$attachment->ID, $popup_code ); //add popup video code in footer
+					wp_localize_script( 'kgvid_video_embed', 'kgvid_video_popup_code_kgvid_'.strval($kgvid_video_id-1), $popup_code ); //add popup video code in footer
 
 				} //end attachment loop
 

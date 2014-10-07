@@ -9,6 +9,7 @@ jQuery(document).ready(function() {
 	});
 
 	jQuery('.kgvid_videodiv').each(function(){ //setup individual videos
+		var id = jQuery(this).data('id');
 		if ( kgvid_video_vars[id].player_type == "Strobe Media Playback" ) {
 			swfobject.embedSWF(kgvid_video_vars[id].swfurl, 'video_'+id, kgvid_video_vars[id].width, kgvid_video_vars[id].height, '10.1.0', kgvid_video_vars[id].expressinstallswfurl, kgvid_video_vars[id].flashvars, kgvid_video_vars[id].params);
 		}
@@ -492,7 +493,7 @@ function kgvid_video_counter(id, event) {
 		jQuery.post(kgvid_ajax_object.ajaxurl, {
 			action: 'kgvid_count_play',
 			security: kgvid_ajax_object.ajax_nonce,
-			post_id: id,
+			post_id: video_vars.attachment_id,
 			video_event: event
 		}, function(data) {
 			if ( event == "play" ) { jQuery('#video_'+id+'_viewcount').html(data+' views'); }
