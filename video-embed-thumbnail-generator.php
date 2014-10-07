@@ -5284,6 +5284,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 					if ( is_array($time_matches) && array_key_exists(1, $time_matches) != true ) { //if something other than the regular FFMPEG encoding output check for these
 						preg_match('/video:(.*?) /', $lastline, $video_matches);
 						preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
+						preg_match('/frames left in the queue on closing/', $lastline, $queue_matches)
 					}
 					if ( is_array($time_matches) && array_key_exists(1, $time_matches) == true ) { //still encoding
 
@@ -5330,7 +5331,11 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong> <script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
 						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
 					}
-					elseif ( ( is_array($video_matches) && array_key_exists(1, $video_matches) == true ) || ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) == true ) ) { //encoding complete
+					elseif (
+						( is_array($video_matches) && array_key_exists(1, $video_matches) == true )
+						|| ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) == true )
+						|| ( is_array($queue_matches) && array_key_exists(1, $queue_matches) == true )
+					) { //encoding complete
 
 						if ( $blog_id ) { switch_to_blog($blog_id); }
 
