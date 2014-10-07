@@ -148,9 +148,6 @@ function kgvid_SetVideo(id) { //for galleries
 					jwplayer(jQuery('#kgvid_'+id+'_wrapper .jwplayer').attr('id')).stop();
 				}
 			}
-			try{
-				delete kgvid_video_vars[id];
-			}catch(e){} //gets around error thrown in IE 8
 
 			jQuery(window).off('resize', kgvid_resize_video(id));
 
@@ -409,7 +406,7 @@ function kgvid_resize_video(id) {
 
 			jQuery('#kgvid_'+id+'_wrapper').width(set_width);
 			var set_height = Math.round(set_width * aspect_ratio);
-			if (  video_vars.player_type == "Video.js" ) {
+			if (  video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null ) {
 				videojs('video_'+id).width(set_width).height(set_height);
 				if ( set_width < 500 ) {
 					var scale = Math.round(100*set_width/500)/100;
