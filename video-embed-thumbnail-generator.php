@@ -2442,13 +2442,9 @@ function kgvid_settings_page() {
 		<script type='text/javascript'>
 			jQuery(document).ready(function() {
 					kgvid_switch_settings_tab('general');
-					jQuery('form :input').not('#volume, #volume_number').change(function() {
+					jQuery('form :input').change(function() {
   						kgvid_save_plugin_settings(this);
 					});
-					jQuery('#volume').on('mouseup', function() {
-  						kgvid_save_plugin_settings(this);
-					});
-
 				}
 			);
 		</script>
@@ -2751,9 +2747,17 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_audio_callback() {
 		$options = kgvid_get_options();
-		echo "<input type='range' min='0' max='1' value='".$options['volume']."' step='0.05' class='affects_player' style='vertical-align: middle;
-margin-right: 10px;' onchange='document.getElementById(\"volume_number\").value=this.value*100+\"%\"' oninput='document.getElementById(\"volume_number\").value=this.value*100+\"%\"' name='kgvid_video_embed_options[volume]' id='volume' /><input disabled id='volume_number' class='small-text' style='font-size:90%' value='". floatval($options['volume'])*100 ."%' /><br />\n\t";
-		echo "<input class='affects_player' ".checked( $options['mute'], "on", false )." id='mute' name='kgvid_video_embed_options[mute]' type='checkbox' /> <label for='mute'>".__('Mute', 'video-embed-thumbnail-generator')."</label>\n\t";
+		$items = array();
+		$percent = 0;
+		for ( $percent = 0; $percent <= 1.05; $percent = $percent + 0.05 ) {
+			$items[sprintf( _x('%d%%', 'a list of percentages. eg: 15%', 'video-embed-thumbnail-generator'), round($percent*100) )] = strval($percent);
+		}
+		echo "<select class='affects_player' id='volume' name='kgvid_video_embed_options[volume]'>";
+		foreach($items as $name=>$value) {
+			$selected = ($options['volume']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
+		}
+		echo "</select> <input class='affects_player' ".checked( $options['mute'], "on", false )." id='mute' name='kgvid_video_embed_options[mute]' type='checkbox' /> <label for='mute'>".__('Mute', 'video-embed-thumbnail-generator')."</label>\n\t";
 
 	}
 
