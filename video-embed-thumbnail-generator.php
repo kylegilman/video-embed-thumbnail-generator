@@ -2442,9 +2442,13 @@ function kgvid_settings_page() {
 		<script type='text/javascript'>
 			jQuery(document).ready(function() {
 					kgvid_switch_settings_tab('general');
-					jQuery('form :input').change(function() {
+					jQuery('form :input').not('#volume, #volume_number').change(function() {
   						kgvid_save_plugin_settings(this);
 					});
+					jQuery('#volume').on('mouseup', function() {
+  						kgvid_save_plugin_settings(this);
+					});
+
 				}
 			);
 		</script>
