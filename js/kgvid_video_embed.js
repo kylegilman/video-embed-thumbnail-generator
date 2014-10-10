@@ -227,7 +227,7 @@ function kgvid_setup_video(id) {
 				'background-image':'url('+video_vars.endofvideooverlay+')'
 				}).fadeIn();
 
-				player.on('timeupdate', kgvid_timeupdate);
+				setTimeout(function() { player.on('timeupdate', kgvid_timeupdate); }, 500);
 
 			}
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
