@@ -90,48 +90,49 @@ function kgvid_SetVideo(id) { //for galleries
 
 			//load the video player embed code
 
+			if ( jQuery('#kgvid_popup_video_holder_'+id).length == 1 ) { //make sure the user hasn't moved on to another video
 
-				if ( jQuery('#kgvid_popup_video_holder_'+id).length == 1 ) { //make sure the user hasn't moved on to another video
+				var video_vars = kgvid_video_vars[id];
+				var popup_code = eval('kgvid_video_popup_code_'+id);
 
-					var video_vars = kgvid_video_vars[id];
-					var popup_code = eval('kgvid_video_popup_code_'+id);
+				jQuery('#kgvid_popup_video_holder_'+id).html(popup_code);
 
-					jQuery('#kgvid_popup_video_holder_'+id).html(popup_code);
+				if ( kgvid_video_vars[id].player_type == "Strobe Media Playback" ) {
+							swfobject.embedSWF(kgvid_video_vars[id].swfurl, 'video_'+id, kgvid_video_vars[id].width, kgvid_video_vars[id].height, '10.1.0', kgvid_video_vars[id].expressinstallswfurl, kgvid_video_vars[id].flashvars, kgvid_video_vars[id].params);
+				}
 
-					if ( kgvid_video_vars[id].player_type == "Strobe Media Playback" ) {
-								swfobject.embedSWF(kgvid_video_vars[id].swfurl, 'video_'+id, kgvid_video_vars[id].width, kgvid_video_vars[id].height, '10.1.0', kgvid_video_vars[id].expressinstallswfurl, kgvid_video_vars[id].flashvars, kgvid_video_vars[id].params);
-					}
+				jQuery.modal.setContainerDimensions();
+				kgvid_setup_video(id);
+				jQuery.modal.setPosition();
 
-					kgvid_setup_video(id);
-					jQuery.modal.setContainerDimensions();
-					dialog.wrap.css('overflow', 'hidden'); //disable scroll bars
-					if ( meta > 0 ) { jQuery('#kgvid-simplemodal-container').css('color','white'); } //show text if there's anything to see below the video
+				dialog.wrap.css('overflow', 'hidden'); //disable scroll bars
+				if ( meta > 0 ) { jQuery('#kgvid-simplemodal-container').css('color','white'); } //show text if there's anything to see below the video
 
-					if ( video_vars.player_type == "Video.js" ) {
-						videojs('video_'+id).load();
-						videojs('video_'+id).play();
-					}//end if Video.js
+				if ( video_vars.player_type == "Video.js" ) {
+					videojs('video_'+id).load();
+					videojs('video_'+id).play();
+				}//end if Video.js
 
-					if ( video_vars.player_type == "WordPress Default" ) {
-						jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
-							success: function(mediaElement, domObject) {
-								if (mediaElement.pluginType == 'flash' || mediaElement.pluginType == 'silverlight') {
-									mediaElement.addEventListener('canplay', function() {
-										// Player is ready
-										mediaElement.play();
-									}, false);
+				if ( video_vars.player_type == "WordPress Default" ) {
+					jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
+						success: function(mediaElement, domObject) {
+							if (mediaElement.pluginType == 'flash' || mediaElement.pluginType == 'silverlight') {
+								mediaElement.addEventListener('canplay', function() {
+									// Player is ready
+									mediaElement.play();
+								}, false);
 
-									mediaElement.addEventListener('ended', function() {
-										if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
-											kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
-										}
-									}, false);
-								}//end if flash or silverlight
-								else { mediaElement.play(); }
-							}
-						});
-					}//end if WordPress Default
-				}//end check to make sure video still needs to load
+								mediaElement.addEventListener('ended', function() {
+									if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
+										kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
+									}
+								}, false);
+							}//end if flash or silverlight
+							else { mediaElement.play(); }
+						}
+					});
+				}//end if WordPress Default
+			}//end check to make sure video still needs to load
 
 		}, //end onShow function
 		onClose: function(dialog) {
@@ -394,9 +395,9 @@ function kgvid_resize_video(id) {
 		var aspect_ratio = Math.round(set_height/set_width*1000)/1000
 		var reference_div = jQuery('#kgvid_'+id+'_wrapper').parent();
 		if ( reference_div.is('body') ) { parent_width = window.innerWidth; }
-		if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) {
-			var window_width = document.clientWidth;
-			if ( window.outerWidth == 0 ) { window_width = window.innerWidth; }
+		if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) { //if it's a pop-up video
+			var window_width = jQuery(window).width();
+			var window_height = jQuery(window).height();
 			parent_width = window_width-40;
 		}
 		else { parent_width = reference_div.width(); }
@@ -406,6 +407,12 @@ function kgvid_resize_video(id) {
 
 			jQuery('#kgvid_'+id+'_wrapper').width(set_width);
 			var set_height = Math.round(set_width * aspect_ratio);
+
+			if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id && set_height > window_height-60 ) {
+				set_height = window_height-60;
+				set_width = Math.round(set_height / aspect_ratio);
+			}
+
 			if (  video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null ) {
 				videojs('video_'+id).width(set_width).height(set_height);
 				if ( set_width < 500 ) {
