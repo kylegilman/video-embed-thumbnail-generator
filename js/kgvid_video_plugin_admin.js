@@ -1007,6 +1007,20 @@ function kgvid_hide_plugin_settings() {
 
 	}
 
+	if ( encoding_tab ) {
+
+		var moov = jQuery('#moov').val();
+
+		if ( moov == 'none' || moov == 'movflag' ) {
+			jQuery('#moov_path_p').hide();
+		}
+		else {
+			jQuery('.kgvid_moov_option').html(moov);
+			jQuery('#moov_path_p').show();
+		}
+
+	}
+
 	if ( ffmpeg_exists == "notinstalled" ) {
 		jQuery(".kgvid_video_app_required").addClass("kgvid_thumbnail_overlay");
 		jQuery(".kgvid_video_app_required").attr('title', kgvidL10n.ffmpegrequired);

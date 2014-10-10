@@ -3061,12 +3061,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
 		$items = array(__("none", 'video-embed-thumbnail-generator')=>"none", "movflags faststart"=>"movflag", "qt-faststart"=>"qt-faststart", "MP4Box"=>"MP4Box");
-		echo "<select id='moov' name='kgvid_video_embed_options[moov]' class='affects_ffmpeg'>";
+		echo "<select onchange='kgvid_hide_plugin_settings()' id='moov' name='kgvid_video_embed_options[moov]' class='affects_ffmpeg'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['moov']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".sprintf( __('By default %1$s places moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start and can prevent Flash players from playing them at all. Since approximately October 2012 %1$s can fix the problem at the end of the encoding process by using the option `movflags faststart`. This is the easiest and fastest way to correct the problem, but older versions of %1$s will not work if you select the movflags option. If you can\'t update to a new version of %1$s, select qt-faststart or MP4Box which will run after encoding is finished if they are installed on your server.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>")."</span></a>";
+		echo "<p id='moov_path_p'>Path to <span class='kgvid_moov_option'>".$options['moov']."</span>: <input class='regular-text code affects_ffmpeg' id='moov_path' name='kgvid_video_embed_options[moov_path]' type='text' value='".$options['moov_path']."' /></p>";
 		echo "</div>\n\t";
 	}
 
@@ -3395,6 +3396,10 @@ function kgvid_update_settings() {
 		if ( $options['version'] < 4.304 ) {
 			$options['version'] = 4.304;
 			$options['gallery_end'] = "";
+		}
+		if ( $options['version'] < 4.306 ) {
+			$options['version'] = 4.306;
+			$options['moov_path'] = $options['app_path'];
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5208,7 +5213,7 @@ function kgvid_test_ffmpeg() {
 	if ( file_exists($uploads['path']."/sample-video-h264".$suffix) ) {
 
 		if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
-			$output .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264".$suffix);
+			$arr['output'] .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264".$suffix);
 		}
 
 		if ( $options['ffmpeg_watermark']['url'] != "" ) {
@@ -5646,9 +5651,11 @@ function kgvid_fix_moov_atom($filepath) {
 
 		$output = "\n".__('Fixing moov atom for streaming', 'video-embed-thumbnail-generator');
 
+		if ( !empty($options['moov_path']) ) { $options['app_path'] = $options['moov_path']; }
+
 		if ( $options['moov'] == 'qt-faststart' && file_exists($filepath) ) {
 			$faststart_tmp_file = str_replace('.mp4', '-faststart.mp4', $filepath);
-			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." ".$filepath." ".$faststart_tmp_file);
+			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." ".$filepath." ".$faststart_tmp_file)." 2>&1";
 			$output .= "\n".$cmd."\n";
 			exec($cmd, $qtfaststart_output, $returnvalue);
 			$output .= implode("\n", $qtfaststart_output);
@@ -5659,7 +5666,7 @@ function kgvid_fix_moov_atom($filepath) {
 		}//if qt-faststart is selected
 
 		if ( $options['moov'] == 'MP4Box' ) {
-			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." -inter 500 ".$filepath);
+			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." -inter 500 ".$filepath)." 2>&1";
 			$output .= "\n".$cmd."\n";
 			exec($cmd, $mp4box_output, $returnvalue);
 			$output .= implode("\n", $mp4box_output);
