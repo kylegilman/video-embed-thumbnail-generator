@@ -3147,7 +3147,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_audio_bitrate_options_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
-		$items = array(96, 112, 128, 160, 192, 224, 256, 320);
+		$items = array(32, 64, 96, 112, 128, 160, 192, 224, 256, 320);
 		echo "<select id='audio_bitrate' name='kgvid_video_embed_options[audio_bitrate]' class='affects_ffmpeg'>";
 		foreach($items as $item) {
 			$selected = ($options['audio_bitrate']==$item) ? 'selected="selected"' : '';
