@@ -1682,7 +1682,7 @@ function KGVID_shortcode($atts, $content = ''){
 						if ( $format != "original" && $encodevideo_info[$format."url"] == $content ) { unset($sources['original']); }
 						if ( $encodevideo_info[$format."_exists"] ) {
 
-							$sources[$format] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format."url"]).'" type="'.$format_stats["mime"].'"';
+							$sources[$format] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format."url"]).'?id='.$kgvid_video_id.'" type="'.$format_stats["mime"].'"';
 							/* if ( $format_stats['type'] == 'mp4' ) {
 								$sources[$format] .= ' data-res="'.$video_format_labels[$format].'"';
 								if ( $mp4already ) { //there is more than one resolution available
