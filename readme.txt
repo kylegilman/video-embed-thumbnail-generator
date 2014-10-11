@@ -221,6 +221,20 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.3.6 - October 11, 2014 =
+* Updated Video.js to version 4.9.0
+* Changed pop-up video gallery to use inline code rather than an AJAX query.
+* Changed video IDs to allow the same video to be embedded multiple times on a page.
+* Changed volume slider on plugin settings page to drop-down menu to fix settings save errors in Windows.
+* Added buttons to generate thumbnails and encode alternate formats for all previously uploaded videos.
+* Added option to encode 64 and 32 kbps audio.
+* Added option to set a different application path for qt-faststart or MP4Box.
+* Restored display of moov atom fix process in FFMPEG test output.
+* Fixed bug that made pop-up video windows 0 pixels wide in iOS 8.
+* Fixed bug that quickly faded out the end overlay image in IE.
+* Fixed bug that prevented replacing encoded videos if there were any other videos in the queue.
+* Fixed bug that didn't recognize videos had completed encoding if there were more audio frames than video frames.
+
 = 4.3.5 - September 17, 2014 =
 * Fixed responsive height for videos using WordPress Default player.
 * Better fix for bug that prevented choosing thumbnails from the small video player in the new media library popup window in WordPress 4.0.
