@@ -663,7 +663,6 @@ function kgvid_insert_shortcode() {
 		shortcode += titlecode + '<span itemprop="name">' + document.getElementById('videotitle').value + '</span>' + endtitlecode + '<br />';
 	}
 	if (url !="") {
-	console.log(basename);
 		shortcode += ' [KGVID';
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value !="") { shortcode += ' poster="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value + '"'; }
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').value !="") { shortcode += ' width="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').value + '"'; }
@@ -1097,6 +1096,42 @@ function kgvid_switch_parents() {
 			jQuery( '#wpbody-content' ).data('switching_parents_interval', interval);
 		}, "text" );
 	}
+}
+
+function kgvid_auto_generate_old(type) {
+
+	var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
+
+	jQuery.post(ajaxurl, { action: "kgvid_get_generating_old", type: type, security: kgflashmediaplayersecurity }, function(count) {
+
+		if ( count > 0 ) {
+
+			if ( type == 'thumbs' ) { var set_for_sure = confirm(kgvidL10n.autothumbnailwarning+count+"\n\n "+kgvidL10n.cancel_ok); }
+			if ( type == 'encode' ) { var set_for_sure = confirm(kgvidL10n.autoencodewarning+"\n\n "+kgvidL10n.cancel_ok); }
+
+			if ( set_for_sure == true ) {
+
+				jQuery('#generate_old_'+type+'_button').parent().append('<div id="generating_old_'+type+'_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="generating_old_'+type+'_status"> '+kgvidL10n.processing+'</span>');
+
+				jQuery.post(ajaxurl, { action: "kgvid_generating_old", type: type, security: kgflashmediaplayersecurity });
+				var interval = setInterval(function(){kgvid_check_cms_progress(count, 'generating_old_'+type)}, 1000);
+				jQuery( '#wpbody-content' ).data('generating_old_'+type+'_interval', interval);
+
+			}// end if sure
+
+		}//end if count
+		else { alert(kgvidL10n.nothumbstomake); }
+
+	}, "text" );
+
+}
+
+function kgvid_add_old_videos_to_queue() {
+
+	var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
+
+
+
 }
 
 function kgvid_check_cms_progress(total, cms_type) {
