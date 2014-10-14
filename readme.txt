@@ -226,6 +226,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Changed pop-up video gallery to use inline code rather than an AJAX query.
 * Changed video IDs to allow the same video to be embedded multiple times on a page.
 * Changed volume slider on plugin settings page to drop-down menu to fix settings save errors in Windows.
+* Added option to encode a custom resolution.
+* Added option to replace original video with a lower-resolution H.264 video, WEBM or OGV.
 * Added buttons to generate thumbnails and encode alternate formats for all previously uploaded videos.
 * Added option to encode 64 and 32 kbps audio.
 * Added option to set a different application path for qt-faststart or MP4Box.
