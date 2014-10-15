@@ -221,7 +221,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.3.6 - October 11, 2014 =
+= 4.3.6 - October 16, 2014 =
 * Updated Video.js to version 4.9.0
 * Changed pop-up video gallery to use inline code rather than an AJAX query.
 * Changed video IDs to allow the same video to be embedded multiple times on a page.
@@ -235,7 +235,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that made pop-up video windows 0 pixels wide in iOS 8.
 * Fixed bug that quickly faded out the end overlay image in IE.
 * Fixed bug that prevented replacing encoded videos if there were any other videos in the queue.
-* Fixed bug that didn't recognize videos had completed encoding if there were more audio frames than video frames.
+* Fixed bug that didn't recognize videos had completed encoding if there were audio frames left in the queue.
+* Fixed bug that incorrectly reported all encoding fps values over 99 as "10".
 
 = 4.3.5 - September 17, 2014 =
 * Fixed responsive height for videos using WordPress Default player.

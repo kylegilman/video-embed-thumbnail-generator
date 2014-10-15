@@ -473,7 +473,7 @@ function kgvid_set_capabilities($capabilities) {
 
 function kgvid_aac_encoders() {
 
-	$aac_array = array("libfdk_aac", "libfaac", "libvo_aacenc", "aac");
+	$aac_array = array("libfdk_aac", "libfaac", "aac", "libvo_aacenc");
 	return $aac_array;
 
 }
@@ -2119,7 +2119,6 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	if ( $page != "queue" ) {
 		$checkboxes .= '<small><em>'.__('Generates additional video formats compatible with most mobile & HTML5-compatible browsers', 'video-embed-thumbnail-generator').'</em></small>';
 	}
-
 
 	if ( $video_queued == true ) {
 		while ( count($video_formats) > 0 ) {
@@ -5391,8 +5390,9 @@ function kgvid_encode_progress($video_key, $format, $page) {
 					if ( is_array($time_matches) && array_key_exists(1, $time_matches) != true ) { //if something other than the regular FFMPEG encoding output check for these
 						preg_match('/video:(.*?) /', $lastline, $video_matches);
 						preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
-						preg_match('/frames left in the queue on closing/', $lastline, $queue_matches);
+						$queue_match = preg_match('/queue on closing/', $lastline);
 					}
+
 					if ( is_array($time_matches) && array_key_exists(1, $time_matches) == true ) { //still encoding
 
 						if ( strpos($time_matches[1], ':') !== false ) {
@@ -5411,7 +5411,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						if ( $percent_done < 20 ) { $percent_done_text = ""; }
 						else { $percent_done_text = strval($percent_done)."%"; }
 
-						preg_match('/fps=\s+(.*?) /', $lastline, $fps_matches);
+						preg_match('/fps=\s?(.*?) /', $lastline, $fps_matches);
 						if ( is_array($fps_matches) && array_key_exists(1, $fps_matches) == true ) {
 							if ( $fps_matches[1] != 0 ) { $fps_match = $fps_matches[1]; }
 							else {  $fps_match = "10"; }
@@ -5441,7 +5441,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 					elseif (
 						( is_array($video_matches) && array_key_exists(1, $video_matches) == true )
 						|| ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) == true )
-						|| ( is_array($queue_matches) && array_key_exists(1, $queue_matches) == true )
+						|| ( $queue_match )
 					) { //encoding complete
 
 						if ( $blog_id ) { switch_to_blog($blog_id); }
