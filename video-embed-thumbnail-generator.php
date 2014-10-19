@@ -2469,8 +2469,8 @@ function kgvid_settings_page() {
 			|| ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && $options['ffmpeg_exists'] == "on" && is_array($network_options) && (is_super_admin() || $network_options['superadmin_only_ffmpeg_settings'] == false) )
 			) { ?>
 		<h2 class="nav-tab-wrapper">
-			<a href="#" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
-			<a href="#" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( _x('%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator'), "<span class='video_app_name'>".strtoupper($video_app)."</span>" ); ?></a>
+			<a href="#general" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
+			<a href="#encoding" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( _x('%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator'), "<span class='video_app_name'>".strtoupper($video_app)."</span>" ); ?></a>
 		</h2>
 		<?php } ?>
 		<form method="post" action="options.php">
@@ -2489,7 +2489,7 @@ function kgvid_settings_page() {
 		</div>
 		<script type='text/javascript'>
 			jQuery(document).ready(function() {
-					kgvid_switch_settings_tab('general');
+					kgvid_switch_settings_tab(document.URL.substr(document.URL.indexOf('#')+1));
 					jQuery('form :input').change(function() {
   						kgvid_save_plugin_settings(this);
 					});
