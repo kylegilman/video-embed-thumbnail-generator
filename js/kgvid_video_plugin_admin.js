@@ -511,7 +511,7 @@ function kgvid_enqueue_video_encode(postID) {
 		page = "queue";
 	}
 
-	var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm");
+	var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm", "custom");
 	var kgvid_encode = new Object();
 	jQuery.each(formats, function(key,formats) {
 		kgvid_encode[formats] = "";
@@ -875,6 +875,15 @@ function kgvid_save_plugin_settings(input_obj) {
 			}
 
 			if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg') == true && jQuery('#ffmpeg_output').length != 0 ) {
+
+				if ( jQuery('.kgvid_custom_format').filter(function() { return jQuery(this).val(); }).length == 0 ) { //if there's no custom format anymore
+					if ( jQuery('#sample_format').val() == 'custom' ) { jQuery('#sample_format').val('mobile'); }
+					jQuery('#sample_format').find('option[value="custom"]').remove();
+				}
+				else {
+					if ( jQuery('#sample_format').find('option[value="custom"]').length == 0 ) { jQuery('#sample_format').append('<option value="custom">'+kgvidL10n.custom+'</option>'); }
+				}
+
 				jQuery('#ffmpeg_output').html(kgvidL10n.runningtest);
 				jQuery('#ffmpeg_h264_sample').html(data.encode_string);
 				jQuery('#ffmpeg_watermark_example').slideUp('slow');
