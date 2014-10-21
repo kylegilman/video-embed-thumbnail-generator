@@ -715,6 +715,9 @@ function kgvid_delete_video(movieurl, postID, format, childID, blogID) {
 
 		jQuery.post(ajaxurl, { action: "kgvid_delete_video", security: kgflashmediaplayersecurity, movieurl: movieurl, postid: postID, format: format, childid: childID, blogid: blogID }, function(data) {
 			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+format).change();
+			if ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' || pagenow == 'tools_page_kgvid_video_encoding_queue' ) { page = 'queue'; }
+			else { page = 'attachment'; }
+			kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID);
 		}, "json" );
 
 	}
