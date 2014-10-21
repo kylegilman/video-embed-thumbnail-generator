@@ -275,6 +275,12 @@ function kgvid_setup_video(id) {
 
 		});
 
+		player.on( 'changeRes', function() {
+			var poster = jQuery('#video_'+id+' video').attr('poster');
+			jQuery('#video_'+id+' video').removeAttr('poster'); //prevents poster from showing during resolution switch
+			player.on ( 'ended', function() { jQuery('#video_'+id+' video').attr('poster', poster); } )
+		});
+
 	} //end if Video.js
 
 	if ( video_vars.player_type == "Strobe Media Playback" || video_vars.player_type == "WordPress Default" ) {

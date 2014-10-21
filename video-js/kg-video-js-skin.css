@@ -569,8 +569,8 @@ transition-duration: 0.4s;
   /* Width of menu - width of button / 2 */
 
   /* background-color-with-alpha */
-  background-color: #07141e;
-  background-color: rgba(7, 20, 30, 0.7);
+  background-color: #333321;
+  background-color: rgba(20, 20, 20, 0.7);
   /* box-shadow */
   -webkit-box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
   -moz-box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);

@@ -1330,8 +1330,7 @@ function kgvid_video_embed_print_scripts() {
 
 	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
 	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.9.1', true );
-	//wp_register_script( 'video-js-resolutions', plugins_url("", __FILE__).'/video-js/resolutions/video-js-resolutions.js', array('video-js'), $options['version'], true );
-	//wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector/video-quality-selector.js', array('video-js'), $options['version'], true );
+	wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
 	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
@@ -1794,14 +1793,14 @@ function KGVID_shortcode($atts, $content = ''){
 								else { $source_key = $x; }
 
 							$sources[$source_key] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format]["url"]).'?id='.$kgvid_video_id.'" type="'.$format_stats["mime"].'"';
-							/* if ( $format_stats['type'] == 'mp4' ) {
-								$sources[$format] .= ' data-res="'.$video_format_labels[$format].'"';
+							if ( $format_stats['type'] == 'h264' ) {
+								$sources[$source_key] .= ' data-res="'.$format_stats['label'].'"';
 								if ( $mp4already ) { //there is more than one resolution available
-									wp_enqueue_script( 'video-js-resolutions' );
+									wp_enqueue_script( 'video-quality-selector' );
 									$enable_resolutions_plugin = true;
 								}
 								$mp4already = true;
-							} */
+							}
 							$sources[$source_key] .= '>'."\n";
 						}
 					}
@@ -1814,7 +1813,9 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= 'preload="'.$options['preload'].'" ';
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
-					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{}\'';
+					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{';
+					if ( $enable_resolutions_plugin ) { $code .= ' "plugins" : { "resolutionSelector" : { } } '; }
+					$code .= '}\'';
 					$code .= ">\n";
 
 					$code .= implode("", $sources); //add the <source> tags created earlier

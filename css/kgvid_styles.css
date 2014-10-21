@@ -272,3 +272,32 @@ img.kgvid_ios_novideo {
 #kgvid-simplemodal-container a.modalCloseImg:hover, #kgvid-simplemodal-container .kgvid_gallery_nav:hover {
 	background-color: #555;
 }
+
+/* video-quality-selector Video.js plugin styles */
+
+.vjs-res-button span.vjs-control-text {
+	display: none;
+}
+
+.vjs-res-button:before {
+    content: "\e600"; /* Gear icon */
+}
+
+
+/* Don't show hover effects on title */
+ul li.vjs-menu-title.vjs-res-menu-title:hover {
+	cursor: default;
+	background-color: transparent;
+	color: #CCC;
+
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+/* Needed to keep text visible in video.js 4.9 */
+.vjs-res-button .vjs-control-text {
+	width: auto;
+	height: auto;
+	clip: auto;
+}
