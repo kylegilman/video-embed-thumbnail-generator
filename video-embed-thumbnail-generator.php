@@ -96,6 +96,7 @@ function kgvid_default_options_fn() {
 		"width" => "640",
 		"height" => "360",
 		"minimum_width" => false,
+		"fullwidth" => false,
 		"gallery_width" => "960",
 		"gallery_height" => "540",
 		"gallery_thumb" => "250",
@@ -1392,6 +1393,7 @@ function kgvid_shortcode_atts($atts) {
 		'videos' => -1,
 		'width' => $options['width'],
 		'height' => $options['height'],
+		'fullwidth' => $options['fullwidth'],
 		'align' => $options['align'],
 		'controlbar' => $options['controlbar_style'],
 		'autohide' => $options['autohide'],
@@ -1447,7 +1449,7 @@ function kgvid_shortcode_atts($atts) {
 
 	$query_atts = shortcode_atts($default_atts, $atts, 'KGVID');
 
-	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink", "mute");
+	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink", "mute", "fullwidth");
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
 		if ( $query_atts[$query] == false ) { $query_atts[$query] = "false"; }
@@ -1867,6 +1869,7 @@ function KGVID_shortcode($atts, $content = ''){
 					'player_type' => $options['embed_method'],
 					'width' => $query_atts['width'],
 					'height' => $query_atts['height'],
+					'fullwidth' => $query_atts['fullwidth'],
 					'countable' => $countable,
 					'autoplay' => $query_atts['autoplay'],
 					'set_volume' => $query_atts['volume'],
@@ -2817,8 +2820,9 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_dimensions_callback() {
 		$options = kgvid_get_options();
-		echo __('Width:', 'video-embed-thumbnail-generator')." <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='".$options['width']."' /> ".__('Height:', 'video-embed-thumbnail-generator')." <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='".$options['height']."' /> ";
-		echo "<input ".checked( $options['minimum_width'], "on", false )." id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>".__('Enlarge lower resolution videos to max width.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Usually if a video\'s resolution is less than the max width, the video player is set to the actual width of the video. Enabling this will always set the same width regardless of the quality of the video. When necessary you can override by setting the dimensions manually.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo __('Width:', 'video-embed-thumbnail-generator')." <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='".$options['width']."' /> ".__('Height:', 'video-embed-thumbnail-generator')." <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='".$options['height']."' /><br />";
+		echo "<input ".checked( $options['minimum_width'], "on", false )." id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>".__('Enlarge lower resolution videos to max width.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Usually if a video\'s resolution is less than the max width, the video player is set to the actual width of the video. Enabling this will always set the same width regardless of the quality of the video. When necessary you can override by setting the dimensions manually.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['fullwidth'], "on", false )." id='fullwidth' name='kgvid_video_embed_options[fullwidth]' type='checkbox' /> <label for='fullwidth'>".__('Set all videos to expand to fill their containers.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enabling this will ignore any other width settings and set the width of the video to the width of the container it\'s in.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
 	function kgvid_gallery_dimensions_callback() {
@@ -3568,6 +3572,7 @@ function kgvid_update_settings() {
 			);
 			if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_vpre'] == "on" ) { $options['nostdin'] = false; }
 			else { $options['nostdin'] = "on"; }
+			$options['fullwidth'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -6411,6 +6416,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>endofvideooverlay="http://www.example.com/end_image.jpg</code> '.__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
 <li><code>width="xxx"</code></li>
 <li><code>height="xxx"</code></li>
+<li><code>fullwidth="true/false"</code> '.__('set video to always expand to fill its container.', 'video-embed-thumbnail-generator').'</li>
 <li><code>align="left/right/center"</code></li>
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>

@@ -400,7 +400,10 @@ function kgvid_resize_video(id) {
 			var window_height = jQuery(window).height();
 			parent_width = window_width-40;
 		}
-		else { parent_width = reference_div.width(); }
+		else {
+			parent_width = reference_div.width();
+			if ( video_vars['fullwidth'] == 'true' ) { set_width = parent_width; }
+		}
 		if ( parent_width < set_width ) { set_width = parent_width; }
 
 		if ( set_width != 0 ) {

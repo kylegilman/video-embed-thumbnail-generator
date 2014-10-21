@@ -84,6 +84,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `endofvideooverlay="http://www.example.com/end_image.jpg` sets the image shown when the video ends.
 * `width="xxx"`
 * `height="xxx"`
+* `fullwidth="true/false"` set video to always expand to fill its container.`
 * `align="left/right/center"`
 * `inline="true/false"` allow other content on the same line as the video
 * `volume="0.x"` pre-sets the volume for unusually loud videos. Value between 0 and 1.
@@ -221,7 +222,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.3.6 - October 18, 2014 =
+= 4.4 - October 21, 2014 =
+* Added option to set videos to fill their containers.
 * Added option to encode a custom resolution.
 * Added option to replace original video with a lower-resolution H.264 video, WEBM or OGV.
 * Added buttons to generate thumbnails and encode alternate formats for all previously uploaded videos.
