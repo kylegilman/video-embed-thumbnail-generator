@@ -223,17 +223,19 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.4 - October 21, 2014 =
+* Added video resolution switcher for Video.js player.
 * Added option to set videos to fill their containers.
 * Added option to encode a custom resolution.
 * Added option to replace original video with a lower-resolution H.264 video, WEBM or OGV.
-* Added buttons to generate thumbnails and encode alternate formats for all previously uploaded videos.
+* Added buttons to generate thumbnails and encode additional formats for all previously uploaded videos.
 * Added option to encode 64 and 32 kbps audio.
 * Added option to set a different application path for qt-faststart or MP4Box.
+* Added option to disable stdin during FFMPEG encoding. Particularly useful for IIS users.
 * Updated Video.js to version 4.9.1
 * Changed pop-up video gallery to use inline code rather than an AJAX query.
-* Changed video IDs to allow the same video to be embedded multiple times on a page.
+* Changed embedded video IDs to allow the same video to be embedded multiple times on a page.
 * Changed volume slider on plugin settings page to drop-down menu to fix settings save errors in Windows.
-* Changed 480p video format label to 360p to accurately reflect resolution of 16:9 videos. Format is actually only 480p for 4:3 videos.
+* Changed 480p video format label to 360p to accurately reflect resolution of 16:9 videos. Format has only really been 480p for 4:3 videos.
 * Changed AAC encoder preference to libfdk_aac > libfaac > Native FFmpeg AAC encoder (aac) > libvo_aacenc.
 * Restored display of moov atom fix process in FFMPEG test output.
 * Fixed bug that made pop-up video windows 0 pixels wide in iOS 8.
