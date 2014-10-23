@@ -326,11 +326,10 @@
 				player.currentTime( current_time );
 
 				if ( player.currentTime() == 0 && current_time != 0 ) {
+					player.addClass( 'vjs-has-started' );
 					player.one( 'loadeddata', function() { player.currentTime( current_time ); } );
 				}
-
-				// If the video was paused, don't show the poster image again
-				player.addClass( 'vjs-has-started' );
+				if ( current_time != 0  ) { player.addClass( 'vjs-has-started' ); } // If the video was paused, don't show the big play button
 
 				if ( ! is_paused ) { player.play(); }
 
