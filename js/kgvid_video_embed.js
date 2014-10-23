@@ -263,14 +263,20 @@ function kgvid_setup_video(id) {
 				}
 			}
 
-			if ( fullScreenApi.supportsFullScreen == true ) { jQuery('#video_'+id).removeClass('vjs-fullscreen'); }
-			else if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
-				jQuery('#video_'+id+'_meta').hide();
-				jQuery('#video_'+id+'_watermark img').css('position', 'fixed');
+			if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
+				var resolutions = player.availableRes;
+				player.changeRes(Object.keys(resolutions)[Object.keys(resolutions).length - 1]);
 			}
-			else {
-				jQuery('#video_'+id+'_meta').show();
-				jQuery('#video_'+id+'_watermark img').css('position', 'absolute');
+
+			if ( fullScreenApi.supportsFullScreen == false ) {
+				if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
+					jQuery('#video_'+id+'_meta').hide();
+					jQuery('#video_'+id+'_watermark img').css('position', 'fixed');
+				}
+				else {
+					jQuery('#video_'+id+'_meta').show();
+					jQuery('#video_'+id+'_watermark img').css('position', 'absolute');
+				}
 			}
 
 		});
@@ -438,6 +444,26 @@ function kgvid_resize_video(id) {
 					}
 				}
 				else { jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').removeAttr('style'); }
+
+				if ( videojs('video_'+id).availableRes !== undefined ) {
+					var resolutions = videojs('video_'+id).availableRes;
+					var resNumbers = [];
+					jQuery.each(resolutions, function(){
+						if ( this[0] != undefined && !isNaN(parseInt(this[0]['data-res'])) ) {
+							resNumbers.push(parseInt(this[0]['data-res']));
+						}
+					});
+					var current_resolution = parseInt(videojs('video_'+id).getCurrentRes());
+
+					if ( !isNaN(current_resolution) ) {
+						var res_options = jQuery.map(resNumbers, function(n) {
+							if ( n >= set_height ) { return n; }
+						});
+						var set_res = Math.min.apply(Math,res_options);
+						if ( set_res != current_resolution ) { videojs('video_'+id).changeRes(set_res+'p') }
+					}
+				}
+
 			}
 			if ( video_vars.player_type == "Strobe Media Playback" ) {
 				jQuery('#video_'+id+'_div').height(set_height);

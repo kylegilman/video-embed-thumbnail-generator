@@ -1176,7 +1176,7 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		}
 
 		$nostdin = "";
-		if ( $options['nostdin'] == "on" ) { $nostdin = " -nostdin"; }
+		if ( $options['nostdin'] == "on" && $options['video_app'] == 'ffmpeg' ) { $nostdin = " -nostdin"; }
 
 		$encode_string = array();
 		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].$nostdin.' -y -i "'.$input.'" '.$watermark_input.$ffmpeg_options.$rate_control_flag.$rotate." -threads ".$options['threads'];
@@ -1787,7 +1787,7 @@ function KGVID_shortcode($atts, $content = ''){
 						if ( $encodevideo_info[$format]["exists"] ) {
 
 								if ( array_key_exists('height', $encodevideo_info[$format]) ) {
-									$source_key = $encodevideo_info[$format]['height'];
+									$source_key = $encodevideo_info[$format]['height']-$x;
 									$format_stats['label'] = $encodevideo_info[$format]['height'].'p';
 								}
 								else { $source_key = $x; }
@@ -1801,8 +1801,10 @@ function KGVID_shortcode($atts, $content = ''){
 								}
 								$mp4already = true;
 							}
+							else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
 							$sources[$source_key] .= '>'."\n";
 						}
+					$x++;
 					}
 					krsort($sources);
 
@@ -1814,7 +1816,7 @@ function KGVID_shortcode($atts, $content = ''){
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
 					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{';
-					if ( $enable_resolutions_plugin ) { $code .= ' "plugins" : { "resolutionSelector" : { } } '; }
+					if ( $enable_resolutions_plugin ) { $code .= ' "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"] } } '; }
 					$code .= '}\'';
 					$code .= ">\n";
 
@@ -5332,10 +5334,10 @@ function kgvid_encode_videos() {
 
 
 						if ( $format_stats['type'] == "webm" || $format_stats['type'] == "ogv" ) { //if it's not H.264 they both work essentially the same
-							if ( ! $encodevideo_info[$queued_format.'_exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$queued_format.'filepath']) < 24576) ) {
+							if ( ! $encodevideo_info[$queued_format]['exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$queued_format]['filepath']) < 24576) ) {
 								if ( $movie_info['configuration']['libvorbis'] == "true" && $movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == "true" ) {
 
-									$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format.'filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
+									$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
 									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
 								}//if the necessary libraries are enabled
 								else {
