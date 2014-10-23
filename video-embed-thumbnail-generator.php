@@ -2081,6 +2081,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$actualheight = "1081";
 	$rotated = false;
 	$encodevideo_info = array();
+	$is_attachment = false;
 
 	if ( !empty($movieurl) ) {
 
@@ -2129,6 +2130,9 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	else {
 		$encode_disabled = ' disabled title="'.__('Please enter a valid video URL', 'video-embed-thumbnail-generator').'"';
 		unset($video_formats['fullres']);
+		unset($video_formats['custom_h264']);
+		unset($video_formats['custom_webm']);
+		unset($video_formats['custom_ogg']);
 	}
 
 	if ( $options['ffmpeg_exists'] == "notinstalled" ) {
@@ -2154,12 +2158,16 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$checkboxes = '<div id="attachments-'.$post_id.'-kgflashmediaplayer-encodeboxes">';
 
 	foreach ( $video_formats as $format => $format_stats ) {
+
 		if ( strpos($post_mime_type, $format) !== false ) { continue; } //skip webm or ogv checkbox if the video is webm or ogv
+
 		$encodeset[$format] = "";
 		$checked[$format] = "";
 		$meta[$format] = "";
 		$disabled[$format] = "";
 		$child_id[$format] = "";
+
+		if ( empty($movieurl) ) { $disabled[$format] = ' disabled title="Please enter a valid video URL"'; }
 
 		if ( !array_key_exists('status', $format_stats) ) { $format_stats['status'] = "notchecked"; } //if this video isn't in the queue
 
@@ -2267,7 +2275,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$arr = array('checkboxes'=>$checkboxes, 'encoding'=>$encoding_now );
 
 	return $arr;
-} //end $video_formats loop
+}
 
 function kgvid_generate_queue_table_header() {
 
