@@ -232,6 +232,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added option to set a different application path for qt-faststart or MP4Box.
 * Added option to disable stdin during FFMPEG encoding. Particularly useful for IIS users.
 * Updated Video.js to version 4.9.1
+* Changed download link to a forced download. No right-clicking necessary.
 * Changed pop-up video gallery to use inline code rather than an AJAX query.
 * Changed embedded video IDs to allow the same video to be embedded multiple times on a page.
 * Changed volume slider on plugin settings page to drop-down menu to fix settings save errors in Windows.
@@ -243,7 +244,6 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that prevented replacing encoded videos if there were any other videos in the queue.
 * Fixed bug that incorrectly reported all encoding fps values over 99 as "10".
 * Fixed bug that didn't recognize videos had completed encoding if there were audio frames left in the queue.
-
 
 = 4.3.5 - September 17, 2014 =
 * Fixed responsive height for videos using WordPress Default player.

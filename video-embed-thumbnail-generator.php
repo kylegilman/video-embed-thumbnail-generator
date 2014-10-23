@@ -592,6 +592,33 @@ function kgvid_rrmdir($dir) {
    }
 }
 
+function kvid_readfile_chunked($file, $retbytes=TRUE) { //sends large files in chunks so PHP doesn't timeout
+
+	$chunksize = 1 * (1024 * 1024);
+	$buffer = '';
+	$cnt =0;
+
+	$handle = fopen($file, 'r');
+	if ($handle === FALSE) { return FALSE; }
+
+	while (!feof($handle)) {
+
+		$buffer = fread($handle, $chunksize);
+		echo $buffer;
+		ob_flush();
+		flush();
+
+		if ($retbytes) { $cnt += strlen($buffer); }
+	}
+
+	$status = fclose($handle);
+
+	if ($retbytes AND $status) { return $cnt; }
+
+	return $status;
+
+}
+
 function kgvid_check_for_shortcode_in_content() {
 	global $post;
 	$pattern = get_shortcode_regex();
@@ -1844,7 +1871,15 @@ function KGVID_shortcode($atts, $content = ''){
 							$code .= '<div class="kgvid-caption" id="video_'.$div_suffix.'_caption">'.$query_atts['caption'];
 							if ( $query_atts['downloadlink'] == "true" ) {
 								if ( !empty($query_atts['caption']) ) { $code .= '<br>'; }
-								$code .= '<a href="'.$content.'">'.__('Right-click or ctrl-click on this link to download', 'video-embed-thumbnail-generator').'</a>';
+								$forceable = false;
+								if ( !empty($id) ) {
+									$filepath = get_attached_file($id);
+									if ( file_exists($filepath) ) {
+										$forceable = true;
+										$code .= '<a href="'.site_url('/').'?attachment_id='.$id.'&kgvid_video_embed[download]=true">'.__('Click on this link to download', 'video-embed-thumbnail-generator').'</a>';
+									}
+								}
+								if ( !$forceable ) { $code .= '<a href="'.$content.'">'.__('Right-click or ctrl-click on this link to download', 'video-embed-thumbnail-generator').'</a>'; }
 							}
 							$code .= '</div>';
 						}
@@ -4870,6 +4905,36 @@ function kgvid_video_attachment_template() {
 		$content_width = $content_width_save; //reset $content_width
 		exit;
 	}
+
+	if ( array_key_exists('download', $kgvid_video_embed) && $kgvid_video_embed['download'] == 'true' && strpos($post->post_mime_type,"video") !== false ) {
+
+		$filepath = get_attached_file($post->ID);
+		$filetype = wp_check_filetype( $filepath );
+		if ( ! isset($filetype['type'])) { $filetype['type'] = 'application/octet-stream'; }
+
+		// Generate the server headers
+		if (strpos($_SERVER['HTTP_USER_AGENT'], "MSIE") !== FALSE) {
+			header('Content-Type: "'.$filetype['type'].'"');
+			header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+			header("Content-Transfer-Encoding: binary");
+			header('Pragma: public');
+			header("Content-Length: ".filesize($filepath));
+		}
+		else {
+			header('Content-Type: "'.$filetype['type'].'"');
+			header('Content-Disposition: attachment; filename="'.basename($filepath).'"');
+			header("Content-Transfer-Encoding: binary");
+			header('Expires: 0');
+			header('Pragma: no-cache');
+			header("Content-Length: ".filesize($filepath));
+	}
+
+	kvid_readfile_chunked($filepath);
+	exit;
+	}
+
 }
 add_action('template_redirect', 'kgvid_video_attachment_template');
 
