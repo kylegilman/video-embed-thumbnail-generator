@@ -429,7 +429,8 @@ function kgvid_resize_video(id) {
 			}
 
 			if (  video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null ) {
-				videojs('video_'+id).width(set_width).height(set_height);
+				var player = videojs('video_'+id);
+				player.width(set_width).height(set_height);
 				if ( set_width < 500 ) {
 					var scale = Math.round(100*set_width/500)/100;
 					jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').css('-webkit-transform','scale('+scale+')').css('-o-transform','scale('+scale+')').css('-ms-transform','scale('+scale+')').css('transform','scale('+scale+')');
@@ -445,22 +446,30 @@ function kgvid_resize_video(id) {
 				}
 				else { jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').removeAttr('style'); }
 
-				if ( videojs('video_'+id).availableRes !== undefined ) {
-					var resolutions = videojs('video_'+id).availableRes;
+				if ( player.availableRes !== undefined ) {
+					var resolutions = player.availableRes;
 					var resNumbers = [];
 					jQuery.each(resolutions, function(){
 						if ( this[0] != undefined && !isNaN(parseInt(this[0]['data-res'])) ) {
 							resNumbers.push(parseInt(this[0]['data-res']));
 						}
 					});
-					var current_resolution = parseInt(videojs('video_'+id).getCurrentRes());
+					var current_resolution = parseInt(player.getCurrentRes());
 
 					if ( !isNaN(current_resolution) ) {
 						var res_options = jQuery.map(resNumbers, function(n) {
 							if ( n >= set_height ) { return n; }
 						});
 						var set_res = Math.min.apply(Math,res_options);
-						if ( set_res != current_resolution ) { videojs('video_'+id).changeRes(set_res+'p') }
+						if ( set_res != current_resolution ) { player.changeRes(set_res+'p') }
+						if ( jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
+							if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
+							if ( player.volume() != 1 ) {
+								var current_volume = player.volume();
+								player.volume(1);
+								player.volume(current_volume);
+							}
+						}
 					}
 				}
 
@@ -529,9 +538,9 @@ function kgvid_video_counter(id, event) {
 		if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', kgvidL10n_frontend.completeview, title]); }
 	}
 	if ( changed == true ) {
-		jQuery.post(kgvid_ajax_object.ajaxurl, {
+		jQuery.post(kgvidL10n_frontend.ajaxurl, {
 			action: 'kgvid_count_play',
-			security: kgvid_ajax_object.ajax_nonce,
+			security: kgvidL10n_frontend.ajax_nonce,
 			post_id: video_vars.attachment_id,
 			video_event: event
 		}, function(data) {
