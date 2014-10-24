@@ -1294,7 +1294,10 @@ function kgvid_video_embed_enqueue_scripts() {
 }
 add_action('wp_enqueue_scripts', 'kgvid_video_embed_enqueue_scripts', 12);
 
+//add_action( 'all', create_function( '', 'error_log(print_r( current_filter(),true ));' ) );
+
 function enqueue_kgvid_script() { //loads plugin-related scripts in the admin area
+
 	$options = kgvid_get_options();
 
     wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url('/js/kgvid_video_plugin_admin.js', __FILE__), array('jquery'), $options['version'], true );
@@ -1341,16 +1344,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 
 }
 add_action('admin_enqueue_scripts', 'enqueue_kgvid_script');
-
-function kgvid_admin_print_scripts() {
-    $screen = get_current_screen();
-
-	if ( $screen->base == "upload" ) {
-		echo '<script type="text/javascript">jQuery(document).ready(kgvid_media_library_icon_overlay());</script>'."\n";
-	}
-
-}
-add_action('admin_print_footer_scripts', 'kgvid_admin_print_scripts');
+add_action('wp_enqueue_media', 'enqueue_kgvid_script');
 
 function kgvid_video_embed_print_scripts() {
 
@@ -1359,20 +1353,6 @@ function kgvid_video_embed_print_scripts() {
     $posts = $wp_query->posts;
 	$pattern = get_shortcode_regex();
 	$options = kgvid_get_options();
-
-	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-	wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.9.1', true );
-	wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
-	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
-
-	wp_localize_script( 'kgvid_video_embed', 'kgvid_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ), 'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce') ) ); // setting ajaxurl
-
-	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
-			'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-			'completeview' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-			'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
-			'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator')
-	) );
 
 	echo '<script type="text/javascript">document.createElement(\'video\');document.createElement(\'audio\');</script>'."\n";
 
@@ -1403,6 +1383,23 @@ function kgvid_video_embed_print_scripts() {
 
 }
 add_action('wp_head', 'kgvid_video_embed_print_scripts', 99);
+
+function kgvid_enqueue_shortcode_scripts() {
+
+	$options = kgvid_get_options();
+
+	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
+			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.9.1', true );
+			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
+		}
+
+		if ( $options['embed_method'] == "Strobe Media Playback" ) {
+			wp_enqueue_script( 'swfobject' );
+		}
+
+	wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
+
+}
 
 function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
 
@@ -1508,16 +1505,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 		$options = kgvid_get_options();
 
-		if ( $options['embed_method'] != "WordPress Default" ) {
-			wp_enqueue_script( 'video-js' );
-			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
-		}
-
-		if ( $options['embed_method'] == "Strobe Media Playback" ) {
-			wp_enqueue_script( 'swfobject' );
-		}
-
-		wp_enqueue_script( 'kgvid_video_embed' );
+		kgvid_enqueue_shortcode_scripts();
 
 		if ( in_the_loop() ) { $post_ID = get_the_ID(); }
 		else { $post_ID = 1; }
@@ -1828,7 +1816,7 @@ function KGVID_shortcode($atts, $content = ''){
 							if ( $format_stats['type'] == 'h264' ) {
 								$sources[$source_key] .= ' data-res="'.$format_stats['label'].'"';
 								if ( $mp4already ) { //there is more than one resolution available
-									wp_enqueue_script( 'video-quality-selector' );
+									wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
 									$enable_resolutions_plugin = true;
 								}
 								$mp4already = true;
@@ -1936,6 +1924,15 @@ function KGVID_shortcode($atts, $content = ''){
 
 				} //if Strobe Media
 
+				wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
+					'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
+					'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce'),
+					'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+					'completeview' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+					'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
+					'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator')
+				) );
+
 				wp_localize_script( 'kgvid_video_embed', 'kgvid_video_vars_'.$div_suffix, $video_variables ); //add video variables in footer
 
 				$kgvid_video_id++;
@@ -1946,7 +1943,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 		else { //if gallery
 
-			wp_enqueue_script( 'simplemodal' );
+			wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
 			static $kgvid_gallery_id = 0;
 
@@ -3973,8 +3970,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 	) { //if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
 
 		wp_enqueue_media(); //allows using the media modal in the Media Library
-		wp_enqueue_script('video_embed_thumbnail_generator_script');
-		wp_enqueue_style('video_embed_thumbnail_generator_style');
+		wp_enqueue_script( 'kgvid_video_plugin_admin' );
+		wp_enqueue_style( 'video_embed_thumbnail_generator_style' );
 
 		$field_id = kgvid_backwards_compatible($post->ID);
 		$movieurl = wp_get_attachment_url($post->ID);
