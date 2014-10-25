@@ -1989,6 +1989,7 @@ function KGVID_shortcode($atts, $content = ''){
 				if ( $query_atts['align'] == "left" ) { $aligncode = ' kgvid_textalign_left'; }
 				if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_textalign_center'; }
 				if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_textalign_right'; }
+				if ( $query_atts['inline'] == "true" ) { $aligncode .= ' kgvid_wrapper_inline'; }
 				$div_suffix = substr(uniqid(rand(), true),0,4);
 				$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'">';
 				foreach ( $attachments as $attachment ) {
@@ -6596,7 +6597,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>description="Description"</code> '.__('Used for metadata only.', 'video-embed-thumbnail-generator').'</li>
 <li><code>downloadlink="true/false"</code> '.__('generates a link below the video to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
 <li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
-<li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
+<li><code>auto_res="true/false"</code> '.__('let the plugin select the best resolution for the size of the player.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>

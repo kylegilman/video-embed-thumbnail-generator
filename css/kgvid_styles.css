@@ -4,6 +4,11 @@
 	max-width: 100%
 }
 
+.kgvid_gallerywrapper {
+	display: block;
+	max-width: 100%;
+}
+
 .kgvid_wrapper_auto_left {
 	margin-left: auto;
 }
@@ -24,11 +29,6 @@
 .kgvid_wrapper_inline_right {
 	float: right;
 	margin: 1em 0 0 1em;
-}
-
-.kgvid_gallerywrapper {
-	display: inline-block;
-	max-width: 100%;
 }
 
 .kgvid_textalign_left {
