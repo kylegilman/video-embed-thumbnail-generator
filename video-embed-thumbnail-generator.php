@@ -135,6 +135,7 @@ function kgvid_default_options_fn() {
 		"auto_thumb_position" => 50,
 		"right_click" => "on",
 		"resize" => "on",
+		"auto_res" => "on",
 		"capabilities" => array(
 			"make_video_thumbnails" => $upload_capable,
 			"encode_videos" => $upload_capable,
@@ -1457,6 +1458,7 @@ function kgvid_shortcode_atts($atts) {
 		'downloadlink' => $options['downloadlink'],
 		'right_click' => $options['right_click'],
 		'resize' => $options['resize'],
+		'auto_res' => $options['auto_res'],
 		'track_kind' => 'subtitles',
 		'track_srclang' => substr(get_bloginfo('language'), 0, 2),
 		'track_src' => '',
@@ -1478,7 +1480,22 @@ function kgvid_shortcode_atts($atts) {
 
 	$query_atts = shortcode_atts($default_atts, $atts, 'KGVID');
 
-	$checkbox_convert = array ( "autohide", "endofvideooverlaysame", "playbutton", "loop", "autoplay", "title", "embedcode", "view_count", "inline", "resize", "downloadlink", "mute", "fullwidth");
+	$checkbox_convert = array (
+		"autohide",
+		"endofvideooverlaysame",
+		"playbutton",
+		"loop",
+		"autoplay",
+		"title",
+		"embedcode",
+		"view_count",
+		"inline",
+		"resize",
+		"auto_res",
+		"downloadlink",
+		"mute",
+		"fullwidth"
+	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
 		if ( $query_atts[$query] == false ) { $query_atts[$query] = "false"; }
@@ -1909,6 +1926,7 @@ function KGVID_shortcode($atts, $content = ''){
 					'meta' => $kgvid_meta,
 					'endofvideooverlay' => $query_atts['endofvideooverlay'],
 					'resize' => $query_atts['resize'],
+					'auto_res' => $query_atts['auto_res'],
 					'right_click' => $query_atts['right_click']
 				);
 
@@ -2893,7 +2911,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_resize_callback() {
 		$options = kgvid_get_options();
-		echo "<input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>".__('Make video player responsive.', 'video-embed-thumbnail-generator')."</label>\n\t";
+		echo "<input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>".__('Make video player responsive.', 'video-embed-thumbnail-generator')."</label><br />";
+		echo "<input ".checked( $options['auto_res'], "on", false )." id='auto_res' name='kgvid_video_embed_options[auto_res]' type='checkbox' /> <label for='auto_res'>".__('Choose video resolution automatically based on player size.', 'video-embed-thumbnail-generator')."</label>\n\t";
 	}
 
 	function kgvid_inline_callback() {
@@ -3655,6 +3674,7 @@ function kgvid_update_settings() {
 			);
 			$options['nostdin'] = false;
 			$options['fullwidth'] = false;
+			$options['auto_res'] = 'on';
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
