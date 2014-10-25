@@ -25,7 +25,7 @@ You have the option to use a few different video players:
 
 <em>The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
 
-No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player will automatically select the one closest to the size of the player and provide a button for users to select the resolution manually.
+No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player can automatically select the one closest to the size of the player and provide a button for users to select the resolution manually.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode.
 
@@ -101,6 +101,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `downloadlink="true/false"` generates a link below the video to make it easier for users to save the video file to their computers.
 * `right_click="true/false"` allow or disable right-clicking on the video player.
 * `resize="true/false"` allow or disable responsive resizing.
+* `auto_res="true/false"` let the plugin select the best resolution for the size of the player.
 
 = These options will add a subtitle/caption track =
 
@@ -225,10 +226,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.4 - October 23, 2014 =
 * Added H.264 HTML5 video resolution switcher for the Video.js player. Automatically selects the appropriate resolution for the size of the displayed video and allows manual user switching.
 * Added option to set videos to automatically fill their containers.
+* Added buttons to manually set other videos in the media library as alternate formats for the current video.
 * Added option to encode a custom resolution.
 * Added option to replace original video with a lower-resolution H.264 video, WEBM or OGV.
 * Added buttons to generate thumbnails and encode additional formats for all previously uploaded videos.
-* Added plugin admin scripts to the frontend when media library is loaded. Works with bbPress now.
+* Added plugin admin scripts to the frontend when Insert Media button is loaded. Works with bbPress now.
 * Added option to encode 64 and 32 kbps audio.
 * Added option to set a different application path for qt-faststart or MP4Box.
 * Added option to disable stdin during FFMPEG encoding. Particularly useful for IIS users.
@@ -237,7 +239,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Changed pop-up video gallery to use inline code rather than an AJAX query.
 * Changed embedded video IDs to allow the same video to be embedded multiple times on a page.
 * Changed volume slider on plugin settings page to drop-down menu to fix settings save errors in Windows.
-* Changed 480p video format label to 360p to accurately reflect resolution of 16:9 videos. Format has only really been 480p for 4:3 videos.
+* Changed 480p video format label to 360p to accurately reflect resolution of 16:9 videos. Format has always only been 480p for 4:3 videos.
 * Changed AAC encoder preference to libfdk_aac > libfaac > Native FFmpeg AAC encoder (aac) > libvo_aacenc.
 * Restored display of moov atom fix process in FFMPEG test output.
 * Fixed bug that made pop-up video windows 0 pixels wide in iOS 8.
@@ -247,6 +249,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that left the GUID as the original filename if replacing the video with an mp4 changed the extension.
 * Fixed bug that incorrectly reported all encoding fps values over 99 as "10".
 * Fixed bug that didn't recognize videos had completed encoding if there were audio frames left in the queue.
+* Fixed bug that made video galleries display as inline-block when the inline video option was disabled.
 
 = 4.3.5 - September 17, 2014 =
 * Fixed responsive height for videos using WordPress Default player.
