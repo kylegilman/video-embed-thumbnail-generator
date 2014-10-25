@@ -938,19 +938,6 @@ function kgvid_embeddable_switch(checked) {
 
 function kgvid_switch_settings_tab(tab) {
 
-	if ( tab == "general" ) {
-
-		var playback_option = jQuery('#embed_method').val();
-
-		jQuery("#general_tab").addClass("nav-tab-active");
-		jQuery("#encoding_tab").removeClass("nav-tab-active");
-		jQuery('h3:eq(0), h3:eq(2)').show();
-		jQuery('table:eq(0), table:eq(1), table:eq(3)').show();
-		jQuery(".kgvid_setting_nearvid").show();
-		jQuery('h3:eq(3)').hide();
-		jQuery('table:eq(4)').hide();
-	}
-
 	if ( tab == "encoding" ) {
 
 		jQuery("#general_tab").removeClass("nav-tab-active");
@@ -973,6 +960,20 @@ function kgvid_switch_settings_tab(tab) {
 				}
 			}, "json" );
 		}
+	}
+
+	else { //General tab
+
+		var playback_option = jQuery('#embed_method').val();
+
+		jQuery("#general_tab").addClass("nav-tab-active");
+		jQuery("#encoding_tab").removeClass("nav-tab-active");
+		jQuery('h3:eq(0), h3:eq(2)').show();
+		jQuery('table:eq(0), table:eq(1), table:eq(3)').show();
+		jQuery(".kgvid_setting_nearvid").show();
+		jQuery('h3:eq(3)').hide();
+		jQuery('table:eq(4)').hide();
+
 	}
 
 	kgvid_hide_plugin_settings();
@@ -1001,10 +1002,14 @@ function kgvid_hide_plugin_settings() {
 
 		if ( playback_option == "WordPress Default" || playback_option == "JW Player" ) {
 			jQuery('#js_skin').parents().eq(1).hide();
+			jQuery('#chromecast').parents().eq(1).hide();
+			jQuery('#auto_res').parents().eq(1).hide();
 		}
 
 		if ( playback_option == "Video.js" || playback_option == "Strobe Media Playback" ) {
 			jQuery('#js_skin').parents().eq(1).show();
+			jQuery('#chromecast').parents().eq(1).show();
+			jQuery('#auto_res').parents().eq(1).show();
 		}
 
 		if ( playback_option == "JW Player" ) {
