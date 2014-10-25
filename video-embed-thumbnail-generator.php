@@ -77,7 +77,7 @@ function kgvid_default_options_fn() {
 		"ffmpeg_exists" =>"notchecked",
 		"video_bitrate_flag" => false,
 		"ffmpeg_vpre" => false,
-		"nostdin" => "on",
+		"nostdin" => false,
 		"moov" => "none",
 		"generate_thumbs" => 4,
 		"featured" => "on",
@@ -878,7 +878,8 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 				$wp_attached_file = get_post_meta($child->ID, '_wp_attached_file', true);
 				$wp_file_info = pathinfo($wp_attached_file);
 				$video_meta = wp_get_attachment_metadata( $child->ID );
-				if ( substr($wp_attached_file, -strlen($format_stats['suffix'])) == $format_stats['suffix'] ) {
+				$meta_format = get_post_meta($child->ID, '_kgflashmediaplayer-format', true);
+				if ( $meta_format == $format || ( substr($wp_attached_file, -strlen($format_stats['suffix'])) == $format_stats['suffix'] && $meta_format == false )  ) {
 					$encodevideo_info[$format]['url'] = $uploads['baseurl'].'/'.$wp_attached_file;
 					$encodevideo_info[$format]['filepath'] = $uploads['basedir'].'/'.$wp_attached_file;
 					$encodevideo_info[$format]['id'] = $child->ID;
@@ -2038,6 +2039,22 @@ function kgvid_no_texturize_shortcode($shortcodes){
 }
 add_filter( 'no_texturize_shortcodes', 'kgvid_no_texturize_shortcode' );
 
+function kgvid_update_child_format() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+	$video_id = $_POST['video_id'];
+	$parent_id = $_POST['parent_id'];
+	$format = $_POST['format'];
+
+	$post = get_post($video_id);
+	$post->post_parent = $parent_id;
+	wp_update_post($post);
+	update_post_meta( $video_id, '_kgflashmediaplayer-format', $format );
+	update_post_meta( $video_id, '_kgflashmediaplayer-pickedformat', 'true' );
+	die();
+}
+add_action('wp_ajax_kgvid_update_child_format', 'kgvid_update_child_format');
+
 function kgvid_ajax_generate_encode_checkboxes() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
@@ -2193,14 +2210,28 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		if ( !empty($encodevideo_info) ) {
 			if ( $encodevideo_info[$format]['exists'] ) { //if the video file exists
+
+				if ( array_key_exists('id', $encodevideo_info[$format]) ) {
+					$child_id[$format] = $encodevideo_info[$format]['id'];
+					$was_picked = get_post_meta( $child_id[$format], '_kgflashmediaplayer-pickedformat', true );
+				}
+
 				if ( $format_stats['status'] != "encoding" ) { // not currently encoding
-					if ( $format_stats['status'] == "notchecked" ) { $meta[$format] = ' <strong>Encoded</strong>'; }
+					if ( $format_stats['status'] == "notchecked" ) {
+						if ( $was_picked == 'true' ) { $meta[$format] = ' <strong>Set: '.basename($encodevideo_info[$format]['filepath']).'</strong>'; }
+						else { $meta[$format] = ' <strong>Encoded</strong>'; }
+					}
 					if ( $format_stats['status'] != "canceling" ) {
-						if ( array_key_exists('id', $encodevideo_info[$format]) ) { $child_id[$format] = $encodevideo_info[$format]['id']; }
+
 						if ( $encodevideo_info[$format]['writable']
 						&& current_user_can('encode_videos')
 						&& $format != "fullres" ) {
-							$meta[$format] .= '<a id="delete-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_delete_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\', \''.$child_id[$format].'\', \''.$blog_id.'\');" href="javascript:void(0)">'.__('Delete Permanently', 'video-embed-thumbnail-generator').'</a>';
+							if ( $was_picked == "true" ) {
+								$meta[$format] .= '<a id="unpick-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_clear_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\', \''.$child_id[$format].'\', \''.$blog_id.'\');" href="javascript:void(0)">'.__('Clear Format', 'video-embed-thumbnail-generator').'</a>';
+							}
+							else {
+								$meta[$format] .= '<a id="delete-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_delete_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$format.'\', \''.$child_id[$format].'\', \''.$blog_id.'\');" href="javascript:void(0)">'.__('Delete Permanently', 'video-embed-thumbnail-generator').'</a>';
+							}
 						}
 					}
 					$disabled[$format] = ' disabled title="Format already exists"';
@@ -2235,7 +2266,11 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			$something_to_encode = false;
 		}
 
-		$checkboxes .= "\n\t\t\t".'<input type="checkbox" id="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments['.$post_id.'][kgflashmediaplayer-encode'.$format.']" '.$checked[$format].' '.$ffmpeg_disabled_text.$disabled[$format].'> <label for="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$post_id.'-kgflashmediaplayer-meta'.$format.'">'.$meta[$format].'</span><br />';
+		$checkboxes .= "\n\t\t\t".'<input type="checkbox" id="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments['.$post_id.'][kgflashmediaplayer-encode'.$format.']" '.$checked[$format].' '.$ffmpeg_disabled_text.$disabled[$format].'> <label for="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$post_id.'-kgflashmediaplayer-meta'.$format.'" class="kgvid_format_meta">'.$meta[$format].'</span>';
+
+		if ( empty($disabled[$format]) && $format != 'fullres' ) { $checkboxes .= "<span id='pick-thumbnail' class='button-secondary kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".esc_attr($format_stats['mime'])."\", \"".$format."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
+		}
+		$checkboxes .= '<br />';
 
 	}
 	if ( $something_to_encode == false ) {
@@ -3618,8 +3653,7 @@ function kgvid_update_settings() {
 				'width' => '',
 				'height' => ''
 			);
-			if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_vpre'] == "on" ) { $options['nostdin'] = false; }
-			else { $options['nostdin'] = "on"; }
+			$options['nostdin'] = false;
 			$options['fullwidth'] = false;
 		}
 

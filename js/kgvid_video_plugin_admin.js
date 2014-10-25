@@ -525,7 +525,7 @@ function kgvid_enqueue_video_encode(postID) {
 	jQuery(encodeprogressplaceholderid).empty();
 	jQuery(encodeplaceholderid).append('<strong>'+kgvidL10n.loading+'</strong>');
 
-	jQuery.post(ajaxurl, { action:"kgvid_callffmpeg", security: kgflashmediaplayersecurity, movieurl: attachmentURL, ffmpeg_action: 'enqueue', encodeformats: kgvid_encode, attachmentID: postID, parent_id: parent_post_id, }, function(data) {
+	jQuery.post(ajaxurl, { action:"kgvid_callffmpeg", security: kgflashmediaplayersecurity, movieurl: attachmentURL, ffmpeg_action: 'enqueue', encodeformats: kgvid_encode, attachmentID: postID, parent_id: parent_post_id }, function(data) {
 
 		jQuery(encodeplaceholderid).empty();
 		jQuery(encodeprogressplaceholderid).empty();
@@ -1202,7 +1202,7 @@ function kgvid_pick_image(button) {
 				// When an image is selected, run a callback.
 				frame.on( 'select', function() {
 					// Grab the selected attachment.
-					var attachment = frame.state().get('selection').first()
+					var attachment = frame.state().get('selection').first();
 					jQuery('#'+$el.data('change')).val(attachment.attributes.url);
 					if ( $el.data('change').substr(-25) == "kgflashmediaplayer-poster" ) { jQuery('#'+$el.data('change').slice(0, -25)+'thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'+attachment.attributes.url+'"></div>'); }
 					jQuery('#'+$el.data('change')).change();
@@ -1246,9 +1246,64 @@ function kgvid_pick_attachment(button) {
 				// When an image is selected, run a callback.
 				frame.on( 'select', function() {
 					// Grab the selected attachment.
-					var attachment = frame.state().get('selection').first()
+					var attachment = frame.state().get('selection').first();
 					jQuery('#'+$el.data('change')).val(attachment.attributes.url);
 					jQuery('#'+$el.data('change')).change();
+				});
+
+				frame.open();
+		});
+
+}
+
+function kgvid_pick_format(button, mime, format) {
+
+		var frame;
+
+		jQuery( function() {
+
+			// Build the choose from library frame.
+
+				var $el = jQuery(button);
+				event.preventDefault();
+
+				// If the media frame already exists, reopen it.
+				if ( frame ) {
+					frame.open();
+					return;
+				}
+
+				// Create the media frame.
+				frame = wp.media.frames.customHeader = wp.media({
+					// Set the title of the modal.
+					title: $el.data('choose'),
+
+					// Tell the modal to show only videos matching the mime type.
+					library: {
+						type: mime
+					},
+
+					// Customize the submit button.
+					button: {
+						// Set the text of the button.
+						text: $el.data('update'),
+						close: true
+					}
+				});
+
+				// When an image is selected, run a callback.
+				frame.on( 'select', function() {
+					// Grab the selected attachment.
+					var video = frame.state().get('selection').first();
+					var parentID = jQuery('.attachment-details').first().data('id')
+					var kgflashmediaplayersecurity = document.getElementsByName('attachments['+parentID+'][kgflashmediaplayer-security]')[0].value;
+
+					jQuery.post(ajaxurl, { action:"kgvid_update_child_format", security: kgflashmediaplayersecurity, parent_id: parentID, video_id: video.id, format: format }, function(data) {
+						kgvid_redraw_encode_checkboxes(jQuery("[data-setting='url'] input").val(), parentID, 'attachment');
+					}, "json");
+
+
+
 				});
 
 				frame.open();
