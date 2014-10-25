@@ -1261,7 +1261,7 @@ function kgvid_pick_attachment(button) {
 
 }
 
-function kgvid_pick_format(button, mime, format) {
+function kgvid_pick_format(button, parentID, mime, format, movieurl) {
 
 		var frame;
 
@@ -1300,11 +1300,10 @@ function kgvid_pick_format(button, mime, format) {
 				frame.on( 'select', function() {
 					// Grab the selected attachment.
 					var video = frame.state().get('selection').first();
-					var parentID = jQuery('.attachment-details').first().data('id')
 					var kgflashmediaplayersecurity = document.getElementsByName('attachments['+parentID+'][kgflashmediaplayer-security]')[0].value;
 
 					jQuery.post(ajaxurl, { action:"kgvid_update_child_format", security: kgflashmediaplayersecurity, parent_id: parentID, video_id: video.id, format: format }, function(data) {
-						kgvid_redraw_encode_checkboxes(jQuery("[data-setting='url'] input").val(), parentID, 'attachment');
+						kgvid_redraw_encode_checkboxes(jQuery(movieurl, parentID, 'attachment');
 					}, "json");
 
 				});
