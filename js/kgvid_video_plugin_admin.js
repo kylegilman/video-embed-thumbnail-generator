@@ -1307,12 +1307,20 @@ function kgvid_pick_format(button, mime, format) {
 						kgvid_redraw_encode_checkboxes(jQuery("[data-setting='url'] input").val(), parentID, 'attachment');
 					}, "json");
 
-
-
 				});
 
 				frame.open();
 		});
+
+}
+
+function kgvid_clear_video(movieurl, postID, video_id, blog_id) {
+
+	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
+
+	jQuery.post(ajaxurl, { action:"kgvid_clear_child_format", security: kgflashmediaplayersecurity, video_id: video_id, blog_id: blog_id }, function(data) {
+		kgvid_redraw_encode_checkboxes(movieurl, postID, 'attachment');
+	}, "json");
 
 }
 
