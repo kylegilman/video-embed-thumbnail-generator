@@ -1303,7 +1303,7 @@ function kgvid_pick_format(button, parentID, mime, format, movieurl) {
 					var kgflashmediaplayersecurity = document.getElementsByName('attachments['+parentID+'][kgflashmediaplayer-security]')[0].value;
 
 					jQuery.post(ajaxurl, { action:"kgvid_update_child_format", security: kgflashmediaplayersecurity, parent_id: parentID, video_id: video.id, format: format }, function(data) {
-						kgvid_redraw_encode_checkboxes(jQuery(movieurl, parentID, 'attachment');
+						kgvid_redraw_encode_checkboxes(movieurl, parentID, 'attachment');
 					}, "json");
 
 				});
