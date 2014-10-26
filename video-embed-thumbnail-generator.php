@@ -2209,7 +2209,20 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		foreach ($video_encode_queue as $video_key => $video_entry) {
 			if ( $video_entry['movieurl'] == $movieurl ) {
 				foreach ( $video_entry['encode_formats'] as $format => $value ) {
-					if ( array_key_exists($format, $video_formats) ) { //don't recreate any formats that were previously unset
+					if ( !array_key_exists($format, $video_formats) && $value['status'] != 'notchecked' ) {
+						$video_formats[$format]['name'] = $value['name'];
+						if ( array_key_exists('filepath', $value) && file_exists($value['filepath']) ) {
+							$encodevideo_info[$format]['exists'] = true;
+							if ( is_writable($value['filepath']) ) { $encodevideo_info[$format]['writable'] = true; }
+							else { $encodevideo_info[$format]['writable'] = false; }
+						}
+						else {
+							$encodevideo_info[$format]['exists'] = false;
+							$encodevideo_info[$format]['writable'] = false;
+						}
+						$video_formats[$format]['status'] = $value['status'];
+					}
+					elseif ( array_key_exists($format, $video_formats) ) { //don't recreate any formats that were previously unset
 						$video_formats[$format]['status'] = $value['status'];
 					}
 				}
@@ -5768,8 +5781,8 @@ function kgvid_encode_progress($video_key, $format, $page) {
 							$video_id = kgvid_url_to_id($video_encode_queue[$video_key]['encode_formats'][$format]['url']);
 							if ( !$video_id ) {
 								$wp_filetype = wp_check_filetype(basename($filepath), null );
-								$video_formats = kgvid_video_formats();
-								$title .= " ".$video_formats[$format]['name'];
+
+								$title .= " ".$video_entry['encode_formats'][$format]['name'];
 
 								if ( $user_ID == 0 ) {
 									$parent_post = get_post($parent_id);
