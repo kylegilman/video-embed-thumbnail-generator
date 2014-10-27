@@ -2,6 +2,10 @@
 	color: #666;
 }
 
+.kgvid_meter {
+	text-indent: 0px;
+}
+
 .kgvid_meter, .meter_finished {
 	height: 14px;
 	width: 125px;
@@ -70,7 +74,7 @@
 	color: white;
 	font-size: 80%;
 	position:relative;
-	top: -2px;
+	top: -4px;
 }
 
 .kgvid_cancel_button {
@@ -115,12 +119,29 @@ div.kgvid_cancel_button input {
     font-size: 1pt;
 }
 
-.compat-item .field {
-	width: 85%;
+.kgvid_encoding_small_text {
+	text-indent: 0px;
+	display: block;
+	margin-left: -30px;
+}
+
+.media-frame .compat-item .field {
+	width: 90%;
 }
 
 .compat-item .field input {
 	width: auto;
+}
+
+.compat-item .kgvid_checkboxes_section ul li {
+	margin-bottom: 10pt;
+	line-height: 16pt;
+	padding-left: 30px;
+	text-indent: -30px;
+}
+
+.kgvid_format_meta {
+	text-indent: 0px;
 }
 
 #poststuff .nav-tab-wrapper.kgvid-tabs {
@@ -308,9 +329,7 @@ font-weight: normal;
 a.kgvid_delete-format {
 	color: #BC0B0B !important;
 	text-decoration: none;
-	margin-left: 15px;
 	display: block;
-	margin-bottom: -10px;
 }
 
 a.kgvid_delete-format:hover {
@@ -563,4 +582,5 @@ td.media-icon img {
 	padding: 0px 4px;
 	height: 24px;
 	line-height: 21px;
+	text-indent: 0;
 }

@@ -2232,7 +2232,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		}
 	}
 
-	$checkboxes = '<div id="attachments-'.$post_id.'-kgflashmediaplayer-encodeboxes">';
+	$checkboxes = '<div id="attachments-'.$post_id.'-kgflashmediaplayer-encodeboxes" class="kgvid_checkboxes_section"><ul>';
 
 	foreach ( $video_formats as $format => $format_stats ) {
 
@@ -2329,13 +2329,16 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			$something_to_encode = false;
 		}
 
-		$checkboxes .= "\n\t\t\t".'<input type="checkbox" id="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments['.$post_id.'][kgflashmediaplayer-encode'.$format.']" '.$checked[$format].' '.$ffmpeg_disabled_text.$disabled[$format].'> <label for="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$post_id.'-kgflashmediaplayer-meta'.$format.'" class="kgvid_format_meta">'.$meta[$format].'</span>';
+		$checkboxes .= "\n\t\t\t".'<li><input class="kgvid_encode_checkbox" type="checkbox" id="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments['.$post_id.'][kgflashmediaplayer-encode'.$format.']" '.$checked[$format].' '.$ffmpeg_disabled_text.$disabled[$format].'> <label for="attachments-'.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$post_id.'-kgflashmediaplayer-meta'.$format.'" class="kgvid_format_meta">'.$meta[$format].'</span>';
 
-		if ( $is_attachment && empty($disabled[$format]) && $format != 'fullres' && $blog_id == false ) { $checkboxes .= "<span id='pick-thumbnail' class='button-secondary kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
+		if ( $is_attachment && empty($disabled[$format]) && $format != 'fullres' && $blog_id == false ) { $checkboxes .= "<span id='pick-'".$format."' class='button-secondary kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
 		}
-		$checkboxes .= '<br />';
+		$checkboxes .= '</li>';
 
-	}
+	}//end format loop
+
+	$checkboxes .= '</ul>';
+
 	if ( $something_to_encode == false ) {
 		$encode_disabled = ' disabled title="'.__('Nothing to encode', 'video-embed-thumbnail-generator').'" style="display:none;"';
 	}
@@ -2344,7 +2347,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		$button_text = _x('Update', 'Button text', 'video-embed-thumbnail-generator');
 		$checkboxes .= "\n\t\t\t".'<input type="hidden" name="attachments['.$post_id.'][kgflashmediaplayer-url]" value="'.$movieurl.'">';
 	}
-	else { $button_text = _x('Encode', 'Button text', 'video-embed-thumbnail-generator'); }
+	else { $button_text = _x('Encode selected', 'Button text', 'video-embed-thumbnail-generator'); }
 
 
 	$checkboxes .= '<input type="button" id="attachments-'.$post_id.'-kgflashmediaplayer-encode" name="attachments['.$post_id.'][kgflashmediaplayer-encode]" class="button-secondary" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$post_id.'-encodeplaceholder"></div>';
@@ -5574,7 +5577,6 @@ function kgvid_encode_videos() {
 			}//end loop
 
 			kgvid_save_encode_queue($video_encode_queue);
-			//kgvid_encode_progress($start_encoding, $queued_format, "attachment");
 
 		} //if there's a format to encode
 
@@ -5729,13 +5731,13 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						$args = array($video_key, $format, $page);
 						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
 
-						$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong> <div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
+						$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
 
 						if ( current_user_can('encode_videos') && $pid ) {
 							$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.$video_entry["attachmentID"].'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.$pid.', \''.$video_entry["attachmentID"].'\', \''.$video_key.'\', \''.$format.'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
 						}
 
-						$embed_display .= '<div style="display:block;"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.$time_remaining.'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.$fps_match.'</small></div><script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, '.$time_to_wait.');</script>';
+						$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.$time_remaining.'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.$fps_match.'</small></div><script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, '.$time_to_wait.');</script>';
 					}
 					elseif ( time() - $started < 10 || ( file_exists($filepath) && time() - filemtime($filepath) < 10 ) ) { //not enough time has passed, so check again later
 						$args = array($video_key, $format, $page);
