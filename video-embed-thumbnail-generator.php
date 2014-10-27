@@ -1829,13 +1829,13 @@ function KGVID_shortcode($atts, $content = ''){
 				if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 
 					$enable_resolutions_plugin = false;
-					$x = 0;
+					$x = 20;
 					foreach ($video_formats as $format => $format_stats) {
 						if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
 						if ( $encodevideo_info[$format]["exists"] ) {
 
-								if ( array_key_exists('height', $encodevideo_info[$format]) ) {
-									$source_key = $encodevideo_info[$format]['height']-$x;
+								if ( array_key_exists('height', $encodevideo_info[$format]) && $format_stats['type'] == 'h264' ) {
+									$source_key = $encodevideo_info[$format]['height'];
 									$format_stats['label'] = $encodevideo_info[$format]['height'].'p';
 								}
 								else { $source_key = $x; }
@@ -1852,7 +1852,7 @@ function KGVID_shortcode($atts, $content = ''){
 							else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
 							$sources[$source_key] .= '>'."\n";
 						}
-					$x++;
+					$x--;
 					}
 					krsort($sources);
 
