@@ -265,7 +265,8 @@ function kgvid_setup_video(id) {
 
 			if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
 				var resolutions = player.availableRes;
-				player.changeRes(Object.keys(resolutions)[Object.keys(resolutions).length - 1]);
+				var highest_res = Object.keys(resolutions)[Object.keys(resolutions).length - 1];
+				player.changeRes(highest_res);
 			}
 
 			if ( fullScreenApi.supportsFullScreen == false ) {
@@ -406,8 +407,6 @@ function kgvid_resize_video(id) {
 		var video_vars = kgvid_video_vars[id];
 		var set_width = video_vars.width;
 		var set_height = video_vars.height;
-		var iOS = ( navigator.userAgent.match(/(iPad|iPhone|iPod)/i) ? true : false );
-		if ( iOS ) { video_vars.player_type = "iOS"; }
 		var aspect_ratio = Math.round(set_height/set_width*1000)/1000
 		var reference_div = jQuery('#kgvid_'+id+'_wrapper').parent();
 		if ( reference_div.is('body') ) { parent_width = window.innerWidth; }
@@ -462,11 +461,15 @@ function kgvid_resize_video(id) {
 					var current_resolution = parseInt(player.getCurrentRes());
 
 					if ( !isNaN(current_resolution) ) {
+						if ( window.devicePixelRatio != undefined ) { var pixel_height = set_height * window.devicePixelRatio; } //don't shortchange retina displays
+						else { pixel_height = set_height; }
 						var res_options = jQuery.map(resNumbers, function(n) {
-							if ( n >= set_height ) { return n; }
+							if ( n >= pixel_height ) { return n; }
 						});
 						var set_res = Math.min.apply(Math,res_options);
-						if ( set_res != current_resolution ) { player.changeRes(set_res+'p') }
+						if ( set_res != current_resolution && !jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
+							 player.changeRes(set_res+'p');
+						}
 						if ( jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
 							if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
 							if ( player.volume() != 1 ) {
@@ -486,15 +489,6 @@ function kgvid_resize_video(id) {
 			}
 			if ( video_vars.player_type == "WordPress Default" ) {
 				jQuery('#kgvid_'+id+'_wrapper').find('.wp-video').attr('style', 'width:'+set_width+'px; height:'+set_height+'px;');
-			}
-
-			if ( video_vars.player_type == "iOS" ) {
-				jQuery('#video_'+id).attr('width',set_width).attr('height',set_height);
-				jQuery('#video_'+id).width(set_width).height(set_height);
-
-				jQuery('#kgvid_'+id+'_wrapper').find('.wp-video-shortcode').attr('width',set_width).attr('height',set_height);
-				jQuery('#kgvid_'+id+'_wrapper').find('.wp-video-shortcode').width(set_width).height(set_height);
-
 			}
 
 			var meta = jQuery('#kgvid_video_gallery_thumb_'+id).data('meta');

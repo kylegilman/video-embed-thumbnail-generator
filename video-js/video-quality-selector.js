@@ -177,7 +177,7 @@
 
 		// Only enable the plugin on HTML5 videos
 		if ( ! this.el().firstChild.canPlayType  ) { return; }
-		if ( this.L.canPlayType('video/mp4') == "" ) { return; } //disables if the player can't play mp4
+		if ( this.L != null && this.L.canPlayType('video/mp4') == "" ) { return; } //disables if the player can't play mp4
 
 		/*******************************************************************
 		 * Setup variables, parse settings
