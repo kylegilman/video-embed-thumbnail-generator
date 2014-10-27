@@ -270,7 +270,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 			"height" => 480,
 			"type" => "h264",
 			"extension" => "mp4",
-			"suffix" => "-480.mp4",
+			"suffix" => "-360.mp4",
 			"mime" => "video/mp4",
 			"old_suffix" => "-ipod.m4v",
 			"vcodec" => "libx264"
@@ -917,6 +917,12 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 				'filepath' => $uploads['basedir']."/html5encodes/".$encodevideo_info['moviefilebasename'].$old_suffix ),
 		);
 		if ( !array_key_exists('old_suffix', $format_stats) ) { unset($potential_locations['same_directory_old_suffix']); }
+		if ( $format == 'mobile' ) {
+			$potential_locations['480p'] = array(
+				'url' => $sanitized_url['noextension'].'-480.mp4',
+				'filepath' => $encodevideo_info['encodepath'].$encodevideo_info['moviefilebasename'].'-480.mp4'
+			);
+		}
 
 		foreach ( $potential_locations as $name => $location ) {
 
