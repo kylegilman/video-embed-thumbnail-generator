@@ -297,11 +297,9 @@ function kgvid_setup_video(id) {
 		jQuery('#video_'+id+'_div').hover(
 			function(){
 				jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
-				//jQuery('#video_'+id+'_watermark').fadeOut(100);
 			},
 			function(){
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-				//setTimeout(function(){jQuery('#video_'+id+'_watermark').fadeIn('slow');},3000);
 			}
 		);
 	} //end if Strobe Media Playback
@@ -316,7 +314,7 @@ function kgvid_setup_video(id) {
 			jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
 		});
 
-		player.on('play', function kgvid_play_start(){
+		jQuery('#video_'+id+'_div .wp-video').one('click', function kgvid_play_start(){
 			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 			kgvid_video_counter(id, 'play');
 		});
