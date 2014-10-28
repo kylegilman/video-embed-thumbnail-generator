@@ -25,7 +25,7 @@ You have the option to use a few different video players:
 
 <em>The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
 
-No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player can automatically select the one closest to the size of the player and provide a button for users to select the resolution manually.
+No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player can automatically select the one closest to the size of the player and provide a button for users to select the resolution manually. Because the player uses native controls on mobile devices, the manual resolution button is only available on desktop browsers.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode.
 
@@ -224,7 +224,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.4 - October 23, 2014 =
-* Added H.264 HTML5 video resolution switcher for the Video.js player. Automatically selects the appropriate resolution for the size of the displayed video and allows manual user switching.
+* Added H.264 HTML5 video resolution switcher for the Video.js player. Automatically selects the appropriate resolution for the size of the displayed video and allows manual user switching on desktop computers.
 * Added option to set videos to automatically fill their containers.
 * Added buttons to manually set other videos in the media library as alternate formats for the current video.
 * Added option to encode a custom resolution.
@@ -249,6 +249,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that left the GUID as the original filename if replacing the video with an mp4 changed the extension.
 * Fixed bug that incorrectly reported all encoding fps values over 99 as "10".
 * Fixed bug that didn't recognize videos had completed encoding if there were audio frames left in the queue.
+* Fixed bug that left title overlay on iOS videos using the WordPress Default player.
 * Fixed bug that made video galleries display as inline-block when the inline video option was disabled.
 
 = 4.3.5 - September 17, 2014 =
