@@ -1401,6 +1401,7 @@ function kgvid_enqueue_shortcode_scripts() {
 	$options = kgvid_get_options();
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
+			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
 			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '4.9.1', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 		}
@@ -1844,7 +1845,6 @@ function KGVID_shortcode($atts, $content = ''){
 							if ( $format_stats['type'] == 'h264' ) {
 								$sources[$source_key] .= ' data-res="'.$format_stats['label'].'"';
 								if ( $mp4already ) { //there is more than one resolution available
-									wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
 									$enable_resolutions_plugin = true;
 								}
 								$mp4already = true;
