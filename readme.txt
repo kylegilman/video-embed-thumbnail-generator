@@ -223,6 +223,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.4.2 - November 1, 2014 =
+* Added Google Universal Analytics event tracking.
+* Updated Spanish and Belgian translations.
+* Updated Video.js to version 4.10.2
+* Fixed bug that prevented pop-up gallery thumbnails from resizing responsively.
+
 = 4.4.1 - October 28, 2014 =
 * Fixed bug that loaded resolution selector plugin too late in the page.
 * Fixed bug that displayed the video poster image while switching resolutions.
