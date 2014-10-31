@@ -3,8 +3,8 @@ msgstr ""
 "Project-Id-Version: Video Embed & Thumbnail Generator v4.3.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/video-embed-thumbnail-"
 "generator\n"
-"POT-Creation-Date: 2014-07-08 16:27:20+00:00\n"
-"PO-Revision-Date: 2014-07-08 23:37+0200\n"
+"POT-Creation-Date: 2014-04-26 18:19:46+00:00\n"
+"PO-Revision-Date: 2014-10-31 21:29+0200\n"
 "Last-Translator: Emil Georgiev <svinqvmraka@gmail.com>\n"
 "Language-Team: \n"
 "Language: bg_BG\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;"
 "_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2\n"
@@ -20,81 +20,80 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:207
+#: video-embed-thumbnail-generator.php:205
 msgid "Replace original with H.264"
 msgstr "Заместете оригинала с H.264"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:353
+#: video-embed-thumbnail-generator.php:351
 msgid "Settings"
 msgstr "Настройки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:361
+#: video-embed-thumbnail-generator.php:359
 msgid "Network Settings"
 msgstr "Настройки на мрежата"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1126
+#: video-embed-thumbnail-generator.php:1125
 msgctxt "please wait"
 msgid "Wait"
 msgstr "Момент"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1127
+#: video-embed-thumbnail-generator.php:1126
 msgid "Hide video..."
 msgstr "Скрийте видеото..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1128
-#: video-embed-thumbnail-generator.php:3707
+#: video-embed-thumbnail-generator.php:1127
 msgid "Choose from video..."
 msgstr "Изберете от видеото..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1129
+#: video-embed-thumbnail-generator.php:1128
 msgid "Can't load video"
 msgstr "Видеото не може да се зареди"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1130
+#: video-embed-thumbnail-generator.php:1129
 msgid "Choose Thumbnail:"
 msgstr "Изберете картинка:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1131
+#: video-embed-thumbnail-generator.php:1130
 msgid "Save All Thumbnails"
 msgstr "Запазете всички картинки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1132
+#: video-embed-thumbnail-generator.php:1131
 msgid "Saving..."
 msgstr "Запазване..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1133
+#: video-embed-thumbnail-generator.php:1132
 msgid "Loading..."
 msgstr "Зареждане..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1134
-#: video-embed-thumbnail-generator.php:4344
+#: video-embed-thumbnail-generator.php:1133
+#: video-embed-thumbnail-generator.php:4294
 msgid "Generate"
 msgstr "Генериране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1135
-#: video-embed-thumbnail-generator.php:4345
+#: video-embed-thumbnail-generator.php:1134
+#: video-embed-thumbnail-generator.php:4295
 msgid "Randomize"
 msgstr "Разбъркване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1136
+#: video-embed-thumbnail-generator.php:1135
 msgid "%s not found"
 msgstr "%s не е намерено"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1137
+#: video-embed-thumbnail-generator.php:1136
 msgid ""
 "Please enter a URL that points to a valid video file. Video sharing sites "
 "are not supported by this plugin.\n"
@@ -107,16 +106,16 @@ msgstr ""
 "публикацията и WordPress ще се погрижи за останалото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1138
-#: video-embed-thumbnail-generator.php:1875
-#: video-embed-thumbnail-generator.php:4344
-#: video-embed-thumbnail-generator.php:4345
-#: video-embed-thumbnail-generator.php:4379
+#: video-embed-thumbnail-generator.php:1137
+#: video-embed-thumbnail-generator.php:1849
+#: video-embed-thumbnail-generator.php:4294
+#: video-embed-thumbnail-generator.php:4295
+#: video-embed-thumbnail-generator.php:4326
 msgid "Please enter a valid video URL"
 msgstr "Въведете валиден адрес на видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1139
+#: video-embed-thumbnail-generator.php:1138
 msgid ""
 "You are about to permanently delete the encoded video.\n"
 " 'Cancel' to stop, 'OK' to delete."
@@ -125,22 +124,22 @@ msgstr ""
 "'Отказ' за прекратяване, 'ОК' за изтриване."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1140
+#: video-embed-thumbnail-generator.php:1139
 msgid "Saved."
 msgstr "Записано."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1141
+#: video-embed-thumbnail-generator.php:1140
 msgid "Running test..."
 msgstr "Тестване..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1142
+#: video-embed-thumbnail-generator.php:1141
 msgid "FFMPEG or LIBAV required for these functions."
 msgstr "FFMPEG или LIBAV са необходими за тези функции."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1143
+#: video-embed-thumbnail-generator.php:1142
 msgid ""
 "You are about to set all existing video thumbnails previously generated by "
 "this plugin as the featured images for their posts. There is no 'undo' "
@@ -151,17 +150,17 @@ msgstr ""
 "връщане, затова продължавате на собствен риск."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1144
+#: video-embed-thumbnail-generator.php:1143
 msgid "'Cancel' to stop, 'OK' to proceed."
 msgstr "'Отказ' за прекратяване, 'ОК' за продължаване."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1145
+#: video-embed-thumbnail-generator.php:1144
 msgid "Processing..."
 msgstr "Обработване..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1146
+#: video-embed-thumbnail-generator.php:1145
 msgid ""
 "You are about to set all existing video thumbnails previously generated by "
 "this plugin as attachments of their posts rather than their associated "
@@ -172,7 +171,7 @@ msgstr ""
 "видеата. Продължете на собствен риск."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1147
+#: video-embed-thumbnail-generator.php:1146
 msgid ""
 "You are about to set all existing video thumbnails previously generated by "
 "this plugin as attachments of their videos rather than their associated "
@@ -183,160 +182,155 @@ msgstr ""
 "Продължете на собствен риск."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1148
+#: video-embed-thumbnail-generator.php:1147
 msgid "Complete"
 msgstr "Готово"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1149
-#: video-embed-thumbnail-generator.php:3783
-#: video-embed-thumbnail-generator.php:4371
+#: video-embed-thumbnail-generator.php:1148
+#: video-embed-thumbnail-generator.php:3733
 msgid "Track type:"
 msgstr "Тип на пътечката:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1150
-#: video-embed-thumbnail-generator.php:3774
-#: video-embed-thumbnail-generator.php:4371
+#: video-embed-thumbnail-generator.php:1149
+#: video-embed-thumbnail-generator.php:3724
 msgid "subtitles"
 msgstr "субтитри"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1151
-#: video-embed-thumbnail-generator.php:3774
-#: video-embed-thumbnail-generator.php:4371
+#: video-embed-thumbnail-generator.php:1150
+#: video-embed-thumbnail-generator.php:3724
 msgid "captions"
 msgstr "надписи"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1152
-#: video-embed-thumbnail-generator.php:3774
-#: video-embed-thumbnail-generator.php:4371
+#: video-embed-thumbnail-generator.php:1151
+#: video-embed-thumbnail-generator.php:3724
 msgid "chapters"
 msgstr "части"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1153
-#: video-embed-thumbnail-generator.php:3784
+#: video-embed-thumbnail-generator.php:1152
+#: video-embed-thumbnail-generator.php:3734
 msgid "Choose a Text File"
 msgstr "Изберете текстов файл"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1154
-#: video-embed-thumbnail-generator.php:3784
+#: video-embed-thumbnail-generator.php:1153
+#: video-embed-thumbnail-generator.php:3734
 msgid "Set as track source"
 msgstr "Задайте като източник на пътечката"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1155
-#: video-embed-thumbnail-generator.php:2576
-#: video-embed-thumbnail-generator.php:2582
-#: video-embed-thumbnail-generator.php:2588
-#: video-embed-thumbnail-generator.php:2916
-#: video-embed-thumbnail-generator.php:3739
-#: video-embed-thumbnail-generator.php:3784
+#: video-embed-thumbnail-generator.php:1154
+#: video-embed-thumbnail-generator.php:2528
+#: video-embed-thumbnail-generator.php:2534
+#: video-embed-thumbnail-generator.php:2540
+#: video-embed-thumbnail-generator.php:2868
+#: video-embed-thumbnail-generator.php:3689
+#: video-embed-thumbnail-generator.php:3734
 msgid "Choose from Library"
 msgstr "Изберете от библиотеката"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1156
-#: video-embed-thumbnail-generator.php:4371
+#: video-embed-thumbnail-generator.php:1155
 msgid "Language code:"
 msgstr "Езиков код:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1157
+#: video-embed-thumbnail-generator.php:1156
 msgctxt "noun"
 msgid "Label:"
 msgstr "Етикет:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1190
+#: video-embed-thumbnail-generator.php:1187
 msgctxt "noun for Google Analytics event"
 msgid "Play Start"
 msgstr "Стартиране на възпроизвеждане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1191
+#: video-embed-thumbnail-generator.php:1188
 msgctxt "noun for Google Analytics event"
 msgid "Complete View"
 msgstr "Пълно гледане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1192
+#: video-embed-thumbnail-generator.php:1189
 msgctxt "button text to play next video"
 msgid "Next"
 msgstr "Следващо"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1193
+#: video-embed-thumbnail-generator.php:1190
 msgctxt "button text to play previous video"
 msgid "Previous"
 msgstr "Предишно"
 
-#: video-embed-thumbnail-generator.php:1638
+#: video-embed-thumbnail-generator.php:1616
 msgid "%s view"
 msgid_plural "%s views"
 msgstr[0] "%s гледане"
 msgstr[1] "%s гледания"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1643
+#: video-embed-thumbnail-generator.php:1621
 msgid "Right-click or ctrl-click on this link to download"
 msgstr ""
 "Натиснете десен бутон или CTRL–ляв бутон, върху тази връзка, за сваляне."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1659
+#: video-embed-thumbnail-generator.php:1637
 msgctxt "precedes code for embedding video"
 msgid "Embed:"
 msgstr "Вграждане:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1880
+#: video-embed-thumbnail-generator.php:1854
 msgctxt "ex: FFMPEG not found at /usr/local/bin"
 msgid "%1$s not found at %2$s"
 msgstr "%1$s не е намерен във %2$s"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1943
+#: video-embed-thumbnail-generator.php:1917
 msgid "Delete Permanently"
 msgstr "Перманентно изтриване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1955
+#: video-embed-thumbnail-generator.php:1929
 msgid "Currently encoding"
 msgstr "Кодира се"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1962
+#: video-embed-thumbnail-generator.php:1936
 msgid "Format already exists"
 msgstr "Форматът вече съществува"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1969
+#: video-embed-thumbnail-generator.php:1943
 msgid "You don't have permission to encode videos"
 msgstr "Нямате разрешение да кодирате видеа"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1977
+#: video-embed-thumbnail-generator.php:1951
 msgid "Nothing to encode"
 msgstr "Няма нищо за кодиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1981
+#: video-embed-thumbnail-generator.php:1955
 msgctxt "Button text"
 msgid "Update"
 msgstr "Обновяване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1984
+#: video-embed-thumbnail-generator.php:1958
 msgctxt "Button text"
 msgid "Encode"
 msgstr "Кодиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:1990
+#: video-embed-thumbnail-generator.php:1964
 msgid ""
 "Generates additional video formats compatible with most mobile & HTML5-"
 "compatible browsers"
@@ -345,102 +339,102 @@ msgstr ""
 "поддържащи браузъри"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2015
+#: video-embed-thumbnail-generator.php:1989
 msgctxt "noun, column header"
 msgid "Order"
 msgstr "Подреждане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2016
+#: video-embed-thumbnail-generator.php:1990
 msgctxt "username, column header"
 msgid "User"
 msgstr "Потребител"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2017
+#: video-embed-thumbnail-generator.php:1991
 msgctxt "noun, column header"
 msgid "Thumbnail"
 msgstr "Картинка"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2018
+#: video-embed-thumbnail-generator.php:1992
 msgctxt "noun, column header"
 msgid "File"
 msgstr "Файл"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2019
+#: video-embed-thumbnail-generator.php:1993
 msgctxt "noun, column header"
 msgid "Formats"
 msgstr "Формати"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2020
+#: video-embed-thumbnail-generator.php:1994
 msgctxt "noun, column header"
 msgid "Actions"
 msgstr "Действия"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2024
+#: video-embed-thumbnail-generator.php:1998
 msgctxt "multisite site name, column header"
 msgid "Site"
 msgstr "Сайт"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2140
+#: video-embed-thumbnail-generator.php:2114
 msgid "Other user's video"
 msgstr "Видео на друг потребител"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2144
+#: video-embed-thumbnail-generator.php:2118
 msgid "Queue is empty"
 msgstr "Опашката е празна"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2153
-#: video-embed-thumbnail-generator.php:2160
+#: video-embed-thumbnail-generator.php:2127
+#: video-embed-thumbnail-generator.php:2134
 msgctxt "Tools page title"
 msgid "Video Embed & Thumbnail Generator Encoding Queue"
 msgstr "Video Embed & Thumbnail Generator Опашка за кодиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2153
+#: video-embed-thumbnail-generator.php:2127
 msgctxt "Title in admin sidebar"
 msgid "Video Encode Queue"
 msgstr "Опашка за кодиране на видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2160
+#: video-embed-thumbnail-generator.php:2134
 msgctxt "Title in network admin sidebar"
 msgid "Network Video Encode Queue"
 msgstr "Опашка за кодиране на видео в мрежата"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2170
+#: video-embed-thumbnail-generator.php:2144
 msgid "Video Embed & Thumbnail Generator Encoding Queue"
 msgstr "Video Embed & Thumbnail Generator опашка за кодиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2187
+#: video-embed-thumbnail-generator.php:2161
 msgid "Clear All Completed"
 msgstr "Изчистване на всички готови"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2195
-#: video-embed-thumbnail-generator.php:2320
+#: video-embed-thumbnail-generator.php:2169
+#: video-embed-thumbnail-generator.php:2283
 msgctxt "Settings page title"
 msgid "Video Embed & Thumbnail Generator"
 msgstr "Video Embed & Thumbnail Generator"
 
 # @ Settings page title in admin sidebar
-#: video-embed-thumbnail-generator.php:2195
-#: video-embed-thumbnail-generator.php:2320
-msgctxt "Settings page title in admin sidebar"
+#. Plugin Name of the plugin/theme
+#: video-embed-thumbnail-generator.php:2169
+#: video-embed-thumbnail-generator.php:2283
 msgid "Video Embed & Thumbnail Generator"
 msgstr "Video Embed & Thumbnail Generator"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2231
+#: video-embed-thumbnail-generator.php:2205
 msgid ""
 "Video Embed & Thumbnail Generator network settings reset to default values."
 msgstr ""
@@ -448,57 +442,53 @@ msgstr ""
 "по подразбиране."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2253
+#: video-embed-thumbnail-generator.php:2227
 msgid "Path to applications on the server:"
 msgstr "Път до приложенията на сървъра:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2256
-#: video-embed-thumbnail-generator.php:2486
+#: video-embed-thumbnail-generator.php:2230
+#: video-embed-thumbnail-generator.php:2438
 msgid "Application for thumbnails & encoding:"
 msgstr "Приложения за картинки  и кодиране:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2260
-#: video-embed-thumbnail-generator.php:2495
+#: video-embed-thumbnail-generator.php:2234
+#: video-embed-thumbnail-generator.php:2447
 msgid "Method to fix encoded H.264 headers for streaming:"
 msgstr "Метод за поправяне на  H.264 хедъри за стрийминг:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2264
-#: video-embed-thumbnail-generator.php:2504
+#: video-embed-thumbnail-generator.php:2238
+#: video-embed-thumbnail-generator.php:2456
 msgid "FFMPEG legacy options:"
 msgstr "FFMPEG наследени опции:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2268
+#: video-embed-thumbnail-generator.php:2242
 msgid "Execution:"
 msgstr "Изпълнение:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2272
+#: video-embed-thumbnail-generator.php:2246
 msgid "User capabilties for new sites:"
 msgstr "Потребителски привилегии за нови сайтове:"
 
-#: video-embed-thumbnail-generator.php:2276
-msgid "Super Admins only:"
-msgstr "Само за супер администратори:"
-
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2282
-#: video-embed-thumbnail-generator.php:2347
+#: video-embed-thumbnail-generator.php:2252
+#: video-embed-thumbnail-generator.php:2309
 msgid "Save Changes"
 msgstr "Запазване на промените"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2283
-#: video-embed-thumbnail-generator.php:2348
+#: video-embed-thumbnail-generator.php:2253
+#: video-embed-thumbnail-generator.php:2310
 msgid "Reset Options"
 msgstr "Възстановяване на настройките по подразбиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2287
-#: video-embed-thumbnail-generator.php:2352
+#: video-embed-thumbnail-generator.php:2257
+#: video-embed-thumbnail-generator.php:2314
 msgid ""
 "If you're getting some use out of this plugin, please consider donating a "
 "few dollars to support its future development."
@@ -507,274 +497,269 @@ msgstr ""
 "разработката му."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2315
-msgctxt "FFMPEG settings tab"
-msgid "%s settings tab."
-msgstr "Раздел с настройки за %s."
-
-# @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2338
+#: video-embed-thumbnail-generator.php:2300
 msgctxt "Adjective, tab title"
 msgid "General"
 msgstr "Общи"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2339
+#: video-embed-thumbnail-generator.php:2301
 msgctxt "FFMPEG Settings, tab title"
 msgid "%s Settings"
 msgstr "%s настройки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2447
+#: video-embed-thumbnail-generator.php:2399
 msgid "Default Video Playback Settings"
 msgstr "Настойки за изпълняване на видео по подразбиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2448
+#: video-embed-thumbnail-generator.php:2400
 msgid "The following options will only affect Flash playback"
 msgstr "Настройките по-долу се отнасят само за Flash"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2449
+#: video-embed-thumbnail-generator.php:2401
 msgid "Plugin Settings"
 msgstr "Настройки на разширението"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2450
+#: video-embed-thumbnail-generator.php:2402
 msgid "Video Encoding Settings"
 msgstr "Настройки за кодирането на видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2452
+#: video-embed-thumbnail-generator.php:2404
 msgid "Default thumbnail:"
 msgstr "Картинка по подразбиране:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2453
+#: video-embed-thumbnail-generator.php:2405
 msgid "End of video image:"
 msgstr "Картинка в края на видеото:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2454
+#: video-embed-thumbnail-generator.php:2406
 msgid "Watermark overlay:"
 msgstr "Воден знак:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2455
+#: video-embed-thumbnail-generator.php:2407
 msgid "Video alignment:"
 msgstr "Подравняване на видеото:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2456
+#: video-embed-thumbnail-generator.php:2408
 msgid "Automatically resize videos:"
 msgstr "Автоматично преоразмеряване на видеата:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2457
+#: video-embed-thumbnail-generator.php:2409
 msgid "Inline videos:"
 msgstr "Видеа в текста:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2458
+#: video-embed-thumbnail-generator.php:2410
 msgid "Max embedded video dimensions:"
 msgstr "Максимални размери за вградени видеа:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2459
+#: video-embed-thumbnail-generator.php:2411
 msgid "Max gallery video dimensions:"
 msgstr "Максимални размери за видеа в галерия:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2460
+#: video-embed-thumbnail-generator.php:2412
 msgid "Gallery thumbnail width:"
 msgstr "Ширина на картинките в галерия:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2461
+#: video-embed-thumbnail-generator.php:2413
 msgid "Video controls:"
 msgstr "Контролни бутони на видеата:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2462
+#: video-embed-thumbnail-generator.php:2414
 msgid "Autoplay:"
 msgstr "Автоматично изпълняване:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2463
+#: video-embed-thumbnail-generator.php:2415
 msgctxt "verb"
 msgid "Loop:"
 msgstr "Повтаряне:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2464
+#: video-embed-thumbnail-generator.php:2416
 msgid "Preload:"
 msgstr "Предварително зареждане:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2465
+#: video-embed-thumbnail-generator.php:2417
 msgctxt "CSS class for video skin"
 msgid "Skin class:"
 msgstr "CSS клас на кожата:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2467
+#: video-embed-thumbnail-generator.php:2419
 msgid "Background color:"
 msgstr "Цвят на фона:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2468
+#: video-embed-thumbnail-generator.php:2420
 msgid "XML configuration file:"
 msgstr "XML конфигурационен файл:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2469
+#: video-embed-thumbnail-generator.php:2421
 msgid "Video skin file:"
 msgstr "Файл с кожа за видеото:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2470
+#: video-embed-thumbnail-generator.php:2422
 msgid "Video stream type:"
 msgstr "Тип на видео потока:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2471
+#: video-embed-thumbnail-generator.php:2423
 msgid "Video scale mode:"
 msgstr "Тип на оразмеряването на видеото:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2472
+#: video-embed-thumbnail-generator.php:2424
 msgid "Autohide:"
 msgstr "Автоматично скриване:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2473
+#: video-embed-thumbnail-generator.php:2425
 msgid "Play button overlay:"
 msgstr "Подложка на бутона за изпълнение:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2475
+#: video-embed-thumbnail-generator.php:2427
 msgid "Default number of thumbnails to generate:"
 msgstr "Брой по подразбиране на генерираните картинки:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2476
+#: video-embed-thumbnail-generator.php:2428
 msgid "User capabilities:"
 msgstr "Потребителски права:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2477
+#: video-embed-thumbnail-generator.php:2429
 msgid "Video security:"
 msgstr "Сигурност на видеото:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2478
+#: video-embed-thumbnail-generator.php:2430
 msgid "Featured image:"
 msgstr "Картинка на публикацията:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2479
+#: video-embed-thumbnail-generator.php:2431
 msgid "Attach thumbnails to:"
 msgstr "Прикачване на картинките към:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2480
+#: video-embed-thumbnail-generator.php:2432
 msgid "Delete associated attachments:"
 msgstr "Изтриване на свързаните прикачени файлове:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2481
+#: video-embed-thumbnail-generator.php:2433
 msgid "Video title text HTML formatting:"
 msgstr "HTML форматиране на заглавия на видеата:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2482
-msgid "Attachment page design:"
+#: video-embed-thumbnail-generator.php:2434
+#, fuzzy
+msgid "Attachment template display:"
 msgstr "Дизайн на страницата за прикачен файл:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2485
+#: video-embed-thumbnail-generator.php:2437
 msgid "Path to applications folder on server:"
 msgstr "Път към директорията на приложението на сървъра:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2489
+#: video-embed-thumbnail-generator.php:2441
 msgid "Enable in-browser thumbnails:"
 msgstr "Включи картинките в браузъра:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2490
+#: video-embed-thumbnail-generator.php:2442
 msgid "Default video encode formats:"
 msgstr "Формати по подразбиране за видео кодиране:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2491
+#: video-embed-thumbnail-generator.php:2443
 msgid "Do automatically on upload:"
 msgstr "Изпълнявай автоматично след качване:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2492
+#: video-embed-thumbnail-generator.php:2444
 msgid "htaccess login:"
 msgstr "htaccess login:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2493
+#: video-embed-thumbnail-generator.php:2445
 msgid "Add watermark to encoded files:"
 msgstr "Добавяй воден знак към кодираните файлове:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2497
+#: video-embed-thumbnail-generator.php:2449
 msgid "Encode quality control method:"
 msgstr "Метод за контрол на качеството на кодиране:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2498
+#: video-embed-thumbnail-generator.php:2450
 msgid "Constant Rate Factors (CRF):"
 msgstr "Constant Rate Factors (CRF):"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2499
+#: video-embed-thumbnail-generator.php:2451
 msgid "Average Bit Rate:"
 msgstr "Среден Битрейт:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2500
+#: video-embed-thumbnail-generator.php:2452
 msgid "H.264 profile:"
 msgstr "H.264 профил:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2501
+#: video-embed-thumbnail-generator.php:2453
 msgid "Audio bit rate:"
 msgstr "Аудио битрейт:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2505
+#: video-embed-thumbnail-generator.php:2457
 msgctxt "program execution options"
 msgid "Execution:"
 msgstr "Изпълнение:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2508
+#: video-embed-thumbnail-generator.php:2460
 msgid "Test FFMPEG:"
 msgstr "Тестване на FFMPEG:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2530
-#: video-embed-thumbnail-generator.php:3804
+#: video-embed-thumbnail-generator.php:2482
+#: video-embed-thumbnail-generator.php:3754
 msgid "WordPress Default"
 msgstr "WordPress по подразбиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2552
+#: video-embed-thumbnail-generator.php:2504
 msgid "(deprecated)"
 msgstr "(вече не се разработва)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2554
+#: video-embed-thumbnail-generator.php:2506
 msgid "Video player:"
 msgstr "Видео плеър:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2559
+#: video-embed-thumbnail-generator.php:2511
 msgid ""
 "Video.js is the default player. Users running WordPress 3.6 or higher can "
 "choose the WordPress Default Mediaelement.js player which may already be "
@@ -793,119 +778,119 @@ msgstr ""
 "можем  да гарантираме съвместимост  с нови функционалности."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2563
+#: video-embed-thumbnail-generator.php:2515
 msgid "Overlay video title"
 msgstr "Заглавие върху видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2564
+#: video-embed-thumbnail-generator.php:2516
 msgid "Overlay embed code"
 msgstr "Код за вграждане върху видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2567
+#: video-embed-thumbnail-generator.php:2519
 msgid "Show download link"
 msgstr "Показване на линк за сваляне"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2568
+#: video-embed-thumbnail-generator.php:2520
 msgid "Show view count"
 msgstr "Показване на брой гледания"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2576
-#: video-embed-thumbnail-generator.php:3739
+#: video-embed-thumbnail-generator.php:2528
+#: video-embed-thumbnail-generator.php:3689
 msgid "Choose a Thumbnail"
 msgstr "Изберете картинка"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2576
-#: video-embed-thumbnail-generator.php:3739
+#: video-embed-thumbnail-generator.php:2528
+#: video-embed-thumbnail-generator.php:3689
 msgid "Set as video thumbnail"
 msgstr "Задайте като картинка на видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2581
+#: video-embed-thumbnail-generator.php:2533
 msgid "Display thumbnail image again when video ends."
 msgstr "Покажете картинката на видеото отново, когато клипът свърши"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2582
+#: video-embed-thumbnail-generator.php:2534
 msgid "Choose End of Video Image"
 msgstr "Изберете картинка за край на видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2582
+#: video-embed-thumbnail-generator.php:2534
 msgid "Set as end of video image"
 msgstr "Задайте като картинка за край на видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2583
+#: video-embed-thumbnail-generator.php:2535
 msgid "Display alternate image when video ends."
 msgstr "Показване на алтернативна картинка след края на видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2588
-#: video-embed-thumbnail-generator.php:2916
+#: video-embed-thumbnail-generator.php:2540
+#: video-embed-thumbnail-generator.php:2868
 msgid "Choose a Watermark"
 msgstr "Изберете воден знак"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2588
-#: video-embed-thumbnail-generator.php:2916
+#: video-embed-thumbnail-generator.php:2540
+#: video-embed-thumbnail-generator.php:2868
 msgid "Set as watermark"
 msgstr "Задайте като воден знак"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2593
-#: video-embed-thumbnail-generator.php:2918
+#: video-embed-thumbnail-generator.php:2545
+#: video-embed-thumbnail-generator.php:2870
 msgid "left"
 msgstr "ляво"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2593
+#: video-embed-thumbnail-generator.php:2545
 msgid "center"
 msgstr "център"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2593
-#: video-embed-thumbnail-generator.php:2918
+#: video-embed-thumbnail-generator.php:2545
+#: video-embed-thumbnail-generator.php:2870
 msgid "right"
 msgstr "дясно"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2604
+#: video-embed-thumbnail-generator.php:2556
 msgid "Make video player responsive."
 msgstr "Направете видео плеърът адаптивен"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2609
+#: video-embed-thumbnail-generator.php:2561
 msgid "Allow other content on the same line as the video."
 msgstr "Позволяване на друго съдържание(пр. текст) на същия ред като видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2614
-#: video-embed-thumbnail-generator.php:2620
-#: video-embed-thumbnail-generator.php:3752
-#: video-embed-thumbnail-generator.php:4360
+#: video-embed-thumbnail-generator.php:2566
+#: video-embed-thumbnail-generator.php:2572
+#: video-embed-thumbnail-generator.php:3702
+#: video-embed-thumbnail-generator.php:4310
 msgid "Width:"
 msgstr "Ширина:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2614
-#: video-embed-thumbnail-generator.php:2620
-#: video-embed-thumbnail-generator.php:3752
-#: video-embed-thumbnail-generator.php:4360
+#: video-embed-thumbnail-generator.php:2566
+#: video-embed-thumbnail-generator.php:2572
+#: video-embed-thumbnail-generator.php:3702
+#: video-embed-thumbnail-generator.php:4310
 msgid "Height:"
 msgstr "Височина:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2615
+#: video-embed-thumbnail-generator.php:2567
 msgid "Enlarge lower resolution videos to max width."
 msgstr "Уголемяване на видеа с по-ниска резолюция до максималната ширина."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2615
+#: video-embed-thumbnail-generator.php:2567
 msgid ""
 "Usually if a video's resolution is less than the max width, the video player "
 "is set to the actual width of the video. Enabling this will always set the "
@@ -919,46 +904,46 @@ msgstr ""
 "различен размер ръчно за отделно видео."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2631
+#: video-embed-thumbnail-generator.php:2583
 msgid "docked"
 msgstr "закачено"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2632
+#: video-embed-thumbnail-generator.php:2584
 msgid "floating"
 msgstr "\"плаващо\""
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2633
+#: video-embed-thumbnail-generator.php:2585
+#: video-embed-thumbnail-generator.php:2609
 #: video-embed-thumbnail-generator.php:2657
-#: video-embed-thumbnail-generator.php:2705
-#: video-embed-thumbnail-generator.php:2794
-#: video-embed-thumbnail-generator.php:2946
+#: video-embed-thumbnail-generator.php:2746
+#: video-embed-thumbnail-generator.php:2898
 msgid "none"
 msgstr "без"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2644
+#: video-embed-thumbnail-generator.php:2596
 msgid "Play automatically when page loads."
 msgstr "Автоматично възпроизвеждане, след зареждане на страницата."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2649
+#: video-embed-thumbnail-generator.php:2601
 msgid "Loop to beginning when video ends."
 msgstr "Повторно възпроизвеждане отначало, след като клипът свърши."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2655
+#: video-embed-thumbnail-generator.php:2607
 msgid "metadata"
 msgstr "метаданни"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2656
+#: video-embed-thumbnail-generator.php:2608
 msgid "auto"
 msgstr "автоматично"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2663
+#: video-embed-thumbnail-generator.php:2615
 msgctxt "Suggest not translating the words in quotation marks"
 msgid ""
 "Controls how much of a video to load before the user starts playback. Mobile "
@@ -975,7 +960,7 @@ msgstr ""
 "браузъри. \"без\" ще спре предварителното зареждане изцяло."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2668
+#: video-embed-thumbnail-generator.php:2620
 msgid ""
 "Use %s for a nice, circular play button. Leave blank for the default square "
 "play button."
@@ -984,94 +969,94 @@ msgstr ""
 "обикновен, квадратен бутон."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2668
+#: video-embed-thumbnail-generator.php:2620
 msgid "Or build your own CSS skin."
 msgstr "Или използвайте собствена CSS кожа."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2683
+#: video-embed-thumbnail-generator.php:2635
 msgid "Use %s for a modern, circular play button."
 msgstr "Използвайте %s за хубав, кръгъл бутон за възпроизвеждане."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2683
+#: video-embed-thumbnail-generator.php:2635
 msgid "Leave blank for the off-center square play button."
 msgstr "Оставете празно за обикновен, квадратен бутон за възпроизвеждане."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2689
+#: video-embed-thumbnail-generator.php:2641
 msgid "liveOrRecorded"
 msgstr "на живо или запис"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2690
+#: video-embed-thumbnail-generator.php:2642
 msgid "live"
 msgstr "на живо"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2691
+#: video-embed-thumbnail-generator.php:2643
 msgid "recorded"
 msgstr "запис"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2692
+#: video-embed-thumbnail-generator.php:2644
 msgid "dvr"
 msgstr "dvr"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2704
+#: video-embed-thumbnail-generator.php:2656
 msgid "letterbox"
 msgstr "по ширина"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2706
+#: video-embed-thumbnail-generator.php:2658
 msgid "stretch"
 msgstr "разтягане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2707
+#: video-embed-thumbnail-generator.php:2659
 msgid "zoom"
 msgstr "увеличаване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2719
+#: video-embed-thumbnail-generator.php:2671
 msgid "Autohide controlbar."
 msgstr "Автоматично скриване на контролната лента."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2724
+#: video-embed-thumbnail-generator.php:2676
 msgid "Overlay play button on poster frame."
 msgstr "Бутон за възпроизвеждане върху картинката"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2736
+#: video-embed-thumbnail-generator.php:2688
 msgid "Can make thumbnails"
 msgstr "Може да задава картинки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2736
+#: video-embed-thumbnail-generator.php:2688
 msgid "Can encode videos"
 msgstr "Може да кодира видеа"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2736
+#: video-embed-thumbnail-generator.php:2688
 msgid "Can view & modify other users encode queue"
 msgstr ""
 "Може да преглежда и модифицира опашката за кодиране на други потребители"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2770
+#: video-embed-thumbnail-generator.php:2722
 msgid "Allow users to embed your videos on other sites."
 msgstr "Позволете на потребителите да вграждат Вашите видеа в други сайтове."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2771
+#: video-embed-thumbnail-generator.php:2723
 msgctxt "\"Open Graph\" is a proper noun and might not need translation"
 msgid "Enable Open Graph video tags"
 msgstr "Включете OpenGraph видео етикети"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2771
+#: video-embed-thumbnail-generator.php:2723
 msgid ""
 "Facebook and some other social media sites will use these tags to embed the "
 "first video in your post. For the majority of Facebook users who have "
@@ -1084,12 +1069,12 @@ msgstr ""
 "чрез https, за да бъде вграждано директно на страницата."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2772
+#: video-embed-thumbnail-generator.php:2724
 msgid "Allow right-clicking on videos."
 msgstr "Позволете десен  бутон върху видеата."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2772
+#: video-embed-thumbnail-generator.php:2724
 msgid ""
 "We can't prevent a user from simply saving the downloaded video file from "
 "the browser's cache, but disabling right-clicking will make it more "
@@ -1100,12 +1085,12 @@ msgstr ""
 "обикновени потребители значително по-трудно."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2777
+#: video-embed-thumbnail-generator.php:2729
 msgid "Set generated video thumbnails as featured images."
 msgstr "Задаване на генерираните картинки, като картинки на публикациите."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2777
+#: video-embed-thumbnail-generator.php:2729
 msgid ""
 "If your theme uses the featured image meta tag, this will automatically set "
 "a video's parent post's featured image to the most recently saved thumbnail "
@@ -1116,13 +1101,13 @@ msgstr ""
 "намира."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2777
+#: video-embed-thumbnail-generator.php:2729
 msgctxt "implied \"Set all thumbnails as featured\""
 msgid "Set all as featured"
 msgstr "Задайте всички като картинки на публикации"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2777
+#: video-embed-thumbnail-generator.php:2729
 msgid ""
 "If you've generated thumbnails before enabling this option, this will set "
 "all existing thumbnails as featured images. Be careful!"
@@ -1131,7 +1116,7 @@ msgstr ""
 "като картинки на публикации."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2788
+#: video-embed-thumbnail-generator.php:2740
 msgid ""
 "This depends on your theme. Thumbnails generated by the plugin can be saved "
 "as children of the video attachment or the post. Some themes use an image "
@@ -1145,12 +1130,12 @@ msgstr ""
 "записваше всички картинки, като деца на видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2788
+#: video-embed-thumbnail-generator.php:2740
 msgid "Set all parents"
 msgstr "Задай всички родители"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2788
+#: video-embed-thumbnail-generator.php:2740
 msgid ""
 "If you've generated thumbnails before changing this option, this will set "
 "all existing thumbnails as children of your currently selected option."
@@ -1159,17 +1144,17 @@ msgstr ""
 "зададе всички съществуващи картинки като деца на избраната опция."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2795
+#: video-embed-thumbnail-generator.php:2747
 msgid "all"
 msgstr "всички"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2796
+#: video-embed-thumbnail-generator.php:2748
 msgid "encoded videos only"
 msgstr "само кодирани видеа"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2802
+#: video-embed-thumbnail-generator.php:2754
 msgid ""
 "If you delete the original video you can choose to delete all associated "
 "attachments (thumbnails & videos) or keep the thumbnail."
@@ -1178,7 +1163,7 @@ msgstr ""
 "асоциирани с него приложения(картинки и видеа) или да запазите картинката."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2807
+#: video-embed-thumbnail-generator.php:2759
 msgid ""
 "HTML tag applied to titles inserted above the video. Examples: %s. "
 "Corresponding closing tags will be applied to the end of the title "
@@ -1187,38 +1172,38 @@ msgstr ""
 "HTML таг, прилагащ се към заглавията на видеата. Пример: %s. Затварящите "
 "тагове ще бъдат добавени в края на заглавието автоматично."
 
-# @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2812
-msgid "Match plugin settings"
-msgstr "Копирай настройките на разширението"
+#: video-embed-thumbnail-generator.php:2764
+msgid "Video title (WP default)"
+msgstr "Заглавие на видеото (стандартно за WP)"
+
+#: video-embed-thumbnail-generator.php:2764
+msgid "Video in existing template"
+msgstr "Видео в съществуващ шаблон"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2812
-msgid "WordPress default"
-msgstr "По подразбиране на WordPress"
-
-# @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2812
+#: video-embed-thumbnail-generator.php:2764
 msgid "Video only (deprecated)"
 msgstr "Само видео (не се препоръчва)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2818
+#: video-embed-thumbnail-generator.php:2770
 msgid ""
-"The plugin can filter your media attachment page to display videos using "
-"your chosen settings, or completely replace your attachment template to show "
-"only the video. If you were one of the few people using iframe embed codes "
-"before version 4.0 of this plugin then you should continue to use \"Video "
-"only\" but otherwise it's not recommended."
+"By default WordPress only displays a video's title on the attachment page. "
+"This plugin can filter your attachment page to display the video, or "
+"completely replace your attachment template to show only the video. If you "
+"were one of the few people using iframe embed codes before version 4.0 of "
+"this plugin then you should continue to use \"Video only\" but otherwise "
+"it's not recommended."
 msgstr ""
-"Разширението може да филтрира страницата Ви за прикачени файлове да показва "
-"клиповете според настройките, които сте направили или напълно да я замени, "
-"така че да показва само видеото. Ако сте от малкото хора, които използваха "
-"iframe кодове за вграждане преди версия 4.0 на това разширение, продължете "
-"да използвате 'само видео'. В останалите случай не се препоръчва."
+"По подразбиране, WordPress показва само заглавие на видеото в страницата му "
+"на прикачен файл. Това разширение може да промени това, показвайки и "
+"заглавие, и видео, или пък само видео. Ако бяхте от малцината, които "
+"използваха iframe кодове за вграждане преди версия 4.0 на това разширение, "
+"продължете да използвате \"Само видео\", в останалите случаи не се "
+"препоръчва."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2832
+#: video-embed-thumbnail-generator.php:2784
 msgid ""
 "This should be the folder where applications are installed on your server, "
 "not a direct path to an application, so it doesn't usually end with %1$s. "
@@ -1229,7 +1214,7 @@ msgstr ""
 "%1$s. Пример: %2$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2844
+#: video-embed-thumbnail-generator.php:2796
 msgid ""
 "FFMPEG split into two separate branches in 2011. The new branch is called "
 "LIBAV and executes using \"avconv\" instead of \"ffmpeg.\" Both are still "
@@ -1242,7 +1227,7 @@ msgstr ""
 "и Ubuntu потребители, ней-вероятно имат инсталиран LIBAV."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2850
+#: video-embed-thumbnail-generator.php:2802
 msgid ""
 "When possible, use the browser's built-in video capabilities to make "
 "thumbnails instead of %s."
@@ -1251,12 +1236,12 @@ msgstr ""
 "картинки, вместо %s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2857
+#: video-embed-thumbnail-generator.php:2809
 msgid "Replace original with same resolution H.264"
 msgstr "Заместване на оригиналът със H.264 със същата разд. способност"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2857
+#: video-embed-thumbnail-generator.php:2809
 msgid ""
 "If you have FFMPEG/LIBAV and the proper libraries installed, you can choose "
 "to replace your uploaded video with an H.264 video, and also transcode into "
@@ -1287,7 +1272,7 @@ msgstr ""
 "на Flash."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2858
+#: video-embed-thumbnail-generator.php:2810
 msgid ""
 "(iPhone 4s+, iPad 2+, modern Android, Windows Phone 8, Chrome, Safari, IE "
 "9+, Firefox Windows)"
@@ -1296,14 +1281,14 @@ msgstr ""
 "Safari, IE 9+, Firefox Windows)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2859
+#: video-embed-thumbnail-generator.php:2811
 msgid "(iPhone 4+, iPad, most Android, Chrome, Safari, IE 9+, Firefox Windows)"
 msgstr ""
 "(iPhone 4+, iPad, повечето у-ва с Android, Chrome, Safari, IE 9+, Firefox "
 "Windows)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2880
+#: video-embed-thumbnail-generator.php:2832
 msgid "Generate %1$s thumbnail from %2$s%% of the way through the video."
 msgid_plural "Generate %1$s thumbnails and set #%2$s as the main image."
 msgstr[0] "Генериране на %1$s картинка от %2$s%% от видеото."
@@ -1311,22 +1296,22 @@ msgstr[1] ""
 "Генериране на  %1$s картинки и задаване на #%2$s като основна картинка."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2888
+#: video-embed-thumbnail-generator.php:2840
 msgid "Encode formats selected above."
 msgstr "Кодиране на избраните по-горе формати."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2908
+#: video-embed-thumbnail-generator.php:2860
 msgid "Username:"
 msgstr "Потребителско име:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2909
+#: video-embed-thumbnail-generator.php:2861
 msgid "Password:"
 msgstr "Парола:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2909
+#: video-embed-thumbnail-generator.php:2861
 msgid ""
 "If your videos are htaccess protected, %s will access them using these "
 "credentials."
@@ -1335,50 +1320,50 @@ msgstr ""
 "достъп."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2917
+#: video-embed-thumbnail-generator.php:2869
 msgid "Scale: %s%% of video covered by the watermark."
 msgstr "Преоразмеряване: %s%% от видеото е покрито с водния знак."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2918
+#: video-embed-thumbnail-generator.php:2870
 msgctxt "horizontal center"
 msgid "center"
 msgstr "център"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2919
+#: video-embed-thumbnail-generator.php:2871
 msgid "Horizontal align:"
 msgstr "Хоризонтално подравняване:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2926
-#: video-embed-thumbnail-generator.php:2936
+#: video-embed-thumbnail-generator.php:2878
+#: video-embed-thumbnail-generator.php:2888
 msgid "offset"
 msgstr "изместване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2928
+#: video-embed-thumbnail-generator.php:2880
 msgid "Vertical align:"
 msgstr "Вертикално подравняване:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2930
+#: video-embed-thumbnail-generator.php:2882
 msgid "top"
 msgstr "горе"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2930
+#: video-embed-thumbnail-generator.php:2882
 msgctxt "vertical center"
 msgid "center"
 msgstr "център"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2930
+#: video-embed-thumbnail-generator.php:2882
 msgid "bottom"
 msgstr "долу"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2952
+#: video-embed-thumbnail-generator.php:2904
 msgid ""
 "By default %1$s places moov atoms at the end of H.264 encoded files, which "
 "forces the entire file to download before playback can start and can prevent "
@@ -1401,7 +1386,7 @@ msgstr ""
 "кодирането е приключило, ако са инсталирани на сървъра Ви."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2965
+#: video-embed-thumbnail-generator.php:2917
 msgid ""
 "Constant Rate Factor (CRF) attempts to maintain a particular quality output "
 "for the entire video and only uses bits the encoder determines are "
@@ -1419,7 +1404,7 @@ msgstr ""
 "качество."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2977
+#: video-embed-thumbnail-generator.php:2929
 msgid ""
 "Lower values are higher quality. 18 is considered visually lossless. Default "
 "is 23."
@@ -1428,35 +1413,35 @@ msgstr ""
 "загуби). Стойността по подразбиране е 23."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2984
+#: video-embed-thumbnail-generator.php:2936
 msgid "Lower values are higher quality. Default is 10."
 msgstr ""
 "По-ниските стойности са за по-високо качество. Стойност по подразбиране - 10."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:2991
+#: video-embed-thumbnail-generator.php:2943
 msgid "Higher values are higher quality. Default is 6."
 msgstr ""
 "По-високите стойности за за по-високо качество. Стойност по подразбиране - 6."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3003
+#: video-embed-thumbnail-generator.php:2955
 msgid "bits per pixel."
 msgstr "бита за пиксел."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3003
+#: video-embed-thumbnail-generator.php:2955
 msgid "Default is 0.1"
 msgstr "По подразбиране - 0.1"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3019
+#: video-embed-thumbnail-generator.php:2971
 msgctxt "H.264 profile. Might not need translation"
 msgid "profile"
 msgstr "профил"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3019
+#: video-embed-thumbnail-generator.php:2971
 msgid ""
 "Lower profiles will slightly increase file sizes. This mostly depends on "
 "your need for compatability with Android devices. Main profile seems to work "
@@ -1475,13 +1460,13 @@ msgstr ""
 "възможно да игрнорират тази настройка изяло."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3026
+#: video-embed-thumbnail-generator.php:2978
 msgctxt "H.264 level. Might not need translation"
 msgid "level"
 msgstr "ниво"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3026
+#: video-embed-thumbnail-generator.php:2978
 msgid ""
 "3.0 is default. Lower levels will lower maximum bit rates and decoding "
 "complexity. This mostly depends on your need for compatability with mobile "
@@ -1493,12 +1478,12 @@ msgstr ""
 "настройка изяло."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3046
+#: video-embed-thumbnail-generator.php:2998
 msgid "Enable legacy FFMPEG \"-b\" and \"-ba\" bitrate flags."
 msgstr "Включи наследените FFMPEG \"-b\" и \"-ba\" флагове."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3046
+#: video-embed-thumbnail-generator.php:2998
 msgid ""
 "Enable if your installed version of FFMPEG is old enough that you can't use "
 "the newer -b:v flags (Dreamhost users must turn this on). It may cause newer "
@@ -1509,12 +1494,12 @@ msgstr ""
 "тази настройка). Може да предизвика проблеми в новите версии на FFMPEG."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3047
+#: video-embed-thumbnail-generator.php:2999
 msgid "Enable legacy FFMPEG parameters."
 msgstr "Включете наследените(стари) параметри на FFMPEG."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3047
+#: video-embed-thumbnail-generator.php:2999
 msgid ""
 "Enable if your installed version of FFMPEG is old enough that libx264 "
 "requires additional configuration to operate (Dreamhost users must turn this "
@@ -1528,12 +1513,12 @@ msgstr ""
 "предизвика проблеми при по-нови версии на FFMPEG."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3060
+#: video-embed-thumbnail-generator.php:3012
 msgid "Simultaneous encodes."
 msgstr "едновременни кодирания."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3060
+#: video-embed-thumbnail-generator.php:3012
 msgid ""
 "Increasing the number will allow %1$s to encode more than one file at a "
 "time, but may lead to %1$s monopolizing system resources."
@@ -1543,13 +1528,13 @@ msgstr ""
 "%1$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3067
+#: video-embed-thumbnail-generator.php:3019
 msgctxt "CPU threads. Might not need translating"
 msgid "threads"
 msgstr "нишки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3067
+#: video-embed-thumbnail-generator.php:3019
 msgid ""
 "Default is 1, which limits encoding speed but prevents encoding from using "
 "too many system resources. Selecting 0 will allow %1$s to optimize the "
@@ -1562,13 +1547,13 @@ msgstr ""
 "ръчно. Това може да доведе до монополизиране на системните ресурси от %1$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3069
+#: video-embed-thumbnail-generator.php:3021
 msgctxt "execute program"
 msgid "Run"
 msgstr "Изпълняване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3069
+#: video-embed-thumbnail-generator.php:3021
 msgid ""
 "Tells %1$s to run at a lower priority to avoid monopolizing system resources."
 msgstr ""
@@ -1576,24 +1561,24 @@ msgstr ""
 "монополизиране на системните ресурси."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3103
+#: video-embed-thumbnail-generator.php:3055
 msgid "%1$s sample %2$s encode command"
 msgstr "%1$s мостра %2$s кодираща команда"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3104
+#: video-embed-thumbnail-generator.php:3056
 msgid "%s test output:"
 msgstr "Тестов резултат от %s :"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3104
+#: video-embed-thumbnail-generator.php:3056
 msgid "For help interpreting this output, %s try our Wiki page on Github"
 msgstr ""
 "За помощ с интерпретирането на този резултат, %s опитайте нашата Wiki "
 "страниа в Github"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3287
+#: video-embed-thumbnail-generator.php:3239
 msgid ""
 "%1$s is disabled in PHP settings. You can embed existing videos and make "
 "thumbnails with compatible browsers, but video encoding will not work. "
@@ -1605,60 +1590,54 @@ msgstr ""
 "включите %1$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3295
+#: video-embed-thumbnail-generator.php:3243
 msgid ""
-"%1$s is not executing correctly at %2$s. You can embed existing videos and "
-"make thumbnails with compatible browsers, but video encoding is not possible "
-"without %1$s."
+"%1$s not found at %2$s. You can embed existing videos and make thumbnails "
+"with compatible browsers, but video encoding is not possible without %1$s."
 msgstr ""
-"%1$s не се изпълнява коректно в %2$s. Можете да вграждате съществуващи "
-"клипове и да създавате картинки на видеа със съвместими браузъри, но видео "
-"кодирането не е възможно без %1$s."
+"%1$s не е намерен в %2$s. Можете да вграждате съществуващи клипове и да "
+"създавате картинки на видеа със съвместими браузъри, но видео кодирането не "
+"е възможно без %1$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3295
-msgid "Error message:"
-msgstr "Съобщение за грешка:"
-
-# @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3310
+#: video-embed-thumbnail-generator.php:3258
 msgid "Video Embed & Thumbnail Generator settings reset to default values."
 msgstr ""
 "Настройките на Video Embed & Thumbnail Generator бяха възстановени до "
 "стойностите по подразбиране."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3321
+#: video-embed-thumbnail-generator.php:3269
 msgid "You must enter a value for the maximum video width."
 msgstr "Трябва да въведете стойност за максимална ширина на видеата."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3325
+#: video-embed-thumbnail-generator.php:3273
 msgid "You must enter a value for the maximum video height."
 msgstr "Трябва да въведете стойност за максимална височина на видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3329
+#: video-embed-thumbnail-generator.php:3277
 msgid "You must enter a value for the maximum gallery video width."
 msgstr "Трябва да въведете стойност за максималната ширина на видео галериите."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3333
+#: video-embed-thumbnail-generator.php:3281
 msgid "You must enter a value for the maximum gallery video height."
 msgstr "Трябва да въведете стойност за максимална височина на видео галериите."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3621
+#: video-embed-thumbnail-generator.php:3571
 msgid "Video Stats"
 msgstr "Статистики за видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3623
+#: video-embed-thumbnail-generator.php:3573
 msgid "%1$s Starts, %2$s Complete Views"
 msgstr "%1$s пускания, %2$s пълни гледания"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3649
+#: video-embed-thumbnail-generator.php:3599
 msgid ""
 "%1$s not found at %2$s and unable to load video in browser for thumbnail "
 "generation."
@@ -1667,254 +1646,252 @@ msgstr ""
 "да се генерира картинка на видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3724
+#: video-embed-thumbnail-generator.php:3674
 msgctxt "Button text. Implied \"Generate thumbnails\""
 msgid "Generate"
 msgstr "Генериране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3725
+#: video-embed-thumbnail-generator.php:3675
 msgctxt "Button text. Implied \"Randomize thumbnail generation\""
 msgid "Randomize"
 msgstr "Разбъркване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3726
+#: video-embed-thumbnail-generator.php:3676
 msgid "Force 1st frame thumbnail"
 msgstr "Налагане на картинка от първия кадър."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3728
-#: video-embed-thumbnail-generator.php:4348
+#: video-embed-thumbnail-generator.php:3678
+#: video-embed-thumbnail-generator.php:4298
 msgid "Thumbnail timecode:"
 msgstr "Код на времето за картинка:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3732
+#: video-embed-thumbnail-generator.php:3682
 msgctxt "Header for thumbnail section"
 msgid "Thumbnails"
 msgstr "Картинки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3740
-#: video-embed-thumbnail-generator.php:4349
+#: video-embed-thumbnail-generator.php:3690
+#: video-embed-thumbnail-generator.php:4299
 msgid "Set thumbnail as featured image"
 msgstr "Задай картинката като картинка на публикацията"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3742
-#: video-embed-thumbnail-generator.php:4354
+#: video-embed-thumbnail-generator.php:3692
+#: video-embed-thumbnail-generator.php:4304
 msgid "Thumbnail URL"
 msgstr "URL адрес на картинката"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3744
-#: video-embed-thumbnail-generator.php:4356
+#: video-embed-thumbnail-generator.php:3694
+#: video-embed-thumbnail-generator.php:4306
 msgid "Leave blank to use %sdefault thumbnail"
 msgstr "Оставете празно, за да използвате %s картинката по подразбиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3750
+#: video-embed-thumbnail-generator.php:3700
 msgid "Video Embed Dimensions"
 msgstr "Размер на вграденото видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3755
+#: video-embed-thumbnail-generator.php:3705
 msgid "Lock to aspect ratio"
 msgstr "Заключване на съотношението на страните"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3756
-#: video-embed-thumbnail-generator.php:4361
+#: video-embed-thumbnail-generator.php:3706
+#: video-embed-thumbnail-generator.php:4311
 msgid "Leave blank to use %sdefault dimensions"
 msgstr "Оставете празно за %s размери по подразбиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3761
-#: video-embed-thumbnail-generator.php:4365
+#: video-embed-thumbnail-generator.php:3711
+#: video-embed-thumbnail-generator.php:4315
 msgid "Additional Formats"
 msgstr "Допълнителни формати"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3782
+#: video-embed-thumbnail-generator.php:3732
 msgctxt "captions track"
 msgid "Track"
 msgstr "Пътечка"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3786
+#: video-embed-thumbnail-generator.php:3736
 msgctxt "two-letter code indicating track's language"
 msgid "Language code:"
 msgstr "Код на езика:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3787
-#: video-embed-thumbnail-generator.php:4371
+#: video-embed-thumbnail-generator.php:3737
 msgid "Label:"
 msgstr "Етикет:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3791
-#: video-embed-thumbnail-generator.php:4370
+#: video-embed-thumbnail-generator.php:3741
 msgid "Subtitles & Captions"
 msgstr "Субтитри и надписи"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3793
+#: video-embed-thumbnail-generator.php:3743
 msgid "Add track"
 msgstr "Добавяне на ппътечка"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3804
+#: video-embed-thumbnail-generator.php:3754
 msgid "Single Video"
 msgstr "Самостоятелно видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3804
+#: video-embed-thumbnail-generator.php:3754
 msgid "Video Gallery"
 msgstr "Видео галерия"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3812
+#: video-embed-thumbnail-generator.php:3762
 msgid "Video Embed Options"
 msgstr "Настройки за вграждането на видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3815
+#: video-embed-thumbnail-generator.php:3765
 msgid "Insert title above video"
 msgstr "Заглавие над видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3817
+#: video-embed-thumbnail-generator.php:3767
 msgid "Insert download link below video"
 msgstr "Връзка за сваляне под видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3817
+#: video-embed-thumbnail-generator.php:3767
 msgid "Makes it easier for users to download file."
 msgstr "Улеснява свалянето на файлове от потребителите."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3818
+#: video-embed-thumbnail-generator.php:3768
 msgctxt "verb"
 msgid "Insert"
 msgstr "Добавяне"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3851
+#: video-embed-thumbnail-generator.php:3801
 msgid "Gallery Settings (all optional)"
 msgstr "Настройки на галериите (незадължителни)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3853
+#: video-embed-thumbnail-generator.php:3803
 msgid "Thumbnail Width"
 msgstr "Ширина на картинките"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3854
+#: video-embed-thumbnail-generator.php:3804
 msgid "Order By"
 msgstr "Подреждане по"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3855
+#: video-embed-thumbnail-generator.php:3805
 msgid "Sort Order"
 msgstr "Начин на подреждане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3856
+#: video-embed-thumbnail-generator.php:3806
 msgid "Exclude"
 msgstr "Премахване"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3857
+#: video-embed-thumbnail-generator.php:3807
 msgid "Include"
 msgstr "Добавяне"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:3858
+#: video-embed-thumbnail-generator.php:3808
 msgid "Post ID"
 msgstr "ID на публикацията"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4036
+#: video-embed-thumbnail-generator.php:3986
 msgctxt "text appended to newly created thumbnail titles"
 msgid "thumbnail"
 msgstr "картинка"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4301
+#: video-embed-thumbnail-generator.php:4251
 msgctxt "Title in \"Add Media\" popup sidebar"
 msgid "Embed Video from URL"
 msgstr "Вграждане на видео от URL адрес"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4330
+#: video-embed-thumbnail-generator.php:4280
 msgid "Video Title"
 msgstr "Заглавие на видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4332
+#: video-embed-thumbnail-generator.php:4282
 msgid "Add an optional header above the video."
 msgstr "Добавяне на допълнително заглавие над видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4337
+#: video-embed-thumbnail-generator.php:4287
 msgid "Specify the URL of the video file."
 msgstr "Задайте точния URL адрес на видео файла."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4341
+#: video-embed-thumbnail-generator.php:4291
 msgid "Thumbnails"
 msgstr "Картинки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4343
+#: video-embed-thumbnail-generator.php:4293
 msgid "Number of Thumbnails"
 msgstr "Брой картинки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4346
+#: video-embed-thumbnail-generator.php:4296
 msgid "Force 1st Frame Thumbnail"
 msgstr "Налагане на картинка от първия кадър"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4359
+#: video-embed-thumbnail-generator.php:4309
 msgid "Dimensions"
 msgstr "Размери"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4360
+#: video-embed-thumbnail-generator.php:4310
 msgid "Lock to Aspect Ratio"
 msgstr "Заключване на съотношението на страните"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4374
+#: video-embed-thumbnail-generator.php:4321
 msgid "Generate Download Link Below Video"
 msgstr "Генериране на линк за сваляне под видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4374
+#: video-embed-thumbnail-generator.php:4321
 msgid "Makes it easier for users to download video file"
 msgstr "Улеснява свалянето на видео файлове за потребителите"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4379
+#: video-embed-thumbnail-generator.php:4326
 msgid "Insert into Post"
 msgstr "Вкарване в публикацията"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4433
+#: video-embed-thumbnail-generator.php:4380
 msgctxt "example video"
 msgid "Sample Video"
 msgstr "Примерно видео"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4434
+#: video-embed-thumbnail-generator.php:4381
 msgid "Sample Embed Code"
 msgstr "Примерен код за вграждане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4435
+#: video-embed-thumbnail-generator.php:4382
 msgid ""
 "If text is entered in the attachment's caption field it is displayed here "
 "automatically."
@@ -1923,38 +1900,38 @@ msgstr ""
 "тук автоматично."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4661
-#: video-embed-thumbnail-generator.php:4800
+#: video-embed-thumbnail-generator.php:4608
+#: video-embed-thumbnail-generator.php:4746
 msgid "Can't open movie file."
 msgstr "Видео файлът не може да бъде отворен."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4778
+#: video-embed-thumbnail-generator.php:4724
 msgid "%1$s updated in existing queue entry in position %2$s."
 msgstr "%1$s беше обновен в съществуващата опашка на позиция %2$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4779
+#: video-embed-thumbnail-generator.php:4725
 msgid "Video is already queued in position %s."
 msgstr "Видеото вече е в опашката на позиция %s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4786
+#: video-embed-thumbnail-generator.php:4732
 msgid "Starting"
 msgstr "Стартиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4787
+#: video-embed-thumbnail-generator.php:4733
 msgid "%1$s added to queue in position %2$s."
 msgstr "%1$s беше добавен в опашката на позиция %2$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4791
+#: video-embed-thumbnail-generator.php:4737
 msgid "Nothing to encode."
 msgstr "Няма нищо за кодиране."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4853
+#: video-embed-thumbnail-generator.php:4799
 msgid ""
 "Error: %1$s not found. Verify that %1$s is installed at %2$s and check the "
 "%3$sapplication path plugin setting"
@@ -1963,169 +1940,169 @@ msgstr ""
 "и проверете настройката за път до приложението в %3$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4956
+#: video-embed-thumbnail-generator.php:4902
 msgid "%s already encoded"
 msgstr "%s е вече кодиран"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4960
+#: video-embed-thumbnail-generator.php:4906
 msgid "%s missing library libx264 required for H.264 encoding"
 msgstr "%s няма libx264 библиотека, която е нужда на H.264 кодиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4965
+#: video-embed-thumbnail-generator.php:4911
 msgid "or"
 msgstr "или"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4966
+#: video-embed-thumbnail-generator.php:4912
 msgid ""
 "and missing an AAC encoding library. Please install and enable libx264 and %s"
 msgstr ""
 "и липсва AAC библиотека за кодиране. Инсталирайте и включете libx264 и %s"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4970
-#: video-embed-thumbnail-generator.php:4988
+#: video-embed-thumbnail-generator.php:4916
+#: video-embed-thumbnail-generator.php:4934
 msgid "Missing libraries"
 msgstr "Липсващи библиотеки"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4979
+#: video-embed-thumbnail-generator.php:4925
 msgid "Encoding %s"
 msgstr "Кодиране на %s"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4985
+#: video-embed-thumbnail-generator.php:4931
 msgid "%1$s missing library %2$s required for %3$s encoding."
 msgstr "%1$s липсваща библиотека %2$s, нужна за кодирането на %3$s."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:4991
+#: video-embed-thumbnail-generator.php:4937
 msgid "%s already encoded."
 msgstr "%s е вече кодирано."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5004
+#: video-embed-thumbnail-generator.php:4950
 msgid "Error: Command 'escapeshellcmd' is disabled on your server."
 msgstr "Грешка: Командата 'escapeshellcmd' е изключена на сървъра Ви."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5189
-#: video-embed-thumbnail-generator.php:5199
+#: video-embed-thumbnail-generator.php:5135
+#: video-embed-thumbnail-generator.php:5145
 msgid "Encoding"
 msgstr "Кодиране"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5192
+#: video-embed-thumbnail-generator.php:5138
 msgid "Cancel"
 msgstr "Отказ"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5195
+#: video-embed-thumbnail-generator.php:5141
 msgid "Elapsed:"
 msgstr "Изминало време:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5195
+#: video-embed-thumbnail-generator.php:5141
 msgid "Remaining:"
 msgstr "Оставащо време:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5195
+#: video-embed-thumbnail-generator.php:5141
 msgctxt "Frames per second"
 msgid "FPS:"
 msgstr "FPS:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5272
-#: video-embed-thumbnail-generator.php:5301
+#: video-embed-thumbnail-generator.php:5218
+#: video-embed-thumbnail-generator.php:5247
 msgid "Encoding Complete"
 msgstr "Кодирането е завършено"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5311
+#: video-embed-thumbnail-generator.php:5257
 msgid "Encoding was canceled."
 msgstr "Кодиранет беше прекъснато."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5322
+#: video-embed-thumbnail-generator.php:5268
 msgid "No log file"
 msgstr "Няма лог файл"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5329
+#: video-embed-thumbnail-generator.php:5275
 msgid "Error:"
 msgstr "Грешка:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5341
+#: video-embed-thumbnail-generator.php:5287
 msgid "Waiting..."
 msgstr "Изчакване..."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5504
+#: video-embed-thumbnail-generator.php:5450
 msgid "Fixing moov atom for streaming"
 msgstr "Поправяне на 'moov атоми' за стройминг"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5996
+#: video-embed-thumbnail-generator.php:5942
 msgid "Video Embed & Thumbnail Generator Shortcode Reference"
 msgstr "Video Embed & Thumbnail Generator Shortcode Reference"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5997
+#: video-embed-thumbnail-generator.php:5943
 msgid "Use these optional attributes in the [KGVID] shortcode:"
 msgstr "Използвайте тези допълнителни атрибути към [KGVID] шорткода:"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5998
+#: video-embed-thumbnail-generator.php:5944
 msgid "video attachment ID (instead of using a URL)."
 msgstr "ID на видео прикачения файл (вместо URL адрес)."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:5999
+#: video-embed-thumbnail-generator.php:5945
 msgid "number of attached videos to display if no URL or ID is given."
 msgstr ""
 "брой на прикачени видеа, които да се покажат, ако не е въведен URL адрес или "
 "ID."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6000
+#: video-embed-thumbnail-generator.php:5946
 msgid "criteria for sorting attached videos if no URL or ID is given."
 msgstr ""
 "критерии за подреждане на прикачените видеа, ако не е въведен URL адрес или "
 "ID."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6001
+#: video-embed-thumbnail-generator.php:5947
 msgid "sort order."
 msgstr "начин на подреждане."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6002
+#: video-embed-thumbnail-generator.php:5948
 msgid "sets the thumbnail."
 msgstr "задава картинката."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6003
+#: video-embed-thumbnail-generator.php:5949
 msgid "sets the image shown when the video ends."
 msgstr "задава изображението, показващо се след края на видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6007
+#: video-embed-thumbnail-generator.php:5953
 msgid "allow other content on the same line as the video"
 msgstr "разрешаване на друго съдържание(напр. текст) на същия ред с видеото"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6008
+#: video-embed-thumbnail-generator.php:5954
 msgid "pre-sets the volume for unusually loud videos. Value between 0 and 1."
 msgstr ""
 "предефинира силата на звука за необичайно шумни клипове. Стойността е между "
 "0 и 1."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6009
+#: video-embed-thumbnail-generator.php:5955
 msgid ""
 "sets the controlbar position. \"Floating\" option only works with Strobe "
 "Media Playback."
@@ -2134,13 +2111,13 @@ msgstr ""
 "медия плеърът."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6012
-#: video-embed-thumbnail-generator.php:6013
+#: video-embed-thumbnail-generator.php:5958
+#: video-embed-thumbnail-generator.php:5959
 msgid "or %s to disable."
 msgstr "или %s за изключване."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6014
+#: video-embed-thumbnail-generator.php:5960
 msgid ""
 "changes text displayed in the embed code overlay in order to provide a "
 "custom method for embedding a video or %s to disable."
@@ -2149,23 +2126,23 @@ msgstr ""
 "персонализиран метод за вграждане на видеа или %s за изключване."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6015
+#: video-embed-thumbnail-generator.php:5961
 msgid "turns the view count on or off."
 msgstr "Включва/Изключва показването на брояча на гледания."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6016
+#: video-embed-thumbnail-generator.php:5962
 msgid ""
 "text that is displayed below the video (not subtitles or closed captioning)"
 msgstr "текст, показващ се под видеото (не субтитри/надписи)."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6017
+#: video-embed-thumbnail-generator.php:5963
 msgid "Used for metadata only."
 msgstr "Използва се единствено за метаданни."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6018
+#: video-embed-thumbnail-generator.php:5964
 msgid ""
 "generates a link below the video to make it easier for users to save the "
 "video file to their computers."
@@ -2173,48 +2150,48 @@ msgstr ""
 "генерира връзка под видето, улесняваща свалянето на клипове от потребителите."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6019
+#: video-embed-thumbnail-generator.php:5965
 msgid "allow or disable right-clicking on the video player."
 msgstr "позволяване или забраняване на кликане с десен бутон върху видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6020
+#: video-embed-thumbnail-generator.php:5966
 msgid "allow or disable responsive resizing."
 msgstr "позволяване или забраняване на адаптивно променяне на размера."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6022
+#: video-embed-thumbnail-generator.php:5968
 msgid "These options will add a subtitle/caption track."
 msgstr "Тези настройки ще добавят субтитри/надписи."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6023
+#: video-embed-thumbnail-generator.php:5969
 msgid "URL of the WebVTT file."
 msgstr "URL адрес на WebVTT файла."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6025
+#: video-embed-thumbnail-generator.php:5971
 msgid "the track's two-character language code (en, fr, es, etc)"
 msgstr "езиковият код на пътечката(два символа, пр. en, fr, es и тн.)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6026
+#: video-embed-thumbnail-generator.php:5972
 msgid "text that will be shown to the user when selecting the track."
 msgstr "текстът, който ще се показва на потребителите, когато избират пътечка."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6028
+#: video-embed-thumbnail-generator.php:5974
 msgid "These options will only affect Video.js playback"
 msgstr "Тези настройки се отнасят само за възпроизвеждане чрез Video.js"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6029
-#: video-embed-thumbnail-generator.php:6038
+#: video-embed-thumbnail-generator.php:5975
+#: video-embed-thumbnail-generator.php:5984
 msgid "Completely change the look of the video player. %sInstructions here."
 msgstr "Променете напълно вида на видео плеърът. %sИнструкции."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6031
+#: video-embed-thumbnail-generator.php:5977
 msgid ""
 "These options will only affect Flash playback in Strobe Media Playback video "
 "elements. They will have no effect on other players."
@@ -2223,24 +2200,24 @@ msgstr ""
 "Media playback видео плеър. Няма да има ефект върху други плеъри."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6032
+#: video-embed-thumbnail-generator.php:5978
 msgid "specify whether to autohide the control bar after a few seconds."
 msgstr ""
 "изберете дали контролната лента да се скрива автоматично след няколко "
 "секунди."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6033
+#: video-embed-thumbnail-generator.php:5979
 msgid "turns the big play button overlay in the middle of the video on or off."
 msgstr "Включва/изключва големият бутон за пускане в средата на видеото."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6034
+#: video-embed-thumbnail-generator.php:5980
 msgid "I honestly don't know what this is for."
 msgstr "Честно казано, нямам идея за какво е това."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6035
+#: video-embed-thumbnail-generator.php:5981
 msgid ""
 "If the video display size isn't the same as the video file, this determines "
 "how the video will be scaled."
@@ -2249,22 +2226,22 @@ msgstr ""
 "размера на оригиналния видео файл."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6036
+#: video-embed-thumbnail-generator.php:5982
 msgid "#rrggbb"
 msgstr "#RRGGBB"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6036
+#: video-embed-thumbnail-generator.php:5982
 msgid "set the background color to whatever hex code you want."
 msgstr "сменете цвета на фона"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6037
+#: video-embed-thumbnail-generator.php:5983
 msgid "Lets you specify all these flashvars in an XML file."
 msgstr "Позволява Ви да зададете всички тези променливи в XML файл."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6040
+#: video-embed-thumbnail-generator.php:5986
 msgid ""
 "These options are available for video galleries (options work the same as "
 "standard WordPress image galleries)"
@@ -2273,17 +2250,17 @@ msgstr ""
 "обикновените WordPress галерии)"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6041
+#: video-embed-thumbnail-generator.php:5987
 msgid "turns on the gallery"
 msgstr "включва галерията"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6042
+#: video-embed-thumbnail-generator.php:5988
 msgid "width in pixels to display gallery thumbnails"
 msgstr "ширина в пиксели на картинките в галериите"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6043
+#: video-embed-thumbnail-generator.php:5989
 msgid ""
 "comma separated video attachment IDs. Excludes the videos from the gallery."
 msgstr ""
@@ -2291,7 +2268,7 @@ msgstr ""
 "галерията."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6044
+#: video-embed-thumbnail-generator.php:5990
 msgid ""
 "comma separated video attachment IDs. Includes only these videos in the "
 "gallery. Please note that include and exclude cannot be used together."
@@ -2301,17 +2278,17 @@ msgstr ""
 "използвани заедно."
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6045
+#: video-embed-thumbnail-generator.php:5991
 msgid "criteria for sorting the gallery"
 msgstr "критерий за сортиране на галерията"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6046
+#: video-embed-thumbnail-generator.php:5992
 msgid "sort order"
 msgstr "начин на подреждане"
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6047
+#: video-embed-thumbnail-generator.php:5993
 msgid ""
 "post ID to display a gallery made up of videos associated with a different "
 "post."
@@ -2320,18 +2297,13 @@ msgstr ""
 "различна публикация. "
 
 # @ video-embed-thumbnail-generator
-#: video-embed-thumbnail-generator.php:6048
+#: video-embed-thumbnail-generator.php:5994
 msgid ""
 "either close the pop-up or start playing the next video when the current "
 "video finishes playing."
 msgstr ""
 "Затворете изскачащия прозорец или изпълнете следващото видео след като "
 "възпроизвеждането завърши."
-
-# @ Settings page title in admin sidebar
-#. Plugin Name of the plugin/theme
-msgid "Video Embed & Thumbnail Generator"
-msgstr "Video Embed & Thumbnail Generator"
 
 #. Plugin URI of the plugin/theme
 msgid ""
@@ -2356,3 +2328,28 @@ msgstr "Kyle Gilman"
 #. Author URI of the plugin/theme
 msgid "http://www.kylegilman.net/"
 msgstr "http://www.kylegilman.net/"
+
+# @ Settings page title in admin sidebar
+#~ msgctxt "Settings page title in admin sidebar"
+#~ msgid "Video Embed & Thumbnail Generator"
+#~ msgstr "Video Embed & Thumbnail Generator"
+
+#~ msgid "Super Admins only:"
+#~ msgstr "Само за супер администратори:"
+
+# @ video-embed-thumbnail-generator
+#~ msgctxt "FFMPEG settings tab"
+#~ msgid "%s settings tab."
+#~ msgstr "Раздел с настройки за %s."
+
+# @ video-embed-thumbnail-generator
+#~ msgid "Match plugin settings"
+#~ msgstr "Копирай настройките на разширението"
+
+# @ video-embed-thumbnail-generator
+#~ msgid "WordPress default"
+#~ msgstr "По подразбиране на WordPress"
+
+# @ video-embed-thumbnail-generator
+#~ msgid "Error message:"
+#~ msgstr "Съобщение за грешка:"
