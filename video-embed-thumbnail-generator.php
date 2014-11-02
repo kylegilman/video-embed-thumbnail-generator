@@ -2284,6 +2284,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 					$child_id[$format] = $encodevideo_info[$format]['id'];
 					$was_picked = get_post_meta( $child_id[$format], '_kgflashmediaplayer-pickedformat', true );
 				}
+				else { $was_picked = false; }
 
 				if ( $format_stats['status'] != "encoding" ) { // not currently encoding
 					if ( $format_stats['status'] == "notchecked" ) {
