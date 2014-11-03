@@ -225,7 +225,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.4.2 - November 3, 2014 =
 * Added Google Universal Analytics event tracking.
-* Updated Spanish and Belgian translations.
+* Updated Spanish, French and Belgian translations.
 * Updated Video.js to version 4.10.2
 * Fixed bug that could prevent the media library from loading.
 * Fixed bug that prevented pop-up gallery thumbnails from resizing responsively.
