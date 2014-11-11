@@ -223,6 +223,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.4.3 - November XX, 2014 =
+* Fixed bug that incorrectly resized videos embedded through iframe.
+* Fixed number formatting of video play counter.
+
 = 4.4.2 - November 3, 2014 =
 * Added Google Universal Analytics event tracking.
 * Updated Spanish, French and Belgian translations.

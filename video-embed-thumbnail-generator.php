@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.4.2
+Version: 4.4.3
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,7 +58,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.42,
+		"version" => 4.43,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -4136,8 +4136,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			update_post_meta($post->ID, '_kgflashmediaplayer-embed', $embedset); //make sure at least this value is set before attachment is inserted into post
 		}
 
-		$starts = intval(get_post_meta($post->ID, "_kgflashmediaplayer-starts", true));
-		$completeviews = intval(get_post_meta($post->ID, "_kgflashmediaplayer-completeviews", true));
+		$starts = get_post_meta($post->ID, "_kgflashmediaplayer-starts", true);
+		$completeviews = get_post_meta($post->ID, "_kgflashmediaplayer-completeviews", true);
 
 		$form_fields["views"]["label"] = __("Video Stats", 'video-embed-thumbnail-generator');
 		$form_fields["views"]["input"] = "html";
@@ -6581,7 +6581,7 @@ function kgvid_count_play() {
 	if ( !empty($plays) ) { $plays = intval($plays)+1; }
 	else { $plays = 1; }
 	update_post_meta($post_id, '_kgflashmediaplayer-'.$event, $plays);
-	echo $plays;
+	echo number_format(intval($plays));
 	die(); // stop executing script
 }
 add_action( 'wp_ajax_kgvid_count_play', 'kgvid_count_play' ); // ajax for logged in users
