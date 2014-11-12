@@ -74,7 +74,7 @@
 	color: white;
 	font-size: 80%;
 	position:relative;
-	top: -4px;
+	top: -3px;
 }
 
 .kgvid_cancel_button {
@@ -119,7 +119,7 @@ div.kgvid_cancel_button input {
     font-size: 1pt;
 }
 
-.kgvid_encoding_small_text {
+.compat-item .kgvid_encoding_small_text {
 	text-indent: 0px;
 	display: block;
 	margin-left: -30px;
