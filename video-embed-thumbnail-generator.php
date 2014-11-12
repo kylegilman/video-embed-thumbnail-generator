@@ -2461,13 +2461,15 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 			$post = get_post( $video_entry['attachmentID'] );
 
 			if ( ( is_network_admin() || 'network' == $scope )
-				|| $current_user->ID == $post->post_author
+				|| ( $post && $current_user->ID == $post->post_author )
 				|| ( current_user_can('edit_others_video_encodes') && ( $blog_id && get_current_blog_id() == $blog_id || !$blog_id ) )
 				) {
 
-
-				$user = get_userdata( $post->post_author );
-				$html .= "<td>".$user->display_name."</td>\n";
+				if ( $post )  {
+					$user = get_userdata( $post->post_author );
+					$html .= "<td>".$user->display_name."</td>\n";
+				}
+				else { $html .= "<td></td>\n"; }
 
 				//Site
 				if ( (is_network_admin() || 'network' == $scope) && $blog_id ) {
@@ -2483,7 +2485,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 				}
 
 				//File
-				if ( $post->post_type == "attachment" ) {
+				if ( $post && $post->post_type == "attachment" ) {
 					$moviefilepath = get_attached_file($video_entry['attachmentID']);
 					$attachmentlink = get_admin_url()."post.php?post=".$video_entry['attachmentID']."&action=edit";
 				}
@@ -5832,34 +5834,17 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						}
 
 						if ( (empty($next_video['format']) || $next_video['video_key'] != $video_key) && $video_encode_queue[$video_key]['encode_formats']['fullres']['status'] == "Encoding Complete" ) { //if there's nothing left to encode in this video and we've encoded the fullres
-
 							$new_movie_url = kgvid_replace_video( $video_key, 'fullres' );
 							$script_function = 'kgvid_redraw_encode_checkboxes("'.$new_movie_url.'", "'.$video_entry['attachmentID'].'", "'.$page.'")';
 
-							if ( $video_encode_queue[$video_key]['movie_info']['rotate'] != "" ) { //if the video needed rotating
-								$video_encode_queue[$video_key]['movie_info']['rotate'] = ""; //clear rotation because we've just fixed that problem
-								delete_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-rotate');
-
-								$setwidth = $video_entry['movie_info']['width'];
-								$setheight = $video_entry['movie_info']['height'];
-								if ( intval($setwidth) > intval($setheight) ) {  //swap the width and height meta if it hasn't already been done
-									update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-actualwidth', $video_entry['movie_info']['height']);
-									update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-width', $setheight);
-									$video_encode_queue[$video_key]['movie_info']['width'] = $video_entry['movie_info']['height'];
-									update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-actualheight', $video_entry['movie_info']['width']);
-									update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-height', $setwidth);
-									$video_encode_queue[$video_key]['movie_info']['height'] = $video_entry['movie_info']['width'];
-								}
-								kgvid_save_encode_queue($video_encode_queue);
-							}
-
 							$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong> <script type="text/javascript">percent_timeout = setTimeout(function(){'.$script_function.'}, 1000);</script>';
 
-							if ( $blog_id ) { restore_current_blog(); }
+						}//fullres encoding complete
 
-						}//encoding complete
+						if ( $blog_id ) { restore_current_blog(); }
 
-					}
+					}//encoding complete
+
 					else { //there was an unexpected output and the encoded file hasn't been modified in more than 10 seconds
 
 						if ( strpos($lastline, "signal 15") !== false ) { //if the encoding was intentionally canceled
@@ -5914,72 +5899,105 @@ function kgvid_ajax_encode_progress() {
 }
 add_action('wp_ajax_kgvid_encode_progress', 'kgvid_ajax_encode_progress');
 
-function kgvid_replace_video ( $video_key, $format ) {
+function kgvid_replace_video( $video_key, $format ) {
 
 	$video_encode_queue = kgvid_get_encode_queue();
 	$video_formats = kgvid_video_formats();
 	$encoded_filename = $video_encode_queue[$video_key]['encode_formats'][$format]['filepath'];
 	$video_id = $video_encode_queue[$video_key]['attachmentID'];
+	$replace = true;
 
-	$original_filename = get_attached_file($video_id);
-	$path_parts = pathinfo($original_filename);
-	if ( $path_parts['extension'] != $video_formats[$format]['extension'] ) {
-		$new_filename = str_replace("-fullres", "", $encoded_filename);
-		$sanitized_url = kgvid_sanitize_url($video_encode_queue[$video_key]['movieurl']);
-		$new_url = $sanitized_url['noextension'].".".$video_formats[$format]['extension'];
-		$video_encode_queue[$video_key]['movieurl'] = $new_url;
-		global $wpdb;
-		$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE `post_content` LIKE '%%%s%%'", $sanitized_url['basename'].".".$path_parts['extension'] ); //find posts that use the old filename
-		$results = $wpdb->get_results($query);
-		if ( $results ) {
-			foreach ( $results as $result ) {
-				$post = get_post($result->ID);
-				$post->post_content = str_replace($sanitized_url['noextension'].".".$path_parts['extension'], $new_url, $post->post_content);
-				wp_update_post($post);
-			}
+	foreach ( $video_encode_queue[$video_key]['encode_formats'] as $format => $value ) { //make sure there isn't another encoding process using this original video
+		if ( $value['status'] == "encoding" || $value['status'] == "queued" ) {
+			$replace = false;
 		}
+	}//end loop
+
+	if ( $replace = false ) {
+		wp_schedule_single_event(time()+60, 'kgvid_cron_replace_video_check', array($video_key, $format) );
+		return $video_encode_queue[$video_key]['movieurl'];
 	}
 	else {
-		$new_filename = $original_filename;
-		$new_url = $video_encode_queue[$video_key]['movieurl'];
-	}
+		$original_filename = get_attached_file($video_id);
+		$path_parts = pathinfo($original_filename);
+		if ( $path_parts['extension'] != $video_formats[$format]['extension'] ) {
+			$new_filename = str_replace("-fullres", "", $encoded_filename);
+			$sanitized_url = kgvid_sanitize_url($video_encode_queue[$video_key]['movieurl']);
+			$new_url = $sanitized_url['noextension'].".".$video_formats[$format]['extension'];
+			$video_encode_queue[$video_key]['movieurl'] = $new_url;
+			global $wpdb;
+			$query = $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE `post_content` LIKE '%%%s%%'", $sanitized_url['basename'].".".$path_parts['extension'] ); //find posts that use the old filename
+			$results = $wpdb->get_results($query);
+			if ( $results ) {
+				foreach ( $results as $result ) {
+					$post = get_post($result->ID);
+					$post->post_content = str_replace($sanitized_url['noextension'].".".$path_parts['extension'], $new_url, $post->post_content);
+					wp_update_post($post);
+				}
+			}
+		}
+		else {
+			$new_filename = $original_filename;
+			$new_url = $video_encode_queue[$video_key]['movieurl'];
+		}
 
-	if ( file_exists($encoded_filename) ) {
-		rename($encoded_filename, $new_filename);
-		if ( file_exists($original_filename) && $original_filename != $new_filename ) { unlink($original_filename); }
-	}
-	$video_encode_queue[$video_key]['encode_formats'][$format]['url'] = $new_url;
-	kgvid_save_encode_queue($video_encode_queue);
+		if ( file_exists($encoded_filename) ) {
+			rename($encoded_filename, $new_filename);
+			if ( file_exists($original_filename) && $original_filename != $new_filename ) { unlink($original_filename); }
+		}
+		$video_encode_queue[$video_key]['encode_formats'][$format]['url'] = $new_url;
 
-	// you must first include the image.php file
-	// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
-	require_once(ABSPATH . 'wp-admin/includes/image.php');
-	global $wp_version;
-	if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
-	$attach_data = wp_generate_attachment_metadata( $video_id, $new_filename );
-	wp_update_attachment_metadata( $video_id, $attach_data );
-	update_attached_file( $video_id, $new_filename );
 
-	$new_mime = wp_check_filetype( $new_filename );
-	$post = get_post($video_id);
-	$new_guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
+		if ( $video_encode_queue[$video_key]['movie_info']['rotate'] != "" ) { //if the video needed rotating
+			$video_encode_queue[$video_key]['movie_info']['rotate'] = ""; //clear rotation because we've just fixed that problem
+			delete_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-rotate');
 
-	if ( $new_guid != $post->guid ) {
-		global $wpdb;
-		$guid_change = $wpdb->update( $wpdb->posts, //can't use wp_update_post because it won't change GUID
-			array(
-				'guid' => $new_guid,
-				'post_mime_type' => $new_mime['type']
-			),
-			array( 'ID' => $video_id ),
-			array( '%s', '%s' ),
-			array( '%d' )
-		);
+			$setwidth = $video_entry['movie_info']['width'];
+			$setheight = $video_entry['movie_info']['height'];
+			if ( intval($setwidth) > intval($setheight) ) {  //swap the width and height meta if it hasn't already been done
+				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-actualwidth', $video_entry['movie_info']['height']);
+				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-width', $setheight);
+				$video_encode_queue[$video_key]['movie_info']['width'] = $video_entry['movie_info']['height'];
+				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-actualheight', $video_entry['movie_info']['width']);
+				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-height', $setwidth);
+				$video_encode_queue[$video_key]['movie_info']['height'] = $video_entry['movie_info']['width'];
+			}
+		}
 
-	}
+		kgvid_save_encode_queue($video_encode_queue);
 
-	return $new_url;
+		// you must first include the image.php file
+		// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
+		require_once(ABSPATH . 'wp-admin/includes/image.php');
+		global $wp_version;
+		if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
+		$attach_data = wp_generate_attachment_metadata( $video_id, $new_filename );
+		wp_update_attachment_metadata( $video_id, $attach_data );
+		update_attached_file( $video_id, $new_filename );
+
+		$new_mime = wp_check_filetype( $new_filename );
+		$post = get_post($video_id);
+		$new_guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
+
+		if ( $new_guid != $post->guid ) {
+			global $wpdb;
+			$guid_change = $wpdb->update( $wpdb->posts, //can't use wp_update_post because it won't change GUID
+				array(
+					'guid' => $new_guid,
+					'post_mime_type' => $new_mime['type']
+				),
+				array( 'ID' => $video_id ),
+				array( '%s', '%s' ),
+				array( '%d' )
+			);
+
+		}
+
+		return $new_url;
+	}//end replace true
+
 }
+add_action('kgvid_cron_replace_video_check', 'kgvid_replace_video', 10, 2);
 
 function kgvid_clear_completed_queue($type, $scope = 'site') {
 
@@ -6164,7 +6182,7 @@ function kgvid_delete_video_attachment($video_id) {
 		if ( !empty($video_encode_queue) ) { //remove any encode queue entry related to this attachment
 			foreach ($video_encode_queue as $video_key => $video_entry) {
 				if ( $video_entry['attachmentID'] == $video_id ) {
-
+error_log($video_id);
 					foreach ( $video_entry['encode_formats'] as $format => $value ) {
 						if ( $value['status'] == "encoding" ) {
 							if ( intval($value['PID']) > 0 ) { posix_kill($value['PID'], 15); }
