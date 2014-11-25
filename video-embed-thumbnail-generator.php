@@ -1863,9 +1863,9 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= 'preload="'.$options['preload'].'" ';
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
-					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{';
-					if ( $enable_resolutions_plugin ) { $code .= ' "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"] } } '; }
-					$code .= '}\'';
+					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "nativeControlsForTouch": true';
+					if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"] } }'; }
+					$code .= ' }\'';
 					$code .= ">\n";
 
 					$code .= implode("", $sources); //add the <source> tags created earlier

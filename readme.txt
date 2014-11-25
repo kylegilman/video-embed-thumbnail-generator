@@ -224,8 +224,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.4.3 - November XX, 2014 =
+* Re-enabled native video player controls on mobile devices when using Video.js player.
 * Fixed bug that incorrectly resized videos embedded through iframe.
 * Fixed number formatting of video play counter.
+* Fixed encode queue text indent bug.
 
 = 4.4.2 - November 3, 2014 =
 * Added Google Universal Analytics event tracking.
