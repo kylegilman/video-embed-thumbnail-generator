@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, preview, poster, ffmpeg, libav, embed, mobile, webm, ogg, h.264, h264, responsive, mp4, jwplayer, resolution
 Requires at least: 3.5
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: 4.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -66,7 +66,7 @@ To embed videos on other sites you can use code like this.
 `[KGVID poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg"
 width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
 
-= Translations included:=
+= Translations included: =
 
 * Español por Andrew Kurtis de <a href="http://www.webhostinghub.com/">WebHostingHub</a>.
 * Français par F.R. 'Friss' Ferry, friss.designs@gmail.com
@@ -223,8 +223,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.4.3 - November XX, 2014 =
+= 4.4.3 - December XX, 2014 =
 * Re-enabled native video player controls on mobile devices when using Video.js player.
+* Added pagination option to video galleries.
 * Fixed bug that incorrectly resized videos embedded through iframe.
 * Fixed number formatting of video play counter.
 * Fixed encode queue text indent bug.
