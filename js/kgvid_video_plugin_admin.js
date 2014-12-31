@@ -81,7 +81,7 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 
 	jQuery('#attachments-'+postID+'-thumbgenerate').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-thumbrandomize').prop('disabled', false).attr('title', '');
-	jQuery('#attachments-'+postID+'-numberofthumbs').prop('disabled', false).attr('title', '');
+	jQuery('#attachments-'+postID+'-kgflashmediaplayer-numberofthumbs').prop('disabled', false).attr('title', '');
 
 	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) {  //this is the Media Library pop-up introduced in WordPress 4.0
 		var mep_id = jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id');
@@ -207,7 +207,7 @@ function kgvid_reveal_thumb_video(postID) {
 			jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
 				if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
 				   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
-				   jQuery('#attachments-'+postID+'-thumbtime').val(thumbtimecode);
+				   jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val(thumbtimecode);
 				}
 			});
 		}
@@ -230,11 +230,11 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
 	var attachmentURL = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-url]')[0].value;
-	var howmanythumbs = document.getElementById('attachments-'+postID+'-numberofthumbs').value;
+	var howmanythumbs = document.getElementById('attachments-'+postID+'-kgflashmediaplayer-numberofthumbs').value;
 	var firstframethumb = document.getElementById('attachments-'+postID+'-firstframe').checked;
 	var posterurl = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-poster]')[0].value;
 
-	var specifictimecode = document.getElementsByName('attachments['+postID+'][thumbtime]')[0].value;
+	var specifictimecode = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-thumbtime]')[0].value;
 	if (specifictimecode === "0") { specifictimecode = "firstframe"; firstframethumb = true; }
 	if (buttonPushed == "random" || howmanythumbs > 1) { specifictimecode = 0; }
 	if (specifictimecode != 0 ) { howmanythumbs = 1; }
@@ -328,7 +328,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 						time_id = Math.round(video.currentTime*100);
 						var time_display = kgvid_convert_to_timecode(video.currentTime);
 
-						jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
+						jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
 						var canvas = document.getElementById(postID+'_thumb_'+time_id);
 						canvas.width = video_width;
 						canvas.height = video_height;
@@ -390,8 +390,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 function kgvid_select_thumbnail(thumb_url, post_id, movieoffset) {
 	jQuery('[name="attachments['+post_id+'][kgflashmediaplayer-poster]"]').val(thumb_url); //get this by name because it's the same before WP v3.5
 	var time_display = kgvid_convert_to_timecode(movieoffset);
-	document.getElementById('attachments-'+post_id+'-thumbtime').value = time_display;
-	document.getElementById('attachments-'+post_id+'-numberofthumbs').value = '1';
+	document.getElementById('attachments-'+post_id+'-kgflashmediaplayer-thumbtime').value = time_display;
+	document.getElementById('attachments-'+post_id+'-kgflashmediaplayer-numberofthumbs').value = '1';
 }
 
 function kgvid_save_canvas_thumb(postID, time_id, total, index) {
@@ -482,7 +482,7 @@ function kgvid_thumb_video_manual(postID) {
 	var video_aspect = video.videoHeight/video.videoWidth;
 	var time_id = Math.round(video.currentTime);
 	var time_display = kgvid_convert_to_timecode(video.currentTime);
-	document.getElementById('attachments-'+postID+'-thumbtime').value = time_display;
+	document.getElementById('attachments-'+postID+'-kgflashmediaplayer-thumbtime').value = time_display;
 	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas style="height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></div>');
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	canvas.width = video.videoWidth;
@@ -562,8 +562,8 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 	jQuery('#kgflashmediaplayer-table').data("kgvid_attachment_id", basename);
 	jQuery('#attachments-'+oldbasename+'-kgflashmediaplayer-encodeboxes').attr('id', 'attachments-'+basename+'-kgflashmediaplayer-encodeboxes');
 	document.getElementById('attachments-'+oldbasename+'-thumbnailplaceholder').id = 'attachments-'+basename+'-thumbnailplaceholder';
-	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
-	document.getElementById('attachments-'+basename+'-numberofthumbs').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-thumbtime').value='';");
+	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-kgflashmediaplayer-thumbtime').value='';");
+	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-numberofthumbs').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-kgflashmediaplayer-thumbtime').value='';");
 	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="'+kgvidL10n.generate+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
 	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="'+kgvidL10n.randomize+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
 	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').setAttribute("onchange", "kgvid_set_dimension('"+basename+"', 'height', this.value);")
