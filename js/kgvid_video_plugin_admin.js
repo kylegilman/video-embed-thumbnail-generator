@@ -1178,7 +1178,7 @@ function kgvid_pick_image(button) {
 			// Build the choose from library frame.
 
 				var $el = jQuery(button);
-				event.preventDefault();
+				if ( typeof event !== 'undefined' ) { event.preventDefault(); }
 
 				// If the media frame already exists, reopen it.
 				if ( frame ) {
