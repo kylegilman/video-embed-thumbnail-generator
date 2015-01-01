@@ -1227,7 +1227,7 @@ function kgvid_pick_attachment(button) {
 			// Build the choose from library frame.
 
 				var $el = jQuery(button);
-				event.preventDefault();
+				if ( typeof event !== 'undefined' ) { event.preventDefault(); }
 
 				// If the media frame already exists, reopen it.
 				if ( frame ) {
@@ -1270,7 +1270,7 @@ function kgvid_pick_format(button, parentID, mime, format, movieurl) {
 			// Build the choose from library frame.
 
 				var $el = jQuery(button);
-				event.preventDefault();
+				if ( typeof event !== 'undefined' ) { event.preventDefault(); }
 
 				// If the media frame already exists, reopen it.
 				if ( frame ) {
