@@ -139,7 +139,7 @@ function kgvid_default_options_fn() {
 		"auto_thumb_position" => 50,
 		"right_click" => "on",
 		"resize" => "on",
-		"auto_res" => "on",
+		"auto_res" => "automatic",
 		"capabilities" => array(
 			"make_video_thumbnails" => $upload_capable,
 			"encode_videos" => $upload_capable,
@@ -1713,7 +1713,6 @@ function kgvid_shortcode_atts($atts) {
 		"view_count",
 		"inline",
 		"resize",
-		"auto_res",
 		"downloadlink",
 		"mute",
 		"fullwidth"
@@ -1724,6 +1723,8 @@ function kgvid_shortcode_atts($atts) {
 	}
 
 	if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
+	if ( $query_atts['auto_res'] == 'true' ) { $query_atts['auto_res'] = 'automatic'; } //if anyone used auto_res in the shortcode before version 4.4.3
+	if ( $query_atts['auto_res'] == 'false' ) { $query_atts['auto_res'] = 'highest'; }
 	if ( is_array($atts) && array_key_exists('skin', $atts) ) {
 		$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 	}
@@ -2077,6 +2078,8 @@ function KGVID_shortcode($atts, $content = ''){
 
 					$enable_resolutions_plugin = false;
 					$x = 20;
+					$h264_resolutions = array();
+
 					foreach ($video_formats as $format => $format_stats) {
 						if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
 						if ( $encodevideo_info[$format]["exists"] ) {
@@ -2094,6 +2097,7 @@ function KGVID_shortcode($atts, $content = ''){
 									$enable_resolutions_plugin = true;
 								}
 								$mp4already = true;
+								$h264_resolutions[] = $format_stats['label'];
 							}
 							else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
 							$sources[$source_key] .= '>'."\n";
@@ -2101,6 +2105,7 @@ function KGVID_shortcode($atts, $content = ''){
 					$x--;
 					}
 					krsort($sources);
+					natsort($h264_resolutions);
 
 					$code .= '<video id="video_'.$div_suffix.'" ';
 					if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
@@ -2110,7 +2115,11 @@ function KGVID_shortcode($atts, $content = ''){
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
 					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "nativeControlsForTouch": true';
-					if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"] } }'; }
+					if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"]';
+						if ( $query_atts["auto_res"] == "highest" ) { $code .= ', "default_res": "'.end($h264_resolutions).'"'; }
+						if ( $query_atts["auto_res"] == "lowest" ) { $code .= ', "default_res": "'.reset($h264_resolutions).'"'; }
+						$code .= ' } }';
+					}
 					$code .= ' }\'';
 					$code .= ">\n";
 
@@ -2969,7 +2978,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('endofvideooverlay', __('End of video image:', 'video-embed-thumbnail-generator'), 'kgvid_endofvideooverlay_callback', __FILE__, 'kgvid_video_embed_playback_settings' );
 	add_settings_field('watermark', __('Watermark overlay:', 'video-embed-thumbnail-generator'), 'kgvid_watermark_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
 	add_settings_field('align', __('Video alignment:', 'video-embed-thumbnail-generator'), 'kgvid_align_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'align' ) );
-	add_settings_field('resize', __('Automatically resize videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'inline' ) );
+	add_settings_field('resize', __('Automatically adjust videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
 	add_settings_field('inline', __('Inline videos:', 'video-embed-thumbnail-generator'), 'kgvid_inline_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'inline' ) );
 	add_settings_field('dimensions', __('Max embedded video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_dimensions', __('Max gallery video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
@@ -3122,7 +3131,14 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_resize_callback() {
 		$options = kgvid_get_options();
 		echo "<input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>".__('Make video player responsive.', 'video-embed-thumbnail-generator')."</label><br />";
-		echo "<input ".checked( $options['auto_res'], "on", false )." id='auto_res' name='kgvid_video_embed_options[auto_res]' type='checkbox' /> <label for='auto_res'>".__('Choose video resolution automatically based on player size.', 'video-embed-thumbnail-generator')."</label>\n\t";
+		$items = array( __("automatic", 'video-embed-thumbnail-generator'), __("highest", 'video-embed-thumbnail-generator'), __("lowest", 'video-embed-thumbnail-generator') );
+		echo "Default playback resolution <select id='auto_res' name='kgvid_video_embed_options[auto_res]'>";
+		foreach($items as $name ) {
+			$selected = ($options['auto_res']==$name) ? 'selected="selected"' : '';
+			echo "<option value='$name' $selected>$name</option>";
+		}
+		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, or automatically select the resolution based on the size of the video window.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+
 	}
 
 	function kgvid_inline_callback() {
@@ -3885,6 +3901,11 @@ function kgvid_update_settings() {
 			$options['nostdin'] = false;
 			$options['fullwidth'] = false;
 			$options['auto_res'] = 'on';
+		}
+		if ( $options['version'] < 4.43 ) {
+			$options['version'] = 4.43;
+			if ( $options['auto_res'] == 'on' ) { $options['auto_res'] = 'automatic'; }
+			else { $options['auto_res'] = 'highest'; }
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -6647,7 +6668,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>downloadlink="true/false"</code> '.__('generates a link below the video to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
 <li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
 <li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>auto_res="true/false"</code> '.__('let the plugin select the best resolution for the size of the player.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>auto_res="automatic/highest/lowest"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>

@@ -435,7 +435,7 @@ function kgvid_resize_video(id) {
 				}
 				else { jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').removeAttr('style'); }
 
-				if ( video_vars.auto_res == 'true' && player.availableRes !== undefined ) {
+				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {
 					var resolutions = player.availableRes;
 					var resNumbers = [];
 					jQuery.each(resolutions, function(){
