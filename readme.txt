@@ -223,14 +223,16 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.4.3 - January XX, 2015 =
+= 4.4.3 - February XX, 2015 =
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Added pagination option to video galleries.
+* Added option to make the watermark overlay image a link.
 * Updated Video.js to version 4.11.2
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
 * Fixed bug that disabled "Choose from Library" buttons in Firefox.
 * Fixed bug that incorrectly resized videos embedded through iframe.
+* Fixed bug that did not assign a default value to the qt-faststart/MP4Box application path for new installations.
 * Fixed number formatting of video play counter.
 * Fixed encode queue text indent bug.
 
