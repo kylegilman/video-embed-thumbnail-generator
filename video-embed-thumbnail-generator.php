@@ -4315,7 +4315,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 		$form_fields["views"]["label"] = __("Video Stats", 'video-embed-thumbnail-generator');
 		$form_fields["views"]["input"] = "html";
-		$form_fields["views"]["html"] = sprintf( __('%1$s Starts, %2$s Complete Views', 'video-embed-thumbnail-generator'), $kgvid_postmeta['starts'], $kgvid_postmeta['completeviews'] );
+		$form_fields["views"]["html"] = sprintf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) ).', '.sprintf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) );
 
 		// ** Thumbnail section **//
 
@@ -4518,6 +4518,29 @@ return $form_fields;
 }
 // attach our function to the correct hook
 add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit", null, 2);
+
+function kgvid_add_video_stats_column($cols) { //add Video Stats column to media library
+
+	$cols['video_stats'] = __("Video Stats", 'video-embed-thumbnail-generator');
+	return $cols;
+
+}
+add_filter( 'manage_media_columns', 'kgvid_add_video_stats_column' );
+
+function kgvid_video_stats_column_data( $column_name, $id ) {
+
+	if ( $column_name == 'video_stats' ) {
+
+		$kgvid_postmeta = kgvid_get_attachment_meta($id);
+		if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) && intval($kgvid_postmeta['starts']) > 0 ) {
+			printf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) );
+			echo '<br>';
+			printf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) );
+		}
+	}
+
+}
+add_action( 'manage_media_custom_column', 'kgvid_video_stats_column_data', 10, 2 );
 
 function kgvid_hide_video_children($wp_query_obj) {
 
@@ -4898,10 +4921,10 @@ class kgInsertMedia {
 		$output .= $titlecode.'<span itemprop="name">'.$attachment["title"].'</span>'.$endtitlecode.'<br />';
 	}
         $output .= '[KGVID';
-        if ( !empty($kgvid_meta['poster']) ) { $output .= ' poster="'.$attachment["poster"].'"'; }
-        if ( !empty($kgvid_meta['width']) ) { $output .= ' width="'.$kgvid_meta["width"].'"'; }
-        if ( !empty($kgvid_meta['height']) ) { $output .= ' height="'.$kgvid_meta["height"].'"'; }
-        if ( $kgvid_meta['downloadlink'] == "on" ) { $output .= ' downloadlink="true"'; }
+        if ( !empty($kgvid_postmeta['poster']) ) { $output .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
+        if ( !empty($kgvid_postmeta['width']) ) { $output .= ' width="'.$kgvid_postmeta["width"].'"'; }
+        if ( !empty($kgvid_postmeta['height']) ) { $output .= ' height="'.$kgvid_postmeta["height"].'"'; }
+        if ( $kgvid_postmeta['downloadlink'] == "on" ) { $output .= ' downloadlink="true"'; }
         $output .= ']'.$kgvid_postmeta["url"].'[/KGVID]<br />';
     } //if embed code is enabled
 
@@ -6636,12 +6659,15 @@ function kgvid_count_play() {
 	$event = $_POST['video_event'];
 	if ( $event == "play" ) { $event = "starts"; }
 	if ( $event == "end" ) { $event = "completeviews"; }
-	$plays = get_post_meta($post_id, '_kgflashmediaplayer-'.$event, true);
+	$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
+	$plays = $kgvid_postmeta[$event];
 	if ( !empty($plays) ) { $plays = intval($plays)+1; }
 	else { $plays = 1; }
-	update_post_meta($post_id, '_kgflashmediaplayer-'.$event, $plays);
+	$kgvid_postmeta[$event] = $plays;
+	kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
 	echo number_format(intval($plays));
 	die(); // stop executing script
+
 }
 add_action( 'wp_ajax_kgvid_count_play', 'kgvid_count_play' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_count_play', 'kgvid_count_play' ); // ajax for not logged in users

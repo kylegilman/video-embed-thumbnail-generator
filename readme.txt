@@ -227,6 +227,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Added pagination option to video galleries.
 * Added option to make the watermark overlay image a link.
+* Added video stats column to media library list view.
 * Updated Video.js to version 4.11.2
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
