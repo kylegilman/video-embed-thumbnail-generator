@@ -1382,7 +1382,7 @@ function kgvid_video_embed_enqueue_scripts() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.10.2' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '4.12.1' );
 		wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] );
 	}
 
@@ -1515,7 +1515,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
 
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.5.1"; }</script>'."\n";
+	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.5.3"; }</script>'."\n";
 
 }
 
@@ -2116,7 +2116,8 @@ function KGVID_shortcode($atts, $content = ''){
 					$code .= 'preload="'.$options['preload'].'" ';
 					if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 					$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
-					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "nativeControlsForTouch": true';
+					$locale = get_locale();
+					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "nativeControlsForTouch": true, "language": "'.substr($locale, 0, 2).'"';
 					if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"]';
 						if ( $query_atts["auto_res"] == "highest" ) { $code .= ', "default_res": "'.end($h264_resolutions).'"'; }
 						if ( $query_atts["auto_res"] == "lowest" ) { $code .= ', "default_res": "'.reset($h264_resolutions).'"'; }

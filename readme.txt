@@ -228,7 +228,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added pagination option to video galleries.
 * Added option to make the watermark overlay image a link.
 * Added video stats column to media library list view.
-* Updated Video.js to version 4.11.2
+* Updated Video.js to version 4.12.1
+* Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
 * Fixed bug that disabled "Choose from Library" buttons in Firefox.
