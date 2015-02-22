@@ -4284,8 +4284,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$dimensions_saved = false;
 		$video_meta = wp_get_attachment_metadata( $post->ID );
 		if ( is_array($video_meta) && array_key_exists('width', $video_meta) && array_key_exists('height', $video_meta) ) { $video_aspect = $video_meta['height']/$video_meta['width']; }
-		elseif ( !empty($kgvid_postmeta['width']) && !empty($kgvid_postmeta['height']) ) {
-			$video_aspect = $kgvid_postmeta['height']/$kgvid_postmeta['width'];
+		if ( !empty($kgvid_postmeta['width']) && !empty($kgvid_postmeta['height']) ) {
+			if ( empty($video_aspect) ) { $video_aspect = $kgvid_postmeta['height']/$kgvid_postmeta['width']; }
 			$dimensions_saved = true;
 		}
 
@@ -4534,6 +4534,7 @@ function kgvid_video_stats_column_data( $column_name, $id ) {
 
 		$kgvid_postmeta = kgvid_get_attachment_meta($id);
 		if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) && intval($kgvid_postmeta['starts']) > 0 ) {
+			/* translators: Start refers to the number of times a video has been started */
 			printf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) );
 			echo '<br>';
 			printf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) );
@@ -4603,12 +4604,6 @@ function kgvid_video_icon_dir($dir) {
 
 }
 add_filter('icon_dir', 'kgvid_video_icon_dir');
-
-/* function kgvid_add_theme_support() {
-	add_post_type_support( 'attachment:video', 'thumbnail' );
-	add_theme_support( 'post-thumbnails', 'attachment:video' );
-}
-add_action( 'after_setup_theme', 'kgvid_add_theme_support' ); */
 
 function kgvid_ajax_save_html5_thumb() {
 
@@ -4921,6 +4916,7 @@ class kgInsertMedia {
 		if ( substr($endtitlecode_array[0], -1) != ">" ) { $endtitlecode = $endtitlecode_array[0].">"; }
 		$output .= $titlecode.'<span itemprop="name">'.$attachment["title"].'</span>'.$endtitlecode.'<br />';
 	}
+
         $output .= '[KGVID';
         if ( !empty($kgvid_postmeta['poster']) ) { $output .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
         if ( !empty($kgvid_postmeta['width']) ) { $output .= ' width="'.$kgvid_postmeta["width"].'"'; }
