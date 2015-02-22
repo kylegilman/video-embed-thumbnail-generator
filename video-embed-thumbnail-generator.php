@@ -69,6 +69,7 @@ function kgvid_default_options_fn() {
 		"encode_720" => "on",
 		"encode_mobile" => "on",
 		"encode_webm" => false,
+		"encode_vp9" => false,
 		"encode_ogg" => false,
 		"encode_custom" => false,
 		"custom_format" => array(
@@ -374,6 +375,17 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 			"mime" => "video/webm",
 			"suffix" => ".webm",
 			"vcodec" => "libvpx",
+		),
+		"vp9" => array(
+			"name" => "WEBM VP9",
+			"label" => 'WEBM VP9',
+			"width" => INF,
+			"height" => INF,
+			"type" => "webm",
+			"extension" => "webm",
+			"mime" => "video/webm",
+			"suffix" => "-vp9.webm",
+			"vcodec" => "libvpx-vp9",
 		),
 		"ogg" => array(
 			"name" => "OGV",
@@ -1116,7 +1128,7 @@ function kgvid_get_video_dimensions($video = false) {
 		exec ( $command, $output );
 		$output = implode("\n", $output);
 		$configuration = array();
-		$video_lib_array = array('libtheora', 'libvorbis', 'libvpx', 'libx264');
+		$video_lib_array = array('libtheora', 'libvorbis', 'libvpx', 'libvpx-vp9', 'libx264');
 		$aac_array = kgvid_aac_encoders();
 		$lib_list = array_merge($video_lib_array, $aac_array);
 		foreach ($lib_list as $lib) {
@@ -3455,11 +3467,12 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "</select> ";
 
 
-		echo "</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into as many as six additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on Windows now. I no longer recommend encoding OGV or WEBM unless you expect a large number of no-Flash sticklers visiting your site.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input ".checked( $options['encode_1080'], "on", false )." id='encode_1080' name='kgvid_video_embed_options[encode_1080]' type='checkbox' /> <label for='encode_1080'>1080p H.264 <small><em>".__('(iPhone 4s+, iPad 2+, modern Android, Windows Phone 8, Chrome, Safari, IE 9+, Firefox Windows)', 'video-embed-thumbnail-generator')."</em></small></label><br />";
-		echo "<input ".checked( $options['encode_720'], "on", false )." id='encode_720' name='kgvid_video_embed_options[encode_720]' type='checkbox' /> <label for='encode_720'>720p H.264 <small><em>".__('(iPhone 4+, iPad, most Android, Chrome, Safari, IE 9+, Firefox Windows)', 'video-embed-thumbnail-generator')."</em></small></label><br />";
-		echo "<input ".checked( $options['encode_mobile'], "on", false )." id='encode_mobile' name='kgvid_video_embed_options[encode_mobile]' type='checkbox' /> <label for='encode_mobile'>360p H.264 <small><em>(iOS, Android, Windows Phone 7, Chrome, Safari, IE 9+, Firefox Windows)</em></small></label><br />";
+		echo "</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into as many as seven additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on most operating systems now. I no longer recommend encoding OGV or WEBM unless you expect a large number of no-Flash sticklers visiting your site. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['encode_1080'], "on", false )." id='encode_1080' name='kgvid_video_embed_options[encode_1080]' type='checkbox' /> <label for='encode_1080'>1080p H.264 <small><em>".__('(iPhone 4s+, iPad 2+, modern Android, Windows Phone 8, Chrome, Safari, IE 9+, Firefox)', 'video-embed-thumbnail-generator')."</em></small></label><br />";
+		echo "<input ".checked( $options['encode_720'], "on", false )." id='encode_720' name='kgvid_video_embed_options[encode_720]' type='checkbox' /> <label for='encode_720'>720p H.264 <small><em>".__('(iPhone 4+, iPad, most Android, Chrome, Safari, IE 9+, Firefox)', 'video-embed-thumbnail-generator')."</em></small></label><br />";
+		echo "<input ".checked( $options['encode_mobile'], "on", false )." id='encode_mobile' name='kgvid_video_embed_options[encode_mobile]' type='checkbox' /> <label for='encode_mobile'>360p H.264 <small><em>(iOS, Android, Windows Phone 7+, Chrome, Safari, IE 9+, Firefox)</em></small></label><br />";
 		echo "<input ".checked( $options['encode_webm'], "on", false )." id='encode_webm' name='kgvid_video_embed_options[encode_webm]' type='checkbox' /> <label for='encode_webm'>WEBM <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small></label><br />";
+		echo "<input ".checked( $options['encode_vp9'], "on", false )." id='encode_vp9' name='kgvid_video_embed_options[encode_vp9]' type='checkbox' /> <label for='encode_vp9'>WEBM VP9 <small><em>(Firefox, Chrome, Opera)</em></small></label><br />";
 		echo "<input ".checked( $options['encode_ogg'], "on", false )." id='encode_ogg' name='kgvid_video_embed_options[encode_ogg]' type='checkbox' /> <label for='encode_ogg'>OGV <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small></label><br />";
 		echo "<input ".checked( $options['encode_custom'], "on", false )." id='encode_custom' name='kgvid_video_embed_options[encode_custom]' type='checkbox' /> <label for='encode_custom'>Custom";
 		$items = array( "H.264" => "h264" , "WEBM" => "webm", "OGV" => "ogg" );
@@ -3918,6 +3931,7 @@ function kgvid_update_settings() {
 			if ( $options['auto_res'] == 'on' ) { $options['auto_res'] = 'automatic'; }
 			else { $options['auto_res'] = 'highest'; }
 			$options['watermark_url'] = '';
+			$options['encode_vp9'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }

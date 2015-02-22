@@ -45,7 +45,7 @@ The plugin can use FFMPEG or LIBAV to encode videos and make thumbnails if you h
 
 By default the plugin looks for FFMPEG in `/usr/local/bin` but if the application is installed in a different place on your server, you can point it to the correct place in the plugin settings. Users running WordPress on Windows servers should try using Linux-style paths (with forward slashes instead of backslashes and a forward slash `/` instead of `C:\`).
 
-If you have the proper libraries installed on your server, you can choose to replace your uploaded video with your preferred format, and generate as many as six additional formats depending on your original source. 1080p, 720p, and 360p H.264, same resolution WEBM and OGV, and a custom format. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but Firefox supports H.264 playback in Windows & Linux now and will support it in Mac OS starting in November 2014. I no longer recommend encoding OGV or WEBM unless you expect a large number of no-Flash sticklers visiting your site, or if you're making an open source principled stand against H.264. However, your needs may vary.
+If you have the proper libraries installed on your server, you can choose to replace your uploaded video with your preferred format, and generate as many as six additional formats depending on your original source. 1080p, 720p, and 360p H.264, same resolution WEBM and OGV, and a custom format. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but Firefox supports native H.264 playback in most operating systems now. I no longer recommend encoding OGV or WEBM unless you're making an open source principled stand against H.264. However, your needs may vary.
 
 The files will encode in the background and will take some time to complete, depending on your server setup and the length and size of your video. The plugin adds a Video Encode Queue menu to the Tools menu. You will see encoding progress, the option to cancel an encoding job, and you should get an error message if something goes wrong. Users on Windows servers may get inconsistent results with the encoding queue.
 
@@ -224,11 +224,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.4.3 - February XX, 2015 =
-* Re-enabled native video player controls on mobile devices when using Video.js player.
+* Added WEBM VP9 format.
 * Added pagination option to video galleries.
 * Added option to make the watermark overlay image a link.
 * Added video stats column to media library list view.
 * Updated Video.js to version 4.12.1
+* Re-enabled native video player controls on mobile devices when using Video.js player.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.

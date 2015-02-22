@@ -511,7 +511,7 @@ function kgvid_enqueue_video_encode(postID) {
 		page = "queue";
 	}
 
-	var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm", "custom");
+	var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm", "vp9", "custom");
 	var kgvid_encode = new Object();
 	jQuery.each(formats, function(key,formats) {
 		kgvid_encode[formats] = "";
