@@ -231,6 +231,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Updated Video.js to version 4.12.1
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
+* Removed superfluous gallery height option.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
 * Fixed bug that disabled "Choose from Library" buttons in Firefox.

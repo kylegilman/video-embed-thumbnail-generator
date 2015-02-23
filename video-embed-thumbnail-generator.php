@@ -104,9 +104,9 @@ function kgvid_default_options_fn() {
 		"minimum_width" => false,
 		"fullwidth" => false,
 		"gallery_width" => "960",
-		"gallery_height" => "540",
 		"gallery_thumb" => "250",
 		"gallery_end" => "",
+		"gallery_perpage" => -1,
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -1544,7 +1544,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		'orderby' => $query_atts['gallery_orderby'],
 		'order' => $query_atts['gallery_order'],
 		'post_mime_type' => 'video',
-		'posts_per_page' => 2,
+		'posts_per_page' => $options['gallery_perpage'],
 		'paged' => $page_number,
 		'post_status' => 'any',
 		'post_parent' => $query_atts['gallery_id'],
@@ -3002,9 +3002,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('resize', __('Automatically adjust videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
 	add_settings_field('inline', __('Inline videos:', 'video-embed-thumbnail-generator'), 'kgvid_inline_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'inline' ) );
 	add_settings_field('dimensions', __('Max embedded video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
-	add_settings_field('gallery_dimensions', __('Max gallery video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
-	add_settings_field('gallery_thumb', __('Gallery thumbnail width:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_thumb_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_thumb' ) );
-	add_settings_field('gallery_end', __('Gallery playback end action:', 'video-embed-thumbnail-generator'), 'kgvid_gallery_end_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_end' ) );
+	add_settings_field('gallery_options', __('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
 	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
 	add_settings_field('autoplay', __('Autoplay:', 'video-embed-thumbnail-generator'), 'kgvid_autoplay_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'autoplay' ) );
 	add_settings_field('loop', _x('Loop:', 'verb', 'video-embed-thumbnail-generator'), 'kgvid_loop_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'loop' ) );
@@ -3175,18 +3173,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<input ".checked( $options['fullwidth'], "on", false )." id='fullwidth' name='kgvid_video_embed_options[fullwidth]' type='checkbox' /> <label for='fullwidth'>".__('Set all videos to expand to fill their containers.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enabling this will ignore any other width settings and set the width of the video to the width of the container it\'s in.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
-	function kgvid_gallery_dimensions_callback() {
+	function kgvid_video_gallery_callback() {
 		$options = kgvid_get_options();
-		echo __('Width:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_width' name='kgvid_video_embed_options[gallery_width]' type='text' value='".$options['gallery_width']."' /> ".__('Height:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_height' name='kgvid_video_embed_options[gallery_height]' type='text' value='".$options['gallery_height']."' />\n\t";
-	}
+		echo __('Maximum popup width:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_width' name='kgvid_video_embed_options[gallery_width]' type='text' value='".$options['gallery_width']."' /><br />";
+		echo __('Thumbnail width:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_thumb' name='kgvid_video_embed_options[gallery_thumb]' type='text' value='".$options['gallery_thumb']."' /><br />";
 
-	function kgvid_gallery_thumb_callback() {
-		$options = kgvid_get_options();
-		echo "<input class='small-text' id='gallery_thumb' name='kgvid_video_embed_options[gallery_thumb]' type='text' value='".$options['gallery_thumb']."' />\n\t";
-	}
-
-	function kgvid_gallery_end_callback() {
-		$options = kgvid_get_options();
 		$items = array();
 		$items = array(
 			__('Stop, but leave popup window open', 'video-embed-thumbnail-generator') => "",
@@ -3197,7 +3188,9 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['gallery_end']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> when current gallery video finishes.\n\t";
+		echo "</select> when current gallery video finishes.<br />";
+		echo __('Videos per gallery page:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_perpage' name='kgvid_video_embed_options[gallery_perpage]' type='text' value='".$options['gallery_perpage']."' /> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('-1 disables video gallery pagination', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+
 	}
 
 	function kgvid_controlbar_style_callback() {
@@ -3932,6 +3925,7 @@ function kgvid_update_settings() {
 			else { $options['auto_res'] = 'highest'; }
 			$options['watermark_url'] = '';
 			$options['encode_vp9'] = false;
+			$options['gallery_perpage'] = -1;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -3992,10 +3986,6 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	if ( empty($input['gallery_width']) ) {
 		add_settings_error( __FILE__, "gallery-width-zero", __("You must enter a value for the maximum gallery video width.", 'video-embed-thumbnail-generator') );
 		$input['gallery_width'] = $options['gallery_width'];
-	}
-	if ( empty($input['gallery_height']) ) {
-		add_settings_error( __FILE__, "gallery-height-zero", __("You must enter a value for the maximum gallery video height.", 'video-embed-thumbnail-generator') );
-		$input['gallery_height'] = $options['gallery_height'];
 	}
 
 	if ( $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
