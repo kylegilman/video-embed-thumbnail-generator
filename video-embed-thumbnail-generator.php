@@ -3777,7 +3777,7 @@ function kgvid_update_settings() {
 				delete_option($old_setting);
 			}
 		}
-		$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'") );
+		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'" );
 
 		foreach ( $default_options as $key => $value ) { //apply default values for any settings that didn't exist before
 			if ( !array_key_exists($key, $options) ) { $options[$key] = $value; }
