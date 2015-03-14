@@ -252,7 +252,7 @@ function kgvid_get_attachment_meta($post_id) {
 
 		$embed = get_post_meta($post_id, "_kgflashmediaplayer-embed", true); //this was always saved if you modified the attachment
 
-		if ( $embed ) { //old meta values exist
+		if ( is_array($embed) ) { //old meta values exist
 
 			foreach ( $meta_key_array as $key => $value ) { //read old meta keys and delete them
 				$kgvid_postmeta[$key] = get_post_meta($post_id, "_kgflashmediaplayer-".$key, true);
@@ -277,15 +277,19 @@ function kgvid_save_attachment_meta($post_id, $kgvid_postmeta) {
 
 	$options = kgvid_get_options();
 
-	foreach ( $kgvid_postmeta as $key => $meta ) { //don't save if it's the same as the default values
+	if ( is_array($kgvid_postmeta) ) {
 
-		if ( array_key_exists($key, $options) && $meta == $options[$key] ) { unset($kgvid_postmeta[$key]); }
+		foreach ( $kgvid_postmeta as $key => $meta ) { //don't save if it's the same as the default values
+
+			if ( array_key_exists($key, $options) && $meta == $options[$key] ) { unset($kgvid_postmeta[$key]); }
+
+		}
+
+		array_filter($kgvid_postmeta, 'strlen'); //remove empty elements
+
+		update_post_meta($post_id, "_kgvid-meta", $kgvid_postmeta);
 
 	}
-
-	array_filter($kgvid_postmeta, 'strlen'); //remove empty elements
-
-	update_post_meta($post_id, "_kgvid-meta", $kgvid_postmeta);
 
 }
 
@@ -592,11 +596,16 @@ add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 function kgvid_check_if_capable($capability) {
 	global $wp_roles;
 	$capable = array();
-	foreach ( $wp_roles->roles as $role => $role_info ) {
-		if ( is_array($role_info['capabilities']) && array_key_exists($capability, $role_info['capabilities']) && $role_info['capabilities'][$capability] == 1 ) {
-			$capable[$role] = "on";
+
+	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
+
+		foreach ( $wp_roles->roles as $role => $role_info ) {
+			if ( is_array($role_info['capabilities']) && array_key_exists($capability, $role_info['capabilities']) && $role_info['capabilities'][$capability] == 1 ) {
+				$capable[$role] = "on";
+			}
+			else { $capable[$role] = false; }
 		}
-		else { $capable[$role] = false; }
+
 	}
 	return $capable;
 }
@@ -605,23 +614,28 @@ function kgvid_set_capabilities($capabilities) {
 
 	global $wp_roles;
 
-	$default_options = kgvid_default_options_fn();
-	foreach ( $default_options['capabilities'] as $default_capability => $default_enabled ) {
-		if ( is_array($capabilities) && !array_key_exists($default_capability, $capabilities) ) {
-			$capabilities[$default_capability] = array();
-		}
-	}
+	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
 
-	foreach ( $capabilities as $capability => $enabled_roles ) {
-		foreach ( $wp_roles->roles as $role => $role_info ) { //check all roles
-			if ( is_array($role_info['capabilities']) && !array_key_exists($capability, $role_info['capabilities']) && array_key_exists($role, $enabled_roles) && $enabled_roles[$role] == "on" ) {
-				$wp_roles->add_cap( $role, $capability );
-			}
-			if ( is_array($role_info['capabilities']) && array_key_exists($capability, $role_info['capabilities']) && !array_key_exists($role, $enabled_roles) ) {
-				$wp_roles->remove_cap( $role, $capability );
+		$default_options = kgvid_default_options_fn();
+
+		foreach ( $default_options['capabilities'] as $default_capability => $default_enabled ) {
+			if ( is_array($capabilities) && !array_key_exists($default_capability, $capabilities) ) {
+				$capabilities[$default_capability] = array();
 			}
 		}
-	}
+
+		foreach ( $capabilities as $capability => $enabled_roles ) {
+			foreach ( $wp_roles->roles as $role => $role_info ) { //check all roles
+				if ( is_array($role_info['capabilities']) && !array_key_exists($capability, $role_info['capabilities']) && array_key_exists($role, $enabled_roles) && $enabled_roles[$role] == "on" ) {
+					$wp_roles->add_cap( $role, $capability );
+				}
+				if ( is_array($role_info['capabilities']) && array_key_exists($capability, $role_info['capabilities']) && !array_key_exists($role, $enabled_roles) ) {
+					$wp_roles->remove_cap( $role, $capability );
+				}
+			}
+		}
+
+	}//end if $wp_roles defined
 
 }
 
@@ -975,7 +989,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 
 		//start with the new database info before checking other locations
 
-		if ($children) {
+		if ( $children ) {
 			foreach ( $children as $child ) {
 				$mime_type = get_post_mime_type($child->ID);
 				$wp_attached_file = get_post_meta($child->ID, '_wp_attached_file', true);
@@ -1759,7 +1773,7 @@ function KGVID_shortcode($atts, $content = ''){
 	if ( !is_feed() ) {
 
 		$options = kgvid_get_options();
-
+		$id_array = array();
 		kgvid_enqueue_shortcode_scripts();
 
 		if ( in_the_loop() ) { $post_ID = get_the_ID(); }
@@ -3325,28 +3339,34 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$capabilities = array( 'make_video_thumbnails'=>__('Can make thumbnails', 'video-embed-thumbnail-generator'), 'encode_videos'=>__('Can encode videos', 'video-embed-thumbnail-generator'), 'edit_others_video_encodes' => __('Can view & modify other users encode queue', 'video-embed-thumbnail-generator') );
 		foreach ( $capabilities as $capability => $capability_name ) {
 			$capabilities_checkboxes[] = "<div class='kgvid_user_roles'><strong>".$capability_name.":</strong><br>";
-			foreach ( $wp_roles->roles as $role => $role_info ) {
 
-				$capability_enabled = false;
-				if ( $page_scope == 'network' ) {
-					$option_name = 'default_capabilities';
-					if ( array_key_exists('default_capabilities', $options)
-					&& array_key_exists($capability, $options['default_capabilities'])
-					&& array_key_exists($role, $options['default_capabilities'][$capability])
-					&& $options['default_capabilities'][$capability][$role] == "on" ) {
-						$capability_enabled = true;
-					}
-				}
-				else {
-					$option_name = 'capabilities';
-					if ( is_array($wp_roles->roles[$role]['capabilities']) && array_key_exists($capability, $wp_roles->roles[$role]['capabilities'])
-					&& $wp_roles->roles[$role]['capabilities'][$capability] == 1 ) {
-						$capability_enabled = true;
-					}
-				}
-				$capabilities_checkboxes[] = "<input type='checkbox' ".checked( $capability_enabled, true, false )." id='capability-".$capability."-".$role."' name='kgvid_video_embed_options[".$option_name."][".$capability."][".$role."]'> <label for='capability-".$capability."-".$role."'>".translate_user_role($role_info['name'])."</label><br>";
+			if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
 
-			} //role loop
+				foreach ( $wp_roles->roles as $role => $role_info ) {
+
+					$capability_enabled = false;
+					if ( $page_scope == 'network' ) {
+						$option_name = 'default_capabilities';
+						if ( array_key_exists('default_capabilities', $options)
+						&& array_key_exists($capability, $options['default_capabilities'])
+						&& array_key_exists($role, $options['default_capabilities'][$capability])
+						&& $options['default_capabilities'][$capability][$role] == "on" ) {
+							$capability_enabled = true;
+						}
+					}
+					else {
+						$option_name = 'capabilities';
+						if ( is_array($wp_roles->roles[$role]['capabilities']) && array_key_exists($capability, $wp_roles->roles[$role]['capabilities'])
+						&& $wp_roles->roles[$role]['capabilities'][$capability] == 1 ) {
+							$capability_enabled = true;
+						}
+					}
+					$capabilities_checkboxes[] = "<input type='checkbox' ".checked( $capability_enabled, true, false )." id='capability-".$capability."-".$role."' name='kgvid_video_embed_options[".$option_name."][".$capability."][".$role."]'> <label for='capability-".$capability."-".$role."'>".translate_user_role($role_info['name'])."</label><br>";
+
+				} //role loop
+
+			}
+
 			$capabilities_checkboxes[] = "</div>";
 		}// capability loop
 		echo implode("", $capabilities_checkboxes)."\n\t";
@@ -3855,18 +3875,6 @@ function kgvid_update_settings() {
 			if ( array_key_exists('embeddable', $options) && $options['embeddable'] != "on" ) { $options['open_graph'] = false; }
 			else { $options['open_graph'] = "on"; }
 
-			$args = array(
-					'numberposts' => -1,
-					'post_mime_type' => 'video',
-					'post_status' => null,
-					'post_type' => 'attachment',
-				);
-			$video_attachments = get_posts($args);
-			foreach ( $video_attachments as $post ) {
-				if ( $post->post_parent && strpos(get_post_mime_type( $post->ID ), 'video') !== false ) {
-
-				}
-			}
 		}
 		if ( $options['version'] < 4.25 ) {
 			$options['version'] = 4.25;
@@ -4026,24 +4034,6 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 
 	} // if the custom format has been set
 	else {
-
-		/* $video_encode_queue = kgvid_get_encode_queue();
-
-		if ( !empty($video_encode_queue) && is_array($video_encode_queue) ) {
-			foreach ( $video_encode_queue as $video_key => $video_entry ) {
-				if ( is_array($video_entry)
-					&& array_key_exists('encode_formats', $video_entry)
-					&& is_array($video_entry['encode_formats'])
-					&& array_key_exists('custom', $video_entry['encode_formats'])
-					&& is_array($video_entry['encode_formats']['custom'])
-					&& array_key_exists('status', $video_entry['encode_formats']['custom'])
-					&& $video_entry['encode_formats']['custom']['status'] != 'encoding'
-				) {
-					unset($video_encode_queue[$video_key]['encode_formats']['custom']);
-				}
-			}
-			kgvid_save_encode_queue($video_encode_queue);
-		} */
 
 		if ( $input['sample_format'] == 'custom' ) { $input['sample_format'] = 'mobile'; }
 
@@ -6047,11 +6037,13 @@ function kgvid_replace_video( $video_key, $format ) {
 	$video_id = $video_encode_queue[$video_key]['attachmentID'];
 	$replace = true;
 
-	foreach ( $video_encode_queue[$video_key]['encode_formats'] as $format => $value ) { //make sure there isn't another encoding process using this original video
-		if ( $value['status'] == "encoding" || $value['status'] == "queued" ) {
-			$replace = false;
-		}
-	}//end loop
+	if ( !empty($video_encode_queue) ) {
+		foreach ( $video_encode_queue[$video_key]['encode_formats'] as $format => $value ) { //make sure there isn't another encoding process using this original video
+			if ( $value['status'] == "encoding" || $value['status'] == "queued" ) {
+				$replace = false;
+			}
+		}//end loop
+	}
 
 	if ( $replace = false ) {
 		wp_schedule_single_event(time()+60, 'kgvid_cron_replace_video_check', array($video_key, $format) );
@@ -6420,7 +6412,7 @@ function kgvid_get_set_featured() {
 	);
 	$videoposts = get_posts( $args );
 
-	if ($videoposts) {
+	if ( $videoposts ) {
 		foreach ($videoposts as $post) {
 			if ( $post->post_type == "attachment" ) { $post_id = $post->post_parent; }
 			else { $post_id = $post->ID; }
@@ -6473,8 +6465,8 @@ function kgvid_get_switch_parents() {
 		);
 		$attachments = get_posts( $args );
 
-		if ($attachments) {
-			foreach ($attachments as $post) {
+		if ( $attachments ) {
+			foreach ( $attachments as $post ) {
 				if ( !empty($post->post_parent) ) { //if the video is attached to a post
 					$args = array(
 						'orderby' => 'post_date',
@@ -6485,7 +6477,7 @@ function kgvid_get_switch_parents() {
 						'numberposts' => -1
 					);
 					$thumbnails = get_posts( $args );
-					if ($thumbnails) {
+					if ( $thumbnails ) {
 						foreach ( $thumbnails as $thumbnail ) {
 							$children[$thumbnail->ID] = array( 'post_parent' => $post->post_parent, 'video_id' => $post->ID );
 						}
@@ -6529,20 +6521,21 @@ function kgvid_switch_parents() {
 	if ( is_array($queue) && array_key_exists('switching_parents', $queue) && $queue['switching_parents'] ) {
 		$new_parent = 'post';
 		if (isset($_POST['parent'])) { $new_parent = $_POST['parent']; }
+		if ( is_array($queue) && array_key_exists('switching_parents', $queue) && is_array($queue['switching_parents']) ) {
+			foreach ( $queue['switching_parents'] as $thumbnail_id => $thumbnail ) {
+				if ( $new_parent == 'post' ) {
+					wp_update_post( array( 'ID' => $thumbnail_id, 'post_parent' => $thumbnail['post_parent'] ) );
+					update_post_meta($thumbnail_id, '_kgflashmediaplayer-video-id', $thumbnail['video_id']);
+				}
 
-		foreach ( $queue['switching_parents'] as $thumbnail_id => $thumbnail ) {
-			if ( $new_parent == 'post' ) {
-				wp_update_post( array( 'ID' => $thumbnail_id, 'post_parent' => $thumbnail['post_parent'] ) );
-				update_post_meta($thumbnail_id, '_kgflashmediaplayer-video-id', $thumbnail['video_id']);
+				if ( $new_parent == 'video' ) {
+					wp_update_post( array( 'ID' => $thumbnail_id, 'post_parent' => $thumbnail['video_id'] ) );
+				}
+				unset($queue['switching_parents'][$thumbnail_id]);
+				update_option('kgvid_video_embed_cms_switch', $queue);
 			}
-
-			if ( $new_parent == 'video' ) {
-				wp_update_post( array( 'ID' => $thumbnail_id, 'post_parent' => $thumbnail['video_id'] ) );
-			}
-			unset($queue['switching_parents'][$thumbnail_id]);
-			update_option('kgvid_video_embed_cms_switch', $queue);
+			unset($queue['switching_parents']);
 		}
-		unset($queue['switching_parents']);
 		if ( empty($queue) ) { delete_option('kgvid_video_embed_cms_switch'); }
 		else { update_option('kgvid_video_embed_cms_switch', $queue); }
 	}
@@ -6620,7 +6613,7 @@ function kgvid_generating_old() {
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 	if (isset($_POST['type'])) { $type = $_POST['type']; }
 	$queue = get_option('kgvid_video_embed_cms_switch');
-	if ( is_array($queue) && array_key_exists('generating_old_'.$type, $queue) && $queue['generating_old_'.$type] ) {
+	if ( is_array($queue) && array_key_exists('generating_old_'.$type, $queue) && is_array($queue['generating_old_'.$type]) ) {
 
 		foreach ( $queue['generating_old_'.$type] as $video_id ) {
 
@@ -6750,9 +6743,11 @@ function kgvid_clear_cron_and_roles() {
 	wp_clear_scheduled_hook('kgvid_cleanup_generated_thumbnails');
 	kgvid_cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
 	global $wp_roles;
-	foreach ( $options['capabilities'] as $capability => $roles ) {
-		foreach ( $wp_roles->roles as $role => $role_info ) {
-			$wp_roles->remove_cap( $role, $capability );
+	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
+		foreach ( $options['capabilities'] as $capability => $roles ) {
+			foreach ( $wp_roles->roles as $role => $role_info ) {
+				$wp_roles->remove_cap( $role, $capability );
+			}
 		}
 	}
 }
