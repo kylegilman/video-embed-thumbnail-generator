@@ -273,6 +273,31 @@ img.kgvid_ios_novideo {
 	background-color: #555;
 }
 
+.kgvid_gallery_pagination span {
+	cursor: pointer;
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	background-color: #ddd;
+	text-align: center;
+	color: #ccc;
+	border-radius: 12px;
+	font-size: 16px;
+	font-weight: 900;
+	border: 1px solid #888;
+	line-height: 20px;
+	text-decoration: none;
+}
+
+.kgvid_gallery_pagination .kgvid_gallery_pagination_selected {
+	background-color: #666;
+	cursor: default;
+}
+
+.kgvid_gallery_pagination span a {
+	border: none;
+}
+
 /* video-quality-selector Video.js plugin styles */
 
 .vjs-res-button span.vjs-control-text {
