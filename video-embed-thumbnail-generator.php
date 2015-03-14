@@ -1616,8 +1616,8 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			$code .= '<div class="kgvid_gallery_pagination">';
 
 			for ( $x = 1; $x <= $attachments->max_num_pages; $x++ ) {
-				if ( $x == $page_number ) { $code .= $x.' '; }
-				else { $code .= '<a href="javascript:void(0)" onclick="kgvid_switch_gallery_page(this);">'.$x.'</a> '; }
+				if ( $x == $page_number ) { $code .= '<span class="kgvid_gallery_pagination_selected">'.$x.'</span> '; }
+				else { $code .= '<span><a href="javascript:void(0)" onclick="kgvid_switch_gallery_page(this);">'.$x.'</a></span> '; }
 			}
 
 			$code .= '</div>';
@@ -4953,7 +4953,8 @@ $kgIM = new kgInsertMedia();
 
 function kgvid_embedurl_menu($tabs) {
 	$newtab = array( 'embedurl' => _x('Embed Video from URL', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator') );
-	return array_merge($tabs, $newtab);
+	if (is_array($tabs) ) { return array_merge($tabs, $newtab); }
+	else { return $newtab; }
 }
 add_filter('media_upload_tabs', 'kgvid_embedurl_menu');
 
