@@ -58,24 +58,50 @@ function kgvid_SetVideo(id) { //for galleries
 
 			//build next/previous buttons
 
+			var is_paginated = jQuery('#'+gallery_id+' .kgvid_gallery_pagination span').length > 0;
+
 			var nav_code = '';
-			if ( jQuery('#kgvid_video_gallery_thumb_'+id).prev('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ) {
+			if ( jQuery('#kgvid_video_gallery_thumb_'+id).prev('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ||
+				( is_paginated && jQuery('#'+gallery_id+' .kgvid_gallery_pagination_selected').html() != "1" )
+			) {
 				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_prev" title="'+kgvidL10n_frontend.previous+'">&#8592;</a>';
 			}
-			if ( jQuery('#kgvid_video_gallery_thumb_'+id).next('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ) {
+			if ( jQuery('#kgvid_video_gallery_thumb_'+id).next('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ||
+				( is_paginated && jQuery('#'+gallery_id+' .kgvid_gallery_pagination span a').last().html() > jQuery('#'+gallery_id+' .kgvid_gallery_pagination_selected').html() )
+			) {
 				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_next" title="'+kgvidL10n_frontend.next+'">&#8594;</a>';
 			}
 
 			jQuery('#kgvid-simplemodal-container').prepend(nav_code);
 
 			jQuery('.kgvid_gallery_next').click( function() {
-				jQuery.modal.close();
-				jQuery('#kgvid_video_gallery_thumb_'+id).next('.kgvid_video_gallery_thumb').trigger('click');
+
+				var next_thumb = jQuery('#kgvid_video_gallery_thumb_'+id).next('.kgvid_video_gallery_thumb');
+
+				if ( next_thumb.length == 0 && is_paginated ) {
+					var next_page = jQuery('#'+gallery_id+' .kgvid_gallery_pagination_selected').next().children();
+					kgvid_switch_gallery_page(next_page[0], 'next');
+				}
+				else { //not switching pages
+					jQuery.modal.close();
+					next_thumb.trigger('click');
+				}
+
 			});
 
 			jQuery('.kgvid_gallery_prev').click( function() {
-				jQuery.modal.close();
-				jQuery('#kgvid_video_gallery_thumb_'+id).prev('.kgvid_video_gallery_thumb').trigger('click');
+
+				var prev_thumb = jQuery('#kgvid_video_gallery_thumb_'+id).prev('.kgvid_video_gallery_thumb');
+
+				if ( prev_thumb.length == 0 && is_paginated ) {
+					var prev_page = jQuery('#'+gallery_id+' .kgvid_gallery_pagination_selected').prev().children();
+					kgvid_switch_gallery_page(prev_page[0], 'prev');
+				}
+				else { //not switching pages
+					jQuery.modal.close();
+					prev_thumb.trigger('click');
+				}
+
 			});
 			jQuery('#simplemodal-data').prepend('<div id="kgvid_popup_video_holder_'+id+'"></div>');
 
@@ -540,7 +566,7 @@ function kgvid_video_counter(id, event) {
 	}
 }
 
-function kgvid_switch_gallery_page(obj) {
+function kgvid_switch_gallery_page(obj, post_action) {
 
 	var gallery_id = jQuery(obj).parents('.kgvid_gallerywrapper').attr('id');
 	var page = obj.innerHTML;
@@ -558,6 +584,14 @@ function kgvid_switch_gallery_page(obj) {
 		jQuery('#'+gallery_id).html(data);
 		kgvid_document_ready();
 		jQuery('#'+gallery_id).fadeTo("fast", 1);
+		if ( post_action == "next" ) {
+			jQuery.modal.close();
+			jQuery('#'+gallery_id+' .kgvid_video_gallery_thumb').first().trigger('click');
+		}
+		if ( post_action == "prev" ) {
+			jQuery.modal.close();
+			jQuery('#'+gallery_id+' .kgvid_video_gallery_thumb').last().trigger('click');
+		}
 	}, "json");
 
 }

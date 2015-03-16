@@ -1558,9 +1558,9 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		'orderby' => $query_atts['gallery_orderby'],
 		'order' => $query_atts['gallery_order'],
 		'post_mime_type' => 'video',
-		'posts_per_page' => $options['gallery_perpage'],
+		'posts_per_page' => $query_atts['gallery_perpage'],
 		'paged' => $page_number,
-		'post_status' => 'any',
+		'post_status' => 'published',
 		'post_parent' => $query_atts['gallery_id'],
 		'exclude' => $query_atts['gallery_exclude']
 	);
@@ -1631,7 +1631,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 			for ( $x = 1; $x <= $attachments->max_num_pages; $x++ ) {
 				if ( $x == $page_number ) { $code .= '<span class="kgvid_gallery_pagination_selected">'.$x.'</span> '; }
-				else { $code .= '<span><a href="javascript:void(0)" onclick="kgvid_switch_gallery_page(this);">'.$x.'</a></span> '; }
+				else { $code .= '<span><a href="javascript:void(0)" onclick="kgvid_switch_gallery_page(this, "none");">'.$x.'</a></span> '; }
 			}
 
 			$code .= '</div>';
@@ -1690,8 +1690,9 @@ function kgvid_shortcode_atts($atts) {
 		'configuration' => $options['configuration'],
 		'skin' => $options['skin'],
 		'gallery' => 'false',
+		'gallery_perpage' => $options['gallery_perpage'],
 		'gallery_thumb' => $options['gallery_thumb'],
-		'gallery_orderby' => 'menu_order',
+		'gallery_orderby' => 'menu_order ID',
 		'gallery_order' => 'ASC',
 		'gallery_exclude' => '',
 		'gallery_include' => '',
@@ -2227,7 +2228,8 @@ function KGVID_shortcode($atts, $content = ''){
 				'gallery_exclude',
 				'gallery_thumb',
 				'caption',
-				'gallery_end'
+				'gallery_end',
+				'gallery_perpage'
 			);
 			$gallery_query_atts = array();
 			foreach($gallery_query_index as $index) { $gallery_query_atts[$index] = $query_atts[$index]; };
@@ -4492,14 +4494,14 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			$items = array("ASC", "DESC");
 			$gallery_order_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_order]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_order">';
 			foreach($items as $item) {
-				$selected = ($kgvid_postmeta['$gallery_order']==$item) ? 'selected="selected"' : '';
+				$selected = ($kgvid_postmeta['gallery_order']==$item) ? 'selected="selected"' : '';
 				$gallery_order_select .= "<option value='$item' $selected>$item</option>";
 			}
 			$gallery_order_select .= "</select>";
 
 			$form_fields["kgflashmediaplayer-gallery"]["label"] = __("Gallery Settings (all optional)", 'video-embed-thumbnail-generator');
 			$form_fields["kgflashmediaplayer-gallery"]["input"] = "html";
-			$form_fields["kgflashmediaplayer-gallery"]["html"] = '<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_thumb_width]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width" type ="text" value="'.$gallery_thumb_width.'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width">'.__('Thumbnail Width', 'video-embed-thumbnail-generator').'</label><br />
+			$form_fields["kgflashmediaplayer-gallery"]["html"] = '<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_thumb_width]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width" type ="text" value="'.$kgvid_postmeta['gallery_thumb_width'].'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_thumb_width">'.__('Thumbnail Width', 'video-embed-thumbnail-generator').'</label><br />
 			'.$gallery_orderby_select.' '.__('Order By', 'video-embed-thumbnail-generator').'<br />
 			'.$gallery_order_select.' '.__('Sort Order', 'video-embed-thumbnail-generator').'<br />
 			<input name="attachments['.$post->ID.'][kgflashmediaplayer-gallery_exclude]" id="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_exclude" type ="text" value="'.$kgvid_postmeta['gallery_exclude'].'" class="kgvid_50_width"> <label for="attachments-'.$post->ID.'-kgflashmediaplayer-gallery_exclude">'.__('Exclude', 'video-embed-thumbnail-generator').'</label><br />
