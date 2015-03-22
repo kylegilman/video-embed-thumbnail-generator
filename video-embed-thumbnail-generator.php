@@ -1489,18 +1489,32 @@ function kgvid_video_embed_print_scripts() {
 				$first_key = array_search('KGVID', $matches[2]);
 				if ( $first_key === false ) { $first_key = array_search('FMP', $matches[2]); }
 
-				if ( $first_key !== false ) {
+				if ( $first_key !== false && $matches[5][$first_key] !== false ) {
 
-				echo '<meta property="og:video" content="'.$matches[5][$first_key].'" />'."\n";
+					echo '<meta property="og:video" content="'.$matches[5][$first_key].'" />'."\n";
+					$secure_url = str_replace('http://', 'https://', $matches[5][$first_key]);
+					echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
+					$mime_type_check = wp_check_filetype($matches[5][$first_key]);
+					echo '<meta property="og:video:type" content="'.$mime_type_check['type'].'" />'."\n";
 
-					if ( array_key_exists( 3, $matches ) ) {
-						$attributes = shortcode_parse_atts($matches[3][$first_key]);
-						if ( is_array($attributes) && array_key_exists( 'width', $attributes ) ) {
-							echo '<meta property="og:video:width" content="'.$attributes['width'].'" />'."\n";
-							if ( array_key_exists( 'height', $attributes ) ) {
-								echo '<meta property="og:video:height" content="'.$attributes['height'].'" />'."\n";
+						if ( array_key_exists( 3, $matches ) ) {
+							$attributes = shortcode_parse_atts($matches[3][$first_key]);
+							if ( is_array($attributes) && array_key_exists( 'width', $attributes ) ) {
+								echo '<meta property="og:video:width" content="'.$attributes['width'].'" />'."\n";
+								if ( array_key_exists( 'height', $attributes ) ) {
+									echo '<meta property="og:video:height" content="'.$attributes['height'].'" />'."\n";
+								}
 							}
 						}
+
+					$id = kgvid_url_to_id($matches[5][$first_key]);
+
+					if ( $id !== false ) {
+
+						echo '<meta property="og:video" content="'.site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true".'" />'."\n";
+						echo '<meta property="og:video:secure_url" content="'.site_url('/', 'https')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true".'" />'."\n";
+						echo '<meta property="og:video:type" content="text/html" />'."\n";
+
 					}
 
 				}
