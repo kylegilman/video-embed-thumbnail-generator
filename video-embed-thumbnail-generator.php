@@ -1489,30 +1489,69 @@ function kgvid_video_embed_print_scripts() {
 				$first_key = array_search('KGVID', $matches[2]);
 				if ( $first_key === false ) { $first_key = array_search('FMP', $matches[2]); }
 
-				if ( $first_key !== false && $matches[5][$first_key] !== false ) {
+				if ( $first_key !== false ) {
 
-					echo '<meta property="og:video" content="'.$matches[5][$first_key].'" />'."\n";
-					$secure_url = str_replace('http://', 'https://', $matches[5][$first_key]);
-					echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
-					$mime_type_check = wp_check_filetype($matches[5][$first_key]);
-					echo '<meta property="og:video:type" content="'.$mime_type_check['type'].'" />'."\n";
+					$attributes = array();
+					$id = "";
+					$url = "";
 
-						if ( array_key_exists( 3, $matches ) ) {
-							$attributes = shortcode_parse_atts($matches[3][$first_key]);
-							if ( is_array($attributes) && array_key_exists( 'width', $attributes ) ) {
-								echo '<meta property="og:video:width" content="'.$attributes['width'].'" />'."\n";
-								if ( array_key_exists( 'height', $attributes ) ) {
-									echo '<meta property="og:video:height" content="'.$attributes['height'].'" />'."\n";
-								}
-							}
+					if ( array_key_exists( 3, $matches ) ) {
+						$attributes = shortcode_parse_atts($matches[3][$first_key]);
+					}
+
+					if ( !empty($matches[5][$first_key]) ) { //there's a URL
+
+						$url = $matches[5][$first_key];
+						$attributes['id'] = kgvid_url_to_id($matches[5][$first_key]);
+
+					}//if there's a URL
+
+					elseif ( is_array($attributes) && array_key_exists( 'id', $attributes ) ) {
+						$url = wp_get_attachment_url($attributes['id']);
+					}//if there's no URL but there's an ID attribute
+
+					elseif ( ( is_array($attributes) && !array_key_exists( 'id', $attributes ) )
+							|| empty($attributes)
+						) {
+
+						$post_ID = $post->ID;
+
+						$args = array(
+							'numberposts' => 1,
+							'post_mime_type' => 'video',
+							'post_parent' => $post_ID,
+							'post_status' => null,
+							'post_type' => 'attachment'
+						);
+						$video_attachment = get_posts($args);
+
+						if ( $video_attachment ) {
+							$attributes['id'] = $video_attachment[0]->ID;
+							$url = wp_get_attachment_url($attributes['id']);
 						}
 
-					$id = kgvid_url_to_id($matches[5][$first_key]);
+					}//if no URL or ID attribute
 
-					if ( $id !== false ) {
+					if ( $url ) {
 
-						echo '<meta property="og:video" content="'.site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true".'" />'."\n";
-						echo '<meta property="og:video:secure_url" content="'.site_url('/', 'https')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true".'" />'."\n";
+						echo '<meta property="og:video" content="'.$url.'" />'."\n";
+						$secure_url = str_replace('http://', 'https://', $url);
+						echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
+						$mime_type_check = wp_check_filetype($url);
+						echo '<meta property="og:video:type" content="'.$mime_type_check['type'].'" />'."\n";
+
+						if ( is_array($attributes) && array_key_exists( 'width', $attributes ) ) {
+							echo '<meta property="og:video:width" content="'.$attributes['width'].'" />'."\n";
+							if ( array_key_exists( 'height', $attributes ) ) {
+								echo '<meta property="og:video:height" content="'.$attributes['height'].'" />'."\n";
+							}
+						}
+					}
+
+					if ( is_array($attributes) && array_key_exists( 'id', $attributes ) ) {
+
+						echo '<meta property="og:video" content="'.site_url('/')."?attachment_id=".$attributes['id']."&amp;kgvid_video_embed[enable]=true".'" />'."\n";
+						echo '<meta property="og:video:secure_url" content="'.site_url('/', 'https')."?attachment_id=".$attributes['id']."&amp;kgvid_video_embed[enable]=true".'" />'."\n";
 						echo '<meta property="og:video:type" content="text/html" />'."\n";
 
 					}
