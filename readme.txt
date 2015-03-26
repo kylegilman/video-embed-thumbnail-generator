@@ -223,19 +223,22 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.4.3 - March XX, 2015 =
+= 4.5 - March XX, 2015 =
 * Added WEBM VP9 format.
 * Added pagination option to video galleries.
 * Added option to make the watermark overlay image a link.
 * Added video stats column to media library list view.
 * Updated Video.js to version 4.12.5
+* Updated Facebook Open Graph video embedding tags.
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
 * Removed superfluous gallery height option.
-* Updated Facebook Open Graph video embedding tags.
+* Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
+* Consolidated video metadata database entries.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
 * Fixed bug that disabled "Choose from Library" buttons in Firefox.
+* Fixed bug that kept end of video overlay images on screen when user hit play again.
 * Fixed bug that incorrectly resized videos embedded through iframe.
 * Fixed bug that did not assign a default value to the qt-faststart/MP4Box application path for new installations.
 * Fixed number formatting of video play counter.
