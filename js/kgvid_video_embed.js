@@ -235,6 +235,7 @@ function kgvid_setup_video(id) {
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 			}
 			if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+' > .vjs-control-bar').removeClass('vjs-fade-in'); }
+			if ( video_vars.endofvideooverlay != "" ) { jQuery('#video_'+id+' > .vjs-poster').hide(); }
 			kgvid_video_counter(id, 'play');
 		});
 
