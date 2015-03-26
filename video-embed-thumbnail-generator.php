@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.4.3
+Version: 4.5
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,7 +58,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.43,
+		"version" => 4.5,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -213,7 +213,7 @@ function kgvid_get_attachment_meta($post_id) {
 		'height' => '',
 		'actualwidth' => '',
 		'actualheight' => '',
-		'downloadlink' => '',
+		'downloadlink' => $options['downloadlink'],
 		'track' => '',
 		'starts' => '0',
 		'completeviews' => '0',
@@ -3982,8 +3982,8 @@ function kgvid_update_settings() {
 			$options['fullwidth'] = false;
 			$options['auto_res'] = 'on';
 		}
-		if ( $options['version'] < 4.43 ) {
-			$options['version'] = 4.43;
+		if ( $options['version'] < 4.5 ) {
+			$options['version'] = 4.5;
 			if ( $options['auto_res'] == 'on' ) { $options['auto_res'] = 'automatic'; }
 			else { $options['auto_res'] = 'highest'; }
 			$options['watermark_url'] = '';
@@ -4921,6 +4921,11 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 			if( !isset($attachment['kgflashmediaplayer-encode'.$format]) ) { $attachment['kgflashmediaplayer-encode'.$format] = "false"; }
 		}
 
+		$checkboxes = array( 'lockaspect', 'featured', 'showtitle', 'downloadlink' ); //make sure unchecked checkbox values are saved
+		foreach ( $checkboxes as $checkbox ) {
+			if( !isset($attachment['kgflashmediaplayer-'.$checkbox]) ) { $attachment['kgflashmediaplayer-'.$checkbox] = "false"; }
+		}
+
 		$kgvid_postmeta = array();
 
 		foreach ( $attachment as $kgflashmediaplayer_key => $value ) {
@@ -4956,14 +4961,14 @@ class kgInsertMedia {
         $kgvid_postmeta['title'] = get_the_title($attachment_id);
         $kgvid_postmeta['poster'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster", true);
 
-        if ($kgvid_postmeta['showtitle'] == "checked" ) {
+        if ($kgvid_postmeta['showtitle'] == "on" ) {
 		$titlecode = html_entity_decode(stripslashes($options['titlecode']));
 		if ( substr($titlecode, 0, 1) != '<' ) { $titlecode = '<'.$titlecode; }
 		if ( substr($titlecode, -1, 1) != '>' ) { $titlecode .= '>'; }
 		$endtitlecode = str_replace("<", "</", $titlecode);
 		$endtitlecode_array = explode(' ', $endtitlecode);
 		if ( substr($endtitlecode_array[0], -1) != ">" ) { $endtitlecode = $endtitlecode_array[0].">"; }
-		$output .= $titlecode.'<span itemprop="name">'.$attachment["title"].'</span>'.$endtitlecode.'<br />';
+		$output .= $titlecode.'<span itemprop="name">'.$kgvid_postmeta["title"].'</span>'.$endtitlecode.'<br />';
 	}
 
         $output .= '[KGVID';
