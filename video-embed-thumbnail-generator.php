@@ -4951,52 +4951,59 @@ class kgInsertMedia {
   //function that does the modifying
   function kgmodifyMediaInsert($html, $attachment_id, $attachment) {
 
-    $options = kgvid_get_options();
-    $output = $html;
-    $kgvid_postmeta = kgvid_get_attachment_meta($attachment_id);
+	$mime_type = get_post_mime_type($attachment_id);
 
-    if ( $kgvid_postmeta['embed'] == "Single Video" ) {
-        $output = "";
-        $kgvid_postmeta['url'] = wp_get_attachment_url($attachment_id);
-        $kgvid_postmeta['title'] = get_the_title($attachment_id);
-        $kgvid_postmeta['poster'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster", true);
+	if ( substr($mime_type, 0, 5) == 'video' ) {
 
-        if ($kgvid_postmeta['showtitle'] == "on" ) {
-		$titlecode = html_entity_decode(stripslashes($options['titlecode']));
-		if ( substr($titlecode, 0, 1) != '<' ) { $titlecode = '<'.$titlecode; }
-		if ( substr($titlecode, -1, 1) != '>' ) { $titlecode .= '>'; }
-		$endtitlecode = str_replace("<", "</", $titlecode);
-		$endtitlecode_array = explode(' ', $endtitlecode);
-		if ( substr($endtitlecode_array[0], -1) != ">" ) { $endtitlecode = $endtitlecode_array[0].">"; }
-		$output .= $titlecode.'<span itemprop="name">'.$kgvid_postmeta["title"].'</span>'.$endtitlecode.'<br />';
-	}
+		$options = kgvid_get_options();
 
-        $output .= '[KGVID';
-        if ( !empty($kgvid_postmeta['poster']) ) { $output .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
-        if ( !empty($kgvid_postmeta['width']) ) { $output .= ' width="'.$kgvid_postmeta["width"].'"'; }
-        if ( !empty($kgvid_postmeta['height']) ) { $output .= ' height="'.$kgvid_postmeta["height"].'"'; }
-        if ( $kgvid_postmeta['downloadlink'] == "on" ) { $output .= ' downloadlink="true"'; }
-        $output .= ']'.$kgvid_postmeta["url"].'[/KGVID]<br />';
-    } //if embed code is enabled
+		$kgvid_postmeta = kgvid_get_attachment_meta($attachment_id);
 
-    if ($kgvid_postmeta['embed'] == "Video Gallery" ) {
+		if ( $kgvid_postmeta['embed'] == "Single Video" ) {
+			$html = "";
+			$kgvid_postmeta['url'] = wp_get_attachment_url($attachment_id);
+			$kgvid_postmeta['title'] = get_the_title($attachment_id);
+			$kgvid_postmeta['poster'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster", true);
 
-    	$post = get_post($attachment_id);
-    	$parent_id = $post->post_parent;
+			if ($kgvid_postmeta['showtitle'] == "on" ) {
+			$titlecode = html_entity_decode(stripslashes($options['titlecode']));
+			if ( substr($titlecode, 0, 1) != '<' ) { $titlecode = '<'.$titlecode; }
+			if ( substr($titlecode, -1, 1) != '>' ) { $titlecode .= '>'; }
+			$endtitlecode = str_replace("<", "</", $titlecode);
+			$endtitlecode_array = explode(' ', $endtitlecode);
+			if ( substr($endtitlecode_array[0], -1) != ">" ) { $endtitlecode = $endtitlecode_array[0].">"; }
+			$html .= $titlecode.'<span itemprop="name">'.$kgvid_postmeta["title"].'</span>'.$endtitlecode.'<br />';
+		}
 
-    	$output = "";
-    	$output .= '[KGVID gallery="true"';
-    	if ( !empty($kgvid_meta['gallery_thumb']) && $kgvid_meta['gallery_thumb'] != $options['gallery_thumb'] ) { $output .= ' gallery_thumb="'.$kgvid_meta["gallery_thumb"].'"'; }
-    	if ( !empty($kgvid_meta['gallery_exclude']) ) { $output .= ' gallery_exclude="'.$kgvid_meta["gallery_exclude"].'"'; }
-    	if ( !empty($kgvid_meta['gallery_include']) ) { $output .= ' gallery_include="'.$kgvid_meta["gallery_include"].'"'; }
-    	if ( !empty($kgvid_meta['gallery_orderby']) && $kgvid_meta['gallery_orderby'] != "menu_order" ) { $output .= ' gallery_orderby="'.$kgvid_meta["gallery_orderby"].'"'; }
-    	if ( !empty($kgvid_meta['gallery_order']) && $kgvid_meta['gallery_order'] != "ASC" ) { $output .= ' gallery_order="'.$kgvid_meta["gallery_order"].'"'; }
-    	if ( !empty($kgvid_meta['gallery_id']) && $kgvid_meta['gallery_id'] != $parent_id ) { $output .= ' gallery_id="'.$kgvid_meta["gallery_id"].'"'; }
-    	$output .= '][/KGVID]';
+			$html .= '[KGVID';
+			if ( !empty($kgvid_postmeta['poster']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
+			if ( !empty($kgvid_postmeta['width']) ) { $html .= ' width="'.$kgvid_postmeta["width"].'"'; }
+			if ( !empty($kgvid_postmeta['height']) ) { $html .= ' height="'.$kgvid_postmeta["height"].'"'; }
+			if ( $kgvid_postmeta['downloadlink'] == "on" ) { $html .= ' downloadlink="true"'; }
+			$html .= ']'.$kgvid_postmeta["url"].'[/KGVID]<br />';
+		} //if embed code is enabled
+
+		if ($kgvid_postmeta['embed'] == "Video Gallery" ) {
+
+			$post = get_post($attachment_id);
+			$parent_id = $post->post_parent;
+
+			$html = "";
+			$html .= '[KGVID gallery="true"';
+			if ( !empty($kgvid_meta['gallery_thumb']) && $kgvid_meta['gallery_thumb'] != $options['gallery_thumb'] ) { $html .= ' gallery_thumb="'.$kgvid_meta["gallery_thumb"].'"'; }
+			if ( !empty($kgvid_meta['gallery_exclude']) ) { $html .= ' gallery_exclude="'.$kgvid_meta["gallery_exclude"].'"'; }
+			if ( !empty($kgvid_meta['gallery_include']) ) { $html .= ' gallery_include="'.$kgvid_meta["gallery_include"].'"'; }
+			if ( !empty($kgvid_meta['gallery_orderby']) && $kgvid_meta['gallery_orderby'] != "menu_order" ) { $html .= ' gallery_orderby="'.$kgvid_meta["gallery_orderby"].'"'; }
+			if ( !empty($kgvid_meta['gallery_order']) && $kgvid_meta['gallery_order'] != "ASC" ) { $html .= ' gallery_order="'.$kgvid_meta["gallery_order"].'"'; }
+			if ( !empty($kgvid_meta['gallery_id']) && $kgvid_meta['gallery_id'] != $parent_id ) { $html .= ' gallery_id="'.$kgvid_meta["gallery_id"].'"'; }
+			$html .= '][/KGVID]';
+		}
+
     }
 
-    return $output;
-  }
+    return $html;
+
+  }//end function
 }
 //instantiate the class
 $kgIM = new kgInsertMedia();
