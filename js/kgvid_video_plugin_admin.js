@@ -742,16 +742,33 @@ function kgvid_cancel_thumbs(postID) {
 
 function kgvid_update_encode_queue() {
 
-	var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
+
+	if ( pagenow == 'tools_page_kgvid_video_encoding_queue' || pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) {
+		var page = 'queue';
+		var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
+	}
+	else {
+		var page = 'attachment';
+		var post_id = jQuery('#post_ID').val();
+		var kgflashmediaplayersecurity = document.getElementsByName('attachments['+post_id+'][kgflashmediaplayer-security]')[0].value;
+	}
+
+	if ( page == 'queue') { var container_element = jQuery('#kgvid_encode_queue_table'); }
+	else { var container_element = jQuery('#attachments-'+post_id+'-kgflashmediaplayer-encodeboxes'); }
+	var encode_queue_timeouts = container_element.data('encode_queue_timeouts');
+	for( key in encode_queue_timeouts ){ clearTimeout(encode_queue_timeouts[key]); }
+	container_element.removeData('encode_queue_timeouts');
 
 	if ( kgflashmediaplayersecurity ) { //sometimes this tries to run after the media modal is closed
 
-		jQuery.post(ajaxurl, { action:"kgvid_update_encode_queue", security: kgflashmediaplayersecurity, pagenow: pagenow }, function(data) {
+		jQuery.post(ajaxurl, { action:"kgvid_update_encode_queue", security: kgflashmediaplayersecurity, page: page }, function(data) {
 
 			var check_again = false;
 			var queued = false;
 
 			jQuery.each(data.queue, function(video_key, video_entry) {
+
+				if ( page != "queue" && jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encodeboxes').length == 0 ) { return true; }
 
 				if ( video_entry.hasOwnProperty('encode_formats') ) {
 
@@ -763,19 +780,24 @@ function kgvid_update_encode_queue() {
 
 							currently_encoding = true;
 							check_again = true;
-							if ( jQuery('#clear_'+video_entry.attachmentID).css("display") != "none" ) {
-								jQuery('#clear_'+video_entry.attachmentID).css("display", "none");
-							}
-							if ( !jQuery('#tr_'+video_entry.attachmentID).hasClass('currently_encoding') ) {
-								jQuery('#tr_'+video_entry.attachmentID).addClass('currently_encoding');
-							}
-							if ( jQuery('#tr_'+video_entry.attachmentID).hasClass('kgvid_complete') )  {
-								jQuery('#tr_'+video_entry.attachmentID).removeClass('kgvid_complete');
+
+							if ( page == "queue" ) {
+
+								if ( jQuery('#clear_'+video_entry.attachmentID).css("display") != "none" ) {
+									jQuery('#clear_'+video_entry.attachmentID).css("display", "none");
+								}
+								if ( !jQuery('#tr_'+video_entry.attachmentID).hasClass('currently_encoding') ) {
+									jQuery('#tr_'+video_entry.attachmentID).addClass('currently_encoding');
+								}
+								if ( jQuery('#tr_'+video_entry.attachmentID).hasClass('kgvid_complete') )  {
+									jQuery('#tr_'+video_entry.attachmentID).removeClass('kgvid_complete');
+								}
+
 							}
 
 						}
 
-						if ( format_entry.stats == 'queued' ) {
+						if ( format_entry.status == 'queued' ) {
 							queued = true;
 						}
 
@@ -785,17 +807,15 @@ function kgvid_update_encode_queue() {
 							var checkbox = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encode'+format);
 
 							if ( meta_entry.html() != undefined && format_entry.meta_array.meta != meta_entry.html() ) {
-
 								check_again = true;
 								meta_entry.empty();
 								meta_entry.html(format_entry.meta_array.meta);
-
 							}
 
 							if ( format_entry.meta_array.checked != '' ) {
 								checkbox.attr('checked', true);
 							}
-							else { checkbox.removeAttr('checked'); }
+							else if ( format_entry.status != 'notchecked' ) { checkbox.removeAttr('checked'); }
 
 							if ( format_entry.meta_array.disabled != '' ) {
 								checkbox.attr('disabled', true);
@@ -808,7 +828,7 @@ function kgvid_update_encode_queue() {
 
 				}
 
-				if ( currently_encoding == false ) {
+				if ( page == 'queue' && currently_encoding == false ) {
 
 					if ( queued == false ) { jQuery('#tr_'+video_entry.attachmentID).addClass('kgvid_complete'); }
 
@@ -823,14 +843,15 @@ function kgvid_update_encode_queue() {
 
 			}); //end loop through queue
 
-			var encode_queue_interval = jQuery('#kgvid_encode_queue_table').data('encode_queue_interval');
-			if ( check_again == false ) {
-				clearInterval(encode_queue_interval);
-				jQuery('#kgvid_encode_queue_table').removeData('encode_queue_interval');
+			if ( check_again == true ) {
+				var encode_queue_timeouts = container_element.data('encode_queue_timeouts');
+				if ( encode_queue_timeouts == null ) { encode_queue_timeouts = new Array(); }
+				encode_queue_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 3000);
+				encode_queue_timeouts.push(encode_queue_timeout);
+				container_element.data('encode_queue_timeouts', encode_queue_timeouts);
 			}
 
 		}, "json" );
-
 
 	}
 
@@ -861,14 +882,12 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
 				if ( data.encoding == true ) {
 					jQuery('#clear_'+postID).css("display", "none");
 					jQuery('#tr_'+postID).addClass('currently_encoding');
+				}
 
-				}
-				var encode_queue_interval = jQuery('#kgvid_encode_queue_table').data('encode_queue_interval');
-				if ( encode_queue_interval == undefined ) {
-					encode_queue_interval = setInterval( function(){ kgvid_update_encode_queue() }, 3000 );
-					jQuery('#kgvid_encode_queue_table').data('encode_queue_interval', encode_queue_interval);
-				}
 			}
+
+			setTimeout( function(){ kgvid_update_encode_queue() }, 3000 ); //start the loop
+
 			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes').removeAttr('style');
 		}, "json" );
 	}
