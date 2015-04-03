@@ -748,8 +748,12 @@ function kgvid_update_encode_queue() {
 	}
 	else {
 		var page = 'attachment';
-		var post_id = jQuery('#post_ID').val();
-		var kgflashmediaplayersecurity = document.getElementsByName('attachments['+post_id+'][kgflashmediaplayer-security]')[0].value;
+		var checkboxes_id = jQuery('.kgvid_checkboxes_section').first().attr('id');
+		if ( checkboxes_id ) {
+			var post_id = checkboxes_id.match("attachments-(.*)-kgflashmediaplayer-encodeboxes");
+			post_id = post_id[1];
+			var kgflashmediaplayersecurity = document.getElementsByName('attachments['+post_id+'][kgflashmediaplayer-security]')[0].value;
+		}
 	}
 
 	if ( page == 'queue') { var container_element = jQuery('#kgvid_encode_queue_table'); }
