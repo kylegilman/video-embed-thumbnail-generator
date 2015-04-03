@@ -742,7 +742,6 @@ function kgvid_cancel_thumbs(postID) {
 
 function kgvid_update_encode_queue() {
 
-
 	if ( pagenow == 'tools_page_kgvid_video_encoding_queue' || pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) {
 		var page = 'queue';
 		var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
@@ -765,6 +764,7 @@ function kgvid_update_encode_queue() {
 
 			var check_again = false;
 			var queued = false;
+			var time_to_wait = 5000;
 
 			jQuery.each(data.queue, function(video_key, video_entry) {
 
@@ -806,6 +806,8 @@ function kgvid_update_encode_queue() {
 							var meta_entry = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-meta'+format);
 							var checkbox = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encode'+format);
 
+							if ( format_entry.status == 'encoding') { time_to_wait = format_entry.meta_array.time_to_wait; }
+
 							if ( meta_entry.html() != undefined && format_entry.meta_array.meta != meta_entry.html() ) {
 								check_again = true;
 								meta_entry.empty();
@@ -815,7 +817,7 @@ function kgvid_update_encode_queue() {
 							if ( format_entry.meta_array.checked != '' ) {
 								checkbox.attr('checked', true);
 							}
-							else if ( format_entry.status != 'notchecked' ) { checkbox.removeAttr('checked'); }
+							else if ( format_entry.status == 'Encoding Complete' ) { checkbox.removeAttr('checked'); }
 
 							if ( format_entry.meta_array.disabled != '' ) {
 								checkbox.attr('disabled', true);
@@ -846,7 +848,7 @@ function kgvid_update_encode_queue() {
 			if ( check_again == true ) {
 				var encode_queue_timeouts = container_element.data('encode_queue_timeouts');
 				if ( encode_queue_timeouts == null ) { encode_queue_timeouts = new Array(); }
-				encode_queue_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 3000);
+				encode_queue_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, time_to_wait);
 				encode_queue_timeouts.push(encode_queue_timeout);
 				container_element.data('encode_queue_timeouts', encode_queue_timeouts);
 			}

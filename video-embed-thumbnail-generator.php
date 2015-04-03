@@ -2412,6 +2412,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 	$child_id = "";
 	$something_to_encode = false;
 	$encoding_now = false;
+	$time_to_wait = 5000;
 
 	if ( get_post_type($post_id) == "attachment" ) { $encodeset = get_post_meta($post_id, "_kgflashmediaplayer-encode".$format, true); }
 	if ( $encodeset == "" && strpos($format, 'custom_') === false ) { $encodeset = $options['encode_'.$format]; }
@@ -2471,6 +2472,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		$checked = 'checked';
 		$progress = kgvid_encode_progress($video_key, $format, $page);
 		$meta = $progress['embed_display'];
+		$time_to_wait = $progress['time_to_wait'];
 	}
 
 	if ( $status == "Encoding Complete" ) {
@@ -2485,7 +2487,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		$something_to_encode = false;
 	}
 
-	$meta_array = array( 'checked' => $checked, 'disabled' => $disabled, 'meta' => $meta, 'something_to_encode' => $something_to_encode, 'encoding_now' => $encoding_now );
+	$meta_array = array( 'checked' => $checked, 'disabled' => $disabled, 'meta' => $meta, 'time_to_wait'=> $time_to_wait, 'something_to_encode' => $something_to_encode, 'encoding_now' => $encoding_now );
 
 	return $meta_array;
 
@@ -5906,7 +5908,7 @@ add_action('wp_ajax_kgvid_test_ffmpeg', 'kgvid_test_ffmpeg');
 function kgvid_encode_progress($video_key, $format, $page) {
 
 	$video_encode_queue = kgvid_get_encode_queue();
-	$time_to_wait = 3000; //default 3 seconds between checking encode progress
+	$time_to_wait = 5000; //default 5 seconds between checking encode progress
 
 	if ( is_array($video_encode_queue) && array_key_exists($video_key, $video_encode_queue) ) {
 
@@ -5992,7 +5994,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 							else {  $fps_match = "10"; }
 						}
 						else {  $fps_match = "10"; }
-						$time_to_wait = strval(max(round(30000/intval($fps_match)), 1000)); //wait at least 1 second
+						$time_to_wait = strval(max(round(40000/intval($fps_match)), 1000)); //wait at least 1 second
 						if ( intval($time_to_wait) > 10000 ) { //wait no more than 10 seconds
 							$time_to_wait = 10000;
 						}
@@ -6115,7 +6117,6 @@ function kgvid_encode_progress($video_key, $format, $page) {
 
 					}
 
-					$arr = array ( "embed_display"=>$embed_display );
 				} //if logfile
 				else {
 
@@ -6136,9 +6137,12 @@ function kgvid_encode_progress($video_key, $format, $page) {
 				}
 
 			}//if not completed
-			else { $arr = array ( "embed_display"=>"<strong>".ucwords($video_encode_queue[$video_key]['encode_formats'][$format]['status'])."</strong>" ); }
+			else { $embed_display = "<strong>".ucwords($video_encode_queue[$video_key]['encode_formats'][$format]['status'])."</strong>"; }
 		} //if there's a queue and the video is encoding
-		else { $arr = array ( "embed_display"=>"<strong>".__('Waiting...', 'video-embed-thumbnail-generator')."</strong>" ); }
+
+		else { $embed_display = "<strong>".__('Waiting...', 'video-embed-thumbnail-generator')."</strong>"; }
+
+		$arr = array ( 'embed_display' => $embed_display, 'time_to_wait' => $time_to_wait );
 		return $arr;
 
 	}//end if queue entry exists
@@ -6168,7 +6172,7 @@ function kgvid_replace_video( $video_key, $format ) {
 	$replace = true;
 
 	if ( !empty($video_encode_queue) ) {
-		foreach ( $video_encode_queue[$video_key]['encode_formats'] as $format => $value ) { //make sure there isn't another encoding process using this original video
+		foreach ( $video_encode_queue[$video_key]['encode_formats'] as $encoding_format => $value ) { //make sure there isn't another encoding process using this original video
 			if ( $value['status'] == "encoding" || $value['status'] == "queued" ) {
 				$replace = false;
 			}
@@ -6180,8 +6184,10 @@ function kgvid_replace_video( $video_key, $format ) {
 		return $video_encode_queue[$video_key]['movieurl'];
 	}
 	else {
+
 		$original_filename = get_attached_file($video_id);
 		$path_parts = pathinfo($original_filename);
+
 		if ( $path_parts['extension'] != $video_formats[$format]['extension'] ) {
 			$new_filename = str_replace("-fullres", "", $encoded_filename);
 			$sanitized_url = kgvid_sanitize_url($video_encode_queue[$video_key]['movieurl']);
