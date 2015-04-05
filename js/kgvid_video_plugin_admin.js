@@ -1048,6 +1048,7 @@ function kgvid_embeddable_switch(checked) {
 
 	var overlay_embedcode = jQuery("#overlay_embedcode");
 	var open_graph = jQuery("#open_graph");
+	var oembed_provider = jQuery("#oembed_provider");
 
 	if (checked == false) {
 		overlay_embedcode[0].checked=false;
@@ -1056,10 +1057,13 @@ function kgvid_embeddable_switch(checked) {
 		open_graph[0].checked=false;
 		open_graph[0].disabled=true;
 		open_graph.change();
+		oembed_provider[0].checked=false;
+		oembed_provider[0].disabled=true;
 	}
 	else {
 		overlay_embedcode[0].disabled=false;
 		open_graph[0].disabled=false;
+		oembed_provider[0].disabled=false;
 	}
 }
 
