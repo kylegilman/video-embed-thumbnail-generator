@@ -3344,7 +3344,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> when current gallery video finishes.<br />";
-		echo __('Videos per gallery page:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_perpage' name='kgvid_video_embed_options[gallery_perpage]' type='text' value='".$options['gallery_perpage']."' /> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('-1 disables video gallery pagination', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo __('Videos per gallery page:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_perpage' name='kgvid_video_embed_options[gallery_perpage]' type='text' value='".$options['gallery_perpage']."' /> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('-1 disables video gallery pagination and shows all gallery thumbnails on one page', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 
 	}
 

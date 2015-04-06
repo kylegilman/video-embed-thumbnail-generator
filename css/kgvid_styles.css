@@ -296,6 +296,7 @@ img.kgvid_ios_novideo {
 
 .kgvid_gallery_pagination span a {
 	border: none;
+	text-decoration: none;
 }
 
 /* video-quality-selector Video.js plugin styles */
