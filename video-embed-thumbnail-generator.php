@@ -2656,8 +2656,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 				$actualheight != "" && ($format == "1080" || $format == "720") &&
 				(
 					( strpos($post_mime_type, "mp4") !== false && $actualheight <= $format_stats['height'] ) ||
-					( strpos($post_mime_type, "mp4") === false && $actualheight < $format_stats['height'] ) ||
-					( $actualheight == $format_stats['height'] && $encodeset['fullres'] == "on" )
+					( strpos($post_mime_type, "mp4") === false && $actualheight < $format_stats['height'] )
 				)
 			)
 		) { continue; } //if the format is bigger than the original video, skip the checkbox
@@ -5489,7 +5488,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			foreach ( $keys as $info => $meta ) {
 				if ( !empty($movie_info[$info]) ) { $kgvid_postmeta[$meta] = $movie_info[$info]; }
 			}
-			kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
+			kgvid_save_attachment_meta($postID, $kgvid_postmeta);
 		}
 		else { //post meta is already set
 			$movie_info = array();
