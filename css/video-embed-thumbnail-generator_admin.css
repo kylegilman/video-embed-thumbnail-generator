@@ -585,3 +585,8 @@ td.media-icon img {
 	text-indent: 0;
 	margin-left: 5px;
 }
+
+.media-modal .mejs-poster, .media-modal .mejs-overlay { /*prevents thumbnail overflow in Firefox */
+    max-width: 100%;
+}
+

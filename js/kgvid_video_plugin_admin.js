@@ -201,17 +201,21 @@ function kgvid_reveal_thumb_video(postID) {
 		jQuery(video).attr("preload", "metadata");
 		video.load();
 
-		if ( video.networkState == 1 || video.networkState == 2 ) {
-			text.html(kgvidL10n.hidevideo);
-			jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
-			jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
-				if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
-				   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
-				   jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val(thumbtimecode);
-				}
-			});
-		}
-		else { text.html(kgvidL10n.cantloadvideo); }
+		setTimeout(function(){ //wait for video to start loading
+
+			if ( video.networkState == 1 || video.networkState == 2 ) {
+				text.html(kgvidL10n.hidevideo);
+				jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
+				jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
+					if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
+					   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
+					   jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val(thumbtimecode);
+					}
+				});
+			}
+			else { text.html(kgvidL10n.cantloadvideo); }
+
+		}, 1000);
 	}
 	else { //video is being hidden
 
