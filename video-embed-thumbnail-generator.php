@@ -5410,6 +5410,7 @@ function kgvid_enable_oembed_discover() {
 
 	}
 
+	else { return false; }
 }
 add_filter( 'embed_oembed_discover', 'kgvid_enable_oembed_discover' );
 

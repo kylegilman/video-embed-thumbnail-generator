@@ -228,7 +228,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added WEBM VP9 format.
 * Added pagination option to video galleries.
 * Added option to make the watermark overlay image a link.
-* Added video stats column to media library list view.
+* Added video stats column to Media Library list view.
 * Updated Video.js to version 4.12.5
 * Updated Facebook Open Graph video embedding tags.
 * Re-enabled native video player controls on mobile devices when using Video.js player.
