@@ -1705,7 +1705,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 			for ( $x = 1; $x <= $attachments->max_num_pages; $x++ ) {
 				if ( $x == $page_number ) { $code .= '<span class="kgvid_gallery_pagination_selected">'.$x.'</span> '; }
-				else { $code .= '<span><a href="javascript:void(0)" onclick="kgvid_switch_gallery_page(this, "none");">'.$x.'</a></span> '; }
+				else { $code .= '<span onclick="kgvid_switch_gallery_page(this, \'none\');"><a href="javascript:void(0)">'.$x.'</a></span> '; }
 			}
 
 			$code .= '</div>';
@@ -1721,7 +1721,8 @@ function kgvid_switch_gallery_page() {
 
 	check_ajax_referer( 'kgvid_frontend_nonce', 'security' );
 
-	$page_number = $_POST['page'];
+	if ( isset($_POST['page']) ) { $page_number = $_POST['page']; }
+	else { $page_number = 1; }
 	$query_atts = $_POST['query_atts'];
 	$last_video_id = $_POST['last_video_id'];
 	$code = kgvid_gallery_page($page_number, $query_atts, $last_video_id);
