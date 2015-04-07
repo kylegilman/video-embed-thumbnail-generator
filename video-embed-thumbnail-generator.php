@@ -1636,9 +1636,16 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		'posts_per_page' => $query_atts['gallery_perpage'],
 		'paged' => $page_number,
 		'post_status' => 'published',
-		'post_parent' => $query_atts['gallery_id'],
-		'exclude' => $query_atts['gallery_exclude']
+		'post_parent' => $query_atts['gallery_id']
 	);
+
+	if ( !empty($query_atts['gallery_exclude']) ) {
+		$exclude_arr = wp_parse_id_list($query_atts['gallery_exclude']);
+		if ( !empty($exclude_arr) ) {
+			$args['post__not_in'] = $exclude_arr;
+		}
+	}
+
 	if ( !empty($query_atts['gallery_include']) ) {
 		$include_arr = wp_parse_id_list($query_atts['gallery_include']);
 		if ( !empty($include_arr) ) {
