@@ -226,6 +226,7 @@ function kgvid_get_attachment_meta($post_id) {
 		'encodemobile' => '',
 		'encodewebm' => '',
 		'encodeogg' => '',
+		'encodecustom_h264' => '',
 		'encodecustom_webm' => '',
 		'encodecustom_ogg' => '',
 		'encodecustom' => '',
@@ -254,7 +255,7 @@ function kgvid_get_attachment_meta($post_id) {
 
 		$embed = get_post_meta($post_id, "_kgflashmediaplayer-embed", true); //this was always saved if you modified the attachment
 
-		if ( is_array($embed) ) { //old meta values exist
+		if ( !empty($embed) ) { //old meta values exist
 
 			foreach ( $meta_key_array as $key => $value ) { //read old meta keys and delete them
 				$kgvid_postmeta[$key] = get_post_meta($post_id, "_kgflashmediaplayer-".$key, true);
@@ -1639,8 +1640,11 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		'exclude' => $query_atts['gallery_exclude']
 	);
 	if ( !empty($query_atts['gallery_include']) ) {
-		$args['include'] = $query_atts['gallery_include'];
-		unset($args['post_parent']);
+		$include_arr = wp_parse_id_list($query_atts['gallery_include']);
+		if ( !empty($include_arr) ) {
+			$args['post__in'] = $include_arr;
+			unset($args['post_parent']);
+		}
 	}
 
 	$attachments = new WP_Query($args);
