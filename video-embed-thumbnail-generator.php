@@ -6370,11 +6370,11 @@ function kgvid_replace_video( $video_key, $format ) {
 		$new_guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
 
 		if ( $new_guid != $post->guid ) {
+			$post->guid = $new_guid;
 			global $wpdb;
 			$guid_change = $wpdb->update( $wpdb->posts, //can't use wp_update_post because it won't change GUID
 				array(
-					'guid' => $new_guid,
-					'post_mime_type' => $new_mime['type']
+					'guid' => $new_guid
 				),
 				array( 'ID' => $video_id ),
 				array( '%s', '%s' ),
@@ -6383,7 +6383,11 @@ function kgvid_replace_video( $video_key, $format ) {
 
 		}
 
+		$post->mime_type = $new_mime['type'];
+		wp_update_post($post);
+
 		return $new_url;
+
 	}//end replace true
 
 }
