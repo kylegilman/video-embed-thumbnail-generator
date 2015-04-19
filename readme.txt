@@ -237,6 +237,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
 * Consolidated video metadata database entries.
 * Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.
+* Fixed bug that created squashed encoded videos in some browsers when they were shot vertically on a mobile device.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
 * Fixed bug that disabled "Choose from Library" buttons in Firefox.

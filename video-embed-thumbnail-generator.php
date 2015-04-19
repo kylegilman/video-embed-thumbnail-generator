@@ -1137,6 +1137,7 @@ function kgvid_get_video_dimensions($video = false) {
 			case "90": $movie_info['rotate'] = ' -vf "transpose=1"'; break;
 			case "180": $movie_info['rotate'] = ' -vf "hflip,vflip"'; break;
 			case "270": $movie_info['rotate'] = ' -vf "transpose=2"'; break;
+			case "-90": $movie_info['rotate'] = ' -vf "transpose=2"'; break;
 			default: $movie_info['rotate'] = ""; break;
 		}
 
@@ -1285,6 +1286,18 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		else {
 			$watermark_input = "";
 			$watermark_filter = "";
+		}
+
+		if ( $rotate === false) { $rotate = ""; }
+		switch ($rotate) { //if it's a sideways mobile video
+			case ' -vf "transpose=1"': //90 degrees
+			case ' -vf "transpose=2"': //270 degrees
+				$width ^= $height ^= $width ^= $height; //swap height & width
+				if ( $options['video_bitrate_flag'] != "on" ) { $rotate .= " -metadata:s:v:0 rotate=0"; }
+				break;
+			case ' -vf "hflip,vflip"': //180 degrees
+				if ( $options['video_bitrate_flag'] != "on" ) { $rotate .= " -metadata:s:v:0 rotate=0"; }
+				break;
 		}
 
 		if ( $video_formats[$format]['type'] == 'h264' ) {
@@ -4448,7 +4461,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			if ( $dimensions_saved ) { $set[$dimension] = $kgvid_postmeta[$dimension]; }
 			elseif ( $dimension == 'width' && $options['minimum_width'] == "on" ) { $set[$dimension] = $max[$dimension]; }
 			else {
-				if ( is_array($video_meta) && array_key_exists($dimension, $video_meta) && intval($video_meta['width']) <= intval($max[$dimension]) ) { $set[$dimension] = $video_meta['width']; }
+				if ( is_array($video_meta) && array_key_exists($dimension, $video_meta) && intval($video_meta[$dimension]) <= intval($max[$dimension]) ) { $set[$dimension] = $video_meta[$dimension]; }
 				else { $set[$dimension] = $max[$dimension]; }
 			}
 			if ( !$dimensions_saved ) { $kgvid_postmeta[$dimension] = $set[$dimension]; }
@@ -6338,20 +6351,23 @@ function kgvid_replace_video( $video_key, $format ) {
 
 		if ( $video_encode_queue[$video_key]['movie_info']['rotate'] != "" ) { //if the video needed rotating
 			$video_encode_queue[$video_key]['movie_info']['rotate'] = ""; //clear rotation because we've just fixed that problem
-			$kgvid_postmeta = kgvid_get_attachment_meta($video_entry['attachmentID']);
+			$kgvid_postmeta = kgvid_get_attachment_meta($video_encode_queue[$video_key]['attachmentID']);
 			$kgvid_postmeta['rotate'] = '';
-			kgvid_save_attachment_meta($video_entry['attachmentID'], $kgvid_postmeta);
+			kgvid_save_attachment_meta($video_encode_queue[$video_key]['attachmentID'], $kgvid_postmeta);
 
-			$setwidth = $video_entry['movie_info']['width'];
-			$setheight = $video_entry['movie_info']['height'];
+			$setwidth = $video_encode_queue[$video_key]['movie_info']['width'];
+			$setheight = $video_encode_queue[$video_key]['movie_info']['height'];
 			if ( intval($setwidth) > intval($setheight) ) {  //swap the width and height meta if it hasn't already been done
-				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-actualwidth', $video_entry['movie_info']['height']);
-				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-width', $setheight);
-				$video_encode_queue[$video_key]['movie_info']['width'] = $video_entry['movie_info']['height'];
-				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-actualheight', $video_entry['movie_info']['width']);
-				update_post_meta($video_entry['attachmentID'], '_kgflashmediaplayer-height', $setwidth);
-				$video_encode_queue[$video_key]['movie_info']['height'] = $video_entry['movie_info']['width'];
+				$kgvid_postmeta['actualwidth'] = $video_encode_queue[$video_key]['movie_info']['height'];
+				$kgvid_postmeta['width'] = $setheight;
+				$video_encode_queue[$video_key]['movie_info']['width'] = $video_encode_queue[$video_key]['movie_info']['height'];
+
+				$kgvid_postmeta['actualheight'] = $video_encode_queue[$video_key]['movie_info']['width'];
+				$kgvid_postmeta['height'] = $setwidth;
+				$video_encode_queue[$video_key]['movie_info']['height'] = $video_encode_queue[$video_key]['movie_info']['width'];
 			}
+
+			kgvid_save_attachment_meta($video_encode_queue[$video_key]['attachmentID'], $kgvid_postmeta);
 		}
 
 		kgvid_save_encode_queue($video_encode_queue);
