@@ -1641,6 +1641,8 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 	$code = '';
 
+	if ( $query_atts['gallery_orderby'] == 'menu_order' ) { $query_atts['gallery_orderby'] = 'menu_order ID'; }
+
 	$args = array(
 		'post_type' => 'attachment',
 		'orderby' => $query_atts['gallery_orderby'],
