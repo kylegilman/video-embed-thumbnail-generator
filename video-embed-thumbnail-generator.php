@@ -789,6 +789,7 @@ function kgvid_backwards_compatible($post_id) {
 
 function kgvid_sanitize_url($movieurl) {
 	$movieurl = rawurldecode($movieurl);
+	$movieurl = strtok($movieurl,'?');
 	$movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
 	$sanitized_url['noextension'] = preg_replace("/\\.[^.\\s]{3,4}$/", "", $movieurl);
 	$sanitized_url['basename'] = sanitize_file_name(basename($movieurl,'.'.$movie_extension));;
@@ -2616,8 +2617,8 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 						break;
 					}
 				}
-			}
 			reset($video_encode_queue);
+			}
 
 		}
 		if ( $post_mime_type == "video/m4v" || $post_mime_type == "video/quicktime" ) { $post_mime_type = "video/mp4"; }

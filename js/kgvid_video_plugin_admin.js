@@ -611,6 +611,7 @@ function kgvid_set_singleurl() {
 				extensionExists = true;
 				jQuery.post(ajaxurl, { action:"kgvid_sanitize_url", security: kgflashmediaplayersecurity, movieurl: url }, function(data) {
 					basename = data.singleurl_id;
+					if ( url != data.movieurl )  { document.getElementById('attachments-'+oldbasename+'-kgflashmediaplayer-url').value = data.movieurl; }
 					url = data.movieurl;
 					kgvid_change_singleurl(url, basename, oldbasename);
 					jQuery('#attachments-'+basename+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
