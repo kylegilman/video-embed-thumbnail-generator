@@ -5167,12 +5167,12 @@ function kgvid_media_embedurl_process() {
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php _e('Thumbnails', 'video-embed-thumbnail-generator') ?></label></span></th>
 					<td class="field">
-						<input id="attachments-singleurl-kgflashmediaplayer-numberofthumbs" type="text" value="<?php echo $options['generate_thumbs']; ?>" maxlength="2" size="4" style="width:35px;text-align:center;" title="<?php _e('Number of Thumbnails', 'video-embed-thumbnail-generator') ?>" onchange="document.getElementById('attachments-singleurl-thumbtime').value='';" />
+						<input id="attachments-singleurl-kgflashmediaplayer-numberofthumbs" type="text" value="<?php echo $options['generate_thumbs']; ?>" maxlength="2" size="4" style="width:35px;text-align:center;" title="<?php _e('Number of Thumbnails', 'video-embed-thumbnail-generator') ?>" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value='';" />
 						<input type="button" id="attachments-singleurl-thumbgenerate" class="button-secondary" value="<?php _e('Generate', 'video-embed-thumbnail-generator') ?>" name="thumbgenerate" onclick="kgvid_generate_thumb('singleurl', 'generate');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
 						<input type="button" id="attachments-singleurl-thumbrandomize" class="button-secondary" value="<?php _e('Randomize', 'video-embed-thumbnail-generator') ?>" name="thumbrandomize" onclick="kgvid_generate_thumb('singleurl', 'random');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
-						<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe"><?php _e('Force 1st Frame Thumbnail', 'video-embed-thumbnail-generator') ?></label><br>
+						<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe"><?php _e('Force 1st Frame Thumbnail', 'video-embed-thumbnail-generator') ?></label><br>
 						<div id="attachments-singleurl-thumbnailplaceholder"></div>
-						<span><?php _e('Thumbnail timecode:', 'video-embed-thumbnail-generator') ?></span> <input name="attachments[singleurl][thumbtime]" id="attachments-singleurl-thumbtime" type="text" value="" style="width:60px;"><br>
+						<span><?php _e('Thumbnail timecode:', 'video-embed-thumbnail-generator') ?></span> <input name="attachments[singleurl][kgflashmediaplayer-thumbtime]" id="attachments-singleurl-kgflashmediaplayer-thumbtime" type="text" value="" style="width:60px;"><br>
 						<input type="checkbox" <?php echo checked( $options["featured"], "on", false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> <?php _e('Set thumbnail as featured image', 'video-embed-thumbnail-generator') ?>
 					</td>
 				</tr>
