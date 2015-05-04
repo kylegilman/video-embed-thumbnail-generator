@@ -82,6 +82,7 @@ function kgvid_default_options_fn() {
 		"ffmpeg_exists" =>"notchecked",
 		"video_bitrate_flag" => false,
 		"ffmpeg_vpre" => false,
+		"ffmpeg_old_rotation" => false,
 		"nostdin" => false,
 		"moov" => "none",
 		"generate_thumbs" => 4,
@@ -1293,11 +1294,17 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		switch ($rotate) { //if it's a sideways mobile video
 			case ' -vf "transpose=1"': //90 degrees
 			case ' -vf "transpose=2"': //270 degrees
-				$width ^= $height ^= $width ^= $height; //swap height & width
-				if ( $options['video_bitrate_flag'] != "on" ) { $rotate .= " -metadata:s:v:0 rotate=0"; }
+				if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
+					$rotate .= " -metadata rotate=0";
+				}
+				else {
+					$rotate .= " -metadata:s:v:0 rotate=0";
+					$width ^= $height ^= $width ^= $height; //swap height & width
+				}
 				break;
 			case ' -vf "hflip,vflip"': //180 degrees
-				if ( $options['video_bitrate_flag'] != "on" ) { $rotate .= " -metadata:s:v:0 rotate=0"; }
+				if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) { $rotate .= " -metadata rotate=0"; }
+				else { $rotate .= " -metadata:s:v:0 rotate=0"; }
 				break;
 		}
 
@@ -3859,7 +3866,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
 		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['video_bitrate_flag'], "on", false )." id='video_bitrate_flag' name='kgvid_video_embed_options[video_bitrate_flag]' type='checkbox' /> <label for='video_bitrate_flag'>".__('Enable legacy FFMPEG "-b" and "-ba" bitrate flags.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that you can\'t use the newer -b:v flags (Dreamhost users must turn this on). It may cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['ffmpeg_vpre'], "on", false )." id='ffmpeg_vpre' name='kgvid_video_embed_options[ffmpeg_vpre]' type='checkbox' /> <label for='ffmpeg_vpre'>".__('Enable legacy FFMPEG parameters.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['ffmpeg_vpre'], "on", false )." id='ffmpeg_vpre' name='kgvid_video_embed_options[ffmpeg_vpre]' type='checkbox' /> <label for='ffmpeg_vpre'>".__('Enable legacy libx264 parameters.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input class='affects_ffmpeg' ".checked( $options['ffmpeg_old_rotation'], "on", false )." id='ffmpeg_old_rotation' name='kgvid_video_embed_options[ffmpeg_old_rotation]' type='checkbox' /> <label for='ffmpeg_old_rotation'>".__('Enable legacy FFMPEG rotation method.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if vertical videos shot on mobile devices don\'t rotate correctly or generate errors.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input class='affects_ffmpeg' ".checked( $options['nostdin'], "on", false )." id='nostdin' name='kgvid_video_embed_options[nostdin]' type='checkbox' /> <label for='nostdin'>".__('Disable stdin.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Turn off this checkbox if your installed version of FFMPEG is old enough that it does not recognize the nostdin flag (Dreamhost users must turn this off).', 'video-embed-thumbnail-generator')."</span></a>";
 		echo "</div>\n\t";
 	}
@@ -3897,7 +3905,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$movie_info = kgvid_get_video_dimensions(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4");
 			$uploads = wp_upload_dir();
 			$encode_dimensions = kgvid_set_encode_dimensions($movie_info, $video_formats[$options['sample_format']]);
-			$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
+			$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], ' -vf "transpose=1"');
 		}
 
 		if ( is_array($encode_string) ) { $encode_string_implode = implode('' , $encode_string); }
@@ -4105,6 +4113,7 @@ function kgvid_update_settings() {
 			$options['gallery_perpage'] = -1;
 			$options['oembed_provider'] = "on";
 			$options['oembed_security'] = false;
+			$options['ffmpeg_old_rotation'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -4271,7 +4280,7 @@ function kgvid_ajax_save_settings() {
 				$uploads = wp_upload_dir();
 				$video_formats = kgvid_video_formats();
 				$encode_dimensions = kgvid_set_encode_dimensions($movie_info, $video_formats[$validated_options['sample_format']]);
-				$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], '');
+				$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], ' -vf "transpose=1"');
 				$auto_thumb_label = kgvid_generate_auto_thumb_label();
 			}
 		}
@@ -5551,7 +5560,8 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		switch ($movie_info['rotate']) { //if it's a sideways mobile video
 			case ' -vf "transpose=1"': //90 degrees
 			case ' -vf "transpose=2"': //270 degrees
-				$movie_width ^= $movie_height ^= $movie_width ^= $movie_height; break; //swap height & width
+				$movie_width ^= $movie_height ^= $movie_width ^= $movie_height; //swap height & width
+				break;
 		}
 
 		$thumbnailheight = strval(round(floatval($movie_height) / floatval($movie_width) * 200));
