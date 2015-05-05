@@ -669,12 +669,8 @@ function kgvid_url_to_id($url) {
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
 	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
  	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
-	// Get the path to search postmeta for
- 	$search_url = explode( $uploads['baseurl'] . '/', $search_url );
 
- 	if ( is_array($search_url) && array_key_exists(1, $search_url) ) {
-		$post_id = (int)$wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_value LIKE '%%%s'", $search_url[1] ) );
-	}
+	$post_id = (int)$wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value))", $search_url ) );
 
 	if ( $post_id ) { return $post_id; }
 	else { return false; }
@@ -997,13 +993,12 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 		if ( $children ) {
 			foreach ( $children as $child ) {
 				$mime_type = get_post_mime_type($child->ID);
-				$wp_attached_file = get_post_meta($child->ID, '_wp_attached_file', true);
-				$wp_file_info = pathinfo($wp_attached_file);
+				$wp_attached_file = get_attached_file($child->ID);
 				$video_meta = wp_get_attachment_metadata( $child->ID );
 				$meta_format = get_post_meta($child->ID, '_kgflashmediaplayer-format', true);
 				if ( $meta_format == $format || ( substr($wp_attached_file, -strlen($format_stats['suffix'])) == $format_stats['suffix'] && $meta_format == false )  ) {
-					$encodevideo_info[$format]['url'] = $uploads['baseurl'].'/'.$wp_attached_file;
-					$encodevideo_info[$format]['filepath'] = $uploads['basedir'].'/'.$wp_attached_file;
+					$encodevideo_info[$format]['url'] = wp_get_attachment_url($child->ID);
+					$encodevideo_info[$format]['filepath'] = $wp_attached_file;
 					$encodevideo_info[$format]['id'] = $child->ID;
 					$encodevideo_info[$format]['exists'] = true;
 					$encodevideo_info[$format]['writable'] = true;
