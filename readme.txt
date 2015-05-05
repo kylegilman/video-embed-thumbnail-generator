@@ -223,12 +223,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5 - April XX, 2015 =
-* Added oEmbed provider data.
-* Added WEBM VP9 format.
+= 4.5 - May XX, 2015 =
 * Added pagination option to video galleries.
+* Added oEmbed provider data.
+* Added WEBM VP9 encoding format.
 * Added option to make the watermark overlay image a link.
 * Added video stats column to Media Library list view.
+* Added options for vertical video rotation and metadata removal using FFMPEG, now that some browsers recognize rotation metadata.
 * Updated Video.js to version 4.12.5
 * Updated Facebook Open Graph video embedding tags.
 * Re-enabled native video player controls on mobile devices when using Video.js player.
@@ -236,12 +237,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Removed superfluous gallery height option.
 * Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
 * Consolidated video metadata database entries.
+* Fixed several bugs related to hosting media on other servers like Amazon S3.
 * Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.
-* Fixed bug that created squashed encoded videos in some browsers when they were shot vertically on a mobile device.
+* Fixed bug that created squashed encoded videos when they were shot vertically on a mobile device.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
 * Fixed bug that disabled "Choose from Library" buttons in Firefox.
-* Fixed bug that incorrectly indicated thumbnail videos did not load in Firefox.
+* Fixed bug that incorrectly indicated thumbnail selection video files did not load in Firefox.
 * Fixed bug that allowed video thumbnails to overflow their container in the Media Library modal window in Firefox.
 * Fixed bug that kept end of video overlay images on screen when user hit play again.
 * Fixed bug that incorrectly resized videos embedded through iframe.
