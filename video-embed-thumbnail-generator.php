@@ -1127,8 +1127,8 @@ function kgvid_get_video_dimensions($video = false) {
 		$movie_info['duration'] = ($movie_duration_hours * 60 * 60) + ($movie_duration_minutes * 60) + $movie_duration_seconds;
 
 		preg_match('/rotate          : (.*?)\n/', $output, $matches);
-		if ( is_array($matches) && array_key_exists(1, $matches) == true ) { $rotate = $matches[1]; }
-		else $rotate = "0";
+		if ( $options['ffmpeg_vpre'] == false && is_array($matches) && array_key_exists(1, $matches) == true ) { $rotate = $matches[1]; }
+		else { $rotate = "0"; }
 
 		switch ($rotate) {
 			case "90": $movie_info['rotate'] = ' -vf "transpose=1"'; break;
@@ -1285,7 +1285,7 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 			$watermark_filter = "";
 		}
 
-		if ( $rotate === false) { $rotate = ""; }
+		if ( $rotate === false || $options['ffmpeg_vpre'] == "on" ) { $rotate = ""; }
 		switch ($rotate) { //if it's a sideways mobile video
 			case ' -vf "transpose=1"': //90 degrees
 			case ' -vf "transpose=2"': //270 degrees
@@ -3548,7 +3548,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<input class='affects_player' ".checked( $options['embeddable'], "on", false )." id='embeddable' name='kgvid_video_embed_options[embeddable]' type='checkbox' onclick='kgvid_embeddable_switch(this.checked);' /> <label for='embeddable'>".__('Allow users to embed your videos on other sites.', 'video-embed-thumbnail-generator')."</label><br />";
 		echo "<input ".checked( $options['open_graph'], "on", false )." id='open_graph' name='kgvid_video_embed_options[open_graph]' type='checkbox'".$embed_disabled." /> <label for='open_graph'>"._x('Enable Open Graph video tags', '"Open Graph" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Facebook and some other social media sites will use these tags to embed the first video in your post. For the majority of Facebook users who have enabled secure browsing, your video must be served via https in order to be embedded directly on the page.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['oembed_provider'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'".$embed_disabled." /> <label for='oembed_provider'>"._x('Enable oEmbed provider', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code. For security reasons, this will not work on other WordPress sites unless they\'ve enabled oEmbed discovery from unkown providers.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input ".checked( $options['oembed_security'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>"._x('Enable oEmbeds from unknown providers', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['oembed_security'], "on", false )." id='oembed_security' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>"._x('Enable oEmbeds from unknown providers', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input class='affects_player' ".checked( $options['right_click'], "on", false )." id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>".__('Allow right-clicking on videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
@@ -3862,7 +3862,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<div class='kgvid_video_app_required'>";
 		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['video_bitrate_flag'], "on", false )." id='video_bitrate_flag' name='kgvid_video_embed_options[video_bitrate_flag]' type='checkbox' /> <label for='video_bitrate_flag'>".__('Enable legacy FFMPEG "-b" and "-ba" bitrate flags.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that you can\'t use the newer -b:v flags (Dreamhost users must turn this on). It may cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['ffmpeg_vpre'], "on", false )." id='ffmpeg_vpre' name='kgvid_video_embed_options[ffmpeg_vpre]' type='checkbox' /> <label for='ffmpeg_vpre'>".__('Enable legacy libx264 parameters.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input class='affects_ffmpeg' ".checked( $options['ffmpeg_old_rotation'], "on", false )." id='ffmpeg_old_rotation' name='kgvid_video_embed_options[ffmpeg_old_rotation]' type='checkbox' /> <label for='ffmpeg_old_rotation'>".__('Enable legacy FFMPEG rotation method.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if vertical videos shot on mobile devices don\'t rotate correctly or generate errors.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input class='affects_ffmpeg' ".checked( $options['ffmpeg_old_rotation'], "on", false )." id='ffmpeg_old_rotation' name='kgvid_video_embed_options[ffmpeg_old_rotation]' type='checkbox' /> <label for='ffmpeg_old_rotation'>".__('Enable legacy FFMPEG rotation method.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enable if vertical videos shot on mobile devices don\'t rotate correctly or generate errors. If legacy libx264 paramaters are necessary, rotation won\'t work at all.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input class='affects_ffmpeg' ".checked( $options['nostdin'], "on", false )." id='nostdin' name='kgvid_video_embed_options[nostdin]' type='checkbox' /> <label for='nostdin'>".__('Disable stdin.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Turn off this checkbox if your installed version of FFMPEG is old enough that it does not recognize the nostdin flag (Dreamhost users must turn this off).', 'video-embed-thumbnail-generator')."</span></a>";
 		echo "</div>\n\t";
 	}
@@ -5551,7 +5551,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
 
-		if ( $movie_info['rotate'] === false) { $movie_info['rotate'] = ""; }
+		if ( $movie_info['rotate'] === false || $options['ffmpeg_vpre'] == "on" ) { $movie_info['rotate'] = ""; }
 		switch ($movie_info['rotate']) { //if it's a sideways mobile video
 			case ' -vf "transpose=1"': //90 degrees
 			case ' -vf "transpose=2"': //270 degrees
