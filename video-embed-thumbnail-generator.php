@@ -1680,11 +1680,14 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 			$thumbnail_url = get_post_meta($attachment->ID, "_kgflashmediaplayer-poster", true);
 			$poster_id = get_post_meta($attachment->ID, '_kgflashmediaplayer-poster-id', true);
-			if ( !empty($poster_id) && intval($query_atts['gallery_thumb']) <= get_option('medium_size_h') ) {
-				$poster_post = get_post($poster_id);
-				if ( $poster_post->guid == $thumbnail_url ) {
-					$thumbnail_url = kgvid_get_attachment_medium_url($poster_id);
-				} //use the "medium" size image if available
+			if ( !empty($poster_id) ) {
+				$thumbnail_url = get_attachment_url($poster_id);
+				if ( intval($query_atts['gallery_thumb']) <= get_option('medium_size_h') ) {
+					$poster_post = get_post($poster_id);
+					if ( $poster_post->guid == $thumbnail_url ) {
+						$thumbnail_url = kgvid_get_attachment_medium_url($poster_id);
+					} //use the "medium" size image if available
+				}
 			}
 			if (!$thumbnail_url) { $thumbnail_url = $options['poster']; } //use the default poster if no thumbnail set
 			if (!$thumbnail_url) { $thumbnail_url = plugins_url('/images/nothumbnail.jpg', __FILE__);} //use the blank image if no other option
@@ -1938,10 +1941,8 @@ function KGVID_shortcode($atts, $content = ''){
 
 				if ( !empty($id) ) { //if the video is an attachment in the WordPress db
 
-					if ( empty($content) ) {
-						$content = wp_get_attachment_url($id);
-						if ( $content == false ) { echo "Invalid video ID"; continue; }
-					}
+					$content = wp_get_attachment_url($id);
+					if ( $content == false ) { echo "Invalid video ID"; continue; }
 
 					$encodevideo_info = kgvid_encodevideo_info($content, $id);
 					$attachment_info = get_post( $id );
@@ -1956,8 +1957,8 @@ function KGVID_shortcode($atts, $content = ''){
 					$poster_id = get_post_meta($id, '_kgflashmediaplayer-poster-id', true);
 					if ( !empty($poster_id) ) {
 						$poster_image_src = wp_get_attachment_image_src($poster_id, 'full');
-						if ( empty($query_atts['poster']) ) { $query_atts['poster'] = $poster_image_src[0]; } //if there's no poster URL set, use the database to set it automatically
-						if ( $poster_image_src[0] == $query_atts['poster'] && intval($query_atts['width']) <= get_option('medium_size_h') ) {
+						$query_atts['poster'] = $poster_image_src[0];
+						if ( intval($query_atts['width']) <= get_option('medium_size_h') ) {
 							$query_atts['poster'] = kgvid_get_attachment_medium_url($poster_id);
 						}
 					}
@@ -2308,6 +2309,8 @@ function KGVID_shortcode($atts, $content = ''){
 				}
 
 				if ( !empty($query_atts["watermark"]) && $query_atts["watermark"] != "false" ) {
+					$watermark_id = kgvid_url_to_id($query_atts["watermark"]);
+					if ( $watermark_id ) { $query_atts["watermark"] = wp_get_attachment_url($watermark_id); }
 					$code .= "<div style=\"display:none;\" id='video_".$div_suffix."_watermark' class='kgvid_watermark'>";
 					if ( !empty($query_atts["watermark_url"]) && $query_atts["watermark_url"] != "false" ) { $code .= "<a href='".$query_atts["watermark_url"]."'>"; }
 					$code .= "<img src='".esc_attr($query_atts["watermark"])."' alt='watermark'>";
@@ -5350,7 +5353,7 @@ function kgvid_video_attachment_template() {
 		exit;
 	}
 
-	if ( array_key_exists('download', $kgvid_video_embed) && $kgvid_video_embed['download'] == 'true' && strpos($post->post_mime_type,"video") !== false ) {
+	if ( is_array($kgvid_video_embed) && array_key_exists('download', $kgvid_video_embed) && $kgvid_video_embed['download'] == 'true' && strpos($post->post_mime_type,"video") !== false ) {
 
 		$filepath = get_attached_file($post->ID);
 		$filetype = wp_check_filetype( $filepath );
@@ -5379,7 +5382,7 @@ function kgvid_video_attachment_template() {
 	exit;
 	}
 
-	if ( $options['oembed_provider'] == "on" && array_key_exists('oembed', $kgvid_video_embed) && array_key_exists('post_id', $kgvid_video_embed) ) {
+	if ( $options['oembed_provider'] == "on" && is_array($kgvid_video_embed) && array_key_exists('oembed', $kgvid_video_embed) && array_key_exists('post_id', $kgvid_video_embed) ) {
 
 		$post = get_post($kgvid_video_embed['post_id']);
 
