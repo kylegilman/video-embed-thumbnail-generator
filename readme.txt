@@ -236,6 +236,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
 * Removed superfluous gallery height option.
 * Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
+* Stopped inserting unnecessary poster URL shortcode attribute when poster is set in the media library.
 * Consolidated video metadata database entries.
 * Fixed several bugs related to hosting media on other servers like Amazon S3.
 * Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.

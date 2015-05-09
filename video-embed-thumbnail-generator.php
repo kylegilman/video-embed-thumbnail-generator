@@ -1681,7 +1681,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			$thumbnail_url = get_post_meta($attachment->ID, "_kgflashmediaplayer-poster", true);
 			$poster_id = get_post_meta($attachment->ID, '_kgflashmediaplayer-poster-id', true);
 			if ( !empty($poster_id) ) {
-				$thumbnail_url = get_attachment_url($poster_id);
+				$thumbnail_url = wp_get_attachment_url($poster_id);
 				if ( intval($query_atts['gallery_thumb']) <= get_option('medium_size_h') ) {
 					$poster_post = get_post($poster_id);
 					if ( $poster_post->guid == $thumbnail_url ) {
@@ -4111,7 +4111,7 @@ function kgvid_update_settings() {
 			$options['gallery_perpage'] = -1;
 			$options['oembed_provider'] = "on";
 			$options['oembed_security'] = false;
-			$options['ffmpeg_old_rotation'] = false;
+			$options['ffmpeg_old_rotation'] = "on";
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -4754,6 +4754,7 @@ function kgvid_change_video_icon($icon, $mime, $post_id) {
 		$poster_id = get_post_meta($post_id, '_kgflashmediaplayer-poster-id', true);
 		if ( $poster_id ) {
 			$poster_src = wp_get_attachment_image_src( $poster_id, 'thumbnail' );
+			if ( is_ssl() ) { $poster_src[0] = str_replace( "http:", "https:", $poster_src[0] ); }
 			global $_current_video_icon_dir;
 			$_current_video_icon_dir =  dirname($poster_src[0]);
 			// - Return your icon path
@@ -5092,6 +5093,7 @@ class kgInsertMedia {
 			$kgvid_postmeta['url'] = wp_get_attachment_url($attachment_id);
 			$kgvid_postmeta['title'] = get_the_title($attachment_id);
 			$kgvid_postmeta['poster'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster", true);
+			$kgvid_postmeta['poster-id'] = get_post_meta($attachment_id, "_kgflashmediaplayer-poster-id", true);
 
 			if ($kgvid_postmeta['showtitle'] == "on" ) {
 			$titlecode = html_entity_decode(stripslashes($options['titlecode']));
@@ -5104,7 +5106,7 @@ class kgInsertMedia {
 		}
 
 			$html .= '[KGVID';
-			if ( !empty($kgvid_postmeta['poster']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
+			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
 			if ( !empty($kgvid_postmeta['width']) ) { $html .= ' width="'.$kgvid_postmeta["width"].'"'; }
 			if ( !empty($kgvid_postmeta['height']) ) { $html .= ' height="'.$kgvid_postmeta["height"].'"'; }
 			if ( $kgvid_postmeta['downloadlink'] == "on" ) { $html .= ' downloadlink="true"'; }
@@ -5376,10 +5378,10 @@ function kgvid_video_attachment_template() {
 			header('Expires: 0');
 			header('Pragma: no-cache');
 			header("Content-Length: ".filesize($filepath));
-	}
+		}
 
-	kvid_readfile_chunked($filepath);
-	exit;
+		kvid_readfile_chunked($filepath);
+		exit;
 	}
 
 	if ( $options['oembed_provider'] == "on" && is_array($kgvid_video_embed) && array_key_exists('oembed', $kgvid_video_embed) && array_key_exists('post_id', $kgvid_video_embed) ) {
@@ -5410,7 +5412,6 @@ function kgvid_video_attachment_template() {
 			'thumbnail_height' => $dimensions['height'],
 			'html' => "<iframe allowfullscreen src='".site_url('/')."?attachment_id=".$post->ID."&amp;kgvid_video_embed[enable]=true' frameborder='0' scrolling='no' width='".esc_attr($dimensions['width'])."' height='".esc_attr($dimensions['height'])."'></iframe>"
 		);
-
 
 		if ( $kgvid_video_embed['oembed'] == 'json' ) {
 
