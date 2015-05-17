@@ -27,11 +27,11 @@ You have the option to use a few different video players:
 
 No matter which player you use, the video will resize on the fly to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player can automatically select the one closest to the size of the player and provide a button for users to select the resolution manually. Because the player uses native controls on mobile devices, the manual resolution button is only available on desktop browsers.
 
-You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode.
+You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode. To make a custom gallery that includes videos that aren't attached to the current post you'll need to determine the video's ID, which is shown under the Video Stats section when viewing the attachment. Switch the "insert" option from "Single Video" to "Video Gallery" and you'll get a number of additional options. Add a comma-separated list of video IDs in the "Include" field to create the gallery. Note: the "Create Gallery" section of the Add Media window is a built-in WordPress function and is only for making image galleries.
 
-If your video can be <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">played natively in your browser</a>, or if you have FFMPEG or LIBAV installed on your server, you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them, you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. After creating an array of thumbnails you can save them all using the "Save all thumbnails" button.
+If your video can be <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">played natively in your browser</a>, or if you have FFMPEG or LIBAV installed on your server, you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. The "Generate" button will always generate thumbnails from the same frames of your video, evenly spaced. If you don't like them, you can randomize the results with the "Randomize" button. If you want to see the first frame of the video, check the "Force 1st Frame Thumbnail" button. You can generate as many or as few as you need (up to 99 at a time). After creating an array of thumbnails you can save them all using the "Save all thumbnails" button.
 
-If you know which frame you want to use for your thumbnail, click "Choose from video..." to select it from the video. This will only work for <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">videos that can be played natively in your browser</a>. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. Use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds. You can generate as many or as few as you need (up to 99 at a time).
+If you know which frame you want to use for your thumbnail, click "Choose from video..." to select it from the video. This will only work for <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">videos that can be played natively in your browser</a>. If you want really fine control you can enter timecode in the "Thumbnail timecode" field. Use `mm:ss` format. Use decimals to approximate frames. For example, `23.5` will generate a thumbnail halfway between the 23rd and 24th seconds in the video. `02:23.25` would be one quarter of the way between the 143rd and 144th seconds.
 
 After you select a thumbnail it will be registered in the Wordpress Media Library and added to the video's attachments. Unused thumbnails will be deleted.
 
@@ -63,8 +63,7 @@ To embed videos on other sites you can use code like this.
 
 = Once you've filled in all your options, click "Insert into Post" and you'll get a shortcode in the visual editor like this =
 
-`[KGVID poster="http://www.kylegilman.net/wp-content/uploads/2011/10/Reel-11-10-10-web_thumb2.jpg"
-width="720" height="404"]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
+`[KGVID]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
 
 = Translations included: =
 
@@ -109,6 +108,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `track_kind=subtitles/captions/chapters`
 * `track_srclang=xx` the track's two-character language code (en, fr, es, etc)
 * `track_label="Track Label"` text that will be shown to the user when selecting the track.
+* `track_default="default"` track is enabled by default.
 
 = These options will only affect Video.js playback =
 
@@ -128,8 +128,8 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 
 * `gallery="true"` turns on the gallery
 * `gallery_thumb="xxx"` width in pixels to display gallery thumbnails
-* `gallery_exclude="15"` comma separated video attachment IDs. Excludes the videos from the gallery.
-* `gallery_include="65"` comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.
+* `gallery_exclude="15,4322"` comma separated video attachment IDs. Excludes the videos from the gallery.
+* `gallery_include="65,32,1533"` comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.
 * `gallery_orderby="menu_order/title/post_date/rand/ID"` criteria for sorting the gallery.
 * `gallery_order="ASC/DESC"` sort order.
 * `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post.
@@ -230,7 +230,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added option to make the watermark overlay image a link.
 * Added video stats column to Media Library list view.
 * Added options for vertical video rotation and metadata removal using FFMPEG, now that some browsers recognize rotation metadata.
-* Updated Video.js to version 4.12.5
+* Added default attribute for subtitle/caption tracks.
+* Updated Video.js to version 4.12.6
 * Updated Facebook Open Graph video embedding tags.
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
