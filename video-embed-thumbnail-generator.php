@@ -2271,8 +2271,8 @@ function KGVID_shortcode($atts, $content = ''){
 				$code .= "\t\t\t</div>\n";
 				$show_views = false;
 				if ( !empty($id) || !empty($query_atts['caption']) || $query_atts['downloadlink'] == "true" || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
-					$view_count = number_format(intval(get_post_meta($id, "_kgflashmediaplayer-starts", true)));
-					if ( empty($view_count) ) { $view_count = "0"; }
+					if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) ) { $view_count = number_format(intval($kgvid_postmeta['starts'])); }
+					else { $view_count = "0"; }
 					if ( $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { $view_count = "XX"; }
 					if ( $query_atts['view_count'] == "true" ) { $show_views = true; }
 					if ( !empty($query_atts['caption']) || $show_views || $query_atts['downloadlink'] == "true" ) {
@@ -5351,7 +5351,9 @@ function kgvid_video_attachment_template() {
 
 	if ( $options['embeddable'] == 'false' && !array_key_exists('sample', $kgvid_video_embed) && !array_key_exists('gallery', $kgvid_video_embed) ) { $kgvid_video_embed['enable'] = 'false'; }
 
-	if ( array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true' && (strpos($post->post_mime_type,"video") !== false || array_key_exists('sample', $kgvid_video_embed)) ) {
+	if ( array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true'
+		&& ( ( property_exists('post', 'post_mime_type') && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
+		) {
 
 		$html = kgvid_generate_embeddable_video( $kgvid_video_embed );
 
