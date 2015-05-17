@@ -4491,9 +4491,9 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 		$nonce = wp_create_nonce('video-embed-thumbnail-generator-nonce');
 
-		$form_fields["views"]["label"] = __("Video Stats", 'video-embed-thumbnail-generator');
+		$form_fields["views"]["label"] = __('Video Stats', 'video-embed-thumbnail-generator');
 		$form_fields["views"]["input"] = "html";
-		$form_fields["views"]["html"] = sprintf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) ).', '.sprintf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) );
+		$form_fields["views"]["html"] = sprintf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) ).', '.sprintf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) ).'<br />'.__('Video ID:', 'video-embed-thumbnail-generator').' '.$post->ID;
 
 		// ** Thumbnail section **//
 
@@ -5125,12 +5125,12 @@ class kgInsertMedia {
 
 			$html = "";
 			$html .= '[KGVID gallery="true"';
-			if ( !empty($kgvid_meta['gallery_thumb']) && $kgvid_meta['gallery_thumb'] != $options['gallery_thumb'] ) { $html .= ' gallery_thumb="'.$kgvid_meta["gallery_thumb"].'"'; }
-			if ( !empty($kgvid_meta['gallery_exclude']) ) { $html .= ' gallery_exclude="'.$kgvid_meta["gallery_exclude"].'"'; }
-			if ( !empty($kgvid_meta['gallery_include']) ) { $html .= ' gallery_include="'.$kgvid_meta["gallery_include"].'"'; }
-			if ( !empty($kgvid_meta['gallery_orderby']) && $kgvid_meta['gallery_orderby'] != "menu_order" ) { $html .= ' gallery_orderby="'.$kgvid_meta["gallery_orderby"].'"'; }
-			if ( !empty($kgvid_meta['gallery_order']) && $kgvid_meta['gallery_order'] != "ASC" ) { $html .= ' gallery_order="'.$kgvid_meta["gallery_order"].'"'; }
-			if ( !empty($kgvid_meta['gallery_id']) && $kgvid_meta['gallery_id'] != $parent_id ) { $html .= ' gallery_id="'.$kgvid_meta["gallery_id"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_thumb']) && $kgvid_postmeta['gallery_thumb'] != $options['gallery_thumb'] ) { $html .= ' gallery_thumb="'.$kgvid_postmeta["gallery_thumb"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_exclude']) ) { $html .= ' gallery_exclude="'.$kgvid_postmeta["gallery_exclude"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_include']) ) { $html .= ' gallery_include="'.$kgvid_postmeta["gallery_include"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_orderby']) && $kgvid_postmeta['gallery_orderby'] != "menu_order" ) { $html .= ' gallery_orderby="'.$kgvid_postmeta["gallery_orderby"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_order']) && $kgvid_postmeta['gallery_order'] != "ASC" ) { $html .= ' gallery_order="'.$kgvid_postmeta["gallery_order"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_id']) && $kgvid_postmeta['gallery_id'] != $parent_id ) { $html .= ' gallery_id="'.$kgvid_postmeta["gallery_id"].'"'; }
 			$html .= '][/KGVID]';
 		}
 
