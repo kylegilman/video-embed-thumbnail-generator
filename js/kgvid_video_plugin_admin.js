@@ -394,8 +394,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 function kgvid_select_thumbnail(thumb_url, post_id, movieoffset) {
 	jQuery('[name="attachments['+post_id+'][kgflashmediaplayer-poster]"]').val(thumb_url); //get this by name because it's the same before WP v3.5
 	var time_display = kgvid_convert_to_timecode(movieoffset);
-	document.getElementById('attachments-'+post_id+'-kgflashmediaplayer-thumbtime').value = time_display;
-	document.getElementById('attachments-'+post_id+'-kgflashmediaplayer-numberofthumbs').value = '1';
+	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-thumbtime').val(time_display);
+	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-numberofthumbs').val('1');
 }
 
 function kgvid_save_canvas_thumb(postID, time_id, total, index) {
@@ -566,7 +566,7 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 	jQuery('#kgflashmediaplayer-table').data("kgvid_attachment_id", basename);
 	jQuery('#attachments-'+oldbasename+'-kgflashmediaplayer-encodeboxes').attr('id', 'attachments-'+basename+'-kgflashmediaplayer-encodeboxes');
 	document.getElementById('attachments-'+oldbasename+'-thumbnailplaceholder').id = 'attachments-'+basename+'-thumbnailplaceholder';
-	document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-kgflashmediaplayer-thumbtime').value='';");
+	//document.getElementById('attachments-'+basename+'-thumbnailplaceholder').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-kgflashmediaplayer-thumbtime').value='';");
 	document.getElementById('attachments-'+basename+'-kgflashmediaplayer-numberofthumbs').setAttribute("onchange", "document.getElementById('attachments-"+basename+"-kgflashmediaplayer-thumbtime').value='';");
 	jQuery('#attachments-'+basename+'-thumbgenerate').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbgenerate" class="button-secondary" value="'+kgvidL10n.generate+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'generate\');" >');
 	jQuery('#attachments-'+basename+'-thumbrandomize').replaceWith('<input disabled="disabled" type="button" id="attachments-'+basename+'-thumbrandomize" class="button-secondary" value="'+kgvidL10n.randomize+'" name="thumbgenerate" onclick="kgvid_generate_thumb(\''+basename+'\', \'random\');" >');
