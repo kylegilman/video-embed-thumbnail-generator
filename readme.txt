@@ -223,16 +223,16 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5 - May XX, 2015 =
+= 4.5 - May 23, 2015 =
 * Added pagination option to video galleries.
 * Added oEmbed provider data.
 * Added experimental WEBM VP9 encoding format.
 * Added option to make the watermark overlay image a link.
 * Added video stats column to Media Library list view.
 * Added options for vertical video rotation and metadata removal using FFMPEG, now that some browsers recognize rotation metadata.
-* Added default attribute for subtitle/caption tracks.
+* Added default attribute for subtitle/caption text tracks.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
-* Updated Video.js to version 4.12.6
+* Updated Video.js to version 4.12.7
 * Updated Facebook Open Graph video embedding tags.
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Removed superfluous gallery height option.
