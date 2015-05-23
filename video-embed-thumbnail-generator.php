@@ -1740,12 +1740,16 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		if ( $attachments->max_num_pages > 1 ) {
 
 			$code .= '<div class="kgvid_gallery_pagination">';
-
+			$code .= '<span class="kgvid_gallery_pagination_arrow"';
+			if ( $page_number == 1 ) { $code .= ' style="visibility:hidden;"'; }
+			$code .= ' onclick="kgvid_switch_gallery_page(jQuery(this).siblings(\'.kgvid_gallery_pagination_selected\').prev(), \'none\');"><a href="javascript:void(0)" title="'.__('Previous', 'video-embed-thumbnail-generator').'">&larr;</a></span> ';
 			for ( $x = 1; $x <= $attachments->max_num_pages; $x++ ) {
 				if ( $x == $page_number ) { $code .= '<span class="kgvid_gallery_pagination_selected">'.$x.'</span> '; }
 				else { $code .= '<span onclick="kgvid_switch_gallery_page(this, \'none\');"><a href="javascript:void(0)">'.$x.'</a></span> '; }
 			}
-
+			$code .= '<span class="kgvid_gallery_pagination_arrow"';
+			if ( $page_number == $attachments->max_num_pages ) { $code .= ' style="visibility:hidden;"'; }
+			$code .= ' onclick="kgvid_switch_gallery_page(jQuery(this).siblings(\'.kgvid_gallery_pagination_selected\').next(), \'none\');"><a href="javascript:void(0)" title="'.__('Next', 'video-embed-thumbnail-generator').'">&rarr;</a></span>';
 			$code .= '</div>';
 
 		}

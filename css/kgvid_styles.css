@@ -289,6 +289,11 @@ img.kgvid_ios_novideo {
 	text-decoration: none;
 }
 
+span.kgvid_gallery_pagination_arrow {
+	background: none;
+	border: none;
+}
+
 .kgvid_gallery_pagination .kgvid_gallery_pagination_selected {
 	background-color: #666;
 	cursor: default;
