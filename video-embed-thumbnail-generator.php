@@ -1728,8 +1728,8 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			$popup_code = str_replace(array("\r", "\n", "\t", $video_vars[0]), "", $popup_code);
 
 			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
-			if ( is_array($atts) && array_key_exists('skin', $atts) ) {
-				$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
+			if ( is_array($query_atts) && array_key_exists('skin', $query_atts) ) {
+				$options['js_skin'] = $query_atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
 
 			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="max-width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
@@ -5439,6 +5439,7 @@ function kgvid_video_attachment_template() {
 		}
 
 		if ( $kgvid_video_embed['oembed'] == 'xml' ) {
+
 			header('Content-Type: text/xml; charset=' . get_bloginfo('charset'), true);
 
 			// render xml-output
@@ -6419,6 +6420,8 @@ function kgvid_replace_video( $video_key, $format ) {
 		$post = get_post($video_id);
 		$new_guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
 
+
+
 		if ( $new_guid != $post->guid ) {
 			$post->guid = $new_guid;
 			global $wpdb;
@@ -6430,11 +6433,11 @@ function kgvid_replace_video( $video_key, $format ) {
 				array( '%s', '%s' ),
 				array( '%d' )
 			);
-
+			clean_post_cache( $video_id ); //otherwise wp_update_post will get the cached version of the post and the old GUID
 		}
 
-		$post->mime_type = $new_mime['type'];
-		wp_update_post($post);
+		$post_update = array('ID' => $video_id, 'post_mime_type' => $new_mime['type']);
+		wp_update_post($post_update);
 
 		return $new_url;
 
