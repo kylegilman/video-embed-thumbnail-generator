@@ -79,6 +79,12 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 
 	var video = document.getElementById('thumb-video-'+postID);
 
+	var crossDomainTest = jQuery.get( video.currentSrc )
+		.fail( function(){
+			jQuery('#thumb-video-'+postID+'-container').hide();
+			kgvid_break_video_on_close(postID);
+		});
+
 	jQuery('#attachments-'+postID+'-thumbgenerate').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-thumbrandomize').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-kgflashmediaplayer-numberofthumbs').prop('disabled', false).attr('title', '');
