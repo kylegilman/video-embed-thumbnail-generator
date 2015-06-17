@@ -231,6 +231,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added video stats column to Media Library list view.
 * Added options for vertical video rotation and metadata removal using FFMPEG, now that some browsers recognize rotation metadata.
 * Added default attribute for subtitle/caption text tracks.
+* Added attachment edit hook that updates video thumbnail's parent post when the video's parent post changes.
+* Added error handling and reporting for in-browser thumbnails.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
 * Updated Video.js to version 4.12.7
 * Updated Facebook Open Graph video embedding tags.

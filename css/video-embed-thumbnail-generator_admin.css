@@ -218,6 +218,13 @@ div.kgvid_thumbnail_overlay {
     filter: alpha(opacity = 50); /* required for opacity to work in IE */
 }
 
+div.kgvid_save_overlay {
+    position: absolute;
+    top: 100px;
+    left: 40%;
+    font-size: 200%;
+}
+
 div.kgvid_video_app_required {
 	background: inherit;
 }

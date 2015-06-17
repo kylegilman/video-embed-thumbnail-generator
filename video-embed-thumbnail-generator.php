@@ -2581,7 +2581,7 @@ function kgvid_ajax_generate_encode_checkboxes() {
 			if ( $checked == "true" ) { $kgvid_postmeta['encode'.$format] = 'on'; }
 			else {$kgvid_postmeta['encode'.$format] = 'notchecked'; }
 		}
-		kgvid_save_attachment_meta($post['ID'], $kgvid_postmeta);
+		kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
 	}
 
 	$checkboxes = kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id);
@@ -4426,7 +4426,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 		$something_to_encode = false;
 		$encode_checked = array();
 		foreach ( $video_formats as $format => $format_stats ) {
-			if ( $options['encode_'.$format] == "on" ) {
+			if ( array_key_exists('encode_'.$format, $options) && $options['encode_'.$format] == "on" ) {
 				$encode_checked[$format] = "true";
 				$something_to_encode = true;
 			}
@@ -4594,7 +4594,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$thumbnail_url = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
 
 		$thumbnail_html = "";
-		if ($thumbnail_url != "" ) {
+		if ( !empty($kgvid_postmeta['autothumb-error']) ) {
+			$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'.$kgvid_postmeta['autothumb-error'].'</div>';
+		}
+		elseif ($thumbnail_url != "" ) {
 			$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'"></div>';
 		}
 
@@ -4682,13 +4685,16 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 		}
 
+		$form_fields["kgflashmediaplayer-autothumb-error"]["input"] = "hidden";
+		$form_fields["kgflashmediaplayer-autothumb-error"]["value"] = $kgvid_postmeta['autothumb-error'];
+
 		$form_fields["generator"]["label"] = _x("Thumbnails", 'Header for thumbnail section', 'video-embed-thumbnail-generator');
 		$form_fields["generator"]["input"] = "html";
 		$form_fields["generator"]["html"] = '<input type="hidden" name="attachments['.$post->ID.'][kgflashmediaplayer-security]" id="attachments-'.$post->ID.'-kgflashmediaplayer-security" value="'.$nonce.'" />
 		'.$choose_from_video_content.'
 		'.$generate_content.'
 		'.$thumbnail_timecode.'
-		<div id="attachments-'.$post->ID.'-thumbnailplaceholder">'. $thumbnail_html .'</div>
+		<div id="attachments-'.$post->ID.'-thumbnailplaceholder" style="position:relative;">'. $thumbnail_html .'</div>
 		<span id="pick-thumbnail" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Thumbnail', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as video thumbnail', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
 		<input type="checkbox" id="attachments-'. $post->ID .'-featured" name="attachments['.$post->ID.'][kgflashmediaplayer-featured]" '.checked( $kgvid_postmeta['featured'], 'on', false ).' '.$ffmpeg_disabled_text.'/> <label for="attachments-'. $post->ID .'-featured">'.__('Set thumbnail as featured image', 'video-embed-thumbnail-generator').'</label>'.$update_script;
 
@@ -4851,7 +4857,7 @@ function kgvid_change_video_icon($icon, $mime, $post_id) {
 			$post_id = $post->post_parent; //use post parent if this is a child video or encoded from an external url
 		}
 		$poster_id = get_post_meta($post_id, '_kgflashmediaplayer-poster-id', true);
-		if ( $poster_id ) {
+		if ( !empty($poster_id) ) {
 			$poster_src = wp_get_attachment_image_src( $poster_id, 'thumbnail' );
 			if ( is_ssl() ) { $poster_src[0] = str_replace( "http:", "https:", $poster_src[0] ); }
 			global $_current_video_icon_dir;
@@ -5076,7 +5082,7 @@ function kgvid_ajax_redraw_thumbnail_box() {
 	$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 	$poster_id = get_post_meta($post_id, "_kgflashmediaplayer-poster-id", true);
 	$thumbnail_size_url = "";
-	if ( $poster_id ) {
+	if ( !empty($poster_id) ) {
 		$thumbnail_src = wp_get_attachment_image_src($poster_id, 'thumbnail');
 		if ( is_array($thumbnail_src) && array_key_exists(0, $thumbnail_src) ) { $thumbnail_size_url = $thumbnail_src[0]; }
 	}

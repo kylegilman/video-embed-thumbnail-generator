@@ -82,6 +82,7 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 	var crossDomainTest = jQuery.get( video.currentSrc )
 		.fail( function(){
 			jQuery('#thumb-video-'+postID+'-container').hide();
+			jQuery('#thumb-video-'+postID).data('allowed', 'off');
 			kgvid_break_video_on_close(postID);
 		});
 
@@ -412,21 +413,31 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	var png64dataURL = canvas.toDataURL(); //this is what saves the image. Do this after selection.
 
+	jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay').fadeTo(500, .25);
+	jQuery('#attachments-'+postID+'-thumbnailplaceholder canvas').not(canvas).remove();
+	jQuery('#attachments-'+postID+'-thumbnailplaceholder input').remove();
+	jQuery('#attachments-'+postID+'-thumbnailplaceholder').prepend('<div class="kgvid_save_overlay">Saving...</div>')
+
 	jQuery.ajax({
 		type: "POST",
 		url: ajaxurl,
-		data: { action:"kgvid_save_html5_thumb", security: kgflashmediaplayersecurity, raw_png: png64dataURL, url: video_url, offset: time_id, postID: postID, total: total, index: index },
-		async: false
+		data: { action:"kgvid_save_html5_thumb", security: kgflashmediaplayersecurity, raw_png: png64dataURL, url: video_url, offset: time_id, postID: postID, total: total, index: index }
 		})
 		.done( function(thumb_url) {
 			if ( total == 1 ) {
+				document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-autothumb-error]')[0].value = '';
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(thumb_url).change();
+				if ( pagenow == 'attachment' ) { jQuery('#publish').click(); }
 			}
 			else {
 				kgvid_thumbnail_saveall_progress(postID, total);
 			}
-		}
-	);
+		})
+		.fail( function(xhr, textStatus, errorThrown) {
+			document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-autothumb-error]')[0].value = errorThrown;
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'+errorThrown+'</div>');
+		});
 }
 
 function kgvid_thumbnail_saveall_progress(postID, total) {
