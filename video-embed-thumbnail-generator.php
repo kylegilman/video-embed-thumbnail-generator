@@ -3334,8 +3334,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_watermark_callback() {
 		$options = kgvid_get_options();
-		echo "Image: <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='".$options['watermark']."' /> <span id='pick-watermark' class='button-secondary' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='watermark' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
-		echo "Link: <input class='regular-text affects_player' id='watermark_url' name='kgvid_video_embed_options[watermark_url]' type='text' value='".$options['watermark_url']."' />\n\t";
+		echo __('Image:', 'video-embed-thumbnail-generator')." <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='".$options['watermark']."' /> <span id='pick-watermark' class='button-secondary' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='watermark' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
+		echo __('Link:', 'video-embed-thumbnail-generator')." <input class='regular-text affects_player' id='watermark_url' name='kgvid_video_embed_options[watermark_url]' type='text' value='".$options['watermark_url']."' />\n\t";
 	}
 
 	function kgvid_align_callback() {
@@ -3353,7 +3353,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = kgvid_get_options();
 		echo "<input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>".__('Make video player responsive.', 'video-embed-thumbnail-generator')."</label><br />";
 		$items = array( __("automatic", 'video-embed-thumbnail-generator'), __("highest", 'video-embed-thumbnail-generator'), __("lowest", 'video-embed-thumbnail-generator') );
-		echo "Default playback resolution <select id='auto_res' name='kgvid_video_embed_options[auto_res]'>";
+		echo __('Default playback resolution', 'video-embed-thumbnail-generator')." <select id='auto_res' name='kgvid_video_embed_options[auto_res]'>";
 		foreach($items as $name ) {
 			$selected = ($options['auto_res']==$name) ? 'selected="selected"' : '';
 			echo "<option value='$name' $selected>$name</option>";
@@ -3784,7 +3784,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".sprintf( __('By default %1$s places moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start and can prevent Flash players from playing them at all. Since approximately October 2012 %1$s can fix the problem at the end of the encoding process by using the option `movflags faststart`. This is the easiest and fastest way to correct the problem, but older versions of %1$s will not work if you select the movflags option. If you can\'t update to a new version of %1$s, select qt-faststart or MP4Box which will run after encoding is finished if they are installed on your server.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>")."</span></a>";
-		echo "<p id='moov_path_p'>Path to <span class='kgvid_moov_option'>".$options['moov']."</span>: <input class='regular-text code affects_ffmpeg' id='moov_path' name='kgvid_video_embed_options[moov_path]' type='text' value='".$options['moov_path']."' /></p>";
+		echo "<p id='moov_path_p'>".sprintf( __('Path to %s:', 'video-embed-thumbnail-generator'), "<span class='kgvid_moov_option'>".$options['moov']."</span>")." <input class='regular-text code affects_ffmpeg' id='moov_path' name='kgvid_video_embed_options[moov_path]' type='text' value='".$options['moov_path']."' /></p>";
 		echo "</div>\n\t";
 	}
 

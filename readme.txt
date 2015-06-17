@@ -235,6 +235,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added error handling and reporting for in-browser thumbnails.
 * Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
 * Updated Video.js to version 4.12.7
+* Updated Spanish translation.
 * Updated Facebook Open Graph video embedding tags.
 * Re-enabled native video player controls on mobile devices when using Video.js player.
 * Removed superfluous gallery height option.
