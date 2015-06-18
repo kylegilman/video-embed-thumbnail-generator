@@ -223,7 +223,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5 - May 23, 2015 =
+= 4.5 - June XX, 2015 =
 * Added pagination option to video galleries.
 * Added oEmbed provider data.
 * Added experimental WEBM VP9 encoding format.
@@ -241,7 +241,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Removed superfluous gallery height option.
 * Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
 * Stopped inserting unnecessary poster URL shortcode attribute when poster is set in the media library.
-* Consolidated video metadata database entries.
+* Consolidated most video metadata database entries into a single array.
 * Fixed several bugs related to hosting media library files on other servers like Amazon S3.
 * Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.
 * Fixed bug that created squashed encoded videos when they were shot vertically on a mobile device.

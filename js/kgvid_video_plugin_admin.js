@@ -414,8 +414,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 	var png64dataURL = canvas.toDataURL(); //this is what saves the image. Do this after selection.
 
 	jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay').fadeTo(500, .25);
-	jQuery('#attachments-'+postID+'-thumbnailplaceholder canvas').not(canvas).remove();
-	jQuery('#attachments-'+postID+'-thumbnailplaceholder input').remove();
+	jQuery('#attachments-'+postID+'-thumbnailplaceholder input').attr('disabled', true);
 	jQuery('#attachments-'+postID+'-thumbnailplaceholder').prepend('<div class="kgvid_save_overlay">Saving...</div>')
 
 	jQuery.ajax({
@@ -450,6 +449,9 @@ function kgvid_thumbnail_saveall_progress(postID, total) {
 
 		if ( number == total ) {
 			jQuery('#saveallthumbs-'+postID+'-div').slideUp(1000);
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder .kgvid_save_overlay').fadeOut();
+			jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay').fadeTo(500, 1);
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder input').removeAttr('disabled');
 		}
 
 }
@@ -460,7 +462,7 @@ function kgvid_saveall_thumbs(postID) {
 	var thumbnails = jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailbox').find('.kgvid_thumbnail');
 	var total = thumbnails.length;
 
-	jQuery('#saveallthumbs-'+postID+'-div').append('<div style="margin:5px;" id="saving_thumbs_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="saving_thumbs_status"> '+kgvidL10n.saving+'</span>');
+	jQuery('#saveallthumbs-'+postID+'-div').append('<br><div style="margin:5px;" id="saving_thumbs_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="saving_thumbs_status"> '+kgvidL10n.saving+'</span>');
 
 	jQuery.each(thumbnails, function(key, value) {
 		if ( value.tagName.toLowerCase() == "canvas" ) {
