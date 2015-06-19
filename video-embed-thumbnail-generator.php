@@ -1726,6 +1726,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			$popup_code = do_shortcode($shortcode);
 			preg_match('/data-kgvid_video_vars=.*? /', $popup_code, $video_vars);
 			$popup_code = str_replace(array("\r", "\n", "\t", $video_vars[0]), "", $popup_code);
+			$video_vars[0] = str_replace('&nbsp;', ' ', $video_vars[0]);
 
 			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
 			if ( is_array($query_atts) && array_key_exists('skin', $query_atts) ) {
@@ -2052,7 +2053,7 @@ function KGVID_shortcode($atts, $content = ''){
 				$video_variables = array(
 					'id' => $div_suffix,
 					'attachment_id' => $id,
-					'player_type' => $options['embed_method'],
+					'player_type' => str_replace(' ', '&nbsp;', $options['embed_method']),
 					'width' => $query_atts['width'],
 					'height' => $query_atts['height'],
 					'fullwidth' => $query_atts['fullwidth'],
