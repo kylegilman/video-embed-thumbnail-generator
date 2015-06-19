@@ -1693,11 +1693,11 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			if (!$thumbnail_url) { $thumbnail_url = $options['poster']; } //use the default poster if no thumbnail set
 			if (!$thumbnail_url) { $thumbnail_url = plugins_url('/images/nothumbnail.jpg', __FILE__);} //use the blank image if no other option
 
-			$downloadlink = get_post_meta($attachment->ID, "_kgflashmediaplayer-downloadlink", true);
 			if ( empty($query_atts['caption']) ) { $query_atts['caption'] = $attachment->post_excerpt; }
 			$below_video = 0;
 			if ( !empty($query_atts['caption']) ) { $below_video = 1; }
-			if ( $downloadlink == "checked" ) { ++$below_video; }
+			$kgvid_postmeta = kgvid_get_attachment_meta( $attachment->ID );
+			if ( $kgvid_postmeta['downloadlink'] == "on" ) { ++$below_video; }
 
 			if ( $options['embed_method'] == "WordPress Default" ) {
 
@@ -1720,7 +1720,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
 
 			$shortcode = '[KGVID autoplay="true" id="'.$attachment->ID.'" width="'.$dimensions['width'].'" height="'.$dimensions['height'].'"';
-			if ($downloadlink == "checked") { $shortcode .= ' downloadlink="true"'; }
+			if ($kgvid_postmeta['downloadlink'] == "on") { $shortcode .= ' downloadlink="true"'; }
 			$shortcode .= '][/KGVID]';
 
 			$popup_code = do_shortcode($shortcode);
@@ -1784,7 +1784,7 @@ function kgvid_shortcode_atts($atts) {
 
 	$default_atts = array(
 		'id' => '',
-		'orderby' => 'menu_order',
+		'orderby' => 'menu_order ID',
 		'order' => 'ASC',
 		'videos' => -1,
 		'width' => $options['width'],
@@ -1871,6 +1871,7 @@ function kgvid_shortcode_atts($atts) {
 
 	if ( $query_atts['auto_res'] == 'true' ) { $query_atts['auto_res'] = 'automatic'; } //if anyone used auto_res in the shortcode before version 4.4.3
 	if ( $query_atts['auto_res'] == 'false' ) { $query_atts['auto_res'] = 'highest'; }
+	if ( $query_atts['orderby'] == 'menu_order' ) { $query_atts['orderby'] = 'menu_order ID'; }
 
 	return $query_atts;
 
