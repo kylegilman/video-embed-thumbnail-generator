@@ -62,6 +62,11 @@
 	box-shadow: none;
 }
 
+.kgvid_watermark a {
+	display: block;
+	position: inherit !important;
+}
+
 .vjs-control-bar, .mejs-controls {
 	z-index:2;
 }
