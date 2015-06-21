@@ -92,6 +92,7 @@ function kgvid_default_options_fn() {
 		"titlecode" => "<strong>",
 		"poster" => "",
 		"watermark" => "",
+		"watermark_link_to" => "home",
 		"watermark_url" => "",
 		"overlay_title" => "on",
 		"overlay_embedcode" => false,
@@ -1796,6 +1797,7 @@ function kgvid_shortcode_atts($atts) {
 		'autohide' => $options['autohide'],
 		'poster' => $options['poster'],
 		'watermark' => $options['watermark'],
+		'watermark_link_to' => $options['watermark_link_to'],
 		'watermark_url' => $options['watermark_url'],
 		'endofvideooverlay' => $options['endofvideooverlay'],
 		'endofvideooverlaysame' => $options['endofvideooverlaysame'],
@@ -2327,9 +2329,46 @@ function KGVID_shortcode($atts, $content = ''){
 					$watermark_id = kgvid_url_to_id($query_atts["watermark"]);
 					if ( $watermark_id ) { $query_atts["watermark"] = wp_get_attachment_url($watermark_id); }
 					$code .= "<div style=\"display:none;\" id='video_".$div_suffix."_watermark' class='kgvid_watermark'>";
-					if ( !empty($query_atts["watermark_url"]) && $query_atts["watermark_url"] != "false" ) { $code .= "<a href='".$query_atts["watermark_url"]."'>"; }
+					if ( !empty($query_atts["watermark_url"]) && $query_atts["watermark_link_to"] != 'custom' ) { $query_atts["watermark_link_to"] = 'custom'; }
+					if ( $query_atts['watermark_link_to'] != 'false' && $query_atts["watermark_url"] != 'false' ) {
+						$watermark_link = true;
+						switch ( $query_atts['watermark_link_to'] ) {
+
+							case 'home':
+								$watermark_href = get_home_url();
+							break;
+
+							case 'parent':
+								if ( !empty($id) && is_object($attachment_info) && array_key_exists('post_parent', $attachment_info) && !empty($attachment_info->post_parent) ) {
+									$watermark_href = get_permalink($attachment_info->post_parent);
+								}
+								else { $watermark_href = get_home_url(); }
+							break;
+
+							case 'attachment':
+								if ( !empty($id) ) {
+									$watermark_href = get_permalink($id);
+								}
+								else { $watermark_href = get_home_url(); }
+							break;
+
+							case 'download':
+								if ( !empty($id) ) {
+									$watermark_href = site_url('/').'?attachment_id='.$id.'&kgvid_video_embed[download]=true';
+								}
+								else { $watermark_href = $content; }
+							break;
+
+							case 'custom':
+							$watermark_href = $query_atts["watermark_url"];
+							break;
+
+						}
+						$code .= "<a target='_parent' href='".$watermark_href."'>";
+					}
+					else { $watermark_link = false; }
 					$code .= "<img src='".esc_attr($query_atts["watermark"])."' alt='watermark'>";
-					if ( !empty($query_atts["watermark_url"]) && $query_atts["watermark_url"] != "false" ) { $code .= "</a>"; }
+					if ( $watermark_link ) { $code .= "</a>"; }
 					$code .= "</div>";
 				} //generate watermark
 				$code .= "\t\t</div>"; //end kgvid_XXXX_wrapper div
@@ -3337,7 +3376,26 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_watermark_callback() {
 		$options = kgvid_get_options();
 		echo __('Image:', 'video-embed-thumbnail-generator')." <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='".$options['watermark']."' /> <span id='pick-watermark' class='button-secondary' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='watermark' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
-		echo __('Link:', 'video-embed-thumbnail-generator')." <input class='regular-text affects_player' id='watermark_url' name='kgvid_video_embed_options[watermark_url]' type='text' value='".$options['watermark_url']."' />\n\t";
+		echo __('Link to:', 'video-embed-thumbnail-generator').' ';
+		$items = array(
+			__("Home page", 'video-embed-thumbnail-generator') => "home",
+			__("Parent post", 'video-embed-thumbnail-generator') => "parent",
+			__("Video attachment page", 'video-embed-thumbnail-generator') => "attachment",
+			__("Download video", 'video-embed-thumbnail-generator') => "download",
+			__("None", 'video-embed-thumbnail-generator') => "false",
+			__("Custom URL", 'video-embed-thumbnail-generator') => "custom" );
+		echo "<select class='affects_player' onchange='kgvid_watermark_url(this);' id='watermark_link_to' name='kgvid_video_embed_options[watermark_link_to]'>";
+		foreach($items as $name => $value) {
+			$selected = ($options['watermark_link_to']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
+		}
+		echo "</select>\n\t";
+		echo " <input ";
+		if ( $options['watermark_link_to'] != 'custom' ) {
+			echo "style='visibility:hidden;' ";
+			$options['watermark_url'] = '';
+		}
+		echo "class='regular-text affects_player' id='watermark_url' name='kgvid_video_embed_options[watermark_url]' type='text' value='".$options['watermark_url']."' />\n\t";
 	}
 
 	function kgvid_align_callback() {
@@ -4123,6 +4181,7 @@ function kgvid_update_settings() {
 			$options['version'] = 4.5;
 			if ( $options['auto_res'] == 'on' ) { $options['auto_res'] = 'automatic'; }
 			else { $options['auto_res'] = 'highest'; }
+			$options['watermark_link_to'] = 'none';
 			$options['watermark_url'] = '';
 			$options['encode_vp9'] = false;
 			$options['gallery_perpage'] = -1;

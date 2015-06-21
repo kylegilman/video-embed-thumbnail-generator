@@ -92,6 +92,8 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `loop="true/false"`
 * `autoplay="true/false"`
 * `watermark="http://www.example.com/image.png"` or `"false"` to disable.
+* `watermark_link_to=home/parent/attachment/download/false"`
+* `watermark_url="http://www.example.com/"` or `"false"` to disable. If this is set, there's no need to manually set `watermark_link_to`.
 * `title="Video Title"` or `"false"` to disable.
 * `embedcode="html code"` changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or `"false"` to disable.
 * `view_count="true/false"` turns the view count on or off.

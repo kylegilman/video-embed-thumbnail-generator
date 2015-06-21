@@ -1224,6 +1224,15 @@ function kgvid_hide_ffmpeg_settings() {
 
 }
 
+function kgvid_watermark_url(obj) {
+
+	if ( obj.value == 'custom' ) {
+		jQuery('#watermark_url').fadeIn().removeAttr('style');
+	}
+	else { jQuery('#watermark_url').val('').fadeOut(); }
+
+}
+
 function kgvid_set_bitrate_display() {
 
 	var resolutions = [1080, 720, 360];
