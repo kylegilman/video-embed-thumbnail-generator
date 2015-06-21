@@ -3382,8 +3382,10 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			__("Parent post", 'video-embed-thumbnail-generator') => "parent",
 			__("Video attachment page", 'video-embed-thumbnail-generator') => "attachment",
 			__("Download video", 'video-embed-thumbnail-generator') => "download",
-			__("None", 'video-embed-thumbnail-generator') => "false",
-			__("Custom URL", 'video-embed-thumbnail-generator') => "custom" );
+			__("Custom URL", 'video-embed-thumbnail-generator') => "custom",
+			__("None", 'video-embed-thumbnail-generator') => "false"
+		);
+
 		echo "<select class='affects_player' onchange='kgvid_watermark_url(this);' id='watermark_link_to' name='kgvid_video_embed_options[watermark_link_to]'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['watermark_link_to']==$value) ? 'selected="selected"' : '';

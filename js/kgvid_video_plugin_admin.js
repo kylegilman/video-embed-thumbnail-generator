@@ -1229,7 +1229,10 @@ function kgvid_watermark_url(obj) {
 	if ( obj.value == 'custom' ) {
 		jQuery('#watermark_url').fadeIn().removeAttr('style');
 	}
-	else { jQuery('#watermark_url').val('').fadeOut(); }
+	else {
+		jQuery('#watermark_url').fadeOut();
+		if ( jQuery('#watermark_url').val() != '' ) { jQuery('#watermark_url').val('').change(); }
+	}
 
 }
 
