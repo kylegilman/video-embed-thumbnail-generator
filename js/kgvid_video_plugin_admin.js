@@ -1239,12 +1239,12 @@ function kgvid_hide_watermark_url(obj) {
 function kgvid_hide_paginate_gallery_setting(obj) {
 
 	if ( obj.checked ) {
-		jQuery('#gallery_perpage').val('10');
-		jQuery('#gallery_perpage_span').fadeIn().removeAttr('style');
+		jQuery('#gallery_per_page').val('10');
+		jQuery('#gallery_per_page_span').fadeIn().removeAttr('style');
 	}
 	else {
-		jQuery('#gallery_perpage_span').fadeOut();
-		jQuery('#gallery_perpage').val('');
+		jQuery('#gallery_per_page_span').fadeOut();
+		jQuery('#gallery_per_page').val('');
 	}
 
 }

@@ -93,7 +93,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `autoplay="true/false"`
 * `watermark="http://www.example.com/image.png"` or `"false"` to disable.
 * `watermark_link_to=home/parent/attachment/download/false"`
-* `watermark_url="http://www.example.com/"` or `"false"` to disable. If this is set, there's no need to manually set `watermark_link_to`.
+* `watermark_url="http://www.example.com/"` or `"false"` to disable. If this is set, it will override the `watermark_link_to` setting.
 * `title="Video Title"` or `"false"` to disable.
 * `embedcode="html code"` changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or `"false"` to disable.
 * `view_count="true/false"` turns the view count on or off.
@@ -102,7 +102,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `downloadlink="true/false"` generates a link below the video to make it easier for users to save the video file to their computers.
 * `right_click="true/false"` allow or disable right-clicking on the video player.
 * `resize="true/false"` allow or disable responsive resizing.
-* `auto_res="true/false"` let the plugin select the best resolution for the size of the player.
+* `auto_res="automatic/highest/lowest"` 'specify the video resolution when the page loads.
 
 = These options will add a subtitle/caption track =
 
@@ -136,7 +136,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `gallery_order="ASC/DESC"` sort order.
 * `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post.
 * `gallery_end="close/next"` either close the pop-up or start playing the next video when the current video finishes playing.
-* `gallery_perpage="xx"` of `"false"` to disable. Number of video thumbnails to show on each gallery page.
+* `gallery_per_page="xx"` or `"false"` to disable pagination. Number of video thumbnails to show on each gallery page.
 
 == Installation ==
 

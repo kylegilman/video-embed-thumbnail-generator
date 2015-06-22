@@ -109,7 +109,7 @@ function kgvid_default_options_fn() {
 		"gallery_thumb" => "250",
 		"gallery_end" => "",
 		"gallery_pagination" => false,
-		"gallery_perpage" => false,
+		"gallery_per_page" => false,
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -1648,14 +1648,14 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 	$code = '';
 
 	if ( $query_atts['gallery_orderby'] == 'menu_order' ) { $query_atts['gallery_orderby'] = 'menu_order ID'; }
-	if ( $options['gallery_pagination'] != 'on' && empty($query_atts['gallery_perpage']) ) { $query_atts['gallery_perpage'] = -1; }
+	if ( $options['gallery_pagination'] != 'on' && empty($query_atts['gallery_per_page']) || $query_atts['gallery_per_page'] == 'false' ) { $query_atts['gallery_per_page'] = -1; }
 
 	$args = array(
 		'post_type' => 'attachment',
 		'orderby' => $query_atts['gallery_orderby'],
 		'order' => $query_atts['gallery_order'],
 		'post_mime_type' => 'video',
-		'posts_per_page' => $query_atts['gallery_perpage'],
+		'posts_per_page' => $query_atts['gallery_per_page'],
 		'paged' => $page_number,
 		'post_status' => 'published',
 		'post_parent' => $query_atts['gallery_id']
@@ -1812,7 +1812,7 @@ function kgvid_shortcode_atts($atts) {
 		'configuration' => $options['configuration'],
 		'skin' => $options['skin'],
 		'gallery' => 'false',
-		'gallery_perpage' => $options['gallery_perpage'],
+		'gallery_per_page' => $options['gallery_per_page'],
 		'gallery_thumb' => $options['gallery_thumb'],
 		'gallery_orderby' => 'menu_order ID',
 		'gallery_order' => 'ASC',
@@ -2393,7 +2393,7 @@ function KGVID_shortcode($atts, $content = ''){
 				'gallery_thumb',
 				'caption',
 				'gallery_end',
-				'gallery_perpage'
+				'gallery_per_page'
 			);
 			$gallery_query_atts = array();
 			foreach($gallery_query_index as $index) { $gallery_query_atts[$index] = $query_atts[$index]; };
@@ -3457,7 +3457,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo " <input ".checked( $options['gallery_pagination'], "on", false )." id='gallery_pagination' name='kgvid_video_embed_options[gallery_pagination]' onchange='kgvid_hide_paginate_gallery_setting(this)' type='checkbox' /> <label for='gallery_pagination'>".__('Paginate video galleries.', 'video-embed-thumbnail-generator')."</label> ";
 		echo "<span ";
 		if ( $options['gallery_pagination'] != 'on' ) { echo "style='visibility:hidden;' "; }
-		echo "id='gallery_perpage_span'><input class='small-text' id='gallery_perpage' name='kgvid_video_embed_options[gallery_perpage]' type='text' value='".$options['gallery_perpage']."' /> ".__('videos per gallery page.', 'video-embed-thumbnail-generator')."</span>\n\t";
+		echo "id='gallery_per_page_span'><input class='small-text' id='gallery_per_page' name='kgvid_video_embed_options[gallery_per_page]' type='text' value='".$options['gallery_per_page']."' /> ".__('videos per gallery page.', 'video-embed-thumbnail-generator')."</span>\n\t";
 
 	}
 
@@ -4192,7 +4192,7 @@ function kgvid_update_settings() {
 			$options['watermark_url'] = '';
 			$options['encode_vp9'] = false;
 			$options['gallery_pagination'] = false;
-			$options['gallery_perpage'] = false;
+			$options['gallery_per_page'] = false;
 			$options['oembed_provider'] = "on";
 			$options['oembed_security'] = false;
 			$options['ffmpeg_old_rotation'] = "on";
@@ -7165,6 +7165,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
 <li><code>watermark="http://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>watermark_link_to=home/parent/attachment/download/false"</code></li>
+<li><code>watermark_url="http://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>title="Video Title"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>embedcode="html code"</code> '.sprintf( __('changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>view_count="true/false"</code> '.__('turns the view count on or off.', 'video-embed-thumbnail-generator').'</li>
@@ -7179,7 +7181,8 @@ function kgvid_add_contextual_help_tab() {
 <ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>
 <li><code>track_kind=subtitles/captions/chapters</code></li>
 <li><code>track_srclang=xx</code> '.__('the track\'s two-character language code (en, fr, es, etc)', 'video-embed-thumbnail-generator').'</li>
-<li><code>track_label="Track Label"</code> '.__('text that will be shown to the user when selecting the track.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>track_label="Track Label"</code> '.__('text that will be shown to the user when selecting the track.', 'video-embed-thumbnail-generator').'</li>
+<li><code>track_default="default"</code> '.__('track is enabled by default.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will only affect Video.js playback', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">' ).'</a></li></ul>
@@ -7201,7 +7204,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting the gallery', 'video-embed-thumbnail-generator').'</li>
 <li><code>gallery_order="ASC/DESC"</code> '.__('sort order', 'video-embed-thumbnail-generator').'</li>
 <li><code>gallery_id="241"</code> '.__('post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_end="close/next"</code> '.__('either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator').'</li></ul>'
+<li><code>gallery_end="close/next"</code> '.__('either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_per_page="xx"</code> '.sprintf( __('or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator'), $false_code).'</li></ul>'
     ) );
 
 }
