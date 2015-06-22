@@ -110,6 +110,7 @@ function kgvid_default_options_fn() {
 		"gallery_end" => "",
 		"gallery_pagination" => false,
 		"gallery_per_page" => false,
+		"gallery_title" => "on"
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -1736,7 +1737,11 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$options['js_skin'] = $query_atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
 
-			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="max-width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div><div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div></div>'."\n\t\t\t";
+			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="max-width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div>';
+error_log(print_r($query_atts,true));
+			if ( $query_atts['gallery_title'] == 'true' ) { $code .= '<div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div>'; }
+
+			$code .= '</div>'."\n\t\t\t";
 
 
 		} //end attachment loop
@@ -1820,6 +1825,7 @@ function kgvid_shortcode_atts($atts) {
 		'gallery_include' => '',
 		'gallery_id' => $post_ID,
 		'gallery_end' => $options['gallery_end'],
+		'gallery_title' => $options['gallery_title'],
 		'volume' => $options['volume'],
 		'mute' => $options['mute'],
 		'title' => $options['overlay_title'],
@@ -1867,7 +1873,8 @@ function kgvid_shortcode_atts($atts) {
 		"resize",
 		"downloadlink",
 		"mute",
-		"fullwidth"
+		"fullwidth",
+		"gallery_title"
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
@@ -1877,6 +1884,7 @@ function kgvid_shortcode_atts($atts) {
 	if ( $query_atts['auto_res'] == 'true' ) { $query_atts['auto_res'] = 'automatic'; } //if anyone used auto_res in the shortcode before version 4.4.3
 	if ( $query_atts['auto_res'] == 'false' ) { $query_atts['auto_res'] = 'highest'; }
 	if ( $query_atts['orderby'] == 'menu_order' ) { $query_atts['orderby'] = 'menu_order ID'; }
+	if ( $query_atts['track_default'] == 'true' ) { $query_atts['track_default'] = 'default'; }
 
 	return $query_atts;
 
@@ -2393,7 +2401,8 @@ function KGVID_shortcode($atts, $content = ''){
 				'gallery_thumb',
 				'caption',
 				'gallery_end',
-				'gallery_per_page'
+				'gallery_per_page',
+				'gallery_title'
 			);
 			$gallery_query_atts = array();
 			foreach($gallery_query_index as $index) { $gallery_query_atts[$index] = $query_atts[$index]; };
@@ -3396,7 +3405,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "</select>\n\t";
 		echo " <input ";
 		if ( $options['watermark_link_to'] != 'custom' ) {
-			echo "style='visibility:hidden;' ";
+			echo "style='display:none;' ";
 			$options['watermark_url'] = '';
 		}
 		echo "class='regular-text affects_player' id='watermark_url' name='kgvid_video_embed_options[watermark_url]' type='text' value='".$options['watermark_url']."' />\n\t";
@@ -3456,8 +3465,9 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "</select> when current gallery video finishes.<br />";
 		echo " <input ".checked( $options['gallery_pagination'], "on", false )." id='gallery_pagination' name='kgvid_video_embed_options[gallery_pagination]' onchange='kgvid_hide_paginate_gallery_setting(this)' type='checkbox' /> <label for='gallery_pagination'>".__('Paginate video galleries.', 'video-embed-thumbnail-generator')."</label> ";
 		echo "<span ";
-		if ( $options['gallery_pagination'] != 'on' ) { echo "style='visibility:hidden;' "; }
-		echo "id='gallery_per_page_span'><input class='small-text' id='gallery_per_page' name='kgvid_video_embed_options[gallery_per_page]' type='text' value='".$options['gallery_per_page']."' /> ".__('videos per gallery page.', 'video-embed-thumbnail-generator')."</span>\n\t";
+		if ( $options['gallery_pagination'] != 'on' ) { echo "style='display:none;' "; }
+		echo "id='gallery_per_page_span'><input class='small-text' id='gallery_per_page' name='kgvid_video_embed_options[gallery_per_page]' type='text' value='".$options['gallery_per_page']."' /> ".__('videos per gallery page.', 'video-embed-thumbnail-generator')."</span><br />";
+		echo " <input ".checked( $options['gallery_title'], "on", false )." id='gallery_title' name='kgvid_video_embed_options[gallery_title]' type='checkbox' /> <label for='gallery_title'>".__('Show video title overlay on thumbnails.', 'video-embed-thumbnail-generator')."</label>\n\t";
 
 	}
 
@@ -4193,6 +4203,7 @@ function kgvid_update_settings() {
 			$options['encode_vp9'] = false;
 			$options['gallery_pagination'] = false;
 			$options['gallery_per_page'] = false;
+			$options['gallery_title'] = "on";
 			$options['oembed_provider'] = "on";
 			$options['oembed_security'] = false;
 			$options['ffmpeg_old_rotation'] = "on";
@@ -4389,7 +4400,6 @@ function kgvid_add_attachment_handler($post_id) {
 		&& (empty($post->post_parent) || (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == false)) ) {
 			$args = array($post_id);
 			wp_schedule_single_event(time(), 'kgvid_cron_new_attachment', $args);
-			spawn_cron();
 		}
 	}
 }
@@ -5520,7 +5530,7 @@ function kgvid_video_attachment_template() {
 
 	if ( $options['embeddable'] == 'false' && !array_key_exists('sample', $kgvid_video_embed) && !array_key_exists('gallery', $kgvid_video_embed) ) { $kgvid_video_embed['enable'] = 'false'; }
 
-	if ( array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true'
+	if ( is_array($kgvid_video_embed) && array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true'
 		&& ( ( property_exists('post', 'post_mime_type') && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
 		) {
 
