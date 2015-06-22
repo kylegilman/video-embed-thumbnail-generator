@@ -108,7 +108,8 @@ function kgvid_default_options_fn() {
 		"gallery_width" => "960",
 		"gallery_thumb" => "250",
 		"gallery_end" => "",
-		"gallery_perpage" => -1,
+		"gallery_pagination" => false,
+		"gallery_perpage" => false,
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -1647,6 +1648,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 	$code = '';
 
 	if ( $query_atts['gallery_orderby'] == 'menu_order' ) { $query_atts['gallery_orderby'] = 'menu_order ID'; }
+	if ( $options['gallery_pagination'] != 'on' && empty($query_atts['gallery_perpage']) ) { $query_atts['gallery_perpage'] = -1; }
 
 	$args = array(
 		'post_type' => 'attachment',
@@ -3386,7 +3388,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			__("None", 'video-embed-thumbnail-generator') => "false"
 		);
 
-		echo "<select class='affects_player' onchange='kgvid_watermark_url(this);' id='watermark_link_to' name='kgvid_video_embed_options[watermark_link_to]'>";
+		echo "<select class='affects_player' onchange='kgvid_hide_watermark_url(this);' id='watermark_link_to' name='kgvid_video_embed_options[watermark_link_to]'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['watermark_link_to']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
@@ -3452,7 +3454,10 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> when current gallery video finishes.<br />";
-		echo __('Videos per gallery page:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_perpage' name='kgvid_video_embed_options[gallery_perpage]' type='text' value='".$options['gallery_perpage']."' /> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('-1 disables video gallery pagination and shows all gallery thumbnails on one page', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo " <input ".checked( $options['gallery_pagination'], "on", false )." id='gallery_pagination' name='kgvid_video_embed_options[gallery_pagination]' onchange='kgvid_hide_paginate_gallery_setting(this)' type='checkbox' /> <label for='gallery_pagination'>".__('Paginate video galleries.', 'video-embed-thumbnail-generator')."</label> ";
+		echo "<span ";
+		if ( $options['gallery_pagination'] != 'on' ) { echo "style='visibility:hidden;' "; }
+		echo "id='gallery_perpage_span'><input class='small-text' id='gallery_perpage' name='kgvid_video_embed_options[gallery_perpage]' type='text' value='".$options['gallery_perpage']."' /> ".__('videos per gallery page.', 'video-embed-thumbnail-generator')."</span>\n\t";
 
 	}
 
@@ -4186,7 +4191,8 @@ function kgvid_update_settings() {
 			$options['watermark_link_to'] = 'none';
 			$options['watermark_url'] = '';
 			$options['encode_vp9'] = false;
-			$options['gallery_perpage'] = -1;
+			$options['gallery_pagination'] = false;
+			$options['gallery_perpage'] = false;
 			$options['oembed_provider'] = "on";
 			$options['oembed_security'] = false;
 			$options['ffmpeg_old_rotation'] = "on";

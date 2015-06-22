@@ -136,6 +136,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `gallery_order="ASC/DESC"` sort order.
 * `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post.
 * `gallery_end="close/next"` either close the pop-up or start playing the next video when the current video finishes playing.
+* `gallery_perpage="xx"` of `"false"` to disable. Number of video thumbnails to show on each gallery page.
 
 == Installation ==
 

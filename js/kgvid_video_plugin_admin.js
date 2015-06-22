@@ -1224,7 +1224,7 @@ function kgvid_hide_ffmpeg_settings() {
 
 }
 
-function kgvid_watermark_url(obj) {
+function kgvid_hide_watermark_url(obj) {
 
 	if ( obj.value == 'custom' ) {
 		jQuery('#watermark_url').fadeIn().removeAttr('style');
@@ -1232,6 +1232,19 @@ function kgvid_watermark_url(obj) {
 	else {
 		jQuery('#watermark_url').fadeOut();
 		if ( jQuery('#watermark_url').val() != '' ) { jQuery('#watermark_url').val('').change(); }
+	}
+
+}
+
+function kgvid_hide_paginate_gallery_setting(obj) {
+
+	if ( obj.checked ) {
+		jQuery('#gallery_perpage').val('10');
+		jQuery('#gallery_perpage_span').fadeIn().removeAttr('style');
+	}
+	else {
+		jQuery('#gallery_perpage_span').fadeOut();
+		jQuery('#gallery_perpage').val('');
 	}
 
 }
