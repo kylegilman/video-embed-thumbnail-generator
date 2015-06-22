@@ -110,7 +110,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `track_kind=subtitles/captions/chapters`
 * `track_srclang=xx` the track's two-character language code (en, fr, es, etc)
 * `track_label="Track Label"` text that will be shown to the user when selecting the track.
-* `track_default="default"` track is enabled by default.
+* `track_default="true/false"` track is enabled by default.
 
 = These options will only affect Video.js playback =
 
@@ -137,6 +137,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `gallery_id="241"` post ID to display a gallery made up of videos associated with a different post.
 * `gallery_end="close/next"` either close the pop-up or start playing the next video when the current video finishes playing.
 * `gallery_per_page="xx"` or `"false"` to disable pagination. Number of video thumbnails to show on each gallery page.
+* `gallery_title="true/false"` display the title overlay on gallery thumbnails.
 
 == Installation ==
 

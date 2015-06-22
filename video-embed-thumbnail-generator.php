@@ -110,7 +110,7 @@ function kgvid_default_options_fn() {
 		"gallery_end" => "",
 		"gallery_pagination" => false,
 		"gallery_per_page" => false,
-		"gallery_title" => "on"
+		"gallery_title" => "on",
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -7215,7 +7215,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>gallery_order="ASC/DESC"</code> '.__('sort order', 'video-embed-thumbnail-generator').'</li>
 <li><code>gallery_id="241"</code> '.__('post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator').'</li>
 <li><code>gallery_end="close/next"</code> '.__('either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_per_page="xx"</code> '.sprintf( __('or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator'), $false_code).'</li></ul>'
+<li><code>gallery_per_page="xx"</code> '.sprintf( __('or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator'), $false_code).'</li>
+<li><code>gallery_title="true/false"</code> '.__('display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator').'</li></ul>'
     ) );
 
 }
