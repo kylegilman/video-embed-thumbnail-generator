@@ -79,12 +79,14 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 
 	var video = document.getElementById('thumb-video-'+postID);
 
-	var crossDomainTest = jQuery.get( video.currentSrc )
-		.fail( function(){
-			jQuery('#thumb-video-'+postID+'-container').hide();
-			jQuery('#thumb-video-'+postID).data('allowed', 'off');
-			kgvid_break_video_on_close(postID);
-		});
+	if ( video != null ) {
+		var crossDomainTest = jQuery.get( video.currentSrc )
+			.fail( function(){
+				jQuery('#thumb-video-'+postID+'-container').hide();
+				jQuery('#thumb-video-'+postID).data('allowed', 'off');
+				kgvid_break_video_on_close(postID);
+			});
+	}
 
 	jQuery('#attachments-'+postID+'-thumbgenerate').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-thumbrandomize').prop('disabled', false).attr('title', '');
@@ -970,9 +972,22 @@ function kgvid_encode_queue(action, order, id) {
 
 	if ( action == "clear_completed" ) {
 		jQuery('tbody > .kgvid_complete').fadeTo('slow', 0.5);
-		jQuery.post(ajaxurl, { action:"kgvid_clear_completed_queue", security: kgflashmediaplayersecurity, scope: scope }, function(data) {
+		jQuery.post(ajaxurl, { action:"kgvid_clear_completed_queue", security: kgflashmediaplayersecurity, type:"manual", scope: scope }, function(data) {
 			jQuery('table.widefat > tbody').replaceWith("<tbody class='rows'>"+data+"</tbody>");
 		}, "html" );
+	}
+
+	if ( action == "clear_queued" ) {
+
+		var clear_for_sure = confirm(kgvidL10n.clearqueuedwarning+"\n"+kgvidL10n.cancel_ok);
+
+		if ( clear_for_sure == true ) {
+			jQuery('tbody > .kgvid_queued').fadeTo('slow', 0.5);
+			jQuery.post(ajaxurl, { action:"kgvid_clear_completed_queue", security: kgflashmediaplayersecurity, type:"queued", scope: scope }, function(data) {
+				jQuery('table.widefat > tbody').replaceWith("<tbody class='rows'>"+data+"</tbody>");
+			}, "html" );
+		}
+
 	}
 
 }
