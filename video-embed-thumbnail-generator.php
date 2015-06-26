@@ -97,6 +97,7 @@ function kgvid_default_options_fn() {
 		"overlay_title" => "on",
 		"overlay_embedcode" => false,
 		"downloadlink" => false,
+		"click_download" => "on",
 		"view_count" => false,
 		"embeddable" => "on",
 		"inline" => false,
@@ -2307,7 +2308,7 @@ function KGVID_shortcode($atts, $content = ''){
 							if ( $query_atts['downloadlink'] == "true" ) {
 								if ( !empty($query_atts['caption']) ) { $code .= '<br>'; }
 								$forceable = false;
-								if ( !empty($id) ) {
+								if ( !empty($id) && $options['click_download'] == 'on' ) {
 									$filepath = get_attached_file($id);
 									if ( file_exists($filepath) ) {
 										$forceable = true;
@@ -3679,7 +3680,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<input ".checked( $options['open_graph'], "on", false )." id='open_graph' name='kgvid_video_embed_options[open_graph]' type='checkbox'".$embed_disabled." /> <label for='open_graph'>"._x('Enable Open Graph video tags', '"Open Graph" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Facebook and some other social media sites will use these tags to embed the first video in your post. For the majority of Facebook users who have enabled secure browsing, your video must be served via https in order to be embedded directly on the page.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['oembed_provider'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'".$embed_disabled." /> <label for='oembed_provider'>"._x('Enable oEmbed provider', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code. For security reasons, this will not work on other WordPress sites unless they\'ve enabled oEmbed discovery from unkown providers.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['oembed_security'], "on", false )." id='oembed_security' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>"._x('Enable oEmbeds from unknown providers', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input class='affects_player' ".checked( $options['right_click'], "on", false )." id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>".__('Allow right-clicking on videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo "<input class='affects_player' ".checked( $options['right_click'], "on", false )." id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>".__('Allow right-clicking on videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['click_download'], "on", false )." id='click_download' name='kgvid_video_embed_options[click_download]' type='checkbox' /> <label for='click_download'>".__('Allow single-click download link for videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
 	function kgvid_featured_callback() {
@@ -4242,6 +4244,7 @@ function kgvid_update_settings() {
 			$options['oembed_provider'] = "on";
 			$options['oembed_security'] = false;
 			$options['ffmpeg_old_rotation'] = "on";
+			$options['click_download'] = "on";
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5590,7 +5593,12 @@ function kgvid_video_attachment_template() {
 		exit;
 	}
 
-	if ( is_array($kgvid_video_embed) && array_key_exists('download', $kgvid_video_embed) && $kgvid_video_embed['download'] == 'true' && strpos($post->post_mime_type,"video") !== false ) {
+	if ( is_array($kgvid_video_embed)
+		&& array_key_exists('download', $kgvid_video_embed)
+		&& $kgvid_video_embed['download'] == 'true'
+		&& strpos($post->post_mime_type,"video") !== false
+		&& $options['click_download'] == 'on'
+	) {
 
 		$filepath = get_attached_file($post->ID);
 		$filetype = wp_check_filetype( $filepath );
