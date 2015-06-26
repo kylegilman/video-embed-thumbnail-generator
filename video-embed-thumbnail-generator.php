@@ -5231,6 +5231,8 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 
 	if( !empty($post['ID']) && isset($attachment['kgflashmediaplayer-url']) && $flag < 1 ) {
 
+		$options = kgvid_get_options();
+
 		$thumb_id = "";
 		if( isset($attachment['kgflashmediaplayer-poster']) ) {
 
@@ -5275,7 +5277,10 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 
 		$video_formats = kgvid_video_formats();
 		foreach ( $video_formats as $format => $format_stats ) {
-			if( !isset($attachment['kgflashmediaplayer-encode'.$format]) ) { $attachment['kgflashmediaplayer-encode'.$format] = "false"; }
+			if( !isset($attachment['kgflashmediaplayer-encode'.$format]) ) {
+				if ( $options['encode_'.$format] == false ) { $attachment['kgflashmediaplayer-encode'.$format] = "false"; }
+				else { $attachment['kgflashmediaplayer-encode'.$format] = "notchecked"; }
+			}
 		}
 
 		$checkboxes = array( 'lockaspect', 'featured', 'showtitle', 'downloadlink' ); //make sure unchecked checkbox values are saved
