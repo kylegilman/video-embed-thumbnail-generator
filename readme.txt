@@ -248,6 +248,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Consolidated most video metadata database entries into a single array.
 * Fixed several bugs related to hosting media library files on other servers like Amazon S3.
 * Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.
+* Fixed bug that dropped videos from the video encode queue when multiple videos were added to the database simultaneously, specifically when using Add From Server.
 * Fixed bug that created squashed encoded videos when they were shot vertically on a mobile device.
 * Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
 * Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
