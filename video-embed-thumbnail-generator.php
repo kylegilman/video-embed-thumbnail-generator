@@ -3289,7 +3289,6 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('watermark', __('Watermark overlay:', 'video-embed-thumbnail-generator'), 'kgvid_watermark_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
 	add_settings_field('align', __('Video alignment:', 'video-embed-thumbnail-generator'), 'kgvid_align_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'align' ) );
 	add_settings_field('resize', __('Automatically adjust videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
-	add_settings_field('inline', __('Inline videos:', 'video-embed-thumbnail-generator'), 'kgvid_inline_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'inline' ) );
 	add_settings_field('dimensions', __('Max embedded video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_options', __('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
 	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
@@ -3471,16 +3470,12 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	}
 
-	function kgvid_inline_callback() {
-		$options = kgvid_get_options();
-		echo "<input ".checked( $options['inline'], "on", false )." id='inline' name='kgvid_video_embed_options[inline]' type='checkbox' /> <label for='inline'>".__('Allow other content on the same line as the video.', 'video-embed-thumbnail-generator')."</label>\n\t";
-	}
-
 	function kgvid_dimensions_callback() {
 		$options = kgvid_get_options();
 		echo __('Width:', 'video-embed-thumbnail-generator')." <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='".$options['width']."' /> ".__('Height:', 'video-embed-thumbnail-generator')." <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='".$options['height']."' /><br />";
 		echo "<input ".checked( $options['minimum_width'], "on", false )." id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>".__('Enlarge lower resolution videos to max width.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Usually if a video\'s resolution is less than the max width, the video player is set to the actual width of the video. Enabling this will always set the same width regardless of the quality of the video. When necessary you can override by setting the dimensions manually.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input ".checked( $options['fullwidth'], "on", false )." id='fullwidth' name='kgvid_video_embed_options[fullwidth]' type='checkbox' /> <label for='fullwidth'>".__('Set all videos to expand to fill their containers.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enabling this will ignore any other width settings and set the width of the video to the width of the container it\'s in.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo "<input ".checked( $options['fullwidth'], "on", false )." id='fullwidth' name='kgvid_video_embed_options[fullwidth]' type='checkbox' /> <label for='fullwidth'>".__('Set all videos to expand to fill their containers.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Enabling this will ignore any other width settings and set the width of the video to the width of the container it\'s in.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['inline'], "on", false )." id='inline' name='kgvid_video_embed_options[inline]' type='checkbox' /> <label for='inline'>".__('Allow other content on the same line as the video.', 'video-embed-thumbnail-generator')."</label>\n\t";
 	}
 
 	function kgvid_video_gallery_callback() {
