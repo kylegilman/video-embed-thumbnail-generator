@@ -229,7 +229,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5 - June 30, 2015 =
+= 4.5 - July 6, 2015 =
 * Added pagination option for video galleries.
 * Added oEmbed provider data.
 * Added experimental WEBM VP9 encoding format.
@@ -705,7 +705,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Upgrade Notice ==
 
 = 4.5 =
-
+This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
 
 = 3.0 =
 Fixes thumbnails & encodes in WP 3.5. Not compatible with earlier WP versions.
