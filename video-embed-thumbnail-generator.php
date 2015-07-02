@@ -1705,6 +1705,8 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			$kgvid_postmeta = kgvid_get_attachment_meta( $attachment->ID );
 			if ( $kgvid_postmeta['downloadlink'] == "on" ) { ++$below_video; }
 
+			$play_button_html = '';
+
 			if ( $options['embed_method'] == "WordPress Default" ) {
 
 				$library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
@@ -1717,10 +1719,20 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/400,2) );
 				$play_translate = 5;
 			}
+			elseif ( $options['embed_method'] == "JW Player" ) {
+				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/250,2) );
+				$play_translate = 30;
+				if ( empty($options['jw_player_id']) ) { $options['jw_player_id'] = 1; }
+				$play_button_html = '<div id="jwplayer-'.$options['jw_player_id'].'" style="position:absolute;top:45%;left:45%;-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><div class="jwdisplay" style="height:52px;width:36px;"><div id="jwplayer-'.$options['jw_player_id'].'_display_button_play" class="jwicon" style="height:100%;"></div></div></div>';
+			}
 			else {
 				$play_button_class = "vjs-big-play-button";
 				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/600,2) );
 				$play_translate = 30;
+			}
+
+			if ( empty($play_button_html) ) {
+				$play_button_html = '<div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div>';
 			}
 
 			$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
@@ -1739,7 +1751,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$options['js_skin'] = $query_atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
 
-			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="max-width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'"><div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div>';
+			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="max-width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'">'.$play_button_html;
 
 			if ( $query_atts['gallery_title'] == 'true' ) { $code .= '<div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div>'; }
 

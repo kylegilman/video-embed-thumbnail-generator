@@ -40,7 +40,7 @@ function kgvid_SetVideo(id) { //for galleries
 	}
 	var frame_height = height;
 	var meta = jQuery('#kgvid_video_gallery_thumb_'+id).data('meta');
-	if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(24*meta); }
+	if ( meta > 0 ) { frame_height = parseInt(height)+Math.round(28*meta); }
 	var frame_width = parseInt(width) + 10;
 	frame_height = parseInt(frame_height) + 10;
 
@@ -124,7 +124,12 @@ function kgvid_SetVideo(id) { //for galleries
 				jQuery.modal.setPosition();
 
 				dialog.wrap.css('overflow', 'hidden'); //disable scroll bars
-				if ( meta > 0 ) { jQuery('#kgvid-simplemodal-container').css('color','white'); } //show text if there's anything to see below the video
+				if ( meta > 0 ) {
+					jQuery('#kgvid-simplemodal-container').css('color','white'); //show text if there's anything to see below the video
+					meta_bump = 5;
+					if ( video_vars.player_type == "JW Player" ) { meta_bump = 15; }
+					jQuery('#kgvid-simplemodal-container').height(jQuery('#kgvid-simplemodal-container').height() + meta_bump);
+				}
 
 				if ( video_vars.player_type == "Video.js" ) {
 					videojs('video_'+id).load();

@@ -264,6 +264,10 @@ img.kgvid_ios_novideo {
 	text-decoration: none;
 }
 
+#kgvid-simplemodal-container .wp-video {
+	margin-bottom: 0px;
+}
+
 .kgvid_gallery_prev {
 	top: -20px;
 	right: 58px;
