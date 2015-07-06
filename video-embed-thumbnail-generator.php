@@ -1719,21 +1719,14 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/400,2) );
 				$play_translate = 5;
 			}
-			elseif ( $options['embed_method'] == "JW Player" ) {
-				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/250,2) );
-				$play_translate = 30;
-				if ( empty($options['jw_player_id']) ) { $options['jw_player_id'] = 1; }
-				$play_button_html = '<div id="jwplayer-'.$options['jw_player_id'].'" style="position:absolute;top:45%;left:45%;-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><div class="jwdisplay" style="height:52px;width:36px;"><div id="jwplayer-'.$options['jw_player_id'].'_display_button_play" class="jwicon" style="height:100%;"></div></div></div>';
-			}
+
 			else {
 				$play_button_class = "vjs-big-play-button";
 				$play_scale = strval( round(intval($query_atts["gallery_thumb"])/600,2) );
 				$play_translate = 30;
 			}
 
-			if ( empty($play_button_html) ) {
-				$play_button_html = '<div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div>';
-			}
+			$play_button_html = '<div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div>';
 
 			$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
 

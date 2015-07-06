@@ -14,6 +14,14 @@ function kgvid_document_ready() {
 
 	});
 
+	jQuery('.kgvid_gallerywrapper').each(function(){ //setup gallery thumbnails
+
+		var gallery_id = this.id;
+		kgvid_resize_gallery_play_button(gallery_id);
+		jQuery(window).resize( function(){ kgvid_resize_gallery_play_button(gallery_id) } );
+
+	});
+
 }
 
 function kgvid_SetVideo(id) { //for galleries
@@ -521,6 +529,47 @@ function kgvid_resize_video(id) {
 	}
 
 	++kgvid_resize_video.counter;
+
+}
+
+function kgvid_resize_gallery_play_button(gallery_id) {
+
+	var video_vars = jQuery('#'+gallery_id+' .kgvid_video_gallery_thumb').first().data('kgvid_video_vars');
+	var thumb_width = jQuery('#'+gallery_id+' .kgvid_video_gallery_thumb').first().width();
+
+	if ( video_vars.player_type == "Video.js" || video_vars.player_type == "WordPress Default" ) {
+
+		var max_percent = 0.17;
+
+
+		if ( video_vars.player_type == "Video.js" ) {
+			var button_selector = '.vjs-big-play-button';
+			var translate_y = 30;
+		}
+
+		if ( video_vars.player_type == "WordPress Default" ) {
+			var button_selector = '.mejs-overlay-button';
+			var translate_y = 5;
+		}
+
+		var play_button_percent = jQuery('#'+gallery_id+' '+button_selector).width()/thumb_width;
+
+		var unscaled_width = jQuery('#'+gallery_id+' '+button_selector)[0].offsetWidth;
+		var scale_value = Math.round(thumb_width * max_percent / unscaled_width * 1000)/1000;
+
+		if ( scale_value < 1 ) {
+			var css_text = 'scale('+scale_value+') translateY(-'+translate_y+'px)';
+
+			jQuery('#'+gallery_id+' '+button_selector).css({
+				'transform' : css_text,
+				'-webkit-transform' : css_text,
+				'-o-transform' : css_text,
+				'-ms-transform': css_text
+			});
+		}
+		else { Query('#'+gallery_id+' '+button_selector).removeAttr('style'); }
+
+	}
 
 }
 
