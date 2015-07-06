@@ -5576,7 +5576,7 @@ function kgvid_video_attachment_template() {
 	$options = kgvid_get_options();
 
 	$kgvid_video_embed = array ( 'enable' => 'false' ); //turned off by default
-	if ( isset($wp_query->query_vars['kgvid_video_embed']) ) { $kgvid_video_embed = $wp_query->query_vars['kgvid_video_embed']; }
+	if ( is_object($wp_query) && isset($wp_query->query_vars['kgvid_video_embed']) ) { $kgvid_video_embed = $wp_query->query_vars['kgvid_video_embed']; }
 	if ( $options['template'] == "old" ) { $kgvid_video_embed['enable'] = 'true'; } //regardless of any query settings, if we're using the old method it's turned on
 	if ( (!is_array($kgvid_video_embed) && $kgvid_video_embed == "true") ) { $kgvid_video_embed = array ( 'enable' => 'true' ); } //maintain backwards compatibility
 
@@ -5596,6 +5596,7 @@ function kgvid_video_attachment_template() {
 	if ( is_array($kgvid_video_embed)
 		&& array_key_exists('download', $kgvid_video_embed)
 		&& $kgvid_video_embed['download'] == 'true'
+		&& is_object($post)
 		&& strpos($post->post_mime_type,"video") !== false
 		&& $options['click_download'] == 'on'
 	) {
