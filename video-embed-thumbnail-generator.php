@@ -601,6 +601,16 @@ function kgvid_plugin_meta_links( $links, $file ) {
 }
 add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 
+// add plugin upgrade notification
+function kgvid_showUpgradeNotification($currentPluginMetadata, $newPluginMetadata){
+   // check "upgrade_notice"
+   if (isset($newPluginMetadata->upgrade_notice) && strlen(trim($newPluginMetadata->upgrade_notice)) > 0){
+        echo '<p style="background-color: #d54e21; padding: 10px; color: #f9f9f9; margin-top: 10px"><strong>Upgrade Notice:</strong> ';
+        echo esc_html($newPluginMetadata->upgrade_notice), '</p>';
+   }
+}
+add_action('in_plugin_update_message-video-embed-thumbnail-generator/video-embed-thumbnail-generator.php', 'kgvid_showUpgradeNotification', 10, 2);
+
 function kgvid_check_if_capable($capability) {
 	global $wp_roles;
 	$capable = array();
@@ -5278,7 +5288,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 			set_post_thumbnail($post['ID'], $thumb_id);
 		}
 
-		$video_formats = kgvid_video_formats();
+		$video_formats = kgvid_video_formats(false, false);
 		foreach ( $video_formats as $format => $format_stats ) {
 			if( !isset($attachment['kgflashmediaplayer-encode'.$format]) ) {
 				if ( $options['encode_'.$format] == false ) { $attachment['kgflashmediaplayer-encode'.$format] = "false"; }
