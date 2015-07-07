@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution
 Requires at least: 3.5
-Tested up to: 4.2
+Tested up to: 4.3
 Stable tag: 4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -156,7 +156,7 @@ Optional: `AddType video/mp4 .mov` will help with IE playback of .mov files but 
 
 = Why doesn't my video play? =
 
-Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. It's confusing, but there is a codec usually identified simply as "MPEG-4" of "MPEG-4 Visual" which is not the same thing as H.264 even if it's in an mp4 container. mp4s with MPEG-4 video will not play in most browsers, and if you don't use AAC audio you won't get any audio.
+Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. It's confusing, but there is a codec usually identified simply as "MPEG-4" of "MPEG-4 Visual" which is not the same thing as H.264 even if it's in an mp4 container. mp4s with MPEG-4 video will not play in most browsers, and if you don't use AAC audio you won't get any audio. I highly recommend using <a href="http://handbrake.fr/">Handbrake</a> to make a file with H.264 video and AAC audio in an MP4 container.
 
 Use <a href="http://mediaarea.net/en/MediaInfo">MediaInfo</a> to get really detailed information about your media files.
 
@@ -229,9 +229,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5 - July 6, 2015 =
+= 4.5 - July 7, 2015 =
+* This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/plugin/video-embed-thumbnail-generator">support forum</a>.
+* Consolidated most video metadata database entries into a single array. This might slow things down the first time you load the Media Library.
 * Added pagination option for video galleries.
-* Added oEmbed provider data.
+* Added oEmbed provider data and option to allow oEmbed discovery from other sites.
 * Added experimental WEBM VP9 encoding format.
 * Added option to make the watermark overlay image a link.
 * Added video stats column to Media Library list view.
@@ -243,12 +245,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Updated Video.js to version 4.12.7
 * Updated Spanish translation.
 * Updated Facebook Open Graph video embedding tags.
-* Consolidated most video metadata database entries into a single array.
-* Re-enabled native video player controls on mobile devices when using Video.js player to allow better Airplay & Chromecast controls.
+* Re-enabled native video player controls on mobile devices when using Video.js player for better responsive resizing and to allow Airplay & Chromecast controls.
 * Removed superfluous gallery height option.
 * Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
 * Stopped inserting unnecessary poster URL shortcode attribute when poster is set in the media library.
-* Fixed several bugs related to hosting media library files on other servers like Amazon S3.
+* Fixed several bugs related to hosting media library files on external servers like Amazon S3.
 * Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.
 * Fixed bug that dropped videos from the video encode queue when multiple videos were added to the database simultaneously, specifically when using Add From Server.
 * Fixed bug that created squashed encoded videos when they were shot vertically on a mobile device.
