@@ -229,6 +229,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.5.1 - July 8, 2015 =
+* Prevented automatic re-writing of video URLs to a local address if a popular cloud storage address is entered in the shortcode (Amazon AWS, Rackspace, etc).
+
 = 4.5 - July 7, 2015 =
 * This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/plugin/video-embed-thumbnail-generator">support forum</a>.
 * Consolidated most video metadata database entries into a single array. This might slow things down the first time you load the Media Library.
