@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution
 Requires at least: 3.5
 Tested up to: 4.3
-Stable tag: 4.5
+Stable tag: 4.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -230,7 +230,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.5.1 - July 8, 2015 =
+* Fixed bug that accidentally deleted thumbnail image IDs from video meta when editing attachments.
 * Prevented automatic re-writing of video URLs to a local address if a popular cloud storage address is entered in the shortcode (Amazon AWS, Rackspace, etc).
+* Restored full-resolution thumbnails when width is set to a percentage.
 
 = 4.5 - July 7, 2015 =
 * This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/plugin/video-embed-thumbnail-generator">support forum</a>.
