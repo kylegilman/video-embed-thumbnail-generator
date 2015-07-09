@@ -229,7 +229,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5.1 - July 8, 2015 =
+= 4.5.1 - July 9, 2015 =
 * Fixed bug that accidentally deleted thumbnail image IDs from video meta when editing attachments.
 * Prevented automatic re-writing of video URLs to a local address if a popular cloud storage address is entered in the shortcode (Amazon AWS, Rackspace, etc).
 * Restored full-resolution thumbnails when width is set to a percentage.
