@@ -710,6 +710,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Upgrade Notice ==
 
+= 4.5.1 =
+This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
+
 = 4.5 =
 This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
 
