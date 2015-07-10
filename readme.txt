@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution
 Requires at least: 3.5
 Tested up to: 4.3
-Stable tag: 4.5.1
+Stable tag: 4.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -228,6 +228,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.5.2 - July 10, 2015 =
+* Fixed bug that failed to set the volume or count views when using the WordPress Default or JW Player.
+* Fixed bug that failed to count views when WordPress Default player was on autoplay.
+* Fixed Video.js inconsistent autoplay bug.
 
 = 4.5.1 - July 9, 2015 =
 * Fixed bug that accidentally deleted thumbnail image IDs from video meta when editing attachments.
@@ -709,6 +714,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * First Release
 
 == Upgrade Notice ==
+
+= 4.5.2 =
+This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
 
 = 4.5.1 =
 This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
