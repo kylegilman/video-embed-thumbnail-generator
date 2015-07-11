@@ -229,8 +229,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5.3 - July 12, 2015 =
-* Fixed 'strlen' error when editing videos with subtitles.
+= 4.5.3 - July 11, 2015 =
+* Fixed error that could zero out view counts when editing videos.
+* Fixed 'strlen' error when updating videos with subtitles.
+* Attempting to enable 'default' subtitle tracks on more browsers, but implementation is inconsistent.
 
 = 4.5.2 - July 10, 2015 =
 * Fixed bug that failed to set the volume or count views when using the WordPress Default or JW Player.

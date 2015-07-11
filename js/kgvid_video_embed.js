@@ -231,10 +231,21 @@ function kgvid_setup_video(id) {
 
 		jQuery('#video_'+id).append(jQuery('#video_'+id+'_watermark'));
 
-		setTimeout(function() {
+		player.on('loadedmetadata', function(){
+
+			var text_tracks = player.textTracks();
+			var default_track_id = jQuery('#video_'+id+'_div track[default]').first().attr('id');
+
+			if ( default_track_id != null ) {
+				jQuery(text_tracks).each(function(index, track) {
+					if ( track.id == default_track_id && track.mode != 'showing' ) { player.textTracks()[index].mode = 'showing'; }
+				});
+			}
+
 			if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
 			if ( video_vars.mute == "true" ) { player.muted(true); }
-		}, 0);
+
+		});
 
 		player.on('play', function kgvid_play_start(){
 			player.off('timeupdate', kgvid_timeupdate);

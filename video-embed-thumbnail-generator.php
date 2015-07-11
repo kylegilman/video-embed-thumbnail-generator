@@ -289,9 +289,11 @@ function kgvid_get_attachment_meta($post_id) {
 
 function kgvid_save_attachment_meta($post_id, $kgvid_postmeta) {
 
-	$options = kgvid_get_options();
-
 	if ( is_array($kgvid_postmeta) ) {
+
+		$options = kgvid_get_options();
+		$kgvid_old_postmeta = kgvid_get_attachment_meta($post_id);
+		$kgvid_postmeta = array_merge($kgvid_old_postmeta, $kgvid_postmeta); //make sure all keys are saved
 
 		foreach ( $kgvid_postmeta as $key => $meta ) { //don't save if it's the same as the default values or empty
 
@@ -2151,7 +2153,7 @@ function KGVID_shortcode($atts, $content = ''){
 							if ( empty($value) ) { $track_attribute[$attribute] = $query_atts['track_'.$attribute]; }
 						}
 						if ( $options['embed_method'] == "WordPress Default" && $track_attribute['kind'] == 'captions' ) { $track_attribute['kind'] = 'subtitles'; }
-						$track_code .= "\t\t\t\t\t<track kind='".esc_attr($track_attribute['kind'])."' src='".esc_attr($track_attribute['src'])."' srclang='".esc_attr($track_attribute['srclang'])."' label='".esc_attr($track_attribute['label'])."' ".esc_attr($track_attribute['default'])." />\n";
+						$track_code .= "\t\t\t\t\t<track id='".$div_suffix."_text_".$track."' kind='".esc_attr($track_attribute['kind'])."' src='".esc_attr($track_attribute['src'])."' srclang='".esc_attr($track_attribute['srclang'])."' label='".esc_attr($track_attribute['label'])."' ".esc_attr($track_attribute['default'])." />\n";
 					}
 				}
 
@@ -4883,7 +4885,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				URL: <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][src]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" type="text" value="'.$kgvid_postmeta['track'][$track]['src'].'" class="text" style="width:180px;"><br />
 				'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][srclang]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_srclang" type="text" value="'.$kgvid_postmeta['track'][$track]['srclang'].'" maxlength="2" style="width:40px;"><br />
 				'.__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][label]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_label" type="text" value="'.$kgvid_postmeta['track'][$track]['label'].'" class="text" style="width:172px;"><br />
-				'.__('Default:', 'video-embed-thumbnail-generator').'<input '.checked(array_key_exists('default', $kgvid_postmeta['track'][$track]), true, false).' name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][default]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_default" type="checkbox" value="default"></div>';
+				'.__('Default:', 'video-embed-thumbnail-generator').'<input '.checked($kgvid_postmeta['track'][$track]['default'], 'default', false).' name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][default]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_default" type="checkbox" value="default"></div>';
 			}
 		}
 
@@ -5327,6 +5329,12 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 		$checkboxes = array( 'lockaspect', 'featured', 'showtitle', 'downloadlink' ); //make sure unchecked checkbox values are saved
 		foreach ( $checkboxes as $checkbox ) {
 			if( !isset($attachment['kgflashmediaplayer-'.$checkbox]) ) { $attachment['kgflashmediaplayer-'.$checkbox] = "false"; }
+		}
+
+		if ( isset( $attachment['kgflashmediaplayer-track'] ) && is_array( $attachment['kgflashmediaplayer-track'] ) ) {
+			foreach ( $attachment['kgflashmediaplayer-track'] as $track => $track_attribute ) {
+				if ( !array_key_exists('default', $track_attribute) ) { $attachment['kgflashmediaplayer-track'][ $track ]['default'] = ''; }
+			}
 		}
 
 		$kgvid_postmeta = array();
