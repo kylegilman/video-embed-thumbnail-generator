@@ -14,6 +14,8 @@ Generates thumbnails, encodes HTML5-compliant videos, and embeds locally hosted 
 
 = A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compatible files a little bit easier. =
 
+This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/plugin/video-embed-thumbnail-generator">support forum</a>.
+
 This plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options, make thumbnails, click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers.
 
 You have the option to use a few different video players:
@@ -228,6 +230,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.5.4 - July XX, 2015 =
+* Added Schema.org uploadDate and description tags which are required by Google for video listings.
 
 = 4.5.3 - July 11, 2015 =
 * Fixed error that could zero out view counts when editing videos.

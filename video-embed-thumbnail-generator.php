@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.5.3
+Version: 4.5.4
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.501,
+		"version" => 4.504,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -2132,10 +2132,17 @@ function KGVID_shortcode($atts, $content = ''){
 				$code .= '<meta itemprop="contentUrl" content="'.$content.'" />';
 
 				if ( !empty($query_atts['title']) ) { $code .= '<meta itemprop="name" content="'.esc_attr($query_atts['title']).'" />'; }
+
 				if ( !empty($query_atts['description']) ) { $description = $query_atts['description']; }
 				elseif ( !empty($query_atts['caption']) ) { $description = $query_atts['caption']; }
-				else { $description = ""; }
-				if ( !empty($description) ) { $code .= '<meta itemprop="description" content="'.esc_attr($description).'" />'; }
+				elseif ( in_the_loop() && !is_attachment() ) { $description = get_the_excerpt(); }
+				if ( empty($description) ) { $description = __('Video', 'video-embed-thumbnail-generator'); }
+				$code .= '<meta itemprop="description" content="'.esc_attr($description).'" />';
+
+				if ( !empty($id) ) { $upload_date = get_the_date('c', $id); }
+				elseif ( $post_ID != 1 ) { $upload_date = get_the_date('c', $post_ID); }
+				else { $upload_date = current_time('c'); }
+				$code .= '<meta itemprop="uploadDate" content="'.esc_attr($upload_date).'" />';
 
 				$track_keys = array('kind', 'srclang', 'src', 'label', 'default');
 				if ( !isset($kgvid_postmeta) || ( is_array($kgvid_postmeta) && !is_array($kgvid_postmeta['track']) ) ) {
