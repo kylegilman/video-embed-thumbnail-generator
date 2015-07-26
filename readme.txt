@@ -233,6 +233,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.5.4 - July XX, 2015 =
 * Added Schema.org uploadDate and description tags which are required by Google for video listings.
+* Fixed undefined index error when editing videos with text tracks that don't have default enabled.
 
 = 4.5.3 - July 11, 2015 =
 * Fixed error that could zero out view counts when editing videos.

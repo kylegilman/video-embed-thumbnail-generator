@@ -4886,6 +4886,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				}
 				$track_type_select .= "</select>";
 
+				if ( !array_key_exists( 'default', $kgvid_postmeta['track'][$track] ) ) { $kgvid_postmeta['track'][$track]['default'] = false; }
+
 				$tracks_html .= '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv-'.$track.'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.strval($track+1).'</strong><span class="kgvid_track_box_removeable" onclick="jQuery(this).parent().remove();jQuery(\'form.compat-item input\').first().change();">X</span><br />
 				'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />
 				<span id="pick-track'.$track.'" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
