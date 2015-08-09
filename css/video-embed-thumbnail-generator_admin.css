@@ -220,9 +220,10 @@ div.kgvid_thumbnail_overlay {
 
 div.kgvid_save_overlay {
     position: absolute;
-    top: 100px;
-    left: 40%;
-    font-size: 200%;
+    top: 70%;
+    font-size: 160%;
+    width: 100%;
+    text-align: center;
 }
 
 div.kgvid_video_app_required {

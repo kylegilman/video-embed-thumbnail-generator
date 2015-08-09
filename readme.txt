@@ -234,7 +234,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.5.4 - August 9, 2015 =
 * Added option to disable native controls on mobile devices when using the Video.js player.
 * Added Schema.org uploadDate and description tags which are required by Google for video listings.
+* Updated Video.js to version 4.12.11
 * Fixed undefined index error when editing videos with text tracks that don't have default enabled.
+* Fixed and localized "Saving..." overlay when saving browser-generated thumbnails.
+* Fixed bug that could generate an error when displaying the sample video on the plugin settings page.
 
 = 4.5.3 - July 11, 2015 =
 * Fixed error that could zero out view counts when editing videos.

@@ -415,9 +415,9 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	var png64dataURL = canvas.toDataURL(); //this is what saves the image. Do this after selection.
 
-	jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay').fadeTo(500, .25);
+	jQuery('#attachments-'+postID+'-thumbnailplaceholder canvas').fadeTo(500, .25);
 	jQuery('#attachments-'+postID+'-thumbnailplaceholder input').attr('disabled', true);
-	jQuery('#attachments-'+postID+'-thumbnailplaceholder').prepend('<div class="kgvid_save_overlay">Saving...</div>')
+	jQuery('#attachments-'+postID+'-thumbnailplaceholder').prepend('<div class="kgvid_save_overlay">'+kgvidL10n.saving+'</div>')
 
 	jQuery.ajax({
 		type: "POST",
