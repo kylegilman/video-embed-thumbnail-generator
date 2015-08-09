@@ -1173,12 +1173,14 @@ function kgvid_hide_plugin_settings() {
 		}
 
 		if ( playback_option == "WordPress Default" || playback_option == "JW Player" ) {
+			jQuery('#nativecontrolsfortouch').parents().eq(1).hide();
 			jQuery('#js_skin').parents().eq(1).hide();
 			jQuery('#chromecast').parents().eq(1).hide();
 			jQuery('#auto_res').parents().eq(1).hide();
 		}
 
 		if ( playback_option == "Video.js" || playback_option == "Strobe Media Playback" ) {
+			jQuery('#nativecontrolsfortouch').parents().eq(1).show();
 			jQuery('#js_skin').parents().eq(1).show();
 			jQuery('#chromecast').parents().eq(1).show();
 			jQuery('#auto_res').parents().eq(1).show();

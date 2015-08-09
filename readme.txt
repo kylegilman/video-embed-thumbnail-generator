@@ -231,7 +231,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5.4 - July XX, 2015 =
+= 4.5.4 - August 9, 2015 =
+* Added option to disable native controls on mobile devices when using the Video.js player.
 * Added Schema.org uploadDate and description tags which are required by Google for video listings.
 * Fixed undefined index error when editing videos with text tracks that don't have default enabled.
 

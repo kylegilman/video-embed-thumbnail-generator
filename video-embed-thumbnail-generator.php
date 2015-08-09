@@ -2316,7 +2316,9 @@ function KGVID_shortcode($atts, $content = ''){
 					if ( is_array($atts) && array_key_exists('skin', $atts) ) {
 						$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 					}
-					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "nativeControlsForTouch": true, "language": "'.substr($locale, 0, 2).'"';
+					$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ ';
+					if ( $options['nativecontrolsfortouch'] == "on" ) { $code .= '"nativeControlsForTouch": true, '; }
+					$code .= '"language": "'.substr($locale, 0, 2).'"';
 					if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"]';
 						if ( $query_atts["auto_res"] == "highest" ) { $code .= ', "default_res": "'.end($h264_resolutions).'"'; }
 						if ( $query_atts["auto_res"] == "lowest" ) { $code .= ', "default_res": "'.reset($h264_resolutions).'"'; }
@@ -3334,6 +3336,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('audio', __('Volume:', 'video-embed-thumbnail-generator'), 'kgvid_audio_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'volume' ) );
 	add_settings_field('preload', __('Preload:', 'video-embed-thumbnail-generator'), 'kgvid_preload_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'preload' ) );
 	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
+	add_settings_field('nativecontrolsfortouch', __('Native controls:', 'video-embed-thumbnail-generator'), 'kgvid_nativecontrolsfortouch_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'nativecontrolsfortouch' ) );
 	add_settings_field('custom_attributes', __('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
 
 	add_settings_field('bgcolor', __('Background color:', 'video-embed-thumbnail-generator'), 'kgvid_bgcolor_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'bgcolor' ) );
@@ -3596,6 +3599,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_js_skin_callback() {
 		$options = kgvid_get_options();
 		echo "<input class='regular-text code affects_player' id='js_skin' name='kgvid_video_embed_options[js_skin]' type='text' value='".$options['js_skin']."' /><br /><em><small>".sprintf( __('Use %s for a nice, circular play button. Leave blank for the default square play button.', 'video-embed-thumbnail-generator')." <a href='http://videojs.com/docs/skins/'>".__('Or build your own CSS skin.', 'video-embed-thumbnail-generator'), '<code>kg-video-js-skin</code>')."</a></small></em>\n\t";
+	}
+
+	function kgvid_nativecontrolsfortouch_callback() {
+		$options = kgvid_get_options();
+		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Native controls allow for streaming services like AirPlay and Chromecast, but don\'t always look as nice.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
 	function kgvid_custom_attributes_callback() {
@@ -4277,6 +4285,10 @@ function kgvid_update_settings() {
 			$options['oembed_security'] = false;
 			$options['ffmpeg_old_rotation'] = "on";
 			$options['click_download'] = "on";
+		}
+		if ( $options['version'] < 4.504 ) {
+			$options['version'] = 4.504;
+			$options['nativecontrolsfortouch'] = "on";
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5638,7 +5650,7 @@ function kgvid_video_attachment_template() {
 	if ( $options['embeddable'] == 'false' && !array_key_exists('sample', $kgvid_video_embed) && !array_key_exists('gallery', $kgvid_video_embed) ) { $kgvid_video_embed['enable'] = 'false'; }
 
 	if ( is_array($kgvid_video_embed) && array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true'
-		&& ( ( array_key_exists('post_mime_type', $post) && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
+		&& ( ( is_object($post) && array_key_exists('post_mime_type', $post) && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
 		) {
 
 		$html = kgvid_generate_embeddable_video( $kgvid_video_embed );
