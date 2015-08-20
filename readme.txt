@@ -231,6 +231,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.5.5 - August 20, 2015 =
+* Fixed a number of potential infinite loops and other recursion issues related to longstanding WordPress bug <a href='https://core.trac.wordpress.org/ticket/17817'>#17817</a>.
+* Changed video player names with spaces (WordPress Default, JW Player) to one word camel case for JavaScript functions (WordPressDefault, JWPlayer).
+
 = 4.5.4 - August 9, 2015 =
 * Added option to disable native controls on mobile devices when using the Video.js player.
 * Added Schema.org uploadDate and description tags which are required by Google for video listings.
