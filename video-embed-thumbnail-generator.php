@@ -2009,7 +2009,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 		elseif ( in_the_loop() && !is_attachment() ) {
 			global $post;
 			if ( !empty($post->post_excerpt) ) {
-				$description = $post->post_exceprt;
+				$description = $post->post_excerpt;
 			}
 			else {
 				$description = esc_attr(wp_trim_words(strip_tags(strip_shortcodes($post->post_content))));
