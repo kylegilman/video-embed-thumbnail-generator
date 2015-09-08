@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.5.5
+Version: 4.5.6
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.505,
+		"version" => 4.506,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -2012,7 +2012,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 				$description = $post->post_excerpt;
 			}
 			else {
-				$description = esc_attr(wp_trim_words(strip_tags(strip_shortcodes($post->post_content))));
+				$description = wp_trim_words(strip_tags(strip_shortcodes($post->post_content)));
 			}
 		}
 		if ( empty($description) ) { $description = __('Video', 'video-embed-thumbnail-generator'); }
@@ -5063,6 +5063,19 @@ function kgvid_video_icon_dir($dir) {
 }
 add_filter('icon_dir', 'kgvid_video_icon_dir');
 
+function kgvid_decode_base64_png($raw_png, $tmp_posterpath) {
+
+	$raw_png = str_replace('data:image/png;base64,', '', $raw_png);
+	$raw_png = str_replace('data:image/jpeg;base64,', '', $raw_png);
+	$raw_png = str_replace(' ', '+', $raw_png);
+	$decoded_png = base64_decode($raw_png);
+	$success = file_put_contents($tmp_posterpath, $decoded_png);
+	$editor = wp_get_image_editor( $tmp_posterpath );
+
+	return $editor;
+
+}
+
 function kgvid_ajax_save_html5_thumb() {
 
 	if ( current_user_can('make_video_thumbnails') ) {
@@ -5080,29 +5093,38 @@ function kgvid_ajax_save_html5_thumb() {
 		$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile.'.png';
 		$thumb_url = $uploads['url'].'/'.$posterfile.'.jpg';
 
-		$raw_png = str_replace('data:image/png;base64,', '', $raw_png);
-		$raw_png = str_replace(' ', '+', $raw_png);
-		$decoded_png = base64_decode($raw_png);
-		$success = file_put_contents($tmp_posterpath, $decoded_png);
+		$editor = kgvid_decode_base64_png($raw_png, $tmp_posterpath);
 
-		$editor = wp_get_image_editor( $tmp_posterpath );
-		$thumb_dimensions = $editor->get_size();
-		if ( $thumb_dimensions ) {
-			$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
-			$kgvid_postmeta['actualwidth'] = $thumb_dimensions['width'];
-			$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
-			kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
+		if ( is_wp_error($editor) ) { //couldn't open the image. Try the alternate php://input
+
+			$raw_post = file_get_contents("php://input");
+			parse_str($raw_post, $alt_post);
+			$editor = kgvid_decode_base64_png($alt_post['raw_png'], $tmp_posterpath);
+
 		}
-		$editor->set_quality( 90 );
-		$new_image_info = $editor->save( $uploads['path'].'/thumb_tmp/'.$posterfile.'.jpg', 'image/jpeg' );
-		unlink($tmp_posterpath);
-		if ( $total > 1 ) {
-			$post_name = get_the_title($post_id);
-			$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
+
+		if ( !is_wp_error($editor) ) {
+			$thumb_dimensions = $editor->get_size();
+			if ( $thumb_dimensions ) {
+				$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
+				$kgvid_postmeta['actualwidth'] = $thumb_dimensions['width'];
+				$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
+				kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
+			}
+			$editor->set_quality( 90 );
+			$new_image_info = $editor->save( $uploads['path'].'/thumb_tmp/'.$posterfile.'.jpg', 'image/jpeg' );
+			unlink($tmp_posterpath);
+			if ( $total > 1 ) {
+				$post_name = get_the_title($post_id);
+				$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
+			}
 		}
+		else { $thumb_url = ''; }
+
 		kgvid_schedule_cleanup_generated_files('thumbs');
 		echo ($thumb_url);
 		die();
+
 	}
 }
 add_action('wp_ajax_kgvid_save_html5_thumb', 'kgvid_ajax_save_html5_thumb');

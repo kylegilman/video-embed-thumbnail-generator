@@ -413,7 +413,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 
 	var video_url = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-url]')[0].value;
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
-	var png64dataURL = canvas.toDataURL(); //this is what saves the image. Do this after selection.
+	var png64dataURL = canvas.toDataURL('image/jpeg', 0.9); //this is what saves the image. Do this after selection.
 
 	jQuery('#attachments-'+postID+'-thumbnailplaceholder canvas').fadeTo(500, .25);
 	jQuery('#attachments-'+postID+'-thumbnailplaceholder input').attr('disabled', true);
@@ -422,7 +422,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 	jQuery.ajax({
 		type: "POST",
 		url: ajaxurl,
-		data: { action:"kgvid_save_html5_thumb", security: kgflashmediaplayersecurity, raw_png: png64dataURL, url: video_url, offset: time_id, postID: postID, total: total, index: index }
+		data: { action:"kgvid_save_html5_thumb", security: kgflashmediaplayersecurity, url: video_url, offset: time_id, postID: postID, total: total, index: index, raw_png: png64dataURL }
 		})
 		.done( function(thumb_url) {
 			if ( total == 1 ) {
