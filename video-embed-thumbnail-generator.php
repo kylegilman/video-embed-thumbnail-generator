@@ -2580,11 +2580,20 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 	$something_to_encode = false;
 	$encoding_now = false;
 	$time_to_wait = 5000;
+	$user_delete_capability = false;
 
 	if ( get_post_type($post_id) == "attachment" ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 		if ( array_key_exists('encode'.$format, $kgvid_postmeta) ) { $encodeset = $kgvid_postmeta['encode'.$format]; }
 		else { $encodeset = 'false'; }
+		$post = get_post($post_id);
+		$current_user = wp_get_current_user();
+		if ( $post && ( $current_user->ID == $post->post_author )
+			|| ( current_user_can('edit_others_video_encodes') )
+		) {
+			$user_delete_capability = true;
+		}
+
 	}
 	if ( $encodeset == "false" && strpos($format, 'custom_') === false ) { $encodeset = $options['encode_'.$format]; }
 
@@ -2617,6 +2626,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 					else { $blog_id = false; }
 					if ( $encodevideo_info[$format]['writable']
 					&& current_user_can('encode_videos')
+					&& $user_delete_capability == true
 					&& $format != "fullres" ) {
 						if ( $was_picked != false ) {
 							$meta .= '<a id="unpick-'.$post_id.'-'.$format.'" class="kgvid_delete-format" onclick="kgvid_clear_video(\''.$movieurl.'\', \''.$post_id.'\', \''.$child_id.'\', \''.$blog_id.'\');" href="javascript:void(0)">'.__('Clear Format', 'video-embed-thumbnail-generator').'</a>';
@@ -4072,7 +4082,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 
 		$options = kgvid_get_options();
-		$video_formats = kgvid_video_formats(true, false);
+		$video_formats = kgvid_video_formats(false, false);
 		$encode_string = "";
 		if ( $options['ffmpeg_exists'] == "on" ) {
 
