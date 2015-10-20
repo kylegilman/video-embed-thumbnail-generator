@@ -231,8 +231,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.5.6 - September XX, 2015 =
+= 4.5.6 - October 20, 2015 =
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
+* Added check for "Can view & modify other users encode queue" capability to prevent unauthorized users from deleting encoded videos.
 
 = 4.5.5 - August 20, 2015 =
 * Fixed a number of potential infinite loops and other recursion issues related to longstanding WordPress bug <a href='https://core.trac.wordpress.org/ticket/17817'>#17817</a>.
