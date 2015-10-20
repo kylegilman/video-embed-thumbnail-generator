@@ -413,7 +413,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 
 	var video_url = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-url]')[0].value;
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
-	var png64dataURL = canvas.toDataURL('image/jpeg', 0.9); //this is what saves the image. Do this after selection.
+	var png64dataURL = canvas.toDataURL('image/jpeg', 0.8); //this is what saves the image. Do this after selection.
 
 	jQuery('#attachments-'+postID+'-thumbnailplaceholder canvas').fadeTo(500, .25);
 	jQuery('#attachments-'+postID+'-thumbnailplaceholder input').attr('disabled', true);
