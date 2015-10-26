@@ -89,7 +89,6 @@ img.kgvid_ios_novideo {
 }
 
 .kgvid_video_meta {
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	line-height: normal;
 	color: white;
 	display: block;
@@ -113,34 +112,151 @@ img.kgvid_ios_novideo {
 	visibility: visible;
 }
 
+.kgvid_video_meta.kgvid_no_title_meta {
+    background: none;
+}
+
 .kgvid_title {
-	height: 12pt;
-	font-size: 10pt;
-	overflow: hidden;
-	padding-top: 1px;
-	padding-left: 4px;
-	margin: 6px;
-	width: auto;
+    font-size: 10pt;
+    padding-left: 4px;
+    margin: 6px;
+    line-height: 23pt;
 }
 
-.kgvid_video_meta input {
-	display: inline-block !important;
-	color: #eee !important;
-	width: 100px !important;
-	font: 10px "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-	line-height: 1.6em !important;
-	background-color: #999 !important;
-	border: none !important;
-	-moz-border-radius: 5px !important;
-	border-radius: 5px !important;
-	padding: 2px !important;
-	margin: 0px !important;
+.kgvid_meta_icons {
+    position: relative;
+    float: right;
+    margin-top: 5px;
+    margin-right: 5px;
 }
 
-.kgvid_share {
-	font-size: 10px;
-	float: right;
-	margin: 6px 6px 6px 12px;
+.kgvid_jwplayer_meta .kgvid_meta_icons {
+    float: left;
+    margin-left: 5px;
+}
+
+.kgvid_meta_icons a {
+	text-decoration: none;
+	border: none;
+}
+
+.kgvid_meta_icons span {
+	cursor: pointer;
+    color: white;
+    margin-right: 5px;
+}
+
+.kgvid_no_title_meta .kgvid_meta_icons span {
+    font-size: 19pt;
+    text-shadow: 1px 1px rgba(20,20,20,0.8);
+}
+
+.kgvid_click_trap {
+	display: none;
+	width: 100%;
+	height: 100%;
+	background: none;
+	position: absolute;
+    top: 0;
+    z-index: 102;
+}
+
+.kgvid_click_trap:before {
+	content: '\20';
+}
+
+.kgvid_share_container {
+	display: none;
+	color: white;
+    top: 32px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    width: 100%;
+    z-index: 103;
+    position: absolute;
+	/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#141414+0,141414+100&amp;0.85+65,0+100 */
+	background: -moz-linear-gradient(top,  rgba(20,20,20,0.85) 0%, rgba(20,20,20,0.85) 65%, rgba(20,20,20,0) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(20,20,20,0.85)), color-stop(65%,rgba(20,20,20,0.85)), color-stop(100%,rgba(20,20,20,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(20,20,20,0.85) 0%,rgba(20,20,20,0.85) 65%,rgba(20,20,20,0) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(20,20,20,0.85) 0%,rgba(20,20,20,0.85) 65%,rgba(20,20,20,0) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(20,20,20,0.85) 0%,rgba(20,20,20,0.85) 65%,rgba(20,20,20,0) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(20,20,20,0.85) 0%,rgba(20,20,20,0.85) 65%,rgba(20,20,20,0) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d9141414', endColorstr='#00141414',GradientType=0 ); /* IE6-9 */
+}
+
+.kgvid_share_container.kgvid_no_title_meta {
+    top: 0;
+    z-index: 102;
+    padding-top: 32px;
+}
+
+.kgvid_share_icons {
+    text-align: center;
+    line-height: 26pt;
+    font-size: 22pt;
+	font-family: sans-serif;
+    word-wrap: normal;
+    overflow-wrap: normal;
+}
+
+.kgvid_share_icons a {
+	text-decoration: none;
+	border: none;
+}
+
+.kgvid_share_icons span {
+    font-size: 13pt;
+    line-height: 29pt;
+    width: inherit;
+    height: inherit;
+    margin: 0;
+    padding: 0;
+}
+
+.kgvid_share_icons span.dashicons.dashicons-editor-code {
+    font-size: 22pt;
+}
+
+.kgvid_share_icons input[type="text"] {
+    font-family: sans-serif;
+    font-size: 10pt;
+    color: white;
+    width: 50%;
+    background: #ABACA8;
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.kgvid_share_icons .kgvid_social_icons {
+    margin-top: 8px;
+    font-size: 19pt;
+}
+
+.kgvid_share_icons span.dashicons.dashicons-twitter {
+    color: #55acee;
+    font-size: 32pt;
+}
+
+span.kgvid_facebook_icon_holder {
+    font-family: sans-serif;
+    position: relative;
+    vertical-align: middle;
+}
+
+.kgvid_share_icons span.dashicons.dashicons-facebook {
+    color: #3b5998;
+    font-size: 32pt;
+}
+
+.kgvid_share_icons span.dashicons.dashicons-facebook:after {
+    content: "\20";
+    background: white;
+    width: 20pt;
+    height: 21.25pt;
+    position: absolute;
+    left: 9px;
+    top: -2px;
+    z-index: -1;
 }
 
 .kgvid_below_video {

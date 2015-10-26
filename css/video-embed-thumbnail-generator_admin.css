@@ -268,6 +268,13 @@ font-weight: normal;
 .kgvid_setting_nearvid div {
 	margin: 5px;
 	font-weight: bold;
+	white-space: nowrap;
+
+}
+
+.kgvid_setting_nearvid span {
+    display: inline-block;
+    margin-right: 111px;
 }
 
 .kgvid_htaccess td {

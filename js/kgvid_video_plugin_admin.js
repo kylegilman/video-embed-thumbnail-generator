@@ -1195,6 +1195,13 @@ function kgvid_hide_plugin_settings() {
 			jQuery('#jw_player_id_select').fadeOut();
 		}
 
+		if ( jQuery('#twitter_button').prop('checked') ) {
+			jQuery('#twitter_username_div').slideDown();
+		}
+		else {
+			jQuery('#twitter_username_div').slideUp();
+		}
+
 	}
 
 	if ( encoding_tab ) {
