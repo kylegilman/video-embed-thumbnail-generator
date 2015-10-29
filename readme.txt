@@ -232,12 +232,15 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.5.6 - October 26, 2015 =
+* Added resolution switching for WordPress Default player.
 * Significantly redesigned video embed code overlay appearance.
 * Added Twitter and Facebook share buttons.
 * Moved download link to an icon overlay.
+* Updated Video.js to version 4.12.14 (version 5.0 coming later)
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Added check for "Can view & modify other users encode queue" capability to prevent unauthorized users from deleting encoded videos.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
+* Fixed bug that redundantly localized the frontend script every time a video was embedded on a page.
 
 = 4.5.5 - August 20, 2015 =
 * Fixed a number of potential infinite loops and other recursion issues related to longstanding WordPress bug <a href='https://core.trac.wordpress.org/ticket/17817'>#17817</a>.
@@ -430,7 +433,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Upgrade Notice ==
 
 = 4.5.6 =
-This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
+Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
 
 = 4.5.2 =
 This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.

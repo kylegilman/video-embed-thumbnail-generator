@@ -457,3 +457,74 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 	height: auto;
 	clip: auto;
 }
+
+/* mep-feature-sourcechooser plugin styles */
+
+.kgvid_wrapper .mejs-controls div.mejs-sourcechooser-button button {
+    background: none;
+    font-family: dashicons;
+    color: white;
+    font-size: 11pt;
+    line-height: 0pt;
+}
+
+.kgvid_wrapper .mejs-controls .mejs-sourcechooser-button button:before {
+	content: "\f111";
+}
+
+.mejs-container .mejs-controls div.mejs-menu-arrow {
+	display: none;
+    position: absolute;
+    bottom: -7px;
+    left: -8px;
+    width: 0em;
+    height: 0em;
+    margin-bottom: 3em;
+    border-left: 2em solid transparent;
+    border-right: 2em solid transparent;
+    border-top: 1.55em solid #000000;
+    border-top-color: rgba(40, 40, 40, 0.5);
+}
+
+div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector {
+	visibility: inherit;
+	bottom: 17px;
+    right: -28px;
+    width: auto;
+    height: auto;
+    padding: 9px 0 0 0;
+    text-align: center;
+	-webkit-box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
+    -moz-box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
+    box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
+}
+
+div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector span {
+    color: white;
+    padding: 0px 10px 5px 10px;
+    display: block;
+    white-space: nowrap;
+}
+
+div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li {
+    margin: 3px 0 3px 0;
+    padding: 2px 10px 5px 10px;
+}
+
+div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-selected {
+	background: rgba(20,20,20,0.8);
+}
+
+div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li:hover {
+    color: #111;
+    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li input {
+	display: none;
+}
+
+div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li label {
+	width: auto;
+}
