@@ -1115,10 +1115,16 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery("#general_tab").removeClass("nav-tab-active");
 		jQuery("#encoding_tab").addClass("nav-tab-active");
 
-		jQuery('h3:eq(0), h3:eq(2)').hide();
+		if ( jQuery('h3').length < 1 ) { // WP version 4.4 or later
+			jQuery('h2:eq(1), h2:eq(3)').hide();
+			jQuery('h2:eq(4)').show();
+		}
+		else { // before WP version 4.4
+			jQuery('h3:eq(0), h3:eq(2)').hide();
+			jQuery('h3:eq(3)').show();
+		}
 		jQuery('table:eq(0), table:eq(1), table:eq(2), table:eq(3)').hide();
 		jQuery(".kgvid_setting_nearvid").hide();
-		jQuery('h3:eq(3)').show();
 		jQuery('table:eq(4)').show();
 
 		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery('#ffmpeg_output').html() == "" ) {
@@ -1140,10 +1146,17 @@ function kgvid_switch_settings_tab(tab) {
 
 		jQuery("#general_tab").addClass("nav-tab-active");
 		jQuery("#encoding_tab").removeClass("nav-tab-active");
-		jQuery('h3:eq(0), h3:eq(2)').show();
+		if ( jQuery('h3').length < 1 ) { // WP version 4.4 or later
+			jQuery('h2:eq(1), h2:eq(3)').show();
+			jQuery('h2:eq(4)').hide();
+		}
+		else { // before WP version 4.4
+			jQuery('h3:eq(0), h3:eq(2)').show();
+			jQuery('h3:eq(3)').hide();
+		}
 		jQuery('table:eq(0), table:eq(1), table:eq(3)').show();
 		jQuery(".kgvid_setting_nearvid").show();
-		jQuery('h3:eq(3)').hide();
+
 		jQuery('table:eq(4)').hide();
 
 	}
@@ -1162,14 +1175,24 @@ function kgvid_hide_plugin_settings() {
 
 	if ( playback_option != "Strobe Media Playback" || encoding_tab ) {
 		jQuery('table:eq(2)').hide();
-		jQuery('h3:eq(1)').hide();
+		if ( jQuery('h3').length < 1 ) { // WP version 4.4 or later
+			jQuery('h2:eq(2)').hide();
+		}
+		else { // before WP version 4.4
+			jQuery('h3:eq(1)').hide();
+		}
 	}
 
 	if ( general_tab ) {
 
 		if ( playback_option == "Strobe Media Playback" ) {
 			jQuery('table:eq(2)').show();
-			jQuery('h3:eq(1)').show();
+			if ( jQuery('h3').length < 1 ) { // WP version 4.4 or later
+				jQuery('h2:eq(2)').show();
+			}
+			else {
+				jQuery('h3:eq(1)').show();
+			}
 		}
 
 		if ( playback_option == "WordPress Default" || playback_option == "JW Player" ) {
