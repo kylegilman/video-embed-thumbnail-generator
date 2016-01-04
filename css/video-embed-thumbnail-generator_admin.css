@@ -274,7 +274,7 @@ font-weight: normal;
 
 .kgvid_setting_nearvid span {
     display: inline-block;
-    margin-right: 111px;
+    width: 33%;
 }
 
 .kgvid_htaccess td {
