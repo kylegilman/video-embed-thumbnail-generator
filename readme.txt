@@ -235,7 +235,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added resolution switching for WordPress Default player.
 * Significantly redesigned video embed code overlay appearance.
 * Added Twitter and Facebook share buttons.
-* Moved download link to an icon overlay.
+* Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
 * Updated Video.js to version 4.12.14 (version 5.0 coming later)
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.

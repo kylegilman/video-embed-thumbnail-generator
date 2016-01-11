@@ -5734,7 +5734,6 @@ class kgInsertMedia {
 			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
 			if ( !empty($kgvid_postmeta['width']) ) { $html .= ' width="'.$kgvid_postmeta["width"].'"'; }
 			if ( !empty($kgvid_postmeta['height']) ) { $html .= ' height="'.$kgvid_postmeta["height"].'"'; }
-			if ( $kgvid_postmeta['downloadlink'] == "on" ) { $html .= ' downloadlink="true"'; }
 			$html .= ']'.$kgvid_postmeta["url"].'[/KGVID]<br />';
 		} //if embed code is enabled
 
