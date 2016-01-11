@@ -240,9 +240,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Updated Video.js to version 4.12.14 (version 5.0 coming later)
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Added check for "Can view & modify other users encode queue" capability to prevent unauthorized users from deleting encoded videos.
+* Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
-* Fixed bug that hid the wrong headers on the plugin settings page in WordPress 4.4.
+* Fixed bug that hid the wrong headers on the plugin settings tabs in WordPress 4.4.
 * Fixed bug that redundantly localized the frontend script every time a video was embedded on a page.
 
 = 4.5.5 - August 20, 2015 =

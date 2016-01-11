@@ -2129,11 +2129,22 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 
 		if ( !empty($query_atts['title']) && $query_atts['title'] != "false" ) { $code .= '<meta itemprop="name" content="'.esc_attr($query_atts['title']).'" />'; }
 
-		if ( !empty($query_atts['description']) ) { $description = $query_atts['description']; }
-		elseif ( !empty($query_atts['caption']) ) { $description = $query_atts['caption']; }
+		if ( !empty($query_atts['description']) && $query_atts['description'] != "false" ) { $description = $query_atts['description']; }
+		elseif ( !empty($query_atts['caption']) && $query_atts['caption'] != "false" ) { $description = $query_atts['caption']; }
 		elseif ( in_the_loop() && !is_attachment() ) {
+
 			global $post;
-			if ( !empty($post->post_excerpt) ) {
+
+			$yoast_meta = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true ); //try Yoast SEO meta description tag
+			$aioseop_meta = get_post_meta( $post->ID, '_aioseop_description', true ); //try All in one SEO Pack meta description tag
+
+			if ( !empty($yoast_meta) ) {
+				$description = $yoast_meta;
+			}
+			elseif ( !empty($yoast_meta) ) {
+				$description = $yoast_meta;
+			}
+			elseif ( !empty($post->post_excerpt) ) {
 				$description = $post->post_excerpt;
 			}
 			else {
