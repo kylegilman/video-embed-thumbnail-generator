@@ -387,15 +387,35 @@ function kgvid_setup_video(id) {
 		var mejs_id = jQuery('#video_'+id+'_div .mejs-container').attr('id');
 
 		player.on('loadedmetadata', function() {
+
+			var mejs_player = eval('mejs.players.'+mejs_id);
+
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 			if ( video_vars.mute == "true" ) { player[0].setMuted(true); }
 			jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
+
+			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
+
+			if ( played == "not played" ) { //only turn on the default captions on first load
+
+
+				jQuery.each(mejs_player.tracks, function(key, item) {
+					if ( item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang') ) {
+						mejs_player.setTrack(item.srclang);
+						jQuery('#'+mejs_id+' .mejs-captions-selector input[value="en"]').prop('checked',true);
+					}
+				});
+
+			}
+
 		});
 
 		player.on('play', function(){
 			kgvid_add_hover(id);
 			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
+
 			kgvid_video_counter(id, 'play');
+
 		});
 
 		player.on('pause', function(){
