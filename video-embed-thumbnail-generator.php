@@ -2130,8 +2130,8 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 
 		if ( !empty($query_atts['title']) && $query_atts['title'] != "false" ) { $code .= '<meta itemprop="name" content="'.esc_attr($query_atts['title']).'" />'; }
 
-		if ( !empty($query_atts['description']) && $query_atts['description'] != "false" ) { $description = $query_atts['description']; }
-		elseif ( !empty($query_atts['caption']) && $query_atts['caption'] != "false" ) { $description = $query_atts['caption']; }
+		if ( !empty(trim($query_atts['description'])) && $query_atts['description'] != "false" ) { $description = $query_atts['description']; }
+		elseif ( !empty(trim($query_atts['caption'])) && $query_atts['caption'] != "false" ) { $description = $query_atts['caption']; }
 		elseif ( in_the_loop() && !is_attachment() ) {
 
 			global $post;
@@ -2142,17 +2142,17 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 			if ( !empty($yoast_meta) ) {
 				$description = $yoast_meta;
 			}
-			elseif ( !empty($yoast_meta) ) {
-				$description = $yoast_meta;
+			elseif ( !empty($aioseop_meta) ) {
+				$description = $aioseop_meta;
 			}
-			elseif ( !empty($post->post_excerpt) ) {
+			elseif ( !empty(trim($post->post_excerpt)) ) {
 				$description = $post->post_excerpt;
 			}
 			else {
 				$description = wp_trim_words(strip_tags(strip_shortcodes($post->post_content)));
 			}
 		}
-		if ( empty($description) ) { $description = __('Video', 'video-embed-thumbnail-generator'); }
+		if ( empty(trim($description)) ) { $description = __('Video', 'video-embed-thumbnail-generator'); }
 		$code .= '<meta itemprop="description" content="'.esc_attr($description).'" />';
 
 		if ( !empty($id) ) { $upload_date = get_the_date('c', $id); }
