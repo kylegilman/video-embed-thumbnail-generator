@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.506,
+		"version" => 4.6,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -4565,8 +4565,8 @@ function kgvid_update_settings() {
 			$options['ffmpeg_old_rotation'] = "on";
 			$options['click_download'] = "on";
 		}
-		if ( $options['version'] < 4.506 ) {
-			$options['version'] = 4.506;
+		if ( $options['version'] < 4.6 ) {
+			$options['version'] = 4.6;
 			if ( !array_key_exists('nativecontrolsfortouch', $options) ) { $options['nativecontrolsfortouch'] = "on"; }
 			$options['twitter_button'] = false;
 			$options['twitter_username'] = '';
@@ -5190,28 +5190,30 @@ display: inline-block;">Loading thumbnail...</span></div>';
 		$tracks_html = '';
 		if ( is_array($kgvid_postmeta['track']) ) {
 			foreach ( $kgvid_postmeta['track'] as $track => $track_attribute ) {
-				$items = array(__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles", __("captions", 'video-embed-thumbnail-generator')=>"captions", __("chapters", 'video-embed-thumbnail-generator')=>"chapters");
-				$track_type_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-track]['.$track.'][kind]" id="attachments-'.$post->ID.'-kgflashmediaplayer-track_'.$track.'_kind]"'.$security_disabled.'>';
-				foreach($items as $name=>$value) {
-					$selected = ($kgvid_postmeta['track'][$track]['kind']==$value) ? 'selected="selected"' : '';
-					$track_type_select .= "<option value='$value'>$name</option>";
-				}
-				$track_type_select .= "</select>";
+				if ( !empty($kgvid_postmeta['track'][$track]['src']) ) {
+					$items = array(__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles", __("captions", 'video-embed-thumbnail-generator')=>"captions", __("chapters", 'video-embed-thumbnail-generator')=>"chapters");
+					$track_type_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-track]['.$track.'][kind]" id="attachments-'.$post->ID.'-kgflashmediaplayer-track_'.$track.'_kind]"'.$security_disabled.'>';
+					foreach($items as $name=>$value) {
+						$selected = ($kgvid_postmeta['track'][$track]['kind']==$value) ? 'selected="selected"' : '';
+						$track_type_select .= "<option value='$value'>$name</option>";
+					}
+					$track_type_select .= "</select>";
 
-				if ( !array_key_exists( 'default', $kgvid_postmeta['track'][$track] ) ) { $kgvid_postmeta['track'][$track]['default'] = false; }
+					if ( !array_key_exists( 'default', $kgvid_postmeta['track'][$track] ) ) { $kgvid_postmeta['track'][$track]['default'] = false; }
 
-				$tracks_html .= '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv-'.$track.'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.strval($track+1).'</strong>';
-				if ( empty($security_disabled) ) {
-					$tracks_html .= '<span class="kgvid_track_box_removeable" onclick="jQuery(this).parent().remove();jQuery(\'form.compat-item input\').first().change();">X</span>';
+					$tracks_html .= '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv-'.$track.'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.strval($track+1).'</strong>';
+					if ( empty($security_disabled) ) {
+						$tracks_html .= '<span class="kgvid_track_box_removeable" data-trackid="'.$track.'" onclick="jQuery(this).siblings(\'input\').val(\'\').attr(\'checked\', \'\').change();">X</span>';
+					}
+					$tracks_html .= '<br />'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />';
+					if ( empty($security_disabled) ) {
+						$tracks_html .= '<span id="pick-track'.$track.'" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />';
+					}
+					$tracks_html .= 'URL: <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][src]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" type="text" value="'.$kgvid_postmeta['track'][$track]['src'].'" class="text" style="width:180px;"'.$readonly.'><br />
+					'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][srclang]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_srclang" type="text" value="'.$kgvid_postmeta['track'][$track]['srclang'].'" maxlength="2" style="width:40px;"'.$readonly.'><br />
+					'.__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][label]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_label" type="text" value="'.$kgvid_postmeta['track'][$track]['label'].'" class="text" style="width:172px;"'.$readonly.'><br />
+					'.__('Default:', 'video-embed-thumbnail-generator').'<input '.checked($kgvid_postmeta['track'][$track]['default'], 'default', false).' name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][default]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_default" type="checkbox" value="default"'.$security_disabled.'></div>';
 				}
-				$tracks_html .= '<br />'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />';
-				if ( empty($security_disabled) ) {
-					$tracks_html .= '<span id="pick-track'.$track.'" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />';
-				}
-				$tracks_html .= 'URL: <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][src]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" type="text" value="'.$kgvid_postmeta['track'][$track]['src'].'" class="text" style="width:180px;"'.$readonly.'><br />
-				'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][srclang]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_srclang" type="text" value="'.$kgvid_postmeta['track'][$track]['srclang'].'" maxlength="2" style="width:40px;"'.$readonly.'><br />
-				'.__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][label]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_label" type="text" value="'.$kgvid_postmeta['track'][$track]['label'].'" class="text" style="width:172px;"'.$readonly.'><br />
-				'.__('Default:', 'video-embed-thumbnail-generator').'<input '.checked($kgvid_postmeta['track'][$track]['default'], 'default', false).' name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][default]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_default" type="checkbox" value="default"'.$security_disabled.'></div>';
 			}
 		}
 
@@ -5224,7 +5226,7 @@ display: inline-block;">Loading thumbnail...</span></div>';
 
 
 		$items = array(__("Single Video", 'video-embed-thumbnail-generator')=>"Single Video", __("Video Gallery", 'video-embed-thumbnail-generator')=>"Video Gallery", __("WordPress Default", 'video-embed-thumbnail-generator')=>"WordPress Default");
-		$shortcode_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-embed]" id="attachments['.$post->ID.'][kgflashmediaplayer-embed]"'.$security_disabled.'>';
+		$shortcode_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-embed]" id="attachments['.$post->ID.'][kgflashmediaplayer-embed]">';
 		foreach($items as $name=>$value) {
 			$selected = ($kgvid_postmeta['embed']==$value) ? 'selected="selected"' : '';
 			$shortcode_select .= "<option value='$value' $selected>$name</option>";

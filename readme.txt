@@ -244,6 +244,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
 * Fixed bug that hid the wrong headers on the plugin settings tabs in WordPress 4.4.
+* Fixed bug that disabled the text track remove button when editing videos in the media library.
 * Fixed bug that redundantly localized the frontend script every time a video was embedded on a page.
 
 = 4.5.5 - August 20, 2015 =
