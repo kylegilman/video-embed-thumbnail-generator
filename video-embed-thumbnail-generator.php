@@ -2564,7 +2564,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 
 	} //end id_array loop
 
-	return $code;
+	return apply_filters('kgvid_single_video_code', $code);
 
 }
 
