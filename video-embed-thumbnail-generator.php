@@ -2129,6 +2129,10 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 		$code .= '<meta itemprop="contentUrl" content="'.$content.'" />';
 
 		if ( !empty($query_atts['title']) && $query_atts['title'] != "false" ) { $code .= '<meta itemprop="name" content="'.esc_attr($query_atts['title']).'" />'; }
+		elseif ( in_the_loop() && !is_attachment() ) {
+			global $post;
+			if ( !empty($post->post_title) ) { $code .= '<meta itemprop="name" content="'.esc_attr($post->post_title).'" />'; }
+		}
 
 		if ( !empty(trim($query_atts['description'])) && $query_atts['description'] != "false" ) { $description = $query_atts['description']; }
 		elseif ( !empty(trim($query_atts['caption'])) && $query_atts['caption'] != "false" ) { $description = $query_atts['caption']; }
@@ -2183,22 +2187,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 
 		if ( $options['embed_method'] == "WordPress Default" ) {
 
-			/* $sources_hack = "";
-			$attr = array();
-			foreach ($video_formats as $format => $format_stats) {
-				if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
-				if ( $encodevideo_info[$format]["exists"] ) {
-					if ( $format_stats['type'] != "h264" || !$mp4already ) {
-						$shortcode_type = wp_check_filetype( $encodevideo_info[$format]["url"], wp_get_mime_types() );
-						$attr[$shortcode_type['ext']] = $encodevideo_info[$format]["url"];
-						if ( $format_stats['type'] == "h264" ) { //WordPress built-in shortcode doesn't support multiple videos of the same type but we'll hack it in later
-							$mp4already = true;
-						}
-					}
-					else { $sources_hack .= '<source type="'.$format_stats['mime'].'" src="'.esc_attr($encodevideo_info[$format]["url"]).'" title="'.esc_attr($format_stats['name']).'" />'; }
-				}
-			} */
-
 			$enable_resolutions_plugin = false;
 			$x = 20;
 			$h264_resolutions = array();
@@ -2224,7 +2212,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 						$h264_resolutions[] = $format_stats['label'];
 					}
 					else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
-					$sources[$source_key] .= ' />';
 
 					if ( $format_stats['type'] != "h264" || !$mp4already ) { //build wp_video_shortcode attributes. Sources will be replaced later
 						$shortcode_type = wp_check_filetype( $encodevideo_info[$format]["url"], wp_get_mime_types() );
@@ -2238,6 +2225,29 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 			}
 			krsort($sources);
 			natsort($h264_resolutions);
+
+			if ( $enable_resolutions_plugin ) {
+
+				$default_key = false;
+
+				if ( $query_atts["auto_res"] == "highest" ) {
+					$res_label = end($h264_resolutions);
+				}
+				elseif ( $query_atts["auto_res"] == "lowest" ) {
+					$res_label = reset($h264_resolutions);
+				}
+				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) {
+					$res_label = $query_atts["auto_res"];
+				}
+				else { $res_label = false; }
+
+				foreach ( $sources as $key => $source ) {
+					if ( strpos($source, 'data-res="'.$res_label.'"') !== false ) { $default_key = $key; }
+				}
+
+				if ( $default_key !== false )  { $sources[$default_key] .= ' data-default_res="true"'; }
+
+			}
 
 			if ( $query_atts["poster"] != '' ) { $attr['poster'] = esc_attr($query_atts["poster"]); }
 			if ( $query_atts["loop"] == 'true') { $attr['loop'] = "true"; }
@@ -2268,7 +2278,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 			$content_width = $content_width_save;
 
 			if ( $enable_resolutions_plugin ) {
-				$executed_shortcode = preg_replace( '/<source .*<a /', implode('', $sources).'<a ', $executed_shortcode );
+				$executed_shortcode = preg_replace( '/<source .*<a /', implode(' />', $sources).'<a ', $executed_shortcode );
 			}
 			if ( !empty($track_code) ) {
 				$executed_shortcode = preg_replace( '/<a /', $track_code.'<a ', $executed_shortcode );
@@ -2396,6 +2406,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 			if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"]';
 				if ( $query_atts["auto_res"] == "highest" ) { $code .= ', "default_res": "'.end($h264_resolutions).'"'; }
 				if ( $query_atts["auto_res"] == "lowest" ) { $code .= ', "default_res": "'.reset($h264_resolutions).'"'; }
+				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) { $code .= ', "default_res": "'.$query_atts["auto_res"].'"'; }
 				$code .= ' } }';
 			}
 			$code .= ' }\'';
@@ -3775,14 +3786,20 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_resize_callback() {
 		$options = kgvid_get_options();
+		$video_formats = kgvid_video_formats();
 		echo "<div id='resize_div'><input ".checked( $options['resize'], "on", false )." id='resize' name='kgvid_video_embed_options[resize]' type='checkbox' /> <label for='resize'>".__('Make video player responsive.', 'video-embed-thumbnail-generator')."</label><br /></div>";
 		$items = array( __("automatic", 'video-embed-thumbnail-generator'), __("highest", 'video-embed-thumbnail-generator'), __("lowest", 'video-embed-thumbnail-generator') );
+		foreach ( $video_formats as $format => $format_stats ) {
+			if ( $format_stats['type'] == 'h264' && !empty($format_stats['label']) ) {
+				$items[] = $format_stats['label'];
+			}
+		}
 		echo __('Default playback resolution', 'video-embed-thumbnail-generator')." <select id='auto_res' name='kgvid_video_embed_options[auto_res]'>";
-		foreach($items as $name ) {
+		foreach( $items as $name ) {
 			$selected = ($options['auto_res']==$name) ? 'selected="selected"' : '';
 			echo "<option value='$name' $selected>$name</option>";
 		}
-		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, or automatically select the resolution based on the size of the video window.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 
 	}
 
@@ -7692,7 +7709,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>downloadlink="true/false"</code> '.__('generates a link below the video to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
 <li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
 <li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>auto_res="automatic/highest/lowest"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>

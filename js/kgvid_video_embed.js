@@ -389,12 +389,12 @@ function kgvid_setup_video(id) {
 		player.on('loadedmetadata', function() {
 
 			var mejs_player = eval('mejs.players.'+mejs_id);
+			var resolutions = player.availableRes;
+			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 			if ( video_vars.mute == "true" ) { player[0].setMuted(true); }
 			jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
-
-			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
 			if ( played == "not played" ) { //only turn on the default captions on first load
 
@@ -578,35 +578,40 @@ function kgvid_resize_video(id) {
 			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null )
 				||  ( video_vars.player_type == "WordPressDefault" && typeof mejs !== 'undefined' )
 			) {
-				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {
-					var resolutions = player.availableRes;
-					var resNumbers = new Array();
-					jQuery.each(resolutions, function(key, value){
-						if ( typeof key !== 'undefined' && !isNaN(parseInt(key)) ) {
-							resNumbers.push(parseInt(key));
-						}
-					});
-					var current_resolution = parseInt(player.getCurrentRes());
-					if ( !isNaN(current_resolution) ) {
-						if ( window.devicePixelRatio != undefined ) { var pixel_height = set_height * window.devicePixelRatio; } //don't shortchange retina displays
-						else { pixel_height = set_height; }
-						var res_options = jQuery.map(resNumbers, function(n) {
-							if ( n >= pixel_height ) { return n; }
-						});
-						var set_res = Math.min.apply(Math,res_options);
+				if ( player.availableRes !== undefined ) {
 
-						if ( set_res != current_resolution && !jQuery('#video_'+id).hasClass('vjs-fullscreen') && !jQuery('#video_'+id+'_div .mejs-container').hasClass('mejs-container-fullscreen') ) {
-							 player.changeRes(set_res+'p');
-						}
-						if (  video_vars.player_type == "Video.js" && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
-							if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
-							if ( player.volume() != 1 ) {
-								var current_volume = player.volume();
-								player.volume(1);
-								player.volume(current_volume);
+					var resolutions = player.availableRes;
+
+					if ( video_vars.auto_res == 'automatic' ) {
+
+						var resNumbers = new Array();
+						jQuery.each(resolutions, function(key, value){
+							if ( typeof key !== 'undefined' && !isNaN(parseInt(key)) ) {
+								resNumbers.push(parseInt(key));
+							}
+						});
+						var current_resolution = parseInt(player.getCurrentRes());
+						if ( !isNaN(current_resolution) ) {
+							if ( window.devicePixelRatio != undefined ) { var pixel_height = set_height * window.devicePixelRatio; } //don't shortchange retina displays
+							else { pixel_height = set_height; }
+							var res_options = jQuery.map(resNumbers, function(n) {
+								if ( n >= pixel_height ) { return n; }
+							});
+							var set_res = Math.min.apply(Math,res_options);
+
+							if ( set_res != current_resolution && !jQuery('#video_'+id).hasClass('vjs-fullscreen') && !jQuery('#video_'+id+'_div .mejs-container').hasClass('mejs-container-fullscreen') ) {
+								 player.changeRes(set_res+'p');
+							}
+							if (  video_vars.player_type == "Video.js" && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
+								if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
+								if ( player.volume() != 1 ) {
+									var current_volume = player.volume();
+									player.volume(1);
+									player.volume(current_volume);
+								}
 							}
 						}
-					}
+					} //automatic
 				}
 			}
 
