@@ -797,85 +797,88 @@ function kgvid_update_encode_queue() {
 			var queued = false;
 			var time_to_wait = 5000;
 
-			jQuery.each(data.queue, function(video_key, video_entry) {
+			if ( data.queue[0] !== undefined ) {
+				jQuery.each(data.queue, function(video_key, video_entry) {
 
-				if ( page != "queue" && jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encodeboxes').length == 0 ) { return true; }
+					if ( page != "queue" && jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encodeboxes').length == 0 ) { return true; }
 
-				if ( video_entry.hasOwnProperty('encode_formats') ) {
+					if ( video_entry.hasOwnProperty('encode_formats') ) {
 
-					var currently_encoding = false;
+						var currently_encoding = false;
 
-					jQuery.each(video_entry.encode_formats, function(format, format_entry) {
+						jQuery.each(video_entry.encode_formats, function(format, format_entry) {
 
-						if ( format_entry.status == 'encoding' ) {
+							if ( format_entry.status == 'encoding' ) {
 
-							currently_encoding = true;
-							check_again = true;
-
-							if ( page == "queue" ) {
-
-								if ( jQuery('#clear_'+video_entry.attachmentID).css("display") != "none" ) {
-									jQuery('#clear_'+video_entry.attachmentID).css("display", "none");
-								}
-								if ( !jQuery('#tr_'+video_entry.attachmentID).hasClass('currently_encoding') ) {
-									jQuery('#tr_'+video_entry.attachmentID).addClass('currently_encoding');
-								}
-								if ( jQuery('#tr_'+video_entry.attachmentID).hasClass('kgvid_complete') )  {
-									jQuery('#tr_'+video_entry.attachmentID).removeClass('kgvid_complete');
-								}
-
-							}
-
-						}
-
-						if ( format_entry.status == 'queued' ) {
-							queued = true;
-						}
-
-						if ( format_entry.hasOwnProperty('meta_array') ) {
-
-							var meta_entry = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-meta'+format);
-							var checkbox = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encode'+format);
-
-							if ( format_entry.status == 'encoding') { time_to_wait = format_entry.meta_array.time_to_wait; }
-
-							if ( meta_entry.html() != undefined && format_entry.meta_array.meta != meta_entry.html() ) {
+								currently_encoding = true;
 								check_again = true;
-								meta_entry.empty();
-								meta_entry.html(format_entry.meta_array.meta);
+
+								if ( page == "queue" ) {
+
+									if ( jQuery('#clear_'+video_entry.attachmentID).css("display") != "none" ) {
+										jQuery('#clear_'+video_entry.attachmentID).css("display", "none");
+									}
+									if ( !jQuery('#tr_'+video_entry.attachmentID).hasClass('currently_encoding') ) {
+										jQuery('#tr_'+video_entry.attachmentID).addClass('currently_encoding');
+									}
+									if ( jQuery('#tr_'+video_entry.attachmentID).hasClass('kgvid_complete') )  {
+										jQuery('#tr_'+video_entry.attachmentID).removeClass('kgvid_complete');
+									}
+
+								}
+
 							}
 
-							if ( format_entry.meta_array.checked != '' ) {
-								checkbox.attr('checked', true);
+							if ( format_entry.status == 'queued' ) {
+								queued = true;
 							}
-							else if ( format_entry.status == 'Encoding Complete' ) { checkbox.removeAttr('checked'); }
 
-							if ( format_entry.meta_array.disabled != '' ) {
-								checkbox.attr('disabled', true);
+							if ( format_entry.hasOwnProperty('meta_array') ) {
+
+								var meta_entry = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-meta'+format);
+								var checkbox = jQuery('#attachments-'+video_entry.attachmentID+'-kgflashmediaplayer-encode'+format);
+
+								if ( format_entry.status == 'encoding') { time_to_wait = format_entry.meta_array.time_to_wait; }
+
+								if ( meta_entry.html() != undefined && format_entry.meta_array.meta != meta_entry.html() ) {
+									check_again = true;
+									meta_entry.empty();
+									meta_entry.html(format_entry.meta_array.meta);
+								}
+
+								if ( format_entry.meta_array.checked != '' ) {
+									checkbox.attr('checked', true);
+								}
+								else if ( format_entry.status == 'Encoding Complete' ) { checkbox.removeAttr('checked'); }
+
+								if ( format_entry.meta_array.disabled != '' ) {
+									checkbox.attr('disabled', true);
+								}
+								else { checkbox.removeAttr('disabled'); }
+
 							}
-							else { checkbox.removeAttr('disabled'); }
 
+						}); //end loop through encode formats
+
+					}
+
+					if ( page == 'queue' && currently_encoding == false ) {
+
+						if ( queued == false ) { jQuery('#tr_'+video_entry.attachmentID).addClass('kgvid_complete'); }
+
+						if ( jQuery('#tr_'+video_entry.attachmentID).hasClass('currently_encoding') ) {
+							jQuery('#tr_'+video_entry.attachmentID).removeClass('currently_encoding');
+						}
+						if ( jQuery('#tr_'+video_entry.attachmentID+' #clear_'+video_entry.attachmentID).css("display") != "block" ) {
+							jQuery('#tr_'+video_entry.attachmentID+' #clear_'+video_entry.attachmentID).css("display", "block");
 						}
 
-					}); //end loop through encode formats
-
-				}
-
-				if ( page == 'queue' && currently_encoding == false ) {
-
-					if ( queued == false ) { jQuery('#tr_'+video_entry.attachmentID).addClass('kgvid_complete'); }
-
-					if ( jQuery('#tr_'+video_entry.attachmentID).hasClass('currently_encoding') ) {
-						jQuery('#tr_'+video_entry.attachmentID).removeClass('currently_encoding');
-					}
-					if ( jQuery('#tr_'+video_entry.attachmentID+' #clear_'+video_entry.attachmentID).css("display") != "block" ) {
-						jQuery('#tr_'+video_entry.attachmentID+' #clear_'+video_entry.attachmentID).css("display", "block");
 					}
 
-				}
+				}); //end loop through queue
 
-			}); //end loop through queue
-
+			}
+			
 			if ( check_again == true ) {
 				var encode_queue_timeouts = container_element.data('encode_queue_timeouts');
 				if ( encode_queue_timeouts == null ) { encode_queue_timeouts = new Array(); }
