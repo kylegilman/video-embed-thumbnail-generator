@@ -436,7 +436,8 @@ span.kgvid_gallery_pagination_arrow {
 }
 
 .vjs-res-button:before {
-    content: "\e600"; /* Gear icon */
+	font-family: VideoJs;
+    content: "\f110"; /* Gear icon */
 }
 
 
