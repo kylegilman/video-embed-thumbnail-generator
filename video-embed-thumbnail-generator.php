@@ -1703,7 +1703,7 @@ function kgvid_change_oembed_data( $data, $post, $width, $height ) {
 	return $data;
 
 }
-if ( $wp_version >= 4.4 ) { add_filter( 'oembed_response_data', 'kgvid_change_oembed_data', 11, 4 ); }
+if ( function_exists('get_oembed_response_data') ) { add_filter( 'oembed_response_data', 'kgvid_change_oembed_data', 11, 4 ); }
 
 function kgvid_change_oembed_iframe_url ( $embed_url, $post ) {
 
@@ -1724,7 +1724,7 @@ function kgvid_change_oembed_iframe_url ( $embed_url, $post ) {
 	return $embed_url;
 
 }
-if ( $wp_version >= 4.4 ) { add_filter( 'post_embed_url', 'kgvid_change_oembed_iframe_url', 11, 2 ); }
+if ( function_exists('get_post_embed_url') ) { add_filter( 'post_embed_url', 'kgvid_change_oembed_iframe_url', 11, 2 ); } //added in WP version 4.4
 
 function kgvid_enqueue_shortcode_scripts() {
 
@@ -2400,8 +2400,9 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 			if ( is_array($atts) && array_key_exists('skin', $atts) ) {
 				$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
-			$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ ';
-			if ( $options['nativecontrolsfortouch'] == "on" ) { $code .= '"nativeControlsForTouch": true, '; }
+			$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "html5": { "nativeTextTracks" : false }, ';
+			if ( $query_atts['resize'] == 'true' ) { $code .= '"fluid": true, '; }
+			if ( $options['nativecontrolsfortouch'] == 'true' ) { $code .= '"nativeControlsForTouch": true, '; }
 			$code .= '"language": "'.substr($locale, 0, 2).'"';
 			if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"]';
 				if ( $query_atts["auto_res"] == "highest" ) { $code .= ', "default_res": "'.end($h264_resolutions).'"'; }
@@ -2622,6 +2623,7 @@ function kgvid_shortcode_atts($atts) {
 		'right_click' => $options['right_click'],
 		'resize' => $options['resize'],
 		'auto_res' => $options['auto_res'],
+		'nativecontrolsfortouch' => $options['nativecontrolsfortouch'],
 		'track_kind' => 'subtitles',
 		'track_srclang' => substr(get_bloginfo('language'), 0, 2),
 		'track_src' => '',
@@ -2658,7 +2660,8 @@ function kgvid_shortcode_atts($atts) {
 		"downloadlink",
 		"mute",
 		"fullwidth",
-		"gallery_title"
+		"gallery_title",
+		"nativecontrolsfortouch"
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
@@ -5156,6 +5159,9 @@ display: inline-block;">Loading thumbnail...</span></div>';
 					</div>
 				</div>';
 			}
+			else {
+				$choose_from_video_content = '<div class="kgvid_thumbnail_box">Thumbnail selection requires GD or Imagick PHP libraries.</div>';
+			}
 			$generate_content = '<div id="generate-thumb-'.$post->ID.'-container" class="kgvid-tabs-content">
 			<input id="attachments-'. $post->ID .'-kgflashmediaplayer-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$kgvid_postmeta['numberofthumbs'].'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.$readonly.'/>
 			<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button-secondary" value="'._x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
@@ -5165,6 +5171,7 @@ display: inline-block;">Loading thumbnail...</span></div>';
 			$thumbnail_timecode = __('Thumbnail timecode:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-thumbtime]" id="attachments-'. $post->ID .'-kgflashmediaplayer-thumbtime" type="text" value="'. $kgvid_postmeta['thumbtime'] .'" style="width:60px;"'.$readonly.'><br>';
 
 		}
+
 
 		$form_fields["kgflashmediaplayer-autothumb-error"]["input"] = "hidden";
 		$form_fields["kgflashmediaplayer-autothumb-error"]["value"] = $kgvid_postmeta['autothumb-error'];
