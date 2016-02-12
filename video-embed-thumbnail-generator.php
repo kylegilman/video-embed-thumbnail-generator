@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.5.6
+Version: 4.6
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -4934,7 +4934,7 @@ function kgvid_change_thumbnail_parent( $post_ID, $parent_id ) {
 					$thumbnail->post_parent = $post_ID;
 				}
 
-				else {
+				else { //parent post exists
 					$thumbnail->post_parent = $parent_id;
 				}
 
@@ -4963,9 +4963,16 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
         if ( isset( $_REQUEST['found_post_id'] ) )  { $parent_id = (int) $_REQUEST['found_post_id']; }
         else { $parent_id = 0; }
 
-		foreach ( $_REQUEST['media'] as $post_ID ) {
+		foreach ( $_REQUEST['media'] as $post_id ) {
 
-			kgvid_change_thumbnail_parent( $post_ID, $parent_id );
+			kgvid_change_thumbnail_parent( $post_id, $parent_id );
+			
+			if ( $options['featured'] == 'on' && !has_post_thumbnail( $parent_id ) ) { 
+				$featured_id = get_post_meta($post_id, '_kgflashmediaplayer-poster-id', true);
+				if ( !empty($featured_id) ) { 
+					set_post_thumbnail($parent_id, $featured_id); 
+				}
+			}
 
 		}//end loop through modified attachments
 
@@ -4981,15 +4988,23 @@ function kgvid_validate_post_updated( $post_ID ) {
 	$options = kgvid_get_options();
 	$post = get_post($post_ID);
 
-	if ( $options['thumb_parent'] == 'post'
-		&& substr($post->post_mime_type, 0, 5) == 'video'
+	if ( substr($post->post_mime_type, 0, 5) == 'video'
 		&& ( empty($post->post_parent)
 		|| (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == '' )
 		)
 	) { //if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
 
-		kgvid_change_thumbnail_parent( $post_ID, $post->post_parent );
 
+		if ( $options['thumb_parent'] == 'post' ) {
+			kgvid_change_thumbnail_parent( $post_ID, $post->post_parent );
+		}
+		
+		if ( $options['featured'] == 'on' && !has_post_thumbnail( $post->post_parent ) ) { 
+			$featured_id = get_post_meta($post_id, '_kgflashmediaplayer-poster-id', true);
+			if ( !empty($featured_id) ) { 
+				set_post_thumbnail($post->post_parent, $featured_id); 
+			}
+		}
 	}
 
 }
@@ -7726,7 +7741,9 @@ function kgvid_add_contextual_help_tab() {
 <li><code>track_default="default"</code> '.__('track is enabled by default.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will only affect Video.js playback', 'video-embed-thumbnail-generator').'</strong></p>
-<ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">' ).'</a></li></ul>
+<ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">' ).'</a></li>
+<li><code>nativecontrolsfortouch="true/false"</code> '.__('enables or disables native controls on touchscreen devices. Native controls allow for streaming services like AirPlay and Chromecast, but don\'t always look as nice.', 'video-embed-thumbnail-generator').'</li>
+</ul>
 
 <p><strong>'.__('These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players.', 'video-embed-thumbnail-generator').'</p></strong>
 <ul><li><code>autohide="true/false"</code> '.__('specify whether to autohide the control bar after a few seconds.', 'video-embed-thumbnail-generator').'</li>

@@ -22,7 +22,7 @@ You have the option to use a few different video players:
 
 * Video.js
 * The WordPress default player using MediaElement.js, which was introduced in WordPress version 3.6
-* JW Player (if <a href="http://wordpress.org/plugins/jw-player-plugin-for-wordpress/">their plugin</a> is installed)
+* JW Player 6 (if their old, discontinued plugin is already installed)
 * Adobe's Strobe Media Playback Flash player.
 
 <em>The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
@@ -119,6 +119,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 = These options will only affect Video.js playback =
 
 * `skin="example-css-class"` Completely change the look of the video player. <a href="http://designer.videojs.com/">Video.js provides a custom skin designer here.</a>
+* `nativecontrolsfortouch="true/false` enables or disables native controls on touchscreen devices. Native controls allow for streaming services like AirPlay and Chromecast, but don't always look as nice.
 
 = These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players. =
 
@@ -232,19 +233,21 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6 - February XX, 2016 =
-* Significantly redesigned video embed code overlay appearance.
+* Updated Video.js to version 5.5.3
+* Significantly redesigned video sharing overlay appearance.
 * Added Twitter and Facebook share buttons.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
 * Added resolution switching for WordPress Default player.
 * Added option to load a specific resolution by default.
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
-* Updated Video.js to version 5.5.3
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
-* Added check for "Can view & modify other users encode queue" capability to prevent unauthorized users from deleting encoded videos.
+* Improved user role security to preven unauthorized users from modifying video settings.
 * Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
+* Fixed bug that incorrectly interpreted FFMPEG output as an error when the last line came from the AAC encoder.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
-* Fixed bug that hid the wrong headers on the plugin settings tabs in WordPress 4.4.
+* Fixed bug that didn't set featured images on some videos uploaded using frontend uploaders.
+* Fixed bug that hid the wrong headers on the plugin settings tabs in WordPress 4.4+.
 * Fixed bug that disabled the text track remove button when editing videos in the media library.
 * Fixed bug that redundantly localized the frontend script every time a video was embedded on a page.
 
