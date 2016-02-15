@@ -5000,7 +5000,7 @@ function kgvid_validate_post_updated( $post_ID ) {
 		}
 		
 		if ( $options['featured'] == 'on' && !has_post_thumbnail( $post->post_parent ) ) { 
-			$featured_id = get_post_meta($post_id, '_kgflashmediaplayer-poster-id', true);
+			$featured_id = get_post_meta($post_ID, '_kgflashmediaplayer-poster-id', true);
 			if ( !empty($featured_id) ) { 
 				set_post_thumbnail($post->post_parent, $featured_id); 
 			}
