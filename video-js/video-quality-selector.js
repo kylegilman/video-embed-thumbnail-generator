@@ -332,6 +332,19 @@
 			// Make sure the loadedmetadata event will fire
 			if ( 'none' == video_el.preload ) { video_el.preload = 'metadata'; }
 
+			if ( current_time != 0 ) {
+				var canvas = document.createElement("canvas");
+				canvas.width = player.width();
+				canvas.height = player.height();
+				var context = canvas.getContext('2d');
+				context.fillRect(0, 0, player.width(), player.height());
+				context.drawImage(video_el, 0, 0, player.width(), player.height());
+				var canvas_url = canvas.toDataURL('image/jpeg', 0.8);
+				var original_poster = player.poster();
+				player.poster(canvas_url);
+
+			}
+
 			// Change the source and make sure we don't start the video over
 			player.src( player.availableRes[target_resolution] ).one( 'loadedmetadata', function() {
 
@@ -341,10 +354,14 @@
 
 					// If the video was paused, don't show the poster image again
 					player.addClass( 'vjs-has-started' );
-				
+					
 				}
 
 				if ( ! is_paused ) { player.play(); }
+			});
+			
+			player.one( 'seeked', function() {
+				player.poster(original_poster);
 			});
 
 			// Save the newly selected resolution in our player options property

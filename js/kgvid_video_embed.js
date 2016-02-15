@@ -369,18 +369,6 @@ function kgvid_setup_video(id) {
 
 		});
 
-		player.on( 'changeRes', function() {
-			if ( jQuery('#video_'+id).hasClass('vjs-has-started') == true ) {
-				var poster = jQuery('#video_'+id+' video').attr('poster');
-				jQuery('#video_'+id+' video').removeAttr('poster'); //prevents poster from showing during resolution switch
-				jQuery('#video_'+id+' .vjs-poster').removeAttr('style');
-				player.on ( 'ended', function() { 
-					jQuery('#video_'+id+' video').attr('poster', poster); 
-					jQuery('#video_'+id+' .vjs-poster').css('background-image', 'url("'+poster+'")');
-				} );
-			}
-		});
-
 		if ( video_vars.autoplay == "true" && player.paused() ) { player.play(); }
 
 	} //end if Video.js

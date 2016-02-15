@@ -121,6 +121,10 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 				}(postID) );
 			}
 		}
+		
+		video.removeAttribute('height'); //disables changes made by mejs
+		video.removeAttribute('style');
+		video.setAttribute('width', '200');
 
 		video.removeAttribute("controls");
 		video.muted=true;
@@ -197,6 +201,27 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		jQuery(video).data('setup', true);
 		if ( jQuery(video).data('busy') != true ) { kgvid_break_video_on_close(postID); }
 	}
+}
+
+function kgvid_draw_thumb_canvas(canvas, canvas_source) {
+
+	if ( canvas_source.nodeName.toLowerCase() === 'video' ) {
+		canvas_width = canvas_source.videoWidth;
+		canvas_height = canvas_source.videoHeight;
+	}
+	else {
+		canvas_width = canvas_source.width;
+		canvas_height = canvas_source.height;
+	}
+
+	canvas.width = canvas_width;
+	canvas.height = canvas_height;
+	var context = canvas.getContext('2d');
+	context.fillRect(0, 0, canvas_width, canvas_height);
+	context.drawImage(canvas_source, 0, 0, canvas_width, canvas_height);
+
+	return canvas;
+
 }
 
 function kgvid_reveal_thumb_video(postID) {
@@ -343,11 +368,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 						jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
 						var canvas = document.getElementById(postID+'_thumb_'+time_id);
-						canvas.width = video_width;
-						canvas.height = video_height;
-						var context = canvas.getContext('2d');
-						context.fillRect(0, 0, video_width, video_height);
-						context.drawImage(video, 0, 0, video_width, video_height);
+						canvas = kgvid_draw_thumb_canvas(canvas, video);
 						jQuery('#attachments-'+postID+'-thumb'+time_id).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000);
 
 						thumbnail_saved.splice(0,1);
@@ -400,11 +421,33 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	}
 }
 
-function kgvid_select_thumbnail(thumb_url, post_id, movieoffset) {
+function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
+
 	jQuery('[name="attachments['+post_id+'][kgflashmediaplayer-poster]"]').val(thumb_url); //get this by name because it's the same before WP v3.5
+
+	var unscaledThumb = new Image();
+	unscaledThumb.src = thumbnail.src;
+	var canvas = document.createElement("canvas");
+	canvas = kgvid_draw_thumb_canvas(canvas, unscaledThumb);
+	var thumb_url = canvas.toDataURL('image/jpeg', 0.8);
+		
+	kgvid_change_media_library_video_poster(post_id, thumb_url);	
+	
 	var time_display = kgvid_convert_to_timecode(movieoffset);
 	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-thumbtime').val(time_display);
 	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-numberofthumbs').val('1');
+	
+	
+}
+
+function kgvid_change_media_library_video_poster(post_id, thumb_url) {
+
+	if ( jQuery('div[data-id='+post_id+'] .wp-video-shortcode video').length > 0 ) {
+		jQuery('div[data-id='+post_id+'] .mejs-poster').css('background-image', 'url("'+thumb_url+'")');
+		jQuery('div[data-id='+post_id+'] .mejs-poster img').attr('src', thumb_url);
+		jQuery('div[data-id='+post_id+'] .wp-video-shortcode video').attr('poster', thumb_url);
+	}
+
 }
 
 function kgvid_save_canvas_thumb(postID, time_id, total, index) {
@@ -429,10 +472,19 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 				document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-autothumb-error]')[0].value = '';
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(thumb_url).change();
 				if ( pagenow == 'attachment' ) { jQuery('#publish').click(); }
+				kgvid_change_media_library_video_poster(postID, png64dataURL);
 			}
 			else {
 				kgvid_thumbnail_saveall_progress(postID, total);
 			}
+			
+			if(wp.media.frame.content.get()!==null){
+			   wp.media.frame.content.get().collection.props.set({ignore: (+ new Date())});
+			}
+			else{
+			   wp.media.frame.library.props.set({ignore: (+ new Date())});
+			}
+			
 		})
 		.fail( function(xhr, textStatus, errorThrown) {
 			document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-autothumb-error]')[0].value = errorThrown;
@@ -451,8 +503,8 @@ function kgvid_thumbnail_saveall_progress(postID, total) {
 
 		if ( number == total ) {
 			jQuery('#saveallthumbs-'+postID+'-div').slideUp(1000);
-			jQuery('#attachments-'+postID+'-thumbnailplaceholder .kgvid_save_overlay').fadeOut();
-			jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay').fadeTo(500, 1);
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder .kgvid_save_overlay').fadeOut("normal", function(){ jQuery(this).remove(); });
+			jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay, #attachments-'+postID+'-thumbnailplaceholder canvas').fadeTo(500, 1);
 			jQuery('#attachments-'+postID+'-thumbnailplaceholder input').removeAttr('disabled');
 		}
 
@@ -510,11 +562,7 @@ function kgvid_thumb_video_manual(postID) {
 	document.getElementById('attachments-'+postID+'-kgflashmediaplayer-thumbtime').value = time_display;
 	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas style="height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></div>');
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
-	canvas.width = video.videoWidth;
-	canvas.height = video.videoHeight;
-	var context = canvas.getContext('2d');
-	context.fillRect(0, 0, video.videoWidth, video.videoHeight);
-	context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+	canvas = kgvid_draw_thumb_canvas(canvas, video);
 	kgvid_save_canvas_thumb(postID, time_id, 1, 1);
 
 }

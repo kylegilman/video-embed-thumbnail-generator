@@ -212,7 +212,6 @@ div.kgvid_chosen_thumbnail_box {
 
 div.kgvid_thumbnail_overlay {
     width: 100%;
-    height:100%;
     background: #fff;
     opacity: 0.5;
     filter: alpha(opacity = 50); /* required for opacity to work in IE */
