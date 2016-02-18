@@ -431,7 +431,16 @@ function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 	canvas = kgvid_draw_thumb_canvas(canvas, unscaledThumb);
 	var thumb_url = canvas.toDataURL('image/jpeg', 0.8);
 		
-	kgvid_change_media_library_video_poster(post_id, thumb_url);	
+	kgvid_change_media_library_video_poster(post_id, thumb_url);
+	
+	setTimeout( function() {
+		if(wp.media.frame.content.get()!==null){
+		   wp.media.frame.content.get().collection.props.set({ignore: (+ new Date())});
+		}
+		else{
+		   wp.media.frame.library.props.set({ignore: (+ new Date())});
+		}
+	}, 2000);	
 	
 	var time_display = kgvid_convert_to_timecode(movieoffset);
 	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-thumbtime').val(time_display);
