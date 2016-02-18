@@ -157,8 +157,8 @@ function kgvid_default_options_fn() {
 			"encode_videos" => $upload_capable,
 			"edit_others_video_encodes" => $edit_others_capable
 		),
-		"open_graph" => "on",
-		"oembed_provider" => "on",
+		"open_graph" => false,
+		"oembed_provider" => false,
 		"oembed_security" => false,
 		"htaccess_login" => "",
 		"htaccess_password" => "",
@@ -257,7 +257,8 @@ function kgvid_get_attachment_meta($post_id) {
 		'gallery_order' => '',
 		'gallery_id' => '',
 		'duration' => '',
-		'aspect' => ''
+		'aspect' => '',
+		'original_replaced' => ''
 	);
 
 	if ( $kgvid_postmeta == '' ) {
@@ -345,7 +346,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 	$video_formats = array(
 		"fullres" => array(
 			"name" => __("same resolution H.264", 'video-embed-thumbnail-generator'),
-			"label" => 'Full',
+			"label" => __('Full', 'video-embed-thumbnail-generator'),
 			"width" => INF,
 			"height" => INF,
 			"type" => "h264",
@@ -429,8 +430,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 
 		$video_formats = $video_formats + array(
 			"custom_h264" => array(
-				"name" => "Custom MP4",
-				"label" => 'Custom MP4',
+				"name" => __('Custom MP4', 'video-embed-thumbnail-generator'),
+				"label" => __('Custom MP4', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "h264",
@@ -440,8 +441,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 				"vcodec" => "libx264"
 			),
 			"custom_webm" => array(
-				"name" => "Custom WEBM",
-				"label" => 'Custom WEBM',
+				"name" => __('Custom WEBM', 'video-embed-thumbnail-generator'),
+				"label" => __('Custom WEBM', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "webm",
@@ -451,8 +452,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 				"vcodec" => "libvpx"
 			),
 			"custom_ogg" => array(
-				"name" => "Custom OGV",
-				"label" => 'Custom OGV',
+				"name" => __('Custom OGV', 'video-embed-thumbnail-generator'),
+				"label" => __('Custom OGV', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "ogv",
@@ -2988,6 +2989,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		$movieurl = $sanitized_url['movieurl'];
 		if ( get_post_type($post_id) == "attachment" ) { //if the video is in the database
 			$is_attachment = true;
+			$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 			$post_mime_type = get_post_mime_type($post_id);
 			$dimensions = kgvid_set_video_dimensions($post_id);
 			$actualwidth = $dimensions['actualwidth'];
@@ -3088,6 +3090,14 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		) { continue; } //if the format is bigger than the original video, skip the checkbox
 
 		if ( !empty($encodevideo_info) && !$encodevideo_info[$format]['exists'] && strpos($format, 'custom_') === 0 ) { continue; } //skip custom formats that don't exist
+		
+		if ( $format == 'fullres' 
+			&& isset($kgvid_postmeta) 
+			&& array_key_exists('original_replaced', $kgvid_postmeta) 
+			&& $kgvid_postmeta['original_replaced'] == $options['replace_format'] 
+		) {
+			$format_stats['name'] = sprintf( _x('%s again', 'Replace original with full resolution format again', 'video-embed-thumbnail-generator'), $format_stats['name']);
+		}
 
 		if ( !array_key_exists('lastline', $format_stats) ) { $format_stats['lastline'] = ''; }
 		$meta_array = kgvid_encode_format_meta($encodevideo_info, $video_key, $format, $format_stats['status'], $format_stats['lastline'], $post_id, $movieurl, $page);
@@ -3633,7 +3643,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('playbutton', __('Play button overlay:', 'video-embed-thumbnail-generator'), 'kgvid_playbutton_callback', __FILE__, 'kgvid_video_embed_flash_settings', array( 'label_for' => 'playbutton' ) );
 
 	add_settings_field('generate_thumbs', __('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
-	add_settings_field('security', __('Video security:', 'video-embed-thumbnail-generator'), 'kgvid_security_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
+	add_settings_field('security', __('Video sharing:', 'video-embed-thumbnail-generator'), 'kgvid_security_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
 	add_settings_field('featured', __('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
 	add_settings_field('thumb_parent', __('Attach thumbnails to:', 'video-embed-thumbnail-generator'), 'kgvid_thumb_parent_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
 	add_settings_field('user_roles', __('User capabilities:', 'video-embed-thumbnail-generator'), 'kgvid_user_roles_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'user_roles' ) );
@@ -3975,10 +3985,10 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		else { $embed_disabled = ""; }
 
 		echo "<input class='affects_player' ".checked( $options['embeddable'], "on", false )." id='embeddable' name='kgvid_video_embed_options[embeddable]' type='checkbox' onclick='kgvid_embeddable_switch(this.checked);' /> <label for='embeddable'>".__('Allow users to embed your videos on other sites.', 'video-embed-thumbnail-generator')."</label><br />";
-		echo "<input ".checked( $options['open_graph'], "on", false )." id='open_graph' name='kgvid_video_embed_options[open_graph]' type='checkbox'".$embed_disabled." /> <label for='open_graph'>"._x('Enable Open Graph video tags.', '"Open Graph" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Facebook and some other social media sites will use these tags to embed the first video in your post. For the majority of Facebook users who have enabled secure browsing, your video must be served via https in order to be embedded directly on the page.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
+		echo "<input ".checked( $options['open_graph'], "on", false )." id='open_graph' name='kgvid_video_embed_options[open_graph]' type='checkbox'".$embed_disabled." /> <label for='open_graph'>"._x('Enable Facebook Open Graph video tags.', '"Open Graph" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Facebook and some other social media sites will use these tags to embed the first video in your post rather than the thumbnail. Your video must be served via https in order to be embedded directly in Facebook.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
 		echo "<input class='affects_player' ".checked( $options['right_click'], "on", false )." id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>".__('Allow right-clicking on videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input ".checked( $options['click_download'], "on", false )." id='click_download' name='kgvid_video_embed_options[click_download]' type='checkbox' /> <label for='click_download'>".__('Allow single-click download link for videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator')."</span></a>";
-		echo "<input ".checked( $options['oembed_provider'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'".$embed_disabled." /> <label for='oembed_provider'>"._x('Enable oEmbed provider.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code. For security reasons, this will not work on other WordPress sites unless they\'ve enabled oEmbed discovery from unkown providers.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['click_download'], "on", false )." id='click_download' name='kgvid_video_embed_options[click_download]' type='checkbox' /> <label for='click_download'>".__('Allow single-click download link for videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['oembed_provider'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'".$embed_disabled." /> <label for='oembed_provider'>"._x('Change oEmbed to video instead of WordPress default photo/excerpt.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites (including Facebook & Twitter) will not show videos through oEmbed unless your link is https.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['oembed_security'], "on", false )." id='oembed_security' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>"._x('Enable oEmbeds from unknown providers.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
 	}
 
@@ -4777,6 +4787,7 @@ add_action('wp_ajax_kgvid_save_settings', 'kgvid_ajax_save_settings');
 function kgvid_add_attachment_handler($post_id) {
 
 	$options = kgvid_get_options();
+	$filename = get_attached_file($post_id);
 
 	if ( $options['auto_encode'] == "on" ||  $options['auto_thumb'] == "on" ) {
 
@@ -4891,25 +4902,42 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 			}
 		}//end setting main thumbnail
 
-
 	}//end if auto_thumb is on
 
 	if ( $force == 'encode' || $options['auto_encode'] == "on" ) {
+
 		$video_formats = kgvid_video_formats();
+		$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
+		$filepath = get_attached_file($post_id);
+		$extension = pathinfo($filepath, PATHINFO_EXTENSION);
 		$something_to_encode = false;
 		$encode_checked = array();
+
+		if ( substr(basename($filepath, '.'.$extension), -10) == '-noreplace'
+			|| ( array_key_exists('original_replaced', $kgvid_postmeta) && $kgvid_postmeta['original_replaced'] == $options['replace_format'] ) 
+		) {
+			$options['encode_fullres'] = false;
+		}
+		
 		foreach ( $video_formats as $format => $format_stats ) {
+
 			if ( array_key_exists('encode_'.$format, $options) && $options['encode_'.$format] == "on" ) {
 				$encode_checked[$format] = "true";
 				$something_to_encode = true;
 			}
+
 			else { $encode_checked[$format] = "notchecked"; }
+
 		}
+
 		if ( $something_to_encode ) {
 			$output = kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
 			$output = kgvid_encode_videos();
+
 		}
-	}
+
+	}//end if auto_encode
+
 }
 add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler');
 
@@ -5467,9 +5495,10 @@ function kgvid_ajax_save_html5_thumb() {
 
 		kgvid_schedule_cleanup_generated_files('thumbs');
 		echo ($thumb_url);
-		die();
-
 	}
+	
+	die();
+	
 }
 add_action('wp_ajax_kgvid_save_html5_thumb', 'kgvid_ajax_save_html5_thumb');
 
@@ -5489,9 +5518,10 @@ function kgvid_ajax_save_thumb() {
 
 		$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
 
-		echo $thumb_id;
-		die();
+		echo $thumb_id;		
 	}
+	
+	die();
 
 }
 add_action('wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb');
@@ -7043,6 +7073,7 @@ add_action('wp_ajax_kgvid_encode_progress', 'kgvid_ajax_encode_progress');
 
 function kgvid_replace_video( $video_key, $format ) {
 
+	$options = kgvid_get_options();
 	$video_encode_queue = kgvid_get_encode_queue();
 	$video_formats = kgvid_video_formats();
 	$encoded_filename = $video_encode_queue[$video_key]['encode_formats'][$format]['filepath'];
@@ -7149,6 +7180,10 @@ function kgvid_replace_video( $video_key, $format ) {
 
 		$post_update = array('ID' => $video_id, 'post_mime_type' => $new_mime['type']);
 		wp_update_post($post_update);
+		
+		$kgvid_postmeta = kgvid_get_attachment_meta($video_id);
+		$kgvid_postmeta['original_replaced'] = $options['replace_format'];
+		kgvid_save_attachment_meta($video_id, $kgvid_postmeta);
 
 		return $new_url;
 

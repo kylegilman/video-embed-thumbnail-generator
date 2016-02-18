@@ -43,7 +43,7 @@ You can add subtitle and caption tracks by choosing properly formatted WebVTT fi
 
 I highly recommend using <a href="http://handbrake.fr/">Handbrake</a> to make a file with H.264 video and AAC audio in an MP4 container before uploading. If you're encoding with Handbrake make sure that "Web Optimized" is checked. Using Apple's Compressor, the "Streaming" setting should be "Fast Start" (not Fast Start - Compressed Header).
 
-The plugin can use FFMPEG or LIBAV to encode videos and make thumbnails if you have one of them installed on your server. You can choose to generate thumbnails and additional video formats automatically whenever a new video is uploaded to the media library, and there are buttons to generate thumbnails and additional video formats for every video already in the media library.
+The plugin can use FFMPEG or LIBAV to encode videos and make thumbnails if you have one of them installed on your server. You can choose to generate thumbnails and additional video formats automatically whenever a new video is uploaded to the media library, and there are buttons to generate thumbnails and additional video formats for every video already in the media library. If you want most videos to be re-encoded and replaced with a particular format but sometimes want to keep the original video, you can add the suffix '-noreplace' (awesomevid-noreplace.mp4) to your filename and the uploaded video will not be replaced. Other automatic formats will still encode.
 
 By default the plugin looks for FFMPEG in `/usr/local/bin` but if the application is installed in a different place on your server, you can point it to the correct place in the plugin settings. Users running WordPress on Windows servers should try using Linux-style paths (with forward slashes instead of backslashes and a forward slash `/` instead of `C:\`). Multisite Super Admins must set the FFMPEG path in the Network settings page which will enable FFMPEG throughout the network.
 
@@ -233,15 +233,17 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6 - February XX, 2016 =
-* Updated Video.js to version 5.5.3
-* Significantly redesigned video sharing overlay appearance.
-* Added Twitter and Facebook share buttons.
-* Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
 * Added resolution switching for WordPress Default player.
 * Added option to load a specific resolution by default.
+* Added Twitter and Facebook share buttons.
+* Added '-noreplace' filename option to prevent automatic video encoding for specific videos.
+* Significantly redesigned video sharing overlay appearance.
+* Updated Video.js to version 5.5.3
+* Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
+* Now showing paused video frame while switching resolutions instead of black frame or thumbnail.
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
-* Improved user role security to preven unauthorized users from modifying video settings.
+* Improved user role security to prevent unauthorized users from modifying video settings or deleting encoded videos.
 * Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that incorrectly interpreted FFMPEG output as an error when the last line came from the AAC encoder.
