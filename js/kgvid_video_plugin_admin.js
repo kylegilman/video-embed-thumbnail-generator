@@ -478,12 +478,14 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 				kgvid_thumbnail_saveall_progress(postID, total);
 			}
 			
-			if(wp.media.frame.content.get()!==null){
-			   wp.media.frame.content.get().collection.props.set({ignore: (+ new Date())});
-			}
-			else{
-			   wp.media.frame.library.props.set({ignore: (+ new Date())});
-			}
+			setTimeout( function() {
+				if(wp.media.frame.content.get()!==null){
+				   wp.media.frame.content.get().collection.props.set({ignore: (+ new Date())});
+				}
+				else{
+				   wp.media.frame.library.props.set({ignore: (+ new Date())});
+				}
+			}, 2000);
 			
 		})
 		.fail( function(xhr, textStatus, errorThrown) {
