@@ -2474,6 +2474,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					if ( $query_atts['embedcode'] == "true" ) { $iframeurl = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 					else { $iframeurl = $query_atts['embedcode']; }
 					$iframecode = "<iframe allowfullscreen src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
+					$iframecode = apply_filters('kgvid_embedcode', $iframecode, $iframeurl, $id, $query_atts);
 					$embed_code .= "<span class='dashicons dashicons-editor-code'></span><span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><input type='text' value='".esc_attr($iframecode)."' onClick='this.select();'></span>";
 				} //embed code
 
