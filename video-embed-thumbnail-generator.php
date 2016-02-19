@@ -1902,7 +1902,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 	} //if there are attachments
 
-	return $code;
+	return apply_filters('kgvid_gallery_page', $code, $kgvid_video_id);
 
 }
 
@@ -2566,7 +2566,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 
 	} //end id_array loop
 
-	return apply_filters('kgvid_single_video_code', $code);
+	return apply_filters('kgvid_single_video_code', $code, $post_id);
 
 }
 
@@ -2736,7 +2736,7 @@ function KGVID_shortcode($atts, $content = ''){
 
 	} //if not feed
 
-	return $code;
+	return apply_filters('KGVID_shortcode', $code, $query_atts, $content);
 
 }
 add_shortcode('FMP', 'KGVID_shortcode');
