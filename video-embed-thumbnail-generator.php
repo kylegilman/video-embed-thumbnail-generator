@@ -1585,12 +1585,12 @@ function kgvid_get_first_embedded_video( $post ) {
 						|| empty($attributes)
 				) {
 
-					$post_ID = $post->ID;
+					$post_id = $post->ID;
 
 					$args = array(
 						'numberposts' => 1,
 						'post_mime_type' => 'video',
-						'post_parent' => $post_ID,
+						'post_parent' => $post_id,
 						'post_status' => null,
 						'post_type' => 'attachment'
 					);
@@ -1861,10 +1861,10 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			if ( $kgvid_postmeta['downloadlink'] == "on" ) { $atts['downloadlink'] = "true"; }
 
 			$popup_atts = kgvid_shortcode_atts($atts);
-			if ( in_the_loop() ) { $post_ID = get_the_ID(); }
-			else { $post_ID = 1; }
+			if ( in_the_loop() ) { $post_id = get_the_ID(); }
+			else { $post_id = 1; }
 			$content = '';
-			$popup_code = kgvid_single_video_code($popup_atts, $atts, $content, $post_ID);
+			$popup_code = kgvid_single_video_code($popup_atts, $atts, $content, $post_id);
 
 			preg_match('/data-kgvid_video_vars=.*? /', $popup_code, $video_vars);
 			$popup_code = str_replace(array("\r", "\n", "\t", $video_vars[0]), "", $popup_code);
@@ -1922,7 +1922,7 @@ function kgvid_switch_gallery_page() {
 add_action( 'wp_ajax_kgvid_switch_gallery_page', 'kgvid_switch_gallery_page' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_switch_gallery_page', 'kgvid_switch_gallery_page' ); // ajax for not logged in users
 
-function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
+function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 	global $content_width;
 	$content_width_save = $content_width;
@@ -1941,11 +1941,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 		if ( !empty($query_atts["id"]) ) {
 			$id_array[0] = $query_atts["id"];
 		}
-		elseif ( $post_ID != 1 ) {
+		elseif ( $post_id != 1 ) {
 			$args = array(
 				'numberposts' => $query_atts['videos'],
 				'post_mime_type' => 'video',
-				'post_parent' => $post_ID,
+				'post_parent' => $post_id,
 				'post_status' => null,
 				'post_type' => 'attachment',
 				'orderby' => $query_atts['orderby'],
@@ -2025,7 +2025,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 		}
 		else { //video is not in the database
 
-			$encodevideo_info = kgvid_encodevideo_info($content, $post_ID); //send the id of the post the video's embedded in
+			$encodevideo_info = kgvid_encodevideo_info($content, $post_id); //send the id of the post the video's embedded in
 			if ( $query_atts['title'] == "true" ) {
 				$query_atts['title'] = "false";
 			}
@@ -2161,7 +2161,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 		$code .= '<meta itemprop="description" content="'.esc_attr($description).'" />';
 
 		if ( !empty($id) ) { $upload_date = get_the_date('c', $id); }
-		elseif ( $post_ID != 1 ) { $upload_date = get_the_date('c', $post_ID); }
+		elseif ( $post_id != 1 ) { $upload_date = get_the_date('c', $post_id); }
 		else { $upload_date = current_time('c'); }
 		$code .= '<meta itemprop="uploadDate" content="'.esc_attr($upload_date).'" />';
 
@@ -2566,7 +2566,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_ID) {
 
 	} //end id_array loop
 
-	return apply_filters('kgvid_single_video_code', $code, $query_atts, $atts, $content, $post_ID);
+	return apply_filters('kgvid_single_video_code', $code, $query_atts, $atts, $content, $post_id);
 
 }
 
@@ -2574,8 +2574,8 @@ function kgvid_shortcode_atts($atts) {
 
 	$options = kgvid_get_options();
 
-	if ( in_the_loop() ) { $post_ID = get_the_ID(); }
-	else { $post_ID = 1; }
+	if ( in_the_loop() ) { $post_id = get_the_ID(); }
+	else { $post_id = 1; }
 
 	$default_atts = array(
 		'id' => '',
@@ -2609,7 +2609,7 @@ function kgvid_shortcode_atts($atts) {
 		'gallery_order' => 'ASC',
 		'gallery_exclude' => '',
 		'gallery_include' => '',
-		'gallery_id' => $post_ID,
+		'gallery_id' => $post_id,
 		'gallery_end' => $options['gallery_end'],
 		'gallery_title' => $options['gallery_title'],
 		'volume' => $options['volume'],
@@ -2688,14 +2688,14 @@ function KGVID_shortcode($atts, $content = ''){
 
 		kgvid_enqueue_shortcode_scripts();
 
-		if ( in_the_loop() ) { $post_ID = get_the_ID(); }
-		else { $post_ID = 1; }
+		if ( in_the_loop() ) { $post_id = get_the_ID(); }
+		else { $post_id = 1; }
 
 		$query_atts = kgvid_shortcode_atts($atts);
 
 		if ( $query_atts["gallery"] != "true" ) { //if this is not a pop-up gallery
 
-			$code = kgvid_single_video_code($query_atts, $atts, $content, $post_ID);
+			$code = kgvid_single_video_code($query_atts, $atts, $content, $post_id);
 
 		} //if not gallery
 
@@ -4942,14 +4942,14 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 }
 add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler');
 
-function kgvid_change_thumbnail_parent( $post_ID, $parent_id ) {
+function kgvid_change_thumbnail_parent( $post_id, $parent_id ) {
 
 	$args = array(
 		'post_type' => 'attachment',
 		'post_mime_type' => 'image',
 		'numberposts' => '-1',
 		'meta_key' => '_kgflashmediaplayer-video-id',
-		'meta_value' => $post_ID,
+		'meta_value' => $post_id,
 	);
 	$thumbnails = get_posts( $args ); //find all thumbnail children of the video in the database
 
@@ -4960,7 +4960,7 @@ function kgvid_change_thumbnail_parent( $post_ID, $parent_id ) {
 			if ( $thumbnail->post_parent != $parent_id )  {
 
 				if ( empty($parent_id) ) {
-					$thumbnail->post_parent = $post_ID;
+					$thumbnail->post_parent = $post_id;
 				}
 
 				else { //parent post exists
@@ -5012,10 +5012,10 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
 }
 add_filter( 'wp_redirect', 'kgvid_upload_page_change_thumbnail_parent' ); //when attachment parent is manually changed on the Media Library page
 
-function kgvid_validate_post_updated( $post_ID ) {
+function kgvid_validate_post_updated( $post_id ) {
 
 	$options = kgvid_get_options();
-	$post = get_post($post_ID);
+	$post = get_post($post_id);
 
 	if ( substr($post->post_mime_type, 0, 5) == 'video'
 		&& ( empty($post->post_parent)
@@ -5025,11 +5025,11 @@ function kgvid_validate_post_updated( $post_ID ) {
 
 
 		if ( $options['thumb_parent'] == 'post' ) {
-			kgvid_change_thumbnail_parent( $post_ID, $post->post_parent );
+			kgvid_change_thumbnail_parent( $post_id, $post->post_parent );
 		}
 		
 		if ( $options['featured'] == 'on' && !has_post_thumbnail( $post->post_parent ) ) { 
-			$featured_id = get_post_meta($post_ID, '_kgflashmediaplayer-poster-id', true);
+			$featured_id = get_post_meta($post_id, '_kgflashmediaplayer-poster-id', true);
 			if ( !empty($featured_id) ) { 
 				set_post_thumbnail($post->post_parent, $featured_id); 
 			}
