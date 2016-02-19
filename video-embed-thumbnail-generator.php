@@ -6034,7 +6034,7 @@ function kgvid_generate_embeddable_video( $kgvid_video_embed ) {
 	$html .= '</body></html>';
 	$content_width = $content_width_save; //reset $content_width
 
-	return $html;
+	return apply_filters('kgvid_generate_embeddable_video', $html, $kgvid_video_embed);
 
 }
 
