@@ -218,13 +218,15 @@ img.kgvid_ios_novideo {
 }
 
 .kgvid_share_icons input[type="text"] {
-    font-family: sans-serif;
-    font-size: 10pt;
-    color: white;
-    width: 50%;
-    background: #ABACA8;
-    padding: 4px;
-    border-radius: 6px;
+    font-family: sans-serif !important;
+    font-size: 10pt !important;
+    color: white !important;
+    width: 50% !important;
+    background: #ABACA8 !important;
+    padding: 4px !important;
+    border-radius: 6px !important;
+    border: none !important;
+    display: inline-block !important;
 }
 
 .kgvid_share_icons .kgvid_social_icons {
