@@ -234,14 +234,16 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6 - February XX, 2016 =
 * Added resolution switching for WordPress Default player.
+* Added animated GIF to video conversion.
 * Added option to load a specific resolution by default.
 * Added Twitter and Facebook share buttons.
-* Added '-noreplace' filename option to prevent automatic video encoding for specific videos.
+* Added '-noreplace' filename option to prevent automatic video encoding for some videos.
 * Significantly redesigned video sharing overlay appearance.
-* Updated Video.js to version 5.7.1
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
+* Updated Video.js to version 5.7.1
 * Now showing paused video frame while switching resolutions instead of black frame or thumbnail.
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
+* Revised Facebook Open Graph tags so they actually work on Facebook.
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Improved user role security to prevent unauthorized users from modifying video settings or deleting encoded videos.
 * Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
