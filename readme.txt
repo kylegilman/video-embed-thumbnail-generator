@@ -240,7 +240,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added '-noreplace' filename option to prevent automatic video encoding for some videos.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
-* Updated Video.js to version 5.7.1
+* Updated Video.js to version 5.5.3
 * Now showing paused video frame while switching resolutions instead of black frame or thumbnail.
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
 * Revised Facebook Open Graph tags so they actually work on Facebook.
