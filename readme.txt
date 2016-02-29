@@ -2,8 +2,8 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution
-Requires at least: 3.5
-Tested up to: 4.4
+Requires at least: 4.4
+Tested up to: 4.5
 Stable tag: 4.5.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -236,8 +236,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added resolution switching for WordPress Default player.
 * Added animated GIF to video conversion.
 * Added option to load a specific resolution by default.
-* Added Twitter and Facebook share buttons.
 * Added '-noreplace' filename option to prevent automatic video encoding for some videos.
+* Added button to clear the whole video encoding queue.
+* Added option to send an email when there is a video encoding error.
+* Added Twitter and Facebook share buttons.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
 * Updated Video.js to version 5.5.3

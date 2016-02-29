@@ -1054,6 +1054,19 @@ function kgvid_encode_queue(action, order, id) {
 		}
 
 	}
+	
+	if ( action == "clear_all" ) {
+
+		var clear_for_sure = confirm(kgvidL10n.clearallwarning+"\n"+kgvidL10n.cancel_ok);
+
+		if ( clear_for_sure == true ) {
+			jQuery('tbody > .kgvid_queued').fadeTo('slow', 0.5);
+			jQuery.post(ajaxurl, { action:"kgvid_clear_completed_queue", security: kgflashmediaplayersecurity, type:"all", scope: scope }, function(data) {
+				jQuery('table.widefat > tbody').replaceWith("<tbody class='rows'>"+data+"</tbody>");
+			}, "html" );
+		}
+
+	}
 
 }
 
