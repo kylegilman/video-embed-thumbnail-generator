@@ -172,7 +172,8 @@ function kgvid_default_options_fn() {
 			"x" => "6",
 			"y" => "5"
 		),
-		"simultaneous_encodes" => 1
+		"simultaneous_encodes" => 1,
+		"error_email" => "nobody"
 	);
 
 	return $options;
@@ -194,7 +195,8 @@ function kgvid_default_network_options() {
 		'ffmpeg_exists' => $default_options['ffmpeg_exists'],
 		'default_capabilities' => $default_options['capabilities'],
 		'superadmin_only_ffmpeg_settings' => false,
-		'simultaneous_encodes' => $default_options['simultaneous_encodes']
+		'simultaneous_encodes' => $default_options['simultaneous_encodes'],
+		'network_error_email' => $default_options['error_email']
 	);
 
 	return $network_options;
@@ -3529,6 +3531,7 @@ function kgvid_network_settings_page() {
 		<script type='text/javascript'>
 				jQuery(document).ready(function() {
 						kgvid_hide_plugin_settings();
+						kgvid_moov_setting();
 						jQuery('form :input').change(function() {
 							kgvid_save_plugin_settings(this);
 						});
@@ -3542,7 +3545,29 @@ function kgvid_network_settings_page() {
 function kgvid_superadmin_capabilities_callback() {
 
 	$network_options = get_site_option('kgvid_video_embed_network_options');
-	echo "<input ".checked( $network_options['superadmin_only_ffmpeg_settings'], "on", false )." id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>".sprintf( _x('%s settings tab.', 'FFMPEG settings tab', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" )."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__( sprintf( 'Only Super admins will be allowed to view and modify %s settings.', "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" ), 'video-embed-thumbnail-generator' )."</span></a>\n\t";
+	echo "<input ".checked( $network_options['superadmin_only_ffmpeg_settings'], "on", false )." id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>".sprintf( _x('Access %s settings tab.', 'Access FFMPEG settings tab', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" )."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__( sprintf( 'Only Super admins will be allowed to view and modify %s settings.', "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" ), 'video-embed-thumbnail-generator' )."</span></a><br>\n\t";
+		
+	echo "<div class='kgvid_video_app_required'>";
+	echo __('Email all encoding errors on the network to:', 'video-embed-thumbnail-generator')." <select id='network_error_email' name='kgvid_video_embed_options[network_error_email]'>";
+	$network_super_admins = get_super_admins();
+	if ( $network_super_admins ) {
+		$authorized_users = array();
+		foreach ( $network_super_admins as $network_super_admin ) {
+			$user = get_user_by('login', $network_super_admin);
+			$authorized_users[$network_super_admin] = $user->ID;
+		}
+	}
+	$items = array_merge( array(
+		__('Nobody', 'video-embed-thumbnail-generator') => 'nobody',
+		__('User who initiated encoding', 'video-embed-thumbnail-generator') => 'encoder'
+		), $authorized_users
+	);
+	foreach($items as $name=>$value) {
+		$selected = ($network_options['network_error_email']==$value) ? 'selected="selected"' : '';
+		echo "<option value='$value' $selected>$name</option>";
+	}
+	echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".sprintf( __( 'Can also be set on individual sites if the %s settings tab isn\'t disabled.' , 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" )."</a></span>";
+	echo "</div>\n\t";
 
 }
 
@@ -3625,9 +3650,18 @@ function kgvid_video_embed_options_init() {
 		}//end setting initial network options
 		else { //network options introduced in version 4.3 exist already
 
+			$network_options_old = $network_options;
+
 			if ( !array_key_exists('superadmin_only_ffmpeg_settings', $network_options) ) {
 				$default_network_options = kgvid_default_network_options();
 				$network_options['superadmin_only_ffmpeg_settings'] = $default_network_options['superadmin_only_ffmpeg_settings'];
+			}
+			
+			if ( !array_key_exists('network_error_email', $network_options) ) {
+				$network_options['network_error_email'] = 'nobody';
+			}
+			
+			if ( $network_options_old != $network_options ) {
 				update_site_option('kgvid_video_embed_network_options', $network_options);
 			}
 
@@ -4318,7 +4352,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		if ( empty($options['moov_path']) ) { $options['moov_path'] = $options['app_path']; }
 		echo "<div class='kgvid_video_app_required'>";
 		$items = array(__("none", 'video-embed-thumbnail-generator')=>"none", "movflags faststart"=>"movflag", "qt-faststart"=>"qt-faststart", "MP4Box"=>"MP4Box");
-		echo "<select onchange='kgvid_hide_plugin_settings()' id='moov' name='kgvid_video_embed_options[moov]' class='affects_ffmpeg'>";
+		echo "<select onchange='kgvid_moov_setting()' id='moov' name='kgvid_video_embed_options[moov]' class='affects_ffmpeg'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['moov']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
@@ -7125,7 +7159,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						if ( strpos($lastline, "signal 15") !== false ) { //if the encoding was intentionally canceled
 							$lastline = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
 						}
-						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "error";
+						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "cancelled";
 
 					}
 
@@ -7137,30 +7171,66 @@ function kgvid_encode_progress($video_key, $format, $page) {
 
 				}
 
-				if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
+				if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" || $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "cancelled" ) {
+				
 					$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = addslashes($lastline);
 					
 					$embed_display = '<strong>'.__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
-					$options = kgvid_get_options();
-					if ( $options['error_email'] != 'nobody' && !array_key_exists('mailed', $video_encode_queue[$video_key]['encode_formats'][$format]) ) {
-						$blog_title = get_bloginfo();
-						$admin_url = get_admin_url();
-						if ( $options['error_email'] == 'encoder' ) {
-							if ( !empty($video_encode_queue[$video_key]['user_id']) ) { 
-								$user = get_userdata( $video_encode_queue[$video_key]['user_id'] );
+					
+					if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
+					
+						$options = kgvid_get_options();
+						
+						if ( ( $options['error_email'] != 'nobody' 
+								|| ( array_key_exists('network_error_email', $options) && $options['network_error_email'] != 'nobody' ) 
+							)
+							&& !array_key_exists('mailed', $video_encode_queue[$video_key]['encode_formats'][$format]) 
+						) {
+							$mailed = false;
+							$blog_title = get_bloginfo();
+							$admin_url = get_admin_url();
+							$user = false;
+							$super_user = false;
+						
+							if ( $options['error_email'] == 'encoder' 
+								|| ( array_key_exists('network_error_email', $options) && $options['network_error_email'] == 'encoder' )
+							) {
+								if ( !empty($video_encode_queue[$video_key]['user_id']) ) { 
+									$user = get_userdata( $video_encode_queue[$video_key]['user_id'] );
+								}
 							}
-						}
-						else { $user = get_userdata($options['error_email']); }
-						if ( $user instanceof WP_User ) {
+							elseif( is_numeric($options['error_email']) ) { 
+								$user = get_userdata($options['error_email']); 
+							}
+						
+							if ( array_key_exists('network_error_email', $options) && is_numeric($options['network_error_email']) ) { 
+								$super_user = get_userdata($options['network_error_email']); 
+							}
+						
 							$headers = array('Content-Type: text/html; charset=UTF-8');
-							$mailed = wp_mail(
-								$user->user_email, 
-								__('Video Encode Error', 'video-embed-thumbnail-generator'), 
-								sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ),
-								$headers
-							);
+						
+							if ( $user instanceof WP_User ) {
+								$mailed = wp_mail(
+									$user->user_email, 
+									__('Video Encode Error', 'video-embed-thumbnail-generator'), 
+									sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ),
+									$headers
+								);
+							}
+						
+							if ( $super_user instanceof WP_User && $super_user != $user ) {
+								$network_info = get_current_site();
+								$mailed = wp_mail(
+									$super_user->user_email, 
+									__('Video Encode Error', 'video-embed-thumbnail-generator'), 
+									sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ).' '.sprintf( _x('on the %s network.', 'on the [name of multisite network] network.', 'video-embed-thumbnail-generator'), '<a href="'.network_admin_url("settings.php?page=kgvid_network_video_encoding_queue").'">'.$network_info->site_name.'</a>' ),
+									$headers
+								);
+							}
+						
 							if ( $mailed ) { $video_encode_queue[$video_key]['encode_formats'][$format]['mailed'] = true; }
 						}
+					
 					}
 					
 					kgvid_save_encode_queue($video_encode_queue);
