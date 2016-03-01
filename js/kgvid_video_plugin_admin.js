@@ -1312,15 +1312,7 @@ function kgvid_hide_plugin_settings() {
 
 	if ( encoding_tab ) {
 
-		var moov = jQuery('#moov').val();
-
-		if ( moov == 'none' || moov == 'movflag' ) {
-			jQuery('#moov_path_p').hide();
-		}
-		else {
-			jQuery('.kgvid_moov_option').html(moov);
-			jQuery('#moov_path_p').show();
-		}
+		kgvid_moov_setting();
 
 	}
 
@@ -1352,6 +1344,20 @@ function kgvid_hide_ffmpeg_settings() {
 	}
 
 	jQuery('.video_app_name').html(video_app.toUpperCase());
+
+}
+
+function kgvid_moov_setting() {
+
+	var moov = jQuery('#moov').val();
+
+	if ( moov == 'none' || moov == 'movflag' ) {
+		jQuery('#moov_path_p').hide();
+	}
+	else {
+		jQuery('.kgvid_moov_option').html(moov);
+		jQuery('#moov_path_p').show();
+	}
 
 }
 
