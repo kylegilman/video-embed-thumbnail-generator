@@ -511,7 +511,7 @@ function kgvid_resize_video(id) {
 		var set_height = video_vars.height;
 		var aspect_ratio = Math.round(set_height/set_width*1000)/1000
 		var reference_div = jQuery('#kgvid_'+id+'_wrapper').parent();
-		if ( reference_div.is('body') ) { parent_width = window.innerWidth; }
+		if ( reference_div.is('body') ) { parent_width = window.innerWidth; set_width = window.innerWidth; }
 		else if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) { //if it's a pop-up video
 			var window_width = jQuery(window).width();
 			var window_height = jQuery(window).height();
