@@ -481,7 +481,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 			if ( total == 1 ) {
 				document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-autothumb-error]')[0].value = '';
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(thumb_url).change();
-				if ( pagenow == 'attachment' ) { jQuery('#publish').click(); }
+				if ( typeof pagenow === 'undefined' || pagenow == 'attachment' ) { jQuery('#publish').click(); }
 				kgvid_change_media_library_video_poster(postID, png64dataURL);
 			}
 			else {
@@ -803,7 +803,7 @@ function kgvid_delete_video(movieurl, postID, format, childID, blogID) {
 
 		jQuery.post(ajaxurl, { action: "kgvid_delete_video", security: kgflashmediaplayersecurity, movieurl: movieurl, postid: postID, format: format, childid: childID, blogid: blogID }, function(data) {
 			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+format).change();
-			if ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' || pagenow == 'tools_page_kgvid_video_encoding_queue' ) { page = 'queue'; }
+			if ( typeof pagenow !== 'undefined' && ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' || pagenow == 'tools_page_kgvid_video_encoding_queue' ) ) { page = 'queue'; }
 			else { page = 'attachment'; }
 			kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID);
 		}, "json" );
@@ -830,7 +830,7 @@ function kgvid_cancel_thumbs(postID) {
 
 function kgvid_update_encode_queue() {
 
-	if ( pagenow == 'tools_page_kgvid_video_encoding_queue' || pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) {
+	if ( typeof pagenow !== 'undefined' && ( pagenow == 'tools_page_kgvid_video_encoding_queue' || pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) ) {
 		var page = 'queue';
 		var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
 	}
@@ -1026,7 +1026,7 @@ function kgvid_encode_queue(action, order, id) {
 	if ( CheckboxTimeout ) { clearTimeout(CheckboxTimeout); }
 
 	var scope = 'blog';
-	if ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) { scope = 'network' }
+	if ( typeof pagenow !== 'undefined' && pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) { scope = 'network' }
 
 	if ( action == "delete" ) {
 		jQuery('#tr_'+id).fadeTo('slow', 0.5);
