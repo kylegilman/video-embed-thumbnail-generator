@@ -580,7 +580,7 @@ function kgvid_thumb_video_manual(postID) {
 
 }
 
-function kgvid_enqueue_video_encode(postID) {
+function kgvid_enqueue_video_encode(postID, blogID) {
 
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
 	var attachmentURL = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-url]')[0].value;
@@ -611,7 +611,7 @@ function kgvid_enqueue_video_encode(postID) {
 	jQuery(encodeprogressplaceholderid).empty();
 	jQuery(encodeplaceholderid).append('<strong>'+kgvidL10n.loading+'</strong>');
 
-	jQuery.post(ajaxurl, { action:"kgvid_callffmpeg", security: kgflashmediaplayersecurity, movieurl: attachmentURL, ffmpeg_action: 'enqueue', encodeformats: kgvid_encode, attachmentID: postID, parent_id: parent_post_id }, function(data) {
+	jQuery.post(ajaxurl, { action:"kgvid_callffmpeg", security: kgflashmediaplayersecurity, movieurl: attachmentURL, ffmpeg_action: 'enqueue', encodeformats: kgvid_encode, attachmentID: postID, parent_id: parent_post_id, blog_id: blogID }, function(data) {
 
 		jQuery(encodeplaceholderid).empty();
 		jQuery(encodeprogressplaceholderid).empty();
@@ -954,7 +954,7 @@ function kgvid_update_encode_queue() {
 
 }
 
-function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
+function kgvid_redraw_encode_checkboxes(movieurl, postID, page) {
 
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
 
@@ -962,6 +962,10 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
 
 		var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm");
 		var kgvid_encode = new Object();
+		var blogID_element = document.getElementsByName('attachments['+postID+'][blog_id]');
+		if ( blogID_element.length > 0 ) { var blogID = blogID_element[0].value; }
+		else { blogID = false; }
+		
 		jQuery.each(formats, function(key,formats) {
 			kgvid_encode[formats] = "";
 			if ( jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+formats).length > 0) {
