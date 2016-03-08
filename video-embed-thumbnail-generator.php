@@ -3233,7 +3233,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		$checkboxes .= "\n\t\t\t".'<li><input class="kgvid_encode_checkbox" type="checkbox" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode'.$format.']" '.$meta_array['checked'].' '.$ffmpeg_disabled_text.$meta_array['disabled'].'> <label for="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-meta'.$format.'" class="kgvid_format_meta">'.$meta_array['meta'].'</span>';
 
-		if ( !$security_disabled && $is_attachment && empty($meta_array['disabled']) && $format != 'fullres' ) { $checkboxes .= "<span id='pick-".$post_id."-".$format."' class='button-secondary kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\", \"".$blog_id."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
+		if ( !$security_disabled && $is_attachment && empty($meta_array['disabled']) && $format != 'fullres' && $page != 'queue' ) { $checkboxes .= "<span id='pick-".$post_id."-".$format."' class='button-secondary kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\", \"".$blog_id."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
 		}
 		$checkboxes .= '</li>';
 
@@ -5044,7 +5044,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 	$post = get_post($post_id);
 	$movieurl = wp_get_attachment_url($post_id);
 	$filepath = get_attached_file($post_id);
-	$is_animated = kgvid_is_animated_gif($filename);
+	$is_animated = kgvid_is_animated_gif($filepath);
 
 	if ( $post && $post->post_mime_type != 'image/gif' && ( $force == 'thumbs' || $options['auto_thumb'] == "on" ) ) {
 
