@@ -1058,7 +1058,7 @@ function kgvid_encode_queue(action, order, id, blogID) {
 	var CheckboxTimeout = jQuery('#wpwrap').data("KGVIDCheckboxTimeout") || null;
 	if ( CheckboxTimeout ) { clearTimeout(CheckboxTimeout); }
 
-	var kgflashmediaplayersecurity = document.getElementsByName('attachments'+blog.name_text+'[kgflashmediaplayer-security]')[0].value;
+	var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
 
 	if ( action == "delete" ) {
 		jQuery('#tr-'+blog.id_text+id).fadeTo('slow', 0.5);
