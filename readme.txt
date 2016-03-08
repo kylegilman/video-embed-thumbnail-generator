@@ -232,9 +232,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6 - February XX, 2016 =
+= 4.6 - March XX, 2016 =
+* Updated Video.js to version 5.5.3 which includes a revised skin.
 * Added resolution switching for WordPress Default player.
-* Added animated GIF to video conversion.
+* Added animated GIF video conversion.
 * Added option to load a specific resolution by default.
 * Added '-noreplace' filename option to prevent automatic video encoding for some videos.
 * Added button to clear the whole video encoding queue.
@@ -242,13 +243,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Twitter and Facebook share buttons.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
-* Updated Video.js to version 5.5.3
 * Now showing paused video frame while switching resolutions instead of black frame or thumbnail.
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
 * Revised Facebook Open Graph tags so they actually work on Facebook.
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Improved user role security to prevent unauthorized users from modifying video settings or deleting encoded videos.
 * Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
+* Fixed multiple multisite encoding queue bugs.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that incorrectly interpreted FFMPEG output as an error when the last line came from the AAC encoder.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
@@ -446,6 +447,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 <a href="http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/">See the full changelog on my website.</a>
 
 == Upgrade Notice ==
+
+= 4.6 =
+It's safe to update. The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
 
 = 4.5.6 =
 Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
