@@ -3211,7 +3211,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		if ( $format == 'fullres' ) {
 
-			if ( $encodevideo_info['fullres']['exists'] == true ) {
+			if ( $encodevideo_info['fullres']['exists'] == true && $format_stats['status'] != "encoding" ) {
 				unlink($encodevideo_info[$format]['filepath']);
 				$encodevideo_info['fullres']['exists'] = false;
 			}
