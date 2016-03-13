@@ -533,7 +533,7 @@ function kgvid_resize_video(id) {
 				set_width = Math.round(set_height / aspect_ratio);
 			}
 
-			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null ) ) {
+			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null ) ) {
 
 				video_vars.player_type == "Video.js"
 
@@ -567,7 +567,7 @@ function kgvid_resize_video(id) {
 				if ( typeof mejs !== 'undefined' ) { player = eval('mejs.players.'+jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').attr('id')); }
 			}
 
-			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null )
+			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null )
 				||  ( video_vars.player_type == "WordPressDefault" && typeof mejs !== 'undefined' )
 			) {
 				if ( player.availableRes !== undefined ) {
@@ -595,7 +595,7 @@ function kgvid_resize_video(id) {
 								player.changeRes(set_res+'p');
 
 							}
-							
+
 							if (  video_vars.player_type == "Video.js" && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
 								if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
 								if ( player.volume() != 1 ) {
