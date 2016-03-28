@@ -3348,14 +3348,20 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 			if ( array_key_exists('blog_id', $video_entry) ) {
 
-				$blog_id = $video_entry['blog_id'];
-				$blog_name_text = '['.$blog_id.']';
-				$blog_id_text = $blog_id.'-';
-
 				if ( is_network_admin() || 'network' == $scope ) {
+					$blog_id = $video_entry['blog_id'];
+					$blog_name_text = '['.$blog_id.']';
+					$blog_id_text = $blog_id.'-';
 					switch_to_blog($blog_id);
 				}
-				elseif ( $blog_id != get_current_blog_id() ) { continue; } //skip this entry if it's not related to this site
+				elseif ( $video_entry['blog_id'] != get_current_blog_id() ) {
+					continue; //skip this entry if it's not related to this site
+				}
+				else {
+					$blog_id = false;
+					$blog_name_text = '';
+					$blog_id_text = '';
+				}
 
 			}
 			else {
