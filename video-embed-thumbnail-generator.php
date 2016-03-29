@@ -7174,7 +7174,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 						$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
 
 						if ( current_user_can('encode_videos') && $pid ) {
-							$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.$video_entry["attachmentID"].'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.$pid.', \''.$video_entry["attachmentID"].'\', \''.$video_key.'\', \''.$format.'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
+							$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.$video_entry["attachmentID"].'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.$pid.', \''.$video_entry["attachmentID"].'\', \''.$video_key.'\', \''.$format.'\', \''.$blog_id.'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
 						}
 
 						$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.$time_remaining.'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.$fps_match.'</small></div>';
