@@ -202,6 +202,7 @@ img.kgvid_ios_novideo {
 .kgvid_share_icons a {
 	text-decoration: none;
 	border: none;
+	box-shadow: none;
 }
 
 .kgvid_share_icons span {
