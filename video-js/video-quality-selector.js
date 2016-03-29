@@ -348,20 +348,21 @@
 			// Change the source and make sure we don't start the video over
 			player.src( player.availableRes[target_resolution] ).one( 'loadedmetadata', function() {
 
-				if ( current_time != 0 ) { 
-				
+				if ( current_time != 0 ) {
+
 					player.currentTime( current_time );
 
 					// If the video was paused, don't show the poster image again
 					player.addClass( 'vjs-has-started' );
-					
+
 				}
 
 				if ( ! is_paused ) { player.play(); }
 			});
-			
+
 			player.one( 'seeked', function() {
 				player.poster(original_poster);
+				//player.addClass( 'vjs-has-started' );
 			});
 
 			// Save the newly selected resolution in our player options property
