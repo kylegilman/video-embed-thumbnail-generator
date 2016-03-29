@@ -341,7 +341,7 @@
 				context.drawImage(video_el, 0, 0, player.width(), player.height());
 				var canvas_url = canvas.toDataURL('image/jpeg', 0.8);
 				var original_poster = player.poster();
-				player.poster(canvas_url);
+				player.posterImage.setSrc(canvas_url);
 
 			}
 
@@ -361,8 +361,7 @@
 			});
 
 			player.one( 'seeked', function() {
-				player.poster(original_poster);
-				//player.addClass( 'vjs-has-started' );
+				player.posterImage.setSrc(original_poster);
 			});
 
 			// Save the newly selected resolution in our player options property
