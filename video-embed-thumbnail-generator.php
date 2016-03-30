@@ -3531,7 +3531,7 @@ function kgvid_FFMPEG_Queue_Page() {
 			</tbody>
 		</table>
 		<p>
-			<?php if ( current_user_can('edit_others_video_encodes') ) { echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>". __('Clear All Completed', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0);'>". __('Clear All Queued', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0);'>". __('Clear All', 'video-embed-thumbnail-generator') ."</a></div></div>"; } ?>
+			<?php if ( current_user_can('edit_others_video_encodes') ) { echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>". __('Clear All Completed', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>". __('Clear All Queued', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>". __('Clear All', 'video-embed-thumbnail-generator') ."</a></div></div>"; } ?>
 		</p>
 		</form>
 	</div>
@@ -7573,9 +7573,7 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 							$keep[$video_key] = true;
 						}
 					}
-					if ( !is_network_admin() && $scope == 'site'
-						|| ( array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() )
-					) { //only clear entries from current blog
+					if ( $scope == 'site' && array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() ) { //only clear entries from current blog
 						$keep[$video_key] = true;
 						break;
 					}
