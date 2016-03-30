@@ -584,7 +584,7 @@ function kgvid_resize_video(id) {
 						});
 						var current_resolution = parseInt(player.getCurrentRes());
 						if ( !isNaN(current_resolution) ) {
-							if ( window.devicePixelRatio != undefined ) { var pixel_height = set_height * window.devicePixelRatio; } //don't shortchange retina displays
+							if ( video_vars.pixel_ratio == "true" && window.devicePixelRatio != undefined ) { var pixel_height = set_height * window.devicePixelRatio; } //for retina displays
 							else { pixel_height = set_height; }
 							var res_options = jQuery.map(resNumbers, function(n) {
 								if ( n >= pixel_height ) { return n; }

@@ -1340,6 +1340,13 @@ function kgvid_hide_plugin_settings() {
 			jQuery('#twitter_username_div').slideUp();
 		}
 
+		if ( jQuery('#auto_res').val() == 'automatic' ) {
+			jQuery('#pixel_ratio_p').slideDown();
+		}
+		else {
+			jQuery('#pixel_ratio_p').slideUp();
+		}
+
 	}
 
 	if ( encoding_tab ) {

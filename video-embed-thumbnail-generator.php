@@ -153,6 +153,7 @@ function kgvid_default_options_fn() {
 		"right_click" => "on",
 		"resize" => "on",
 		"auto_res" => "automatic",
+		"pixel_ratio" => "on",
 		"capabilities" => array(
 			"make_video_thumbnails" => $upload_capable,
 			"encode_videos" => $upload_capable,
@@ -2204,6 +2205,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			'endofvideooverlay' => $query_atts['endofvideooverlay'],
 			'resize' => $query_atts['resize'],
 			'auto_res' => $query_atts['auto_res'],
+			'pixel_ratio' => $query_atts['pixel_ratio'],
 			'right_click' => $query_atts['right_click']
 		);
 
@@ -2701,6 +2703,7 @@ function kgvid_shortcode_atts($atts) {
 		'right_click' => $options['right_click'],
 		'resize' => $options['resize'],
 		'auto_res' => $options['auto_res'],
+		'pixel_ratio' => $options['pixel_ratio'],
 		'nativecontrolsfortouch' => $options['nativecontrolsfortouch'],
 		'jw_player_id' => $options['jw_player_id'],
 		'track_kind' => 'subtitles',
@@ -2740,7 +2743,8 @@ function kgvid_shortcode_atts($atts) {
 		"mute",
 		"fullwidth",
 		"gallery_title",
-		"nativecontrolsfortouch"
+		"nativecontrolsfortouch",
+		"pixel_ratio"
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
@@ -3994,12 +3998,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 				$items[] = $format_stats['label'];
 			}
 		}
-		echo __('Default playback resolution', 'video-embed-thumbnail-generator')." <select id='auto_res' name='kgvid_video_embed_options[auto_res]'>";
+		echo __('Default playback resolution', 'video-embed-thumbnail-generator')." <select id='auto_res' name='kgvid_video_embed_options[auto_res]' onchange='kgvid_hide_plugin_settings()'>";
 		foreach( $items as $name ) {
 			$selected = ($options['auto_res']==$name) ? 'selected="selected"' : '';
 			echo "<option value='$name' $selected>$name</option>";
 		}
-		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo "</select> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.', 'video-embed-thumbnail-generator')."</span></a>";
+		echo "<p id='pixel_ratio_p'><input ".checked( $options['pixel_ratio'], "on", false )." id='pixel_ratio' name='kgvid_video_embed_options[pixel_ratio]' type='checkbox' /><label for='pixel_ratio'>".__('Use display pixel ratio for resolution calculation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can lead to a higher resolution selected on mobile devices than desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.', 'video-embed-thumbnail-generator')."</span></a></p>\n\t";
 
 	}
 
@@ -4818,6 +4823,7 @@ function kgvid_update_settings() {
 			$options['twitter_card'] = false;
 			$options['error_email'] = 'nobody';
 			$options['auto_encode_gif'] = false;
+			$options['pixel_ratio'] = 'on';
 
 			$jetpack_options = get_option('jetpack_options');
 			$jetpack_twitter_cards_site_tag = get_option('jetpack-twitter-cards-site-tag');
