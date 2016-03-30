@@ -3358,13 +3358,14 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 					$blog_id_text = $blog_id.'-';
 					switch_to_blog($blog_id);
 				}
-				elseif ( $video_entry['blog_id'] != get_current_blog_id() ) {
-					continue; //skip this entry if it's not related to this site
-				}
 				else {
 					$blog_id = false;
 					$blog_name_text = '';
 					$blog_id_text = '';
+					if ( $video_entry['blog_id'] == get_current_blog_id() ) {
+						$same_blog = true;
+					}
+					else { $same_blog = false; }
 				}
 
 			}
@@ -3372,6 +3373,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 				$blog_id = false;
 				$blog_name_text = '';
 				$blog_id_text = '';
+				$same_blog = true;
 			}
 
 			$html .= "\t<tr id='tr-".$blog_id_text.$video_entry['attachmentID']."'";
@@ -3414,8 +3416,8 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 			$post = get_post( $video_entry['attachmentID'] );
 
 			if ( ( is_network_admin() || 'network' == $scope )
-				|| ( $post && $current_user->ID == $post->post_author )
-				|| ( current_user_can('edit_others_video_encodes') && ( $blog_id && get_current_blog_id() == $blog_id || !$blog_id ) )
+				|| ( $same_blog && $post && $current_user->ID == $post->post_author )
+				|| ( current_user_can('edit_others_video_encodes') && $same_blog )
 			) {
 
 				if ( array_key_exists('user_id', $video_entry) && !empty($video_entry['user_id']) ) {
@@ -3471,8 +3473,12 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 				$html .= ">Clear</a>";
 
 			}//end if current user can see this stuff
-
-			else { $html .= "<td colspan='".strval($total_columns-1)."'><strong class='kgvid_queue_message'>".__("Other user's video", 'video-embed-thumbnail-generator')."</strong></td>"; }
+			elseif ( $same_blog == false ) {
+				$html .= "<td colspan='".strval($total_columns-1)."'><strong class='kgvid_queue_message'>".__("Other site's video", 'video-embed-thumbnail-generator')."</strong></td>";
+			}
+			else {
+				$html .= "<td colspan='".strval($total_columns-1)."'><strong class='kgvid_queue_message'>".__("Other user's video", 'video-embed-thumbnail-generator')."</strong></td>";
+			}
 			$html .= "</td></tr>\n";
 
 			if ( (is_network_admin() || 'network' == $scope) && $blog_id ) { restore_current_blog(); }
