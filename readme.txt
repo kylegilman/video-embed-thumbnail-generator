@@ -22,10 +22,8 @@ You have the option to use a few different video players:
 
 * Video.js
 * The WordPress default player using MediaElement.js, which was introduced in WordPress version 3.6
-* JW Player 6 (if their old, discontinued plugin is already installed)
-* Adobe's Strobe Media Playback Flash player.
-
-<em>The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
+* JW Player 6 (if their old, discontinued plugin is already installed. This plugin does not work with JW Player 7 yet.)
+* Adobe's Strobe Media Playback Flash player (deprecated)
 
 No matter which player you use, the video will responsively resize to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player can automatically select the one closest to the size of the player and provide a button for users to select the resolution manually. Because the player uses native controls on mobile devices, the manual resolution button is only available on desktop browsers.
 
@@ -68,6 +66,8 @@ If you enable oEmbed provider data in the plugin settings, the URL of a post wit
 = Once you've filled in all your options, click "Insert into Post" and you'll get a shortcode in the visual editor like this =
 
 `[KGVID]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
+
+<em>The JW Player 6 plugin has been removed from the WordPress plugin repository and JW Player 7 uses a very different system for embedding videos. JW Player 7 support is not available in this plugin yet. The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
 
 = Translations included: =
 
@@ -232,24 +232,25 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6 - March XX, 2016 =
+= 4.6 - April XX, 2016 =
 * Updated Video.js to version 5.5.3 which includes a revised skin.
 * Added resolution switching for WordPress Default player.
 * Added animated GIF video conversion.
-* Added option to load a specific resolution by default.
+* Added option to select a specific video resolution when the page first loads.
+* Added option to ignore pixel ratios when calculating automatic resolution selection in order to prioritize lower resolutions on mobile devices.
 * Added '-noreplace' filename option to prevent automatic video encoding for some videos.
 * Added button to clear the whole video encoding queue.
 * Added option to send an email when there is a video encoding error.
 * Added Twitter and Facebook share buttons.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
-* Now showing paused video frame while switching resolutions instead of black frame or thumbnail.
+* Now showing paused video frame while switching resolutions instead of black frame or thumbnail (browser experience may vary).
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
 * Revised Facebook Open Graph tags so they actually work on Facebook.
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Improved user role security to prevent unauthorized users from modifying video settings or deleting encoded videos.
 * Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
-* Fixed multiple multisite encoding queue bugs.
+* Fixed several multisite encoding queue bugs, especially when videos have identical post IDs on different sites.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that incorrectly interpreted FFMPEG output as an error when the last line came from the AAC encoder.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
