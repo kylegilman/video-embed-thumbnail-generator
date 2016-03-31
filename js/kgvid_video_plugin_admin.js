@@ -793,7 +793,7 @@ function kgvid_get_multisite_data(blogID) {
 		blog.ID = blogID;
 	}
 	else {
-		blog.scope = 'blog';
+		blog.scope = 'site';
 		blog.name_text = '';
 		blog.id_text = '';
 		blog.ID = false;
