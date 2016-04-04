@@ -333,6 +333,9 @@
 			if ( 'none' == video_el.preload ) { video_el.preload = 'metadata'; }
 
 			if ( current_time != 0 ) {
+
+				player.pause();
+
 				var canvas = document.createElement("canvas");
 				canvas.width = player.width();
 				canvas.height = player.height();
@@ -341,28 +344,42 @@
 				context.drawImage(video_el, 0, 0, player.width(), player.height());
 				var canvas_url = canvas.toDataURL('image/jpeg', 0.8);
 				var original_poster = player.poster();
-				player.posterImage.setSrc(canvas_url);
+
+				player.poster(canvas_url);
+				jQuery(video_el).parent().attr('poster', canvas_url);
+
+				player.bigPlayButton.hide();
 
 			}
 
 			// Change the source and make sure we don't start the video over
-			player.src( player.availableRes[target_resolution] ).one( 'loadedmetadata', function() {
+			player.src( player.availableRes[target_resolution] )
+				.one( 'loadedmetadata', function() {
 
-				if ( current_time != 0 ) {
+					if ( current_time != 0 ) {
 
-					player.currentTime( current_time );
+						player.currentTime( current_time );
 
-					// If the video was paused, don't show the poster image again
-					player.addClass( 'vjs-has-started' );
+					}
 
-				}
+				})
+				.one( 'seeked', function() {
+					if ( current_time != 0 ) {
 
-				if ( ! is_paused ) { player.play(); }
-			});
+						// If the video was paused, don't show the poster image again
+						player.addClass( 'vjs-has-started' );
 
-			player.one( 'seeked', function() {
-				player.posterImage.setSrc(original_poster);
-			});
+						if ( ! is_paused ) { player.play(); }
+
+						player.poster(original_poster);
+
+						player.play(); //Safari shows the poster image if we don't send play command after changing poster
+						if ( is_paused ) { player.pause(); }
+
+						jQuery(video_el).parent().attr('poster', original_poster);
+
+					}
+				});
 
 			// Save the newly selected resolution in our player options property
 			player.currentRes = target_resolution;
