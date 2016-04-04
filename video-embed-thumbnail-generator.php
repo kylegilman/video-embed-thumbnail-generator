@@ -5369,6 +5369,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			// ** Thumbnail section **//
 
 			$thumbnail_url = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
+			if ( is_ssl() ) { $thumbnail_url = str_replace('http:', 'https:', $thumbnail_url); }
 
 			$thumbnail_html = "";
 			if ( !empty($kgvid_postmeta['autothumb-error']) ) {
