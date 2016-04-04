@@ -346,7 +346,7 @@ span.kgvid_facebook_icon_holder {
 #kgvid-simplemodal-container a.modalCloseImg {
     display: inline;
     box-sizing: border-box;
-    padding: 3px 6px 2px 7px;
+    padding: 2px 2px 2px 3px;
     z-index: 10003;
     position: absolute;
     top: -25px;
@@ -386,11 +386,11 @@ span.kgvid_facebook_icon_holder {
 }
 
 .kgvid_gallery_prev {
-	right: 58px;
+	right: 59px;
 }
 
 .kgvid_gallery_next {
-	right: 23px;
+	right: 25px;
 }
 
 #kgvid-simplemodal-container a.modalCloseImg:hover, #kgvid-simplemodal-container .kgvid_gallery_nav:hover {

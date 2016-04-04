@@ -76,7 +76,7 @@ function kgvid_SetVideo(id) { //for galleries
 		minHeight:frame_height,
 		autoResize: false,
 		overlayClose:true,
-		closeHTML:'<a class="modalCloseImg simplemodal-close" title="Close">X</a>',
+		closeHTML:'<a class="modalCloseImg simplemodal-close" title="Close"><span class="dashicons dashicons-no-alt"></span></a>',
 		zIndex:10000,
 		onShow: function(dialog) {
 
