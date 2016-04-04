@@ -888,7 +888,7 @@ function kgvid_update_encode_queue() {
 
 			if ( data.queue[0] !== undefined ) {
 				jQuery.each(data.queue, function(video_key, video_entry) {
-
+console.log(video_entry);
 					var blog = kgvid_get_multisite_data(video_entry.blog_id);
 
 					if ( page != "queue" && jQuery('#attachments-'+blog.id_text+video_entry.attachmentID+'-kgflashmediaplayer-encodeboxes').length == 0 ) { return true; }
@@ -960,8 +960,8 @@ function kgvid_update_encode_queue() {
 						if ( jQuery('#tr-'+blog.id_text+video_entry.attachmentID).hasClass('currently_encoding') ) {
 							jQuery('#tr-'+blog.id_text+video_entry.attachmentID).removeClass('currently_encoding');
 						}
-						if ( jQuery('#tr-'+blog.id_text+video_entry.attachmentID+' #clear_'+video_entry.attachmentID).css("display") != "block" ) {
-							jQuery('#tr-'+blog.id_text+video_entry.attachmentID+' #clear_'+video_entry.attachmentID).css("display", "block");
+						if ( jQuery('#tr-'+blog.id_text+video_entry.attachmentID+' #clear_'+blog.id_text+video_entry.attachmentID).css("display") != "block" ) {
+							jQuery('#tr-'+blog.id_text+video_entry.attachmentID+' #clear_'+blog.id_text+video_entry.attachmentID).css("display", "block");
 						}
 
 					}

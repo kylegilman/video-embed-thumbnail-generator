@@ -3468,7 +3468,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 				//Actions
 				$html .= "\t\t\t\t\t<td>";
-				$html .= "<a id='clear-".$blog_id_text.$video_entry['attachmentID']."' class='submitdelete' href='javascript:void(0)' onclick='kgvid_encode_queue(\"delete\", ".$order.", ".$video_entry['attachmentID'].", ".$blog_id.")'";
+				$html .= "<a id='clear-".$blog_id_text.$video_entry['attachmentID']."' class='submitdelete' href='javascript:void(0)' onclick='kgvid_encode_queue(\"delete\", ".$order.", ".$video_entry['attachmentID'].", \"".$blog_id."\")'";
 				if ( $currently_encoding[$order] ) { $html .= " style='display:none;'"; }
 				$html .= ">Clear</a>";
 
@@ -5372,10 +5372,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			if ( is_ssl() ) { $thumbnail_url = str_replace('http:', 'https:', $thumbnail_url); }
 
 			$thumbnail_html = "";
-			if ( !empty($kgvid_postmeta['autothumb-error']) ) {
+			if ( !empty($kgvid_postmeta['autothumb-error']) && empty($thumbnail_url) ) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'.$kgvid_postmeta['autothumb-error'].'</div>';
 			}
-			elseif ($thumbnail_url != "" ) {
+			elseif ( !empty($thumbnail_url) ) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'"></div>';
 			}
 
