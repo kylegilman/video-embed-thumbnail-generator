@@ -792,6 +792,12 @@ function kgvid_get_multisite_data(blogID) {
 		blog.id_text = blogID+'-';
 		blog.ID = blogID;
 	}
+	else if ( typeof pagenow !== 'undefined' && pagenow == 'tools_page_kgvid_video_encoding_queue' && !isNaN(blogID) ) {
+		blog.scope = 'site';
+		blog.name_text = '['+blogID+']';
+		blog.id_text = blogID+'-';
+		blog.ID = blogID;
+	}
 	else {
 		blog.scope = 'site';
 		blog.name_text = '';
@@ -886,9 +892,9 @@ function kgvid_update_encode_queue() {
 			var queued = false;
 			var time_to_wait = 5000;
 
-			if ( data.queue[0] !== undefined ) {
+			if ( data.queue.length !== 0 && data.queue[0] !== undefined ) {
 				jQuery.each(data.queue, function(video_key, video_entry) {
-console.log(video_entry);
+
 					var blog = kgvid_get_multisite_data(video_entry.blog_id);
 
 					if ( page != "queue" && jQuery('#attachments-'+blog.id_text+video_entry.attachmentID+'-kgflashmediaplayer-encodeboxes').length == 0 ) { return true; }

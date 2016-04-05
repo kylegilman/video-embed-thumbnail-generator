@@ -2902,12 +2902,18 @@ function kgvid_update_encode_queue() {
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
 	if ( isset( $_POST['page'] ) ) { $page = $_POST['page']; }
+	else { die(); }
 
 	$video_encode_queue = kgvid_get_encode_queue();
 
 	if ( !empty($video_encode_queue) ) {
 
 		foreach ( $video_encode_queue as $video_key => $video_entry ) {
+
+			if ( $page == 'attachment' && array_key_exists('blog_id', $video_entry) && get_current_blog_id() != $video_entry['blog_id'] ) { //remove all entries from other blogs on attachment pages
+				unset($video_encode_queue[$video_key]);
+				continue;
+			}
 
 			if ( !empty($video_entry['movieurl']) && !empty($video_entry['attachmentID']) ) {
 				$encodevideo_info = kgvid_encodevideo_info($video_entry['movieurl'], $video_entry['attachmentID']);
@@ -3352,20 +3358,18 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 			if ( array_key_exists('blog_id', $video_entry) ) {
 
-				if ( is_network_admin() || 'network' == $scope ) {
-					$blog_id = $video_entry['blog_id'];
-					$blog_name_text = '['.$blog_id.']';
-					$blog_id_text = $blog_id.'-';
-					switch_to_blog($blog_id);
+				$blog_id = $video_entry['blog_id'];
+				$blog_name_text = '['.$blog_id.']';
+				$blog_id_text = $blog_id.'-';
+
+				$same_blog = true;
+
+				if ( $video_entry['blog_id'] == get_current_blog_id() ) {
+					$same_blog = true;
 				}
 				else {
-					$blog_id = false;
-					$blog_name_text = '';
-					$blog_id_text = '';
-					if ( $video_entry['blog_id'] == get_current_blog_id() ) {
-						$same_blog = true;
-					}
-					else { $same_blog = false; }
+					$same_blog = false;
+					if ( is_network_admin() || $scope == "network" ) { switch_to_blog($blog_id); }
 				}
 
 			}
