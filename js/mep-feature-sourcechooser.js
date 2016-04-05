@@ -111,25 +111,23 @@
 				var currentTime = media.currentTime;
 				var paused = media.paused;
 				media.pause();
+
 				if ( currentTime != 0 ) {
 					var canvas = document.createElement("canvas");
+					canvas.className = 'kgvid_temp_thumb';
 					canvas.width = this.width;
 					canvas.height = this.height;
 					var context = canvas.getContext('2d');
 					context.fillRect(0, 0, this.width, this.height);
 					context.drawImage(media, 0, 0, this.width, this.height);
-					var canvas_url = canvas.toDataURL('image/jpeg', 0.8);
-					var original_poster = media.poster;
-					media.poster = canvas_url;
-					jQuery('#'+this.id+' .mejs-poster').attr('src', canvas_url);
-					
+					jQuery('#'+this.id+' .mejs-layers').append(canvas);
+
 					jQuery(media).one( 'seeked', function() {
-						media.poster = original_poster;
-						jQuery('#'+this.id+' .mejs-poster').attr('src', original_poster);
+						jQuery(canvas).remove();
 					});
 				}
 
-				media.setSrc(src);
+				setTimeout(function(){ media.setSrc(src); }, 0);
 				this.currentRes = target_res;
 				jQuery(this.sourcechooserButton).find('li').removeClass('mejs-sourcechooser-selected');
 				jQuery(this.sourcechooserButton).find('li:contains('+target_res+')').addClass('mejs-sourcechooser-selected');

@@ -337,16 +337,13 @@
 				player.pause();
 
 				var canvas = document.createElement("canvas");
+				canvas.className = 'kgvid_temp_thumb';
 				canvas.width = player.width();
 				canvas.height = player.height();
 				var context = canvas.getContext('2d');
 				context.fillRect(0, 0, player.width(), player.height());
 				context.drawImage(video_el, 0, 0, player.width(), player.height());
-				var canvas_url = canvas.toDataURL('image/jpeg', 0.8);
-				var original_poster = player.poster();
-
-				player.poster(canvas_url);
-				jQuery(video_el).parent().attr('poster', canvas_url);
+				jQuery(video_el).parent().append(canvas);
 
 				player.bigPlayButton.hide();
 
@@ -368,15 +365,8 @@
 
 						// If the video was paused, don't show the poster image again
 						player.addClass( 'vjs-has-started' );
-
+						jQuery(canvas).remove();
 						if ( ! is_paused ) { player.play(); }
-
-						player.poster(original_poster);
-
-						player.play(); //Safari shows the poster image if we don't send play command after changing poster
-						if ( is_paused ) { player.pause(); }
-
-						jQuery(video_el).parent().attr('poster', original_poster);
 
 					}
 				});

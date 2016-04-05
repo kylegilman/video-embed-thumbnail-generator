@@ -429,6 +429,13 @@ span.kgvid_gallery_pagination_arrow {
 	text-decoration: none;
 }
 
+.kgvid_temp_thumb {
+	position: absolute;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
 /* video-quality-selector Video.js plugin styles */
 
 .vjs-res-button span.vjs-control-text {
@@ -510,6 +517,7 @@ div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector span {
 div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li {
     margin: 3px 0 3px 0;
     padding: 2px 10px 5px 10px;
+    cursor: pointer;
 }
 
 div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-selected {
