@@ -356,17 +356,19 @@
 					if ( current_time != 0 ) {
 
 						player.currentTime( current_time );
+						player.pause();
 
+						// If the video was paused, don't show the poster image again
+						player.addClass( 'vjs-has-started' );
+
+						if ( ! is_paused ) { player.play(); }
 					}
 
 				})
 				.one( 'seeked', function() {
 					if ( current_time != 0 ) {
 
-						// If the video was paused, don't show the poster image again
-						player.addClass( 'vjs-has-started' );
 						jQuery(canvas).remove();
-						if ( ! is_paused ) { player.play(); }
 
 					}
 				});

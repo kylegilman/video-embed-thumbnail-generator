@@ -2209,6 +2209,56 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			'right_click' => $query_atts['right_click']
 		);
 
+		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
+
+			$locale = get_locale();
+
+			$enable_resolutions_plugin = false;
+			$x = 20;
+			$h264_resolutions = array();
+
+			foreach ($video_formats as $format => $format_stats) {
+				if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
+				if ( $encodevideo_info[$format]["exists"] ) {
+
+					if ( array_key_exists('height', $encodevideo_info[$format]) && $format_stats['type'] == 'h264' ) {
+						$source_key = $encodevideo_info[$format]['height'];
+						$format_stats['label'] = $encodevideo_info[$format]['height'].'p';
+					}
+					else { $source_key = $x; }
+
+					$sources[$source_key] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format]["url"]).'?id='.$kgvid_video_id.'" type="'.$format_stats["mime"].'"';
+					if ( $format == 'vp9' ) { $sources[$source_key] .= ' codecs="vp9, vorbis"'; }
+					if ( $format_stats['type'] == 'h264' ) {
+						$sources[$source_key] .= ' data-res="'.$format_stats['label'].'"';
+						if ( $mp4already ) { //there is more than one resolution available
+							$enable_resolutions_plugin = true;
+						}
+						$mp4already = true;
+						$h264_resolutions[] = $format_stats['label'];
+					}
+					else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
+					$sources[$source_key] .= '>'."\n";
+				}
+			$x--;
+			}
+			krsort($sources);
+			natsort($h264_resolutions);
+
+			$video_variables['nativecontrolsfortouch'] = $query_atts['nativecontrolsfortouch'];
+			$video_variables['locale'] = substr($locale, 0, 2);
+
+			if ( $enable_resolutions_plugin ) {
+				$video_variables['enable_resolutions_plugin'] = "true";
+				if ( $query_atts["auto_res"] == "highest" ) { $video_variables['default_res'] = end($h264_resolutions); }
+				if ( $query_atts["auto_res"] == "lowest" ) { $video_variables['default_res'] = reset($h264_resolutions); }
+				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) { $video_variables['default_res'] = $query_atts["auto_res"]; }
+				else { $video_variables['default_res'] = false; }
+			}
+			else { $video_variables['enable_resolutions_plugin'] = false; }
+
+		}
+
 		if ( $options['embed_method'] == "Strobe Media Playback" && $flash_settings['flash_source_found'] ) {
 
 			$video_variables['swfurl'] = plugins_url('', __FILE__)."/flash/StrobeMediaPlayback.swf";
@@ -2435,38 +2485,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 
-			$enable_resolutions_plugin = false;
-			$x = 20;
-			$h264_resolutions = array();
-
-			foreach ($video_formats as $format => $format_stats) {
-				if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
-				if ( $encodevideo_info[$format]["exists"] ) {
-
-					if ( array_key_exists('height', $encodevideo_info[$format]) && $format_stats['type'] == 'h264' ) {
-						$source_key = $encodevideo_info[$format]['height'];
-						$format_stats['label'] = $encodevideo_info[$format]['height'].'p';
-					}
-					else { $source_key = $x; }
-
-					$sources[$source_key] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format]["url"]).'?id='.$kgvid_video_id.'" type="'.$format_stats["mime"].'"';
-					if ( $format == 'vp9' ) { $sources[$source_key] .= ' codecs="vp9, vorbis"'; }
-					if ( $format_stats['type'] == 'h264' ) {
-						$sources[$source_key] .= ' data-res="'.$format_stats['label'].'"';
-						if ( $mp4already ) { //there is more than one resolution available
-							$enable_resolutions_plugin = true;
-						}
-						$mp4already = true;
-						$h264_resolutions[] = $format_stats['label'];
-					}
-					else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
-					$sources[$source_key] .= '>'."\n";
-				}
-			$x--;
-			}
-			krsort($sources);
-			natsort($h264_resolutions);
-
 			$code .= '<video id="video_'.$div_suffix.'" ';
 			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
@@ -2474,23 +2492,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$code .= 'preload="'.$options['preload'].'" ';
 			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 			$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
-			$locale = get_locale();
 			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
 			if ( is_array($atts) && array_key_exists('skin', $atts) ) {
 				$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
-			$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'" data-setup=\'{ "html5": { "nativeTextTracks" : false }, ';
-			if ( $query_atts['resize'] == 'true' ) { $code .= '"fluid": true, '; }
-			if ( $options['nativecontrolsfortouch'] == 'true' ) { $code .= '"nativeControlsForTouch": true, '; }
-			$code .= '"language": "'.substr($locale, 0, 2).'"';
-			if ( $enable_resolutions_plugin ) { $code .= ', "plugins" : { "resolutionSelector" : { "force_types" : ["video/mp4"]';
-				if ( $query_atts["auto_res"] == "highest" ) { $code .= ', "default_res": "'.end($h264_resolutions).'"'; }
-				if ( $query_atts["auto_res"] == "lowest" ) { $code .= ', "default_res": "'.reset($h264_resolutions).'"'; }
-				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) { $code .= ', "default_res": "'.$query_atts["auto_res"].'"'; }
-				$code .= ' } }';
-			}
-			$code .= ' }\'';
-			$code .= ">\n";
+			$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'">\n"';
 
 			$code .= implode("", $sources); //add the <source> tags created earlier
 			$code .= $track_code; //if there's a text track
@@ -3155,8 +3161,8 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	}
 	else { $ffmpeg_disabled_text = ""; }
 
-	if ( ($is_attachment && $user_ID != $post->post_author) || !current_user_can('edit_others_posts') ) {
-		$ffmpeg_disabled_text = ' disabled title="'.__('Encoding disabled for user', 'video-embed-thumbnail-generator').'"';
+	if ( ($is_attachment && $user_ID != $post->post_author && !current_user_can('edit_others_video_encodes') ) || !current_user_can('encode_videos') ) {
+		$ffmpeg_disabled_text = ' disabled title="'.__('Insufficient priveleges to encode this video', 'video-embed-thumbnail-generator').'"';
 		$security_disabled = true;
 	}
 	else { $security_disabled = false; }
@@ -4204,7 +4210,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		global $wp_roles;
 		$options = kgvid_get_options();
 		$capabilities_checkboxes = array();
-		$capabilities = array( 'make_video_thumbnails'=>__('Can make thumbnails', 'video-embed-thumbnail-generator'), 'encode_videos'=>__('Can encode videos', 'video-embed-thumbnail-generator'), 'edit_others_video_encodes' => __('Can view & modify other users encode queue', 'video-embed-thumbnail-generator') );
+		$capabilities = array( 'make_video_thumbnails'=>__('Can make thumbnails', 'video-embed-thumbnail-generator'), 'encode_videos'=>__('Can encode videos', 'video-embed-thumbnail-generator'), 'edit_others_video_encodes' => __('Can view & modify other users encoded videos', 'video-embed-thumbnail-generator') );
 		foreach ( $capabilities as $capability => $capability_name ) {
 			$capabilities_checkboxes[] = "<div class='kgvid_user_roles'><strong>".$capability_name.":</strong><br>";
 

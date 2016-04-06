@@ -447,6 +447,10 @@ span.kgvid_gallery_pagination_arrow {
     content: "\f110"; /* Gear icon */
 }
 
+.vjs-loading-spinner {
+	z-index: 1;
+}
+
 
 /* Don't show hover effects on title */
 ul li.vjs-menu-title.vjs-res-menu-title:hover {
