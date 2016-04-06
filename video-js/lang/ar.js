@@ -11,7 +11,7 @@ videojs.addLanguage("ar",{
  "Fullscreen": "ملء الشاشة",
  "Non-Fullscreen": "غير ملء الشاشة",
  "Mute": "صامت",
- "Unmute": "غير الصامت",
+ "Unmuted": "غير الصامت",
  "Playback Rate": "معدل التشغيل",
  "Subtitles": "الترجمة",
  "subtitles off": "ايقاف الترجمة",

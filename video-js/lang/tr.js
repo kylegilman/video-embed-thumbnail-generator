@@ -11,7 +11,7 @@ videojs.addLanguage("tr",{
  "Fullscreen": "Tam Ekran",
  "Non-Fullscreen": "Küçük Ekran",
  "Mute": "Ses Kapa",
- "Unmute": "Ses Aç",
+ "Unmuted": "Ses Aç",
  "Playback Rate": "Oynatma Hızı",
  "Subtitles": "Altyazı",
  "subtitles off": "Altyazı Kapat",
