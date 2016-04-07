@@ -1603,11 +1603,29 @@ add_action('wp_enqueue_media', 'enqueue_kgvid_script');
 
 function kgvid_get_first_embedded_video( $post ) {
 
-	$url = "";
+	$url = '';
 	$attributes = array();
 
+	$first_embedded_video_meta = get_post_meta($post->ID, '_kgvid_first_embedded_video', true);
+
+	if ( !empty($first_embedded_video_meta) ) {
+
+		if ( is_array($first_embedded_video_meta['atts']) ) {
+			$dataattributes = array_map(function($value, $key) {
+				return $key.'="'.$value.'"';
+			}, array_values($first_embedded_video_meta['atts']), array_keys($first_embedded_video_meta['atts']));
+
+			$dataattributes = ' '.implode(' ', $dataattributes);
+		}
+		else { $dataattributes = $first_embedded_video_meta['atts']; }
+
+		$shortcode_text = '[KGVID'.$dataattributes.']'.$first_embedded_video_meta['content'].'[/KGVID]';
+
+	}
+	else { $shortcode_text = $post->post_content; }
+
 	$pattern = get_shortcode_regex();
-	preg_match_all( '/'. $pattern .'/s', $post->post_content, $matches );
+	preg_match_all( '/'. $pattern .'/s', $shortcode_text, $matches );
 
 	if ( is_array($matches)
 		&& array_key_exists( 2, $matches ) && array_key_exists( 5, $matches )
@@ -2075,6 +2093,15 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		$sources = array();
 		$mp4already = false;
 		$dimensions = array();
+
+		if ( $kgvid_video_id === 0 && $post_id != 1 ) {
+			$first_embedded_video['atts'] = $atts;
+			$first_embedded_video['content'] = $content;
+			$first_embedded_video_meta = get_post_meta($post_id, '_kgvid_first_embedded_video', true);
+			if ( $first_embedded_video_meta != $first_embedded_video ) {
+				update_post_meta($post_id, '_kgvid_first_embedded_video', $first_embedded_video);
+			}
+		}
 
 		if ( !empty($id) ) { //if the video is an attachment in the WordPress db
 
@@ -8178,6 +8205,19 @@ function kgvid_add_contextual_help_tab() {
 add_action( 'admin_head-post.php', 'kgvid_add_contextual_help_tab' );
 add_action( 'admin_head-post-new.php', 'kgvid_add_contextual_help_tab' );
 
+function kgvid_clear_first_embedded_video_meta() {
+
+	global $kgvid_video_id;
+	global $post;
+
+	if ( $kgvid_video_id == null && $post ) {
+		$first_embedded_video_meta = get_post_meta($post->ID, '_kgvid_first_embedded_video', true);
+		if ( !empty($first_embedded_video_meta) ) {
+			delete_post_meta($post->ID, '_kgvid_first_embedded_video');
+		}
+	}
+}
+add_action( 'wp_footer', 'kgvid_clear_first_embedded_video_meta', 12 );
 
 function kgvid_clear_cron_and_roles() {
 
