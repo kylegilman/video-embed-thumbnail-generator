@@ -229,7 +229,7 @@ function kgvid_video_gallery_end_action(id, action) {
 	}
 }
 
-function kgvid_timeupdate() {
+function kgvid_timeupdate_poster() {
 	jQuery('#'+this.id()+' > .vjs-poster').fadeOut();
 }
 
@@ -305,7 +305,7 @@ function kgvid_setup_video(id) {
 		});
 
 		player.on('play', function kgvid_play_start(){
-			player.off('timeupdate', kgvid_timeupdate);
+			player.off('timeupdate', kgvid_timeupdate_poster);
 			if ( video_vars.meta ) {
 				kgvid_add_hover(id);
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
@@ -313,6 +313,25 @@ function kgvid_setup_video(id) {
 			if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+' > .vjs-control-bar').removeClass('vjs-fade-in'); }
 			if ( video_vars.endofvideooverlay != "" ) { jQuery('#video_'+id+' > .vjs-poster').hide(); }
 			kgvid_video_counter(id, 'play');
+
+			player.on('timeupdate', function kgvid_quarter_tracker(){
+
+				if ( jQuery('#video_'+id+'_div').data("25") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 25 ) {
+					jQuery('#video_'+id+'_div').data("25", true);
+					kgvid_video_counter(id, '25');
+				}
+				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 50 ) {
+					jQuery('#video_'+id+'_div').data("50", true);
+					kgvid_video_counter(id, '50');
+				}
+				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 75 ) {
+					jQuery('#video_'+id+'_div').data("75", true);
+					kgvid_video_counter(id, '75');
+
+				}
+
+			});
+
 		});
 
 		player.on('pause', function kgvid_play_pause(){
@@ -327,7 +346,7 @@ function kgvid_setup_video(id) {
 				'background-image':'url('+video_vars.endofvideooverlay+')'
 				}).fadeIn();
 
-				setTimeout(function() { player.on('timeupdate', kgvid_timeupdate); }, 500);
+				setTimeout(function() { player.on('timeupdate', kgvid_timeupdate_poster); }, 500);
 
 			}
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
@@ -711,6 +730,14 @@ function kgvid_video_counter(id, event) {
 		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", kgvidL10n_frontend.playstart, title]); }
 
 	}
+
+	if ( !isNaN(event) ) {
+
+		if (typeof ga != "undefined") { ga("send", "event", "Videos", event+"%", title); }
+		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", event+"%", title]); }
+
+	}
+
 	if ( event == "end" ) {
 		if (video_vars.countable) { //video is in the db
 			changed = true;
