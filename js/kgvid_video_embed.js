@@ -314,17 +314,19 @@ function kgvid_setup_video(id) {
 			if ( video_vars.endofvideooverlay != "" ) { jQuery('#video_'+id+' > .vjs-poster').hide(); }
 			kgvid_video_counter(id, 'play');
 
-			player.on('timeupdate', function kgvid_quarter_tracker(){
+			player.on('timeupdate', function(){
 
-				if ( jQuery('#video_'+id+'_div').data("25") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 25 ) {
+				var percent_duration = Math.round(player.currentTime() / player.duration() * 100);
+
+				if ( jQuery('#video_'+id+'_div').data("25") == undefined && percent_duration >= 25 && percent_duration < 50 ) {
 					jQuery('#video_'+id+'_div').data("25", true);
 					kgvid_video_counter(id, '25');
 				}
-				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 50 ) {
+				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && percent_duration >= 50 && percent_duration < 75 ) {
 					jQuery('#video_'+id+'_div').data("50", true);
 					kgvid_video_counter(id, '50');
 				}
-				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 75 ) {
+				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && percent_duration >= 75 && percent_duration < 100 ) {
 					jQuery('#video_'+id+'_div').data("75", true);
 					kgvid_video_counter(id, '75');
 
@@ -442,6 +444,25 @@ function kgvid_setup_video(id) {
 
 			kgvid_video_counter(id, 'play');
 
+			player.on('timeupdate', function(){
+
+				var percent_duration = Math.round(player[0].currentTime / player[0].duration * 100);
+
+				if ( jQuery('#video_'+id+'_div').data("25") == undefined && percent_duration >= 25 && percent_duration < 50 ) {
+					jQuery('#video_'+id+'_div').data("25", true);
+					kgvid_video_counter(id, '25');
+				}
+				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && percent_duration >= 50 && percent_duration < 75 ) {
+					jQuery('#video_'+id+'_div').data("50", true);
+					kgvid_video_counter(id, '50');
+				}
+				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && percent_duration >= 75 && percent_duration < 100 ) {
+					jQuery('#video_'+id+'_div').data("75", true);
+					kgvid_video_counter(id, '75');
+				}
+
+			});
+
 		});
 
 		player.on('pause', function(){
@@ -506,6 +527,24 @@ function kgvid_setup_video(id) {
 				kgvid_add_hover(id);
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 			}
+
+			player.on('timeupdate', function(){
+
+				if ( jQuery('#video_'+id+'_div').data("25") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 25 ) {
+					jQuery('#video_'+id+'_div').data("25", true);
+					kgvid_video_counter(id, '25');
+				}
+				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 50 ) {
+					jQuery('#video_'+id+'_div').data("50", true);
+					kgvid_video_counter(id, '50');
+				}
+				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 75 ) {
+					jQuery('#video_'+id+'_div').data("75", true);
+					kgvid_video_counter(id, '75');
+
+				}
+
+			});
 
 		});
 
