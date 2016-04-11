@@ -432,6 +432,7 @@ span.kgvid_gallery_pagination_arrow {
 .kgvid_temp_thumb {
 	position: absolute;
 	top: 0;
+	left: 0;
 	width: 100%;
 	height: 100%;
 }
