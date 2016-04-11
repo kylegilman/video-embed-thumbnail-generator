@@ -1841,7 +1841,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
 
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?4.7.0"; }</script>'."\n";
+	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?5.0.1"; }</script>'."\n";
 
 }
 
@@ -2094,7 +2094,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		$mp4already = false;
 		$dimensions = array();
 
-		if ( $kgvid_video_id === 0 && $post_id != 1 ) {
+		if ( $query_atts['gallery'] == 'false' && $kgvid_video_id === 0 && $post_id != 1 ) {
 			$first_embedded_video['atts'] = $atts;
 			$first_embedded_video['content'] = $content;
 			$first_embedded_video_meta = get_post_meta($post_id, '_kgvid_first_embedded_video', true);
