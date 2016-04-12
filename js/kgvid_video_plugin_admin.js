@@ -892,7 +892,7 @@ function kgvid_update_encode_queue() {
 			var queued = false;
 			var time_to_wait = 5000;
 
-			if ( data.queue.length !== 0 && data.queue[0] !== undefined ) {
+			if ( data.queue.length !== 0 && data.queue[1] !== undefined ) {
 				jQuery.each(data.queue, function(video_key, video_entry) {
 
 					var blog = kgvid_get_multisite_data(video_entry.blog_id);
