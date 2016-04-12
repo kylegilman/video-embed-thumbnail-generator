@@ -1,7 +1,7 @@
 === Video Embed & Thumbnail Generator ===
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
-Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution
+Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution, analytics
 Requires at least: 4.4
 Tested up to: 4.5
 Stable tag: 4.5.5
@@ -20,12 +20,12 @@ This plugin adds several fields to any video uploaded to the WordPress Media Lib
 
 You have the option to use a few different video players:
 
-* Video.js
+* Video.js (files are included with the plugin)
 * The WordPress default player using MediaElement.js, which was introduced in WordPress version 3.6
 * JW Player 6 (if their old, discontinued plugin is already installed. This plugin does not work with JW Player 7 yet.)
 * Adobe's Strobe Media Playback Flash player (deprecated)
 
-No matter which player you use, the video will responsively resize to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the Video.js player can automatically select the one closest to the size of the player and provide a button for users to select the resolution manually. Because the player uses native controls on mobile devices, the manual resolution button is only available on desktop browsers.
+No matter which player you use, the video will responsively resize to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the plugin can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If you have Google Analytics set up on your site, the plugin will automatically send Google Analytics Events when users start, reach 25%, 50%, 75%, and complete watching your videos.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode. To make a custom gallery that includes videos that aren't attached to the current post you'll need to determine the video's ID, which is shown under the Video Stats section when viewing the attachment. Switch the "insert" option from "Single Video" to "Video Gallery" and you'll get a number of additional options (all of which are optional). Add a comma-separated list of video IDs in the "Include" field to create a gallery manually. Note: the "Create Gallery" section of the Add Media window is a built-in WordPress function and is only for making image galleries.
 
@@ -107,6 +107,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `right_click="true/false"` allow or disable right-clicking on the video player.
 * `resize="true/false"` allow or disable responsive resizing.
 * `auto_res="automatic/highest/lowest"` specify the video resolution when the page loads.
+* `pixel_ratio="true/false"` account for high-density (retina) displays when choosing automatic video resolution.
 
 = These options will add a subtitle/caption track =
 
@@ -241,6 +242,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added '-noreplace' filename option to prevent automatic video encoding for some videos.
 * Added button to clear the whole video encoding queue.
 * Added option to send an email when there is a video encoding error.
+* Added Google Analytics Event tracking when users watch 25%, 50%, and 75% of a video.
 * Added Twitter and Facebook share buttons.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
