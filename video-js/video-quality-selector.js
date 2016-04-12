@@ -416,7 +416,9 @@
 
 		// Add the button to the control bar object and the DOM
 		this.on( 'ready' , function() {
-			player.getChild( 'controlBar' ).addChild( resolutionSelector );
+			player.controlBar.addChild( resolutionSelector );
+
+			player.controlBar.el().insertBefore(jQuery(player.controlBar.el()).find('.vjs-res-button')[0], player.controlBar.customControlSpacer.el());
 		} );
 	});
 
