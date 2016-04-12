@@ -8165,7 +8165,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>downloadlink="true/false"</code> '.__('generates a link below the video to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
 <li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
 <li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li>
+<li><code>pixel_ratio="true/false"</code> '.__('account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>
@@ -8204,6 +8205,18 @@ function kgvid_add_contextual_help_tab() {
 }
 add_action( 'admin_head-post.php', 'kgvid_add_contextual_help_tab' );
 add_action( 'admin_head-post-new.php', 'kgvid_add_contextual_help_tab' );
+
+function kgvid_save_post($post_id) {
+
+	$options = kgvid_get_options();
+
+	if ( $options['open_graph'] == "on" ) {
+		//render the post when it's saved in case there's a do_shortcode call in it so open graph metadata makes it into wp_head()
+		$response = wp_remote_get( get_permalink($post_id), array('blocking' => false) );
+	}
+
+}
+add_action( 'save_post', 'kgvid_save_post' );
 
 function kgvid_clear_first_embedded_video_meta() {
 
