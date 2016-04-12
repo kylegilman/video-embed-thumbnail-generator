@@ -1,30 +1,36 @@
 kgvid_video_vars = {};
 
+jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
+
+	var video_vars = jQuery(this).data('kgvid_video_vars');
+
+	if ( video_vars.player_type == "Video.js" ) {
+
+		var videojs_options = { "html5": { "nativeTextTracks" : false }, "language": video_vars.locale };
+		if ( video_vars.resize == "true" ) {
+			videojs_options.fluid = true;
+		}
+		if ( video_vars.nativecontrolsfortouch == "true" ) {
+			videojs_options.nativeControlsForTouch = true;
+		}
+		if ( video_vars.enable_resolutions_plugin == "true" ) {
+			videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
+			if ( video_vars.default_res ) {
+				videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
+			}
+		}
+
+		videojs('video_'+video_vars.id, videojs_options ).ready(function(){ kgvid_setup_video(video_vars.id); });
+	}
+});
+
 jQuery(document).ready(kgvid_document_ready());
 
 function kgvid_document_ready() {
 
 	jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
+
 		var video_vars = jQuery(this).data('kgvid_video_vars');
-
-		if ( video_vars.player_type == "Video.js" ) {
-
-			var videojs_options = { "html5": { "nativeTextTracks" : false }, "language": video_vars.locale };
-			if ( video_vars.resize == "true" ) {
-				videojs_options.fluid = true;
-			}
-			if ( video_vars.nativecontrolsfortouch == "true" ) {
-				videojs_options.nativeControlsForTouch = true;
-			}
-			if ( video_vars.enable_resolutions_plugin == "true" ) {
-				videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
-				if ( video_vars.default_res ) {
-					videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
-				}
-			}
-
-			videojs('video_'+video_vars.id, videojs_options ).ready(function(){ kgvid_setup_video(video_vars.id); });
-		}
 
 		if ( video_vars.player_type == "JWPlayer" ) {
 			var player_id = jQuery('#video_'+video_vars.id+'_div').children('div[id^="jwplayer"]').attr('id');
