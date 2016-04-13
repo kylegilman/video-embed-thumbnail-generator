@@ -792,7 +792,7 @@ function kgvid_get_multisite_data(blogID) {
 		blog.id_text = blogID+'-';
 		blog.ID = blogID;
 	}
-	else if ( typeof pagenow !== 'undefined' && pagenow == 'tools_page_kgvid_video_encoding_queue' && !isNaN(blogID) ) {
+	else if ( typeof pagenow !== 'undefined' && pagenow == 'tools_page_kgvid_video_encoding_queue' && !isNaN(parseInt(blogID)) ) {
 		blog.scope = 'site';
 		blog.name_text = '['+blogID+']';
 		blog.id_text = blogID+'-';
@@ -892,7 +892,7 @@ function kgvid_update_encode_queue() {
 			var queued = false;
 			var time_to_wait = 5000;
 
-			if ( data.queue.length !== 0 && data.queue[1] !== undefined ) {
+			if ( data.queue.length !== 0 && data.queue.length !== undefined ) {
 				jQuery.each(data.queue, function(video_key, video_entry) {
 
 					var blog = kgvid_get_multisite_data(video_entry.blog_id);
