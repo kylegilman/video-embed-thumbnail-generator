@@ -246,6 +246,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Twitter and Facebook share buttons.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
+* Moved resolution switching icon to the left of the fullscreen button.
 * Now showing paused video frame while switching resolutions instead of black frame or thumbnail (browser experience may vary).
 * Updated oEmbed system to work with new oEmbed features introduced in WordPress 4.4.
 * Revised Facebook Open Graph tags so they actually work on Facebook.

@@ -116,7 +116,7 @@ function kgvid_default_options_fn() {
 		"gallery_pagination" => false,
 		"gallery_per_page" => false,
 		"gallery_title" => "on",
-		"nativecontrolsfortouch" => "on",
+		"nativecontrolsfortouch" => false,
 		"controlbar_style" => "docked",
 		"autoplay" => false,
 		"loop" => false,
@@ -4144,7 +4144,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_nativecontrolsfortouch_callback() {
 		$options = kgvid_get_options();
-		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Native controls allow for streaming services like AirPlay and Chromecast, but don\'t always look as nice.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
+		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label>\n\t";
 	}
 
 	function kgvid_custom_attributes_callback() {
@@ -8177,7 +8177,7 @@ function kgvid_add_contextual_help_tab() {
 
 <p><strong>'.__('These options will only affect Video.js playback', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">' ).'</a></li>
-<li><code>nativecontrolsfortouch="true/false"</code> '.__('enables or disables native controls on touchscreen devices. Native controls allow for streaming services like AirPlay and Chromecast, but don\'t always look as nice.', 'video-embed-thumbnail-generator').'</li>
+<li><code>nativecontrolsfortouch="true/false"</code> '.__('enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator').'</li>
 </ul>
 
 <p><strong>'.__('These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players.', 'video-embed-thumbnail-generator').'</p></strong>
