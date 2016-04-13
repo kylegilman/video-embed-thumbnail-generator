@@ -25,6 +25,7 @@ jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress 
 });
 
 jQuery(document).ready(kgvid_document_ready());
+jQuery(window).load(kgvid_window_load());
 
 function kgvid_document_ready() {
 
@@ -46,12 +47,16 @@ function kgvid_document_ready() {
 
 	});
 
+}
+
+function kgvid_window_load() {
+
 	jQuery('.kgvid_gallerywrapper').each(function(){ //setup gallery thumbnails
 
 		var gallery_id = this.id;
 		kgvid_resize_gallery_play_button(gallery_id);
 		jQuery(window).resize( function(){ kgvid_resize_gallery_play_button(gallery_id) } );
-
+		setTimeout(function(){ kgvid_resize_gallery_play_button(gallery_id) }, 200);
 	});
 
 }
@@ -165,7 +170,7 @@ function kgvid_SetVideo(id) { //for galleries
 				}
 
 				jQuery.modal.setContainerDimensions();
-				kgvid_setup_video(id);
+				setTimeout(function() { kgvid_setup_video(id); }, 0);
 				jQuery.modal.setPosition();
 
 				dialog.wrap.css('overflow', 'hidden'); //disable scroll bars
@@ -197,7 +202,8 @@ function kgvid_SetVideo(id) { //for galleries
 								}, false);
 							}//end if flash or silverlight
 							else { mediaElement.play(); }
-						}
+						},
+						features : [ 'playpause', 'progress', 'volume', 'tracks', 'sourcechooser', 'fullscreen' ]
 					});
 				}//end if WordPress Default
 			}//end check to make sure video still needs to load
