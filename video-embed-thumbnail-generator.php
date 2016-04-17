@@ -1807,6 +1807,32 @@ function kgvid_change_oembed_iframe_url ( $embed_url, $post ) {
 }
 if ( function_exists('get_post_embed_url') ) { add_filter( 'post_embed_url', 'kgvid_change_oembed_iframe_url', 11, 2 ); } //added in WP version 4.4
 
+function kgvid_change_oembed_html($output, $post, $width, $height) {
+
+$output = preg_replace('/<blockquote(.*)<\/script>/s', '', $output);
+return $output;
+
+}
+if ( function_exists('get_post_embed_html') ) { add_filter( 'embed_html', 'kgvid_change_oembed_html', 11, 4 ); } //added in WP version 4.4
+
+/* function kgvid_replace_oembed_content($template) {
+
+	$options = kgvid_get_options();
+
+	if ( $options['oembed_provider'] == "on" ) {
+
+		global $post;
+		if ( $post ) { $first_embedded_video = kgvid_get_first_embedded_video( $post ); }
+		if ( $first_embedded_video && !empty($first_embedded_video['id']) && basename($template) == 'embed.php' ) {
+			$template = plugin_dir_path( __FILE__ ) . 'includes/embed.php';
+		}
+    }
+
+    return $template;
+
+}
+add_filter( 'template_include', 'kgvid_replace_oembed_content', 99 ); */
+
 function kgvid_enqueue_shortcode_scripts() {
 
 	$options = kgvid_get_options();
@@ -4144,7 +4170,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_nativecontrolsfortouch_callback() {
 		$options = kgvid_get_options();
-		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label>\n\t";
+		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.', 'video-embed-thumbnail-generator')."</span></a>\n\t";
 	}
 
 	function kgvid_custom_attributes_callback() {
@@ -4224,7 +4250,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		/* echo "<input ".checked( $options['twitter_card'], "on", false )." id='twitter_card' name='kgvid_video_embed_options[twitter_card]' type='checkbox'".$embed_disabled." /> <label for='twitter_card'>".__('Enable Twitter Cards.', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Generates metadata for Twitter Cards. Your site must have https enabled and you must validate and request approval from Twitter.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t"; */
 		echo "<input class='affects_player' ".checked( $options['right_click'], "on", false )." id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>".__('Allow right-clicking on videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['click_download'], "on", false )." id='click_download' name='kgvid_video_embed_options[click_download]' type='checkbox' /> <label for='click_download'>".__('Allow single-click download link for videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator')."</span></a><br />";
-		echo "<input ".checked( $options['oembed_provider'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'".$embed_disabled." /> <label for='oembed_provider'>"._x('Change oEmbed to video instead of WordPress default photo/excerpt.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites (including Facebook & Twitter) will not show videos through oEmbed unless your link is https.', 'video-embed-thumbnail-generator')."</span></a><br />";
+		echo "<input ".checked( $options['oembed_provider'], "on", false )." id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'".$embed_disabled." /> <label for='oembed_provider'>"._x('Change oEmbed to video instead of WordPress default photo/excerpt.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites (including Facebook & Twitter) will not show videos through oEmbed unless your link is https. In order to display the video properly, this will also remove some of the security features included in the built-in WordPress oEmbed system.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['oembed_security'], "on", false )." id='oembed_security' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>"._x('Enable oEmbeds from unknown providers.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
 	}
 
