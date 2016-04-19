@@ -1712,7 +1712,7 @@ function kgvid_video_embed_print_scripts() {
 	$pattern = get_shortcode_regex();
 	$options = kgvid_get_options();
 
-	echo '<script type="text/javascript">document.createElement(\'video\');document.createElement(\'audio\');</script>'."\n";
+	//echo '<script type="text/javascript">document.createElement(\'video\');document.createElement(\'audio\');</script>'."\n";
 
 	if ( !empty($posts) && is_array($posts) ) {
 		foreach ( $posts as $post ) {
@@ -1720,6 +1720,9 @@ function kgvid_video_embed_print_scripts() {
 			if ( !empty($first_embedded_video['url']) ) { //if KGVID or FMP shortcode is in posts on this page.
 
 				if ( $options['open_graph'] == "on" ) {
+
+					//add_filter('jetpack_disable_open_graph', '__return_true', 99);
+					//remove_action('wp_head','jetpack_og_tags');
 
 					echo '<meta property="og:video" content="'.$first_embedded_video['url'].'" />'."\n";
 					$secure_url = str_replace('http://', 'https://', $first_embedded_video['url']);
@@ -1733,6 +1736,17 @@ function kgvid_video_embed_print_scripts() {
 							echo '<meta property="og:video:height" content="'.$first_embedded_video['height'].'" />'."\n";
 						}
 					}
+
+					if ( array_key_exists( 'poster', $first_embedded_video) ) {
+						echo '<meta property="og:image" content="'.$first_embedded_video['poster'].'" />'."\n";
+						if ( array_key_exists( 'width', $first_embedded_video ) ) {
+						echo '<meta property="og:image:width" content="'.$first_embedded_video['width'].'" />'."\n";
+						if ( array_key_exists( 'height', $first_embedded_video ) ) {
+							echo '<meta property="og:image:height" content="'.$first_embedded_video['height'].'" />'."\n";
+						}
+					}
+					}
+
 				}
 
 				/* if ( $options['twitter_card'] == "on" && array_key_exists('id', $first_embedded_video) ) {
@@ -4254,7 +4268,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 		echo "<input class='affects_player' ".checked( $options['embeddable'], "on", false )." id='embeddable' name='kgvid_video_embed_options[embeddable]' type='checkbox' onclick='kgvid_embeddable_switch(this.checked);' /> <label for='embeddable'>".__('Allow users to embed your videos on other sites.', 'video-embed-thumbnail-generator')."</label><br />";
 		echo "<input ".checked( $options['open_graph'], "on", false )." id='open_graph' name='kgvid_video_embed_options[open_graph]' type='checkbox'".$embed_disabled." /> <label for='open_graph'>"._x('Enable Facebook Open Graph video tags.', '"Open Graph" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Facebook and some other social media sites will use these tags to embed the first video in your post. Your video must be served via https in order to be embedded directly in Facebook and playback is handled by the unstyled built-in browser player. No statistics will be recorded for videos embedded this way.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
-		echo "<input ".checked( $options['schema'], "on", false )." id='schema' name='kgvid_video_embed_options[schema]' type='checkbox'".$embed_disabled." /> <label for='schema'>".__('Enable structured data markup for search engines.', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Helps your videos appear in video searches on Google, Yahoo, and Bing.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
+		echo "<input ".checked( $options['schema'], "on", false )." id='schema' name='kgvid_video_embed_options[schema]' type='checkbox'".$embed_disabled." /> <label for='schema'>".__('Enable Schema.org structured data markup for search engines.', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Helps your videos appear in video searches on Google, Yahoo, and Bing.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t";
 		/* echo "<input ".checked( $options['twitter_card'], "on", false )." id='twitter_card' name='kgvid_video_embed_options[twitter_card]' type='checkbox'".$embed_disabled." /> <label for='twitter_card'>".__('Enable Twitter Cards.', 'video-embed-thumbnail-generator')."</label><a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('Generates metadata for Twitter Cards. Your site must have https enabled and you must validate and request approval from Twitter.', 'video-embed-thumbnail-generator')."</span></a><br />\n\t"; */
 		echo "<input class='affects_player' ".checked( $options['right_click'], "on", false )." id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>".__('Allow right-clicking on videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator')."</span></a><br />";
 		echo "<input ".checked( $options['click_download'], "on", false )." id='click_download' name='kgvid_video_embed_options[click_download]' type='checkbox' /> <label for='click_download'>".__('Allow single-click download link for videos.', 'video-embed-thumbnail-generator')."</label> <a class='kgvid_tooltip wp-ui-text-highlight' href='javascript:void(0);'><span class='kgvid_tooltip_classic'>".__('The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator')."</span></a><br />";
@@ -8201,7 +8215,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
 <li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
 <li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li>
-<li><code>pixel_ratio="true/false"</code> '.__('account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>pixel_ratio="true/false"</code> '.__('account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator').'</li>
+<li><code>schema="true/false"</code> '.__('allow or disable Schema.org search engine metadata.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>
