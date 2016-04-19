@@ -77,7 +77,7 @@ If you enable oEmbed provider data in the plugin settings, the URL of a post wit
 
 I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
 
-= If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. If the plugin is installed on your site, this information is also available in the post edit help screen. =
+= If you want to further modify the way the video player works, you can add the following options inside the `[KGVID]` tag. These will override anything you've set in the plugin settings or attachment details. If the plugin is installed on your site, this documentation is also available in the post edit help screen. =
 
 * `id="xxx"` video attachment ID (instead of using a URL).
 * `videos="x"` number of attached videos to display if no URL or ID is given.
@@ -108,6 +108,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `resize="true/false"` allow or disable responsive resizing.
 * `auto_res="automatic/highest/lowest"` specify the video resolution when the page loads.
 * `pixel_ratio="true/false"` account for high-density (retina) displays when choosing automatic video resolution.
+* `schema="true/false"` allow or disable Schema.org metadata.
 
 = These options will add a subtitle/caption track =
 
