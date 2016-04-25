@@ -108,7 +108,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `resize="true/false"` allow or disable responsive resizing.
 * `auto_res="automatic/highest/lowest"` specify the video resolution when the page loads.
 * `pixel_ratio="true/false"` account for high-density (retina) displays when choosing automatic video resolution.
-* `schema="true/false"` allow or disable Schema.org metadata.
+* `schema="true/false"` allow or disable Schema.org search engine metadata.
 
 = These options will add a subtitle/caption track =
 
