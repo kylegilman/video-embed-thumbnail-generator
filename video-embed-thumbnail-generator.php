@@ -1723,9 +1723,9 @@ function kgvid_video_embed_print_scripts() {
 
 					//add_filter('jetpack_disable_open_graph', '__return_true', 99);
 					remove_action('wp_head','jetpack_og_tags');
-					echo '<meta property="og:url" content="'.get_permalink($post).'" />'."\n";
-					echo '<meta property="og:title" content="'.get_the_title($post).'" />'."\n";
-					echo '<meta property="og:description" content="'.kgvid_generate_video_description($first_embedded_video, $post).'" />'."\n";
+					echo '<meta property="og:url" content="'.esc_attr(get_permalink($post)).'" />'."\n";
+					echo '<meta property="og:title" content="'.esc_attr(get_the_title($post)).'" />'."\n";
+					echo '<meta property="og:description" content="'.esc_attr(kgvid_generate_video_description($first_embedded_video, $post)).'" />'."\n";
 					echo '<meta property="og:video" content="'.$first_embedded_video['url'].'" />'."\n";
 					$secure_url = str_replace('http://', 'https://', $first_embedded_video['url']);
 					echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
@@ -1826,8 +1826,9 @@ if ( function_exists('get_post_embed_url') ) { add_filter( 'post_embed_url', 'kg
 
 function kgvid_change_oembed_html($output, $post, $width, $height) {
 
-$output = preg_replace('/<blockquote(.*)<\/script>/s', '', $output);
-return $output;
+	$output = preg_replace('/<blockquote(.*)<\/script>/s', '', $output);
+
+	return $output;
 
 }
 if ( function_exists('get_post_embed_html') ) { add_filter( 'embed_html', 'kgvid_change_oembed_html', 11, 4 ); } //added in WP version 4.4
@@ -2053,7 +2054,7 @@ function kgvid_generate_video_description($query_atts, $post = false) {
 	elseif ( array_key_exists('description', $query_atts) && !empty($query_atts['caption']) && $query_atts['caption'] != "false" ) {
 		$description = $query_atts['caption'];
 	}
-	elseif ( (in_the_loop() || $post != false)  && !is_attachment() ) {
+	elseif ( $post != false || ( in_the_loop() && !is_attachment() ) ) {
 
 		if ( $post == false ) { global $post; }
 
