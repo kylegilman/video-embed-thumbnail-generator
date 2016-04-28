@@ -301,13 +301,14 @@ font-weight: normal;
 }
 
 .kgvid_tooltip:hover span {
-  font-family: Calibri, Tahoma, Geneva, sans-serif;
   position: absolute;
   left: 1em;
   top: 2em;
   z-index: 99;
   margin-left: 0;
   width: 250px;
+  font-weight: normal;
+  white-space: normal;
   border-radius: 5px 5px;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
