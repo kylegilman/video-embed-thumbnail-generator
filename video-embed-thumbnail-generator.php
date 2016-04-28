@@ -1761,7 +1761,7 @@ function kgvid_video_embed_print_scripts() {
 					echo '<meta name="twitter:card" content="player">'."\n";
 					if ( !empty($options['twitter_username']) ) { echo '<meta name="twitter:site" content="@'.esc_attr($options['twitter_username']).'">'."\n"; }
 					echo '<meta name="twitter:title" content="'.esc_attr($post->post_title).'">'."\n";
-					echo '<meta name="twitter:description" content="'.esc_attr(kgvid_generate_video_description($first_embedded_video, $post)).'">'."\n";
+					echo '<meta name="twitter:description" content="'.substr(esc_attr(kgvid_generate_video_description($first_embedded_video, $post)), 0, 200).'">'."\n";
 					echo '<meta name="twitter:image" content="'.esc_attr(str_replace('http://', 'https://', $first_embedded_video['poster'])).'">'."\n";
 					echo '<meta name="twitter:player" content="'.esc_attr(str_replace('http://', 'https://', get_attachment_link($first_embedded_video['id']))).'?kgvid_video_embed%5Benable%5D=true'.'">'."\n";
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
