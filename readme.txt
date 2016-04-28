@@ -37,6 +37,8 @@ After you select a thumbnail it will be registered in the Wordpress Media Librar
 
 In the plugin settings you can set the default maximum video width and height based on the dimensions of your particular template and those values will be filled in when you open the window. If you generate thumbnails, the video display dimensions will be adjusted automatically to match the size and aspect ratio of the video file. You can make further adjustments if you want. There are options to always fill the width of the template or to always set videos to the maximum width setting regardless of their resolution.
 
+If enabled in the plugin settings, Facebook, Twitter, and Schema.org video search engine metadata will be generated for your videos. If your site supports https, your videos can play directly in the Facebook timeline or on Twitter. Twitter requires whitelisting for each domain that provides player cards so you will be required to request whitelisting using the <a href="https://cards-dev.twitter.com/validator">Twitter Card Validator tool</a>. Once you've installed the plugin and enabled the Twitter Cards setting, go to the Twitter Card Validator, enter a secure URL from your site that has a video embedded using this plugin, click "Preview card" and you'll probably see a warning that your site isn't whitelisted. Request whitelisting and Twitter should approve you fairly quickly. Enabling the Facebook or Twitter metadata options will override Jetpack's corresponding metadata whenever a video is embedded on the page. However, your theme or SEO plugins might generate their own metadata that could conflict with this plugin's.
+
 You can add subtitle and caption tracks by choosing properly formatted WebVTT files from the media library or entering a URL directly. Enter the two-letter language code and the label text that will be shown to users. Enabling the "default" option will turn the text track on when the page loads. The WordPress default player does not differentiate between captions and subtitles, but Video.js will show a different icon depending on the selection.
 
 I highly recommend using <a href="http://handbrake.fr/">Handbrake</a> to make a file with H.264 video and AAC audio in an MP4 container before uploading. If you're encoding with Handbrake make sure that "Web Optimized" is checked. Using Apple's Compressor, the "Streaming" setting should be "Fast Start" (not Fast Start - Compressed Header).
@@ -237,6 +239,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.6 - April XX, 2016 =
 * Updated Video.js to version 5.5.3 which includes a revised skin.
 * Added resolution switching for WordPress Default player.
+* Added Twitter Player Cards.
 * Added animated GIF video conversion.
 * Added option to select a specific video resolution when the page first loads.
 * Added option to ignore pixel ratios when calculating automatic resolution selection in order to prioritize lower resolutions on mobile devices.
