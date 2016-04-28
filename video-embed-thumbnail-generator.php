@@ -1781,7 +1781,7 @@ function kgvid_video_embed_print_scripts() {
 					}
 					if ( $twitter_stream ) {
 						echo '<meta name="twitter:player:stream" content="'.esc_attr(str_replace('http://', 'https://', $twitter_stream)).'">'."\n";
-						echo '<meta name="twitter:player:stream:content_type" content="video/mp4">'."\n";
+						echo '<meta name="twitter:player:stream:content_type" content="video/mp4; codecs=&quot;avc1.42E01E1, mp4a.40.2&quot;">'."\n";
 					}
 
 
