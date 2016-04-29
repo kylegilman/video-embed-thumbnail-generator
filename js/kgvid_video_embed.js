@@ -10,6 +10,9 @@ jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress 
 		if ( video_vars.resize == "true" ) {
 			videojs_options.fluid = true;
 		}
+		if ( video_vars.width != undefined && video_vars.height != undefined ) {
+			videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
+		}
 		if ( video_vars.nativecontrolsfortouch == "true" ) {
 			videojs_options.nativeControlsForTouch = true;
 		}
@@ -57,6 +60,7 @@ function kgvid_window_load() {
 		kgvid_resize_gallery_play_button(gallery_id);
 		jQuery(window).resize( function(){ kgvid_resize_gallery_play_button(gallery_id) } );
 		setTimeout(function(){ kgvid_resize_gallery_play_button(gallery_id) }, 200);
+
 	});
 
 }
