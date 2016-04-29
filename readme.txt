@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution, analytics
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.5.5
+Stable tag: 4.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +14,7 @@ Generates thumbnails, encodes HTML5-compliant videos, and embeds locally hosted 
 
 = A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compatible files a little bit easier. =
 
-This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/plugin/video-embed-thumbnail-generator">support forum</a>.
+Still 100% free, but some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
 
 This plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options, make thumbnails, click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers.
 
@@ -236,7 +236,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6 - April XX, 2016 =
+= 4.6 - April 29, 2016 =
+* Still 100% free. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
 * Updated Video.js to version 5.5.3 which includes a revised skin.
 * Added resolution switching for WordPress Default player.
 * Added Twitter Player Cards.
@@ -256,8 +257,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Revised Facebook Open Graph tags so they actually work on Facebook.
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Improved user role security to prevent unauthorized users from modifying video settings or deleting encoded videos.
-* Now using Yoast SEO or All In One SEO Pack post descriptions for Schema.org description metadata, when available.
-* Fixed several multisite encoding queue bugs, especially when videos have identical post IDs on different sites.
+* Now using Yoast SEO or All In One SEO Pack post descriptions for description metadata, when available.
+* Fixed several multisite encoding queue bugs, particularly when videos have identical post IDs on different sites.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that incorrectly interpreted FFMPEG output as an error when the last line came from the AAC encoder.
 * Fixed bug that didn't initialize the nativecontrolsfortouch plugin setting.
