@@ -258,6 +258,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Changed in-browser base64 thumbnail encoding to JPG in order to reduce data transferred when saving. Should reduce 404 errors.
 * Improved user role security to prevent unauthorized users from modifying video settings or deleting encoded videos.
 * Now using Yoast SEO or All In One SEO Pack post descriptions for description metadata, when available.
+* Removed Spanish translation from the distribution in order to favor the new <a href="https://translate.wordpress.org/projects/wp-plugins/video-embed-thumbnail-generator">WordPress language packs</a>.
 * Fixed several multisite encoding queue bugs, particularly when videos have identical post IDs on different sites.
 * Fixed bug that broke FFMPEG sample encode output and video rotation when a watermark overlay was enabled.
 * Fixed bug that incorrectly interpreted FFMPEG output as an error when the last line came from the AAC encoder.
