@@ -236,6 +236,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.1 - April 30, 2016 =
+* Fixed bug that changed the way vertical video players were resized.
+
 = 4.6 - April 29, 2016 =
 * Still 100% free. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
 * Updated Video.js to version 5.5.3 which includes a revised skin.
@@ -458,11 +461,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Upgrade Notice ==
 
-= 4.6 =
+= 4.6.1 =
 It's safe to update. The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
 
-= 4.5.6 =
-Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
+= 4.6 =
+It's safe to update. The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
 
 = 4.5.2 =
 This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
