@@ -98,7 +98,7 @@ function kgvid_default_options_fn() {
 		"overlay_title" => "on",
 		"overlay_embedcode" => false,
 		"twitter_button" => false,
-		"twitter_username" => '',
+		"twitter_username" => kgvid_get_jetpack_twitter_username(),
 		"facebook_button" => false,
 		"downloadlink" => false,
 		"click_download" => "on",
@@ -217,6 +217,27 @@ function kgvid_get_options() {
 	}
 
 	return $options;
+
+}
+
+function kgvid_get_jetpack_twitter_username() {
+
+	$jetpack_options = get_option('jetpack_options');
+	$jetpack_twitter_cards_site_tag = get_option('jetpack-twitter-cards-site-tag');
+	if ( is_array($jetpack_options)
+		&& array_key_exists('publicize_connections', $jetpack_options)
+		&& array_key_exists('twitter', $jetpack_options['publicize_connections'])
+		&& array_key_exists('external_name', $jetpack_options['publicize_connections']['twitter'])
+		&& !empty($jetpack_options['publicize_connections']['twitter']['external_name'])
+	) {
+		$twitter_username = $jetpack_options['publicize_connections']['twitter']['external_name'];
+	}
+	elseif ( !empty($jetpack_twitter_cards_site_tag) ) {
+		$twitter_username = $jetpack_twitter_cards_site_tag;
+	}
+	else { $twitter_username = ''; }
+
+	return $twitter_username;
 
 }
 
@@ -1105,7 +1126,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 				if ( is_writable($location['filepath']) ) { $encodevideo_info[$format]['writable'] = true; }
 				break;
 			}
-			elseif ( !$encodevideo_info['sameserver'] &&  $name != "html5encodes" ) { //last resort if it's not on the same server, check url_exists
+			elseif ( !empty($postID) && !$encodevideo_info['sameserver'] && $name != "html5encodes" ) { //last resort if it's not on the same server, check url_exists
 
 				$already_checked_url = get_post_meta($postID, '_kgflashmediaplayer-'.$sanitized_url['singleurl_id'].'-'.$format, true);
 				if ( empty($already_checked_url) ) {
@@ -1724,7 +1745,6 @@ function kgvid_video_embed_print_scripts() {
 
 				if ( $options['open_graph'] == "on" ) {
 
-					//add_filter('jetpack_disable_open_graph', '__return_true', 99);
 					remove_action('wp_head','jetpack_og_tags');
 					echo '<meta property="og:url" content="'.esc_attr(get_permalink($post)).'" />'."\n";
 					echo '<meta property="og:title" content="'.esc_attr(get_the_title($post)).'" />'."\n";
@@ -1754,7 +1774,7 @@ function kgvid_video_embed_print_scripts() {
 
 				}
 
-				if ( $options['twitter_card'] == "on" && array_key_exists('id', $first_embedded_video) ) {
+				if ( $options['twitter_card'] == "on" && array_key_exists('id', $first_embedded_video) && !empty($first_embedded_video['id']) ) {
 
 					add_filter( 'jetpack_disable_twitter_cards', '__return_true', 99 );
 
@@ -1762,7 +1782,9 @@ function kgvid_video_embed_print_scripts() {
 					if ( !empty($options['twitter_username']) ) { echo '<meta name="twitter:site" content="@'.esc_attr($options['twitter_username']).'">'."\n"; }
 					echo '<meta name="twitter:title" content="'.esc_attr($post->post_title).'">'."\n";
 					echo '<meta name="twitter:description" content="'.substr(esc_attr(kgvid_generate_video_description($first_embedded_video, $post)), 0, 200).'">'."\n";
-					echo '<meta name="twitter:image" content="'.esc_attr(str_replace('http://', 'https://', $first_embedded_video['poster'])).'">'."\n";
+					if ( array_key_exists('poster', $first_embedded_video) ) {
+						echo '<meta name="twitter:image" content="'.esc_attr(str_replace('http://', 'https://', $first_embedded_video['poster'])).'">'."\n";
+					}
 					echo '<meta name="twitter:player" content="'.esc_attr(str_replace('http://', 'https://', get_attachment_link($first_embedded_video['id']))).'?kgvid_video_embed%5Benable%5D=true'.'">'."\n";
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
 						echo '<meta name="twitter:player:width" content="'.esc_attr($first_embedded_video['width']).'">'."\n";
@@ -3056,6 +3078,9 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 	$time_to_wait = 5000;
 	$user_delete_capability = false;
 
+	if ( is_multisite() ) { $blog_id = get_current_blog_id(); }
+	else { $blog_id = false; }
+
 	if ( get_post_type($post_id) == "attachment" ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 		if ( array_key_exists('encode'.$format, $kgvid_postmeta) ) { $encodeset = $kgvid_postmeta['encode'.$format]; }
@@ -3081,9 +3106,6 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 	}
 
 	if ( !empty($encodevideo_info) ) {
-
-		if ( is_multisite() ) { $blog_id = get_current_blog_id(); }
-		else { $blog_id = false; }
 
 		if ( $encodevideo_info[$format]['exists'] ) { //if the video file exists
 
@@ -3196,17 +3218,17 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$encodevideo_info = array();
 	$is_attachment = false;
 
-	if ( !empty($movieurl) ) {
+	if ( !empty($blog_id) && $blog_id != 'false' ) {
+		switch_to_blog($blog_id);
+		$blog_name_text = '['.$blog_id.']';
+		$blog_id_text = $blog_id.'-';
+	}
+	else {
+		$blog_name_text = '';
+		$blog_id_text = '';
+	}
 
-		if ( !empty($blog_id) && $blog_id != 'false' ) {
-			switch_to_blog($blog_id);
-			$blog_name_text = '['.$blog_id.']';
-			$blog_id_text = $blog_id.'-';
-		}
-		else {
-			$blog_name_text = '';
-			$blog_id_text = '';
-		}
+	if ( !empty($movieurl) ) {
 
 		$encodevideo_info = kgvid_encodevideo_info($movieurl, $post_id);
 		$sanitized_url = kgvid_sanitize_url($movieurl);
@@ -4938,21 +4960,7 @@ function kgvid_update_settings() {
 			$options['error_email'] = 'nobody';
 			$options['auto_encode_gif'] = false;
 			$options['pixel_ratio'] = 'on';
-
-			$jetpack_options = get_option('jetpack_options');
-			$jetpack_twitter_cards_site_tag = get_option('jetpack-twitter-cards-site-tag');
-			if ( is_array($jetpack_options)
-				&& array_key_exists('publicize_connections', $jetpack_options)
-				&& array_key_exists('twitter', $jetpack_options['publicize_connections'])
-				&& array_key_exists('external_name', $jetpack_options['publicize_connections']['twitter'])
-				&& !empty($jetpack_options['publicize_connections']['twitter']['external_name'])
-			) {
-				$options['twitter_username'] = $jetpack_options['publicize_connections']['twitter']['external_name'];
-			}
-			elseif ( !empty($jetpack_twitter_cards_site_tag) ) {
-				$options['twitter_username'] = $jetpack_twitter_cards_site_tag;
-			}
-			else { $options['twitter_username'] = ''; }
+			$options['twitter_username'] = kgvid_get_jetpack_twitter_username();
 
 		}
 
