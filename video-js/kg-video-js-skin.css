@@ -49,6 +49,7 @@
   position: absolute;
 
   box-sizing: border-box;
+  z-index: 2;
 }
 
 /* The default color of control backgrounds is mostly black but with a little

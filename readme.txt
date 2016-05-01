@@ -123,7 +123,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 = These options will only affect Video.js playback =
 
 * `skin="example-css-class"` Completely change the look of the video player. <a href="http://designer.videojs.com/">Video.js provides a custom skin designer here.</a>
-* `nativecontrolsfortouch="true/false` enables or disables native controls on touchscreen devices. Native controls allow for streaming services like AirPlay and Chromecast, but don't always look as nice.
+* `nativecontrolsfortouch="true/false` disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.
 
 = These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players. =
 
@@ -236,8 +236,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.1 - April 30, 2016 =
-* Fixed bug that changed the way vertical video players were resized.
+= 4.6.1 - May 1, 2016 =
+* Fixed bug that changed the way Video.js players were resized when the specified dimensions did not match the video's actual dimensions.
+* Adjusted CSS for video overlay bar and z-index of the Video.js play button.
 
 = 4.6 - April 29, 2016 =
 * Still 100% free. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
