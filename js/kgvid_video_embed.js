@@ -10,7 +10,7 @@ jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress 
 		if ( video_vars.resize == "true" ) {
 			videojs_options.fluid = true;
 		}
-		if ( video_vars.width != undefined && video_vars.height != undefined ) {
+		if ( video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {
 			videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
 		}
 		if ( video_vars.nativecontrolsfortouch == "true" ) {
