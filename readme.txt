@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution, analytics
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.6
+Stable tag: 4.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -87,9 +87,9 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `order="ASC/DESC"` sort order.
 * `poster="http://www.example.com/image.jpg"` sets the thumbnail.
 * `endofvideooverlay="http://www.example.com/end_image.jpg` sets the image shown when the video ends.
-* `width="xxx"`
-* `height="xxx"`
-* `fullwidth="true/false"` set video to always expand to fill its container.`
+* `width="xxx"` preferred maximum width in pixels.
+* `height="xxx"` preferred maximum height in pixels.
+* `fullwidth="true/false"` set video to always expand to 100% of its container.
 * `align="left/right/center"`
 * `inline="true/false"` allow other content on the same line as the video
 * `volume="0.x"` pre-sets the volume for unusually loud videos. Value between 0 and 1.
@@ -235,6 +235,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.2 - May 2, 2016 =
+* Fixed bug that disabled subtitles/captions button in the WordPress Default player.
+* Fixed bug that broke Video.js players set to width="100%". This has never worked for the WordPress Default player. Using the plugin setting "Set all videos to expand to 100% of their containers" or the shortcode attribute fullwidth="true" is the recommended method, but players will work again for people using width="100%".
+* Changed description of fullwidth setting to make it more clear.
 
 = 4.6.1 - May 1, 2016 =
 * Fixed bug that changed the way Video.js players were resized when the specified dimensions did not match the video's actual dimensions.
