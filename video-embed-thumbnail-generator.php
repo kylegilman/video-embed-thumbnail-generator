@@ -1989,7 +1989,8 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 			if ( empty($query_atts['caption']) ) { $query_atts['caption'] = $attachment->post_excerpt; }
 			$below_video = 0;
-			if ( !empty($query_atts['caption']) ) { $below_video = 1; }
+			if ( !empty($query_atts['caption']) || $query_atts['view_count'] == "true" ) { $below_video = 1; }
+
 			$kgvid_postmeta = kgvid_get_attachment_meta( $attachment->ID );
 
 			$play_button_html = '';
@@ -2915,6 +2916,7 @@ function KGVID_shortcode($atts, $content = ''){
 				'gallery_exclude',
 				'gallery_thumb',
 				'caption',
+				'view_count',
 				'gallery_end',
 				'gallery_per_page',
 				'gallery_title'
