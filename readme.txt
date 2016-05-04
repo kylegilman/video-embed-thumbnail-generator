@@ -237,8 +237,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.3 - May 4, 2016 =
-* Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event.
-* Fixed bug that always showed text track types as subtitles in the attachment edit window.
+* Updated Video.js to version 5.9.2
+* Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event instead of always selecting the largest resolution.
+* Fixed bug that always showed text track type selector as "subtitles" in the attachment edit window.
 
 = 4.6.2 - May 2, 2016 =
 * Fixed bug that disabled subtitles/captions button in the WordPress Default player.
