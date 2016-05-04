@@ -257,6 +257,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added button to clear the whole video encoding queue.
 * Added option to send an email when there is a video encoding error.
 * Added Google Analytics Event tracking when users watch 25%, 50%, and 75% of a video.
+* Added several filter hooks to facilitate customization of the plugin.
 * Added Twitter and Facebook share buttons.
 * Significantly redesigned video sharing overlay appearance.
 * Moved download link to an icon overlay and stopped inserting unnecessary downloadlink attribute in shortcode for videos in the WordPress database.
@@ -467,11 +468,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Upgrade Notice ==
 
+= 4.6.2 =
+The plugin is still completely free until version 5.0. Video.js users will notice an updated player design if updating from 4.5.5.
+
 = 4.6.1 =
-It's safe to update. The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
+The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
 
 = 4.6 =
-It's safe to update. The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
+The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
 
 = 4.5.2 =
 This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.

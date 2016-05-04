@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.2
+Version: 4.6.3
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.602,
+		"version" => 4.603,
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -5628,8 +5628,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 						$items = array(__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles", __("captions", 'video-embed-thumbnail-generator')=>"captions", __("chapters", 'video-embed-thumbnail-generator')=>"chapters");
 						$track_type_select = '<select name="attachments['.$post->ID.'][kgflashmediaplayer-track]['.$track.'][kind]" id="attachments-'.$post->ID.'-kgflashmediaplayer-track_'.$track.'_kind]"'.$security_disabled.'>';
 						foreach($items as $name=>$value) {
-							$selected = ($kgvid_postmeta['track'][$track]['kind']==$value) ? 'selected="selected"' : '';
-							$track_type_select .= "<option value='$value'>$name</option>";
+							$selected = ($kgvid_postmeta['track'][$track]['kind']==$value) ? ' selected="selected"' : '';
+							$track_type_select .= "<option value='$value'".$selected.">$name</option>";
 						}
 						$track_type_select .= "</select>";
 
