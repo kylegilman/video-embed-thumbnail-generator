@@ -400,12 +400,7 @@ function kgvid_setup_video(id) {
 			}
 
 			if ( player.availableRes != undefined ) {
-				if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') ) {
-					var resolutions = player.availableRes;
-					var highest_res = Object.keys(resolutions)[Object.keys(resolutions).length - 1];
-					player.changeRes(highest_res);
-				}
-				else { kgvid_resize_video(id); }
+				 kgvid_resize_video(id);
 			}
 
 			if ( fullScreenApi.supportsFullScreen == false ) {
@@ -597,14 +592,16 @@ function kgvid_resize_video(id) {
 	var video_vars = jQuery('#video_'+id+'_div').data('kgvid_video_vars');
 
 	if ( video_vars !== undefined ) {
+
 		var set_width = video_vars.width;
 		var set_height = video_vars.height;
 		var aspect_ratio = Math.round(set_height/set_width*1000)/1000
 		var reference_div = jQuery('#kgvid_'+id+'_wrapper').parent();
+		var window_width = jQuery(window).width();
+		var window_height = jQuery(window).height();
+
 		if ( reference_div.is('body') ) { parent_width = window.innerWidth; set_width = window.innerWidth; }
 		else if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) { //if it's a pop-up video
-			var window_width = jQuery(window).width();
-			var window_height = jQuery(window).height();
 			parent_width = window_width-40;
 		}
 		else {
@@ -660,41 +657,47 @@ function kgvid_resize_video(id) {
 			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null )
 				||  ( video_vars.player_type == "WordPressDefault" && typeof mejs !== 'undefined' )
 			) {
-				if ( player.availableRes !== undefined ) {
+				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {
 
 					var resolutions = player.availableRes;
+					var resNumbers = new Array();
 
-					if ( video_vars.auto_res == 'automatic' ) {
+					jQuery.each(resolutions, function(key, value){
+						if ( typeof key !== 'undefined' && !isNaN(parseInt(key)) ) {
+							resNumbers.push(parseInt(key));
+						}
+					});
+					var current_resolution = parseInt(player.getCurrentRes());
+					if ( !isNaN(current_resolution) ) {
+						if ( video_vars.pixel_ratio == "true" && window.devicePixelRatio != undefined ) {
+							var pixel_ratio = window.devicePixelRatio;
+						} //for retina displays
+						else { pixel_ratio = 1; }
 
-						var resNumbers = new Array();
-						jQuery.each(resolutions, function(key, value){
-							if ( typeof key !== 'undefined' && !isNaN(parseInt(key)) ) {
-								resNumbers.push(parseInt(key));
-							}
+						if ( jQuery('#video_'+id).hasClass('vjs-fullscreen') || jQuery('#video_'+id+'_div .mejs-container').hasClass('mejs-container-fullscreen') ) {
+							pixel_height = window_width * aspect_ratio * pixel_ratio;
+						}
+						else { pixel_height = set_width * aspect_ratio * pixel_ratio; }
+
+						var res_options = jQuery.map(resNumbers, function(n) {
+							if ( n >= pixel_height ) { return n; }
 						});
-						var current_resolution = parseInt(player.getCurrentRes());
-						if ( !isNaN(current_resolution) ) {
-							if ( video_vars.pixel_ratio == "true" && window.devicePixelRatio != undefined ) { var pixel_height = set_height * window.devicePixelRatio; } //for retina displays
-							else { pixel_height = set_height; }
-							var res_options = jQuery.map(resNumbers, function(n) {
-								if ( n >= pixel_height ) { return n; }
-							});
-							var set_res = Math.min.apply(Math,res_options);
+						var set_res = Math.min.apply(Math,res_options);
 
-							if ( set_res != current_resolution && !jQuery('#video_'+id).hasClass('vjs-fullscreen') && !jQuery('#video_'+id+'_div .mejs-container').hasClass('mejs-container-fullscreen') ) {
-								player.changeRes(set_res+'p');
+						if ( set_res != current_resolution ) {
+							player.changeRes(set_res+'p');
 
-							}
+						}
 
-							if (  video_vars.player_type == "Video.js" && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
-								if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
-								if ( player.volume() != 1 ) {
-									var current_volume = player.volume();
-									player.volume(1);
-									player.volume(current_volume);
-								}
+						if (  video_vars.player_type == "Video.js" && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
+							if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
+							if ( player.volume() != 1 ) {
+								var current_volume = player.volume();
+								player.volume(1);
+								player.volume(current_volume);
 							}
 						}
+
 					} //automatic
 				}
 			}

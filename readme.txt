@@ -236,6 +236,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.3 - May 4, 2016 =
+* Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event.
+* Fixed bug that always showed text track types as subtitles in the attachment edit window.
+
 = 4.6.2 - May 2, 2016 =
 * Fixed bug that disabled subtitles/captions button in the WordPress Default player.
 * Fixed bug that broke Video.js players set to width="100%". This has never worked for the WordPress Default player. Using the plugin setting "Set all videos to expand to 100% of their containers" or the shortcode attribute fullwidth="true" is the recommended method, but players will work again for people using width="100%".
