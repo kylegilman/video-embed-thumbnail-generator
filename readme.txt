@@ -236,9 +236,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.3 - May 4, 2016 =
+= 4.6.3 - May 5, 2016 =
 * Updated Video.js to version 5.9.2
-* Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event instead of always selecting the largest resolution.
+* Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event instead of always selecting the highest resolution available.
+* Fixed bug that disabled JW Player player selection in the plugin settings page.
 * Fixed bug that always showed text track type selector as "subtitles" in the attachment edit window.
 
 = 4.6.2 - May 2, 2016 =
@@ -473,6 +474,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Upgrade Notice ==
 
+= 4.6.3 =
+The plugin is still completely free until version 5.0. Video.js users will notice an updated player design if updating from 4.5.5.
+
 = 4.6.2 =
 The plugin is still completely free until version 5.0. Video.js users will notice an updated player design if updating from 4.5.5.
 
@@ -481,18 +485,3 @@ The plugin is still completely free until version 5.0. Video.js users will notic
 
 = 4.6 =
 The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
-
-= 4.5.2 =
-This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
-
-= 4.5.1 =
-This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
-
-= 4.5 =
-This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the support forum.
-
-= 3.0 =
-Fixes thumbnails & encodes in WP 3.5. Not compatible with earlier WP versions.
-
-= 2.0 =
-Fixes several security issues.

@@ -4030,7 +4030,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		//add the JW Player if available
 		$jw_player_select = "";
 		if ( class_exists('JWP6_Shortcode') ) {
-			$players["JW Player"] = "JW Player 6";
+			$players[__("JW Player 6", 'video-embed-thumbnail-generator')] = "JW Player";
 			$jw_players = get_option('jwp6_players');
 			if ( count($jw_players) > 1 ) {
 				$jw_player_select = " <div style='display:none;' id='jw_player_id_select'><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='jw_player_id' name='kgvid_video_embed_options[jw_player_id]'>";
