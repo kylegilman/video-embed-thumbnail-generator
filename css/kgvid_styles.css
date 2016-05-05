@@ -117,8 +117,6 @@ img.kgvid_ios_novideo {
 }
 
 .kgvid_title {
-	position: absolute;
-	top: 50%;
     font-size: 10pt;
     padding-left: 4px;
     margin: -6pt 6pt 6pt 2pt;
