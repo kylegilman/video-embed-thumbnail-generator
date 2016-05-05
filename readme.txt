@@ -236,6 +236,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.4 - May 5, 2016 =
+* Fixed bug that caused an error when feed pages were generated, possibly interrupting autosaves.
+
 = 4.6.3 - May 5, 2016 =
 * Updated Video.js to version 5.9.2
 * Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event instead of always selecting the highest resolution available.
