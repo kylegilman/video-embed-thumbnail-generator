@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => 4.603,
+		"version" => '4.6.3',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -4951,6 +4951,7 @@ function kgvid_update_settings() {
 			$options['ffmpeg_old_rotation'] = "on";
 			$options['click_download'] = "on";
 		}
+
 		if ( $options['version'] < 4.6 ) {
 			$options['version'] = 4.6;
 			if ( !array_key_exists('nativecontrolsfortouch', $options) ) { $options['nativecontrolsfortouch'] = "on"; }
@@ -4963,7 +4964,6 @@ function kgvid_update_settings() {
 			$options['auto_encode_gif'] = false;
 			$options['pixel_ratio'] = 'on';
 			$options['twitter_username'] = kgvid_get_jetpack_twitter_username();
-
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }

@@ -239,7 +239,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.6.3 - May 5, 2016 =
 * Updated Video.js to version 5.9.2
 * Changed method for calculating automatic resolution when switching to fullscreen so it's the same as a regular resize event instead of always selecting the highest resolution available.
-* Fixed bug that disabled JW Player player selection in the plugin settings page.
+* Fixed bug that disabled JW Player selection in the plugin settings page.
 * Fixed bug that always showed text track type selector as "subtitles" in the attachment edit window.
 
 = 4.6.2 - May 2, 2016 =
