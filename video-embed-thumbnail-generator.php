@@ -812,6 +812,10 @@ function kgvid_rrmdir($dir) {
    }
 }
 
+function kgvid_build_paired_attributes($value, $key) {
+	return $key.'="'.$value.'"';
+}
+
 function kvid_readfile_chunked($file, $retbytes=TRUE) { //sends large files in chunks so PHP doesn't timeout
 
 	$chunksize = 1 * (1024 * 1024);
@@ -1636,9 +1640,7 @@ function kgvid_get_first_embedded_video( $post ) {
 	if ( !empty($first_embedded_video_meta) ) {
 
 		if ( is_array($first_embedded_video_meta['atts']) ) {
-			$dataattributes = array_map(function($value, $key) {
-				return $key.'="'.$value.'"';
-			}, array_values($first_embedded_video_meta['atts']), array_keys($first_embedded_video_meta['atts']));
+			$dataattributes = array_map('kgvid_build_paired_attributes', array_values($first_embedded_video_meta['atts']), array_keys($first_embedded_video_meta['atts']));
 
 			$dataattributes = ' '.implode(' ', $dataattributes);
 		}

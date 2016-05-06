@@ -237,7 +237,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.5 - May 6, 2016 =
-* Disabled page rendering call on autosaves and revisions.
+* Disabled background page rendering request on autosaves and revisions.
+* Adjusted title bar CSS again.
 
 = 4.6.4 - May 5, 2016 =
 * Fixed bug that caused an error when feed pages were generated, possibly interrupting autosaves.
