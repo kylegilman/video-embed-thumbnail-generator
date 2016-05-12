@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, html5, shortcode, thumbnail, video thumbnail, preview, poster, ffmpeg, libav, embed, oembed, mobile, webm, ogg, h.264, h264, vp9, responsive, mp4, jwplayer, resolution, analytics
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.6.4
+Stable tag: 4.6.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -236,8 +236,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.5 - May 6, 2016 =
+= 4.6.5 - May 12, 2016 =
+* Removed anonymous function to allow the plugin to run on PHP versions lower than 5.3.
+* Added 25%, 50%, and 75% video view tracking to the WordPress admin area.
 * Disabled background page rendering request on autosaves and revisions.
+* Fixed width="100%" vertical video aspect ratio bug and now allowing other players to work with this still not recommended method.
 * Adjusted title bar CSS again.
 
 = 4.6.4 - May 5, 2016 =
@@ -482,14 +485,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Upgrade Notice ==
 
-= 4.6.3 =
+= 4.6.5 =
 The plugin is still completely free until version 5.0. Video.js users will notice an updated player design if updating from 4.5.5.
-
-= 4.6.2 =
-The plugin is still completely free until version 5.0. Video.js users will notice an updated player design if updating from 4.5.5.
-
-= 4.6.1 =
-The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.
 
 = 4.6 =
 The plugin is still completely free until version 5.0. Video.js users will notice an updated player design.

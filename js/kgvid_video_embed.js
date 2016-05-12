@@ -7,7 +7,7 @@ jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress 
 	if ( video_vars.player_type == "Video.js" ) {
 
 		var videojs_options = { "html5": { "nativeTextTracks" : false }, "language": video_vars.locale };
-		if ( video_vars.resize == "true" ) {
+		if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
 			videojs_options.fluid = true;
 		}
 		if ( video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {

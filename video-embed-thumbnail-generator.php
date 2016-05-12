@@ -2308,6 +2308,12 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		}
 		else { $kgvid_meta = false; }
 
+		if ( $query_atts['width'] == "100%" ) {
+			$query_atts['width'] = $options['width'];
+			$query_atts['height'] = $options['height'];
+			$query_atts['fullwidth'] = "true";
+		}
+
 		$video_variables = array(
 			'id' => $div_suffix,
 			'attachment_id' => $id,
