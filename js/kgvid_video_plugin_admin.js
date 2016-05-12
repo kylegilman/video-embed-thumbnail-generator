@@ -224,6 +224,11 @@ function kgvid_draw_thumb_canvas(canvas, canvas_source) {
 
 }
 
+function kgvid_reveal_video_stats(postID) {
+	jQuery('#show-video-stats-'+postID).hide();
+	jQuery('#video-'+postID+'-stats').animate({opacity: 'toggle', height: 'toggle'}, 500);
+}
+
 function kgvid_reveal_thumb_video(postID) {
 	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
 	var text = jQuery('#show-thumb-video-'+postID+' :nth-child(2)');

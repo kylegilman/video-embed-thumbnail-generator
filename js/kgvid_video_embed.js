@@ -791,18 +791,26 @@ function kgvid_video_counter(id, event) {
 
 	if ( !isNaN(event) ) {
 
+		if (video_vars.countable) { //video is in the db
+			changed = true;
+		}
+
 		if (typeof ga != "undefined") { ga("send", "event", "Videos", event+"%", title); }
 		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", event+"%", title]); }
 
 	}
 
 	if ( event == "end" ) {
+
 		if (video_vars.countable) { //video is in the db
 			changed = true;
 		}
+
 		if (typeof ga != "undefined") { ga("send", "event", "Videos", kgvidL10n_frontend.completeview, title); }
 		else if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', kgvidL10n_frontend.completeview, title]); }
+
 	}
+
 	if ( changed == true ) {
 		jQuery.post(kgvidL10n_frontend.ajaxurl, {
 			action: 'kgvid_count_play',

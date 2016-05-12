@@ -256,6 +256,9 @@ function kgvid_get_attachment_meta($post_id) {
 		'downloadlink' => $options['downloadlink'],
 		'track' => '',
 		'starts' => '0',
+		'play_25' => '0',
+		'play_50' => '0',
+		'play_75' => '0',
 		'completeviews' => '0',
 		'pickedformat' => '',
 		'encodefullres' => '',
@@ -5486,7 +5489,12 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if ( $post->post_mime_type != 'image/gif' ) {
 			$form_fields["views"]["label"] = __('Video Stats', 'video-embed-thumbnail-generator');
 			$form_fields["views"]["input"] = "html";
-			$form_fields["views"]["html"] = sprintf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) ).', '.sprintf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) ).'<br />'.__('Video ID:', 'video-embed-thumbnail-generator').' '.$post->ID;
+			$form_fields["views"]["html"] = sprintf( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['starts']), '</strong>' ).'<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats('.$post->ID.')" id="show-video-stats-'.$post->ID.'"><br /><a class="kgvid-show-video">'.__('(More...)', 'video-embed-thumbnail-generator').'</a></span><div style="display:none;" id="video-'.$post->ID.'-stats">'.
+			intval($kgvid_postmeta['play_25']).' '.__('25%', 'video-embed-thumbnail-generator').
+			'<br /><strong>'.intval($kgvid_postmeta['play_50']).'</strong> '.__('50%', 'video-embed-thumbnail-generator').
+			'<br /><strong>'.intval($kgvid_postmeta['play_75']).'</strong> '.__('75%', 'video-embed-thumbnail-generator').
+			'<br />'.sprintf( _n('%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['completeviews']), '</strong>' ).
+			'<p>'.__('Video ID:', 'video-embed-thumbnail-generator').' '.$post->ID.'</p></div>';
 
 			// ** Thumbnail section **//
 
@@ -5735,9 +5743,12 @@ function kgvid_video_stats_column_data( $column_name, $id ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta($id);
 		if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) && intval($kgvid_postmeta['starts']) > 0 ) {
 			/* translators: Start refers to the number of times a video has been started */
-			printf( _n('%d Start', '%d Starts', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['starts']) );
-			echo '<br>';
-			printf( _n('%d Complete View', '%d Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), intval($kgvid_postmeta['completeviews']) );
+			printf( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['starts']), '</strong>' );
+			echo '<br><strong>'.intval($kgvid_postmeta['play_25']).'</strong> 25%'.
+			'<br><strong>'.intval($kgvid_postmeta['play_50']).'</strong> 50%'.
+			'<br><strong>'.intval($kgvid_postmeta['play_75']).'</strong> 75%<br>';
+			printf( _n('%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['completeviews']), '</strong>' );
+
 		}
 	}
 
@@ -8202,6 +8213,7 @@ function kgvid_count_play() {
 	$event = $_POST['video_event'];
 	if ( $event == "play" ) { $event = "starts"; }
 	if ( $event == "end" ) { $event = "completeviews"; }
+	if ( is_numeric($event) ) { $event = "play_".$event; }
 	$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 	$plays = $kgvid_postmeta[$event];
 	if ( !empty($plays) ) { $plays = intval($plays)+1; }
