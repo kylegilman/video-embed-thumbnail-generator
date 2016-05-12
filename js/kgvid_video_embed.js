@@ -650,7 +650,6 @@ function kgvid_resize_video(id) {
 			}
 
 			if ( video_vars.player_type == "WordPressDefault" ) {
-				jQuery('#kgvid_'+id+'_wrapper').find('.wp-video').attr('style', 'width:'+set_width+'px; height:'+set_height+'px;');
 				if ( typeof mejs !== 'undefined' ) { player = eval('mejs.players.'+jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').attr('id')); }
 			}
 

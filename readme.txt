@@ -239,8 +239,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.6.5 - May 12, 2016 =
 * Removed anonymous function to allow the plugin to run on PHP versions lower than 5.3.
 * Added 25%, 50%, and 75% video view tracking to the WordPress admin area.
+* Fixed width="100%" vertical video aspect ratio bug and now allowing other players to work with this still-not-recommended method.
+* Modified resizing method for WordPress default player container.
+* Fixed temporary thumbnail display when switching resolutions in a Video.js player that is set to a different aspect ratio from the video file.
 * Disabled background page rendering request on autosaves and revisions.
-* Fixed width="100%" vertical video aspect ratio bug and now allowing other players to work with this still not recommended method.
 * Adjusted title bar CSS again.
 
 = 4.6.4 - May 5, 2016 =
