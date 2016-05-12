@@ -119,7 +119,7 @@ img.kgvid_ios_novideo {
 .kgvid_title {
     font-size: 10pt;
     padding-left: 4px;
-    margin: -6pt 6pt 6pt 2pt;
+    line-height: 20pt;
 }
 
 .kgvid_meta_icons {
