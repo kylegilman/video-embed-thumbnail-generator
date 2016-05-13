@@ -8314,9 +8314,12 @@ function kgvid_save_post($post_id) {
 
 	$options = kgvid_get_options();
 
-	if ( !wp_is_post_revision( $post_id) && !wp_is_post_autosave( $post_id ) && $options['open_graph'] == "on" ) {
+	if ( !wp_is_post_revision( $post_id ) && !wp_is_post_autosave( $post_id )
+		&& ( $options['open_graph'] == "on" || $options['twitter_card'] == "on" )
+	) {
 		//render the post when it's saved in case there's a do_shortcode call in it so open graph metadata makes it into wp_head()
 		$response = wp_remote_get( get_permalink($post_id), array('blocking' => false) );
+
 	}
 
 }
