@@ -472,6 +472,10 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 	clip: auto;
 }
 
+.kgvid_wrapper .mejs-overlay-button {
+    z-index: 2;
+}
+
 /* mep-feature-sourcechooser plugin styles */
 
 .kgvid_wrapper .mejs-controls div.mejs-sourcechooser-button button {
