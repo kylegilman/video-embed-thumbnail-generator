@@ -485,18 +485,7 @@ function kgvid_setup_video(id) {
 			var mejs_player = eval('mejs.players.'+mejs_id);
 
 			if ( mejs_player.isFullScreen && mejs_player.hasOwnProperty('availableRes') ) {
-				var resolutions = mejs_player.availableRes;
-
-				var resNumbers = new Array();
-				jQuery.each(resolutions, function(key, value){
-					if ( typeof key !== 'undefined' && !isNaN(parseInt(key)) ) {
-						resNumbers.push(parseInt(key));
-					}
-				});
-				var highest_res = Math.max.apply( Math, resNumbers );
-
-				mejs_player.changeRes(highest_res+'p');
-
+				kgvid_resize_video(id);
 			}
 		});
 
