@@ -773,6 +773,7 @@ function kgvid_video_counter(id, event) {
 			jQuery('#video_'+id+'_div').data("played", "played");
 		}
 		if (typeof ga != "undefined") { ga("send", "event", "Videos", kgvidL10n_frontend.playstart, title); }
+		else if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", kgvidL10n_frontend.playstart, title); } // Yoast renamed ga function
 		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", kgvidL10n_frontend.playstart, title]); }
 
 	}
@@ -784,6 +785,7 @@ function kgvid_video_counter(id, event) {
 		}
 
 		if (typeof ga != "undefined") { ga("send", "event", "Videos", event+"%", title); }
+		else if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", event+"%", title); } // Yoast renamed ga function
 		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", event+"%", title]); }
 
 	}
@@ -795,6 +797,7 @@ function kgvid_video_counter(id, event) {
 		}
 
 		if (typeof ga != "undefined") { ga("send", "event", "Videos", kgvidL10n_frontend.completeview, title); }
+		if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", kgvidL10n_frontend.completeview, title); } // Yoast renamed ga function
 		else if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', kgvidL10n_frontend.completeview, title]); }
 
 	}
