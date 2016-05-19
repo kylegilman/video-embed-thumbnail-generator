@@ -220,6 +220,7 @@ img.kgvid_ios_novideo {
 .kgvid_share_icons input[type="text"] {
     font-family: sans-serif !important;
     font-size: 10pt !important;
+    line-height: 1.2 !important;
     color: white !important;
     width: 50% !important;
     background: #ABACA8 !important;

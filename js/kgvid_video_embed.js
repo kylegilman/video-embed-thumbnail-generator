@@ -639,7 +639,10 @@ function kgvid_resize_video(id) {
 			}
 
 			if ( video_vars.player_type == "WordPressDefault" ) {
-				if ( typeof mejs !== 'undefined' ) { player = eval('mejs.players.'+jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').attr('id')); }
+				if ( typeof mejs !== 'undefined' ) {
+					jQuery('#kgvid_'+id+'_wrapper').find('.wp-video').attr('style', 'width:'+set_width+'px;');
+					player = eval('mejs.players.'+jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').attr('id'));
+				}
 			}
 
 			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null )
