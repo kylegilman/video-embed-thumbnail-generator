@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.6.5
+Stable tag: 4.6.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -238,9 +238,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6.6 - May 19, 2016 =
 * Added support for Yoast's custom Universal Google Analytics variable name.
-* Modified resizing method for WordPress default player container again.
+* Modified resizing method for WordPress Default player container again.
 * Updated WordPress Default player's fullscreen resolution calculation to match Video.js change made in v4.6.3
-* Added filter to modify FFMPEG-generated thumbnails.
+* Added filter hook to modify FFMPEG-generated thumbnail options.
 * Increased WordPress Default play button z-index.
 
 = 4.6.5 - May 13, 2016 =
