@@ -24,6 +24,7 @@ jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress 
 		}
 
 		videojs('video_'+video_vars.id, videojs_options ).ready(function(){ kgvid_setup_video(video_vars.id); });
+
 	}
 });
 
@@ -436,7 +437,6 @@ function kgvid_setup_video(id) {
 			jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
 
 			if ( played == "not played" ) { //only turn on the default captions on first load
-
 
 				jQuery.each(mejs_player.tracks, function(key, item) {
 					if ( item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang') ) {

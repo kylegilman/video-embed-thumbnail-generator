@@ -268,18 +268,6 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 	// Make sure we have at least 2 available resolutions before we add the button
 	if ( available_res.length < 2 ) { return; }
 
-	// Loop through the choosen default resolutions if there were any
-	for ( i = 0; i < default_resolutions.length; i++ ) {
-
-		// Set the video to start out with the first available default res
-		if ( available_res[default_resolutions[i]] ) {
-
-			player.src( available_res[default_resolutions[i]] );
-			player.currentRes = default_resolutions[i];
-			break;
-		}
-	}
-
 	/*******************************************************************
 	 * Add methods to player object
 	 *******************************************************************/
@@ -417,5 +405,16 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 	this.on( 'ready' , function() {
 		player.controlBar.addChild( resolutionSelector );
 		player.controlBar.el().insertBefore(jQuery(player.controlBar.el()).find('.vjs-res-button')[0], player.controlBar.customControlSpacer.el());
+
+		// Loop through the choosen default resolutions if there were any
+		for ( i = 0; i < default_resolutions.length; i++ ) {
+
+			// Set the video to start out with the first available default res
+			if ( available_res[default_resolutions[i]] ) {
+				player.changeRes(default_resolutions[i]);
+				break;
+			}
+		}
+
 	} );
 });
