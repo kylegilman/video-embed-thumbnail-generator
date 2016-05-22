@@ -236,7 +236,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.6 - May 19, 2016 =
+= 4.6.6 - May 21, 2016 =
 * Added support for Yoast's custom Universal Google Analytics variable name.
 * Modified resizing method for WordPress Default player container again.
 * Updated WordPress Default player's fullscreen resolution calculation to match Video.js change made in v4.6.3
