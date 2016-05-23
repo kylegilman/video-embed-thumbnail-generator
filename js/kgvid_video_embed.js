@@ -1,14 +1,58 @@
 kgvid_video_vars = {};
 
+function getJsonFromUrl() {
+
+	var query = location.search.substr(1);
+	var result = {};
+	query.split("&").forEach(function(part) {
+	if(!part) return;
+	part = part.split("+").join(" "); // replace every + with space, regexp-free version
+	var eq = part.indexOf("=");
+	var key = eq>-1 ? part.substr(0,eq) : part;
+	var val = eq>-1 ? decodeURIComponent(part.substr(eq+1)) : "";
+	var from = key.indexOf("[");
+	if(from==-1) result[decodeURIComponent(key)] = val;
+	else {
+	  var to = key.indexOf("]");
+	  var index = decodeURIComponent(key.substring(from+1,to));
+	  key = decodeURIComponent(key.substring(0,from));
+	  if(!result[key]) result[key] = {};
+	  if(!index) result[key].push(val);
+	  else result[key][index] = val;
+	}
+	});
+
+	return result;
+
+}
+
 jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
 
-	var video_vars = jQuery(this).data('kgvid_video_vars');
+	var current_video = jQuery(this);
+	var video_vars = current_video.data('kgvid_video_vars');
+
+	var query_string = getJsonFromUrl();
+	if ( query_string.kgvid_video_embed !== undefined ) {
+
+		var allowed_vars = [ 'auto_res', 'autoplay', 'default_res', 'fullwidth', 'height', 'mute', 'nativecontrolsfortouch', 'pixel_ratio', 'resize', 'set_volume', 'start', 'width' ];
+
+		jQuery.each(query_string.kgvid_video_embed, function(key, value){
+			if ( allowed_vars.indexOf(key) >= 0 ) {
+				video_vars[key] = value;
+			}
+		});
+
+		current_video.data('kgvid_video_vars', video_vars);
+	}
 
 	if ( video_vars.player_type == "Video.js" ) {
 
 		var videojs_options = { "html5": { "nativeTextTracks" : false }, "language": video_vars.locale };
 		if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
 			videojs_options.fluid = true;
+		}
+		else {
+			videojs_options.fluid = false;
 		}
 		if ( video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {
 			videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
@@ -69,6 +113,20 @@ function kgvid_window_load() {
 function kgvid_mejs_success(mediaElement, domObject) {
 	var id = jQuery(domObject).parents('.kgvid_videodiv').data('id');
 	kgvid_setup_video(id);
+}
+
+function kgvid_convert_from_timecode(timecode) {
+
+	var timecode_array = timecode.split(":");
+	timecode_array = timecode_array.reverse();
+	if ( timecode_array[1] ) { timecode_array[1] = timecode_array[1] * 60; }
+	if ( timecode_array[2] ) { timecode_array[2] = timecode_array[2] * 3600; }
+	var thumbtimecode = 0;
+	jQuery.each(timecode_array,function() {
+		thumbtimecode += parseFloat(this);
+	});
+	return thumbtimecode;
+
 }
 
 function kgvid_SetVideo(id) { //for galleries
@@ -309,11 +367,20 @@ function kgvid_setup_video(id) {
 
 			var text_tracks = player.textTracks();
 			var track_elements = player.options_.tracks;
+			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
-			if ( track_elements != null ) {
-				jQuery(text_tracks).each(function(index, track) {
-					if ( track_elements[index].default == true && track.mode != 'showing' ) { player.textTracks()[index].mode = 'showing'; }
-				});
+			if ( played == "not played" ) { //only turn on the default captions on first load
+
+				if ( track_elements != null ) {
+					jQuery(text_tracks).each(function(index, track) {
+						if ( track_elements[index].default == true && track.mode != 'showing' ) { player.textTracks()[index].mode = 'showing'; }
+					});
+				}
+
+				if ( video_vars.start != '' ) {
+					player.currentTime(kgvid_convert_from_timecode(video_vars.start));
+				}
+
 			}
 
 			if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
@@ -329,6 +396,7 @@ function kgvid_setup_video(id) {
 			}
 			if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+' > .vjs-control-bar').removeClass('vjs-fade-in'); }
 			if ( video_vars.endofvideooverlay != "" ) { jQuery('#video_'+id+' > .vjs-poster').hide(); }
+
 			kgvid_video_counter(id, 'play');
 
 			player.on('timeupdate', function(){
@@ -444,6 +512,10 @@ function kgvid_setup_video(id) {
 						jQuery('#'+mejs_id+' .mejs-captions-selector input[value="en"]').prop('checked',true);
 					}
 				});
+
+				if ( video_vars.start != '' ) {
+					player[0].setCurrentTime(kgvid_convert_from_timecode(video_vars.start));
+				}
 
 			}
 

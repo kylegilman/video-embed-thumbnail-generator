@@ -2322,6 +2322,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			'height' => $query_atts['height'],
 			'fullwidth' => $query_atts['fullwidth'],
 			'countable' => $countable,
+			'start' => $query_atts['start'],
 			'autoplay' => $query_atts['autoplay'],
 			'set_volume' => $query_atts['volume'],
 			'mute' => $query_atts['mute'],
@@ -2802,6 +2803,7 @@ function kgvid_shortcode_atts($atts) {
 		'controlbar' => $options['controlbar_style'],
 		'autohide' => $options['autohide'],
 		'poster' => $options['poster'],
+		'start' => '',
 		'watermark' => $options['watermark'],
 		'watermark_link_to' => $options['watermark_link_to'],
 		'watermark_url' => $options['watermark_url'],
@@ -6366,8 +6368,13 @@ function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 	if ( !empty($dimensions['height']) ) { $shortcode .= ' height="'.$dimensions['height'].'"'; }
 	if ( is_array($kgvid_video_embed) && array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true' )  { $shortcode .= ' fullwidth="true"'; }
 	if ( $kgvid_postmeta['downloadlink'] == "on" ) { $shortcode .= ' downloadlink="true"'; }
-	if (is_array($kgvid_video_embed) && array_key_exists('gallery', $kgvid_video_embed)) { $shortcode .= ' autoplay="true"'; }
-	if (is_array($kgvid_video_embed) && array_key_exists('sample', $kgvid_video_embed)) {
+	if ( is_array($kgvid_video_embed) && array_key_exists('start', $kgvid_video_embed) ) {
+		$shortcode .= ' start="'.$kgvid_video_embed['start'].'"';
+	}
+	if ( is_array($kgvid_video_embed) && array_key_exists('gallery', $kgvid_video_embed) ) {
+		$shortcode .= ' autoplay="true"';
+	}
+	if ( is_array($kgvid_video_embed) && array_key_exists('sample', $kgvid_video_embed) ) {
 		if ( $options['overlay_title'] == "on" ) { $shortcode .= ' title="'._x('Sample Video', 'example video', 'video-embed-thumbnail-generator').'"'; }
 		if ( $options['overlay_embedcode'] == "on" ) { $shortcode .= ' embedcode="'.__('Sample Embed Code', 'video-embed-thumbnail-generator').'"'; }
 		$shortcode .= ' caption="'.__('If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator').'"';
@@ -8259,6 +8266,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>controlbar="docked/floating/none"</code> '.__('sets the controlbar position. "Floating" option only works with Strobe Media Playback.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
+<li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
 <li><code>watermark="http://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>watermark_link_to=home/parent/attachment/download/false"</code></li>
 <li><code>watermark_url="http://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>

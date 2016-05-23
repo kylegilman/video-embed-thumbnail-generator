@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.6.6
+Stable tag: 4.6.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
 * `autoplay="true/false"`
+* `start="mm:ss"` video will start playing at this timecode.
 * `watermark="http://www.example.com/image.png"` or `"false"` to disable.
 * `watermark_link_to=home/parent/attachment/download/false"`
 * `watermark_url="http://www.example.com/"` or `"false"` to disable. If this is set, it will override the `watermark_link_to` setting.
@@ -235,6 +236,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.7 - May 23, 2016 =
+* Added a system to change video playback settings via URL query strings.
+* Added "start" shortcode attribute to start videos at a particular timecode.
+* Fixed bug that set Video.js players to the highest resolution no matter what was set as the default.
 
 = 4.6.6 - May 21, 2016 =
 * Added support for Yoast's custom Universal Google Analytics variable name.
