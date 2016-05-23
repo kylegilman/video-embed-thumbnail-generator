@@ -2687,7 +2687,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					else { $iframeurl = $query_atts['embedcode']; }
 					$iframecode = "<iframe allowfullscreen src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
 					$iframecode = apply_filters('kgvid_embedcode', $iframecode, $iframeurl, $id, $query_atts);
-					$embed_code .= "<span class='dashicons dashicons-editor-code'></span><span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><input type='text' value='".esc_attr($iframecode)."' onClick='this.select();'></span>";
+					$embed_code .= "<span class='dashicons dashicons-editor-code'></span><span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><input class='kgvid_embedcode' type='text' value='".esc_attr($iframecode)."' onClick='this.select();'></span> <span class='kgvid_start_time'><input type='checkbox' class='kgvid_start_at_enable' onclick='kgvid_set_start_at(\"".$div_suffix."\")'> ".__('Start at:', 'video-embed-thumbnail-generator')." <input type='text' class='kgvid_start_at' onkeyup='kgvid_change_start_at(\"".$div_suffix."\")'></span>";
 				} //embed code
 
 				if ( $options['twitter_button'] == 'on' || $options['facebook_button'] == 'on' ) {
@@ -2698,13 +2698,13 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					else { $permalink = $content; }
 
 					if ( $options['twitter_button'] == 'on' ) {
-						$embed_code .= "<a href='https://twitter.com/share?text=".urlencode($query_atts['title'])."&url=".urlencode($permalink);
+						$embed_code .= "<a title='".__('Share on Twitter', 'video-embed-thumbnail-generator')."' href='https://twitter.com/share?text=".urlencode($query_atts['title'])."&url=".urlencode($permalink);
 						if ( !empty($options['twitter_username']) ) { $embed_code .= "&via=".urlencode($options['twitter_username']); }
 						$embed_code .= "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='dashicons dashicons-twitter'></span></a>";
 					}
 
 					if ( $options['facebook_button'] == 'on' ) {
-						$embed_code .= "&nbsp;<a href='https://www.facebook.com/sharer/sharer.php?u=".urlencode($permalink)."' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='kgvid_facebook_icon_holder'><span class='dashicons dashicons-facebook'></span></span></a>";
+						$embed_code .= "&nbsp;<a title='".__('Share on Facebook', 'video-embed-thumbnail-generator')."' href='https://www.facebook.com/sharer/sharer.php?u=".urlencode($permalink)."' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='kgvid_facebook_icon_holder'><span class='dashicons dashicons-facebook'></span></span></a>";
 					}
 
 					$embed_code .= "</div>";

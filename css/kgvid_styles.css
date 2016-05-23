@@ -221,13 +221,20 @@ img.kgvid_ios_novideo {
     font-family: sans-serif !important;
     font-size: 10pt !important;
     line-height: 1.2 !important;
-    color: white !important;
-    width: 50% !important;
-    background: #ABACA8 !important;
+    color: #999 !important;
+    background: #EEE !important;
     padding: 4px !important;
     border-radius: 6px !important;
     border: none !important;
     display: inline-block !important;
+}
+
+input[type="text"].kgvid_embedcode {
+    width: 30% !important;
+}
+
+input[type="text"].kgvid_start_at {
+    width: 8%; !important;
 }
 
 .kgvid_share_icons .kgvid_social_icons {

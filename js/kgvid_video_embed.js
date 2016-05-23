@@ -115,6 +115,17 @@ function kgvid_mejs_success(mediaElement, domObject) {
 	kgvid_setup_video(id);
 }
 
+function kgvid_convert_to_timecode(time) {
+
+	var minutes = Math.floor(time / 60);
+	var seconds = Math.round((time - (minutes * 60))*100)/100;
+	if (minutes < 10) {minutes = "0"+minutes;}
+	if (seconds < 10) {seconds = "0"+seconds;}
+	var time_display = minutes+':'+seconds;
+	return time_display;
+
+}
+
 function kgvid_convert_from_timecode(timecode) {
 
 	var timecode_array = timecode.split(":");
@@ -992,5 +1003,48 @@ function kgvid_share_icon_click(id) {
 	else { kgvid_add_hover(id); }
 
 	jQuery('#video_'+id+'_embed, #click_trap_'+id).slideToggle();
+
+}
+
+function kgvid_set_start_at(id) {
+
+	var video_vars = jQuery('#video_'+id+'_div').data('kgvid_video_vars');
+
+	if ( jQuery('#video_'+id+'_embed .kgvid_start_at_enable').prop('checked') ) {
+
+		if ( video_vars.player_type == "Video.js" ) {
+			var current_time = videojs('video_'+id).currentTime();
+		}
+		else if ( video_vars.player_type == "WordPressDefault" ) {
+			var current_time = jQuery('#video_'+id+'_div video')[0].getCurrentTime();
+		}
+
+		jQuery('#video_'+id+'_embed .kgvid_start_at').val(kgvid_convert_to_timecode(Math.floor(current_time)));
+
+	}
+
+	kgvid_change_start_at(id);
+
+}
+
+function kgvid_change_start_at(id) {
+
+	var embed_code = jQuery('#video_'+id+'_embed .kgvid_embedcode').val();
+	parsed_embed_code = jQuery.parseHTML(embed_code);
+	var old_src = jQuery(parsed_embed_code).attr('src');
+
+	if ( old_src.indexOf('&kgvid_video_embed[start]=') !== -1 ) { //start value exists
+		var src_array = old_src.split('&');
+		old_src = src_array[0] + '&' + src_array[1];
+	}
+
+	if ( jQuery('#video_'+id+'_embed .kgvid_start_at_enable').prop('checked') ) {
+		var new_src = old_src + '&kgvid_video_embed[start]='+jQuery('#video_'+id+'_embed .kgvid_start_at').val();
+	}
+	else {
+		var new_src = old_src;
+	}
+
+	jQuery('#video_'+id+'_embed .kgvid_embedcode').val("<iframe allowfullscreen src='"+new_src+"' frameborder='0' scrolling='no' width='640' height='360'></iframe>");
 
 }
