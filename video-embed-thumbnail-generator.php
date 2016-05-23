@@ -1992,9 +1992,8 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			if (!$thumbnail_url) { $thumbnail_url = $options['poster']; } //use the default poster if no thumbnail set
 			if (!$thumbnail_url) { $thumbnail_url = plugins_url('/images/nothumbnail.jpg', __FILE__);} //use the blank image if no other option
 
-			if ( empty($query_atts['caption']) ) { $query_atts['caption'] = $attachment->post_excerpt; }
 			$below_video = 0;
-			if ( !empty($query_atts['caption']) || $query_atts['view_count'] == "true" ) { $below_video = 1; }
+			if ( !empty($attachment->post_excerpt) || $query_atts['view_count'] == "true" ) { $below_video = 1; }
 
 			$kgvid_postmeta = kgvid_get_attachment_meta( $attachment->ID );
 
@@ -2930,7 +2929,6 @@ function KGVID_shortcode($atts, $content = ''){
 				'gallery_include',
 				'gallery_exclude',
 				'gallery_thumb',
-				'caption',
 				'view_count',
 				'gallery_end',
 				'gallery_per_page',
@@ -4063,6 +4061,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 
 		$players["Strobe Media Playback ".__('(deprecated)', 'video-embed-thumbnail-generator')] = "Strobe Media Playback";
+
+		$players = apply_filters('kgvid_available_video_players', $players);
 
 		echo "<table class='form-table'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>".__('Video player:', 'video-embed-thumbnail-generator')."</label></th><td><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='embed_method' name='kgvid_video_embed_options[embed_method]'>";
 		foreach($players as $name => $value) {

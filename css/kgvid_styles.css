@@ -341,8 +341,18 @@ span.kgvid_facebook_icon_holder {
 /* SimpleModal styles */
 #kgvid-simplemodal-overlay {background-color:#000;}
 
-#kgvid-simplemodal-container { color:black; background-color:#000; height:auto; }
-#kgvid-simplemodal-container .simplemodal-data {margin-top:-1em; padding:5px;}
+#kgvid-simplemodal-container {
+	color:black;
+	background-color:#000;
+	height:auto;
+	transform: translateY(10px);
+}
+
+#kgvid-simplemodal-container .simplemodal-data {
+	margin-top:-1em;
+	padding:5px;
+}
+
 #kgvid-simplemodal-container a.modalCloseImg {
     display: inline;
     box-sizing: border-box;

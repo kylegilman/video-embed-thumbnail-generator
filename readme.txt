@@ -1,18 +1,18 @@
 === Video Embed & Thumbnail Generator ===
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
-Tags: video, video player, video gallery, video thumbnail, ffmpeg
+Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.5
 Stable tag: 4.6.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Generates thumbnails, encodes HTML5-compliant videos, and embeds locally hosted videos. Requires FFMPEG or LIBAV for encoding.
+Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
 
 == Description ==
 
-= A plugin to make embedding videos, generating thumbnails, and encoding HTML5-compatible files a little bit easier. =
+= A plugin to make embedding videos, generating thumbnails, and encoding files easier. =
 
 Still 100% free, but some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
 
@@ -25,7 +25,7 @@ You have the option to use a few different video players:
 * JW Player 6 (if their old, discontinued plugin is already installed. This plugin does not work with JW Player 7 yet.)
 * Adobe's Strobe Media Playback Flash player (deprecated)
 
-No matter which player you use, the video will responsively resize to fit the container it's in. There is no need to use FitVids.js and in fact FitVids.js will break playback for some players. If you provide multiple H.264 resolutions, the plugin can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If you have Google Analytics set up on your site, the plugin will automatically send Google Analytics Events when users start, reach 25%, 50%, 75%, and complete watching your videos.
+No matter which player you use, the video will responsively resize to fit the container it's in. If you provide multiple H.264 resolutions, the plugin can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If you have Google Analytics set up on your site, the plugin will automatically send Google Analytics Events when users start, reach 25%, 50%, 75%, and complete watching your videos.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the WordPress image gallery shortcode. In its simplest form use the code `[KGVID gallery="true"]` to create a gallery of all videos attached to the post. Thumbnail size and video popup size can be set on the plugin settings page or in the shortcode. To make a custom gallery that includes videos that aren't attached to the current post you'll need to determine the video's ID, which is shown under the Video Stats section when viewing the attachment. Switch the "insert" option from "Single Video" to "Video Gallery" and you'll get a number of additional options (all of which are optional). Add a comma-separated list of video IDs in the "Include" field to create a gallery manually. Note: the "Create Gallery" section of the Add Media window is a built-in WordPress function and is only for making image galleries.
 
@@ -149,6 +149,13 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `gallery_per_page="xx"` or `"false"` to disable pagination. Number of video thumbnails to show on each gallery page.
 * `gallery_title="true/false"` display the title overlay on gallery thumbnails.
 
+= These options can be added to the URL to further customize playback =
+
+Using the `kgvid_video_embed` query string any of the following options will modify playback: `auto_res, autoplay, default_res, fullwidth, height, mute, nativecontrolsfortouch, pixel_ratio, resize, set_volume, start, width`
+
+Example: `https://www.kylegilman.net/portfolio-item/bronx-warrants-pilot/?kgvid_video_embed[start]=29&kgvid_video_embed[autoplay]=true` autoplays the embedded video and starts 29 seconds in.
+
+
 == Installation ==
 
 1. Upload the unzipped folder `video-embed-thumbnail-generator` to the `/wp-content/plugins/` directory.
@@ -238,9 +245,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.7 - May 23, 2016 =
+* Fixed bug that set Video.js players to the highest resolution no matter what was set as the default.
 * Added a system to change video playback settings via URL query strings.
 * Added "start" shortcode attribute to start videos at a particular timecode.
-* Fixed bug that set Video.js players to the highest resolution no matter what was set as the default.
+* Added left/right arrow navigation through video galleries.
+* Changed resizing method when responsive video is disabled.
+* Delayed autoplay command until metadata is loaded in Video.js player.
+* Fixed bug that re-enabled default subtitles in the Video.js player every time play restarted.
+* Fixed bug that left room for captions on all gallery videos if the first video had a caption.
 
 = 4.6.6 - May 21, 2016 =
 * Added support for Yoast's custom Universal Google Analytics variable name.
