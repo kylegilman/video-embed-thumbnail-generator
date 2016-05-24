@@ -1,49 +1,8 @@
 kgvid_video_vars = {};
 
-function getJsonFromUrl() {
-
-	var query = location.search.substr(1);
-	var result = {};
-	query.split("&").forEach(function(part) {
-	if(!part) return;
-	part = part.split("+").join(" "); // replace every + with space, regexp-free version
-	var eq = part.indexOf("=");
-	var key = eq>-1 ? part.substr(0,eq) : part;
-	var val = eq>-1 ? decodeURIComponent(part.substr(eq+1)) : "";
-	var from = key.indexOf("[");
-	if(from==-1) result[decodeURIComponent(key)] = val;
-	else {
-	  var to = key.indexOf("]");
-	  var index = decodeURIComponent(key.substring(from+1,to));
-	  key = decodeURIComponent(key.substring(0,from));
-	  if(!result[key]) result[key] = {};
-	  if(!index) result[key].push(val);
-	  else result[key][index] = val;
-	}
-	});
-
-	return result;
-
-}
-
 jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
 
-	var current_video = jQuery(this);
-	var video_vars = current_video.data('kgvid_video_vars');
-
-	var query_string = getJsonFromUrl();
-	if ( query_string.kgvid_video_embed !== undefined ) {
-
-		var allowed_vars = [ 'auto_res', 'autoplay', 'default_res', 'fullwidth', 'height', 'mute', 'nativecontrolsfortouch', 'pixel_ratio', 'resize', 'set_volume', 'start', 'width' ];
-
-		jQuery.each(query_string.kgvid_video_embed, function(key, value){
-			if ( allowed_vars.indexOf(key) >= 0 ) {
-				video_vars[key] = value;
-			}
-		});
-
-		current_video.data('kgvid_video_vars', video_vars);
-	}
+	var video_vars = jQuery(this).data('kgvid_video_vars');
 
 	if ( video_vars.player_type == "Video.js" ) {
 

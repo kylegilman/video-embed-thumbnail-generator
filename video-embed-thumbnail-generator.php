@@ -2864,6 +2864,35 @@ function kgvid_shortcode_atts($atts) {
 
 	$query_atts = shortcode_atts($default_atts, $atts, 'KGVID');
 
+	$kgvid_video_embed_query_var = get_query_var('kgvid_video_embed'); //variables in URL
+
+	if ( !empty($kgvid_video_embed_query_var) ) {
+
+		$allowed_query_var_atts = array( //attributes that can be changed via URL
+			'auto_res',
+			'autoplay',
+			'default_res',
+			'fullwidth',
+			'height',
+			'mute',
+			'nativecontrolsfortouch',
+			'pixel_ratio',
+			'resize',
+			'set_volume',
+			'start',
+			'width'
+		);
+
+		$allowed_query_var_atts = apply_filters('kgvid_allowed_query_var_atts', $allowed_query_var_atts);
+
+		foreach ( $kgvid_video_embed_query_var as $key => $value ) {
+			if ( in_array($key, $allowed_query_var_atts) ) {
+				$query_atts[$key] = $value;
+			}
+		}
+
+	}
+
 	$checkbox_convert = array (
 		"autohide",
 		"endofvideooverlaysame",
