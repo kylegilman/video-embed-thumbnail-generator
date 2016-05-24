@@ -631,7 +631,7 @@ function kgvid_setup_video(id) {
 		jQuery(window).resize( function(){ kgvid_resize_video(id) } );
 	}
 
-	if ( typeof jQuery.modal !== "undefined" ) { jQuery.modal.setPosition(); }
+	if ( typeof jQuery.modal !== "undefined" && jQuery('#kgvid-simplemodal-container').length > 0 ) { jQuery.modal.setPosition(); }
 
 }
 
