@@ -244,15 +244,16 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.7 - May 23, 2016 =
+= 4.6.7 - May 25, 2016 =
 * Fixed bug that set Video.js players to the highest resolution no matter what was set as the default.
 * Added a system to change video playback settings via URL query strings.
-* Added "start" shortcode attribute to start videos at a particular timecode and an option to set the start time in the embed code generator.
+* Added "start" shortcode attribute to start videos at a particular timecode and an option to set the start time in the embed code overlay.
 * Added left/right arrow navigation through video galleries.
 * Changed resizing method when responsive video is disabled.
 * Delayed autoplay command until metadata is loaded in Video.js player.
 * Fixed bug that re-enabled default subtitles in the Video.js player every time play restarted.
 * Fixed bug that left room for captions on all gallery videos if the first video had a caption.
+* Fixed bug that incorrectly resized pop-up gallery window for vertical videos.
 
 = 4.6.6 - May 21, 2016 =
 * Added support for Yoast's custom Universal Google Analytics variable name.
