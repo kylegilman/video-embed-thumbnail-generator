@@ -244,7 +244,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.7 - May 25, 2016 =
+= 4.6.7 - May 26, 2016 =
+* Updated Video.js to version 5.10.2
 * Fixed bug that set Video.js players to the highest resolution no matter what was set as the default.
 * Added a system to change video playback settings via URL query strings.
 * Added "start" shortcode attribute to start videos at a particular timecode and an option to set the start time in the embed code overlay.
