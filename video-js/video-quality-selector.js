@@ -140,7 +140,7 @@ videojs.ResolutionSelector.prototype.createItems = function() {
 		el : videojs.getComponent( 'Component' ).prototype.createEl( 'li', {
 
 			className	: 'vjs-menu-title vjs-res-menu-title',
-			innerHTML	: player.localize( 'Quality' )
+			innerHTML	: kgvidL10n_frontend.quality
 		})
 	}));
 

@@ -5526,7 +5526,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		if ( $post->post_mime_type != 'image/gif' ) {
 			$form_fields["views"]["label"] = __('Video Stats', 'video-embed-thumbnail-generator');
 			$form_fields["views"]["input"] = "html";
-			$form_fields["views"]["html"] = sprintf( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['starts']), '</strong>' ).'<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats('.$post->ID.')" id="show-video-stats-'.$post->ID.'"><br /><a class="kgvid-show-video">'.__('(More...)', 'video-embed-thumbnail-generator').'</a></span><div style="display:none;" id="video-'.$post->ID.'-stats">'.
+			$form_fields["views"]["html"] = sprintf( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['starts']), '</strong>' ).'<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats('.$post->ID.')" id="show-video-stats-'.$post->ID.'"><br /><a class="kgvid-show-video">('.__('More...', 'video-embed-thumbnail-generator').')</a></span><div style="display:none;" id="video-'.$post->ID.'-stats">'.
 			intval($kgvid_postmeta['play_25']).' '.__('25%', 'video-embed-thumbnail-generator').
 			'<br /><strong>'.intval($kgvid_postmeta['play_50']).'</strong> '.__('50%', 'video-embed-thumbnail-generator').
 			'<br /><strong>'.intval($kgvid_postmeta['play_75']).'</strong> '.__('75%', 'video-embed-thumbnail-generator').
