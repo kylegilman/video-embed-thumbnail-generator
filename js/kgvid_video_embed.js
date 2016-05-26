@@ -233,11 +233,6 @@ function kgvid_SetVideo(id) { //for galleries
 					jQuery.modal.setPosition();
 				}
 
-				if ( video_vars.player_type == "Video.js" ) {
-					videojs('video_'+id).load();
-					videojs('video_'+id).play();
-				}//end if Video.js
-
 				if ( video_vars.player_type == "WordPressDefault" ) {
 					jQuery('#kgvid_'+id+'_wrapper video').mediaelementplayer({
 						success: function(mediaElement, domObject) {

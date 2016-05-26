@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.6.7
+Stable tag: 4.6.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -151,7 +151,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 
 = These options can be added to the URL to further customize playback =
 
-Using the `kgvid_video_embed` query string any of the following options will modify playback: `auto_res, autoplay, default_res, fullwidth, height, mute, nativecontrolsfortouch, pixel_ratio, resize, set_volume, start, width`
+Using the `kgvid_video_embed` query string any of the following options will modify playback: auto_res, autoplay, default_res, fullwidth, height, mute, nativecontrolsfortouch, pixel_ratio, resize, set_volume, start, width
 
 Example: `https://www.kylegilman.net/portfolio-item/bronx-warrants-pilot/?kgvid_video_embed[start]=29&kgvid_video_embed[autoplay]=true` autoplays the embedded video and starts 29 seconds in.
 
@@ -243,6 +243,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.8 - May 27, 2016 =
+* Fixed bug that didn't record Video.js pop-up video gallery views.
 
 = 4.6.7 - May 26, 2016 =
 * Updated Video.js to version 5.10.2
