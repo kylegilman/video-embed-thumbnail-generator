@@ -687,7 +687,7 @@ function kgvid_resize_video(id) {
 						}
 					}
 				}
-				else { jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').removeAttr('style'); }
+				else { jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').css('transform', ''); }
 			}
 
 			if ( video_vars.player_type == "StrobeMediaPlayback" ) {

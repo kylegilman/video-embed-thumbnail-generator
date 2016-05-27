@@ -233,6 +233,10 @@ input[type="text"].kgvid_embedcode {
     width: 30% !important;
 }
 
+span.kgvid_start_time {
+	margin-left: 15px;
+}
+
 input[type="text"].kgvid_start_at {
     width: 8%; !important;
 }

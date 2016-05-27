@@ -246,6 +246,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6.8 - May 27, 2016 =
 * Fixed bug that didn't record Video.js pop-up video gallery views.
+* Tweaked embed code overlay styles.
 
 = 4.6.7 - May 26, 2016 =
 * Updated Video.js to version 5.10.2
