@@ -306,6 +306,7 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 
 		var video_el = player.el().firstChild,
 			is_paused = player.paused(),
+			is_autoplay = player.autoplay(),
 			current_time = player.currentTime(),
 			button_nodes,
 			button_node_count;
@@ -317,6 +318,8 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 
 		// Make sure the loadedmetadata event will fire
 		if ( 'none' == video_el.preload ) { video_el.preload = 'metadata'; }
+
+		if ( is_autoplay ) { player.autoplay(false); }
 
 		if ( current_time != 0 ) {
 
@@ -350,6 +353,9 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 					player.addClass( 'vjs-has-started' );
 
 					if ( ! is_paused ) { player.play(); }
+
+					if ( is_autoplay ) { player.autoplay(true); }
+
 				}
 
 			})
