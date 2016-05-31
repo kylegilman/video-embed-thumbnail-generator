@@ -246,6 +246,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6.8 - May 27, 2016 =
 * Fixed bug that didn't record Video.js pop-up video gallery views.
+* Fixed bug that doubled non-H.264 video source tags.
+* Fixed bug that prevented encoding 1080p and 720p H.264 videos if original video is not H.264 and has the same resolution.
 * Tweaked embed code overlay styles.
 
 = 4.6.7 - May 26, 2016 =

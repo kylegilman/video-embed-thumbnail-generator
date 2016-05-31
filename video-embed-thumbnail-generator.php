@@ -2342,7 +2342,9 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$h264_resolutions = array();
 
 			foreach ($video_formats as $format => $format_stats) {
-				if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
+				if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) {
+					continue; //don't double up on non-H.264 video sources
+				}
 				if ( $encodevideo_info[$format]["exists"] ) {
 
 					if ( array_key_exists('height', $encodevideo_info[$format]) && $format_stats['type'] == 'h264' ) {
@@ -6790,6 +6792,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 	$post_type = get_post_type($postID);
 	if ( $post_type == "attachment" ) { $filepath = get_attached_file($postID); }
 	else { $filepath = $movieurl; }
+	$mime_type_check = wp_check_filetype($filepath);
 	$movie_info = kgvid_get_video_dimensions($filepath);
 
 	if ($movie_info['worked'] == true) { //if FFMPEG was able to open the file
@@ -6812,7 +6815,12 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 		foreach ( $video_formats as $format => $format_stats ) {
 			if ( array_key_exists($format, $encode_checked) && $encode_checked[$format] == "true" ) {
 				if ( !$encodevideo_info[$format]['exists'] ) {
-					if ( ($format == "1080" && $movie_height <= 1080) || ($format == "720" && $movie_height <= 720) ) {
+					if ( ($format == "1080" || $format == "720") &&
+						(
+							( strpos($mime_type_check['type'], "mp4") !== false && $movie_height <= $format_stats['height'] ) ||
+							( strpos($mime_type_check['type'], "mp4") === false && $movie_height < $format_stats['height'] )
+						)
+					) {
 						$movie_extension = pathinfo($movieurl, PATHINFO_EXTENSION);
 						if ( $encode_checked['fullres'] == "true" || in_array($movie_extension, $h264extensions) || $movie_height < intval($format) ) {
 							$encode_formats[$format]['status'] = "lowres";
@@ -7726,9 +7734,8 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 
 		$keep = array();
 		$cleared_video_queue = array();
-
 		foreach ( $video_encode_queue as $video_key => $queue_entry ) {
-			if ( !empty($queue_entry['encode_formats']) ) {
+			if ( !is_array($queue_entry['encode_formats']) ) {
 				foreach ( $queue_entry['encode_formats'] as $format => $value ) {
 					if ( $value['status'] == "encoding" ) { //if it's not completed yet
 						if ( $type != "all" ) { $keep[$video_key] = true; }
