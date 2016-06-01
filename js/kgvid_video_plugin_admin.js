@@ -142,6 +142,7 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		  else {
 			// Pause the video
 			video.pause();
+			video.playbackRate = 1;
 		  }
 		});
 
@@ -198,6 +199,62 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		   video.currentTime = maxduration * percentage / 100;
 		};
 
+		jQuery(video).on('loadedmetadata', function() {
+			video.currentTime = kgvid_convert_from_timecode(jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val());
+		});
+
+		jQuery('.kgvid-video-controls').on('keydown.kgvid', function(e) {
+
+			e.stopImmediatePropagation();
+
+			switch(e.which) {
+				case 32: // spacebar
+				playButton.click();
+				break;
+
+				case 37: // left
+				video.pause();
+				video.currentTime = video.currentTime - 0.042;
+				break;
+
+				case 39: // right
+				video.pause();
+				video.currentTime = video.currentTime + 0.042;
+				break;
+
+				case 74: //j
+				if ( video.paused == false ) {
+					video.playbackRate = video.playbackRate - 1;
+				}
+				if ( video.playbackRate >= 0 ) { video.playbackRate = -1; }
+				video.play();
+				break;
+
+				case 75: // k
+				if ( video.paused == false ) { playButton.click(); }
+				break;
+
+				case 76: //l
+				if ( video.paused == false ) {
+					video.playbackRate = video.playbackRate + 1;
+				}
+				if ( video.playbackRate <= 0 ) { video.playbackRate = 1; }
+				video.play();
+				break;
+
+				default: return; // exit this handler for other keys
+			}
+			e.preventDefault(); // prevent the default action (scroll / move caret)
+		});
+
+		jQuery(video).click( function(e){
+			e.stopImmediatePropagation();
+			playButton.click();
+			jQuery('.kgvid-video-controls').focus();
+		});
+
+		jQuery('.kgvid-video-controls').focus();
+
 		jQuery(video).data('setup', true);
 		if ( jQuery(video).data('busy') != true ) { kgvid_break_video_on_close(postID); }
 	}
@@ -244,7 +301,7 @@ function kgvid_reveal_thumb_video(postID) {
 
 			if ( video.networkState == 1 || video.networkState == 2 ) {
 				text.html(kgvidL10n.hidevideo);
-				jQuery('#attachments-'+postID+'-thumbnailplaceholder').empty();
+				jQuery('#attachments-'+postID+'-thumbnailplaceholder').slideUp();
 				jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
 					if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
 					   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
@@ -262,6 +319,10 @@ function kgvid_reveal_thumb_video(postID) {
 		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
 		kgvid_break_video_on_close(postID);
 		text.html(kgvidL10n.choosefromvideo);
+
+		if ( jQuery('#attachments-'+postID+'-thumbnailplaceholder').is(":visible") == false ) {
+			jQuery('#attachments-'+postID+'-thumbnailplaceholder').slideDown();
+		}
 
 	}
 	jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 500);

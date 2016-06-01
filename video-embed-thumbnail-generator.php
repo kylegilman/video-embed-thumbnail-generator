@@ -5605,7 +5605,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 							<video crossorigin="anonymous" preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
 							implode("\n", $sources).'
 							</video>
-							<div class="kgvid-video-controls">
+							<div class="kgvid-video-controls" tabindex="0">
 								<div class="kgvid-play-pause"></div>
 								<div class="kgvid-seek-bar">
 									<div class="kgvid-play-progress"></div>

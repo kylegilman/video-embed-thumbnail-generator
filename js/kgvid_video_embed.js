@@ -196,11 +196,11 @@ function kgvid_SetVideo(id) { //for galleries
 			jQuery(document).on('keydown.kgvid', function(e) {
 				switch(e.which) {
 					case 37: // left
-					jQuery('.kgvid_gallery_prev').click()
+					jQuery('.kgvid_gallery_prev').click();
 					break;
 
 					case 39: // right
-					jQuery('.kgvid_gallery_next').click()
+					jQuery('.kgvid_gallery_next').click();
 					break;
 
 					default: return; // exit this handler for other keys
