@@ -7735,7 +7735,7 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 		$keep = array();
 		$cleared_video_queue = array();
 		foreach ( $video_encode_queue as $video_key => $queue_entry ) {
-			if ( !is_array($queue_entry['encode_formats']) ) {
+			if ( array_key_exists('encode_formats', $queue_entry) && !empty($queue_entry['encode_formats']) ) {
 				foreach ( $queue_entry['encode_formats'] as $format => $value ) {
 					if ( $value['status'] == "encoding" ) { //if it's not completed yet
 						if ( $type != "all" ) { $keep[$video_key] = true; }
