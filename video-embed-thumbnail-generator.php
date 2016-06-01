@@ -7761,10 +7761,13 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 							$keep[$video_key] = true;
 						}
 					}
-					if ( ( $scope == 'site' && array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() )
-						|| ( !current_user_can('edit_others_video_encodes') && $user_ID != $queue_entry['user_id'] )
-						|| !current_user_can('encode_videos')
-						|| ( $scope != 'site' && !current_user_can('manage_network') )
+					if ( $type != "scheduled" &&
+						(
+							( $scope == 'site' && array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() )
+							|| ( !current_user_can('edit_others_video_encodes') && $user_ID != $queue_entry['user_id'] )
+							|| !current_user_can('encode_videos')
+							|| ( $scope != 'site' && !current_user_can('manage_network') )
+						)
 					) { //only clear entries from current blog
 						$keep[$video_key] = true;
 						break;
