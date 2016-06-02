@@ -402,7 +402,7 @@ span.kgvid_facebook_icon_holder {
     top: -22px;
 }
 
-#kgvid-simplemodal-container .wp-video {
+#kgvid-simplemodal-container .wp-video, .kgvid_wrapper .wp-video {
 	margin-bottom: 0px;
 }
 

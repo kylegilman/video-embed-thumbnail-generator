@@ -2145,7 +2145,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		if ( !empty($query_atts["id"]) ) {
 			$id_array[0] = $query_atts["id"];
 		}
-		elseif ( $post_id != 1 ) {
+		elseif ( $post_id != 0 ) {
 			$args = array(
 				'numberposts' => $query_atts['videos'],
 				'post_mime_type' => 'video',
@@ -2940,8 +2940,13 @@ function KGVID_shortcode($atts, $content = ''){
 
 		kgvid_enqueue_shortcode_scripts();
 
-		if ( in_the_loop() ) { $post_id = get_the_ID(); }
-		else { $post_id = 1; }
+		if ( in_the_loop() ) {
+			$post_id = get_the_ID();
+		}
+		else {
+			global $wp_query;
+    		$post_id = $wp_query->get_queried_object_id();
+		}
 
 		$query_atts = kgvid_shortcode_atts($atts);
 
