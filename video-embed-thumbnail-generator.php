@@ -721,17 +721,26 @@ add_filter('upload_mimes', 'kgvid_add_upload_mimes');
 function kgvid_url_to_id($url) {
 
 	global $wpdb;
-	$post_id = false;
+	$post_id = NULL;
 	$uploads = wp_upload_dir();
+	$video_formats = kgvid_video_formats();
 
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
 	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
  	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
+	$search_query =  "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value))";
+	$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
 
-	$post_id = (int)$wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value))", $search_url ) );
+	if ( !$post_id && $video_formats['fullres']['extension'] != pathinfo($url, PATHINFO_EXTENSION) ) {
+		$search_url = str_replace( pathinfo($url, PATHINFO_EXTENSION), $video_formats['fullres']['extension'], $url );
+		$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
+		if ( $post_id ) { $kgvid_postmeta = kgvid_get_attachment_meta($post_id); }
+		if ( !is_array($kgvid_postmeta) || ( is_array($kgvid_postmeta) && !array_key_exists('original_replaced', $kgvid_postmeta) ) ) {
+			$post_id = NULL;
+		}
+	}
 
-	if ( $post_id ) { return $post_id; }
-	else { return false; }
+	return $post_id;
 
 }
 
@@ -2184,7 +2193,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		$mp4already = false;
 		$dimensions = array();
 
-		if ( $query_atts['gallery'] == 'false' && $kgvid_video_id === 0 && $post_id != 1 ) {
+		if ( $query_atts['gallery'] == 'false' && $kgvid_video_id === 0 && $post_id != 0 ) {
 			$first_embedded_video['atts'] = $atts;
 			$first_embedded_video['content'] = $content;
 			$first_embedded_video_meta = get_post_meta($post_id, '_kgvid_first_embedded_video', true);
@@ -2415,7 +2424,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$code .= '<meta itemprop="description" content="'.esc_attr($description).'" />';
 
 			if ( !empty($id) ) { $upload_date = get_the_date('c', $id); }
-			elseif ( $post_id != 1 ) { $upload_date = get_the_date('c', $post_id); }
+			elseif ( $post_id != 0 ) { $upload_date = get_the_date('c', $post_id); }
 			else { $upload_date = current_time('c'); }
 			$code .= '<meta itemprop="uploadDate" content="'.esc_attr($upload_date).'" />';
 		}
