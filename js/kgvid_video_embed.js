@@ -383,6 +383,14 @@ function kgvid_setup_video(id) {
 			if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+' > .vjs-control-bar').removeClass('vjs-fade-in'); }
 			if ( video_vars.endofvideooverlay != "" ) { jQuery('#video_'+id+' > .vjs-poster').hide(); }
 
+			if ( video_vars.pauseothervideos == "true" ) {
+				jQuery.each(videojs.getPlayers(), function(otherPlayerId, otherPlayer) {
+					if ( player.id() != otherPlayerId && !otherPlayer.paused() && !otherPlayer.autoplay() ) {
+						otherPlayer.pause();
+					}
+				});
+			}
+
 			kgvid_video_counter(id, 'play');
 
 			player.on('timeupdate', function(){
@@ -486,6 +494,7 @@ function kgvid_setup_video(id) {
 
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 			if ( video_vars.mute == "true" ) { player[0].setMuted(true); }
+			if ( video_vars.pauseothervideos == "false" ) { mejs_player.options.pauseOtherPlayers = false; }
 			jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
 
 			if ( played == "not played" ) { //only turn on the default captions on first load

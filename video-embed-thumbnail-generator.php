@@ -119,6 +119,7 @@ function kgvid_default_options_fn() {
 		"nativecontrolsfortouch" => false,
 		"controlbar_style" => "docked",
 		"autoplay" => false,
+		"pauseothervideos" => "on",
 		"loop" => false,
 		"volume" => 1,
 		"mute" => false,
@@ -2332,6 +2333,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			'countable' => $countable,
 			'start' => $query_atts['start'],
 			'autoplay' => $query_atts['autoplay'],
+			'pauseothervideos' => $query_atts['pauseothervideos'],
 			'set_volume' => $query_atts['volume'],
 			'mute' => $query_atts['mute'],
 			'meta' => $kgvid_meta,
@@ -2823,6 +2825,7 @@ function kgvid_shortcode_atts($atts) {
 		'playbutton' => $options['playbutton'],
 		'loop' => $options['loop'],
 		'autoplay' => $options['autoplay'],
+		'pauseothervideos' => $options['pauseothervideos'],
 		'streamtype' => $options['stream_type'],
 		'scalemode' => $options['scale_mode'],
 		'backgroundcolor' => $options['bgcolor'],
@@ -2911,6 +2914,7 @@ function kgvid_shortcode_atts($atts) {
 		"playbutton",
 		"loop",
 		"autoplay",
+		"pauseothervideos",
 		"title",
 		"embedcode",
 		"view_count",
@@ -4011,10 +4015,6 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('dimensions', __('Max embedded video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_options', __('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
 	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
-	add_settings_field('autoplay', __('Autoplay:', 'video-embed-thumbnail-generator'), 'kgvid_autoplay_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'autoplay' ) );
-	add_settings_field('loop', _x('Loop:', 'verb', 'video-embed-thumbnail-generator'), 'kgvid_loop_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'loop' ) );
-	add_settings_field('audio', __('Volume:', 'video-embed-thumbnail-generator'), 'kgvid_audio_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'volume' ) );
-	add_settings_field('preload', __('Preload:', 'video-embed-thumbnail-generator'), 'kgvid_preload_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'preload' ) );
 	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
 	add_settings_field('nativecontrolsfortouch', __('Native controls:', 'video-embed-thumbnail-generator'), 'kgvid_nativecontrolsfortouch_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'nativecontrolsfortouch' ) );
 	add_settings_field('custom_attributes', __('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', __FILE__, 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
@@ -4242,47 +4242,36 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$items[__("docked", 'video-embed-thumbnail-generator')] = "docked";
 		if ( $options['embed_method'] == "Strobe Media Playback" ) { $items[__("floating", 'video-embed-thumbnail-generator')] = "floating"; }
 		$items[__("none", 'video-embed-thumbnail-generator')] = "none";
-		echo "<select class='affects_player' id='controlbar_style' name='kgvid_video_embed_options[controlbar_style]'>";
+		echo __('Display controls:', 'video-embed-thumbnail-generator')." <select class='affects_player' id='controlbar_style' name='kgvid_video_embed_options[controlbar_style]'>";
 		foreach($items as $name => $value) {
 			$selected = ($options['controlbar_style']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select>\n\t";
-	}
+		echo "</select><br />\n\t";
 
-	function kgvid_autoplay_callback() {
-		$options = kgvid_get_options();
-		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Play automatically when page loads.', 'video-embed-thumbnail-generator')."</label>\n\t";
-	}
+		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Play automatically when page loads.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
-	function kgvid_loop_callback() {
-		$options = kgvid_get_options();
-		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop to beginning when video ends.', 'video-embed-thumbnail-generator')."</label>\n\t";
-	}
+		echo "<input ".checked( $options['pauseothervideos'], "on", false )." id='pauseothervideos' name='kgvid_video_embed_options[pauseothervideos]' type='checkbox' /> <label for='pauseothervideos'>".__('Pause other videos on page when starting a new video.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
-	function kgvid_audio_callback() {
-		$options = kgvid_get_options();
+		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop to beginning when video ends.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+
 		$items = array();
 		$percent = 0;
 		for ( $percent = 0; $percent <= 1.05; $percent = $percent + 0.05 ) {
 			$items[sprintf( _x('%d%%', 'a list of percentages. eg: 15%', 'video-embed-thumbnail-generator'), round($percent*100) )] = strval($percent);
 		}
-		echo "<select class='affects_player' id='volume' name='kgvid_video_embed_options[volume]'>";
+		echo __('Volume:', 'video-embed-thumbnail-generator')." <select class='affects_player' id='volume' name='kgvid_video_embed_options[volume]'>";
 		foreach($items as $name=>$value) {
 			$selected = ($options['volume']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <input class='affects_player' ".checked( $options['mute'], "on", false )." id='mute' name='kgvid_video_embed_options[mute]' type='checkbox' /> <label for='mute'>".__('Mute', 'video-embed-thumbnail-generator')."</label>\n\t";
+		echo "</select> <input class='affects_player' ".checked( $options['mute'], "on", false )." id='mute' name='kgvid_video_embed_options[mute]' type='checkbox' /> <label for='mute'>".__('Mute', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
-	}
-
-	function kgvid_preload_callback() {
-		$options = kgvid_get_options();
 		$items = array(
 			__('metadata', 'video-embed-thumbnail-generator') => "metadata",
 			__('auto', 'video-embed-thumbnail-generator') => "auto",
 			__('none', 'video-embed-thumbnail-generator') => "none");
-		echo "<select class='affects_player' id='preload' name='kgvid_video_embed_options[preload]'>";
+		echo __('Preload:', 'video-embed-thumbnail-generator')." <select class='affects_player' id='preload' name='kgvid_video_embed_options[preload]'>";
 		foreach($items as $name=>$value) {
 			$selected = ($options['preload']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
@@ -5025,6 +5014,10 @@ function kgvid_update_settings() {
 			$options['auto_encode_gif'] = false;
 			$options['pixel_ratio'] = 'on';
 			$options['twitter_username'] = kgvid_get_jetpack_twitter_username();
+		}
+
+		if ( version_compare( $options['version'], '4.6.8', '<' ) ) {
+			$options['pauseothervideos'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
