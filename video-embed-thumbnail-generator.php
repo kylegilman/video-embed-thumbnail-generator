@@ -736,7 +736,7 @@ function kgvid_url_to_id($url) {
 		$search_url = str_replace( pathinfo($url, PATHINFO_EXTENSION), $video_formats['fullres']['extension'], $url );
 		$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
 		if ( $post_id ) { $kgvid_postmeta = kgvid_get_attachment_meta($post_id); }
-		if ( !is_array($kgvid_postmeta) || ( is_array($kgvid_postmeta) && !array_key_exists('original_replaced', $kgvid_postmeta) ) ) {
+		if ( !isset($kgvid_postmeta) || !is_array($kgvid_postmeta) || ( is_array($kgvid_postmeta) && !array_key_exists('original_replaced', $kgvid_postmeta) ) ) {
 			$post_id = NULL;
 		}
 	}

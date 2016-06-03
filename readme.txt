@@ -244,7 +244,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.8 - June 2, 2016 =
+= 4.6.8 - June 3, 2016 =
 * Added keyboard control of video thumbnail selector. Spacebar to play/pause, arrow keys to move one frame forward or back, and JKL playback control. Reverse playback only works on Safari.
 * Added option to pause other Video.js videos on page when starting a new video.
 * Added functionality to dynamically embed attached videos outside of the loop.
@@ -253,6 +253,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that prevented automatic clearing of old encode queue entries.
 * Fixed bug that doubled non-H.264 video source tags.
 * Fixed bug that prevented encoding 1080p and 720p H.264 videos if original video is not H.264 and has the same resolution.
+* Changed iPhone play button to match Video.js button.
 * Tweaked embed code overlay styles.
 * Set WordPress Default bottom margin to 0.
 

@@ -70,8 +70,12 @@ function kgvid_window_load() {
 }
 
 function kgvid_mejs_success(mediaElement, domObject) {
-	var id = jQuery(domObject).parents('.kgvid_videodiv').data('id');
-	kgvid_setup_video(id);
+	if ( domObject.nodeName == "VIDEO" ) {
+		var id = jQuery(domObject).parents('.kgvid_videodiv').data('id');
+		if ( id != undefined ) { //make sure we're using KGVID shortcode
+			kgvid_setup_video(id);
+		}
+	}
 }
 
 function kgvid_convert_to_timecode(time) {
