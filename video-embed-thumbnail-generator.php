@@ -722,6 +722,7 @@ add_filter('upload_mimes', 'kgvid_add_upload_mimes');
 function kgvid_url_to_id($url) {
 
 	global $wpdb;
+	$options = kgvid_get_options();
 	$post_id = NULL;
 	$uploads = wp_upload_dir();
 	$video_formats = kgvid_video_formats();
@@ -732,7 +733,7 @@ function kgvid_url_to_id($url) {
 	$search_query =  "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value))";
 	$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
 
-	if ( !$post_id && $video_formats['fullres']['extension'] != pathinfo($url, PATHINFO_EXTENSION) ) {
+	if ( !$post_id && $options['ffmpeg_exists'] == "on" && $video_formats['fullres']['extension'] != pathinfo($url, PATHINFO_EXTENSION) ) {
 		$search_url = str_replace( pathinfo($url, PATHINFO_EXTENSION), $video_formats['fullres']['extension'], $url );
 		$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
 		if ( $post_id ) { $kgvid_postmeta = kgvid_get_attachment_meta($post_id); }
