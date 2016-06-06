@@ -660,7 +660,10 @@ function kgvid_resize_video(id) {
 		var window_width = jQuery(window).width();
 		var window_height = jQuery(window).height();
 
-		if ( reference_div.is('body') ) { parent_width = window.innerWidth; set_width = window.innerWidth; }
+		if ( reference_div.is('body') ) { //if the video is embedded
+			parent_width = window.innerWidth;
+			set_width = window.innerWidth;
+		}
 		else if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id ) { //if it's a pop-up video
 			parent_width = window_width-40;
 		}
@@ -675,18 +678,24 @@ function kgvid_resize_video(id) {
 			jQuery('#kgvid_'+id+'_wrapper').width(set_width);
 			var set_height = Math.round(set_width * aspect_ratio);
 
-			if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id && set_height > window_height-60 ) {
+			if ( reference_div.attr('id') == 'kgvid_popup_video_holder_'+id && set_height > window_height-60 ) { //if it's a popup video
 				set_height = window_height-60;
 				set_width = Math.round(set_height / aspect_ratio);
 			}
+
+			if ( reference_div.is('body') && set_height > window.innerHeight ) { //if it's a tall embedded video
+				set_height = window.innerHeight;
+				var change_aspect = true;
+
+			} //if the video is embedded
 
 			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null ) ) {
 
 				video_vars.player_type == "Video.js"
 
 				var player = videojs('video_'+id);
+				if ( change_aspect ) { player.aspectRatio(Math.floor(set_width)+':'+Math.floor(set_height)); }
 				player.width(set_width).height(set_height);
-
 				if ( set_width < 500 ) {
 					var scale = Math.round(100*set_width/500)/100;
 					jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').css('-webkit-transform','scale('+scale+')').css('-o-transform','scale('+scale+')').css('-ms-transform','scale('+scale+')').css('transform','scale('+scale+')');
@@ -711,8 +720,14 @@ function kgvid_resize_video(id) {
 
 			if ( video_vars.player_type == "WordPressDefault" ) {
 				if ( typeof mejs !== 'undefined' ) {
-					jQuery('#kgvid_'+id+'_wrapper').find('.wp-video').attr('style', 'width:'+set_width+'px;');
+					jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').css('width', set_width+'px');
 					player = eval('mejs.players.'+jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').attr('id'));
+					if ( change_aspect ) {
+						player.options.setDimensions = false;
+						player.height = set_height;
+						jQuery('#kgvid_'+id+'_wrapper div.wp-video-shortcode').css('height', set_height+'px');
+					}
+
 				}
 			}
 
