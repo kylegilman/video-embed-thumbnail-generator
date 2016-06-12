@@ -110,9 +110,7 @@
 			if (media.currentSrc != src) {
 				var currentTime = media.currentTime;
 				var paused = media.paused;
-				var is_autoplay = media.autoplay;
 				media.pause();
-				if ( is_autoplay ) { media.autoplay = false; }
 				if ( currentTime != 0 ) {
 					var canvas = document.createElement("canvas");
 					canvas.className = 'kgvid_temp_thumb';
@@ -140,7 +138,6 @@
 				var canPlayAfterSourceSwitchHandler = function(e) {
 					if (!paused) {
 						media.play();
-						if ( is_autoplay ) { media.autoplay = true; }
 					}
 
 					media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler, true);
