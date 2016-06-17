@@ -244,13 +244,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.8 - June 12, 2016 =
+= 4.6.8 - June 17, 2016 =
 * Added keyboard control of video thumbnail selector. Spacebar to play/pause, arrow keys to move one frame forward or back, and JKL playback control. Reverse playback only works in Safari.
 * Added option to pause other Video.js videos on page when starting a new video.
 * Added option to always load plugin-related JavaScripts to support AJAX page loading.
 * Added functionality to dynamically embed attached videos outside of the loop.
 * Added check for changed extensions if a video has been replaced by a different format.
-* Fixed bug that didn't record Video.js pop-up video gallery views.
+* Fixed bug that didn't record Video.js pop-up video gallery views or JW Player quarter playback stats.
 * Fixed bug that prevented automatic clearing of old encode queue entries.
 * Fixed bug that doubled non-H.264 video source tags.
 * Fixed bug that prevented encoding 1080p and 720p H.264 videos if original video is not H.264 and has the same resolution.

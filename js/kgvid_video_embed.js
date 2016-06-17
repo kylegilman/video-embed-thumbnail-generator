@@ -597,17 +597,34 @@ function kgvid_setup_video(id) {
 				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 			}
 
-			player.on('timeupdate', function(){
+			if ( video_vars.pauseothervideos == "true" ) {
+				var i = 0;
+				while (true) {
+					var testplayer = jwplayer(i);
+					if (!testplayer.id) {
+						break;
+					}
+					else if ( testplayer.id == player.id ) {
+						i++;
+					}
+					else {
+						testplayer.pause(true);
+						i++;
+					}
+				}//end loop through jwplayers
+			}
 
-				if ( jQuery('#video_'+id+'_div').data("25") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 25 ) {
+			player.onTime( function(e){
+
+				if ( jQuery('#video_'+id+'_div').data("25") == undefined && Math.round(e.position / e.duration * 100) == 25 ) {
 					jQuery('#video_'+id+'_div').data("25", true);
 					kgvid_video_counter(id, '25');
 				}
-				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 50 ) {
+				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && Math.round(e.position / e.duration * 100) == 50 ) {
 					jQuery('#video_'+id+'_div').data("50", true);
 					kgvid_video_counter(id, '50');
 				}
-				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && Math.round(player.currentTime() / player.duration() * 100) == 75 ) {
+				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && Math.round(e.position / e.duration * 100) == 75 ) {
 					jQuery('#video_'+id+'_div').data("75", true);
 					kgvid_video_counter(id, '75');
 
