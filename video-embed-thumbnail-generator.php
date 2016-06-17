@@ -5029,7 +5029,8 @@ function kgvid_update_settings() {
 		}
 
 		if ( version_compare( $options['version'], '4.6.8', '<' ) ) {
-			$options['pauseothervideos'] = false;
+			if ( $options['embed_method'] == "WordPress Default" ) { $options['pauseothervideos'] = "on"; }
+			else { $options['pauseothervideos'] = false; }
 			$options['alwaysloadscripts'] = false;
 		}
 
