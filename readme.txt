@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.5
-Stable tag: 4.6.8
+Stable tag: 4.6.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
 * `autoplay="true/false"`
+* `pauseothervideos="true/false"` video will pause other videos on the page when it starts playing.
 * `start="mm:ss"` video will start playing at this timecode.
 * `watermark="http://www.example.com/image.png"` or `"false"` to disable.
 * `watermark_link_to=home/parent/attachment/download/false"`
