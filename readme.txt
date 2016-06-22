@@ -246,7 +246,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6.8 - June 17, 2016 =
 * Added keyboard control of video thumbnail selector. Spacebar to play/pause, arrow keys to move one frame forward or back, and JKL playback control. Reverse playback only works in Safari.
-* Added option to pause other Video.js videos on page when starting a new video.
+* Added option to pause other videos on the page when starting a new video (or disable it for WP Default player).
 * Added option to always load plugin-related JavaScripts to support AJAX page loading.
 * Added functionality to dynamically embed attached videos outside of the loop.
 * Added check for changed extensions if a video has been replaced by a different format.
