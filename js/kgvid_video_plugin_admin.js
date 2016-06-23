@@ -215,9 +215,10 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 
 		jQuery(video).on('loadedmetadata', function() {
 			var currentTimecode = jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val();
-			if ( currentTimecode ) {
-				video.currentTime = kgvid_convert_from_timecode(currentTimecode);
+			if ( !currentTimecode ) {
+				currentTimecode = '0';
 			}
+			video.currentTime = kgvid_convert_from_timecode(currentTimecode);
 		});
 
 		jQuery('.kgvid-video-controls').on('keydown.kgvid', function(e) {
