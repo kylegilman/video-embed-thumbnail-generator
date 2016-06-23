@@ -34,25 +34,39 @@ function kgvid_set_aspect(postID, checked) {
 
 function kgvid_convert_to_timecode(time) {
 
-	var minutes = Math.floor(time / 60);
-	var seconds = Math.round((time - (minutes * 60))*100)/100;
-	if (minutes < 10) {minutes = "0"+minutes;}
-	if (seconds < 10) {seconds = "0"+seconds;}
-	var time_display = minutes+':'+seconds;
+	var time_display = '';
+
+	if ( time ) {
+
+		var minutes = Math.floor(time / 60);
+		var seconds = Math.round((time - (minutes * 60))*100)/100;
+		if (minutes < 10) {minutes = "0"+minutes;}
+		if (seconds < 10) {seconds = "0"+seconds;}
+		time_display = minutes+':'+seconds;
+
+	}
+
 	return time_display;
 
 }
 
 function kgvid_convert_from_timecode(timecode) {
 
-	var timecode_array = timecode.split(":");
-	timecode_array = timecode_array.reverse();
-	if ( timecode_array[1] ) { timecode_array[1] = timecode_array[1] * 60; }
-	if ( timecode_array[2] ) { timecode_array[2] = timecode_array[2] * 3600; }
 	var thumbtimecode = 0;
-	jQuery.each(timecode_array,function() {
-		thumbtimecode += parseFloat(this);
-	});
+
+	if ( timecode ) {
+
+		var timecode_array = timecode.split(":");
+		timecode_array = timecode_array.reverse();
+		if ( timecode_array[1] ) { timecode_array[1] = timecode_array[1] * 60; }
+		if ( timecode_array[2] ) { timecode_array[2] = timecode_array[2] * 3600; }
+
+		jQuery.each(timecode_array,function() {
+			thumbtimecode += parseFloat(this);
+		});
+
+	}
+
 	return thumbtimecode;
 
 }
@@ -200,7 +214,10 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		};
 
 		jQuery(video).on('loadedmetadata', function() {
-			video.currentTime = kgvid_convert_from_timecode(jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val());
+			var currentTimecode = jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val();
+			if ( currentTimecode ) {
+				video.currentTime = kgvid_convert_from_timecode(currentTimecode);
+			}
 		});
 
 		jQuery('.kgvid-video-controls').on('keydown.kgvid', function(e) {
