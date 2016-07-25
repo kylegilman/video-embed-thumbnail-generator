@@ -1579,7 +1579,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.10.2' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.10.7' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 
@@ -1919,7 +1919,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
-			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.10.2', true );
+			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.10.7', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 		}
 
@@ -4149,7 +4149,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_endofvideooverlay_callback() {
 		$options = kgvid_get_options();
 		echo "<input class='affects_player' ".checked( $options['endofvideooverlaysame'], "on", false )." id='endofvideooverlaysame' name='kgvid_video_embed_options[endofvideooverlaysame]' type='checkbox' /> <label for='endofvideooverlaysame'>".__('Display thumbnail image again when video ends.', 'video-embed-thumbnail-generator')."</label><br />";
-		echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' ".disabled( $options['endofvideooverlaysame'], "true", false )." type='text' value='".$options['endofvideooverlay']."' /> <span id='pick-endofvideooverlay' class='button-secondary' data-choose='".__('Choose End of Video Image', 'video-embed-thumbnail-generator')."' data-update='".__('Set as end of video image', 'video-embed-thumbnail-generator')."' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
+		echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' ".disabled( $options['endofvideooverlaysame'], "on", false )." type='text' value='".$options['endofvideooverlay']."' /> <span id='pick-endofvideooverlay' class='button-secondary' data-choose='".__('Choose End of Video Image', 'video-embed-thumbnail-generator')."' data-update='".__('Set as end of video image', 'video-embed-thumbnail-generator')."' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
 		echo __('Display alternate image when video ends.', 'video-embed-thumbnail-generator')."<small>\n\t";
 	}
 
