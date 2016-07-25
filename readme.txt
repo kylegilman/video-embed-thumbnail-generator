@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
-Tested up to: 4.5
+Tested up to: 4.6
 Stable tag: 4.6.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -248,6 +248,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.6.9 - July 25, 2016 =
 * Updated Video.js to version 5.10.7
 * Fixed bug that sometimes prevented thumbnail generation.
+* Fixed bug that prevented selection of encoding error email setting in Network admin page.
 * Added visual feedback while saving manually selected thumbnails.
 
 = 4.6.8 - June 22, 2016 =
