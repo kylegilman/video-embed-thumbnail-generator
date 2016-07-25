@@ -245,6 +245,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.9 - July 25, 2016 =
+* Updated Video.js to version 5.10.7
+* Fixed bug that sometimes prevented thumbnail generation.
+* Added visual feedback while saving manually selected thumbnails.
+
 = 4.6.8 - June 22, 2016 =
 * Added keyboard control of video thumbnail selector. Spacebar to play/pause, arrow keys to move one frame forward or back, and JKL playback control. Reverse playback only works in Safari.
 * Added option to pause other videos on the page when starting a new video (or disable it for WP Default player).

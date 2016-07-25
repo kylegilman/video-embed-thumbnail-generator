@@ -165,6 +165,7 @@ div.kgvid-tabs-content {
 }
 
 div.kgvid_thumbnail_box {
+	position:relative;
 	border-style:solid;
 	border-color:#ccc;
 	border-width:1px;
@@ -223,6 +224,7 @@ div.kgvid_save_overlay {
     font-size: 160%;
     width: 100%;
     text-align: center;
+    z-index: 2;
 }
 
 div.kgvid_video_app_required {

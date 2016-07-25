@@ -656,10 +656,18 @@ function kgvid_thumb_video_manual(postID) {
 	var video_aspect = video.videoHeight/video.videoWidth;
 	var time_id = Math.round(video.currentTime);
 	var time_display = kgvid_convert_to_timecode(video.currentTime);
+
+	jQuery('#thumb-video-'+postID+'-player .button-secondary').attr('disabled', true);
+	jQuery('#thumb-video-'+postID+'-player').fadeTo(500, .25);
+	jQuery('#thumb-video-'+postID+'-container').prepend('<div class="kgvid_save_overlay">'+kgvidL10n.saving+'</div>');
+
 	document.getElementById('attachments-'+postID+'-kgflashmediaplayer-thumbtime').value = time_display;
+
 	jQuery("#attachments-"+postID+"-thumbnailplaceholder").html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><canvas style="height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></div>');
+
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	canvas = kgvid_draw_thumb_canvas(canvas, video);
+
 	kgvid_save_canvas_thumb(postID, time_id, 1, 1);
 
 }
