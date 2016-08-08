@@ -3468,11 +3468,11 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			if ( array_key_exists('status', $last_format) && $last_format['status'] != "notchecked" ) { break; } //get the final queued format
 		}
 
-		if ( !$encoding_now && ($last_format['status'] == "queued" || $last_format['status'] == "canceling") ) {
+		if ( $page != "queue" && !$encoding_now && ($last_format['status'] == "queued" || $last_format['status'] == "canceling") ) {
 			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'", "'.$blog_id.'") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
 		}
 
-		if ( $encoding_now ) {
+		else {
 			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 5000);</script>';
 		}
 	}
@@ -6864,76 +6864,79 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 
 		if ( isset($kgvid_postmeta) ) { kgvid_save_attachment_meta($postID, $kgvid_postmeta); }
 
-		if ( !empty($encode_list) ) { //if there's anything to encode
+		$video_encode_queue = kgvid_get_encode_queue();
+		if ( empty($parent_id) && $post_type == "attachment"  ) { $parent_id = get_post($postID)->post_parent; }
+		$current_user_id = get_current_user_id();
+		if ( $current_user_id == 0 && $post_type == "attachment" ) { $current_user_id = get_post($postID)->post_author; }
 
-			$video_encode_queue = kgvid_get_encode_queue();
-			if ( empty($parent_id) && $post_type == "attachment"  ) { $parent_id = get_post($postID)->post_parent; }
-			$current_user_id = get_current_user_id();
-			if ( $current_user_id == 0 && $post_type == "attachment" ) { $current_user_id = get_post($postID)->post_author; }
+		$queue_entry = array (
+			'attachmentID' => $postID,
+			'parent_id' => $parent_id,
+			'movieurl' => $movieurl,
+			'encode_formats'=> $encode_formats,
+			'movie_info' => $movie_info,
+			'user_id' => $current_user_id
+		);
+		if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
+			$queue_entry['blog_id'] = get_current_blog_id();
+		}
 
-			$queue_entry = array (
-				'attachmentID' => $postID,
-				'parent_id' => $parent_id,
-				'movieurl' => $movieurl,
-				'encode_formats'=> $encode_formats,
-				'movie_info' => $movie_info,
-				'user_id' => $current_user_id
-			);
-			if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
-				$queue_entry['blog_id'] = get_current_blog_id();
-			}
+		$already_queued = false;
+		$format_removed = false;
 
-			$already_queued = false;
-			if ( !empty($video_encode_queue ) ) {
-				foreach ($video_encode_queue as $index => $entry) {
-					if ( $entry['movieurl'] == $movieurl ) {
-						$already_queued = $index;
-						foreach ( $entry['encode_formats'] as $format => $value ) {
+		if ( !empty($video_encode_queue ) ) {
+			foreach ($video_encode_queue as $index => $entry) {
+				if ( $entry['movieurl'] == $movieurl ) {
+					$already_queued = $index;
+					foreach ( $entry['encode_formats'] as $format => $value ) {
 
-							if ( $value['status'] == "queued" && array_key_exists($format, $encode_list) ) {
-								unset($encode_list[$format]);
-							}
+						if ( $value['status'] == "queued" && array_key_exists($format, $encode_list) ) {
+							unset($encode_list[$format]);
+						}
+						elseif ( $value['status'] == "queued" && $encode_checked[$format] != "true" ) {
+							$queue_entry['encode_formats'][$format]['status'] = 'notchecked';
+							$encode_list[$format] = $video_formats[$format]['name'];
+						}
+						elseif ( $value['status'] == "encoding" || $encode_checked[$format] != "true" ) {
+							$queue_entry['encode_formats'][$format] = $entry['encode_formats'][$format];
+						} //don't edit queue entry for anything that's currently encoding or not checked
 
-							if ( $value['status'] == "encoding" || $encode_checked[$format] != "true" ) {
-								$queue_entry['encode_formats'][$format] = $entry['encode_formats'][$format];
-							} //don't edit queue entry for anything that's currently encoding or not checked
-
-							if ( $parent_id == "check" ) {
-								$parent_id = $entry['parent_id'];
-								$queue_entry['parent_id'] = $entry['parent_id'];
-							}
-
-						}//loop through formats
-
-						if ( array_key_exists('blog_id', $entry) ) { //reset the ids in case this is the network queue
+						if ( $parent_id == "check" ) {
+							$parent_id = $entry['parent_id'];
 							$queue_entry['parent_id'] = $entry['parent_id'];
-							$queue_entry['blog_id'] = $entry['blog_id'];
 						}
 
-					}//url matches existing queue entry
-				}//loop through queue
-			}//if there's already a queue
+					}//loop through formats
 
-			$imploded_encode_list = implode(", " , $encode_list);
+					if ( array_key_exists('blog_id', $entry) ) { //reset the ids in case this is the network queue
+						$queue_entry['parent_id'] = $entry['parent_id'];
+						$queue_entry['blog_id'] = $entry['blog_id'];
+					}
 
-			if ( $already_queued !== false ) {
-				$video_encode_queue[$already_queued] = $queue_entry;
-				kgvid_save_encode_queue($video_encode_queue);
-				$existing_queue_position = strval(intval($already_queued)+1);
-				if ( !empty($encode_list) ) { $embed_display = "<strong>".sprintf( __('%1$s updated in existing queue entry in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $existing_queue_position )." </strong>"; }
-				else { $embed_display = "<strong>".sprintf( __('Video is already queued in position %s.', 'video-embed-thumbnail-generator'), $existing_queue_position )." </strong>"; }
-			}
-			else {
-				$video_encode_queue[] = $queue_entry;
-				kgvid_save_encode_queue($video_encode_queue);
-				$queue_position = intval(key( array_slice( $video_encode_queue, -1, 1, TRUE ) ));
-				$new_queue_position = strval(intval($queue_position)+1);
-				if ( $queue_position == 0 ) { $embed_display = "<strong>".__('Starting', 'video-embed-thumbnail-generator')." ".strtoupper($options['video_app'])."... </strong>"; }
-				else { $embed_display = "<strong>".sprintf( __('%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $new_queue_position )." </strong>";
-				}
-			}
-		} //if any video formats don't already exist, add to queue
+				}//url matches existing queue entry
+			}//loop through queue
+		}//if there's already a queue
+
+		$imploded_encode_list = implode(", " , $encode_list);
+
+		if ( $already_queued !== false ) {
+			$video_encode_queue[$already_queued] = $queue_entry;
+			kgvid_save_encode_queue($video_encode_queue);
+			$existing_queue_position = strval(intval($already_queued)+1);
+			if ( !empty($encode_list) ) { $embed_display = "<strong>".sprintf( __('%1$s updated in existing queue entry in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $existing_queue_position )." </strong>"; }
+			else { $embed_display = "<strong>".sprintf( __('Video is already queued in position %s.', 'video-embed-thumbnail-generator'), $existing_queue_position )." </strong>"; }
+		}
 		else {
+			$video_encode_queue[] = $queue_entry;
+			kgvid_save_encode_queue($video_encode_queue);
+			$queue_position = intval(key( array_slice( $video_encode_queue, -1, 1, TRUE ) ));
+			$new_queue_position = strval(intval($queue_position)+1);
+			if ( $queue_position == 0 ) { $embed_display = "<strong>".__('Starting', 'video-embed-thumbnail-generator')." ".strtoupper($options['video_app'])."... </strong>"; }
+			else { $embed_display = "<strong>".sprintf( __('%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $new_queue_position )." </strong>";
+			}
+		}
+
+		if ( empty($encode_list) ) {
 			$embed_display = "<strong>".__('Nothing to encode.', 'video-embed-thumbnail-generator')."</strong>";
 			$transient = get_transient( 'kgvid_new_attachment_transient' );
 			if ( is_array($transient) && in_array($postID, $transient) ) {
@@ -7383,7 +7386,8 @@ function kgvid_encode_progress($video_key, $format, $page) {
 							else {  $fps_match = "10"; }
 						}
 						else {  $fps_match = "10"; }
-						$time_to_wait = strval(max(round(40000/intval($fps_match)), 1000)); //wait at least 1 second
+;
+						$time_to_wait = strval(max(round(40000/(floatval($fps_match))), 1000)); //wait at least 1 second
 						if ( intval($time_to_wait) > 10000 ) { //wait no more than 10 seconds
 							$time_to_wait = 10000;
 						}

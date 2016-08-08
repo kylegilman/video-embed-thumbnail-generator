@@ -1020,6 +1020,9 @@ function kgvid_update_encode_queue() {
 
 							if ( format_entry.status == 'queued' ) {
 								queued = true;
+								if ( jQuery('#tr-'+blog.id_text+video_entry.attachmentID).hasClass('kgvid_complete') )  {
+									jQuery('#tr-'+blog.id_text+video_entry.attachmentID).removeClass('kgvid_complete');
+								}
 							}
 
 							if ( format_entry.hasOwnProperty('meta_array') ) {
@@ -1035,15 +1038,14 @@ function kgvid_update_encode_queue() {
 									meta_entry.html(format_entry.meta_array.meta);
 								}
 
-								if ( format_entry.meta_array.checked != '' ) {
-									checkbox.attr('checked', true);
-								}
-								else if ( format_entry.status == 'Encoding Complete' ) { checkbox.removeAttr('checked'); }
+								if ( format_entry.status == 'Encoding Complete' ) { checkbox.removeAttr('checked'); }
 
-								if ( format_entry.meta_array.disabled != '' ) {
+								if ( format_entry.meta_array.disabled != '' && checkbox.attr('disabled') == undefined ) {
 									checkbox.attr('disabled', true);
 								}
-								else { checkbox.removeAttr('disabled'); }
+								else if ( format_entry.meta_array.disabled == '' && checkbox.attr('disabled') == 'disabled' ) {
+									checkbox.removeAttr('disabled');
+								}
 
 							}
 

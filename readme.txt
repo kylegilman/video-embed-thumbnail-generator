@@ -245,6 +245,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.10 - August 8, 2016 =
+* Fixed bug that prevented removing individual formats from the encode queue.
+* Fixed divide by zero error when encoding is slower than 1 fps.
+
 = 4.6.9 - July 25, 2016 =
 * Updated Video.js to version 5.10.7
 * Fixed bug that sometimes prevented thumbnail generation.
