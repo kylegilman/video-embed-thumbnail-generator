@@ -3547,8 +3547,6 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 		$currently_encoding = array();
 		$queued = array();
 
-		$html .= "<input type='hidden' name='attachments[kgflashmediaplayer-security]' value='".$nonce."' />";
-
 		foreach ( $video_encode_queue as $order => $video_entry ) {
 
 			if ( array_key_exists('blog_id', $video_entry) ) {
@@ -3685,7 +3683,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 		}
 	}
 
-	if ( empty($html) || $html == "<input type='hidden' name='attachments[kgflashmediaplayer-security]' value='".$nonce."' />" ) { $html = "\t<tr><td colspan='".strval($total_columns)."'><strong class='kgvid_queue_message'>".__('Queue is empty', 'video-embed-thumbnail-generator')."</strong></td></tr>\n"; }
+	if ( empty($html) ) { $html = "\t<tr><td colspan='".strval($total_columns)."'><strong class='kgvid_queue_message'>".__('Queue is empty', 'video-embed-thumbnail-generator')."</strong></td></tr>\n"; }
 
 return $html;
 

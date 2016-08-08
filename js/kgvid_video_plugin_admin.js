@@ -958,7 +958,7 @@ function kgvid_update_encode_queue() {
 
 	if ( typeof pagenow !== 'undefined' && ( pagenow == 'tools_page_kgvid_video_encoding_queue' || pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' ) ) {
 		var page = 'queue';
-		var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
+		var kgflashmediaplayersecurity = jQuery('#video-embed-thumbnail-generator-nonce').val();
 	}
 	else {
 		var page = 'attachment';
@@ -1158,7 +1158,7 @@ function kgvid_encode_queue(action, order, id, blogID) {
 	var CheckboxTimeout = jQuery('#wpwrap').data("KGVIDCheckboxTimeout") || null;
 	if ( CheckboxTimeout ) { clearTimeout(CheckboxTimeout); }
 
-	var kgflashmediaplayersecurity = document.getElementsByName('attachments[kgflashmediaplayer-security]')[0].value;
+	var kgflashmediaplayersecurity = jQuery('#video-embed-thumbnail-generator-nonce').val();
 
 	if ( action == "delete" ) {
 		jQuery('#tr-'+blog.id_text+id).fadeTo('slow', 0.5);
