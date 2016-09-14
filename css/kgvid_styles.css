@@ -67,7 +67,7 @@
 	position: inherit !important;
 }
 
-.vjs-control-bar, .mejs-controls {
+.vjs-control-bar, .mejs-controls, video::-webkit-media-controls-panel {
 	z-index:2;
 }
 

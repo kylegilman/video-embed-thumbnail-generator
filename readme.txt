@@ -245,7 +245,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.10 - August 8, 2016 =
+= 4.6.10 - September 14, 2016 =
+* Updated Video.js to version 5.11.6
+* Now forcing Video.js controls to display on mobile devices if the video is not muted. Otherwise autoplay doesn't work and there's no way for the user to start the video.
+* Moved native controls z-index in front of watermark overlay and hid Video.js play button on Android when using native controls option.
 * Fixed bug that constantly reset checkboxes and prevented removing individual formats from the video encode queue.
 * Fixed divide by zero error when video encoding is slower than 1 fps.
 * Fixed missing nonce error when clearing video encode queue.

@@ -1,5 +1,3 @@
-kgvid_video_vars = {};
-
 jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
 
 	var video_vars = jQuery(this).data('kgvid_video_vars');
@@ -351,6 +349,21 @@ function kgvid_setup_video(id) {
 
 		jQuery('#video_'+id).append(jQuery('#video_'+id+'_watermark'));
 
+		if ( videojs.browser.TOUCH_ENABLED == true ) {
+
+			if ( video_vars.nativecontrolsfortouch == "true" && videojs.browser.IS_ANDROID ) {
+
+				jQuery('.vjs-big-play-button').hide();
+
+			}
+
+			if ( player.controls() == false && player.muted() == false ) { //mobile browsers allow autoplay only if the player is muted
+
+				player.controls(true);
+
+			}
+		}
+
 		player.on('loadedmetadata', function(){
 
 			var text_tracks = player.textTracks();
@@ -372,7 +385,6 @@ function kgvid_setup_video(id) {
 			}
 
 			if ( video_vars.set_volume != "" ) { player.volume(video_vars.set_volume); }
-			if ( video_vars.mute == "true" ) { player.muted(true); }
 
 			if ( video_vars.autoplay == "true" && player.paused() ) { player.play(); }
 
@@ -785,7 +797,10 @@ function kgvid_resize_video(id) {
 						}
 
 						if (  video_vars.player_type == "Video.js" && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
-							if ( player.muted() == true ) { player.muted(false); player.muted(true); } // reset volume and mute otherwise player doesn't display properly
+							if ( player.muted() == true ) {
+								player.muted(false);
+								player.muted(true);
+							} // reset volume and mute otherwise player doesn't display properly
 							if ( player.volume() != 1 ) {
 								var current_volume = player.volume();
 								player.volume(1);
