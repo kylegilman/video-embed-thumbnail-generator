@@ -1579,7 +1579,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.10.7' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.11.6' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 
@@ -1919,7 +1919,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
-			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.10.7', true );
+			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.11.6', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 		}
 
@@ -1947,7 +1947,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
 
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?5.0.2"; }</script>'."\n";
+	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?5.1.0"; }</script>'."\n";
 
 }
 
@@ -2636,6 +2636,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
 			if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
+			if ( $query_atts["mute"] == 'true' ) { $code .= 'muted '; }
 			$code .= 'preload="'.$options['preload'].'" ';
 			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 			$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
@@ -8318,7 +8319,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
 <li><code>order="ASC/DESC"</code> '.__('sort order.', 'video-embed-thumbnail-generator').'</li>
 <li><code>poster="http://www.example.com/image.jpg"</code> '.__('sets the thumbnail.', 'video-embed-thumbnail-generator').'</li>
-<li><code>endofvideooverlay="http://www.example.com/end_image.jpg</code> '.__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
+<li><code>endofvideooverlay="http://www.example.com/end_image.jpg"</code> '.__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
 <li><code>width="xxx"</code></li>
 <li><code>height="xxx"</code></li>
 <li><code>fullwidth="true/false"</code> '.__('set video to always expand to fill its container.', 'video-embed-thumbnail-generator').'</li>
@@ -8332,14 +8333,14 @@ function kgvid_add_contextual_help_tab() {
 <li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
 <li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
 <li><code>watermark="http://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
-<li><code>watermark_link_to=home/parent/attachment/download/false"</code></li>
+<li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>
 <li><code>watermark_url="http://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>title="Video Title"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>embedcode="html code"</code> '.sprintf( __('changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>view_count="true/false"</code> '.__('turns the view count on or off.', 'video-embed-thumbnail-generator').'</li>
 <li><code>caption="Caption"</code> '.__('text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator').'</li>
 <li><code>description="Description"</code> '.__('Used for metadata only.', 'video-embed-thumbnail-generator').'</li>
-<li><code>downloadlink="true/false"</code> '.__('generates a link below the video to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
+<li><code>downloadlink="true/false"</code> '.__('shows a download icon overlay to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
 <li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
 <li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
 <li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li>
@@ -8354,7 +8355,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>track_default="default"</code> '.__('track is enabled by default.', 'video-embed-thumbnail-generator').'</li></ul>
 
 <p><strong>'.__('These options will only affect Video.js playback', 'video-embed-thumbnail-generator').'</strong></p>
-<ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="https://github.com/zencoder/video-js/blob/master/docs/skins.md">' ).'</a></li>
+<ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="http://codepen.io/heff/pen/EarCt">' ).'</a></li>
 <li><code>nativecontrolsfortouch="true/false"</code> '.__('enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator').'</li>
 </ul>
 
