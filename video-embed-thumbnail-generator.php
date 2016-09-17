@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.10
+Version: 4.6.11
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.10',
+		"version" => '4.6.11',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -1588,6 +1588,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	if ( $options['alwaysloadscripts'] == 'on' ) {
 		kgvid_enqueue_shortcode_scripts();
+		wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 	}
 
 }
@@ -2660,7 +2661,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts['view_count'] == "true" ) { $show_views = true; }
 			if ( !empty($query_atts['caption']) || $show_views || $query_atts['downloadlink'] == "true" ) {
 				$code .= "\t\t\t".'<div class="kgvid_below_video" id="video_'.$div_suffix.'_below">';
-				if ( $show_views ) { $code .= '<div class="kgvid-viewcount" id="video_'.$div_suffix.'_viewcount">'.sprintf( _n( '%s view', '%s views', intval(str_replace(',', '', $view_count)) , 'video-embed-thumbnail-generator'), $view_count ).'</div>'; }
+				if ( $show_views ) { $code .= '<div class="kgvid-viewcount" id="video_'.$div_suffix.'_viewcount">'.sprintf( _n( '%s view', '%s views', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), $view_count ).'</div>'; }
 				if ( !empty($query_atts['caption']) ) {
 					$code .= '<div class="kgvid-caption" id="video_'.$div_suffix.'_caption">'.$query_atts['caption'].'</div>';
 				}
@@ -3004,8 +3005,6 @@ function KGVID_shortcode($atts, $content = ''){
 			$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'">';
 			$code .= kgvid_gallery_page(1, $gallery_query_atts);
 			$code .= '</div>'; //end wrapper div
-
-			wp_localize_script( 'kgvid_video_embed', 'kgvid_video_gallery_query_'.$kgvid_gallery_id, $gallery_query_atts ); //add popup video code in footer
 
 			$kgvid_gallery_id++;
 
@@ -8299,7 +8298,7 @@ function kgvid_count_play() {
 	else { $plays = 1; }
 	$kgvid_postmeta[$event] = $plays;
 	kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
-	echo number_format(intval($plays));
+	echo sprintf( _n( '%s view', '%s views', $plays, 'video-embed-thumbnail-generator'), number_format($plays) );
 	die(); // stop executing script
 
 }

@@ -931,7 +931,7 @@ function kgvid_video_counter(id, event) {
 			post_id: video_vars.attachment_id,
 			video_event: event
 		}, function(data) {
-			if ( event == "play" ) { jQuery('#video_'+id+'_viewcount').html(data+' views'); }
+			if ( event == "play" ) { jQuery('#video_'+id+'_viewcount').html(data); }
 		});
 	}
 }
