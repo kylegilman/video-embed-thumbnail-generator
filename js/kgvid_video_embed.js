@@ -4,27 +4,7 @@ jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress 
 
 	if ( video_vars.player_type == "Video.js" ) {
 
-		var videojs_options = { "html5": { "nativeTextTracks" : false }, "language": video_vars.locale };
-		if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
-			videojs_options.fluid = true;
-		}
-		else {
-			videojs_options.fluid = false;
-		}
-		if ( video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {
-			videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
-		}
-		if ( video_vars.nativecontrolsfortouch == "true" ) {
-			videojs_options.nativeControlsForTouch = true;
-		}
-		if ( video_vars.enable_resolutions_plugin == "true" ) {
-			videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
-			if ( video_vars.default_res ) {
-				videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
-			}
-		}
-
-		videojs('video_'+video_vars.id, videojs_options ).ready(function(){ kgvid_setup_video(video_vars.id); });
+		kgvid_load_videojs(video_vars);
 
 	}
 });
@@ -224,7 +204,10 @@ function kgvid_SetVideo(id) { //for galleries
 					swfobject.embedSWF(video_vars.swfurl, 'video_'+id, video_vars.width, video_vars.height, '10.1.0', video_vars.expressinstallswfurl, video_vars.flashvars, video_vars.params);
 				}
 
-				setTimeout(function() { kgvid_setup_video(id); }, 0);
+				if ( video_vars.player_type == "Video.js" ) {
+					setTimeout(function() { kgvid_load_videojs(video_vars); }, 0);
+				}
+				else { setTimeout(function() { kgvid_setup_video(id); }, 0); }
 
 				dialog.wrap.css('overflow', 'hidden'); //disable scroll bars
 				if ( meta > 0 ) {
@@ -315,6 +298,32 @@ function kgvid_add_hover(id) {
 			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 		}
 	);
+
+}
+
+function kgvid_load_videojs(video_vars) {
+
+	var videojs_options = { "html5": { "nativeTextTracks" : false }, "language": video_vars.locale };
+	if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
+		videojs_options.fluid = true;
+	}
+	else {
+		videojs_options.fluid = false;
+	}
+	if ( video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {
+		videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
+	}
+	if ( video_vars.nativecontrolsfortouch == "true" ) {
+		videojs_options.nativeControlsForTouch = true;
+	}
+	if ( video_vars.enable_resolutions_plugin == "true" ) {
+		videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
+		if ( video_vars.default_res ) {
+			videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
+		}
+	}
+
+	videojs('video_'+video_vars.id, videojs_options ).ready(function(){ kgvid_setup_video(video_vars.id); });
 
 }
 

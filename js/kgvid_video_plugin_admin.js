@@ -140,9 +140,6 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		video.removeAttribute('style');
 		video.setAttribute('width', '200');
 
-		video.removeAttribute("controls");
-		video.muted=true;
-
 		var playButton = jQuery(".kgvid-play-pause");
 		var seekBar = jQuery(".kgvid-seek-bar");
 		var playProgress = jQuery(".kgvid-play-progress");
@@ -179,10 +176,16 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 
 		var timeDrag = false;   /* Drag status */
 		seekBar.mousedown(function(e) {
-			video.pause();
+			if ( video.paused == false ) {
+				video.pause();
+			}
 
-		   timeDrag = true;
-		   updatebar(e.pageX);
+			if ( video.currentTime == 0 ) {
+				video.play(); //video won't seek in Chrome unless it has played once already
+			}
+
+			timeDrag = true;
+			updatebar(e.pageX);
 		});
 		jQuery(document).mouseup(function(e) {
 		   if(timeDrag) {
@@ -211,14 +214,14 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		   playProgress.css('width', percentage+'%');
 		   seekHandle.css('left', percentage+'%');
 		   video.currentTime = maxduration * percentage / 100;
+
 		};
 
 		jQuery(video).on('loadedmetadata', function() {
 			var currentTimecode = jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val();
-			if ( !currentTimecode ) {
-				currentTimecode = '0';
+			if ( currentTimecode ) {
+				video.currentTime = kgvid_convert_from_timecode(currentTimecode);
 			}
-			video.currentTime = kgvid_convert_from_timecode(currentTimecode);
 		});
 
 		jQuery('.kgvid-video-controls').on('keydown.kgvid', function(e) {
@@ -320,8 +323,8 @@ function kgvid_reveal_thumb_video(postID) {
 			if ( video.networkState == 1 || video.networkState == 2 ) {
 				text.html(kgvidL10n.hidevideo);
 				jQuery('#attachments-'+postID+'-thumbnailplaceholder').slideUp();
-				jQuery('#thumb-video-'+postID).on('timeupdate.kgvid', function() {
-					if (document.getElementById('thumb-video-'+postID).currentTime != 0) {
+				jQuery(video).on('timeupdate.kgvid', function() {
+					if (video.currentTime != 0) {
 					   var thumbtimecode = kgvid_convert_to_timecode(document.getElementById('thumb-video-'+postID).currentTime);
 					   jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val(thumbtimecode);
 					}
@@ -447,6 +450,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 					var thumbnail_saved = jQuery(video).data('thumbnail_data');
 					if ( thumbnail_saved.length > 0 ) { //if there are any thumbnails that haven't been generated
 
+						if ( video.paused == false ) { video.pause(); }
+
 						time_id = Math.round(video.currentTime*100);
 						var time_display = kgvid_convert_to_timecode(video.currentTime);
 
@@ -493,6 +498,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 					var thumbtimecode = kgvid_convert_from_timecode(specifictimecode);
 					thumbnails = [thumbtimecode];
 				}
+				video.play();
 				video.currentTime = thumbnails[0];
 				jQuery(video).data('thumbnail_data', thumbnails);
 

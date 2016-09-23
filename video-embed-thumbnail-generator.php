@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.11
+Version: 4.6.12
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.11',
+		"version" => '4.6.12',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -2655,8 +2655,13 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		$code .= "\t\t\t</div>\n";
 		$show_views = false;
 		if ( ( !empty($id) && $query_atts['view_count'] == "true" ) || !empty($query_atts['caption']) || $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { //generate content below the video
-			if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) ) { $view_count = number_format(intval($kgvid_postmeta['starts'])); }
-			else { $view_count = "0"; }
+			if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) ) {
+				$view_count = number_format(intval($kgvid_postmeta['starts']));
+			}
+			else {
+				$view_count = "0";
+				$kgvid_postmeta['starts'] = 0;
+			}
 			if ( $content == plugins_url('/images/sample-video-h264.mp4', __FILE__) ) { $view_count = "XX"; }
 			if ( $query_atts['view_count'] == "true" ) { $show_views = true; }
 			if ( !empty($query_atts['caption']) || $show_views || $query_atts['downloadlink'] == "true" ) {
@@ -5621,7 +5626,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 					$choose_from_video_content = '<div style="display:none;" class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
 						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">'.__('Choose from video...', 'video-embed-thumbnail-generator').'</span></div>
 						<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-							<video crossorigin="anonymous" preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'" controls>'.
+							<video crossorigin="anonymous" muted preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'">'.
 							implode("\n", $sources).'
 							</video>
 							<div class="kgvid-video-controls" tabindex="0">
