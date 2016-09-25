@@ -245,7 +245,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.12 - September 20, 2016 =
+= 4.6.12 - September 25, 2016 =
+* Restored Video.js resolution selection in pop-up video galleries.
 * Fixed thumbnail creation bugs in Chrome browser.
 * Fixed missing 'starts' error message when video had never been played.
 

@@ -5827,6 +5827,7 @@ function kgvid_hide_video_children($wp_query_obj) {
 		&& !array_key_exists('post_mime_type', $wp_query_obj->query_vars) //show children when specifically displaying videos
 		&& ( array_key_exists('posts_per_page', $wp_query_obj->query_vars) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) //hide children only when showing paged content (makes sure that -1 will actually return all attachments)
 	) {
+
 		$wp_query_obj->set(
 			'meta_query',
 			array(
