@@ -453,6 +453,7 @@ span.kgvid_gallery_pagination_arrow {
 .kgvid_gallery_pagination span a {
 	border: none;
 	text-decoration: none;
+	box-shadow: none;
 }
 
 .kgvid_temp_thumb {

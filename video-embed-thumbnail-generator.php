@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.12
+Version: 4.6.13
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.12',
+		"version" => '4.6.13',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -2529,7 +2529,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts["poster"] != '' ) { $attr['poster'] = esc_attr($query_atts["poster"]); }
 			if ( $query_atts["loop"] == 'true') { $attr['loop'] = "true"; }
 			if ( $query_atts["autoplay"] == 'true') { $attr['autoplay'] = "true"; }
-			$attr['preload'] = $options['preload'];
+			$attr['preload'] = $query_atts['preload'];
 			$attr['width'] = $query_atts['width'];
 			$attr['height'] = $query_atts['height'];
 
@@ -3007,7 +3007,7 @@ function KGVID_shortcode($atts, $content = ''){
 			if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_textalign_right'; }
 			if ( $query_atts['inline'] == "true" ) { $aligncode .= ' kgvid_wrapper_inline'; }
 
-			$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'">';
+			$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'" data-query_atts="'.esc_attr(json_encode($gallery_query_atts)).'">';
 			$code .= kgvid_gallery_page(1, $gallery_query_atts);
 			$code .= '</div>'; //end wrapper div
 
@@ -5841,7 +5841,7 @@ function kgvid_hide_video_children($wp_query_obj) {
 	}//end if
 
 }
-add_action('pre_get_posts','kgvid_hide_video_children');
+add_action('pre_get_posts', 'kgvid_hide_video_children');
 
 function kgvid_change_video_icon($icon, $mime, $post_id) {
 

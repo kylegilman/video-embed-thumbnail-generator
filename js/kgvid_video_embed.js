@@ -948,6 +948,8 @@ function kgvid_video_counter(id, event) {
 function kgvid_switch_gallery_page(obj, post_action) {
 
 	var gallery_id = jQuery(obj).parents('.kgvid_gallerywrapper').attr('id');
+	var query_atts = jQuery('#'+gallery_id).data('query_atts');
+	console.log(query_atts);
 	var page = jQuery(obj).children().first().html();
 	var last_id = jQuery('.kgvid_videodiv, .kgvid_video_gallery_thumb').last().data('id').substr(6);
 
@@ -957,7 +959,7 @@ function kgvid_switch_gallery_page(obj, post_action) {
 		action: 'kgvid_switch_gallery_page',
 		security: kgvidL10n_frontend.ajax_nonce,
 		page: page,
-		query_atts: eval('kgvid_video_gallery_query_'+gallery_id.substr(14)),
+		query_atts: query_atts,
 		last_video_id: last_id
 	}, function(data) {
 		jQuery('#'+gallery_id).html(data);
