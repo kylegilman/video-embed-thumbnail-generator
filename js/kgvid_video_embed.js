@@ -801,7 +801,33 @@ function kgvid_resize_video(id) {
 						var set_res = Math.min.apply(Math,res_options);
 
 						if ( set_res != current_resolution ) {
-							player.changeRes(set_res+'p');
+
+							if ( video_vars.player_type == "Video.js" ) {
+
+								if ( player.paused() ) {
+									player.one('play', function() {
+										player.changeRes(set_res+'p');
+										player.play();
+									});
+								}
+								else {
+									player.changeRes(set_res+'p');
+								}
+
+							}
+
+							if ( video_vars.player_type == "WordPressDefault" ) {
+
+								if ( player.media.paused ) {
+									jQuery(player.media).one('play', function() {
+										player.changeRes(set_res+'p');
+									});
+								}
+								else {
+									player.changeRes(set_res+'p');
+								}
+
+							}
 
 						}
 
@@ -949,7 +975,6 @@ function kgvid_switch_gallery_page(obj, post_action) {
 
 	var gallery_id = jQuery(obj).parents('.kgvid_gallerywrapper').attr('id');
 	var query_atts = jQuery('#'+gallery_id).data('query_atts');
-	console.log(query_atts);
 	var page = jQuery(obj).children().first().html();
 	var last_id = jQuery('.kgvid_videodiv, .kgvid_video_gallery_thumb').last().data('id').substr(6);
 

@@ -2856,6 +2856,7 @@ function kgvid_shortcode_atts($atts) {
 		'gallery_title' => $options['gallery_title'],
 		'volume' => $options['volume'],
 		'mute' => $options['mute'],
+		'preload' => $options['preload'],
 		'title' => $options['overlay_title'],
 		'embedcode' => $options['overlay_embedcode'],
 		'view_count' => $options['view_count'],
@@ -8336,6 +8337,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
 <li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
+<li><code>preload="metadata/auto/none"</code> '.__('indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator').'</li>
 <li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
 <li><code>watermark="http://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>

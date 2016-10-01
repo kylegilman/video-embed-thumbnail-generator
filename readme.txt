@@ -245,8 +245,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.13 - September 29, 2016 =
+= 4.6.13 - October 1, 2016 =
 * Fixed bug that disabled gallery page switching.
+* Delayed automatic resolution switching until playback starts.
+* Fixed bug that disabled resolution switching if preload is set to "none"
+* Added preload as a shortcode attribute.
 
 = 4.6.12 - September 25, 2016 =
 * Restored Video.js resolution selection in pop-up video galleries.

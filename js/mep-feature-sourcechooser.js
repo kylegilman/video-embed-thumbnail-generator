@@ -125,7 +125,7 @@
 						jQuery(canvas).remove();
 					});
 				}
-
+				media.preload = "metadata";
 				setTimeout(function(){ media.setSrc(src); }, 0);
 				this.currentRes = target_res;
 				jQuery(this.sourcechooserButton).find('li').removeClass('mejs-sourcechooser-selected');
