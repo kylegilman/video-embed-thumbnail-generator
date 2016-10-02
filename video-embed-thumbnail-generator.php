@@ -6228,13 +6228,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 }
 add_filter("attachment_fields_to_save", "kgvid_video_attachment_fields_to_save", null, 2);
 
-class kgInsertMedia {
-  //class constructor
-  function kgInsertMedia () {
-    add_filter('media_send_to_editor', array($this, 'kgmodifyMediaInsert') , 10, 3);
-  }
-  //function that does the modifying
-  function kgmodifyMediaInsert($html, $attachment_id, $attachment) {
+function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 
 	$mime_type = get_post_mime_type($attachment_id);
 
@@ -6288,10 +6282,8 @@ class kgInsertMedia {
 
     return $html;
 
-  }//end function
 }
-//instantiate the class
-$kgIM = new kgInsertMedia();
+add_filter('media_send_to_editor', 'kgvid_modify_media_insert' , 10, 3);
 
 function kgvid_embedurl_menu($tabs) {
 	$newtab = array( 'embedurl' => _x('Embed Video from URL', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator') );
