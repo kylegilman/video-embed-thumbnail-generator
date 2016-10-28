@@ -57,7 +57,7 @@
 
 						if ( src.dataset.default_res != undefined ) {
 							if ( this.currentRes != src.dataset.res ) {
-								this.changeRes(src.dataset.res);
+								this.changeRes(src.dataset.res,"none");
 							}
 						}
 
@@ -102,8 +102,7 @@
 			}
 		},
 
-		changeRes: function(target_res) {
-
+		changeRes: function(target_res,this_preload) {
 			var media = this.media;
 			var src = this.availableRes[target_res];
 
@@ -125,7 +124,9 @@
 						jQuery(canvas).remove();
 					});
 				}
-				media.preload = "metadata";
+				if(!this_preload)
+					this_preload = "metadata";
+				media.preload = this_preload;
 				setTimeout(function(){ media.setSrc(src); }, 0);
 				this.currentRes = target_res;
 				jQuery(this.sourcechooserButton).find('li').removeClass('mejs-sourcechooser-selected');
