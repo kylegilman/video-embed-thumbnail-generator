@@ -57,7 +57,7 @@
 
 						if ( src.dataset.default_res != undefined ) {
 							if ( this.currentRes != src.dataset.res ) {
-								this.changeRes(src.dataset.res,"none");
+								this.changeRes(src.dataset.res, media.preload);
 							}
 						}
 
