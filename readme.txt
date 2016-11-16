@@ -98,6 +98,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `loop="true/false"`
 * `autoplay="true/false"`
 * `pauseothervideos="true/false"` video will pause other videos on the page when it starts playing.
+* `preload="metadata/auto/none"` indicate how much of the video should be loaded when the page loads.
 * `start="mm:ss"` video will start playing at this timecode.
 * `watermark="http://www.example.com/image.png"` or `"false"` to disable.
 * `watermark_link_to=home/parent/attachment/download/false"`
@@ -250,6 +251,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Delayed automatic resolution switching until playback starts.
 * Fixed bug that disabled resolution switching if preload is set to "none"
 * Added preload as a shortcode attribute.
+* Fixed deprecated class constructor warning in PHP 7.
 
 = 4.6.12 - September 25, 2016 =
 * Restored Video.js resolution selection in pop-up video galleries.

@@ -1518,7 +1518,7 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 
 }
 
-class kgvid_Process{
+class kgvid_Process {
 
     private $pid;
     private $command;
@@ -5581,8 +5581,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			if ( !isset($options['ffmpeg_exists']) || $options['ffmpeg_exists'] == "notchecked" ) {
 					kgvid_check_ffmpeg_exists($options, true);
 				}
-			if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.sprintf( __('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ).'"'; }
-			else { $ffmpeg_disabled_text = ""; }
+			/* if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.sprintf( __('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ).'"'; }
+			else { $ffmpeg_disabled_text = ""; } */
+
+			$ffmpeg_disabled_text = "";
 
 			$update_script = "";
 			if ( $options['ffmpeg_exists'] == "on" && $options['auto_thumb'] == "on" && !$thumbnail_url && $created_time < 60 ) {
@@ -5624,10 +5626,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				}
 
 				if ( $img_editor_works ) {
-					$choose_from_video_content = '<div style="display:none;" class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
+					$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
 						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">'.__('Choose from video...', 'video-embed-thumbnail-generator').'</span></div>
 						<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-							<video crossorigin="anonymous" muted preload="metadata" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'">'.
+							<video crossorigin="anonymous" muted preload="none" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'">'.
 							implode("\n", $sources).'
 							</video>
 							<div class="kgvid-video-controls" tabindex="0">

@@ -275,7 +275,7 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 		});
 
 		jQuery('.kgvid-video-controls').focus();
-
+console.log('video setup');
 		jQuery(video).data('setup', true);
 		if ( jQuery(video).data('busy') != true ) { kgvid_break_video_on_close(postID); }
 	}
@@ -303,16 +303,20 @@ function kgvid_draw_thumb_canvas(canvas, canvas_source) {
 }
 
 function kgvid_reveal_video_stats(postID) {
+
 	jQuery('#show-video-stats-'+postID).hide();
 	jQuery('#video-'+postID+'-stats').animate({opacity: 'toggle', height: 'toggle'}, 500);
+
 }
 
 function kgvid_reveal_thumb_video(postID) {
+
 	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
 	var text = jQuery('#show-thumb-video-'+postID+' :nth-child(2)');
 	video = document.getElementById('thumb-video-'+postID);
 
 	if ( text.html() == kgvidL10n.choosefromvideo ) { //video is being revealed
+
 		jQuery(video).data('busy', true);
 		jQuery(video).removeAttr('src');
 		jQuery(video).attr("preload", "metadata");
@@ -330,11 +334,17 @@ function kgvid_reveal_thumb_video(postID) {
 					}
 				});
 			}
-			else { text.html(kgvidL10n.cantloadvideo); }
+			else {
+
+				text.html(kgvidL10n.cantloadvideo);
+				jQuery('#thumb-video-'+postID+'-player').hide();
+				jQuery('#show-thumb-video-'+postID+' :first').hide();
+
+			}
 
 		}, 1000);
 	}
-	else { //video is being hidden
+	else if ( text.html() == kgvidL10n.hidevideo ) { //video is being hidden
 
 		video.pause();
 		jQuery('#thumb-video-'+postID).off('timeupdate.kgvid');
@@ -346,8 +356,13 @@ function kgvid_reveal_thumb_video(postID) {
 		}
 
 	}
-	jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 500);
-	jQuery('#generate-thumb-'+postID+'-container').animate({opacity: 'toggle', height: 'toggle'}, 500);
+
+	if ( text.html() != kgvidL10n.cantloadvideo ) {
+
+		jQuery('#thumb-video-'+postID+'-player').animate({opacity: 'toggle', height: 'toggle'}, 500);
+		jQuery('#generate-thumb-'+postID+'-container').animate({opacity: 'toggle', height: 'toggle'}, 500);
+
+	}
 
 }
 
@@ -376,6 +391,26 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var increaser = 0;
 	var iincreaser = 0;
 	var page = "attachment";
+
+	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" && jQuery('#thumb-video-'+postID).data('setup') == undefined ) {
+
+		video = document.getElementById('thumb-video-'+postID);
+		video.preload = "metadata";
+
+		setTimeout(function(){ //wait for video to start loading
+
+			if ( video.networkState == 1 || video.networkState == 2 ) {
+				console.log('loading');
+			}
+			else {
+
+console.log('not loading');
+
+			}
+
+		}, 1000);
+
+	}
 
 	jQuery(thumbnailplaceholderid).empty();
 	jQuery(thumbnailplaceholderid).append('<strong>'+kgvidL10n.choosethumbnail+' </strong><div style="display:inline-block;" id="attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv" name="attachments-'+postID+'-kgflashmediaplayer-cancelthumbsdiv"> <input type="button" id="attachments-'+postID+'-kgflashmediaplayer-cancelencode" class="button-secondary" value="Cancel Generating" name="attachments-'+postID+'-cancelencode" onclick="kgvid_cancel_thumbs(\''+postID+'\');"></div><div id="attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay" name="attachments-'+postID+'-kgflashmediaplayer-thumbnailboxoverlay" class="kgvid_thumbnail_overlay"><div name="attachments-'+postID+'-kgflashmediaplayer-thumbnailbox" id="attachments-'+postID+'-kgflashmediaplayer-thumbnailbox" class="kgvid_thumbnail_box"></div></div>');
