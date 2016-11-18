@@ -246,11 +246,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.13 - October 1, 2016 =
+= 4.6.13 - November 18, 2016 =
 * Fixed bug that disabled gallery page switching.
 * Delayed automatic resolution switching until playback starts.
 * Fixed bug that disabled resolution switching if preload is set to "none"
 * Added preload as a shortcode attribute.
+* Delayed loading videos in attachment editing page until needed for thumbnail creation.
 * Fixed deprecated class constructor warning in PHP 7.
 
 = 4.6.12 - September 25, 2016 =

@@ -1608,6 +1608,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'hidevideo' => __('Hide video...', 'video-embed-thumbnail-generator'),
 				'choosefromvideo' => __('Choose from video...', 'video-embed-thumbnail-generator'),
 				'cantloadvideo' => __('Can\'t load video', 'video-embed-thumbnail-generator'),
+				'cantmakethumbs' => sprintf( __('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ),
 				'choosethumbnail' => __('Choose Thumbnail:', 'video-embed-thumbnail-generator'),
 				'saveallthumbnails' => __('Save All Thumbnails', 'video-embed-thumbnail-generator'),
 				'saving' => __('Saving...', 'video-embed-thumbnail-generator'),
@@ -2638,7 +2639,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
 			if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
 			if ( $query_atts["mute"] == 'true' ) { $code .= 'muted '; }
-			$code .= 'preload="'.$options['preload'].'" ';
+			$code .= 'preload="'.$query_atts['preload'].'" ';
 			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 			$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
 			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
@@ -2830,6 +2831,7 @@ function kgvid_shortcode_atts($atts) {
 		'autohide' => $options['autohide'],
 		'poster' => $options['poster'],
 		'start' => '',
+		'preload' => $options['preload'],
 		'watermark' => $options['watermark'],
 		'watermark_link_to' => $options['watermark_link_to'],
 		'watermark_url' => $options['watermark_url'],
@@ -5645,7 +5647,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				else {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box">Thumbnail selection requires GD or Imagick PHP libraries.</div>';
 				}
-				$generate_content = '<div id="generate-thumb-'.$post->ID.'-container" class="kgvid-tabs-content">
+				$generate_content = '<div id="generate-thumb-'.$post->ID.'-container" class="kgvid-tabs-content" data-ffmpeg="'.$options['ffmpeg_exists'].'">
 				<input id="attachments-'. $post->ID .'-kgflashmediaplayer-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$kgvid_postmeta['numberofthumbs'].'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.$readonly.'/>
 				<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button-secondary" value="'._x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
 				<input type="button" id="attachments-'. $post->ID .'-thumbrandomize" class="button-secondary" value="'._x('Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator').'" name="thumbrandomize" onclick="kgvid_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/>
