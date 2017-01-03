@@ -246,9 +246,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.13 - November 18, 2016 =
+= 4.6.13 - January 3, 2017 =
 * Fixed bug that disabled gallery page switching.
-* Delayed automatic resolution switching until playback starts.
+* Delayed automatic resolution switching until playback starts and now sorting sources to make default resolution the first element and prevent unnecessary source switching after the page loads.
 * Fixed bug that disabled resolution switching if preload is set to "none"
 * Added preload as a shortcode attribute.
 * Delayed loading videos in attachment editing page until needed for thumbnail creation.

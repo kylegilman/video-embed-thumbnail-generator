@@ -2399,6 +2399,15 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				if ( $query_atts["auto_res"] == "lowest" ) { $video_variables['default_res'] = reset($h264_resolutions); }
 				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) { $video_variables['default_res'] = $query_atts["auto_res"]; }
 				else { $video_variables['default_res'] = false; }
+
+				$default_key = intval($video_variables['default_res']);
+
+				if ( $video_variables['default_res'] && array_key_exists($default_key, $sources) ) {
+					$default_source = $sources[$default_key];
+					unset($sources[$default_key]);
+					$sources = array($default_key => $default_source) + $sources;
+				}
+
 			}
 			else { $video_variables['enable_resolutions_plugin'] = false; }
 
@@ -2523,7 +2532,9 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					if ( strpos($source, 'data-res="'.$res_label.'"') !== false ) { $default_key = $key; }
 				}
 
-				if ( $default_key !== false )  { $sources[$default_key] .= ' data-default_res="true"'; }
+				if ( $default_key !== false )  {
+					$sources[$default_key] .= ' data-default_res="true"';
+				}
 
 			}
 
