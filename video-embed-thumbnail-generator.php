@@ -1608,7 +1608,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'hidevideo' => __('Hide video...', 'video-embed-thumbnail-generator'),
 				'choosefromvideo' => __('Choose from video...', 'video-embed-thumbnail-generator'),
 				'cantloadvideo' => __('Can\'t load video', 'video-embed-thumbnail-generator'),
-				'cantmakethumbs' => sprintf( __('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ),
+				'cantmakethumbs' => sprintf( __('Error: unable to load video in browser for thumbnail generation and %1$s not found at %2$s', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ),
 				'choosethumbnail' => __('Choose Thumbnail:', 'video-embed-thumbnail-generator'),
 				'saveallthumbnails' => __('Save All Thumbnails', 'video-embed-thumbnail-generator'),
 				'saving' => __('Saving...', 'video-embed-thumbnail-generator'),

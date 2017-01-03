@@ -424,7 +424,10 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				}
 				else { //there's no way to make thumbnails
 
-					jQuery('#attachments-'+postID+'-thumbgenerate, #attachments-'+postID+'-thumbrandomize').attr('disabled', true).attr('title', kgvidL10n.cantmakethumbs);
+					jQuery('#attachments-'+postID+'-thumbgenerate, #attachments-'+postID+'-thumbrandomize, #attachments-'+postID+'-firstframe, #attachments-'+postID+'-kgflashmediaplayer-thumbtime, #attachments-'+postID+'-kgflashmediaplayer-numberofthumbs').attr('disabled', true).attr('title', kgvidL10n.cantmakethumbs);
+
+					jQuery(thumbnailplaceholderid).empty();
+					jQuery('#thumb-video-'+postID+'-container').hide();
 
 					alert(kgvidL10n.cantmakethumbs);
 
