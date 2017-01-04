@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
-Tested up to: 4.6
+Tested up to: 4.7
 Stable tag: 4.6.13
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -247,6 +247,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.13 - January 4, 2017 =
+* Updated Video.js player to version 5.14.1
 * Fixed bug that disabled gallery page switching.
 * Delayed automatic resolution switching until playback starts and now sorting sources to make the default resolution the first element and prevent unnecessary source switching after the page loads.
 * Fixed bug that disabled resolution switching if preload is set to "none"
@@ -254,6 +255,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Delayed loading videos in attachment editing page until needed for thumbnail creation.
 * Fixed bug that deleted completed same-resolution video files if other video formats were added or removed from the queue before encoding of secondary formats was completed.
 * Fixed deprecated class constructor warning in PHP 7.
+* Removed unnecessary Video.js player re-initializations.
 
 = 4.6.12 - September 25, 2016 =
 * Restored Video.js resolution selection in pop-up video galleries.
