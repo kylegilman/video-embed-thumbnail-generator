@@ -403,6 +403,10 @@ div.kgvid_post_meta_boxes {
 	background-color: black;
 }
 
+.mejs-container .kgvid-thumb-video {
+    margin-top: 0;
+}
+
 .kgvid-video-controls {
 	white-space: nowrap;
 }

@@ -106,14 +106,6 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 	jQuery('#attachments-'+postID+'-thumbrandomize').prop('disabled', false).attr('title', '');
 	jQuery('#attachments-'+postID+'-kgflashmediaplayer-numberofthumbs').prop('disabled', false).attr('title', '');
 
-	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) {  //this is the Media Library pop-up introduced in WordPress 4.0
-		var mep_id = jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id');
-		mejs.players[mep_id].remove();
-		var current_source = video.currentSrc;
-		video.src = current_source.split("?")[0];
-		video.load();
-	}
-
 	jQuery('#thumb-video-'+postID+'-container').show();
 
 	if ( video != null && jQuery(video).data('setup') != true ) {
@@ -315,6 +307,13 @@ function kgvid_reveal_thumb_video(postID) {
 	video = document.getElementById('thumb-video-'+postID);
 
 	if ( text.html() == kgvidL10n.choosefromvideo ) { //video is being revealed
+
+		if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) { //this is the Media Library pop-up introduced in WordPress 4.0;
+
+			jQuery('#thumb-video-'+postID+'-player .mejs-container .mejs-layers, #thumb-video-'+postID+'-player .mejs-container .mejs-controls').remove();
+
+
+		}
 
 		jQuery(video).data('busy', true);
 		jQuery(video).removeAttr('src');
