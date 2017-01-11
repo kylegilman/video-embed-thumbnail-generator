@@ -140,7 +140,7 @@ img.kgvid_ios_novideo {
 .kgvid_meta_icons a {
 	text-decoration: none;
 	border: none;
-	box-shadow: none;
+	box-shadow: none !important;
 }
 
 .kgvid_meta_icons span {
