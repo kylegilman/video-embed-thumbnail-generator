@@ -246,6 +246,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.14 - January 13, 2017 =
+* Added check for Video.js version in case another application loads an older version. Resolution selector will not load if Video.js is not 5.x or above.
+* Added hook for download logging using the single-click download method. An alpha version of a download logging add-on plugin is <a href="https://github.com/kylegilman/file-download-logger">available on GitHub</a>.
+
 = 4.6.13 - January 5, 2017 =
 * Updated Video.js player to version 5.14.1
 * Fixed bug that disabled gallery page switching.

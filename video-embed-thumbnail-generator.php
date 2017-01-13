@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.14.beta.1',
+		"version" => '4.6.14.beta.2',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -836,10 +836,12 @@ function kvid_readfile_chunked($file, $retbytes=TRUE) { //sends large files in c
 
 	$chunksize = 1 * (1024 * 1024);
 	$buffer = '';
-	$cnt =0;
+	$cnt = 0;
 
 	$handle = fopen($file, 'r');
 	if ($handle === FALSE) { return FALSE; }
+
+	$download_log = apply_filters( 'kg_file_download_logger_start', false );
 
 	while (!feof($handle)) {
 
@@ -849,9 +851,20 @@ function kvid_readfile_chunked($file, $retbytes=TRUE) { //sends large files in c
 		flush();
 
 		if ($retbytes) { $cnt += strlen($buffer); }
+
 	}
 
 	$status = fclose($handle);
+
+	if ( $download_log ) {
+		if ( $cnt == filesize($file) ) {
+			$complete = true;
+		}
+		else {
+			$complete = false;
+		}
+		do_action( 'kg_file_download_logger_end', $download_log, $complete );
+	}
 
 	if ($retbytes AND $status) { return $cnt; }
 
@@ -859,8 +872,8 @@ function kvid_readfile_chunked($file, $retbytes=TRUE) { //sends large files in c
 
 }
 
-function kgvid_get_attachment_medium_url( $id )
-{
+function kgvid_get_attachment_medium_url( $id ) {
+
     $medium_array = image_downsize( $id, 'medium' );
     $medium_path = $medium_array[0];
 
@@ -1922,7 +1935,8 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
-			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.14.1', true );
+			//wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.14.1', true );
+			wp_enqueue_script( 'video-js', 'http://vjs.zencdn.net/4.12.1/video.js', '', '4.12.1', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 		}
 
@@ -6556,8 +6570,6 @@ function kgvid_video_attachment_template() {
 			header('Pragma: no-cache');
 			header("Content-Length: ".filesize($filepath));
 		}
-
-		do_action('kg_file_download_logger_start' );
 
 		kvid_readfile_chunked($filepath);
 		exit;

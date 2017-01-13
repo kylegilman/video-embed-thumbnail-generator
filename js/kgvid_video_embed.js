@@ -317,9 +317,18 @@ function kgvid_load_videojs(video_vars) {
 		videojs_options.nativeControlsForTouch = true;
 	}
 	if ( video_vars.enable_resolutions_plugin == "true" ) {
-		videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
-		if ( video_vars.default_res ) {
-			videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
+
+		if ( videojs.VERSION.split('.')[0] >= 5 ) {
+
+			videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
+			if ( video_vars.default_res ) {
+				videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
+			}
+
+		}
+
+		else {
+			console.warn('Video Embed & Thumbnail Generator: Video.js version '+videojs.VERSION+' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.');
 		}
 	}
 
@@ -358,7 +367,7 @@ function kgvid_setup_video(id) {
 
 		jQuery('#video_'+id).append(jQuery('#video_'+id+'_watermark'));
 
-		if ( videojs.browser.TOUCH_ENABLED == true ) {
+		if ( videojs.VERSION.split('.')[0] >= 5 && videojs.browser.TOUCH_ENABLED == true ) {
 
 			if ( video_vars.nativecontrolsfortouch == "true" && videojs.browser.IS_ANDROID ) {
 
@@ -375,20 +384,24 @@ function kgvid_setup_video(id) {
 
 		player.on('loadedmetadata', function(){
 
-			var text_tracks = player.textTracks();
-			var track_elements = player.options_.tracks;
-			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
+			if ( videojs.VERSION.split('.')[0] >= 5 ) {
 
-			if ( played == "not played" ) { //only turn on the default captions on first load
+				var text_tracks = player.textTracks();
+				var track_elements = player.options_.tracks;
+				var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
-				if ( track_elements != null ) {
-					jQuery(text_tracks).each(function(index, track) {
-						if ( track_elements[index].default == true && track.mode != 'showing' ) { player.textTracks()[index].mode = 'showing'; }
-					});
-				}
+				if ( played == "not played" ) { //only turn on the default captions on first load
 
-				if ( video_vars.start != '' ) {
-					player.currentTime(kgvid_convert_from_timecode(video_vars.start));
+					if ( track_elements != null ) {
+						jQuery(text_tracks).each(function(index, track) {
+							if ( track_elements[index].default == true && track.mode != 'showing' ) { player.textTracks()[index].mode = 'showing'; }
+						});
+					}
+
+					if ( video_vars.start != '' ) {
+						player.currentTime(kgvid_convert_from_timecode(video_vars.start));
+					}
+
 				}
 
 			}
@@ -408,7 +421,7 @@ function kgvid_setup_video(id) {
 			if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+' > .vjs-control-bar').removeClass('vjs-fade-in'); }
 			if ( video_vars.endofvideooverlay != "" ) { jQuery('#video_'+id+' > .vjs-poster').hide(); }
 
-			if ( video_vars.pauseothervideos == "true" ) {
+			if ( video_vars.pauseothervideos == "true" && videojs.VERSION.split('.')[0] >= 5 ) {
 				jQuery.each(videojs.getPlayers(), function(otherPlayerId, otherPlayer) {
 					if ( player.id() != otherPlayerId && !otherPlayer.paused() && !otherPlayer.autoplay() ) {
 						otherPlayer.pause();
@@ -727,7 +740,7 @@ function kgvid_resize_video(id) {
 
 			} //if the video is embedded
 
-			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null ) ) {
+			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null ) ) {
 
 				video_vars.player_type == "Video.js"
 
@@ -770,7 +783,7 @@ function kgvid_resize_video(id) {
 				}
 			}
 
-			if ( ( video_vars.player_type == "Video.js" && eval('videojs.getPlayers()["video_'+id+'"]') != null )
+			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null )
 				||  ( video_vars.player_type == "WordPressDefault" && typeof mejs !== 'undefined' )
 			) {
 				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {

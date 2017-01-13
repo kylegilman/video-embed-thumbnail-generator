@@ -12,6 +12,14 @@
  * FIXME with hacks by User:TheDJ to make this video-js 5.0 compatible
  */
 
+function kgvid_load_video_quality_selector() {
+
+if ( videojs.VERSION.split('.')[0] < 5 ) {
+
+	return;
+
+}
+
 
 /***********************************************************************************
  * Define some helper functions
@@ -424,3 +432,7 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 
 	} );
 });
+
+}
+
+kgvid_load_video_quality_selector();
