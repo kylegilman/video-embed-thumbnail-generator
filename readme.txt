@@ -252,6 +252,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added option to disable view tracking in the WordPress database.
 * Added option to use FFMPEG's auto rotation feature, available in recent versions of FFMPEG.
 * Added check for Video.js version in case another application loads an older version. The resolution selector feature will not load if Video.js is not 5.x or above.
+* Added check for a new parent post if a video thumbnail is auto generated before a corresponding post is created. If a new parent exists, the thumbnail is set as the featured image for the new post. This is usually only necessary when used with frontend uploaders.
 * Added hook for download logging using the single-click download method. An alpha version of a download logging add-on plugin is <a href="https://github.com/kylegilman/file-download-logger">available on GitHub</a>.
 
 = 4.6.13 - January 5, 2017 =

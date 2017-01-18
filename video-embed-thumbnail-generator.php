@@ -5426,7 +5426,14 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 			update_post_meta($post_id, '_kgflashmediaplayer-poster-id', $thumb_id[$thumb_key]);
 			set_post_thumbnail($post_id, $thumb_id[$thumb_key]);
 			if( $options['featured'] == "on" ) {
-				if ( !empty($thumb_id[$thumb_key]) && !empty($post->post_parent) ) { set_post_thumbnail($post->post_parent, $thumb_id[$thumb_key]); }
+				if ( !empty($thumb_id[$thumb_key]) ) {
+					if ( !empty($post->post_parent) ) {
+						set_post_thumbnail($post->post_parent, $thumb_id[$thumb_key]);
+					}
+					else { //video has no parent post yet
+						wp_schedule_single_event( time() + 60, 'kgvid_cron_check_post_parent', array($post_id) );
+					}
+				}
 			}
 		}//end setting main thumbnail
 
@@ -5474,6 +5481,19 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 
 }
 add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler');
+
+function kgvid_cron_check_post_parent_handler( $post_id ) {
+
+	$post = get_post($post_id);
+	$video_thumbnail_id = get_post_thumbnail_id($post_id);
+	$post_thumbnail_id = get_post_thumbnail_id($post->post_parent);
+
+	if ( !empty($post->post_parent) && !empty($video_thumbnail_id) && empty($post_thumbnail_id) ) {
+		set_post_thumbnail($post->post_parent, $video_thumbnail_id);
+	}
+
+}
+add_action('kgvid_cron_check_post_parent', 'kgvid_cron_check_post_parent_handler');
 
 function kgvid_change_thumbnail_parent( $post_id, $parent_id ) {
 
