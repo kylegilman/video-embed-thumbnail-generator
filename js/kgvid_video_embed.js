@@ -458,7 +458,10 @@ function kgvid_setup_video(id) {
 		});
 
 		player.on('ended', function kgvid_play_end(){
-			kgvid_video_counter(id, 'end');
+			if ( jQuery('#video_'+id+'_div').data("end") == undefined ) {
+				jQuery('#video_'+id+'_div').data("end", true);
+				kgvid_video_counter(id, 'end');
+			}
 			setTimeout(function() { jQuery('#video_'+id+' > .vjs-loading-spinner').hide(); }, 250);
 			if ( video_vars.endofvideooverlay != "" ) {
 				jQuery('#video_'+id+' > .vjs-poster').css({
@@ -593,7 +596,10 @@ function kgvid_setup_video(id) {
 		});
 
 		player.on('ended', function(){
-			kgvid_video_counter(id, 'end');
+			if ( jQuery('#video_'+id+'_div').data("end") == undefined ) {
+				jQuery('#video_'+id+'_div').data("end", true);
+				kgvid_video_counter(id, 'end');
+			}
 			if ( video_vars.endofvideooverlay != "" ) {
 				jQuery('#video_'+id+'_div .mejs-poster').css({
 				'background-image':'url('+video_vars.endofvideooverlay+')'
@@ -669,7 +675,11 @@ function kgvid_setup_video(id) {
 		});
 
 		player.onComplete( function() {
-			kgvid_video_counter(id, 'end');
+
+			if ( jQuery('#video_'+id+'_div').data("end") == undefined ) {
+				jQuery('#video_'+id+'_div').data("end", true);
+				kgvid_video_counter(id, 'end');
+			}
 
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
 				kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
@@ -972,7 +982,14 @@ function kgvid_video_counter(id, event) {
 
 	}
 
-	if ( changed == true ) {
+	if ( changed == true
+		&& video_vars.count_views != 'false'
+		&& (
+			video_vars.count_views == 'all'
+			|| ( video_vars.count_views == 'start_complete' && ( event == 'play' || event == 'end' ) )
+			|| ( video_vars.count_views == 'start' && event == 'play' )
+		)
+	) {
 		jQuery.post(kgvidL10n_frontend.ajaxurl, {
 			action: 'kgvid_count_play',
 			security: kgvidL10n_frontend.ajax_nonce,
