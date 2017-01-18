@@ -2340,9 +2340,9 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		if ( is_admin() && defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 
-			foreach ( $encodevideo_info as $format => $format_stats ) {
+			foreach ( $video_formats as $format => $format_stats ) {
 
-				if ( array_key_exists('url', $encodevideo_info[$format]) ) {
+				if ( array_key_exists($format, $encodevideo_info) && is_array($encodevideo_info[$format]) && array_key_exists('url', $encodevideo_info[$format]) ) {
 					$encodevideo_info[$format]['url'] = set_url_scheme($encodevideo_info[$format]['url']);
 				}
 
