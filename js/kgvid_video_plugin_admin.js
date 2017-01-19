@@ -1269,7 +1269,7 @@ function kgvid_save_plugin_settings(input_obj) {
 		else { setting_value = false; }
 	}
 
-	var save_span = '<span id="save_'+input_obj.id+'" class="settings-save-status kgvid_spinner"><span class="spinner" style="display:inline-block;"></span><span class="saved" style="display:none;">'+kgvidL10n.saved+'</span></span>';
+	var save_span = '<span id="save_'+input_obj.id+'" class="attachment-details save-waiting kgvid_spinner"><span class="settings-save-status"><span class="spinner"></span><span class="saved">'+kgvidL10n.saved+'</span></span></span>';
 	if ( jQuery(input_obj).parents(".kgvid_video_app_required").length ) { jQuery(input_obj).parents(".kgvid_video_app_required").append(save_span); }
 	else { jQuery(input_obj).parents("td:first").append(save_span); }
 
@@ -1330,7 +1330,7 @@ function kgvid_save_plugin_settings(input_obj) {
 				}, "json" );
 			}
 
-			jQuery( '#save_'+save_queue[0].id+' > .spinner' ).fadeOut(500).delay(500).next().delay(500).fadeIn(500).delay(1500).fadeOut(1000, function(){ jQuery(this).remove(); });
+			jQuery( '#save_'+save_queue[0].id ).toggleClass('save-waiting save-complete').delay(1500).fadeOut(1000, function(){ jQuery(this).remove(); });
 
 			save_queue = jQuery( '#wpbody-content' ).data('save_queue');
 			save_queue.splice(0,1);

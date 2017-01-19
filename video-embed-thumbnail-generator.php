@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.14.beta.2',
+		"version" => '4.6.14',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -3528,7 +3528,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		$checkboxes .= "\n\t\t\t".'<li><input class="kgvid_encode_checkbox" type="checkbox" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode'.$format.']" '.$meta_array['checked'].' '.$ffmpeg_disabled_text.$meta_array['disabled'].'> <label for="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-meta'.$format.'" class="kgvid_format_meta">'.$meta_array['meta'].'</span>';
 
-		if ( !$security_disabled && $is_attachment && empty($meta_array['disabled']) && $format != 'fullres' && $page != 'queue' ) { $checkboxes .= "<span id='pick-".$post_id."-".$format."' class='button-secondary kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\", \"".$blog_id."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
+		if ( !$security_disabled && $is_attachment && empty($meta_array['disabled']) && $format != 'fullres' && $page != 'queue' ) { $checkboxes .= "<span id='pick-".$post_id."-".$format."' class='button kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\", \"".$blog_id."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
 		}
 		$checkboxes .= '</li>';
 
@@ -3546,7 +3546,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	}
 	else { $button_text = _x('Encode selected', 'Button text', 'video-embed-thumbnail-generator'); }
 
-	$checkboxes .= '<input type="button" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]" class="button-secondary" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\', \''.$blog_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$blog_id_text.$post_id.'-encodeplaceholder"></div>';
+	$checkboxes .= '<input type="button" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]" class="button" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\', \''.$blog_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$blog_id_text.$post_id.'-encodeplaceholder"></div>';
 
 	if ( $page != "queue" ) {
 		$checkboxes .= '<small><em>'.__('Generates additional video formats compatible with most mobile & HTML5-compatible browsers', 'video-embed-thumbnail-generator').'</em></small>';
@@ -4232,19 +4232,19 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_poster_callback() {
 		$options = kgvid_get_options();
-		echo "<input class='regular-text affects_player' id='poster' name='kgvid_video_embed_options[poster]' type='text' value='".$options['poster']."' /> <span id='pick-thumbnail' class='button-secondary' data-choose='".__('Choose a Thumbnail', 'video-embed-thumbnail-generator')."' data-update='".__('Set as video thumbnail', 'video-embed-thumbnail-generator')."' data-change='poster' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>\n\t";
+		echo "<input class='regular-text affects_player' id='poster' name='kgvid_video_embed_options[poster]' type='text' value='".$options['poster']."' /> <span id='pick-thumbnail' class='button' data-choose='".__('Choose a Thumbnail', 'video-embed-thumbnail-generator')."' data-update='".__('Set as video thumbnail', 'video-embed-thumbnail-generator')."' data-change='poster' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>\n\t";
 	}
 
 	function kgvid_endofvideooverlay_callback() {
 		$options = kgvid_get_options();
 		echo "<input class='affects_player' ".checked( $options['endofvideooverlaysame'], "on", false )." id='endofvideooverlaysame' name='kgvid_video_embed_options[endofvideooverlaysame]' type='checkbox' /> <label for='endofvideooverlaysame'>".__('Display thumbnail image again when video ends.', 'video-embed-thumbnail-generator')."</label><br />";
-		echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' ".disabled( $options['endofvideooverlaysame'], "on", false )." type='text' value='".$options['endofvideooverlay']."' /> <span id='pick-endofvideooverlay' class='button-secondary' data-choose='".__('Choose End of Video Image', 'video-embed-thumbnail-generator')."' data-update='".__('Set as end of video image', 'video-embed-thumbnail-generator')."' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
+		echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' ".disabled( $options['endofvideooverlaysame'], "on", false )." type='text' value='".$options['endofvideooverlay']."' /> <span id='pick-endofvideooverlay' class='button' data-choose='".__('Choose End of Video Image', 'video-embed-thumbnail-generator')."' data-update='".__('Set as end of video image', 'video-embed-thumbnail-generator')."' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
 		echo __('Display alternate image when video ends.', 'video-embed-thumbnail-generator')."<small>\n\t";
 	}
 
 	function kgvid_watermark_callback() {
 		$options = kgvid_get_options();
-		echo __('Image:', 'video-embed-thumbnail-generator')." <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='".$options['watermark']."' /> <span id='pick-watermark' class='button-secondary' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='watermark' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
+		echo __('Image:', 'video-embed-thumbnail-generator')." <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='".$options['watermark']."' /> <span id='pick-watermark' class='button' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='watermark' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span><br />";
 		echo __('Link to:', 'video-embed-thumbnail-generator').' ';
 		$items = array(
 			__("Home page", 'video-embed-thumbnail-generator') => "home",
@@ -4505,7 +4505,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_featured_callback() {
 		$options = kgvid_get_options();
-		echo "<input ".checked( $options['featured'], "on", false )." id='featured' name='kgvid_video_embed_options[featured]' type='checkbox' /> <label for='featured'>".__('Set generated video thumbnails as featured images.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If your theme uses the featured image meta tag, this will automatically set a video\'s parent post\'s featured image to the most recently saved thumbnail image.', 'video-embed-thumbnail-generator')."</span></span><br /> <a class='button-secondary' href='javascript:void(0);' onclick='kgvid_set_all_featured();'>"._x('Set all as featured', 'implied "Set all thumbnails as featured"', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If you\'ve generated thumbnails before enabling this option, this will set all existing thumbnails as featured images. Be careful!', 'video-embed-thumbnail-generator')."</span></span>\n\t";
+		echo "<input ".checked( $options['featured'], "on", false )." id='featured' name='kgvid_video_embed_options[featured]' type='checkbox' /> <label for='featured'>".__('Set generated video thumbnails as featured images.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If your theme uses the featured image meta tag, this will automatically set a video\'s parent post\'s featured image to the most recently saved thumbnail image.', 'video-embed-thumbnail-generator')."</span></span><br /> <a class='button' href='javascript:void(0);' onclick='kgvid_set_all_featured();'>"._x('Set all as featured', 'implied "Set all thumbnails as featured"', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If you\'ve generated thumbnails before enabling this option, this will set all existing thumbnails as featured images. Be careful!', 'video-embed-thumbnail-generator')."</span></span>\n\t";
 	}
 
 	function kgvid_user_roles_callback($page_scope = 'site') {
@@ -4556,7 +4556,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['thumb_parent']==$item) ? 'selected="selected"' : '';
 			echo "<option value='$item' $selected>$item</option>";
 		}
-		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('This depends on your theme. Thumbnails generated by the plugin can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator')."</span></span><br /> <a class='button-secondary' href='javascript:void(0);' onclick='kgvid_switch_parents();'>".__('Set all parents', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If you\'ve generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.', 'video-embed-thumbnail-generator')."</span></span>\n\t";
+		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('This depends on your theme. Thumbnails generated by the plugin can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator')."</span></span><br /> <a class='button' href='javascript:void(0);' onclick='kgvid_switch_parents();'>".__('Set all parents', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If you\'ve generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.', 'video-embed-thumbnail-generator')."</span></span>\n\t";
 	}
 
 	function kgvid_delete_children_callback() {
@@ -4705,8 +4705,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_old_video_buttons_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<p><a id='generate_old_thumbs_button' class='button-secondary' href='javascript:void(0);' onclick='kgvid_auto_generate_old(\"thumbs\");'>".__('Generate thumbnails', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('Use %s to automatically generate thumbnails for every video in the Media Library that doesn\'t already have them. Uses the automatic thumbnail settings above. This could take a very long time if you have a lot of videos. Proceed with caution!', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span></p>";
-		echo "<p><a id='generate_old_encode_button' class='button-secondary' href='javascript:void(0);' onclick='kgvid_auto_generate_old(\"encode\");'>".__('Encode videos', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('Add every video in the Media Library to the encode queue if it hasn\'t already been encoded. Uses the default encode formats chosen above.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span></p>";
+		echo "<p><a id='generate_old_thumbs_button' class='button' href='javascript:void(0);' onclick='kgvid_auto_generate_old(\"thumbs\");'>".__('Generate thumbnails', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('Use %s to automatically generate thumbnails for every video in the Media Library that doesn\'t already have them. Uses the automatic thumbnail settings above. This could take a very long time if you have a lot of videos. Proceed with caution!', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span></p>";
+		echo "<p><a id='generate_old_encode_button' class='button' href='javascript:void(0);' onclick='kgvid_auto_generate_old(\"encode\");'>".__('Encode videos', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('Add every video in the Media Library to the encode queue if it hasn\'t already been encoded. Uses the default encode formats chosen above.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span></p>";
 		echo "</div>\n\t";
 	}
 
@@ -4745,7 +4745,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_ffmpeg_watermark_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<p><input class='regular-text affects_ffmpeg' id='ffmpeg_watermark_url' name='kgvid_video_embed_options[ffmpeg_watermark][url]' type='text' value='".$options['ffmpeg_watermark']['url']."' /> <span id='pick-ffmpeg-watermark' class='button-secondary' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='ffmpeg_watermark_url' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span></p>\n\t";
+		echo "<p><input class='regular-text affects_ffmpeg' id='ffmpeg_watermark_url' name='kgvid_video_embed_options[ffmpeg_watermark][url]' type='text' value='".$options['ffmpeg_watermark']['url']."' /> <span id='pick-ffmpeg-watermark' class='button' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as watermark', 'video-embed-thumbnail-generator')."' data-change='ffmpeg_watermark_url' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span></p>\n\t";
 		echo "<p>".sprintf( __('Scale: %s%% of video covered by the watermark.', 'video-embed-thumbnail-generator'), "<input class='small-text affects_ffmpeg' id='ffmpeg_watermark_scale' name='kgvid_video_embed_options[ffmpeg_watermark][scale]' type='text' value='".$options['ffmpeg_watermark']['scale']."' maxlength='3' />" )."</p>";
 		$items = array(__("left", 'video-embed-thumbnail-generator')=>"left", _x("center", "horizontal center", 'video-embed-thumbnail-generator')=>"center", __("right", 'video-embed-thumbnail-generator')=>"right");
 		echo "<p>".__('Horizontal align:', 'video-embed-thumbnail-generator');
@@ -5782,7 +5782,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 									<div class="kgvid-play-progress"></div>
 									<div class="kgvid-seek-handle"></div></div>
 							</div>
-							<span id="manual-thumbnail" class="button-secondary" onclick="kgvid_thumb_video_manual('.$post->ID.');">Use this frame</span>
+							<span id="manual-thumbnail" class="button" onclick="kgvid_thumb_video_manual('.$post->ID.');">Use this frame</span>
 						</div>
 					</div>';
 				}
@@ -5791,8 +5791,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				}
 				$generate_content = '<div id="generate-thumb-'.$post->ID.'-container" class="kgvid-tabs-content" data-ffmpeg="'.$options['ffmpeg_exists'].'">
 				<input id="attachments-'. $post->ID .'-kgflashmediaplayer-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$kgvid_postmeta['numberofthumbs'].'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.$readonly.'/>
-				<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button-secondary" value="'._x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
-				<input type="button" id="attachments-'. $post->ID .'-thumbrandomize" class="button-secondary" value="'._x('Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator').'" name="thumbrandomize" onclick="kgvid_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/>
+				<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button" value="'._x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
+				<input type="button" id="attachments-'. $post->ID .'-thumbrandomize" class="button" value="'._x('Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator').'" name="thumbrandomize" onclick="kgvid_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/>
 				<span style="white-space:nowrap;"><input type="checkbox" id="attachments-'. $post->ID .'-firstframe" name="attachments['.$post->ID.'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.checked( $kgvid_postmeta['forcefirst'], 'on', false ).' '.$ffmpeg_disabled_text.$readonly.'/> <label for="attachments-'. $post->ID .'-firstframe">'.__('Force 1st frame thumbnail', 'video-embed-thumbnail-generator').'</label></span></div>';
 
 				$thumbnail_timecode = __('Thumbnail timecode:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-thumbtime]" id="attachments-'. $post->ID .'-kgflashmediaplayer-thumbtime" type="text" value="'. $kgvid_postmeta['thumbtime'] .'" style="width:60px;"'.$readonly.'><br>';
@@ -5811,7 +5811,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			'.$thumbnail_timecode.'
 			<div id="attachments-'.$post->ID.'-thumbnailplaceholder" style="position:relative;">'. $thumbnail_html .'</div>';
 			if ( empty($security_disabled) ) {
-				$form_fields["generator"]["html"] .= '<span id="pick-thumbnail" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Thumbnail', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as video thumbnail', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
+				$form_fields["generator"]["html"] .= '<span id="pick-thumbnail" class="button" style="margin:10px 0;" data-choose="'.__('Choose a Thumbnail', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as video thumbnail', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
 				<input type="checkbox" id="attachments-'. $post->ID .'-featured" name="attachments['.$post->ID.'][kgflashmediaplayer-featured]" '.checked( $kgvid_postmeta['featured'], 'on', false ).' '.$ffmpeg_disabled_text.'/> <label for="attachments-'. $post->ID .'-featured">'.__('Set thumbnail as featured image', 'video-embed-thumbnail-generator').'</label>';
 			}
 
@@ -5866,7 +5866,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 						}
 						$tracks_html .= '<br />'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />';
 						if ( empty($security_disabled) ) {
-							$tracks_html .= '<span id="pick-track'.$track.'" class="button-secondary" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />';
+							$tracks_html .= '<span id="pick-track'.$track.'" class="button" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />';
 						}
 						$tracks_html .= 'URL: <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][src]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_src" type="text" value="'.$kgvid_postmeta['track'][$track]['src'].'" class="text" style="width:180px;"'.$readonly.'><br />
 						'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-track]['.$track.'][srclang]" id="attachments-'. $post->ID .'-kgflashmediaplayer-track_'.$track.'_srclang" type="text" value="'.$kgvid_postmeta['track'][$track]['srclang'].'" maxlength="2" style="width:40px;"'.$readonly.'><br />
@@ -5880,7 +5880,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			$form_fields["kgflashmediaplayer-track"]["input"] = "html";
 			$form_fields["kgflashmediaplayer-track"]["html"] = '<div id="kgflashmediaplayer-'.$post->ID.'-trackdiv">'.$tracks_html.'</div>';
 			if ( empty($security_disabled) ) {
-				$form_fields["kgflashmediaplayer-track"]["html"] .= '<span class="button-secondary" id="kgflashmediaplayer-add_track" onclick="kgvid_add_subtitles('.$post->ID.')">'.__('Add track', 'video-embed-thumbnail-generator').'</span>';
+				$form_fields["kgflashmediaplayer-track"]["html"] .= '<span class="button" id="kgflashmediaplayer-add_track" onclick="kgvid_add_subtitles('.$post->ID.')">'.__('Add track', 'video-embed-thumbnail-generator').'</span>';
 			}
 
 			$items = array(__("Single Video", 'video-embed-thumbnail-generator')=>"Single Video", __("Video Gallery", 'video-embed-thumbnail-generator')=>"Video Gallery", __("WordPress Default", 'video-embed-thumbnail-generator')=>"WordPress Default");
@@ -6476,8 +6476,8 @@ function kgvid_media_embedurl_process() {
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php _e('Thumbnails', 'video-embed-thumbnail-generator') ?></label></span></th>
 					<td class="field">
 						<input id="attachments-singleurl-kgflashmediaplayer-numberofthumbs" type="text" value="<?php echo $options['generate_thumbs']; ?>" maxlength="2" size="4" style="width:35px;text-align:center;" title="<?php _e('Number of Thumbnails', 'video-embed-thumbnail-generator') ?>" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value='';" />
-						<input type="button" id="attachments-singleurl-thumbgenerate" class="button-secondary" value="<?php _e('Generate', 'video-embed-thumbnail-generator') ?>" name="thumbgenerate" onclick="kgvid_generate_thumb('singleurl', 'generate');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
-						<input type="button" id="attachments-singleurl-thumbrandomize" class="button-secondary" value="<?php _e('Randomize', 'video-embed-thumbnail-generator') ?>" name="thumbrandomize" onclick="kgvid_generate_thumb('singleurl', 'random');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
+						<input type="button" id="attachments-singleurl-thumbgenerate" class="button" value="<?php _e('Generate', 'video-embed-thumbnail-generator') ?>" name="thumbgenerate" onclick="kgvid_generate_thumb('singleurl', 'generate');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
+						<input type="button" id="attachments-singleurl-thumbrandomize" class="button" value="<?php _e('Randomize', 'video-embed-thumbnail-generator') ?>" name="thumbrandomize" onclick="kgvid_generate_thumb('singleurl', 'random');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
 						<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe"><?php _e('Force 1st Frame Thumbnail', 'video-embed-thumbnail-generator') ?></label><br>
 						<div id="attachments-singleurl-thumbnailplaceholder"></div>
 						<span><?php _e('Thumbnail timecode:', 'video-embed-thumbnail-generator') ?></span> <input name="attachments[singleurl][kgflashmediaplayer-thumbtime]" id="attachments-singleurl-kgflashmediaplayer-thumbtime" type="text" value="" style="width:60px;"><br>

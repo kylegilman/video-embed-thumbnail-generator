@@ -353,13 +353,24 @@ a.kgvid_delete-format:hover {
 	color: red !important;
 }
 
-.kgvid_spinner .spinner {
+.attachment-details.kgvid_spinner .settings-save-status {
+    float: none;
+}
+
+.attachment-details.kgvid_spinner .settings-save-status .spinner, .attachment-details.kgvid_spinner .settings-save-status .saved {
 	float: none;
-	vertical-align: top;
 }
 
 .kgvid_spinner .saved {
 	margin-left:6px;
+}
+
+.attachment-details.kgvid_spinner.save-complete .settings-save-status .spinner {
+	display:none;
+}
+
+.attachment-details.kgvid_spinner.save-complete .settings-save-status .saved {
+	display:inline-block;
 }
 
 div.kgvid_post_meta_boxes {
