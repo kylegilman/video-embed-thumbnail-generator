@@ -4918,7 +4918,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$movie_info = kgvid_get_video_dimensions(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4");
 			$uploads = wp_upload_dir();
 			$encode_dimensions = kgvid_set_encode_dimensions($movie_info, $video_formats[$options['sample_format']]);
-			$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
+			if ( empty($options['sample_rotate']) ) {
+				$input = plugin_dir_path(__FILE__)."images/sample-video-h264.mp4";
+			}
+			else {
+				$input = plugin_dir_path(__FILE__)."images/sample-video-rotated-h264.mp4";
+			}
+			$encode_string = kgvid_generate_encode_string($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
 		}
 
 		if ( is_array($encode_string) ) { $encode_string_implode = implode('' , $encode_string); }
@@ -5326,7 +5332,13 @@ function kgvid_ajax_save_settings() {
 				$uploads = wp_upload_dir();
 				$video_formats = kgvid_video_formats();
 				$encode_dimensions = kgvid_set_encode_dimensions($movie_info, $video_formats[$validated_options['sample_format']]);
-				$encode_string = kgvid_generate_encode_string(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4", $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($validated_options['sample_rotate']));
+				if ( empty($validated_options['sample_rotate']) ) {
+				$input = plugin_dir_path(__FILE__)."images/sample-video-h264.mp4";
+				}
+				else {
+					$input = plugin_dir_path(__FILE__)."images/sample-video-rotated-h264.mp4";
+				}
+				$encode_string = kgvid_generate_encode_string($input, $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($validated_options['sample_rotate']));
 				$auto_thumb_label = kgvid_generate_auto_thumb_label();
 			}
 		}

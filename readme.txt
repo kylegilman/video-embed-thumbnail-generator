@@ -246,11 +246,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.14 - January 18, 2017 =
+= 4.6.14 - January 24, 2017 =
 * Updated Video.js to version 5.15.1
 * Added option to restrict video player aspect ratio to the default aspect ratio.
 * Added option to disable view tracking in the WordPress database.
-* Added option to use FFMPEG's auto rotation feature, available in recent versions of FFMPEG.
+* Added option to use FFMPEG's auto rotation feature for vertical videos, available in recent versions of FFMPEG and added a rotated video for testing.
 * Added check for Video.js version in case another application loads an older version. The resolution selector feature will not load if Video.js is not 5.x or above.
 * Added check for a new parent post if a video thumbnail is auto generated before a corresponding post is created. If a new parent exists, the thumbnail is set as the featured image for the new post. This is usually only necessary when used with frontend uploaders.
 * Fixed mixed content warnings in galleries with multiple pages.
