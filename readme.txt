@@ -246,6 +246,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.15 - February xx, 2017 =
+* Changed VP9 encoding CRF value to the H.264 setting. Using the WEBM setting led to unnecessarily high bitrates.
+
 = 4.6.14 - January 24, 2017 =
 * Updated Video.js to version 5.15.1
 * Added option to restrict video player aspect ratio to the default aspect ratio.

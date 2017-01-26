@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.14
+Version: 4.6.15
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -1362,6 +1362,7 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 
 		if ( $options['rate_control'] == "crf" ) {
 			$crf_option = $video_formats[$format]['type'].'_CRF';
+			if ( $format == 'vp9' ) { $crf_option = 'h264_CRF'; }
 			$crf_flag = "crf";
 			if ( $video_formats[$format]['type'] == 'ogv' ) { $crf_flag = $qscale_flag; } //ogg doesn't do CRF
 			$rate_control_flag = " -".$crf_flag." ".$options[$crf_option];
@@ -4808,7 +4809,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['h264_CRF']==$i) ? 'selected="selected"' : '';
 			echo "<option value='".$i."' $selected>".$i."</option>";
 		}
-		echo "</select> H.264 <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Lower values are higher quality. 18 is considered visually lossless. Default is 23.', 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "</select> H.264 & VP9 WEBM <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Lower values are higher quality. 18 is considered visually lossless. Default is 23.', 'video-embed-thumbnail-generator')."</span></span><br />";
 
 		echo "<select id='webm_CRF' name='kgvid_video_embed_options[webm_CRF]' class='affects_ffmpeg'>";
 		for ($i = 4; $i <= 63; $i++ ) {
