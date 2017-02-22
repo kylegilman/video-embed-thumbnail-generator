@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.14',
+		"version" => '4.6.15',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -1800,7 +1800,7 @@ function kgvid_video_embed_print_scripts() {
 					echo '<meta property="og:video" content="'.$first_embedded_video['url'].'" />'."\n";
 					$secure_url = str_replace('http://', 'https://', $first_embedded_video['url']);
 					echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
-					$mime_type_check = wp_check_filetype($first_embedded_video['url']);
+					$mime_type_check = wp_check_filetype(strtok($first_embedded_video['url'], '?'));
 					echo '<meta property="og:video:type" content="'.$mime_type_check['type'].'" />'."\n";
 
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
@@ -2312,7 +2312,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$countable = false;
 		}
 
-		$mime_type_check = wp_check_filetype($content);
+		$mime_type_check = wp_check_filetype(strtok($content,'?'));
 		if ( in_array($mime_type_check['ext'], $h264compatible) ) {
 			$format_type = "h264";
 			$mime_type = "video/mp4";
@@ -2567,7 +2567,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
 
 					if ( $format_stats['type'] != "h264" || !$mp4already ) { //build wp_video_shortcode attributes. Sources will be replaced later
-						$shortcode_type = wp_check_filetype( $encodevideo_info[$format]["url"], wp_get_mime_types() );
+						$shortcode_type = wp_check_filetype( strtok($encodevideo_info[$format]["url"], '?'), wp_get_mime_types() );
 						$attr[$shortcode_type['ext']] = $encodevideo_info[$format]["url"];
 						if ( $format_stats['type'] == "h264" ) {
 							$mp4already = true;
@@ -3408,7 +3408,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			$is_attachment = false;
 			unset($video_formats['fullres']);
 
-			$check_mime_type = wp_check_filetype($movieurl);
+			$check_mime_type = wp_check_filetype(strtok($movieurl, '?'));
 			$post_mime_type = $check_mime_type['type'];
 
 			if ( !empty($video_encode_queue) ) {
@@ -5786,7 +5786,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.$post->ID.'-container">
 						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.$post->ID.')" id="show-thumb-video-'.$post->ID.'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">'.__('Choose from video...', 'video-embed-thumbnail-generator').'</span></div>
 						<div style="display:none;" id="thumb-video-'.$post->ID.'-player">
-							<video crossorigin="anonymous" muted preload="none" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'">'.
+							<video playsinline crossorigin="anonymous" muted preload="none" class="kgvid-thumb-video" width="200" data-allowed="'.$options['browser_thumbnails'].'" onloadedmetadata="kgvid_thumb_video_loaded(\''.$post->ID.'\');" id="thumb-video-'.$post->ID.'">'.
 							implode("\n", $sources).'
 							</video>
 							<div class="kgvid-video-controls" tabindex="0">
