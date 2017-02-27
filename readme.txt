@@ -247,6 +247,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.15 - February 27, 2017 =
+* Updated Video.js to version 5.16.0
 * Changed source filetype checking to account for URLs with query strings, which allows for signed URLs.
 * Changed VP9 encoding CRF value to the H.264 setting. Using the WEBM setting led to unnecessarily high bitrates.
 * Removed French translation files from distribution to allow updated language packs.

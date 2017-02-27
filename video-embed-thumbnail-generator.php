@@ -1604,7 +1604,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.15.1' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.16.0' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 
@@ -1946,7 +1946,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
-			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.15.1', true );
+			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.16.0', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 		}
 
