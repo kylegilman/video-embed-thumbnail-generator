@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.7
-Stable tag: 4.6.14
+Stable tag: 4.6.15
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,8 +246,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.15 - February xx, 2017 =
+= 4.6.15 - February 27, 2017 =
+* Changed source filetype checking to account for URLs with query strings, which allows for signed URLs.
 * Changed VP9 encoding CRF value to the H.264 setting. Using the WEBM setting led to unnecessarily high bitrates.
+* Removed French translation files from distribution to allow updated language packs.
 
 = 4.6.14 - January 24, 2017 =
 * Updated Video.js to version 5.15.1
