@@ -736,7 +736,7 @@ function kgvid_url_to_id($url) {
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
 	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
  	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
-	$search_query =  "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value))";
+	$search_query =  "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value)) AND LENGTH(meta_value) > 0";
 	$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
 
 	if ( !$post_id && $options['ffmpeg_exists'] == "on" && $video_formats['fullres']['extension'] != pathinfo($url, PATHINFO_EXTENSION) ) {
@@ -2246,7 +2246,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		if ( !empty($id) ) { //if the video is an attachment in the WordPress db
 
 			$attachment_url = wp_get_attachment_url($id);
-			if ( $attachment_url == false ) { echo "Invalid video ID"; continue; }
+			if ( $attachment_url == false ) { _e("Invalid video ID", 'video-embed-thumbnail-generator'); continue; }
 			$exempt_cdns = array(
 				'amazonaws.com',
 				'rackspace.com',
@@ -2331,7 +2331,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$encodevideo_info["original"]["exists"] = true;
 			$encodevideo_info["original"]["url"] = $content;
 
-			if ( is_array($dimensions) && array_key_exists('actualheight', $dimensions) ) {
+			if ( is_array($dimensions) && array_key_exists('actualheight', $dimensions) && !empty($dimensions['actualheight']) ) {
 				$video_formats['original']['label'] = $dimensions['actualheight'].'p';
 				$video_formats['original']['height'] = $dimensions['actualheight'];
 				$encodevideo_info["original"]["height"] = $dimensions['actualheight'];
