@@ -988,7 +988,7 @@ function kgvid_video_counter(id, event) {
 	if ( changed == true
 		&& video_vars.count_views != 'false'
 		&& (
-			video_vars.count_views == 'all'
+			video_vars.count_views == 'quarters'
 			|| ( video_vars.count_views == 'start_complete' && ( event == 'play' || event == 'end' ) )
 			|| ( video_vars.count_views == 'start' && event == 'play' )
 		)
