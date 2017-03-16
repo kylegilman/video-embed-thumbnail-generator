@@ -1461,7 +1461,6 @@ function kgvid_hide_plugin_settings() {
 		if ( playback_option == "WordPress Default" || playback_option == "JW Player" ) {
 			jQuery('#nativecontrolsfortouch').parents().eq(1).hide();
 			jQuery('#js_skin').parents().eq(1).hide();
-			jQuery('#playback_rate').parents().eq(1).hide();
 			jQuery('#resize_div').hide();
 		}
 
@@ -1475,12 +1474,14 @@ function kgvid_hide_plugin_settings() {
 
 		if ( playback_option == "WordPress Default" ) {
 			jQuery('#auto_res').parents().eq(1).show();
+			jQuery('#playback_rate').parents().eq(1).show();
 		}
 
 		if ( playback_option == "JW Player" ) {
 			jQuery('#endofvideooverlay').parents().eq(1).hide();
 			jQuery('#auto_res').parents().eq(1).hide();
 			jQuery('#jw_player_id_select').fadeIn();
+			jQuery('#playback_rate').parents().eq(1).hide();
 		}
 		else {
 			jQuery('#endofvideooverlay').parents().eq(1).show();

@@ -246,6 +246,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.16 - March 16, 2017 =
+* Updated Video.js to version 5.17.0
+* Added option for variable playback rates in Video.js.
+* Fixed bug that didn't save views when quarter counting was enabled.
+* Fixed query for converting URLs to post IDs when a blank _wp_attached_file is present in the database.
+
 = 4.6.15 - February 27, 2017 =
 * Updated Video.js to version 5.16.0
 * Changed source filetype checking to account for URLs with query strings, which allows for signed URLs.

@@ -1949,11 +1949,15 @@ function kgvid_enqueue_shortcode_scripts() {
 			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
 			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.17.0', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
-		}
+	}
 
-		if ( $options['embed_method'] == "Strobe Media Playback" ) {
-			wp_enqueue_script( 'swfobject' );
-		}
+	if ( $options['embed_method'] == "Strobe Media Playback" ) {
+		wp_enqueue_script( 'swfobject' );
+	}
+
+	if ( $options['embed_method'] == "Wordpress Default" ) {
+		wp_register_script( 'mejs-speed', plugins_url( 'js/mep-speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
+	}
 
 	if ( !wp_script_is('kgvid_video_embed', 'enqueued') ) {
 
@@ -2613,20 +2617,32 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$attr['width'] = $query_atts['width'];
 			$attr['height'] = $query_atts['height'];
 
+			$localize = false;
+
+			$wpmejssettings = array(
+				'features' => array( 'playpause', 'progress', 'volume', 'tracks' ),
+				'pluginPath' => includes_url( 'js/mediaelement/', 'relative' ),
+				'success' => 'kgvid_mejs_success'
+			);
+
 			if ( $enable_resolutions_plugin && !wp_script_is('mejs_sourcechooser', 'enqueued') ) {
 				wp_enqueue_script( 'mejs_sourcechooser', plugins_url( 'js/mep-feature-sourcechooser.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
-				wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', array(
-					'features' => array( 'playpause', 'progress', 'volume', 'tracks', 'sourcechooser', 'fullscreen' ),
-					'pluginPath' => includes_url( 'js/mediaelement/', 'relative' ),
-					'success' => 'kgvid_mejs_success'
-				) );
+				array_push($wpmejssettings['features'], 'sourcechooser');
+				$localize = true;
 			}
-			elseif ( $kgvid_video_id === 0 ) {
-				wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', array(
-					'features' => array( 'playpause', 'progress', 'volume', 'tracks', 'fullscreen' ),
-					'pluginPath' => includes_url( 'js/mediaelement/', 'relative' ),
-					'success' => 'kgvid_mejs_success'
-				) );
+
+			if ( $kgvid_video_id === 0 ) {
+				$localize = true;
+			}
+
+			if ( $query_atts['playback_rate'] = 'true' ) {
+				array_push($wpmejssettings['features'], 'speed');
+			}
+
+			array_push($wpmejssettings['features'], 'fullscreen');
+
+			if ( $localize ) {
+				wp_localize_script( 'wp-mediaelement', '_wpmejsSettings', $wpmejssettings );
 			}
 
 			$content_width = $query_atts['width'];
