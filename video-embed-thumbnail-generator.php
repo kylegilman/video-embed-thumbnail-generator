@@ -2637,6 +2637,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 			if ( $query_atts['playback_rate'] = 'true' ) {
 				array_push($wpmejssettings['features'], 'speed');
+				$wpmejssettings['speeds'] = array('0.5', '1', '1.25', '1.5', '2');
 			}
 
 			array_push($wpmejssettings['features'], 'fullscreen');
@@ -5198,6 +5199,9 @@ function kgvid_update_settings() {
 		if ( version_compare( $options['version'], '4.6.16', '<' ) ) {
 			$options['version'] = '4.6.16';
 			$options['playback_rate'] = false;
+			if ( $options['count_views'] == 'all' ) {
+				$options['count_views'] = 'quarters';
+			}
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
