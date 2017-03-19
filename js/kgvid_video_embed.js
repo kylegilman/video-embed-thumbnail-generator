@@ -354,7 +354,10 @@ function kgvid_setup_video(id) {
 	jQuery('#video_'+id+'_embed, #click_trap_'+id).appendTo('#video_'+id+'_div');
 	jQuery('#click_trap_'+id).on('click', function(){ kgvid_share_icon_click(id); });
 	jQuery('#video_'+id+'_meta').attr('style', ''); //shows the hidden meta div
-	if ( video_vars.autoplay == "true" ) { jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover'); }
+	if ( video_vars.autoplay == "true" ) {
+		kgvid_video_counter(id, 'play');
+		jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
+	}
 
 	if ( video_vars.right_click != "on" ) {
 		jQuery('#video_'+id+'_div').bind('contextmenu',function() { return false; });
@@ -373,15 +376,15 @@ function kgvid_setup_video(id) {
 		if ( videojs.VERSION.split('.')[0] >= 5 && videojs.browser.TOUCH_ENABLED == true ) {
 
 			if ( video_vars.nativecontrolsfortouch == "true" && videojs.browser.IS_ANDROID ) {
-
 				jQuery('.vjs-big-play-button').hide();
+			}
 
+			if ( video_vars.autoplay == "true" && !player.paused() ) {
+				player.removeClass('vjs-paused').addClass('vjs-has-started');
 			}
 
 			if ( player.controls() == false && player.muted() == false ) { //mobile browsers allow autoplay only if the player is muted
-
 				player.controls(true);
-
 			}
 		}
 
