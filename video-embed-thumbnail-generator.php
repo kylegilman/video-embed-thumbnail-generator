@@ -1605,7 +1605,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.17.0' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.18.4' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 
@@ -1947,7 +1947,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
-			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.17.0', true );
+			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.18.4', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 	}
 
@@ -1979,7 +1979,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
 
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?5.2.0"; }</script>'."\n";
+	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/video-js.swf?5.3.0"; }</script>'."\n";
 
 }
 
@@ -2635,7 +2635,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				$localize = true;
 			}
 
-			if ( $query_atts['playback_rate'] = 'true' ) {
+			if ( $query_atts['playback_rate'] == 'true' ) {
 				array_push($wpmejssettings['features'], 'speed');
 				$wpmejssettings['speeds'] = array('0.5', '1', '1.25', '1.5', '2');
 			}
