@@ -379,13 +379,14 @@ function kgvid_setup_video(id) {
 				jQuery('.vjs-big-play-button').hide();
 			}
 
-			if ( video_vars.autoplay == "true" && !player.paused() ) {
-				player.removeClass('vjs-paused').addClass('vjs-has-started');
-			}
-
 			if ( player.controls() == false && player.muted() == false ) { //mobile browsers allow autoplay only if the player is muted
 				player.controls(true);
 			}
+		}
+
+		if ( video_vars.autoplay == "true" && !player.paused() && player.hasClass('vjs-paused') ) {
+			player.pause();
+			player.play();
 		}
 
 		player.on('loadedmetadata', function(){
