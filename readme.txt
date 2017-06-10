@@ -3,8 +3,8 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
-Tested up to: 4.7
-Stable tag: 4.6.16
+Tested up to: 4.8
+Stable tag: 4.6.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -245,6 +245,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.17 - June 10, 2017 =
+* Updated Video.js to version 5.19.2
+* Better fix for big play button overlay remaining visible on autoplay Video.js videos.
 
 = 4.6.16 - March 19, 2017 =
 * Updated Video.js to version 5.18.4
