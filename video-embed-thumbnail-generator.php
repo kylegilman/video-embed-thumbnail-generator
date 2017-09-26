@@ -1713,7 +1713,6 @@ function kgvid_get_first_embedded_video( $post ) {
 
 			if ( $first_key !== false ) {
 
-				$attributes = array();
 				$url = "";
 
 				if ( array_key_exists( 3, $matches ) ) {
@@ -1723,6 +1722,9 @@ function kgvid_get_first_embedded_video( $post ) {
 				if ( !empty($matches[5][$first_key]) ) { //there's a URL
 
 					$url = $matches[5][$first_key];
+					if ( !is_array($attributes) ) {
+						$attributes = array();
+					}
 					$attributes['id'] = kgvid_url_to_id($matches[5][$first_key]);
 
 				}//if there's a URL
