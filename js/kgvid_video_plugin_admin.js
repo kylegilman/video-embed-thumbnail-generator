@@ -826,7 +826,7 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 }
 
 function kgvid_set_singleurl() {
-console.log('change');
+
 	var oldbasename = jQuery('#kgflashmediaplayer-table').data("kgvid_attachment_id") || "singleurl";
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+oldbasename+'][kgflashmediaplayer-security]')[0].value;
 	var basename;

@@ -340,7 +340,7 @@ function kgvid_load_videojs(video_vars) {
 			console.warn('Video Embed & Thumbnail Generator: Video.js version '+videojs.VERSION+' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.');
 		}
 	}
-console.log(videojs_options);
+
 	videojs('video_'+video_vars.id, videojs_options ).ready(function(){ kgvid_setup_video(video_vars.id); });
 
 }
