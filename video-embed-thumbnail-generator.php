@@ -802,6 +802,62 @@ function kgvid_url_exists($url) {
     return is_array($hdrs) ? preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/',$hdrs[0]) : false;
 }
 
+function kgvid_url_mime_type($url) {
+
+	$mime_info = wp_check_filetype(strtok($url, '?'));
+
+	if ( array_key_exists('type', $mime_info) && empty($mime_info['type']) ) { //wp unable to determine mime type
+		
+		$mime_type = '';
+		$url_extension = '';
+
+		$context_options = ( [
+			'ssl' => [
+				'verify_peer' => false,
+				'verify_peer_name' => false,
+			],
+			'http' => [
+				'method' => 'HEAD'
+			]
+		]);
+		$context = stream_context_create($context_options);
+
+		$fp = fopen($url, 'r', null, $context);
+		$metadata = stream_get_meta_data($fp);
+		fclose($fp);
+
+		$headers = $metadata['wrapper_data'];
+
+		foreach($headers as $line) {
+				if (strtok($line, ':') == 'Content-Type') {
+						$parts = explode(":", $line);
+						$mime_type = trim($parts[1]);
+				}
+		}
+
+		if ( !empty($mime_type) ) {
+			$wp_mime_types = wp_get_mime_types();
+			foreach ($wp_mime_types as $extension => $type ) {
+				if ( $type == $mime_type ) {
+					$url_extension = $extension;
+					if ( strpos($url_extension, '|') !== false ) {
+						$extensions = explode('|', $url_extension);
+						$url_extension = $extensions[0];
+					}
+					break;
+				}
+			}
+		}
+
+		$mime_info['type'] = $mime_type;
+		$mime_info['ext'] = $url_extension;
+
+	}
+
+	return $mime_info;
+
+}
+
 function kgvid_is_empty_dir($dir)
 {
     if ($dh = @opendir($dir))
@@ -902,14 +958,25 @@ function kgvid_backwards_compatible($post_id) {
 }
 
 function kgvid_sanitize_url($movieurl) {
+
 	$movieurl = rawurldecode($movieurl);
-	$movieurl = strtok($movieurl,'?');
 	$movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
-	$sanitized_url['noextension'] = preg_replace("/\\.[^.\\s]{3,4}$/", "", $movieurl);
-	$sanitized_url['basename'] = sanitize_file_name(basename($movieurl,'.'.$movie_extension));;
+
+	if ( empty($movie_extension) ) {
+		$sanitized_url['noextension'] = $movieurl;
+		$sanitized_url['basename'] = substr($movieurl, -10);
+	}
+	else {
+		$movieurl = strtok($movieurl,'?');
+		$sanitized_url['noextension'] = preg_replace("/\\.[^.\\s]{3,4}$/", "", $movieurl);
+		$sanitized_url['basename'] = sanitize_file_name(basename($movieurl,'.'.$movie_extension));;
+	}
+	
 	$sanitized_url['singleurl_id'] = "singleurl_".preg_replace('/[^a-zA-Z0-9]/', '_', $sanitized_url['basename']);
 	$sanitized_url['movieurl'] = esc_url_raw(str_replace(" ", "%20", $movieurl));
+
 	return $sanitized_url;
+
 }
 
 function kgvid_ajax_sanitize_url() {
@@ -1803,7 +1870,7 @@ function kgvid_video_embed_print_scripts() {
 					echo '<meta property="og:video" content="'.$first_embedded_video['url'].'" />'."\n";
 					$secure_url = str_replace('http://', 'https://', $first_embedded_video['url']);
 					echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
-					$mime_type_check = wp_check_filetype(strtok($first_embedded_video['url'], '?'));
+					$mime_type_check = kgvid_url_mime_type($first_embedded_video['url']);
 					echo '<meta property="og:video:type" content="'.$mime_type_check['type'].'" />'."\n";
 
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
@@ -2319,7 +2386,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$countable = false;
 		}
 
-		$mime_type_check = wp_check_filetype(strtok($content,'?'));
+		$mime_type_check = kgvid_url_mime_type($content);
 		if ( in_array($mime_type_check['ext'], $h264compatible) ) {
 			$format_type = "h264";
 			$mime_type = "video/mp4";
@@ -2575,7 +2642,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
 
 					if ( $format_stats['type'] != "h264" || !$mp4already ) { //build wp_video_shortcode attributes. Sources will be replaced later
-						$shortcode_type = wp_check_filetype( strtok($encodevideo_info[$format]["url"], '?'), wp_get_mime_types() );
+						$shortcode_type = kgvid_url_mime_type($encodevideo_info[$format]["url"]);
 						$attr[$shortcode_type['ext']] = $encodevideo_info[$format]["url"];
 						if ( $format_stats['type'] == "h264" ) {
 							$mp4already = true;
@@ -3431,7 +3498,8 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			$is_attachment = false;
 			unset($video_formats['fullres']);
 
-			$check_mime_type = wp_check_filetype(strtok($movieurl, '?'));
+			$check_mime_type = kgvid_url_mime_type($movieurl);
+			
 			$post_mime_type = $check_mime_type['type'];
 
 			if ( !empty($video_encode_queue) ) {
@@ -3518,7 +3586,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		if ( $format_stats['status'] == "lowres" ||
 			(
-				$actualheight != "" && ($format == "1080" || $format == "720") &&
+				$actualheight != "" && ($format == "1080" || $format == "720" || $format == "mobile") &&
 				(
 					( strpos($post_mime_type, "mp4") !== false && $actualheight <= $format_stats['height'] ) ||
 					( strpos($post_mime_type, "mp4") === false && $actualheight < $format_stats['height'] )
@@ -7006,7 +7074,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 	$post_type = get_post_type($postID);
 	if ( $post_type == "attachment" ) { $filepath = get_attached_file($postID); }
 	else { $filepath = $movieurl; }
-	$mime_type_check = wp_check_filetype($filepath);
+	$mime_type_check = kgvid_url_mime_type($filepath);
 	$movie_info = kgvid_get_video_dimensions($filepath);
 
 	if ($movie_info['worked'] == true) { //if FFMPEG was able to open the file
@@ -7029,7 +7097,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 		foreach ( $video_formats as $format => $format_stats ) {
 			if ( array_key_exists($format, $encode_checked) && $encode_checked[$format] == "true" ) {
 				if ( !$encodevideo_info[$format]['exists'] ) {
-					if ( ($format == "1080" || $format == "720") &&
+					if ( ($format == "1080" || $format == "720" || $format == "mobile") &&
 						(
 							( strpos($mime_type_check['type'], "mp4") !== false && $movie_height <= $format_stats['height'] ) ||
 							( strpos($mime_type_check['type'], "mp4") === false && $movie_height < $format_stats['height'] )

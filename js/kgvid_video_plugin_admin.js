@@ -826,34 +826,23 @@ function kgvid_change_singleurl(url, basename, oldbasename) {
 }
 
 function kgvid_set_singleurl() {
-
+console.log('change');
 	var oldbasename = jQuery('#kgflashmediaplayer-table').data("kgvid_attachment_id") || "singleurl";
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+oldbasename+'][kgflashmediaplayer-security]')[0].value;
 	var basename;
 	var url = document.getElementById('attachments-'+oldbasename+'-kgflashmediaplayer-url').value;
-	var validExtensions = new Array(".flv", ".f4v", ".mp4", ".mov", ".m4v", ".webm", ".ogg", ".ogv");
-	var extensionExists = false;
 
 	if ( url.length > 0 ) {
-
-		for (var i = 0; i < validExtensions.length; i++) {
-			if (url.indexOf(validExtensions[i]) != -1) {
-				extensionExists = true;
-				jQuery.post(ajaxurl, { action:"kgvid_sanitize_url", security: kgflashmediaplayersecurity, movieurl: url }, function(data) {
-					basename = data.singleurl_id;
-					if ( url != data.movieurl )  { document.getElementById('attachments-'+oldbasename+'-kgflashmediaplayer-url').value = data.movieurl; }
-					url = data.movieurl;
-					kgvid_change_singleurl(url, basename, oldbasename);
-					jQuery('#attachments-'+basename+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
-					kgvid_redraw_encode_checkboxes(url, basename, 'attachment', false);
-				}, "json");
-				break;
-			}
-		}
+		jQuery.post(ajaxurl, { action:"kgvid_sanitize_url", security: kgflashmediaplayersecurity, movieurl: url }, function(data) {
+			basename = data.singleurl_id;
+			if ( url != data.movieurl )  { document.getElementById('attachments-'+oldbasename+'-kgflashmediaplayer-url').value = data.movieurl; }
+			url = data.movieurl;
+			kgvid_change_singleurl(url, basename, oldbasename);
+			jQuery('#attachments-'+basename+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
+			kgvid_redraw_encode_checkboxes(url, basename, 'attachment', false);
+		}, "json");
 	}
-
-	if (extensionExists == false) {
-		if ( url != "" ) { alert(kgvidL10n.validurlalert); }
+	else {
 		basename = "singleurl";
 		kgvid_change_singleurl(url, basename, oldbasename);
 		document.getElementById('attachments-'+basename+'-thumbgenerate').disabled = true;
