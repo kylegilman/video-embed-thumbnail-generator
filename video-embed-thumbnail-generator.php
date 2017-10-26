@@ -802,55 +802,72 @@ function kgvid_url_exists($url) {
     return is_array($hdrs) ? preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/',$hdrs[0]) : false;
 }
 
-function kgvid_url_mime_type($url) {
+function kgvid_url_mime_type($url, $post_id = false) {
 
 	$mime_info = wp_check_filetype(strtok($url, '?'));
 
 	if ( array_key_exists('type', $mime_info) && empty($mime_info['type']) ) { //wp unable to determine mime type
 		
-		$mime_type = '';
-		$url_extension = '';
+		$mime_info = '';
 
-		$context_options = ( [
-			'ssl' => [
-				'verify_peer' => false,
-				'verify_peer_name' => false,
-			],
-			'http' => [
-				'method' => 'HEAD'
-			]
-		]);
-		$context = stream_context_create($context_options);
+		if ( $post_id != false ) {
 
-		$fp = fopen($url, 'r', null, $context);
-		$metadata = stream_get_meta_data($fp);
-		fclose($fp);
+			$sanitized_url = kgvid_sanitize_url($url);		
+			$mime_info = get_post_meta($post_id, '_kgflashmediaplayer-'.$sanitized_url['singleurl_id'].'-mime', true);
 
-		$headers = $metadata['wrapper_data'];
-
-		foreach($headers as $line) {
-				if (strtok($line, ':') == 'Content-Type') {
-						$parts = explode(":", $line);
-						$mime_type = trim($parts[1]);
-				}
 		}
 
-		if ( !empty($mime_type) ) {
-			$wp_mime_types = wp_get_mime_types();
-			foreach ($wp_mime_types as $extension => $type ) {
-				if ( $type == $mime_type ) {
-					$url_extension = $extension;
-					if ( strpos($url_extension, '|') !== false ) {
-						$extensions = explode('|', $url_extension);
-						$url_extension = $extensions[0];
+		if ( empty($mime_info) ) {
+
+			$mime_type = '';
+			$url_extension = '';
+
+			$context_options = ( [
+				'ssl' => [
+					'verify_peer' => false,
+					'verify_peer_name' => false,
+				],
+				'http' => [
+					'method' => 'HEAD'
+				]
+			]);
+			$context = stream_context_create($context_options);
+
+			$fp = fopen($url, 'r', null, $context);
+			$metadata = stream_get_meta_data($fp);
+			fclose($fp);
+
+			$headers = $metadata['wrapper_data'];
+
+			foreach($headers as $line) {
+					if (strtok($line, ':') == 'Content-Type') {
+							$parts = explode(":", $line);
+							$mime_type = trim($parts[1]);
 					}
-					break;
+			}
+
+			if ( !empty($mime_type) ) {
+				$wp_mime_types = wp_get_mime_types();
+				foreach ($wp_mime_types as $extension => $type ) {
+					if ( $type == $mime_type ) {
+						$url_extension = $extension;
+						if ( strpos($url_extension, '|') !== false ) {
+							$extensions = explode('|', $url_extension);
+							$url_extension = $extensions[0];
+						}
+						break;
+					}
 				}
 			}
-		}
 
-		$mime_info['type'] = $mime_type;
-		$mime_info['ext'] = $url_extension;
+			$mime_info['type'] = $mime_type;
+			$mime_info['ext'] = $url_extension;
+
+			if ( $post_id != false ) {
+				$mime_info = update_post_meta($post_id, '_kgflashmediaplayer-'.$sanitized_url['singleurl_id'].'-mime', $mime_info);
+			}
+
+		}
 
 	}
 
@@ -964,7 +981,7 @@ function kgvid_sanitize_url($movieurl) {
 
 	if ( empty($movie_extension) ) {
 		$sanitized_url['noextension'] = $movieurl;
-		$sanitized_url['basename'] = substr($movieurl, -10);
+		$sanitized_url['basename'] = substr($movieurl, -20);
 	}
 	else {
 		$movieurl = strtok($movieurl,'?');
@@ -1709,7 +1726,6 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'generate' => __('Generate', 'video-embed-thumbnail-generator'),
 				'randomize' => __('Randomize', 'video-embed-thumbnail-generator'),
 				'ffmpegnotfound' => sprintf( __('%s not found', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']) ),
-				'validurlalert' => __("Please enter a URL that points to a valid video file. Video sharing sites are not supported by this plugin.\nTo embed from YouTube, Vimeo, etc, just paste the link directly into the post window and WordPress will handle the rest.", 'video-embed-thumbnail-generator'),
 				'pleasevalidurl' => __('Please enter a valid video URL', 'video-embed-thumbnail-generator'),
 				'deletemessage' => __("You are about to permanently delete the encoded video.\n 'Cancel' to stop, 'OK' to delete.", 'video-embed-thumbnail-generator'),
 				'saved' => __('Saved.', 'video-embed-thumbnail-generator'),
@@ -1870,7 +1886,7 @@ function kgvid_video_embed_print_scripts() {
 					echo '<meta property="og:video" content="'.$first_embedded_video['url'].'" />'."\n";
 					$secure_url = str_replace('http://', 'https://', $first_embedded_video['url']);
 					echo '<meta property="og:video:secure_url" content="'.$secure_url.'" />'."\n";
-					$mime_type_check = kgvid_url_mime_type($first_embedded_video['url']);
+					$mime_type_check = kgvid_url_mime_type($first_embedded_video['url'], $post->ID);
 					echo '<meta property="og:video:type" content="'.$mime_type_check['type'].'" />'."\n";
 
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
@@ -2386,7 +2402,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$countable = false;
 		}
 
-		$mime_type_check = kgvid_url_mime_type($content);
+		$mime_type_check = kgvid_url_mime_type($content, $post_id);
 		if ( in_array($mime_type_check['ext'], $h264compatible) ) {
 			$format_type = "h264";
 			$mime_type = "video/mp4";
@@ -2642,7 +2658,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					else { $sources[$source_key] .= ' data-res="'.$format_stats['name'].'"'; }
 
 					if ( $format_stats['type'] != "h264" || !$mp4already ) { //build wp_video_shortcode attributes. Sources will be replaced later
-						$shortcode_type = kgvid_url_mime_type($encodevideo_info[$format]["url"]);
+						$shortcode_type = kgvid_url_mime_type($encodevideo_info[$format]["url"], $post_id);
 						$attr[$shortcode_type['ext']] = $encodevideo_info[$format]["url"];
 						if ( $format_stats['type'] == "h264" ) {
 							$mp4already = true;
