@@ -6589,7 +6589,7 @@ function kgvid_media_embedurl_process() {
 					<td class="field"><input type="text" id="attachments-singleurl-kgflashmediaplayer-url" name="attachments[singleurl][kgflashmediaplayer-url]" value="" size="50" onchange="kgvid_set_singleurl();"/>
 					<p class="help"><small><?php _e('Specify the URL of the video file.', 'video-embed-thumbnail-generator'); ?></small></p></td>
 				</tr>
-				<?php if ( current_user_can('make_video_thumbnails') ) { ?>
+				<?php if ( current_user_can('make_video_thumbnails') && $options['ffmpeg_exists'] == 'on' ) { ?>
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php _e('Thumbnails', 'video-embed-thumbnail-generator') ?></label></span></th>
 					<td class="field">

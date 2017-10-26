@@ -554,8 +554,14 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	}//end canvas thumb function
 
-	if ( jQuery('#thumb-video-'+postID).data('allowed') != 'on' && jQuery('#generate-thumb-'+postID+'-container').data('ffmpeg') == 'on' ) {
-		kgvid_ffmpeg_thumbs(); //call the FFMPEG loop if the browser can't do it
+	if ( 
+		(
+			jQuery('#thumb-video-'+postID).data('allowed') != 'on' 
+			&& jQuery('#generate-thumb-'+postID+'-container').data('ffmpeg') == 'on' //call the FFMPEG loop if the browser can't do it
+		) 
+		|| jQuery('#kgflashmediaplayer-table').length > 0 //or if it's the external URL dialog
+	) {
+		kgvid_ffmpeg_thumbs(); 
 	}
 }
 
