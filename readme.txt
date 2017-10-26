@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.8
-Stable tag: 4.6.17
+Stable tag: 4.6.18
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -245,6 +245,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.18 - October 26, 2017 =
+* Updated Video.js to version 5.20.2
+* No longer double encoding 360p formats for 360p or lower resoltion original videos.
+* Enabled subtitles for fullscreen iPhone videos when using the Video.js player.
+* Now allowing external URLs without filename extensions.
+* Fixed FFMPEG thumbnail generation when embedding videos from external URLs.
+* Fixed "Warning illegal string offset 'id'" errors.
 
 = 4.6.17 - June 10, 2017 =
 * Updated Video.js to version 5.19.2
@@ -508,88 +516,6 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that didn't recognize videos had completed encoding if there were audio frames left in the queue.
 * Fixed bug that left title overlay on iOS videos using the WordPress Default player.
 * Fixed bug that made video galleries display as inline-block when the inline video option was disabled.
-
-= 4.3.5 - September 17, 2014 =
-* Fixed responsive height for videos using WordPress Default player.
-* Better fix for bug that prevented choosing thumbnails from the small video player in the new media library popup window in WordPress 4.0.
-
-= 4.3.4 - September 10, 2014 =
-* Updated Video.js to version 4.8.1
-* Added default gallery end option to play the next video or close the popup window.
-* Restored watermark overlay in fullscreen for Video.js and WordPress Default players.
-* Restored browser thumbnail generation quality in WordPress 4.0.
-* Fixed bug that prevented choosing thumbnails from the small video player in the new media library popup window in WordPress 4.0.
-* Removed instances in which a video or watermark in the WordPress database would be input to FFMPEG through http instead of using the file path. Should fix some I/O errors, particularly with SSL.
-* Now setting the thumbnail as the featured image for the video attachment regardless of plugin settings.
-
-= 4.3.3 - July 20, 2014 =
-* Changed .mov files back to type "video/mp4" to fix "No compatible source was found for this video" errors.
-* Added "mute" shortcode attribute.
-* Added default volume and mute options.
-* Added option to set custom default shortcode attributes.
-* Fixed WordPress default player alternate H.264 sources.
-* Fixed WordPress default player volume and preload settings.
-* Fixed Video.js volume slider appearance when using the custom skin.
-* Disabled JW Player custom context menu when right-clicking is disabled.
-
-= 4.3.2 - July 15, 2014 =
-* Updated Video.js to version 4.6.4
-* Added Spanish, French, and Bulgarian translations.
-* Added ability to send advanced configuration attributes to JW Player. Any attributes added to the [KGVID] shortcode will be passed on without change.
-* Added multisite option to restrict FFMPEG settings access to super admins only.
-* Added better error reporting when FFMPEG isn't executing.
-* Added subtitles/captions fields to "Embed Video from URL" tab.
-* Added allowfullscreen to iframe embed codes.
-* Added fitvidsignore class to Video.js videos to help defeat FitVids.js-induced playback problems.
-* Added contentUrl schema.org metadata.
-* Fixed some gettext calls for translation.
-* Fixed bug that set alternate resolution H.264 videos to type "video/h264" instead of "video/mp4".
-* Fixed bug that incorrectly added "Other user's video" to video encode queue entries.
-* Fixed missing help icons on settings pages.
-* Fixed bug that disabled aspect ratio locking in the "Embed Video from URL" tab.
-
-= 4.3.1 - April 8, 2014 =
-* Fixed errors when activating plugin for the first time and saving settings page in non-multisite installations.
-* Updated Video.js to version 4.5.1
-* Fixed pop-up gallery cross-origin bug for users with FORCE_SSL_ADMIN enabled.
-* Fixed error on network settings page when pressing the "Save Changes" button and resetting network settings using "Reset Options" button.
-* Added text-align:left to left-aligned galleries.
-* Added gettext calls to some text for translation.
-* Removed duplicate bitrate setting for WEBM encoding when using average bitrate.
-
-= 4.3 - March 18, 2014 =
-* Prepared plugin for internationalization. Translators welcome!
-* Finally paying attention to multisite. Several FFMPEG settings and the encode queue are now controlled at the network level if the plugin is network activated.
-* Added option to encode more than one video at a time.
-* Added JW Player option if the JW Player WordPress plugin is active.
-* Added video subtitle/captions support.
-* Revised and simplified video gallery popup method. Switched to lighter SimpleModal plugin and no longer loading jQuery-ui libraries.
-* Added "gallery_end" shortcode attribute to set an action when a pop-up video gallery video ends.
-* Added next and previous buttons to navigate between pop-up video gallery items.
-* Updated Video.js to version 4.4.3
-* Strobe Media Playback is now deprecated. New features added to the plugin might not work if this player is selected.
-* Added option to add a watermark to videos encoded with FFMPEG/LIBAV.
-* Added option to automatically generate multiple thumbnails when a video is uploaded.
-* Added option to encode more than one video at the same time.
-* Added option to turn on video download link by default.
-* Added option to set video preload attribute.
-* Added list of shortcode attribute options to the post edit help tab.
-* Added "order" and "orderby" shortcode attributes to sort videos embedded without a URL or ID specified.
-* Added float to inline videos to allow text to wrap around them.
-* Added play button overlay to gallery thumbnails when using WordPress Default player.
-* Applied video alignment setting to video galleries for center and right justifying galleries.
-* Now only loading plugin-related JavaScripts when the shortcode is used on the page and moved links to the footer to speed up page loading.
-* Added wpdb->prepare to all database queries for increased security.
-* Added nonce check when recording video play counts for increased security.
-* Fixed bug that broke responsive resizing in IE 8 and for all videos with apostrophes in their titles.
-* Fixed bug that disabled FFMPEG if the path to WordPress had spaces in it.
-* Fixed bug that generated an error if the exec function was disabled on the server using suhosin or safe mode.
-* Fixed bug that caused video encode problems when FFMPEG output contained special characters.
-* Fixed bug that generated misaligned play button arrows in some themes when using the Video.js player.
-* Fixed bug that sometimes generated jagged rows in galleries with mixed aspect ratios.
-* Fixed bug that attempted to generate thumbnails using FFMPEG if a user had previously installed FFMPEG, disabled in-browser thumbnails, then disabled FFMPEG.
-* Fixed several user capability related bugs related to users who were not assigned any roles and capabilities that were not assigned to any roles.
-* Changed video title overlay z-index to 103 to avoid floating over other elements.
 
 <a href="http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/">See the full changelog on my website.</a>
 
