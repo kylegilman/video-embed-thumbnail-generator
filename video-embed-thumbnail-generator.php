@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.18',
+		"version" => '4.6.19',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
