@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.8
-Stable tag: 4.6.18
+Stable tag: 4.6.19
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -245,6 +245,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.19 - November 2, 2017 =
+* Fixed shorthand array declaration to retain compatiblity with versions of PHP older than 5.4.
 
 = 4.6.18 - November 2, 2017 =
 * Updated Video.js to version 5.20.2
