@@ -246,9 +246,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.18 - October 26, 2017 =
+= 4.6.18 - November 2, 2017 =
 * Updated Video.js to version 5.20.2
-* No longer double encoding 360p formats for 360p or lower resoltion original videos.
+* No longer double encoding 360p formats for 360p or lower resolution original videos.
 * Enabled subtitles for fullscreen iPhone videos when using the Video.js player.
 * Now allowing external URLs without filename extensions.
 * Fixed FFMPEG thumbnail generation when embedding videos from external URLs.
