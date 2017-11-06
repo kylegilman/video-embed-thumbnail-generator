@@ -751,7 +751,7 @@ function kgvid_enqueue_video_encode(postID, blogID) {
 		page = "queue";
 	}
 
-	var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm", "vp9", "custom");
+	var formats = new Array("fullres", "1080", "720", "480", "mobile", "ogg", "webm", "vp9", "custom");
 	var kgvid_encode = new Object();
 	jQuery.each(formats, function(key,formats) {
 		kgvid_encode[formats] = "";
@@ -1141,7 +1141,7 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
 
 	if ( kgflashmediaplayersecurity ) { //sometimes this tries to run after the media modal is closed
 
-		var formats = new Array("fullres", "1080", "720", "mobile", "ogg", "webm");
+		var formats = new Array("fullres", "1080", "720", "480", "mobile", "ogg", "webm", "vp9", "custom");
 		var kgvid_encode = new Object();
 
 		jQuery.each(formats, function(key,formats) {

@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.19
+Version: 4.6.20
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.19',
+		"version" => '4.6.20',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -69,6 +69,7 @@ function kgvid_default_options_fn() {
 		"encode_fullres" => false,
 		"encode_1080" => "on",
 		"encode_720" => "on",
+		"encode_480" => "on",
 		"encode_mobile" => "on",
 		"encode_webm" => false,
 		"encode_vp9" => false,
@@ -79,6 +80,7 @@ function kgvid_default_options_fn() {
 			'width' => '',
 			'height' => ''
 		),
+		"hide_video_formats" => "on",
 		"app_path" => "/usr/local/bin",
 		"video_app"  => "ffmpeg",
 		"ffmpeg_exists" =>"notchecked",
@@ -268,12 +270,13 @@ function kgvid_get_attachment_meta($post_id) {
 		'play_75' => '0',
 		'completeviews' => '0',
 		'pickedformat' => '',
-		'encodefullres' => '',
-		'encode1080' => '',
-		'encode720' => '',
-		'encodemobile' => '',
-		'encodewebm' => '',
-		'encodeogg' => '',
+		'encode_fullres' => '',
+		'encode_1080' => '',
+		'encode_720' => '',
+		'encode_480' => '',
+		'encode_mobile' => '',
+		'encode_webm' => '',
+		'encode_ogg' => '',
 		'encodecustom_h264' => '',
 		'encodecustom_webm' => '',
 		'encodecustom_ogg' => '',
@@ -416,11 +419,23 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true ) 
 			"old_suffix" => "-720.m4v",
 			"vcodec" => "libx264"
 		),
+		"480" => array(
+			"name" => "480p H.264",
+			"label" => '480p',
+			"width" => 854,
+			"height" => 480,
+			"type" => "h264",
+			"extension" => "mp4",
+			"mime" => "video/mp4",
+			"suffix" => "-480.mp4",
+			"old_suffix" => "-480.m4v",
+			"vcodec" => "libx264"
+		),
 		"mobile" => array(
 			"name" => "360p H.264",
 			"label" => '360p',
 			"width" => 640,
-			"height" => 480,
+			"height" => 360,
 			"type" => "h264",
 			"extension" => "mp4",
 			"suffix" => "-360.mp4",
@@ -1232,12 +1247,6 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 				'filepath' => $uploads['basedir']."/html5encodes/".$encodevideo_info['moviefilebasename'].$old_suffix ),
 		);
 		if ( !array_key_exists('old_suffix', $format_stats) ) { unset($potential_locations['same_directory_old_suffix']); }
-		if ( $format == 'mobile' ) {
-			$potential_locations['480p'] = array(
-				'url' => $sanitized_url['noextension'].'-480.mp4',
-				'filepath' => $encodevideo_info['encodepath'].$encodevideo_info['moviefilebasename'].'-480.mp4'
-			);
-		}
 
 		foreach ( $potential_locations as $name => $location ) {
 
@@ -3603,7 +3612,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		if ( $format_stats['status'] == "lowres" ||
 			(
-				$actualheight != "" && ($format == "1080" || $format == "720" || $format == "mobile") &&
+				$actualheight != "" && $format_stats['type'] == "h264" && $format != "fullres" &&
 				(
 					( strpos($post_mime_type, "mp4") !== false && $actualheight <= $format_stats['height'] ) ||
 					( strpos($post_mime_type, "mp4") === false && $actualheight < $format_stats['height'] )
@@ -3611,7 +3620,12 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			)
 		) { continue; } //if the format is bigger than the original video, skip the checkbox
 
-		if ( !empty($encodevideo_info) && !$encodevideo_info[$format]['exists'] && strpos($format, 'custom_') === 0 ) { continue; } //skip custom formats that don't exist
+		if ( !empty($encodevideo_info) && !$encodevideo_info[$format]['exists']
+				&& ( 
+					strpos($format, 'custom_') === 0 //skip custom formats that don't exist
+					|| ( $format != 'fullres' && $options['encode_'.$format] == false && $options['hide_video_formats'] )
+				) 
+			) { continue; } 
 
 		if ( $format == 'fullres' ) {
 
@@ -4757,14 +4771,15 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "</select> ";
 
 
-		echo "</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into as many as seven additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on most operating systems now. I no longer recommend encoding OGV or WEBM unless you expect a large number of no-Flash sticklers visiting your site. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013.', 'video-embed-thumbnail-generator')."</span></span><br />";
-		echo "<input ".checked( $options['encode_1080'], "on", false )." id='encode_1080' name='kgvid_video_embed_options[encode_1080]' type='checkbox' /> <label for='encode_1080'>1080p H.264 <small><em>".__('(iPhone 4s+, iPad 2+, modern Android, Windows Phone 8, Chrome, Safari, IE 9+, Firefox)', 'video-embed-thumbnail-generator')."</em></small></label><br />";
-		echo "<input ".checked( $options['encode_720'], "on", false )." id='encode_720' name='kgvid_video_embed_options[encode_720]' type='checkbox' /> <label for='encode_720'>720p H.264 <small><em>".__('(iPhone 4+, iPad, most Android, Chrome, Safari, IE 9+, Firefox)', 'video-embed-thumbnail-generator')."</em></small></label><br />";
-		echo "<input ".checked( $options['encode_mobile'], "on", false )." id='encode_mobile' name='kgvid_video_embed_options[encode_mobile]' type='checkbox' /> <label for='encode_mobile'>360p H.264 <small><em>(iOS, Android, Windows Phone 7+, Chrome, Safari, IE 9+, Firefox)</em></small></label><br />";
+		echo "</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on most operating systems now. I no longer recommend encoding OGV or WEBM. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013. Most browsers except Safari currently support it.', 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "<input ".checked( $options['encode_1080'], "on", false )." id='encode_1080' name='kgvid_video_embed_options[encode_1080]' type='checkbox' /> <label for='encode_1080'>1080p H.264</label><br />";
+		echo "<input ".checked( $options['encode_720'], "on", false )." id='encode_720' name='kgvid_video_embed_options[encode_720]' type='checkbox' /> <label for='encode_720'>720p H.264</label><br />";
+		echo "<input ".checked( $options['encode_480'], "on", false )." id='encode_480' name='kgvid_video_embed_options[encode_480]' type='checkbox' /> <label for='encode_480'>480p H.264</label><br />";
+		echo "<input ".checked( $options['encode_mobile'], "on", false )." id='encode_mobile' name='kgvid_video_embed_options[encode_mobile]' type='checkbox' /> <label for='encode_mobile'>360p H.264</label><br />";
 		echo "<input ".checked( $options['encode_webm'], "on", false )." id='encode_webm' name='kgvid_video_embed_options[encode_webm]' type='checkbox' /> <label for='encode_webm'>WEBM <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small></label><br />";
-		echo "<input ".checked( $options['encode_vp9'], "on", false )." id='encode_vp9' name='kgvid_video_embed_options[encode_vp9]' type='checkbox' /> <label for='encode_vp9'>WEBM VP9 <small><em>(Firefox, Chrome, Opera)</em></small></label><br />";
+		echo "<input ".checked( $options['encode_vp9'], "on", false )." id='encode_vp9' name='kgvid_video_embed_options[encode_vp9]' type='checkbox' /> <label for='encode_vp9'>WEBM VP9 <small><em>(Android 4.4+, Firefox, Chrome, Opera, Edge)</em></small></label><br />";
 		echo "<input ".checked( $options['encode_ogg'], "on", false )." id='encode_ogg' name='kgvid_video_embed_options[encode_ogg]' type='checkbox' /> <label for='encode_ogg'>OGV <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small></label><br />";
-		echo "<input ".checked( $options['encode_custom'], "on", false )." id='encode_custom' name='kgvid_video_embed_options[encode_custom]' type='checkbox' /> <label for='encode_custom'>Custom";
+		echo "<input ".checked( $options['encode_custom'], "on", false )." id='encode_custom' name='kgvid_video_embed_options[encode_custom]' type='checkbox' /> <label for='encode_custom'>".__('Custom', 'video-embed-thumbnail-generator');
 		$items = array( "H.264" => "h264" , "WEBM" => "webm", "OGV" => "ogg" );
 		echo " <select id='custom_format_type' name='kgvid_video_embed_options[custom_format][format]' class='affects_ffmpeg'>";
 		foreach($items as $name=>$value) {
@@ -4772,7 +4787,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select> ";
-		echo "<small>Width: <input id='custom_format_width' name='kgvid_video_embed_options[custom_format][width]' class='small-text affects_ffmpeg kgvid_custom_format' value='".$options['custom_format']['width']."' /> Height: <input id='custom_format_height' name='kgvid_video_embed_options[custom_format][height]' class='small-text affects_ffmpeg kgvid_custom_format' value='".$options['custom_format']['height']."' /></small></label>";
+		echo "<small>Width: <input id='custom_format_width' name='kgvid_video_embed_options[custom_format][width]' class='small-text affects_ffmpeg kgvid_custom_format' value='".$options['custom_format']['width']."' /> Height: <input id='custom_format_height' name='kgvid_video_embed_options[custom_format][height]' class='small-text affects_ffmpeg kgvid_custom_format' value='".$options['custom_format']['height']."' /></small></label><br />";
+		echo "<br><input ".checked( $options['hide_video_formats'], "on", false )." id='hide_video_formats' name='kgvid_video_embed_options[hide_video_formats]' type='checkbox' /> <label for='hide_video_formats'>".__('Only show video formats selected above on attachment pages and encode queue.', 'video-embed-thumbnail-generator');
 		echo "</div>\n\t";
 	}
 
@@ -5289,6 +5305,12 @@ function kgvid_update_settings() {
 			if ( $options['count_views'] == 'all' ) {
 				$options['count_views'] = 'quarters';
 			}
+		}
+
+		if ( version_compare( $options['version'], '4.6.20', '<' ) ) {
+			$options['version'] = '4.6.20';
+			$options['encode_480'] = false;
+			$options['hide_video_formats'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -7114,7 +7136,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 		foreach ( $video_formats as $format => $format_stats ) {
 			if ( array_key_exists($format, $encode_checked) && $encode_checked[$format] == "true" ) {
 				if ( !$encodevideo_info[$format]['exists'] ) {
-					if ( ($format == "1080" || $format == "720" || $format == "mobile") &&
+					if ( $format_stats['type'] == "h264" && $format != "fullres" &&
 						(
 							( strpos($mime_type_check['type'], "mp4") !== false && $movie_height <= $format_stats['height'] ) ||
 							( strpos($mime_type_check['type'], "mp4") === false && $movie_height < $format_stats['height'] )

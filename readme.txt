@@ -246,6 +246,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.20 - November 7, 2017 =
+* Added 480p resolution option.
+* Added option to hide unwanted encode formats from the attachment pages and encode queue.
+* Fixed bug that prevented 360p encoding for videos less than 480p.
+* Fixed bug that did not automatically select default encoding formats.
+
 = 4.6.19 - November 2, 2017 =
 * Fixed shorthand array declaration to retain compatiblity with versions of PHP older than 5.4.
 
