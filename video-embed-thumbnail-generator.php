@@ -2050,10 +2050,6 @@ function kgvid_enqueue_shortcode_scripts() {
 		wp_enqueue_script( 'swfobject' );
 	}
 
-	if ( $options['embed_method'] == "Wordpress Default" ) {
-		wp_register_script( 'mejs-speed', plugins_url( 'js/mep-speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
-	}
-
 	if ( !wp_script_is('kgvid_video_embed', 'enqueued') ) {
 
 		wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
@@ -2716,12 +2712,14 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 			$wpmejssettings = array(
 				'features' => array( 'playpause', 'progress', 'volume', 'tracks' ),
+				'classPrefix' => 'mejs-',
+				'stretching' => 'responsive',
 				'pluginPath' => includes_url( 'js/mediaelement/', 'relative' ),
 				'success' => 'kgvid_mejs_success'
 			);
 
 			if ( $enable_resolutions_plugin && !wp_script_is('mejs_sourcechooser', 'enqueued') ) {
-				wp_enqueue_script( 'mejs_sourcechooser', plugins_url( 'js/mep-feature-sourcechooser.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
+				wp_enqueue_script( 'mejs_sourcechooser', plugins_url( 'js/source-chooser.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
 				array_push($wpmejssettings['features'], 'sourcechooser');
 				$localize = true;
 			}
@@ -2733,6 +2731,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts['playback_rate'] == 'true' ) {
 				array_push($wpmejssettings['features'], 'speed');
 				$wpmejssettings['speeds'] = array('0.5', '1', '1.25', '1.5', '2');
+				wp_enqueue_script( 'mejs-speed', plugins_url( 'js/speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
 			}
 
 			array_push($wpmejssettings['features'], 'fullscreen');
