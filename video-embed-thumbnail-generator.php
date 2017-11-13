@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.20
+Version: 4.6.20-alpha
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.20',
+		"version" => '4.6.20-alpha',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -2279,6 +2279,8 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 	global $kgvid_video_id;
 	if ( !$kgvid_video_id ) { $kgvid_video_id = 0; }
 
+	global $wp_version;
+
 	$options = kgvid_get_options();
 	$code = "";
 	$id_array = array();
@@ -2719,7 +2721,13 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			);
 
 			if ( $enable_resolutions_plugin && !wp_script_is('mejs_sourcechooser', 'enqueued') ) {
-				wp_enqueue_script( 'mejs_sourcechooser', plugins_url( 'js/source-chooser.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
+				if ( $wp_version >= 4.9 ) {
+					$sourcechooser_path = plugins_url( 'js/mejs-source-chooser.js', __FILE__ );
+				}
+				else {
+					$sourcechooser_path = plugins_url( 'js/mep-feature-sourcechooser.js', __FILE__ );
+				}
+				wp_enqueue_script( 'mejs_sourcechooser', $sourcechooser_path, array( 'mediaelement' ), $options['version'], true );
 				array_push($wpmejssettings['features'], 'sourcechooser');
 				$localize = true;
 			}
@@ -2731,7 +2739,13 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts['playback_rate'] == 'true' ) {
 				array_push($wpmejssettings['features'], 'speed');
 				$wpmejssettings['speeds'] = array('0.5', '1', '1.25', '1.5', '2');
-				wp_enqueue_script( 'mejs-speed', plugins_url( 'js/speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
+				if ( $wp_version >= 4.9 ) {
+					$speed_path = plugins_url( 'js/mejs-speed.js', __FILE__ );
+				}
+				else {
+					$speed_path = plugins_url( 'js/mep-speed.js', __FILE__ );;
+				}
+				wp_enqueue_script( 'mejs-speed', $speed_path, array( 'mediaelement' ), $options['version'], true );
 			}
 
 			array_push($wpmejssettings['features'], 'fullscreen');

@@ -11,8 +11,6 @@
  */(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
-mejs.i18n.en['mejs.source-chooser'] = 'Source Chooser';
-
 Object.assign(mejs.MepDefaults, {
 	sourcechooserText: null
 });
@@ -116,7 +114,7 @@ Object.assign(MediaElementPlayer.prototype, {
 					if (otherRadios[j] !== this) {
 						otherRadios[j].setAttribute('aria-selected', 'false');
 						otherRadios[j].removeAttribute('checked');
-						otherRadios[j].className = '';
+						otherRadios[j].parentElement.className = '';
 					}
 				}
 
@@ -160,12 +158,6 @@ Object.assign(MediaElementPlayer.prototype, {
 
 		t.sourcechooserButton.querySelector('ul').innerHTML += '<li' + (isCurrent ? ' class="sourcechooser-selected"' : '') + '>' + ('<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" ') + ('role="menuitemradio" value="' + src + '" ' + (isCurrent ? 'checked="checked"' : '') + ' aria-selected="' + isCurrent + '"/>') + ('<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + '</label>') + '</li>';
 
-		t.adjustSourcechooserBox();
-	},
-	adjustSourcechooserBox: function adjustSourcechooserBox() {
-		var t = this;
-
-		t.sourcechooserButton.querySelector('.' + t.options.classPrefix + 'sourcechooser-selector').style.height = parseFloat(t.sourcechooserButton.querySelector('.' + t.options.classPrefix + 'sourcechooser-selector ul').offsetHeight) + 'px';
 	},
 	hideSourcechooserSelector: function hideSourcechooserSelector() {
 
