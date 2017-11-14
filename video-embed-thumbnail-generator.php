@@ -2587,7 +2587,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		} //if Strobe Media
 
-		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper'.$aligncode.'">'."\n\t\t\t";
+		$code .= '<div id="kgvid_'.$div_suffix.'_wrapper" class="kgvid_wrapper';
+		if ( $wp_version < 4.9 && $options['embed_method'] == "WordPress Default" ) { 
+			$code .= ' kgvid_compat_mep'; 
+		}
+		$code .= $aligncode.'">'."\n\t\t\t";
 		$code .= '<div id="video_'.$div_suffix.'_div" class="fitvidsignore kgvid_videodiv" data-id="'.$div_suffix.'" data-kgvid_video_vars="'.esc_attr(json_encode($video_variables)).'" ';
 		if ( $query_atts["schema"] == "true" ) {
 			$code .= 'itemprop="video" itemscope itemtype="https://schema.org/VideoObject">';
