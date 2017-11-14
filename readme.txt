@@ -246,7 +246,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.20 - November 7, 2017 =
+= 4.6.20 - November 14, 2017 =
+* Updated WordPress Default player resizing methods and speed and resolution selector plugins for the new player included with WordPress 4.9.
 * Added 480p resolution option.
 * Added option to hide unwanted encode formats from the attachment pages and encode queue.
 * Fixed bug that prevented 360p encoding for videos less than 480p.
