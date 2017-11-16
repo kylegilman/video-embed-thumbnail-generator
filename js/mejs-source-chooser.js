@@ -100,25 +100,26 @@ Object.assign(MediaElementPlayer.prototype, {
 			}, 0);
 		}, 100));
 
-		var radios = player.sourcechooserButton.querySelectorAll('input[type=radio]');
+		var selectorLIs = player.sourcechooserButton.querySelectorAll('li');
 
-		for (var _i2 = 0, _total2 = radios.length; _i2 < _total2; _i2++) {
-			radios[_i2].addEventListener('click', function () {
-				this.setAttribute('aria-selected', true);
-				this.checked = true;
-				this.parentElement.className = 'sourcechooser-selected';
+		for (var _i2 = 0, _total2 = selectorLIs.length; _i2 < _total2; _i2++) {
+			selectorLIs[_i2].addEventListener('click', function () {
+				var radio = this.querySelectorAll('input[type=radio]')[0];
+				radio.setAttribute('aria-selected', true);
+				radio.checked = true;
+				this.className = 'sourcechooser-selected';
 
 				var otherRadios = this.closest('.' + t.options.classPrefix + 'sourcechooser-selector').querySelectorAll('input[type=radio]');
 
 				for (var j = 0, radioTotal = otherRadios.length; j < radioTotal; j++) {
-					if (otherRadios[j] !== this) {
+					if (otherRadios[j] !== radio) {
 						otherRadios[j].setAttribute('aria-selected', 'false');
 						otherRadios[j].removeAttribute('checked');
 						otherRadios[j].parentElement.className = '';
 					}
 				}
 
-				var src = this.value;
+				var src = radio.value;
 
 				if (media.getSrc() !== src) {
 					var currentTime = media.currentTime;
@@ -133,9 +134,32 @@ Object.assign(MediaElementPlayer.prototype, {
 					};
 
 					media.pause();
+					
+					if ( currentTime != 0 ) {
+						var video = jQuery(media).children('video')[0];
+						var canvas = document.createElement("canvas");
+						canvas.className = 'kgvid_temp_thumb';
+						canvas.width = video.offsetWidth;
+						canvas.height = video.videoHeight/video.videoWidth*video.offsetWidth;
+						var topOffset = Math.round((video.offsetHeight - canvas.height)/2);
+						if (topOffset > 2) {
+							canvas.setAttribute('style', 'top:' + topOffset + 'px;');
+						}
+						console.log(canvas.style.top);
+						var context = canvas.getContext('2d');
+						context.fillRect(0, 0, canvas.width, canvas.height);
+						context.drawImage(video, 0, 0, canvas.width, canvas.height);
+						jQuery('#'+media.id).parents('.mejs-mediaelement').append(canvas);
+	
+						jQuery(media).one( 'seeked', function() {
+							jQuery(canvas).remove();
+						});
+					}
+
 					media.setSrc(src);
 					media.load();
 					media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+					
 				}
 			});
 		}
