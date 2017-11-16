@@ -332,16 +332,17 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 		if ( current_time != 0 ) {
 
 			player.pause();
-			var real_aspect_ratio = Math.round(video_el.videoHeight/video_el.videoWidth*1000)/1000;
-			var thumbnail_width = player.height() / real_aspect_ratio;
-			var x_axis = (player.width() - thumbnail_width) / 2;
 			var canvas = document.createElement("canvas");
 			canvas.className = 'kgvid_temp_thumb';
-			canvas.width = player.width();
-			canvas.height = player.height();
+			canvas.width = video_el.offsetWidth;
+			canvas.height = video_el.videoHeight/video_el.videoWidth*video_el.offsetWidth;
+			var topOffset = Math.round((video_el.offsetHeight - canvas.height)/2);
+			if (topOffset > 2) {
+				canvas.setAttribute('style', 'top:' + topOffset + 'px;');
+			}
 			var context = canvas.getContext('2d');
-			context.fillRect(0, 0, player.width(), player.height());
-			context.drawImage(video_el, x_axis, 0, thumbnail_width, player.height());
+			context.fillRect(0, 0, canvas.width, canvas.height);
+			context.drawImage(video_el, 0, 0, canvas.width, canvas.height);
 			jQuery(video_el).parent().append(canvas);
 
 			player.bigPlayButton.hide();
