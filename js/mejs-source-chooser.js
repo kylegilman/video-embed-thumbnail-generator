@@ -139,13 +139,16 @@ Object.assign(MediaElementPlayer.prototype, {
 						var video = jQuery(media).children('video')[0];
 						var canvas = document.createElement("canvas");
 						canvas.className = 'kgvid_temp_thumb';
-						canvas.width = video.offsetWidth;
-						canvas.height = video.videoHeight/video.videoWidth*video.offsetWidth;
+						canvas.width = ( video.videoWidth > video.videoHeight ) ? video.offsetWidth : video.videoWidth/video.videoHeight*video.offsetHeight;
+						canvas.height = ( video.videoWidth > video.videoHeight ) ? video.videoHeight/video.videoWidth*video.offsetWidth : video.offsetHeight;
 						var topOffset = Math.round((video.offsetHeight - canvas.height)/2);
 						if (topOffset > 2) {
 							canvas.setAttribute('style', 'top:' + topOffset + 'px;');
 						}
-						console.log(canvas.style.top);
+						var leftOffset = Math.round((video.offsetWidth - canvas.width)/2);
+						if (leftOffset > 2) {
+							canvas.setAttribute('style', 'left:' + leftOffset + 'px;');
+						}
 						var context = canvas.getContext('2d');
 						context.fillRect(0, 0, canvas.width, canvas.height);
 						context.drawImage(video, 0, 0, canvas.width, canvas.height);

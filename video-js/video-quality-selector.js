@@ -312,7 +312,7 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 	// Define the change res method
 	player.changeRes = function( target_resolution ) {
 
-		var video_el = player.el().firstChild,
+		var video = player.el().firstChild,
 			is_paused = player.paused(),
 			is_autoplay = player.autoplay(),
 			current_time = player.currentTime(),
@@ -325,7 +325,7 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 			|| ! player.availableRes[target_resolution] ) { return; }
 
 		// Make sure the loadedmetadata event will fire
-		if ( 'none' == video_el.preload ) { video_el.preload = 'metadata'; }
+		if ( 'none' == video.preload ) { video.preload = 'metadata'; }
 
 		if ( is_autoplay ) { player.autoplay(false); }
 
@@ -334,16 +334,20 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 			player.pause();
 			var canvas = document.createElement("canvas");
 			canvas.className = 'kgvid_temp_thumb';
-			canvas.width = video_el.offsetWidth;
-			canvas.height = video_el.videoHeight/video_el.videoWidth*video_el.offsetWidth;
-			var topOffset = Math.round((video_el.offsetHeight - canvas.height)/2);
+			canvas.width = ( video.videoWidth > video.videoHeight ) ? video.offsetWidth : video.videoWidth/video.videoHeight*video.offsetHeight;
+			canvas.height = ( video.videoWidth > video.videoHeight ) ? video.videoHeight/video.videoWidth*video.offsetWidth : video.offsetHeight;
+			var topOffset = Math.round((video.offsetHeight - canvas.height)/2);
 			if (topOffset > 2) {
 				canvas.setAttribute('style', 'top:' + topOffset + 'px;');
 			}
+			var leftOffset = Math.round((video.offsetWidth - canvas.width)/2);
+			if (leftOffset > 2) {
+				canvas.setAttribute('style', 'left:' + leftOffset + 'px;');
+			}
 			var context = canvas.getContext('2d');
 			context.fillRect(0, 0, canvas.width, canvas.height);
-			context.drawImage(video_el, 0, 0, canvas.width, canvas.height);
-			jQuery(video_el).parent().append(canvas);
+			context.drawImage(video, 0, 0, canvas.width, canvas.height);
+			jQuery(video).parent().append(canvas);
 
 			player.bigPlayButton.hide();
 
