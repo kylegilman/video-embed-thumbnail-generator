@@ -539,26 +539,37 @@ function kgvid_setup_video(id) {
 
 		var player = jQuery('#video_'+id+'_div video');
 		var mejs_id = jQuery('#video_'+id+'_div .mejs-container').attr('id');
+		var played = jQuery('#video_'+id+'_div').data("played") || "not played";
+
+		jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
+
+		if ( played == "not played" ) { //only turn on the default captions on first load
+
+			var mejs_player = eval('mejs.players.'+mejs_id);
+
+			jQuery.each(mejs_player.tracks, function(key, item) {
+				if ( item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang').toLowerCase() ) {
+					mejs_player.setTrack(item.trackId);
+					jQuery('#'+mejs_id+' .mejs-captions-selector input[value="en"]').prop('checked',true);
+				}
+			});
+
+			if ( video_vars.start != '' ) {
+				player[0].setCurrentTime(kgvid_convert_from_timecode(video_vars.start));
+			}
+
+		}
 
 		player.on('loadedmetadata', function() {
 
-			var mejs_player = eval('mejs.players.'+mejs_id);
 			var resolutions = player.availableRes;
 			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 			if ( video_vars.mute == "true" ) { player[0].setMuted(true); }
 			if ( video_vars.pauseothervideos == "false" ) { mejs_player.options.pauseOtherPlayers = false; }
-			jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
-
-			if ( played == "not played" ) { //only turn on the default captions on first load
-
-				jQuery.each(mejs_player.tracks, function(key, item) {
-					if ( item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang') ) {
-						mejs_player.setTrack(item.srclang);
-						jQuery('#'+mejs_id+' .mejs-captions-selector input[value="en"]').prop('checked',true);
-					}
-				});
+			
+			if ( played == "not played" ) { //only fast forward to start time on first play
 
 				if ( video_vars.start != '' ) {
 					player[0].setCurrentTime(kgvid_convert_from_timecode(video_vars.start));
