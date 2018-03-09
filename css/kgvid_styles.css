@@ -513,6 +513,15 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 .kgvid_wrapper .video-js.vjs-controls-enabled .vjs-big-play-button { display: none; }
 .kgvid_wrapper .video-js.vjs-controls-enabled.vjs-paused .vjs-big-play-button { display: block; }
 
+/* change default styling of captions menu to match other plugins */
+.kgvid_wrapper .mejs-captions-selector-label label, .kgvid_wrapper .mejs-captions-selected {
+    color: #fff;
+}
+
+.kgvid_wrapper .mejs-captions-selector-list-item {
+    background: rgba(255, 255, 255, 0.4);
+}
+
 /* mejs-sourcechooser plugin styles */
 
 .kgvid_wrapper .mejs-controls div.mejs-sourcechooser-button button {
