@@ -713,6 +713,11 @@ function kgvid_saveall_thumbs(postID) {
 function kgvid_thumb_video_manual(postID) {
 
 	var video = document.getElementById('thumb-video-'+postID);
+
+	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) { //this is the Media Library pop-up introduced in WordPress 4.0;
+		video = document.getElementById('thumb-video-'+postID+'_html5');
+	}
+
 	var video_aspect = video.videoHeight/video.videoWidth;
 	var time_id = Math.round(video.currentTime);
 	var time_display = kgvid_convert_to_timecode(video.currentTime);
