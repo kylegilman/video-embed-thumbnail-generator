@@ -515,11 +515,18 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 
 /* change default styling of captions menu to match other plugins */
 .kgvid_wrapper .mejs-captions-selector-label label, .kgvid_wrapper .mejs-captions-selected {
-    color: #fff;
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .kgvid_wrapper .mejs-captions-selector-list-item {
-    background: rgba(255, 255, 255, 0.4);
+    padding: 0px;
+}
+
+.kgvid_wrapper .mejs-captions-selector-label {
+    padding: 5px;
+    margin: 0px;
+    color: #fff;
+    width: 100%;
 }
 
 /* mejs-sourcechooser plugin styles */
