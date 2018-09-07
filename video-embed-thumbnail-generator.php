@@ -5679,6 +5679,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 		}
 
 		if ( $something_to_encode ) {
+			
 			$output = kgvid_enqueue_videos($post_id, $movieurl, $encode_checked, $post->post_parent);
 			$output = kgvid_encode_videos();
 
@@ -7543,6 +7544,9 @@ function kgvid_encode_videos() {
 						'OS' => $serverOS,
 						'started' => time()
 					);
+
+					$args = array($video_key, $queued_format, 'queue');
+					wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
 
 				} //end if there's stuff to encode
 
