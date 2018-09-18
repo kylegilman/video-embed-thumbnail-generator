@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.21-alpha
+Version: 4.6.21
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.21-alpha',
+		"version" => '4.6.21',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -118,6 +118,7 @@ function kgvid_default_options_fn() {
 		"fixed_aspect" => "vertical",
 		"gallery_width" => "960",
 		"gallery_thumb" => "250",
+		"gallery_thumb_aspect" => "on",
 		"gallery_end" => "",
 		"gallery_pagination" => false,
 		"gallery_per_page" => false,
@@ -2119,8 +2120,11 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 
 			$thumbnail_url = get_post_meta($attachment->ID, "_kgflashmediaplayer-poster", true);
 			$poster_id = get_post_meta($attachment->ID, '_kgflashmediaplayer-poster-id', true);
+			$thumbnail_srcset = false;
+
 			if ( !empty($poster_id) ) {
 				$thumbnail_url = wp_get_attachment_url($poster_id);
+				$thumbnail_srcset = wp_get_attachment_image_srcset($poster_id);
 				if ( intval($query_atts['gallery_thumb']) <= get_option('medium_size_h') ) {
 					$poster_post = get_post($poster_id);
 					if ( $poster_post->guid == $thumbnail_url ) {
@@ -2189,7 +2193,20 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$options['js_skin'] = $query_atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
 
-			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="max-width:'.$query_atts["gallery_thumb"].'px"><img src="'.esc_attr($thumbnail_url).'" alt="'.esc_attr($attachment->post_title).'">'.$play_button_html;
+			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="width:'.$query_atts["gallery_thumb"].'px;';
+			
+			if ( $query_atts['gallery_thumb_aspect'] == "true" ) {
+				$code .= ' height:'.round($options["height"]/$options["width"]*$query_atts["gallery_thumb"]).'px;';
+			}
+
+			$code .= '"><img ';
+			if ( !empty($thumbnail_srcset) ) { 
+				$code .= 'srcset="'.esc_attr($thumbnail_srcset).'"'; 
+			}
+			else { 
+				$code .= 'src="'.esc_attr($thumbnail_url).'"'; 
+			}
+			$code .= 'alt="'.esc_attr($attachment->post_title).'">'.$play_button_html;
 
 			if ( $query_atts['gallery_title'] == 'true' ) { $code .= '<div class="titlebackground"><div class="videotitle">'.$attachment->post_title.'</div></div>'; }
 
@@ -3061,6 +3078,7 @@ function kgvid_shortcode_atts($atts) {
 		'gallery' => 'false',
 		'gallery_per_page' => $options['gallery_per_page'],
 		'gallery_thumb' => $options['gallery_thumb'],
+		'gallery_thumb_aspect' => $options['gallery_thumb_aspect'],
 		'gallery_orderby' => 'menu_order ID',
 		'gallery_order' => 'ASC',
 		'gallery_exclude' => '',
@@ -3154,6 +3172,7 @@ function kgvid_shortcode_atts($atts) {
 		"mute",
 		"playback_rate",
 		"fullwidth",
+		"gallery_thumb_aspect",
 		"gallery_title",
 		"nativecontrolsfortouch",
 		"pixel_ratio",
@@ -3211,6 +3230,7 @@ function KGVID_shortcode($atts, $content = '') {
 				'gallery_include',
 				'gallery_exclude',
 				'gallery_thumb',
+				'gallery_thumb_aspect',
 				'view_count',
 				'gallery_end',
 				'gallery_per_page',
@@ -4062,7 +4082,7 @@ function kgvid_network_settings_page() {
    		</form>
    		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 		<span><?php _e('If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator') ?></span>
-		<a href="http://www.kylegilman.net/plugin-donation/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
+		<a href="https://www.kylegilman.net/plugin-donation/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</div>
 		<script type='text/javascript'>
 				jQuery(document).ready(function() {
@@ -4141,7 +4161,7 @@ function kgvid_settings_page() {
 		</form>
 		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 		<span><?php _e('If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator') ?></span>
-		<a href="http://www.kylegilman.net/plugin-donation/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
+		<a href="https://www.kylegilman.net/plugin-donation/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</form>
 		</div>
 		<script type='text/javascript'>
@@ -4465,7 +4485,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = kgvid_get_options();
 		echo __('Maximum popup width:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_width' name='kgvid_video_embed_options[gallery_width]' type='text' value='".$options['gallery_width']."' /><br />";
 		echo __('Thumbnail width:', 'video-embed-thumbnail-generator')." <input class='small-text' id='gallery_thumb' name='kgvid_video_embed_options[gallery_thumb]' type='text' value='".$options['gallery_thumb']."' /><br />";
-
+		echo " <input ".checked( $options['gallery_thumb_aspect'], "on", false )." id='gallery_thumb_aspect' name='kgvid_video_embed_options[gallery_thumb_aspect]' type='checkbox' /> <label for='gallery_thumb_aspect'>".__('Constrain all gallery thumbnails to default video aspect ratio.', 'video-embed-thumbnail-generator')."</label><br>";
 		$items = array();
 		$items = array(
 			__('Stop, but leave popup window open', 'video-embed-thumbnail-generator') => "",
@@ -5328,6 +5348,11 @@ function kgvid_update_settings() {
 			$options['version'] = '4.6.20';
 			$options['encode_480'] = false;
 			$options['hide_video_formats'] = false;
+		}
+
+		if ( version_compare( $options['version'], '4.6.21', '<' ) ) {
+			$options['version'] = '4.6.21';
+			$options['gallery_thumb_aspect'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
