@@ -732,8 +732,13 @@ function kgvid_thumb_video_manual(postID) {
 
 	var canvas = document.getElementById(postID+'_thumb_'+time_id);
 	canvas = kgvid_draw_thumb_canvas(canvas, video);
+	
+	setTimeout(function() { //redraw the canvas after a delay to avoid Safari bug
+		canvas = kgvid_draw_thumb_canvas(canvas, video);
+		kgvid_save_canvas_thumb(postID, time_id, 1, 1);
+	}, 250);
 
-	kgvid_save_canvas_thumb(postID, time_id, 1, 1);
+	
 
 }
 
