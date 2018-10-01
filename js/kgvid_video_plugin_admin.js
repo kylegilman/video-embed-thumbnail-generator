@@ -1331,8 +1331,21 @@ function kgvid_save_plugin_settings(input_obj) {
 					if ( 'watermark_preview' in data ) {
 						jQuery('#ffmpeg_watermark_example').empty().append('<img src="'+data.watermark_preview+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">').slideDown('slow');
 					}
-
 				}, "json" );
+			}
+
+			if ( jQuery('#ffmpeg_thumb_watermark_url').val() != '' && jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg_thumb_watermark') == true && jQuery('#ffmpeg_output').length != 0 ) {
+				jQuery('#browser_thumbnails')[0].checked = false; //can't allow in-browser thumbnails with FFMPEG watermark
+				jQuery('#browser_thumbnails')[0].disabled = true;
+				jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg_thumb_watermark", security: kgflashmediaplayersecurity }, function(thumb_url) {
+					if ( thumb_url !== '' ) {
+						jQuery('#ffmpeg_thumb_watermark_example').empty().append('<img src="'+thumb_url+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">').slideDown('slow');
+					}
+				}, "text" );
+			}
+			else { 
+				jQuery('#ffmpeg_thumb_watermark_example').empty();
+				jQuery('#browser_thumbnails')[0].disabled = false;
 			}
 
 			jQuery( '#save_'+save_queue[0].id ).toggleClass('save-waiting save-complete').delay(1500).fadeOut(1000, function(){ jQuery(this).remove(); });
@@ -1351,6 +1364,7 @@ function kgvid_save_plugin_settings(input_obj) {
 	else { save_queue.push({ 'id':input_obj.id, 'value':setting_value }); }
 	jQuery( '#wpbody-content' ).data('save_queue', save_queue);
 	if ( save_queue.length == 1 ) { kgvid_ajax_save(); }
+
 }
 
 function kgvid_embeddable_switch(checked) {
@@ -1405,6 +1419,14 @@ function kgvid_switch_settings_tab(tab) {
 					jQuery('#ffmpeg_watermark_example').append('<img src="'+data.watermark_preview+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">');
 				}
 			}, "json" );
+			if ( jQuery('#ffmpeg_thumb_watermark_url').val() != '' ) {
+				jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg_thumb_watermark", security: kgflashmediaplayersecurity }, function(thumb_url) {
+					if ( thumb_url !== '' ) {
+						jQuery('#ffmpeg_thumb_watermark_example').empty().append('<img src="'+thumb_url+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">').slideDown('slow');
+					}
+
+				}, "text" );
+			}
 		}
 	}
 
@@ -1528,6 +1550,11 @@ function kgvid_hide_plugin_settings() {
 		jQuery(".kgvid_video_app_required").removeAttr('title');
 		jQuery("#ffmpeg_sample_div").slideDown(1000);
 	}
+
+	if ( jQuery('#ffmpeg_thumb_watermark_url').val() !== '' ) {
+		jQuery('#browser_thumbnails').attr('disabled', 'disabled');
+	}
+
 }
 
 function kgvid_hide_ffmpeg_settings() {

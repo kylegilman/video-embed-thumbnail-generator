@@ -177,6 +177,14 @@ function kgvid_default_options_fn() {
 		"htaccess_password" => "",
 		"sample_format" => "mobile",
 		"sample_rotate" => false,
+		"ffmpeg_thumb_watermark" => array(
+			"url" => "",
+			"scale" => "50",
+			"align" => "center",
+			"valign"=> "center",
+			"x" => "0",
+			"y" => "0"
+		),
 		"ffmpeg_watermark" => array(
 			"url" => "",
 			"scale" => "9",
@@ -1429,6 +1437,137 @@ function kgvid_generate_flashvars($content, $query_atts, $encodevideo_info, $id)
 
 }
 
+function kgvid_ffmpeg_rotate_strings($rotate, $width, $height) {
+
+	$options = kgvid_get_options();
+
+	if ( $rotate === false || $options['ffmpeg_vpre'] == "on" ) { $rotate = ""; }
+
+	switch ($rotate) { //if it's a sideways mobile video
+
+		case 90:
+			if ( empty($options['ffmpeg_watermark']['url']) ) {
+				$rotate = ' -vf "transpose=1"';
+			}
+			else {
+				$rotate = '';
+				$rotate_complex = 'transpose=1[rotate];[rotate]';
+			}
+
+			if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
+				$rotate .= " -metadata rotate=0";
+			}
+			else {
+				$rotate .= " -metadata:s:v:0 rotate=0";
+				$width ^= $height ^= $width ^= $height; //swap height & width
+			}
+
+			break;
+
+		case 270:
+
+			if ( empty($options['ffmpeg_watermark']['url']) ) {
+				$rotate = ' -vf "transpose=2"';
+			}
+			else {
+				$rotate = '';
+				$rotate_complex = 'transpose=2[rotate];[rotate]';
+			}
+
+			if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
+				$rotate .= " -metadata rotate=0";
+			}
+			else {
+				$rotate .= " -metadata:s:v:0 rotate=0";
+				$width ^= $height ^= $width ^= $height; //swap height & width
+			}
+
+			break;
+
+		case 180:
+
+			if ( empty($options['ffmpeg_watermark']['url']) ) {
+				$rotate = ' -vf "hflip,vflip"';
+			}
+			else {
+				$rotate = '';
+				$rotate_complex = 'hflip,vflip[rotate];[rotate]';
+			}
+
+			if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
+				$rotate .= " -metadata rotate=0";
+			}
+			else {
+				$rotate .= " -metadata:s:v:0 rotate=0";
+			}
+
+			break;
+
+		default:
+			$rotate = '';
+			$rotate_complex = '';
+			break;
+	}
+
+	if ( $options['ffmpeg_auto_rotate'] == "on" ) { $rotate = ''; $rotate_complex = ''; }
+
+	$rotate_strings = array(
+		'rotate' => $rotate,
+		'complex' => $rotate_complex,
+		'width' => $width,
+		'height' => $height
+	);
+
+	return $rotate_strings;
+
+}
+
+function kgvid_ffmpeg_watermark_strings( $ffmpeg_watermark, $movie_width, $rotate_complex = '' ) {
+
+	if ( is_array($ffmpeg_watermark) && array_key_exists('url', $ffmpeg_watermark) && !empty($ffmpeg_watermark['url']) ) {
+
+		$watermark_width = strval(round(intval($movie_width)*(intval($ffmpeg_watermark['scale'])/100)));
+
+		if ( $ffmpeg_watermark['align'] == 'right' ) {
+			$watermark_align = "main_w-overlay_w-";
+		}
+		elseif ( $ffmpeg_watermark['align'] == 'center' ) {
+			$watermark_align = "main_w/2-overlay_w/2-";
+		}
+		else { $watermark_align = ""; } //left justified
+
+		if ( $ffmpeg_watermark['valign'] == 'bottom' ) {
+			$watermark_valign = "main_h-overlay_h-";
+		}
+		elseif ( $ffmpeg_watermark['valign'] == 'center' ) {
+			$watermark_valign = "main_h/2-overlay_h/2-";
+		}
+		else { $watermark_valign = ""; } //top justified
+
+		$ffmpeg_watermark['url'] = str_replace("https://", "http://",  $ffmpeg_watermark['url']);
+		if ( strpos($ffmpeg_watermark['url'], 'http://') === 0 ) {
+			$watermark_id = false;
+			$watermark_id = kgvid_url_to_id($ffmpeg_watermark['url']);
+			if ( $watermark_id ) {
+				$watermark_file = get_attached_file($watermark_id);
+				if ( file_exists($watermark_file) ) { $ffmpeg_watermark['url'] = $watermark_file; }
+			}
+		}
+
+		$watermark_strings['input'] = '-i "'.$ffmpeg_watermark['url'].'" ';
+		$watermark_strings['filter'] = ' -filter_complex "[1:v]scale='.$watermark_width.':-1[watermark];[0:v]'.$rotate_complex.'[watermark]overlay='.$watermark_align.'main_w*'.round($ffmpeg_watermark['x']/100, 3).':'.$watermark_valign.'main_w*'.round($ffmpeg_watermark['y']/100, 3).'"';
+
+	}
+	else {
+
+		$watermark_strings['input'] = '';
+		$watermark_strings['filter'] = '';
+	
+	}
+
+	return $watermark_strings;
+
+}
 
 function kgvid_generate_encode_string($input, $output, $movie_info, $format, $width, $height, $rotate) {
 
@@ -1467,113 +1606,11 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 			$rate_control_flag = " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*$width*$height*30/1024)."k";
 		}
 
-		if ( $rotate === false || $options['ffmpeg_vpre'] == "on" ) { $rotate = ""; }
+		$rotate_strings = kgvid_ffmpeg_rotate_strings($rotate, $width, $height);
+		$width = $rotate_strings['width']; //in case rotation requires swapping height and width
+		$height = $rotate_strings['height']; 
 
-		switch ($rotate) { //if it's a sideways mobile video
-
-			case 90:
-				if ( empty($options['ffmpeg_watermark']['url']) ) {
-					$rotate = ' -vf "transpose=1"';
-				}
-				else {
-					$rotate = '';
-					$rotate_complex = 'transpose=1[rotate];[rotate]';
-				}
-
-				if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
-					$rotate .= " -metadata rotate=0";
-				}
-				else {
-					$rotate .= " -metadata:s:v:0 rotate=0";
-					$width ^= $height ^= $width ^= $height; //swap height & width
-				}
-
-				break;
-
-			case 270:
-
-				if ( empty($options['ffmpeg_watermark']['url']) ) {
-					$rotate = ' -vf "transpose=2"';
-				}
-				else {
-					$rotate = '';
-					$rotate_complex = 'transpose=2[rotate];[rotate]';
-				}
-
-				if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
-					$rotate .= " -metadata rotate=0";
-				}
-				else {
-					$rotate .= " -metadata:s:v:0 rotate=0";
-					$width ^= $height ^= $width ^= $height; //swap height & width
-				}
-
-				break;
-
-			case 180:
-
-				if ( empty($options['ffmpeg_watermark']['url']) ) {
-					$rotate = ' -vf "hflip,vflip"';
-				}
-				else {
-					$rotate = '';
-					$rotate_complex = 'hflip,vflip[rotate];[rotate]';
-				}
-
-				if ( $options['video_bitrate_flag'] == "on" || $options['ffmpeg_old_rotation'] == "on" ) {
-					$rotate .= " -metadata rotate=0";
-				}
-				else {
-					$rotate .= " -metadata:s:v:0 rotate=0";
-				}
-
-				break;
-
-			default:
-				$rotate = '';
-				$rotate_complex = '';
-				break;
-		}
-
-		if ( $options['ffmpeg_auto_rotate'] == "on" ) { $rotate = ''; $rotate_complex = ''; }
-
-		if ( $options['ffmpeg_watermark']['url'] != "" ) {
-
-			$watermark_width = strval(round(intval($movie_info['width'])*(intval($options['ffmpeg_watermark']['scale'])/100)));
-
-			if ( $options['ffmpeg_watermark']['align'] == 'right' ) {
-				$watermark_align = "main_w-overlay_w-";
-			}
-			elseif ( $options['ffmpeg_watermark']['align'] == 'center' ) {
-				$watermark_align = "main_w/2-overlay_w/2-";
-			}
-			else { $watermark_align = ""; } //left justified
-
-			if ( $options['ffmpeg_watermark']['valign'] == 'bottom' ) {
-				$watermark_valign = "main_h-overlay_h-";
-			}
-			elseif ( $options['ffmpeg_watermark']['valign'] == 'center' ) {
-				$watermark_valign = "main_h/2-overlay_h/2-";
-			}
-			else { $watermark_valign = ""; } //top justified
-
-			$options['ffmpeg_watermark']['url'] = str_replace("https://", "http://",  $options['ffmpeg_watermark']['url']);
-			if ( strpos($options['ffmpeg_watermark']['url'], 'http://') === 0 ) {
-				$watermark_id = false;
-				$watermark_id = kgvid_url_to_id($options['ffmpeg_watermark']['url']);
-				if ( $watermark_id ) {
-					$watermark_file = get_attached_file($watermark_id);
-					if ( file_exists($watermark_file) ) { $options['ffmpeg_watermark']['url'] = $watermark_file; }
-				}
-			}
-
-			$watermark_input = '-i "'.$options['ffmpeg_watermark']['url'].'" ';
-			$watermark_filter = ' -filter_complex "[1:v]scale='.$watermark_width.':-1[watermark];[0:v]'.$rotate_complex.'[watermark]overlay='.$watermark_align.'main_w*'.round($options['ffmpeg_watermark']['x']/100, 3).':'.$watermark_valign.'main_w*'.round($options['ffmpeg_watermark']['y']/100, 3).'"';
-		}
-		else {
-			$watermark_input = "";
-			$watermark_filter = "";
-		}
+		$watermark_strings = kgvid_ffmpeg_watermark_strings($options['ffmpeg_watermark'], $movie_info['width'], $rotate_strings['complex']);
 
 		if ( $video_formats[$format]['type'] == 'h264' ) {
 
@@ -1626,8 +1663,8 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		if ( $options['nostdin'] == "on" && $options['video_app'] == 'ffmpeg' ) { $nostdin = " -nostdin"; }
 
 		$encode_string = array();
-		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].$nostdin.' -y -i "'.$input.'" '.$watermark_input.$ffmpeg_options.$rate_control_flag.$rotate." -threads ".$options['threads'];
-		$encode_string[2] = $watermark_filter;
+		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].$nostdin.' -y -i "'.$input.'" '.$watermark_strings['input'].$ffmpeg_options.$rate_control_flag.$rotate_strings['rotate']." -threads ".$options['threads'];
+		$encode_string[2] = $watermark_strings['filter'];
 		$encode_string[3] = ' "'.$output.'"';
 
 		$options['encode_string'] = $encode_string;
@@ -4304,6 +4341,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('old_videos', __('For previously uploaded videos:', 'video-embed-thumbnail-generator'), 'kgvid_old_video_buttons_callback', __FILE__, 'kgvid_video_embed_encode_settings' );
 	add_settings_field('error_email', __('Email encoding errors to:', 'video-embed-thumbnail-generator'), 'kgvid_error_email_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'error_email' ) );
 	add_settings_field('htaccess', __('htaccess login:', 'video-embed-thumbnail-generator'), 'kgvid_htaccess_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'htaccess_username' ) );
+	add_settings_field('ffmpeg_thumb_watermark', __('Add watermark to thumbnails:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_thumb_watermark_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_thumb_watermark' ) );
 	add_settings_field('ffmpeg_watermark', __('Add watermark to encoded files:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_watermark_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_watermark' ) );
 	if ( !is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
 		add_settings_field('moov', __('Method to fix encoded H.264 headers for streaming:', 'video-embed-thumbnail-generator'), 'kgvid_moov_callback', __FILE__, 'kgvid_video_embed_encode_settings', array( 'label_for' => 'moov' ) );
@@ -4784,7 +4822,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_browser_thumbnails_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<input ".checked( $options['browser_thumbnails'], "on", false )." id='browser_thumbnails' name='kgvid_video_embed_options[browser_thumbnails]' type='checkbox' /> <label for='browser_thumbnails'>".sprintf( __('When possible, use the browser\'s built-in video capabilities to make thumbnails instead of %s.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>")."</label>\n\t";
+		echo "<input".checked( $options['browser_thumbnails'], "on", false )." id='browser_thumbnails' name='kgvid_video_embed_options[browser_thumbnails]' type='checkbox'".disabled( empty($options['ffmpeg_thumb_watermark']['url']), false, false )."/> <label for='browser_thumbnails'>".sprintf( __('When possible, use the browser\'s built-in video capabilities to make thumbnails instead of %s.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>")."</label>\n\t";
 		echo "</div>";
 	}
 
@@ -4907,6 +4945,36 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<div class='kgvid_video_app_required'>";
 		echo "<table class='kgvid_htaccess'><tbody><tr><td>".__('Username:', 'video-embed-thumbnail-generator')."</td><td><input class='regular-text affects_ffmpeg' id='htaccess_login' name='kgvid_video_embed_options[htaccess_login]' type='text' value='".$options['htaccess_login']."' /></td></tr>";
 		echo "<tr><td>".__('Password:', 'video-embed-thumbnail-generator')."</td><td><input class='regular-text affects_ffmpeg' id='htaccess_password' name='kgvid_video_embed_options[htaccess_password]' type='text' value='".$options['htaccess_password']."' /> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('If your videos are htaccess protected, %s will access them using these credentials.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span></td></tr></tbody></table>";
+		echo "</div>\n\t";
+	}
+
+	function kgvid_ffmpeg_thumb_watermark_callback() {
+		$options = kgvid_get_options();
+		echo "<div class='kgvid_video_app_required'>";
+		echo "<p><input class='regular-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_url' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][url]' type='text' value='".$options['ffmpeg_thumb_watermark']['url']."' /> <span id='pick-ffmpeg-watermark' class='button' data-choose='".__('Choose a Watermark', 'video-embed-thumbnail-generator')."' data-update='".__('Set as thumbnail watermark', 'video-embed-thumbnail-generator')."' data-change='ffmpeg_thumb_watermark_url' onclick='kgvid_pick_image(this);'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span></p>\n\t";
+		echo "<p>".sprintf( __('Scale: %s%% of video covered by the watermark.', 'video-embed-thumbnail-generator'), "<input class='small-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_scale' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][scale]' type='text' value='".$options['ffmpeg_thumb_watermark']['scale']."' maxlength='3' />" )."</p>";
+		$items = array(__("left", 'video-embed-thumbnail-generator')=>"left", _x("center", "horizontal center", 'video-embed-thumbnail-generator')=>"center", __("right", 'video-embed-thumbnail-generator')=>"right");
+		echo "<p>".__('Horizontal align:', 'video-embed-thumbnail-generator');
+		echo " <select id='ffmpeg_thumb_watermark_align' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][align]' class='affects_ffmpeg_thumb_watermark'>";
+		foreach($items as $name=>$value) {
+			$selected = ($options['ffmpeg_thumb_watermark']['align']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
+		}
+		echo "</select> ";
+		_e('offset', 'video-embed-thumbnail-generator');
+		echo " <input class='small-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_x' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][x]' type='text' value='".$options['ffmpeg_thumb_watermark']['x']."' maxlength='3' />%</p>";
+		echo "<p>".__('Vertical align:', 'video-embed-thumbnail-generator');
+		echo " <select id='ffmpeg_thumb_watermark_valign' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][valign]' class='affects_ffmpeg_thumb_watermark'>";
+		$items = array(__("top", 'video-embed-thumbnail-generator')=>"top", _x("center", "vertical center", 'video-embed-thumbnail-generator')=>"center", __("bottom", 'video-embed-thumbnail-generator')=>"bottom");
+		foreach($items as $name=>$value) {
+			$selected = ($options['ffmpeg_thumb_watermark']['valign']==$value) ? 'selected="selected"' : '';
+			echo "<option value='$value' $selected>$name</option>";
+		}
+		echo "</select> ";
+		_e('offset', 'video-embed-thumbnail-generator');
+		echo " <input class='small-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_y' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][y]' type='text' value='".$options['ffmpeg_thumb_watermark']['y']."' maxlength='3' />%";
+		echo "</p>\n\t";
+		echo "<div id='ffmpeg_thumb_watermark_example'></div>";
 		echo "</div>\n\t";
 	}
 
@@ -5112,7 +5180,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$sample_format_select .= "</select>";
 
 		echo "<div id='ffmpeg_sample_div'".$display_div."><p>".sprintf( __('Sample %2$s encode command', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>", $sample_format_select)."<br>";
-		echo "<input ".checked( $options['sample_rotate'], 90, false )." id='sample_rotate' name='kgvid_video_embed_options[sample_rotate]' class='affects_ffmpeg' value='90' type='checkbox' /> <label for='sample_rotate'>".__('Test video rotation.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('Tests %1$s\'s ability to rotate vertical videos shot on mobile devices.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span><br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".$encode_string_implode."</textarea></p>";
+		echo "<input ".checked( $options['sample_rotate'], 90, false )." id='sample_rotate' name='kgvid_video_embed_options[sample_rotate]' class='affects_ffmpeg affects_ffmpeg_thumb_watermark' value='90' type='checkbox' /> <label for='sample_rotate'>".__('Test video rotation.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".sprintf( __('Tests %1$s\'s ability to rotate vertical videos shot on mobile devices.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>" )."</span></span><br /><textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".$encode_string_implode."</textarea></p>";
 		echo "<p>".sprintf( __('%s test output:', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($options['video_app'])."</strong>")."<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>".sprintf( __('For help interpreting this output, %s try our Wiki page on Github', 'video-embed-thumbnail-generator'), "<a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>")."</a>.</p></div>\n\t";
 	}
 
@@ -5353,6 +5421,14 @@ function kgvid_update_settings() {
 		if ( version_compare( $options['version'], '4.6.21', '<' ) ) {
 			$options['version'] = '4.6.21';
 			$options['gallery_thumb_aspect'] = false;
+			$options['ffmpeg_thumb_watermark'] = array(
+				"url" => "",
+				"scale" => "50",
+				"align" => "center",
+				"valign"=> "center",
+				"x" => "0",
+				"y" => "0"
+			);
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5401,6 +5477,10 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	else { $input['ffmpeg_exists'] = $options['ffmpeg_exists']; }
 
 	if ( $input['ffmpeg_exists'] == "notinstalled" ) { $input['browser_thumbnails'] = "on"; } //in case a user had FFMPEG installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
+
+	if ( $input['ffmpeg_thumb_watermark']['url'] != '' ) { //can't use browser thumbnails with ffmpeg watermark
+		$input['browser_thumbnails'] = false;
+	}
 
 	if ( empty($input['width']) ) {
 		add_settings_error( __FILE__, "width-zero", __("You must enter a value for the maximum video width.", 'video-embed-thumbnail-generator') );
@@ -5532,7 +5612,14 @@ function kgvid_ajax_save_settings() {
 
 		if ( !empty($wp_settings_errors) ) { $error_message = $wp_settings_errors[0]['message']; }
 
-		if ( strpos($setting, 'capability') !== false || strpos($setting, 'default_capabilities') !== false || strpos($setting, 'ffmpeg_watermark') !== false || strpos($setting, 'custom_format') !== false ) { $validated_options[$setting] = $value; }
+		if ( strpos($setting, 'capability') !== false 
+			|| strpos($setting, 'default_capabilities') !== false 
+			|| strpos($setting, 'ffmpeg_watermark') !== false 
+			|| strpos($setting, 'ffmpeg_thumb_watermark') !== false 
+			|| strpos($setting, 'custom_format') !== false ) 
+		{ 
+			$validated_options[$setting] = $value; 
+		}
 
 		$arr = array ( "error_message" => $error_message, "validated_value" => $validated_options[$setting], "ffmpeg_exists" => $validated_options['ffmpeg_exists'], "encode_string" => implode('', $encode_string), "app_path" => $validated_options['app_path'], "auto_thumb_label" => $auto_thumb_label );
 		echo json_encode($arr);
@@ -7107,14 +7194,17 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			$moviefilepath = substr_replace($moviefilepath, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
 		}
 
-		$ffmpeg_options = '-y -ss '.round($movieoffset).' -i "'.$moviefilepath.'"'.$movie_info['rotate'].' -qscale 1 -vframes 1 -f mjpeg "'.$thumbnailfilename[$i].'"';
+		$rotate_strings = kgvid_ffmpeg_rotate_strings($movie_info['rotate'], $movie_info['width'], $movie_info['height']);
+		$watermark_strings = kgvid_ffmpeg_watermark_strings($options['ffmpeg_thumb_watermark'], $movie_width, $rotate_strings['complex']);
+
+		$ffmpeg_options = '-y -ss '.round($movieoffset).' -i "'.$moviefilepath.'" '.$watermark_strings['input'].$rotate_strings['rotate'].' -qscale 1 -vframes 1 -f mjpeg';
 
 		$ffmpeg_options = apply_filters( 'kgvid_thumbnail_ffmpeg_options', $ffmpeg_options );
 
 		$thumbnailurl = $thumbnailfilebase."_thumb".round($movieoffset).'.jpg';
 		$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 
-		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options));
+		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options).$watermark_strings['filter'].escapeshellcmd(' "'.$thumbnailfilename[$i].'"'));
 		if ( is_file($thumbnailfilename[$i]) )
 		kgvid_schedule_cleanup_generated_files('thumbs');
 
@@ -7122,7 +7212,15 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$i++;
 
-		$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "movie_width"=>$movie_width, "movie_height"=>$movie_height, "lastthumbnumber"=>$i, "movieoffset"=>$movieoffset, "thumb_url"=>str_replace('/thumb_tmp/', '/', $thumbnailurl) );
+		$arr = array ( 
+			"thumbnaildisplaycode"=>$thumbnaildisplaycode, 
+			"movie_width"=>$movie_width, 
+			"movie_height"=>$movie_height, 
+			"lastthumbnumber"=>$i, 
+			"movieoffset"=>$movieoffset, 
+			"thumb_url"=>str_replace('/thumb_tmp/', '/', $thumbnailurl), 
+			"real_thumb_url" => $thumbnailurl 
+		);
 
 		return $arr;
 
@@ -7638,6 +7736,29 @@ function kgvid_test_ffmpeg() {
 
 }
 add_action('wp_ajax_kgvid_test_ffmpeg', 'kgvid_test_ffmpeg');
+
+function kgvid_test_ffmpeg_thumb_watermark() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	$options = get_option('kgvid_video_embed_options');
+	if ( $options['sample_rotate'] != false ) {
+		$sample_video_path = plugin_dir_path(__FILE__).'images/sample-video-rotated-h264.mp4';
+	}
+	else {
+		$sample_video_path = plugin_dir_path(__FILE__).'images/sample-video-h264.mp4';
+	}
+
+	$thumb = kgvid_make_thumbs('singleurl', $sample_video_path, 1, 1, 1, 0, true, 'generate');
+
+	if ( array_key_exists('real_thumb_url', $thumb) ) {	
+		echo $thumb['real_thumb_url'];
+	}
+
+	die;
+
+}
+add_action('wp_ajax_kgvid_test_ffmpeg_thumb_watermark', 'kgvid_test_ffmpeg_thumb_watermark');
 
 function kgvid_encode_progress($video_key, $format, $page) {
 
