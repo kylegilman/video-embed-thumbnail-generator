@@ -247,6 +247,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.21 - October 1, 2018 =
+* Updated Video.js to version 5.20.5
 * Added option to constrain video gallery thumbnail aspect ratios when mixed aspect ratios are present in the gallery.
 * Added option to use FFMPEG to add a separate watermark to thumbnails.
 * Fixed WordPress Default player default subtitles not enabled on page load.
