@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 4.9
-Stable tag: 4.6.20
+Stable tag: 4.6.21
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -246,15 +246,15 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.21 - October 1, 2018 =
+= 4.6.21 - October 2, 2018 =
 * Updated Video.js to version 5.20.5
 * Added option to constrain video gallery thumbnail aspect ratios when mixed aspect ratios are present in the gallery.
-* Added option to use FFMPEG to add a separate watermark to thumbnails.
+* Added option to use FFMPEG to add a watermark to thumbnails.
 * Fixed WordPress Default player default subtitles not enabled on page load.
 * Fixed manual thumbnail selection in Media Library page and Safari.
 * Added gtag Google Analytics support.
 * Restored freeze-frame while resolution switching in WordPress Default player and now maintaining video aspect ratio while in fullscreen mode for both players.
-* Added cron check to continue encoding the rest of the queue when no user ever sees encoding start.
+* Added cron check to continue encoding the rest of the queue when user does not see encoding start.
 
 = 4.6.20 - November 14, 2017 =
 * Updated WordPress Default player resizing methods and speed and resolution selector plugins for the new player included with WordPress 4.9.
