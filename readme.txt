@@ -246,7 +246,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.21 - October 2, 2018 =
+= 4.6.21 - October 6, 2018 =
 * Updated Video.js to version 5.20.5
 * Added option to constrain video gallery thumbnail aspect ratios when mixed aspect ratios are present in the gallery.
 * Added option to use FFMPEG to add a watermark to thumbnails.
@@ -254,7 +254,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed manual thumbnail selection in Media Library page and Safari.
 * Added gtag Google Analytics support.
 * Restored freeze-frame while resolution switching in WordPress Default player and now maintaining video aspect ratio while in fullscreen mode for both players.
-* Added cron check to continue encoding the rest of the queue when user does not see encoding start.
+* Added cron check to ensure the rest of the queue encodes when user does not see encoding start.
 
 = 4.6.20 - November 14, 2017 =
 * Updated WordPress Default player resizing methods and speed and resolution selector plugins for the new player included with WordPress 4.9.
