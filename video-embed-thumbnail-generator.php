@@ -756,6 +756,25 @@ function kgvid_set_capabilities($capabilities) {
 
 }
 
+function kgvid_set_locale() {
+
+	$wp_locale = get_locale();
+	if ( strlen($wp_locale) == 4 ) {
+		$locale_name = $wp_locale.'.UTF-8';
+	}
+	else {
+		$locale_name = "en_US.UTF-8";
+	}
+	$old_locale = setlocale(LC_CTYPE, 0);
+	$new_locale = setlocale(LC_CTYPE, $locale_name);
+	if ( !$new_locale ) {
+		$new_locale = setlocale(LC_CTYPE, "en_US.UTF-8");
+	}
+
+	return $old_locale;
+
+}
+
 function kgvid_aac_encoders() {
 
 	$aac_array = array("libfdk_aac", "libfaac", "aac", "libvo_aacenc");
@@ -1081,7 +1100,9 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		if (function_exists('escapeshellcmd')) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
+			$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg').' 2>&1';
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			exec ( $cmd, $output, $returnvalue );
 		}
 		else { $function = "ESCAPESHELLCMD"; }
@@ -1092,7 +1113,9 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 
 		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
+			$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			exec ( $cmd );
 		}
 
@@ -1354,8 +1377,9 @@ function kgvid_get_video_dimensions($video = false) {
 			}
 		}
 	}
-
+	$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 	$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '"');
+	$restore_locale = setlocale(LC_CTYPE, $old_locale);
 	$command = $command.' 2>&1';
 	exec ( $command, $output );
 	$lastline = end($output);
@@ -1388,8 +1412,9 @@ function kgvid_get_video_dimensions($video = false) {
 			case "-90": $movie_info['rotate'] = 270; break;
 			default: $movie_info['rotate'] = ""; break;
 		}
-
+		$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 		$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '" -codecs');
+		$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		$command = $command.' 2>&1';
 		exec ( $command, $output );
 		$output = implode("\n", $output);
@@ -7216,7 +7241,10 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		$thumbnailurl = $thumbnailfilebase."_thumb".round($movieoffset).'.jpg';
 		$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
 
+		$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options).$watermark_strings['filter'].escapeshellcmd(' "'.$thumbnailfilename[$i].'"'));
+		$restore_locale = setlocale(LC_CTYPE, $old_locale);
+
 		if ( is_file($thumbnailfilename[$i]) )
 		kgvid_schedule_cleanup_generated_files('thumbs');
 
@@ -7654,7 +7682,9 @@ function kgvid_encode_videos() {
 
 					$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt';
 
+					$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 					$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
+					$restore_locale = setlocale(LC_CTYPE, $old_locale);
 
 					if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
 					else {
@@ -7724,7 +7754,11 @@ function kgvid_test_ffmpeg() {
 	$suffix = $video_formats[$options['sample_format']]['suffix'];
 
 	$encode_string = $options['encode_string'];
+
+	$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 	$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
+	$restore_locale = setlocale(LC_CTYPE, $old_locale);
+
 	exec ( $cmd.' 2>&1', $output );
 	$arr['output'] = implode("\n", $output);
 
@@ -7736,7 +7770,11 @@ function kgvid_test_ffmpeg() {
 
 		if ( !empty($options['ffmpeg_watermark']['url']) ) {
 			if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
+
+			$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -y -i "'.$uploads['path']."/sample-video-h264".$suffix.'" -qscale 1 -vframes 1 -f mjpeg '.$uploads['path'].'/thumb_tmp/watermark_test.jpg');
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
+
 			kgvid_schedule_cleanup_generated_files('thumbs');
 			exec ( $cmd );
 			if ( file_exists($uploads['path'].'/thumb_tmp/watermark_test.jpg') ) {
@@ -8350,7 +8388,11 @@ function kgvid_fix_moov_atom($filepath) {
 
 		if ( $options['moov'] == 'qt-faststart' && file_exists($filepath) ) {
 			$faststart_tmp_file = str_replace('.mp4', '-faststart.mp4', $filepath);
+			
+			$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." ".$filepath." ".$faststart_tmp_file)." 2>&1";
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
+
 			$output .= "\n".$cmd."\n";
 			exec($cmd, $qtfaststart_output, $returnvalue);
 			$output .= implode("\n", $qtfaststart_output);
@@ -8361,7 +8403,9 @@ function kgvid_fix_moov_atom($filepath) {
 		}//if qt-faststart is selected
 
 		if ( $options['moov'] == 'MP4Box' ) {
+			$old_locale = kgvid_set_locale(); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." -inter 500 ".$filepath)." 2>&1";
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			$output .= "\n".$cmd."\n";
 			exec($cmd, $mp4box_output, $returnvalue);
 			$output .= implode("\n", $mp4box_output);
