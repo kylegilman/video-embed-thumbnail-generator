@@ -14,7 +14,9 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 = A plugin to make embedding videos, generating thumbnails, and encoding files easier. =
 
-Still 100% free, but some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
+Not Gutenberg compatible. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
+
+Still 100% free, but some advanced features may be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
 
 This plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options, make thumbnails, click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers.
 
@@ -245,6 +247,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.6.22 - October 16, 2018 =
+* Removed old Media Library video thumbnail display functionality that was preventing some Media Libraries from loading.
 
 = 4.6.21 - October 6, 2018 =
 * Updated Video.js to version 5.20.5

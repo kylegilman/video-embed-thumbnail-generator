@@ -761,12 +761,13 @@ function kgvid_enqueue_video_encode(postID, blogID) {
 		page = "queue";
 	}
 
-	var formats = new Array("fullres", "1080", "720", "480", "mobile", "ogg", "webm", "vp9", "custom");
+	var format_inputs = jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes input[type=checkbox]');
 	var kgvid_encode = new Object();
-	jQuery.each(formats, function(key,formats) {
-		kgvid_encode[formats] = "";
-		if ( jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+formats).length > 0) {
-			kgvid_encode[formats] = document.getElementById('attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+formats).checked;
+	jQuery.each(format_inputs, function(key,el) {
+		var format = jQuery(el).data('format');
+		kgvid_encode[format] = "";
+		if ( jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+format).length > 0) {
+			kgvid_encode[format] = document.getElementById('attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+format).checked;
 		}
 	});
 	JSON.stringify(kgvid_encode);
@@ -1151,13 +1152,14 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
 
 	if ( kgflashmediaplayersecurity ) { //sometimes this tries to run after the media modal is closed
 
-		var formats = new Array("fullres", "1080", "720", "480", "mobile", "ogg", "webm", "vp9", "custom");
+		var format_inputs = jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes input[type=checkbox]');
 		var kgvid_encode = new Object();
 
-		jQuery.each(formats, function(key,formats) {
-			kgvid_encode[formats] = "";
-			if ( jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+formats).length > 0) {
-				kgvid_encode[formats] = document.getElementById('attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+formats).checked;
+		jQuery.each(format_inputs, function(key,el) {
+			var format = jQuery(el).data('format');
+			kgvid_encode[format] = "";
+			if ( jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+format).length > 0) {
+				kgvid_encode[format] = document.getElementById('attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+format).checked;
 			}
 		});
 		JSON.stringify(kgvid_encode);
