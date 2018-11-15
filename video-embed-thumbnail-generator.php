@@ -324,20 +324,21 @@ function kgvid_get_attachment_meta($post_id) {
 		}
 
 		$old_meta_encode_keys = array(
-			'encode_fullres',
-			'encode_1080',
-			'encode_720',
-			'encode_480',
-			'encode_mobile',
-			'encode_webm',
-			'encode_ogg'
+			'encodefullres',
+			'encode1080',
+			'encode720',
+			'encode480',
+			'encodemobile',
+			'encodewebm',
+			'encodeogg',
+			'encodecustom',
 		);
 
 		$old_meta_exists = false;
 
 		foreach ($old_meta_encode_keys as $old_key) {
 			if ( array_key_exists($old_key, $kgvid_postmeta) ) {
-				$format = str_replace('encode_', '', $old_key);
+				$format = str_replace('encode', '', $old_key);
 				$kgvid_postmeta['encode'][$format] = $kgvid_postmeta[$old_key];
 				unset($kgvid_postmeta[$old_key]);
 				$old_meta_exists = true;
@@ -3458,7 +3459,9 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 
 	if ( get_post_type($post_id) == "attachment" ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
-		if ( array_key_exists('encode', $kgvid_postmeta) && array_key_exists($kgvid_postmeta['encode'][$format]) ) { $encodeset = $kgvid_postmeta['encode'][$format]; }
+		if ( array_key_exists('encode', $kgvid_postmeta) && array_key_exists($format, $kgvid_postmeta['encode']) ) { 
+			$encodeset = $kgvid_postmeta['encode'][$format]; 
+		}
 		else { $encodeset = 'false'; }
 		$post = get_post($post_id);
 		$current_user = wp_get_current_user();
