@@ -5857,7 +5857,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 
 		foreach ( $video_formats as $format => $format_stats ) {
 
-			if ( array_key_exists('encode_'.$format, $options) && $options['encode_'.$format] == "on" ) {
+			if ( array_key_exists($format, $options['encode']) && $options['encode'][$format] == "on" ) {
 				$encode_checked[$format] = "true";
 				$something_to_encode = true;
 			}
