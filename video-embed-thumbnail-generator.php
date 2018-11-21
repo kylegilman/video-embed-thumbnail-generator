@@ -8307,6 +8307,7 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 					}
 					if ( ($type == "manual" && $value['status'] == "queued")
 						|| ($type == "queued" && $value['status'] == "Encoding Complete")
+						|| ($type == "scheduled" && $value['status'] == "queued")
 					) {
 						$keep[$video_key] = true;
 					}
