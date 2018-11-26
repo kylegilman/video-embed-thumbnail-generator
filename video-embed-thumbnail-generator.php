@@ -3520,7 +3520,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 
 	if ( !empty($encodevideo_info) ) {
 
-		if ( $encodevideo_info[$format]['exists'] ) { //if the video file exists
+		if ( array_key_exists($format, $encodevideo_info) && $encodevideo_info[$format]['exists'] ) { //if the video file exists
 
 			if ( array_key_exists('id', $encodevideo_info[$format]) ) {
 				$child_id = $encodevideo_info[$format]['id'];
@@ -7324,16 +7324,15 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 		foreach ( $video_formats as $format => $format_stats ) {
 			if ( array_key_exists($format, $encode_checked) && $encode_checked[$format] == "true" ) {
 				if ( !$encodevideo_info[$format]['exists'] ) {
-					if ( $format_stats['type'] == "h264" && $format != "fullres" &&
-						(
-							( strpos($mime_type_check['type'], "mp4") !== false && $movie_height <= $format_stats['height'] ) ||
-							( strpos($mime_type_check['type'], "mp4") === false && $movie_height < $format_stats['height'] )
+					$movie_extension = pathinfo($movieurl, PATHINFO_EXTENSION);
+					if ( $format_stats['type'] == "h264" 
+						&& $format != "fullres" && $movie_height <= $format_stats['height']
+						&& ( $encode_checked['fullres'] == "true" 
+							|| in_array($movie_extension, $h264extensions) 
+							|| $movie_height < $format_stats['height'] 
 						)
 					) {
-						$movie_extension = pathinfo($movieurl, PATHINFO_EXTENSION);
-						if ( $encode_checked['fullres'] == "true" || in_array($movie_extension, $h264extensions) || $movie_height < intval($format) ) {
-							$encode_formats[$format]['status'] = "lowres";
-						} //skip if the resolution of an existing video is lower than the HD format
+						$encode_formats[$format]['status'] = "lowres"; //skip if the resolution of an existing video is lower than the HD format
 					}
 					else {
 						$encode_formats[$format]['status'] = "queued";
