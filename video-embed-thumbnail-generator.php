@@ -6507,15 +6507,6 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 			$filename = preg_replace('/\.[^.]+$/', '', basename($thumb_url));
 			if ( $user_ID == 0 ) { $user_ID = $video->post_author; }
 
-
-			/*$file_array = array(
-				'name' => basename($posterfile),
-				'tmp_name' => $tmp_posterpath,
-			);
-
-			//$return = apply_filters( 'wp_handle_upload', array( 'file' => $uploads['path'].'/'.$posterfile, 'url' => $thumb_url, 'type' => $wp_filetype['type'] ), 'sideload' );
-			//$thumb_id = media_handle_sideload( $file_array, $post_id, $desc );*/
-
 			$attachment = array(
 			   'guid' => $thumb_url,
 			   'post_mime_type' => $wp_filetype['type'],
@@ -7231,7 +7222,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			$movieoffset = "0";
 		}
 
-		$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".round($movieoffset).".jpg";
+		$thumbnailfilename[$i] = $jpgpath.$moviefilebasename."_thumb".$i.".jpg";
 		$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
 
 		if ( !empty($options['htaccess_login']) && strpos($moviefilepath, 'http://') === 0 ) {
@@ -7245,8 +7236,12 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$ffmpeg_options = apply_filters( 'kgvid_thumbnail_ffmpeg_options', $ffmpeg_options );
 
-		$thumbnailurl = $thumbnailfilebase."_thumb".round($movieoffset).'.jpg';
-		$thumbnailurl = str_replace(" ", "_", $thumbnailurl);
+		$tmp_thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
+		$tmp_thumbnailurl = str_replace(" ", "_", $tmp_thumbnailurl);
+
+		$final_thumbnailurl = $thumbnailfilebase."_thumb.jpg";
+		$final_thumbnailurl = str_replace(" ", "_", $final_thumbnailurl);
+		$final_thumbnailurl = str_replace('/thumb_tmp/', '/', $final_thumbnailurl);
 
 		$old_locale = kgvid_set_locale($moviefilepath); //fixes UTF-8 encoding problems
 		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options).$watermark_strings['filter'].escapeshellcmd(' "'.$thumbnailfilename[$i].'"'));
@@ -7255,7 +7250,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		if ( is_file($thumbnailfilename[$i]) )
 		kgvid_schedule_cleanup_generated_files('thumbs');
 
-		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio_'.$postID.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.str_replace('/thumb_tmp/', '/', $thumbnailurl).'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.', jQuery(this).parent().find(\'img\')[0]);"></div>';
+		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$tmp_thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio_'.$postID.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.$final_thumbnailurl.'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.', jQuery(this).parent().find(\'img\')[0]);"></div>';
 
 		$i++;
 
