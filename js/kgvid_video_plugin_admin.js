@@ -384,15 +384,19 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var widthID = 'attachments-'+postID+'-kgflashmediaplayer-width';
 	var heightID = 'attachments-'+postID+'-kgflashmediaplayer-height';
 	var maxwidthID = 'attachments['+postID+'][kgflashmediaplayer-maxwidth]';
-	var maxheightID = 'attachments['+postID+'][kgflashmediaplayer-maxheight]';
 	var i=1;
 	var increaser = 0;
 	var iincreaser = 0;
 	var page = "attachment";
 
-	if ( jQuery('#thumb-video-'+postID).data('allowed') == "on" ) {
+	var video_id = 'thumb-video-'+postID;
+	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) { //this is the Media Library pop-up introduced in WordPress 4.0;
+		video_id = 'thumb-video-'+postID+'_html5';
+	}
 
-		video = document.getElementById('thumb-video-'+postID);
+	if ( jQuery('#'+video_id).data('allowed') == "on" ) {
+
+		video = document.getElementById(video_id);
 
 		if ( video.preload == "none" ) {
 
@@ -412,7 +416,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 		setTimeout(function(){ //wait for video to start loading
 
-			video = document.getElementById('thumb-video-'+postID);
+			video = document.getElementById(video_id);
 
 			if ( jQuery(video).data('success') == false ) {
 
@@ -493,7 +497,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			var video_aspect = video_height/video_width;
 			var thumbnails = [];
 
-			jQuery('#thumb-video-'+postID).on('seeked.kgvid', function(){ //when the video is finished seeking
+			jQuery('#'+video_id).on('seeked.kgvid', function(){ //when the video is finished seeking
 
 				var thumbnail_saved = jQuery(video).data('thumbnail_data');
 				if ( thumbnail_saved.length > 0 ) { //if there are any thumbnails that haven't been generated
@@ -577,20 +581,9 @@ function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 
 	kgvid_change_media_library_video_poster(post_id, thumb_url);
 
-	/* this breaks the media modal
-	setTimeout( function() {
-		if(wp.media.frame.content.get()!==null){
-		   wp.media.frame.content.get().collection.props.set({ignore: (+ new Date())});
-		}
-		else{
-		   wp.media.frame.library.props.set({ignore: (+ new Date())});
-		}
-	}, 2000); */
-
 	var time_display = kgvid_convert_to_timecode(movieoffset);
 	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-thumbtime').val(time_display);
 	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-numberofthumbs').val('1');
-
 
 }
 
