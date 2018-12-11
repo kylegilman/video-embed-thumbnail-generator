@@ -471,8 +471,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 			"default_encode" => "on"
 		),
 		"webm" => array(
-			"name" => "WEBM",
-			"label" => 'WEBM',
+			"name" => "WEBM VP8",
+			"label" => 'WEBM VP8',
 			"width" => INF,
 			"height" => INF,
 			"type" => "webm",
@@ -533,6 +533,18 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 				"mime" => "video/webm",
 				"suffix" => "-custom.webm",
 				"vcodec" => "libvpx",
+				"default_encode" => false
+			),
+			"custom_vp9" => array(
+				"name" => __('Custom VP9 WEBMP', 'video-embed-thumbnail-generator'),
+				"label" => __('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
+				"width" => 0,
+				"height" => 0,
+				"type" => "webm",
+				"extension" => "webm",
+				"mime" => "video/webm",
+				"suffix" => "-customvp9.webm",
+				"vcodec" => "libvpx-vp9",
 				"default_encode" => false
 			),
 			"custom_ogg" => array(
@@ -4918,15 +4930,14 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		foreach ( $video_formats as $format => $format_stats ) {
 			echo "<input ".checked( array_key_exists($format, $options['encode']), true, false )." id='encode_".$format."' name='kgvid_video_embed_options[encode][".$format."]' type='checkbox' /> <label for='encode_".$format."'>".$format_stats['name']."</label><br />";
 		}
-		/* echo "<input ".checked( $options['encode_1080'], "on", false )." id='encode_1080' name='kgvid_video_embed_options[encode_1080]' type='checkbox' /> <label for='encode_1080'>1080p H.264</label><br />";
-		echo "<input ".checked( $options['encode_720'], "on", false )." id='encode_720' name='kgvid_video_embed_options[encode_720]' type='checkbox' /> <label for='encode_720'>720p H.264</label><br />";
-		echo "<input ".checked( $options['encode_480'], "on", false )." id='encode_480' name='kgvid_video_embed_options[encode_480]' type='checkbox' /> <label for='encode_480'>480p H.264</label><br />";
-		echo "<input ".checked( $options['encode_mobile'], "on", false )." id='encode_mobile' name='kgvid_video_embed_options[encode_mobile]' type='checkbox' /> <label for='encode_mobile'>360p H.264</label><br />";
-		echo "<input ".checked( $options['encode_webm'], "on", false )." id='encode_webm' name='kgvid_video_embed_options[encode_webm]' type='checkbox' /> <label for='encode_webm'>WEBM <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small></label><br />";
-		echo "<input ".checked( $options['encode_vp9'], "on", false )." id='encode_vp9' name='kgvid_video_embed_options[encode_vp9]' type='checkbox' /> <label for='encode_vp9'>WEBM VP9 <small><em>(Android 4.4+, Firefox, Chrome, Opera, Edge)</em></small></label><br />";
-		echo "<input ".checked( $options['encode_ogg'], "on", false )." id='encode_ogg' name='kgvid_video_embed_options[encode_ogg]' type='checkbox' /> <label for='encode_ogg'>OGV <small><em>(Firefox, Chrome, Android 2.3+, Opera)</em></small></label><br />"; */
+		
 		echo "<input ".checked( array_key_exists('custom', $options['encode']), true, false )." id='encode_custom' name='kgvid_video_embed_options[encode][custom]' type='checkbox' /> <label for='encode_custom'>".__('Custom', 'video-embed-thumbnail-generator');
-		$items = array( "H.264" => "h264" , "WEBM" => "webm", "OGV" => "ogg" );
+		$items = array( 
+			"H.264" => "h264", 
+			"WEBM VP8" => "webm", 
+			"WEBM VP9" => "vp9",
+			"OGV" => "ogg" 
+		);
 		echo " <select id='custom_format_type' name='kgvid_video_embed_options[custom_format][format]' class='affects_ffmpeg'>";
 		foreach($items as $name=>$value) {
 			$selected = ($options['custom_format']['format']==$value) ? 'selected="selected"' : '';
@@ -5606,10 +5617,10 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 			$input['custom_format']['extension'] = $video_formats[$input['custom_format']['format']]['extension'];
 			$input['custom_format']['mime'] = $video_formats[$input['custom_format']['format']]['mime'];
 			$input['custom_format']['vcodec'] = $video_formats[$input['custom_format']['format']]['vcodec'];
-			if ( $input['custom_format']['format'] == 'ogg' ) { $input['custom_format']['type'] = 'ogv'; }
 		}
+		$input['custom_format']['type'] = $input['custom_format']['format'];
 		if ( $input['custom_format']['format'] == 'ogg' ) { $input['custom_format']['type'] = 'ogv'; }
-		else { $input['custom_format']['type'] = $input['custom_format']['format']; }
+		if ( $input['custom_format']['format'] == 'vp9' ) { $input['custom_format']['type'] = 'webm'; }
 		$input['custom_format']['suffix'] = '-custom.'.$input['custom_format']['extension'];
 
 		$input['custom_format']['default_encode'] = "on";
