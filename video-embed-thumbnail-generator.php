@@ -5699,7 +5699,9 @@ function kgvid_ajax_save_settings() {
 			|| strpos($setting, 'default_capabilities') !== false 
 			|| strpos($setting, 'ffmpeg_watermark') !== false 
 			|| strpos($setting, 'ffmpeg_thumb_watermark') !== false 
-			|| strpos($setting, 'custom_format') !== false ) 
+			|| strpos($setting, 'custom_format') !== false 
+			|| strpos($setting, 'encode') !== false
+		) 
 		{ 
 			$validated_options[$setting] = $value; 
 		}
