@@ -248,7 +248,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.22 - October 16, 2018 =
+= 4.6.22 - December 14, 2018 =
+* Modularized video file formats that can be encoded by the plugin to allow other plugins to modify, delete, or create new formats.
+* Added Custom VP9 format option.
+* Renamed WEBM to WEBM VP8.
+* Fixed bug that deleted unfinished video encode queue entries once a day.
+* Fixed bug that created duplicate encodes of non-H.264 files.
+* Fixed bug that prevented manual thumbnail generation in the Media Library.
+* Stopped appending timecode to thumbnail filenames.
 * Removed old Media Library video thumbnail display functionality that was preventing some Media Libraries from loading.
 
 = 4.6.21 - October 6, 2018 =
