@@ -3612,8 +3612,8 @@ function kgvid_ajax_generate_encode_checkboxes() {
 		$encode_checked = $_POST['encodeformats'];
 		$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 		foreach ( $encode_checked as $format => $checked ) {
-			if ( $checked == "true" ) { $kgvid_postmeta['encode'.$format] = 'on'; }
-			else {$kgvid_postmeta['encode'.$format] = 'notchecked'; }
+			if ( $checked == "true" ) { $kgvid_postmeta['encode'][$format] = 'on'; }
+			else {$kgvid_postmeta['encode'][$format] = 'notchecked'; }
 		}
 		kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
 	}
@@ -7346,14 +7346,14 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 						$encode_formats[$format]['status'] = "queued";
 						$encode_formats[$format]['name'] = $format_stats['name'];
 						$encode_list[$format] = $format_stats['name'];
-						if ( isset($kgvid_postmeta) ) {	$kgvid_postmeta['encode'.$format] = 'on'; }
+						if ( isset($kgvid_postmeta) ) {	$kgvid_postmeta['encode'][$format] = 'on'; }
 					}
 				} // if video doesn't already exist
 				else { $encode_formats[$format]['status'] = "encoded"; }
 			} // if user wants to encode format
 			else {
 				$encode_formats[$format]['status'] = "notchecked";
-				if ( isset($kgvid_postmeta) ) {	$kgvid_postmeta['encode'.$format] = 'notchecked'; }
+				if ( isset($kgvid_postmeta) ) {	$kgvid_postmeta['encode'][$format] = 'notchecked'; }
 			}
 		}//end loop through video formats
 
