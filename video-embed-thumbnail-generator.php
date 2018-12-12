@@ -5517,7 +5517,7 @@ function kgvid_update_settings() {
 			$options['version'] = '4.6.22';
 			$video_formats = kgvid_video_formats();
 			foreach ($video_formats as $format => $format_stats ) {
-				if (array_key_exists('encode_'.$format, $options)) {
+				if ( array_key_exists('encode_'.$format, $options) && $options['encode_'.$format] == 'on' ) {
 					$options['encode'][$format] = $options['encode_'.$format];
 				}
 			}
