@@ -487,7 +487,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 			"label" => 'WEBM VP9',
 			"width" => INF,
 			"height" => INF,
-			"type" => "webm",
+			"type" => "vp9",
 			"extension" => "webm",
 			"mime" => "video/webm",
 			"suffix" => "-vp9.webm",
@@ -1663,20 +1663,30 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 			$qscale_flag = "qscale";
 		}
 
+		$rotate_strings = kgvid_ffmpeg_rotate_strings($rotate, $width, $height);
+		$width = $rotate_strings['width']; //in case rotation requires swapping height and width
+		$height = $rotate_strings['height']; 
+
 		if ( $options['rate_control'] == "crf" ) {
 			$crf_option = $video_formats[$format]['type'].'_CRF';
-			if ( $format == 'vp9' ) { $crf_option = 'h264_CRF'; }
+			if ( $video_formats[$format]['type'] == 'vp9' ) { 
+				$options['vp9_CRF'] = round((-0.000002554 * $width * $height) + 35); //formula to generate close to Google-recommended CRFs https://developers.google.com/media/vp9/settings/vod/
+			}
 			$crf_flag = "crf";
 			if ( $video_formats[$format]['type'] == 'ogv' ) { $crf_flag = $qscale_flag; } //ogg doesn't do CRF
 			$rate_control_flag = " -".$crf_flag." ".$options[$crf_option];
 		}
 		else {
-			$rate_control_flag = " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*$width*$height*30/1024)."k";
+			if ( $video_formats[$format]['type'] == 'vp9' ) {
+				$average_bitrate = round(102 + 0.000876 * $width * $height + 1.554*pow(10, -10) * pow($width * $height, 2) );
+				$maxrate = round($average_bitrate * 1.45);
+				$minrate = round($average_bitrate * .5);
+				$rate_control_flag = " -".$video_bitrate_flag." ".$average_bitrate."k -maxrate ".$maxrate."k -minrate ".$minrate."k";
+			}
+			else {
+				$rate_control_flag = " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*$width*$height*30/1024)."k";
+			}
 		}
-
-		$rotate_strings = kgvid_ffmpeg_rotate_strings($rotate, $width, $height);
-		$width = $rotate_strings['width']; //in case rotation requires swapping height and width
-		$height = $rotate_strings['height']; 
 
 		$watermark_strings = kgvid_ffmpeg_watermark_strings($options['ffmpeg_watermark'], $movie_info['width'], $rotate_strings['complex']);
 
@@ -1714,8 +1724,13 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		}
 		else { //if it's not H.264 the settings are basically the same
 			$ffmpeg_options = "-acodec libvorbis -".$audio_bitrate_flag." ".$options['audio_bitrate']."k -s ".$width."x".$height." -vcodec ".$video_formats[$format]['vcodec'];
-			if ( $video_formats[$format]['type'] == 'webm' && $options['rate_control'] == "crf" ) {
-				$ffmpeg_options .= " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*1.25*$width*$height*30/1024)."k"; //set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
+			if ( $options['rate_control'] == "crf" ) {
+				if ( $video_formats[$format]['type'] == 'webm' ) {
+					$ffmpeg_options .= " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*1.25*$width*$height*30/1024)."k"; //set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
+				}
+				if ( $video_formats[$format]['type'] == 'vp9' ) {
+					$ffmpeg_options .= " -".$video_bitrate_flag." 0";
+				}
 			}
 		}
 
@@ -5114,7 +5129,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['rate_control']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Constant Rate Factor (CRF) attempts to maintain a particular quality output for the entire video and only uses bits the encoder determines are necessary. Average Bit Rate is similar to the method used in older versions of this plugin. If CRF is selected, WEBM encoding will also use the ABR setting to set a max bit rate 25% higher than the ABR. Without a max bit rate setting WEBM files are terrible quality.', 'video-embed-thumbnail-generator')."</span></span>";
+		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Constant Rate Factor (CRF) attempts to maintain a particular quality output for the entire video and only uses bits the encoder determines are necessary. Average Bit Rate is similar to the method used in older versions of this plugin. If CRF is selected, WEBM encoding will also use the ABR setting to set a max bit rate 25% higher than the ABR. Without a max bit rate setting WEBM files are terrible quality. VP9 CRF and bitrates are set using a formula based on resolution that approximates <a href="https://developers.google.com/media/vp9/bitrate-modes/">Google\'s recommended VOD values</a>.', 'video-embed-thumbnail-generator')."</span></span>";
 		echo "</div>\n\t";
 	}
 
@@ -5126,14 +5141,14 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['h264_CRF']==$i) ? 'selected="selected"' : '';
 			echo "<option value='".$i."' $selected>".$i."</option>";
 		}
-		echo "</select> H.264 & VP9 WEBM <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Lower values are higher quality. 18 is considered visually lossless. Default is 23.', 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "</select> H.264 <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Lower values are higher quality. 18 is considered visually lossless. Default is 23.', 'video-embed-thumbnail-generator')."</span></span><br />";
 
 		echo "<select id='webm_CRF' name='kgvid_video_embed_options[webm_CRF]' class='affects_ffmpeg'>";
 		for ($i = 4; $i <= 63; $i++ ) {
 			$selected = ($options['webm_CRF']==$i) ? 'selected="selected"' : '';
 			echo "<option value='".$i."' $selected>".$i."</option>";
 		}
-		echo "</select> WEBM <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Lower values are higher quality. Default is 10.', 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
+		echo "</select> WEBM VP8 <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Lower values are higher quality. Default is 10.', 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
 
 		echo "<select id='ogv_CRF' name='kgvid_video_embed_options[ogv_CRF]' class='affects_ffmpeg'>";
 		for ($i = 1; $i <= 10; $i++ ) {
