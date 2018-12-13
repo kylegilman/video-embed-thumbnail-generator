@@ -540,7 +540,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 				"label" => __('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
-				"type" => "webm",
+				"type" => "vp9",
 				"extension" => "webm",
 				"mime" => "video/webm",
 				"suffix" => "-customvp9.webm",
@@ -1382,8 +1382,6 @@ function kgvid_get_video_dimensions($video = false) {
 	$ffmpegPath = $options['app_path']."/".$options['video_app'];
 	$movie_info = array();
 
-	$video = str_replace("https://", "http://",  $video);
-
 	if ( strpos($video, 'http://') === 0 ) { //if it's a URL
 		$video_id = kgvid_url_to_id($video);
 		if ( $video_id ) {
@@ -1612,7 +1610,6 @@ function kgvid_ffmpeg_watermark_strings( $ffmpeg_watermark, $movie_width, $rotat
 		}
 		else { $watermark_valign = ""; } //top justified
 
-		$ffmpeg_watermark['url'] = str_replace("https://", "http://",  $ffmpeg_watermark['url']);
 		if ( strpos($ffmpeg_watermark['url'], 'http://') === 0 ) {
 			$watermark_id = false;
 			$watermark_id = kgvid_url_to_id($ffmpeg_watermark['url']);
@@ -3713,6 +3710,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		unset($video_formats['custom_h264']);
 		unset($video_formats['custom_webm']);
 		unset($video_formats['custom_ogg']);
+		unset($video_formats['custom_vp9']);
 	}
 
 	if ( $options['ffmpeg_exists'] == "notinstalled" ) {
@@ -5635,7 +5633,6 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 		}
 		$input['custom_format']['type'] = $input['custom_format']['format'];
 		if ( $input['custom_format']['format'] == 'ogg' ) { $input['custom_format']['type'] = 'ogv'; }
-		if ( $input['custom_format']['format'] == 'vp9' ) { $input['custom_format']['type'] = 'webm'; }
 		$input['custom_format']['suffix'] = '-custom.'.$input['custom_format']['extension'];
 
 		$input['custom_format']['default_encode'] = "on";
@@ -7186,7 +7183,6 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		$moviefilepath = get_attached_file($postID);
 		if ( !file_exists($moviefilepath) ) {
 			$moviefilepath = esc_url_raw(str_replace(" ", "%20", $movieurl));
-			$moviefilepath = str_replace("https://", "http://",  $moviefilepath);
 		}
 
 		$kgvid_postmeta = kgvid_get_attachment_meta($postID);
@@ -7209,7 +7205,6 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 	}
 	else {
 		$moviefilepath = esc_url_raw(str_replace(" ", "%20", $movieurl));
-		$moviefilepath = str_replace("https://", "http://",  $moviefilepath);
 		$movie_info = kgvid_get_video_dimensions($moviefilepath);
 	}
 
@@ -7641,7 +7636,6 @@ function kgvid_encode_videos() {
 				if ( get_post_type($video['attachmentID']) == "attachment" ) { $moviefilepath = get_attached_file($video['attachmentID']); }
 				elseif ( empty($moviefilepath) || !file_exists($moviefilepath) ) {
 					$moviefilepath = str_replace(" ", "%20", esc_url_raw($video['movieurl']));
-					$moviefilepath = str_replace("https://", "http://",  $moviefilepath);
 				}
 
 				$movie_info = $video['movie_info'];

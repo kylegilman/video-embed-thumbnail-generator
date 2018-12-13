@@ -257,6 +257,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that prevented manual thumbnail generation in the Media Library.
 * Stopped appending timecode to thumbnail filenames.
 * Removed old Media Library video thumbnail display functionality that was preventing some Media Libraries from loading.
+* Now allowing https FFMPEG input.
 
 = 4.6.21 - October 6, 2018 =
 * Updated Video.js to version 5.20.5
