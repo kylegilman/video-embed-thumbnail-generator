@@ -5621,18 +5621,19 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 		}
 		if ( $input['custom_format']['format'] == 'h264' ) {
 			$input['custom_format']['name'] .= ' H.264';
+			$input['custom_format']['type'] = 'h264';
 			$input['custom_format']['extension'] = 'mp4';
 			$input['custom_format']['mime'] = 'video/mp4';
 			$input['custom_format']['vcodec'] = 'libx264';
 		}
 		else {
 			$input['custom_format']['name'] .= ' '.strtoupper($input['custom_format']['format']);
+			$input['custom_format']['type'] = $video_formats[$input['custom_format']['format']]['type'];
 			$input['custom_format']['extension'] = $video_formats[$input['custom_format']['format']]['extension'];
 			$input['custom_format']['mime'] = $video_formats[$input['custom_format']['format']]['mime'];
 			$input['custom_format']['vcodec'] = $video_formats[$input['custom_format']['format']]['vcodec'];
 		}
-		$input['custom_format']['type'] = $input['custom_format']['format'];
-		if ( $input['custom_format']['format'] == 'ogg' ) { $input['custom_format']['type'] = 'ogv'; }
+
 		$input['custom_format']['suffix'] = '-custom.'.$input['custom_format']['extension'];
 
 		$input['custom_format']['default_encode'] = "on";
@@ -7687,8 +7688,7 @@ function kgvid_encode_videos() {
 							}
 						}
 
-
-						if ( $format_stats['type'] == "webm" || $format_stats['type'] == "ogv" ) { //if it's not H.264 they both work essentially the same
+						if ( $format_stats['type'] == "webm" || $format_stats['type'] == "ogv" || $format_stats['type'] == "vp9" ) { //if it's not H.264 they both work essentially the same
 							if ( ! $encodevideo_info[$queued_format]['exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$queued_format]['filepath']) < 24576) ) {
 								if ( $movie_info['configuration']['libvorbis'] == "true" && $movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == "true" ) {
 
