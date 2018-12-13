@@ -6415,7 +6415,10 @@ function kgvid_ajax_save_html5_thumb() {
 		$total = $_POST['total'];
 		$index = $_POST['index']+1;
 
-		$posterfile = sanitize_file_name(pathinfo($video_url, PATHINFO_FILENAME)).'_thumb';
+		if ( $total > 1 ) { $filename_index = $index; }
+		else { $filename_index = ''; }
+
+		$posterfile = sanitize_file_name(pathinfo($video_url, PATHINFO_FILENAME)).'_thumb'.$filename_index;
 		if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
 		$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile.'.png';
 		$thumb_url = $uploads['url'].'/'.$posterfile.'.jpg';
