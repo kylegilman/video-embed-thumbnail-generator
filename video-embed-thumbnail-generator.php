@@ -5837,9 +5837,15 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 		foreach ( $thumb_output as $key=>$output ) {
 
 			if ( $thumb_output[$key]['lastthumbnumber'] != 'break' ) {
-				if ( $numberofthumbs == 1 ) { $index = false; }
-				else { $index = $key; }
-				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_output[$key]['thumb_url'], $index);
+				if ( $numberofthumbs == 1 ) { 
+					$index = false;
+					$thumb_url = $thumb_output[$key]['thumb_url'];
+				}
+				else { 
+					$index = $key; 
+					$thumb_url = $thumb_output[$key]['thumb_url_multiple'];
+				}
+				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_url, $thumb_output[$key]['tmp_posterfile'], $index);
 			}//end if there wasn't an error
 			else {
 				$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
@@ -7288,8 +7294,6 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$tmp_thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail" data-tmp_posterfile="'.$sanitized_url['basename'].'_thumb'.$i.'.jpg'.'"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio_'.$postID.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.$final_thumbnailurl.'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.', jQuery(this).parent().find(\'img\')[0]);"></div>';
 
-		$i++;
-
 		$arr = array ( 
 			"thumbnaildisplaycode" => $thumbnaildisplaycode, 
 			"movie_width" => $movie_width, 
@@ -7297,8 +7301,12 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			"lastthumbnumber" => $i, 
 			"movieoffset" => $movieoffset, 
 			"thumb_url" => $final_thumbnailurl, 
-			"real_thumb_url" => $tmp_thumbnailurl 
+			"thumb_url_multiple" => $uploads['url'].'/'.$sanitized_url['basename'].'_thumb'.$i.'.jpg',
+			"real_thumb_url" => $tmp_thumbnailurl,
+			"tmp_posterfile" => $sanitized_url['basename'].'_thumb'.$i.'.jpg'
 		);
+
+		$i++;
 
 		return $arr;
 
