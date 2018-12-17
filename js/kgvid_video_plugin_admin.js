@@ -574,12 +574,12 @@ function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 	jQuery('[name="attachments['+post_id+'][kgflashmediaplayer-poster]"]').val(thumb_url); //get this by name because it's the same before WP v3.5
 
 	var unscaledThumb = new Image();
-	unscaledThumb.src = thumbnail.src;
+	unscaledThumb.src = thumbnail.src+'?'+String(Math.floor((Math.random()*1000)+1));
 	var canvas = document.createElement("canvas");
 	canvas = kgvid_draw_thumb_canvas(canvas, unscaledThumb);
-	var thumb_url = canvas.toDataURL('image/jpeg', 0.8);
+	var thumb_dataurl = canvas.toDataURL('image/jpeg', 0.8);
 
-	kgvid_change_media_library_video_poster(post_id, thumb_url);
+	kgvid_change_media_library_video_poster(post_id, thumb_dataurl);
 
 	var time_display = kgvid_convert_to_timecode(movieoffset);
 	jQuery('#attachments-'+post_id+'-kgflashmediaplayer-thumbtime').val(time_display);

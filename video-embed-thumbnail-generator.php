@@ -6118,7 +6118,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'.$kgvid_postmeta['autothumb-error'].'</div>';
 			}
 			elseif ( !empty($thumbnail_url) ) {
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'"></div>';
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'?'.rand().'"></div>';
 			}
 
 			$choose_from_video_content = "";
@@ -6509,6 +6509,11 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $tmp_posterfile, $in
 	$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$tmp_posterfile;
 	$final_posterpath = $uploads['path'].'/'.$posterfile;
 
+	$poster_id = get_post_meta($post_id, "_kgflashmediaplayer-poster-id", true);
+	if ( !empty($poster_id) ) {
+		wp_delete_post($poster_id);
+	}
+
 	$success = false;
 	if ( !is_file($final_posterpath) ) { //if the file doesn't already exist
 		if ( is_file($tmp_posterpath) ) {
@@ -6624,8 +6629,8 @@ function kgvid_ajax_redraw_thumbnail_box() {
 		$thumbnail_src = wp_get_attachment_image_src($poster_id, 'thumbnail');
 		if ( is_array($thumbnail_src) && array_key_exists(0, $thumbnail_src) ) { $thumbnail_size_url = $thumbnail_src[0]; }
 	}
-	$response['thumb_url'] = get_post_meta($post_id, "_kgflashmediaplayer-poster", true);
-	$response['thumbnail_size_url'] = $thumbnail_size_url;
+	$response['thumb_url'] = get_post_meta($post_id, "_kgflashmediaplayer-poster", true).'?'.rand();
+	$response['thumbnail_size_url'] = $thumbnail_size_url.'?'.rand();
 	$response['thumb_error'] = $kgvid_postmeta['autothumb-error'];
 	echo json_encode($response);
 	die();
@@ -7278,12 +7283,15 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$ffmpeg_options = apply_filters( 'kgvid_thumbnail_ffmpeg_options', $ffmpeg_options );
 
+		$tmp_posterfile = $sanitized_url['basename'].'_thumb'.$i.'.jpg';
 		$tmp_thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
 		$tmp_thumbnailurl = str_replace(" ", "_", $tmp_thumbnailurl);
 
 		$final_thumbnailurl = $thumbnailfilebase."_thumb.jpg";
 		$final_thumbnailurl = str_replace(" ", "_", $final_thumbnailurl);
 		$final_thumbnailurl = str_replace('/thumb_tmp/', '/', $final_thumbnailurl);
+
+		$thumb_url_multiple = $uploads['url'].'/'.$sanitized_url['basename'].'_thumb'.$i.'.jpg';
 
 		$old_locale = kgvid_set_locale($moviefilepath); //fixes UTF-8 encoding problems
 		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options).$watermark_strings['filter'].escapeshellcmd(' "'.$thumbnailfilename[$i].'"'));
@@ -7294,6 +7302,8 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$tmp_thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail" data-tmp_posterfile="'.$sanitized_url['basename'].'_thumb'.$i.'.jpg'.'"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio_'.$postID.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.$final_thumbnailurl.'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.', jQuery(this).parent().find(\'img\')[0]);"></div>';
 
+		$i++;
+
 		$arr = array ( 
 			"thumbnaildisplaycode" => $thumbnaildisplaycode, 
 			"movie_width" => $movie_width, 
@@ -7301,12 +7311,10 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			"lastthumbnumber" => $i, 
 			"movieoffset" => $movieoffset, 
 			"thumb_url" => $final_thumbnailurl, 
-			"thumb_url_multiple" => $uploads['url'].'/'.$sanitized_url['basename'].'_thumb'.$i.'.jpg',
+			"thumb_url_multiple" => $thumb_url_multiple,
 			"real_thumb_url" => $tmp_thumbnailurl,
-			"tmp_posterfile" => $sanitized_url['basename'].'_thumb'.$i.'.jpg'
+			"tmp_posterfile" => $tmp_posterfile
 		);
-
-		$i++;
 
 		return $arr;
 
