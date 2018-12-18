@@ -312,11 +312,10 @@ function kgvid_reveal_thumb_video(postID) {
 
 			jQuery('#thumb-video-'+postID+'-player .mejs-container .mejs-layers, #thumb-video-'+postID+'-player .mejs-container .mejs-controls').remove();
 
-
 		}
 
 		jQuery(video).data('busy', true);
-		jQuery(video).removeAttr('src');
+		//jQuery(video).removeAttr('src');
 		jQuery(video).attr("preload", "metadata");
 		video.load();
 
@@ -400,7 +399,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 		if ( video.preload == "none" ) {
 
-			jQuery(video).removeAttr('src');
+			//jQuery(video).removeAttr('src');
 			video.preload = "metadata";
 			video.load();
 			jQuery(video).data('busy', true);
