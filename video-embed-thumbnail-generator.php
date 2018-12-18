@@ -6509,9 +6509,12 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $tmp_posterfile, $in
 	$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$tmp_posterfile;
 	$final_posterpath = $uploads['path'].'/'.$posterfile;
 
-	$poster_id = get_post_meta($post_id, "_kgflashmediaplayer-poster-id", true);
-	if ( !empty($poster_id) ) {
-		wp_delete_post($poster_id);
+	if ( file_exists($final_posterpath) ) {
+		$old_poster_id = get_post_meta($post_id, "_kgflashmediaplayer-poster-id", true);
+		$old_poster_file = get_attached_file($old_poster_id);
+		if ( $old_poster_file == $final_posterpath ) {
+			wp_delete_post($old_poster_id);
+		}
 	}
 
 	$success = false;
