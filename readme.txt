@@ -255,6 +255,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that deleted unfinished video encode queue entries every 24 hours.
 * Fixed bug that created duplicate encodes of non-H.264 files.
 * Fixed bug that prevented manual thumbnail generation in the Media Library.
+* Fixed bug that disabled embed from URL if FFMPEG was not installed.
 * Stopped appending timecode to thumbnail filenames.
 * Stopped removing special characters from the end of filenames of generated thumbnails and encoded files.
 * Attempting to fix misconfigured locale settings that can sometimes lead to video files with diacritics (accent marks, umlauts, etc) to generate "File not found" errors when using FFMPEG.

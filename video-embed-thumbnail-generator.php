@@ -5839,13 +5839,11 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 			if ( $thumb_output[$key]['lastthumbnumber'] != 'break' ) {
 				if ( $numberofthumbs == 1 ) { 
 					$index = false;
-					$thumb_url = $thumb_output[$key]['thumb_url'];
 				}
 				else { 
 					$index = $key; 
-					$thumb_url = $thumb_output[$key]['thumb_url_multiple'];
 				}
-				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_url, $thumb_output[$key]['tmp_posterfile'], $index);
+				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_output[$key]['thumb_url'], $thumb_output[$key]['tmp_posterfile'], $index);
 			}//end if there wasn't an error
 			else {
 				$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
@@ -7288,12 +7286,9 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		$tmp_posterfile = $sanitized_url['basename'].'_thumb'.$i.'.jpg';
 		$tmp_thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
 		$tmp_thumbnailurl = str_replace(" ", "_", $tmp_thumbnailurl);
+		$final_thumbnailurl = str_replace('/thumb_tmp/', '/', $tmp_thumbnailurl);
 
-		$final_thumbnailurl = $thumbnailfilebase."_thumb.jpg";
-		$final_thumbnailurl = str_replace(" ", "_", $final_thumbnailurl);
-		$final_thumbnailurl = str_replace('/thumb_tmp/', '/', $final_thumbnailurl);
-
-		$thumb_url_multiple = $uploads['url'].'/'.$sanitized_url['basename'].'_thumb'.$i.'.jpg';
+		//$thumb_url_multiple = $uploads['url'].'/'.$sanitized_url['basename'].'_thumb'.$i.'.jpg';
 
 		$old_locale = kgvid_set_locale($moviefilepath); //fixes UTF-8 encoding problems
 		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options).$watermark_strings['filter'].escapeshellcmd(' "'.$thumbnailfilename[$i].'"'));
@@ -7312,8 +7307,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			"movie_height" => $movie_height, 
 			"lastthumbnumber" => $i, 
 			"movieoffset" => $movieoffset, 
-			"thumb_url" => $final_thumbnailurl, 
-			"thumb_url_multiple" => $thumb_url_multiple,
+			"thumb_url" => $final_thumbnailurl,
 			"real_thumb_url" => $tmp_thumbnailurl,
 			"tmp_posterfile" => $tmp_posterfile
 		);

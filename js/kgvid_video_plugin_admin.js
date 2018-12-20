@@ -383,7 +383,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var widthID = 'attachments-'+postID+'-kgflashmediaplayer-width';
 	var heightID = 'attachments-'+postID+'-kgflashmediaplayer-height';
 	var maxwidthID = 'attachments['+postID+'][kgflashmediaplayer-maxwidth]';
-	var i=1;
+	var i = 1;
 	var increaser = 0;
 	var iincreaser = 0;
 	var page = "attachment";
@@ -504,9 +504,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 					if ( video.paused == false ) { video.pause(); }
 
 					time_id = Math.round(video.currentTime*100);
-					var time_display = kgvid_convert_to_timecode(video.currentTime);
 
-					jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-thumbtime\').value = \''+time_display+'\'; document.getElementById(\'attachments-'+postID+'-kgflashmediaplayer-numberofthumbs\').value =\'1\';kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
+					jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'" data-movieoffset="'+video.currentTime+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
 					var canvas = document.getElementById(postID+'_thumb_'+time_id);
 					canvas = kgvid_draw_thumb_canvas(canvas, video);
 					jQuery('#attachments-'+postID+'-thumb'+time_id).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000);
@@ -619,6 +618,12 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 			if ( total == 1 ) {
 				document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-autothumb-error]')[0].value = '';
 				document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-tmp_posterfile]')[0].value = data.tmp_posterfile;
+
+				jQuery('#attachments-'+postID+'-kgflashmediaplayer-numberofthumbs').val('1');
+
+				var time_display = kgvid_convert_to_timecode(canvas.dataset.movieoffset);
+				jQuery('#attachments-'+postID+'-kgflashmediaplayer-thumbtime').val(time_display);
+
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(data.thumb_url).change();
 				if ( typeof pagenow === 'undefined' || pagenow == 'attachment' ) { jQuery('#publish').click(); }
 				kgvid_change_media_library_video_poster(postID, png64dataURL);
