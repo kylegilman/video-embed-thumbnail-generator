@@ -5843,7 +5843,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 				else { 
 					$index = $key; 
 				}
-				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_output[$key]['thumb_url'], $thumb_output[$key]['tmp_posterfile'], $index);
+				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_output[$key]['thumb_url'], $index);
 			}//end if there wasn't an error
 			else {
 				$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
@@ -6204,9 +6204,6 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			$form_fields["kgflashmediaplayer-autothumb-error"]["input"] = "hidden";
 			$form_fields["kgflashmediaplayer-autothumb-error"]["value"] = $kgvid_postmeta['autothumb-error'];
 
-			$form_fields["kgflashmediaplayer-tmp_posterfile"]["input"] = "hidden";
-			$form_fields["kgflashmediaplayer-tmp_posterfile"]["value"] = '';
-
 			$form_fields["generator"]["label"] = _x("Thumbnails", 'Header for thumbnail section', 'video-embed-thumbnail-generator');
 			$form_fields["generator"]["input"] = "html";
 			$form_fields["generator"]["html"] = $choose_from_video_content.'
@@ -6418,11 +6415,8 @@ function kgvid_ajax_save_html5_thumb() {
 		$total = $_POST['total'];
 		$index = $_POST['index']+1;
 
-		if ( $total > 1 ) { $filename_index = $index; }
-		else { $filename_index = ''; }
-
 		$sanitized_url = kgvid_sanitize_url($video_url);
-		$posterfile = $sanitized_url['basename'].'_thumb'.$filename_index;
+		$posterfile = $sanitized_url['basename'].'_thumb'.$index;
 		if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
 		$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile.'.png';
 		$thumb_url = $uploads['url'].'/'.$posterfile.'.jpg';
@@ -6453,16 +6447,13 @@ function kgvid_ajax_save_html5_thumb() {
 			unlink($tmp_posterpath);
 			if ( $total > 1 ) {
 				$post_name = get_the_title($post_id);
-				$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $posterfile.'.jpg', $index);
+				$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
 			}
 		}
 
 		kgvid_schedule_cleanup_generated_files('thumbs');
-		$arr = array(
-			'thumb_url' => $thumb_url,
-			'tmp_posterfile' => $posterfile.'.jpg'
-		);
-		echo (json_encode($arr));
+
+		echo $thumb_url;
 	}
 
 	die();
@@ -6484,9 +6475,7 @@ function kgvid_ajax_save_thumb() {
 		}
 		else { $post_name = str_replace('singleurl_','', $post_id); }
 
-		$tmp_posterfile = pathinfo($thumb_url, PATHINFO_BASENAME);
-
-		$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $tmp_posterfile, $index);
+		$thumb_id = kgvid_save_thumb($post_id, $post_name, $thumb_url, $index);
 
 		echo $thumb_id;
 	}
@@ -6496,7 +6485,7 @@ function kgvid_ajax_save_thumb() {
 }
 add_action('wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb');
 
-function kgvid_save_thumb($post_id, $post_name, $thumb_url, $tmp_posterfile, $index=false) {
+function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 	global $user_ID;
 
@@ -6504,7 +6493,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $tmp_posterfile, $in
 	$uploads = wp_upload_dir();
 
 	$posterfile = pathinfo($thumb_url, PATHINFO_BASENAME);
-	$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$tmp_posterfile;
+	$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
 	$final_posterpath = $uploads['path'].'/'.$posterfile;
 
 	if ( file_exists($final_posterpath) ) {
@@ -6658,8 +6647,8 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 
 			$thumb_url = $attachment['kgflashmediaplayer-poster'];
 
-			if ( !empty($attachment['kgflashmediaplayer-tmp_posterfile']) && !empty($thumb_url) ) {
-				$thumb_id = kgvid_save_thumb($post['ID'], $post['post_title'], $thumb_url, $attachment['kgflashmediaplayer-tmp_posterfile']);
+			if ( !empty($thumb_url) ) {
+				$thumb_id = kgvid_save_thumb($post['ID'], $post['post_title'], $thumb_url);
 				if ( $thumb_id ) {
 					$thumb_url = wp_get_attachment_url($thumb_id);
 					update_post_meta($post['ID'], '_kgflashmediaplayer-poster-id', $thumb_id);
@@ -6896,7 +6885,6 @@ function kgvid_media_embedurl_process() {
 	<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-titlecode]' id='attachments-singleurl-kgflashmediaplayer-titlecode' value='<?php echo $options['titlecode']; ?>' />
 	<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-titlecode]' id='attachments-singleurl-kgflashmediaplayer-titlecode' value='<?php echo $options['titlecode']; ?>' />
 	<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-ffmpegexists]' id='attachments-singleurl-kgflashmediaplayer-ffmpegexists' value='<?php echo $options['ffmpeg_exists']; ?>' />
-	<input type='hidden' name='attachments[singleurl][kgflashmediaplayer-tmp_posterfile]' id='attachments-singleurl-kgflashmediaplayer-tmp_posterfile' value='' />
 	</form>
 
 	<?php
@@ -7283,7 +7271,6 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$ffmpeg_options = apply_filters( 'kgvid_thumbnail_ffmpeg_options', $ffmpeg_options );
 
-		$tmp_posterfile = $sanitized_url['basename'].'_thumb'.$i.'.jpg';
 		$tmp_thumbnailurl = $thumbnailfilebase."_thumb".$i.'.jpg';
 		$tmp_thumbnailurl = str_replace(" ", "_", $tmp_thumbnailurl);
 		$final_thumbnailurl = str_replace('/thumb_tmp/', '/', $tmp_thumbnailurl);
@@ -7297,7 +7284,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		if ( is_file($thumbnailfilename[$i]) )
 		kgvid_schedule_cleanup_generated_files('thumbs');
 
-		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$tmp_thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail" data-tmp_posterfile="'.$sanitized_url['basename'].'_thumb'.$i.'.jpg'.'"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio_'.$postID.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.$final_thumbnailurl.'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.', jQuery(this).parent().find(\'img\')[0]);"></div>';
+		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments['.$postID.'][thumb'.$i.']" id="attachments-'.$postID.'-thumb'.$i.'"><label for="kgflashmedia-'.$postID.'-thumbradio'.$i.'"><img src="'.$tmp_thumbnailurl.'?'.rand().'" width="200" height="'.$thumbnailheight.'" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments['.$postID.'][thumbradio_'.$postID.']" id="kgflashmedia-'.$postID.'-thumbradio'.$i.'" value="'.$final_thumbnailurl.'" onchange="kgvid_select_thumbnail(this.value, \''.$postID.'\', '.$movieoffset.', jQuery(this).parent().find(\'img\')[0]);"></div>';
 
 		$i++;
 
@@ -7308,8 +7295,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			"lastthumbnumber" => $i, 
 			"movieoffset" => $movieoffset, 
 			"thumb_url" => $final_thumbnailurl,
-			"real_thumb_url" => $tmp_thumbnailurl,
-			"tmp_posterfile" => $tmp_posterfile
+			"real_thumb_url" => $tmp_thumbnailurl
 		);
 
 		return $arr;
@@ -7534,10 +7520,10 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 
 }
 
-function kgivd_save_singleurl_poster($parent_id, $poster, $tmp_posterfile, $movieurl, $set_featured) { //called by the "Embed Video from URL" tab when submitting
+function kgivd_save_singleurl_poster($parent_id, $poster, $movieurl, $set_featured) { //called by the "Embed Video from URL" tab when submitting
 
 		$sanitized_url = kgvid_sanitize_url($movieurl);
-		if ( !empty($poster) ) { $thumb_id = kgvid_save_thumb($parent_id, $sanitized_url['basename'], $poster, $tmp_posterfile); }
+		if ( !empty($poster) ) { $thumb_id = kgvid_save_thumb($parent_id, $sanitized_url['basename'], $poster); }
 		if ( !empty($thumb_id) && $set_featured == "on" ) {
 			set_post_thumbnail($parent_id, $thumb_id);
 		}
@@ -7564,7 +7550,6 @@ function kgvid_callffmpeg() {
 	else { $blog_id = false; }
 
 	if (isset($_POST['poster'])) { $poster = $_POST['poster']; }
-	if (isset($_POST['tmp_posterfile'])) { $tmp_posterfile = $_POST['tmp_posterfile']; }
 	if (isset($_POST['parent_id'])) { $parent_id = $_POST['parent_id']; }
 	if ( !isset($parent_id) ) {	$parent_id = "check"; }
 	if ( isset($_POST['set_featured']) ) { $set_featured = $_POST['set_featured']; }
@@ -7581,7 +7566,7 @@ function kgvid_callffmpeg() {
 			$arr = kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $blog_id);
 			echo json_encode($arr);
 		}
-		if ( $action == "submit" && current_user_can('make_video_thumbnails') ) { kgivd_save_singleurl_poster($parent_id, $poster, $tmp_posterfile, $movieurl, $set_featured); }
+		if ( $action == "submit" && current_user_can('make_video_thumbnails') ) { kgivd_save_singleurl_poster($parent_id, $poster, $movieurl, $set_featured); }
 	}
 	else {
 			$thumbnaildisplaycode = '<strong>'.sprintf( __('Error: %1$s not found. Verify that %1$s is installed at %2$s and check the %3$sapplication path plugin setting', 'video-embed-thumbnail-generator'), strtoupper($options["video_app"]), $options["app_path"], '<a href="options-general.php?page=video-embed-thumbnail-generator/video-embed-thumbnail-generator.php">' ).'</a>.</strong>' ;
