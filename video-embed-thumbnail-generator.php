@@ -6499,7 +6499,15 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 	if ( file_exists($final_posterpath) ) {
 		$old_thumb_id = kgvid_url_to_id($final_posterpath);
 		if ( !empty($old_thumb_id) ) {
-			wp_delete_post($old_thumb_id);
+			$existing_posterpath = get_attached_file($old_thumb_id);
+			if ( time() - filemtime($existing_posterpath) > 30 //file was created less than 30 seconds ago
+				|| abs( filesize($tmp_posterpath) - filesize($existing_posterpath) ) > 100 //filesize is more than 100 bytes different means it's probably a different image
+			) {
+				wp_delete_post($old_thumb_id);
+			}
+			else { 
+				return $old_thumb_id; //if a new thumbnail was just created with the same name don't make a new one.
+			}
 		}
 	}
 
