@@ -248,17 +248,17 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.22 - December 19, 2018 =
+= 4.6.22 - January 3, 2019 =
 * Modularized video file formats that can be encoded by the plugin to allow other plugins to modify, delete, or create new formats.
-* Added Custom VP9 format option.
-* Renamed WEBM to WEBM VP8.
+* Added Custom WEBM VP9 format option.
+* Renamed WEBM format to WEBM VP8.
 * Fixed bug that deleted unfinished video encode queue entries every 24 hours.
 * Fixed bug that created duplicate encodes of non-H.264 files.
 * Fixed bug that prevented manual thumbnail generation in the Media Library.
 * Fixed bug that disabled embed from URL if FFMPEG was not installed.
 * Stopped appending timecode to thumbnail filenames.
 * Stopped removing special characters from the end of filenames of generated thumbnails and encoded files.
-* Attempting to fix misconfigured locale settings that can sometimes lead to video files with diacritics (accent marks, umlauts, etc) to generate "File not found" errors when using FFMPEG.
+* Attempting to fix misconfigured locale settings that can sometimes cause video files with diacritics (accent marks, umlauts, etc) to generate "File not found" errors when using FFMPEG.
 * Removed old Media Library video thumbnail display functionality that was preventing some Media Libraries from loading.
 * Now allowing https FFMPEG input.
 
@@ -448,110 +448,6 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that hid the wrong headers on the plugin settings tabs in WordPress 4.4+.
 * Fixed bug that disabled the text track remove button when editing videos in the media library.
 * Fixed bug that redundantly localized the frontend script every time a video was embedded on a page.
-
-= 4.5.5 - August 20, 2015 =
-* Fixed a number of potential infinite loops and other recursion issues related to longstanding WordPress bug <a href='https://core.trac.wordpress.org/ticket/17817'>#17817</a>.
-* Changed video player names with spaces (WordPress Default, JW Player) to one word camel case for JavaScript functions (WordPressDefault, JWPlayer).
-
-= 4.5.4 - August 9, 2015 =
-* Added option to disable native controls on mobile devices when using the Video.js player.
-* Added Schema.org uploadDate and description tags which are required by Google for video listings.
-* Updated Video.js to version 4.12.11
-* Fixed undefined index error when editing videos with text tracks that don't have default enabled.
-* Fixed and localized "Saving..." overlay when saving browser-generated thumbnails.
-* Fixed bug that could generate an error when displaying the sample video on the plugin settings page.
-
-= 4.5.3 - July 11, 2015 =
-* Fixed error that could zero out view counts when editing videos.
-* Fixed 'strlen' error when updating videos with subtitles.
-* Attempting to enable 'default' subtitle tracks on more browsers, but implementation is inconsistent.
-
-= 4.5.2 - July 10, 2015 =
-* Fixed bug that failed to set the volume or count views when using the WordPress Default or JW Player.
-* Fixed bug that failed to count views when WordPress Default player was on autoplay.
-* Fixed Video.js inconsistent autoplay bug.
-
-= 4.5.1 - July 9, 2015 =
-* Fixed bug that accidentally deleted thumbnail image IDs from video meta when editing attachments.
-* Prevented automatic re-writing of video URLs to a local address if a popular cloud storage address is entered in the shortcode (Amazon AWS, Rackspace, etc).
-* Restored full-resolution thumbnails when width is set to a percentage.
-
-= 4.5 - July 7, 2015 =
-* This is probably the last completely free major release. Some advanced features will be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/plugin/video-embed-thumbnail-generator">support forum</a>.
-* Consolidated most video metadata database entries into a single array. This might slow things down the first time you load the Media Library.
-* Added pagination option for video galleries.
-* Added oEmbed provider data and option to allow oEmbed discovery from other sites.
-* Added experimental WEBM VP9 encoding format.
-* Added option to make the watermark overlay image a link.
-* Added video stats column to Media Library list view.
-* Added options for vertical video rotation and metadata removal using FFMPEG, now that some browsers recognize rotation metadata.
-* Added "default" attribute for subtitle/caption text tracks to turn tracks on when the video loads.
-* Added attachment edit hook that updates video thumbnail's parent post when the video's parent post changes.
-* Added error handling and reporting for in-browser thumbnails.
-* Added Video.js localization. Automatically changes Video.js language to the current WordPress language.
-* Updated Video.js to version 4.12.7
-* Updated Spanish translation.
-* Updated Facebook Open Graph video embedding tags.
-* Re-enabled native video player controls on mobile devices when using Video.js player for better responsive resizing and to allow Airplay & Chromecast controls.
-* Removed superfluous gallery height option.
-* Stopped inserting unnecessary width and height shortcode attributes when videos are set to the default width and height.
-* Stopped inserting unnecessary poster URL shortcode attribute when poster is set in the media library.
-* Fixed several bugs related to hosting media library files on external servers like Amazon S3.
-* Fixed bug that deleted replacement videos before encoding was finished when simultaneous encodes are enabled.
-* Fixed bug that dropped videos from the video encode queue when multiple videos were added to the database simultaneously, specifically when using Add From Server.
-* Fixed bug that created squashed encoded videos when they were shot vertically on a mobile device.
-* Fixed bug that added bad content to Open Graph video tag when other shortcodes were found before KGVID in the post.
-* Fixed bug that wrote multiple unnecessary meta entries to the database when image attachments were updated.
-* Fixed bug that disabled "Choose from Library" buttons in Firefox.
-* Fixed bug that incorrectly indicated thumbnail selection video files did not load in Firefox.
-* Fixed bug that allowed video thumbnails to overflow their container in the Media Library modal window in Firefox.
-* Fixed bug that allowed crossdomain in-browser thumbnails to load, but then fail when trying to save them in Safari.
-* Fixed bug that kept end of video overlay images on screen when user hit play again.
-* Fixed bug that incorrectly resized videos embedded through iframe.
-* Fixed bug that did not assign a default value to the qt-faststart/MP4Box application path for new installations.
-* Fixed bug that allowed selection of multiple thumbnails in Embed Video from URL window
-* Fixed number formatting of video play counter.
-* Fixed encode queue text indent bug.
-
-= 4.4.2 - November 3, 2014 =
-* Added Google Universal Analytics event tracking.
-* Updated Spanish, French and Belgian translations.
-* Updated Video.js to version 4.10.2
-* Fixed bug that could prevent the media library from loading.
-* Fixed bug that prevented pop-up gallery thumbnails from resizing responsively.
-
-= 4.4.1 - October 28, 2014 =
-* Fixed bug that loaded resolution selector plugin too late in the page.
-* Fixed bug that displayed the video poster image while switching resolutions.
-
-= 4.4 - October 28, 2014 =
-* Added H.264 HTML5 video resolution switcher for the Video.js player. Automatically selects the appropriate resolution for the size of the displayed video and allows manual user switching on desktop computers.
-* Added option to set videos to automatically fill their containers.
-* Added buttons to manually set other videos in the media library as alternate formats for the current video.
-* Added option to encode a custom resolution.
-* Added option to replace original video with a lower-resolution H.264 video, WEBM or OGV.
-* Added buttons to generate thumbnails and encode additional formats for all previously uploaded videos.
-* Added plugin admin scripts to the frontend when Insert Media button is loaded. Works with bbPress now.
-* Added option to encode 64 and 32 kbps audio.
-* Added option to set a different application path for qt-faststart or MP4Box.
-* Added option to disable stdin during FFMPEG encoding. Particularly useful for IIS users.
-* Updated Video.js to version 4.9.1
-* Changed download link to a forced download for videos in the media library. No right-clicking necessary.
-* Changed pop-up video gallery to use inline code rather than an AJAX query.
-* Changed embedded video IDs to allow the same video to be embedded multiple times on a page.
-* Changed volume slider on plugin settings page to drop-down menu to fix settings save errors in Windows.
-* Changed 480p video format label to 360p to accurately reflect resolution of 16:9 videos. Format has always been 480p only for 4:3 videos.
-* Changed AAC encoder preference to libfdk_aac > libfaac > Native FFmpeg AAC encoder (aac) > libvo_aacenc.
-* Restored display of moov atom fix process in FFMPEG test output.
-* Fixed bug that made pop-up video windows 0 pixels wide in iOS 8.
-* Fixed bug that couldn't find video attachements that have been redirected to a CDN.
-* Fixed bug that quickly faded out the end overlay image in IE.
-* Fixed bug that prevented replacing encoded videos if there were any other videos in the queue.
-* Fixed bug that left the GUID as the original filename if replacing the video with an mp4 changed the extension.
-* Fixed bug that incorrectly reported all encoding fps values over 99 as "10".
-* Fixed bug that didn't recognize videos had completed encoding if there were audio frames left in the queue.
-* Fixed bug that left title overlay on iOS videos using the WordPress Default player.
-* Fixed bug that made video galleries display as inline-block when the inline video option was disabled.
 
 <a href="http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/">See the full changelog on my website.</a>
 
