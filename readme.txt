@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
-Tested up to: 4.9
+Tested up to: 5.0
 Stable tag: 4.6.21
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -14,7 +14,7 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 = A plugin to make embedding videos, generating thumbnails, and encoding files easier. =
 
-Not Gutenberg compatible. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
+Not compatible with the new Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
 
 Still 100% free, but some advanced features may be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
 
