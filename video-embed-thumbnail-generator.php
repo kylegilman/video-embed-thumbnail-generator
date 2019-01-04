@@ -1122,8 +1122,8 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$test_path = rtrim($options['app_path'], '/');
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg').' 2>&1';
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			exec ( $cmd, $output, $returnvalue );
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}
 		else { $function = "ESCAPESHELLCMD"; }
 	}
@@ -1135,8 +1135,8 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			exec ( $cmd );
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}
 
 		if ( file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //FFMEG has executed successfully
@@ -1397,9 +1397,9 @@ function kgvid_get_video_dimensions($video = false) {
 	}
 	$old_locale = kgvid_set_locale($video); //fixes UTF-8 encoding problems
 	$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '"');
-	$restore_locale = setlocale(LC_CTYPE, $old_locale);
 	$command = $command.' 2>&1';
 	exec ( $command, $output );
+	$restore_locale = setlocale(LC_CTYPE, $old_locale);
 	$lastline = end($output);
 	$lastline = prev($output)."<br />".$lastline;
 	$movie_info['output'] = addslashes($lastline);
@@ -1432,9 +1432,9 @@ function kgvid_get_video_dimensions($video = false) {
 		}
 		$old_locale = kgvid_set_locale($video); //fixes UTF-8 encoding problems
 		$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '" -codecs');
-		$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		$command = $command.' 2>&1';
 		exec ( $command, $output );
+		$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		$output = implode("\n", $output);
 		$configuration = array();
 		$video_lib_array = array('libtheora', 'libvorbis', 'libvpx', 'libvpx-vp9', 'libx264');
@@ -7725,14 +7725,14 @@ function kgvid_encode_videos() {
 
 					$old_locale = kgvid_set_locale($encode_string[1]); //fixes UTF-8 encoding problems
 					$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
-					$restore_locale = setlocale(LC_CTYPE, $old_locale);
-
+					
 					if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
 					else {
 						$arr = array ( "embed_display"=>"<span class='kgvid_warning'>".__("Error: Command 'escapeshellcmd' is disabled on your server.", 'video-embed-thumbnail-generator')."</span>" );
 						return $arr;
 					}
 					$process = new kgvid_Process($cmd);
+					$restore_locale = setlocale(LC_CTYPE, $old_locale);
 
 					sleep(1);
 
@@ -7798,9 +7798,8 @@ function kgvid_test_ffmpeg() {
 
 	$old_locale = kgvid_set_locale($encode_string[1]); //fixes UTF-8 encoding problems
 	$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
-	$restore_locale = setlocale(LC_CTYPE, $old_locale);
-
 	exec ( $cmd.' 2>&1', $output );
+	$restore_locale = setlocale(LC_CTYPE, $old_locale);
 	$arr['output'] = implode("\n", $output);
 
 	if ( file_exists($uploads['path']."/sample-video-h264".$suffix) ) {
@@ -7814,10 +7813,9 @@ function kgvid_test_ffmpeg() {
 
 			$old_locale = kgvid_set_locale($uploads['path']."/sample-video-h264".$suffix); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -y -i "'.$uploads['path']."/sample-video-h264".$suffix.'" -qscale 1 -vframes 1 -f mjpeg '.$uploads['path'].'/thumb_tmp/watermark_test.jpg');
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
-
-			kgvid_schedule_cleanup_generated_files('thumbs');
 			exec ( $cmd );
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
+			kgvid_schedule_cleanup_generated_files('thumbs');
 			if ( file_exists($uploads['path'].'/thumb_tmp/watermark_test.jpg') ) {
 				$arr['watermark_preview'] = $uploads['url'].'/thumb_tmp/watermark_test.jpg';
 			}
@@ -8433,10 +8431,9 @@ function kgvid_fix_moov_atom($filepath) {
 			
 			$old_locale = kgvid_set_locale($filepath); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." ".$filepath." ".$faststart_tmp_file)." 2>&1";
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
-
 			$output .= "\n".$cmd."\n";
 			exec($cmd, $qtfaststart_output, $returnvalue);
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			$output .= implode("\n", $qtfaststart_output);
 			if ( file_exists($faststart_tmp_file) ) {
 				unlink($filepath);
@@ -8447,9 +8444,9 @@ function kgvid_fix_moov_atom($filepath) {
 		if ( $options['moov'] == 'MP4Box' ) {
 			$old_locale = kgvid_set_locale($filepath); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($options['app_path']."/".$options['moov']." -inter 500 ".$filepath)." 2>&1";
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			$output .= "\n".$cmd."\n";
 			exec($cmd, $mp4box_output, $returnvalue);
+			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			$output .= implode("\n", $mp4box_output);
 		}//if MP4Box is selected
 
