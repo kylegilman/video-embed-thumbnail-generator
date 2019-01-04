@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 5.0
-Stable tag: 4.6.21
+Stable tag: 4.6.22
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -248,14 +248,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.22 - January 3, 2019 =
+= 4.6.22 - January 5, 2019 =
 * Modularized video file formats that can be encoded by the plugin to allow other plugins to modify, delete, or create new formats.
 * Added Custom WEBM VP9 format option.
 * Renamed WEBM format to WEBM VP8.
 * Fixed bug that deleted unfinished video encode queue entries every 24 hours.
 * Fixed bug that created duplicate encodes of non-H.264 files.
 * Fixed bug that prevented manual thumbnail generation in the Media Library.
-* Fixed bug that disabled embed from URL if FFMPEG was not installed.
+* Fixed bug that disabled embed from URL "insert into post" button if FFMPEG was not on server.
 * Stopped appending timecode to thumbnail filenames.
 * Stopped removing special characters from the end of filenames of generated thumbnails and encoded files.
 * Attempting to fix misconfigured locale settings that can sometimes cause video files with diacritics (accent marks, umlauts, etc) to generate "File not found" errors when using FFMPEG.
