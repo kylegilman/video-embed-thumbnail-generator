@@ -119,7 +119,7 @@ function kgvid_thumb_video_loaded(postID) { //sets up mini custom player for mak
 				ed_media.on( 'escape',
 				function(postID) {
 					return function() {
-						if ( jQuery('#show-thumb-video-'+postID+' :nth-child(2)').html() == kgvidL10n.hidevideo ) {
+						if ( jQuery('#show-thumb-video-'+postID+' .kgvid-show-video').html() == kgvidL10n.hidevideo ) {
 							kgvid_reveal_thumb_video(postID);
 						}
 						//kgvid_break_video_on_close(postID);
@@ -301,23 +301,31 @@ function kgvid_reveal_video_stats(postID) {
 
 }
 
-function kgvid_reveal_thumb_video(postID) {
+function kgvid_remove_mejs_player(postID) {
 
-	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
-	var text = jQuery('#show-thumb-video-'+postID+' :nth-child(2)');
-
-	if ( text.html() == kgvidL10n.choosefromvideo ) { //video is being revealed
-
-		if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined && typeof mejs !== 'undefined' ) { //this is the Media Library pop-up introduced in WordPress 4.0
+	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined && typeof mejs !== 'undefined' ) { //this is the Media Library pop-up introduced in WordPress 4.0
 			
-			var mejs_id = jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id');
-			var mejs_player = eval('mejs.players.'+mejs_id);
+		var mejs_id = jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id');
+		var mejs_player = eval('mejs.players.'+mejs_id);
+		if ( mejs_player.getSrc() !== null ) {
 			if ( !mejs_player.paused ) {
 				mejs_player.pause();
 			}
 			mejs_player.remove();
-
 		}
+
+	}
+
+}
+
+function kgvid_reveal_thumb_video(postID) {
+
+	jQuery('#show-thumb-video-'+postID+' :first').toggleClass( 'kgvid-down-arrow kgvid-right-arrow' );
+	var text = jQuery('#show-thumb-video-'+postID+' .kgvid-show-video');
+
+	if ( text.html() == kgvidL10n.choosefromvideo ) { //video is being revealed
+
+		kgvid_remove_mejs_player(postID);
 
 		video = document.getElementById('thumb-video-'+postID);
 		jQuery(video).data('busy', true);
@@ -394,18 +402,9 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var increaser = 0;
 	var iincreaser = 0;
 	var page = "attachment";
-
 	var video_id = 'thumb-video-'+postID;
-	if ( jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id') !== undefined ) { //this is the Media Library pop-up introduced in WordPress 4.0
-		
-		var mejs_id = jQuery('#thumb-video-'+postID+'-player .mejs-container').attr('id');
-		var mejs_player = eval('mejs.players.'+mejs_id);
-		if ( !mejs_player.paused ) {
-			mejs_player.pause();
-		}
-		mejs_player.remove();
-
-	}
+	
+	kgvid_remove_mejs_player(postID);
 
 	if ( jQuery('#'+video_id).data('allowed') == "on" ) {
 
