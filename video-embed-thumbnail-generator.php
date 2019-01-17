@@ -7283,8 +7283,6 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		$tmp_thumbnailurl = str_replace(" ", "_", $tmp_thumbnailurl);
 		$final_thumbnailurl = str_replace('/thumb_tmp/', '/', $tmp_thumbnailurl);
 
-		//$thumb_url_multiple = $uploads['url'].'/'.$sanitized_url['basename'].'_thumb'.$i.'.jpg';
-
 		$old_locale = kgvid_set_locale($moviefilepath); //fixes UTF-8 encoding problems
 		exec(escapeshellcmd($ffmpegPath." ".$ffmpeg_options).$watermark_strings['filter'].escapeshellcmd(' "'.$thumbnailfilename[$i].'"'));
 		$restore_locale = setlocale(LC_CTYPE, $old_locale);
