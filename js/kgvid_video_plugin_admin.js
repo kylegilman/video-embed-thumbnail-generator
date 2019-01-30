@@ -564,7 +564,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 		
 			video.play();
 		
-			jQuery(video).on('canplay', function(){
+			jQuery(video).on('loadeddata', function(){
 				video.currentTime = thumbnails[0];
 			});
 			
