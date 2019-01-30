@@ -561,8 +561,13 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				var thumbtimecode = kgvid_convert_from_timecode(specifictimecode);
 				thumbnails = [thumbtimecode];
 			}
+		
 			video.play();
-			video.currentTime = thumbnails[0];
+		
+			jQuery(video).on('canplay', function(){
+				video.currentTime = thumbnails[0];
+			});
+			
 			jQuery(video).data('thumbnail_data', thumbnails);
 
 		}
