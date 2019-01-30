@@ -5582,7 +5582,12 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	}
 	else { $input['ffmpeg_exists'] = $options['ffmpeg_exists']; }
 
-	if ( $input['ffmpeg_exists'] == "notinstalled" ) { $input['browser_thumbnails'] = "on"; } //in case a user had FFMPEG installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
+	if ( $input['ffmpeg_exists'] == "notinstalled" ) { 
+		$input['browser_thumbnails'] = "on"; //in case a user had FFMPEG installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
+		$input['auto_encode'] = false;
+		$input['auto_encode_gif'] = false;
+		$input['auto_thumb'] = false;
+	}
 
 	if ( $input['ffmpeg_thumb_watermark']['url'] != '' ) { //can't use browser thumbnails with ffmpeg watermark
 		$input['browser_thumbnails'] = false;
