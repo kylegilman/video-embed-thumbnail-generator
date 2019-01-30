@@ -248,7 +248,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.22 - January 17, 2019 =
+= 4.6.22 - January 30, 2019 =
 * Modularized video file formats that can be encoded by the plugin to allow other plugins to modify, delete, or create new formats.
 * Added Custom WEBM VP9 format option.
 * Renamed WEBM format to WEBM VP8.
