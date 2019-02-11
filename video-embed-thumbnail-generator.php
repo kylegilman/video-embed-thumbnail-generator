@@ -186,7 +186,8 @@ function kgvid_default_options_fn() {
 		),
 		"simultaneous_encodes" => 1,
 		"error_email" => "nobody",
-		"alwaysloadscripts" => false
+		"alwaysloadscripts" => false,
+		"replace_video_shortcode" => false
 	);
 
 	$video_formats = kgvid_video_formats();
@@ -3157,6 +3158,31 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 }
 
+function kgvid_overwrite_shortcode() {
+
+	$options = kgvid_get_options();
+	if ($options['replace_video_shortcode'] == 'on') {
+		remove_shortcode('video');
+		add_shortcode('video', 'kgvid_replace_video_shortcode');
+	}
+
+}
+add_action('wp_loaded', 'kgvid_overwrite_shortcode');
+
+function kgvid_replace_video_shortcode( $atts, $content = '' ) {
+
+	$src_atts = array('src', 'mp4', 'm4v', 'webm', 'ogv', 'wmv', 'flv');
+	foreach ( $src_atts as $src_key ) {
+		if ( array_key_exists($src_key, $atts) ) {
+			$content = $atts[$src_key];
+			break;
+		}
+	}
+
+	return KGVID_shortcode($atts, $content);
+
+}
+
 function kgvid_shortcode_atts($atts) {
 
 	$options = kgvid_get_options();
@@ -4408,6 +4434,7 @@ function kgvid_video_embed_options_init() {
 
 	add_settings_field('security', __('Video sharing:', 'video-embed-thumbnail-generator'), 'kgvid_security_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
 	add_settings_field('count_views', __("View counting:", 'video-embed-thumbnail-generator'), 'kgvid_view_counting_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
+	add_settings_field('replacevideoshortcode', __("Replace video shortcode:", 'video-embed-thumbnail-generator'), 'kgvid_replace_video_shortcode_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
 	add_settings_field('scriptloading', __("Script loading:", 'video-embed-thumbnail-generator'), 'kgvid_scriptloading_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'alwaysloadscripts' ) );
 	add_settings_field('generate_thumbs', __('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
 	add_settings_field('featured', __('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
@@ -4782,6 +4809,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$select .= "</select>";
 		echo sprintf( __('Record %s views in the WordPress database.', 'video-embed-thumbnail-generator'), $select);
 		echo "<span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.', 'video-embed-thumbnail-generator')."</span></span>\n\t";
+	}
+
+	function kgvid_replace_video_shortcode_callback() {
+		$options = kgvid_get_options();
+		echo "<input ".checked( $options['replace_video_shortcode'], "on", false )." id='replace_video_shortcode' name='kgvid_video_embed_options[replace_video_shortcode]' type='checkbox' /> <label for='replace_video_shortcode'>".__('Override any existing WordPress built-in "[video]" shortcodes.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If you have posts or theme files that make use of the built-in WordPress video shortcode, the plugin can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator')."</span></span><br />";
 	}
 
 	function kgvid_scriptloading_callback() {
@@ -5535,6 +5567,11 @@ function kgvid_update_settings() {
 					$options['encode'][$format] = $options['encode_'.$format];
 				}
 			}
+		}
+
+		if ( version_compare( $options['version'], '4.6.23', '<' ) ) {
+			$options['version'] = '4.6.23';
+			$options['replace_video_shortcode'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
