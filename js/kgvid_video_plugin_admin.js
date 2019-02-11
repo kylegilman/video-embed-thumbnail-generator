@@ -741,7 +741,7 @@ function kgvid_thumb_video_manual(postID) {
 	
 	setTimeout(function() { //redraw the canvas after a delay to avoid Safari bug
 		canvas = kgvid_draw_thumb_canvas(canvas, video);
-		kgvid_save_canvas_thumb(postID, time_id, 1, 1);
+		kgvid_save_canvas_thumb(postID, time_id, 1, 0);
 	}, 250);
 
 	
