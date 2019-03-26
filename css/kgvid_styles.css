@@ -211,6 +211,7 @@ img.kgvid_ios_novideo {
 .kgvid_share_icons span {
     font-size: 13pt;
     line-height: 29pt;
+    text-decoration: none;
     width: inherit;
     height: inherit;
     margin: 0;
