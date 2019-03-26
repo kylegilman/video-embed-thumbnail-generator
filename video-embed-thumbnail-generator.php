@@ -2732,7 +2732,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		if ( $query_atts["schema"] == "true" ) {
 			$code .= 'itemprop="video" itemscope itemtype="https://schema.org/VideoObject">';
 			if ( $query_atts["poster"] != '' ) { $code .= '<meta itemprop="thumbnailUrl" content="'.esc_attr($query_atts["poster"]).'" />'; }
-			if ( !empty($id) && $options['embeddable'] == "on" ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
+			if ( !empty($id) && $query_atts['embeddable'] == "true" ) { $schema_embedURL = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 			else { $schema_embedURL = $content; }
 			$code .= '<meta itemprop="embedUrl" content="'.esc_attr($schema_embedURL).'" />';
 			$code .= '<meta itemprop="contentUrl" content="'.$content.'" />';
@@ -3047,7 +3047,12 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			}
 			else { $download_code = ''; }
 
-			if ( $query_atts['embedcode'] != "false" || $options['twitter_button'] == 'on' || $options['facebook_button'] == 'on' ) {
+			if ( $query_atts['embeddable'] == 'true'
+				&& ( $query_atts['embedcode'] != "false" 
+					|| $options['twitter_button'] == 'on' 
+					|| $options['facebook_button'] == 'on' 
+				)
+			) {
 
 				$embed_code = "\t\t\t\t<span id='kgvid_".$div_suffix."_shareicon' class='dashicons dashicons-share' onclick='kgvid_share_icon_click(\"".$div_suffix."\");'></span>\n";
 				$embed_code .= "\t\t\t\t<div id='click_trap_".$div_suffix."' class='kgvid_click_trap'></div><div id='video_".$div_suffix."_embed' class='kgvid_share_container";
@@ -3236,6 +3241,7 @@ function kgvid_shortcode_atts($atts) {
 		'playback_rate' => $options['playback_rate'],
 		'title' => $options['overlay_title'],
 		'embedcode' => $options['overlay_embedcode'],
+		'embeddable' => $options['embeddable'],
 		'view_count' => $options['view_count'],
 		'count_views' => $options['count_views'],
 		'caption' => '',
@@ -3309,6 +3315,7 @@ function kgvid_shortcode_atts($atts) {
 		"pauseothervideos",
 		"title",
 		"embedcode",
+		"embeddable",
 		"view_count",
 		"inline",
 		"resize",
@@ -8949,6 +8956,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>
 <li><code>watermark_url="http://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>title="Video Title"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>embeddable="true/false"</code> '.__('enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator').'</li>
 <li><code>embedcode="html code"</code> '.sprintf( __('changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>view_count="true/false"</code> '.__('turns the view count on or off.', 'video-embed-thumbnail-generator').'</li>
 <li><code>count_views="quarters/start_complete/start/false"</code> '.__('sets the level of video view counting.', 'video-embed-thumbnail-generator').'</li>
