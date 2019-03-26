@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
 Tested up to: 5.0
-Stable tag: 4.6.22
+Stable tag: 4.6.23
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -248,10 +248,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.23 - March xx, 2019 =
+= 4.6.23 - March 26, 2019 =
 * Added option to override WordPress built-in [video] shortcodes.
 * Fixed bug that prevented generating in-browser thumbnails more than once without reloading the page.
-* Stopped deleting thumbnails that are selected from the library manually.
+* Stopped deleting existing thumbnails that are selected from the library.
 * Changed filename of manually selected thumbnails to thumb1.jpg
 
 = 4.6.22 - January 30, 2019 =
