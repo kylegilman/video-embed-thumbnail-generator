@@ -248,8 +248,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.23 - February xx, 2019 =
+= 4.6.23 - March xx, 2019 =
 * Added option to override WordPress built-in [video] shortcodes.
+* Stopped deleting thumbnails that are selected from the library manually.
 * Changed filename of manually selected thumbnails to thumb1.jpg
 
 = 4.6.22 - January 30, 2019 =
