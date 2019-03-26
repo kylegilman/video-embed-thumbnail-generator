@@ -535,6 +535,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 						jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
 						jQuery(thumbnailboxID).prepend('<div id="saveallthumbs-'+postID+'-div"><input style="display:none;" type="button" id="attachments-'+postID+'-saveallthumbs" class="button-secondary kgvid-centered-block" value="'+kgvidL10n.saveallthumbnails+'" name="attachments-'+postID+'-saveallthumbs" onclick="kgvid_saveall_thumbs(\''+postID+'\');"></div>');
 						jQuery('#attachments-'+postID+'-saveallthumbs').animate({opacity: 'toggle', height: 'toggle'}, 500);
+						jQuery(video).removeData('thumbnail_data');
 						kgvid_break_video_on_close(postID);
 					}
 				}
@@ -565,9 +566,12 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			video.play();
 		
 			jQuery(video).on('loadeddata', function(){
-				video.currentTime = thumbnails[0];
+				var thumbnail_saved = jQuery(video).data('thumbnail_data');
+				if ( thumbnail_saved.length > 0 ) {
+					video.currentTime = thumbnail_saved[0];
+				}
 			});
-			
+
 			jQuery(video).data('thumbnail_data', thumbnails);
 
 		}

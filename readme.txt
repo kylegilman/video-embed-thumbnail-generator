@@ -250,6 +250,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6.23 - March xx, 2019 =
 * Added option to override WordPress built-in [video] shortcodes.
+* Fixed bug that prevented generating in-browser thumbnails more than once without reloading the page.
 * Stopped deleting thumbnails that are selected from the library manually.
 * Changed filename of manually selected thumbnails to thumb1.jpg
 
