@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.23
+Version: 4.6.24
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -2650,7 +2650,8 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			'auto_res' => $query_atts['auto_res'],
 			'pixel_ratio' => $query_atts['pixel_ratio'],
 			'right_click' => $query_atts['right_click'],
-			'playback_rate' => $query_atts['playback_rate']
+			'playback_rate' => $query_atts['playback_rate'],
+			'title' => $stats_title
 		);
 
 		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
@@ -2736,12 +2737,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			else { $schema_embedURL = $content; }
 			$code .= '<meta itemprop="embedUrl" content="'.esc_attr($schema_embedURL).'" />';
 			$code .= '<meta itemprop="contentUrl" content="'.$content.'" />';
-
-			if ( !empty($query_atts['title']) && $query_atts['title'] != "false" ) { $code .= '<meta itemprop="name" content="'.esc_attr($query_atts['title']).'" />'; }
-			elseif ( in_the_loop() && !is_attachment() ) {
-				global $post;
-				if ( !empty($post->post_title) ) { $code .= '<meta itemprop="name" content="'.esc_attr($post->post_title).'" />'; }
-			}
+			$code .= '<meta itemprop="name" content="'.esc_attr($stats_title).'" />';
 
 			$description = kgvid_generate_video_description($query_atts);
 
@@ -8908,6 +8904,7 @@ function kgvid_count_play() {
 
 	$post_id = $_POST['post_id'];
 	$event = $_POST['video_event'];
+	$show_views = $_POST['show_views'];
 	if ( $event == "play" ) { $event = "starts"; }
 	if ( $event == "end" ) { $event = "completeviews"; }
 	if ( is_numeric($event) ) { $event = "play_".$event; }
@@ -8917,7 +8914,10 @@ function kgvid_count_play() {
 	else { $plays = 1; }
 	$kgvid_postmeta[$event] = $plays;
 	kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
-	echo sprintf( _n( '%s view', '%s views', $plays, 'video-embed-thumbnail-generator'), number_format($plays) );
+	if ( $show_views > 0 ) { //only return number of views if they are displayed on the site
+		echo sprintf( _n( '%s view', '%s views', $plays, 'video-embed-thumbnail-generator'), number_format($plays) );
+	}
+	else { echo ''; }
 	die(); // stop executing script
 
 }
