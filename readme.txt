@@ -248,6 +248,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.24 - April 1, 2019 =
+* Improved method for assigning Google Analytics Event labels.
+
 = 4.6.23 - March 26, 2019 =
 * Added option to override WordPress built-in [video] shortcodes.
 * Fixed bug that prevented generating in-browser thumbnails more than once without reloading the page.
