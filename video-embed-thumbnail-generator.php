@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.24
+Version: 4.6.25
 Author: Kyle Gilman
 Author URI: http://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -1245,8 +1245,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 		$args = array(
 			'numberposts' => '-1',
 			'post_parent' => $postID,
-			'post_type' => 'attachment',
-			'post_mime_type' => 'video'
+			'post_type' => 'attachment'
 		);
 	}
 	elseif ($moviefile == '' || !is_file($moviefile) ) {
@@ -1271,8 +1270,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 			'numberposts' => '-1',
 			'post_type' => 'attachment',
 			'meta_key' => '_kgflashmediaplayer-externalurl',
-			'meta_value' => $sanitized_url['movieurl'],
-			'post_mime_type' => 'video'
+			'meta_value' => $sanitized_url['movieurl']
 		);
 
 	}
@@ -1384,7 +1382,7 @@ function kgvid_get_video_dimensions($video = false) {
 	$ffmpegPath = $options['app_path']."/".$options['video_app'];
 	$movie_info = array();
 
-	if ( strpos($video, 'http://') === 0 ) { //if it's a URL
+	if ( strpos($video, 'http') === 0 ) { //if it's a URL
 		$video_id = kgvid_url_to_id($video);
 		if ( $video_id ) {
 			$video_path = get_attached_file($video_id);
@@ -1396,6 +1394,7 @@ function kgvid_get_video_dimensions($video = false) {
 			}
 		}
 	}
+
 	$old_locale = kgvid_set_locale($video); //fixes UTF-8 encoding problems
 	$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '"');
 	$command = $command.' 2>&1';
@@ -1413,6 +1412,7 @@ function kgvid_get_video_dimensions($video = false) {
 		$movie_info['worked'] = true;
 		$movie_info['width'] = $regs [1] ? $regs [1] : null;
 		$movie_info['height'] = $regs [2] ? $regs [2] : null;
+
 		preg_match('/Duration: (.*?),/', $output, $matches);
 		$duration = $matches[1];
 		$movie_duration_hours = intval(substr($duration, -11, 2));
@@ -1434,9 +1434,9 @@ function kgvid_get_video_dimensions($video = false) {
 		$old_locale = kgvid_set_locale($video); //fixes UTF-8 encoding problems
 		$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '" -codecs');
 		$command = $command.' 2>&1';
-		exec ( $command, $output );
+		exec ( $command, $codec_output );
 		$restore_locale = setlocale(LC_CTYPE, $old_locale);
-		$output = implode("\n", $output);
+		$codec_output = implode("\n", $codec_output);
 		$configuration = array();
 		$video_lib_array = array('libtheora', 'libvorbis', 'libvpx', 'libvpx-vp9', 'libx264');
 		$aac_array = kgvid_aac_encoders();
@@ -1451,7 +1451,7 @@ function kgvid_get_video_dimensions($video = false) {
 		$movie_info['worked'] = false;
 	}
 
-	return apply_filters('kgvid_get_video_dimensions', $movie_info, $video);
+	return apply_filters('kgvid_get_video_dimensions', $movie_info, $video, $output, $codec_output);
 }
 
 function kgvid_generate_flashvars($content, $query_atts, $encodevideo_info, $id) {
@@ -1672,8 +1672,15 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 				$options['vp9_CRF'] = round((-0.000002554 * $width * $height) + 35); //formula to generate close to Google-recommended CRFs https://developers.google.com/media/vp9/settings/vod/
 			}
 			$crf_flag = "crf";
-			if ( $video_formats[$format]['type'] == 'ogv' ) { $crf_flag = $qscale_flag; } //ogg doesn't do CRF
-			$rate_control_flag = " -".$crf_flag." ".$options[$crf_option];
+			if ( $video_formats[$format]['type'] == 'ogv' ) { //ogg doesn't do CRF
+				$crf_flag = $qscale_flag; 
+			}
+			if ( isset( $options[$crf_option] ) ) {
+				$rate_control_flag = " -".$crf_flag." ".$options[$crf_option];
+			}
+			else {
+				$rate_control_flag = '';
+			}
 		}
 		else {
 			if ( $video_formats[$format]['type'] == 'vp9' ) {
@@ -1754,7 +1761,12 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 
 	} //if FFMPEG is found
 
-	return apply_filters('kgvid_generate_encode_string', $encode_string, $input, $output, $movie_info, $format, $width, $height, $rotate);
+	 $encode_string = apply_filters('kgvid_generate_encode_string', $encode_string, $input, $output, $movie_info, $format, $width, $height, $rotate, $nostdin);
+
+	$options['encode_string'] = $encode_string;
+	update_option('kgvid_video_embed_options', $options);
+
+	return $encode_string;
 
 }
 
@@ -2161,7 +2173,7 @@ function kgvid_enqueue_shortcode_scripts() {
 	$options = kgvid_get_options();
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
-			wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
+			
 			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.20.5', true );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 	}
@@ -2303,8 +2315,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 			else { $post_id = 1; }
 			$content = '';
 			$popup_code = kgvid_single_video_code($popup_atts, $atts, $content, $post_id);
-
-			preg_match('/data-kgvid_video_vars=.*? /', $popup_code, $video_vars);
+			preg_match('/data-kgvid_video_vars=".*?"/', $popup_code, $video_vars);
 			$popup_code = str_replace(array("\r", "\n", "\t", $video_vars[0]), "", $popup_code);
 
 			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
@@ -2312,7 +2323,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$options['js_skin'] = $query_atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
 			}
 
-			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_html($popup_code).'" '.$video_vars[0].'" style="width:'.$query_atts["gallery_thumb"].'px;';
+			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_'.strval($kgvid_video_id-1).'\')" id="kgvid_video_gallery_thumb_kgvid_'.strval($kgvid_video_id-1).'" data-id="kgvid_'.strval($kgvid_video_id-1).'" data-width="'.esc_attr($dimensions['width']).'" data-height="'.esc_attr($dimensions['height']).'" data-meta="'.esc_attr($below_video).'" data-gallery_end="'.esc_attr($query_atts['gallery_end']).'" data-popupcode="'.esc_attr($popup_code).'" '.$video_vars[0].'" style="width:'.$query_atts["gallery_thumb"].'px;';
 			
 			if ( $query_atts['gallery_thumb_aspect'] == "true" ) {
 				$code .= ' height:'.round($options["height"]/$options["width"]*$query_atts["gallery_thumb"]).'px;';
@@ -2697,6 +2708,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 			if ( $enable_resolutions_plugin ) {
 				$video_variables['enable_resolutions_plugin'] = "true";
+				wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
 				if ( $query_atts["auto_res"] == "highest" ) { $video_variables['default_res'] = end($h264_resolutions); }
 				if ( $query_atts["auto_res"] == "lowest" ) { $video_variables['default_res'] = reset($h264_resolutions); }
 				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) { $video_variables['default_res'] = $query_atts["auto_res"]; }
@@ -7740,14 +7752,24 @@ function kgvid_encode_videos() {
 							}
 						}
 
-						if ( $format_stats['type'] == "webm" || $format_stats['type'] == "ogv" || $format_stats['type'] == "vp9" ) { //if it's not H.264 they both work essentially the same
-							if ( ! $encodevideo_info[$queued_format]['exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$queued_format]['filepath']) < 24576) ) {
+						if ( 
+							$format_stats['type'] == "webm" 
+							|| $format_stats['type'] == "ogv" 
+							|| $format_stats['type'] == "vp9" 
+						) { //if it's not H.264 they both work essentially the same
+							if ( 
+								!$encodevideo_info[$queued_format]['exists'] 
+								|| ($encodevideo_info['sameserver'] 
+								&& filesize($encodevideo_info[$queued_format]['filepath']) < 24576) 
+							) {
 								if ( $movie_info['configuration']['libvorbis'] == "true" && $movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == "true" ) {
 
 									$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
 									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
+
 								}//if the necessary libraries are enabled
 								else {
+
 									$missing_libraries = array();
 									if($movie_info['configuration']['libvorbis'] == 'false') { $missing_libraries[] = 'libvorbis'; }
 									if($movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == 'false') { $missing_libraries[] = $video_formats[$queued_format]['vcodec']; }
@@ -7755,11 +7777,20 @@ function kgvid_encode_videos() {
 									$video_encode_queue[$video_key]['encode_formats'][$queued_format]['status'] = "error";
 									$video_encode_queue[$video_key]['encode_formats'][$queued_format]['lastline'] = $lastline;
 									$embed_display = __("Missing libraries", 'video-embed-thumbnail-generator');
+
 								}
+
 							}//if file doesn't already exist
 							else { $embed_display = sprintf( __('%s already encoded.', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['vcodec'] ); }
 
 						}//if webm or ogg format is queued
+
+						else { //a format type we haven't accounted for yet
+							if ( !$encodevideo_info[$queued_format]['exists'] ) {
+								$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
+									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
+							}
+						}
 
 					}//if format is chosen for encoding
 
@@ -8557,8 +8588,11 @@ function kgvid_ajax_delete_video() {
 add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
 
 function kgvid_delete_video_attachment($video_id) {
-
-	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false ) { //only do this for videos
+	error_log('deleting');
+	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false
+		|| !empty(get_post_meta($video_id, '_kgflashmediaplayer-format', true))
+	) { //only do this for videos or other child formats
+		
 		$parent_post = get_post($video_id);
 		$options = kgvid_get_options();
 		$video_encode_queue = kgvid_get_encode_queue();
@@ -8581,7 +8615,9 @@ function kgvid_delete_video_attachment($video_id) {
 					kgvid_save_encode_queue($video_encode_queue);
 					break;
 				}//if the video is an original format
-				if ( $video_entry['attachmentID'] == $parent_id || get_post_meta($video_id, '_kgflashmediaplayer-externalurl', true) == $video_entry['movieurl'] ) {
+				if ( $video_entry['attachmentID'] == $parent_id 
+					|| get_post_meta($video_id, '_kgflashmediaplayer-externalurl', true) == $video_entry['movieurl'] 
+				) {
 					foreach ( $video_entry['encode_formats'] as $format => $value ) {
 						if ( array_key_exists('filepath', $value) ) {
 							if ( strpos($value['filepath'], $wp_attached_file) !== false ) {
@@ -8632,7 +8668,7 @@ function kgvid_delete_video_attachment($video_id) {
 				}
 			}
 		}//end if there are any children
-    }//end if video
+    }//end if video or other child format
 
 	elseif ( strpos(get_post_mime_type( $video_id ), 'image') !== false ) {
 		$args = array(
