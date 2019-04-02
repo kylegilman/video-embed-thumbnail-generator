@@ -9,7 +9,7 @@ function kgvid_document_ready() {
 
 		if ( video_vars.player_type == "Video.js" ) {
 
-			setTimeout(function() { kgvid_load_videojs(video_vars); }, 0);
+			kgvid_load_videojs(video_vars);
 	
 		}
 

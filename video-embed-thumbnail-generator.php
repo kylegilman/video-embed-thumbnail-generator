@@ -3361,8 +3361,6 @@ function KGVID_shortcode($atts, $content = '') {
 
 		$options = kgvid_get_options();
 
-		kgvid_enqueue_shortcode_scripts();
-
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
 		}
@@ -3412,6 +3410,8 @@ function KGVID_shortcode($atts, $content = '') {
 			$kgvid_gallery_id++;
 
 		} //if gallery
+
+		kgvid_enqueue_shortcode_scripts();
 
 	} //if not feed
 
