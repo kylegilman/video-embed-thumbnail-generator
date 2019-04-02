@@ -1,14 +1,3 @@
-jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
-
-	var video_vars = jQuery(this).data('kgvid_video_vars');
-
-	if ( video_vars.player_type == "Video.js" ) {
-
-		kgvid_load_videojs(video_vars);
-
-	}
-});
-
 jQuery(document).ready(kgvid_document_ready());
 jQuery(window).load(kgvid_window_load());
 
@@ -17,6 +6,12 @@ function kgvid_document_ready() {
 	jQuery('.kgvid_videodiv').each(function(){ //setup individual videos. WordPress Default has its own success callback
 
 		var video_vars = jQuery(this).data('kgvid_video_vars');
+
+		if ( video_vars.player_type == "Video.js" ) {
+
+			setTimeout(function() { kgvid_load_videojs(video_vars); }, 0);
+	
+		}
 
 		if ( video_vars.player_type == "JWPlayer" ) {
 			var player_id = jQuery('#video_'+video_vars.id+'_div').children('div[id^="jwplayer"]').attr('id');
@@ -436,7 +431,10 @@ function kgvid_setup_video(id) {
 
 			if ( video_vars.pauseothervideos == "true" && videojs.VERSION.split('.')[0] >= 5 ) {
 				jQuery.each(videojs.getPlayers(), function(otherPlayerId, otherPlayer) {
-					if ( player.id() != otherPlayerId && !otherPlayer.paused() && !otherPlayer.autoplay() ) {
+					if ( player.id() != otherPlayerId 
+					&& otherPlayer != null
+					&& !otherPlayer.paused() 
+					&& !otherPlayer.autoplay() ) {
 						otherPlayer.pause();
 					}
 				});
