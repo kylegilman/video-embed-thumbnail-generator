@@ -248,6 +248,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.25 - April 3, 2019 =
+* Fixed bug that broke pop-up galleries when video title had a space in the name.
+* Now selectively enqueuing Video.js resolution selector JavaScript file.
+* Changes to allow for future child formats that aren't videos.
+
 = 4.6.24 - April 1, 2019 =
 * Improved method for assigning Google Analytics Event labels.
 

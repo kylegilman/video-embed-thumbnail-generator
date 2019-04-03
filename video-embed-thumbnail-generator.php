@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.24',
+		"version" => '4.6.25',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -1641,10 +1641,9 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 	$options = kgvid_get_options();
 	$libraries = $movie_info['configuration'];
 	$encode_string = strtoupper($options['video_app'])." not found";
+	$video_formats = kgvid_video_formats();
 
-	if ( $options['ffmpeg_exists'] == "on" ) {
-
-		$video_formats = kgvid_video_formats();
+	if ( $options['ffmpeg_exists'] == "on" && isset($video_formats[$format]) ) {
 
 		if ( $options['video_app'] == "avconv" || $options['video_bitrate_flag'] != "on" ) {
 			$video_bitrate_flag = "b:v";
@@ -1756,12 +1755,9 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		$encode_string[2] = $watermark_strings['filter'];
 		$encode_string[3] = ' "'.$output.'"';
 
-		$options['encode_string'] = $encode_string;
-		update_option('kgvid_video_embed_options', $options);
+		$encode_string = apply_filters('kgvid_generate_encode_string', $encode_string, $input, $output, $movie_info, $format, $width, $height, $rotate, $nostdin);
 
 	} //if FFMPEG is found
-
-	 $encode_string = apply_filters('kgvid_generate_encode_string', $encode_string, $input, $output, $movie_info, $format, $width, $height, $rotate, $nostdin);
 
 	$options['encode_string'] = $encode_string;
 	update_option('kgvid_video_embed_options', $options);
@@ -5292,7 +5288,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = kgvid_get_options();
 		$video_formats = kgvid_video_formats(false, false);
 		$encode_string = "";
+
 		if ( $options['ffmpeg_exists'] == "on" ) {
+
+			if ( !isset( $video_formats[$options['sample_format']] ) ) {
+				$options['sample_format'] = 'mobile';
+				update_option('kgvid_video_embed_options', $options);
+			}
 
 			$movie_info = kgvid_get_video_dimensions(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4");
 			$uploads = wp_upload_dir();
@@ -8588,7 +8590,7 @@ function kgvid_ajax_delete_video() {
 add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
 
 function kgvid_delete_video_attachment($video_id) {
-	error_log('deleting');
+
 	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false
 		|| !empty(get_post_meta($video_id, '_kgflashmediaplayer-format', true))
 	) { //only do this for videos or other child formats
