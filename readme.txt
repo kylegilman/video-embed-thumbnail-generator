@@ -248,6 +248,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.7 - April 3, 2019 =
+* Added Video.js version 7 player option.
+* Removed Strobe Media Playback player option.
+* Fixed popup video gallery rendering when video titles included spaces.
+
 = 4.6.24 - April 1, 2019 =
 * Improved method for assigning Google Analytics Event labels.
 
