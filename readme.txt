@@ -252,6 +252,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that broke pop-up galleries when video title had a space in the name.
 * Now selectively enqueuing Video.js resolution selector JavaScript file.
 * Better activation procedure that doesn't generate errors and disables FFMPEG functions if FFMPEG is not found.
+* No longer turning on all video formats by default.
 * Code changes to allow for future child formats that aren't videos.
 
 = 4.6.24 - April 1, 2019 =

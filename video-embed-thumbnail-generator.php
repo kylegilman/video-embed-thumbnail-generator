@@ -192,10 +192,9 @@ function kgvid_default_options_fn() {
 
 	$video_formats = kgvid_video_formats();
 	foreach ($video_formats as $format => $format_stats ) {
-		if (array_key_exists('default_encode', $format_stats)) {
+		if ( array_key_exists('default_encode', $format_stats) && $format_stats['default_encode'] == 'on' ) {
 			$options['encode'][$format] = $format_stats['default_encode'];
 		}
-		else { $options['encode'][$format] = false; }
 	}
 
 	return $options;
@@ -1441,12 +1440,17 @@ function kgvid_get_video_dimensions($video = false) {
 		exec ( $command, $codec_output );
 		$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		$codec_output = implode("\n", $codec_output);
-		$configuration = array();
-		$video_lib_array = array('libtheora', 'libvorbis', 'libvpx', 'libvpx-vp9', 'libx264');
+		$video_lib_array = array('libvorbis');
+		$video_formats = kgvid_video_formats();
+		foreach ( $video_formats as $format => $format_stats ) {
+			if ( isset($format_stats['vcodec']) ) {
+				$video_lib_array[] = $format_stats['vcodec'];
+			}
+		}
 		$aac_array = kgvid_aac_encoders();
 		$lib_list = array_merge($video_lib_array, $aac_array);
 		foreach ($lib_list as $lib) {
-			if ( strpos($output, $lib) !== false ) { $movie_info['configuration'][$lib] = "true"; }
+			if ( strpos($codec_output, $lib) !== false ) { $movie_info['configuration'][$lib] = "true"; }
 			else { $movie_info['configuration'][$lib] = "false"; }
 		}
 
@@ -4970,7 +4974,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$items['custom'] = __('Custom', 'video-embed-thumbnail-generator');
 
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<input ".checked( array_key_exists('fullres', $options['encode']), true, false )." id='encode_fullres' name='kgvid_video_embed_options[encode][fullres]' type='checkbox' /> <label for='encode_fullres'>".__('Replace original with', 'video-embed-thumbnail-generator');
+		echo "<input ".checked( array_key_exists('fullres', $options['encode']) && $options['encode']['fullres'] == 'on', true, false )." id='encode_fullres' name='kgvid_video_embed_options[encode][fullres]' type='checkbox' /> <label for='encode_fullres'>".__('Replace original with', 'video-embed-thumbnail-generator');
 
 		echo " <select id='replace_format' name='kgvid_video_embed_options[replace_format]' class='affects_ffmpeg' onchange='kgvid_change_replace_format();'>";
 		foreach($items as $value=>$name) {
@@ -4989,7 +4993,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 
 		foreach ( $video_formats as $format => $format_stats ) {
-			echo "<input ".checked( array_key_exists($format, $options['encode']), true, false )." id='encode_".$format."' name='kgvid_video_embed_options[encode][".$format."]' type='checkbox' /> <label for='encode_".$format."'>".$format_stats['name']."</label><br />";
+			echo "<input ".checked( array_key_exists($format, $options['encode']) && $options['encode'][$format] == 'on', true, false )." id='encode_".$format."' name='kgvid_video_embed_options[encode][".$format."]' type='checkbox' /> <label for='encode_".$format."'>".$format_stats['name']."</label><br />";
 		}
 		
 		echo "<input ".checked( array_key_exists('custom', $options['encode']), true, false )." id='encode_custom' name='kgvid_video_embed_options[encode][custom]' type='checkbox' /> <label for='encode_custom'>".__('Custom', 'video-embed-thumbnail-generator');
