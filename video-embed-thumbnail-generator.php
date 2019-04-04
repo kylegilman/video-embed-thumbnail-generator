@@ -568,18 +568,22 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 		unset($video_formats['custom_'.$options['custom_format']['format']]);
 	}
 
-	$video_formats['fullres'] = array(
-		'name' => sprintf( __("Replace original with %s", 'video-embed-thumbnail-generator'), $video_formats[$options['replace_format']]['name'] ),
-		'width' => $video_formats[$options['replace_format']]['width'],
-		'height' => $video_formats[$options['replace_format']]['height'],
-		'type' => $video_formats[$options['replace_format']]['type'],
-		'extension' => $video_formats[$options['replace_format']]['extension'],
-		'mime' => $video_formats[$options['replace_format']]['mime'],
-		'suffix' => '-fullres.'.$video_formats[$options['replace_format']]['extension'],
-		'vcodec' => $video_formats[$options['replace_format']]['vcodec']
-	);
+	if ( isset($options['replace_format']) ) {
 
-	if ( !$return_replace && $options['replace_format'] != 'fullres' ) { unset($video_formats[$options['replace_format']]); }
+		$video_formats['fullres'] = array(
+			'name' => sprintf( __("Replace original with %s", 'video-embed-thumbnail-generator'), $video_formats[$options['replace_format']]['name'] ),
+			'width' => $video_formats[$options['replace_format']]['width'],
+			'height' => $video_formats[$options['replace_format']]['height'],
+			'type' => $video_formats[$options['replace_format']]['type'],
+			'extension' => $video_formats[$options['replace_format']]['extension'],
+			'mime' => $video_formats[$options['replace_format']]['mime'],
+			'suffix' => '-fullres.'.$video_formats[$options['replace_format']]['extension'],
+			'vcodec' => $video_formats[$options['replace_format']]['vcodec']
+		);
+
+		if ( !$return_replace && $options['replace_format'] != 'fullres' ) { unset($video_formats[$options['replace_format']]); }
+
+	}
 
 	return apply_filters('kgvid_video_formats', $video_formats, $return_replace, $return_customs, $return_dontembeds);
 
@@ -598,7 +602,7 @@ function kgvid_register_default_options_fn() { //add default values for options
 			$options['ffmpeg_exists'] = 'on';
 			$options['app_path'] = $ffmpeg_check['app_path'];
 		}
-		else { $options['ffmpeg_exists'] = false; }
+		else { $options['ffmpeg_exists'] = 'notinstalled'; }
 
 		update_option('kgvid_video_embed_options', $options);
 
