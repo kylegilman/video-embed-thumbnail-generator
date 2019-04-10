@@ -1833,10 +1833,35 @@ function kgvid_video_embed_enqueue_styles() {
 
 	$options = kgvid_get_options();
 
+	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
+
+	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
+
 	//Video.js styles
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/video-js.css', '', '5.20.5' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/kg-video-js-skin.css', '', $options['version'] ); }
+
+		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.20.5', true );
+		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
+
+	}
+
+	if ( $options['embed_method'] == "WordPress Default" ) {
+		if ( $wp_version >= 4.9 ) {
+			$sourcechooser_path = plugins_url( 'js/mejs-source-chooser.js', __FILE__ );
+		}
+		else {
+			$sourcechooser_path = plugins_url( 'js/mep-feature-sourcechooser.js', __FILE__ );
+		}
+		wp_register_script( 'mejs_sourcechooser', $sourcechooser_path, array( 'mediaelement' ), $options['version'], true );
+		if ( $wp_version >= 4.9 ) {
+			$speed_path = plugins_url( 'js/mejs-speed.js', __FILE__ );
+		}
+		else {
+			$speed_path = plugins_url( 'js/mep-speed.js', __FILE__ );;
+		}
+		wp_register_script( 'mejs-speed', $speed_path, array( 'mediaelement' ), $options['version'], true );
 	}
 
 	//plugin-related frontend styles, requires dashicons
@@ -1845,7 +1870,7 @@ function kgvid_video_embed_enqueue_styles() {
 	if ( $options['alwaysloadscripts'] == 'on' ) {
 		kgvid_enqueue_shortcode_scripts();
 		wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
-	}
+	}	
 
 }
 add_action('wp_enqueue_scripts', 'kgvid_video_embed_enqueue_styles', 12);
@@ -2178,8 +2203,13 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 			
-			wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/video.js', '', '5.20.5', true );
+			wp_enqueue_script( 'video-js' );
 			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
+
+			if ( $options['alwaysloadscripts'] == 'on' ) {
+				wp_enqueue_script( 'video-quality-selector' );
+			}
+			
 	}
 
 	if ( $options['embed_method'] == "Strobe Media Playback" ) {
@@ -2188,7 +2218,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( !wp_script_is('kgvid_video_embed', 'enqueued') ) {
 
-		wp_enqueue_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
+		wp_enqueue_script( 'kgvid_video_embed' );
 
 		wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
 			'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
@@ -2712,7 +2742,9 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 			if ( $enable_resolutions_plugin ) {
 				$video_variables['enable_resolutions_plugin'] = "true";
-				wp_enqueue_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/video-quality-selector.js', array('video-js'), $options['version'], true );
+				wp_dequeue_script('kgvid_video_embed'); //ensure that the video-quality-selector script is loaded before kgvid_video_embed.js
+				wp_enqueue_script( 'video-quality-selector' );
+				wp_enqueue_script('kgvid_video_embed');
 				if ( $query_atts["auto_res"] == "highest" ) { $video_variables['default_res'] = end($h264_resolutions); }
 				if ( $query_atts["auto_res"] == "lowest" ) { $video_variables['default_res'] = reset($h264_resolutions); }
 				elseif ( in_array($query_atts["auto_res"], $h264_resolutions) ) { $video_variables['default_res'] = $query_atts["auto_res"]; }
@@ -2873,13 +2905,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			);
 
 			if ( $enable_resolutions_plugin && !wp_script_is('mejs_sourcechooser', 'enqueued') ) {
-				if ( $wp_version >= 4.9 ) {
-					$sourcechooser_path = plugins_url( 'js/mejs-source-chooser.js', __FILE__ );
-				}
-				else {
-					$sourcechooser_path = plugins_url( 'js/mep-feature-sourcechooser.js', __FILE__ );
-				}
-				wp_enqueue_script( 'mejs_sourcechooser', $sourcechooser_path, array( 'mediaelement' ), $options['version'], true );
+				wp_enqueue_script( 'mejs_sourcechooser' );
 				array_push($wpmejssettings['features'], 'sourcechooser');
 				$localize = true;
 			}
@@ -2891,13 +2917,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts['playback_rate'] == 'true' ) {
 				array_push($wpmejssettings['features'], 'speed');
 				$wpmejssettings['speeds'] = array('0.5', '1', '1.25', '1.5', '2');
-				if ( $wp_version >= 4.9 ) {
-					$speed_path = plugins_url( 'js/mejs-speed.js', __FILE__ );
-				}
-				else {
-					$speed_path = plugins_url( 'js/mep-speed.js', __FILE__ );;
-				}
-				wp_enqueue_script( 'mejs-speed', $speed_path, array( 'mediaelement' ), $options['version'], true );
+				wp_enqueue_script( 'mejs-speed' );
 			}
 
 			array_push($wpmejssettings['features'], 'fullscreen');
@@ -3364,7 +3384,7 @@ function KGVID_shortcode($atts, $content = '') {
 	if ( !is_feed() ) {
 
 		$options = kgvid_get_options();
-
+		if ( $options['embed_method'] != "Video.js" ) { kgvid_enqueue_shortcode_scripts(); }
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
 		}
@@ -3400,7 +3420,7 @@ function KGVID_shortcode($atts, $content = '') {
 			$gallery_query_atts = array();
 			foreach($gallery_query_index as $index) { $gallery_query_atts[$index] = $query_atts[$index]; };
 
-			wp_enqueue_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
+			wp_enqueue_script( 'simplemodal' );
 
 			if ( $query_atts['align'] == "left" ) { $aligncode = ' kgvid_textalign_left'; }
 			if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_textalign_center'; }
@@ -3415,7 +3435,7 @@ function KGVID_shortcode($atts, $content = '') {
 
 		} //if gallery
 
-		kgvid_enqueue_shortcode_scripts();
+		if ( $options['embed_method'] == "Video.js" ) { kgvid_enqueue_shortcode_scripts(); }
 
 	} //if not feed
 

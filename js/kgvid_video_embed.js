@@ -43,6 +43,7 @@ function kgvid_window_load() {
 }
 
 function kgvid_mejs_success(mediaElement, domObject) {
+	console.log('mejs_success');
 	if ( domObject.nodeName == "VIDEO" ) {
 		var id = jQuery(domObject).parents('.kgvid_videodiv').data('id');
 		if ( id != undefined ) { //make sure we're using KGVID shortcode
