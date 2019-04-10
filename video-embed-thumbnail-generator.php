@@ -1848,6 +1848,8 @@ function kgvid_video_embed_enqueue_styles() {
 	}
 
 	if ( $options['embed_method'] == "WordPress Default" ) {
+		global $wp_version;
+		
 		if ( $wp_version >= 4.9 ) {
 			$sourcechooser_path = plugins_url( 'js/mejs-source-chooser.js', __FILE__ );
 		}
