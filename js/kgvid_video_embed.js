@@ -560,7 +560,6 @@ function kgvid_setup_video(id) {
 
 		player.on('loadedmetadata', function() {
 
-			var resolutions = player.availableRes;
 			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
@@ -815,6 +814,7 @@ function kgvid_resize_video(id) {
 			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null )
 				||  ( video_vars.player_type == "WordPressDefault" && typeof mejs !== 'undefined' )
 			) {
+				console.log(player);
 				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {
 
 					var resolutions = player.availableRes;

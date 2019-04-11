@@ -3387,6 +3387,7 @@ function KGVID_shortcode($atts, $content = '') {
 	if ( !is_feed() ) {
 
 		$options = kgvid_get_options();
+		if ( $options['embed_method'] != 'Video.js' ) { kgvid_enqueue_shortcode_scripts(); }
 
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
@@ -3438,7 +3439,7 @@ function KGVID_shortcode($atts, $content = '') {
 
 		} //if gallery
 
-		kgvid_enqueue_shortcode_scripts();
+		if ( $options['embed_method'] == 'Video.js' ) { kgvid_enqueue_shortcode_scripts(); }
 
 	} //if not feed
 
