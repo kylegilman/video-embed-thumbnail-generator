@@ -814,7 +814,6 @@ function kgvid_resize_video(id) {
 			if ( ( video_vars.player_type == "Video.js" && eval('videojs.players.video_'+id) != null )
 				||  ( video_vars.player_type == "WordPressDefault" && typeof mejs !== 'undefined' )
 			) {
-				console.log(player);
 				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {
 
 					var resolutions = player.availableRes;
@@ -826,6 +825,7 @@ function kgvid_resize_video(id) {
 						}
 					});
 					var current_resolution = parseInt(player.getCurrentRes());
+
 					if ( !isNaN(current_resolution) ) {
 						if ( video_vars.pixel_ratio == "true" && window.devicePixelRatio != undefined ) {
 							var pixel_ratio = window.devicePixelRatio;

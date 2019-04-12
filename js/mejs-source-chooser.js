@@ -51,7 +51,7 @@ Object.assign(MediaElementPlayer.prototype, {
 			var src = sources[_i];
 			if (src.type !== undefined && typeof media.canPlayType === 'function') {
 				player.addSourceButton(src.src, src.dataset.res, src.type, media.src === src.src);
-				player.availableRes[parseFloat(src.dataset.res)] = src.src;
+				player.availableRes[src.dataset.res] = src.src;
 			}
 		}
 
@@ -124,8 +124,8 @@ Object.assign(MediaElementPlayer.prototype, {
 
 				var target_res = radio.value;
 
-				if (t.getCurrentRes !== target_res) {
-					player.changeRes(target_res);
+				if (t.getCurrentRes() !== target_res) {
+					t.changeRes(target_res);
 				}
 			});
 		}
@@ -146,7 +146,7 @@ Object.assign(MediaElementPlayer.prototype, {
 		}
 		type = type.split('/')[1];
 
-		t.sourcechooserButton.querySelector('ul').innerHTML += '<li' + (isCurrent ? ' class="sourcechooser-selected"' : '') + '>' + ('<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" ') + ('role="menuitemradio" value="' + parseFloat(label) + '" ' + (isCurrent ? 'checked="checked"' : '') + ' aria-selected="' + isCurrent + '"/>') + ('<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + '</label>') + '</li>';
+		t.sourcechooserButton.querySelector('ul').innerHTML += '<li' + (isCurrent ? ' class="sourcechooser-selected"' : '') + '>' + ('<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" ') + ('role="menuitemradio" value="' + label + '" ' + (isCurrent ? 'checked="checked"' : '') + ' aria-selected="' + isCurrent + '"/>') + ('<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + '</label>') + '</li>';
 
 	},
 	hideSourcechooserSelector: function hideSourcechooserSelector() {
@@ -185,7 +185,7 @@ Object.assign(MediaElementPlayer.prototype, {
 			radios[i].setAttribute('tabindex', '0');
 		}
 	},
-	getCurrentRes: function() {
+	getCurrentRes() {
 
 		if ( typeof this.currentRes !== 'undefined' ) {
 
@@ -203,7 +203,7 @@ Object.assign(MediaElementPlayer.prototype, {
 			}
 		}
 	},
-	changeRes: function(target_res) {
+	changeRes(target_res) {
 
 		var media = this.media;
 		var src = this.availableRes[target_res];
@@ -246,6 +246,7 @@ Object.assign(MediaElementPlayer.prototype, {
 
 		media.setSrc(src);
 		media.load();
+		this.currentRes = target_res;
 		media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
 	}
 });
