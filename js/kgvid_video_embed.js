@@ -539,6 +539,7 @@ function kgvid_setup_video(id) {
 		var mejs_id = jQuery('#video_'+id+'_div .mejs-container').attr('id');
 		var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
+		jQuery('.wp-video').removeAttr('style');
 		jQuery('#video_'+id+'_div .mejs-container').append(jQuery('#video_'+id+'_watermark'));
 
 		if ( played == "not played" ) { //only turn on the default captions on first load
