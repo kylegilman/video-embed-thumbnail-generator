@@ -250,6 +250,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.6.25 - April 4, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.
+* Fixed bug that disabled auto resolution switching when using the WordPress Default video player.
 * Now selectively enqueuing Video.js resolution selector JavaScript file.
 * Better activation procedure that doesn't generate errors and disables FFMPEG functions if FFMPEG is not found.
 * No longer turning on all video formats by default.

@@ -861,9 +861,16 @@ function kgvid_resize_video(id) {
 							if ( video_vars.player_type == "WordPressDefault" ) {
 
 								if ( player.media.paused ) {
-									jQuery(player.media).one('play', function() {
-										player.changeRes(set_res+'p');
-									});
+									if ( player.media.preload == 'none' ) {
+										jQuery(player.media).one('canplay', function() {
+											player.changeRes(set_res+'p');
+										});
+									}
+									else {
+										jQuery(player.media).one('play', function() {
+											player.changeRes(set_res+'p');
+										});
+									}
 								}
 								else {
 									player.changeRes(set_res+'p');

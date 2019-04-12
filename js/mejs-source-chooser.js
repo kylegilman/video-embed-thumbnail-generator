@@ -108,25 +108,10 @@ Object.assign(MediaElementPlayer.prototype, {
 		for (var _i2 = 0, _total2 = selectorLIs.length; _i2 < _total2; _i2++) {
 			selectorLIs[_i2].addEventListener('click', function () {
 				var radio = this.querySelectorAll('input[type=radio]')[0];
-				radio.setAttribute('aria-selected', true);
-				radio.checked = true;
-				this.className = 'sourcechooser-selected';
-
-				var otherRadios = this.closest('.' + t.options.classPrefix + 'sourcechooser-selector').querySelectorAll('input[type=radio]');
-
-				for (var j = 0, radioTotal = otherRadios.length; j < radioTotal; j++) {
-					if (otherRadios[j] !== radio) {
-						otherRadios[j].setAttribute('aria-selected', 'false');
-						otherRadios[j].removeAttribute('checked');
-						otherRadios[j].parentElement.className = '';
-					}
-				}
-
 				var target_res = radio.value;
-
 				if (t.getCurrentRes() !== target_res) {
 					t.changeRes(target_res);
-				}
+				}	
 			});
 		}
 
@@ -146,7 +131,7 @@ Object.assign(MediaElementPlayer.prototype, {
 		}
 		type = type.split('/')[1];
 
-		t.sourcechooserButton.querySelector('ul').innerHTML += '<li' + (isCurrent ? ' class="sourcechooser-selected"' : '') + '>' + ('<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + type + '" ') + ('role="menuitemradio" value="' + label + '" ' + (isCurrent ? 'checked="checked"' : '') + ' aria-selected="' + isCurrent + '"/>') + ('<label for="' + t.id + '_sourcechooser_' + label + type + '" aria-hidden="true">' + label + '</label>') + '</li>';
+		t.sourcechooserButton.querySelector('ul').innerHTML += '<li' + (isCurrent ? ' class="sourcechooser-selected"' : '') + '>' + ('<input type="radio" name="' + t.id + '_sourcechooser" id="' + t.id + '_sourcechooser_' + label + '" ') + ('role="menuitemradio" value="' + label + '" ' + (isCurrent ? 'checked="checked"' : '') + ' aria-selected="' + isCurrent + '"/>') + ('<label for="' + t.id + '_sourcechooser_' + label + '" aria-hidden="true">' + label + '</label>') + '</li>';
 
 	},
 	hideSourcechooserSelector: function hideSourcechooserSelector() {
@@ -195,7 +180,7 @@ Object.assign(MediaElementPlayer.prototype, {
 
 			try {
 
-				return res = this.node.children[0].dataset.res;
+				return this.node.children[0].dataset.res;
 
 			} catch(e) {
 
@@ -205,18 +190,41 @@ Object.assign(MediaElementPlayer.prototype, {
 	},
 	changeRes(target_res) {
 
+		var currentRes = this.getCurrentRes();
+
+		if ( currentRes == target_res
+		|| ! this.availableRes
+		|| ! this.availableRes[target_res] ) { return; }
+
 		var media = this.media;
 		var src = this.availableRes[target_res];
 		var currentTime = media.currentTime;
+		var paused = media.paused;
 
-		var paused = media.paused,
-			canPlayAfterSourceSwitchHandler = function canPlayAfterSourceSwitchHandler() {
-			if (!paused) {
-				media.setCurrentTime(currentTime);
-				media.play();
+		var radio = document.querySelectorAll('#' + this.id + '_sourcechooser_' + target_res)[0];
+		radio.setAttribute('aria-selected', true);
+		radio.checked = true;
+		radio.parentElement.className = 'sourcechooser-selected';
+
+		var otherRadios = radio.parentElement.closest('.' + this.options.classPrefix + 'sourcechooser-selector').querySelectorAll('input[type=radio]');
+
+		for (var j = 0, radioTotal = otherRadios.length; j < radioTotal; j++) {
+			if (otherRadios[j] !== radio) {
+				otherRadios[j].setAttribute('aria-selected', 'false');
+				otherRadios[j].removeAttribute('checked');
+				otherRadios[j].parentElement.className = '';
 			}
-			media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
-		};
+		}
+
+		
+		var canPlayAfterSourceSwitchHandler = function(e) {
+				media.setCurrentTime(currentTime);
+				if (!paused) {
+					media.play();
+				}
+				media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
+			}
+		;
 
 		media.pause();
 		
@@ -248,6 +256,7 @@ Object.assign(MediaElementPlayer.prototype, {
 		media.load();
 		this.currentRes = target_res;
 		media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+		
 	}
 });
 
