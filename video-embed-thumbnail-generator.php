@@ -4346,7 +4346,7 @@ function kgvid_settings_page() {
 		<form method="post" action="options.php">
 		<?php settings_fields('kgvid_video_embed_options'); ?>
 		<input type="hidden" id="kgvid_settings_security" value="<?php echo wp_create_nonce('video-embed-thumbnail-generator-nonce'); ?>">
-		<?php do_settings_sections(__FILE__); ?>
+		<?php kgvid_do_settings_sections(__FILE__); ?>
      	<p class='submit'>
    		   <?php submit_button(__('Save Changes', 'video-embed-thumbnail-generator'), 'primary', 'kgvid_submit', false, array( 'onclick' => "jQuery('form :disabled').prop('disabled', false);" ) ); ?>
    		   <?php submit_button(__('Reset Options', 'video-embed-thumbnail-generator'), 'secondary', 'video-embed-thumbnail-generator-reset', false); ?>
@@ -4444,6 +4444,31 @@ function kgvid_video_embed_options_init() {
 
 		}//end copying site queues to network
 	}//end network activation setup
+
+	function kgvid_do_settings_sections( $page ) {
+		global $wp_settings_sections, $wp_settings_fields;
+	 
+		if ( ! isset( $wp_settings_sections[ $page ] ) ) {
+			return;
+		}
+	 
+		foreach ( (array) $wp_settings_sections[ $page ] as $section ) {
+			if ( $section['title'] ) {
+				echo "<h2 id='header_{$section['id']}'>{$section['title']}</h2>\n";
+			}
+	 
+			if ( $section['callback'] ) {
+				call_user_func( $section['callback'], $section );
+			}
+	 
+			if ( ! isset( $wp_settings_fields ) || ! isset( $wp_settings_fields[ $page ] ) || ! isset( $wp_settings_fields[ $page ][ $section['id'] ] ) ) {
+				continue;
+			}
+			echo '<table class="form-table" id="table_'.$section["id"].'">';
+			do_settings_fields( $page, $section['id'] );
+			echo '</table>';
+		}
+	} 
 
 	register_setting('kgvid_video_embed_options', 'kgvid_video_embed_options', 'kgvid_video_embed_options_validate' );
 
@@ -4562,7 +4587,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 		$players = apply_filters('kgvid_available_video_players', $players);
 
-		echo "<table class='form-table'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>".__('Video player:', 'video-embed-thumbnail-generator')."</label></th><td><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='embed_method' name='kgvid_video_embed_options[embed_method]'>";
+		echo "<table class='form-table' id='table_kgvid_video_embed_embed_method'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>".__('Video player:', 'video-embed-thumbnail-generator')."</label></th><td><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='embed_method' name='kgvid_video_embed_options[embed_method]'>";
 		foreach($players as $name => $value) {
 			$selected = ($options['embed_method']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
