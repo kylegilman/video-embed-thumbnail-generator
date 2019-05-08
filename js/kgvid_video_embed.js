@@ -1,5 +1,5 @@
 jQuery(document).ready(kgvid_document_ready());
-jQuery(window).load(kgvid_window_load());
+jQuery(window).on("load", kgvid_window_load);
 
 function kgvid_document_ready() {
 
@@ -719,7 +719,11 @@ function kgvid_setup_video(id) {
 
 	if ( video_vars.resize == "true" || window.location.search.indexOf("kgvid_video_embed[enable]=true") !== -1 ) {
 		kgvid_resize_video(id);
-		jQuery(window).resize( function(){ kgvid_resize_video(id) } );
+		var resizeId;
+		jQuery(window).resize( function(){ 
+			clearTimeout(resizeId);
+    		resizeId = setTimeout(function(){kgvid_resize_video(id)}, 500);
+		} );
 	}
 
 	if ( typeof jQuery.modal !== "undefined" && jQuery('#kgvid-simplemodal-container').length > 0 ) { jQuery.modal.setPosition(); }
@@ -727,7 +731,7 @@ function kgvid_setup_video(id) {
 }
 
 function kgvid_resize_video(id) {
-
+console.log('resize '+id);
 	if ( typeof kgvid_resize_video.counter == 'undefined' ) {
 		kgvid_resize_video.counter = 0;
 	}
