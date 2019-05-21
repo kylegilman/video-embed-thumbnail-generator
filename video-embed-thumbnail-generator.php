@@ -3424,6 +3424,10 @@ function KGVID_shortcode($atts, $content = '') {
 			$gallery_query_atts = array();
 			foreach($gallery_query_index as $index) { $gallery_query_atts[$index] = $query_atts[$index]; };
 
+			if ( $gallery_query_atts['gallery_orderby'] == 'rand' ) {
+				$gallery_query_atts['gallery_orderby'] = 'RAND('.rand().')'; //use the same seed on every page load
+			}
+
 			wp_enqueue_script( 'simplemodal' );
 
 			if ( $query_atts['align'] == "left" ) { $aligncode = ' kgvid_textalign_left'; }
