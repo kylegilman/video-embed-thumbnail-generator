@@ -311,7 +311,7 @@ function kgvid_load_videojs(video_vars) {
 	else {
 		videojs_options.fluid = false;
 	}
-	if ( video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {
+	if ( videojs_options.fluid == true && video_vars.width != undefined && video_vars.width.indexOf('%') === -1 && video_vars.height != undefined ) {
 		videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
 	}
 	if ( video_vars.nativecontrolsfortouch == "true" ) {
@@ -717,7 +717,10 @@ function kgvid_setup_video(id) {
 
 	}
 
-	if ( video_vars.resize == "true" || window.location.search.indexOf("kgvid_video_embed[enable]=true") !== -1 ) {
+	if ( video_vars.resize == "true" 
+		|| video_vars.auto_res == "automatic"
+		|| window.location.search.indexOf("kgvid_video_embed[enable]=true") !== -1 
+	) {
 		kgvid_resize_video(id);
 		var resizeId;
 		jQuery(window).resize( function(){ 
@@ -782,7 +785,7 @@ console.log('resize '+id);
 
 				var player = eval('videojs.players.video_'+id);
 				if ( change_aspect ) { player.aspectRatio(Math.floor(set_width)+':'+Math.floor(set_height)); }
-				player.width(set_width).height(set_height);
+
 				if ( set_width < 500 ) {
 					var scale = Math.round(100*set_width/500)/100;
 					jQuery('#kgvid_'+id+'_wrapper .vjs-big-play-button').css('-webkit-transform','scale('+scale+')').css('-o-transform','scale('+scale+')').css('-ms-transform','scale('+scale+')').css('transform','scale('+scale+')');
