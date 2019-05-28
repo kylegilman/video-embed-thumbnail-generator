@@ -888,8 +888,19 @@ function kgvid_is_video($post) {
 }
 
 function kgvid_url_exists($url) {
-    $hdrs = @get_headers($url);
-    return is_array($hdrs) ? preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/',$hdrs[0]) : false;
+
+	$ssl_context_options = array(
+		'ssl' => array(
+			'verify_peer' => false,
+			'verify_peer_name' => false,
+		)
+	);
+	$ssl_context = stream_context_create($ssl_context_options);
+
+	$hdrs = @get_headers($url, 0, $ssl_context);
+
+	return is_array($hdrs) ? preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/',$hdrs[0]) : false;
+	
 }
 
 function kgvid_url_mime_type($url, $post_id = false) {
