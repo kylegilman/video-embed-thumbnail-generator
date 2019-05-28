@@ -408,7 +408,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 	$video_formats = array(
 		"fullres" => array(
 			"name" => __("same resolution H.264", 'video-embed-thumbnail-generator'),
-			"label" => __('Full', 'video-embed-thumbnail-generator'),
+			"label" => _x('Full', 'Full resolution', 'video-embed-thumbnail-generator'),
 			"width" => INF,
 			"height" => INF,
 			"type" => "h264",
@@ -2240,7 +2240,8 @@ function kgvid_enqueue_shortcode_scripts() {
 			'completeview' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
 			'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
 			'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator'),
-			'quality' => _x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator')
+			'quality' => _x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator'),
+			'fullres' => _x("Full", 'Full resolution', 'video-embed-thumbnail-generator')
 		) );
 
 	}
@@ -2615,7 +2616,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		}
 
 		unset($video_formats['fullres']);
-		$video_formats = array('original' => array( "type" => $format_type, "mime" => $mime_type, "name" => "Full", "label" => "Full" ) ) + $video_formats;
+		$video_formats = array('original' => array( "type" => $format_type, "mime" => $mime_type, "name" => "Full", "label" => _x("Full", 'Full resolution', 'video-embed-thumbnail-generator') ) ) + $video_formats;
 
 		if ( in_array($mime_type_check['ext'], $compatible) ) {
 
@@ -2948,7 +2949,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( function_exists('wp_video_shortcode') ) { $executed_shortcode = wp_video_shortcode($attr); }
 			else { $executed_shortcode = 'WordPress video shortcode function does not exist.'; }
 			$content_width = $content_width_save;
-
 			if ( $enable_resolutions_plugin ) {
 				$executed_shortcode = preg_replace( '/<source .*<a /', implode(' />', $sources).' /><a ', $executed_shortcode );
 			}

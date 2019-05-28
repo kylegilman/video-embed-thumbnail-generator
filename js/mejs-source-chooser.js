@@ -52,6 +52,15 @@ Object.assign(MediaElementPlayer.prototype, {
 			if (src.type !== undefined && typeof media.canPlayType === 'function') {
 				player.addSourceButton(src.src, src.dataset.res, src.type, media.src === src.src);
 				player.availableRes[src.dataset.res] = src.src;
+
+				if ( src.dataset.res == kgvidL10n_frontend.fullres ) {
+					media.addEventListener('loadedmetadata', function(){
+						if ( player.media.originalNode.videoHeight != NaN ) {
+							jQuery('.mejs-sourcechooser-button label:contains('+kgvidL10n_frontend.fullres+')').html(media.originalNode.videoHeight+'p');
+						}
+					});
+				}
+
 			}
 		}
 
@@ -215,7 +224,6 @@ Object.assign(MediaElementPlayer.prototype, {
 				otherRadios[j].parentElement.className = '';
 			}
 		}
-
 		
 		var canPlayAfterSourceSwitchHandler = function(e) {
 				media.setCurrentTime(currentTime);
