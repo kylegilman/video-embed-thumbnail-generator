@@ -2732,7 +2732,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					}
 					else { $source_key = $x; }
 
-					$sources[$source_key] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format]["url"]).'?id='.$kgvid_video_id.'" type="'.$format_stats["mime"].'"';
+					if ( strpos($encodevideo_info[$format]["url"], '?') === false )  { //if there isn't already a query string in this URL
+						$encodevideo_info[$format]["url"] = $encodevideo_info[$format]["url"].'?id='.$kgvid_video_id;
+					}
+
+					$sources[$source_key] = "\t\t\t\t\t".'<source src="'.esc_attr($encodevideo_info[$format]["url"]).'" type="'.$format_stats["mime"].'"';
 					if ( $format == 'vp9' ) { $sources[$source_key] .= ' codecs="vp9, vorbis"'; }
 					if ( $format_stats['type'] == 'h264' ) {
 						$sources[$source_key] .= ' data-res="'.$format_stats['label'].'"';
