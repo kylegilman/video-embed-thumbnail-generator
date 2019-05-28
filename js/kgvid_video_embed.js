@@ -321,6 +321,8 @@ function kgvid_load_videojs(video_vars) {
 		videojs_options.playbackRates = [0.5, 1, 1.25, 1.5, 2];
 	}
 	if ( video_vars.enable_resolutions_plugin == "true" ) {
+		
+		kgvid_load_video_quality_selector(); //defined in video-quality-selector.js
 
 		if ( videojs.VERSION.split('.')[0] >= 5 ) {
 
@@ -734,7 +736,7 @@ function kgvid_setup_video(id) {
 }
 
 function kgvid_resize_video(id) {
-console.log('resize '+id);
+
 	if ( typeof kgvid_resize_video.counter == 'undefined' ) {
 		kgvid_resize_video.counter = 0;
 	}
