@@ -249,14 +249,18 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.25 - May XX, 2019 =
+= 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.
+* Fixed bug that re-shuffled random gallery order every time a new gallery page was loaded.
 * Fixed bug that disabled auto resolution switching when using the WordPress Default video player.
 * Removed the built-in WordPress Default video player size limit for better responsive sizing.
+* Reduced CPU load when responsive video resizing is enabled.
 * Now selectively enqueuing Video.js resolution selector JavaScript file.
+* Re-ordered resolution list so when original resolution is unknown, "Full" is at the top, enabled translation of the "Full" menu item and now automatically renaming it when video metadata is loaded.
 * Better activation procedure that doesn't generate errors and disables FFMPEG functions if FFMPEG is not found.
-* No longer turning on all video formats by default.
-* Fixed settings page bug that broke tab switching when other plugins modified the admin page.
+* No longer turning on all video encode formats by default.
+* Fixed bug that couldn't automatically discover alternate formats of videos on other servers via https.
+* Fixed bug that broke tab switching on the settings page when other plugins modified the admin page.
 * Code changes to allow for future child formats that aren't videos.
 
 = 4.6.24 - April 1, 2019 =
