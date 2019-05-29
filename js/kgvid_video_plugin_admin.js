@@ -1406,12 +1406,12 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery("#general_tab").removeClass("nav-tab-active");
 		jQuery("#encoding_tab").addClass("nav-tab-active");
 
-		jQuery('h2:eq(1), h2:eq(2)').hide();
-		jQuery('h2:eq(3)').show();
-
-		jQuery('table:eq(0), table:eq(1), table:eq(2)').hide();
+		jQuery('#header_kgvid_video_embed_playback_settings, #header_kgvid_video_embed_plugin_settings').hide();
+		jQuery('#header_kgvid_video_embed_encode_settings').show();
+		
+		jQuery('#table_kgvid_video_embed_embed_method, #table_kgvid_video_embed_playback_settings, #table_kgvid_video_embed_flash_settings, #table_kgvid_video_embed_plugin_settings').hide();
 		jQuery(".kgvid_setting_nearvid").hide();
-		jQuery('table:eq(3)').show();
+		jQuery('#table_kgvid_video_embed_encode_settings').show();
 
 		if ( jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery('#ffmpeg_output').html() == "" ) {
 			jQuery('#ffmpeg_output').html('Running test...');
@@ -1441,13 +1441,13 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery("#general_tab").addClass("nav-tab-active");
 		jQuery("#encoding_tab").removeClass("nav-tab-active");
 
-		jQuery('h2:eq(1), h2:eq(2)').show();
-		jQuery('h2:eq(3)').hide();
+		jQuery('#header_kgvid_video_embed_playback_settings, #header_kgvid_video_embed_plugin_settings').show();
+		jQuery('#header_kgvid_video_embed_encode_settings').hide();
 
-		jQuery('table:eq(0), table:eq(1), table:eq(2)').show();
+		jQuery('#table_kgvid_video_embed_embed_method, #table_kgvid_video_embed_playback_settings, #table_kgvid_video_embed_flash_settings, #table_kgvid_video_embed_plugin_settings').show();
 		jQuery(".kgvid_setting_nearvid").show();
 
-		jQuery('table:eq(3)').hide();
+		jQuery('#table_kgvid_video_embed_encode_settings').hide();
 
 	}
 

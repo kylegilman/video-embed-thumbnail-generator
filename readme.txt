@@ -3,8 +3,9 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
-Tested up to: 5.1
-Stable tag: 4.6.24
+Tested up to: 5.2
+Requires PHP: 5.3.0
+Stable tag: 4.6.25
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -252,6 +253,20 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Video.js version 7 player option.
 * Removed Strobe Media Playback player option.
 * Fixed popup video gallery rendering when video titles included spaces.
+
+= 4.6.25 - May 28, 2019 =
+* Fixed bug that broke pop-up galleries when video title had a space in the name.
+* Fixed bug that re-shuffled random gallery order every time a new gallery page was loaded.
+* Fixed bug that disabled auto resolution switching when using the WordPress Default video player.
+* Removed the built-in WordPress Default video player size limit for better responsive sizing.
+* Reduced CPU load when responsive video resizing is enabled.
+* Now selectively enqueuing Video.js resolution selector JavaScript file.
+* Re-ordered resolution list so when original resolution is unknown, "Full" is at the top, enabled translation of the "Full" menu item and now automatically renaming it when video metadata is loaded.
+* Better activation procedure that doesn't generate errors and disables FFMPEG functions if FFMPEG is not found.
+* No longer turning on all video encode formats by default.
+* Fixed bug that couldn't automatically discover alternate formats of videos on other servers via https.
+* Fixed bug that broke tab switching on the settings page when other plugins modified the admin page.
+* Code changes to allow for future child formats that aren't videos.
 
 = 4.6.24 - April 1, 2019 =
 * Improved method for assigning Google Analytics Event labels.
