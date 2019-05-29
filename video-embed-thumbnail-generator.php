@@ -536,7 +536,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 				"default_encode" => false
 			),
 			"custom_vp9" => array(
-				"name" => __('Custom VP9 WEBMP', 'video-embed-thumbnail-generator'),
+				"name" => __('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
 				"label" => __('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
