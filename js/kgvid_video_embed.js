@@ -312,8 +312,6 @@ function kgvid_load_videojs(video_vars) {
 		videojs_options.playbackRates = [0.5, 1, 1.25, 1.5, 2];
 	}
 	if ( video_vars.enable_resolutions_plugin == "true" ) {
-		
-		kgvid_load_video_quality_selector(); //defined in video-quality-selector.js
 
 		if ( videojs.VERSION.split('.')[0] >= 5 ) {
 

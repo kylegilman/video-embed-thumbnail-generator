@@ -1803,7 +1803,7 @@ function kgvid_video_embed_enqueue_styles() {
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/v5/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 	if ( $options['embed_method'] == "Video.js v7" ) {
-		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.js', '', '7.4.1', true );
+		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.4.1', true );
 		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/v7/video-quality-selector.js', array('video-js'), $options['version'], true );
 		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', '7.4.1' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/v7/kg-video-js-skin.css', '', $options['version'] ); }
@@ -3342,7 +3342,7 @@ function KGVID_shortcode($atts, $content = '') {
 	if ( !is_feed() ) {
 
 		$options = kgvid_get_options();
-		if ( $options['embed_method'] != 'Video.js' ) { kgvid_enqueue_shortcode_scripts(); }
+		if ( $options['embed_method'] != 'Video.js' && $options['embed_method'] != 'Video.js v7' ) { kgvid_enqueue_shortcode_scripts(); }
 
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
@@ -3398,7 +3398,7 @@ function KGVID_shortcode($atts, $content = '') {
 
 		} //if gallery
 
-		if ( $options['embed_method'] == 'Video.js' ) { kgvid_enqueue_shortcode_scripts(); }
+		if ( $options['embed_method'] == 'Video.js' || $options['embed_method'] == 'Video.js v7' ) { kgvid_enqueue_shortcode_scripts(); }
 
 	} //if not feed
 
@@ -7789,7 +7789,8 @@ function kgvid_encode_videos() {
 						'logfile' => $logfile,
 						'PID' => $processPID,
 						'OS' => $serverOS,
-						'started' => time()
+						'started' => time(),
+						'encode_string' => $encode_string
 					);
 
 					$args = array($video_key, $queued_format, 'queue');
@@ -8071,6 +8072,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 								$attach_data = wp_generate_attachment_metadata( $new_id, $filepath );
 								wp_update_attachment_metadata( $new_id, $attach_data );
 								update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
+								update_post_meta( $new_id, '_videopack-encode_string', $video_encode_queue[$video_key]['encode_formats'][$format]['encode_string'] );
 								if ( get_post_type($video_entry['attachmentID']) == false ) { update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $video_entry['movieurl'] ); } //connect new video to external url
 							}
 						}

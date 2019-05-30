@@ -14,7 +14,7 @@
 
 function kgvid_load_video_quality_selector() {
 
-if ( videojs.VERSION.split('.')[0] < 5 ) {
+if ( videojs.VERSION.split('.')[0] < 7 ) {
 
 	return;
 
@@ -142,16 +142,6 @@ videojs.ResolutionSelector.prototype.createItems = function() {
 		items = [],
 		current_res;
 
-	// Add the menu title item
-	items.push( new videojs.ResolutionTitleMenuItem( player, {
-
-		el : videojs.getComponent( 'Component' ).prototype.createEl( 'li', {
-
-			className	: 'vjs-menu-title vjs-res-menu-title',
-			innerHTML	: kgvidL10n_frontend.quality
-		})
-	}));
-
 	// Add an item for each available resolution
 	for ( current_res in player.availableRes ) {
 
@@ -171,11 +161,29 @@ videojs.ResolutionSelector.prototype.createItems = function() {
 
 			return -1;
 
-		} else {
+		} 
+		else if ( a.resolution == kgvidL10n_frontend.fullres ) { //sort the 'Full' resolution value to the top of the list
+			return -1;
+		}
+		else if ( b.resolution == kgvidL10n_frontend.fullres ) {
+			return 1;
+		}
+		else {
 
 			return parseInt( b.resolution ) - parseInt( a.resolution );
+
 		}
 	});
+
+	// Add the menu title item
+	items.unshift( new videojs.ResolutionTitleMenuItem( player, {
+
+		el : videojs.getComponent( 'Component' ).prototype.createEl( 'li', {
+
+			className	: 'vjs-menu-title vjs-res-menu-title',
+			innerHTML	: kgvidL10n_frontend.quality
+		})
+	}));
 
 	return items;
 };
@@ -229,6 +237,15 @@ videojs.registerPlugin( 'resolutionSelector', function( options ) {
 		}
 
 		available_res[current_res].push( sources[i] );
+
+		if ( current_res == kgvidL10n_frontend.fullres ) {
+			player.on('loadedmetadata', function(){
+				if ( player.videoHeight() != NaN ) {
+					jQuery('.vjs-res-button li:contains('+kgvidL10n_frontend.fullres+')').html(player.videoHeight()+'p');
+				}
+			});
+		}
+
 	}
 
 	// Check for forced types
@@ -354,31 +371,31 @@ videojs.registerPlugin( 'resolutionSelector', function( options ) {
 		}
 
 		// Change the source and make sure we don't start the video over
-		player.src( player.availableRes[target_resolution] );
-		player.one( 'loadedmetadata', function() {
+		player.src( player.availableRes[target_resolution] )
+			.one( 'loadedmetadata', function() {
 
-			if ( current_time != 0 ) {
+				if ( current_time != 0 ) {
 
-				player.currentTime( current_time );
-				player.pause();
+					player.currentTime( current_time );
+					player.pause();
 
-				// If the video was paused, don't show the poster image again
-				player.addClass( 'vjs-has-started' );
+					// If the video was paused, don't show the poster image again
+					player.addClass( 'vjs-has-started' );
 
-				if ( ! is_paused ) { player.play(); }
+					if ( ! is_paused ) { player.play(); }
 
-				if ( is_autoplay ) { player.autoplay(true); }
+					if ( is_autoplay ) { player.autoplay(true); }
 
-			}
+				}
 
-		});
-		player.one( 'seeked', function() {
-			if ( current_time != 0 ) {
+			})
+			.one( 'seeked', function() {
+				if ( current_time != 0 ) {
 
-				jQuery(canvas).remove();
+					jQuery(canvas).remove();
 
-			}
-		});
+				}
+			});
 
 		// Save the newly selected resolution in our player options property
 		player.currentRes = target_resolution;
