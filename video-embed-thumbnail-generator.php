@@ -1803,9 +1803,9 @@ function kgvid_video_embed_enqueue_styles() {
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/v5/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 	if ( $options['embed_method'] == "Video.js v7" ) {
-		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.4.1', true );
+		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.5.4', true );
 		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/v7/video-quality-selector.js', array('video-js'), $options['version'], true );
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', '7.4.1' );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', '7.5.4' );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/v7/kg-video-js-skin.css', '', $options['version'] ); }
 	}
 
@@ -2162,7 +2162,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	if ( $options['embed_method'] == "Video.js v7" ) {
 			
-		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.4.1', true );
+		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.5.4', true );
 
 	}
 

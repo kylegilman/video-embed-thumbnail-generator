@@ -18,7 +18,7 @@ videojs.addLanguage('zh-TW', {
   "Captions": "內嵌字幕",
   "captions off": "關閉內嵌字幕",
   "Chapters": "章節",
-  "Close Modal Dialog": "關閉彈窗",
+  "Close Modal Dialog": "關閉對話框",
   "Descriptions": "描述",
   "descriptions off": "關閉描述",
   "Audio Track": "音軌",

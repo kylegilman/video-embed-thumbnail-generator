@@ -763,3 +763,7 @@ li.mejs-speed-selected {
 .mejs-speed-button:hover .mejs-speed-selector {
     visibility: visible;
 }
+
+/* Video.js v7 qualityselector plugin CSS */
+
+.video-js.vjs-qualityselector{display:block}.video-js .vjs-quality-container{padding:8px;position:relative}.video-js .vjs-quality-container .vjs-brand-quality-link{color:#fff;text-decoration:none;cursor:pointer}.video-js .vjs-quality-container .vjs-quality-dropdown{position:absolute;bottom:30px;background:rgba(0,0,0,0.48);transition:opacity 0.5s linear;opacity:0;-webkit-transform:scaleY(0);-o-transform:scaleY(0);-ms-transform:scaleY(0);transform:scaleY(0);-webkit-transform-origin:bottom;-o-transform-origin:bottom;-ms-transform-origin:bottom;transform-origin:bottom;-webkit-transition:-webkit-transform 0.26s ease-out;-o-transition:-o-transform 0.26s ease;-ms-transition:-ms-transform 0.26s ease;transition:transform 0.26s ease}.video-js .vjs-quality-container .vjs-quality-dropdown.show{opacity:1;-webkit-transform:scaleY(1);-o-transform:scaleY(1);-ms-transform:scaleY(1);transform:scaleY(1)}.video-js .vjs-quality-container .vjs-quality-dropdown ul{margin:0;padding:0}.video-js .vjs-quality-container .vjs-quality-dropdown ul li{list-style:none;margin:0}.video-js .vjs-quality-container .vjs-quality-dropdown ul li a{color:#fff;text-decoration:none;padding:5px 10px;display:table;width:100%}.video-js .vjs-quality-container .vjs-quality-dropdown ul li.current a,.video-js .vjs-quality-container .vjs-quality-dropdown ul li a:hover{background:#000;color:red}

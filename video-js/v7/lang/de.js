@@ -54,7 +54,7 @@ videojs.addLanguage('de', {
   "Window": "Fenster",
   "Transparent": "Durchsichtig",
   "Semi-Transparent": "Halbdurchsichtig",
-  "Opaque": "Undurchsictig",
+  "Opaque": "Undurchsichtig",
   "Font Size": "Schriftgröße",
   "Text Edge Style": "Textkantenstil",
   "None": "Kein",
