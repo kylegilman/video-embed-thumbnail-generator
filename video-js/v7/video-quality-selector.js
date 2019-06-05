@@ -132,7 +132,7 @@ videojs.ResolutionSelector = videojs.extend( videojs.getComponent( 'MenuButton' 
 
 // Set class for resolution selector button
 videojs.ResolutionSelector.prototype.buildCSSClass = function buildCSSClass() {
-	return 'vjs-res-button ' + videojs.getComponent( 'MenuButton' ).prototype.buildCSSClass.call( this );
+	return 'vjs-res-button vjs7-res-button ' + videojs.getComponent( 'MenuButton' ).prototype.buildCSSClass.call( this );
 };
 
 // Create a menu item for each available resolution
@@ -440,8 +440,7 @@ videojs.registerPlugin( 'resolutionSelector', function( options ) {
 
 	// Add the button to the control bar object and the DOM
 	this.on( 'ready' , function() {
-		player.controlBar.addChild( resolutionSelector );
-		player.controlBar.el().insertBefore(jQuery(player.controlBar.el()).find('.vjs-res-button')[0], player.controlBar.customControlSpacer.el());
+		player.getChild('controlBar').addChild( resolutionSelector, {}, 11 ); //11 is the order of the component in the controlbar
 
 		// Loop through the choosen default resolutions if there were any
 		for ( i = 0; i < default_resolutions.length; i++ ) {

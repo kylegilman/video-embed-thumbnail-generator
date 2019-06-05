@@ -471,6 +471,11 @@ span.kgvid_gallery_pagination_arrow {
 
 /* video-quality-selector Video.js plugin styles */
 
+button.vjs-res-button.vjs7-res-button {
+    padding: 4px 0 0 0;
+    font-size: 1.5em;
+}
+
 .vjs-res-button span.vjs-control-text {
 	display: none;
 }
