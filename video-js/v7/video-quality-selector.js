@@ -371,31 +371,32 @@ videojs.registerPlugin( 'resolutionSelector', function( options ) {
 		}
 
 		// Change the source and make sure we don't start the video over
-		player.src( player.availableRes[target_resolution] )
-			.one( 'loadedmetadata', function() {
 
-				if ( current_time != 0 ) {
+		player.src( player.availableRes[target_resolution] );
+		player.one( 'loadedmetadata', function() {
 
-					player.currentTime( current_time );
-					player.pause();
+			if ( current_time != 0 ) {
 
-					// If the video was paused, don't show the poster image again
-					player.addClass( 'vjs-has-started' );
+				player.currentTime( current_time );
+				player.pause();
 
-					if ( ! is_paused ) { player.play(); }
+				// If the video was paused, don't show the poster image again
+				player.addClass( 'vjs-has-started' );
 
-					if ( is_autoplay ) { player.autoplay(true); }
+				if ( ! is_paused ) { player.play(); }
 
-				}
+				if ( is_autoplay ) { player.autoplay(true); }
 
-			})
-			.one( 'seeked', function() {
-				if ( current_time != 0 ) {
+			}
 
-					jQuery(canvas).remove();
+		});
+		player.one( 'seeked', function() {
+			if ( current_time != 0 ) {
 
-				}
-			});
+				jQuery(canvas).remove();
+
+			}
+		});
 
 		// Save the newly selected resolution in our player options property
 		player.currentRes = target_resolution;

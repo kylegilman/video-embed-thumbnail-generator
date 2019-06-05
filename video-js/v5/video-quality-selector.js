@@ -456,3 +456,5 @@ videojs.plugin( 'resolutionSelector', function( options ) {
 });
 
 }
+
+kgvid_load_video_quality_selector();
