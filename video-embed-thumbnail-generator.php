@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Video Embed & Thumbnail Generator
+Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
 Version: 4.7
@@ -4090,14 +4090,14 @@ return $html;
 function kgvid_add_FFMPEG_Queue_Page() {
 	$options = kgvid_get_options();
 	if ( $options['ffmpeg_exists'] == "on" ) { //only add the queue page if FFMPEG is installed
-		add_submenu_page('tools.php', _x('Video Embed & Thumbnail Generator Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator'), _x('Video Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator'), 'encode_videos', 'kgvid_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
+		add_submenu_page('tools.php', _x('Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator'), _x('Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator'), 'encode_videos', 'kgvid_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
 	}
 }
 add_action('admin_menu', 'kgvid_add_FFMPEG_Queue_Page');
 
 function kgvid_add_network_queue_page() {
 	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
-		add_submenu_page('settings.php', _x('Video Embed & Thumbnail Generator Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator'), _x('Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator'), 'manage_network', 'kgvid_network_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
+		add_submenu_page('settings.php', _x('Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator'), _x('Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator'), 'manage_network', 'kgvid_network_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
 	}
 }
 add_action('network_admin_menu', 'kgvid_add_network_queue_page');
@@ -4109,7 +4109,7 @@ function kgvid_FFMPEG_Queue_Page() {
 ?>
 	<div class="wrap">
 		<div id="icon-tools" class="icon32"><br /></div>
-		<h1><?php _e('Video Embed & Thumbnail Generator Encoding Queue', 'video-embed-thumbnail-generator') ?></h1>
+		<h1><?php _e('Videopack Encoding Queue', 'video-embed-thumbnail-generator') ?></h1>
 		<p></p>
 		<form method="post" action="tools.php?page=kgvid_video_encoding_queue">
 		<?php wp_nonce_field('video-embed-thumbnail-generator-nonce','video-embed-thumbnail-generator-nonce'); ?>
@@ -4137,7 +4137,7 @@ kgvid_encode_videos();
 }
 
 function kgvid_add_network_settings_page() {
-		add_submenu_page('settings.php', _x('Video Embed & Thumbnail Generator', 'Settings page title', 'video-embed-thumbnail-generator'), _x('Video Embed & Thumbnail Generator', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator'), 'manage_network_options', 'video_embed_thumbnail_generator_settings', 'kgvid_network_settings_page' );
+		add_submenu_page('settings.php', _x('Videopack', 'Settings page title', 'video-embed-thumbnail-generator'), _x('Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator'), 'manage_network_options', 'video_embed_thumbnail_generator_settings', 'kgvid_network_settings_page' );
 }
 add_action('network_admin_menu', 'kgvid_add_network_settings_page');
 
@@ -4173,7 +4173,7 @@ function kgvid_network_settings_page() {
 			if (isset ($_POST["video-embed-thumbnail-generator-reset"])) { //reset button pressed
 				$default_network_options = kgvid_default_network_options();
 				$options_updated = update_site_option( 'kgvid_video_embed_network_options', $default_network_options );
-				add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", __("Video Embed & Thumbnail Generator network settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
+				add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", __("Videopack network settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
 			}
 			else { //save button pressed
 				$input = $_POST['kgvid_video_embed_options'];
@@ -4187,7 +4187,7 @@ function kgvid_network_settings_page() {
 	?>
 	<div class="wrap">
 		<div class="icon32" id="icon-options-general"><br></div>
-		<h1>Video Embed & Thumbnail Generator Network Settings</h1>
+		<h1>Videopack Network Settings</h1>
 		<?php settings_errors( 'video_embed_thumbnail_generator_settings' ); ?>
 		<form method="post">
 		<input type="hidden" name="action" value="update_kgvid_network_settings" />
@@ -4276,7 +4276,7 @@ function kgvid_superadmin_capabilities_callback() {
 }
 
 function kgvid_add_settings_page() {
-		add_options_page( _x('Video Embed & Thumbnail Generator', 'Settings page title', 'video-embed-thumbnail-generator'), _x('Video Embed & Thumbnail Generator', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator'), 'manage_options', 'video_embed_thumbnail_generator_settings', 'kgvid_settings_page' );
+		add_options_page( _x('Videopack', 'Settings page title', 'video-embed-thumbnail-generator'), _x('Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator'), 'manage_options', 'video_embed_thumbnail_generator_settings', 'kgvid_settings_page' );
 }
 add_action('admin_menu', 'kgvid_add_settings_page');
 
@@ -4289,7 +4289,7 @@ function kgvid_settings_page() {
 	?>
 	<div class="wrap">
 		<div class="icon32" id="icon-options-general"><br></div>
-		<h1>Video Embed & Thumbnail Generator</h1>
+		<h1>Videopack</h1>
 		<?php if ( !is_multisite()
 			|| ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && $options['ffmpeg_exists'] == "on" && is_array($network_options) && (is_super_admin() || $network_options['superadmin_only_ffmpeg_settings'] == false) )
 			) { ?>
@@ -5575,7 +5575,7 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 
 	if (isset ($_POST["video-embed-thumbnail-generator-reset"])) {
 		$input = $default_options;
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", __("Video Embed & Thumbnail Generator settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", __("Videopack settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
 	}
 
 	if ( $input['app_path'] != $options['app_path'] || strtoupper($input['video_app']) != strtoupper($options['video_app']) ) {
@@ -8919,7 +8919,7 @@ function kgvid_add_contextual_help_tab() {
 
 	get_current_screen()->add_help_tab( array(
         'id'        => 'kgvid-help-tab',
-        'title'     => __( 'Video Embed & Thumbnail Generator Shortcode Reference' , 'video-embed-thumbnail-generator'),
+        'title'     => __( 'Videopack Shortcode Reference' , 'video-embed-thumbnail-generator'),
         'content'   => '<p><strong>'.__('Use these optional attributes in the [KGVID] shortcode:', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>id="xxx"</code> '.__('video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator').'</li>
 <li><code>videos="x"</code> '.__('number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
