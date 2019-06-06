@@ -1,4 +1,4 @@
-=== Video Embed & Thumbnail Generator ===
+=== Videopack (formerly Video Embed & Thumbnail Generator) ===
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
@@ -249,10 +249,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7 - April 3, 2019 =
+= 4.7 - June xx, 2019 =
+* Changed plugin name to Videopack.
 * Added Video.js version 7 player option.
+* Deprecated Video.js version 5 player.
 * Removed Strobe Media Playback player option.
-* Fixed popup video gallery rendering when video titles included spaces.
+* Renamed 'controlbar' option to 'controls'
 
 = 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.
