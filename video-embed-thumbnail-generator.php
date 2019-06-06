@@ -112,7 +112,7 @@ function kgvid_default_options_fn() {
 		"gallery_per_page" => false,
 		"gallery_title" => "on",
 		"nativecontrolsfortouch" => false,
-		"controlbar_style" => "docked",
+		"controls" => "on",
 		"autoplay" => false,
 		"pauseothervideos" => "on",
 		"loop" => false,
@@ -2924,7 +2924,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				if ( $query_atts["poster"] != '' ) { $jw_shortcode .= 'image="'.esc_attr($query_atts["poster"]).'" '; }
 				if ( $query_atts["loop"] == 'true' ) { $jw_shortcode .= 'repeat="true" '; }
 				if ( $query_atts["autoplay"] == 'true' ) { $jw_shortcode .= 'autostart="true" '; }
-				if ( $query_atts["controlbar"] == 'none') { $jw_shortcode .= 'controls="false" '; }
+				if ( $query_atts["controls"] == 'false') { $jw_shortcode .= 'controls="false" '; }
 				if ( $query_atts['title'] != "false" ) { $jw_shortcode .= ' title="'.$query_atts['title'].'" '; }
 				if ( $query_atts['jw_player_id'] != "") {
 					$jw_player_config = get_option('jwp6_player_config_'.$query_atts['jw_player_id']);
@@ -2956,7 +2956,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$code .= "\n\t\t\t\t".'<video id="video_'.$div_suffix.'" ';
 			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
-			if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
+			if ( $query_atts["controls"] != 'false') { $code .= 'controls '; }
 			if ( $query_atts["mute"] == 'true' ) { $code .= 'muted '; }
 			$code .= 'preload="'.$query_atts['preload'].'" ';
 			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
@@ -3180,7 +3180,7 @@ function kgvid_shortcode_atts($atts) {
 		'fullwidth' => $options['fullwidth'],
 		'fixed_aspect' => $options['fixed_aspect'],
 		'align' => $options['align'],
-		'controlbar' => $options['controlbar_style'],
+		'controls' => $options['controls'],
 		'autohide' => $options['autohide'],
 		'poster' => $options['poster'],
 		'start' => '',
@@ -3259,6 +3259,7 @@ function kgvid_shortcode_atts($atts) {
 		$allowed_query_var_atts = array( //attributes that can be changed via URL
 			'auto_res',
 			'autoplay',
+			'controls',
 			'default_res',
 			'fullwidth',
 			'height',
@@ -3287,6 +3288,7 @@ function kgvid_shortcode_atts($atts) {
 		"playbutton",
 		"loop",
 		"autoplay",
+		"controls",
 		"pauseothervideos",
 		"title",
 		"embedcode",
@@ -3314,6 +3316,15 @@ function kgvid_shortcode_atts($atts) {
 	if ( $query_atts['orderby'] == 'menu_order' ) { $query_atts['orderby'] = 'menu_order ID'; }
 	if ( $query_atts['track_default'] == 'true' ) { $query_atts['track_default'] = 'default'; }
 	if ( $query_atts['count_views'] == 'false' ) { $query_atts['view_count'] = 'false'; }
+	if ( array_key_exists('controlbar', $query_atts) ) { //convert old 'controlbar' attribute to 'controls'
+		$query_atts['controlbar'] = $query_atts['controls'];
+		if ( $query_atts['controls'] == 'none' ) {
+			$query_atts['controls'] = 'false';
+		}
+		else {
+			$query_atts['controls'] = 'true';
+		}
+	}
 
 	return apply_filters('kgvid_shortcode_atts', $query_atts);
 
@@ -4429,7 +4440,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('resize', __('Automatically adjust videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
 	add_settings_field('dimensions', __('Video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_options', __('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
-	add_settings_field('controlbar_style', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controlbar_style_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controlbar_style' ) );
+	add_settings_field('controls', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controls_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controls' ) );
 	add_settings_field('playback_rate', __('Playback rate:', 'video-embed-thumbnail-generator'), 'kgvid_playback_rate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'playback_rate' ) );
 	add_settings_field('nativecontrolsfortouch', __('Native controls:', 'video-embed-thumbnail-generator'), 'kgvid_nativecontrolsfortouch_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'nativecontrolsfortouch' ) );
 	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
@@ -4660,17 +4671,10 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	}
 
-	function kgvid_controlbar_style_callback() {
+	function kgvid_controls_callback() {
 		$options = kgvid_get_options();
-		$items = array();
-		$items[__("docked", 'video-embed-thumbnail-generator')] = "docked";
-		$items[__("none", 'video-embed-thumbnail-generator')] = "none";
-		echo __('Display controls:', 'video-embed-thumbnail-generator')." <select class='affects_player' id='controlbar_style' name='kgvid_video_embed_options[controlbar_style]'>";
-		foreach($items as $name => $value) {
-			$selected = ($options['controlbar_style']==$value) ? 'selected="selected"' : '';
-			echo "<option value='$value' $selected>$name</option>";
-		}
-		echo "</select><br />\n\t";
+		
+		echo "<input class='affects_player' ".checked( $options['controls'], "on", false )." id='controls' name='kgvid_video_embed_options[controls]' type='checkbox' /> <label for='controls'>".__('Enable player controls.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Play automatically when page loads.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
@@ -5531,6 +5535,7 @@ function kgvid_update_settings() {
 			if ( $options['embed_method'] == 'Strobe Media Playback' ) {
 				$options['embed_method'] = 'Video.js';
 			}
+			$options['controlbar_style'] = $options['controls'];
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -8930,7 +8935,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
 <li><code>mute="true/false"</code> '.__('sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
-<li><code>controlbar="docked/none"</code> '.__('sets the controlbar position.', 'video-embed-thumbnail-generator').'</li>
+<li><code>controls="true/false"</code> '.__('Enables video controls.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
 <li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
