@@ -3170,6 +3170,16 @@ function kgvid_shortcode_atts($atts) {
 	if ( in_the_loop() ) { $post_id = get_the_ID(); }
 	else { $post_id = 1; }
 
+	if ( is_array($atts) && array_key_exists('controlbar', $atts) ) { //convert old 'controlbar' attribute to 'controls'
+		$atts['controls'] = $atts['controlbar'];
+		if ( $atts['controls'] == 'none' ) {
+			$atts['controls'] = 'false';
+		}
+		else {
+			$atts['controls'] = 'true';
+		}
+	}
+
 	$default_atts = array(
 		'id' => '',
 		'orderby' => 'menu_order ID',
@@ -3316,15 +3326,6 @@ function kgvid_shortcode_atts($atts) {
 	if ( $query_atts['orderby'] == 'menu_order' ) { $query_atts['orderby'] = 'menu_order ID'; }
 	if ( $query_atts['track_default'] == 'true' ) { $query_atts['track_default'] = 'default'; }
 	if ( $query_atts['count_views'] == 'false' ) { $query_atts['view_count'] = 'false'; }
-	if ( array_key_exists('controlbar', $query_atts) ) { //convert old 'controlbar' attribute to 'controls'
-		$query_atts['controlbar'] = $query_atts['controls'];
-		if ( $query_atts['controls'] == 'none' ) {
-			$query_atts['controls'] = 'false';
-		}
-		else {
-			$query_atts['controls'] = 'true';
-		}
-	}
 
 	return apply_filters('kgvid_shortcode_atts', $query_atts);
 
@@ -4441,8 +4442,6 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('dimensions', __('Video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
 	add_settings_field('gallery_options', __('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
 	add_settings_field('controls', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controls_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controls' ) );
-	add_settings_field('playback_rate', __('Playback rate:', 'video-embed-thumbnail-generator'), 'kgvid_playback_rate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'playback_rate' ) );
-	add_settings_field('nativecontrolsfortouch', __('Native controls:', 'video-embed-thumbnail-generator'), 'kgvid_nativecontrolsfortouch_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'nativecontrolsfortouch' ) );
 	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
 	add_settings_field('custom_attributes', __('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
 
@@ -4675,12 +4674,16 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$options = kgvid_get_options();
 		
 		echo "<input class='affects_player' ".checked( $options['controls'], "on", false )." id='controls' name='kgvid_video_embed_options[controls]' type='checkbox' /> <label for='controls'>".__('Enable player controls.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		
+		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.', 'video-embed-thumbnail-generator')."</span></span><br>\n\t";
 
-		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Play automatically when page loads.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
-
-		echo "<input ".checked( $options['pauseothervideos'], "on", false )." id='pauseothervideos' name='kgvid_video_embed_options[pauseothervideos]' type='checkbox' /> <label for='pauseothervideos'>".__('Pause other videos on page when starting a new video.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Autoplay.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop to beginning when video ends.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+
+		echo "<input class='affects_player' ".checked( $options['playback_rate'], "on", false )." id='playback_rate' name='kgvid_video_embed_options[playback_rate]' type='checkbox' /> <label for='playback_rate'>".__('Enable variable playback rates.', 'video-embed-thumbnail-generator')."</label><br>\n\t";
+
+		echo "<input ".checked( $options['pauseothervideos'], "on", false )." id='pauseothervideos' name='kgvid_video_embed_options[pauseothervideos]' type='checkbox' /> <label for='pauseothervideos'>".__('Pause other videos on page when starting a new video.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		$items = array();
 		$percent = 0;
@@ -4704,16 +4707,6 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			echo "<option value='$value' $selected>$name</option>";
 		}
 		echo "</select><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>"._x('Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.', 'Suggest not translating the words in quotation marks', 'video-embed-thumbnail-generator')."</span></span>\n\t";
-	}
-
-	function kgvid_playback_rate_callback() {
-		$options = kgvid_get_options();
-		echo "<input class='affects_player' ".checked( $options['playback_rate'], "on", false )." id='playback_rate' name='kgvid_video_embed_options[playback_rate]' type='checkbox' /> <label for='playback_rate'>".__('Enable variable playback rates.', 'video-embed-thumbnail-generator')."</label>\n\t";
-	}
-
-	function kgvid_nativecontrolsfortouch_callback() {
-		$options = kgvid_get_options();
-		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.', 'video-embed-thumbnail-generator')."</span></span>\n\t";
 	}
 
 	function kgvid_js_skin_callback() {
@@ -5536,6 +5529,12 @@ function kgvid_update_settings() {
 				$options['embed_method'] = 'Video.js';
 			}
 			$options['controlbar_style'] = $options['controls'];
+			if ( $options['controls'] == 'none' ) {
+				$options['controls'] = false;
+			}
+			else {
+				$options['controls'] = 'on';
+			}
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
