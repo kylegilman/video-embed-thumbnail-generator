@@ -117,7 +117,7 @@ function kgvid_default_options_fn() {
 		"pauseothervideos" => "on",
 		"loop" => false,
 		"volume" => 1,
-		"mute" => false,
+		"muted" => false,
 		"preload" => "metadata",
 		"playback_rate" => false,
 		"endofvideooverlay" => false,
@@ -2635,7 +2635,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			'autoplay' => $query_atts['autoplay'],
 			'pauseothervideos' => $query_atts['pauseothervideos'],
 			'set_volume' => $query_atts['volume'],
-			'mute' => $query_atts['mute'],
+			'muted' => $query_atts['muted'],
 			'meta' => $kgvid_meta,
 			'endofvideooverlay' => $query_atts['endofvideooverlay'],
 			'resize' => $query_atts['resize'],
@@ -2957,7 +2957,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
 			if ( $query_atts["controls"] != 'false') { $code .= 'controls '; }
-			if ( $query_atts["mute"] == 'true' ) { $code .= 'muted '; }
+			if ( $query_atts["muted"] == 'true' ) { $code .= 'muted '; }
 			$code .= 'preload="'.$query_atts['preload'].'" ';
 			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
 			$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
@@ -3170,14 +3170,34 @@ function kgvid_shortcode_atts($atts) {
 	if ( in_the_loop() ) { $post_id = get_the_ID(); }
 	else { $post_id = 1; }
 
-	if ( is_array($atts) && array_key_exists('controlbar', $atts) ) { //convert old 'controlbar' attribute to 'controls'
-		$atts['controls'] = $atts['controlbar'];
-		if ( $atts['controls'] == 'none' ) {
-			$atts['controls'] = 'false';
+	$deprecated_atts = array(
+		'controlbar' => 'controls',
+		'mute' => 'muted'
+	);
+
+	if ( is_array($atts) ) {
+
+		foreach( $deprecated_atts as $deprecated_att => $new_att ) { //loop through old atts and convert to new ones
+
+			if ( array_key_exists($deprecated_att, $atts) ) {
+
+				$atts[$new_att] = $atts[$deprecated_att];
+
+				if ( $new_att == 'controls' ) {
+
+					if ( $atts['controls'] == 'none' ) {
+						$atts['controls'] = 'false';
+					}
+					else {
+						$atts['controls'] = 'true';
+					}
+
+				}
+
+			}
+
 		}
-		else {
-			$atts['controls'] = 'true';
-		}
+
 	}
 
 	$default_atts = array(
@@ -3221,7 +3241,7 @@ function kgvid_shortcode_atts($atts) {
 		'gallery_end' => $options['gallery_end'],
 		'gallery_title' => $options['gallery_title'],
 		'volume' => $options['volume'],
-		'mute' => $options['mute'],
+		'muted' => $options['muted'],
 		'preload' => $options['preload'],
 		'playback_rate' => $options['playback_rate'],
 		'title' => $options['overlay_title'],
@@ -3273,7 +3293,7 @@ function kgvid_shortcode_atts($atts) {
 			'default_res',
 			'fullwidth',
 			'height',
-			'mute',
+			'muted',
 			'nativecontrolsfortouch',
 			'pixel_ratio',
 			'resize',
@@ -3307,7 +3327,7 @@ function kgvid_shortcode_atts($atts) {
 		"inline",
 		"resize",
 		"downloadlink",
-		"mute",
+		"muted",
 		"playback_rate",
 		"fullwidth",
 		"gallery_thumb_aspect",
@@ -4695,7 +4715,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['volume']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <input class='affects_player' ".checked( $options['mute'], "on", false )." id='mute' name='kgvid_video_embed_options[mute]' type='checkbox' /> <label for='mute'>".__('Mute', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		echo "</select> <input class='affects_player' ".checked( $options['muted'], "on", false )." id='muted' name='kgvid_video_embed_options[muted]' type='checkbox' /> <label for='muted'>".__('Muted.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		$items = array(
 			__('metadata', 'video-embed-thumbnail-generator') => "metadata",
@@ -5526,15 +5546,18 @@ function kgvid_update_settings() {
 		if ( version_compare( $options['version'], '4.7', '<' ) ) {
 			$options['version'] = '4.7';
 			if ( $options['embed_method'] == 'Strobe Media Playback' ) {
-				$options['embed_method'] = 'Video.js';
+				$options['embed_method'] = 'Video.js v7';
 			}
-			$options['controlbar_style'] = $options['controls'];
+			$options['controls'] = $options['controlbar_style']; //convert 'controlbar_style' option to 'controls' to match HTML5 convention
+			unset($options['controlbar_style']);
 			if ( $options['controls'] == 'none' ) {
 				$options['controls'] = false;
 			}
 			else {
 				$options['controls'] = 'on';
 			}
+			$options['muted'] = $options['mute']; //convert 'mute' option to 'muted' to match HTML5 convention
+			unset($options['mute']);
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -8933,7 +8956,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>align="left/right/center"</code></li>
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
-<li><code>mute="true/false"</code> '.__('sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
+<li><code>muted="true/false"</code> '.__('Mutes the audio.', 'video-embed-thumbnail-generator').'</li>
 <li><code>controls="true/false"</code> '.__('Enables video controls.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
