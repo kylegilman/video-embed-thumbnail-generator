@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Video Embed & Thumbnail Generator
-Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
+Plugin URI: https://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.25
+Version: 4.6.26
 Author: Kyle Gilman
-Author URI: http://www.kylegilman.net/
+Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
 Domain Path: /languages
 
@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.25',
+		"version" => '4.6.26',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -187,7 +187,8 @@ function kgvid_default_options_fn() {
 		"simultaneous_encodes" => 1,
 		"error_email" => "nobody",
 		"alwaysloadscripts" => false,
-		"replace_video_shortcode" => false
+		"replace_video_shortcode" => false,
+		"rewrite_attachment_url" => 'on'
 	);
 
 	$video_formats = kgvid_video_formats();
@@ -708,7 +709,7 @@ function kgvid_plugin_meta_links( $links, $file ) {
 	if ( $file == $plugin ) {
 		return array_merge(
 			$links,
-			array( '<a href="http://www.kylegilman.net/plugin-donation/">Donate</a>' )
+			array( '<a href="https://www.kylegilman.net/plugin-donation/">Donate</a>' )
 		);
 	}
 	return $links;
@@ -2510,7 +2511,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 	else { // $content is a URL
 		// workaround for relative video URL (contributed by Lee Fernandes)
 		if(substr($content, 0, 1) == '/') $content = get_bloginfo('url').$content;
-		$content = trim($content);
+		$content = apply_filters('kgvid_filter_url', trim($content));
 		$id_array[0] = kgvid_url_to_id($content);
 	}
 
@@ -2539,20 +2540,31 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 			$attachment_url = wp_get_attachment_url($id);
 			if ( $attachment_url == false ) { _e("Invalid video ID", 'video-embed-thumbnail-generator'); continue; }
-			$exempt_cdns = array(
-				'amazonaws.com',
-				'rackspace.com',
-				'netdna-cdn.com',
-				'nexcess-cdn.net',
-				'limelight.com'
-			); //don't replace URLs that point to CDNs
-			$exempt_url = false;
-			foreach ( $exempt_cdns as $exempt_cdn ) {
-				if ( strpos($content, $exempt_cdn) !== false ) {
-					$exempt_url = true;
+
+			if ( $options['rewrite_attachment_url'] == 'on' ) {
+
+				$rewrite_url = true;
+
+				//in case user doesn't know about this setting still check manually for popular CDNs like we used to
+				$exempt_cdns = array(
+					'amazonaws.com',
+					'rackspace.com',
+					'netdna-cdn.com',
+					'nexcess-cdn.net',
+					'limelight.com',
+					'digitaloceanspaces.com'
+				); //don't replace URLs that point to CDNs
+				foreach ( $exempt_cdns as $exempt_cdn ) {
+					if ( strpos($content, $exempt_cdn) !== false ) {
+						$rewrite_url = false;
+					}
 				}
+
 			}
-			if ( !$exempt_url ) { $content = $attachment_url; }
+			else {
+				$rewrite_url = false;
+			}
+			if ( $rewrite_url ) { $content = $attachment_url; }
 
 			$encodevideo_info = kgvid_encodevideo_info($content, $id);
 			$attachment_info = get_post( $id );
@@ -4523,6 +4535,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('count_views', __("View counting:", 'video-embed-thumbnail-generator'), 'kgvid_view_counting_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
 	add_settings_field('replacevideoshortcode', __("Replace video shortcode:", 'video-embed-thumbnail-generator'), 'kgvid_replace_video_shortcode_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
 	add_settings_field('scriptloading', __("Script loading:", 'video-embed-thumbnail-generator'), 'kgvid_scriptloading_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'alwaysloadscripts' ) );
+	add_settings_field('rewrite_attachment_url', __("Attachment URL Rewriting:", 'video-embed-thumbnail-generator'), 'kgvid_rewrite_attachment_url_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
 	add_settings_field('generate_thumbs', __('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
 	add_settings_field('featured', __('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
 	add_settings_field('thumb_parent', __('Attach thumbnails to:', 'video-embed-thumbnail-generator'), 'kgvid_thumb_parent_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
@@ -4906,6 +4919,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_scriptloading_callback() {
 		$options = kgvid_get_options();
 		echo "<input ".checked( $options['alwaysloadscripts'], "on", false )." id='alwaysloadscripts' name='kgvid_video_embed_options[alwaysloadscripts]' type='checkbox' /> <label for='alwaysloadscripts'>".__('Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator')."</span></span><br />";
+	}
+
+	function kgvid_rewrite_attachment_url_callback() {
+		$options = kgvid_get_options();
+		echo "<input ".checked( $options['rewrite_attachment_url'], "on", false )." id='rewrite_attachment_url' name='kgvid_video_embed_options[rewrite_attachment_url]' type='checkbox' /> <label for='rewrite_attachment_url'>".__("Allow rewriting of WordPress attachment URLs.", 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if the plugin is changing your URLs to local files instead of the CDN.", 'video-embed-thumbnail-generator')."</span></span><br />";
 	}
 
 	function kgvid_generate_thumbs_callback() {
@@ -5665,6 +5683,11 @@ function kgvid_update_settings() {
 		if ( version_compare( $options['version'], '4.6.23', '<' ) ) {
 			$options['version'] = '4.6.23';
 			$options['replace_video_shortcode'] = false;
+		}
+
+		if ( version_compare( $options['version'], '4.6.26', '<' ) ) {
+			$options['version'] = '4.6.26';
+			$options['rewrite_attachment_url'] = 'on';
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -8668,7 +8691,7 @@ add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
 function kgvid_delete_video_attachment($video_id) {
 
 	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false
-		|| !empty(get_post_meta($video_id, '_kgflashmediaplayer-format', true))
+		|| ! (get_post_meta($video_id, '_kgflashmediaplayer-format', true))
 	) { //only do this for videos or other child formats
 		
 		$parent_post = get_post($video_id);

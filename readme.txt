@@ -249,6 +249,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.26 - June 10, 2019 =
+* Added option to disable shortcode URL rewriting if WordPress doesn't know your videos are hosted on a CDN.
+* Added filter to manually rewrite shortcode URLs.
+* Changed code that caused fatal error 'Can't use function return value in write context' on PHP versions before 5.5
+
 = 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.
 * Fixed bug that re-shuffled random gallery order every time a new gallery page was loaded.
