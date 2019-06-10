@@ -2479,6 +2479,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$attachment_url = wp_get_attachment_url($id);
 			if ( $attachment_url == false ) { _e("Invalid video ID", 'video-embed-thumbnail-generator'); continue; }
 			$exempt_cdns = array(
+				'digitaloceanspaces.com',
 				'amazonaws.com',
 				'rackspace.com',
 				'netdna-cdn.com',
