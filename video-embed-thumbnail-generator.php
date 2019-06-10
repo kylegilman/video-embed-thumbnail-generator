@@ -3635,8 +3635,20 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		$disabled = ' disabled title="'.__('Currently encoding', 'video-embed-thumbnail-generator').'"';
 		$checked = 'checked';
 		$progress = kgvid_encode_progress();
-		$meta = $progress['embed_display'];
-		$time_to_wait = $progress['time_to_wait'];
+		if ( is_array($progress) 
+			&& array_key_exists($video_key, $progress)
+			&& array_key_exists($format, $progress[$video_key])
+			&& array_key_exists('embed_display', $progress[$video_key][$format])
+		) {
+			$meta = $progress[$video_key][$format]['embed_display'];
+		}
+		if ( is_array($progress) 
+			&& array_key_exists($video_key, $progress)
+			&& array_key_exists($format, $progress[$video_key])
+			&& array_key_exists('time_to_wait', $progress[$video_key][$format])
+		) {
+			$time_to_wait = $progress[$video_key][$format]['time_to_wait'];
+		}
 	}
 
 	if ( $status == "Encoding Complete" ) {
@@ -7661,6 +7673,8 @@ function kgvid_encode_videos() {
 
 		if ( !empty($start_encoding) ) {
 
+			wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
+
 			foreach( $start_encoding as $key => $queue_info ) {
 
 				extract($queue_info, EXTR_OVERWRITE);
@@ -7806,8 +7820,6 @@ function kgvid_encode_videos() {
 						'encode_string' => $encode_string
 					);
 
-					wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
-
 				} //end if there's stuff to encode
 
 			}//end loop
@@ -7911,7 +7923,7 @@ function kgvid_encode_progress() {
 
 	if ( is_array($video_encode_queue) ) { //if there is an encode queue
 
-		foreach ( $video_encode_queue as $video_key => $video_entry ) {
+		foreach ( $video_encode_queue as $video_key => $video_entry ) { //loop through encode queue
 
 			if ( array_key_exists('blog_id', $video_entry) ) {
 				$blog_id = $video_entry['blog_id'];
@@ -7919,13 +7931,12 @@ function kgvid_encode_progress() {
 			}
 			else { $blog_id = false; }
 
-			$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'")';
+			foreach ( $video_entry['encode_formats'] as $format => $format_info ) { //loop through formats
 
-			foreach ( $queue_entry['encode_formats'] as $format => $format_info ) {
+				$embed_display = "";
 
 				if ( is_array($format_info) && array_key_exists('logfile', $format_info) ) {
 					
-					$embed_display = "";
 					$percent_done = "";
 					$time_remaining = "";
 					$other_message = "";
@@ -7933,6 +7944,8 @@ function kgvid_encode_progress() {
 					$lastline = "";
 
 					if ( $video_entry['encode_formats'][$format]['status'] != "Encoding Complete" ) {
+
+						clearstatcache(); //make sure the existence of the logfile isn't cached
 
 						if ( is_file($format_info['logfile']) ) {
 
@@ -8090,13 +8103,9 @@ function kgvid_encode_progress() {
 								$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
 								$next_video = kgvid_encode_videos(); //start the next queued video
-								if ( !empty($next_video['format']) ) { //if there's something to encode, schedule cron
-									wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
-								}
 
 								if ( (empty($next_video['format']) || $next_video['video_key'] != $video_key) && $video_encode_queue[$video_key]['encode_formats']['fullres']['status'] == "Encoding Complete" ) { //if there's nothing left to encode in this video and we've encoded the fullres
 									$new_movie_url = kgvid_replace_video( $video_key, 'fullres' );
-									$script_function = 'kgvid_redraw_encode_checkboxes("'.$new_movie_url.'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'")';
 
 									$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
@@ -8186,22 +8195,23 @@ function kgvid_encode_progress() {
 							kgvid_save_encode_queue($video_encode_queue);
 
 							$next_video = kgvid_encode_videos(); //start the next queued video
-							if ( !empty($next_video['format']) ) {
-								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
-							}
+
 						}
 
 					}//if not completed
-					else { $embed_display = "<strong>".ucwords($video_encode_queue[$video_key]['encode_formats'][$format]['status'])."</strong>"; }
 
 				} //if there's a queue and the video is encoding
 
-				else { $embed_display = "<strong>".__('Waiting...', 'video-embed-thumbnail-generator')."</strong>"; }
+				elseif ( is_array($format_info) && array_key_exists('status', $format_info) && $format_info['status'] != "notchecked" ) {
+					$embed_display = "<strong>".ucfirst($video_encode_queue[$video_key]['encode_formats'][$format]['status'])."</strong>"; 
+				}
 
-				$encode_progress[] = array ( 
+				if ( !empty($embed_display) ) { 
+					$encode_progress[$video_key][$format] = array ( 
 					'embed_display' => $embed_display, 
-					'time_to_wait' => $time_to_wait 
-				);				
+					'time_to_wait' => $time_to_wait
+					);
+				}		
 
 			} //end loop through encode formats
 
@@ -8215,19 +8225,6 @@ function kgvid_encode_progress() {
 
 }
 add_action('kgvid_cron_queue_check', 'kgvid_encode_progress');
-
-function kgvid_ajax_encode_progress() {
-
-	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-	$video_key = $_POST['video_key'];
-	$format = $_POST['format'];
-	$page = $_POST['page'];
-	$progress = kgvid_encode_progress();
-	echo json_encode($progress);
-	die();
-
-}
-add_action('wp_ajax_kgvid_encode_progress', 'kgvid_ajax_encode_progress');
 
 function kgvid_replace_video( $video_key, $format ) {
 

@@ -401,7 +401,6 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var i = 1;
 	var increaser = 0;
 	var iincreaser = 0;
-	var page = "attachment";
 	var video_id = 'thumb-video-'+postID;
 	
 	kgvid_remove_mejs_player(postID);
@@ -494,7 +493,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			else { document.getElementById(widthID).value = document.getElementsByName(maxwidthID)[0].value; }
 			document.getElementById(heightID).value = Math.round(kgvid_aspect*parseInt(document.getElementById(widthID).value));
 
-			kgvid_redraw_encode_checkboxes(attachmentURL, postID, page, false);
+			kgvid_redraw_encode_checkboxes(attachmentURL, postID, false);
 
 		}, "json");
 
@@ -781,7 +780,6 @@ function kgvid_enqueue_video_encode(postID, blogID) {
 	var encodeplaceholderid = "#attachments-"+blog.id_text+postID+"-encodeplaceholder";
 	var encodeprogressplaceholderid = "#attachments-"+blog.id_text+postID+"-encodeprogressplaceholder";
 
-	var page = "attachment";
 	var document_url = document.URL;
 	var page_check = /[?&]page=([^&]+)/i;
 	var match = page_check.exec(document_url);
@@ -806,7 +804,7 @@ function kgvid_enqueue_video_encode(postID, blogID) {
 
 			setTimeout(function(){
 				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
-				kgvid_redraw_encode_checkboxes(attachmentURL, postID, page, blogID);
+				kgvid_redraw_encode_checkboxes(attachmentURL, postID, blogID);
 			}, 2000);
 		}, "json");
 
@@ -873,7 +871,7 @@ function kgvid_set_singleurl() {
 			url = data.movieurl;
 			kgvid_change_singleurl(url, basename, oldbasename);
 			jQuery('#attachments-'+basename+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
-			kgvid_redraw_encode_checkboxes(url, basename, 'attachment', false);
+			kgvid_redraw_encode_checkboxes(url, basename, false);
 		}, "json");
 	}
 	else {
@@ -945,7 +943,7 @@ function kgvid_rescan_external_server(movieurl, postID) {
 	jQuery('#attachments-'+postID+'-kgflashmediaplayer-rescanplaceholder').append('<strong>Scanning...</strong>');
 	jQuery.post(ajaxurl, { action:"kgvid_rescan_external_server", security: kgflashmediaplayersecurity, movieurl:movieurl, postID:postID }, function() {
 		jQuery('#attachments-'+postID+'-kgflashmediaplayer-encodeboxes').css('opacity', '0.5');
-		kgvid_redraw_encode_checkboxes(movieurl, postID, 'queue', false);
+		kgvid_redraw_encode_checkboxes(movieurl, postID, false);
 		jQuery('#attachments-'+postID+'-kgflashmediaplayer-rescanplaceholder').empty();
 	});
 }
@@ -1006,9 +1004,7 @@ function kgvid_delete_video(movieurl, postID, format, childID, blogID) {
 
 		jQuery.post(ajaxurl, { action: "kgvid_delete_video", security: kgflashmediaplayersecurity, movieurl: movieurl, postid: postID, format: format, childid: childID, blogid: blogID }, function(data) {
 			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+format).change();
-			if ( typeof pagenow !== 'undefined' && ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' || pagenow == 'tools_page_kgvid_video_encoding_queue' ) ) { page = 'queue'; }
-			else { page = 'attachment'; }
-			kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID);
+			kgvid_redraw_encode_checkboxes(movieurl, postID, blogID);
 		}, "json" );
 
 	}
@@ -1165,12 +1161,18 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) {
 
 	var blog = kgvid_get_multisite_data(blogID);
 
+	if ( typeof pagenow !== 'undefined' && ( pagenow == 'settings_page_kgvid_network_video_encoding_queue-network' || pagenow == 'tools_page_kgvid_video_encoding_queue' ) ) { 
+		page = 'queue'; 
+	}
+	else { 
+		page = 'attachment'; 
+	}
+
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments'+blog.name_text+'['+postID+'][kgflashmediaplayer-security]')[0].value;
 
 	if ( kgflashmediaplayersecurity ) { //sometimes this tries to run after the media modal is closed
 
 		var kgvid_encode = kgvid_list_videos_to_encode(postID, blog);
-		if ( pagenow == '')
 
 		jQuery.post(ajaxurl, { action:"kgvid_generate_encode_checkboxes", security: kgflashmediaplayersecurity, movieurl: movieurl, post_id: postID, page: page, blog_id: blog.ID, encodeformats: kgvid_encode }, function(data) {
 			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encodeboxes').empty();
@@ -1827,7 +1829,7 @@ function kgvid_pick_format(button, parentID, mime, format, movieurl, blog_id) {
 					var kgflashmediaplayersecurity = document.getElementsByName('attachments['+parentID+'][kgflashmediaplayer-security]')[0].value;
 
 					jQuery.post(ajaxurl, { action:"kgvid_update_child_format", security: kgflashmediaplayersecurity, parent_id: parentID, video_id: video.id, format: format, blog_id: blog_id }, function(data) {
-						kgvid_redraw_encode_checkboxes(movieurl, parentID, 'attachment', blog_id);
+						kgvid_redraw_encode_checkboxes(movieurl, parentID, blog_id);
 					}, "json");
 
 				});
@@ -1842,7 +1844,7 @@ function kgvid_clear_video(movieurl, postID, video_id, blog_id) {
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments['+postID+'][kgflashmediaplayer-security]')[0].value;
 
 	jQuery.post(ajaxurl, { action:"kgvid_clear_child_format", security: kgflashmediaplayersecurity, video_id: video_id, blog_id: blog_id }, function(data) {
-		kgvid_redraw_encode_checkboxes(movieurl, postID, 'attachment', blog_id);
+		kgvid_redraw_encode_checkboxes(movieurl, postID, blog_id);
 	}, "json");
 
 }
