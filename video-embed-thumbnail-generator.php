@@ -3633,7 +3633,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		$encoding_now = true;
 		$disabled = ' disabled title="'.__('Currently encoding', 'video-embed-thumbnail-generator').'"';
 		$checked = 'checked';
-		$progress = kgvid_encode_progress($video_key, $format, $page);
+		$progress = kgvid_encode_progress();
 		$meta = $progress['embed_display'];
 		$time_to_wait = $progress['time_to_wait'];
 	}
@@ -3888,7 +3888,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		}
 
 		if ( $page != "queue" && !$encoding_now && ($last_format['status'] == "queued" || $last_format['status'] == "canceling") ) {
-			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'", "'.$blog_id.'") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
+			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
 		}
 
 		else {
@@ -6268,7 +6268,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-encode"]["html"] = $checkboxes['checkboxes'];
 
 		if ( $options['ffmpeg_exists'] == "on" && $options['auto_encode'] == "on" && $created_time < 60 ) {
-			$form_fields["kgflashmediaplayer-encode"]["html"] .= '<script type="text/javascript">jQuery(document).ready(function() { percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$movieurl.'", "'.$post->ID.'", "attachment", "") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout); });</script>';
+			$form_fields["kgflashmediaplayer-encode"]["html"] .= '<script type="text/javascript">jQuery(document).ready(function() { percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$movieurl.'", "'.$post->ID.'", "") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout); });</script>';
 		}
 
 
@@ -7805,8 +7805,7 @@ function kgvid_encode_videos() {
 						'encode_string' => $encode_string
 					);
 
-					$args = array($video_key, $queued_format, 'queue');
-					wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
+					wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
 
 				} //end if there's stuff to encode
 
@@ -7903,316 +7902,318 @@ function kgvid_test_ffmpeg_thumb_watermark() {
 }
 add_action('wp_ajax_kgvid_test_ffmpeg_thumb_watermark', 'kgvid_test_ffmpeg_thumb_watermark');
 
-function kgvid_encode_progress($video_key, $format, $page) {
+function kgvid_encode_progress() {
 
 	$video_encode_queue = kgvid_get_encode_queue();
+	$encode_progress = array();
 	$time_to_wait = 5000; //default 5 seconds between checking encode progress
 
-	if ( is_array($video_encode_queue) && array_key_exists($video_key, $video_encode_queue) ) {
+	if ( is_array($video_encode_queue) ) { //if there is an encode queue
 
-		$video_entry = $video_encode_queue[$video_key];
+		foreach ( $video_encode_queue as $video_key => $video_entry ) {
 
-		if ( array_key_exists('blog_id', $video_entry) ) {
-			$blog_id = $video_entry['blog_id'];
-			switch_to_blog($blog_id);
-		}
-		else { $blog_id = false; }
+			if ( array_key_exists('blog_id', $video_entry) ) {
+				$blog_id = $video_entry['blog_id'];
+				switch_to_blog($blog_id);
+			}
+			else { $blog_id = false; }
 
-		$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$page.'", "'.$blog_id.'")';
+			$script_function = 'kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'")';
 
-		if ( is_array($video_entry['encode_formats'][$format]) && array_key_exists('logfile', $video_entry['encode_formats'][$format]) ) {
+			foreach ( $queue_entry['encode_formats'] as $format => $format_info ) {
 
-			$pid = $video_entry['encode_formats'][$format]['PID'];
-			$logfile = $video_entry['encode_formats'][$format]['logfile'];
-			$started = $video_entry['encode_formats'][$format]['started'];
-			$movie_duration = $video_entry['movie_info']['duration'];
-			$filepath = $video_entry['encode_formats'][$format]['filepath'];
-			$embed_display = "";
-			$percent_done = "";
-			$time_remaining = "";
-			$other_message = "";
-			$logfilecontents = "";
-			$lastline = "";
+				if ( is_array($format_info) && array_key_exists('logfile', $format_info) ) {
+					
+					$embed_display = "";
+					$percent_done = "";
+					$time_remaining = "";
+					$other_message = "";
+					$logfilecontents = "";
+					$lastline = "";
 
-			if ( $video_entry['encode_formats'][$format]['status'] != "Encoding Complete" ) {
+					if ( $video_entry['encode_formats'][$format]['status'] != "Encoding Complete" ) {
 
-				if ( is_file($logfile) ) {
+						if ( is_file($format_info['logfile']) ) {
 
-					$fp = fopen($logfile, 'r');
-					$c = '';
-					$read = '';
-					$offset = -1;
-					$lines = 2;
-					if ( substr(strtoupper(PHP_OS),0,3) == "WIN" ) { $lines = 4; }
-					while ( $lines && fseek($fp, $offset, SEEK_END) >= 0 ) {
-						$c = fgetc($fp);
-						if( $c == "\n" || $c == "\r" ) {
-							$lines--;
-						}
-						$read .= $c;
-						$offset--;
-					}
-					fclose($fp);
-					$lastline = strrev(rtrim($read,"\n\r"));
-
-					$last_match = "";
-					$time_matches = "";
-					$video_matches = "";
-					$libx264_matches = "";
-					$fps_matches = "";
-					$fps_match = "";
-					$basename = "";
-
-					preg_match('/time=(.*?) /', $lastline, $time_matches);
-
-					if ( is_array($time_matches) && array_key_exists(1, $time_matches) != true ) { //if something other than the regular FFMPEG encoding output check for these
-						preg_match('/video:(.*?) /', $lastline, $video_matches);
-						preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
-						preg_match('/aac (.*?) /', $lastline, $aac_matches);
-						$queue_match = preg_match('/queue on closing/', $lastline);
-					}
-
-					if ( is_array($time_matches) && array_key_exists(1, $time_matches) == true ) { //still encoding
-
-						if ( strpos($time_matches[1], ':') !== false ) {
-							$current_hours = intval(substr($time_matches[1], -11, 2));
-							$current_minutes = intval(substr($time_matches[1], -8, 2));
-							$current_seconds = intval(substr($time_matches[1], -5, 2));
-							$current_seconds = ($current_hours * 60 * 60) + ($current_minutes * 60) + $current_seconds;
-						}
-						else { $current_seconds = $time_matches[1]; }
-
-						$percent_done = intval($current_seconds)/intval($movie_duration);
-						$time_elapsed = time() - $started;
-						if ( $percent_done != 0 ) { $time_remaining = date('H:i:s', round($time_elapsed / $percent_done) - $time_elapsed); }
-						else $time_remaining = "unknown";
-						$percent_done = round($percent_done*100);
-						if ( $percent_done < 20 ) { $percent_done_text = ""; }
-						else { $percent_done_text = strval($percent_done)."%"; }
-
-						preg_match('/fps=\s?(.*?) /', $lastline, $fps_matches);
-						if ( is_array($fps_matches) && array_key_exists(1, $fps_matches) == true ) {
-							if ( $fps_matches[1] != 0 ) { $fps_match = $fps_matches[1]; }
-							else {  $fps_match = "10"; }
-						}
-						else {  $fps_match = "10"; }
-;
-						$time_to_wait = strval(max(round(40000/(floatval($fps_match))), 1000)); //wait at least 1 second
-						if ( intval($time_to_wait) > 10000 ) { //wait no more than 10 seconds
-							$time_to_wait = 10000;
-						}
-
-						$args = array($video_key, $format, $page);
-						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
-
-						$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
-
-						if ( current_user_can('encode_videos') && $pid ) {
-							$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.$video_entry["attachmentID"].'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.$pid.', \''.$video_entry["attachmentID"].'\', \''.$video_key.'\', \''.$format.'\', \''.$blog_id.'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
-						}
-
-						$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.$time_remaining.'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.$fps_match.'</small></div>';
-					}
-					elseif ( time() - $started < 10 || ( file_exists($filepath) && time() - filemtime($filepath) < 10 ) ) { //not enough time has passed, so check again later
-						$args = array($video_key, $format, $page);
-						$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong>';
-						$time_to_wait = 1000;
-						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
-					}
-					elseif (
-						( is_array($video_matches) && array_key_exists(1, $video_matches) == true )
-						|| ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) == true )
-						|| ( is_array($aac_matches) && array_key_exists(1, $aac_matches) == true )
-						|| ( $queue_match )
-					) { //encoding complete
-
-						$percent_done = 100;
-						$ended = filemtime($logfile);
-						$time_elapsed = $ended - $started;
-						$time_remaining = "0";
-						$fps_match = "10";
-						if ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) ) {
-							$moov_output = kgvid_fix_moov_atom($filepath);
-						} //fix the moov atom if the file was encoded by libx264
-						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "Encoding Complete";
-						$video_encode_queue[$video_key]['encode_formats'][$format]['ended'] = $ended;
-						$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
-
-						kgvid_save_encode_queue($video_encode_queue);
-
-						if ( $format != "fullres" ) {
-
-							//insert the encoded video as a child attachment of the original video, or post if external original
-							if ( get_post_type($video_entry['attachmentID']) == "attachment" ) { //if the original video is in the database set that as parent
-								$parent_id = $video_entry['attachmentID'];
-								$title = get_the_title($video_entry['attachmentID']);
+							$fp = fopen($format_info['logfile'], 'r');
+							$c = '';
+							$read = '';
+							$offset = -1;
+							$lines = 2;
+							if ( substr(strtoupper(PHP_OS),0,3) == "WIN" ) { $lines = 4; }
+							while ( $lines && fseek($fp, $offset, SEEK_END) >= 0 ) {
+								$c = fgetc($fp);
+								if( $c == "\n" || $c == "\r" ) {
+									$lines--;
+								}
+								$read .= $c;
+								$offset--;
 							}
-							else { //otherwise set the post as the parent
-								$parent_id = $video_entry['parent_id'];
-								$sanitized_url = kgvid_sanitize_url($video_entry['movieurl']);
-								$title = $sanitized_url['basename'];
+							fclose($fp);
+							$lastline = strrev(rtrim($read,"\n\r"));
+
+							$last_match = "";
+							$time_matches = "";
+							$video_matches = "";
+							$libx264_matches = "";
+							$fps_matches = "";
+							$fps_match = "";
+							$basename = "";
+
+							preg_match('/time=(.*?) /', $lastline, $time_matches);
+
+							if ( is_array($time_matches) && array_key_exists(1, $time_matches) != true ) { //if something other than the regular FFMPEG encoding output check for these
+								preg_match('/video:(.*?) /', $lastline, $video_matches);
+								preg_match('/libx264 (.*?) /', $lastline, $libx264_matches);
+								preg_match('/aac (.*?) /', $lastline, $aac_matches);
+								$queue_match = preg_match('/queue on closing/', $lastline);
 							}
 
-							global $user_ID;
-							$video_id = kgvid_url_to_id($video_encode_queue[$video_key]['encode_formats'][$format]['url']);
-							if ( !$video_id ) {
-								$wp_filetype = wp_check_filetype(basename($filepath), null );
+							if ( is_array($time_matches) && array_key_exists(1, $time_matches) == true ) { //still encoding
 
-								$title .= " ".$video_entry['encode_formats'][$format]['name'];
+								if ( strpos($time_matches[1], ':') !== false ) {
+									$current_hours = intval(substr($time_matches[1], -11, 2));
+									$current_minutes = intval(substr($time_matches[1], -8, 2));
+									$current_seconds = intval(substr($time_matches[1], -5, 2));
+									$current_seconds = ($current_hours * 60 * 60) + ($current_minutes * 60) + $current_seconds;
+								}
+								else { $current_seconds = $time_matches[1]; }
 
-								if ( $user_ID == 0 ) {
-									$parent_post = get_post($parent_id);
-									$user_ID = $parent_post->post_author;
+								$percent_done = intval($current_seconds)/intval($video_entry['movie_info']['duration']);
+								$time_elapsed = time() - $format_info['started'];
+								if ( $percent_done != 0 ) { $time_remaining = date('H:i:s', round($time_elapsed / $percent_done) - $time_elapsed); }
+								else $time_remaining = "unknown";
+								$percent_done = round($percent_done*100);
+								if ( $percent_done < 20 ) { $percent_done_text = ""; }
+								else { $percent_done_text = strval($percent_done)."%"; }
+
+								preg_match('/fps=\s?(.*?) /', $lastline, $fps_matches);
+								if ( is_array($fps_matches) && array_key_exists(1, $fps_matches) == true ) {
+									if ( $fps_matches[1] != 0 ) { $fps_match = $fps_matches[1]; }
+									else {  $fps_match = "10"; }
+								}
+								else {  $fps_match = "10"; }
+								
+								$time_to_wait = strval(max(round(40000/(floatval($fps_match))), 1000)); //wait at least 1 second
+								if ( intval($time_to_wait) > 10000 ) { //wait no more than 10 seconds
+									$time_to_wait = 10000;
 								}
 
-								$attachment = array(
-								   'guid' => $video_entry['encode_formats'][$format]['url'],
-								   'post_mime_type' => $wp_filetype['type'],
-								   'post_title' => $title,
-								   'post_content' => '',
-								   'post_status' => 'inherit',
-								   'post_author' => $user_ID
-								);
+								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
 
-								$new_id = wp_insert_attachment( $attachment, $filepath, $parent_id );
-								// you must first include the image.php file
-								// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
-								require_once(ABSPATH . 'wp-admin/includes/image.php');
-								global $wp_version;
-								if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
-								require_once(ABSPATH . 'wp-admin/includes/media.php');
-								$attach_data = wp_generate_attachment_metadata( $new_id, $filepath );
-								wp_update_attachment_metadata( $new_id, $attach_data );
-								update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
-								update_post_meta( $new_id, '_videopack-encode_string', $video_encode_queue[$video_key]['encode_formats'][$format]['encode_string'] );
-								if ( get_post_type($video_entry['attachmentID']) == false ) { update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $video_entry['movieurl'] ); } //connect new video to external url
-							}
-						}
+								$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
 
-						//finish inserting attachment
-
-						$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
-
-						$next_video = kgvid_encode_videos(); //start the next queued video
-						if ( !empty($next_video['format']) ) { //if there's something to encode, schedule cron
-							$args = array($next_video['video_key'], $next_video['format'], $page);
-							wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
-						}
-
-						if ( (empty($next_video['format']) || $next_video['video_key'] != $video_key) && $video_encode_queue[$video_key]['encode_formats']['fullres']['status'] == "Encoding Complete" ) { //if there's nothing left to encode in this video and we've encoded the fullres
-							$new_movie_url = kgvid_replace_video( $video_key, 'fullres' );
-							$script_function = 'kgvid_redraw_encode_checkboxes("'.$new_movie_url.'", "'.$video_entry['attachmentID'].'", "'.$page.'", "'.$blog_id.'")';
-
-							$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
-
-						}//fullres encoding complete
-
-					}//encoding complete
-
-					else { //there was an unexpected output and the encoded file hasn't been modified in more than 10 seconds
-
-						if ( strpos($lastline, "signal 15") !== false ) { //if the encoding was intentionally canceled
-							$lastline = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
-						}
-						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
-
-					}
-
-				} //if logfile
-				else {
-
-					$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "error";
-					$lastline = __("No log file", 'video-embed-thumbnail-generator');
-
-				}
-
-				if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" || $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "canceled" ) {
-
-					$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = addslashes($lastline);
-
-					$embed_display = '<strong>'.__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
-
-					if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
-
-						$options = kgvid_get_options();
-
-						if ( ( $options['error_email'] != 'nobody'
-								|| ( array_key_exists('network_error_email', $options) && $options['network_error_email'] != 'nobody' )
-							)
-							&& !array_key_exists('mailed', $video_encode_queue[$video_key]['encode_formats'][$format])
-						) {
-							$mailed = false;
-							$blog_title = get_bloginfo();
-							$admin_url = get_admin_url();
-							$user = false;
-							$super_user = false;
-
-							if ( $options['error_email'] == 'encoder'
-								|| ( array_key_exists('network_error_email', $options) && $options['network_error_email'] == 'encoder' )
-							) {
-								if ( !empty($video_encode_queue[$video_key]['user_id']) ) {
-									$user = get_userdata( $video_encode_queue[$video_key]['user_id'] );
+								if ( current_user_can('encode_videos') && $format_info['PID'] ) {
+									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.$video_entry["attachmentID"].'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.$format_info['PID'].', \''.$video_entry["attachmentID"].'\', \''.$video_key.'\', \''.$format.'\', \''.$blog_id.'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
 								}
+
+								$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.$time_remaining.'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.$fps_match.'</small></div>';
 							}
-							elseif( is_numeric($options['error_email']) ) {
-								$user = get_userdata($options['error_email']);
+							elseif ( time() - $format_info['started'] < 10 || ( file_exists($format_info['filepath']) && time() - filemtime($format_info['filepath']) < 10 ) ) { //not enough time has passed, so check again later
+								$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong>';
+								$time_to_wait = 1000;
+								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
+							}
+							elseif (
+								( is_array($video_matches) && array_key_exists(1, $video_matches) == true )
+								|| ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) == true )
+								|| ( is_array($aac_matches) && array_key_exists(1, $aac_matches) == true )
+								|| ( $queue_match )
+							) { //encoding complete
+
+								$percent_done = 100;
+								$ended = filemtime($format_info['logfile']);
+								$time_elapsed = $ended - $format_info['started'];
+								$time_remaining = "0";
+								$fps_match = "10";
+								if ( is_array($libx264_matches) && array_key_exists(1, $libx264_matches) ) {
+									$moov_output = kgvid_fix_moov_atom($format_info['filepath']);
+								} //fix the moov atom if the file was encoded by libx264
+								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "Encoding Complete";
+								$video_encode_queue[$video_key]['encode_formats'][$format]['ended'] = $ended;
+								$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
+
+								kgvid_save_encode_queue($video_encode_queue);
+
+								if ( $format != "fullres" ) {
+
+									//insert the encoded video as a child attachment of the original video, or post if external original
+									if ( get_post_type($video_entry['attachmentID']) == "attachment" ) { //if the original video is in the database set that as parent
+										$parent_id = $video_entry['attachmentID'];
+										$title = get_the_title($video_entry['attachmentID']);
+									}
+									else { //otherwise set the post as the parent
+										$parent_id = $video_entry['parent_id'];
+										$sanitized_url = kgvid_sanitize_url($video_entry['movieurl']);
+										$title = $sanitized_url['basename'];
+									}
+
+									global $user_ID;
+									$video_id = kgvid_url_to_id($video_encode_queue[$video_key]['encode_formats'][$format]['url']);
+									if ( !$video_id ) {
+										$wp_filetype = wp_check_filetype(basename($format_info['filepath']), null );
+
+										$title .= " ".$video_entry['encode_formats'][$format]['name'];
+
+										if ( $user_ID == 0 ) {
+											$parent_post = get_post($parent_id);
+											$user_ID = $parent_post->post_author;
+										}
+
+										$attachment = array(
+										'guid' => $video_entry['encode_formats'][$format]['url'],
+										'post_mime_type' => $wp_filetype['type'],
+										'post_title' => $title,
+										'post_content' => '',
+										'post_status' => 'inherit',
+										'post_author' => $user_ID
+										);
+
+										$new_id = wp_insert_attachment( $attachment, $format_info['filepath'], $parent_id );
+										// you must first include the image.php file
+										// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
+										require_once(ABSPATH . 'wp-admin/includes/image.php');
+										global $wp_version;
+										if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
+										require_once(ABSPATH . 'wp-admin/includes/media.php');
+										$attach_data = wp_generate_attachment_metadata( $new_id, $format_info['filepath'] );
+										wp_update_attachment_metadata( $new_id, $attach_data );
+										update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
+										update_post_meta( $new_id, '_videopack-encode_string', $video_encode_queue[$video_key]['encode_formats'][$format]['encode_string'] );
+										if ( get_post_type($video_entry['attachmentID']) == false ) { update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $video_entry['movieurl'] ); } //connect new video to external url
+									}
+								}
+
+								//finish inserting attachment
+
+								$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
+
+								$next_video = kgvid_encode_videos(); //start the next queued video
+								if ( !empty($next_video['format']) ) { //if there's something to encode, schedule cron
+									wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
+								}
+
+								if ( (empty($next_video['format']) || $next_video['video_key'] != $video_key) && $video_encode_queue[$video_key]['encode_formats']['fullres']['status'] == "Encoding Complete" ) { //if there's nothing left to encode in this video and we've encoded the fullres
+									$new_movie_url = kgvid_replace_video( $video_key, 'fullres' );
+									$script_function = 'kgvid_redraw_encode_checkboxes("'.$new_movie_url.'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'")';
+
+									$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
+
+								}//fullres encoding complete
+
+							}//encoding complete
+
+							else { //there was an unexpected output and the encoded file hasn't been modified in more than 10 seconds
+
+								if ( strpos($lastline, "signal 15") !== false ) { //if the encoding was intentionally canceled
+									$lastline = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
+								}
+								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
+
 							}
 
-							if ( array_key_exists('network_error_email', $options) && is_numeric($options['network_error_email']) ) {
-								$super_user = get_userdata($options['network_error_email']);
-							}
+						} //if logfile
+						else {
 
-							$headers = array('Content-Type: text/html; charset=UTF-8');
+							$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "error";
+							$lastline = __("No log file", 'video-embed-thumbnail-generator');
 
-							if ( $user instanceof WP_User ) {
-								$mailed = wp_mail(
-									$user->user_email,
-									__('Video Encode Error', 'video-embed-thumbnail-generator'),
-									sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ),
-									$headers
-								);
-							}
-
-							if ( $super_user instanceof WP_User && $super_user != $user ) {
-								$network_info = get_current_site();
-								$mailed = wp_mail(
-									$super_user->user_email,
-									__('Video Encode Error', 'video-embed-thumbnail-generator'),
-									sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ).' '.sprintf( _x('on the %s network.', 'on the [name of multisite network] network.', 'video-embed-thumbnail-generator'), '<a href="'.network_admin_url("settings.php?page=kgvid_network_video_encoding_queue").'">'.$network_info->site_name.'</a>' ),
-									$headers
-								);
-							}
-
-							if ( $mailed ) { $video_encode_queue[$video_key]['encode_formats'][$format]['mailed'] = true; }
 						}
 
-					}
+						if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" || $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "canceled" ) {
 
-					kgvid_save_encode_queue($video_encode_queue);
+							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = addslashes($lastline);
 
-					$next_video = kgvid_encode_videos(); //start the next queued video
-					if ( !empty($next_video['format']) ) {
-						$args = array($next_video['video_key'], $next_video['format'], $page);
-						wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check', $args);
-					}
-				}
+							$embed_display = '<strong>'.__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
 
-			}//if not completed
-			else { $embed_display = "<strong>".ucwords($video_encode_queue[$video_key]['encode_formats'][$format]['status'])."</strong>"; }
-		} //if there's a queue and the video is encoding
+							if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
 
-		else { $embed_display = "<strong>".__('Waiting...', 'video-embed-thumbnail-generator')."</strong>"; }
+								$options = kgvid_get_options();
 
-		$arr = array ( 'embed_display' => $embed_display, 'time_to_wait' => $time_to_wait );
+								if ( ( $options['error_email'] != 'nobody'
+										|| ( array_key_exists('network_error_email', $options) && $options['network_error_email'] != 'nobody' )
+									)
+									&& !array_key_exists('mailed', $video_encode_queue[$video_key]['encode_formats'][$format])
+								) {
+									$mailed = false;
+									$blog_title = get_bloginfo();
+									$admin_url = get_admin_url();
+									$user = false;
+									$super_user = false;
 
-		if ( $blog_id ) { restore_current_blog(); }
+									if ( $options['error_email'] == 'encoder'
+										|| ( array_key_exists('network_error_email', $options) && $options['network_error_email'] == 'encoder' )
+									) {
+										if ( !empty($video_encode_queue[$video_key]['user_id']) ) {
+											$user = get_userdata( $video_encode_queue[$video_key]['user_id'] );
+										}
+									}
+									elseif( is_numeric($options['error_email']) ) {
+										$user = get_userdata($options['error_email']);
+									}
 
-		return $arr;
+									if ( array_key_exists('network_error_email', $options) && is_numeric($options['network_error_email']) ) {
+										$super_user = get_userdata($options['network_error_email']);
+									}
 
-	}//end if queue entry exists
+									$headers = array('Content-Type: text/html; charset=UTF-8');
+
+									if ( $user instanceof WP_User ) {
+										$mailed = wp_mail(
+											$user->user_email,
+											__('Video Encode Error', 'video-embed-thumbnail-generator'),
+											sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ),
+											$headers
+										);
+									}
+
+									if ( $super_user instanceof WP_User && $super_user != $user ) {
+										$network_info = get_current_site();
+										$mailed = wp_mail(
+											$super_user->user_email,
+											__('Video Encode Error', 'video-embed-thumbnail-generator'),
+											sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'], basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']), '<a href="'.$admin_url.'/tools.php?page=kgvid_video_encoding_queue">'.$blog_title.'</a>' ).' '.sprintf( _x('on the %s network.', 'on the [name of multisite network] network.', 'video-embed-thumbnail-generator'), '<a href="'.network_admin_url("settings.php?page=kgvid_network_video_encoding_queue").'">'.$network_info->site_name.'</a>' ),
+											$headers
+										);
+									}
+
+									if ( $mailed ) { $video_encode_queue[$video_key]['encode_formats'][$format]['mailed'] = true; }
+								}
+
+							}
+
+							kgvid_save_encode_queue($video_encode_queue);
+
+							$next_video = kgvid_encode_videos(); //start the next queued video
+							if ( !empty($next_video['format']) ) {
+								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
+							}
+						}
+
+					}//if not completed
+					else { $embed_display = "<strong>".ucwords($video_encode_queue[$video_key]['encode_formats'][$format]['status'])."</strong>"; }
+
+				} //if there's a queue and the video is encoding
+
+				else { $embed_display = "<strong>".__('Waiting...', 'video-embed-thumbnail-generator')."</strong>"; }
+
+				$encode_progress[] = array ( 
+					'embed_display' => $embed_display, 
+					'time_to_wait' => $time_to_wait 
+				);				
+
+			} //end loop through encode formats
+
+			if ( $blog_id ) { restore_current_blog(); }
+
+		} //end loop through encode queue
+
+	} //end if there's an encode queue
+
+	return $encode_progress;
 
 }
-add_action('kgvid_cron_queue_check', 'kgvid_encode_progress', 10, 3);
+add_action('kgvid_cron_queue_check', 'kgvid_encode_progress');
 
 function kgvid_ajax_encode_progress() {
 
@@ -8220,7 +8221,7 @@ function kgvid_ajax_encode_progress() {
 	$video_key = $_POST['video_key'];
 	$format = $_POST['format'];
 	$page = $_POST['page'];
-	$progress = kgvid_encode_progress($video_key, $format, $page);
+	$progress = kgvid_encode_progress();
 	echo json_encode($progress);
 	die();
 

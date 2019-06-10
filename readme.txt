@@ -254,7 +254,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Video.js version 7 player option.
 * Deprecated Video.js version 5 player.
 * Removed Strobe Media Playback player option.
-* Renamed 'controlbar' option to 'controls'
+* Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
 
 = 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.

@@ -1161,7 +1161,7 @@ function kgvid_update_encode_queue() {
 
 }
 
-function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
+function kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) {
 
 	var blog = kgvid_get_multisite_data(blogID);
 
@@ -1170,6 +1170,7 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, page, blogID) {
 	if ( kgflashmediaplayersecurity ) { //sometimes this tries to run after the media modal is closed
 
 		var kgvid_encode = kgvid_list_videos_to_encode(postID, blog);
+		if ( pagenow == '')
 
 		jQuery.post(ajaxurl, { action:"kgvid_generate_encode_checkboxes", security: kgflashmediaplayersecurity, movieurl: movieurl, post_id: postID, page: page, blog_id: blog.ID, encodeformats: kgvid_encode }, function(data) {
 			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encodeboxes').empty();
