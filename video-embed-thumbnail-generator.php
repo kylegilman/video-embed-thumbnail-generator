@@ -628,13 +628,13 @@ function kgvid_video_embed_activation_hook( $network_wide ) {
 			update_site_option('kgvid_video_embed_network_options', $network_options);
 
 			$current_blog_id = get_current_blog_id();
-			$sites = wp_get_sites();
+			$sites = get_sites();
 
 			if ( is_array($sites) ) {
 
 				foreach ( $sites as $site ) {
-
-					switch_to_blog($site['blog_id']);
+					$blog_id = $site->__get('id');
+					switch_to_blog($blog_id);
 
 					$options = get_option('kgvid_video_embed_options');
 
@@ -4411,19 +4411,19 @@ function kgvid_video_embed_options_init() {
 		if ( is_array($network_options) && array_key_exists('ffmpeg_exists', $network_options) && 'on' == $network_options['ffmpeg_exists']
  		&& false === $network_queue ) { //if the network queue hasn't been set yet
 
-			$sites = wp_get_sites();
+			$sites = get_sites();
 
 			if ( is_array($sites) ) {
 				$network_queue = array();
 				foreach ( $sites as $site ) {
-
-					$site_queue = get_blog_option($site['blog_id'], 'kgvid_video_embed_queue');
+					$blog_id = $site->__get('id');
+					$site_queue = get_blog_option($blog_id, 'kgvid_video_embed_queue');
 					if ( is_array($site_queue) ) {
 						foreach ( $site_queue as $index => $entry ) {
-							$site_queue[$index]['blog_id'] = $site['blog_id'];
+							$site_queue[$index]['blog_id'] = $blog_id;
 						}
 						$network_queue = array_merge($network_queue, $site_queue);
-						delete_blog_option($site['blog_id'], 'kgvid_video_embed_queue');
+						delete_blog_option($blog_id, 'kgvid_video_embed_queue');
 					}
 
 				}//end loop through sites
@@ -4466,6 +4466,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_section('kgvid_video_embed_playback_settings', __('Default Video Playback Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_playback_settings_section_callback', 'video_embed_thumbnail_generator_settings');
 	add_settings_section('kgvid_video_embed_plugin_settings', __('Plugin Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_settings_section_callback', 'video_embed_thumbnail_generator_settings');
 	add_settings_section('kgvid_video_embed_encode_settings', __('Video Encoding Settings', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings');
+	add_settings_section('kgvid_video_embed_encode_test_settings', __('Video Encoding Test', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings');
 
 	add_settings_field('poster', __('Default thumbnail:', 'video-embed-thumbnail-generator'), 'kgvid_poster_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
 	add_settings_field('endofvideooverlay', __('End of video image:', 'video-embed-thumbnail-generator'), 'kgvid_endofvideooverlay_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings' );
@@ -4517,7 +4518,7 @@ function kgvid_video_embed_options_init() {
 		add_settings_field('execution', _x('Execution:', 'program execution options', 'video-embed-thumbnail-generator'), 'kgvid_execution_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'threads' ) );
 	}
 
-	add_settings_field('test_ffmpeg', __('Test FFMPEG:', 'video-embed-thumbnail-generator'), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings' );
+	add_settings_field('test_ffmpeg', __('Test FFMPEG:', 'video-embed-thumbnail-generator'), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_test_settings' );
 
 }
 add_action('admin_init', 'kgvid_video_embed_options_init' );
@@ -9058,13 +9059,13 @@ function kgvid_deactivate_plugin( $network_wide ) {
 	if ( is_multisite() && $network_wide ) {
 
 		$current_blog_id = get_current_blog_id();
-		$sites = wp_get_sites();
+		$sites = get_sites();
 
 		if ( is_array($sites) ) {
 
 			foreach ( $sites as $site ) {
-
-				switch_to_blog($site['blog_id']);
+				$blog_id = $site->__get('id');
+				switch_to_blog($blog_id);
 				kgvid_clear_cron_and_roles();
 
 			}//end loop through sites
