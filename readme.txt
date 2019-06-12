@@ -2,7 +2,7 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
-Requires at least: 4.4
+Requires at least: 4.6
 Tested up to: 5.2
 Requires PHP: 5.3.0
 Stable tag: 4.6.25
