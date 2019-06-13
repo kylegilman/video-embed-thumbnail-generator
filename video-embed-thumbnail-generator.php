@@ -227,7 +227,12 @@ function kgvid_get_options() {
 
 	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
 		$network_options = get_site_option('kgvid_video_embed_network_options');
-		if ( is_array($network_options) ) { $options = array_merge($options, $network_options); }
+		if ( !is_array($options) ) {
+			$options = kgvid_default_options_fn();
+		}
+		if ( is_array($network_options) ) { 
+			$options = array_merge($options, $network_options); 
+		}
 	}
 
 	return $options;
