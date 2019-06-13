@@ -3286,6 +3286,8 @@ function kgvid_shortcode_atts($atts) {
 		}
 	}
 
+	$default_atts = apply_filters('kgvid_default_shortcode_atts', $default_atts);
+
 	$query_atts = shortcode_atts($default_atts, $atts, 'KGVID');
 
 	$kgvid_video_embed_query_var = get_query_var('kgvid_video_embed'); //variables in URL
