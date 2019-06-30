@@ -3740,7 +3740,7 @@ add_action('wp_ajax_kgvid_generate_encode_checkboxes', 'kgvid_ajax_generate_enco
 
 function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id = false) {
 
-	global $user_ID;
+	$user_ID = get_current_user_id();
 
 	$options = kgvid_get_options();
 	$video_encode_queue = kgvid_get_encode_queue();
@@ -6198,8 +6198,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		wp_enqueue_script( 'kgvid_video_plugin_admin' );
 		wp_enqueue_style( 'video_embed_thumbnail_generator_style' );
 
-		global $user_ID;
-
+		$user_ID = get_current_user_id();
 		$field_id = kgvid_backwards_compatible($post->ID);
 		$movieurl = wp_get_attachment_url($post->ID);
 		$moviefile = get_attached_file($post->ID);
@@ -6645,8 +6644,7 @@ add_action('wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb');
 
 function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
-	global $user_ID;
-
+	$user_ID = get_current_user_id();
 	$options = kgvid_get_options();
 	$uploads = wp_upload_dir();
 
@@ -8182,7 +8180,7 @@ function kgvid_encode_progress($video_key, $format, $page) {
 								$title = $sanitized_url['basename'];
 							}
 
-							global $user_ID;
+							$user_ID = get_current_user_id();
 							$video_id = kgvid_url_to_id($video_encode_queue[$video_key]['encode_formats'][$format]['url']);
 							if ( !$video_id ) {
 								$wp_filetype = wp_check_filetype(basename($filepath), null );
@@ -8490,7 +8488,7 @@ add_action('kgvid_cron_replace_video_check', 'kgvid_replace_video', 10, 2);
 
 function kgvid_clear_completed_queue($type, $scope = 'site') {
 
-	global $user_ID;
+	$user_ID = get_current_user_id();
 
 	$video_encode_queue = kgvid_get_encode_queue();
 
