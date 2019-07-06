@@ -3041,6 +3041,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Strobe Media Playback" ) {
 
 			$code .= "\n\t\t\t\t".'<video id="video_'.$div_suffix.'" ';
+			if ( $query_atts["playsinline"] == 'true' ) { $code .= 'playsinline '; }
 			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
 			if ( $query_atts["controlbar"] != 'none') { $code .= 'controls '; }
@@ -3281,6 +3282,7 @@ function kgvid_shortcode_atts($atts) {
 		'loop' => $options['loop'],
 		'autoplay' => $options['autoplay'],
 		'pauseothervideos' => $options['pauseothervideos'],
+		'playsinline' => 'true',
 		'streamtype' => $options['stream_type'],
 		'scalemode' => $options['scale_mode'],
 		'backgroundcolor' => $options['bgcolor'],
@@ -9081,6 +9083,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
 <li><code>mute="true/false"</code> '.__('sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
+<li><code>playsinline="true/false"</code> '.__('allows videos to play inline on iPhones.', 'video-embed-thumbnail-generator').'</li>
 <li><code>controlbar="docked/floating/none"</code> '.__('sets the controlbar position. "Floating" option only works with Strobe Media Playback.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>

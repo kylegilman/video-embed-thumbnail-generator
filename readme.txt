@@ -100,6 +100,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
 * `autoplay="true/false"`
+* `playsinline="true/false"` allows videos to play inline on iPhones.
 * `pauseothervideos="true/false"` video will pause other videos on the page when it starts playing.
 * `preload="metadata/auto/none"` indicate how much of the video should be loaded when the page loads.
 * `start="mm:ss"` video will start playing at this timecode.
@@ -249,8 +250,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.26 - June 30, 2019 =
+= 4.6.26 - July 6, 2019 =
 * Added option to disable shortcode URL rewriting if WordPress doesn't know your videos are hosted on a CDN.
+* Added playsinline attribute to Video.js videos to allow iPhones to play videos inline on web pages.
 * Added filter to manually rewrite shortcode URLs.
 * Changed code that caused fatal error 'Can't use function return value in write context' on PHP versions before 5.5
 * Stopped using deprecated $user_ID global
