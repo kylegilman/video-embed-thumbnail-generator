@@ -9083,10 +9083,10 @@ function kgvid_add_contextual_help_tab() {
 <li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
 <li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
 <li><code>mute="true/false"</code> '.__('sets the mute button on or off.', 'video-embed-thumbnail-generator').'</li>
-<li><code>playsinline="true/false"</code> '.__('allows videos to play inline on iPhones.', 'video-embed-thumbnail-generator').'</li>
 <li><code>controlbar="docked/floating/none"</code> '.__('sets the controlbar position. "Floating" option only works with Strobe Media Playback.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
+<li><code>playsinline="true/false"</code> '.__('allows videos to play inline on iPhones.', 'video-embed-thumbnail-generator').'</li>
 <li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
 <li><code>preload="metadata/auto/none"</code> '.__('indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator').'</li>
 <li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
