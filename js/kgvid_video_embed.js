@@ -547,9 +547,10 @@ function kgvid_setup_video(id) {
 		if ( played == "not played" ) { //only turn on the default captions on first load
 
 			var mejs_player = eval('mejs.players.'+mejs_id);
-
+			
 			jQuery.each(mejs_player.tracks, function(key, item) {
-				if ( item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang').toLowerCase() ) {
+				if ( jQuery('#'+mejs_id+' track[default]').length > 0
+					&& item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang').toLowerCase() ) {
 					mejs_player.setTrack(item.trackId);
 					jQuery('#'+mejs_id+' .mejs-captions-selector input[value="en"]').prop('checked',true);
 				}
@@ -564,6 +565,7 @@ function kgvid_setup_video(id) {
 		player.on('loadedmetadata', function() {
 
 			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
+			var mejs_player = eval('mejs.players.'+mejs_id);
 
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 			if ( video_vars.mute == "true" ) { player[0].setMuted(true); }
