@@ -3462,7 +3462,6 @@ function KGVID_shortcode($atts, $content = '') {
 			if ( $query_atts['align'] == "left" ) { $aligncode = ' kgvid_textalign_left'; }
 			if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_textalign_center'; }
 			if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_textalign_right'; }
-			if ( $query_atts['inline'] == "true" ) { $aligncode .= ' kgvid_wrapper_inline'; }
 
 			$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'" data-query_atts="'.esc_attr(json_encode($gallery_query_atts)).'">';
 			$code .= kgvid_gallery_page(1, $gallery_query_atts);

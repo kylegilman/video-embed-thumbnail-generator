@@ -934,12 +934,14 @@ function kgvid_resize_gallery_play_button(gallery_id) {
 
 		if ( video_vars.player_type == "Video.js" ) {
 			var button_selector = '.vjs-big-play-button';
-			var translate_y = 30;
+			var translate_x = '0';
+			var translate_y = '-30px';
 		}
 
 		if ( video_vars.player_type == "WordPressDefault" ) {
 			var button_selector = '.mejs-overlay-button';
-			var translate_y = 5;
+			var translate_x = '-50%'
+			var translate_y = '-55%';
 		}
 
 		var play_button_percent = jQuery('#'+gallery_id+' '+button_selector).width()/thumb_width;
@@ -948,7 +950,7 @@ function kgvid_resize_gallery_play_button(gallery_id) {
 		var scale_value = Math.round(thumb_width * max_percent / unscaled_width * 1000)/1000;
 
 		if ( scale_value < 1 ) {
-			var css_text = 'scale('+scale_value+') translateY(-'+translate_y+'px)';
+			var css_text = 'scale('+scale_value+') translate('+translate_x+', '+translate_y+')';
 
 			jQuery('#'+gallery_id+' '+button_selector).css({
 				'transform' : css_text,

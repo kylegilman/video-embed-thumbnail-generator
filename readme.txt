@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.4
-Tested up to: 5.2
+Tested up to: 5.4
 Requires PHP: 5.6.0
 Stable tag: 4.6.25
 License: GPLv2 or later
@@ -250,12 +250,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.6.26 - July 6, 2019 =
+= 4.6.26 - April 22, 2020 =
 * Added option to disable shortcode URL rewriting if WordPress doesn't know your videos are hosted on a CDN.
 * Added playsinline attribute to Video.js videos to allow iPhones to play videos inline on web pages.
 * Added filter to manually rewrite shortcode URLs.
 * Changed code that caused fatal error 'Can't use function return value in write context' on PHP versions before 5.5
-* Stopped using deprecated $user_ID global
+* Made gallery thumbnail images responsive.
+* Stopped using deprecated $user_ID global.
+* Fixed bug that crashed WordPress Default player if text tracks were available but no default track was set.
 
 = 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.

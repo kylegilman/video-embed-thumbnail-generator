@@ -299,7 +299,8 @@ span.kgvid_facebook_icon_holder {
 }
 
 .kgvid_video_gallery_thumb {
-	position: relative;
+    position: relative;
+    max-width:100%;
 	vertical-align: bottom;
     display:inline-block;
 	cursor: pointer !important;
@@ -313,6 +314,13 @@ span.kgvid_facebook_icon_holder {
 	padding: 0px;
     margin: 0px;
     object-fit: cover;
+}
+
+.kgvid_video_gallery_thumb .mejs-overlay-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0 0;
 }
 
 .kgvid_video_gallery_thumb .titlebackground {
