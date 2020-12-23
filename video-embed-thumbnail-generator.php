@@ -7429,8 +7429,8 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			$movieoffset = "0";
 		}
 
-		$thumbnailfilename[$i] = $jpgpath.$sanitized_url['basename']."_thumb".$i.".jpg";
-		$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
+		$thumbnailfilename[$i] = str_replace(" ", "_", $sanitized_url['basename']."_thumb".$i.".jpg");
+		$thumbnailfilename[$i] = $jpgpath.$thumbnailfilename[$i];
 
 		if ( !empty($options['htaccess_login']) && strpos($moviefilepath, 'http://') === 0 ) {
 			$moviefilepath = substr_replace($moviefilepath, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);

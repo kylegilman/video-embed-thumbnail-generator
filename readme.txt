@@ -258,7 +258,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Made gallery thumbnail images responsive.
 * Stopped using deprecated $user_ID global.
 * Fixed bug that crashed WordPress Default player if text tracks were available but no default track was set.
-* Fixed bug that didn't recognize FFMPEG if application path contained a space.
+* Fixed bugs that caused FFMPEG errors if application path contained a space.
 
 = 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.
