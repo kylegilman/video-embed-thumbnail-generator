@@ -1137,7 +1137,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg').' 2>&1';
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg').'" 2>&1';
 			exec ( $cmd, $output, $returnvalue );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}
@@ -3870,7 +3870,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 	foreach ( $video_formats as $format => $format_stats ) {
 
-		if ( strpos($post_mime_type, $format) !== false ) { continue; } //skip webm or ogv checkbox if the video is webm or ogv
+		if ( strpos($post_mime_type, strval($format)) !== false ) { continue; } //skip webm or ogv checkbox if the video is webm or ogv
 
 		if ( empty($movieurl) ) { $disabled[$format] = ' disabled title="Please enter a valid video URL"'; }
 
@@ -7993,7 +7993,7 @@ function kgvid_test_ffmpeg() {
 			if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
 
 			$old_locale = kgvid_set_locale($uploads['path']."/sample-video-h264".$suffix); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -y -i "'.$uploads['path']."/sample-video-h264".$suffix.'" -qscale 1 -vframes 1 -f mjpeg '.$uploads['path'].'/thumb_tmp/watermark_test.jpg');
+			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -y -i "'.$uploads['path']."/sample-video-h264".$suffix.'" -qscale 1 -vframes 1 -f mjpeg "'.$uploads['path'].'/thumb_tmp/watermark_test.jpg'.'"');
 			exec ( $cmd );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			kgvid_schedule_cleanup_generated_files('thumbs');
