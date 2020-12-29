@@ -3,9 +3,9 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.6
-Tested up to: 5.2
-Requires PHP: 5.3.0
-Stable tag: 4.6.25
+Tested up to: 5.6
+Requires PHP: 5.6.0
+Stable tag: 4.6.26
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,6 +100,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
 * `loop="true/false"`
 * `autoplay="true/false"`
+* `playsinline="true/false"` allows videos to play inline on iPhones.
 * `pauseothervideos="true/false"` video will pause other videos on the page when it starts playing.
 * `preload="metadata/auto/none"` indicate how much of the video should be loaded when the page loads.
 * `start="mm:ss"` video will start playing at this timecode.
@@ -249,12 +250,22 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7 - June xx, 2019 =
+= 4.7 - January xx, 2020 =
 * Changed plugin name to Videopack.
 * Added Video.js version 7 player option.
 * Deprecated Video.js version 5 player.
 * Removed Strobe Media Playback player option.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
+
+= 4.6.26 - December 28, 2020 =
+* Added option to disable shortcode URL rewriting if WordPress doesn't know your videos are hosted on a CDN.
+* Added playsinline attribute to Video.js videos to allow iPhones to play videos inline on web pages.
+* Added filter to manually rewrite shortcode URLs.
+* Changed code that caused fatal error 'Can't use function return value in write context' on PHP versions before 5.5
+* Made gallery thumbnail images responsive.
+* Stopped using deprecated $user_ID global.
+* Fixed bug that crashed WordPress Default player if text tracks were available but no default track was set.
+* Fixed bugs that caused FFMPEG errors if application path contained a space.
 
 = 4.6.25 - May 28, 2019 =
 * Fixed bug that broke pop-up galleries when video title had a space in the name.

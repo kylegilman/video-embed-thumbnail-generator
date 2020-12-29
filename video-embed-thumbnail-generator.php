@@ -5,7 +5,7 @@ Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
 Version: 4.7
 Author: Kyle Gilman
-Author URI: http://www.kylegilman.net/
+Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
 Domain Path: /languages
 
@@ -184,7 +184,8 @@ function kgvid_default_options_fn() {
 		"simultaneous_encodes" => 1,
 		"error_email" => "nobody",
 		"alwaysloadscripts" => false,
-		"replace_video_shortcode" => false
+		"replace_video_shortcode" => false,
+		"rewrite_attachment_url" => 'on'
 	);
 
 	$video_formats = kgvid_video_formats();
@@ -710,7 +711,7 @@ function kgvid_plugin_meta_links( $links, $file ) {
 	if ( $file == $plugin ) {
 		return array_merge(
 			$links,
-			array( '<a href="http://www.kylegilman.net/plugin-donation/">Donate</a>' )
+			array( '<a href="https://www.kylegilman.net/plugin-donation/">Donate</a>' )
 		);
 	}
 	return $links;
@@ -1138,7 +1139,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg').' 2>&1';
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg').'" 2>&1';
 			exec ( $cmd, $output, $returnvalue );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}
@@ -2454,7 +2455,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 	else { // $content is a URL
 		// workaround for relative video URL (contributed by Lee Fernandes)
 		if(substr($content, 0, 1) == '/') $content = get_bloginfo('url').$content;
-		$content = trim($content);
+		$content = apply_filters('kgvid_filter_url', trim($content));
 		$id_array[0] = kgvid_url_to_id($content);
 	}
 
@@ -2483,21 +2484,31 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 			$attachment_url = wp_get_attachment_url($id);
 			if ( $attachment_url == false ) { _e("Invalid video ID", 'video-embed-thumbnail-generator'); continue; }
-			$exempt_cdns = array(
-				'digitaloceanspaces.com',
-				'amazonaws.com',
-				'rackspace.com',
-				'netdna-cdn.com',
-				'nexcess-cdn.net',
-				'limelight.com'
-			); //don't replace URLs that point to CDNs
-			$exempt_url = false;
-			foreach ( $exempt_cdns as $exempt_cdn ) {
-				if ( strpos($content, $exempt_cdn) !== false ) {
-					$exempt_url = true;
+
+			if ( $options['rewrite_attachment_url'] == 'on' ) {
+
+				$rewrite_url = true;
+
+				//in case user doesn't know about this setting still check manually for popular CDNs like we used to
+				$exempt_cdns = array(
+					'amazonaws.com',
+					'rackspace.com',
+					'netdna-cdn.com',
+					'nexcess-cdn.net',
+					'limelight.com',
+					'digitaloceanspaces.com'
+				); //don't replace URLs that point to CDNs
+				foreach ( $exempt_cdns as $exempt_cdn ) {
+					if ( strpos($content, $exempt_cdn) !== false ) {
+						$rewrite_url = false;
+					}
 				}
+
 			}
-			if ( !$exempt_url ) { $content = $attachment_url; }
+			else {
+				$rewrite_url = false;
+			}
+			if ( $rewrite_url || $content == '' ) { $content = $attachment_url; }
 
 			$encodevideo_info = kgvid_encodevideo_info($content, $id);
 			$attachment_info = get_post( $id );
@@ -2514,7 +2525,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( !empty($poster_id) ) {
 				$poster_image_src = wp_get_attachment_image_src($poster_id, 'full');
 				$query_atts['poster'] = $poster_image_src[0];
-				if ( strpos($query_atts['width'], '%') === false && intval($query_atts['width']) <= get_option('medium_size_h') ) {
+				if ( strpos($query_atts['width'], '%') === false 
+					&& $query_atts['resize'] == 'false'
+					&& $query_atts['fullwidth'] == 'false'
+					&& intval($query_atts['width']) <= get_option('medium_size_h')
+				) {
 					$query_atts['poster'] = kgvid_get_attachment_medium_url($poster_id);
 				}
 			}
@@ -2960,6 +2975,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
 
 			$code .= "\n\t\t\t\t".'<video id="video_'.$div_suffix.'" ';
+			if ( $query_atts["playsinline"] == 'true' ) { $code .= 'playsinline '; }
 			if ( $query_atts["loop"] == 'true') { $code .= 'loop '; }
 			if ( $query_atts["autoplay"] == 'true') { $code .= 'autoplay '; }
 			if ( $query_atts["controls"] != 'false') { $code .= 'controls '; }
@@ -3230,6 +3246,7 @@ function kgvid_shortcode_atts($atts) {
 		'loop' => $options['loop'],
 		'autoplay' => $options['autoplay'],
 		'pauseothervideos' => $options['pauseothervideos'],
+		'playsinline' => 'true',
 		'streamtype' => $options['stream_type'],
 		'scalemode' => $options['scale_mode'],
 		'backgroundcolor' => $options['bgcolor'],
@@ -3413,7 +3430,6 @@ function KGVID_shortcode($atts, $content = '') {
 			if ( $query_atts['align'] == "left" ) { $aligncode = ' kgvid_textalign_left'; }
 			if ( $query_atts['align'] == "center" ) { $aligncode = ' kgvid_textalign_center'; }
 			if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_textalign_right'; }
-			if ( $query_atts['inline'] == "true" ) { $aligncode .= ' kgvid_wrapper_inline'; }
 
 			$code .= '<div class="kgvid_gallerywrapper'.$aligncode.'" id="kgvid_gallery_'.$kgvid_gallery_id.'" data-query_atts="'.esc_attr(json_encode($gallery_query_atts)).'">';
 			$code .= kgvid_gallery_page(1, $gallery_query_atts);
@@ -3705,7 +3721,7 @@ add_action('wp_ajax_kgvid_generate_encode_checkboxes', 'kgvid_ajax_generate_enco
 
 function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id = false) {
 
-	global $user_ID;
+	$user_ID = get_current_user_id();
 
 	$options = kgvid_get_options();
 	$video_encode_queue = kgvid_get_encode_queue();
@@ -3830,7 +3846,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 	foreach ( $video_formats as $format => $format_stats ) {
 
-		if ( strpos($post_mime_type, $format) !== false ) { continue; } //skip webm or ogv checkbox if the video is webm or ogv
+		if ( strpos($post_mime_type, strval($format)) !== false ) { continue; } //skip webm or ogv checkbox if the video is webm or ogv
 
 		if ( empty($movieurl) ) { $disabled[$format] = ' disabled title="Please enter a valid video URL"'; }
 
@@ -4490,6 +4506,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('count_views', __("View counting:", 'video-embed-thumbnail-generator'), 'kgvid_view_counting_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
 	add_settings_field('replacevideoshortcode', __("Replace video shortcode:", 'video-embed-thumbnail-generator'), 'kgvid_replace_video_shortcode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
 	add_settings_field('scriptloading', __("Script loading:", 'video-embed-thumbnail-generator'), 'kgvid_scriptloading_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'alwaysloadscripts' ) );
+	add_settings_field('rewrite_attachment_url', __("Attachment URL Rewriting:", 'video-embed-thumbnail-generator'), 'kgvid_rewrite_attachment_url_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
 	add_settings_field('generate_thumbs', __('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
 	add_settings_field('featured', __('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
 	add_settings_field('thumb_parent', __('Attach thumbnails to:', 'video-embed-thumbnail-generator'), 'kgvid_thumb_parent_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
@@ -4803,6 +4820,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_scriptloading_callback() {
 		$options = kgvid_get_options();
 		echo "<input ".checked( $options['alwaysloadscripts'], "on", false )." id='alwaysloadscripts' name='kgvid_video_embed_options[alwaysloadscripts]' type='checkbox' /> <label for='alwaysloadscripts'>".__('Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator')."</span></span><br />";
+	}
+
+	function kgvid_rewrite_attachment_url_callback() {
+		$options = kgvid_get_options();
+		echo "<input ".checked( $options['rewrite_attachment_url'], "on", false )." id='rewrite_attachment_url' name='kgvid_video_embed_options[rewrite_attachment_url]' type='checkbox' /> <label for='rewrite_attachment_url'>".__("Allow rewriting of WordPress attachment URLs.", 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if the plugin is changing your URLs to local files instead of the CDN.", 'video-embed-thumbnail-generator')."</span></span><br />";
 	}
 
 	function kgvid_generate_thumbs_callback() {
@@ -5564,6 +5586,11 @@ function kgvid_update_settings() {
 			$options['replace_video_shortcode'] = false;
 		}
 
+		if ( version_compare( $options['version'], '4.6.26', '<' ) ) {
+			$options['version'] = '4.6.26';
+			$options['rewrite_attachment_url'] = 'on';
+		}	
+
 		if ( version_compare( $options['version'], '4.7', '<' ) ) {
 			$options['version'] = '4.7';
 			if ( $options['embed_method'] == 'Strobe Media Playback' ) {
@@ -6089,8 +6116,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		wp_enqueue_script( 'kgvid_video_plugin_admin' );
 		wp_enqueue_style( 'video_embed_thumbnail_generator_style' );
 
-		global $user_ID;
-
+		$user_ID = get_current_user_id();
 		$field_id = kgvid_backwards_compatible($post->ID);
 		$movieurl = wp_get_attachment_url($post->ID);
 		$moviefile = get_attached_file($post->ID);
@@ -6536,8 +6562,7 @@ add_action('wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb');
 
 function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
-	global $user_ID;
-
+	$user_ID = get_current_user_id();
 	$options = kgvid_get_options();
 	$uploads = wp_upload_dir();
 
@@ -7317,8 +7342,8 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			$movieoffset = "0";
 		}
 
-		$thumbnailfilename[$i] = $jpgpath.$sanitized_url['basename']."_thumb".$i.".jpg";
-		$thumbnailfilename[$i] = str_replace(" ", "_", $thumbnailfilename[$i]);
+		$thumbnailfilename[$i] = str_replace(" ", "_", $sanitized_url['basename']."_thumb".$i.".jpg");
+		$thumbnailfilename[$i] = $jpgpath.$thumbnailfilename[$i];
 
 		if ( !empty($options['htaccess_login']) && strpos($moviefilepath, 'http://') === 0 ) {
 			$moviefilepath = substr_replace($moviefilepath, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
@@ -7881,7 +7906,7 @@ function kgvid_test_ffmpeg() {
 			if (!file_exists($uploads['path'].'/thumb_tmp')) { mkdir($uploads['path'].'/thumb_tmp'); }
 
 			$old_locale = kgvid_set_locale($uploads['path']."/sample-video-h264".$suffix); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -y -i "'.$uploads['path']."/sample-video-h264".$suffix.'" -qscale 1 -vframes 1 -f mjpeg '.$uploads['path'].'/thumb_tmp/watermark_test.jpg');
+			$cmd = escapeshellcmd($options['app_path'].'/'.$options['video_app'].' -y -i "'.$uploads['path']."/sample-video-h264".$suffix.'" -qscale 1 -vframes 1 -f mjpeg "'.$uploads['path'].'/thumb_tmp/watermark_test.jpg'.'"');
 			exec ( $cmd );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 			kgvid_schedule_cleanup_generated_files('thumbs');
@@ -8070,7 +8095,7 @@ function kgvid_encode_progress() {
 										$title = $sanitized_url['basename'];
 									}
 
-									global $user_ID;
+									$user_ID = get_current_user_id();
 									$video_id = kgvid_url_to_id($video_encode_queue[$video_key]['encode_formats'][$format]['url']);
 									if ( !$video_id ) {
 										$wp_filetype = wp_check_filetype(basename($format_info['filepath']), null );
@@ -8369,7 +8394,7 @@ add_action('kgvid_cron_replace_video_check', 'kgvid_replace_video', 10, 2);
 
 function kgvid_clear_completed_queue($type, $scope = 'site') {
 
-	global $user_ID;
+	$user_ID = get_current_user_id();
 
 	$video_encode_queue = kgvid_get_encode_queue();
 
@@ -8570,7 +8595,7 @@ add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
 function kgvid_delete_video_attachment($video_id) {
 
 	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false
-		|| !empty(get_post_meta($video_id, '_kgflashmediaplayer-format', true))
+		|| ! (get_post_meta($video_id, '_kgflashmediaplayer-format', true))
 	) { //only do this for videos or other child formats
 		
 		$parent_post = get_post($video_id);
@@ -8967,6 +8992,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>controls="true/false"</code> '.__('Enables video controls.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
+<li><code>playsinline="true/false"</code> '.__('allows videos to play inline on iPhones.', 'video-embed-thumbnail-generator').'</li>
 <li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
 <li><code>preload="metadata/auto/none"</code> '.__('indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator').'</li>
 <li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>

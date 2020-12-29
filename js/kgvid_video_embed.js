@@ -535,9 +535,10 @@ function kgvid_setup_video(id) {
 		if ( played == "not played" ) { //only turn on the default captions on first load
 
 			var mejs_player = eval('mejs.players.'+mejs_id);
-
+			
 			jQuery.each(mejs_player.tracks, function(key, item) {
-				if ( item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang').toLowerCase() ) {
+				if ( jQuery('#'+mejs_id+' track[default]').length > 0
+					&& item.srclang == jQuery('#'+mejs_id+' track[default]').attr('srclang').toLowerCase() ) {
 					mejs_player.setTrack(item.trackId);
 					jQuery('#'+mejs_id+' .mejs-captions-selector input[value="en"]').prop('checked',true);
 				}
@@ -552,6 +553,7 @@ function kgvid_setup_video(id) {
 		player.on('loadedmetadata', function() {
 
 			var played = jQuery('#video_'+id+'_div').data("played") || "not played";
+			var mejs_player = eval('mejs.players.'+mejs_id);
 
 			if ( video_vars.set_volume != "" ) { player[0].volume = video_vars.set_volume; }
 			if ( video_vars.mute == "true" ) { player[0].setMuted(true); }
@@ -911,12 +913,14 @@ function kgvid_resize_gallery_play_button(gallery_id) {
 
 		if ( video_vars.player_type == "Video.js" || video_vars.player_type == "Video.js v7" ) {
 			var button_selector = '.vjs-big-play-button';
-			var translate_y = 30;
+			var translate_x = '0';
+			var translate_y = '-30px';
 		}
 
 		if ( video_vars.player_type == "WordPress Default" ) {
 			var button_selector = '.mejs-overlay-button';
-			var translate_y = 5;
+			var translate_x = '-50%'
+			var translate_y = '-55%';
 		}
 
 		var play_button_percent = jQuery('#'+gallery_id+' '+button_selector).width()/thumb_width;
@@ -925,7 +929,7 @@ function kgvid_resize_gallery_play_button(gallery_id) {
 		var scale_value = Math.round(thumb_width * max_percent / unscaled_width * 1000)/1000;
 
 		if ( scale_value < 1 ) {
-			var css_text = 'scale('+scale_value+') translateY(-'+translate_y+'px)';
+			var css_text = 'scale('+scale_value+') translate('+translate_x+', '+translate_y+')';
 
 			jQuery('#'+gallery_id+' '+button_selector).css({
 				'transform' : css_text,
