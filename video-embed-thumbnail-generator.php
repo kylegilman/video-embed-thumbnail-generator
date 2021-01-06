@@ -1139,7 +1139,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg').'" 2>&1';
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg"').' 2>&1';
 			exec ( $cmd, $output, $returnvalue );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}
