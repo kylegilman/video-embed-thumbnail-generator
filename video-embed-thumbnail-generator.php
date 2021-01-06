@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: https://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.26
+Version: 4.6.27
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.26',
+		"version" => '4.6.27',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -1137,7 +1137,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg').'" 2>&1';
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg"').' 2>&1';
 			exec ( $cmd, $output, $returnvalue );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}
@@ -1150,7 +1150,7 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
 			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
-			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg '.$uploads['path'].'/ffmpeg_exists_test.jpg');
+			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg"');
 			exec ( $cmd );
 			$restore_locale = setlocale(LC_CTYPE, $old_locale);
 		}

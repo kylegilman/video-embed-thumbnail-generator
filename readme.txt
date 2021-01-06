@@ -250,6 +250,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.27 - January 6, 2021 =
+* Fixed bug in testing FFMPEG execution.
+
 = 4.6.26 - December 28, 2020 =
 * Added option to disable shortcode URL rewriting if WordPress doesn't know your videos are hosted on a CDN.
 * Added playsinline attribute to Video.js videos to allow iPhones to play videos inline on web pages.
