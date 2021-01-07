@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.6
 Tested up to: 5.6
 Requires PHP: 5.6.0
-Stable tag: 4.6.26
+Stable tag: 4.6.27
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -256,6 +256,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Deprecated Video.js version 5 player.
 * Removed Strobe Media Playback player option.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
+
+= 4.6.27 - January 6, 2021 =
+* Fixed bug in testing FFMPEG execution.
 
 = 4.6.26 - December 28, 2020 =
 * Added option to disable shortcode URL rewriting if WordPress doesn't know your videos are hosted on a CDN.
