@@ -116,6 +116,7 @@ function kgvid_default_options_fn() {
 		"autoplay" => false,
 		"pauseothervideos" => "on",
 		"loop" => false,
+		"playsinline" => "on",
 		"volume" => 1,
 		"muted" => false,
 		"preload" => "metadata",
@@ -4737,7 +4738,9 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Autoplay.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
-		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop to beginning when video ends.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+
+		echo "<input class='affects_player' ".checked( $options['playsinline'], "on", false )." id='playsinline' name='kgvid_video_embed_options[playsinline]' type='checkbox' /> <label for='playsinline'>".__('Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		echo "<input class='affects_player' ".checked( $options['playback_rate'], "on", false )." id='playback_rate' name='kgvid_video_embed_options[playback_rate]' type='checkbox' /> <label for='playback_rate'>".__('Enable variable playback rates.', 'video-embed-thumbnail-generator')."</label><br>\n\t";
 
@@ -5606,6 +5609,7 @@ function kgvid_update_settings() {
 			}
 			$options['muted'] = $options['mute']; //convert 'mute' option to 'muted' to match HTML5 convention
 			unset($options['mute']);
+			$options['playsinline'] = 'on';
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
