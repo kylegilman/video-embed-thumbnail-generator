@@ -1,0 +1,2280 @@
+# Translation of Plugins - Video Embed &amp; Thumbnail Generator - Stable (latest release) in Greek
+# This file is distributed under the same license as the Plugins - Video Embed &amp; Thumbnail Generator - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2021-02-03 13:17-0500\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Poedit 2.4.2\n"
+"Language: el_GR\n"
+"Project-Id-Version: Plugins - Video Embed &amp; Thumbnail Generator\n"
+"POT-Creation-Date: \n"
+"Last-Translator: \n"
+"Language-Team: Jrop llc https://www.jrop.com\n"
+
+#: video-embed-thumbnail-generator.php:9092
+msgid "allows videos to play inline on iPhones."
+msgstr "επιτρέπει στα βίντεο να παίζουν απευθείας στο iPhone."
+
+#: video-embed-thumbnail-generator.php:4931
+msgid "If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if the plugin is changing your URLs to local files instead of the CDN."
+msgstr "Εάν τα βίντεό σας φιλοξενούνται στο CDN, το WordPress ενδέχεται να επιστρέψει εσφαλμένες διευθύνσεις URL για συνημμένα στη Βιβλιοθήκη Πολυμέσων. Απενεργοποιήστε αυτήν τη ρύθμιση εάν το πρόσθετο αλλάζει τις διευθύνσεις URL σε τοπικά αρχεία αντί για το CDN."
+
+#: video-embed-thumbnail-generator.php:4931
+msgid "Allow rewriting of WordPress attachment URLs."
+msgstr "Να επιτρέπεται η επανεγγραφή διευθύνσεων URL σε συνημμένα στο WordPress."
+
+#: video-embed-thumbnail-generator.php:4543
+msgid "Attachment URL Rewriting:"
+msgstr "Επανεγγραφή διεύθυνσης URL συνημμένου:"
+
+#: video-embed-thumbnail-generator.php:412
+#: video-embed-thumbnail-generator.php:2245
+#: video-embed-thumbnail-generator.php:2635
+msgctxt "Full resolution"
+msgid "Full"
+msgstr "Πλήρης"
+
+#: video-embed-thumbnail-generator.php:9100
+msgid "enable or disable video embedding and sharing icons."
+msgstr "ενεργοποιήστε ή απενεργοποιήστε τα ενσωματωμένα βίντεο και την κοινοποίηση εικονιδίων."
+
+#: video-embed-thumbnail-generator.php:4921
+msgid "If you have posts or theme files that make use of the built-in WordPress video shortcode, the plugin can override them with this plugin's embedded video player."
+msgstr "Εάν έχετε δημοσιεύσεις ή αρχεία θεμάτων που χρησιμοποιούν τον ενσωματωμένο σύντομο κώδικα για βίντεο στο WordPress, το πρόσθετο μπορεί να τα αντικαταστήσει με το ενσωματωμένο πρόγραμμα αναπαραγωγής βίντεο αυτού του πρόσθετου."
+
+#: video-embed-thumbnail-generator.php:4921
+msgid "Override any existing WordPress built-in \"[video]\" shortcodes."
+msgstr "Παράκαμψη τυχόν υφιστάμενου ενσωματωμένου σύντομου κώδικα για \"[video]\" στο WordPress."
+
+#: video-embed-thumbnail-generator.php:4541
+msgid "Replace video shortcode:"
+msgstr "Αντικατάσταση σύντομου κώδικα για βίντεο:"
+
+#: video-embed-thumbnail-generator.php:5273
+msgid "Constant Rate Factor (CRF) attempts to maintain a particular quality output for the entire video and only uses bits the encoder determines are necessary. Average Bit Rate is similar to the method used in older versions of this plugin. If CRF is selected, WEBM encoding will also use the ABR setting to set a max bit rate 25% higher than the ABR. Without a max bit rate setting WEBM files are terrible quality. VP9 CRF and bitrates are set using a formula based on resolution that approximates <a href=\"https://developers.google.com/media/vp9/bitrate-modes/\">Google's recommended VOD values</a>."
+msgstr "Ο Συντελεστής Σταθερού Ρυθμού (CRF) προσπαθεί να διατηρήσει ένα συγκεκριμένο ποιοτικό αποτέλεσμα για ολόκληρο το βίντεο και χρησιμοποιεί μόνο bits που ο κωδικοποιητής καθορίζει ως απαραίτητα. Ο Μέσος Ρυθμός των Bit είναι παρόμοιος με τη μέθοδο που χρησιμοποιείται σε παλαιότερες εκδόσεις αυτού του πρόσθετου. Εάν έχει επιλεγεί το CRF, η κωδικοποίηση WEBM θα χρησιμοποιεί επίσης τη ρύθμιση ABR για να ορίσει ένα μέγιστο ρυθμό μετάδοσης των bit κατά 25% υψηλότερο από το ABR. Χωρίς τη ρύθμιση μέγιστου ρυθμού των bit, τα αρχεία WEBM έχουν απαίσια ποιότητα. Τα VP9 CRF και οι ρυθμοί bit ρυθμίζονται χρησιμοποιώντας έναν τύπο βασισμένο σε ανάλυση που προσεγγίζει τις <a href=\"https://developers.google.com/media/vp9/bitrate-modes/\"> προτεινόμενες τιμές VOD της Google </a>."
+
+#: video-embed-thumbnail-generator.php:540
+#: video-embed-thumbnail-generator.php:541
+msgid "Custom VP9 WEBM"
+msgstr "Προσαρμοσμένο VP9 WEBM"
+
+#: video-embed-thumbnail-generator.php:5192
+msgid "Set as thumbnail watermark"
+msgstr "Ορίστε ως εικόνα προεπισκόπησης με υδατογράφημα"
+
+#: video-embed-thumbnail-generator.php:4745
+msgid "Constrain all gallery thumbnails to default video aspect ratio."
+msgstr "Περιορίστε όλες τις εικόνες προεπισκόπησης της συλλογής σε προεπιλεγμένη αναλογία εικόνας του βίντεο."
+
+#: video-embed-thumbnail-generator.php:4563
+msgid "Add watermark to thumbnails:"
+msgstr "Προσθέστε υδατογράφημα στις εικόνες προεπισκόπησης:"
+
+#: video-embed-thumbnail-generator.php:5104
+msgid "Only show video formats selected above on attachment pages and encode queue."
+msgstr "Εμφάνιση μόνο μορφών βίντεο που έχουν επιλεγεί παραπάνω στις σελίδες συνημμένων και στην σειρά κωδικοποίησης."
+
+#: video-embed-thumbnail-generator.php:4810
+msgid "Enable variable playback rates."
+msgstr "Ενεργοποίηση μεταβλητών ρυθμών αναπαραγωγής."
+
+#: video-embed-thumbnail-generator.php:4526
+msgid "Playback rate:"
+msgstr "Ρυθμός αναπαραγωγής:"
+
+#: video-embed-thumbnail-generator.php:3664
+msgid "Set:"
+msgstr "Καθορίστε:"
+
+#: video-embed-thumbnail-generator.php:2542
+msgid "Invalid video ID"
+msgstr "Μη έγκυρο αναγνωριστικό βίντεο"
+
+#: video-embed-thumbnail-generator.php:9103
+msgid "sets the level of video view counting."
+msgstr "καθορίζει το επίπεδο καταμέτρησης προβολών βίντεο."
+
+#: video-embed-thumbnail-generator.php:9084
+msgid "set video to conform to the default aspect ratio. Vertical applies only if the video height is greater than the width."
+msgstr "καθορίζει το βίντεο ώστε να συμμορφώνεται με την προεπιλεγμένη αναλογία διαστάσεων. Το κάθετο ισχύει μόνο εάν το ύψος του βίντεο είναι μεγαλύτερο από το πλάτος."
+
+#: video-embed-thumbnail-generator.php:5356
+msgid "Recent versions of FFMPEG will automatically rotate mobile videos when necessary. Disable if your version of FFMPEG is old enough that vertical videos don't rotate correctly."
+msgstr "Οι πρόσφατες εκδόσεις του FFMPEG θα περιστρέφουν αυτόματα τα βίντεο για κινητά όταν είναι απαραίτητο. Απενεργοποιήστε εάν η έκδοσή σας του FFMPEG είναι αρκετά παλιά ώστε τα κατακόρυφα βίντεο να μην περιστρέφονται σωστά."
+
+#: video-embed-thumbnail-generator.php:5356
+msgid "Enable automatic FFMPEG rotation."
+msgstr "Ενεργοποίηση αυτόματης περιστροφής του FFMPEG."
+
+#: video-embed-thumbnail-generator.php:4916
+msgid "Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it."
+msgstr "Για την εγγραφή προβολών στη βάση δεδομένων απαιτείται εγγραφή στη βάση δεδομένων, η οποία μπορεί να υπερφορτώσει έναν διακομιστή με πολλές προβολές. Για να επιταχύνετε τη φόρτωση σελίδας, ενεργοποιήστε μόνο το επίπεδο καταμέτρησης προβολών που χρειάζεστε. Εάν έχει φορτωθεί το Google Analytics, η παρακολούθηση συμβάντων ανά τρίμηνο καταγράφεται πάντα επειδή οι διακομιστές της Google μπορούν να το χειριστούν."
+
+#: video-embed-thumbnail-generator.php:4915
+msgid "Record %s views in the WordPress database."
+msgstr "Καταγραφή %s προβολών στη βάση δεδομένων του WordPress."
+
+#: video-embed-thumbnail-generator.php:4906
+msgid "start"
+msgstr "έναρξη"
+
+#: video-embed-thumbnail-generator.php:4905
+msgid "start and complete"
+msgstr "έναρξη και ολοκλήρωση"
+
+#: video-embed-thumbnail-generator.php:4904
+msgid "start, 25%, 50%, 75%, and complete"
+msgstr "έναρξη, 25%, 50%, 75%, και ολοκλήρωση"
+
+#: video-embed-thumbnail-generator.php:4736
+msgid "When set to \"no,\" the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window."
+msgstr "Όταν έχει οριστεί σε \"όχι\", το πρόγραμμα αναπαραγωγής βίντεο προσαρμόζεται αυτόματα στην αναλογία διαστάσεων του βίντεο, αλλά σε ορισμένες περιπτώσεις απαιτείται σταθερή αναλογία διαστάσεων και τα κατακόρυφα βίντεο ταιριάζουν συχνά καλύτερα στη σελίδα όταν εμφανίζονται σε μικρότερο παράθυρο."
+
+#: video-embed-thumbnail-generator.php:4736
+msgid "Constrain %s videos to default aspect ratio."
+msgstr "Επιβάλετε %s βίντεο στην προεπιλεγμένη αναλογία διαστάσεων."
+
+#: video-embed-thumbnail-generator.php:4727
+msgid "vertical"
+msgstr "κατακόρυφα"
+
+#: video-embed-thumbnail-generator.php:4726
+#: video-embed-thumbnail-generator.php:4907
+msgid "no"
+msgstr "όχι"
+
+#: video-embed-thumbnail-generator.php:4724
+msgid "Default Width:"
+msgstr "Προεπιλεγμένο Πλάτος:"
+
+#: video-embed-thumbnail-generator.php:4540
+msgid "View counting:"
+msgstr "Καταμέτρηση προβολών:"
+
+#: video-embed-thumbnail-generator.php:4523
+msgid "Video dimensions:"
+msgstr "Διαστάσεις βίντεο:"
+
+#: video-embed-thumbnail-generator.php:9094
+msgid "indicate how much of the video should be loaded when the page loads."
+msgstr "υποδείξτε πόσα από τα βίντεο πρέπει να φορτώνονται κατά τη φόρτωση της σελίδας."
+
+#: video-embed-thumbnail-generator.php:1906
+msgid "Error: unable to load video in browser for thumbnail generation and %1$s not found at %2$s"
+msgstr "Σφάλμα: δεν ήταν δυνατή η φόρτωση του βίντεο στο πρόγραμμα περιήγησης για δημιουργία εικόνας προεπισκόπησης και το %1$s δεν βρέθηκε στο %2$s"
+
+#: video-embed-thumbnail-generator.php:9106
+msgid "shows a download icon overlay to make it easier for users to save the video file to their computers."
+msgstr "εμφανίζει ένα εικονίδιο λήψης για να διευκολύνει τους χρήστες να αποθηκεύουν το αρχείο βίντεο στους υπολογιστές τους."
+
+#: video-embed-thumbnail-generator.php:9093
+msgid "video will pause other videos on the page when it starts playing."
+msgstr "το βίντεο θα διακόψει άλλα βίντεο στη σελίδα όταν αρχίσει να παίζει."
+
+#: video-embed-thumbnail-generator.php:6264
+msgid "More..."
+msgstr "Περισσότερα..."
+
+#: video-embed-thumbnail-generator.php:4926
+msgid "Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded."
+msgstr "Συνήθως, η JavaScript του προσθέτου φορτώνεται μόνο εάν υπάρχει ένα βίντεο στη σελίδα. Η φόρτωση σελίδας σε AJAX μπορεί να προκαλέσει σφάλματα, επειδή η JavaScript δεν φορτώνεται με το περιεχόμενο του βίντεο. Η ενεργοποίηση αυτής της επιλογής θα διασφαλίσει ότι η JavaScript φορτώνεται πάντα."
+
+#: video-embed-thumbnail-generator.php:4926
+msgid "Always load plugin-related JavaScripts."
+msgstr "Να φορτώνετε πάντα την JavaScript που σχετίζεται με πρόσθετα."
+
+#: video-embed-thumbnail-generator.php:4780
+msgid "Pause other videos on page when starting a new video."
+msgstr "Παύση άλλων βίντεο στη σελίδα κατά την έναρξη ενός νέου βίντεο."
+
+#: video-embed-thumbnail-generator.php:4771
+msgid "Display controls:"
+msgstr "Στοιχεία ελέγχου οθόνης:"
+
+#: video-embed-thumbnail-generator.php:4542
+msgid "Script loading:"
+msgstr "Φόρτωση σεναρίου:"
+
+#: video-embed-thumbnail-generator.php:9095
+msgid "video will start playing at this timecode."
+msgstr "το βίντεο θα αρχίσει να παίζει σε αυτόν τον χρόνο."
+
+#: video-embed-thumbnail-generator.php:3151
+msgid "Share on Facebook"
+msgstr "Κοινοποίηση στο Facebook"
+
+#: video-embed-thumbnail-generator.php:3145
+msgid "Share on Twitter"
+msgstr "Κοινοποίηση στο Twitter"
+
+#: video-embed-thumbnail-generator.php:3134
+msgid "Start at:"
+msgstr "Ξεκίνα στις:"
+
+#: video-embed-thumbnail-generator.php:6268
+#: video-embed-thumbnail-generator.php:6523
+msgid "%1$s%2$d%3$s Complete View"
+msgid_plural "%1$s%2$d%3$s Complete Views"
+msgstr[0] "%1$s%2$d%3$s Πλήρης Προβολή"
+msgstr[1] "%1$s%2$d%3$s Πλήρεις Προβολές"
+
+#: video-embed-thumbnail-generator.php:6267
+msgid "75%"
+msgstr "75%"
+
+#: video-embed-thumbnail-generator.php:6266
+msgid "50%"
+msgstr "50%"
+
+#: video-embed-thumbnail-generator.php:6265
+msgid "25%"
+msgstr "50%"
+
+#. translators: Start refers to the number of times a video has been started
+#: video-embed-thumbnail-generator.php:6264
+#: video-embed-thumbnail-generator.php:6519
+msgid "%1$s%2$d%3$s Play"
+msgid_plural "%1$s%2$d%3$s Plays"
+msgstr[0] "%1$s%2$d%3$s Αναπαραγωγή"
+msgstr[1] "%1$s%2$d%3$s Αναπαραγωγές"
+
+#: video-embed-thumbnail-generator.php:4606
+msgid "JW Player 6"
+msgstr "JW Player 6"
+
+#: video-embed-thumbnail-generator.php:9122
+msgid "enables or disables native controls on touchscreen devices."
+msgstr "ενεργοποιεί ή απενεργοποιεί τα εγγενή στοιχεία ελέγχου σε συσκευές με οθόνη αφής."
+
+#: video-embed-thumbnail-generator.php:9111
+msgid "allow or disable Schema.org search engine metadata."
+msgstr "επιτρέψτε ή απενεργοποιήστε τα μεταδεδομένα της μηχανής αναζήτησης Schema.org."
+
+#: video-embed-thumbnail-generator.php:9110
+msgid "account for high-density (retina) displays when choosing automatic video resolution."
+msgstr "λογαριασμός για οθόνες υψηλής πυκνότητας (ρετίνα) κατά την επιλογή αυτόματης ανάλυσης βίντεο."
+
+#: video-embed-thumbnail-generator.php:8312
+msgctxt "on the [name of multisite network] network."
+msgid "on the %s network."
+msgstr "στο δίκτυο %s."
+
+#: video-embed-thumbnail-generator.php:8302
+#: video-embed-thumbnail-generator.php:8312
+msgctxt "1 is the error message, 2 is the filename, 3 is the website name."
+msgid "Error message \"%1$s\" while encoding video file %2$s at %3$s"
+msgstr "Μήνυμα σφάλματος \"%1$s\" κατά την κωδικοποίηση του αρχείου βίντεο %2$s στο %3$s"
+
+#: video-embed-thumbnail-generator.php:8301
+#: video-embed-thumbnail-generator.php:8311
+msgid "Video Encode Error"
+msgstr "Σφάλμα Κωδικοποίησης Βίντεο"
+
+#: video-embed-thumbnail-generator.php:6461
+#: video-embed-thumbnail-generator.php:7041
+msgid "Show download icon"
+msgstr "Εμφάνιση εικονιδίου λήψης"
+
+#: video-embed-thumbnail-generator.php:5427
+msgid "Tests %1$s's ability to rotate vertical videos shot on mobile devices."
+msgstr "Δοκιμάζει την ικανότητα του %1$s να περιστρέφει κατακόρυφα βίντεο που έχουν τραβηχτεί σε κινητές συσκευές."
+
+#: video-embed-thumbnail-generator.php:5427
+msgid "Test video rotation."
+msgstr "Δοκιμή περιστροφής του βίντεο."
+
+#: video-embed-thumbnail-generator.php:5426
+msgid "Sample %2$s encode command"
+msgstr "Δείγμα εντολής κωδικοποίησης %2$s"
+
+#: video-embed-thumbnail-generator.php:5132
+msgid "Convert animated GIFs to %s."
+msgstr "Μετατροπή κινούμενων εικόνων GIF σε %s."
+
+#: video-embed-thumbnail-generator.php:4897
+msgid "Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites (including Facebook & Twitter) will not show videos through oEmbed unless your link is https. In order to display the video properly, this will also remove some of the security features included in the built-in WordPress oEmbed system."
+msgstr "Επιτρέπει στους χρήστες άλλων ιστότοπων να ενσωματώνουν τα βίντεό σας χρησιμοποιώντας μόνο τη διεύθυνση URL της δημοσίευσης και όχι τον πλήρη κώδικα ενσωμάτωσης iframe, όπως το Vimeo ή το YouTube. Ωστόσο, οι περισσότεροι ιστότοποι κοινωνικών μέσων (συμπεριλαμβανομένου του Facebook & Twitter) δεν θα εμφανίζουν βίντεο μέσω του oEmbed, εκτός εάν ο σύνδεσμός σας είναι σε https. Για να εμφανιστεί σωστά το βίντεο, αυτό θα αφαιρέσει επίσης ορισμένες από τις δυνατότητες ασφαλείας που περιλαμβάνονται στο ενσωματωμένο σύστημα oEmbed του WordPress."
+
+#: video-embed-thumbnail-generator.php:4897
+msgctxt "\"oEmbed\" is a proper noun and might not need translation"
+msgid "Change oEmbed to video instead of WordPress default photo/excerpt."
+msgstr "Αλλάξτε το oEmbed σε βίντεο αντί για την προεπιλεγμένη φωτογραφία/απόσπασμα σε WordPress."
+
+#: video-embed-thumbnail-generator.php:4894
+msgid "Twitter username"
+msgstr "Όνομα χρήστη στο Twitter"
+
+#: video-embed-thumbnail-generator.php:4893
+msgid "Generates metadata for \"player\" Twitter Cards that will show a thumbnail and playable video in Twitter. Disables Jetpack Twitter metadata on any page with a video. Your site must have https enabled and you must request whitelist approval for your site using the %1$sTwitter card validator%2$s. Don't worry if your player card doesn't render. Twitter will most likely approve your request."
+msgstr "Δημιουργεί μεταδεδομένα στο Twitter Cards για το \"πρόγραμμα αναπαραγωγής\" που θα εμφανίζουν μια εικόνα προεπισκόπησης και ένα βίντεο με δυνατότητα αναπαραγωγής στο Twitter. Απενεργοποιεί τα μεταδεδομένα Jetpack στο Twitter σε οποιαδήποτε σελίδα με βίντεο. Ο ιστότοπός σας πρέπει να έχει ενεργοποιήσει το https και πρέπει να ζητήσετε έγκριση στη λίστα επιτρεπόμενων για τον ιστότοπό σας χρησιμοποιώντας την %1$sεπαλήθευση στο Twitter card%2$s Μην ανησυχείτε εάν η κάρτα στο πρόγραμμα αναπαραγωγής σας δεν αποδίδει. Το Twitter πιθανότατα θα εγκρίνει το αίτημά σας."
+
+#: video-embed-thumbnail-generator.php:4893
+msgid "Enable Twitter Cards."
+msgstr "Ενεργοποίηση του Twitter Cards."
+
+#: video-embed-thumbnail-generator.php:4892
+msgid "Helps your videos appear in video searches on Google, Yahoo, and Bing."
+msgstr "Βοηθά τα βίντεό σας να εμφανίζονται σε αναζητήσεις βίντεο στο Google, το Yahoo και το Bing."
+
+#: video-embed-thumbnail-generator.php:4892
+msgid "Enable Schema.org structured data markup for search engines."
+msgstr "Ενεργοποίηση επισήμανσης δομημένων δεδομένων του Schema.org για μηχανές αναζήτησης."
+
+#: video-embed-thumbnail-generator.php:4891
+msgid "Facebook and some other social media sites will use these tags to embed the first video in your post. Your video must be served via https in order to be embedded directly in Facebook and playback is handled by the unstyled built-in browser player. No statistics will be recorded for videos embedded this way and Open Graph tags generated by Jetpack will be disabled on pages with videos."
+msgstr "Το Facebook και ορισμένοι άλλοι ιστότοποι κοινωνικών μέσων θα χρησιμοποιήσουν αυτές τις ετικέτες για να ενσωματώσουν το πρώτο βίντεο στην δημοσίευσή σας. Το βίντεό σας πρέπει να προβάλλεται μέσω https για να ενσωματωθεί απευθείας στο Facebook και η αναπαραγωγή γίνεται από το τυποποιημένο ενσωματωμένο πρόγραμμα αναπαραγωγής στον φυλλομετρητή. Δεν θα καταγραφούν στατιστικά στοιχεία για ενσωματωμένα βίντεο με αυτόν τον τρόπο και οι ετικέτες Open Graph που δημιουργούνται από το Jetpack θα απενεργοποιηθούν σε σελίδες με βίντεο."
+
+#: video-embed-thumbnail-generator.php:4887
+msgid "Embedding disabled"
+msgstr "Η ενσωμάτωση απενεργοποιήθηκε"
+
+#: video-embed-thumbnail-generator.php:4815
+msgid "Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button."
+msgstr "Απενεργοποιήστε την μορφοποίηση του Video.js και εμφανίστε τα ενσωματωμένα στοιχεία ελέγχου βίντεο σε κινητές συσκευές. Αυτό θα απενεργοποιήσει το κουμπί επιλογής ανάλυσης."
+
+#: video-embed-thumbnail-generator.php:4717
+msgid "Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data."
+msgstr "Οι περισσότερες σύγχρονες φορητές συσκευές και ορισμένες οθόνες πολύ υψηλής ανάλυσης επιτραπέζιων υπολογιστών (αυτό που η Apple αποκαλεί οθόνη Ρετίνα) χρησιμοποιούν αναλογία εικονοστοιχείων για να υπολογίσουν το μέγεθος της προβολής τους. Η χρήση της αναλογίας εικονοστοιχείων μπορεί να έχει ως αποτέλεσμα την επιλογή υψηλότερης ανάλυσης σε κινητές συσκευές από ό,τι σε επιτραπέζιες συσκευές. Επειδή αυτές οι συσκευές έχουν πραγματικά εξαιρετικά υψηλές αναλύσεις, και σε μια ανταποκρίσιμη σχεδίαση, το πρόγραμμα αναπαραγωγής βίντεο καταλαμβάνει συνήθως περισσότερο μέρος της οθόνης από ό,τι σε ένα πρόγραμμα περιήγησης επιτραπέζιου υπολογιστή, αυτό δεν είναι λάθος, αλλά οι χρήστες σας μπορεί να προτιμούν να χρησιμοποιούν λιγότερα δεδομένα κινητής τηλεφωνίας."
+
+#: video-embed-thumbnail-generator.php:4717
+msgid "Use display pixel ratio for resolution calculation"
+msgstr "Χρησιμοποιήστε την αναλογία εικονοστοιχείων οθόνης για τον υπολογισμό της ανάλυσης"
+
+#: video-embed-thumbnail-generator.php:4716
+msgid "If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time."
+msgstr "Εάν υπάρχουν πολλές διαθέσιμες αναλύσεις H.264 για ένα βίντεο, μπορείτε να επιλέξετε να φορτώσετε την υψηλότερη ή τη χαμηλότερη διαθέσιμη ανάλυση από προεπιλογή, να επιλέξετε αυτόματα την ανάλυση με βάση το μέγεθος του πλαισίου του βίντεο ή να υποδείξετε μια συγκεκριμένη ανάλυση που θα χρησιμοποιείται κάθε φορά."
+
+#: video-embed-thumbnail-generator.php:4642
+msgid "Facebook button"
+msgstr "Κουμπί για το Facebook"
+
+#: video-embed-thumbnail-generator.php:4641
+msgid "Enter your Twitter username in the Video Sharing section below."
+msgstr "Εισαγάγετε το όνομα χρήστη σας στο Twitter στην ενότητα Κοινοποίηση Βίντεο παρακάτω."
+
+#: video-embed-thumbnail-generator.php:4641
+msgid "Twitter button"
+msgstr "Κουμπί για το Twitter"
+
+#: video-embed-thumbnail-generator.php:4640
+msgid "Embed code"
+msgstr "Κωδικός ενσωμάτωσης"
+
+#: video-embed-thumbnail-generator.php:4639
+msgid "Sharing:"
+msgstr "Κοινοποίηση:"
+
+#: video-embed-thumbnail-generator.php:4619
+msgid "JW Player player"
+msgstr "JW Player"
+
+#: video-embed-thumbnail-generator.php:4561
+msgid "Email encoding errors to:"
+msgstr "Σφάλματα κωδικοποίησης μέσω email σε:"
+
+#: video-embed-thumbnail-generator.php:4539
+msgid "Video sharing:"
+msgstr "Κοινοποίηση Βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4354
+msgid "Can also be set on individual sites if the %s settings tab isn't disabled."
+msgstr "Μπορεί επίσης να οριστεί σε μεμονωμένους ιστότοπους εάν η καρτέλα ρυθμίσεων του %s δεν είναι απενεργοποιημένη."
+
+#: video-embed-thumbnail-generator.php:4347
+#: video-embed-thumbnail-generator.php:5170
+msgid "User who initiated encoding"
+msgstr "Χρήστης που ξεκίνησε την κωδικοποίηση"
+
+#: video-embed-thumbnail-generator.php:4346
+#: video-embed-thumbnail-generator.php:5169
+msgid "Nobody"
+msgstr "Κανείς"
+
+#: video-embed-thumbnail-generator.php:4336
+msgid "Email all encoding errors on the network to:"
+msgstr "Στείλτε με email όλα τα σφάλματα κωδικοποίησης στο δίκτυο:"
+
+#: video-embed-thumbnail-generator.php:4333
+msgctxt "Access FFMPEG settings tab"
+msgid "Access %s settings tab."
+msgstr "Πρόσβαση στην καρτέλα ρυθμίσεων του %s."
+
+#: video-embed-thumbnail-generator.php:4210
+msgid "Clear All"
+msgstr "Διαγραφή Όλων"
+
+#: video-embed-thumbnail-generator.php:4153
+msgid "Other site's video"
+msgstr "Άλλο βίντεο του ιστότοπου"
+
+#: video-embed-thumbnail-generator.php:3907
+msgctxt "Replace original with full resolution format again"
+msgid "%s again"
+msgstr "%s ξανά"
+
+#: video-embed-thumbnail-generator.php:3828
+msgid "Insufficient priveleges to encode this video"
+msgstr "Ανεπαρκή δικαιώματα για την κωδικοποίηση αυτού του βίντεο"
+
+#: video-embed-thumbnail-generator.php:3112
+msgid "Right-click or ctrl-click to download"
+msgstr "Κάντε δεξί κλικ ή ctrl-κλικ για λήψη"
+
+#: video-embed-thumbnail-generator.php:3109
+msgid "Click to download"
+msgstr "Κάντε κλικ για λήψη"
+
+#: video-embed-thumbnail-generator.php:2244
+msgctxt "text above list of video resolutions"
+msgid "Quality"
+msgstr "Ποιότητα"
+
+#: video-embed-thumbnail-generator.php:1928
+msgid "You are about to clear all videos currently encoding, not yet encoded, completed successfully, and completed with errors."
+msgstr "Πρόκειται να διαγράψετε όλα τα βίντεο που κωδικοποιούν αυτήν τη στιγμή, δεν έχουν ακόμη κωδικοποιηθεί, ολοκληρώθηκαν με επιτυχία και ολοκληρώθηκαν με σφάλματα."
+
+#: video-embed-thumbnail-generator.php:552
+#: video-embed-thumbnail-generator.php:553
+msgid "Custom OGV"
+msgstr "Προσαρμοσμένο OGV"
+
+#: video-embed-thumbnail-generator.php:528
+#: video-embed-thumbnail-generator.php:529
+msgid "Custom WEBM"
+msgstr "Προσαρμοσμένο WEBM"
+
+#: video-embed-thumbnail-generator.php:516
+#: video-embed-thumbnail-generator.php:517
+msgid "Custom MP4"
+msgstr "Προσαρμοσμένο MP4"
+
+#. Author URI of the plugin
+msgid "https://www.kylegilman.net/"
+msgstr "https://www.kylegilman.net/"
+
+#. Author of the plugin
+msgid "Kyle Gilman"
+msgstr "Kyle Gilman"
+
+#. Description of the plugin
+msgid "Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding."
+msgstr "Δημιουργεί εικόνες προεπισκόπησης, βίντεο συμβατά με HTML5 και ενσωματώνει κωδικοποίηση για βίντεο που φιλοξενούνται τοπικά. Απαιτεί FFMPEG ή LIBAV για κωδικοποίηση."
+
+#. Plugin URI of the plugin
+msgid "https://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/"
+msgstr "https://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/"
+
+#. Plugin Name of the plugin
+msgid "Video Embed & Thumbnail Generator"
+msgstr "Video Embed & Thumbnail Generator"
+
+#: video-embed-thumbnail-generator.php:9144
+msgid "display the title overlay on gallery thumbnails."
+msgstr "εμφανίστε τον τίτλο στις εικόνες προεπισκόπησης της συλλογής."
+
+#: video-embed-thumbnail-generator.php:9143
+msgid "or %s to disable pagination. Number of video thumbnails to show on each gallery page."
+msgstr "ή %s για απενεργοποίηση της σελιδαρίθμησης. Αριθμός των εικόνων προεπισκόπησης σε βίντεο για εμφάνιση σε κάθε σελίδα της συλλογής."
+
+#: video-embed-thumbnail-generator.php:9142
+msgid "either close the pop-up or start playing the next video when the current video finishes playing."
+msgstr "αλλιώς κλείστε το αναδυόμενο παράθυρο ή ξεκινήστε την αναπαραγωγή του επόμενου βίντεο όταν ολοκληρωθεί η αναπαραγωγή του τρέχοντος βίντεο."
+
+#: video-embed-thumbnail-generator.php:9141
+msgid "post ID to display a gallery made up of videos associated with a different post."
+msgstr "αναγνωριστικό δημοσίευσης για εμφάνιση της συλλογής που αποτελείται από βίντεο που σχετίζονται με διαφορετική δημοσίευση."
+
+#: video-embed-thumbnail-generator.php:9140
+msgid "sort order"
+msgstr "σειρά ταξινόμησης"
+
+#: video-embed-thumbnail-generator.php:9139
+msgid "criteria for sorting the gallery"
+msgstr "κριτήρια ταξινόμησης της συλλογής"
+
+#: video-embed-thumbnail-generator.php:9138
+msgid "comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together."
+msgstr "αναγνωριστικά συνημμένων βίντεο διαχωρισμένα με κόμμα. Περιλαμβάνει μόνο αυτά τα βίντεο στη συλλογή. Παρακαλούμε σημειώστε ότι η συμπερίληψη και η εξαίρεση δεν μπορούν να χρησιμοποιηθούν μαζί."
+
+#: video-embed-thumbnail-generator.php:9137
+msgid "comma separated video attachment IDs. Excludes the videos from the gallery."
+msgstr "αναγνωριστικά συνημμένων βίντεο διαχωρισμένα με κόμμα. Εξαιρούνται τα βίντεο από τη συλλογή."
+
+#: video-embed-thumbnail-generator.php:9136
+msgid "width in pixels to display gallery thumbnails"
+msgstr "πλάτος σε εικονοστοιχεία για εμφάνιση εικόνων προεπισκόπησης συλλογής"
+
+#: video-embed-thumbnail-generator.php:9135
+msgid "turns on the gallery"
+msgstr "ενεργοποιεί τη συλλογή"
+
+#: video-embed-thumbnail-generator.php:9134
+msgid "These options are available for video galleries (options work the same as standard WordPress image galleries)"
+msgstr "Αυτές οι επιλογές είναι διαθέσιμες για συλλογή βίντεο (οι επιλογές λειτουργούν όπως οι τυπικές συλλογές εικόνων στο WordPress)"
+
+#: video-embed-thumbnail-generator.php:9131
+msgid "Lets you specify all these flashvars in an XML file."
+msgstr "Σας επιτρέπει να καθορίσετε όλα αυτά τα flashvars σε ένα αρχείο XML."
+
+#: video-embed-thumbnail-generator.php:9130
+msgid "set the background color to whatever hex code you want."
+msgstr "ορίστε το χρώμα φόντου σε οποιονδήποτε δεκαεξαδικό κώδικα θέλετε."
+
+#: video-embed-thumbnail-generator.php:9130
+msgid "#rrggbb"
+msgstr "#rrggbb"
+
+#: video-embed-thumbnail-generator.php:9129
+msgid "If the video display size isn't the same as the video file, this determines how the video will be scaled."
+msgstr "Εάν το μέγεθος προβολής του βίντεο δεν είναι το ίδιο με το αρχείο του βίντεο, αυτό καθορίζει τον τρόπο κλιμάκωσης του βίντεο."
+
+#: video-embed-thumbnail-generator.php:9128
+msgid "I honestly don't know what this is for."
+msgstr "Ειλικρινά δεν ξέρω τι είναι αυτό."
+
+#: video-embed-thumbnail-generator.php:9127
+msgid "turns the big play button overlay in the middle of the video on or off."
+msgstr "ενεργοποιεί ή απενεργοποιεί το μεγάλο κουμπί αναπαραγωγής στη μέση του βίντεο."
+
+#: video-embed-thumbnail-generator.php:9126
+msgid "specify whether to autohide the control bar after a few seconds."
+msgstr "καθορίστε αν θα γίνει αυτόματη απόκρυψη της γραμμής ελέγχου μετά από λίγα δευτερόλεπτα."
+
+#: video-embed-thumbnail-generator.php:9125
+msgid "These options will only affect Flash playback in Strobe Media Playback video elements. They will have no effect on other players."
+msgstr "Αυτές οι επιλογές θα επηρεάσουν μόνο την αναπαραγωγή του Flash σε στοιχεία βίντεο στο Strobe Media Playback. Δεν θα επηρεάσουν άλλα προγράμματα αναπαραγωγής."
+
+#: video-embed-thumbnail-generator.php:9121
+#: video-embed-thumbnail-generator.php:9132
+msgid "Completely change the look of the video player. %sInstructions here."
+msgstr "Αλλάξτε εντελώς την εμφάνιση του προγράμματος αναπαραγωγής βίντεο. %sΟδηγίες εδώ."
+
+#: video-embed-thumbnail-generator.php:9120
+msgid "These options will only affect Video.js playback"
+msgstr "Αυτές οι επιλογές θα επηρεάσουν μόνο την αναπαραγωγή του Video.js"
+
+#: video-embed-thumbnail-generator.php:9118
+msgid "track is enabled by default."
+msgstr "το κομμάτι είναι ενεργοποιημένο από προεπιλογή."
+
+#: video-embed-thumbnail-generator.php:9117
+msgid "text that will be shown to the user when selecting the track."
+msgstr "κείμενο που θα εμφανίζεται στον χρήστη κατά την επιλογή του κομματιού."
+
+#: video-embed-thumbnail-generator.php:9116
+msgid "the track's two-character language code (en, fr, es, etc)"
+msgstr "ο κωδικός γλώσσας δύο χαρακτήρων του κομματιού (en, fr, es, κ.λπ.)"
+
+#: video-embed-thumbnail-generator.php:9114
+msgid "URL of the WebVTT file."
+msgstr "Διεύθυνση URL του αρχείου WebVTT."
+
+#: video-embed-thumbnail-generator.php:9113
+msgid "These options will add a subtitle/caption track."
+msgstr "Αυτές οι επιλογές θα προσθέσουν έναν υπότιτλο/λεζάντα."
+
+#: video-embed-thumbnail-generator.php:9109
+msgid "specify the video resolution when the page loads."
+msgstr "καθορίστε την ανάλυση του βίντεο όταν φορτώνεται η σελίδα."
+
+#: video-embed-thumbnail-generator.php:9108
+msgid "allow or disable responsive resizing."
+msgstr "επιτρέψτε ή απενεργοποιήστε την αλλαγή μεγέθους της απόκρισης."
+
+#: video-embed-thumbnail-generator.php:9107
+msgid "allow or disable right-clicking on the video player."
+msgstr "επιτρέψτε ή απενεργοποιήστε το δεξί κλικ στο πρόγραμμα αναπαραγωγής βίντεο."
+
+#: video-embed-thumbnail-generator.php:9105
+msgid "Used for metadata only."
+msgstr "Χρησιμοποιείται μόνο για μεταδεδομένα."
+
+#: video-embed-thumbnail-generator.php:9104
+msgid "text that is displayed below the video (not subtitles or closed captioning)"
+msgstr "κείμενο που εμφανίζεται κάτω από το βίντεο (όχι υπότιτλοι ή λεζάντα κλειστού πλαισίου)"
+
+#: video-embed-thumbnail-generator.php:9102
+msgid "turns the view count on or off."
+msgstr "ενεργοποιεί ή απενεργοποιεί τον αριθμό προβολών."
+
+#: video-embed-thumbnail-generator.php:9101
+msgid "changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable."
+msgstr "αλλάζει το κείμενο που εμφανίζεται στον κώδικα ενσωμάτωσης προκειμένου να παρέχει μια προσαρμοσμένη μέθοδο για την ενσωμάτωση ενός βίντεο ή %s για απενεργοποίηση."
+
+#: video-embed-thumbnail-generator.php:9098
+msgid "or %s to disable. If this is set, it will override the watermark_link_to setting."
+msgstr "ή %s για απενεργοποίηση. Εάν έχει ρυθμιστεί, θα παρακάμψει τη ρύθμιση του υδατογραφήματος."
+
+#: video-embed-thumbnail-generator.php:9096
+#: video-embed-thumbnail-generator.php:9099
+msgid "or %s to disable."
+msgstr "ή %s για απενεργοποίηση."
+
+#: video-embed-thumbnail-generator.php:9089
+msgid "sets the controlbar position. \"Floating\" option only works with Strobe Media Playback."
+msgstr "ορίζει τη θέση της γραμμής ελέγχου. Η επιλογή \"Αιωρούμενο\" λειτουργεί μόνο με το Strobe Media Playback."
+
+#: video-embed-thumbnail-generator.php:9088
+msgid "sets the mute button on or off."
+msgstr "ενεργοποιεί ή απενεργοποιεί το κουμπί σίγασης."
+
+#: video-embed-thumbnail-generator.php:9087
+msgid "pre-sets the volume for unusually loud videos. Value between 0 and 1."
+msgstr "προκαθορίζει την ένταση για ασυνήθιστα δυνατά βίντεο. Τιμή μεταξύ 0 και 1."
+
+#: video-embed-thumbnail-generator.php:9086
+msgid "allow other content on the same line as the video"
+msgstr "επιτρέψτε άλλο περιεχόμενο στην ίδια γραμμή με το βίντεο"
+
+#: video-embed-thumbnail-generator.php:9083
+msgid "set video to always expand to fill its container."
+msgstr "ορίζει το βίντεο να επεκτείνεται πάντα για να γεμίζει το περιεχόμενό του."
+
+#: video-embed-thumbnail-generator.php:9080
+msgid "sets the image shown when the video ends."
+msgstr "ορίζει την εικόνα που εμφανίζεται όταν τελειώνει το βίντεο."
+
+#: video-embed-thumbnail-generator.php:9079
+msgid "sets the thumbnail."
+msgstr "ορίζει την εικόνα προεπισκόπησης."
+
+#: video-embed-thumbnail-generator.php:9078
+msgid "sort order."
+msgstr "σειρά ταξινόμησης."
+
+#: video-embed-thumbnail-generator.php:9077
+msgid "criteria for sorting attached videos if no URL or ID is given."
+msgstr "κριτήρια ταξινόμησης συνημμένων βίντεο, εάν δεν έχει δοθεί διεύθυνση URL ή αναγνωριστικό."
+
+#: video-embed-thumbnail-generator.php:9076
+msgid "number of attached videos to display if no URL or ID is given."
+msgstr "αριθμός συνημμένων βίντεο για εμφάνιση εάν δεν έχει δοθεί διεύθυνση URL ή αναγνωριστικό."
+
+#: video-embed-thumbnail-generator.php:9075
+msgid "video attachment ID (instead of using a URL)."
+msgstr "αναγνωριστικό συνημμένου βίντεο (αντί να χρησιμοποιήσετε μια διεύθυνση URL)."
+
+#: video-embed-thumbnail-generator.php:9074
+msgid "Use these optional attributes in the [KGVID] shortcode:"
+msgstr "Χρησιμοποιήστε αυτά τα προαιρετικά χαρακτηριστικά στον σύντομο κώδικα [KGVID]:"
+
+#: video-embed-thumbnail-generator.php:9073
+msgid "Video Embed & Thumbnail Generator Shortcode Reference"
+msgstr "Αναφορά Σύντομου Κώδικα για το Video Embed & Thumbnail Generator"
+
+#: video-embed-thumbnail-generator.php:8606
+msgid "Fixing moov atom for streaming"
+msgstr "Διόρθωση του moov atom για ζωντανή μετάδοση (streaming)"
+
+#: video-embed-thumbnail-generator.php:8335
+msgid "Waiting..."
+msgstr "Αναμονή..."
+
+#: video-embed-thumbnail-generator.php:8264
+msgid "Error:"
+msgstr "Σφάλμα:"
+
+#: video-embed-thumbnail-generator.php:8256
+msgid "No log file"
+msgstr "Δεν υπάρχει αρχείο καταγραφής"
+
+#: video-embed-thumbnail-generator.php:8246
+msgid "Encoding was canceled."
+msgstr "Η κωδικοποίηση ακυρώθηκε."
+
+#: video-embed-thumbnail-generator.php:8225
+#: video-embed-thumbnail-generator.php:8237
+msgid "Encoding Complete"
+msgstr "Η κωδικοποίηση ολοκληρώθηκε"
+
+#: video-embed-thumbnail-generator.php:8146
+msgctxt "Frames per second"
+msgid "FPS:"
+msgstr "FPS:"
+
+#: video-embed-thumbnail-generator.php:8146
+msgid "Remaining:"
+msgstr "Απομένουν:"
+
+#: video-embed-thumbnail-generator.php:8146
+msgid "Elapsed:"
+msgstr "Παρήλθαν:"
+
+#: video-embed-thumbnail-generator.php:8143
+msgid "Cancel"
+msgstr "Άκυρο"
+
+#: video-embed-thumbnail-generator.php:8140
+#: video-embed-thumbnail-generator.php:8150
+msgid "Encoding"
+msgstr "Κωδικοποίηση"
+
+#: video-embed-thumbnail-generator.php:7912
+msgid "Error: Command 'escapeshellcmd' is disabled on your server."
+msgstr "Σφάλμα: Η εντολή 'escapeshellcmd' είναι απενεργοποιημένη στον διακομιστή σας."
+
+#: video-embed-thumbnail-generator.php:7888
+msgid "%s already encoded."
+msgstr "Το %s έχει ήδη κωδικοποιηθεί."
+
+#: video-embed-thumbnail-generator.php:7880
+msgid "%1$s missing library %2$s required for %3$s encoding."
+msgstr "Λείπει η βιβλιοθήκη %1$s που απαιτείται %2$s για την κωδικοποίηση του %3$s."
+
+#: video-embed-thumbnail-generator.php:7872
+#: video-embed-thumbnail-generator.php:7895
+msgid "Encoding %s"
+msgstr "Κωδικοποίηση του %s"
+
+#: video-embed-thumbnail-generator.php:7855
+#: video-embed-thumbnail-generator.php:7883
+msgid "Missing libraries"
+msgstr "Λείπουν βιβλιοθήκες"
+
+#: video-embed-thumbnail-generator.php:7851
+msgid "and missing an AAC encoding library. Please install and enable libx264 and %s"
+msgstr "και λείπει μια βιβλιοθήκη κωδικοποίησης AAC. Εγκαταστήστε και ενεργοποιήστε το libx264 και %s"
+
+#: video-embed-thumbnail-generator.php:7850
+msgid "or"
+msgstr "ή"
+
+#: video-embed-thumbnail-generator.php:7845
+msgid "%s missing library libx264 required for H.264 encoding"
+msgstr "Λείπει η βιβλιοθήκη %s libx264 που απαιτείται για κωδικοποίηση σε H.264"
+
+#: video-embed-thumbnail-generator.php:7839
+msgid "%s already encoded"
+msgstr "το %s έχει ήδη κωδικοποιηθεί"
+
+#: video-embed-thumbnail-generator.php:7742
+msgid "Error: %1$s not found. Verify that %1$s is installed at %2$s and check the %3$sapplication path plugin setting"
+msgstr "Σφάλμα: Δεν βρέθηκε το %1$s. Βεβαιωθείτε ότι το %1$s είναι εγκατεστημένο στο %2$s και ελέγξτε τη ρύθμιση του πρόσθετου στην διαδρομή της εφαρμογής %3$s"
+
+#: video-embed-thumbnail-generator.php:7632
+msgid "Nothing to encode."
+msgstr "Τίποτα για κωδικοποίηση."
+
+#: video-embed-thumbnail-generator.php:7627
+msgid "%1$s added to queue in position %2$s."
+msgstr "Το %1$s προστέθηκε στην σειρά στη θέση %2$s."
+
+#: video-embed-thumbnail-generator.php:7626
+msgid "Starting"
+msgstr "Εκκίνηση"
+
+#: video-embed-thumbnail-generator.php:7619
+msgid "Video is already queued in position %s."
+msgstr "Το βίντεο βρίσκεται ήδη στην ουρά στη θέση %s."
+
+#: video-embed-thumbnail-generator.php:7618
+msgid "%1$s updated in existing queue entry in position %2$s."
+msgstr "Το %1$s ενημερώθηκε στην υπάρχουσα καταχώριση σειράς στη θέση %2$s."
+
+#: video-embed-thumbnail-generator.php:7476
+#: video-embed-thumbnail-generator.php:7682
+msgid "Can't open movie file."
+msgstr "Δεν είναι δυνατό το άνοιγμα του αρχείου ταινίας."
+
+#: video-embed-thumbnail-generator.php:7108
+msgid "If text is entered in the attachment's caption field it is displayed here automatically."
+msgstr "Εάν έχει εισαχθεί κείμενο στο πεδίο λεζάντας του συνημμένου, εμφανίζεται αυτόματα εδώ."
+
+#: video-embed-thumbnail-generator.php:7107
+msgid "Sample Embed Code"
+msgstr "Δείγμα Ενσωμάτωσης Κώδικα"
+
+#: video-embed-thumbnail-generator.php:7106
+msgctxt "example video"
+msgid "Sample Video"
+msgstr "Δοκιμαστικό Βίντεο"
+
+#: video-embed-thumbnail-generator.php:7046
+msgid "Insert into Post"
+msgstr "Εισαγωγή στην δημοσίευση"
+
+#: video-embed-thumbnail-generator.php:7041
+msgid "Makes it easier for users to download video file"
+msgstr "Διευκολύνει τους χρήστες να κατεβάσουν το αρχείο του βίντεο"
+
+#: video-embed-thumbnail-generator.php:7027
+msgid "Lock to Aspect Ratio"
+msgstr "Κλείδωμα Αναλογίας Διαστάσεων"
+
+#: video-embed-thumbnail-generator.php:7026
+msgid "Dimensions"
+msgstr "Διαστάσεις"
+
+#: video-embed-thumbnail-generator.php:7013
+msgid "Force 1st Frame Thumbnail"
+msgstr "Επιβολή Εικόνας Προεπισκόπησης 1ου Καρέ"
+
+#: video-embed-thumbnail-generator.php:7010
+msgid "Number of Thumbnails"
+msgstr "Αριθμός Εικόνων Προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:7008
+msgid "Thumbnails"
+msgstr "Εικόνες Προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:7004
+msgid "Specify the URL of the video file."
+msgstr "Καθορίστε τη διεύθυνση URL του αρχείου βίντεο."
+
+#: video-embed-thumbnail-generator.php:6999
+msgid "Add an optional header above the video."
+msgstr "Προσθέστε προαιρετικά μια επικεφαλίδα πάνω από το βίντεο."
+
+#: video-embed-thumbnail-generator.php:6997
+msgid "Video Title"
+msgstr "Τίτλος του Βίντεο"
+
+#: video-embed-thumbnail-generator.php:6967
+msgctxt "Title in \"Add Media\" popup sidebar"
+msgid "Embed Video from URL"
+msgstr "Ενσωμάτωση του Βίντεο από τη διεύθυνση URL"
+
+#: video-embed-thumbnail-generator.php:6705
+msgctxt "text appended to newly created thumbnail titles"
+msgid "thumbnail"
+msgstr "εικόνα προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:6493
+msgid "Post ID"
+msgstr "Αναγνωριστικό δημοσίευσης"
+
+#: video-embed-thumbnail-generator.php:6492
+msgid "Include"
+msgstr "Περιλαμβάνει"
+
+#: video-embed-thumbnail-generator.php:6491
+msgid "Exclude"
+msgstr "Αποκλείει"
+
+#: video-embed-thumbnail-generator.php:6490
+msgid "Sort Order"
+msgstr "Σειρά Ταξινόμησης"
+
+#: video-embed-thumbnail-generator.php:6489
+msgid "Order By"
+msgstr "Ταξινόμηση κατά"
+
+#: video-embed-thumbnail-generator.php:6488
+msgid "Thumbnail Width"
+msgstr "Πλάτος εικόνας προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:6486
+msgid "Gallery Settings (all optional)"
+msgstr "Ρυθμίσεις συλλογής (προαιρετικά όλα)"
+
+#: video-embed-thumbnail-generator.php:6462
+msgctxt "verb"
+msgid "Insert"
+msgstr "Εισάγετε"
+
+#: video-embed-thumbnail-generator.php:6461
+msgid "Makes it easier for users to download file."
+msgstr "Διευκολύνει τους χρήστες να κατεβάσουν το αρχείο του βίντεο."
+
+#: video-embed-thumbnail-generator.php:6459
+msgid "Insert title above video"
+msgstr "Εισαγωγή τίτλου πάνω από το βίντεο"
+
+#: video-embed-thumbnail-generator.php:6456
+msgid "Video Embed Options"
+msgstr "Επιλογές Ενσωμάτωσης Βίντεο"
+
+#: video-embed-thumbnail-generator.php:6448
+msgid "Video Gallery"
+msgstr "Συλλογή Βίντεο"
+
+#: video-embed-thumbnail-generator.php:6448
+msgid "Single Video"
+msgstr "Μεμονωμένα Βίντεο"
+
+#: video-embed-thumbnail-generator.php:6445
+msgid "Add track"
+msgstr "Προσθήκη κομματιού"
+
+#: video-embed-thumbnail-generator.php:6441
+#: video-embed-thumbnail-generator.php:7037
+msgid "Subtitles & Captions"
+msgstr "Υπότιτλοι & Λεζάντες"
+
+#: video-embed-thumbnail-generator.php:6435
+#: video-embed-thumbnail-generator.php:7038
+msgid "Label:"
+msgstr "Ετικέτα:"
+
+#: video-embed-thumbnail-generator.php:6434
+msgctxt "two-letter code indicating track's language"
+msgid "Language code:"
+msgstr "Κωδικός γλώσσας:"
+
+#: video-embed-thumbnail-generator.php:6425
+msgctxt "captions track"
+msgid "Track"
+msgstr "Κομμάτι"
+
+#: video-embed-thumbnail-generator.php:6400
+#: video-embed-thumbnail-generator.php:7032
+msgid "Additional Formats"
+msgstr "Πρόσθετες μορφές"
+
+#: video-embed-thumbnail-generator.php:6394
+#: video-embed-thumbnail-generator.php:7028
+msgid "Leave blank to use %sdefault dimensions"
+msgstr "Αφήστε κενό για να χρησιμοποιήσετε τις προεπιλεγμένες διαστάσεις %s"
+
+#: video-embed-thumbnail-generator.php:6393
+msgid "Lock to aspect ratio"
+msgstr "Κλείδωμα προς αναλογία διαστάσεων"
+
+#: video-embed-thumbnail-generator.php:6388
+msgid "Video Embed Dimensions"
+msgstr "Διαστάσεις Ενσωμάτωσης Βίντεο"
+
+#: video-embed-thumbnail-generator.php:6385
+#: video-embed-thumbnail-generator.php:7023
+msgid "Leave blank to use %sdefault thumbnail"
+msgstr "Αφήστε κενό για να χρησιμοποιήσετε τις προεπιλεγμένες εικόνες προεπισκόπησης %s"
+
+#: video-embed-thumbnail-generator.php:6383
+#: video-embed-thumbnail-generator.php:7021
+msgid "Thumbnail URL"
+msgstr "Διεύθυνση URL των εικόνων προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:6377
+#: video-embed-thumbnail-generator.php:7016
+msgid "Set thumbnail as featured image"
+msgstr "Ορίστε την εικόνα προεπισκόπησης ως επιλεγμένη εικόνα"
+
+#: video-embed-thumbnail-generator.php:6369
+msgctxt "Header for thumbnail section"
+msgid "Thumbnails"
+msgstr "Εικόνες Προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:6361
+#: video-embed-thumbnail-generator.php:7015
+msgid "Thumbnail timecode:"
+msgstr "Χρονοκώδικας εικόνας προεπισκόπησης:"
+
+#: video-embed-thumbnail-generator.php:6359
+msgid "Force 1st frame thumbnail"
+msgstr "Επιβολή εικόνας προεπισκόπησης 1ου καρέ"
+
+#: video-embed-thumbnail-generator.php:6358
+msgctxt "Button text. Implied \"Randomize thumbnail generation\""
+msgid "Randomize"
+msgstr "Τυχαία"
+
+#: video-embed-thumbnail-generator.php:6357
+msgctxt "Button text. Implied \"Generate thumbnails\""
+msgid "Generate"
+msgstr "Δημιουργία"
+
+#: video-embed-thumbnail-generator.php:6269
+msgid "Video ID:"
+msgstr "Αναγνωριστικό βίντεο:"
+
+#: video-embed-thumbnail-generator.php:6262
+#: video-embed-thumbnail-generator.php:6506
+msgid "Video Stats"
+msgstr "Στατιστικά του βίντεο"
+
+#: video-embed-thumbnail-generator.php:5763
+msgid "You must enter a value for the maximum gallery video width."
+msgstr "Πρέπει να εισαγάγετε μια τιμή για το μέγιστο πλάτος των βίντεο της συλλογής."
+
+#: video-embed-thumbnail-generator.php:5759
+msgid "You must enter a value for the maximum video height."
+msgstr "Πρέπει να εισαγάγετε μια τιμή για το μέγιστο ύψος των βίντεο της συλλογής."
+
+#: video-embed-thumbnail-generator.php:5755
+msgid "You must enter a value for the maximum video width."
+msgstr "Πρέπει να εισαγάγετε μια τιμή για το μέγιστο πλάτος των βίντεο."
+
+#: video-embed-thumbnail-generator.php:5735
+msgid "Video Embed & Thumbnail Generator settings reset to default values."
+msgstr "Επαναφορά ρυθμίσεων του Video Embed & Thumbnail Generator που επανέρχονται στις προεπιλεγμένες τιμές."
+
+#: video-embed-thumbnail-generator.php:5720
+msgid "Error message:"
+msgstr "Μήνυμα σφάλματος:"
+
+#: video-embed-thumbnail-generator.php:5720
+msgid "%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s."
+msgstr "Το %1$s δεν εκτελείται σωστά στο %2$s. Μπορείτε να ενσωματώσετε υπάρχοντα βίντεο και να δημιουργήσετε εικόνες προεπισκόπησης με συμβατά προγράμματα περιήγησης, αλλά η κωδικοποίηση του βίντεο δεν είναι δυνατή χωρίς το %1$s."
+
+#: video-embed-thumbnail-generator.php:5712
+msgid "%1$s is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable %1$s."
+msgstr "Το %1$s είναι απενεργοποιημένο στις ρυθμίσεις PHP. Μπορείτε να ενσωματώσετε υπάρχοντα βίντεο και να δημιουργήσετε εικόνες προεπισκόπησης με συμβατά προγράμματα περιήγησης, αλλά η κωδικοποίηση του βίντεο δεν θα λειτουργήσει. Επικοινωνήστε με τον Διαχειριστή Συστήματος για να μάθετε εάν μπορείτε να ενεργοποιήσετε το %1$s."
+
+#: video-embed-thumbnail-generator.php:5428
+msgid "For help interpreting this output, %s try our Wiki page on Github"
+msgstr "Για βοήθεια στην ερμηνεία αυτού του αποτελέσματος, %s δοκιμάστε τη σελίδα Wiki στο Github"
+
+#: video-embed-thumbnail-generator.php:5428
+msgid "%s test output:"
+msgstr "Αποτέλεσμα δοκιμής %s:"
+
+#: video-embed-thumbnail-generator.php:5416
+msgid "Replace"
+msgstr "Αντικάτασταση"
+
+#: video-embed-thumbnail-generator.php:5380
+msgid "Tells %1$s to run at a lower priority to avoid monopolizing system resources."
+msgstr "Λέει στο %1$s να λειτουργεί σε χαμηλότερη προτεραιότητα για να αποφύγει το μονοπώλιο των πόρων του συστήματος."
+
+#: video-embed-thumbnail-generator.php:5380
+msgctxt "execute program"
+msgid "Run"
+msgstr "Εκτέλεση"
+
+#: video-embed-thumbnail-generator.php:5378
+msgid "Default is 1, which limits encoding speed but prevents encoding from using too many system resources. Selecting 0 will allow %1$s to optimize the number of threads or you can set the number manually. This may lead to %1$s monopolizing system resources."
+msgstr "Η προεπιλογή είναι 1, η οποία περιορίζει την ταχύτητα κωδικοποίησης, αλλά αποτρέπει τη χρήση πολλών πόρων συστήματος από την κωδικοποίηση. Η επιλογή 0 θα επιτρέψει στο %1$s να βελτιστοποιήσει τον αριθμό των νημάτων ή μπορείτε να ορίσετε τον αριθμό χειροκίνητα. Αυτό μπορεί να οδηγήσει στο %1$s να μονοπωλήσει τους πόρους του συστήματος."
+
+#: video-embed-thumbnail-generator.php:5378
+msgctxt "CPU threads. Might not need translating"
+msgid "threads"
+msgstr "νήματα"
+
+#: video-embed-thumbnail-generator.php:5371
+msgid "Increasing the number will allow %1$s to encode more than one file at a time, but may lead to %1$s monopolizing system resources."
+msgstr "Η αύξηση του αριθμού θα επιτρέψει στο %1$s να κωδικοποιήσει περισσότερα από ένα αρχεία κάθε φορά, αλλά μπορεί να οδηγήσει στο %1$s να μονοπωλήσει τους πόρους του συστήματος."
+
+#: video-embed-thumbnail-generator.php:5371
+msgid "Simultaneous encodes."
+msgstr "Ταυτόχρονες κωδικοποιήσεις."
+
+#: video-embed-thumbnail-generator.php:5358
+msgid "Turn off this checkbox if your installed version of FFMPEG is old enough that it does not recognize the nostdin flag (Dreamhost users must turn this off)."
+msgstr "Απενεργοποιήστε αυτό το πλαίσιο ελέγχου εάν η εγκατεστημένη έκδοση του FFMPEG είναι αρκετά παλιά ώστε να μην αναγνωρίζει το nostdin flag (οι χρήστες του Dreamhost πρέπει να το απενεργοποιήσουν)."
+
+#: video-embed-thumbnail-generator.php:5358
+msgid "Disable stdin."
+msgstr "Απενεργοποίηση του stdin."
+
+#: video-embed-thumbnail-generator.php:5357
+msgid "Enable if vertical videos shot on mobile devices don't rotate correctly or generate errors. If legacy libx264 paramaters are necessary, rotation won't work at all."
+msgstr "Ενεργοποιήστε εάν τα κατακόρυφα βίντεο που λαμβάνονται σε κινητές συσκευές δεν περιστρέφονται σωστά ή δημιουργούν σφάλματα. Εάν είναι απαραίτητοι οι παράμετροι τύπου libx264, η περιστροφή δεν θα λειτουργεί καθόλου."
+
+#: video-embed-thumbnail-generator.php:5357
+msgid "Enable legacy FFMPEG rotation method."
+msgstr "Ενεργοποίηση παλαιάς μεθόδου περιστροφής για FFMPEG."
+
+#: video-embed-thumbnail-generator.php:5355
+msgid "Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail."
+msgstr "Ενεργοποιήστε εάν η εγκατεστημένη έκδοση του FFMPEG είναι αρκετά παλιά ώστε το libx264 απαιτεί πρόσθετη διαμόρφωση για να λειτουργήσει (οι χρήστες του Dreamhost πρέπει να το ενεργοποιήσουν). Αυτό θα βοηθήσει εάν μπορείτε να κωδικοποιήσετε αρχεία WEBM ή OGV αλλά τα αρχεία H264/Mobile θα αποτύχουν. Θα μπορούσε να προκαλέσει την αποτυχία νεότερων εκδόσεων του FFMPEG."
+
+#: video-embed-thumbnail-generator.php:5355
+msgid "Enable legacy libx264 parameters."
+msgstr "Ενεργοποίηση παλαιάς μεθόδου περιστροφής για libx264."
+
+#: video-embed-thumbnail-generator.php:5354
+msgid "Enable if your installed version of FFMPEG is old enough that you can't use the newer -b:v flags (Dreamhost users must turn this on). It may cause newer versions of FFMPEG to fail."
+msgstr "Ενεργοποιήστε εάν η εγκατεστημένη έκδοση του FFMPEG είναι αρκετά παλιά ώστε να μην μπορείτε να χρησιμοποιήσετε τις νεότερες επισημάνσεις -b:v (οι χρήστες του Dreamhost πρέπει να το ενεργοποιήσουν). Μπορεί να προκαλέσει αποτυχία νεότερων εκδόσεων του FFMPEG."
+
+#: video-embed-thumbnail-generator.php:5354
+msgid "Enable legacy FFMPEG \"-b\" and \"-ba\" bitrate flags."
+msgstr "Ενεργοποίηση επισημάνσεων ρυθμού bit παλαιού τύπου για FFMPEG \"-b\" και \"-ba\"."
+
+#: video-embed-thumbnail-generator.php:5334
+msgid "3.0 is default. Lower levels will lower maximum bit rates and decoding complexity. This mostly depends on your need for compatability with mobile devices. Older versions of FFMPEG might ignore this setting altogether."
+msgstr "Το 3.0 είναι η προεπιλογή. Τα χαμηλότερα επίπεδα θα μειώσουν τους μέγιστους ρυθμούς bit και την πολυπλοκότητα αποκωδικοποίησης. Αυτό εξαρτάται κυρίως από την ανάγκη σας για συμβατότητα με κινητές συσκευές. Οι παλαιότερες εκδόσεις του FFMPEG ενδέχεται να αγνοήσουν εντελώς αυτήν τη ρύθμιση."
+
+#: video-embed-thumbnail-generator.php:5334
+msgctxt "H.264 level. Might not need translation"
+msgid "level"
+msgstr "επίπεδο"
+
+#: video-embed-thumbnail-generator.php:5327
+msgid "Lower profiles will slightly increase file sizes. This mostly depends on your need for compatability with Android devices. Main profile seems to work on all recent phones. High profile is not recommended for mobile or Flash compatibility, and anything above high is designed for professional video and probably incompatible with consumer devices. Older versions of FFMPEG might ignore this setting altogether."
+msgstr "Τα χαμηλότερα προφίλ θα αυξήσουν ελαφρώς τα μεγέθη αρχείων. Αυτό εξαρτάται κυρίως από την ανάγκη σας για συμβατότητα με συσκευές Android. Το κύριο προφίλ φαίνεται να λειτουργεί σε όλα τα πρόσφατα τηλέφωνα. Το υψηλό προφίλ δεν συνιστάται για συμβατότητα με φορητές συσκευές ή Flash και οτιδήποτε παραπάνω είναι σχεδιασμένο για επαγγελματικό βίντεο και πιθανώς ασύμβατο με καταναλωτικές συσκευές. Οι παλαιότερες εκδόσεις του FFMPEG ενδέχεται να αγνοήσουν αυτήν τη ρύθμιση εντελώς."
+
+#: video-embed-thumbnail-generator.php:5327
+msgctxt "H.264 profile. Might not need translation"
+msgid "profile"
+msgstr "προφίλ"
+
+#: video-embed-thumbnail-generator.php:5311
+msgid "Default is 0.1"
+msgstr "Η προεπιλογή είναι 0,1"
+
+#: video-embed-thumbnail-generator.php:5311
+msgid "bits per pixel."
+msgstr "bits ανά εικονοστοιχείο."
+
+#: video-embed-thumbnail-generator.php:5299
+msgid "Higher values are higher quality. Default is 6."
+msgstr "Οι μεγαλύτερες τιμές είναι υψηλότερης ποιότητας. Η προεπιλογή είναι 6."
+
+#: video-embed-thumbnail-generator.php:5292
+msgid "Lower values are higher quality. Default is 10."
+msgstr "Οι χαμηλότερες τιμές είναι υψηλότερης ποιότητας. Η προεπιλογή είναι 10."
+
+#: video-embed-thumbnail-generator.php:5285
+msgid "Lower values are higher quality. 18 is considered visually lossless. Default is 23."
+msgstr "Οι χαμηλότερες τιμές είναι υψηλότερης ποιότητας. Το 18 θεωρείται οπτικά χωρίς απώλειες. Η προεπιλογή είναι 23."
+
+#: video-embed-thumbnail-generator.php:5260
+msgid "Path to %s:"
+msgstr "Διαδρομή για %s:"
+
+#: video-embed-thumbnail-generator.php:5259
+msgid "By default %1$s places moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start and can prevent Flash players from playing them at all. Since approximately October 2012 %1$s can fix the problem at the end of the encoding process by using the option `movflags faststart`. This is the easiest and fastest way to correct the problem, but older versions of %1$s will not work if you select the movflags option. If you can't update to a new version of %1$s, select qt-faststart or MP4Box which will run after encoding is finished if they are installed on your server."
+msgstr "Από προεπιλογή, το %1$s τοποθετεί το moov atoms στο τέλος των κωδικοποιημένων αρχείων H.264, κάτι που αναγκάζει ολόκληρο το αρχείο να κατεβεί πριν ξεκινήσει η αναπαραγωγή και μπορεί να αποτρέψει την αναπαραγωγή των προγραμμάτων αναπαραγωγής σε Flash. Από περίπου τον Οκτώβριο του 2012, το %1$s μπορεί να διορθώσει το πρόβλημα στο τέλος της διαδικασίας κωδικοποίησης χρησιμοποιώντας την επιλογή \"movflags faststart\". Αυτός είναι ο ευκολότερος και ταχύτερος τρόπος για να διορθώσετε το πρόβλημα, αλλά οι παλαιότερες εκδόσεις του %1$s δεν θα λειτουργήσουν εάν ορίσετε την επιλογή movflags. Εάν δεν μπορείτε να πραγματοποιήσετε ενημέρωση σε νέα έκδοση του %1$s, επιλέξτε qt-faststart ή MP4Box που θα εκτελεστεί μετά την ολοκλήρωση της κωδικοποίησης, εάν είναι εγκατεστημένα στον διακομιστή σας."
+
+#: video-embed-thumbnail-generator.php:5206
+#: video-embed-thumbnail-generator.php:5236
+msgid "bottom"
+msgstr "κάτω"
+
+#: video-embed-thumbnail-generator.php:5206
+#: video-embed-thumbnail-generator.php:5236
+msgctxt "vertical center"
+msgid "center"
+msgstr "κέντρο"
+
+#: video-embed-thumbnail-generator.php:5206
+#: video-embed-thumbnail-generator.php:5236
+msgid "top"
+msgstr "επάνω"
+
+#: video-embed-thumbnail-generator.php:5204
+#: video-embed-thumbnail-generator.php:5234
+msgid "Vertical align:"
+msgstr "Κάθετη ευθυγράμμιση:"
+
+#: video-embed-thumbnail-generator.php:5202
+#: video-embed-thumbnail-generator.php:5212
+#: video-embed-thumbnail-generator.php:5232
+#: video-embed-thumbnail-generator.php:5242
+msgid "offset"
+msgstr "αντιστάθμισμα"
+
+#: video-embed-thumbnail-generator.php:5195
+#: video-embed-thumbnail-generator.php:5225
+msgid "Horizontal align:"
+msgstr "Οριζόντια ευθυγράμμιση:"
+
+#: video-embed-thumbnail-generator.php:5194
+#: video-embed-thumbnail-generator.php:5224
+msgctxt "horizontal center"
+msgid "center"
+msgstr "κέντρο"
+
+#: video-embed-thumbnail-generator.php:5193
+#: video-embed-thumbnail-generator.php:5223
+msgid "Scale: %s%% of video covered by the watermark."
+msgstr "Κλίμακα: %s%% του βίντεο καλύπτεται από υδατογράφημα."
+
+#: video-embed-thumbnail-generator.php:5185
+msgid "If your videos are htaccess protected, %s will access them using these credentials."
+msgstr "Εάν τα βίντεό σας προστατεύονται με htaccess, το %s θα έχει πρόσβαση σε αυτά χρησιμοποιώντας αυτά τα διαπιστευτήρια."
+
+#: video-embed-thumbnail-generator.php:5185
+msgid "Password:"
+msgstr "Κωδικός πρόσβασης:"
+
+#: video-embed-thumbnail-generator.php:5184
+msgid "Username:"
+msgstr "Όνομα χρήστη:"
+
+#: video-embed-thumbnail-generator.php:5153
+msgid "Add every video in the Media Library to the encode queue if it hasn't already been encoded. Uses the default encode formats chosen above."
+msgstr "Προσθέστε κάθε βίντεο στη Βιβλιοθήκη Πολυμέσων στην σειρά κωδικοποίησης, εάν δεν έχει ήδη κωδικοποιηθεί. Χρησιμοποιεί τις προεπιλεγμένες μορφές κωδικοποίησης που επιλέξατε παραπάνω."
+
+#: video-embed-thumbnail-generator.php:5153
+msgid "Encode videos"
+msgstr "Κωδικοποίηση βίντεο"
+
+#: video-embed-thumbnail-generator.php:5152
+msgid "Use %s to automatically generate thumbnails for every video in the Media Library that doesn't already have them. Uses the automatic thumbnail settings above. This could take a very long time if you have a lot of videos. Proceed with caution!"
+msgstr "Χρησιμοποιήστε το %s για να δημιουργήσετε αυτόματα εικόνες προεπισκόπησης για κάθε βίντεο στη Βιβλιοθήκη Πολυμέσων αν δεν τις έχετε ήδη. Χρησιμοποιεί τις παραπάνω αυτόματες ρυθμίσεις για εικόνες προεπισκόπησης. Αυτό μπορεί να πάρει πολύ χρόνο αν έχετε πολλά βίντεο. Προχωρήστε με προσοχή!"
+
+#: video-embed-thumbnail-generator.php:5152
+msgid "Generate thumbnails"
+msgstr "Δημιουργία εικόνων προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:5131
+msgid "Encode formats selected above."
+msgstr "Κωδικοποίηση μορφών που έχουν επιλεγεί παραπάνω."
+
+#: video-embed-thumbnail-generator.php:5122
+msgid "Generate %1$s thumbnail from %2$s%% of the way through the video."
+msgid_plural "Generate %1$s thumbnails and set #%2$s as the main image."
+msgstr[0] "Δημιουργήστε εικόνα προεπισκόπησης για το %1$s από %2$s%% του βίντεο."
+msgstr[1] "Δημιουργήστε εικόνες προεπισκόπησης για το %1$s και ορίστε την #%2$s ως την κύρια εικόνα."
+
+#: video-embed-thumbnail-generator.php:5077
+msgid "If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on most operating systems now. I no longer recommend encoding OGV or WEBM. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013. Most browsers except Safari currently support it."
+msgstr "Εάν έχετε εγκατεστημένο το FFMPEG/LIBAV και τις κατάλληλες βιβλιοθήκες, μπορείτε να επιλέξετε να αντικαταστήσετε το βίντεο που έχετε ανεβάσει με την προτιμώμενη μορφή σας, και επίσης να μετατρέψετε σε διάφορες πρόσθετες μορφές ανάλογα με την ανάλυση της αρχικής πηγής σας. Διαφορετικά προγράμματα περιήγησης έχουν διαφορετικές δυνατότητες αναπαραγωγής. Τα περισσότερα προγράμματα περιήγησης επιτραπέζιου υπολογιστή μπορούν να παίξουν H.264 και όλες οι σύγχρονες κινητές συσκευές μπορούν να παίξουν τουλάχιστον σε 360p H.264. Εάν δημιουργήσετε πολλές αναλύσεις σε H.264, η υψηλότερη ανάλυση που υποστηρίζεται από τη συσκευή θα προβάλλεται αυτόματα. Το πρόσθετο δεν θα μετατρέψει το βίντεό σας, οπότε αν ανεβάσετε ένα βίντεο σε 720p, δεν θα χάσετε το χρόνο σας δημιουργώντας μια έκδοση σε 1080p. Υπήρχε μια εποχή που φαινόταν καλή ιδέα να παρέχουμε OGV ή WEBM για ορισμένα προγράμματα περιήγησης επιτραπέζιων υπολογιστών, αλλά ακόμη και ο Firefox επιτρέπει την αναπαραγωγή σε H.264 στα περισσότερα λειτουργικά συστήματα τώρα. Δεν προτείνω πλέον την κωδικοποίηση σε OGV ή WEBM. Το WEBM VP9 είναι μια νέα τεχνολογία και απαιτεί έκδοση σε FFMPEG ή LIBAV νεότερη από τον Οκτώβριο του 2013. Τα περισσότερα προγράμματα περιήγησης εκτός από το Safari το υποστηρίζουν αυτήν τη στιγμή."
+
+#: video-embed-thumbnail-generator.php:5068
+msgid "Replace original with"
+msgstr "Αντικαταστήστε το πρωτότυπο με"
+
+#: video-embed-thumbnail-generator.php:5065
+#: video-embed-thumbnail-generator.php:5090
+#: video-embed-thumbnail-generator.php:5417
+msgid "Custom"
+msgstr "Προσαρμογή"
+
+#: video-embed-thumbnail-generator.php:5054
+msgid "When possible, use the browser's built-in video capabilities to make thumbnails instead of %s."
+msgstr "Όταν είναι δυνατόν, χρησιμοποιήστε τις δυνατότητες ενσωμάτωσης βίντεο του προγράμματος περιήγησης για να δημιουργήσετε εικόνες προεπισκόπησης αντί για %s."
+
+#: video-embed-thumbnail-generator.php:5048
+msgid "FFMPEG split into two separate branches in 2011. The new branch is called LIBAV and executes using \"avconv\" instead of \"ffmpeg.\" Both are still actively developed and FFMPEG frequently incorporates LIBAV features. Debian & Ubuntu users probably have LIBAV installed."
+msgstr "Το FFMPEG χωρίστηκε σε δύο ξεχωριστά τμήματα το 2011. Το νέο τμήμα ονομάζεται LIBAV και εκτελείται χρησιμοποιώντας το \"avconv\" αντί του \"ffmpeg.\" Και τα δύο είναι ακόμα ενεργά αναπτυγμένα και το FFMPEG ενσωματώνει συχνά δυνατότητες LIBAV. Οι χρήστες του Debian & Ubuntu πιθανώς έχουν εγκαταστήσει το LIBAV."
+
+#: video-embed-thumbnail-generator.php:5036
+msgid "This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn't usually end with %1$s. Example: %2$s."
+msgstr "Αυτό θα πρέπει να είναι ο φάκελος όπου οι εφαρμογές είναι εγκατεστημένες στον διακομιστή σας, όχι μια απευθείας διαδρομή προς μια εφαρμογή, επομένως συνήθως δεν τελειώνει με %1$s. Παράδειγμα: %2$s."
+
+#: video-embed-thumbnail-generator.php:5022
+msgid "The plugin can filter your media attachment page to display videos using your chosen settings, or completely replace your attachment template to show only the video. If you were one of the few people using iframe embed codes before version 4.0 of this plugin then you should continue to use \"Video only\" but otherwise it's not recommended."
+msgstr "Το πρόσθετο μπορεί να φιλτράρει τη σελίδα συνημμένων των πολυμέσων σας για να προβάλλετε βίντεο χρησιμοποιώντας τις ρυθμίσεις που έχετε επιλέξει ή να αντικαταστήσετε εντελώς το πρότυπο συνημμένου για να εμφανίζεται μόνο το βίντεο. Εάν ήσασταν ένα από τα λίγα άτομα που χρησιμοποιούν κωδικούς ενσωμάτωσης iframe πριν από την έκδοση 4.0 αυτού του πρόσθετου, τότε θα πρέπει να συνεχίσετε να χρησιμοποιείτε την επιλογή \"Μόνο το βίντεο\", αλλιώς διαφορετικά δεν συνιστάται."
+
+#: video-embed-thumbnail-generator.php:5016
+msgid "Video only (deprecated)"
+msgstr "Μόνο το βίντεο (καταργήθηκε)"
+
+#: video-embed-thumbnail-generator.php:5016
+msgid "WordPress default"
+msgstr "Προκαθορισμένο στο WordPress"
+
+#: video-embed-thumbnail-generator.php:5016
+msgid "Match plugin settings"
+msgstr "Αντιστοίχιση ρυθμίσεων προσθέτου"
+
+#: video-embed-thumbnail-generator.php:5011
+msgid "HTML tag applied to titles inserted above the video. Examples: %s. Corresponding closing tags will be applied to the end of the title automatically."
+msgstr "Η ετικέτα HTML εφαρμόζεται σε τίτλους που έχουν εισαχθεί πάνω από το βίντεο. Παραδείγματα: %s. Οι αντίστοιχες ετικέτες κλεισίματος θα εφαρμοστούν αυτόματα στο τέλος του τίτλου."
+
+#: video-embed-thumbnail-generator.php:5006
+msgid "If you delete the original video you can choose to delete all associated attachments (thumbnails & videos) or keep the thumbnail."
+msgstr "Εάν διαγράψετε το αρχικό βίντεο, μπορείτε να επιλέξετε να διαγράψετε όλα τα σχετικά συνημμένα (εικόνες προεπισκόπησης & βίντεο) ή να διατηρήσετε την εικόνα προεπισκόπησης."
+
+#: video-embed-thumbnail-generator.php:5000
+msgid "encoded videos only"
+msgstr "μόνο κωδικοποιημένα βίντεο"
+
+#: video-embed-thumbnail-generator.php:4728
+#: video-embed-thumbnail-generator.php:4999
+msgid "all"
+msgstr "όλα"
+
+#: video-embed-thumbnail-generator.php:4992
+msgid "If you've generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option."
+msgstr "Εάν έχετε δημιουργήσει εικόνες προεπισκόπησης πριν αλλάξετε αυτήν την επιλογή, αυτό θα ορίσει όλες τις υπάρχουσες εικόνες προεπισκόπησης ως αποτέλεσμα της τρέχουσας επιλογής σας."
+
+#: video-embed-thumbnail-generator.php:4992
+msgid "Set all parents"
+msgstr "Ορίστε όλες τις ρυθμίσεις"
+
+#: video-embed-thumbnail-generator.php:4992
+msgid "This depends on your theme. Thumbnails generated by the plugin can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video."
+msgstr "Αυτό εξαρτάται από το θέμα σας. Οι εικόνες προεπισκόπησης που δημιουργούνται από το πρόσθετο μπορούν να αποθηκευτούν ως αποτέλεσμα του συνημμένου βίντεο ή της δημοσίευσης. Ορισμένα θέματα χρησιμοποιούν μια εικόνα που επισυνάπτεται σε μια δημοσίευση αντί για την ενσωματωμένη μετα-ετικέτα της επιλεγμένης εικόνας. Η έκδοση 3.x αυτού του προσθέτου αποθήκευσε όλες τις εικόνες προεπισκόπησης ως αποτέλεσμα του βίντεο."
+
+#: video-embed-thumbnail-generator.php:4941
+msgid "If you've generated thumbnails before enabling this option, this will set all existing thumbnails as featured images. Be careful!"
+msgstr "Εάν έχετε δημιουργήσει εικόνες προεπισκόπησης πριν ενεργοποιήσετε αυτήν την επιλογή, αυτό θα ορίσει όλες τις υπάρχουσες εικόνες προεπισκόπησης ως επιλεγμένες εικόνες. Προσέχετε!"
+
+#: video-embed-thumbnail-generator.php:4941
+msgctxt "implied \"Set all thumbnails as featured\""
+msgid "Set all as featured"
+msgstr "Ορίστε όλα ως προτεινόμενα"
+
+#: video-embed-thumbnail-generator.php:4941
+msgid "If your theme uses the featured image meta tag, this will automatically set a video's parent post's featured image to the most recently saved thumbnail image."
+msgstr "Εάν το θέμα σας χρησιμοποιεί τη μετα-ετικέτα της επιλεγμένης εικόνας, αυτό θα ορίσει αυτόματα την επιλεγμένη εικόνα της αρχικής δημοσίευσης ενός βίντεο στην πιο πρόσφατα αποθηκευμένη εικόνα προεπισκόπησης."
+
+#: video-embed-thumbnail-generator.php:4941
+msgid "Set generated video thumbnails as featured images."
+msgstr "Ορίστε τις εικόνες προεπισκόπησης των βίντεο που δημιουργήθηκαν ως προτεινόμενες εικόνες."
+
+#: video-embed-thumbnail-generator.php:4896
+msgid "The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video's WordPress database ID could potentially use the method to download videos they might not otherwise have access to."
+msgstr "Το πρόσθετο δημιουργεί μια μέθοδο με ένα κλικ για χρήστες που θέλουν να επιτρέψουν την εύκολη λήψη των βίντεο, αλλά εάν ορισμένα από τα βίντεό σας είναι κρυφά ή ιδιωτικά, ανάλογα με τις μεθόδους που χρησιμοποιείτε, κάποιος που μαντεύει το αναγνωριστικό της βάσης δεδομένων του WordPress θα μπορούσε ενδεχομένως να χρησιμοποιήσει τη μέθοδο για να κατεβάσει τα βίντεο στα οποία διαφορετικά δεν θα είχε πρόσβαση."
+
+#: video-embed-thumbnail-generator.php:4896
+msgid "Allow single-click download link for videos."
+msgstr "Να επιτρέπεται ένας σύνδεσμος λήψης με ένα κλικ για βίντεο."
+
+#: video-embed-thumbnail-generator.php:4895
+msgid "We can't prevent a user from simply saving the downloaded video file from the browser's cache, but disabling right-clicking will make it more difficult for casual users to save your videos."
+msgstr "Δεν μπορούμε να εμποδίσουμε έναν χρήστη απλώς να αποθηκεύσει το αρχείο βίντεο που έχει κατεβάσει από την προσωρινή μνήμη του προγράμματος περιήγησης, αλλά η απενεργοποίηση του δεξιού κλικ θα δυσκολέψει τους περιστασιακούς χρήστες να αποθηκεύσουν τα βίντεό σας."
+
+#: video-embed-thumbnail-generator.php:4895
+msgid "Allow right-clicking on videos."
+msgstr "Να επιτρέπεται το δεξί κλικ στα βίντεο."
+
+#: video-embed-thumbnail-generator.php:4898
+msgid "Allows your own users to embed content from any oEmbed provider. User must have the \"unfiltered_html\" capability which is limited to Administrators and Editors by default."
+msgstr "Επιτρέπει στους δικούς σας χρήστες να ενσωματώνουν περιεχόμενο από οποιονδήποτε πάροχο του oEmbed. Ο χρήστης πρέπει να έχει τη δυνατότητα για \"unfiltered_html\" που περιορίζεται από προεπιλογή στους Διαχειριστές και τους Συντάκτες."
+
+#: video-embed-thumbnail-generator.php:4898
+msgctxt "\"oEmbed\" is a proper noun and might not need translation"
+msgid "Enable oEmbeds from unknown providers."
+msgstr "Ενεργοποίηση του oEmbed από άγνωστους παρόχους."
+
+#: video-embed-thumbnail-generator.php:4891
+msgctxt "\"Open Graph\" is a proper noun and might not need translation"
+msgid "Enable Facebook Open Graph video tags."
+msgstr "Ενεργοποίηση ετικετών βίντεο του Facebook Open Graph."
+
+#: video-embed-thumbnail-generator.php:4890
+msgid "Allow users to embed your videos on other sites."
+msgstr "Επιτρέψτε στους χρήστες να ενσωματώνουν τα βίντεό σας σε άλλους ιστότοπους."
+
+#: video-embed-thumbnail-generator.php:4948
+msgid "Can view & modify other users encoded videos"
+msgstr "Δυνατότητα προβολής & τροποποίησης κωδικοποιημένων βίντεο άλλων χρηστών"
+
+#: video-embed-thumbnail-generator.php:4948
+msgid "Can encode videos"
+msgstr "Μπορεί να κωδικοποιήσει βίντεο"
+
+#: video-embed-thumbnail-generator.php:4948
+msgid "Can make thumbnails"
+msgstr "Μπορεί να δημιουργήσει εικόνες προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:4881
+msgid "Overlay play button on poster frame."
+msgstr "Κουμπί αναπαραγωγής στο πλαίσιο της ανάρτησης."
+
+#: video-embed-thumbnail-generator.php:4876
+msgid "Autohide controlbar."
+msgstr "Αυτόματη απόκρυψη της γραμμής ελέγχου."
+
+#: video-embed-thumbnail-generator.php:4864
+msgid "zoom"
+msgstr "μεγένθυση"
+
+#: video-embed-thumbnail-generator.php:4863
+msgid "stretch"
+msgstr "επέκταση"
+
+#: video-embed-thumbnail-generator.php:4861
+msgid "letterbox"
+msgstr "letterbox"
+
+#: video-embed-thumbnail-generator.php:4849
+msgid "dvr"
+msgstr "dvr"
+
+#: video-embed-thumbnail-generator.php:4848
+msgid "recorded"
+msgstr "καταγράφηκε"
+
+#: video-embed-thumbnail-generator.php:4847
+msgid "live"
+msgstr "ζωντανά"
+
+#: video-embed-thumbnail-generator.php:4846
+msgid "liveOrRecorded"
+msgstr "liveOrRecorded"
+
+#: video-embed-thumbnail-generator.php:4840
+msgid "Leave blank for the off-center square play button."
+msgstr "Αφήστε κενό για το τετράγωνο κουμπί αναπαραγωγής εκτός πλαισίου."
+
+#: video-embed-thumbnail-generator.php:4840
+msgid "Use %s for a modern, circular play button."
+msgstr "Χρησιμοποιήστε το %s για ένα μοντέρνο, κυκλικό κουμπί αναπαραγωγής."
+
+#: video-embed-thumbnail-generator.php:4825
+msgid "Space-separated list to add to all videos. Example: %s"
+msgstr "Λίστα διαχωρισμένη με διάστημα για προσθήκη σε όλα τα βίντεο. Παράδειγμα: %s"
+
+#: video-embed-thumbnail-generator.php:4815
+msgid "Show native controls on mobile devices."
+msgstr "Εμφάνιση εγγενών στοιχείων ελέγχου σε κινητές συσκευές."
+
+#: video-embed-thumbnail-generator.php:4820
+msgid "Or build your own CSS skin."
+msgstr "Ή δημιουργήστε το δικό σας CSS."
+
+#: video-embed-thumbnail-generator.php:4820
+msgid "Use %s for a nice, circular play button. Leave blank for the default square play button."
+msgstr "Χρησιμοποιήστε το %s για ένα ωραίο, κυκλικό κουμπί αναπαραγωγής. Αφήστε κενό για το προεπιλεγμένο τετράγωνο κουμπί αναπαραγωγής."
+
+#: video-embed-thumbnail-generator.php:4805
+msgctxt "Suggest not translating the words in quotation marks"
+msgid "Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting \"metadata\" will load the height and width and format information along with a few seconds of the video in some desktop browsers. \"Auto\" will preload nearly a minute of video in most desktop browsers. \"None\" will prevent all data from preloading."
+msgstr "Ελέγχει πόσα βίντεο θα φορτωθούν πριν ξεκινήσει ο χρηστής την αναπαραγωγή. Τα προγράμματα περιήγησης για κινητά δεν προφορτώνουν ποτέ πληροφορίες των βίντεο. Επιλέγοντας \"μεταδεδομένα\" θα φορτωθούν οι πληροφορίες ύψους και πλάτους και μορφοποίησης μαζί με μερικά δευτερόλεπτα του βίντεο σε ορισμένα προγράμματα περιήγησης επιτραπέζιου υπολογιστή. Η επιλογή \"Αυτόματα\" θα προφορτώσει σχεδόν ένα λεπτό βίντεο στα περισσότερα προγράμματα περιήγησης επιτραπέζιων υπολογιστών. Η επιλογή \"Κανένα\" θα αποτρέψει την προφόρτιση όλων των δεδομένων."
+
+#: video-embed-thumbnail-generator.php:4798
+msgid "auto"
+msgstr "αυτόματα"
+
+#: video-embed-thumbnail-generator.php:4797
+msgid "metadata"
+msgstr "μεταδεδομένα"
+
+#: video-embed-thumbnail-generator.php:4794
+msgid "Mute"
+msgstr "Σίγαση"
+
+#: video-embed-thumbnail-generator.php:4787
+msgctxt "a list of percentages. eg: 15%"
+msgid "%d%%"
+msgstr "%d%%"
+
+#: video-embed-thumbnail-generator.php:4782
+msgid "Loop to beginning when video ends."
+msgstr "Επαναφορά στην αρχή όταν τελειώνει το βίντεο."
+
+#: video-embed-thumbnail-generator.php:4778
+msgid "Play automatically when page loads."
+msgstr "Παίζει αυτόματα όταν φορτώνεται η σελίδα."
+
+#: video-embed-thumbnail-generator.php:4770
+#: video-embed-thumbnail-generator.php:4799
+#: video-embed-thumbnail-generator.php:4862
+#: video-embed-thumbnail-generator.php:4998
+#: video-embed-thumbnail-generator.php:5253
+msgid "none"
+msgstr "τίποτα"
+
+#: video-embed-thumbnail-generator.php:4769
+msgid "floating"
+msgstr "αιωρούμενο"
+
+#: video-embed-thumbnail-generator.php:4768
+msgid "docked"
+msgstr "σταθερό"
+
+#: video-embed-thumbnail-generator.php:4761
+msgid "Show video title overlay on thumbnails."
+msgstr "Εμφάνιση τίτλου βίντεο σε εικόνες προεπισκόπησης."
+
+#: video-embed-thumbnail-generator.php:4760
+msgid "videos per gallery page."
+msgstr "βίντεο ανά σελίδα συλλογής."
+
+#: video-embed-thumbnail-generator.php:4757
+msgid "Paginate video galleries."
+msgstr "Αρίθμηση βίντεο συλλογής."
+
+#: video-embed-thumbnail-generator.php:4756
+msgid "when current gallery video finishes."
+msgstr "όταν τελειώσει το τρέχον βίντεο της συλλογής."
+
+#: video-embed-thumbnail-generator.php:4750
+msgid "Close popup window"
+msgstr "Κλείσιμο αναδυόμενου παραθύρου"
+
+#: video-embed-thumbnail-generator.php:4749
+msgid "Autoplay next video in the gallery"
+msgstr "Αυτόματη αναπαραγωγή του επόμενου βίντεο στη συλλογή"
+
+#: video-embed-thumbnail-generator.php:4748
+msgid "Stop, but leave popup window open"
+msgstr "Σταματήστε, αλλά αφήστε ανοιχτό το αναδυόμενο παράθυρο"
+
+#: video-embed-thumbnail-generator.php:4744
+msgid "Thumbnail width:"
+msgstr "Πλάτος εικόνας προεπισκόπησης:"
+
+#: video-embed-thumbnail-generator.php:4743
+msgid "Maximum popup width:"
+msgstr "Μέγιστο πλάτος αναδυόμενου παράθυρου:"
+
+#: video-embed-thumbnail-generator.php:4738
+msgid "Allow other content on the same line as the video."
+msgstr "Να επιτρέπεται άλλο περιεχόμενο στην ίδια γραμμή με το βίντεο."
+
+#: video-embed-thumbnail-generator.php:4723
+msgid "Enabling this will ignore any other width settings and set the width of the video to the width of the container it's in."
+msgstr "Με την ενεργοποίηση αυτή θα αγνοηθούν τυχόν άλλες ρυθμίσεις πλάτους και θα ρυθμιστεί το πλάτος του βίντεο στο πλάτος του αρχείου στο οποίο βρίσκεται."
+
+#: video-embed-thumbnail-generator.php:4723
+msgid "Set all videos to expand to 100% of their containers."
+msgstr "Ρυθμίστε όλα τα βίντεο για επέκταση στο 100% των αρχείων τους."
+
+#: video-embed-thumbnail-generator.php:4737
+msgid "Usually if a video's resolution is less than the max width, the video player is set to the actual width of the video. Enabling this will always set the same width regardless of the quality of the video. When necessary you can override by setting the dimensions manually."
+msgstr "Συνήθως, εάν η ανάλυση ενός βίντεο είναι μικρότερη από το μέγιστο πλάτος, το πρόγραμμα αναπαραγωγής βίντεο ρυθμίζεται στο πραγματικό πλάτος του βίντεο. Η ενεργοποίηση αυτού θα ορίζει πάντα το ίδιο πλάτος ανεξάρτητα από την ποιότητα του βίντεο. Όταν είναι απαραίτητο, μπορείτε να παρακάμψετε ρυθμίζοντας τις διαστάσεις χειροκίνητα."
+
+#: video-embed-thumbnail-generator.php:4737
+msgid "Enlarge lower resolution videos to max width."
+msgstr "Μεγέθυνση βίντεο χαμηλότερης ανάλυσης στο μέγιστο πλάτος."
+
+#: video-embed-thumbnail-generator.php:4724
+#: video-embed-thumbnail-generator.php:6390
+#: video-embed-thumbnail-generator.php:7027
+msgid "Height:"
+msgstr "Ύψος:"
+
+#: video-embed-thumbnail-generator.php:6390
+#: video-embed-thumbnail-generator.php:7027
+msgid "Width:"
+msgstr "Πλάτος:"
+
+#: video-embed-thumbnail-generator.php:4711
+msgid "Default playback resolution"
+msgstr "Προεπιλεγμένη ανάλυση αναπαραγωγής"
+
+#: video-embed-thumbnail-generator.php:4705
+msgid "lowest"
+msgstr "χαμηλότερη"
+
+#: video-embed-thumbnail-generator.php:4705
+msgid "highest"
+msgstr "υψηλότερη"
+
+#: video-embed-thumbnail-generator.php:4705
+msgid "automatic"
+msgstr "αυτόματα"
+
+#: video-embed-thumbnail-generator.php:4704
+msgid "Make video player responsive."
+msgstr "Κάντε το πρόγραμμα αναπαραγωγής βίντεο να ανταποκρίνεται."
+
+#: video-embed-thumbnail-generator.php:4692
+#: video-embed-thumbnail-generator.php:5194
+#: video-embed-thumbnail-generator.php:5224
+msgid "right"
+msgstr "δεξιά"
+
+#: video-embed-thumbnail-generator.php:4692
+msgid "center"
+msgstr "κέντρο"
+
+#: video-embed-thumbnail-generator.php:4692
+#: video-embed-thumbnail-generator.php:5194
+#: video-embed-thumbnail-generator.php:5224
+msgid "left"
+msgstr "αριστερά"
+
+#: video-embed-thumbnail-generator.php:4673
+msgid "None"
+msgstr "Όχι"
+
+#: video-embed-thumbnail-generator.php:4672
+msgid "Custom URL"
+msgstr "Προσαρμοσμένη διεύθυνση URL"
+
+#: video-embed-thumbnail-generator.php:4671
+msgid "Download video"
+msgstr "Λήψη του βίντεο"
+
+#: video-embed-thumbnail-generator.php:4670
+msgid "Video attachment page"
+msgstr "Σελίδα συνημμένου βίντεο"
+
+#: video-embed-thumbnail-generator.php:4669
+msgid "Parent post"
+msgstr "Αρχική δημοσίευση"
+
+#: video-embed-thumbnail-generator.php:4668
+msgid "Home page"
+msgstr "Αρχική σελίδα"
+
+#: video-embed-thumbnail-generator.php:4666
+msgid "Link to:"
+msgstr "Σύνδεση με:"
+
+#: video-embed-thumbnail-generator.php:4665
+#: video-embed-thumbnail-generator.php:5222
+msgid "Set as watermark"
+msgstr "Ορίστε ως υδατογράφημα"
+
+#: video-embed-thumbnail-generator.php:4665
+#: video-embed-thumbnail-generator.php:5192
+#: video-embed-thumbnail-generator.php:5222
+msgid "Choose a Watermark"
+msgstr "Επιλέξτε ένα υδατογράφημα"
+
+#: video-embed-thumbnail-generator.php:4665
+msgid "Image:"
+msgstr "Εικόνα:"
+
+#: video-embed-thumbnail-generator.php:4660
+msgid "Display alternate image when video ends."
+msgstr "Εμφάνιση εναλλακτικής εικόνας όταν τελειώνει το βίντεο."
+
+#: video-embed-thumbnail-generator.php:4659
+msgid "Set as end of video image"
+msgstr "Ορίστε ως τέλος μια εικόνα του βίντεο"
+
+#: video-embed-thumbnail-generator.php:4659
+msgid "Choose End of Video Image"
+msgstr "Επιλέξτε το τέλος μιας εικόνας του βίντεο"
+
+#: video-embed-thumbnail-generator.php:4658
+msgid "Display thumbnail image again when video ends."
+msgstr "Εμφανίστε ξανά την εικόνα προεπισκόπησης όταν τελειώσει το βίντεο."
+
+#: video-embed-thumbnail-generator.php:4653
+#: video-embed-thumbnail-generator.php:6376
+msgid "Set as video thumbnail"
+msgstr "Ορίστε ως εικόνα προεπισκόπησης του βίντεο"
+
+#: video-embed-thumbnail-generator.php:4653
+#: video-embed-thumbnail-generator.php:6376
+msgid "Choose a Thumbnail"
+msgstr "Επιλέξτε μια εικόνα προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:4645
+msgid "Show view count"
+msgstr "Εμφάνιση καταμετρήσης προβολών"
+
+#: video-embed-thumbnail-generator.php:4638
+msgid "Show download link"
+msgstr "Εμφάνιση συνδέσμου λήψης"
+
+#: video-embed-thumbnail-generator.php:4637
+msgid "Overlay video title"
+msgstr "Επικάλυψη τίτλου βίντεο"
+
+#: video-embed-thumbnail-generator.php:4632
+msgid "Video.js is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. If the JW Player WordPress plugin is active it should be available as a video player. In the past this plugin used Adobe's Strobe Media Playback Flash player, which hasn't been updated since 2011 and is not recommended. It should still work, but new plugin functions are not guaranteed to be compatible."
+msgstr "Το Video.js είναι το προεπιλεγμένο πρόγραμμα αναπαραγωγής. Οι χρήστες που χρησιμοποιούν το WordPress 3.6 ή νεότερη έκδοση μπορούν να επιλέξουν το προεπιλεγμένο πρόγραμμα αναπαραγωγής Mediaelement.js για WordPress που μπορεί να έχει ήδη προετοιμαστεί για να ταιριάζει με το θέμα σας. Εάν το πρόσθετο JW Player για WordPress είναι ενεργό, θα πρέπει να είναι διαθέσιμο ως πρόγραμμα αναπαραγωγής βίντεο. Στο παρελθόν, αυτό το πρόσθετο χρησιμοποίησε το πρόγραμμα αναπαραγωγής Flash του Adobe Strobe Media Playback, το οποίο δεν έχει ενημερωθεί από το 2011 και δεν συνιστάται. Θα πρέπει να λειτουργεί ακόμη, αλλά οι νέες λειτουργίες του πρόσθετου δεν είναι εγγυημένο ότι είναι συμβατές."
+
+#: video-embed-thumbnail-generator.php:4627
+msgid "Video player:"
+msgstr "Πρόγραμμα αναπαραγωγής για βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4623
+msgid "(deprecated)"
+msgstr "(καταργήθηκε)"
+
+#: video-embed-thumbnail-generator.php:4601
+#: video-embed-thumbnail-generator.php:6448
+msgid "WordPress Default"
+msgstr "Προεπιλογή για WordPress"
+
+#: video-embed-thumbnail-generator.php:4579
+msgid "Test FFMPEG:"
+msgstr "Δοκιμάστε το FFMPEG:"
+
+#: video-embed-thumbnail-generator.php:4576
+msgctxt "program execution options"
+msgid "Execution:"
+msgstr "Εκτέλεση:"
+
+#: video-embed-thumbnail-generator.php:4572
+msgid "Audio bit rate:"
+msgstr "Ρυθμός μετάδοσης ήχου:"
+
+#: video-embed-thumbnail-generator.php:4571
+msgid "H.264 profile:"
+msgstr "Προφίλ H.264:"
+
+#: video-embed-thumbnail-generator.php:4570
+msgid "Average Bit Rate:"
+msgstr "Μέσος ρυθμός μετάδοσης:"
+
+#: video-embed-thumbnail-generator.php:4569
+msgid "Constant Rate Factors (CRF):"
+msgstr "Συντελεστές Σταθερού Ρυθμού (CRF):"
+
+#: video-embed-thumbnail-generator.php:4568
+msgid "Encode quality control method:"
+msgstr "Μέθοδος κωδικοποίησης ποιοτικού ελέγχου:"
+
+#: video-embed-thumbnail-generator.php:4564
+msgid "Add watermark to encoded files:"
+msgstr "Προσθέστε υδατογράφημα σε κωδικοποιημένα αρχεία:"
+
+#: video-embed-thumbnail-generator.php:4562
+msgid "htaccess login:"
+msgstr "σύνδεση σε htaccess:"
+
+#: video-embed-thumbnail-generator.php:4560
+msgid "For previously uploaded videos:"
+msgstr "Για βίντεο που μεταφορτώθηκαν προηγουμένως:"
+
+#: video-embed-thumbnail-generator.php:4559
+msgid "Do automatically on upload:"
+msgstr "Να γίνεται αυτόματα η μεταφόρτωση:"
+
+#: video-embed-thumbnail-generator.php:4558
+msgid "Default video encode formats:"
+msgstr "Προεπιλεγμένες μορφές κωδικοποίησης βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4557
+msgid "Enable in-browser thumbnails:"
+msgstr "Ενεργοποίηση εικόνων προεπισκόπησης στο πρόγραμμα περιήγησης:"
+
+#: video-embed-thumbnail-generator.php:4553
+msgid "Path to applications folder on server:"
+msgstr "Διαδρομή σε φάκελο εφαρμογών στον διακομιστή:"
+
+#: video-embed-thumbnail-generator.php:4550
+msgid "Attachment page design:"
+msgstr "Σχεδιασμός σελίδας συνημμένου:"
+
+#: video-embed-thumbnail-generator.php:4549
+msgid "Video title text HTML formatting:"
+msgstr "Μορφοποίηση κειμένου τίτλου σε HTML του βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4548
+msgid "Delete associated attachments:"
+msgstr "Διαγραφή συνδεδεμένων συνημμένων:"
+
+#: video-embed-thumbnail-generator.php:4546
+msgid "Attach thumbnails to:"
+msgstr "Επισυνάψτε εικόνες προεπισκόπησης σε:"
+
+#: video-embed-thumbnail-generator.php:4545
+msgid "Featured image:"
+msgstr "Προτεινόμενη εικόνα:"
+
+#: video-embed-thumbnail-generator.php:4547
+msgid "User capabilities:"
+msgstr "Δυνατότητες χρήστη:"
+
+#: video-embed-thumbnail-generator.php:4544
+msgid "Default number of thumbnails to generate:"
+msgstr "Προεπιλεγμένος αριθμός εικόνων προεπισκόπησης για δημιουργία:"
+
+#: video-embed-thumbnail-generator.php:4537
+msgid "Play button overlay:"
+msgstr "Επικάλυψη κουμπιού αναπαραγωγής:"
+
+#: video-embed-thumbnail-generator.php:4536
+msgid "Autohide:"
+msgstr "Αυτόματη απόκρυψη:"
+
+#: video-embed-thumbnail-generator.php:4535
+msgid "Video scale mode:"
+msgstr "Λειτουργία κλίμακας του βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4534
+msgid "Video stream type:"
+msgstr "Τύπος ροής του βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4533
+msgid "Video skin file:"
+msgstr "Αρχείο εμφάνισης του βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4532
+msgid "XML configuration file:"
+msgstr "Αρχείο διαμόρφωσης XML:"
+
+#: video-embed-thumbnail-generator.php:4531
+msgid "Background color:"
+msgstr "Χρώμα του φόντου:"
+
+#: video-embed-thumbnail-generator.php:4529
+msgid "Custom attributes:"
+msgstr "Προσαρμοσμένα χαρακτηριστικά:"
+
+#: video-embed-thumbnail-generator.php:4527
+msgid "Native controls:"
+msgstr "Εγγενείς έλεγχοι:"
+
+#: video-embed-thumbnail-generator.php:4528
+msgctxt "CSS class for video skin"
+msgid "Skin class:"
+msgstr "Κατηγορία εμφάνισης:"
+
+#: video-embed-thumbnail-generator.php:4800
+msgid "Preload:"
+msgstr "Προφόρτωση:"
+
+#: video-embed-thumbnail-generator.php:4789
+msgid "Volume:"
+msgstr "Ένταση ήχου:"
+
+#: video-embed-thumbnail-generator.php:4525
+msgid "Video controls:"
+msgstr "Στοιχεία ελέγχου βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4524
+msgid "Video gallery:"
+msgstr "Συλλογή βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4522
+msgid "Automatically adjust videos:"
+msgstr "Αυτόματη προσαρμογή των βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4521
+msgid "Video alignment:"
+msgstr "Ευθυγράμμιση του βίντεο:"
+
+#: video-embed-thumbnail-generator.php:4520
+msgid "Watermark overlay:"
+msgstr "Επικάλυψη υδατογραφήματος:"
+
+#: video-embed-thumbnail-generator.php:4519
+msgid "End of video image:"
+msgstr "Τέλος του βίντεο με εικόνα:"
+
+#: video-embed-thumbnail-generator.php:4518
+msgid "Default thumbnail:"
+msgstr "Προεπιλεγμένη εικόνας προεπισκόπησης:"
+
+#: video-embed-thumbnail-generator.php:4516
+msgid "Video Encoding Settings"
+msgstr "Ρυθμίσεις Κωδικοποίησης Βίντεο"
+
+#: video-embed-thumbnail-generator.php:4515
+msgid "Plugin Settings"
+msgstr "Ρυθμίσεις Προσθέτου"
+
+#: video-embed-thumbnail-generator.php:4514
+msgid "The following options will only affect Flash playback"
+msgstr "Οι ακόλουθες επιλογές θα επηρεάσουν μόνο την αναπαραγωγή του Flash"
+
+#: video-embed-thumbnail-generator.php:4513
+msgid "Default Video Playback Settings"
+msgstr "Προεπιλεγμένες Ρυθμίσεις Αναπαραγωγής Βίντεο"
+
+#: video-embed-thumbnail-generator.php:4379
+msgctxt "FFMPEG Settings, tab title"
+msgid "%s Settings"
+msgstr "Ρυθμίσεις για %s"
+
+#: video-embed-thumbnail-generator.php:4378
+msgctxt "Adjective, tab title"
+msgid "General"
+msgstr "Γενικά"
+
+#: video-embed-thumbnail-generator.php:4313
+#: video-embed-thumbnail-generator.php:4392
+msgid "If you're getting some use out of this plugin, please consider donating a few dollars to support its future development."
+msgstr "Εάν χρησιμοποιείτε κάπως αυτό το πρόσθετο, σκεφτείτε το ενδεχόμενο να δώσετε λίγα χρήματα για να στηρίξετε τη μελλοντική του ανάπτυξη."
+
+#: video-embed-thumbnail-generator.php:4309
+#: video-embed-thumbnail-generator.php:4388
+msgid "Reset Options"
+msgstr "Επιλογές Επαναφοράς"
+
+#: video-embed-thumbnail-generator.php:4308
+#: video-embed-thumbnail-generator.php:4387
+msgid "Save Changes"
+msgstr "Αποθήκευση Αλλαγών"
+
+#: video-embed-thumbnail-generator.php:4302
+msgid "Super Admins only:"
+msgstr "Μόνο για Διαχειριστές:"
+
+#: video-embed-thumbnail-generator.php:4298
+msgid "User capabilties for new sites:"
+msgstr "Δυνατότητες χρήστη για νέους ιστότοπους:"
+
+#: video-embed-thumbnail-generator.php:4294
+msgid "Execution:"
+msgstr "Εκτέλεση:"
+
+#: video-embed-thumbnail-generator.php:4290
+#: video-embed-thumbnail-generator.php:4575
+msgid "FFMPEG legacy options:"
+msgstr "Επιλογές παλαιού τύπου FFMPEG:"
+
+#: video-embed-thumbnail-generator.php:4286
+#: video-embed-thumbnail-generator.php:4566
+msgid "Method to fix encoded H.264 headers for streaming:"
+msgstr "Μέθοδος για την επιδιόρθωση κωδικοποιημένων επικεφαλίδων H.264 για μετάδοση:"
+
+#: video-embed-thumbnail-generator.php:4282
+#: video-embed-thumbnail-generator.php:4554
+msgid "Application for thumbnails & encoding:"
+msgstr "Εφαρμογή για εικόνες προεπισκόπησης & κωδικοποίηση:"
+
+#: video-embed-thumbnail-generator.php:4279
+msgid "Path to applications on the server:"
+msgstr "Διαδρομή προς εφαρμογές στον διακομιστή:"
+
+#: video-embed-thumbnail-generator.php:4257
+msgid "Video Embed & Thumbnail Generator network settings reset to default values."
+msgstr "Οι ρυθμίσεις δικτύου του Video Embed & Thumbnail Generator επαναφέρονται στις προεπιλεγμένες τιμές."
+
+#: video-embed-thumbnail-generator.php:4221
+#: video-embed-thumbnail-generator.php:4360
+msgctxt "Settings page title in admin sidebar"
+msgid "Video Embed & Thumbnail Generator"
+msgstr "Video Embed & Thumbnail Generator"
+
+#: video-embed-thumbnail-generator.php:4221
+#: video-embed-thumbnail-generator.php:4360
+msgctxt "Settings page title"
+msgid "Video Embed & Thumbnail Generator"
+msgstr "Video Embed & Thumbnail Generator"
+
+#: video-embed-thumbnail-generator.php:4210
+msgid "Clear All Queued"
+msgstr "Διαγραφή όλης της σειράς"
+
+#: video-embed-thumbnail-generator.php:4210
+msgid "Clear All Completed"
+msgstr "Διαγραφή όλων των ολοκληρωμένων"
+
+#: video-embed-thumbnail-generator.php:4193
+msgid "Video Embed & Thumbnail Generator Encoding Queue"
+msgstr "Σειρά Κωδικοποίησης του Video Embed & Thumbnail Generator"
+
+#: video-embed-thumbnail-generator.php:4181
+msgctxt "Title in network admin sidebar"
+msgid "Network Video Encode Queue"
+msgstr "Σειρά Κωδικοποίησης Βίντεο Δικτύου"
+
+#: video-embed-thumbnail-generator.php:4174
+msgctxt "Title in admin sidebar"
+msgid "Video Encode Queue"
+msgstr "Σειρά Κωδικοποίησης Βίντεο"
+
+#: video-embed-thumbnail-generator.php:4174
+#: video-embed-thumbnail-generator.php:4181
+msgctxt "Tools page title"
+msgid "Video Embed & Thumbnail Generator Encoding Queue"
+msgstr "Σειρά Κωδικοποίησης Βίντεο στο Video Embed & Thumbnail Generator"
+
+#: video-embed-thumbnail-generator.php:4165
+msgid "Queue is empty"
+msgstr "Η σειρά είναι άδεια"
+
+#: video-embed-thumbnail-generator.php:4156
+msgid "Other user's video"
+msgstr "Άλλα βίντεο χρήστη"
+
+#: video-embed-thumbnail-generator.php:4141
+msgid "Please wait while this video is automatically added to the queue..."
+msgstr "Περιμένετε όσο αυτό το βίντεο προστίθεται αυτόματα στην ουρά..."
+
+#: video-embed-thumbnail-generator.php:3978
+msgctxt "multisite site name, column header"
+msgid "Site"
+msgstr "Ιστότοπος"
+
+#: video-embed-thumbnail-generator.php:3974
+msgctxt "noun, column header"
+msgid "Actions"
+msgstr "Ενέργειες"
+
+#: video-embed-thumbnail-generator.php:3973
+msgctxt "noun, column header"
+msgid "Formats"
+msgstr "Μορφές"
+
+#: video-embed-thumbnail-generator.php:3972
+msgctxt "noun, column header"
+msgid "File"
+msgstr "Αρχείο"
+
+#: video-embed-thumbnail-generator.php:3971
+msgctxt "noun, column header"
+msgid "Thumbnail"
+msgstr "Εικόνα Προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:3970
+msgctxt "username, column header"
+msgid "User"
+msgstr "Χρήστης"
+
+#: video-embed-thumbnail-generator.php:3969
+msgctxt "noun, column header"
+msgid "Order"
+msgstr "Σειρά"
+
+#: video-embed-thumbnail-generator.php:3941
+msgid "Generates additional video formats compatible with most mobile & HTML5-compatible browsers"
+msgstr "Δημιουργεί πρόσθετες μορφές βίντεο συμβατές με τα περισσότερα προγράμματα περιήγησης συμβατά με κινητά και HTML5"
+
+#: video-embed-thumbnail-generator.php:3936
+msgctxt "Button text"
+msgid "Encode selected"
+msgstr "Επιλέχθηκε κωδικοποίηση"
+
+#: video-embed-thumbnail-generator.php:3933
+msgctxt "Button text"
+msgid "Update"
+msgstr "Ενημέρωση"
+
+#: video-embed-thumbnail-generator.php:3929
+msgid "Nothing to encode"
+msgstr "Τίποτα για κωδικοποίηση"
+
+#: video-embed-thumbnail-generator.php:3920
+msgid "Set as %s"
+msgstr "Ορισμός ως %s"
+
+#: video-embed-thumbnail-generator.php:3920
+msgid "Choose %s"
+msgstr "Επιλέξτε το %s"
+
+#: video-embed-thumbnail-generator.php:3823
+msgctxt "ex: FFMPEG not found at /usr/local/bin"
+msgid "%1$s not found at %2$s"
+msgstr "Το %1$s δεν βρέθηκε στο %2$s"
+
+#: video-embed-thumbnail-generator.php:3709
+msgid "You don't have permission to encode videos"
+msgstr "Δεν έχετε άδεια για να κωδικοποιήσετε το βίντεο"
+
+#: video-embed-thumbnail-generator.php:3702
+msgid "Format already exists"
+msgstr "Η μορφοποίηση υπάρχει ήδη"
+
+#: video-embed-thumbnail-generator.php:3694
+msgid "Currently encoding"
+msgstr "Αυτή τη στιγμή κωδικοποιείται"
+
+#: video-embed-thumbnail-generator.php:3677
+msgid "Delete Permanently"
+msgstr "Μόνιμη Διαγραφή"
+
+#: video-embed-thumbnail-generator.php:3674
+msgid "Clear Format"
+msgstr "Διαγραφή Μορφοποίησης"
+
+#: video-embed-thumbnail-generator.php:3134
+msgctxt "precedes code for embedding video"
+msgid "Embed:"
+msgstr "Ενσωματωμένο:"
+
+#: video-embed-thumbnail-generator.php:3081
+#: video-embed-thumbnail-generator.php:9058
+msgid "%s view"
+msgid_plural "%s views"
+msgstr[0] "%s προβολή"
+msgstr[1] "%s προβολές"
+
+#: video-embed-thumbnail-generator.php:2464
+msgid "Video"
+msgstr "Βίντεο"
+
+#: video-embed-thumbnail-generator.php:2409
+msgid "Next"
+msgstr "Επόμενο"
+
+#: video-embed-thumbnail-generator.php:2402
+msgid "Previous"
+msgstr "Προηγούμενο"
+
+#: video-embed-thumbnail-generator.php:2243
+msgctxt "button text to play previous video"
+msgid "Previous"
+msgstr "Προηγούμενο"
+
+#: video-embed-thumbnail-generator.php:2242
+msgctxt "button text to play next video"
+msgid "Next"
+msgstr "Επόμενο"
+
+#: video-embed-thumbnail-generator.php:2241
+msgctxt "noun for Google Analytics event"
+msgid "Complete View"
+msgstr "Πλήρης Προβολή"
+
+#: video-embed-thumbnail-generator.php:2240
+msgctxt "noun for Google Analytics event"
+msgid "Play Start"
+msgstr "Έναρξη Αναπαραγωγής"
+
+#: video-embed-thumbnail-generator.php:1940
+msgctxt "Custom format"
+msgid "Custom"
+msgstr "Προσαρμοσμένο"
+
+#: video-embed-thumbnail-generator.php:1939
+#: video-embed-thumbnail-generator.php:6436
+#: video-embed-thumbnail-generator.php:7038
+msgid "Default:"
+msgstr "Προκαθορισμένο:"
+
+#: video-embed-thumbnail-generator.php:1938
+msgctxt "noun"
+msgid "Label:"
+msgstr "Ετικέτα:"
+
+#: video-embed-thumbnail-generator.php:1937
+#: video-embed-thumbnail-generator.php:7038
+msgid "Language code:"
+msgstr "Κωδικός γλώσσας:"
+
+#: video-embed-thumbnail-generator.php:1936
+#: video-embed-thumbnail-generator.php:3920
+#: video-embed-thumbnail-generator.php:4653
+#: video-embed-thumbnail-generator.php:4659
+#: video-embed-thumbnail-generator.php:4665
+#: video-embed-thumbnail-generator.php:5192
+#: video-embed-thumbnail-generator.php:5222
+#: video-embed-thumbnail-generator.php:6376
+#: video-embed-thumbnail-generator.php:6431
+msgid "Choose from Library"
+msgstr "Επιλέξτε από την Βιβλιοθήκη"
+
+#: video-embed-thumbnail-generator.php:1935
+#: video-embed-thumbnail-generator.php:6431
+msgid "Set as track source"
+msgstr "Ορισμός ως πηγή κομματιού"
+
+#: video-embed-thumbnail-generator.php:1934
+#: video-embed-thumbnail-generator.php:6431
+msgid "Choose a Text File"
+msgstr "Επιλέξτε ένα Αρχείο Κειμένου"
+
+#: video-embed-thumbnail-generator.php:1933
+#: video-embed-thumbnail-generator.php:6415
+#: video-embed-thumbnail-generator.php:7038
+msgid "chapters"
+msgstr "κεφάλαια"
+
+#: video-embed-thumbnail-generator.php:1932
+#: video-embed-thumbnail-generator.php:6415
+#: video-embed-thumbnail-generator.php:7038
+msgid "captions"
+msgstr "λεζάντες"
+
+#: video-embed-thumbnail-generator.php:1931
+#: video-embed-thumbnail-generator.php:6415
+#: video-embed-thumbnail-generator.php:7038
+msgid "subtitles"
+msgstr "υπότιτλοι"
+
+#: video-embed-thumbnail-generator.php:1930
+#: video-embed-thumbnail-generator.php:6429
+#: video-embed-thumbnail-generator.php:7038
+msgid "Track type:"
+msgstr "Τύπος κομματιού:"
+
+#: video-embed-thumbnail-generator.php:1929
+msgid "Complete"
+msgstr "Πλήρης"
+
+#: video-embed-thumbnail-generator.php:1927
+msgid "You are about to clear all videos not yet encoded."
+msgstr "Πρόκειται να διαγράψετε όλα τα βίντεο που δεν έχουν κωδικοποιηθεί ακόμη."
+
+#: video-embed-thumbnail-generator.php:1926
+msgid "You are about to set all existing video thumbnails previously generated by this plugin as attachments of their videos rather than their associated posts. Proceed at your own risk."
+msgstr "Πρόκειται να ορίσετε όλες τις υπάρχουσες εικόνες προεπισκόπησης των βίντεο που είχαν δημιουργηθεί προηγουμένως από αυτό το πρόσθετο ως συνημμένα των βίντεό τους αντί για τις σχετικές δημοσιεύσεις τους. Προχωρήστε με δική σας ευθύνη."
+
+#: video-embed-thumbnail-generator.php:1925
+msgid "You are about to set all existing video thumbnails previously generated by this plugin as attachments of their posts rather than their associated videos. Proceed at your own risk."
+msgstr "Πρόκειται να ορίσετε όλες τις υπάρχουσες εικόνες προεπισκόπησης των βίντεο που είχαν δημιουργηθεί προηγουμένως από αυτό το πρόσθετο ως συνημμένα των δημοσιεύσεων τους και όχι ως συνδεδεμένα βίντεο. Προχωρήστε με δική σας ευθύνη."
+
+#: video-embed-thumbnail-generator.php:1924
+msgid "Processing..."
+msgstr "Επεξεργασία..."
+
+#: video-embed-thumbnail-generator.php:1923
+msgid "'Cancel' to stop, 'OK' to proceed."
+msgstr "\"Ακύρωση\" για διακοπή, \"ΟΚ\" για να συνεχίσετε."
+
+#: video-embed-thumbnail-generator.php:1922
+msgid "No thumbnails generated. All videos have thumbnails already."
+msgstr "Δεν δημιουργήθηκαν εικόνες προεπισκόπησης. Όλα τα βίντεο έχουν ήδη εικόνες προεπισκόπησης."
+
+#: video-embed-thumbnail-generator.php:1921
+msgid "You are about to add every video in your Media Library to the video encode queue if it hasn't already been encoded. This might take a long time."
+msgstr "Πρόκειται να προσθέσετε κάθε βίντεο στη Βιβλιοθήκη Πολυμέσων στην σειρά κωδικοποίησης βίντεο, εάν δεν έχει ήδη κωδικοποιηθεί. Αυτό μπορεί να διαρκέσει πολύ."
+
+#: video-embed-thumbnail-generator.php:1920
+msgid ""
+"You are about to create thumbnails for every video in your Media Library that doesn't already have one. This might take a long time. There is no 'undo' button, so proceed at your own risk.\n"
+"\n"
+"Number of videos without thumbnails: "
+msgstr ""
+"Πρόκειται να δημιουργήσετε εικόνες προεπισκόπησης για κάθε βίντεο στη Βιβλιοθήκη Πολυμέσων που δεν έχει ήδη. Αυτό μπορεί να διαρκέσει πολύ. Δεν υπάρχει κουμπί \"αναίρεσης\", οπότε προχωρήστε με δική σας ευθύνη.\n"
+"\n"
+"Αριθμός των βίντεο χωρίς εικόνες προεπισκόπησης: "
+
+#: video-embed-thumbnail-generator.php:1919
+msgid "You are about to set all existing video thumbnails previously generated by this plugin as the featured images for their posts. There is no 'undo' button, so proceed at your own risk."
+msgstr "Πρόκειται να ορίσετε όλες τις υπάρχουσες εικόνες προεπισκόπησης των βίντεο που είχαν δημιουργηθεί προηγουμένως από αυτό το πρόσθετο ως επιλεγμένες εικόνες για τις δημοσιεύσεις τους. Δεν υπάρχει κουμπί \"αναίρεσης\", οπότε προχωρήστε με δική σας ευθύνη."
+
+#: video-embed-thumbnail-generator.php:1918
+msgid "FFMPEG or LIBAV required for these functions."
+msgstr "Απαιτείται FFMPEG ή LIBAV για αυτές τις λειτουργίες."
+
+#: video-embed-thumbnail-generator.php:1917
+msgid "Running test..."
+msgstr "Εκτέλεση δοκιμής..."
+
+#: video-embed-thumbnail-generator.php:1916
+msgid "Saved."
+msgstr "Αποθηκεύτηκε."
+
+#: video-embed-thumbnail-generator.php:1915
+msgid ""
+"You are about to permanently delete the encoded video.\n"
+" 'Cancel' to stop, 'OK' to delete."
+msgstr ""
+"Πρόκειται να διαγράψετε οριστικά το κωδικοποιημένο βίντεο.\n"
+"\"Ακύρωση\" για διακοπή, \"OK\" για διαγραφή."
+
+#: video-embed-thumbnail-generator.php:1914
+#: video-embed-thumbnail-generator.php:3814
+#: video-embed-thumbnail-generator.php:7011
+#: video-embed-thumbnail-generator.php:7012
+#: video-embed-thumbnail-generator.php:7046
+msgid "Please enter a valid video URL"
+msgstr "Εισαγάγετε μια έγκυρη διεύθυνση URL του βίντεο"
+
+#: video-embed-thumbnail-generator.php:1913
+msgid "%s not found"
+msgstr "Το %s δεν βρέθηκε"
+
+#: video-embed-thumbnail-generator.php:1912
+#: video-embed-thumbnail-generator.php:7012
+msgid "Randomize"
+msgstr "Τυχαία"
+
+#: video-embed-thumbnail-generator.php:1911
+#: video-embed-thumbnail-generator.php:7011
+msgid "Generate"
+msgstr "Δημιουργία"
+
+#: video-embed-thumbnail-generator.php:1910
+msgid "Loading..."
+msgstr "Φόρτωση..."
+
+#: video-embed-thumbnail-generator.php:1909
+msgid "Saving..."
+msgstr "Αποθήκευση..."
+
+#: video-embed-thumbnail-generator.php:1908
+msgid "Save All Thumbnails"
+msgstr "Αποθήκευση όλων των εικόνων προεπισκόπησης"
+
+#: video-embed-thumbnail-generator.php:1907
+msgid "Choose Thumbnail:"
+msgstr "Επιλέξτε Εικόνα Προεπισκόπησης:"
+
+#: video-embed-thumbnail-generator.php:1905
+msgid "Can't load video"
+msgstr "Δεν είναι δυνατή η φόρτωση του βίντεο"
+
+#: video-embed-thumbnail-generator.php:1904
+#: video-embed-thumbnail-generator.php:6337
+msgid "Choose from video..."
+msgstr "Επιλέξτε από τα βίντεο..."
+
+#: video-embed-thumbnail-generator.php:1903
+msgid "Hide video..."
+msgstr "Απόκρυψη του βίντεο..."
+
+#: video-embed-thumbnail-generator.php:1902
+msgctxt "please wait"
+msgid "Wait"
+msgstr "Περιμένετε"
+
+#: video-embed-thumbnail-generator.php:691
+msgid "Network Settings"
+msgstr "Ρυθμίσεις Δικτύου"
+
+#: video-embed-thumbnail-generator.php:683
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+#: video-embed-thumbnail-generator.php:574
+msgid "Replace original with %s"
+msgstr "Αντικαταστήστε το πρωτότυπο με %s"
+
+#: video-embed-thumbnail-generator.php:411
+#: video-embed-thumbnail-generator.php:5064
+msgid "same resolution H.264"
+msgstr "ίδια ανάλυση με H.264"

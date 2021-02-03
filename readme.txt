@@ -79,6 +79,7 @@ If you enable oEmbed provider data in the plugin settings, the URL of a post wit
 * Español por Andrew Kurtis de <a href="http://www.webhostinghub.com/">WebHostingHub</a>.
 * Français par F.R. 'Friss' Ferry, friss.designs@gmail.com
 * Българска от Емил Георгиев, svinqvmraka@gmail.com
+* Greek by Jrop llc <a href="https://www.jrop.com">https://www.jrop.com</a>
 
 I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
 
@@ -250,12 +251,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7 - January xx, 2020 =
+= 4.7 - February xx, 2020 =
 * Changed plugin name to Videopack.
 * Added Video.js version 7 player option.
 * Deprecated Video.js version 5 player.
 * Removed Strobe Media Playback player option.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
+* Added Greek translation.
 
 = 4.6.27 - January 6, 2021 =
 * Fixed bug in testing FFMPEG execution.
