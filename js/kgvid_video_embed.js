@@ -13,13 +13,6 @@ function kgvid_document_ready() {
 	
 		}
 
-		if ( video_vars.player_type == "JW Player" ) {
-			var player_id = jQuery('#video_'+video_vars.id+'_div').children('div[id^="jwplayer"]').attr('id');
-			player_id = player_id.replace('_wrapper', ''); //Flash JW Players have wrapper in the id
-			var player = jwplayer(player_id);
-			player.onReady( kgvid_setup_video(video_vars.id) );
-		}
-
 	});
 
 }
@@ -199,7 +192,6 @@ function kgvid_SetVideo(id) { //for galleries
 				if ( meta > 0 ) {
 					jQuery('#kgvid-simplemodal-container').css('color','white'); //show text if there's anything to see below the video
 					meta_bump = 5;
-					if ( video_vars.player_type == "JW Player" ) { meta_bump = 15; }
 					jQuery('#kgvid-simplemodal-container').height(jQuery('#kgvid-simplemodal-container').height() + meta_bump);
 					jQuery.modal.setPosition();
 				}
@@ -238,9 +230,6 @@ function kgvid_SetVideo(id) { //for galleries
 				if ( video_vars.player_type == "Video.js" || video_vars.player_type == "Video.js v7" ) {
 					eval('videojs.players.video_'+id).pause();
 					setTimeout(function() { eval('videojs.players.video_'+id).dispose(); }, 0);
-				}
-				if ( video_vars.player_type == "JW Player" ) {
-					jwplayer(jQuery('#kgvid_'+id+'_wrapper .jwplayer').attr('id')).stop();
 				}
 			}
 
@@ -635,80 +624,6 @@ function kgvid_setup_video(id) {
 
 	} //end if WordPress Default
 
-	if (  video_vars.player_type == "JW Player" ) {
-		var player_id = jQuery('#video_'+id+'_div').children('div[id^="jwplayer"]').attr('id');
-		player_id = player_id.replace('_wrapper', ''); //Flash JW Players have wrapper in the id
-		var player = jwplayer(player_id);
-
-		if ( video_vars.set_volume != "" ) { player.setVolume(Math.round(video_vars.set_volume*100)); }
-		if ( video_vars.mute == "true" ) { player.setMute(true); }
-
-		player.onPlay( function() {
-			kgvid_video_counter(id, 'play');
-
-			if ( video_vars.meta ) {
-				kgvid_add_hover(id);
-				jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-			}
-
-			if ( video_vars.pauseothervideos == "true" ) {
-				var i = 0;
-				while (true) {
-					var testplayer = jwplayer(i);
-					if (!testplayer.id) {
-						break;
-					}
-					else if ( testplayer.id == player.id ) {
-						i++;
-					}
-					else {
-						testplayer.pause(true);
-						i++;
-					}
-				}//end loop through jwplayers
-			}
-
-			player.onTime( function(e){
-
-				if ( jQuery('#video_'+id+'_div').data("25") == undefined && Math.round(e.position / e.duration * 100) == 25 ) {
-					jQuery('#video_'+id+'_div').data("25", true);
-					kgvid_video_counter(id, '25');
-				}
-				else if ( jQuery('#video_'+id+'_div').data("50") == undefined && Math.round(e.position / e.duration * 100) == 50 ) {
-					jQuery('#video_'+id+'_div').data("50", true);
-					kgvid_video_counter(id, '50');
-				}
-				else if ( jQuery('#video_'+id+'_div').data("75") == undefined && Math.round(e.position / e.duration * 100) == 75 ) {
-					jQuery('#video_'+id+'_div').data("75", true);
-					kgvid_video_counter(id, '75');
-
-				}
-
-			});
-
-		});
-
-		player.onComplete( function() {
-
-			if ( jQuery('#video_'+id+'_div').data("end") == undefined ) {
-				jQuery('#video_'+id+'_div').data("end", true);
-				kgvid_video_counter(id, 'end');
-			}
-
-			if ( jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != "" && jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end') != null ) {
-				kgvid_video_gallery_end_action(id, jQuery('#kgvid_video_gallery_thumb_'+id).data('gallery_end'));
-			}
-
-		});
-
-		if ( video_vars.right_click != "on" ) {
-			player.onReady( function() {
-				jQuery('#video_'+id+'_div .jwclick').remove();
-			});
-		}
-
-	}
-
 	if ( video_vars.resize == "true" 
 		|| video_vars.auto_res == "automatic"
 		|| window.location.search.indexOf("kgvid_video_embed[enable]=true") !== -1 
@@ -1093,12 +1008,6 @@ function kgvid_share_icon_click(id) {
 		jQuery('#video_'+id+'_div .mejs-overlay-button').toggle();
 
 	}//if WordPress Default player
-	else if ( video_vars.player_type == "JW Player" ) {
-		var player_id = jQuery('#video_'+id+'_div').children('div[id^="jwplayer"]').attr('id');
-		player_id = player_id.replace('_wrapper', ''); //Flash JW Players have wrapper in the id
-		var player = jwplayer(player_id);
-		player.pause(true);
-	}
 
 	if ( event == 'turn on' ) { jQuery('#video_'+id+'_div').off('mouseenter mouseleave focus focusout').addClass('kgvid_video_meta_hover'); }
 	else { kgvid_add_hover(id); }

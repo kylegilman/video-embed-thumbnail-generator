@@ -23,10 +23,8 @@ This plugin adds several fields to any video uploaded to the WordPress Media Lib
 
 You have the option to use a few different video players:
 
-* Video.js (files are included with the plugin)
+* Video.js v7 or v5 (files are included with the plugin)
 * The WordPress default player using MediaElement.js, which was introduced in WordPress version 3.6
-* JW Player 6 (if their old, discontinued plugin is already installed. This plugin does not work with JW Player 7 yet.)
-* Adobe's Strobe Media Playback Flash player (deprecated)
 
 No matter which player you use, the video will responsively resize to fit the container it's in. If you provide multiple H.264 resolutions, the plugin can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If you have Google Analytics set up on your site, the plugin will automatically send Google Analytics Events when users start, reach 25%, 50%, 75%, and complete watching your videos.
 
@@ -72,14 +70,12 @@ If you enable oEmbed provider data in the plugin settings, the URL of a post wit
 
 `[KGVID]http://www.kylegilman.net/wp-content/uploads/2006/09/Reel-2012-05-15-720.mp4[/KGVID]`
 
-<em>The JW Player 6 plugin has been removed from the WordPress plugin repository and JW Player 7 uses a very different system for embedding videos. JW Player 7 support is not available in this plugin yet. The Strobe Media Playback option hasn't been updated since 2011 and is not recommended, but I'm keeping it around for longtime users of this plugin who don't want to change. Most features of the plugin will work when using Strobe Media Playback, but new features will not be tested with it. Selecting Strobe Media Playback will default to a Flash video player if you're using a Flash-compatible file (flv, f4v, mp4, mov, or m4v). Otherwise it will use the Video.js player as a fallback.</em>
-
 = Translations included: =
 
 * Español por Andrew Kurtis de <a href="http://www.webhostinghub.com/">WebHostingHub</a>.
 * Français par F.R. 'Friss' Ferry, friss.designs@gmail.com
 * Българска от Емил Георгиев, svinqvmraka@gmail.com
-* Greek by Jrop llc <a href="https://www.jrop.com">https://www.jrop.com</a>
+* Greek by <a href="https://www.jrop.com">Jrop llc</a>
 
 I'm not really a software developer. I'm just a film editor with some time on his hands who wanted to post video for clients and wasn't happy with the current state of any available software. But I want to really make this thing work, so please help me out by posting your feedback on <a href="https://github.com/kylegilman/video-embed-thumbnail-generator/issues?state=open">Github</a>.
 
@@ -141,7 +137,7 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `scalemode="letterbox/none/stretch/zoom"` If the video display size isn't the same as the video file, this determines how the video will be scaled.
 * `backgroundcolor="#rrggbb"` set the background color to whatever hex code you want.
 * `configuration="http://www.example.com/config.xml"` Lets you specify all these flashvars in an XML file.
-* `skin="http://www.example.com/skin.xml"` Completely change the look of the video player. <a href="http://www.longtailvideo.com/support/jw-player/jw-player-for-flash-v5/14/building-skins">Instructions here.</a>
+* `skin="http://www.example.com/skin.xml"` Completely change the look of the video player.
 
 = These options are available for video galleries (options work the same as standard WordPress image galleries) =
 
@@ -255,8 +251,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Changed plugin name to Videopack.
 * Added Video.js version 7 player option.
 * Deprecated Video.js version 5 player.
-* Removed Strobe Media Playback player option.
+* Removed JW Player & Strobe Media Playback player options.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
+* Fixed bug that added videos to encode queue even if there was nothing to encode.
 * Added Greek translation.
 
 = 4.6.27 - January 6, 2021 =
