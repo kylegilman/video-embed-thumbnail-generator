@@ -59,7 +59,6 @@ function kgvid_default_options_fn() {
 	$options = array(
 		"version" => '4.7',
 		"embed_method" => "Video.js v7",
-		"jw_player_id" => "",
 		"template" => false,
 		"template_gentle" => "on",
 		"replace_format" => "fullres",
@@ -2619,7 +2618,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_wrapper_auto_left'; }
 		}
 
-		if ( ( $query_atts['title'] != "false" && $options['embed_method'] != "JW Player" )
+		if ( ( $query_atts['title'] != "false" )
 			|| $query_atts['embedcode'] != "false"
 			|| $query_atts['downloadlink'] == "true"
 			||  $options['twitter_button'] == 'on'
@@ -2906,73 +2905,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$code .= $executed_shortcode;
 		}
 
-		if ( $options['embed_method'] == "JW Player" ) {
-
-			if ( class_exists('JWP6_Shortcode') ) {
-
-				$x = 0;
-				foreach ($video_formats as $format => $format_stats) {
-					if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) { unset($sources['original']); }
-					if ( $encodevideo_info[$format]["exists"] ) {
-						if ( array_key_exists('height', $encodevideo_info[$format]) ) {
-							$source_key = $encodevideo_info[$format]['height'];
-							$format_stats['label'] = $encodevideo_info[$format]['height'].'p';
-						}
-						else { $source_key = $x; }
-
-						$sources[$source_key] = '{ file:\''.esc_attr($encodevideo_info[$format]["url"]).'\', label:\''.$format_stats['label'].'\'';
-						if ( $format == "original" ) { $sources[$source_key] .= ', default:\'true\''; }
-						$sources[$source_key] .= '}';
-						$x++;
-					}
-				}
-				krsort($sources);
-
-				$jw_tracks = array();
-				if ( !empty($kgvid_postmeta['track'][0]['src']) ) {
-					foreach ( $kgvid_postmeta['track'] as $track => $track_attribute ) {
-						foreach ( $track_attribute as $attribute => $value ) {
-							if ( empty($value) ) { $track_attribute[$attribute] = $query_atts['track_'.$attribute]; }
-						}
-						$default_text = '';
-						if ( $track_attribute['default'] == 'default' ) { $default_text = ', \'default\': true'; }
-						$jw_tracks[] = '{ file:\''.esc_attr($track_attribute['src']).'\', kind:\''.esc_attr($track_attribute['kind']).'\', label:\''.esc_attr($track_attribute['label']).'\''.$default_text.'}';
-					}
-				}
-
-				$jw_shortcode = "[jwplayer ";
-				$jw_shortcode .= 'sources="'.implode(',', $sources).'" ';
-				$jw_shortcode .= 'tracks="'.implode(',', $jw_tracks).'" ';
-				if ( $query_atts["poster"] != '' ) { $jw_shortcode .= 'image="'.esc_attr($query_atts["poster"]).'" '; }
-				if ( $query_atts["loop"] == 'true' ) { $jw_shortcode .= 'repeat="true" '; }
-				if ( $query_atts["autoplay"] == 'true' ) { $jw_shortcode .= 'autostart="true" '; }
-				if ( $query_atts["controls"] == 'false') { $jw_shortcode .= 'controls="false" '; }
-				if ( $query_atts['title'] != "false" ) { $jw_shortcode .= ' title="'.$query_atts['title'].'" '; }
-				if ( $query_atts['jw_player_id'] != "") {
-					$jw_player_config = get_option('jwp6_player_config_'.$query_atts['jw_player_id']);
-					if ( !empty($jw_player_config) ) { $jw_shortcode .= ' player="'.$query_atts['jw_player_id'].'" '; }
-				}
-
-				if ( !empty($query_atts['custom_atts']) && is_array($query_atts['custom_atts']) ) {
-					foreach ( $query_atts['custom_atts'] as $jw_param => $jw_setting ) {
-						$jw_shortcode .= ' '.$jw_param.'="'.$jw_setting.'" ';
-					}
-				}
-
-				$jw_shortcode = trim($jw_shortcode);
-				$jw_shortcode .= ']';
-
-				//this is JW Player's hack for executing without registering a WP shortcode
-				$tag_regex = '/(.?)\[(jwplayer)\b(.*?)(?:(\/))?\](?:(.+?)\[\/\2\])?(.?)/s';
-				$executed_shortcode = preg_replace_callback($tag_regex,  array("JWP6_Shortcode", "tag_parser"), $jw_shortcode);
-
-				$code .= $executed_shortcode;
-
-			}// if class exists
-			else { $options['embed_method'] = "Video.js"; }
-
-		}
-
 		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
 
 			$code .= "\n\t\t\t\t".'<video id="video_'.$div_suffix.'" ';
@@ -3019,13 +2951,12 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		if ( $kgvid_meta == true ) { //generate content overlaid on video
 			$code .= "\t\t\t<div style=\"display:none;\" id=\"video_".$div_suffix."_meta\" class=\"kgvid_video_meta kgvid_video_meta_hover ";
-			if ( $query_atts['title'] != "false" && $options['embed_method'] != "JW Player" ) {
+			if ( $query_atts['title'] != "false" ) {
 				$show_title = true;
 				$code .= "\">";
 			}
 			else {
 				$show_title = false;
-				if ( $options['embed_method'] == "JW Player" ) { $code .= "kgvid_jwplayer_meta "; }
 				$code .= "kgvid_no_title_meta\">";
 			} //no title
 
@@ -3090,12 +3021,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			}
 			else { $embed_code = ''; }
 
-			if ( $options['embed_method'] != "JW Player" ) {
-				$code .= $download_code.$embed_code;
-			}
-			else {
-				$code .= $embed_code.$download_code;
-			}
+			$code .= $embed_code.$download_code;
 
 			$code .= "</span>";
 			if ( $show_title == true ) { $code .= "\n\t\t\t\t<span id='video_".$div_suffix."_title' class='kgvid_title'>".$query_atts['title']."</span>\n"; }
@@ -3282,7 +3208,6 @@ function kgvid_shortcode_atts($atts) {
 		'auto_res' => $options['auto_res'],
 		'pixel_ratio' => $options['pixel_ratio'],
 		'nativecontrolsfortouch' => $options['nativecontrolsfortouch'],
-		'jw_player_id' => $options['jw_player_id'],
 		'schema' => $options['schema'],
 		'track_kind' => 'subtitles',
 		'track_srclang' => substr(get_bloginfo('language'), 0, 2),
@@ -4569,26 +4494,6 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$players["Video.js v5"] = "Video.js";
 		if ( $wp_version >= 3.6 ) { $players[__("WordPress Default", 'video-embed-thumbnail-generator')] = "WordPress Default"; }
 
-		//add the JW Player if available
-		$jw_player_select = "";
-		if ( class_exists('JWP6_Shortcode') ) {
-			$players[__("JW Player 6", 'video-embed-thumbnail-generator')] = "JW Player";
-			$jw_players = get_option('jwp6_players');
-			if ( count($jw_players) > 1 ) {
-				$jw_player_select = " <div style='display:none;' id='jw_player_id_select'><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='jw_player_id' name='kgvid_video_embed_options[jw_player_id]'>";
-				foreach( $jw_players as $jw_player_id ) {
-					$selected = ($options['jw_player_id']==$jw_player_id) ? 'selected="selected"' : '';
-					$jw_player_config = get_option('jwp6_player_config_'.$jw_player_id);
-					if ( is_array($jw_player_config)
-					&& array_key_exists('description', $jw_player_config)
-					&& !empty($jw_player_config['description']) ) { $jw_player_config_description = $jw_player_config['description']; }
-					else { $jw_player_config_description = $jw_player_id; }
-					$jw_player_select .= "<option value='$jw_player_id' $selected>".stripcslashes($jw_player_config_description)."</option>";
-				}
-				$jw_player_select .= "</select> ".__('JW Player player', 'video-embed-thumbnail-generator')."</div>";
-			}
-		}
-
 		$players = apply_filters('kgvid_available_video_players', $players);
 
 		echo "<table class='form-table' id='table_kgvid_video_embed_embed_method'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>".__('Video player:', 'video-embed-thumbnail-generator')."</label></th><td><select class='affects_player' onchange='kgvid_hide_plugin_settings();' id='embed_method' name='kgvid_video_embed_options[embed_method]'>";
@@ -4596,7 +4501,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['embed_method']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Video.js version 7 is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. If the JW Player 6 WordPress plugin is active it should be available as a video player.', 'video-embed-thumbnail-generator')."</span></span>".$jw_player_select."</td></tr></tbody></table>\n";
+		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Video.js version 7 is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme.', 'video-embed-thumbnail-generator')."</span></span></td></tr></tbody></table>\n";
 
 		$sampleheight = intval($options['height']) + 50;
 		echo "<div class='kgvid_setting_nearvid' style='width:".$options['width']."px;'>";
@@ -5459,7 +5364,6 @@ function kgvid_update_settings() {
 		if ( $options['version'] < 4.3 ) {
 
 			$options['version'] = 4.3;
-			$options['jw_player_id'] = '';
 			$options['preload'] = "metadata";
 			$options['sample_format'] = "mobile";
 			$options['ffmpeg_watermark'] = array("url" => "", "scale" => "9", "align" => "right", "valign"=> "bottom", "x" => "6", "y" => "5");
