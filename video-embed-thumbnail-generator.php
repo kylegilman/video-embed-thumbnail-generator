@@ -125,7 +125,7 @@ function kgvid_default_options_fn() {
 		"endofvideooverlaysame" => "",
 		"bgcolor" => "",
 		"configuration" => "",
-		"skin" => plugins_url("", __FILE__)."/flash/skin/kg_skin.xml",
+		"skin" => "kg-video-js-skin",
 		"js_skin" => "kg-video-js-skin",
 		"custom_attributes" => "",
 		"stream_type" => "liveOrRecorded",
@@ -7406,8 +7406,6 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 	$uploads = wp_upload_dir();
 
 	$embed_display = "";
-	$start_encoding = false;
-	$encode_these = array();
 	$encode_list = array();
 	$embeddable = array("flv", "f4v", "mp4", "mov", "m4v", "ogv", "ogg", "webm");
 	$h264extensions = array("mp4", "m4v", "mov");
@@ -7535,7 +7533,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 			if ( !empty($encode_list) ) { $embed_display = "<strong>".sprintf( __('%1$s updated in existing queue entry in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $existing_queue_position )." </strong>"; }
 			else { $embed_display = "<strong>".sprintf( __('Video is already queued in position %s.', 'video-embed-thumbnail-generator'), $existing_queue_position )." </strong>"; }
 		}
-		else {
+		elseif ( !empty($encode_list) ) {
 			$video_encode_queue[] = $queue_entry;
 			kgvid_save_encode_queue($video_encode_queue);
 			$queue_position = intval(key( array_slice( $video_encode_queue, -1, 1, TRUE ) ));
