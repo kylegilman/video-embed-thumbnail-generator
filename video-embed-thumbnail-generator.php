@@ -2233,6 +2233,9 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		$include_arr = wp_parse_id_list($query_atts['gallery_include']);
 		if ( !empty($include_arr) ) {
 			$args['post__in'] = $include_arr;
+			if ( $args['orderby'] == 'menu_order ID' ) {
+				$args['orderby'] = 'post__in'; //sort by order of IDs in the gallery_include parameter
+			}
 			unset($args['post_parent']);
 		}
 	}
@@ -3174,7 +3177,7 @@ function kgvid_shortcode_atts($atts) {
 		'loop' => $options['loop'],
 		'autoplay' => $options['autoplay'],
 		'pauseothervideos' => $options['pauseothervideos'],
-		'playsinline' => 'true',
+		'playsinline' => $options['playsinline'],
 		'streamtype' => $options['stream_type'],
 		'scalemode' => $options['scale_mode'],
 		'backgroundcolor' => $options['bgcolor'],
@@ -3269,6 +3272,7 @@ function kgvid_shortcode_atts($atts) {
 		"endofvideooverlaysame",
 		"playbutton",
 		"loop",
+		"playsinline",
 		"autoplay",
 		"controls",
 		"pauseothervideos",
@@ -5505,7 +5509,12 @@ function kgvid_update_settings() {
 		if ( version_compare( $options['version'], '4.6.26', '<' ) ) {
 			$options['version'] = '4.6.26';
 			$options['rewrite_attachment_url'] = 'on';
-		}	
+		}
+
+		if ( version_compare( $options['version'], '4.6.28', '<' ) ) {
+			$options['version'] = '4.6.28';
+			$options['playsinline'] = 'on';
+		}
 
 		if ( version_compare( $options['version'], '4.7', '<' ) ) {
 			$options['version'] = '4.7';
@@ -5522,7 +5531,6 @@ function kgvid_update_settings() {
 			}
 			$options['muted'] = $options['mute']; //convert 'mute' option to 'muted' to match HTML5 convention
 			unset($options['mute']);
-			$options['playsinline'] = 'on';
 			$options['auto_publish_post'] = false;
 		}
 
@@ -6951,7 +6959,7 @@ function kgvid_filter_video_attachment_content($content) {
 	global $post;
 	$options = kgvid_get_options();
 
-	if ( $options['template'] == "gentle" && strpos($post->post_mime_type, "video") !== false ) {
+	if ( $options['template'] == "gentle" && isset($post) && strpos($post->post_mime_type, "video") !== false ) {
 		$kgvid_video_embed = array(); //no query set
 		$content = kgvid_generate_attachment_shortcode($kgvid_video_embed);
 		$content .= '<p>'.$post->post_content.'</p>';
