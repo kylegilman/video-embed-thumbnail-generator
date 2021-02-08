@@ -2288,6 +2288,9 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 		$include_arr = wp_parse_id_list($query_atts['gallery_include']);
 		if ( !empty($include_arr) ) {
 			$args['post__in'] = $include_arr;
+			if ( $args['orderby'] == 'menu_order ID' ) {
+				$args['orderby'] = 'post__in'; //sort by order of IDs in the gallery_include parameter
+			}
 			unset($args['post_parent']);
 		}
 	}
