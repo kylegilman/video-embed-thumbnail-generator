@@ -60,7 +60,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.6.27',
+		"version" => '4.6.28',
 		"embed_method" => "Video.js",
 		"jw_player_id" => "",
 		"template" => false,
@@ -119,6 +119,7 @@ function kgvid_default_options_fn() {
 		"autoplay" => false,
 		"pauseothervideos" => "on",
 		"loop" => false,
+		"playsinline" => "on",
 		"volume" => 1,
 		"mute" => false,
 		"preload" => "metadata",
@@ -3289,7 +3290,7 @@ function kgvid_shortcode_atts($atts) {
 		'loop' => $options['loop'],
 		'autoplay' => $options['autoplay'],
 		'pauseothervideos' => $options['pauseothervideos'],
-		'playsinline' => 'true',
+		'playsinline' => $options['playsinline'],
 		'streamtype' => $options['stream_type'],
 		'scalemode' => $options['scale_mode'],
 		'backgroundcolor' => $options['bgcolor'],
@@ -3382,6 +3383,7 @@ function kgvid_shortcode_atts($atts) {
 		"endofvideooverlaysame",
 		"playbutton",
 		"loop",
+		"playsinline",
 		"autoplay",
 		"pauseothervideos",
 		"title",
@@ -4778,11 +4780,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 		echo "</select><br />\n\t";
 
-		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Play automatically when page loads.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Autoplay.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		echo "<input ".checked( $options['pauseothervideos'], "on", false )." id='pauseothervideos' name='kgvid_video_embed_options[pauseothervideos]' type='checkbox' /> <label for='pauseothervideos'>".__('Pause other videos on page when starting a new video.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
-		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop to beginning when video ends.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+
+		echo "<input class='affects_player' ".checked( $options['playsinline'], "on", false )." id='playsinline' name='kgvid_video_embed_options[playsinline]' type='checkbox' /> <label for='playsinline'>".__('Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		$items = array();
 		$percent = 0;
@@ -5696,6 +5700,11 @@ function kgvid_update_settings() {
 		if ( version_compare( $options['version'], '4.6.26', '<' ) ) {
 			$options['version'] = '4.6.26';
 			$options['rewrite_attachment_url'] = 'on';
+		}
+
+		if ( version_compare( $options['version'], '4.6.28', '<' ) ) {
+			$options['version'] = '4.6.28';
+			$options['playsinline'] = 'on';
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }

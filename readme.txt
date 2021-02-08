@@ -251,6 +251,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.6.28 - February 8, 2021 =
+* Added setting to change default playsinline behavior on iPhones.
 * Changed default sort order of video galleries created using the gallery_include parameter to maintain the order of IDs as entered in the parameter.
 * Fixed bug that caused an error when saving Menus.
 
