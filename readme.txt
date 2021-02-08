@@ -17,7 +17,7 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 Not compatible with the new Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
 
-Still 100% free, but some advanced features may be converted to premium add-ons in the future. More info in the <a href="https://wordpress.org/support/topic/version-50-will-convert-some-free-features-to-paid-add-ons">support forum</a>.
+In a future update (v4.7) this plugin will be changing its name to "Videopack" and removing old video players StrobeMediaPlayback and JW Player 6 that haven't been supported for several years. Freemius will also be integrated on an opt-in basis to allow premium add-ons. More info in the <a href="https://wordpress.org/support/topic/removing-old-players-and-adding-freemius/">support forum</a>.
 
 This plugin adds several fields to any video uploaded to the WordPress Media Library. Just choose a few options, make thumbnails, click "Insert into Post" and you'll get a shortcode in the post editor that will embed a flexible, responsive HTML5 video player with Flash fallback for unsupported browsers.
 
@@ -495,6 +495,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 <a href="http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/">See the full changelog on my website.</a>
 
 == Upgrade Notice ==
+
+= 4.6.28 =
+In a future update (v4.7) this plugin will be changing its name to "Videopack" and removing old video players StrobeMediaPlayback and JW Player 6 that haven't been supported for several years. Freemius will also be integrated on an opt-in basis to allow premium add-ons. More info in the <a href="https://wordpress.org/support/topic/removing-old-players-and-adding-freemius/">support forum</a>.
 
 = 4.6.5 =
 The plugin is still completely free until version 5.0. Video.js users will notice an updated player design if updating from 4.5.5.
