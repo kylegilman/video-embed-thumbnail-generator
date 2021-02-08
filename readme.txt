@@ -250,6 +250,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.6.28 - February 8, 2021 =
+* Fixed bug that caused an error when saving Menus.
+
 = 4.6.27 - January 6, 2021 =
 * Fixed bug in testing FFMPEG execution.
 

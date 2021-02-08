@@ -3,7 +3,7 @@
 Plugin Name: Video Embed & Thumbnail Generator
 Plugin URI: https://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.6.27
+Version: 4.6.28
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -7120,7 +7120,7 @@ function kgvid_filter_video_attachment_content($content) {
 	global $post;
 	$options = kgvid_get_options();
 
-	if ( $options['template'] == "gentle" && strpos($post->post_mime_type, "video") !== false ) {
+	if ( $options['template'] == "gentle" && isset($post) && strpos($post->post_mime_type, "video") !== false ) {
 		$kgvid_video_embed = array(); //no query set
 		$content = kgvid_generate_attachment_shortcode($kgvid_video_embed);
 		$content .= '<p>'.$post->post_content.'</p>';
