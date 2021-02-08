@@ -241,6 +241,51 @@ function kgvid_get_options() {
 
 }
 
+if ( ! function_exists( 'videopack_fs' ) ) {
+    // Create a helper function for easy SDK access.
+    function videopack_fs() {
+        global $videopack_fs;
+
+        if ( ! isset( $videopack_fs ) ) {
+            // Activate multisite network integration.
+            if ( ! defined( 'WP_FS__PRODUCT_7761_MULTISITE' ) ) {
+                define( 'WP_FS__PRODUCT_7761_MULTISITE', true );
+            }
+
+            // Include Freemius SDK.
+            require_once dirname(__FILE__) . '/freemius/start.php';
+
+            $videopack_fs = fs_dynamic_init( array(
+                'id'                  => '7761',
+                'slug'                => 'video-embed-thumbnail-generator',
+				'navigation'          => 'tabs',
+                'premium_slug'        => 'videopack-ads-premium',
+                'type'                => 'plugin',
+                'public_key'          => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
+                'is_premium'          => false,
+                'has_addons'          => true,
+                'has_paid_plans'      => false,
+                'menu'                => array(
+                    'slug'           => 'video_embed_thumbnail_generator_settings',
+                    'contact'        => false,
+                    'support'        => false,
+                    'network'        => true,
+                    'parent'         => array(
+                        'slug' => 'options-general.php',
+                    ),
+                ),
+            ) );
+        }
+
+        return $videopack_fs;
+    }
+
+    // Init Freemius.
+    videopack_fs();
+    // Signal that SDK was initiated.
+    do_action( 'videopack_fs_loaded' );
+}
+
 function kgvid_get_jetpack_twitter_username() {
 
 	$jetpack_options = get_option('jetpack_options');
