@@ -871,23 +871,40 @@ function kgvid_url_to_id($url) {
 
 	global $wpdb;
 	$options = kgvid_get_options();
-	$post_id = NULL;
 	$uploads = wp_upload_dir();
 	$video_formats = kgvid_video_formats();
 
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
 	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
  	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
-	$search_query =  "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value)) AND LENGTH(meta_value) > 0";
-	$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
+	if (strlen($search_url) > 172 ) { $search_url = substr($search_url, -172); } //transients can't be more than 172 characters long
 
-	if ( !$post_id && $options['ffmpeg_exists'] == "on" && $video_formats['fullres']['extension'] != pathinfo($url, PATHINFO_EXTENSION) ) {
-		$search_url = str_replace( pathinfo($url, PATHINFO_EXTENSION), $video_formats['fullres']['extension'], $url );
+	$post_id = get_transient( $search_url );
+
+	if ( $post_id === false ) {
+		
+		$search_query =  "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value LIKE RIGHT('%s', CHAR_LENGTH(meta_value)) AND LENGTH(meta_value) > 0";
 		$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
-		if ( $post_id ) { $kgvid_postmeta = kgvid_get_attachment_meta($post_id); }
-		if ( !isset($kgvid_postmeta) || !is_array($kgvid_postmeta) || ( is_array($kgvid_postmeta) && !array_key_exists('original_replaced', $kgvid_postmeta) ) ) {
-			$post_id = NULL;
+
+		if ( !$post_id && $options['ffmpeg_exists'] == "on" && $video_formats['fullres']['extension'] != pathinfo($url, PATHINFO_EXTENSION) ) {
+			$search_url = str_replace( pathinfo($url, PATHINFO_EXTENSION), $video_formats['fullres']['extension'], $url );
+			$post_id = (int)$wpdb->get_var( $wpdb->prepare( $search_query, $search_url ) );
+			if ( $post_id ) { $kgvid_postmeta = kgvid_get_attachment_meta($post_id); }
+			if ( !isset($kgvid_postmeta) || !is_array($kgvid_postmeta) || ( is_array($kgvid_postmeta) && !array_key_exists('original_replaced', $kgvid_postmeta) ) ) {
+				$post_id = NULL;
+			}
 		}
+
+		if ( !$post_id ) {
+			$post_id = 'not found'; //don't save a transient value that could evaluate as false
+		}
+error_log($post_id);
+		set_transient( $search_url, $post_id, MONTH_IN_SECONDS );
+
+	}
+	
+	if ( $post_id == 'not found' ) { 
+		$post_id = NULL; 
 	}
 
 	return $post_id;
