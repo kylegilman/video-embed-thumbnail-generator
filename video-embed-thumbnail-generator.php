@@ -400,7 +400,7 @@ function kgvid_get_attachment_meta($post_id) {
 
 	$kgvid_postmeta = array_merge($meta_key_array, $kgvid_postmeta); //make sure all keys are set
 
-	return $kgvid_postmeta;
+	return apply_filters('kgvid_attachment_meta', $kgvid_postmeta);
 
 }
 
@@ -415,9 +415,12 @@ function kgvid_save_attachment_meta($post_id, $kgvid_postmeta) {
 		foreach ( $kgvid_postmeta as $key => $meta ) { //don't save if it's the same as the default values or empty
 
 			if ( (array_key_exists($key, $options) && $meta == $options[$key])
-				|| (!is_array($kgvid_postmeta[$key]) && strlen($kgvid_postmeta[$key]) == 0)
+				|| ( !is_array($kgvid_postmeta[$key]) && strlen($kgvid_postmeta[$key]) == 0 
+					&& ( ( array_key_exists($key, $options) && strlen($options[$key]) == 0 )
+					|| !array_key_exists($key, $options) )
+				)
 			) { unset($kgvid_postmeta[$key]); }
-
+			
 		}
 
 		update_post_meta($post_id, "_kgvid-meta", $kgvid_postmeta);
@@ -1302,14 +1305,16 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 
 	if ( get_post_type($postID) == "attachment" ) { //if it's an attachment, not from URL
 		$moviefile = get_attached_file($postID);
-		$path_parts = pathinfo($moviefile);
-		$encodevideo_info['encodepath'] = $path_parts['dirname']."/";
-		$encodevideo_info['sameserver'] = true;
-		$args = array(
-			'numberposts' => '-1',
-			'post_parent' => $postID,
-			'post_type' => 'attachment'
-		);
+		if ( $moviefile ) {
+			$path_parts = pathinfo($moviefile);
+			$encodevideo_info['encodepath'] = $path_parts['dirname']."/";
+			$encodevideo_info['sameserver'] = true;
+			$args = array(
+				'numberposts' => '-1',
+				'post_parent' => $postID,
+				'post_type' => 'attachment'
+			);
+		}
 	}
 	elseif ($moviefile == '' || !is_file($moviefile) ) {
 
@@ -3618,7 +3623,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 						}
 					}
 				}
-				$disabled = ' disabled title="Format already exists"';
+				$disabled = ' disabled title="'.__('Format already exists', 'video-embed-thumbnail-generator').'"';
 				$checked = '';
 			}
 		}
@@ -6383,7 +6388,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 return $form_fields;
 }
 // attach our function to the correct hook
-add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit", null, 2);
+add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit", 10, 2);
 
 function kgvid_add_video_stats_column($cols) { //add Video Stats column to media library
 
@@ -6819,8 +6824,18 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 
 			$html .= '[KGVID';
 			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
-			if ( !empty($kgvid_postmeta['width']) ) { $html .= ' width="'.$kgvid_postmeta["width"].'"'; }
-			if ( !empty($kgvid_postmeta['height']) ) { $html .= ' height="'.$kgvid_postmeta["height"].'"'; }
+
+			$insert_shortcode_atts = apply_filters('kgvid_insert_shortcode_atts', array(
+				'width',
+				'height'
+			));
+
+			foreach ( $insert_shortcode_atts as $att ) {
+				if ( array_key_exists($att, $kgvid_postmeta) && !empty($kgvid_postmeta[$att]) ) { 
+					$html .= ' '.$att.'="'.$kgvid_postmeta[$att].'"';
+				}
+			}
+
 			$html .= ']'.$kgvid_postmeta["url"].'[/KGVID]<br />';
 		} //if embed code is enabled
 
