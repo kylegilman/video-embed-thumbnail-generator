@@ -6552,8 +6552,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 			$existing_posterpath = get_attached_file($old_thumb_id);
 			if ( is_file($tmp_posterpath)
 				&& ( 
-					time() - filemtime($existing_posterpath) > 30 //file was created more than 30 seconds ago
-					|| abs( filesize($tmp_posterpath) - filesize($existing_posterpath) ) > 100 //filesize is more than 100 bytes different means it's probably a different image
+					abs( filemtime($tmp_posterpath) - filemtime($existing_posterpath) ) > 10 //file modified time more than 10 seconds different
+					&& abs( filesize($tmp_posterpath) - filesize($existing_posterpath) ) > 100 //filesize is more than 100 bytes different means it's probably a different image
 				) 
 			) {
 				wp_delete_post($old_thumb_id);
