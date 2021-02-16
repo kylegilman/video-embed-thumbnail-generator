@@ -2,7 +2,7 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Video%20Embed%20And%20Thumbnail%20Generator%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
-Requires at least: 4.6
+Requires at least: 4.9
 Tested up to: 5.6
 Requires PHP: 5.6.0
 Stable tag: 4.6.28
@@ -249,9 +249,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.7 - February xx, 2020 =
 * Changed plugin name to Videopack.
+* Added Freemius SDK to facilitate selling premium Videopack add-ons.
 * Added Video.js version 7 player option.
 * Deprecated Video.js version 5 player.
 * Removed JW Player & Strobe Media Playback player options.
+* Added cache for complicated database query that should speed up plugin execution on sites with large numbers of videos.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
 * Fixed bug that added videos to encode queue even if there was nothing to encode.
 
