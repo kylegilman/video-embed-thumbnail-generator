@@ -1577,7 +1577,12 @@ function kgvid_ffmpeg_rotate_strings($rotate, $width, $height) {
 			}
 			else {
 				$rotate .= " -metadata:s:v:0 rotate=0";
-				$width ^= $height ^= $width ^= $height; //swap height & width
+
+				//swap height & width
+				$tmp = $width;
+				$width = $height;
+				$height = $tmp;
+
 			}
 
 			break;
@@ -1597,7 +1602,11 @@ function kgvid_ffmpeg_rotate_strings($rotate, $width, $height) {
 			}
 			else {
 				$rotate .= " -metadata:s:v:0 rotate=0";
-				$width ^= $height ^= $width ^= $height; //swap height & width
+
+				//swap height & width
+				$tmp = $width;
+				$width = $height;
+				$height = $tmp;
 			}
 
 			break;
@@ -7323,7 +7332,10 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		switch ($movie_info['rotate']) { //if it's a sideways mobile video
 			case 90:
 			case 270:
-				$movie_width ^= $movie_height ^= $movie_width ^= $movie_height; //swap height & width
+				//swap height & width
+				$tmp = $width;
+				$width = $height;
+				$height = $tmp;
 				break;
 		}
 
