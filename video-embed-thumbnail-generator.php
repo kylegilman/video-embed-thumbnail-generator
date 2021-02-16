@@ -241,6 +241,17 @@ function kgvid_get_options() {
 
 }
 
+function kgvid_videopack_fs_loaded() { //add Freemius customizations after Freemius is loaded
+
+	videopack_fs()->override_i18n( array(
+		'yee-haw' 		=> __( "Great", 'video-embed-thumbnail-generator' ),
+		'woot'          => __( 'Great', 'video-embed-thumbnail-generator' ),
+	) );
+
+	videopack_fs()->add_action('after_uninstall', 'kgvid_uninstall_plugin'); //add uninstall logic
+}
+add_action('videopack_fs_loaded', 'kgvid_videopack_fs_loaded');
+
 if ( ! function_exists( 'videopack_fs' ) ) {
     // Create a helper function for easy SDK access.
     function videopack_fs() {
@@ -9152,6 +9163,5 @@ function kgvid_uninstall_plugin() {
     }
 
 }
-videopack_fs()->add_action('after_uninstall', 'kgvid_uninstall_plugin');
 
 ?>
