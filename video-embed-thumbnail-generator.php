@@ -888,9 +888,9 @@ function kgvid_url_to_id($url) {
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
 	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
  	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
-	if (strlen($search_url) > 172 ) { $search_url = substr($search_url, -172); } //transients can't be more than 172 characters long
+	if (strlen($search_url) > 166 ) { $search_url = substr($search_url, -162); } //transients can't be more than 172 characters long. Including 'kgvid_' the URL has to be 162 characters or fewer
 
-	$post_id = get_transient( $search_url );
+	$post_id = get_transient( 'kgvid_'.$search_url );
 
 	if ( $post_id === false ) {
 		
@@ -910,7 +910,7 @@ function kgvid_url_to_id($url) {
 			$post_id = 'not found'; //don't save a transient value that could evaluate as false
 		}
 error_log($post_id);
-		set_transient( $search_url, $post_id, MONTH_IN_SECONDS );
+		set_transient( 'kgvid_'.$search_url, $post_id, MONTH_IN_SECONDS );
 
 	}
 	
