@@ -186,7 +186,8 @@ function kgvid_default_options_fn() {
 		"alwaysloadscripts" => false,
 		"replace_video_shortcode" => false,
 		"rewrite_attachment_url" => 'on',
-		"auto_publish_post" => false
+		"auto_publish_post" => false,
+		'transient_cache' => false
 	);
 
 	$video_formats = kgvid_video_formats();
@@ -883,6 +884,7 @@ function kgvid_url_to_id($url) {
 	global $wpdb;
 	$options = kgvid_get_options();
 	$uploads = wp_upload_dir();
+	$post_id = false;
 	$video_formats = kgvid_video_formats();
 
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
@@ -890,7 +892,9 @@ function kgvid_url_to_id($url) {
  	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
 	if (strlen($search_url) > 166 ) { $search_url = substr($search_url, -162); } //transients can't be more than 172 characters long. Including 'kgvid_' the URL has to be 162 characters or fewer
 
-	$post_id = get_transient( 'kgvid_'.$search_url );
+	if ( $options['transient_cache'] == "on" ) {
+		$post_id = get_transient( 'kgvid_'.$search_url );
+	}
 
 	if ( $post_id === false ) {
 		
@@ -906,11 +910,13 @@ function kgvid_url_to_id($url) {
 			}
 		}
 
-		if ( !$post_id ) {
-			$post_id = 'not found'; //don't save a transient value that could evaluate as false
+		if ( $options['transient_cache'] == "on" ) {
+			if ( !$post_id ) {
+				$post_id = 'not found'; //don't save a transient value that could evaluate as false
+			}
+
+			set_transient( 'kgvid_'.$search_url, $post_id, MONTH_IN_SECONDS );
 		}
-error_log($post_id);
-		set_transient( 'kgvid_'.$search_url, $post_id, MONTH_IN_SECONDS );
 
 	}
 	
@@ -1983,7 +1989,8 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'languagecode' => __('Language code:', 'video-embed-thumbnail-generator'),
 				'label' => _x('Label:', 'noun', 'video-embed-thumbnail-generator'),
 				'trackdefault' => __('Default:', 'video-embed-thumbnail-generator'),
-				'custom' => _x('Custom', 'Custom format', 'video-embed-thumbnail-generator')
+				'custom' => _x('Custom', 'Custom format', 'video-embed-thumbnail-generator'),
+				'clearingcache' => __('Clearing URL cache...', 'video-embed-thumbnail-generator'),
 		) );
 	}
 
@@ -4521,9 +4528,8 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('custom_attributes', __('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
 
 	add_settings_field('security', __('Video sharing:', 'video-embed-thumbnail-generator'), 'kgvid_security_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
-	add_settings_field('count_views', __("View counting:", 'video-embed-thumbnail-generator'), 'kgvid_view_counting_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
+	add_settings_field('performance', __("Performance:", 'video-embed-thumbnail-generator'), 'kgvid_performance_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
 	add_settings_field('replacevideoshortcode', __("Replace video shortcode:", 'video-embed-thumbnail-generator'), 'kgvid_replace_video_shortcode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
-	add_settings_field('scriptloading', __("Script loading:", 'video-embed-thumbnail-generator'), 'kgvid_scriptloading_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'alwaysloadscripts' ) );
 	add_settings_field('rewrite_attachment_url', __("Attachment URL Rewriting:", 'video-embed-thumbnail-generator'), 'kgvid_rewrite_attachment_url_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
 	add_settings_field('generate_thumbs', __('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
 	add_settings_field('featured', __('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
@@ -4584,7 +4590,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 		$players["Video.js v7"] = "Video.js v7";
 
-		$players["Video.js v5"] = "Video.js";
+		$players["Video.js v5 (deprecated)"] = "Video.js";
 		if ( $wp_version >= 3.6 ) { $players[__("WordPress Default", 'video-embed-thumbnail-generator')] = "WordPress Default"; }
 
 		$players = apply_filters('kgvid_available_video_players', $players);
@@ -4795,8 +4801,13 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<input ".checked( $options['oembed_security'], "on", false )." id='oembed_security' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>"._x('Enable oEmbeds from unknown providers.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator')."</span></span>\n\t";
 	}
 
-	function kgvid_view_counting_callback() {
+	function kgvid_performance_callback() {
 		$options = kgvid_get_options();
+
+		echo "<input ".checked( $options['transient_cache'], "on", false )." id='transient_cache' name='kgvid_video_embed_options[transient_cache]' type='checkbox' /> <label for='transient_cache'>".__('Use experimental URL cache.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("The plugin uses an uncached query to convert URLs to WordPress post IDs which can signficantly slow down sites with large numbers of videos. Caching the results of the query as a transient in the database can speed up loading time significantly, but will also add a lot of entries to your database. All transients are deleted on plugin deactivation.", 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
+
+		echo "<p><a id='clear_transient_cache' class='button' href='javascript:void(0);' onclick='kgvid_clear_transient_cache();'>".__('Clear URL cache', 'video-embed-thumbnail-generator')."</a> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("Recommended if your site's URL has changed.", 'video-embed-thumbnail-generator')."</span></span></p>";
+
 		$items = array(
 			__("start, 25%, 50%, 75%, and complete", 'video-embed-thumbnail-generator') => "quarters",
 			__("start and complete", 'video-embed-thumbnail-generator') => "start_complete",
@@ -4810,22 +4821,20 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 		$select .= "</select>";
 		echo sprintf( __('Record %s views in the WordPress database.', 'video-embed-thumbnail-generator'), $select);
-		echo "<span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.', 'video-embed-thumbnail-generator')."</span></span>\n\t";
+		echo "<span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.', 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
+
+		echo "<input ".checked( $options['alwaysloadscripts'], "on", false )." id='alwaysloadscripts' name='kgvid_video_embed_options[alwaysloadscripts]' type='checkbox' /> <label for='alwaysloadscripts'>".__('Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
+
 	}
 
 	function kgvid_replace_video_shortcode_callback() {
 		$options = kgvid_get_options();
-		echo "<input ".checked( $options['replace_video_shortcode'], "on", false )." id='replace_video_shortcode' name='kgvid_video_embed_options[replace_video_shortcode]' type='checkbox' /> <label for='replace_video_shortcode'>".__('Override any existing WordPress built-in "[video]" shortcodes.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If you have posts or theme files that make use of the built-in WordPress video shortcode, the plugin can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator')."</span></span><br />";
-	}
-
-	function kgvid_scriptloading_callback() {
-		$options = kgvid_get_options();
-		echo "<input ".checked( $options['alwaysloadscripts'], "on", false )." id='alwaysloadscripts' name='kgvid_video_embed_options[alwaysloadscripts]' type='checkbox' /> <label for='alwaysloadscripts'>".__('Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "<input ".checked( $options['replace_video_shortcode'], "on", false )." id='replace_video_shortcode' name='kgvid_video_embed_options[replace_video_shortcode]' type='checkbox' /> <label for='replace_video_shortcode'>".__('Override any existing WordPress built-in "[video]" shortcodes.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If you have posts or theme files that make use of the built-in WordPress video shortcode, the plugin can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
 	}
 
 	function kgvid_rewrite_attachment_url_callback() {
 		$options = kgvid_get_options();
-		echo "<input ".checked( $options['rewrite_attachment_url'], "on", false )." id='rewrite_attachment_url' name='kgvid_video_embed_options[rewrite_attachment_url]' type='checkbox' /> <label for='rewrite_attachment_url'>".__("Allow rewriting of WordPress attachment URLs.", 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if the plugin is changing your URLs to local files instead of the CDN.", 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "<input ".checked( $options['rewrite_attachment_url'], "on", false )." id='rewrite_attachment_url' name='kgvid_video_embed_options[rewrite_attachment_url]' type='checkbox' /> <label for='rewrite_attachment_url'>".__("Allow rewriting of WordPress attachment URLs.", 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__("If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if the plugin is changing your URLs to local files instead of the CDN.", 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
 	}
 
 	function kgvid_generate_thumbs_callback() {
@@ -5619,6 +5628,7 @@ function kgvid_update_settings() {
 			$options['muted'] = $options['mute']; //convert 'mute' option to 'muted' to match HTML5 convention
 			unset($options['mute']);
 			$options['auto_publish_post'] = false;
+			$options['transient_cache'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5691,6 +5701,8 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	}
 
 	if ( $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
+
+	if ( !array_key_exists('transient_cache', $input) && $options['transient_cache'] == "on" ) { kgvid_delete_transients(); } //if user is turning off transient cache option
 
 	$input['titlecode'] =  wp_kses_post( $input['titlecode'] );
 
@@ -9108,14 +9120,65 @@ function kgvid_clear_first_embedded_video_meta() {
 }
 add_action( 'wp_footer', 'kgvid_clear_first_embedded_video_meta', 12 );
 
-function kgvid_clear_cron_and_roles() {
+
+function kgvid_delete_transients() {
+
+	global $wpdb;
+
+	delete_expired_transients();
+    
+	$t  = esc_sql( "_transient_timeout_kgvid%" );
+  
+	$sql = $wpdb -> prepare (
+	  "
+		SELECT option_name
+		FROM $wpdb->options
+		WHERE option_name LIKE '%s'
+	  ",
+	  $t
+	);
+  
+	$transients = $wpdb -> get_col( $sql );
+
+	if ( $transients && is_array($transients) ) {
+		foreach( $transients as $transient ) {
+	
+		// Strip away the WordPress prefix in order to arrive at the transient key.
+		$key = str_replace( '_transient_timeout_', '', $transient );
+	
+		// Now that we have the key, use WordPress core to the delete the transient.
+		delete_transient( $key );
+	
+		}
+	}
+
+}
+
+function kgvid_ajax_clear_transient_cache() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	kgvid_delete_transients();
+
+	die();
+
+}
+add_action('wp_ajax_kgvid_clear_transient_cache', 'kgvid_ajax_clear_transient_cache');
+
+function kgvid_cleanup_plugin() {
 
 	$options = kgvid_default_options_fn();
+
 	wp_clear_scheduled_hook('kgvid_cleanup_queue', array( 'scheduled' ) );
 	wp_clear_scheduled_hook('kgvid_cleanup_generated_thumbnails');
 	kgvid_cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
+
+	kgvid_delete_transients();
+
 	global $wp_roles;
-	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
+	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') 
+		&& is_array($options) && array_key_exists('capabilities', $options)
+		) {
 		foreach ( $options['capabilities'] as $capability => $roles ) {
 			foreach ( $wp_roles->roles as $role => $role_info ) {
 				$wp_roles->remove_cap( $role, $capability );
@@ -9136,7 +9199,7 @@ function kgvid_deactivate_plugin( $network_wide ) {
 			foreach ( $sites as $site ) {
 				$blog_id = $site->__get('id');
 				switch_to_blog($blog_id);
-				kgvid_clear_cron_and_roles();
+				kgvid_cleanup_plugin();
 
 			}//end loop through sites
 
@@ -9147,7 +9210,7 @@ function kgvid_deactivate_plugin( $network_wide ) {
 	}//end if network activated
 
 	else { //if not network activated
-		kgvid_clear_cron_and_roles();
+		kgvid_cleanup_plugin();
 	}
 }
 register_deactivation_hook( __FILE__, 'kgvid_deactivate_plugin' );
