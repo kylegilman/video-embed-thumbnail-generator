@@ -1690,6 +1690,20 @@ function kgvid_check_cms_progress(total, cms_type) {
 	}
 }
 
+function kgvid_clear_transient_cache() {
+
+	var kgflashmediaplayersecurity = document.getElementById("kgvid_settings_security").value;
+	var button_text = jQuery('#clear_transient_cache').html();
+	jQuery('#clear_transient_cache').html(kgvidL10n.clearingcache);
+
+	jQuery.post(ajaxurl, { action: "kgvid_clear_transient_cache", security: kgflashmediaplayersecurity }, function() {
+
+		jQuery('#clear_transient_cache').html(button_text);
+
+	});
+
+}
+
 function kgvid_pick_image(button) {
 
 		var frame;
