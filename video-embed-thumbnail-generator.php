@@ -6589,14 +6589,13 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 	$final_posterpath = $uploads['path'].'/'.$posterfile;
 
 	if ( is_file($final_posterpath) ) {
-		$old_thumb_id = kgvid_url_to_id($final_posterpath);
+		$old_thumb_id = attachment_url_to_postid($final_posterpath);
 		if ( !empty($old_thumb_id) ) {
 			$existing_posterpath = get_attached_file($old_thumb_id);
+
 			if ( is_file($tmp_posterpath)
-				&& ( 
-					abs( filemtime($tmp_posterpath) - filemtime($existing_posterpath) ) > 10 //file modified time more than 10 seconds different
-					&& abs( filesize($tmp_posterpath) - filesize($existing_posterpath) ) > 100 //filesize is more than 100 bytes different means it's probably a different image
-				) 
+				&& abs( filemtime($tmp_posterpath) - filemtime($existing_posterpath) ) > 10 //file modified time more than 10 seconds different
+				&& abs( filesize($tmp_posterpath) - filesize($existing_posterpath) ) > 100 //filesize is more than 100 bytes different means it's probably a different image 
 			) {
 				wp_delete_post($old_thumb_id);
 				$transient_name = kgvid_set_transient_name($thumb_url);
