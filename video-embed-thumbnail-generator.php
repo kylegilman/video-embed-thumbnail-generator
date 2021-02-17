@@ -880,7 +880,7 @@ function kgvid_add_upload_mimes ( $existing_mimes=array() ) {
 add_filter('upload_mimes', 'kgvid_add_upload_mimes');
 
 function kgvid_url_to_id($url) {
-
+error_log('url to id');
 	global $wpdb;
 	$options = kgvid_get_options();
 	$uploads = wp_upload_dir();
@@ -2040,7 +2040,11 @@ function kgvid_get_first_embedded_video( $post ) {
 					$attributes = shortcode_parse_atts($matches[3][$first_key]);
 				}
 
-				if ( !empty($matches[5][$first_key]) ) { //there's a URL
+				if ( is_array($attributes) && array_key_exists( 'id', $attributes ) ) {
+					$url = wp_get_attachment_url($attributes['id']);
+				}//if there's an ID attribute
+
+				elseif ( !empty($matches[5][$first_key]) ) { //there's a URL but no ID
 
 					$url = $matches[5][$first_key];
 					if ( !is_array($attributes) ) {
@@ -2048,11 +2052,7 @@ function kgvid_get_first_embedded_video( $post ) {
 					}
 					$attributes['id'] = kgvid_url_to_id($matches[5][$first_key]);
 
-				}//if there's a URL
-
-				elseif ( is_array($attributes) && array_key_exists( 'id', $attributes ) ) {
-					$url = wp_get_attachment_url($attributes['id']);
-				}//if there's no URL but there's an ID attribute
+				}
 
 				elseif ( ( is_array($attributes) && !array_key_exists( 'id', $attributes ) )
 						|| empty($attributes)
@@ -2210,7 +2210,7 @@ function kgvid_change_oembed_data( $data, $post, $width, $height ) {
 		if ( !empty($first_embedded_video['poster']) ) { $data['thumbnail_url'] = $first_embedded_video['poster']; }
 
 	}
-
+	
 	return apply_filters('kgvid_change_oembed_data', $data, $post, $width, $height );
 
 }
@@ -2526,35 +2526,40 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 	$compatible = array("flv", "f4v", "mp4", "mov", "m4v", "ogv", "ogg", "webm");
 	$h264compatible = array("mp4", "mov", "m4v");
 
-	if ( empty($content) ) {
-		if ( !empty($query_atts["id"]) ) {
-			$id_array[0] = $query_atts["id"];
-		}
-		elseif ( $post_id != 0 ) {
-			$args = array(
-				'numberposts' => $query_atts['videos'],
-				'post_mime_type' => 'video',
-				'post_parent' => $post_id,
-				'post_status' => null,
-				'post_type' => 'attachment',
-				'orderby' => $query_atts['orderby'],
-				'order' => $query_atts['order']
-			);
-			$video_attachments = get_posts($args);
-			if ( $video_attachments ) {
-				foreach ( $video_attachments as $video ) {
-					$id_array[] = $video->ID;
-				}
-			}
-			else { return; } //if there are no video children of the current post
-		}
-		else { return; } //if there's no post ID and no $content
+	if ( !empty($query_atts["id"]) ) {
+		$id_array[0] = $query_atts["id"];
 	}
-	else { // $content is a URL
-		// workaround for relative video URL (contributed by Lee Fernandes)
-		if(substr($content, 0, 1) == '/') $content = get_bloginfo('url').$content;
-		$content = apply_filters('kgvid_filter_url', trim($content));
-		$id_array[0] = kgvid_url_to_id($content);
+	else { 
+
+		if ( empty($content) ) {
+
+			if ( $post_id != 0 ) {
+				$args = array(
+					'numberposts' => $query_atts['videos'],
+					'post_mime_type' => 'video',
+					'post_parent' => $post_id,
+					'post_status' => null,
+					'post_type' => 'attachment',
+					'orderby' => $query_atts['orderby'],
+					'order' => $query_atts['order']
+				);
+				$video_attachments = get_posts($args);
+				if ( $video_attachments ) {
+					foreach ( $video_attachments as $video ) {
+						$id_array[] = $video->ID;
+					}
+				}
+				else { return; } //if there are no video children of the current post
+			}
+			else { return; } //if there's no post ID and no $content
+		}
+		else { // $content is a URL
+			// workaround for relative video URL (contributed by Lee Fernandes)
+			if(substr($content, 0, 1) == '/') $content = get_bloginfo('url').$content;
+			$content = apply_filters('kgvid_filter_url', trim($content));
+			$id_array[0] = kgvid_url_to_id($content);
+		}
+
 	}
 
 	$original_content = $content;
@@ -6871,7 +6876,7 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 			$html .= $titlecode.'<span itemprop="name">'.$kgvid_postmeta["title"].'</span>'.$endtitlecode.'<br />';
 		}
 
-			$html .= '[KGVID';
+			$html .= '[KGVID id="'.$attachment_id.'"';
 			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
 
 			$insert_shortcode_atts = apply_filters('kgvid_insert_shortcode_atts', array(

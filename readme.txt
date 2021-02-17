@@ -250,10 +250,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.7 - February xx, 2020 =
 * Changed plugin name to Videopack.
 * Added Freemius SDK to facilitate selling premium Videopack add-ons.
-* Added Video.js version 7 player option.
-* Deprecated Video.js version 5 player.
+* Added Video.js v7 player option.
+* Deprecated Video.js v5 player.
 * Removed JW Player & Strobe Media Playback player options.
-* Added cache for complicated database query that should speed up plugin execution on sites with large numbers of videos.
+* Added an experimental cache for a complicated URL to ID database query that should speed up plugin execution on sites with large numbers of videos.
+* Adding attachment 'id' attribute to shortcodes inserted into posts, and prioritizing the 'id' attribute over URLs to avoid making the URL to ID query when possible.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
 * Fixed bug that added videos to encode queue even if there was nothing to encode.
 
