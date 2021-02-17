@@ -879,6 +879,17 @@ function kgvid_add_upload_mimes ( $existing_mimes=array() ) {
 }
 add_filter('upload_mimes', 'kgvid_add_upload_mimes');
 
+function kgvid_set_transient_name($url) {
+
+	$url = str_replace(' ', '', $url); //in case a url with spaces got through
+	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
+ 	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
+	if (strlen($search_url) > 166 ) { $search_url = substr($search_url, -162); } //transients can't be more than 172 characters long. Including 'kgvid_' the URL has to be 162 characters or fewer
+
+	return $search_url;
+
+}
+
 function kgvid_url_to_id($url) {
 
 	global $wpdb;
@@ -886,11 +897,7 @@ function kgvid_url_to_id($url) {
 	$uploads = wp_upload_dir();
 	$post_id = false;
 	$video_formats = kgvid_video_formats();
-
-	$url = str_replace(' ', '', $url); //in case a url with spaces got through
-	// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back
- 	$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo($url, PATHINFO_EXTENSION), $url );
-	if (strlen($search_url) > 166 ) { $search_url = substr($search_url, -162); } //transients can't be more than 172 characters long. Including 'kgvid_' the URL has to be 162 characters or fewer
+	$search_url = kgvid_set_transient_name($url);
 
 	if ( $options['transient_cache'] == "on" ) {
 		$post_id = get_transient( 'kgvid_'.$search_url );
@@ -6592,6 +6599,8 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 				) 
 			) {
 				wp_delete_post($old_thumb_id);
+				$transient_name = kgvid_set_transient_name($thumb_url);
+				delete_transient( 'kgvid_' . $transient_name );
 			}
 			else { 
 				return $old_thumb_id; //if a new thumbnail was just created with the same name don't make a new one.
@@ -8598,6 +8607,7 @@ add_action('wp_ajax_kgvid_cancel_encode', 'kgvid_cancel_encode');
 function kgvid_ajax_delete_video() {
 
 	if ( current_user_can('encode_videos') ) {
+
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 		$deleted = false;
 		$attachment_id = "";
@@ -8620,9 +8630,15 @@ function kgvid_ajax_delete_video() {
 			if ( !empty($deleted) ) { $deleted = true; }
 			if ( $blog_id ) { restore_current_blog(); }
 		}
+
+		$transient_name = kgvid_set_transient_name($movieurl);
+		delete_transient( 'kgvid_' . $transient_name );
+
 		echo($deleted);
-		die();
+	
 	}
+
+	die();
 
 }
 add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
@@ -8726,6 +8742,10 @@ function kgvid_delete_video_attachment($video_id) {
 			}
 		}
 	}
+
+	$transient_name = kgvid_set_transient_name( wp_get_attachment_url($video_id) );
+	delete_transient( 'kgvid_' . $transient_name );
+
 }
 add_action('delete_attachment', 'kgvid_delete_video_attachment');
 
