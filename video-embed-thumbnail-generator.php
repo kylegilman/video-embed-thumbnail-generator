@@ -880,7 +880,7 @@ function kgvid_add_upload_mimes ( $existing_mimes=array() ) {
 add_filter('upload_mimes', 'kgvid_add_upload_mimes');
 
 function kgvid_url_to_id($url) {
-error_log('url to id');
+
 	global $wpdb;
 	$options = kgvid_get_options();
 	$uploads = wp_upload_dir();
@@ -1143,23 +1143,6 @@ function kgvid_get_attachment_medium_url( $id ) {
     $medium_path = $medium_array[0];
 
     return $medium_path;
-}
-
-function kgvid_backwards_compatible($post_id) {
-
-	global $wp_version;
-	$field_id = array();
-
-	if ( $wp_version < 3.5 ) {
-		$field_id['poster'] = 'attachments['. $post_id .'][kgflashmediaplayer-poster]';
-		$field_id['thumbtime'] = 'attachments['. $post_id .'][kgflashmediaplayer-thumbtime]';
-	}
-	else {
-		$field_id['poster'] = 'attachments-'. $post_id .'-kgflashmediaplayer-poster';
-		$field_id['thumbtime'] = 'attachments-'. $post_id .'-kgflashmediaplayer-thumbtime';
-	}
-	return $field_id;
-
 }
 
 function kgvid_sanitize_url($movieurl) {
@@ -4581,8 +4564,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_plugin_playback_settings_section_callback() {
 
-		global $wp_version;
 		$options = kgvid_get_options();
+
 		if ( $options['embeddable'] != "on" ) {
 			$embed_disabled = "disabled='disabled'";
 			if ( $options['overlay_embedcode'] == "on" || $options['open_graph'] == "on" ) {
@@ -4593,10 +4576,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 		else { $embed_disabled = ""; }
 
-		$players["Video.js v7"] = "Video.js v7";
-
-		$players["Video.js v5 (deprecated)"] = "Video.js";
-		if ( $wp_version >= 3.6 ) { $players[__("WordPress Default", 'video-embed-thumbnail-generator')] = "WordPress Default"; }
+		$players = array(
+			"Video.js v7" => "Video.js v7",
+			"Video.js v5 (" . __("deprecated") . ")" => "Video.js",
+			__("WordPress Default", 'video-embed-thumbnail-generator') => "WordPress Default"
+		);
 
 		$players = apply_filters('kgvid_available_video_players', $players);
 
@@ -4605,7 +4589,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['embed_method']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Video.js version 7 is the default player. Users running WordPress 3.6 or higher can choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme.', 'video-embed-thumbnail-generator')."</span></span></td></tr></tbody></table>\n";
+		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Video.js version 7 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme.', 'video-embed-thumbnail-generator')."</span></span></td></tr></tbody></table>\n";
 
 		$sampleheight = intval($options['height']) + 50;
 		echo "<div class='kgvid_setting_nearvid' style='width:".$options['width']."px;'>";
@@ -4745,7 +4729,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		
 		echo "<input class='affects_player' ".checked( $options['nativecontrolsfortouch'], "on", false )." id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>".__('Show native controls on mobile devices.', 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.', 'video-embed-thumbnail-generator')."</span></span><br>\n\t";
 
-		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Autoplay.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+		echo "<input class='affects_player' ".checked( $options['autoplay'], "on", false )." id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>".__('Autoplay.', 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Many browsers will only autoplay videos if the video starts muted.', 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
 
 		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
@@ -6147,7 +6131,6 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		wp_enqueue_style( 'video_embed_thumbnail_generator_style' );
 
 		$user_ID = get_current_user_id();
-		$field_id = kgvid_backwards_compatible($post->ID);
 		$movieurl = wp_get_attachment_url($post->ID);
 		$moviefile = get_attached_file($post->ID);
 		$kgvid_postmeta = kgvid_get_attachment_meta($post->ID);
@@ -6229,10 +6212,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			$thumbnail_timecode = "";
 
 			if ( !isset($options['ffmpeg_exists']) || $options['ffmpeg_exists'] == "notchecked" ) {
-					kgvid_check_ffmpeg_exists($options, true);
-				}
-			/* if ( $options['ffmpeg_exists'] == "notinstalled" ) { $ffmpeg_disabled_text = 'disabled="disabled" title="'.sprintf( __('%1$s not found at %2$s and unable to load video in browser for thumbnail generation.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ).'"'; }
-			else { $ffmpeg_disabled_text = ""; } */
+				kgvid_check_ffmpeg_exists($options, true);
+			}
 
 			$ffmpeg_disabled_text = "";
 
@@ -6296,10 +6277,10 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box">Thumbnail selection requires GD or Imagick PHP libraries.</div>';
 				}
 				$generate_content = '<div id="generate-thumb-'.$post->ID.'-container" class="kgvid-tabs-content" data-ffmpeg="'.$options['ffmpeg_exists'].'">
-				<input id="attachments-'. $post->ID .'-kgflashmediaplayer-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$kgvid_postmeta['numberofthumbs'].'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.$ffmpeg_disabled_text.$readonly.'/>
+				<input id="attachments-'. $post->ID .'-kgflashmediaplayer-numberofthumbs" name="attachments['.$post->ID.'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.$kgvid_postmeta['numberofthumbs'].'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.$post->ID.'\', \'onchange\');document.getElementById(\'attachments-'. $post->ID .'-kgflashmediaplayer-thumbtime\').value =\'\';" '.$ffmpeg_disabled_text.$readonly.'/>
 				<input type="button" id="attachments-'. $post->ID .'-thumbgenerate" class="button" value="'._x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. $post->ID .', \'generate\');" '.$ffmpeg_disabled_text.'/>
 				<input type="button" id="attachments-'. $post->ID .'-thumbrandomize" class="button" value="'._x('Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator').'" name="thumbrandomize" onclick="kgvid_generate_thumb('. $post->ID .', \'random\');" '.$ffmpeg_disabled_text.'/>
-				<span style="white-space:nowrap;"><input type="checkbox" id="attachments-'. $post->ID .'-firstframe" name="attachments['.$post->ID.'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\''.$field_id['thumbtime'].'\').value =\'\';" '.checked( $kgvid_postmeta['forcefirst'], 'on', false ).' '.$ffmpeg_disabled_text.$readonly.'/> <label for="attachments-'. $post->ID .'-firstframe">'.__('Force 1st frame thumbnail', 'video-embed-thumbnail-generator').'</label></span></div>';
+				<span style="white-space:nowrap;"><input type="checkbox" id="attachments-'. $post->ID .'-firstframe" name="attachments['.$post->ID.'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\'attachments-'. $post->ID .'-kgflashmediaplayer-thumbtime\').value =\'\';" '.checked( $kgvid_postmeta['forcefirst'], 'on', false ).' '.$ffmpeg_disabled_text.$readonly.'/> <label for="attachments-'. $post->ID .'-firstframe">'.__('Force 1st frame thumbnail', 'video-embed-thumbnail-generator').'</label></span></div>';
 
 				$thumbnail_timecode = __('Thumbnail timecode:', 'video-embed-thumbnail-generator').' <input name="attachments['. $post->ID .'][kgflashmediaplayer-thumbtime]" id="attachments-'. $post->ID .'-kgflashmediaplayer-thumbtime" type="text" value="'. $kgvid_postmeta['thumbtime'] .'" style="width:60px;"'.$readonly.'><br>';
 
