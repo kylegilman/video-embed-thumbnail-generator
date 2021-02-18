@@ -105,7 +105,7 @@ function kgvid_SetVideo(id) { //for galleries
 		minHeight:frame_height,
 		autoResize: false,
 		overlayClose:true,
-		closeHTML:'<a class="modalCloseImg simplemodal-close" title="Close"><span class="dashicons dashicons-no-alt"></span></a>',
+		closeHTML:'<a class="modalCloseImg simplemodal-close kgvid_gallery_nav" title="Close"><span class="kgvid-icons kgvid-icon-cross"></span></a>',
 		zIndex:10000,
 		onShow: function(dialog) {
 
@@ -117,12 +117,12 @@ function kgvid_SetVideo(id) { //for galleries
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).prev('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ||
 				( is_paginated && jQuery('#'+gallery_id+' .kgvid_gallery_pagination_selected').html() != "1" )
 			) {
-				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_prev" title="'+kgvidL10n_frontend.previous+'">&#8592;</a>';
+				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_prev kgvid-icons kgvid-icon-left-arrow" title="'+kgvidL10n_frontend.previous+'"></a>';
 			}
 			if ( jQuery('#kgvid_video_gallery_thumb_'+id).next('#'+gallery_id+' .kgvid_video_gallery_thumb').length  > 0 ||
 				( is_paginated && jQuery('#'+gallery_id+' .kgvid_gallery_pagination span a').last().html() > jQuery('#'+gallery_id+' .kgvid_gallery_pagination_selected').html() )
 			) {
-				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_next" title="'+kgvidL10n_frontend.next+'">&#8594;</a>';
+				nav_code += '<a class="kgvid_gallery_nav kgvid_gallery_next kgvid-icons kgvid-icon-right-arrow" title="'+kgvidL10n_frontend.next+'"></a>';
 			}
 
 			jQuery('#kgvid-simplemodal-container').prepend(nav_code);
@@ -972,13 +972,13 @@ function kgvid_share_icon_click(id) {
 	var player_element;
 	var event;
 
-	if ( jQuery('#kgvid_'+id+'_shareicon').hasClass('dashicons-share') ) {
+	if ( jQuery('#kgvid_'+id+'_shareicon').hasClass('vjs-icon-share') ) {
 		event = 'turn on';
-		jQuery('#kgvid_'+id+'_shareicon').removeClass('dashicons-share').addClass('dashicons-no');
+		jQuery('#kgvid_'+id+'_shareicon').removeClass('vjs-icon-share').addClass('vjs-icon-cancel');
 	}
 	else {
 		event = 'turn off';
-		jQuery('#kgvid_'+id+'_shareicon').removeClass('dashicons-no').addClass('dashicons-share');
+		jQuery('#kgvid_'+id+'_shareicon').removeClass('vjs-icon-cancel').addClass('vjs-icon-share');
 	}
 
 	var video_vars = jQuery('#video_'+id+'_div').data('kgvid_video_vars');

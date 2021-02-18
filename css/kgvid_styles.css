@@ -193,6 +193,40 @@ img.kgvid_ios_novideo {
     padding-top: 32px;
 }
 
+.kgvid-icons,
+.kgvid-icons-before:before {
+	display: inline-block;
+	line-height: 1;
+	text-decoration: inherit;
+	text-transform: none;
+	width: 20px;
+	height: 20px;
+	vertical-align: text-top;
+	text-align: center;
+	background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.kgvid-icon-embed {
+    background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' preserveAspectRatio='none' fill='white'%3E %3Ctitle%3Eembed%3C/title%3E %3Cpath d='M18 23l3 3 10-10-10-10-3 3 7 7z'%3E%3C/path%3E %3Cpath d='M14 9l-3-3-10 10 10 10 3-3-7-7z'%3E%3C/path%3E %3C/svg%3E");
+}
+
+.kgvid-icon-download {
+    background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' fill='white'%3E %3Ctitle%3Efile_download%3C/title%3E %3Cpath d='M5.016 18h13.969v2.016h-13.969v-2.016zM18.984 9l-6.984 6.984-6.984-6.984h3.984v-6h6v6h3.984z'%3E%3C/path%3E %3C/svg%3E");
+}
+
+.kgvid-icon-cross {
+    background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Ecross%3C/title%3E %3Cpath d='M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z'%3E%3C/path%3E %3C/svg%3E");
+}
+
+.kgvid-icon-left-arrow {
+    background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Earrow-left%3C/title%3E %3Cpath d='M1 16l15 15v-9h16v-12h-16v-9z'%3E%3C/path%3E %3C/svg%3E ");
+}
+
+.kgvid-icon-right-arrow {
+    background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Earrow-right%3C/title%3E %3Cpath d='M31 16l-15-15v9h-16v12h16v9z'%3E%3C/path%3E %3C/svg%3E ");
+}
+
 .kgvid_share_icons {
     text-align: center;
     line-height: 26pt;
@@ -212,14 +246,8 @@ img.kgvid_ios_novideo {
     font-size: 13pt;
     line-height: 29pt;
     text-decoration: none;
-    width: inherit;
-    height: inherit;
     margin: 0;
     padding: 0;
-}
-
-.kgvid_share_icons span.dashicons.dashicons-editor-code {
-    font-size: 22pt;
 }
 
 .kgvid_share_icons input[type="text"] {
@@ -243,6 +271,10 @@ span.kgvid_start_time {
 	white-space: nowrap;
 }
 
+.kgvid_start_time input {
+    vertical-align:middle;
+}
+
 input[type="text"].kgvid_start_at {
     width: 3em !important;
 }
@@ -252,31 +284,14 @@ input[type="text"].kgvid_start_at {
     font-size: 19pt;
 }
 
-.kgvid_share_icons span.dashicons.dashicons-twitter {
+.kgvid_share_icons .vjs-icon-twitter {
     color: #55acee;
     font-size: 32pt;
 }
 
-span.kgvid_facebook_icon_holder {
-    font-family: sans-serif;
-    position: relative;
-    vertical-align: middle;
-}
-
-.kgvid_share_icons span.dashicons.dashicons-facebook {
+.kgvid_share_icons .vjs-icon-facebook {
     color: #3b5998;
     font-size: 32pt;
-}
-
-.kgvid_share_icons span.dashicons.dashicons-facebook:after {
-    content: "\20";
-    background: white;
-    width: 20pt;
-    height: 21.25pt;
-    position: absolute;
-    left: 9px;
-    top: -2px;
-    z-index: -1;
 }
 
 .kgvid_below_video {
@@ -321,6 +336,7 @@ span.kgvid_facebook_icon_holder {
     top: 50%;
     left: 50%;
     transform-origin: 0 0;
+    border: none;
 }
 
 .kgvid_video_gallery_thumb .titlebackground {
@@ -381,41 +397,16 @@ span.kgvid_facebook_icon_holder {
 }
 
 #kgvid-simplemodal-container a.modalCloseImg {
-    display: inline;
-    box-sizing: border-box;
-    padding: 2px 2px 2px 3px;
-    z-index: 10003;
-    position: absolute;
-    top: -25px;
-    right: -5px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 13px;
-    border-radius: 8px;
-    background-color: rgba(0,0,0,0.5);
-    color: #ccc;
-    font-family: Arial, sans-serif;
-    line-height: 18px;
-    font-weight: 900;
-    text-decoration: none;
+    right: -10px;
+    top: -30px;
 }
 
 #kgvid-simplemodal-container .kgvid_gallery_nav {
 	cursor: pointer;
-    display: inline-block;
-    padding: 3px 7px 4px 7px;
-    background-color: rgba(0,0,0,0.5);
-    text-align: center;
-    color: white;
-    border-radius: 5px;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 900;
-    line-height: 12px;
     z-index: 10003;
     position: absolute;
     text-decoration: none;
-    top: -22px;
+    top: -26px;
 }
 
 #kgvid-simplemodal-container .wp-video, .kgvid_wrapper .wp-video {
@@ -428,11 +419,6 @@ span.kgvid_facebook_icon_holder {
 
 .kgvid_gallery_next {
 	right: 25px;
-}
-
-#kgvid-simplemodal-container a.modalCloseImg:hover, #kgvid-simplemodal-container .kgvid_gallery_nav:hover {
-	background-color: black;
-    box-shadow: 0px 0px 4px #fff;
 }
 
 .kgvid_gallery_pagination span {
@@ -553,14 +539,14 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 
 .kgvid_wrapper .mejs-controls div.mejs-sourcechooser-button button {
     background: none;
-    font-family: dashicons;
+    font-family: VideoJS;
     color: white;
     font-size: 11pt;
     line-height: 0pt;
 }
 
 .kgvid_wrapper .mejs-controls .mejs-sourcechooser-button button:before {
-	content: "\f111";
+	content: "\f110";
 }
 
 /* mep-feature-sourcechooser backwards compatible plugin styles */
@@ -666,10 +652,7 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 
 .mejs__sourcechooser-selector input,
 .mejs-sourcechooser-selector input {
-    clear: both;
-    float: left;
-	margin: 3px 3px 0 0;
-	visibility: hidden;
+    display: none;
 }
 
 .mejs__sourcechooser-selector label,
