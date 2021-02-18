@@ -2242,21 +2242,14 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	$options = kgvid_get_options();
 
-	if ( $options['embed_method'] == "Video.js" ) {
+	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
 			
 			wp_enqueue_script( 'video-js' );
-			add_action('wp_footer', 'kgvid_print_videojs_footer', 99);
 
 			if ( $options['alwaysloadscripts'] == 'on' ) {
 				wp_enqueue_script( 'video-quality-selector' );
 			}
 			
-	}
-
-	if ( $options['embed_method'] == "Video.js v7" ) {
-			
-		wp_enqueue_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.10.2', true );
-
 	}
 
 	do_action( 'kgvid_enqueue_shortcode_scripts' );
@@ -2277,12 +2270,6 @@ function kgvid_enqueue_shortcode_scripts() {
 		) );
 
 	}
-
-}
-
-function kgvid_print_videojs_footer() { //called by the shortcode if Video.js is used
-
-	echo '<script type="text/javascript">if(typeof videojs !== "undefined") { videojs.options.flash.swf = "'.plugins_url("", __FILE__).'/video-js/v5/video-js.swf?5.3.0"; }</script>'."\n";
 
 }
 
