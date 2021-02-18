@@ -1916,11 +1916,13 @@ function kgvid_video_embed_enqueue_styles() {
 			$speed_path = plugins_url( 'js/mep-speed.js', __FILE__ );;
 		}
 		wp_register_script( 'mejs-speed', $speed_path, array( 'mediaelement' ), $options['version'], true );
+
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', '7.10.4' ); //gives access to video-js icons for resolution gear selector and social logos
 		
 	}
 
-	//plugin-related frontend styles, requires dashicons
-	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), array( 'dashicons' ), $options['version'] );
+	//plugin-related frontend styles, requires video-js
+	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), array( 'video-js' ), $options['version'] );
 
 	if ( $options['alwaysloadscripts'] == 'on' ) {
 		kgvid_enqueue_shortcode_scripts();
@@ -2379,7 +2381,7 @@ function kgvid_gallery_page($page_number, $query_atts, $last_video_id = 0) {
 				$play_translate = 30;
 			}
 
-			$play_button_html = '<div class="'.esc_attr($options['js_skin']).'" ><div class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"><span></span></div></div>';
+			$play_button_html = '<div class="'.esc_attr($options['js_skin']).'" ><button class="'.$play_button_class.'" style="-webkit-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -o-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); -ms-transform: scale('.$play_scale.') translateY(-'.$play_translate.'px); transform: scale('.$play_scale.') translateY(-'.$play_translate.'px);"></button></div>';
 
 			$dimensions = kgvid_set_video_dimensions($attachment->ID, true);
 
@@ -3065,7 +3067,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					}
 				}
 				if ( !$forceable ) { $download_code = '<a href="'.$content.'" title="'.__('Right-click or ctrl-click to download', 'video-embed-thumbnail-generator').'">'; }
-				$download_code .= '<span class="dashicons dashicons-download"></span></a>';
+				$download_code .= '<span class="kgvid-icons kgvid-icon-download"></span></a>';
 			}
 			else { $download_code = ''; }
 
@@ -3076,7 +3078,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				)
 			) {
 
-				$embed_code = "\t\t\t\t<span id='kgvid_".$div_suffix."_shareicon' class='dashicons dashicons-share' onclick='kgvid_share_icon_click(\"".$div_suffix."\");'></span>\n";
+				$embed_code = "\t\t\t\t<span id='kgvid_".$div_suffix."_shareicon' class='vjs-icon-share' onclick='kgvid_share_icon_click(\"".$div_suffix."\");'></span>\n";
 				$embed_code .= "\t\t\t\t<div id='click_trap_".$div_suffix."' class='kgvid_click_trap'></div><div id='video_".$div_suffix."_embed' class='kgvid_share_container";
 				if ( $show_title == false ) { $embed_code .= " kgvid_no_title_meta"; }
 				$embed_code .= "'><div class='kgvid_share_icons'>";
@@ -3085,7 +3087,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					else { $iframeurl = $query_atts['embedcode']; }
 					$iframecode = "<iframe allowfullscreen src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
 					$iframecode = apply_filters('kgvid_embedcode', $iframecode, $iframeurl, $id, $query_atts);
-					$embed_code .= "<span class='kgvid_embedcode_container'><span class='dashicons dashicons-editor-code'></span>
+					$embed_code .= "<span class='kgvid_embedcode_container'><span class='kgvid-icons kgvid-icon-embed'></span>
 					<span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><span><input class='kgvid_embedcode' type='text' value='".esc_attr($iframecode)."' onClick='this.select();'></span> <span class='kgvid_start_time'><input type='checkbox' class='kgvid_start_at_enable' onclick='kgvid_set_start_at(\"".$div_suffix."\")'> ".__('Start at:', 'video-embed-thumbnail-generator')." <input type='text' class='kgvid_start_at' onkeyup='kgvid_change_start_at(\"".$div_suffix."\")'></span></span>";
 				} //embed code
 
@@ -3099,11 +3101,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					if ( $options['twitter_button'] == 'on' ) {
 						$embed_code .= "<a title='".__('Share on Twitter', 'video-embed-thumbnail-generator')."' href='https://twitter.com/share?text=".urlencode($query_atts['title'])."&url=".urlencode($permalink);
 						if ( !empty($options['twitter_username']) ) { $embed_code .= "&via=".urlencode($options['twitter_username']); }
-						$embed_code .= "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='dashicons dashicons-twitter'></span></a>";
+						$embed_code .= "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-twitter'></span></a>";
 					}
 
 					if ( $options['facebook_button'] == 'on' ) {
-						$embed_code .= "&nbsp;<a title='".__('Share on Facebook', 'video-embed-thumbnail-generator')."' href='https://www.facebook.com/sharer/sharer.php?u=".urlencode($permalink)."' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='kgvid_facebook_icon_holder'><span class='dashicons dashicons-facebook'></span></span></a>";
+						$embed_code .= "&nbsp;<a title='".__('Share on Facebook', 'video-embed-thumbnail-generator')."' href='https://www.facebook.com/sharer/sharer.php?u=".urlencode($permalink)."' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-facebook'></span></a>";
 					}
 
 					$embed_code .= "</div>";
