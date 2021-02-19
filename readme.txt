@@ -93,8 +93,8 @@ I'm not really a software developer. I'm just a film editor with some time on hi
 * `align="left/right/center"`
 * `inline="true/false"` allow other content on the same line as the video
 * `volume="0.x"` pre-sets the volume for unusually loud videos. Value between 0 and 1.
-* `mute="true/false"` sets the mute button on or off.
-* `controlbar="docked/floating/none"` sets the controlbar position. Video.js only responds to the "none" option.
+* `muted="true/false"` sets the mute button on or off (required for autoplay in most browsers).
+* `controls="true/false"` sets the controls on or off.
 * `loop="true/false"`
 * `autoplay="true/false"`
 * `playsinline="true/false"` allows videos to play inline on iPhones.
@@ -253,10 +253,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Added Video.js v7 player option.
 * Deprecated Video.js v5 player.
 * Removed JW Player & Strobe Media Playback player options.
+* Removed obsolete Video-js.swf Flash player and unused Video.js font files.
+* Removed dashicons library from the front end and fixed multiple CSS issues.
 * Added an experimental cache for a complicated URL to ID database query that should speed up plugin execution on sites with large numbers of videos.
 * Adding attachment 'id' attribute to shortcodes inserted into posts, and prioritizing the 'id' attribute over URLs to avoid making the URL to ID query when possible.
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
 * Fixed bug that added videos to encode queue even if there was nothing to encode.
+* Added automatic localization for Video.js player elements.
 
 = 4.6.28 - February 8, 2021 =
 * Added setting to change default playsinline behavior on iPhones.

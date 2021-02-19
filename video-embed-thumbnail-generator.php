@@ -58,6 +58,7 @@ function kgvid_default_options_fn() {
 
 	$options = array(
 		"version" => '4.7',
+		"videojs_version" => '7.11.4',
 		"embed_method" => "Video.js v7",
 		"template" => false,
 		"template_gentle" => "on",
@@ -859,6 +860,34 @@ function kgvid_set_locale($filepath) {
 	}
 
 	return $old_locale;
+
+}
+
+function kgvid_get_videojs_locale() {
+
+	$options = kgvid_get_options();
+	$locale = get_locale();
+
+$locale = 'pt_PT';
+	$locale_conversions = array( //all Video.js language codes are two-character except these
+		'pt-BR' => 'pt_BR',
+		'pt-PT' => 'pt_PT',
+		'zh-CN' => 'zh_CN',
+		'zh-TW' => 'zh_TW'
+	);
+	if ( $options['embed_method'] == "Video.js" ) { //v5 doesn't have pt-PT
+		$locale_conversions['pt-BR'] = 'pt_PT';
+	}
+
+	$matching_locale = array_search($locale, $locale_conversions);
+	if ( $matching_locale !== false ) {
+		$locale = $matching_locale;
+	}
+	else {
+		$locale = substr($locale, 0, 2);
+	}
+
+	return $locale;
 
 }
 
@@ -1886,17 +1915,35 @@ function kgvid_video_embed_enqueue_styles() {
 
 	//Video.js styles
 
-	if ( $options['embed_method'] == "Video.js" ) {
-		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/v5/video.js', '', '5.20.5', true );
-		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/v5/video-quality-selector.js', array('video-js'), $options['version'], true );
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v5/video-js.css', '', '5.20.5' );
-		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/v5/kg-video-js-skin.css', '', $options['version'] ); }
-	}
-	if ( $options['embed_method'] == "Video.js v7" ) {
-		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video.min.js', '', '7.10.4', true );
-		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/v7/video-quality-selector.js', array('video-js'), $options['version'], true );
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', '7.10.4' );
-		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/v7/kg-video-js-skin.css', '', $options['version'] ); }
+	if ( $options['embed_method'] == "Video.js" ||  $options['embed_method'] == "Video.js v7" ) {
+
+		if ( $options['embed_method'] == "Video.js" ) {
+
+			$videojs_register = array(
+				'version' => '5.20.5',
+				'path' => 'v5'
+			);
+
+		}
+		if ( $options['embed_method'] == "Video.js v7" ) {
+
+			$videojs_register = array(
+				'version' => $options['videojs_version'],
+				'path' => 'v7'
+			);
+
+		}
+
+		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/video.min.js', '', $videojs_register['version'], true );
+		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/video-quality-selector.js', array('video-js'), $options['version'], true );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/video-js.min.css', '', $videojs_register['version'] );
+		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/kg-video-js-skin.css', '', $options['version'] ); }
+
+		$locale = kgvid_get_videojs_locale();
+		if ( $locale != 'en' && file_exists(plugin_dir_path(__FILE__).'video-js/'.$videojs_register['path'].'/lang/'.$locale.'.js')) {
+			wp_register_script( 'videojs-l10n', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/lang/'.$locale.'.js', array('video-js'), $videojs_register['version'], true );
+		}
+
 	}
 
 	if ( $options['embed_method'] == "WordPress Default" ) {
@@ -2245,6 +2292,7 @@ function kgvid_enqueue_shortcode_scripts() {
 	if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
 			
 			wp_enqueue_script( 'video-js' );
+			wp_enqueue_script( 'videojs-l10n' );
 
 			if ( $options['alwaysloadscripts'] == 'on' ) {
 				wp_enqueue_script( 'video-quality-selector' );
@@ -2752,8 +2800,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
 
-			$locale = get_locale();
-
 			$enable_resolutions_plugin = false;
 			$x = 20;
 			$h264_resolutions = array();
@@ -2793,7 +2839,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			natsort($h264_resolutions);
 
 			$video_variables['nativecontrolsfortouch'] = $query_atts['nativecontrolsfortouch'];
-			$video_variables['locale'] = substr($locale, 0, 2);
+			$video_variables['locale'] = kgvid_get_videojs_locale();
 
 			if ( $enable_resolutions_plugin ) {
 				$video_variables['enable_resolutions_plugin'] = "true";
@@ -5614,6 +5660,7 @@ function kgvid_update_settings() {
 			unset($options['mute']);
 			$options['auto_publish_post'] = false;
 			$options['transient_cache'] = false;
+			$options['videojs_version'] = $default_options['videojs_version'];
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5761,7 +5808,9 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 
 	if ( $input['embeddable'] == false ) { $input['overlay_embedcode'] = false; }
 
-	$input['version'] = $default_options['version']; //since this isn't user selectable it has to be re-entered every time
+	//since this isn't user selectable it has to be re-entered every time
+	$input['version'] = $default_options['version'];
+	$input['videojs_version'] = $default_options['videojs_version'];
 
 	return $input;
 }
