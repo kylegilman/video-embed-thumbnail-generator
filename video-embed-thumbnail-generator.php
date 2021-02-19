@@ -868,7 +868,6 @@ function kgvid_get_videojs_locale() {
 	$options = kgvid_get_options();
 	$locale = get_locale();
 
-$locale = 'pt_PT';
 	$locale_conversions = array( //all Video.js language codes are two-character except these
 		'pt-BR' => 'pt_BR',
 		'pt-PT' => 'pt_PT',
@@ -5086,7 +5085,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_automatic_completed_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<input ".checked( $options['auto_publish_post'], "on", false )." id='auto_publish_post' name='kgvid_video_embed_options[auto_publish_post]' type='checkbox' /> <label for='auto_publish_post'>".__("Publish video's parent post.", 'video-embed-thumbnail-generator')."</label><br />";
+		echo "<input ".checked( $options['auto_publish_post'], "on", false )." id='auto_publish_post' name='kgvid_video_embed_options[auto_publish_post]' type='checkbox' /> <label for='auto_publish_post'>".__("Publish video's parent post.", 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('If all videos in the encode queue attached to a draft post are completed, the draft post will be automatically published.', 'video-embed-thumbnail-generator')."</span></span><br />";
 		echo "</div>\n\t";
 	}
 
@@ -7928,7 +7927,9 @@ function kgvid_encode_videos() {
 			kgvid_save_encode_queue($video_encode_queue);
 
 		} //if there's a format to encode
-
+		else { 
+			$video_key = '';
+		}
 	} //if there's a queue
 	$arr = array ( "embed_display"=>"<strong>".$embed_display."</strong>", "video_key"=>$video_key, "format"=>$queued_format, "actualwidth"=>$movie_info['width'], "actualheight"=>$movie_info['height'] );
 
@@ -8212,7 +8213,15 @@ function kgvid_encode_progress() {
 									} //fullres encoding complete
 
 									$options = kgvid_get_options();
-									if ( $options['auto_publish_post'] == 'on' ) {
+
+									if ( $options['auto_publish_post'] == 'on' 
+										&& ( $next_video['video_key'] == '' //no more videos to encode
+											|| ( $next_video['video_key'] != '' 
+											&& array_key_exists($next_video['video_key'], $video_encode_queue) 
+											&& $video_encode_queue[$video_key]['parent_id'] != $video_encode_queue[$next_video['video_key']]['parent_id'] //no more videos with the same post
+											)
+										)
+									) {
 
 										wp_update_post(array(
 											'ID' => $video_encode_queue[$video_key]['parent_id'],

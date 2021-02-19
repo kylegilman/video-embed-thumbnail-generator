@@ -611,8 +611,7 @@ td.media-icon img {
 .compat-item .kgvid_encode_checkbox_button {
 	font-size: 80%;
 	padding: 0px 4px;
-	height: 24px;
-	line-height: 21px;
+	min-height: unset;
 	text-indent: 0;
 	margin-left: 5px;
 }
