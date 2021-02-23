@@ -1650,9 +1650,9 @@ function kgvid_auto_generate_old(type) {
 
 	jQuery.post(ajaxurl, { action: "kgvid_get_generating_old", type: type, security: kgflashmediaplayersecurity }, function(attachments) {
 
-		if ( attachments.length > 0 ) {
+		if ( parseInt(attachments) > 0 ) {
 
-			if ( type == 'thumbs' ) { var set_for_sure = confirm(kgvidL10n.autothumbnailwarning+attachments.length+"\n\n "+kgvidL10n.cancel_ok); }
+			if ( type == 'thumbs' ) { var set_for_sure = confirm(kgvidL10n.autothumbnailwarning+attachments+"\n\n "+kgvidL10n.cancel_ok); }
 			if ( type == 'encode' ) { var set_for_sure = confirm(kgvidL10n.autoencodewarning+"\n\n "+kgvidL10n.cancel_ok); }
 
 			if ( set_for_sure == true ) {
@@ -1660,7 +1660,7 @@ function kgvid_auto_generate_old(type) {
 				jQuery('#generate_old_'+type+'_button').parent().append('<div id="generating_old_'+type+'_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="generating_old_'+type+'_status"> '+kgvidL10n.processing+'</span>');
 
 				jQuery.post(ajaxurl, { action: "kgvid_generating_old", type: type, security: kgflashmediaplayersecurity });
-				var interval = setInterval(function(){kgvid_check_cms_progress(attachments.length, 'generating_old_'+type)}, 1000);
+				var interval = setInterval(function(){kgvid_check_cms_progress(parseInt(attachments), 'generating_old_'+type)}, 1000);
 				jQuery( '#wpbody-content' ).data('generating_old_'+type+'_interval', interval);
 
 			}// end if sure
@@ -1668,7 +1668,7 @@ function kgvid_auto_generate_old(type) {
 		}//end if any attachments
 		else { alert(kgvidL10n.nothumbstomake); }
 
-	}, "json" );
+	}, 'text' );
 
 }
 

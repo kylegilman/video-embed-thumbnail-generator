@@ -5875,38 +5875,54 @@ add_action('wp_ajax_kgvid_save_settings', 'kgvid_ajax_save_settings');
 function kgvid_add_attachment_handler($post_id) {
 
 	$options = kgvid_get_options();
-	$filename = get_attached_file($post_id);
 
 	if ( $options['auto_encode'] == "on" ||  $options['auto_thumb'] == "on" ) {
 
-		$post = get_post($post_id);
-		$is_video = kgvid_is_video($post);
-
-		if ( $is_video ) {
-
-			wp_schedule_single_event( time() + rand(0,10), 'kgvid_cron_new_attachment', array($post_id) );
-			$transient = get_transient( 'kgvid_new_attachment_transient' ); //error checking to avoid race conditions when using Add From Server
-			if ( is_array($transient) ) { $transient[] = $post_id; }
-			else { $transient = array($post_id); }
-			set_transient( 'kgvid_new_attachment_transient', $transient, DAY_IN_SECONDS );
-
-		}
+		kgvid_schedule_attachment_processing($post_id);
 
 	}
 
 }
 add_action('add_attachment', 'kgvid_add_attachment_handler');
 
+function kgvid_schedule_attachment_processing($post_id, $force = false, $x = 1) {
+
+	$post = get_post($post_id);
+	$is_video = kgvid_is_video($post);
+
+	if ( $is_video ) {
+
+		$time_offset = ($x * 3);
+
+		wp_schedule_single_event( time() + $time_offset, 'kgvid_cron_new_attachment', array($post_id, $force) );
+
+		if ( $force === false ) {
+			$transient = get_transient( 'kgvid_new_attachment_transient' ); //error checking to avoid race conditions when using Add From Server
+			if ( is_array($transient) ) { $transient[] = $post_id; }
+			else { $transient = array($post_id); }
+			set_transient( 'kgvid_new_attachment_transient', $transient, DAY_IN_SECONDS );
+		}
+
+	}
+
+}
+
 function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 
 	$options = kgvid_get_options();
-	if ( $force == 'thumbs' ) { $options['auto_encode'] = false; }
-	if ( $force == 'encode' ) { $options['auto_thumb'] = false; }
+
+	if ( $force != false ) { 
+		$options['auto_encode'] = false;
+		$options['auto_thumb'] = false; 
+	}
 
 	$post = get_post($post_id);
 	$movieurl = wp_get_attachment_url($post_id);
 	$filepath = get_attached_file($post_id);
+	$is_animated = false;
+	if ( $post && $post->post_mime_type == 'image/gif' ) {
 	$is_animated = kgvid_is_animated_gif($filepath);
+	}
 
 	if ( $post && $post->post_mime_type != 'image/gif' && ( $force == 'thumbs' || $options['auto_thumb'] == "on" ) ) {
 
@@ -6048,7 +6064,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 	}//end if auto_encode
 
 }
-add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler');
+add_action('kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler', 10, 2);
 
 function kgvid_cron_check_post_parent_handler( $post_id ) {
 
@@ -8943,9 +8959,10 @@ function kgvid_get_generating_old() {
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
 	if (isset($_POST['type'])) { $type = $_POST['type']; }
+	$args = array();
 	$attachments = array();
 
-	if ( $type == 'thumbs' ) {
+	if ( $type == 'thumbs' && current_user_can('make_video_thumbnails') ) {
 
 		$args = array(
 			'orderby' => 'post_date',
@@ -8969,7 +8986,7 @@ function kgvid_get_generating_old() {
 
 	}
 
-	if ( $type == 'encode' ) {
+	if ( $type == 'encode' && current_user_can('encode_videos') ) {
 
 		$args = array(
 			'orderby' => 'post_date',
@@ -8999,7 +9016,7 @@ function kgvid_get_generating_old() {
 		$cms_switch_queue['generating_old_'.$type] = $attachments;
 		update_option('kgvid_video_embed_cms_switch', $cms_switch_queue);
 	}
-	echo json_encode($attachments);
+	echo count($attachments);
 	die;
 }
 add_action('wp_ajax_kgvid_get_generating_old', 'kgvid_get_generating_old');
@@ -9007,16 +9024,20 @@ add_action('wp_ajax_kgvid_get_generating_old', 'kgvid_get_generating_old');
 function kgvid_generating_old() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
 	if (isset($_POST['type'])) { $type = $_POST['type']; }
 	$queue = get_option('kgvid_video_embed_cms_switch');
+	
 	if ( is_array($queue) && array_key_exists('generating_old_'.$type, $queue) && is_array($queue['generating_old_'.$type]) ) {
 
+		$x = 1;
 		foreach ( $queue['generating_old_'.$type] as $video_id ) {
 
-			kgvid_cron_new_attachment_handler($video_id, $type);
+			kgvid_schedule_attachment_processing($video_id, $type, $x);
 
 			unset($queue['generating_old_'.$type][$video_id]);
 			update_option('kgvid_video_embed_cms_switch', $queue);
+			$x++;
 		}
 		unset($queue['generating_old_'.$type]);
 		if ( empty($queue) ) { delete_option('kgvid_video_embed_cms_switch'); }
@@ -9035,6 +9056,11 @@ function kgvid_update_cms_progress() {
 	$queue = get_option('kgvid_video_embed_cms_switch');
 	if ( is_array($queue) && array_key_exists($type, $queue) ) {
 		$remaining = count($queue[$type]);
+		if ( $remaining > 0
+			&& ( $type == 'thumbs' || $type == 'encode' ) 
+		) {
+			kgvid_generate_old($type);
+		}
 	}
 	echo $remaining;
 	die;
@@ -9225,7 +9251,9 @@ function kgvid_cleanup_plugin() {
 	wp_clear_scheduled_hook('kgvid_cleanup_generated_thumbnails');
 	kgvid_cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
 
-	kgvid_delete_transients();
+	kgvid_delete_transients(); //clear URL cache
+	delete_transient('kgvid_new_attachment_transient');
+	delete_option('kgvid_video_embed_cms_switch');
 
 	global $wp_roles;
 	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') 
