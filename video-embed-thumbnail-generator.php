@@ -8504,16 +8504,23 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 
 	$video_encode_queue = kgvid_get_encode_queue();
 
-	if ( !empty($video_encode_queue) ) {
+	if ( !empty($video_encode_queue) && is_array($video_encode_queue) ) {
 
+		$video_encode_queue = array_reverse($video_encode_queue);
 		$keep = array();
 		$cleared_video_queue = array();
+
 		foreach ( $video_encode_queue as $video_key => $queue_entry ) {
+
 			if ( array_key_exists('encode_formats', $queue_entry) && !empty($queue_entry['encode_formats']) ) {
+
 				foreach ( $queue_entry['encode_formats'] as $format => $value ) {
+
 					if ( $value['status'] == "encoding" ) { //if it's not completed yet
+
 						if ( $type != "all" ) { $keep[$video_key] = true; }
-						elseif ( (is_network_admin() && $scope == 'network')
+						elseif ( !is_multisite()
+							|| (is_network_admin() && $scope == 'network')
 							|| (array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] == get_current_blog_id())
 						) {
 							if ( array_key_exists( 'PID', $value ) && intval($value['PID']) > 0 ) {
@@ -8525,32 +8532,37 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 						}
 						else { $keep[$video_key] = true; }
 					}
+
 					if ( ($type == "manual" && $value['status'] == "queued")
 						|| ($type == "queued" && $value['status'] == "Encoding Complete")
 						|| ($type == "scheduled" && $value['status'] == "queued")
 					) {
 						$keep[$video_key] = true;
 					}
+
 					if ( $type == "scheduled" && $value['status'] == "Encoding Complete" ) {
-						if ( time() - intval($value['ended']) < 604800 ) { //if it finished less than a week ago
+						if ( count($keep) < 50 && time() - intval($value['ended']) < WEEK_IN_SECONDS ) { //if there are fewer than 50 entries left in the queue and it finished less than a week ago
 							$keep[$video_key] = true;
 						}
 					}
-					if ( $type != "scheduled" &&
+
+					if ( is_multisite() && $type != "scheduled" && current_user_can('encode_videos') &&
 						(
 							( $scope == 'site' && array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] != get_current_blog_id() )
 							|| ( !current_user_can('edit_others_video_encodes') && $user_ID != $queue_entry['user_id'] )
-							|| !current_user_can('encode_videos')
 							|| ( $scope != 'site' && !current_user_can('manage_network') )
 						)
 					) { //only clear entries from current blog
 						$keep[$video_key] = true;
 						break;
 					}
-				}
-			}
-		}
 
+				}
+
+			}
+
+		}
+		$keep = array_reverse($keep);
 		foreach ( $keep as $video_key => $value ) {
 			$cleared_video_queue[] = $video_encode_queue[$video_key];
 		}
@@ -8560,7 +8572,7 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 
 	}
 }
-add_action('kgvid_cleanup_queue','kgvid_clear_completed_queue');
+add_action('kgvid_cleanup_queue','kgvid_clear_completed_queue', 10, 2);
 
 function kgvid_ajax_clear_completed_queue() {
 
