@@ -517,7 +517,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 					time_id = Math.round(video.currentTime*100);
 
-					jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'" data-movieoffset="'+video.currentTime+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 1);"></div>');
+					jQuery(thumbnailboxID).append('<div style="display:none;" class="kgvid_thumbnail_select" name="attachments['+postID+'][thumb'+time_id+']" id="attachments-'+postID+'-thumb'+time_id+'"><label for="kgflashmedia-'+postID+'-thumbradio'+time_id+'"><canvas class="kgvid_thumbnail" style="width:200px;height:'+Math.round(200*video_aspect)+'px;" id="'+postID+'_thumb_'+time_id+'" data-movieoffset="'+video.currentTime+'"></canvas></label><br /><input type="radio" name="attachments['+postID+'][thumbradio'+time_id+']" id="kgflashmedia-'+postID+'-thumbradio'+time_id+'" value="'+video.currentTime+'" onchange="kgvid_save_canvas_thumb(\''+postID+'\', \''+time_id+'\', 1, 0);"></div>');
 					var canvas = document.getElementById(postID+'_thumb_'+time_id);
 					canvas = kgvid_draw_thumb_canvas(canvas, video);
 					jQuery('#attachments-'+postID+'-thumb'+time_id).animate({opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000);
