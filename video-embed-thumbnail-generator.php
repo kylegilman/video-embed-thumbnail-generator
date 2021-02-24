@@ -5993,7 +5993,6 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 				else { 
 					$index = $key; 
 				}
-				$thumb_id[$key] = kgvid_save_thumb($post_id, $post->post_title, $thumb_output[$key]['thumb_url'], $index);
 				$thumb_info = kgvid_save_thumb($post_id, $post->post_title, $thumb_output[$key]['thumb_url'], $index);
 				$thumb_id[$key] = $thumb_info['thumb_id'];
 			}//end if there wasn't an error
