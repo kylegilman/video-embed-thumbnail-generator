@@ -188,7 +188,8 @@ function kgvid_default_options_fn() {
 		"replace_video_shortcode" => false,
 		"rewrite_attachment_url" => 'on',
 		"auto_publish_post" => false,
-		'transient_cache' => false
+		"transient_cache" => false,
+		"queue_control" => 'play'
 	);
 
 	$video_formats = kgvid_video_formats();
@@ -218,7 +219,8 @@ function kgvid_default_network_options() {
 		'default_capabilities' => $default_options['capabilities'],
 		'superadmin_only_ffmpeg_settings' => false,
 		'simultaneous_encodes' => $default_options['simultaneous_encodes'],
-		'network_error_email' => $default_options['error_email']
+		'network_error_email' => $default_options['error_email'],
+		'queue_control' => $default_options['queue_control']
 	);
 
 	return $network_options;
@@ -2029,6 +2031,9 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'trackdefault' => __('Default:', 'video-embed-thumbnail-generator'),
 				'custom' => _x('Custom', 'Custom format', 'video-embed-thumbnail-generator'),
 				'clearingcache' => __('Clearing URL cache...', 'video-embed-thumbnail-generator'),
+				'queue_pause' => __('Pause the queue. Any videos currently encoding will complete.', 'video-embed-thumbnail-generator'),
+				'queue_play' => __('Start encoding', 'video-embed-thumbnail-generator'),
+				'nothing_to_encode' => __('Nothing to encode', 'video-embed-thumbnail-generator'),
 		) );
 	}
 
@@ -3584,6 +3589,7 @@ function kgvid_update_encode_queue() {
 	if ( isset( $_POST['page'] ) ) { $page = $_POST['page']; }
 	else { die(); }
 
+	$options = kgvid_get_options();
 	$video_encode_queue = kgvid_get_encode_queue();
 
 	if ( !empty($video_encode_queue) ) {
@@ -3611,7 +3617,7 @@ function kgvid_update_encode_queue() {
 
 	}//if there's a queue
 
-	$arr = array( 'queue' => $video_encode_queue );
+	$arr = array( 'queue' => $video_encode_queue, 'queue_control' => $options['queue_control'] );
 
 	echo json_encode($arr);
 
@@ -3978,11 +3984,11 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		}
 
 		if ( $page != "queue" && !$encoding_now && ($last_format['status'] == "queued" || $last_format['status'] == "canceling") ) {
-			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
+			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'") }, 2000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
 		}
 
 		else {
-			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 5000);</script>';
+			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 2000);</script>';
 		}
 	}
 	$checkboxes .= '</div>'; //close encodeboxes div
@@ -4219,12 +4225,13 @@ function kgvid_FFMPEG_Queue_Page() {
 
 ?>
 	<div class="wrap">
-		<div id="icon-tools" class="icon32"><br /></div>
-		<h1><?php _e('Videopack Encoding Queue', 'video-embed-thumbnail-generator') ?></h1>
-		<p></p>
+		<h1><?php _e('Videopack Encoding Queue', 'video-embed-thumbnail-generator'); 
+		if ( current_user_can('edit_others_video_encodes') ) {
+			echo '<span id="kgvid-encode-queue-control" class="kgvid-encode-queue dashicons dashicons-controls-play kgvid-encode-queue-control-disabled" title="'.__('Loading...', 'video-embed-thumbnail-generator').'"></span>';
+		}
+		?></h1>
 		<form method="post" action="tools.php?page=kgvid_video_encoding_queue">
 		<?php wp_nonce_field('video-embed-thumbnail-generator-nonce','video-embed-thumbnail-generator-nonce'); ?>
-
 		<table class="widefat" id="kgvid_encode_queue_table">
 			<thead>
 				<?php echo kgvid_generate_queue_table_header(); ?>
@@ -4237,7 +4244,10 @@ function kgvid_FFMPEG_Queue_Page() {
 			</tbody>
 		</table>
 		<p>
-			<?php if ( current_user_can('edit_others_video_encodes') ) { echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>". __('Clear All Completed', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>". __('Clear All Queued', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>". __('Clear All', 'video-embed-thumbnail-generator') ."</a></div></div>"; } ?>
+			<?php if ( current_user_can('edit_others_video_encodes') ) { 
+				echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>". __('Clear All Completed', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>". __('Clear All Queued', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>". __('Clear All', 'video-embed-thumbnail-generator') ."</a></div></div>"; 
+			} 
+			?>
 		</p>
 		</form>
 	</div>
@@ -5660,6 +5670,7 @@ function kgvid_update_settings() {
 			$options['auto_publish_post'] = false;
 			$options['transient_cache'] = false;
 			$options['videojs_version'] = $default_options['videojs_version'];
+			$options['queue_control'] = 'play';
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -5806,6 +5817,10 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	}
 
 	if ( $input['embeddable'] == false ) { $input['overlay_embedcode'] = false; }
+
+	if ( !$input['queue_control'] ) { //don't reset queue control when saving settings
+		$input['queue_control'] = $options['queue_control']; 
+	}
 
 	//since this isn't user selectable it has to be re-entered every time
 	$input['version'] = $default_options['version'];
@@ -7792,7 +7807,7 @@ function kgvid_encode_videos() {
 	$video_encode_queue = kgvid_get_encode_queue();
 	$video_formats = kgvid_video_formats();
 
-	if ( !empty($video_encode_queue) ) {
+	if ( !empty($video_encode_queue) && $options['queue_control'] == 'play' ) {
 
 		$x = $options['simultaneous_encodes'];
 
@@ -8710,6 +8725,40 @@ function kgvid_cancel_encode() {
 
 }
 add_action('wp_ajax_kgvid_cancel_encode', 'kgvid_cancel_encode');
+
+function kgvid_queue_control() {
+
+	$success = 'false';
+
+	if ( isset($_POST['command']) && current_user_can('edit_others_video_encodes') ) {
+
+		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+		if ( $_POST['scope'] == 'site' ) {
+
+			$options = kgvid_get_options();
+			$options['queue_control'] = $_POST['command'];
+			update_option('kgvid_video_embed_options', $options);
+			$success = 'true';
+
+		}
+
+		if ( $_POST['scope'] == 'network' ) {
+
+			$network_options = get_site_option('kgvid_video_embed_network_options');
+			$network_options['queue_control'] = $_POST['command'];
+			update_site_option('kgvid_video_embed_network_options', $network_options);
+			$success = 'true';
+
+		}
+
+	}
+
+	echo $success;
+
+	die();
+}
+add_action('wp_ajax_kgvid_queue_control', 'kgvid_queue_control');
 
 function kgvid_ajax_delete_video() {
 

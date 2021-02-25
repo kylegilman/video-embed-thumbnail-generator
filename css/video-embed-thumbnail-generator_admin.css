@@ -591,6 +591,27 @@ td.media-icon img {
 	display: inline-block;
 }
 
+.kgvid-encode-queue.dashicons {
+    float: right;
+    height: 40pt;
+    font-size: 40pt;
+    margin-right: 20pt;
+	cursor: pointer;
+}
+
+.kgvid-encode-queue.dashicons.dashicons-controls-play {
+	color: green;
+}
+
+.kgvid-encode-queue.dashicons.dashicons-controls-pause {
+	color: red;
+}
+
+.kgvid-encode-queue.dashicons.kgvid-encode-queue-control-disabled {
+	cursor: not-allowed;
+    color: #ddd;
+}
+
 .kgvid_queue_message {
 	font-size: 129%;
 	color: #298CBA;
