@@ -237,6 +237,9 @@ function kgvid_get_options() {
 			$options = kgvid_default_options_fn();
 		}
 		if ( is_array($network_options) ) { 
+			if ( $network_options['queue_control'] == 'play' && $options['queue_control'] == 'pause' ) {
+				$network_options['queue_control'] = 'pause'; //allows local queue to pause while network queue continues
+			}
 			$options = array_merge($options, $network_options); 
 		}
 	}
@@ -7827,6 +7830,14 @@ function kgvid_encode_videos() {
 			foreach ( $video_encode_queue as $video_key => $queue_entry ) {
 				foreach ( $queue_entry['encode_formats'] as $format => $value ) {
 					if ( $value['status'] == "queued" ) {
+						if ( array_key_exists('blog_id', $queue_entry) ) { 
+							switch_to_blog( $queue_entry['blog_id'] );
+							$blog_options = get_option('kgvid_video_embed_options');
+							restore_current_blog();
+							if ( is_array($blog_options) && array_key_exists('queue_control', $blog_options) && $blog_options['queue_control'] == 'pause' ) {
+								break; //don't start encoding if the local queue is paused
+							}
+						}
 						$start_encoding[] = array('video_key' => $video_key, 'queued_format' => $format );
 						$x++;
 						if ( $x == intval($options['simultaneous_encodes']) ) { break 2; }
@@ -7986,6 +7997,8 @@ function kgvid_encode_videos() {
 
 				} //end if there's stuff to encode
 
+				if ( array_key_exists('blog_id', $video) ) { restore_current_blog(); }
+
 			}//end loop
 
 			kgvid_save_encode_queue($video_encode_queue);
@@ -7997,7 +8010,7 @@ function kgvid_encode_videos() {
 	} //if there's a queue
 	$arr = array ( "embed_display"=>"<strong>".$embed_display."</strong>", "video_key"=>$video_key, "format"=>$queued_format, "actualwidth"=>$movie_info['width'], "actualheight"=>$movie_info['height'] );
 
-	if ( array_key_exists('blog_id', $video) ) { restore_current_blog(); }
+	
 
 	return $arr;
 
@@ -8750,6 +8763,10 @@ function kgvid_queue_control() {
 			update_site_option('kgvid_video_embed_network_options', $network_options);
 			$success = 'true';
 
+		}
+
+		if ( $_POST['command'] == 'play' ) {
+			kgvid_encode_videos();
 		}
 
 	}
