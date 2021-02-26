@@ -273,25 +273,32 @@ if ( ! function_exists( 'videopack_fs' ) ) {
             // Include Freemius SDK.
             require_once dirname(__FILE__) . '/freemius/start.php';
 
+			$menu_array = array(
+				'slug'           => 'video_embed_thumbnail_generator_settings',
+				'contact'        => false,
+				'support'        => false,
+				'network'        => true,
+				'parent'         => array(
+					'slug' => 'options-general.php',
+				),
+			);
+
+			if ( is_network_admin() ) {
+				$menu_array['parent'] = array( 
+					'slug' => 'settings.php', 
+				);
+			}
+
             $videopack_fs = fs_dynamic_init( array(
                 'id'                  => '7761',
                 'slug'                => 'video-embed-thumbnail-generator',
 				'navigation'          => 'tabs',
-                'premium_slug'        => 'videopack-ads-premium',
                 'type'                => 'plugin',
                 'public_key'          => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
                 'is_premium'          => false,
                 'has_addons'          => true,
                 'has_paid_plans'      => false,
-                'menu'                => array(
-                    'slug'           => 'video_embed_thumbnail_generator_settings',
-                    'contact'        => false,
-                    'support'        => false,
-                    'network'        => true,
-                    'parent'         => array(
-                        'slug' => 'options-general.php',
-                    ),
-                ),
+                'menu'                => $menu_array,
             ) );
         }
 
@@ -4310,8 +4317,10 @@ function kgvid_network_settings_page() {
 
 	?>
 	<div class="wrap">
-		<div class="icon32" id="icon-options-general"><br></div>
 		<h1>Videopack Network Settings</h1>
+		<h2 class="nav-tab-wrapper">
+			<a id="general_tab" class="nav-tab nav-tab-active" href="<?php echo network_admin_url("settings.php?page=video_embed_thumbnail_generator_settings"); ?>"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator'); ?></a>
+		</h2>
 		<?php settings_errors( 'video_embed_thumbnail_generator_settings' ); ?>
 		<form method="post">
 		<input type="hidden" name="action" value="update_kgvid_network_settings" />
@@ -4373,7 +4382,7 @@ function kgvid_network_settings_page() {
 function kgvid_superadmin_capabilities_callback() {
 
 	$network_options = get_site_option('kgvid_video_embed_network_options');
-	echo "<input ".checked( $network_options['superadmin_only_ffmpeg_settings'], "on", false )." id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>".sprintf( _x('Access %s settings tab.', 'Access FFMPEG settings tab', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" )."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__( sprintf( 'Only Super admins will be allowed to view and modify %s settings.', "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" ), 'video-embed-thumbnail-generator' )."</span></span></a><br>\n\t";
+	echo "<input ".checked( $network_options['superadmin_only_ffmpeg_settings'], "on", false )." id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>".sprintf( _x('Can access %s settings tab.', 'Can access FFMPEG settings tab', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" )."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__( sprintf( 'Only Super admins will be allowed to view and modify %s settings.', "<strong class='video_app_name'>".strtoupper($network_options['video_app'])."</strong>" ), 'video-embed-thumbnail-generator' )."</span></span></a><br>\n\t";
 
 	echo "<div class='kgvid_video_app_required'>";
 	echo __('Email all encoding errors on the network to:', 'video-embed-thumbnail-generator')." <select id='network_error_email' name='kgvid_video_embed_options[network_error_email]'>";
@@ -4412,16 +4421,15 @@ function kgvid_settings_page() {
 	if ( $video_app == "avconv" ) { $video_app = "libav"; }
 	?>
 	<div class="wrap">
-		<div class="icon32" id="icon-options-general"><br></div>
 		<h1>Videopack</h1>
-		<?php if ( !is_multisite()
-			|| ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && $options['ffmpeg_exists'] == "on" && is_array($network_options) && (is_super_admin() || $network_options['superadmin_only_ffmpeg_settings'] == false) )
-			) { ?>
 		<h2 class="nav-tab-wrapper">
 			<a href="#general" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
+			<?php if ( !is_multisite()
+			|| ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && $options['ffmpeg_exists'] == "on" && is_array($network_options) && (is_super_admin() || $network_options['superadmin_only_ffmpeg_settings'] == false) )
+			) { ?>
 			<a href="#encoding" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( _x('%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator'), "<span class='video_app_name'>".strtoupper($video_app)."</span>" ); ?></a>
+			<?php } ?>
 		</h2>
-		<?php } ?>
 		<form method="post" action="options.php">
 		<?php settings_fields('kgvid_video_embed_options'); ?>
 		<input type="hidden" id="kgvid_settings_security" value="<?php echo wp_create_nonce('video-embed-thumbnail-generator-nonce'); ?>">
@@ -5307,11 +5315,11 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 	function kgvid_ffmpeg_options_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['video_bitrate_flag'], "on", false )." id='video_bitrate_flag' name='kgvid_video_embed_options[video_bitrate_flag]' type='checkbox' /> <label for='video_bitrate_flag'>".__('Enable legacy FFMPEG "-b" and "-ba" bitrate flags.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that you can\'t use the newer -b:v flags (Dreamhost users must turn this on). It may cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></span><br />";
-		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['ffmpeg_vpre'], "on", false )." id='ffmpeg_vpre' name='kgvid_video_embed_options[ffmpeg_vpre]' type='checkbox' /> <label for='ffmpeg_vpre'>".__('Enable legacy libx264 parameters.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['video_bitrate_flag'], "on", false )." id='video_bitrate_flag' name='kgvid_video_embed_options[video_bitrate_flag]' type='checkbox' /> <label for='video_bitrate_flag'>".__('Enable legacy FFMPEG "-b" and "-ba" bitrate flags.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that you can\'t use the newer -b:v flags. It may cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></span><br />";
+		echo "<input class='affects_ffmpeg' onchange='if(jQuery(\"#ffmpeg_vpre\").attr(\"checked\")==\"checked\"){jQuery(\"#video_bitrate_flag\").attr(\"checked\", \"checked\"); jQuery(\"#nostdin\").removeAttr(\"checked\");}' ".checked( $options['ffmpeg_vpre'], "on", false )." id='ffmpeg_vpre' name='kgvid_video_embed_options[ffmpeg_vpre]' type='checkbox' /> <label for='ffmpeg_vpre'>".__('Enable legacy libx264 parameters.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate. This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail.', 'video-embed-thumbnail-generator')."</span></span><br />";
 		echo "<input class='affects_ffmpeg' ".checked( $options['ffmpeg_auto_rotate'], "on", false )." id='ffmpeg_auto_rotate' name='kgvid_video_embed_options[ffmpeg_auto_rotate]' type='checkbox' /> <label for='ffmpeg_auto_rotate'>".__('Enable automatic FFMPEG rotation.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Recent versions of FFMPEG will automatically rotate mobile videos when necessary. Disable if your version of FFMPEG is old enough that vertical videos don\'t rotate correctly.', 'video-embed-thumbnail-generator')."</span></span><br />";
 		echo "<input class='affects_ffmpeg' ".checked( $options['ffmpeg_old_rotation'], "on", false )." id='ffmpeg_old_rotation' name='kgvid_video_embed_options[ffmpeg_old_rotation]' type='checkbox' /> <label for='ffmpeg_old_rotation'>".__('Enable legacy FFMPEG rotation method.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Enable if vertical videos shot on mobile devices don\'t rotate correctly or generate errors. If legacy libx264 paramaters are necessary, rotation won\'t work at all.', 'video-embed-thumbnail-generator')."</span></span><br />";
-		echo "<input class='affects_ffmpeg' ".checked( $options['nostdin'], "on", false )." id='nostdin' name='kgvid_video_embed_options[nostdin]' type='checkbox' /> <label for='nostdin'>".__('Disable stdin.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Turn off this checkbox if your installed version of FFMPEG is old enough that it does not recognize the nostdin flag (Dreamhost users must turn this off).', 'video-embed-thumbnail-generator')."</span></span>";
+		echo "<input class='affects_ffmpeg' ".checked( $options['nostdin'], "on", false )." id='nostdin' name='kgvid_video_embed_options[nostdin]' type='checkbox' /> <label for='nostdin'>".__('Disable stdin.', 'video-embed-thumbnail-generator')."</label> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Turn off this checkbox if your installed version of FFMPEG is old enough that it does not recognize the nostdin flag.', 'video-embed-thumbnail-generator')."</span></span>";
 		echo "</div>\n\t";
 	}
 

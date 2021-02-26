@@ -1411,8 +1411,7 @@ function kgvid_save_plugin_settings(input_obj) {
 			}
 
 			if ( jQuery('#ffmpeg_thumb_watermark_url').val() != '' && jQuery('#app_path').data('ffmpeg_exists') == "on" && jQuery(input_obj).hasClass('affects_ffmpeg_thumb_watermark') == true && jQuery('#ffmpeg_output').length != 0 ) {
-				jQuery('#browser_thumbnails')[0].checked = false; //can't allow in-browser thumbnails with FFMPEG watermark
-				jQuery('#browser_thumbnails')[0].disabled = true;
+				jQuery('#browser_thumbnails').prop('checked', false).attr('disabled', true); //can't allow in-browser thumbnails with FFMPEG watermark
 				jQuery.post(ajaxurl, { action: "kgvid_test_ffmpeg_thumb_watermark", security: kgflashmediaplayersecurity }, function(thumb_url) {
 					if ( thumb_url !== '' ) {
 						jQuery('#ffmpeg_thumb_watermark_example').empty().append('<img src="'+thumb_url+'?'+String(Math.floor((Math.random()*1000)+1))+'" style="margin-top:10px;width:640px;">').slideDown('slow');
@@ -1421,7 +1420,7 @@ function kgvid_save_plugin_settings(input_obj) {
 			}
 			else { 
 				jQuery('#ffmpeg_thumb_watermark_example').empty();
-				jQuery('#browser_thumbnails')[0].disabled = false;
+				jQuery('#browser_thumbnails').prop('disabled', false);
 			}
 
 			jQuery( '#save_'+save_queue[0].id ).toggleClass('save-waiting save-complete').delay(1500).fadeOut(1000, function(){ jQuery(this).remove(); });
