@@ -5118,13 +5118,16 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_error_email_callback() {
 		$options = kgvid_get_options();
+		$authorized_users = array();
 		echo "<div class='kgvid_video_app_required'>";
 		echo " <select id='error_email' name='kgvid_video_embed_options[error_email]'>";
-		$users = get_users( array( 'role__in' => array_keys($options['capabilities']['edit_others_video_encodes']) ) );
-		if ( $users ) {
-			$authorized_users = array();
-			foreach ( $users as $user ) {
-				$authorized_users[$user->user_login] = $user->ID;
+		if ( is_array( $options['capabilities'] && array_key_exists('edit_others_video_encodes', $options['capabilities']) ) ) {
+			$users = get_users( array( 'role__in' => array_keys($options['capabilities']['edit_others_video_encodes']) ) );
+			if ( $users ) {
+				$authorized_users = array();
+				foreach ( $users as $user ) {
+					$authorized_users[$user->user_login] = $user->ID;
+				}
 			}
 		}
 		$items = array_merge( array(
@@ -5752,6 +5755,7 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	}
 
 	if ( $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
+	if ( array_key_exists('capabilities', $input) && is_array($input['capabilities']) && $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
 
 	if ( !array_key_exists('transient_cache', $input) && $options['transient_cache'] == "on" ) { kgvid_delete_transients(); } //if user is turning off transient cache option
 
