@@ -273,23 +273,7 @@ if ( ! function_exists( 'videopack_fs' ) ) {
             // Include Freemius SDK.
             require_once dirname(__FILE__) . '/freemius/start.php';
 
-			$menu_array = array(
-				'slug'           => 'video_embed_thumbnail_generator_settings',
-				'contact'        => false,
-				'support'        => false,
-				'network'        => true,
-				'parent'         => array(
-					'slug' => 'options-general.php',
-				),
-			);
-
-			if ( is_network_admin() ) {
-				$menu_array['parent'] = array( 
-					'slug' => 'settings.php', 
-				);
-			}
-
-            $videopack_fs = fs_dynamic_init( array(
+			$init_options = array(
                 'id'                  => '7761',
                 'slug'                => 'video-embed-thumbnail-generator',
 				'navigation'          => 'tabs',
@@ -298,8 +282,25 @@ if ( ! function_exists( 'videopack_fs' ) ) {
                 'is_premium'          => false,
                 'has_addons'          => true,
                 'has_paid_plans'      => false,
-                'menu'                => $menu_array,
-            ) );
+                'menu'                => array(
+					'slug'           => 'video_embed_thumbnail_generator_settings',
+					'contact'        => false,
+					'support'        => false,
+					'network'        => true,
+					'parent'         => array(
+						'slug' => 'options-general.php',
+					),
+				)
+			);
+
+			if ( fs_is_network_admin() ) {
+				$init_options['navigation'] = 'menu';
+				$init_options['menu']['parent'] = array( 
+					'slug' => 'settings.php', 
+				);
+			}
+
+            $videopack_fs = fs_dynamic_init( $init_options );
         }
 
         return $videopack_fs;
@@ -4318,9 +4319,6 @@ function kgvid_network_settings_page() {
 	?>
 	<div class="wrap">
 		<h1>Videopack Network Settings</h1>
-		<h2 class="nav-tab-wrapper">
-			<a id="general_tab" class="nav-tab nav-tab-active" href="<?php echo network_admin_url("settings.php?page=video_embed_thumbnail_generator_settings"); ?>"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator'); ?></a>
-		</h2>
 		<?php settings_errors( 'video_embed_thumbnail_generator_settings' ); ?>
 		<form method="post">
 		<input type="hidden" name="action" value="update_kgvid_network_settings" />
