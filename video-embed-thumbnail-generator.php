@@ -8297,8 +8297,7 @@ function kgvid_encode_progress() {
 										// you must first include the image.php file
 										// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
 										require_once(ABSPATH . 'wp-admin/includes/image.php');
-										global $wp_version;
-										if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
+										require_once(ABSPATH . 'wp-admin/includes/media.php');
 										require_once(ABSPATH . 'wp-admin/includes/media.php');
 										$attach_data = wp_generate_attachment_metadata( $new_id, $format_info['filepath'] );
 										wp_update_attachment_metadata( $new_id, $attach_data );
@@ -8550,8 +8549,7 @@ function kgvid_replace_video( $video_key, $format ) {
 		// you must first include the image.php file
 		// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
 		require_once(ABSPATH . 'wp-admin/includes/image.php');
-		global $wp_version;
-		if ( $wp_version >= 3.6 ) { require_once(ABSPATH . 'wp-admin/includes/media.php'); }
+		require_once(ABSPATH . 'wp-admin/includes/media.php');
 		$attach_data = wp_generate_attachment_metadata( $video_id, $new_filename );
 		wp_update_attachment_metadata( $video_id, $attach_data );
 		update_attached_file( $video_id, $new_filename );
