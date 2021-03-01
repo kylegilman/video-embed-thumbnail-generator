@@ -4233,13 +4233,34 @@ add_action('network_admin_menu', 'kgvid_add_network_queue_page');
 function kgvid_FFMPEG_Queue_Page() {
 
 	wp_enqueue_media();
+	$options = kgvid_get_options();
+	$network_options = get_site_option('kgvid_video_embed_network_options');
+	$queue_control_html = '';
+
+	if ( current_user_can('edit_others_video_encodes') && 
+		( !is_multisite()
+		|| is_network_admin()
+		|| ( function_exists( 'is_plugin_active_for_network' ) 
+			&& is_plugin_active_for_network( plugin_basename(__FILE__) ) 
+			&& ( 
+				( 
+					is_array($network_options) 
+					&& array_key_exists('queue_control', $network_options) 
+					&& $network_options == 'play' 
+				)
+				|| is_super_admin() 
+				)
+			) 
+		)
+	) {
+
+		$queue_control_html = '<span id="kgvid-encode-queue-control" class="kgvid-encode-queue dashicons dashicons-controls-pause kgvid-encode-queue-control-disabled" title="'.__('Control disabled', 'video-embed-thumbnail-generator').'"></span>';
+	}
 
 ?>
 	<div class="wrap">
 		<h1><?php _e('Videopack Encoding Queue', 'video-embed-thumbnail-generator'); 
-		if ( current_user_can('edit_others_video_encodes') ) {
-			echo '<span id="kgvid-encode-queue-control" class="kgvid-encode-queue dashicons dashicons-controls-play kgvid-encode-queue-control-disabled" title="'.__('Loading...', 'video-embed-thumbnail-generator').'"></span>';
-		}
+			echo $queue_control_html;
 		?></h1>
 		<form method="post" action="tools.php?page=kgvid_video_encoding_queue">
 		<?php wp_nonce_field('video-embed-thumbnail-generator-nonce','video-embed-thumbnail-generator-nonce'); ?>
