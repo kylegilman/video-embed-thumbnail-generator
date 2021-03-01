@@ -474,7 +474,7 @@ button.vjs-res-button.vjs7-res-button {
 	display: none;
 }
 
-.vjs-res-button .vjs-menu li.vjs-menu-item {
+.vjs-res-button .vjs-menu li.vjs-menu-item, .vjs-res-button + .vjs-menu li.vjs-menu-item {
     text-transform: none;
 }
 
