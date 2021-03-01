@@ -5775,7 +5775,6 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 		$input['gallery_width'] = $options['gallery_width'];
 	}
 
-	if ( $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
 	if ( array_key_exists('capabilities', $input) && is_array($input['capabilities']) && $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
 
 	if ( !array_key_exists('transient_cache', $input) && $options['transient_cache'] == "on" ) { kgvid_delete_transients(); } //if user is turning off transient cache option
