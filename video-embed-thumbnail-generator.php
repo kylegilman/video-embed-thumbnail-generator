@@ -2827,7 +2827,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 					if ( array_key_exists('height', $encodevideo_info[$format]) && $format_stats['type'] == 'h264' ) {
 						$source_key = $encodevideo_info[$format]['height'];
-						$format_stats['label'] = $encodevideo_info[$format]['height'].'p';
+						$format_stats['label'] = str_replace($format_stats['height'], $encodevideo_info[$format]['height'], $format_stats['label']);
 					}
 					else { $source_key = $x; }
 
