@@ -6078,14 +6078,12 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 			update_post_meta($post_id, '_kgflashmediaplayer-poster', $thumb_output[$thumb_key]['thumb_url']);
 			update_post_meta($post_id, '_kgflashmediaplayer-poster-id', $thumb_id[$thumb_key]);
 			set_post_thumbnail($post_id, $thumb_id[$thumb_key]);
-			if( $options['featured'] == "on" ) {
-				if ( !empty($thumb_id[$thumb_key]) ) {
-					if ( !empty($post->post_parent) ) {
-						set_post_thumbnail($post->post_parent, $thumb_id[$thumb_key]);
-					}
-					else { //video has no parent post yet
-						wp_schedule_single_event( time() + 60, 'kgvid_cron_check_post_parent', array($post_id) );
-					}
+			if( $options['featured'] == "on" && !empty($thumb_id[$thumb_key]) ) {
+				if ( !empty($post->post_parent) ) {
+					set_post_thumbnail($post->post_parent, $thumb_id[$thumb_key]);
+				}
+				else { //video has no parent post yet
+					wp_schedule_single_event( time() + 60, 'kgvid_cron_check_post_parent', array($post_id) );
 				}
 			}
 		}//end setting main thumbnail
@@ -6710,13 +6708,19 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 	$posterfile = pathinfo($thumb_url, PATHINFO_BASENAME);
 	$tmp_posterpath = $uploads['path'].'/thumb_tmp/'.$posterfile;
 	$final_posterpath = $uploads['path'].'/'.$posterfile;
-
+	
 	if ( is_file($final_posterpath) ) {
 
 		$old_thumb_id = attachment_url_to_postid($thumb_url);
-		if ( !empty($old_thumb_id) ) {
+		
+		if ( !$old_thumb_id ) { //should be there but check if it was so big it was scaled down
+			$old_thumb_id = attachment_url_to_postid(str_replace('.jpg', '-scaled.jpg', $thumb_url));
+		}
 
-			$existing_posterpath = get_attached_file($old_thumb_id);
+		if ( $old_thumb_id ) {
+
+			$existing_posterpath = wp_get_original_image_path($old_thumb_id);
+			
 			if ( is_file($tmp_posterpath)
 				&& abs( filemtime($tmp_posterpath) - filemtime($existing_posterpath) ) > 10 //file modified time more than 10 seconds different
 				&& abs( filesize($tmp_posterpath) - filesize($existing_posterpath) ) > 100 //filesize is more than 100 bytes different means it's probably a different image 
@@ -6729,7 +6733,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 					$thumb_index = substr($posterfile_noextension, strpos($posterfile_noextension, "_thumb") + 6);
 				}
 
-				if ( $thumb_index === false ) {
+				if ( $thumb_index === false ) { //nothing after "_thumb"
 					$thumb_index = 1;
 					$posterfile_noindex = $posterfile_noextension;
 				}
@@ -6763,23 +6767,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 	//insert the $thumb_url into the media library if it does not already exist
 
-	usleep(250000);
-
-	$exploded_url = explode($uploads['baseurl'].'/', $thumb_url);
-	$relative_upload_path = array_pop($exploded_url);
-
-	$args = array(
-		'numberposts' => '-1',
-		'post_type' => 'attachment',
-		'meta_key' => '_wp_attached_file',
-		'meta_value' => $relative_upload_path
-	);
-
-	$posts = get_posts($args);
-
-	if ( $posts ) { $thumb_id = $posts[0]->ID; }
-
-	elseif ( $success ) { //no existing post with this filename
+	if ( $success ) { //new file was copied into uploads directory
 
 		unlink($tmp_posterpath);
 
@@ -6850,14 +6838,14 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 		update_post_meta($post_id, '_kgflashmediaplayer-poster-id', $thumb_id);
 		update_post_meta($thumb_id, '_kgflashmediaplayer-video-id', $video->ID);
 
-	}//end else no existing db entry
-
-	if( !empty($thumb_id) && !is_wp_error($thumb_id) ) {
-
-		$arr = array('thumb_id' => $thumb_id, 'thumb_url' => $thumb_url );
-		return $arr;
-
+	}//end copied new file into uploads directory
+	else {
+		$thumb_id = false;
 	}
+
+	$arr = array('thumb_id' => $thumb_id, 'thumb_url' => $thumb_url );
+	return $arr;
+
 
 }
 
