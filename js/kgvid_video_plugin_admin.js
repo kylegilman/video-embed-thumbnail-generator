@@ -1040,8 +1040,9 @@ function kgvid_update_encode_queue() {
 			var post_id = checkboxes_id.match("attachments-(.*)-kgflashmediaplayer-encodeboxes");
 			post_id = post_id[1];
 			var kgflashmediaplayersecurity = document.getElementsByName('attachments['+post_id+'][kgflashmediaplayer-security]')[0].value;
+			var container_element = jQuery('#attachments-'+post_id+'-kgflashmediaplayer-encodeboxes');
 		}
-        var container_element = jQuery('#attachments-'+post_id+'-kgflashmediaplayer-encodeboxes'); 
+		else { return; }
 	}
 
 	var encode_queue_timeouts = container_element.data('encode_queue_timeouts');
@@ -1160,7 +1161,7 @@ function kgvid_update_encode_queue() {
 						.attr('title', title)
 						.off('click.kgvid')
 						.on('click.kgvid', kgvid_queue_control);
-						
+
                 }
             }
 
@@ -1180,7 +1181,13 @@ function kgvid_check_queue_again(time_to_wait) {
         var container_element = jQuery('#kgvid_encode_queue_table'); 
 	}
 	else {
-        var container_element = jQuery('#attachments-'+post_id+'-kgflashmediaplayer-encodeboxes');
+		var checkboxes_id = jQuery('.kgvid_checkboxes_section').first().attr('id');
+		if ( checkboxes_id ) {
+			var post_id = checkboxes_id.match("attachments-(.*)-kgflashmediaplayer-encodeboxes");
+			post_id = post_id[1];
+			var container_element = jQuery('#attachments-'+post_id+'-kgflashmediaplayer-encodeboxes');
+		}
+        else { return; }
 	}
 
     var encode_queue_timeouts = container_element.data('encode_queue_timeouts');
