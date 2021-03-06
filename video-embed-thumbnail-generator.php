@@ -2069,7 +2069,7 @@ function kgvid_get_first_embedded_video( $post ) {
 		}
 		else { $dataattributes = $first_embedded_video_meta['atts']; }
 
-		$shortcode_text = '[KGVID'.$dataattributes.']'.$first_embedded_video_meta['content'].'[/KGVID]';
+		$shortcode_text = '[videopack'.$dataattributes.']'.$first_embedded_video_meta['content'].'[/videopack]';
 
 	}
 	else { $shortcode_text = $post->post_content; }
@@ -2079,13 +2079,27 @@ function kgvid_get_first_embedded_video( $post ) {
 
 	if ( is_array($matches)
 		&& array_key_exists( 2, $matches ) && array_key_exists( 5, $matches )
-		&& ( in_array( 'KGVID', $matches[2] ) || in_array( 'FMP', $matches[2] ) )
-	) { //if KGVID or FMP shortcode is in posts on this page.
+		&& ( in_array( 'videopack', $matches[2] ) 
+			|| in_array( 'VIDEOPACK', $matches[2] ) 
+			|| in_array( 'KGVID', $matches[2] ) 
+			|| in_array( 'FMP', $matches[2] ) 
+		)
+	) { //if videopack, KGVID, or FMP shortcode is in posts on this page.
 
 		if ( isset($matches) ) {
 
-			$first_key = array_search('KGVID', $matches[2]);
-			if ( $first_key === false ) { $first_key = array_search('FMP', $matches[2]); }
+			$shortcode_names = array('videopack', 
+				'VIDEOPACK', 
+				'KGVID', 
+				'FMP'
+			);
+
+			foreach ($shortcode_names as $shortcode ) {
+				$first_key = array_search($shortcode, $matches[2]);
+				if ( $first_key !== false ) { 
+					break;
+				}
+			}
 
 			if ( $first_key !== false ) {
 
@@ -3519,11 +3533,15 @@ function KGVID_shortcode($atts, $content = '') {
 }
 add_shortcode('FMP', 'KGVID_shortcode');
 add_shortcode('KGVID', 'KGVID_shortcode');
+add_shortcode('videopack', 'KGVID_shortcode');
+add_shortcode('VIDEOPACK', 'KGVID_shortcode');
 
 
 function kgvid_no_texturize_shortcode($shortcodes){
     $shortcodes[] = 'KGVID';
     $shortcodes[] = 'FMP';
+	$shortcodes[] = 'videopack';
+	$shortcodes[] = 'VIDEOPACK';
     return $shortcodes;
 }
 add_filter( 'no_texturize_shortcodes', 'kgvid_no_texturize_shortcode' );
@@ -7009,7 +7027,7 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 			$html .= $titlecode.'<span itemprop="name">'.$kgvid_postmeta["title"].'</span>'.$endtitlecode.'<br />';
 		}
 
-			$html .= '[KGVID id="'.$attachment_id.'"';
+			$html .= '[videopack id="'.$attachment_id.'"';
 			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
 
 			$insert_shortcode_atts = apply_filters('kgvid_insert_shortcode_atts', array(
@@ -7023,7 +7041,7 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 				}
 			}
 
-			$html .= ']'.$kgvid_postmeta["url"].'[/KGVID]<br />';
+			$html .= ']'.$kgvid_postmeta["url"].'[/videopack]<br />';
 		} //if embed code is enabled
 
 		if ($kgvid_postmeta['embed'] == "Video Gallery" ) {
@@ -7032,14 +7050,14 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 			$parent_id = $post->post_parent;
 
 			$html = "";
-			$html .= '[KGVID gallery="true"';
+			$html .= '[videopack gallery="true"';
 			if ( !empty($kgvid_postmeta['gallery_thumb']) && $kgvid_postmeta['gallery_thumb'] != $options['gallery_thumb'] ) { $html .= ' gallery_thumb="'.$kgvid_postmeta["gallery_thumb"].'"'; }
 			if ( !empty($kgvid_postmeta['gallery_exclude']) ) { $html .= ' gallery_exclude="'.$kgvid_postmeta["gallery_exclude"].'"'; }
 			if ( !empty($kgvid_postmeta['gallery_include']) ) { $html .= ' gallery_include="'.$kgvid_postmeta["gallery_include"].'"'; }
 			if ( !empty($kgvid_postmeta['gallery_orderby']) && $kgvid_postmeta['gallery_orderby'] != "menu_order" ) { $html .= ' gallery_orderby="'.$kgvid_postmeta["gallery_orderby"].'"'; }
 			if ( !empty($kgvid_postmeta['gallery_order']) && $kgvid_postmeta['gallery_order'] != "ASC" ) { $html .= ' gallery_order="'.$kgvid_postmeta["gallery_order"].'"'; }
 			if ( !empty($kgvid_postmeta['gallery_id']) && $kgvid_postmeta['gallery_id'] != $parent_id ) { $html .= ' gallery_id="'.$kgvid_postmeta["gallery_id"].'"'; }
-			$html .= '][/KGVID]';
+			$html .= '][/videopack]';
 		}
 
     }
@@ -7176,7 +7194,7 @@ function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 
 	$dimensions = kgvid_set_video_dimensions($post->ID, $gallery);
 
-	$shortcode = '[KGVID';
+	$shortcode = '[videopack';
 	if ( $poster !="" ) { $shortcode .= ' poster="'.$poster.'"'; }
 	if ( !empty($dimensions['width']) ) { $shortcode .= ' width="'.$dimensions['width'].'"'; }
 	if ( !empty($dimensions['height']) ) { $shortcode .= ' height="'.$dimensions['height'].'"'; }
@@ -7195,7 +7213,7 @@ function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 		if ( $options['downloadlink'] == "on" ) { $shortcode .= ' downloadlink="true"'; }
 	}
 
-	$shortcode .= ']'.$url.'[/KGVID]';
+	$shortcode .= ']'.$url.'[/videopack]';
 
 	return $shortcode;
 
@@ -9254,7 +9272,7 @@ function kgvid_add_contextual_help_tab() {
 	get_current_screen()->add_help_tab( array(
         'id'        => 'kgvid-help-tab',
         'title'     => __( 'Videopack Shortcode Reference' , 'video-embed-thumbnail-generator'),
-        'content'   => '<p><strong>'.__('Use these optional attributes in the [KGVID] shortcode:', 'video-embed-thumbnail-generator').'</strong></p>
+        'content'   => '<p><strong>'.__('Use these optional attributes in the [videopack] shortcode:', 'video-embed-thumbnail-generator').'</strong></p>
 <ul><li><code>id="xxx"</code> '.__('video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator').'</li>
 <li><code>videos="x"</code> '.__('number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
 <li><code>orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
