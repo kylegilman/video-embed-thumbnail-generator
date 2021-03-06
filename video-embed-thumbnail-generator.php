@@ -4298,8 +4298,9 @@ function kgvid_FFMPEG_Queue_Page() {
 		</table>
 		<p>
 			<?php if ( current_user_can('edit_others_video_encodes') ) { 
-				echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>". __('Clear All Completed', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>". __('Clear All Queued', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>". __('Clear All', 'video-embed-thumbnail-generator') ."</a></div></div>"; 
-			} 
+				echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>". __('Clear All Completed', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>". __('Clear All Queued', 'video-embed-thumbnail-generator') ."</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>". __('Clear All', 'video-embed-thumbnail-generator') ."</a> <span class='kgvid_queue_clear_info'>".__('Completed videos are cleared weekly, or daily if there are more than 50 entries in the queue.')."</div></div>"; 
+			}
+			 
 			?>
 		</p>
 		</form>
@@ -8314,7 +8315,7 @@ function kgvid_encode_progress() {
 										$attach_data = wp_generate_attachment_metadata( $new_id, $format_info['filepath'] );
 										wp_update_attachment_metadata( $new_id, $attach_data );
 										update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
-										update_post_meta( $new_id, '_videopack-encode_string', $video_encode_queue[$video_key]['encode_formats'][$format]['encode_string'] );
+										//update_post_meta( $new_id, '_videopack-encode_string', $video_encode_queue[$video_key]['encode_formats'][$format]['encode_string'] );
 										if ( get_post_type($video_entry['attachmentID']) == false ) { update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $video_entry['movieurl'] ); } //connect new video to external url
 									}
 								}
