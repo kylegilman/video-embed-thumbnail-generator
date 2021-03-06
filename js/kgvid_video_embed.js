@@ -630,19 +630,10 @@ function kgvid_setup_video(id) {
 	) {
 		kgvid_resize_video(id);
 		var resizeId;
-		if ( video_vars.player_type != "Video.js v7" ) {
-			jQuery(window).resize( function(){ 
-				clearTimeout(resizeId);
-				resizeId = setTimeout(function(){kgvid_resize_video(id)}, 500);
-			} );
-		}
-		else {
-			player.on('playerresize', function(el){
-				id = jQuery('#'+el.target.id+'_div').data('id');
-				clearTimeout(resizeId);
-				resizeId = setTimeout(function(){kgvid_resize_video(id)}, 500);
-			});
-		}
+		jQuery(window).resize( function(){ 
+			clearTimeout(resizeId);
+			resizeId = setTimeout(function(){kgvid_resize_video(id)}, 500);
+		} );
 	}
 
 	if ( typeof jQuery.modal !== "undefined" && jQuery('#kgvid-simplemodal-container').length > 0 ) { jQuery.modal.setPosition(); }
@@ -795,7 +786,7 @@ function kgvid_resize_video(id) {
 
 						}
 
-						if ( (video_vars.player_type == "Video.js" || video_vars.player_type == "Video.js v7" ) && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
+						if ( ( video_vars.player_type == "Video.js" ) && jQuery('#video_'+id).hasClass('vjs-has-started') == false ) {
 							if ( player.muted() == true ) {
 								player.muted(false);
 								player.muted(true);
