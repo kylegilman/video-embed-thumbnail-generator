@@ -147,6 +147,8 @@ img.kgvid_ios_novideo {
 	cursor: pointer;
     color: white;
     margin-right: 5px;
+    vertical-align: middle;
+    font-size: 13pt;
 }
 
 .kgvid_no_title_meta .kgvid_meta_icons span {
