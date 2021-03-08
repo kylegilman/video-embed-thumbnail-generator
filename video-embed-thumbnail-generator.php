@@ -244,7 +244,28 @@ function kgvid_get_options() {
 
 }
 
+function kgvid_fs_custom_connect_message_on_update(
+	$message,
+	$user_first_name,
+	$product_title,
+	$user_login,
+	$site_link,
+	$freemius_link
+) {
+	return sprintf(
+		__( 'Hi %1$s', 'video-embed-thumbnail-generator' ) . ',<br>' .
+		__( 'I changed the name of the Video Embed & Thumbnail Generator plugin to Videopack and released the first of what I hope will be several useful premium add-ons. I\'m using %5$s to license and update the add-ons. Please help me improve Videopack. If you opt-in, some data about your usage of Videopack will be sent to %5$s. If you skip this, that\'s okay! Videopack will still work just fine.', 'video-embed-thumbnail-generator' ),
+		$user_first_name,
+		'<b>' . $product_title . '</b>',
+		'<b>' . $user_login . '</b>',
+		$site_link,
+		$freemius_link
+	);
+}
+
 function kgvid_videopack_fs_loaded() { //add Freemius customizations after Freemius is loaded
+
+	videopack_fs()->add_filter('connect_message_on_update', 'kgvid_fs_custom_connect_message_on_update', 10, 6);
 
 	videopack_fs()->override_i18n( array(
 		'yee-haw' 		=> __( "Great", 'video-embed-thumbnail-generator' ),
