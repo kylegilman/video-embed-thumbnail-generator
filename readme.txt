@@ -246,6 +246,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Removed JW Player & Strobe Media Playback player options.
 * Removed obsolete Video-js.swf Flash player and unused Video.js font files.
 * Added automatic localization for Video.js player elements.
+* Added GIF Mode setting to make videos behave like GIFs (autoplay, loop, muted, etc).
 * Removed dashicons library from the front end and fixed multiple CSS issues.
 * Added option to use an experimental cache for a complicated URL-to-ID database query that should speed up plugin execution on sites with large numbers of videos.
 * Adding attachment 'id' attribute to shortcodes inserted into posts, and prioritizing the 'id' attribute over URLs when embedding videos to avoid making the URL-to-ID query when possible.

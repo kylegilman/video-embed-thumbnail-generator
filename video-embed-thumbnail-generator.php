@@ -120,6 +120,7 @@ function kgvid_default_options_fn() {
 		"playsinline" => "on",
 		"volume" => 1,
 		"muted" => false,
+		"gifmode" => false,
 		"preload" => "metadata",
 		"playback_rate" => false,
 		"endofvideooverlay" => false,
@@ -2797,6 +2798,24 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		}
 
+		if ( $query_atts['gifmode'] == "true" ) {
+			$gifmode_atts = array(
+				'muted' => 'true',
+				'autoplay' => 'true',
+				'loop' => 'true',
+				'title' => 'false',
+				'embeddable' => 'false',
+				'downloadlink' => 'false',
+				'playsinline' => 'true'
+			);
+
+			$gifmode_atts = apply_filters('kgvid_gifmode_atts', $gifmode_atts);
+
+			foreach ( $gifmode_atts as $gifmode_key => $gifmode_value ) {
+				$query_atts[$gifmode_key] = $gifmode_value;
+			}
+		}
+
 		$video_variables = array(
 			'id' => $div_suffix,
 			'attachment_id' => $id,
@@ -3322,6 +3341,7 @@ function kgvid_shortcode_atts($atts) {
 		'endofvideooverlaysame' => $options['endofvideooverlaysame'],
 		'loop' => $options['loop'],
 		'autoplay' => $options['autoplay'],
+		'gifmode' => $options['gifmode'],
 		'pauseothervideos' => $options['pauseothervideos'],
 		'playsinline' => $options['playsinline'],
 		'skin' => $options['js_skin'],
@@ -3377,7 +3397,7 @@ function kgvid_shortcode_atts($atts) {
 
 	$default_atts = apply_filters('kgvid_default_shortcode_atts', $default_atts);
 
-	$query_atts = shortcode_atts($default_atts, $atts, 'KGVID');
+	$query_atts = shortcode_atts($default_atts, $atts, 'videopack');
 
 	$kgvid_video_embed_query_var = get_query_var('kgvid_video_embed'); //variables in URL
 
@@ -3396,7 +3416,8 @@ function kgvid_shortcode_atts($atts) {
 			'resize',
 			'set_volume',
 			'start',
-			'width'
+			'width',
+			'gifmode',
 		);
 
 		$allowed_query_var_atts = apply_filters('kgvid_allowed_query_var_atts', $allowed_query_var_atts);
@@ -3430,7 +3451,8 @@ function kgvid_shortcode_atts($atts) {
 		"gallery_title",
 		"nativecontrolsfortouch",
 		"pixel_ratio",
-		"schema"
+		"schema",
+		"gifmode",
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[$query] == "on" ) { $query_atts[$query] = "true"; }
@@ -4841,6 +4863,8 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "<input class='affects_player' ".checked( $options['loop'], "on", false )." id='loop' name='kgvid_video_embed_options[loop]' type='checkbox' /> <label for='loop'>".__('Loop.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
 
 		echo "<input class='affects_player' ".checked( $options['playsinline'], "on", false )." id='playsinline' name='kgvid_video_embed_options[playsinline]' type='checkbox' /> <label for='playsinline'>".__('Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator')."</label><br />\n\t";
+
+		echo "<input class='affects_player' ".checked( $options['gifmode'], "on", false )." id='gifmode' name='kgvid_video_embed_options[gifmode]' type='checkbox' /> <label for='gifmode'>".__('GIF Mode.', 'video-embed-thumbnail-generator')."</label><span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator')."</span></span><br />\n\t";
 
 		echo "<input class='affects_player' ".checked( $options['playback_rate'], "on", false )." id='playback_rate' name='kgvid_video_embed_options[playback_rate]' type='checkbox' /> <label for='playback_rate'>".__('Enable variable playback rates.', 'video-embed-thumbnail-generator')."</label><br>\n\t";
 
