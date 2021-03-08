@@ -240,12 +240,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.7 - March xx, 2020 =
 * Changed plugin name to Videopack.
 * Added Freemius SDK to facilitate selling premium Videopack add-ons.
-* Released first Videopack add-on for Video Ads.
+* Released the first <a href="https://www.wordpressvideopack.com/add-ons/ads/">Videopack add-on for Video Ads</a>.
 * Added Video.js v7 player option.
 * Deprecated Video.js v5 player.
 * Removed JW Player & Strobe Media Playback player options.
 * Removed obsolete Video-js.swf Flash player and unused Video.js font files.
-* Added automatic localization for Video.js player elements.
 * Added GIF Mode setting to make videos behave like GIFs (autoplay, loop, muted, etc).
 * Removed dashicons library from the front end and fixed multiple CSS issues.
 * Added option to use an experimental cache for a complicated URL-to-ID database query that should speed up plugin execution on sites with large numbers of videos.
@@ -254,6 +253,8 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
 * Improved bulk processing of videos using the "Generate thumbnails" or "Encode videos" buttons from the FFMPEG Settings tab.
 * Added pause/resume control to video encode queue.
+* Added automatic localization for Video.js player elements.
+* Fixed bugs related to saving thumbnails with existing filenames and large thumbnails that are automatically scaled down and renamed by WordPress's large image resizing introduced in WordPress version 5.3.
 * Fixed bugs that prevented clearing encode queue in non-multisite environments.
 * Fixed bug that added videos to encode queue even if there was nothing to encode.
 
