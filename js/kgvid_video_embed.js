@@ -23,7 +23,7 @@ function kgvid_window_load() {
 
 		var gallery_id = this.id;
 		kgvid_resize_gallery_play_button(gallery_id);
-		jQuery(window).resize( function(){ kgvid_resize_gallery_play_button(gallery_id) } );
+		jQuery(window).on('resize', function(){ kgvid_resize_gallery_play_button(gallery_id) } );
 		setTimeout(function(){ kgvid_resize_gallery_play_button(gallery_id) }, 200);
 
 	});
@@ -127,7 +127,7 @@ function kgvid_SetVideo(id) { //for galleries
 
 			jQuery('#kgvid-simplemodal-container').prepend(nav_code);
 
-			jQuery('.kgvid_gallery_next').click( function() {
+			jQuery('.kgvid_gallery_next').on('click', function() {
 
 				var next_thumb = jQuery('#kgvid_video_gallery_thumb_'+id).next('.kgvid_video_gallery_thumb');
 
@@ -142,7 +142,7 @@ function kgvid_SetVideo(id) { //for galleries
 
 			});
 
-			jQuery('.kgvid_gallery_prev').click( function() {
+			jQuery('.kgvid_gallery_prev').on('click', function() {
 
 				var prev_thumb = jQuery('#kgvid_video_gallery_thumb_'+id).prev('.kgvid_video_gallery_thumb');
 
@@ -161,11 +161,11 @@ function kgvid_SetVideo(id) { //for galleries
 			jQuery(document).on('keydown.kgvid', function(e) {
 				switch(e.which) {
 					case 37: // left
-					jQuery('.kgvid_gallery_prev').click();
+					jQuery('.kgvid_gallery_prev').trigger('click');
 					break;
 
 					case 39: // right
-					jQuery('.kgvid_gallery_next').click();
+					jQuery('.kgvid_gallery_next').trigger('click');
 					break;
 
 					default: return; // exit this handler for other keys
@@ -254,21 +254,23 @@ function kgvid_timeupdate_poster() {
 
 function kgvid_add_hover(id) {
 
-	jQuery('#video_'+id+'_div').hover(
-		function(){
-			jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
-		},
-		function(){
-			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
-		}
-	);
-
-	jQuery('#video_'+id+'_div').focus(
+	jQuery('#video_'+id+'_div')
+	.on('mouseenter',
 		function(){
 			jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
 		}
 	)
-	.focusout(
+	.on('mouseleave',
+		function(){
+			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
+		}
+	)
+	.on('focus',
+		function(){
+			jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
+		}
+	)
+	.on('focusout',
 		function(){
 			jQuery('#video_'+id+'_meta').removeClass('kgvid_video_meta_hover');
 		}
@@ -400,6 +402,7 @@ function kgvid_setup_video(id) {
 		});
 
 		player.on('play', function kgvid_play_start(){
+
 			player.off('timeupdate', kgvid_timeupdate_poster);
 			if ( video_vars.meta ) {
 				kgvid_add_hover(id);
@@ -630,7 +633,7 @@ function kgvid_setup_video(id) {
 	) {
 		kgvid_resize_video(id);
 		var resizeId;
-		jQuery(window).resize( function(){ 
+		jQuery(window).on('resize', function(){ 
 			clearTimeout(resizeId);
 			resizeId = setTimeout(function(){kgvid_resize_video(id)}, 500);
 		} );
@@ -995,7 +998,7 @@ function kgvid_share_icon_click(id) {
 		}
 
 		if ( jQuery('#video_'+id+'_div'+player_element).attr('style') == undefined ) {
-		jQuery('#video_'+id+'_div'+player_element).hide();
+			jQuery('#video_'+id+'_div'+player_element).hide();
 		}
 		else {
 			jQuery('#video_'+id+'_div'+player_element).removeAttr('style');
@@ -1009,8 +1012,12 @@ function kgvid_share_icon_click(id) {
 
 	}//if WordPress Default player
 
-	if ( event == 'turn on' ) { jQuery('#video_'+id+'_div').off('mouseenter mouseleave focus focusout').addClass('kgvid_video_meta_hover'); }
-	else { kgvid_add_hover(id); }
+	if ( event == 'turn on' ) { 
+		jQuery('#video_'+id+'_div').off('mouseenter mouseleave focus focusout');jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover'); 
+	}
+	else { 
+		kgvid_add_hover(id); 
+	}
 
 	jQuery('#video_'+id+'_embed, #click_trap_'+id).slideToggle();
 
