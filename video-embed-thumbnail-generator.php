@@ -2066,8 +2066,19 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 	}
 
 }
-add_action('admin_enqueue_scripts', 'enqueue_kgvid_script');
-add_action('wp_enqueue_media', 'enqueue_kgvid_script');
+add_action('wp_enqueue_media', 'enqueue_kgvid_script'); //always enqueue scripts if media elements are loaded
+
+function maybe_enqueue_kgvid_script($hook_suffix) {
+
+	if ( $hook_suffix == 'settings_page_video_embed_thumbnail_generator_settings'
+		|| $hook_suffix == 'tools_page_kgvid_video_encoding_queue'
+		|| $hook_suffix == 'settings_page_kgvid_network_video_encoding_queue'
+	) {
+		enqueue_kgvid_script();
+	}
+
+}
+add_action('admin_enqueue_scripts', 'maybe_enqueue_kgvid_script'); //only enqueue scripts on settings page or encode queue
 
 function kgvid_get_first_embedded_video( $post ) {
 
