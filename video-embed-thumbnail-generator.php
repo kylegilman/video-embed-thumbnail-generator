@@ -1202,6 +1202,20 @@ function kvid_readfile_chunked($file, $retbytes=TRUE) { //sends large files in c
 
 }
 
+function kgvid_array_insert_after($key, array &$array, $new_key, $new_value) {
+	if (array_key_exists($key, $array)) {
+	  $new = array();
+	  foreach ($array as $k => $value) {
+		$new[$k] = $value;
+		if ($k === $key) {
+		  $new[$new_key] = $new_value;
+		}
+	  }
+	  return $new;
+	}
+	return FALSE;
+}
+
 function kgvid_get_attachment_medium_url( $id ) {
 
     $medium_array = image_downsize( $id, 'medium' );
@@ -2835,6 +2849,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				'muted' => 'true',
 				'autoplay' => 'true',
 				'loop' => 'true',
+				'controls' => 'false',
 				'title' => 'false',
 				'embeddable' => 'false',
 				'downloadlink' => 'false',
@@ -3193,7 +3208,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				if ( $query_atts['embedcode'] != "false" ) {
 					if ( $query_atts['embedcode'] == "true" ) { $iframeurl = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
 					else { $iframeurl = $query_atts['embedcode']; }
-					$iframecode = "<iframe allowfullscreen src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])."'></iframe>";
+					$iframecode = "<iframe src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])." allowfullscreen allow='autoplay; fullscreen'></iframe>";
 					$iframecode = apply_filters('kgvid_embedcode', $iframecode, $iframeurl, $id, $query_atts);
 					$embed_code .= "<span class='kgvid_embedcode_container'><span class='kgvid-icons kgvid-icon-embed'></span>
 					<span>"._x('Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator')." </span><span><input class='kgvid_embedcode' type='text' value='".esc_attr($iframecode)."' onClick='this.select();'></span> <span class='kgvid_start_time'><input type='checkbox' class='kgvid_start_at_enable' onclick='kgvid_set_start_at(\"".$div_suffix."\")'> ".__('Start at:', 'video-embed-thumbnail-generator')." <input type='text' class='kgvid_start_at' onkeyup='kgvid_change_start_at(\"".$div_suffix."\")'></span></span>";
@@ -3431,7 +3446,10 @@ function kgvid_shortcode_atts($atts) {
 
 	$query_atts = shortcode_atts($default_atts, $atts, 'videopack');
 
-	$kgvid_video_embed_query_var = get_query_var('kgvid_video_embed'); //variables in URL
+	$kgvid_video_embed_query_var = get_query_var('videopack'); //variables in URL
+	if ( empty($kgvid_video_embed_query_var) ) {
+		$kgvid_video_embed_query_var = get_query_var('kgvid_video_embed'); //check the old query variable
+	}
 
 	if ( !empty($kgvid_video_embed_query_var) ) {
 
@@ -3441,7 +3459,9 @@ function kgvid_shortcode_atts($atts) {
 			'controls',
 			'default_res',
 			'fullwidth',
+			'gifmode',
 			'height',
+			'loop',
 			'muted',
 			'nativecontrolsfortouch',
 			'pixel_ratio',
@@ -3449,7 +3469,6 @@ function kgvid_shortcode_atts($atts) {
 			'set_volume',
 			'start',
 			'width',
-			'gifmode',
 		);
 
 		$allowed_query_var_atts = apply_filters('kgvid_allowed_query_var_atts', $allowed_query_var_atts);
@@ -4418,7 +4437,7 @@ function kgvid_network_settings_page() {
 	}
 
 	?>
-	<div class="wrap">
+	<div class="wrap videopack-settings">
 		<h1>Videopack Network Settings</h1>
 		<?php settings_errors( 'video_embed_thumbnail_generator_settings' ); ?>
 		<form method="post">
@@ -4519,7 +4538,7 @@ function kgvid_settings_page() {
 	$video_app = $options['video_app'];
 	if ( $video_app == "avconv" ) { $video_app = "libav"; }
 	?>
-	<div class="wrap">
+	<div class="wrap videopack-settings">
 		<h1>Videopack</h1>
 		<h2 class="nav-tab-wrapper">
 			<a href="#general" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
@@ -5769,7 +5788,9 @@ function kgvid_update_settings() {
 
 		if ( version_compare( $options['version'], '4.7', '<' ) ) {
 			$options['version'] = '4.7';
-			if ( $options['embed_method'] == 'Strobe Media Playback' || $options['embed_method'] == 'JW Player' ) { //change removed video players to new Video.js player
+			if ( $options['embed_method'] == 'Strobe Media Playback' 
+				|| $options['embed_method'] == 'JW Player' 
+			) { //change removed video players to new Video.js player
 				$options['embed_method'] = 'Video.js v7';
 			}
 			$options['controls'] = $options['controlbar_style']; //convert 'controlbar_style' option to 'controls' to match HTML5 convention
@@ -5786,6 +5807,7 @@ function kgvid_update_settings() {
 			$options['transient_cache'] = false;
 			$options['videojs_version'] = $default_options['videojs_version'];
 			$options['queue_control'] = 'play';
+			$options['gifmode'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
@@ -7213,8 +7235,9 @@ function kgvid_embedurl_handle() {
 }
 add_action('media_upload_embedurl', 'kgvid_embedurl_handle');
 
-function kgvid_parameter_queryvars( $qvars ) { //add kgvid_video_embed variable for passing information using URL queries
-	$qvars[] = 'kgvid_video_embed';
+function kgvid_parameter_queryvars( $qvars ) { //add videopack variable for passing information using URL queries
+	$qvars[] = 'videopack';
+	$qvars[] = 'kgvid_video_embed'; //old query variable
 	return $qvars;
 }
 add_filter('query_vars', 'kgvid_parameter_queryvars' );

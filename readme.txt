@@ -237,7 +237,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7 - March xx, 2020 =
+= 4.7 - March xx, 2021 =
 * Changed plugin name to Videopack.
 * Added Freemius SDK to facilitate selling premium Videopack add-ons.
 * Released the first <a href="https://www.wordpressvideopack.com/add-ons/ads/">Videopack add-on for Video Ads</a>.
