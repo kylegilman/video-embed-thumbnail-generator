@@ -257,6 +257,17 @@ div.kgvid_cancel_button {
 color: #aaa;
 }
 
+.videopack-settings input[type="checkbox"] {
+    height: 1.25rem;
+    width: 1.25rem;
+    margin: 0.2rem;
+}
+
+.videopack-settings input[type="checkbox"]:checked::before {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
 .ffmpeg_sample_code {
 background: #eee;
 outline: 2px solid #aaa;
