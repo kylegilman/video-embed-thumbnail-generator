@@ -133,6 +133,7 @@ function kgvid_default_options_fn() {
 		"webm_CRF" => "10",
 		"ogv_CRF" => "6",
 		"audio_bitrate" => 160,
+		"audio_channels" => 'on',
 		"threads" => 1,
 		"nice" => "on",
 		"browser_thumbnails" => "on",
@@ -1820,6 +1821,13 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 			}
 		}
 
+		if ( $options['audio_channels'] == 'on' ) {
+			$audio_channels_flag = '-ac 2 ';
+		} 
+		else {
+			$audio_channels_flag = '';
+		}
+
 		$watermark_strings = kgvid_ffmpeg_watermark_strings($options['ffmpeg_watermark'], $movie_info['width'], $rotate_strings['complex']);
 
 		if ( $video_formats[$format]['type'] == 'h264' ) {
@@ -1878,7 +1886,7 @@ function kgvid_generate_encode_string($input, $output, $movie_info, $format, $wi
 		if ( $options['nostdin'] == "on" && $options['video_app'] == 'ffmpeg' ) { $nostdin = " -nostdin"; }
 
 		$encode_string = array();
-		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].$nostdin.' -y -i "'.$input.'" '.$watermark_strings['input'].$ffmpeg_options.$rate_control_flag.$rotate_strings['rotate']." -threads ".$options['threads'];
+		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].$nostdin.' -y -i "'.$input.'" '.$watermark_strings['input'].$audio_channels_flag.$ffmpeg_options.$rate_control_flag.$rotate_strings['rotate']." -threads ".$options['threads'];
 		$encode_string[2] = $watermark_strings['filter'];
 		$encode_string[3] = ' "'.$output.'"';
 
@@ -4728,7 +4736,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field('CRFs', __('Constant Rate Factors (CRF):', 'video-embed-thumbnail-generator'), 'kgvid_CRF_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_CRF' ) );
 	add_settings_field('bitrate_multiplier', __('Average Bit Rate:', 'video-embed-thumbnail-generator'), 'kgvid_average_bitrate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'bitrate_multiplier' ) );
 	add_settings_field('h264_profile', __('H.264 profile:', 'video-embed-thumbnail-generator'), 'kgvid_h264_profile_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_profile' ) );
-	add_settings_field('audio_bitrate', __('Audio bit rate:', 'video-embed-thumbnail-generator'), 'kgvid_audio_bitrate_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'audio_bitrate' ) );
+	add_settings_field('audio_options', __('Audio:', 'video-embed-thumbnail-generator'), 'kgvid_audio_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'audio_bitrate' ) );
 
 	if ( !is_plugin_active_for_network( plugin_basename('video_embed_thumbnail_generator_settings') ) ) {
 		add_settings_field('ffmpeg_options', __('FFMPEG legacy options:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_bitrate_flag' ) );
@@ -5422,7 +5430,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		echo "</div>\n\t";
 	}
 
-	function kgvid_audio_bitrate_options_callback() {
+	function kgvid_audio_options_callback() {
 		$options = kgvid_get_options();
 		echo "<div class='kgvid_video_app_required'>";
 		$items = array(32, 64, 96, 112, 128, 160, 192, 224, 256, 320);
@@ -5431,8 +5439,10 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['audio_bitrate']==$item) ? 'selected="selected"' : '';
 			echo "<option value='$item' $selected>$item</option>";
 		}
-		echo "</select> kbps";
+		echo "</select> kbps<br />";
+		echo "<input class='affects_ffmpeg' ".checked( $options['audio_channels'], "on", false )." id='audio_channels' name='kgvid_video_embed_options[audio_channels]' type='checkbox' /> <label for='audio_channels'>".__('Always output stereo audio.', 'video-embed-thumbnail-generator')."</label>";
 		echo "</div>\n\t";
+
 	}
 
 	function kgvid_ffmpeg_options_callback() {
@@ -5808,6 +5818,7 @@ function kgvid_update_settings() {
 			$options['videojs_version'] = $default_options['videojs_version'];
 			$options['queue_control'] = 'play';
 			$options['gifmode'] = false;
+			$options['audio_channels'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
