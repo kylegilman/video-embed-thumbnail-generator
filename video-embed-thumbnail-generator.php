@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
-Plugin URI: http://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/
+Plugin URI: https://www.wordpressvideopack.com/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
 Version: 4.7
 Author: Kyle Gilman
@@ -3221,7 +3221,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				if ( $show_title == false ) { $embed_code .= " kgvid_no_title_meta"; }
 				$embed_code .= "'><div class='kgvid_share_icons'>";
 				if ( $query_atts['embedcode'] != "false" ) {
-					if ( $query_atts['embedcode'] == "true" ) { $iframeurl = site_url('/')."?attachment_id=".$id."&amp;kgvid_video_embed[enable]=true"; }
+					if ( $query_atts['embedcode'] == "true" ) { $iframeurl = site_url('/')."?attachment_id=".$id."&amp;videopack[enable]=true"; }
 					else { $iframeurl = $query_atts['embedcode']; }
 					$iframecode = "<iframe src='".$iframeurl."' frameborder='0' scrolling='no' width='".esc_attr($query_atts['width'])."' height='".esc_attr($query_atts["height"])." allowfullscreen allow='autoplay; fullscreen'></iframe>";
 					$iframecode = apply_filters('kgvid_embedcode', $iframecode, $iframeurl, $id, $query_atts);
