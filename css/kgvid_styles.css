@@ -259,6 +259,7 @@ img.kgvid_ios_novideo {
     color: #999 !important;
     background: #EEE !important;
     padding: 4px !important;
+    margin: 0 !important;
     border-radius: 6px !important;
     border: none !important;
     display: inline-block !important;
