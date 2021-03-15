@@ -1017,25 +1017,28 @@ function kgvid_is_animated_gif($filename) {
 
 function kgvid_is_video($post) {
 
-	if ( $post->post_mime_type == 'image/gif' ) {
-		$moviefile = get_attached_file($post->ID);
-		$is_animated = kgvid_is_animated_gif($moviefile);
-	}
-	else { $is_animated = false; }
+	if ( $post && is_object($post) && property_exists($post, 'post_mime_type') ) {
 
-	if ( substr($post->post_mime_type, 0, 5) == 'video'	&&
-		( empty($post->post_parent)
-		|| (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == '' )
-		)
-		|| $is_animated
-	) { //if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
+		if ( $post->post_mime_type == 'image/gif' ) {
+			$moviefile = get_attached_file($post->ID);
+			$is_animated = kgvid_is_animated_gif($moviefile);
+		}
+		else { $is_animated = false; }
 
-		return true;
+		if ( substr($post->post_mime_type, 0, 5) == 'video'	&&
+			( empty($post->post_parent)
+			|| (strpos(get_post_mime_type( $post->post_parent ), 'video') === false && get_post_meta($post->ID, '_kgflashmediaplayer-externalurl', true) == '' )
+			)
+			|| $is_animated
+		) { //if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
+
+			return true;
+
+		}
 
 	}
-	else {
-		return false;
-	}
+
+	return false;
 
 }
 
@@ -3843,7 +3846,15 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		$something_to_encode = false;
 	}
 
-	$meta_array = array( 'checked' => $checked, 'disabled' => $disabled, 'meta' => $meta, 'time_to_wait'=> $time_to_wait, 'something_to_encode' => $something_to_encode, 'encoding_now' => $encoding_now, 'blog_id' => $blog_id );
+	$meta_array = array( 
+		'checked' => $checked, 
+		'disabled' => $disabled, 
+		'meta' => $meta, 
+		'time_to_wait'=> $time_to_wait, 
+		'something_to_encode' => $something_to_encode, 
+		'encoding_now' => $encoding_now, 
+		'blog_id' => $blog_id 
+	);
 
 	return $meta_array;
 
@@ -4050,7 +4061,14 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		$checkboxes .= "\n\t\t\t".'<li><input class="kgvid_encode_checkbox" type="checkbox" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode'.$format.'" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]['.$format.']" '.$meta_array['checked'].' '.$ffmpeg_disabled_text.$meta_array['disabled'].' data-format="'.$format.'"> <label for="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode'.$format.'">'.$format_stats['name'].'</label> <span id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-meta'.$format.'" class="kgvid_format_meta">'.$meta_array['meta'].'</span>';
 
-		if ( !$security_disabled && $is_attachment && empty($meta_array['disabled']) && $format != 'fullres' && $page != 'queue' ) { $checkboxes .= "<span id='pick-".$post_id."-".$format."' class='button kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\", \"".$blog_id."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
+		if ( !$security_disabled 
+			&& $is_attachment 
+			&& empty($meta_array['disabled'])
+			&& $format_stats['status'] != 'queued'
+			&& $format != 'fullres' 
+			&& $page != 'queue' 
+		) { 
+			$checkboxes .= "<span id='pick-".$post_id."-".$format."' class='button kgvid_encode_checkbox_button' data-choose='".sprintf( __('Choose %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' data-update='".sprintf( __('Set as %s', 'video-embed-thumbnail-generator'), $format_stats['name'] )."' onclick='kgvid_pick_format(this, \"".$post_id."\", \"".esc_attr($format_stats['mime'])."\", \"".$format."\", \"".esc_attr($movieurl)."\", \"".$blog_id."\");'>".__('Choose from Library', 'video-embed-thumbnail-generator')."</span>";
 		}
 		$checkboxes .= '</li>';
 
@@ -4547,7 +4565,7 @@ function kgvid_settings_page() {
 	if ( $video_app == "avconv" ) { $video_app = "libav"; }
 	?>
 	<div class="wrap videopack-settings">
-		<h1>Videopack</h1>
+		<h1><?php _e('Videopack Settings', 'video-embed-thumbnail-generator'); ?></h1>
 		<h2 class="nav-tab-wrapper">
 			<a href="#general" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
 			<?php if ( !is_multisite()
@@ -4955,7 +4973,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 	function kgvid_js_skin_callback() {
 		$options = kgvid_get_options();
-		echo "<input class='regular-text code affects_player' id='js_skin' name='kgvid_video_embed_options[js_skin]' type='text' value='".$options['js_skin']."' /><br /><em><small>".sprintf( __('Use %s for a nice, circular play button. Leave blank for the default square play button.', 'video-embed-thumbnail-generator')." <a href='http://videojs.com/docs/skins/'>".__('Or build your own CSS skin.', 'video-embed-thumbnail-generator'), '<code>kg-video-js-skin</code>')."</a></small></em>\n\t";
+		echo "<input class='regular-text code affects_player' id='js_skin' name='kgvid_video_embed_options[js_skin]' type='text' value='".$options['js_skin']."' /><br /><em><small>".sprintf( __('Use %s for a nice, circular play button. Leave blank for the default square play button.', 'video-embed-thumbnail-generator')." <a href='https://codepen.io/heff/pen/EarCt'>".__('Or build your own CSS skin.', 'video-embed-thumbnail-generator'), '<code>kg-video-js-skin</code>')."</a></small></em>\n\t";
 	}
 
 	function kgvid_custom_attributes_callback() {
@@ -9353,8 +9371,8 @@ function kgvid_add_contextual_help_tab() {
 <li><code>videos="x"</code> '.__('number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
 <li><code>orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
 <li><code>order="ASC/DESC"</code> '.__('sort order.', 'video-embed-thumbnail-generator').'</li>
-<li><code>poster="http://www.example.com/image.jpg"</code> '.__('sets the thumbnail.', 'video-embed-thumbnail-generator').'</li>
-<li><code>endofvideooverlay="http://www.example.com/end_image.jpg"</code> '.__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
+<li><code>poster="https://www.example.com/image.jpg"</code> '.__('sets the thumbnail.', 'video-embed-thumbnail-generator').'</li>
+<li><code>endofvideooverlay="https://www.example.com/end_image.jpg"</code> '.__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
 <li><code>width="xxx"</code></li>
 <li><code>height="xxx"</code></li>
 <li><code>fullwidth="true/false"</code> '.__('set video to always expand to fill its container.', 'video-embed-thumbnail-generator').'</li>
@@ -9366,13 +9384,14 @@ function kgvid_add_contextual_help_tab() {
 <li><code>controls="true/false"</code> '.__('Enables video controls.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
-<li><code>playsinline="true/false"</code> '.__('allows videos to play inline on iPhones.', 'video-embed-thumbnail-generator').'</li>
+<li><code>playsinline="true/false"</code> '.__('Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gifmode="true/false"</code> '.__('Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator').'</li>
 <li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
 <li><code>preload="metadata/auto/none"</code> '.__('indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator').'</li>
 <li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
-<li><code>watermark="http://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>watermark="https://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>
-<li><code>watermark_url="http://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>watermark_url="https://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>title="Video Title"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>embeddable="true/false"</code> '.__('enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator').'</li>
 <li><code>embedcode="html code"</code> '.sprintf( __('changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
