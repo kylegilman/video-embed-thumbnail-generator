@@ -15,7 +15,7 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 = A plugin to make video players, thumbnails, multiple resolutions, and video galleries. =
 
-Not compatible with the new Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
+Video Embed & Thumbnail Generator is now Videopack! This is a substantial update that includes new versions of Video.js and numerous fixes from years of neglect.
 
 This video plugin adds several fields to any video uploaded to the WordPress Media Library. If your video can be played natively in your browser, or if you have FFMPEG installed on your server (optional), you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. Click "Insert into Post" and you'll get a shortcode in the post editor that will make a flexible, responsive video player.
 
@@ -24,6 +24,8 @@ If you provide multiple H.264 resolutions, the plugin can automatically select t
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the <a href="https://codex.wordpress.org/Gallery_Shortcode">WordPress image gallery shortcode</a>. In its simplest form it will create a gallery of all videos attached to the post.
 
 You can now add advertisements to your videos using the <a href="https://www.wordpressvideopack.com/add-ons/videopack-ads/">Videopack Ads</a> premium add-on which you can purchase from the Add-ons tab of the Videopack Settings page or on the <a href="https://www.wordpressvideopack.com/add-ons/videopack-ads/">Videopack website</a>.
+
+Not compatible with the new Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
 
 Visit the <a href="https://www.wordpressvideopack.com/docs/">Videopack Documentation pages</a> for more info.
 
@@ -113,7 +115,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7 - March 15, 2021 =
+= 4.7 - March 16, 2021 =
 * Changed plugin name to Videopack.
 * The shortcode is now [videopack] by default but older [KGVID] shortcodes will still work.
 * Added Freemius SDK to facilitate selling premium Videopack add-ons.
