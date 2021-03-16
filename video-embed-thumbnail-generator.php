@@ -816,8 +816,8 @@ add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 function kgvid_showUpgradeNotification($currentPluginMetadata, $newPluginMetadata){
    // check "upgrade_notice"
    if (isset($newPluginMetadata->upgrade_notice) && strlen(trim($newPluginMetadata->upgrade_notice)) > 0){
-        echo '<p style="background-color: #d54e21; padding: 10px; color: #f9f9f9; margin-top: 10px"><strong>Upgrade Notice:</strong> ';
-        echo esc_html($newPluginMetadata->upgrade_notice), '</p>';
+        echo 'Upgrade Notice: ';
+        echo esc_html($newPluginMetadata->upgrade_notice);
    }
 }
 add_action('in_plugin_update_message-video-embed-thumbnail-generator/video-embed-thumbnail-generator.php', 'kgvid_showUpgradeNotification', 10, 2);
