@@ -129,10 +129,6 @@ div.kgvid_cancel_button input {
 	width: 90%;
 }
 
-.compat-item .field input {
-	width: auto;
-}
-
 .compat-item .kgvid_checkboxes_section ul li {
 	margin-bottom: 10pt;
 	line-height: 16pt;

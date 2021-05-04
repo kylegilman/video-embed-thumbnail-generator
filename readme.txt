@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
 Tested up to: 5.7
 Requires PHP: 5.6.0
-Stable tag: 4.7
+Stable tag: 4.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.7.1 - May 4, 2021 =
+* Updated Video.js to version 7.11.8
+* Fixed bug that caused errors when all default encode formats were diabled.
 
 = 4.7 - March 16, 2021 =
 * Changed plugin name to Videopack.
