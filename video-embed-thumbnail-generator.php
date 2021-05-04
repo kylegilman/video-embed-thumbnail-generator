@@ -3,7 +3,7 @@
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: https://www.wordpressvideopack.com/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.7
+Version: 4.7.1
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,8 +58,8 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.7',
-		"videojs_version" => '7.11.4',
+		"version" => '4.7.1',
+		"videojs_version" => '7.11.8',
 		"embed_method" => "Video.js v7",
 		"template" => false,
 		"template_gentle" => "on",
@@ -3749,7 +3749,10 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 
 	if ( get_post_type($post_id) == "attachment" ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
-		if ( array_key_exists('encode', $kgvid_postmeta) && array_key_exists($format, $kgvid_postmeta['encode']) ) { 
+		if ( array_key_exists('encode', $kgvid_postmeta) 
+			&& is_array($kgvid_postmeta['encode'])
+			&& array_key_exists($format, $kgvid_postmeta['encode']) 
+		) { 
 			$encodeset = $kgvid_postmeta['encode'][$format]; 
 		}
 		else { $encodeset = 'false'; }
@@ -3763,7 +3766,11 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 
 	}
 	if ( $encodeset == "false" && strpos($format, 'custom_') === false ) { 
-		if (array_key_exists($format, $options['encode'])) { $encodeset = "on"; }
+		if ( is_array( $options['encode'])
+			&& array_key_exists($format, $options['encode'])
+		) { 
+			$encodeset = "on"; 
+		}
 		else { $encodeset = false; }
 	}
 
@@ -4037,7 +4044,8 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		if ( !empty($encodevideo_info) && !$encodevideo_info[$format]['exists']
 				&& ( 
 					strpos($format, 'custom_') === 0 //skip custom formats that don't exist
-					|| ( $format != 'fullres' && !array_key_exists($format, $options['encode']) && $options['hide_video_formats'] )
+					|| ( $options['hide_video_formats'] && is_array($options['encode']) && !array_key_exists($format, $options['encode'])) //skip options disabled in settings
+					|| ( $options['hide_video_formats'] && !is_array($options['encode']) ) //skip all options if they're all disabled
 				) 
 			) { continue; } 
 
@@ -4093,7 +4101,12 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$checkboxes .= '<input type="button" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]" class="button" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\', \''.$blog_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$blog_id_text.$post_id.'-encodeplaceholder"></div>';
 
 	if ( $page != "queue" ) {
-		$checkboxes .= '<small><em>'.__('Generates additional video formats compatible with most mobile & HTML5-compatible browsers', 'video-embed-thumbnail-generator').'</em></small>';
+		if ( is_array($options['encode']) || $options['hide_video_formats'] == false ) {
+			$checkboxes .= '<small><em>'.__('Generates additional video formats compatible with most mobile & HTML5-compatible browsers', 'video-embed-thumbnail-generator').'</em></small>';
+		}
+		else {
+			$checkboxes .= '<em>'.__('All additional video formats are disabled in Videopack settings', 'video-embed-thumbnail-generator').'</em>';
+		}
 	}
 
 	if ( $video_queued == true ) {
@@ -5172,7 +5185,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		$items['custom'] = __('Custom', 'video-embed-thumbnail-generator');
 
 		echo "<div class='kgvid_video_app_required'>";
-		echo "<input ".checked( array_key_exists('fullres', $options['encode']) && $options['encode']['fullres'] == 'on', true, false )." id='encode_fullres' name='kgvid_video_embed_options[encode][fullres]' type='checkbox' /> <label for='encode_fullres'>".__('Replace original with', 'video-embed-thumbnail-generator');
+		echo "<input ".checked( is_array($options['encode']) && array_key_exists('fullres', $options['encode']) && $options['encode']['fullres'] == 'on', true, false )." id='encode_fullres' name='kgvid_video_embed_options[encode][fullres]' type='checkbox' /> <label for='encode_fullres'>".__('Replace original with', 'video-embed-thumbnail-generator');
 
 		echo " <select id='replace_format' name='kgvid_video_embed_options[replace_format]' class='affects_ffmpeg' onchange='kgvid_change_replace_format();'>";
 		foreach($items as $value=>$name) {
@@ -5191,10 +5204,10 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 		}
 
 		foreach ( $video_formats as $format => $format_stats ) {
-			echo "<input ".checked( array_key_exists($format, $options['encode']) && $options['encode'][$format] == 'on', true, false )." id='encode_".$format."' name='kgvid_video_embed_options[encode][".$format."]' type='checkbox' /> <label for='encode_".$format."'>".$format_stats['name']."</label><br />";
+			echo "<input ".checked( is_array($options['encode']) && array_key_exists($format, $options['encode']) && $options['encode'][$format] == 'on', true, false )." id='encode_".$format."' name='kgvid_video_embed_options[encode][".$format."]' type='checkbox' /> <label for='encode_".$format."'>".$format_stats['name']."</label><br />";
 		}
 		
-		echo "<input ".checked( array_key_exists('custom', $options['encode']), true, false )." id='encode_custom' name='kgvid_video_embed_options[encode][custom]' type='checkbox' /> <label for='encode_custom'>".__('Custom', 'video-embed-thumbnail-generator');
+		echo "<input ".checked( is_array($options['encode']) && array_key_exists('custom', $options['encode']), true, false )." id='encode_custom' name='kgvid_video_embed_options[encode][custom]' type='checkbox' /> <label for='encode_custom'>".__('Custom', 'video-embed-thumbnail-generator');
 		$items = array( 
 			"H.264" => "h264", 
 			"WEBM VP8" => "webm", 
@@ -6229,7 +6242,7 @@ function kgvid_cron_new_attachment_handler($post_id, $force = false) {
 
 		foreach ( $video_formats as $format => $format_stats ) {
 
-			if ( array_key_exists($format, $options['encode']) && $options['encode'][$format] == "on" ) {
+			if ( is_array($options['encode']) &&  array_key_exists($format, $options['encode']) && $options['encode'][$format] == "on" ) {
 				$encode_checked[$format] = "true";
 				$something_to_encode = true;
 			}
@@ -7064,7 +7077,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 		$video_formats = kgvid_video_formats(false, false);
 		foreach ( $video_formats as $format => $format_stats ) {
 			if( !isset($attachment['kgflashmediaplayer-encode'][$format]) ) {
-				if ( !array_key_exists($format, $options['encode']) ) { $attachment['kgflashmediaplayer-encode'][$format] = "false"; }
+				if ( is_array($options['encode']) && !array_key_exists($format, $options['encode']) ) { $attachment['kgflashmediaplayer-encode'][$format] = "false"; }
 				else { $attachment['kgflashmediaplayer-encode'][$format] = "notchecked"; }
 			}
 		}
