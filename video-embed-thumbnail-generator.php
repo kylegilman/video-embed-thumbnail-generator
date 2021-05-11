@@ -928,16 +928,6 @@ function kgvid_aac_encoders() {
 
 }
 
-function kgvid_add_upload_mimes ( $existing_mimes=array() ) {
-
-	// allows uploading .webm videos
-	$existing_mimes['webm'] = 'video/webm';
-	$existing_mimes['vtt'] = 'text/vtt';
-	return $existing_mimes;
-
-}
-add_filter('upload_mimes', 'kgvid_add_upload_mimes');
-
 function kgvid_set_transient_name($url) {
 
 	$url = str_replace(' ', '', $url); //in case a url with spaces got through
@@ -2085,6 +2075,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'custom' => _x('Custom', 'Custom format', 'video-embed-thumbnail-generator'),
 				'clearingcache' => __('Clearing URL cache...', 'video-embed-thumbnail-generator'),
 				'queue_pause' => __('Pause the queue. Any videos currently encoding will complete.', 'video-embed-thumbnail-generator'),
+				'queue_paused' => __('Queue is paused. Press play button to start.', 'video-embed-thumbnail-generator'),
 				'queue_play' => __('Start encoding', 'video-embed-thumbnail-generator'),
 				'nothing_to_encode' => __('Nothing to encode', 'video-embed-thumbnail-generator'),
 		) );
@@ -2232,8 +2223,6 @@ function kgvid_video_embed_print_scripts() {
     $posts = $wp_query->posts;
 	$pattern = get_shortcode_regex();
 	$options = kgvid_get_options();
-
-	//echo '<script type="text/javascript">document.createElement(\'video\');document.createElement(\'audio\');</script>'."\n";
 
 	if ( !empty($posts) && is_array($posts) ) {
 		foreach ( $posts as $post ) {
@@ -6679,7 +6668,6 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 	} //only add fields if attachment is the right kind of video
 return $form_fields;
 }
-// attach our function to the correct hook
 add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit", 10, 2);
 
 function kgvid_add_video_stats_column($cols) { //add Video Stats column to media library
