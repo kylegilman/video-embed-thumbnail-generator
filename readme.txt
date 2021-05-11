@@ -115,9 +115,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.1 - May 4, 2021 =
+= 4.7.1 - May 11, 2021 =
 * Updated Video.js to version 7.11.8
+* Updated Embed Video From URL inserted shortcode to [videopack]
+* Fixed bug that removed existing meta_query when loading attachments and broke Woocommerce image importing. 
 * Fixed bug that caused errors when all default encode formats were diabled.
+* Changed video encode queue page design to make it clearer when the queue is paused.
 
 = 4.7 - March 16, 2021 =
 * Changed plugin name to Videopack.

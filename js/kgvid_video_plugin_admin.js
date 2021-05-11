@@ -1153,7 +1153,19 @@ function kgvid_update_encode_queue() {
                     if ( data.queue_control == 'play' ) {
                         opposite_command = 'pause';
                         var title = kgvidL10n.queue_pause;
+						jQuery('#kgvid_encode_queue_table th, #kgvid_encode_queue_table td').not('.queue_encode_formats')
+							.removeClass('kgvid-encode-queue-paused')
+							.removeAttr('title');
+						jQuery('.videopack-encode-button')
+							.removeAttr('title');
                     }
+					else {
+						jQuery('#kgvid_encode_queue_table th, #kgvid_encode_queue_table td').not('.queue_encode_formats')
+							.addClass('kgvid-encode-queue-paused')
+							.attr('title', kgvidL10n.queue_paused);
+						jQuery('.videopack-encode-button')
+							.attr('title', kgvidL10n.queue_paused);
+					}
 
                     jQuery('#kgvid-encode-queue-control')
 						.removeClass('kgvid-encode-queue-control-disabled dashicons-controls-'+data.queue_control)
