@@ -619,6 +619,10 @@ td.media-icon img {
     color: #ddd;
 }
 
+.kgvid-encode-queue-paused {
+	opacity: 50%;
+}
+
 .kgvid_queue_message {
 	font-size: 129%;
 	color: #298CBA;

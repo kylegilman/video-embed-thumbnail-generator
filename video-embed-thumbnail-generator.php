@@ -2075,7 +2075,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'custom' => _x('Custom', 'Custom format', 'video-embed-thumbnail-generator'),
 				'clearingcache' => __('Clearing URL cache...', 'video-embed-thumbnail-generator'),
 				'queue_pause' => __('Pause the queue. Any videos currently encoding will complete.', 'video-embed-thumbnail-generator'),
-				'queue_paused' => __('Queue is paused. Press play button to start.', 'video-embed-thumbnail-generator'),
+				'queue_paused' => __('Queue is paused. Press play button at top of screen to start.', 'video-embed-thumbnail-generator'),
 				'queue_play' => __('Start encoding', 'video-embed-thumbnail-generator'),
 				'nothing_to_encode' => __('Nothing to encode', 'video-embed-thumbnail-generator'),
 		) );
@@ -4087,7 +4087,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	}
 	else { $button_text = _x('Encode selected', 'Button text', 'video-embed-thumbnail-generator'); }
 
-	$checkboxes .= '<input type="button" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]" class="button" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\', \''.$blog_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$blog_id_text.$post_id.'-encodeplaceholder"></div>';
+	$checkboxes .= '<input type="button" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]" class="button videopack-encode-button" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\', \''.$blog_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$blog_id_text.$post_id.'-encodeplaceholder"></div>';
 
 	if ( $page != "queue" ) {
 		if ( is_array($options['encode']) || $options['hide_video_formats'] == false ) {
