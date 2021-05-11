@@ -6718,14 +6718,17 @@ function kgvid_hide_video_children($wp_query_obj) {
 		&& ( array_key_exists('posts_per_page', $wp_query_obj->query_vars) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) //hide children only when showing paged content (makes sure that -1 will actually return all attachments)
 	) {
 
+		$meta_query = $wp_query_obj->get('meta_query');
+		if ( !is_array($meta_query) ) {
+			$meta_query = array();
+		}
+		$meta_query[] = array(
+			'key' => '_kgflashmediaplayer-format',
+			'compare' => 'NOT EXISTS'
+		);
 		$wp_query_obj->set(
 			'meta_query',
-			array(
-				array(
-					'key' => '_kgflashmediaplayer-format',
-					'compare' => 'NOT EXISTS'
-				)
-			)
+			$meta_query
 		);
 
 	}//end if
