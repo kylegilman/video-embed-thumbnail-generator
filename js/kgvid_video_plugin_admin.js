@@ -918,7 +918,7 @@ function kgvid_insert_shortcode() {
 		shortcode += titlecode + '<span itemprop="name">' + document.getElementById('videotitle').value + '</span>' + endtitlecode + '<br />';
 	}
 	if (url !="") {
-		shortcode += ' [KGVID';
+		shortcode += ' [videopack';
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value !="") { shortcode += ' poster="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-poster').value + '"'; }
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').value !="") { shortcode += ' width="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-width').value + '"'; }
 		if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').value !="") { shortcode += ' height="' + document.getElementById('attachments-'+basename+'-kgflashmediaplayer-height').value + '"'; }
@@ -930,7 +930,7 @@ function kgvid_insert_shortcode() {
 			if (document.getElementById('attachments-'+basename+'-kgflashmediaplayer-track_default').value == "default") { shortcode += ' track_default="default"'; }
 		}
 		if (document.getElementById('downloadlink').checked ) { shortcode += ' downloadlink="true"'; }
-		shortcode += ']' + url + '[/KGVID] '; }
+		shortcode += ']' + url + '[/videopack] '; }
 
 	parent.send_to_editor(shortcode);
 }
