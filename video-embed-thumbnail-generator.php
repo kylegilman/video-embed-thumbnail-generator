@@ -59,7 +59,7 @@ function kgvid_default_options_fn() {
 
 	$options = array(
 		"version" => '4.7.1',
-		"videojs_version" => '7.11.8',
+		"videojs_version" => '7.12.4',
 		"embed_method" => "Video.js v7",
 		"template" => false,
 		"template_gentle" => "on",
