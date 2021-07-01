@@ -468,31 +468,31 @@ span.kgvid_gallery_pagination_arrow {
 
 /* video-quality-selector Video.js plugin styles */
 
-button.vjs-res-button.vjs7-res-button {
+.kgvid_wrapper button.vjs-res-button.vjs7-res-button {
     padding: 4px 0 0 0;
     font-size: 1.5em;
 }
 
-.vjs-res-button span.vjs-control-text {
+.kgvid_wrapper .vjs-res-button span.vjs-control-text {
 	display: none;
 }
 
-.vjs-res-button .vjs-menu li.vjs-menu-item, .vjs-res-button + .vjs-menu li.vjs-menu-item {
+.kgvid_wrapper .vjs-res-button .vjs-menu li.vjs-menu-item, .vjs-res-button + .vjs-menu li.vjs-menu-item {
     text-transform: none;
 }
 
-.vjs-res-button:before {
+.kgvid_wrapper .vjs-res-button:before {
 	font-family: VideoJs;
     content: "\f110"; /* Gear icon */
 }
 
-.vjs-loading-spinner {
+.kgvid_wrapper .vjs-loading-spinner {
 	z-index: 1;
 }
 
 
 /* Don't show hover effects on title */
-ul li.vjs-menu-title.vjs-res-menu-title:hover {
+.kgvid_wrapper ul li.vjs-menu-title.vjs-res-menu-title:hover {
 	cursor: default;
 	background-color: transparent;
 	color: #CCC;
@@ -503,7 +503,7 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 }
 
 /* Needed to keep text visible in video.js 4.9 */
-.vjs-res-button .vjs-control-text {
+.kgvid_wrapper .vjs-res-button .vjs-control-text {
 	width: auto;
 	height: auto;
 	clip: auto;
@@ -613,8 +613,8 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
 
 /* mejs-sourcechooser new plugin styles */
 
-.mejs__sourcechooser-button .mejs__sourcechooser-selector,
-.mejs-sourcechooser-button .mejs-sourcechooser-selector {
+.kgvid_wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector,
+.kgvid_wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector {
     background: rgba(50, 50, 50, 0.7);
     border: solid 1px transparent;
     border-radius: 0;
@@ -624,8 +624,8 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     position: absolute;
 }
 
-.mejs__sourcechooser-selector ul,
-.mejs-sourcechooser-selector ul {
+.kgvid_wrapper .mejs__sourcechooser-selector ul,
+.kgvid_wrapper .mejs-sourcechooser-selector ul {
     display: block;
     list-style-type: none !important;
     margin: 0;
@@ -633,8 +633,8 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     padding: 0;
 }
 
-.mejs__sourcechooser-selector li,
-.mejs-sourcechooser-selector li {
+.kgvid_wrapper .mejs__sourcechooser-selector li,
+.kgvid_wrapper .mejs-sourcechooser-selector li {
     color: #fff;
     display: block;
     list-style-type: none !important;
@@ -643,40 +643,40 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     padding: 5px 10px 5px 0px;
 }
 
-.mejs-sourcechooser-selector li.sourcechooser-selected {
+.kgvid_wrapper .mejs-sourcechooser-selector li.sourcechooser-selected {
 	background-color: rgba(255, 255, 255, 0.2);
 }
 
-.mejs__sourcechooser-selector li:hover,
-.mejs-sourcechooser-selector li:hover {
+.kgvid_wrapper .mejs__sourcechooser-selector li:hover,
+.kgvid_wrapper .mejs-sourcechooser-selector li:hover {
     background-color: rgba(255, 255, 255, 0.2);
     cursor: pointer;
 }
 
-.mejs__sourcechooser-selector input,
-.mejs-sourcechooser-selector input {
+.kgvid_wrapper .mejs__sourcechooser-selector input,
+.kgvid_wrapper .mejs-sourcechooser-selector input {
     display: none;
 }
 
-.mejs__sourcechooser-selector label,
-.mejs-sourcechooser-selector label {
+.kgvid_wrapper .mejs__sourcechooser-selector label,
+.kgvid_wrapper .mejs-sourcechooser-selector label {
 	color: #fff;
     display: inline-block;
     float: left;
     font-size: 10px;
     line-height: 15px;
-	padding: 4px 0 0;
+	padding: 4px 5px 0;
 	cursor: pointer;
 }
 
 /* mejs-speed styles */
-.mejs__speed-button,
-.mejs-speed-button {
+.kgvid_wrapper .mejs__speed-button,
+.kgvid_wrapper .mejs-speed-button {
     position: relative;
 }
 
-.mejs__speed-button > button,
-.mejs-speed-button > button {
+.kgvid_wrapper .mejs__speed-button > button,
+.kgvid_wrapper .mejs-speed-button > button {
     background: transparent;
     color: #fff;
     font-size: 11px;
@@ -685,8 +685,8 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     width: 36px;
 }
 
-.mejs__speed-selector,
-.mejs-speed-selector {
+.kgvid_wrapper .mejs__speed-selector,
+.kgvid_wrapper .mejs-speed-selector {
     background: rgba(50, 50, 50, 0.7);
     border: solid 1px transparent;
     border-radius: 0;
@@ -699,13 +699,13 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     width: 60px;
 }
 
-.mejs__speed-selector,
-.mejs-speed-selector {
+.kgvid_wrapper .mejs__speed-selector,
+.kgvid_wrapper .mejs-speed-selector {
     visibility: visible;
 }
 
-.mejs__speed-selector-list,
-.mejs-speed-selector-list  {
+.kgvid_wrapper .mejs__speed-selector-list,
+.kgvid_wrapper .mejs-speed-selector-list  {
     display: block;
     list-style-type: none !important;
     margin: 0;
@@ -713,8 +713,8 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     padding: 0;
 }
 
-.mejs__speed-selector-list-item,
-.mejs-speed-selector-list-item {
+.kgvid_wrapper .mejs__speed-selector-list-item,
+.kgvid_wrapper .mejs-speed-selector-list-item {
     color: #fff;
     display: block;
     list-style-type: none !important;
@@ -723,14 +723,14 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     padding: 0 10px;
 }
 
-.mejs__speed-selector-list-item:hover,
-.mejs-speed-selector-list-item:hover {
+.kgvid_wrapper .mejs__speed-selector-list-item:hover,
+.kgvid_wrapper .mejs-speed-selector-list-item:hover {
     background-color: rgb(200, 200, 200) !important;
     background-color: rgba(255, 255, 255, 0.4) !important;
 }
 
-.mejs__speed-selector-input,
-.mejs-speed-selector-input {
+.kgvid_wrapper .mejs__speed-selector-input,
+.kgvid_wrapper .mejs-speed-selector-input {
     clear: both;
     float: left;
     left: -1000px;
@@ -738,8 +738,8 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     position: absolute;
 }
 
-.mejs__speed-selector-label,
-.mejs-speed-selector-label {
+.kgvid_wrapper .mejs__speed-selector-label,
+.kgvid_wrapper .mejs-speed-selector-label {
     color: white;
     cursor: pointer;
     float: left;
@@ -750,15 +750,15 @@ ul li.vjs-menu-title.vjs-res-menu-title:hover {
     width: 60px;
 }
 
-li.mejs-speed-selected {
+.kgvid_wrapper li.mejs-speed-selected {
 	background: rgba(255, 255, 255, 0.4);
 }
 
-.mejs__speed-selector,
-.mejs-speed-selector {
+.kgvid_wrapper .mejs__speed-selector,
+.kgvid_wrapper .mejs-speed-selector {
     visibility: hidden;
 }
-.mejs__speed-button:hover .mejs__speed-selector,
-.mejs-speed-button:hover .mejs-speed-selector {
+.kgvid_wrapper .mejs__speed-button:hover .mejs__speed-selector,
+.kgvid_wrapper .mejs-speed-button:hover .mejs-speed-selector {
     visibility: visible;
 }
