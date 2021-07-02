@@ -2297,8 +2297,8 @@ function kgvid_video_embed_print_scripts() {
 
 				if ( $wp_version < 4.4 && array_key_exists( 'id', $first_embedded_video ) && $options['oembed_provider'] == "on" && is_singular() ) {
 
-					echo '<link rel="alternate" type="application/json+oembed" href="' . site_url('/?kgvid_video_embed[oembed]=json&amp;kgvid_video_embed[post_id]=' .$first_embedded_video['id']).'" />'."\n";
-					echo '<link rel="alternate" type="application/xml+oembed" href="' . site_url('/?kgvid_video_embed[oembed]=xml&amp;kgvid_video_embed[post_id]='.$first_embedded_video['id']).'" />'."\n";
+					echo '<link rel="alternate" type="application/json+oembed" href="' . site_url('/?videopack[oembed]=json&amp;videopack[post_id]=' .$first_embedded_video['id']).'" />'."\n";
+					echo '<link rel="alternate" type="application/xml+oembed" href="' . site_url('/?videopack[oembed]=xml&amp;videopack[post_id]='.$first_embedded_video['id']).'" />'."\n";
 
 				}
 
@@ -7469,7 +7469,7 @@ function kgvid_video_attachment_template() {
 			'thumbnail_url' => $thumbnail_url,
 			'thumbnail_width' => $dimensions['width'],
 			'thumbnail_height' => $dimensions['height'],
-			'html' => "<iframe allowfullscreen src='".site_url('/')."?attachment_id=".$post->ID."&amp;kgvid_video_embed[enable]=true' frameborder='0' scrolling='no' width='".esc_attr($dimensions['width'])."' height='".esc_attr($dimensions['height'])."'></iframe>"
+			'html' => "<iframe allowfullscreen src='".site_url('/')."?attachment_id=".$post->ID."&amp;videopack[enable]=true' frameborder='0' scrolling='no' width='".esc_attr($dimensions['width'])."' height='".esc_attr($dimensions['height'])."'></iframe>"
 		);
 
 		if ( $kgvid_video_embed['oembed'] == 'json' ) {
