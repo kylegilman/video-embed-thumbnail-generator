@@ -2271,7 +2271,7 @@ function kgvid_video_embed_print_scripts() {
 					if ( array_key_exists('poster', $first_embedded_video) ) {
 						echo '<meta name="twitter:image" content="'.esc_attr(str_replace('http://', 'https://', $first_embedded_video['poster'])).'">'."\n";
 					}
-					echo '<meta name="twitter:player" content="'.esc_attr(str_replace('http://', 'https://', get_attachment_link($first_embedded_video['id']))).'?kgvid_video_embed%5Benable%5D=true'.'">'."\n";
+					echo '<meta name="twitter:player" content="'.esc_attr(str_replace('http://', 'https://', get_attachment_link($first_embedded_video['id']))).'?videopack[enable]=true'.'">'."\n";
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
 						echo '<meta name="twitter:player:width" content="'.esc_attr($first_embedded_video['width']).'">'."\n";
 					}
@@ -7398,7 +7398,7 @@ function kgvid_video_attachment_template() {
 	if ( $options['embeddable'] == 'false' && !array_key_exists('sample', $kgvid_video_embed) && !array_key_exists('gallery', $kgvid_video_embed) ) { $kgvid_video_embed['enable'] = 'false'; }
 
 	if ( is_array($kgvid_video_embed) && array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true'
-		&& ( ( is_object($post) && array_key_exists('post_mime_type', $post) && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
+		&& ( ( is_object($post) && property_exists($post, 'post_mime_type') && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
 		) {
 
 		$html = kgvid_generate_embeddable_video( $kgvid_video_embed );
