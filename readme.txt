@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
-Tested up to: 5.7
+Tested up to: 5.8
 Requires PHP: 5.6.0
 Stable tag: 4.7.1
 License: GPLv2 or later
@@ -115,12 +115,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.1 - June 20, 2021 =
-* Updated Video.js to version 7.12.4
-* Updated Embed Video From URL inserted shortcode to [videopack]
-* Fixed bug that removed existing meta_query when loading attachments and broke Woocommerce image importing. 
+= 4.7.1 - July 2, 2021 =
+* Updated Video.js to version 7.13.3
+* Fixed bug that removed existing meta_query when loading attachments, which broke Woocommerce image importing and most likely some other queries. 
+* Updated shortcode inserted via Embed Video From URL tab to [videopack]
 * Fixed bug that caused errors when all default encode formats were diabled.
+* Fixed bug that broke playback on Twitter Player Cards.
 * Changed video encode queue page design to make it clearer when the queue is paused.
+* Updated Admin styles to conform to standardized WordPress color palette.
 
 = 4.7 - March 16, 2021 =
 * Changed plugin name to Videopack.
