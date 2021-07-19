@@ -115,13 +115,14 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.1 - July 2, 2021 =
+= 4.7.1 - July 19, 2021 =
 * Updated Video.js to version 7.13.3
 * Fixed bug that removed existing meta_query when loading attachments, which broke Woocommerce image importing and most likely some other queries. 
-* Updated shortcode inserted via Embed Video From URL tab to [videopack]
-* Fixed bug that caused errors when all default encode formats were diabled.
+* Updated shortcode inserted via 'Embed Video From URL' tab from 'KGVID' to 'videopack'
+* Fixed bug that caused errors when all default encode formats were disabled.
 * Fixed bug that broke playback on Twitter Player Cards.
 * Changed video encode queue page design to make it clearer when the queue is paused.
+* Added fallback logic in case the Freemius SDK files are removed from the distribution. The Freemius SDK is not required to run Videopack unless you would like to use a premium add-on.
 * Updated Admin styles to conform to standardized WordPress color palette.
 
 = 4.7 - March 16, 2021 =
@@ -147,7 +148,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that added videos to encode queue even if there was nothing to encode.
 * Fixed bug that wouldn't show a sample video on the settings page if there were no posts in the WordPress database.
 
-<a href="https://www.wordpressvideopack.com/docs/changelog/">See the full changelog on my website.</a>
+<a href="https://www.wordpressvideopack.com/docs/changelog/">See the full changelog on the Videopack website.</a>
 
 == Upgrade Notice ==
 
