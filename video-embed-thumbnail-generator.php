@@ -266,18 +266,23 @@ function kgvid_fs_custom_connect_message_on_update(
 
 function kgvid_videopack_fs_loaded() { //add Freemius customizations after Freemius is loaded
 
-	videopack_fs()->add_filter('connect_message_on_update', 'kgvid_fs_custom_connect_message_on_update', 10, 6);
+	if ( function_exists( 'videopack_fs' ) ) {
 
-	videopack_fs()->override_i18n( array(
-		'yee-haw' 		=> __( "Great", 'video-embed-thumbnail-generator' ),
-		'woot'          => __( 'Great', 'video-embed-thumbnail-generator' ),
-	) );
+		videopack_fs()->add_filter('connect_message_on_update', 'kgvid_fs_custom_connect_message_on_update', 10, 6);
 
-	videopack_fs()->add_action('after_uninstall', 'kgvid_uninstall_plugin'); //add uninstall logic
+		videopack_fs()->override_i18n( array(
+			'yee-haw' 		=> __( "Great", 'video-embed-thumbnail-generator' ),
+			'woot'          => __( 'Great', 'video-embed-thumbnail-generator' ),
+		) );
+
+		videopack_fs()->add_action('after_uninstall', 'kgvid_uninstall_plugin'); //add uninstall logic
+
+	}
+
 }
 add_action('videopack_fs_loaded', 'kgvid_videopack_fs_loaded');
 
-if ( ! function_exists( 'videopack_fs' ) ) {
+if ( file_exists(dirname(__FILE__) . '/freemius/start.php') && ! function_exists( 'videopack_fs' ) ) {
     // Create a helper function for easy SDK access.
     function videopack_fs() {
         global $videopack_fs;
@@ -289,7 +294,7 @@ if ( ! function_exists( 'videopack_fs' ) ) {
             }
 
             // Include Freemius SDK.
-            require_once dirname(__FILE__) . '/freemius/start.php';
+			require_once dirname(__FILE__) . '/freemius/start.php';
 
 			$init_options = array(
                 'id'                  => '7761',
@@ -4769,6 +4774,12 @@ function kgvid_video_embed_options_init() {
 
 	add_settings_field('test_ffmpeg', __('Test FFMPEG:', 'video-embed-thumbnail-generator'), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_test_settings' );
 
+	if ( !function_exists( 'videopack_fs' ) ) {
+
+		register_uninstall_hook( __FILE__, 'kgvid_uninstall_plugin' ); //register WP uninstall instead of Freemius uninstall hook
+		
+	}
+
 }
 add_action('admin_init', 'kgvid_video_embed_options_init' );
 
@@ -6443,6 +6454,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			// ** Thumbnail section **//
 
 			$thumbnail_url = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
+			$thumbnail_id = get_post_meta($post->ID, "_kgflashmediaplayer-poster-id", true);
 			if ( is_ssl() ) { $thumbnail_url = str_replace('http:', 'https:', $thumbnail_url); }
 
 			$thumbnail_html = "";
@@ -6450,7 +6462,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'.$kgvid_postmeta['autothumb-error'].'</div>';
 			}
 			elseif ( !empty($thumbnail_url) ) {
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'.$thumbnail_url.'?'.rand().'"></div>';
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-thumb_id="'.$thumbnail_id.'" src="'.$thumbnail_url.'?'.rand().'"></div>';
 			}
 
 			$choose_from_video_content = "";
@@ -6981,9 +6993,12 @@ function kgvid_ajax_redraw_thumbnail_box() {
 		$thumbnail_src = wp_get_attachment_image_src($poster_id, 'thumbnail');
 		if ( is_array($thumbnail_src) && array_key_exists(0, $thumbnail_src) ) { $thumbnail_size_url = $thumbnail_src[0]; }
 	}
-	$response['thumb_url'] = get_post_meta($post_id, "_kgflashmediaplayer-poster", true).'?'.rand();
-	$response['thumbnail_size_url'] = $thumbnail_size_url.'?'.rand();
-	$response['thumb_error'] = $kgvid_postmeta['autothumb-error'];
+
+	$response = array(
+		'thumb_url' => get_post_meta($post_id, "_kgflashmediaplayer-poster", true).'?'.rand(),
+		'thumbnail_size_url' => $thumbnail_size_url.'?'.rand(),
+		'thumb_error' => $kgvid_postmeta['autothumb-error']
+	);
 	echo json_encode($response);
 	die();
 
@@ -7057,6 +7072,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 				if ( isset($post_parent) ) {
 					set_post_thumbnail($post_parent, $thumb_id);
 				}
+				else { $attachment['kgflashmediaplayer-noparent'] = true; }
 
 			}
 		}
