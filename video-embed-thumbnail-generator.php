@@ -3,7 +3,7 @@
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: https://www.wordpressvideopack.com/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.7.1
+Version: 4.7.2
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,7 +58,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.7.1',
+		"version" => '4.7.2',
 		"videojs_version" => '7.13.3',
 		"embed_method" => "Video.js v7",
 		"template" => false,
@@ -1996,6 +1996,7 @@ function kgvid_video_embed_enqueue_styles() {
 	}
 
 	if ( $options['embed_method'] == "WordPress Default" ) {
+
 		global $wp_version;
 		
 		if ( $wp_version >= 4.9 ) {
@@ -2018,7 +2019,9 @@ function kgvid_video_embed_enqueue_styles() {
 	}
 
 	//plugin-related frontend styles, requires video-js
-	wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), array( 'video-js' ), $options['version'] );
+	if ( $options['embed_method'] != 'None' ) {
+		wp_enqueue_style( 'kgvid_video_styles', plugins_url("/css/kgvid_styles.css", __FILE__), array( 'video-js' ), $options['version'] );
+	}
 
 	if ( $options['alwaysloadscripts'] == 'on' ) {
 		kgvid_enqueue_shortcode_scripts();
@@ -2828,11 +2831,14 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts['align'] == "right" ) { $aligncode = ' kgvid_wrapper_auto_left'; }
 		}
 
-		if ( ( $query_atts['title'] != "false" )
+		if ( 
+			( $query_atts['title'] != "false"
 			|| $query_atts['embedcode'] != "false"
 			|| $query_atts['downloadlink'] == "true"
 			||  $options['twitter_button'] == 'on'
-			||  $options['facebook_button'] == 'on'
+			||  $options['facebook_button'] == 'on' 
+			)
+			&& $options['embed_method'] != 'None'
 		) { //generate content overlaid on video
 			$kgvid_meta = true;
 		}
@@ -2897,7 +2903,10 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		);
 		$video_variables = apply_filters('kgvid_video_variables', $video_variables, $query_atts, $encodevideo_info);
 
-		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
+		if ( $options['embed_method'] == "Video.js" 
+			|| $options['embed_method'] == "Video.js v7" 
+			|| $options['embed_method'] == "None"
+		) {
 
 			$enable_resolutions_plugin = false;
 			$x = 20;
@@ -3132,7 +3141,10 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$code .= $executed_shortcode;
 		}
 
-		if ( $options['embed_method'] == "Video.js" || $options['embed_method'] == "Video.js v7" ) {
+		if ( $options['embed_method'] == "Video.js" 
+			|| $options['embed_method'] == "Video.js v7" 
+			|| $options['embed_method'] == "None" 
+		) {
 
 			$code .= "\n\t\t\t\t".'<video id="video_'.$div_suffix.'" ';
 			if ( $query_atts["playsinline"] == 'true' ) { $code .= 'playsinline '; }
@@ -3142,12 +3154,23 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $query_atts["muted"] == 'true' ) { $code .= 'muted '; }
 			$code .= 'preload="'.$query_atts['preload'].'" ';
 			if ( $query_atts["poster"] != '' ) { $code .= 'poster="'.esc_attr($query_atts["poster"]).'" '; }
-			$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
-			if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
-			if ( is_array($atts) && array_key_exists('skin', $atts) ) {
-				$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
+			if ( $options['embed_method'] != "None" ) {
+				$code .= 'width="'.$query_atts["width"].'" height="'.esc_attr($query_atts["height"]).'"';
 			}
-			$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'">'."\n";
+			else {
+				$code .= 'width="100%"';
+			}
+			
+			if (  $options['embed_method'] != "None" ) {
+				if ( $options['js_skin'] == "" ) { $options['js_skin'] = "vjs-default-skin"; }
+				if ( is_array($atts) && array_key_exists('skin', $atts) ) {
+					$options['js_skin'] = $atts['skin']; //allows user to set skin for individual videos using the skin="" attribute
+				}
+				$code .= ' class="fitvidsignore '.esc_attr('video-js '.$options['js_skin']).'">'."\n";
+			}
+			else {
+				$code .= ' class="fitvidsignore">'."\n";
+			}
 
 			$code .= implode("", $sources); //add the <source> tags created earlier
 			$code .= $track_code; //if there's a text track
@@ -3255,7 +3278,10 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			$code .= "</div>\n";
 		}
 
-		if ( !empty($query_atts["watermark"]) && $query_atts["watermark"] != "false" ) {
+		if ( !empty($query_atts["watermark"]) 
+			&& $query_atts["watermark"] != "false" 
+			&& $options['embed_method'] != "None"
+		) {
 			$watermark_id = kgvid_url_to_id($query_atts["watermark"]);
 			if ( $watermark_id ) { $query_atts["watermark"] = wp_get_attachment_url($watermark_id); }
 			if ( is_admin() && defined( 'DOING_AJAX' ) && DOING_AJAX ) {
@@ -4801,8 +4827,9 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 
 		$players = array(
 			"Video.js v7" => "Video.js v7",
-			"Video.js v5 (" . __("deprecated") . ")" => "Video.js",
-			__("WordPress Default", 'video-embed-thumbnail-generator') => "WordPress Default"
+			"Video.js v5 (" . __("deprecated", 'video-embed-thumbnail-generator') . ")" => "Video.js",
+			__("WordPress Default", 'video-embed-thumbnail-generator') => "WordPress Default",
+			__("None", 'video-embed-thumbnail-generator') => "None"
 		);
 
 		$players = apply_filters('kgvid_available_video_players', $players);
@@ -4812,7 +4839,7 @@ add_action('admin_init', 'kgvid_video_embed_options_init' );
 			$selected = ($options['embed_method']==$value) ? 'selected="selected"' : '';
 			echo "<option value='$value' $selected>$name</option>";
 		}
-		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Video.js version 7 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme.', 'video-embed-thumbnail-generator')."</span></span></td></tr></tbody></table>\n";
+		echo "</select> <span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>".__('Video.js version 7 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.', 'video-embed-thumbnail-generator')."</span></span></td></tr></tbody></table>\n";
 
 		$sampleheight = intval($options['height']) + 50;
 		echo "<div class='kgvid_setting_nearvid' style='width:".$options['width']."px;'>";

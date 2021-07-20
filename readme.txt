@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
 Tested up to: 5.8
 Requires PHP: 5.6.0
-Stable tag: 4.7.1
+Stable tag: 4.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.7.2 - July XX, 2021 =
+* Added video player option "None" which will disable all plugin-related CSS and JS on the front end.
 
 = 4.7.1 - July 19, 2021 =
 * Updated Video.js to version 7.13.3
