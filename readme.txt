@@ -66,8 +66,6 @@ WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in sys
 
 If you're like most users and don't have FFMPEG installed on your server, the plugin relies on your browser's built-in ability to play videos. Google Chrome is best when making thumbnails because it supports the most formats. Wikipedia has <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">a great chart that explains which browsers work with which video formats</a>.
 
-If you were able to make thumbnails using FFMPEG before updating to version 4.2, try disabling in-browser thumbnail creation in the FFMPEG Settings tab of the plugin settings.
-
 = How can I change the watermark's size or position? =
 
 The watermark option is a simple image overlay and is styled using CSS. The default styling is
