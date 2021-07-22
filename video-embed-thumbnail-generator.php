@@ -3355,7 +3355,7 @@ function kgvid_replace_video_shortcode( $atts, $content = '' ) {
 
 	$src_atts = array('src', 'mp4', 'm4v', 'webm', 'ogv', 'wmv', 'flv');
 	foreach ( $src_atts as $src_key ) {
-		if ( array_key_exists($src_key, $atts) ) {
+		if ( is_array($atts) && array_key_exists($src_key, $atts) ) {
 			$content = $atts[$src_key];
 			break;
 		}
