@@ -113,7 +113,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.2 - July XX, 2021 =
+= 4.7.3 - August 11, 2021 =
+* Updated Video.js to version 7.14.3
+* Fixed bug that localized front-end JavaScript multiple times if multiple videos were embedded on the page.
+
+= 4.7.2 - July 22, 2021 =
 * Added video player option "None" which will disable all plugin-related CSS and JS on the front end.
 
 = 4.7.1 - July 19, 2021 =
