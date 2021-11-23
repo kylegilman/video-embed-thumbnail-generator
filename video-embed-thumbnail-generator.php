@@ -3,7 +3,7 @@
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: https://www.wordpressvideopack.com/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.7.3
+Version: 4.7.4
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,7 +58,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.7.3',
+		"version" => '4.7.4',
 		"videojs_version" => '7.14.3',
 		"embed_method" => "Video.js v7",
 		"template" => false,
@@ -663,12 +663,12 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 		);
 	}
 
-	if ( is_array($options['custom_format']) && ( !empty($options['custom_format']['width']) || !empty($options['custom_format']['height']) ) ) {
+	if ( is_array($options) && is_array($options['custom_format']) && ( !empty($options['custom_format']['width']) || !empty($options['custom_format']['height']) ) ) {
 		$video_formats['custom'] = $options['custom_format'];
 		unset($video_formats['custom_'.$options['custom_format']['format']]);
 	}
 
-	if ( isset($options['replace_format']) ) {
+	if ( is_array($options) && isset($options['replace_format']) ) {
 
 		$video_formats['fullres'] = array(
 			'name' => sprintf( __("Replace original with %s", 'video-embed-thumbnail-generator'), $video_formats[$options['replace_format']]['name'] ),
@@ -2201,10 +2201,12 @@ function kgvid_get_first_embedded_video( $post ) {
 					$video_attachment = get_posts($args);
 
 					if ( $video_attachment ) {
+						if ( empty($attributes) ) {
+							$attributes = array();
+						}
 						$attributes['id'] = $video_attachment[0]->ID;
 						$url = wp_get_attachment_url($attributes['id']);
 					}
-
 				}//if no URL or ID attribute
 
 			}//if there's a KGVID shortcode in the post
@@ -3561,12 +3563,9 @@ function KGVID_shortcode($atts, $content = '') {
 		$options = kgvid_get_options();
 		if ( $options['embed_method'] != 'Video.js' && $options['embed_method'] != 'Video.js v7' ) { kgvid_enqueue_shortcode_scripts(); }
 
-		if ( in_the_loop() ) {
-			$post_id = get_the_ID();
-		}
-		else {
-			global $wp_query;
-    		$post_id = $wp_query->get_queried_object_id();
+		$post_id = get_the_ID();
+		if ( $post_id == false ) {
+			$post_id = get_queried_object_id();
 		}
 
 		$query_atts = kgvid_shortcode_atts($atts);
