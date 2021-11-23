@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
 Tested up to: 5.8
 Requires PHP: 5.6.0
-Stable tag: 4.7.3
+Stable tag: 4.7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,11 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.7.4 - November XX, 2021 =
+* Updated Video.js to version 7.17.0
+* Fixed some autoplay problems with Video.js v7
+* Fixed a bug that caused a PHP 8 warning when the plugin is first installed.
 
 = 4.7.3 - August 16, 2021 =
 * Updated Video.js to version 7.14.3
