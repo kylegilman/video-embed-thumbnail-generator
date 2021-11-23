@@ -366,7 +366,7 @@ function kgvid_setup_video(id) {
 			}
 		}
 
-		if ( video_vars.autoplay == "true" && !player.paused() && player.hasClass('vjs-paused') ) {
+		if ( video_vars.player_type == "Video.js" && video_vars.autoplay == "true" && !player.paused() && player.hasClass('vjs-paused') ) {
 			player.pause();
 			player.play();
 		}
