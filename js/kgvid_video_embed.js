@@ -448,6 +448,11 @@ function kgvid_setup_video(id) {
 
 		player.on('pause', function kgvid_play_pause(){
 			jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
+			kgvid_video_counter(id, 'pause');
+		});
+
+		player.on('seeked', function kgvid_seeked(){
+			kgvid_video_counter(id, 'seek');
 		});
 
 		player.on('ended', function kgvid_play_end(){
@@ -588,8 +593,13 @@ function kgvid_setup_video(id) {
 
 		});
 
+		player.on('seeked', function(){
+			kgvid_video_counter(id, 'seek');
+		});
+
 		player.on('pause', function(){
 			jQuery('#video_'+id+'_meta').addClass('kgvid_video_meta_hover');
+			kgvid_video_counter(id, 'pause');
 		});
 
 		jQuery(document).on('mozfullscreenchange webkitfullscreenchange fullscreenchange', function(){
@@ -862,60 +872,63 @@ function kgvid_resize_gallery_play_button(gallery_id) {
 
 }
 
+function kgvid_send_google_analytics(event, label) {
+
+	if (typeof gtag != "undefined") { 
+		gtag("event", event, {
+			'event_category': "Videos", 
+			'event_label': label
+		}); 
+	}
+	else if (typeof ga != "undefined") { ga("send", "event", "Videos", event, label); }
+	else if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", event, label); } // Yoast renamed ga function
+	else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", event, label]); }
+
+}
+
 function kgvid_video_counter(id, event) {
 
 	var video_vars = jQuery('#video_'+id+'_div').data('kgvid_video_vars');
 	var changed = false;
-
 	var played = jQuery('#video_'+id+'_div').data("played") || "not played";
-	if ( played == "not played" ) {
-		if (video_vars.countable) { //video is in the db
-			changed = true;
-			jQuery('#video_'+id+'_div').data("played", "played");
+
+	if ( event == 'play' ) {
+
+		if ( played == "not played" ) { //Play start
+
+			if (video_vars.countable) { //video is in the db
+				changed = true;
+			}
+
+			jQuery('#video_'+id+'_div').data("played", "played");	
+			kgvid_send_google_analytics(kgvidL10n_frontend.playstart, video_vars.title);
+
 		}
-		if (typeof gtag != "undefined") { 
-			gtag("event", kgvidL10n_frontend.playstart, {
-				'event_category': "Videos", 
-				'event_label': video_vars.title
-			}); 
+		else { //Resume
+
+			kgvid_send_google_analytics(kgvidL10n_frontend.resume, video_vars.title);
+
 		}
-		else if (typeof ga != "undefined") { ga("send", "event", "Videos", kgvidL10n_frontend.playstart, video_vars.title); }
-		else if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", kgvidL10n_frontend.playstart, video_vars.title); } // Yoast renamed ga function
-		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", kgvidL10n_frontend.playstart, video_vars.title]); }
 
 	}
 
-	if ( !isNaN(event) ) {
+	if ( event == "seek" || event == "pause" || event == "end" ) {
 
-		if (video_vars.countable) { //video is in the db
+		if ( event == 'end' && video_vars.countable) { //video is in the db
 			changed = true;
 		}
-		if (typeof gtag != "undefined") {
-			gtag("event", event+"%", {
-				'event_category': "Videos", 
-				'event_label': video_vars.title
-			}); 
-		}
-		else if (typeof ga != "undefined") { ga("send", "event", "Videos", event+"%", video_vars.title); }
-		else if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", event+"%", video_vars.title); } // Yoast renamed ga function
-		else if (typeof _gaq != "undefined") { _gaq.push(["_trackEvent", "Videos", event+"%", video_vars.title]); }
+
+		kgvid_send_google_analytics(kgvidL10n_frontend[event], video_vars.title);
 
 	}
 
-	if ( event == "end" ) {
+	if ( !isNaN(event) ) { //event is a number (quarter-play)
 
 		if (video_vars.countable) { //video is in the db
 			changed = true;
 		}
-		if (typeof gtag != "undefined") { 
-			gtag("event", kgvidL10n_frontend.completeview, {
-				'event_category': "Videos", 
-				'event_label': video_vars.title
-			}); 
-		}
-		if (typeof ga != "undefined") { ga("send", "event", "Videos", kgvidL10n_frontend.completeview, video_vars.title); }
-		if (typeof __gaTracker != "undefined") { __gaTracker("send", "event", "Videos", kgvidL10n_frontend.completeview, video_vars.title); } // Yoast renamed ga function
-		else if (typeof _gaq != 'undefined') { _gaq.push(['_trackEvent', 'Videos', kgvidL10n_frontend.completeview, video_vars.title]); }
+
+		kgvid_send_google_analytics(event+"%", video_vars.title);
 
 	}
 

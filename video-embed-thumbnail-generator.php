@@ -3,7 +3,7 @@
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: https://www.wordpressvideopack.com/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.7.4
+Version: 4.7.4b
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,7 +58,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.7.4',
+		"version" => '4.7.4b',
 		"videojs_version" => '7.17.0',
 		"embed_method" => "Video.js v7",
 		"template" => false,
@@ -1964,7 +1964,10 @@ function kgvid_video_embed_enqueue_styles() {
 		'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
 		'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce'),
 		'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'completeview' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'pause' => _x("Pause", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'resume' => _x("Resume", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'seek' => _x("Seek", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'end' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
 		'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
 		'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator'),
 		'quality' => _x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator'),
