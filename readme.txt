@@ -113,8 +113,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.4 - December XX, 2021 =
+= 4.7.4 - January XX, 2022 =
 * Updated Video.js to version 7.17.0
+* Added limited support for HLS and DASH streaming.
 * Added Pause, Resume, and Seek Google Analytics event tracking. 
 * Fixed a bug that reported multiple Play events when videos not in the WordPress database resumed.
 * Fixed some autoplay problems with Video.js v7.

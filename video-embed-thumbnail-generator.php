@@ -3,7 +3,7 @@
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: https://www.wordpressvideopack.com/
 Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
-Version: 4.7.4b
+Version: 4.7.4
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -1053,6 +1053,16 @@ function kgvid_url_exists($url) {
 	
 }
 
+function kgvid_add_mime_types( $existing_mimes ) {
+
+	$existing_mimes['mpd'] = 'application/dash+xml';
+	$existing_mimes['m3u8'] = 'application/vnd.apple.mpegurl';
+
+	return $existing_mimes;
+
+}
+add_filter( 'mime_types', 'kgvid_add_mime_types' );
+
 function kgvid_url_mime_type($url, $post_id = false) {
 
 	$mime_info = wp_check_filetype(strtok($url, '?'));
@@ -1112,6 +1122,7 @@ function kgvid_url_mime_type($url, $post_id = false) {
 				}
 			}
 
+			$mime_info = array();
 			$mime_info['type'] = $mime_type;
 			$mime_info['ext'] = $url_extension;
 
@@ -2634,7 +2645,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 	$code = "";
 	$id_array = array();
 	$video_formats = kgvid_video_formats(false, true, false);
-	$compatible = array("flv", "f4v", "mp4", "mov", "m4v", "ogv", "ogg", "webm");
+	$compatible = array("mp4", "mov", "m4v", "ogv", "ogg", "webm", "mpd", "m3u8");
 	$h264compatible = array("mp4", "mov", "m4v");
 
 	if ( !empty($query_atts["id"]) ) {
@@ -7759,7 +7770,6 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 
 	$embed_display = "";
 	$encode_list = array();
-	$embeddable = array("flv", "f4v", "mp4", "mov", "m4v", "ogv", "ogg", "webm");
 	$h264extensions = array("mp4", "m4v", "mov");
 	$video_formats = kgvid_video_formats(false, false);
 	$sanitized_url = kgvid_sanitize_url($movieurl);
