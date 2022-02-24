@@ -107,8 +107,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.4 - January XX, 2022 =
-* Updated Video.js to version 7.17.0
+= 4.7.4 - February 24, 2022 =
+* Updated Video.js to v7.17.0
+* Updated Freemius SDK to v2.4.3
 * Added limited support for HLS and DASH streaming.
 * Added Pause, Resume, and Seek Google Analytics event tracking. 
 * Fixed a bug that reported multiple Play events when videos not in the WordPress database resumed.
