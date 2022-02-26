@@ -107,7 +107,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.4 - February 24, 2022 =
+= 4.7.4 - February 26, 2022 =
 * Updated Video.js to v7.17.0
 * Updated Freemius SDK to v2.4.3
 * Added limited support for HLS and DASH streaming.

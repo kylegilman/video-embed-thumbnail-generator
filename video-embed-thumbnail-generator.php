@@ -2,7 +2,7 @@
 /*
 Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
 Plugin URI: https://www.wordpressvideopack.com/
-Description: Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding.
+Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
 Version: 4.7.4
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
