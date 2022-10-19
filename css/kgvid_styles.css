@@ -99,6 +99,7 @@ img.kgvid_ios_novideo {
 	position: absolute;
 	top: 0px;
 	z-index: 103;
+    box-sizing:border-box;
 	margin: 0px;
     padding: 3px;
 	width: 100%;
