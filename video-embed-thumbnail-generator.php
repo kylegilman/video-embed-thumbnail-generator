@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Videopack (formerly Video Embed & Thumbnail Generator)
-Plugin URI: https://www.wordpressvideopack.com/
+Plugin Name: Videopack
+Plugin URI: https://www.videopack.video/
 Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
-Version: 4.7.4
+Version: 4.7.5
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -58,8 +58,8 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.7.4b',
-		"videojs_version" => '7.17.0',
+		"version" => '4.7.5',
+		"videojs_version" => '7.20.3',
 		"embed_method" => "Video.js v7",
 		"template" => false,
 		"template_gentle" => "on",
@@ -809,7 +809,7 @@ function kgvid_plugin_meta_links( $links, $file ) {
 	if ( $file == $plugin ) {
 		return array_merge(
 			$links,
-			array( '<a href="https://www.wordpressvideopack.com/donate/">Donate</a>' )
+			array( '<a href="https://www.videopack.video/donate/">Donate</a>' )
 		);
 	}
 	return $links;
@@ -1968,28 +1968,13 @@ class kgvid_Process {
 function kgvid_video_embed_enqueue_styles() {
 
 	$options = kgvid_get_options();
-
-	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), array('jquery'), $options['version'], true );
-
-	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
-		'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
-		'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce'),
-		'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'pause' => _x("Pause", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'resume' => _x("Resume", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'seek' => _x("Seek", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'end' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
-		'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator'),
-		'quality' => _x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator'),
-		'fullres' => _x("Full", 'Full resolution', 'video-embed-thumbnail-generator')
-	) );
-
-	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
+	$kgvid_video_embed_script_dependencies = array('jquery');
 
 	//Video.js styles
 
 	if ( $options['embed_method'] == "Video.js" ||  $options['embed_method'] == "Video.js v7" ) {
+
+		$kgvid_video_embed_script_dependencies[] = 'video-js';
 
 		if ( $options['embed_method'] == "Video.js" ) {
 
@@ -2019,6 +2004,24 @@ function kgvid_video_embed_enqueue_styles() {
 		}
 
 	}
+
+	wp_register_script( 'kgvid_video_embed', plugins_url("/js/kgvid_video_embed.js", __FILE__), $kgvid_video_embed_script_dependencies, $options['version'], true );
+
+	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
+		'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
+		'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce'),
+		'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'pause' => _x("Pause", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'resume' => _x("Resume", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'seek' => _x("Seek", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'end' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
+		'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator'),
+		'quality' => _x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator'),
+		'fullres' => _x("Full", 'Full resolution', 'video-embed-thumbnail-generator')
+	) );
+
+	wp_register_script( 'simplemodal', plugins_url("/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
 
 	if ( $options['embed_method'] == "WordPress Default" ) {
 
@@ -4553,7 +4556,7 @@ function kgvid_network_settings_page() {
    		</form>
    		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 		<span><?php _e('If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator') ?></span>
-		<a href="https://www.wordpressvideopack.com/donate/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
+		<a href="https://www.videopack.video/donate/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</div>
 		<script type='text/javascript'>
 				jQuery(document).ready(function() {
@@ -4631,7 +4634,7 @@ function kgvid_settings_page() {
 		</form>
 		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 		<span><?php _e('If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator') ?></span>
-		<a href="https://www.wordpressvideopack.com/donate/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
+		<a href="https://www.videopack.video/donate/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</form>
 		</div>
 		<script type='text/javascript'>

@@ -1,11 +1,11 @@
-=== Videopack (formerly Video Embed & Thumbnail Generator) ===
+=== Videopack ===
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 5.6.0
-Stable tag: 4.7.4
+Stable tag: 4.7.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,19 +15,17 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 = A plugin to make video players, thumbnails, multiple resolutions, and video galleries. =
 
-Video Embed & Thumbnail Generator is now Videopack! This is a substantial update that includes new versions of Video.js and numerous fixes from years of neglect.
-
 This video plugin adds several fields to any video uploaded to the WordPress Media Library. If your video can be played natively in your browser, or if you have FFMPEG installed on your server (optional), you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. Click "Insert into Post" and you'll get a shortcode in the post editor that will make a flexible, responsive video player.
 
 If you provide multiple H.264 resolutions, the plugin can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If FFMPEG is installed on your server the plugin can make the videos automatically.
 
 You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the <a href="https://codex.wordpress.org/Gallery_Shortcode">WordPress image gallery shortcode</a>. In its simplest form it will create a gallery of all videos attached to the post.
 
-You can now add advertisements to your videos using the <a href="https://www.wordpressvideopack.com/add-ons/videopack-ads/">Videopack Ads</a> premium add-on which you can purchase from the Add-ons tab of the Videopack Settings page or on the <a href="https://www.wordpressvideopack.com/add-ons/videopack-ads/">Videopack website</a>.
+You can now add advertisements to your videos using the <a href="https://www.videopack.video/add-ons/videopack-ads/">Videopack Ads</a> premium add-on which you can purchase from the Add-ons tab of the Videopack Settings page or on the <a href="https://www.videopack.video/add-ons/videopack-ads/">Videopack website</a>.
 
 Not compatible with the new Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
 
-Visit the <a href="https://www.wordpressvideopack.com/docs/">Videopack Documentation pages</a> for more info.
+Visit the <a href="https://www.videopack.video/docs/">Videopack Documentation pages</a> for more info.
 
 == Installation ==
 
@@ -107,6 +105,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.7.5 - October 19, 2022 =
+* Changed official URL to https://www.videopack.video to avoid WordPress trademark violation.
+* Updated Video.js to v7.20.3
+* Adjusted video player script registration order to avoid undefined variables on page load.
+* Modified CSS for video player info bar to prevent it from extending beyond the edge of the video.
+
 = 4.7.4 - February 26, 2022 =
 * Updated Video.js to v7.17.0
 * Updated Freemius SDK to v2.4.3
@@ -137,7 +141,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Changed plugin name to Videopack.
 * The shortcode is now [videopack] by default but older [KGVID] shortcodes will still work.
 * Added Freemius SDK to facilitate selling premium Videopack add-ons.
-* Released a <a href="https://www.wordpressvideopack.com/add-ons/ads/">premium add-on for video ads</a>.
+* Released a <a href="https://www.videopack.video/add-ons/ads/">premium add-on for video ads</a>.
 * Added Video.js v7 player option.
 * Deprecated Video.js v5 player.
 * Removed JW Player & Strobe Media Playback player options.
@@ -156,7 +160,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that added videos to encode queue even if there was nothing to encode.
 * Fixed bug that wouldn't show a sample video on the settings page if there were no posts in the WordPress database.
 
-<a href="https://www.wordpressvideopack.com/docs/changelog/">See the full changelog on the Videopack website.</a>
+<a href="https://www.videopack.video/docs/changelog/">See the full changelog on the Videopack website.</a>
 
 == Upgrade Notice ==
 
