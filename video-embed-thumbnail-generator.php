@@ -923,13 +923,14 @@ function kgvid_set_capabilities($capabilities) {
 
 }
 
-function kgvid_set_locale($filepath) {
+function kgvid_set_lang($filepath) {
 
-	$old_locale = setlocale(LC_CTYPE, 0);
-	$escaped_filepath = escapeshellcmd($filepath);
+	$old_locale = getenv('LANG');
+	//$old_locale = setlocale(LC_CTYPE, 0);
+	$escaped_filepath = escapeshellarg($filepath);
 
-	if ($filepath != $escaped_filepath) {
-
+	if ('"'.$filepath.'"' != $escaped_filepath) {
+error_log($old_locale.' '.$filepath.' '.$escaped_filepath);
 		$wp_locale = get_locale();
 		if ( strlen($wp_locale) == 4 ) {
 			$locale_name = $wp_locale.'.UTF-8';
@@ -938,9 +939,11 @@ function kgvid_set_locale($filepath) {
 			$locale_name = "en_US.UTF-8";
 		}
 		
-		$new_locale = setlocale(LC_CTYPE, $locale_name);
+		//$new_locale = setlocale(LC_CTYPE, $locale_name);
+		$new_locale = putenv('LANG='.$locale_name); 
 		if ( !$new_locale ) {
-			$new_locale = setlocale(LC_CTYPE, "en_US.UTF-8");
+			//$new_locale = setlocale(LC_CTYPE, "en_US.UTF-8");
+			$new_locale = putenv('LANG=en_US.UTF-8'); 
 		}
 
 	}
@@ -1343,10 +1346,10 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		if (function_exists('escapeshellcmd')) {
 			$exec_enabled = true;
 			$test_path = rtrim($options['app_path'], '/');
-			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
+			$old_locale = kgvid_set_lang(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg"').' 2>&1';
 			exec ( $cmd, $output, $returnvalue );
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
+			$restore_lang = putenv('LANG='.$old_locale);
 		}
 		else { $function = "ESCAPESHELLCMD"; }
 	}
@@ -1356,10 +1359,10 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 
 		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
-			$old_locale = kgvid_set_locale(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
+			$old_locale = kgvid_set_lang(plugin_dir_path(__FILE__).'images/sample-video-h264.mp4'); //fixes UTF-8 encoding problems
 			$cmd = escapeshellcmd($test_path.'/'.$options['video_app'].' -i "'.plugin_dir_path(__FILE__).'images/sample-video-h264.mp4" -vframes 1 -f mjpeg "'.$uploads['path'].'/ffmpeg_exists_test.jpg"');
 			exec ( $cmd );
-			$restore_locale = setlocale(LC_CTYPE, $old_locale);
+			$restore_lang = putenv('LANG='.$old_locale);
 		}
 
 		if ( file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //FFMEG has executed successfully
@@ -1620,11 +1623,11 @@ function kgvid_get_video_dimensions($video = false) {
 		}
 	}
 
-	$old_locale = kgvid_set_locale($video); //fixes UTF-8 encoding problems
+	$old_locale = kgvid_set_lang($video); //fixes UTF-8 encoding problems
 	$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '"');
 	$command = $command.' 2>&1';
 	exec ( $command, $output );
-	$restore_locale = setlocale(LC_CTYPE, $old_locale);
+	$restore_lang = putenv('LANG='.$old_locale);
 	$lastline = end($output);
 	$lastline = prev($output)."<br />".$lastline;
 	$movie_info['output'] = addslashes($lastline);
@@ -1656,11 +1659,11 @@ function kgvid_get_video_dimensions($video = false) {
 			case "-90": $movie_info['rotate'] = 270; break;
 			default: $movie_info['rotate'] = ""; break;
 		}
-		$old_locale = kgvid_set_locale($video); //fixes UTF-8 encoding problems
+		$old_locale = kgvid_set_lang($video); //fixes UTF-8 encoding problems
 		$command = escapeshellcmd($ffmpegPath . ' -i "' . $video . '" -codecs');
 		$command = $command.' 2>&1';
 		exec ( $command, $codec_output );
-		$restore_locale = setlocale(LC_CTYPE, $old_locale);
+		$restore_lang = putenv('LANG='.$old_locale);
 		$codec_output = implode("\n", $codec_output);
 		$video_lib_array = array('libvorbis');
 		$video_formats = kgvid_video_formats();
