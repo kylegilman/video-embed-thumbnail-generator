@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
 Tested up to: 6.1
-Requires PHP: 5.6.0
+Requires PHP: 7.2.5
 Stable tag: 4.7.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -105,8 +105,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.7.6 - December XX, 2022 =
+= 4.8 - December XX, 2022 =
+* Increased PHP requirement to 7.2.5
+* Now using Symfony/Process to escape and run FFMPEG instead of exec.
 * Sanitized, escaped, and validated many user inputs and echoed variables.
+* Moved included libraries to lib folder.
+* Re-ordered AAC encoder libraries to avoid using old, deprecated libraries libvo_aacenc and libfaac.
 
 = 4.7.5 - October 19, 2022 =
 * Changed official URL to https://www.videopack.video to avoid WordPress trademark violation.
