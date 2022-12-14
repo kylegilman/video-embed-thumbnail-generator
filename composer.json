@@ -1,0 +1,20 @@
+{
+    "name": "kylegilman/video-embed-thumbnail-generator",
+    "description": "Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.",
+    "type": "wordpress-plugin",
+    "require": {
+        "symfony/process": "^5.4"
+    },
+    "license": "GNU General Public License",
+    "autoload": {
+        "psr-4": {
+            "Kylegilman\\VideoEmbedThumbnailGenerator\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kyle Gilman",
+            "email": "kylegilman@gmail.com"
+        }
+    ]
+}
