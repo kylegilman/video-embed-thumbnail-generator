@@ -2079,143 +2079,6 @@ function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_width, $rotate_
 
 }
 
-function kgvid_generate_encode_string($input, $output, $movie_info, $format, $width, $height, $rotate) {
-
-	$options = kgvid_get_options();
-	$libraries = $movie_info['configuration'];
-	$encode_string = strtoupper($options['video_app'])." not found";
-	$video_formats = kgvid_video_formats();
-
-	if ( $options['ffmpeg_exists'] == "on" && isset($video_formats[$format]) ) {
-
-		if ( $options['video_app'] == "avconv" || $options['video_bitrate_flag'] != "on" ) {
-			$video_bitrate_flag = "b:v";
-			$audio_bitrate_flag = "b:a";
-			$profile_flag = "profile:v";
-			$level_flag = "level:v";
-			$qscale_flag = "q:v";
-		}
-
-		else {
-			$video_bitrate_flag = "b";
-			$audio_bitrate_flag = "ab";
-			$profile_flag = "profile";
-			$level_flag = "level";
-			$qscale_flag = "qscale";
-		}
-
-		$rotate_strings = kgvid_ffmpeg_rotate_strings($rotate, $width, $height);
-		$width = $rotate_strings['width']; //in case rotation requires swapping height and width
-		$height = $rotate_strings['height']; 
-
-		if ( $options['rate_control'] == "crf" ) {
-			$crf_option = $video_formats[$format]['type'].'_CRF';
-			if ( $video_formats[$format]['type'] == 'vp9' ) { 
-				$options['vp9_CRF'] = round((-0.000002554 * $width * $height) + 35); //formula to generate close to Google-recommended CRFs https://developers.google.com/media/vp9/settings/vod/
-			}
-			$crf_flag = "crf";
-			if ( $video_formats[$format]['type'] == 'ogv' ) { //ogg doesn't do CRF
-				$crf_flag = $qscale_flag; 
-			}
-			if ( isset( $options[$crf_option] ) ) {
-				$rate_control_flag = " -".$crf_flag." ".$options[$crf_option];
-			}
-			else {
-				$rate_control_flag = '';
-			}
-		}
-		else {
-			if ( $video_formats[$format]['type'] == 'vp9' ) {
-				$average_bitrate = round(102 + 0.000876 * $width * $height + 1.554*pow(10, -10) * pow($width * $height, 2) );
-				$maxrate = round($average_bitrate * 1.45);
-				$minrate = round($average_bitrate * .5);
-				$rate_control_flag = " -".$video_bitrate_flag." ".$average_bitrate."k -maxrate ".$maxrate."k -minrate ".$minrate."k";
-			}
-			else {
-				$rate_control_flag = " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*$width*$height*30/1024)."k";
-			}
-		}
-
-		if ( $options['audio_channels'] == 'on' ) {
-			$audio_channels_flag = '-ac 2 ';
-		} 
-		else {
-			$audio_channels_flag = '';
-		}
-
-		$watermark_strings = kgvid_ffmpeg_watermark_strings($options['ffmpeg_watermark'], $movie_info['width'], $rotate_strings['complex']);
-
-		if ( $video_formats[$format]['type'] == 'h264' ) {
-
-			$aac_array = kgvid_aac_encoders();
-			foreach ( $aac_array as $aaclib ) { //cycle through available AAC encoders in order of quality
-				if ( $libraries[$aaclib] == "true" ) { break; }
-			}
-			if ( $aaclib == "aac" ) { $aaclib = "aac -strict experimental"; } //the built-in aac encoder is considered experimental
-
-			$vpre_flags = "";
-			if ( $options['ffmpeg_vpre'] == 'on' ) { $vpre_flags = ' -coder 0 -flags +loop -cmp +chroma -partitions +parti8x8+parti4x4+partp8x8+partb8x8 -me_method hex -subq 6 -me_range 16 -g 250 -keyint_min 25 -sc_threshold 40 -i_qfactor 0.71 -b_strategy 1 -qcomp 0.6 -qmin 10 -qmax 51 -qdiff 4 -bf 0 -refs 1 -trellis 1 -flags2 +bpyramid+mixed_refs-wpred-dct8x8+fastpskip -wpredp 0 -rc_lookahead 30 -maxrate 10000000 -bufsize 10000000'; }
-
-			$movflags = "";
-			if ( $options['moov'] == "movflag" ) {
-				$movflags = " -movflags faststart";
-			}
-
-			$profile_text = "";
-			if ( $options['h264_profile'] != "none" ) {
-				$profile_text = " -".$profile_flag." ".$options['h264_profile'];
-				if ( $options['h264_profile'] != "high422" && $options['h264_profile'] != "high444" ) {
-					$profile_text .= " -pix_fmt yuv420p"; //makes sure output is converted to 4:2:0
-				}
-			}
-
-			$level_text = "";
-			if ( $options['h264_level'] != "none" ) {
-				$level_text = " -".$level_flag." ".round(floatval($options['h264_level'])*10);
-			}
-
-			$ffmpeg_options = "-acodec ".$aaclib." -".$audio_bitrate_flag." ".$options['audio_bitrate']."k -s ".$width."x".$height." -vcodec libx264".$vpre_flags.$movflags.$profile_text.$level_text;
-
-		}
-		else { //if it's not H.264 the settings are basically the same
-			$ffmpeg_options = "-acodec libvorbis -".$audio_bitrate_flag." ".$options['audio_bitrate']."k -s ".$width."x".$height." -vcodec ".$video_formats[$format]['vcodec'];
-			if ( $options['rate_control'] == "crf" ) {
-				if ( $video_formats[$format]['type'] == 'webm' ) {
-					$ffmpeg_options .= " -".$video_bitrate_flag." ".round(floatval($options['bitrate_multiplier'])*1.25*$width*$height*30/1024)."k"; //set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
-				}
-				if ( $video_formats[$format]['type'] == 'vp9' ) {
-					$ffmpeg_options .= " -".$video_bitrate_flag." 0";
-				}
-			}
-		}
-
-		$nice = "";
-		$sys = strtoupper(PHP_OS); // Get OS Name
-		if( substr($sys,0,3) != "WIN" && $options['nice'] == "on" ) { $nice = "nice "; }
-
-		if ( !empty($options['htaccess_login']) && strpos($input, 'http://') === 0 ) {
-			$input = substr_replace($input, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
-		}
-
-		$nostdin = "";
-		if ( $options['nostdin'] == "on" && $options['video_app'] == 'ffmpeg' ) { $nostdin = " -nostdin"; }
-
-		$encode_string = array();
-		$encode_string[1] = $nice.$options['app_path']."/".$options['video_app'].$nostdin.' -y -i "'.$input.'" '.$watermark_strings['input'].$audio_channels_flag.$ffmpeg_options.$rate_control_flag.$rotate_strings['rotate']." -threads ".$options['threads'];
-		$encode_string[2] = $watermark_strings['filter'];
-		$encode_string[3] = ' "'.$output.'"';
-
-		$encode_string = apply_filters('kgvid_generate_encode_string', $encode_string, $input, $output, $movie_info, $format, $width, $height, $rotate, $nostdin);
-
-	} //if FFMPEG is found
-
-	$options['encode_string'] = $encode_string;
-	update_option('kgvid_video_embed_options', $options);
-
-	return $encode_string;
-
-}
-
 function kgvid_generate_encode_array($input, $output, $movie_info, $format, $width, $height, $rotate) {
 
 	$options = kgvid_get_options();
@@ -6147,7 +6010,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 
 		$options = kgvid_get_options();
 		$video_formats = kgvid_video_formats(false, false);
-		$encode_string = "";
+		$encode_array = array();
 
 		if ( $options['ffmpeg_exists'] == "on" ) {
 
@@ -6165,11 +6028,11 @@ function kgvid_tooltip_html( $tooltip_text ) {
 			else {
 				$input = plugin_dir_path(__FILE__)."images/sample-video-rotated-h264.mp4";
 			}
-			$encode_string = kgvid_generate_encode_string($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
+			$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
 			$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
 		}
 
-		if ( is_array($encode_string) ) { $encode_string_implode = implode('' , $encode_string); }
+		if ( is_array($encode_array) ) { $encode_string_implode = implode(' ' , $encode_array); }
 		else { $encode_string_implode = ''; }
 
 		$display_div = "";
@@ -6658,7 +6521,6 @@ function kgvid_ajax_save_settings() {
 		$all_settings = kgvid_sanitize_text_field($all_settings);
 		
 		$error_message = "";
-		$encode_string = array();
 		$encode_array = array();
 		$auto_thumb_label = "";
 		global $wp_settings_errors;
@@ -6690,8 +6552,6 @@ function kgvid_ajax_save_settings() {
 					$input = plugin_dir_path(__FILE__)."images/sample-video-rotated-h264.mp4";
 			
 				}
-			
-				$encode_string = kgvid_generate_encode_string($input, $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($validated_options['sample_rotate']));
 	
 				$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$validated_options['sample_format']]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($validated_options['sample_rotate']));
 
@@ -8681,7 +8541,7 @@ function kgvid_encode_videos() {
 	$queued_format = "";
 	$encoding = array();
 	$start_encoding = array();
-	$encode_string = array();
+	$encode_array = array();
 	$uploads = wp_upload_dir();
 	$movie_info = array("width"=>"", "height"=>"");
 	$video_encode_queue = kgvid_get_encode_queue();
@@ -8809,8 +8669,6 @@ function kgvid_encode_videos() {
 
 								if ( ! $encodevideo_info[$format]['exists'] || ($encodevideo_info['sameserver'] && filesize($encodevideo_info[$format]['filepath']) < 24576) ) {
 
-									$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
-
 									$encode_array = kgvid_generate_encode_array($moviefilepath, $encodevideo_info[$format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
 
 								}//if file doesn't already exist
@@ -8859,7 +8717,7 @@ function kgvid_encode_videos() {
 
 								if ( $movie_info['configuration']['libvorbis'] == "true" && $movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == "true" ) {
 
-									$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
+									$encode_array = kgvid_generate_encode_array($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
 									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
 
 								}//if the necessary libraries are enabled
@@ -8900,7 +8758,7 @@ function kgvid_encode_videos() {
 
 							if ( !$encodevideo_info[$queued_format]['exists'] ) {
 
-								$encode_string = kgvid_generate_encode_string($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
+								$encode_array = kgvid_generate_encode_array($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
 									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
 
 							}
@@ -8911,36 +8769,18 @@ function kgvid_encode_videos() {
 
 				}//format loop
 
-				if ( !empty($encode_string) ) {
+				if ( !empty($encode_array) ) {
 
 					$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt';
 
-					$old_locale = kgvid_set_lang($encode_string[1]); //fixes UTF-8 encoding problems
-					$cmd = escapeshellcmd($encode_string[1]).$encode_string[2].escapeshellcmd($encode_string[3]);
-					
-					if ( !empty($cmd) ) { $cmd = $cmd.' > "'.$logfile.'" 2>&1 & echo $!'; }
-					else {
-						$arr = array ( "embed_display"=>"<span class='kgvid_warning'>".__("Error: Command 'escapeshellcmd' is disabled on your server.", 'video-embed-thumbnail-generator')."</span>" );
-						return $arr;
-					}
-
-					if (!empty($encode_array) ) {
-
-						$commandline = implode(' ', array_map('kgvid_escapeArgument', $encode_array));
-						$commandline = $commandline . ' > ' . kgvid_escapeArgument($logfile) . ' 2>&1';
-						$shell_process = Process::fromShellCommandline($commandline);
-						$shell_process->start();
-						$processPID = $shell_process->getPID();
-
-					}
-
-					//$process = new kgvid_Process($cmd);
-					$restore_lang = putenv('LANG='.$old_locale);
+					$commandline = implode(' ', array_map('kgvid_escapeArgument', $encode_array));
+					$commandline = $commandline . ' > "${:LOGFILE}" 2>&1';
+					$shell_process = Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess::fromShellCommandline($commandline);
+					$shell_process->start(null, ['LOGFILE' => $logfile]);
 
 					sleep(1);
 
-					//$processPID = ''; //$process->getPid();
-					$serverOS = ''; //$process->OS;
+					$processPID = $shell_process->getPID();
 
 					$args = array('logfile'=>$logfile);
 					wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);
@@ -8955,9 +8795,8 @@ function kgvid_encode_videos() {
 						'url' => $encodevideo_info[$queued_format]['url'],
 						'logfile' => $logfile,
 						'PID' => $processPID,
-						'OS' => $serverOS,
 						'started' => time(),
-						'encode_string' => $encode_string
+						'encode_string' => trim(implode(' ', $encode_array))
 					);
 
 				} //end if there's stuff to encode
@@ -9248,7 +9087,6 @@ function kgvid_encode_progress() {
 										$attach_data = wp_generate_attachment_metadata( $new_id, $format_info['filepath'] );
 										wp_update_attachment_metadata( $new_id, $attach_data );
 										update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
-										//update_post_meta( $new_id, '_videopack-encode_string', $video_encode_queue[$video_key]['encode_formats'][$format]['encode_string'] );
 										if ( get_post_type($video_entry['attachmentID']) == false ) { update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $video_entry['movieurl'] ); } //connect new video to external url
 									}
 								}
