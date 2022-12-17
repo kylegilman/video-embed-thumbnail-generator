@@ -975,14 +975,14 @@ function kgvid_get_multisite_data(blogID) {
 
 }
 
-function kgvid_cancel_encode(kgvid_pid, postID, video_key, format, blogID) {
+function kgvid_cancel_encode(postID, video_key, format, blogID) {
 
 	var blog = kgvid_get_multisite_data(blogID);
 
 	var kgflashmediaplayersecurity = document.getElementsByName('attachments'+blog.name_text+'['+postID+'][kgflashmediaplayer-security]')[0].value;
 	jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).empty();
-	jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).append('<strong>Canceling</strong>');
-	jQuery.post(ajaxurl, { action:"kgvid_cancel_encode", security: kgflashmediaplayersecurity, kgvid_pid: kgvid_pid, video_key: video_key, format: format } );
+	jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).append('<strong>'+kgvidL10n.canceling+'</strong>');
+	jQuery.post(ajaxurl, { action:"kgvid_cancel_encode", security: kgflashmediaplayersecurity, video_key: video_key, format: format } );
 
 }
 
