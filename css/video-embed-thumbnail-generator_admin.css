@@ -129,15 +129,22 @@ div.kgvid_cancel_button input {
 	width: 90%;
 }
 
-.compat-item .kgvid_checkboxes_section ul li {
+.compat-attachment-fields .kgvid_checkboxes_section ul li {
 	margin-bottom: 10pt;
 	line-height: 16pt;
 	padding-left: 30px;
 	text-indent: -30px;
 }
 
-.kgvid_format_meta {
+.kgvid_checkboxes_section ul li span.kgvid_format_meta {
+    vertical-align: middle;
 	text-indent: 0px;
+}
+
+span.button.kgvid_encode_checkbox_button {
+    vertical-align: middle;
+    margin-left: 5px;
+	text-indent: 0;
 }
 
 #poststuff .nav-tab-wrapper.kgvid-tabs {
