@@ -1,0 +1,13 @@
+{
+    "name": "videojs/video.js",
+    "description": "An HTML5 video player.",
+    "type": "library",
+    "keywords": [
+        "videojs",
+        "html5",
+        "video",
+        "player"
+    ],
+    "homepage": "https://www.videojs.com/",
+    "license": "Apache-2.0"
+}
