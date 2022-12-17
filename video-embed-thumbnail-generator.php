@@ -925,35 +925,6 @@ function kgvid_set_capabilities($capabilities) {
 
 }
 
-function kgvid_set_lang($filepath) {
-
-	$old_locale = getenv('LANG');
-	//$old_locale = setlocale(LC_CTYPE, 0);
-	$escaped_filepath = escapeshellarg($filepath);
-
-	if ('"'.$filepath.'"' != $escaped_filepath) {
-
-		$wp_locale = get_locale();
-		if ( strlen($wp_locale) == 4 ) {
-			$locale_name = $wp_locale.'.UTF-8';
-		}
-		else {
-			$locale_name = "en_US.UTF-8";
-		}
-		
-		//$new_locale = setlocale(LC_CTYPE, $locale_name);
-		$new_locale = putenv('LANG='.$locale_name); 
-		if ( !$new_locale ) {
-			//$new_locale = setlocale(LC_CTYPE, "en_US.UTF-8");
-			$new_locale = putenv('LANG=en_US.UTF-8'); 
-		}
-
-	}
-
-	return $old_locale;
-
-}
-
 function kgvid_get_videojs_locale() {
 
 	$options = kgvid_get_options();
@@ -2297,61 +2268,6 @@ function kgvid_generate_encode_array($input, $output, $movie_info, $format, $wid
 
 }
 
-class kgvid_Process {
-
-    private $pid;
-    private $command;
-
-    public function __construct($cl=false){
-        if ($cl != false){
-            $this->command = $cl;
-            $this->runCom();
-        }
-    }
-    private function runCom(){
-		$sys = strtoupper(PHP_OS); // Get OS Name
-		if(substr($sys,0,3) == "WIN") { $this->OS = "windows"; }
-		else { $this->OS = "linux";	}
-
-		$command = $this->command;
-		if ($this->OS != "windows") {
-			exec($command ,$op);
-			$this->output = $op;
-			$this->pid = (int)$op[0];
-		}
-		else {
-			proc_close(proc_open ('start /B '.$command, array(), $foo));
-		}
-    }
-
-    public function setPid($pid){
-        $this->pid = $pid;
-    }
-
-    public function getPid(){
-        return $this->pid;
-    }
-
-    public function status(){
-        $command = 'ps -p '.$this->pid;
-        exec($command,$op);
-        if (!isset($op[1]))return false;
-        else return true;
-    }
-
-    public function start(){
-        if ($this->command != '')$this->runCom();
-        else return true;
-    }
-
-    public function stop(){
-        $command = 'kill '.$this->pid;
-        exec($command);
-        if ($this->status() == false)return true;
-        else return false;
-    }
-}// class Process
-
 function kgvid_video_embed_enqueue_styles() {
 
 	$options = kgvid_get_options();
@@ -2501,6 +2417,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'queue_paused' => __('Queue is paused. Press play button at top of screen to start.', 'video-embed-thumbnail-generator'),
 				'queue_play' => __('Start encoding', 'video-embed-thumbnail-generator'),
 				'nothing_to_encode' => __('Nothing to encode', 'video-embed-thumbnail-generator'),
+				'canceling' => __('Canceling', 'video-embed-thumbnail-generator')
 		) );
 	}
 
@@ -4540,7 +4457,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		}
 
 		if ( $page != "queue" && !$encoding_now && ($last_format['status'] == "queued" || $last_format['status'] == "canceling") ) {
-			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.$video_entry['movieurl'].'", "'.$video_entry['attachmentID'].'", "'.$blog_id.'") }, 2000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
+			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.esc_attr($video_entry['movieurl']).'", "'.esc_attr($video_entry['attachmentID']).'", "'.esc_attr($blog_id).'") }, 2000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
 		}
 
 		else {
@@ -8773,7 +8690,7 @@ function kgvid_encode_videos() {
 
 					$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt';
 
-					$commandline = implode(' ', array_map('kgvid_escapeArgument', $encode_array));
+					$commandline = implode(' ', array_map('kgvid_escapeArgument', $encode_array)); //escape each argument in the encode array
 					$commandline = $commandline . ' > "${:LOGFILE}" 2>&1';
 					$shell_process = Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess::fromShellCommandline($commandline);
 					$shell_process->start(null, ['LOGFILE' => $logfile]);
@@ -9014,7 +8931,7 @@ function kgvid_encode_progress() {
 								$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
 
 								if ( current_user_can('encode_videos') && $format_info['PID'] ) {
-									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.esc_attr($video_entry["attachmentID"]).'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode('.esc_attr($format_info['PID']).', \''.esc_attr($video_entry["attachmentID"]).'\', \''.esc_attr($video_key).'\', \''.esc_attr($format).'\', \''.esc_attr($blog_id).'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
+									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.esc_attr($video_entry["attachmentID"]).'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\''.esc_attr($video_entry["attachmentID"]).'\', \''.esc_attr($video_key).'\', \''.esc_attr($format).'\', \''.esc_attr($blog_id).'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
 								}
 
 								$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.esc_html($time_remaining).'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.esc_html($fps_match).'</small></div>';
@@ -9562,21 +9479,89 @@ function kgvid_fix_moov_atom($filepath) {
 function kgvid_cancel_encode() {
 
 	if ( current_user_can('encode_videos') ) {
+
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
-		if (isset($_POST['kgvid_pid'])) {
-			$kgvid_pid = kgvid_sanitize_text_field($_POST['kgvid_pid']);
-			if ( intval($kgvid_pid) > 0 ) {
-				posix_kill($kgvid_pid, 15);
-			}
+		if (isset($_POST['video_key'])) {
+
 			$video_key = kgvid_sanitize_text_field($_POST['video_key']);
 			$format = kgvid_sanitize_text_field($_POST['format']);
+
+			$options = kgvid_get_options();
+
 			$video_encode_queue = kgvid_get_encode_queue();
-			$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceling";
-			kgvid_save_encode_queue($video_encode_queue);
+
+			if ( is_array($video_encode_queue) 
+				&& array_key_exists($video_key, $video_encode_queue)
+				&& array_key_exists($format, $video_encode_queue[$video_key]['encode_formats'])
+				&& array_key_exists('PID', $video_encode_queue[$video_key]['encode_formats'][$format])
+			) {
+
+				$kgvid_pid = $video_encode_queue[$video_key]['encode_formats'][$format]['PID'];
+				$logfile = $video_encode_queue[$video_key]['encode_formats'][$format]['logfile'];
+
+				if ('\\' !== DIRECTORY_SEPARATOR) { //not Windows
+					
+					$check_pid_command = array(
+						'ps',
+						'-p',
+						$kgvid_pid,
+						'-o',
+						'cmd'
+					);
+
+					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($check_pid_command);
+					$check_pid->run();
+					$commandName = $check_pid->getOutput();
+
+					if ( intval($kgvid_pid) > 0 && $commandName == $options['video_app'] ) {
+
+						posix_kill($kgvid_pid, 15);
+
+					}
+
+				}
+				else { //Windows
+
+					$check_pid_command = array(
+						'powershell',
+						'-Command',
+						'Get-CimInstance Win32_Process -Filter "handle = '.$kgvid_pid.'" | Format-Table -Property CommandLine | Out-String -Width 10000',
+					);
+	
+					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($check_pid_command);
+					$check_pid->run();
+
+					if ( intval($kgvid_pid) > 0 
+						&& strpos($check_pid->getOutput(), $options['app_path'].'/'.$options['video_app']) !== false 
+						&& strpos($check_pid->getOutput(), $logfile) !== false 
+					) {
+
+						$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
+
+						$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess::fromShellCommandline($commandline);
+						$kill_process->run(null, ['KGVID_PID' => $kgvid_pid]);
+						
+						if ( strpos($kill_process->getOutput(), 'SUCCESS') !== false ) {
+
+							$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
+							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
+						
+						}
+
+					}
+
+				}
+				
+				kgvid_save_encode_queue($video_encode_queue);
+
+			}
+
 		}
-		die(); // this is required to return a proper result
+		
 	}
+
+	die();
 
 }
 add_action('wp_ajax_kgvid_cancel_encode', 'kgvid_cancel_encode');
