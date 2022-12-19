@@ -107,10 +107,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.8 - December XX, 2022 =
 * Increased PHP requirement to 7.2.5
-* Now using Symfony/Process to escape and run FFMPEG instead of exec.
+* Now using more secure Symfony/Process library to escape and run FFMPEG instead of exec & escapeshellcmd.
 * Sanitized, escaped, and validated many user inputs and echoed variables.
+* Enabled canceling encoding on Windows.
 * Moved included libraries to lib folder.
-* Re-ordered AAC encoder libraries to avoid using old, deprecated libraries libvo_aacenc and libfaac.
+* Updated Freemius SDK to v2.5.3
+* Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.
 
 = 4.7.5 - October 19, 2022 =
 * Changed official URL to https://www.videopack.video to avoid WordPress trademark violation.
