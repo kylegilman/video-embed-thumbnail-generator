@@ -61,7 +61,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.8-alpha',
+		"version" => '4.8',
 		"videojs_version" => '7.20.3',
 		"embed_method" => "Video.js v7",
 		"template" => false,
@@ -9536,7 +9536,7 @@ function kgvid_cancel_encode() {
 					$process_info = explode(' ', trim($check_pid->getOutput()));
 
 					if ( intval($process_info[0]) > 0
-						&& in_array($video_encode_queue[$video_key]['encode_formats'][$format]['filepath'], $process_info, true)
+						&& strpos($video_encode_queue[$video_key]['encode_formats'][$format]['filepath'], $check_pid->getOutput()) !== false
 					) {
 
 						$killed_process = posix_kill($process_info[0], 15);
