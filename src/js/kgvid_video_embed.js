@@ -100,13 +100,13 @@ function kgvid_SetVideo(id) { //for galleries
 	jQuery.modal("", {
 		overlayId: 'kgvid-simplemodal-overlay',
 		containerId: 'kgvid-simplemodal-container',
-		opacity:70,
-		minWidth:frame_width,
-		minHeight:frame_height,
+		opacity: '70',
+		minWidth: frame_width,
+		minHeight: frame_height,
 		autoResize: false,
-		overlayClose:true,
-		closeHTML:'<a class="modalCloseImg simplemodal-close kgvid_gallery_nav" title="Close"><span class="kgvid-icons kgvid-icon-cross"></span></a>',
-		zIndex:10000,
+		overlayClose: true,
+		closeHTML: '<a class="modalCloseImg simplemodal-close kgvid_gallery_nav" title="Close"><span class="kgvid-icons kgvid-icon-cross"></span></a>',
+		zIndex: '10000',
 		onShow: function(dialog) {
 
 			//build next/previous buttons
@@ -889,67 +889,73 @@ function kgvid_send_google_analytics(event, label) {
 function kgvid_video_counter(id, event) {
 
 	var video_vars = jQuery('#video_'+id+'_div').data('kgvid_video_vars');
-	var changed = false;
-	var played = jQuery('#video_'+id+'_div').data("played") || "not played";
+	if ( !video_vars ) { //maybe a gallery video
+		var video_vars = jQuery('#kgvid_video_gallery_thumb_'+id).data('kgvid_video_vars');
+	}
 
-	if ( event == 'play' ) {
+	if ( video_vars ) {
+		var changed = false;
+		var played = jQuery('#video_'+id+'_div').data("played") || "not played";
 
-		if ( played == "not played" ) { //Play start
+		if ( event == 'play' ) {
+
+			if ( played == "not played" ) { //Play start
+
+				if (video_vars.countable) { //video is in the db
+					changed = true;
+				}
+
+				jQuery('#video_'+id+'_div').data("played", "played");	
+				kgvid_send_google_analytics(kgvidL10n_frontend.playstart, video_vars.title);
+
+			}
+			else { //Resume
+
+				kgvid_send_google_analytics(kgvidL10n_frontend.resume, video_vars.title);
+
+			}
+
+		}
+
+		if ( event == "seek" || event == "pause" || event == "end" ) {
+
+			if ( event == 'end' && video_vars.countable) { //video is in the db
+				changed = true;
+			}
+
+			kgvid_send_google_analytics(kgvidL10n_frontend[event], video_vars.title);
+
+		}
+
+		if ( !isNaN(event) ) { //event is a number (quarter-play)
 
 			if (video_vars.countable) { //video is in the db
 				changed = true;
 			}
 
-			jQuery('#video_'+id+'_div').data("played", "played");	
-			kgvid_send_google_analytics(kgvidL10n_frontend.playstart, video_vars.title);
-
-		}
-		else { //Resume
-
-			kgvid_send_google_analytics(kgvidL10n_frontend.resume, video_vars.title);
+			kgvid_send_google_analytics(event+"%", video_vars.title);
 
 		}
 
-	}
-
-	if ( event == "seek" || event == "pause" || event == "end" ) {
-
-		if ( event == 'end' && video_vars.countable) { //video is in the db
-			changed = true;
+		if ( changed == true
+			&& video_vars.count_views != 'false'
+			&& (
+				video_vars.count_views == 'quarters'
+				|| ( video_vars.count_views == 'start_complete' && ( event == 'play' || event == 'end' ) )
+				|| ( video_vars.count_views == 'start' && event == 'play' )
+			)
+		) {
+			jQuery.post(kgvidL10n_frontend.ajaxurl, {
+				action: 'kgvid_count_play',
+				security: kgvidL10n_frontend.ajax_nonce,
+				post_id: video_vars.attachment_id,
+				video_event: event,
+				show_views: jQuery('#video_'+id+'_viewcount').length
+			}, function(data) {
+				if ( event == "play" ) { jQuery('#video_'+id+'_viewcount').html(data); }
+			});
 		}
-
-		kgvid_send_google_analytics(kgvidL10n_frontend[event], video_vars.title);
-
-	}
-
-	if ( !isNaN(event) ) { //event is a number (quarter-play)
-
-		if (video_vars.countable) { //video is in the db
-			changed = true;
-		}
-
-		kgvid_send_google_analytics(event+"%", video_vars.title);
-
-	}
-
-	if ( changed == true
-		&& video_vars.count_views != 'false'
-		&& (
-			video_vars.count_views == 'quarters'
-			|| ( video_vars.count_views == 'start_complete' && ( event == 'play' || event == 'end' ) )
-			|| ( video_vars.count_views == 'start' && event == 'play' )
-		)
-	) {
-		jQuery.post(kgvidL10n_frontend.ajaxurl, {
-			action: 'kgvid_count_play',
-			security: kgvidL10n_frontend.ajax_nonce,
-			post_id: video_vars.attachment_id,
-			video_event: event,
-			show_views: jQuery('#video_'+id+'_viewcount').length
-		}, function(data) {
-			if ( event == "play" ) { jQuery('#video_'+id+'_viewcount').html(data); }
-		});
-	}
+	} //if there are still video_vars available
 }
 
 function kgvid_switch_gallery_page(obj, post_action) {
