@@ -2838,7 +2838,7 @@ function kgvid_switch_gallery_page() {
 	else { $page_number = 1; }
 	$query_atts = kgvid_sanitize_text_field($_POST['query_atts']);
 	$last_video_id = kgvid_sanitize_text_field($_POST['last_video_id']);
-	$code = wp_kses_post(kgvid_gallery_page($page_number, $query_atts, $last_video_id));
+	$code = kgvid_gallery_page($page_number, $query_atts, $last_video_id);
 	wp_send_json($code);
 
 }
