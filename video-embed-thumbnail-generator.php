@@ -4811,10 +4811,10 @@ function kgvid_network_settings_page() {
 		<a href="https://www.videopack.video/donate/"><img alt="Donate" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 		</div>
 		<script type='text/javascript'>
-				jQuery(document).ready(function() {
+				jQuery(function() {
 						kgvid_hide_plugin_settings();
 						kgvid_moov_setting();
-						jQuery('form :input').change(function() {
+						jQuery('form :input').on('change',function() {
 							kgvid_save_plugin_settings(this);
 						});
 					}
@@ -4893,9 +4893,9 @@ function kgvid_settings_page() {
 		</form>
 		</div>
 		<script type='text/javascript'>
-			jQuery(document).ready(function() {
+			jQuery(function() {
 					kgvid_switch_settings_tab(document.URL.substr(document.URL.indexOf('#')+1));
-					jQuery('form :input').change(function() {
+					jQuery('form :input').on('change', function() {
   						kgvid_save_plugin_settings(this);
 					});
 				}
@@ -6871,9 +6871,8 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 			$update_script = "";
 			if ( $options['ffmpeg_exists'] == "on" && $options['auto_thumb'] == "on" && !$thumbnail_url && $created_time < 60 ) {
-				$update_script = '<script type="text/javascript">jQuery(document).ready(function() { setTimeout(function(){ kgvid_redraw_thumbnail_box("'.esc_attr($post->ID).'") }, 5000); });</script>';
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;
-	display: inline-block;">Loading thumbnail...</span></div>';
+				$update_script = '<script type="text/javascript">jQuery(function() { setTimeout(function(){ kgvid_redraw_thumbnail_box("'.esc_attr($post->ID).'") }, 5000); });</script>';
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;	display: inline-block;">Loading thumbnail...</span></div>';
 			}
 
 			if ( empty($security_disabled) && current_user_can('make_video_thumbnails') ) {
@@ -6978,7 +6977,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-encode"]["html"] = $checkboxes['checkboxes'];
 
 		if ( $options['ffmpeg_exists'] == "on" && $options['auto_encode'] == "on" && $created_time < 60 ) {
-			$form_fields["kgflashmediaplayer-encode"]["html"] .= '<script type="text/javascript">jQuery(document).ready(function() { percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.esc_url($movieurl).'", "'.esc_attr($post->ID).'", "") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout); });</script>';
+			$form_fields["kgflashmediaplayer-encode"]["html"] .= '<script type="text/javascript">jQuery(function() { percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.esc_url($movieurl).'", "'.esc_attr($post->ID).'", "") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout); });</script>';
 		}
 
 
@@ -7000,7 +6999,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 						$tracks_html .= '<div id="kgflashmediaplayer-'.esc_attr($post->ID).'-trackdiv-'.esc_attr($track).'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.esc_attr(strval($track+1)).'</strong>';
 						if ( empty($security_disabled) ) {
-							$tracks_html .= '<span class="kgvid_track_box_removeable" data-trackid="'.esc_attr($track).'" onclick="jQuery(this).siblings(\'input\').val(\'\').attr(\'checked\', \'\').change();">X</span>';
+							$tracks_html .= '<span class="kgvid_track_box_removeable" data-trackid="'.esc_attr($track).'" onclick="jQuery(this).siblings(\'input\').val(\'\').attr(\'checked\', \'\').trigger(\'change\');">X</span>';
 						}
 						$tracks_html .= '<br />'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />';
 						if ( empty($security_disabled) ) {
@@ -7040,7 +7039,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-downloadlink">'.__('Show download icon', 'video-embed-thumbnail-generator').'<em><small><br />'.__('Makes it easier for users to download file.', 'video-embed-thumbnail-generator').'</em></small></label><br />
 			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-embed">'._x('Insert', 'verb', 'video-embed-thumbnail-generator').'</label>
 			'.$shortcode_select.'
-			<script type="text/javascript">jQuery(document).ready(function(){kgvid_hide_standard_wordpress_display_settings('.esc_attr($post->ID).');});</script>';
+			<script type="text/javascript">jQuery(function(){kgvid_hide_standard_wordpress_display_settings('.esc_attr($post->ID).');});</script>';
 
 			if ( $kgvid_postmeta['embed'] == "Video Gallery" ) {
 
