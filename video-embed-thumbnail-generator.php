@@ -1370,17 +1370,19 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 		$ffmpeg_test = kgvid_ProcessThumb(
 			plugin_dir_path(__FILE__).'images/sample-video-h264.mp4', 
 			$uploads['path'].'/ffmpeg_exists_test.jpg',
-			$test_path.'/'
+			$test_path
 		);
 
-		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') ) { //if FFMPEG has not executed successfully
+		if ( !file_exists($uploads['path'].'/ffmpeg_exists_test.jpg') 
+			&& substr($test_path, -strlen($options['video_app'])) == $options['video_app']
+		) { //if FFMPEG has not executed successfully
 		
 			$test_path = substr($test_path, 0, -strlen($options['video_app'])-1 );
-		
+
 			$ffmpeg_test = kgvid_ProcessThumb(
 				plugin_dir_path(__FILE__).'images/sample-video-h264.mp4', 
 				$uploads['path'].'/ffmpeg_exists_test.jpg',
-				$test_path.'/'
+				$test_path
 			);
 
 		}
@@ -5937,19 +5939,29 @@ function kgvid_tooltip_html( $tooltip_text ) {
 			}
 
 			$movie_info = kgvid_get_video_dimensions(plugin_dir_path(__FILE__)."images/sample-video-h264.mp4");
-			$uploads = wp_upload_dir();
-			$encode_dimensions = kgvid_set_encode_dimensions($movie_info, $video_formats[$options['sample_format']]);
-			if ( empty($options['sample_rotate']) ) {
-				$input = plugin_dir_path(__FILE__)."images/sample-video-h264.mp4";
+			
+			if ( $movie_info['worked'] ) {
+
+				$uploads = wp_upload_dir();
+
+				$encode_dimensions = kgvid_set_encode_dimensions($movie_info, $video_formats[$options['sample_format']]);
+				if ( empty($options['sample_rotate']) ) {
+					$input = plugin_dir_path(__FILE__)."images/sample-video-h264.mp4";
+				}
+				else {
+					$input = plugin_dir_path(__FILE__)."images/sample-video-rotated-h264.mp4";
+				}
+				$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
+				$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
+
 			}
 			else {
-				$input = plugin_dir_path(__FILE__)."images/sample-video-rotated-h264.mp4";
+				$options['ffmpeg_exists'] = false;
 			}
-			$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
-			$encode_array = kgvid_generate_encode_array($input, $uploads['path']."/sample-video-h264".$video_formats[$options['sample_format']]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval($options['sample_rotate']));
+
 		}
 
-		if ( is_array($encode_array) ) { $encode_string_implode = implode(' ' , $encode_array); }
+		if ( !empty($encode_array) && is_array($encode_array) ) { $encode_string_implode = implode(' ' , $encode_array); }
 		else { $encode_string_implode = ''; }
 
 		$display_div = "";
@@ -6451,6 +6463,7 @@ function kgvid_ajax_save_settings() {
 		else { //single site on the network
 
 			$validated_options = kgvid_video_embed_options_validate($all_settings['kgvid_video_embed_options']);
+
 			$options_updated = update_option('kgvid_video_embed_options', $validated_options);
 
 			if ( $validated_options['ffmpeg_exists'] == "on" ) {
@@ -8763,39 +8776,46 @@ function kgvid_test_ffmpeg() {
 	$video_formats = kgvid_video_formats();
 	$suffix = $video_formats[$options['sample_format']]['suffix'];
 
-	$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($options['encode_array']);
+	if ( array_key_exists('encode_array', $options) && is_array($options['encode_array']) ) {
 
-	$process->run();
+		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($options['encode_array']);
 
-	$arr['output'] = $process->getErrorOutput();
+		$process->run();
 
-	if ( file_exists($uploads['path']."/sample-video-h264".$suffix) ) {
+		$arr['output'] = $process->getErrorOutput();
 
-		if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
-			$arr['output'] .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264".$suffix);
-		}
+		if ( file_exists($uploads['path']."/sample-video-h264".$suffix) ) {
 
-		if ( !empty($options['ffmpeg_watermark']['url']) ) {
-
-			if (!file_exists($uploads['path'].'/thumb_tmp')) { 
-				mkdir($uploads['path'].'/thumb_tmp'); 
+			if ( $options['moov'] == "qt-faststart" || $options['moov'] == "MP4Box" ) {
+				$arr['output'] .= kgvid_fix_moov_atom($uploads['path']."/sample-video-h264".$suffix);
 			}
 
-			$watermark_test = kgvid_ProcessThumb(
-				$uploads['path']."/sample-video-h264".$suffix, 
-				$uploads['path'].'/thumb_tmp/watermark_test.jpg'
-			);
+			if ( !empty($options['ffmpeg_watermark']['url']) ) {
 
-			kgvid_schedule_cleanup_generated_files('thumbs');
+				if (!file_exists($uploads['path'].'/thumb_tmp')) { 
+					mkdir($uploads['path'].'/thumb_tmp'); 
+				}
 
-			if ( file_exists($uploads['path'].'/thumb_tmp/watermark_test.jpg') ) {
-				$arr['watermark_preview'] = $uploads['url'].'/thumb_tmp/watermark_test.jpg';
+				$watermark_test = kgvid_ProcessThumb(
+					$uploads['path']."/sample-video-h264".$suffix, 
+					$uploads['path'].'/thumb_tmp/watermark_test.jpg'
+				);
+
+				kgvid_schedule_cleanup_generated_files('thumbs');
+
+				if ( file_exists($uploads['path'].'/thumb_tmp/watermark_test.jpg') ) {
+					$arr['watermark_preview'] = $uploads['url'].'/thumb_tmp/watermark_test.jpg';
+				}
+
 			}
+
+			unlink($uploads['path']."/sample-video-h264".$suffix);
 
 		}
 
-		unlink($uploads['path']."/sample-video-h264".$suffix);
-
+	}
+	else {
+		$arr['output'] = sprintf( __('%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] );
 	}
 
 	echo wp_json_encode($arr);
@@ -9504,19 +9524,27 @@ function kgvid_cancel_encode() {
 					
 					$check_pid_command = array(
 						'ps',
-						'-p',
+						'--ppid',
 						$kgvid_pid,
 						'-o',
-						'cmd'
+						'pid,cmd',
+						'--no-headers'
 					);
 
 					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($check_pid_command);
 					$check_pid->run();
-					$commandName = $check_pid->getOutput();
+					$process_info = explode(' ', trim($check_pid->getOutput()));
 
-					if ( intval($kgvid_pid) > 0 && $commandName == $options['video_app'] ) {
+					if ( intval($process_info[0]) > 0
+						&& in_array($video_encode_queue[$video_key]['encode_formats'][$format]['filepath'], $process_info, true)
+					) {
 
-						posix_kill($kgvid_pid, 15);
+						$killed_process = posix_kill($process_info[0], 15);
+
+						if ( $killed_process ) {
+							$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
+							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
+						}
 
 					}
 
