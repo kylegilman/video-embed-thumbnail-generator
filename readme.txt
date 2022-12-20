@@ -106,11 +106,12 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.8 - December XX, 2022 =
+* Significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration.
 * Increased PHP requirement to 7.2.5
-* Now using more secure Symfony/Process library to escape and run FFMPEG instead of exec & escapeshellcmd.
+* Now using more secure Symfony/Process library to escape and run FFMPEG instead of escapeshellcmd & exec.
 * Sanitized, escaped, and validated many user inputs and echoed variables.
-* Enabled canceling encoding on Windows.
-* Moved included libraries to lib folder.
+* Enabled canceling encoding on Windows and added checks to ensure the correct process is being canceled on all platforms.
+* Rearranged plugin directory structure.
 * Updated Freemius SDK to v2.5.3
 * Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.
 
@@ -172,6 +173,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 <a href="https://www.videopack.video/docs/changelog/">See the full changelog on the Videopack website.</a>
 
 == Upgrade Notice ==
+
+= 4.8 =
+Videopack now requires PHP version 7.2.5. This Videopack update is a significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration.
 
 = 4.7 =
 "Video Embed & Thumbnail Generator" is now "Videopack" and I've removed old video players StrobeMediaPlayback and JW Player 6 that haven't been supported for several years. Freemius is also integrated on an opt-in basis to allow premium add-ons. More info in the <a href="https://wordpress.org/support/topic/removing-old-players-and-adding-freemius/">support forum</a>.
