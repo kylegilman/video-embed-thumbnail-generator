@@ -10041,19 +10041,23 @@ function kgvid_count_play() {
 	$post_id = kgvid_sanitize_text_field($_POST['post_id']);
 	$event = kgvid_sanitize_text_field($_POST['video_event']);
 	$show_views = kgvid_sanitize_text_field($_POST['show_views']);
+
 	if ( $event == "play" ) { $event = "starts"; }
 	if ( $event == "end" ) { $event = "completeviews"; }
 	if ( is_numeric($event) ) { $event = "play_".$event; }
+
 	$kgvid_postmeta = kgvid_get_attachment_meta($post_id);
 	$plays = $kgvid_postmeta[$event];
 	if ( !empty($plays) ) { $plays = intval($plays)+1; }
 	else { $plays = 1; }
 	$kgvid_postmeta[$event] = $plays;
 	kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
+
 	if ( $show_views > 0 ) { //only return number of views if they are displayed on the site
 		echo sprintf( _n( '%s view', '%s views', $plays, 'video-embed-thumbnail-generator'), number_format($plays) );
 	}
-	else { echo ''; }
+	else { echo ' '; }
+
 	die(); // stop executing script
 
 }
