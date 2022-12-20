@@ -108,9 +108,10 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.8 - December XX, 2022 =
 * Significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration.
 * Increased PHP requirement to 7.2.5
-* Now using more secure Symfony/Process library to escape and run FFMPEG instead of escapeshellcmd & exec.
+* Now using more secure Symfony/Process library to escape and run FFMPEG commands instead of escapeshellcmd & exec.
 * Sanitized, escaped, and validated many user inputs and echoed variables.
 * Enabled canceling encoding on Windows and added checks to ensure the correct process is being canceled on all platforms.
+* Fixed bug that disabled the Video.js big play button after switching resolutions.
 * Rearranged plugin directory structure.
 * Updated Freemius SDK to v2.5.3
 * Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.

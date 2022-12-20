@@ -1,4 +1,4 @@
-jQuery(document).ready(kgvid_document_ready());
+jQuery(kgvid_document_ready());
 jQuery(window).on("load", kgvid_window_load);
 
 function kgvid_document_ready() {
