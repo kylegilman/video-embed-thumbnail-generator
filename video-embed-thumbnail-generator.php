@@ -8988,21 +8988,39 @@ function kgvid_encode_progress() {
 
 									$options = kgvid_get_options();
 
-									if ( $options['auto_publish_post'] == 'on' 
-										&& ( $next_video['video_key'] == '' //no more videos to encode
-											|| ( $next_video['video_key'] != '' 
-											&& array_key_exists($next_video['video_key'], $video_encode_queue) 
-											&& $video_encode_queue[$video_key]['parent_id'] != $video_encode_queue[$next_video['video_key']]['parent_id'] //no more videos with the same post
-											)
-										)
-									) {
+									if ( $options['auto_publish_post'] == 'on' ) {
 
-										wp_update_post(array(
-											'ID' => $video_encode_queue[$video_key]['parent_id'],
-											'post_status' => 'publish'
-										));
+										$post_parent_queue = $video_encode_queue;
+										$publish_post = true;
 
-									}
+										foreach ( $post_parent_queue as $possible_video_key => $possible_parent_video) {
+
+											if ( $possible_parent_video['parent_id'] == $video_encode_queue[$video_key]['parent_id'] ) {
+
+												foreach ( $possible_parent_video['encode_formats'] as $possible_format => $possible_format_info ) {
+
+													if ( $possible_format_info['status'] == 'queued' || $possible_format_info['status'] == 'encoding' ) {
+
+														$publish_post = false;
+
+													}//a format for this video is not complete
+
+												}//loop through the formats of the video
+
+											}//if the encode queue has a video with the same parent ID
+
+										}//loop through a copy of the encode queue
+
+										if ( $publish_post ) {
+
+											wp_update_post(array(
+												'ID' => $video_encode_queue[$video_key]['parent_id'],
+												'post_status' => 'publish'
+											));
+
+										}
+
+									}//auto publish post is on
 
 									$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
