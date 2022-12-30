@@ -9315,7 +9315,10 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 						$keep[$video_key] = true;
 					}
 
-					if ( $type == "scheduled" && $value['status'] == "Encoding Complete" ) {
+					if ( $type == "scheduled" 
+						&& $value['status'] == "Encoding Complete" 
+						&& array_key_exists('ended', $value)
+					) {
 						if ( count($keep) < 50 && time() - intval($value['ended']) < WEEK_IN_SECONDS ) { //if there are fewer than 50 entries left in the queue and it finished less than a week ago
 							$keep[$video_key] = true;
 						}
