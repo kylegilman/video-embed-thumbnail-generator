@@ -338,17 +338,46 @@ if ( file_exists(dirname(__FILE__) . '/lib/freemius/start.php') && ! function_ex
     do_action( 'videopack_fs_loaded' );
 }
 
-function kgvid_sanitize_text_field($text_field) { //recursively sanitizes user input
+function kgvid_filter_validate_url( $uri ) { //multibyte compatible check if string is a URL
+
+	$res = filter_var ($uri, FILTER_VALIDATE_URL);
+
+	if ($res) return $res;
+	// Check if it has unicode chars.
+	$l = mb_strlen ($uri);
+
+	if ($l !== strlen ($uri)) {
+
+		// Replace wide chars by “X”.
+		$s = str_repeat (' ', $l);
+		for ($i = 0; $i < $l; ++$i) {
+			$ch = mb_substr ($uri, $i, 1);
+			$s [$i] = strlen ($ch) > 1 ? 'X' : $ch;
+		}
+		// Re-check now.
+		$res = filter_var ($s, FILTER_VALIDATE_URL);
+		if ($res) {
+			$uri = $res; return 1;    
+		}
+
+	}
+
+}
+
+function kgvid_sanitize_text_field( $text_field ) { //recursively sanitizes user input
 
 	if ( is_array( $text_field ) ) {
 
 		foreach ( $text_field as $key => &$value ) {
 			if ( is_array( $value ) ) {
-				$value = kgvid_sanitize_text_field($value);
+				$value = kgvid_sanitize_text_field( $value );
 			}
 			else {
-				if ( $key == "titlecode" ) {
+				if ( $key == "titlecode" ) { //special case for the titlecode Videopack setting
 					$value = wp_kses( $value, wp_kses_allowed_html( 'post' ) );
+				}
+				elseif ( kgvid_filter_validate_url( $value ) ) { //if it's a URL
+					$value = sanitize_url( $value );
 				}
 				else {
 					$value = sanitize_text_field( $value );
@@ -357,8 +386,15 @@ function kgvid_sanitize_text_field($text_field) { //recursively sanitizes user i
 		}
 
 	}
-	else { 
-		$text_field = sanitize_text_field( $text_field ); 
+	else { //not an array
+		
+		if (  kgvid_filter_validate_url( $text_field ) ) { //if it's a URL
+			$text_field = sanitize_url( $text_field );
+		}
+		else {
+			$text_field = sanitize_text_field( $text_field );
+		}
+
 	}
 
     return $text_field;
@@ -386,6 +422,39 @@ function kgvid_escape_output($output) { //recursively sanitizes html output
     return $output;
 	
 }
+
+function kgvid_sanitize_url($movieurl) {
+
+	$movieurl = rawurldecode($movieurl);
+	$movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
+
+	if ( empty($movie_extension) ) {
+		$sanitized_url['noextension'] = $movieurl;
+		$sanitized_url['basename'] = substr($movieurl, -20);
+	}
+	else {
+		$movieurl = strtok($movieurl,'?');
+		$sanitized_url['noextension'] = preg_replace("/\\.[^.\\s]{3,4}$/", "", $movieurl);
+		$sanitized_url['basename'] = sanitize_file_name(basename($movieurl));
+		$sanitized_url['basename'] = str_replace('.'.$movie_extension, '', $sanitized_url['basename']);
+	}
+	
+	$sanitized_url['singleurl_id'] = "singleurl_".preg_replace('/[^a-zA-Z0-9]/', '_', $sanitized_url['basename']);
+	$sanitized_url['movieurl'] = esc_url_raw(str_replace(" ", "%20", $movieurl));
+
+	return $sanitized_url;
+
+}
+
+function kgvid_ajax_sanitize_url() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+	$movieurl = sanitize_url($_POST['movieurl']);
+	$sanitized_url = kgvid_sanitize_url($movieurl);
+	wp_send_json($sanitized_url);
+
+}
+add_action('wp_ajax_kgvid_sanitize_url', 'kgvid_ajax_sanitize_url');
 
 function kgvid_get_jetpack_twitter_username() {
 
@@ -1182,38 +1251,43 @@ function kgvid_url_mime_type($url, $post_id = false) {
 			$context = stream_context_create($context_options);
 
 			$fp = fopen($url, 'r', null, $context);
-			$metadata = stream_get_meta_data($fp);
-			fclose($fp);
+		
+			if ( $fp ) {
 
-			$headers = $metadata['wrapper_data'];
+				$metadata = stream_get_meta_data($fp);
+				fclose($fp);
 
-			foreach($headers as $line) {
-					if (strtok($line, ':') == 'Content-Type') {
-							$parts = explode(":", $line);
-							$mime_type = trim($parts[1]);
-					}
-			}
+				$headers = $metadata['wrapper_data'];
 
-			if ( !empty($mime_type) ) {
-				$wp_mime_types = wp_get_mime_types();
-				foreach ($wp_mime_types as $extension => $type ) {
-					if ( $type == $mime_type ) {
-						$url_extension = $extension;
-						if ( strpos($url_extension, '|') !== false ) {
-							$extensions = explode('|', $url_extension);
-							$url_extension = $extensions[0];
+				foreach($headers as $line) {
+						if (strtok($line, ':') == 'Content-Type') {
+								$parts = explode(":", $line);
+								$mime_type = trim($parts[1]);
 						}
-						break;
+				}
+
+				if ( !empty($mime_type) ) {
+					$wp_mime_types = wp_get_mime_types();
+					foreach ($wp_mime_types as $extension => $type ) {
+						if ( $type == $mime_type ) {
+							$url_extension = $extension;
+							if ( strpos($url_extension, '|') !== false ) {
+								$extensions = explode('|', $url_extension);
+								$url_extension = $extensions[0];
+							}
+							break;
+						}
 					}
 				}
-			}
 
-			$mime_info = array();
-			$mime_info['type'] = $mime_type;
-			$mime_info['ext'] = $url_extension;
+				$mime_info = array();
+				$mime_info['type'] = $mime_type;
+				$mime_info['ext'] = $url_extension;
 
-			if ( $post_id != false ) {
-				$mime_info = update_post_meta($post_id, '_kgflashmediaplayer-'.$sanitized_url['singleurl_id'].'-mime', $mime_info);
+				if ( $post_id != false ) {
+					$mime_info = update_post_meta($post_id, '_kgflashmediaplayer-'.$sanitized_url['singleurl_id'].'-mime', $mime_info);
+				}
+
 			}
 
 		}
@@ -1319,39 +1393,6 @@ function kgvid_get_attachment_medium_url( $id ) {
 
     return $medium_path;
 }
-
-function kgvid_sanitize_url($movieurl) {
-
-	$movieurl = rawurldecode($movieurl);
-	$movie_extension = pathinfo(parse_url($movieurl, PHP_URL_PATH), PATHINFO_EXTENSION);
-
-	if ( empty($movie_extension) ) {
-		$sanitized_url['noextension'] = $movieurl;
-		$sanitized_url['basename'] = substr($movieurl, -20);
-	}
-	else {
-		$movieurl = strtok($movieurl,'?');
-		$sanitized_url['noextension'] = preg_replace("/\\.[^.\\s]{3,4}$/", "", $movieurl);
-		$sanitized_url['basename'] = sanitize_file_name(basename($movieurl));
-		$sanitized_url['basename'] = str_replace('.'.$movie_extension, '', $sanitized_url['basename']);
-	}
-	
-	$sanitized_url['singleurl_id'] = "singleurl_".preg_replace('/[^a-zA-Z0-9]/', '_', $sanitized_url['basename']);
-	$sanitized_url['movieurl'] = esc_url_raw(str_replace(" ", "%20", $movieurl));
-
-	return $sanitized_url;
-
-}
-
-function kgvid_ajax_sanitize_url() {
-
-	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-	$movieurl = kgvid_sanitize_text_field($_POST['movieurl']);
-	$sanitized_url = kgvid_sanitize_url($movieurl);
-	wp_send_json($sanitized_url);
-
-}
-add_action('wp_ajax_kgvid_sanitize_url', 'kgvid_ajax_sanitize_url');
 
 function kgvid_check_ffmpeg_exists($options, $save) {
 
@@ -1541,7 +1582,9 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 			$decodedurl = urldecode($movieurl);
 			$parsed_url= parse_url($decodedurl);
 			$fileinfo = pathinfo($decodedurl);
-			$parsed_url['extension'] = $fileinfo['extension'];
+			if ( array_key_exists( 'extension', $fileinfo ) ) {
+				$parsed_url['extension'] = $fileinfo['extension'];
+			}
 			$parsed_url['filename'] = $fileinfo['basename'];
 			$parsed_url['localpath'] = $_SERVER['DOCUMENT_ROOT'].$parsed_url['path'];
 			// just in case there is a double slash created when joining document_root and path
@@ -1681,7 +1724,7 @@ function kgvid_get_video_dimensions($video = false) {
 		}
 		else { //not in the database
 
-			if ( !empty($options['htaccess_login']) && strpos($video, 'http://') === 0 ) {
+			if ( !empty($options['htaccess_login']) && strpos($video, 'http') === 0 ) {
 
 				$video = substr_replace($video, $options['htaccess_login'].':'.$options['htaccess_password'].'@', 7, 0);
 
@@ -3039,7 +3082,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		}
 
 		$mime_type_check = kgvid_url_mime_type($content, $post_id);
-		if ( in_array($mime_type_check['ext'], $h264compatible) ) {
+		if ( is_array($mime_type_check) && in_array($mime_type_check['ext'], $h264compatible) ) {
 			$format_type = "h264";
 			$mime_type = "video/mp4";
 		}
@@ -4155,7 +4198,7 @@ function kgvid_ajax_generate_encode_checkboxes() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
-	$movieurl = kgvid_sanitize_text_field($_POST['movieurl']);
+	$movieurl = sanitize_url($_POST['movieurl']);
 	$post_id = kgvid_sanitize_text_field($_POST['post_id']);
 	$page = kgvid_sanitize_text_field($_POST['page']);
 	if ( isset($_POST['blog_id']) ) { kgvid_sanitize_text_field($blog_id = $_POST['blog_id']); }
@@ -7151,7 +7194,7 @@ function kgvid_ajax_save_html5_thumb() {
 		$uploads = wp_upload_dir();
 		$post_id = kgvid_sanitize_text_field($_POST['postID']);
 		$raw_png = kgvid_sanitize_text_field($_POST['raw_png']);
-		$video_url = kgvid_sanitize_text_field($_POST['url']);
+		$video_url = sanitize_url($_POST['url']);
 		$movieoffset = kgvid_sanitize_text_field($_POST['offset']);
 		$total = kgvid_sanitize_text_field($_POST['total']);
 		$index = kgvid_sanitize_text_field($_POST['index']) + 1;
@@ -7590,6 +7633,7 @@ add_filter('media_upload_tabs', 'kgvid_embedurl_menu');
 function kgvid_media_embedurl_process() {
 
 	$options = kgvid_get_options();
+	enqueue_kgvid_script();
 
 	if ( !isset($options['ffmpeg_exists']) || $options['ffmpeg_exists'] == "notchecked" ) {
 		kgvid_check_ffmpeg_exists($options, true);
@@ -8332,7 +8376,7 @@ function kgvid_callffmpeg() {
 	$options = kgvid_get_options();
 
 	if (isset($_POST['attachmentID'])) { $postID = kgvid_sanitize_text_field($_POST['attachmentID']); }
-	if (isset($_POST['movieurl'])) { $movieurl = kgvid_sanitize_text_field($_POST['movieurl']); }
+	if (isset($_POST['movieurl'])) { $movieurl = sanitize_url($_POST['movieurl']); }
 	if (isset($_POST['numberofthumbs'])) { $numberofthumbs = kgvid_sanitize_text_field($_POST['numberofthumbs']); }
 	if (isset($_POST['thumbnumber'])) { $i = kgvid_sanitize_text_field($_POST['thumbnumber']); }
 	if (isset($_POST['thumbnumberplusincreaser'])) { $iincreaser = kgvid_sanitize_text_field($_POST['thumbnumberplusincreaser']); }
@@ -9625,7 +9669,7 @@ function kgvid_ajax_delete_video() {
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 		$deleted = false;
 		$attachment_id = "";
-		if ( isset($_POST['movieurl']) ) { $movieurl = kgvid_sanitize_text_field($_POST['movieurl']); }
+		if ( isset($_POST['movieurl']) ) { $movieurl = sanitize_url($_POST['movieurl']); }
 		if ( isset($_POST['postid']) ) { $post_id = kgvid_sanitize_text_field($_POST['postid']); }
 		if ( isset($_POST['format']) ) { $format = kgvid_sanitize_text_field($_POST['format']); }
 		if ( isset($_POST['childid']) ) { $attachment_id = kgvid_sanitize_text_field($_POST['childid']); }
