@@ -227,11 +227,26 @@ function kgvid_default_network_options() {
 
 }
 
+function is_videopack_active_for_network() {
+
+	if ( ! is_multisite() ) {
+		return false;
+	}
+
+	$plugins = get_site_option( 'active_sitewide_plugins' );
+	if ( isset( $plugins[ plugin_basename(__FILE__) ] ) ) {
+		return true;
+	}
+
+	return false;
+
+}
+
 function kgvid_get_options() {
 
 	$options = get_option('kgvid_video_embed_options');
 
-	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
+	if ( is_videopack_active_for_network() ) {
 		$network_options = get_site_option('kgvid_video_embed_network_options');
 		if ( !is_array($options) ) {
 			$options = kgvid_default_options_fn();
@@ -605,7 +620,7 @@ function kgvid_get_encode_queue() {
 		require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 	}
 
-	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
+	if ( is_videopack_active_for_network() ) {
 		$video_encode_queue = get_site_option('kgvid_video_embed_queue');
 	}
 	else { $video_encode_queue = get_option('kgvid_video_embed_queue'); }
@@ -616,7 +631,7 @@ function kgvid_get_encode_queue() {
 
 function kgvid_save_encode_queue($video_encode_queue) {
 
-	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
+	if ( is_videopack_active_for_network() ) {
 		update_site_option('kgvid_video_embed_queue', $video_encode_queue);
 	}
 	else { update_option('kgvid_video_embed_queue', $video_encode_queue); }
@@ -625,7 +640,7 @@ function kgvid_save_encode_queue($video_encode_queue) {
 
 function kgvid_video_formats( $return_replace = false, $return_customs = true, $return_dontembeds = true ) {
 
-	$options = kgvid_get_options();
+	$options = get_option('kgvid_video_embed_options');
 
 	$video_formats = array(
 		"fullres" => array(
@@ -852,28 +867,6 @@ function kgvid_video_embed_activation_hook( $network_wide ) {
 
 			update_site_option('kgvid_video_embed_network_options', $network_options);
 
-			$current_blog_id = get_current_blog_id();
-			$sites = get_sites();
-
-			if ( is_array($sites) ) {
-
-				foreach ( $sites as $site ) {
-					$blog_id = $site->__get('id');
-					switch_to_blog($blog_id);
-
-					$options = get_option('kgvid_video_embed_options');
-
-					if ( !is_array($options) ) {
-						kgvid_register_default_options_fn();
-						kgvid_set_capabilities($network_options['default_capabilities']);
-					}
-
-				}//end loop through sites
-
-				switch_to_blog($current_blog_id);
-
-			}//if there are existing sites to set
-
 		}// if network options haven't been set already
 
 	}
@@ -949,6 +942,7 @@ function kgvid_showUpgradeNotification($currentPluginMetadata, $newPluginMetadat
 add_action('in_plugin_update_message-video-embed-thumbnail-generator/video-embed-thumbnail-generator.php', 'kgvid_showUpgradeNotification', 10, 2);
 
 function kgvid_check_if_capable($capability) {
+
 	global $wp_roles;
 	$capable = array();
 
@@ -963,6 +957,7 @@ function kgvid_check_if_capable($capability) {
 
 	}
 	return $capable;
+
 }
 
 function kgvid_set_capabilities($capabilities) {
@@ -1024,6 +1019,9 @@ function kgvid_get_videojs_locale() {
 function kgvid_ProcessThumb ( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array() ) {
 
 	$options = kgvid_get_options();
+	if ( empty($options) ) {
+		$options = kgvid_default_options_fn();
+	}
 
 	if ( empty($ffmpeg_path) ) {
 		$ffmpeg_path = $options['app_path']."/".$options['video_app'];
@@ -4668,7 +4666,7 @@ function kgvid_add_FFMPEG_Queue_Page() {
 add_action('admin_menu', 'kgvid_add_FFMPEG_Queue_Page');
 
 function kgvid_add_network_queue_page() {
-	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
+	if ( is_videopack_active_for_network() ) {
 		add_submenu_page('settings.php', _x('Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator'), _x('Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator'), 'manage_network', 'kgvid_network_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page');
 	}
 }
@@ -4684,8 +4682,7 @@ function kgvid_FFMPEG_Queue_Page() {
 	if ( current_user_can('edit_others_video_encodes') &&
 		( !is_multisite()
 		|| is_network_admin()
-		|| ( function_exists( 'is_plugin_active_for_network' )
-			&& is_plugin_active_for_network( plugin_basename(__FILE__) )
+		|| ( is_videopack_active_for_network()
 			&& (
 				(
 					is_array($network_options)
@@ -4711,8 +4708,7 @@ function kgvid_FFMPEG_Queue_Page() {
 	}
 	elseif ( is_multisite()
 		&& !is_network_admin()
-		&& function_exists( 'is_plugin_active_for_network' )
-		&& is_plugin_active_for_network( plugin_basename(__FILE__) )
+		&& is_videopack_active_for_network()
 		&& is_array($network_options)
 		&& array_key_exists('queue_control', $network_options)
 		&& $network_options['queue_control'] == 'pause'
@@ -4912,7 +4908,7 @@ function kgvid_settings_page() {
 		<h2 class="nav-tab-wrapper">
 			<a href="#general" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php _ex('General', 'Adjective, tab title', 'video-embed-thumbnail-generator') ?></a>
 			<?php if ( !is_multisite()
-			|| ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && $options['ffmpeg_exists'] == "on" && is_array($network_options) && (is_super_admin() || $network_options['superadmin_only_ffmpeg_settings'] == false) )
+			|| ( is_videopack_active_for_network() && $options['ffmpeg_exists'] == "on" && is_array($network_options) && (is_super_admin() || $network_options['superadmin_only_ffmpeg_settings'] == false) )
 			) { ?>
 			<a href="#encoding" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( _x('%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator'), "<span class='video_app_name'>".esc_html(strtoupper($video_app))."</span>" ); ?></a>
 			<?php } ?>
@@ -4945,79 +4941,6 @@ function kgvid_settings_page() {
 }
 
 function kgvid_video_embed_options_init() {
-
-	//check for network options in 'admin_init' because is_plugin_active_for_network is not defined in 'init' hook
-	if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
-
-		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
-
-		if( !is_array($network_options) ) { //if the network options haven't been set yet
-
-			switch_to_blog(1);
-			$options = get_option('kgvid_video_embed_options');
-			$network_options = kgvid_default_network_options();
-			if ( is_array($options) ) {
-				$network_options = array_intersect_key($network_options, $options); //copy options from main blog to network
-				$network_options['default_capabilities'] = $options['capabilities'];
-				if ( !array_key_exists('simultaneous_encodes', $network_options) ) { $network_options['simultaneous_encodes'] = 1; }
-			}
-			restore_current_blog();
-
-			if ( !isset($network_options['ffmpeg_exists']) || $network_options['ffmpeg_exists'] == "notchecked" ) {
-				$ffmpeg_info = kgvid_check_ffmpeg_exists($network_options, false);
-				if ( $ffmpeg_info['ffmpeg_exists'] == true ) { $network_options['ffmpeg_exists'] = "on"; }
-				$network_options['app_path'] = $ffmpeg_info['app_path'];
-			}
-			update_site_option('kgvid_video_embed_network_options', $network_options);
-
-		}//end setting initial network options
-		else { //network options introduced in version 4.3 exist already
-
-			$network_options_old = $network_options;
-
-			if ( !array_key_exists('superadmin_only_ffmpeg_settings', $network_options) ) {
-				$default_network_options = kgvid_default_network_options();
-				$network_options['superadmin_only_ffmpeg_settings'] = $default_network_options['superadmin_only_ffmpeg_settings'];
-			}
-
-			if ( !array_key_exists('network_error_email', $network_options) ) {
-				$network_options['network_error_email'] = 'nobody';
-			}
-
-			if ( $network_options_old != $network_options ) {
-				update_site_option('kgvid_video_embed_network_options', $network_options);
-			}
-
-		}
-
-
-		$network_queue = get_site_option('kgvid_video_embed_queue');
-
-		if ( is_array($network_options) && array_key_exists('ffmpeg_exists', $network_options) && 'on' == $network_options['ffmpeg_exists']
- 		&& false === $network_queue ) { //if the network queue hasn't been set yet
-
-			$sites = get_sites();
-
-			if ( is_array($sites) ) {
-				$network_queue = array();
-				foreach ( $sites as $site ) {
-					$blog_id = $site->__get('id');
-					$site_queue = get_blog_option($blog_id, 'kgvid_video_embed_queue');
-					if ( is_array($site_queue) ) {
-						foreach ( $site_queue as $index => $entry ) {
-							$site_queue[$index]['blog_id'] = $blog_id;
-						}
-						$network_queue = array_merge($network_queue, $site_queue);
-						delete_blog_option($blog_id, 'kgvid_video_embed_queue');
-					}
-
-				}//end loop through sites
-				array_multisort($network_queue);
-				update_site_option( 'kgvid_video_embed_queue', $network_queue );
-			}
-
-		}//end copying site queues to network
-	}//end network activation setup
 
 	function kgvid_do_settings_sections( $page ) {
 		global $wp_settings_sections, $wp_settings_fields;
@@ -5529,7 +5452,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 
 	function kgvid_app_path_callback() {
 		$options = kgvid_get_options();
-		//if ( is_plugin_active_for_network( plugin_basename(__FILE__) ) ) { $options = get_site_option( 'kgvid_video_embed_network_options' ); }
+
 		echo "<input class='affects_ffmpeg regular-text code' id='app_path' data-ffmpeg_exists='".$options['ffmpeg_exists']."' name='kgvid_video_embed_options[app_path]' type='text' value='".$options['app_path']."' />";
 		echo kgvid_tooltip_html( sprintf( __('This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn\'t usually end with %1$s. Example: %2$s.', 'video-embed-thumbnail-generator'), "<code><strong class='video_app_name'>".strtoupper($options['video_app'])."</strong></code>", "<code>/usr/local/bin</code>" ) );
 		echo "\n\t";
@@ -5537,7 +5460,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 
 	function kgvid_video_app_callback() {
 		$options = kgvid_get_options();
-		//if ( is_plugin_active_for_network( plugin_basename(__FILE__) ) ) { $options = get_site_option( 'kgvid_video_embed_network_options' ); }
+
 		$items = array(
 			"FFMPEG" => "ffmpeg",
 			__("LIBAV (deprecated)",'video_embed_thumbnail_generator_settings' ) => "avconv"
@@ -5972,6 +5895,88 @@ function kgvid_update_settings() {
 
 	global $wpdb;
 
+	if ( is_videopack_active_for_network() ) {
+
+		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
+
+		if( !is_array($network_options) ) { //if the network options haven't been set yet
+
+			switch_to_blog(1);
+			$options = get_option('kgvid_video_embed_options');
+			$network_options = kgvid_default_network_options();
+			if ( is_array($options) ) {
+				$network_options = array_intersect_key($network_options, $options); //copy options from main blog to network
+				$network_options['default_capabilities'] = $options['capabilities'];
+				if ( !array_key_exists('simultaneous_encodes', $network_options) ) { $network_options['simultaneous_encodes'] = 1; }
+			}
+			restore_current_blog();
+
+			if ( !isset($network_options['ffmpeg_exists']) || $network_options['ffmpeg_exists'] == "notchecked" ) {
+				$ffmpeg_info = kgvid_check_ffmpeg_exists($network_options, false);
+				if ( $ffmpeg_info['ffmpeg_exists'] == true ) { $network_options['ffmpeg_exists'] = "on"; }
+				$network_options['app_path'] = $ffmpeg_info['app_path'];
+			}
+			update_site_option('kgvid_video_embed_network_options', $network_options);
+
+		}//end setting initial network options
+		else { //network options introduced in version 4.3 exist already
+
+			$network_options_old = $network_options;
+
+			if ( !array_key_exists('superadmin_only_ffmpeg_settings', $network_options) ) {
+				$default_network_options = kgvid_default_network_options();
+				$network_options['superadmin_only_ffmpeg_settings'] = $default_network_options['superadmin_only_ffmpeg_settings'];
+			}
+
+			if ( !array_key_exists('network_error_email', $network_options) ) {
+				$network_options['network_error_email'] = 'nobody';
+			}
+
+			if ( $network_options_old != $network_options ) {
+				update_site_option('kgvid_video_embed_network_options', $network_options);
+			}
+
+		}
+
+
+		$network_queue = get_site_option('kgvid_video_embed_queue');
+
+		if ( is_array($network_options) && array_key_exists('ffmpeg_exists', $network_options) && 'on' == $network_options['ffmpeg_exists']
+ 		&& false === $network_queue ) { //if the network queue hasn't been set yet
+
+			$sites = get_sites();
+
+			if ( is_array($sites) ) {
+				$network_queue = array();
+				foreach ( $sites as $site ) {
+					$site_queue = get_blog_option($site->blog_id, 'kgvid_video_embed_queue');
+					if ( is_array($site_queue) ) {
+						foreach ( $site_queue as $index => $entry ) {
+							$site_queue[$index]['blog_id'] = $site->blog_id;
+						}
+						$network_queue = array_merge($network_queue, $site_queue);
+						delete_blog_option($site->blog_id, 'kgvid_video_embed_queue');
+					}
+
+				}//end loop through sites
+				array_multisort($network_queue);
+				update_site_option( 'kgvid_video_embed_queue', $network_queue );
+			}
+
+		}//end copying site queues to network
+
+		$local_options = get_option('kgvid_video_embed_options');
+
+		if ( empty($local_options) ) {
+
+			$options = kgvid_default_options_fn();
+			$updated = update_option('kgvid_video_embed_options', $options);
+			kgvid_set_capabilities($network_options['default_capabilities']);
+
+		}
+
+	}//end network activation setup
+
 	$options = kgvid_get_options();
 	$options_old = $options; //save the values that are in the db
 	$default_options = kgvid_default_options_fn();
@@ -6019,6 +6024,7 @@ function kgvid_update_settings() {
 		}
 
 		update_option('kgvid_video_embed_options', $options);
+
 	}
 
 	else { //user is already upgraded to version 3.0, but needs the extra options introduced in later versions
@@ -6262,6 +6268,11 @@ function kgvid_update_settings() {
 			$options['audio_channels'] = false;
 		}
 
+		if ( version_compare( $options['version'], '4.8', '<' ) ) {
+			$options['version'] = '4.8';
+			kgvid_check_ffmpeg_exists($options, true); //recheck because so much about executing FFMPEG has changed
+		}
+
 		if ( $options['version'] != $default_options['version'] ) { $options['version'] = $default_options['version']; }
 		if ( $options !== $options_old ) { update_option('kgvid_video_embed_options', $options); }
 	}
@@ -6335,7 +6346,7 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 
 	if ( !array_key_exists('transient_cache', $input) && $options['transient_cache'] == "on" ) { kgvid_delete_transients(); } //if user is turning off transient cache option
 
-	$input['titlecode'] =  wp_kses_post( $input['titlecode'] );
+	$input['titlecode'] = wp_kses_post( $input['titlecode'] );
 
 	if ( is_array($input['custom_format']) && ( !empty($input['custom_format']['width']) || !empty($input['custom_format']['height']) ) ) {
 
@@ -6438,7 +6449,7 @@ function kgvid_ajax_save_settings() {
 		$auto_thumb_label = "";
 		global $wp_settings_errors;
 
-		if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) && !array_key_exists('embed_method', $all_settings['kgvid_video_embed_options']) ) {
+		if ( is_videopack_active_for_network() && !array_key_exists('embed_method', $all_settings['kgvid_video_embed_options']) ) {
 
 			$validated_options = kgvid_validate_network_settings($all_settings['kgvid_video_embed_options']);
 			$options_updated = update_site_option('kgvid_video_embed_network_options', $validated_options);
@@ -8229,7 +8240,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 			'movie_info' => $movie_info,
 			'user_id' => $current_user_id
 		);
-		if ( function_exists( 'is_plugin_active_for_network' ) && is_plugin_active_for_network( plugin_basename(__FILE__) ) ) {
+		if ( is_videopack_active_for_network() ) {
 			$queue_entry['blog_id'] = get_current_blog_id();
 		}
 
@@ -8338,7 +8349,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 
 		$arr = array ( "embed_display"=>$embed_display );
 
-		if ( isset($old_blog_id) ) { switch_to_blog($old_blog_id); }
+		if ( isset($old_blog_id) ) { restore_current_blog(); }
 
 		return $arr;
 
@@ -8351,7 +8362,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 			"embed_display" => $thumbnaildisplaycode,
 			"lastthumbnumber" => "break" );
 
-		if ( isset($old_blog_id) ) { switch_to_blog($old_blog_id); }
+		if ( isset($old_blog_id) ) { restore_current_blog(); }
 
 		return $arr;
 
@@ -10295,13 +10306,12 @@ function kgvid_deactivate_plugin( $network_wide ) {
 		if ( is_array($sites) ) {
 
 			foreach ( $sites as $site ) {
-				$blog_id = $site->__get('id');
-				switch_to_blog($blog_id);
+
+				switch_to_blog($site->blog_id);
 				kgvid_cleanup_plugin();
+				restore_current_blog();
 
 			}//end loop through sites
-
-			switch_to_blog($current_blog_id);
 
 		}//end if there are sites
 
@@ -10314,6 +10324,10 @@ function kgvid_deactivate_plugin( $network_wide ) {
 register_deactivation_hook( __FILE__, 'kgvid_deactivate_plugin' );
 
 function kgvid_uninstall_plugin() {
+
+	if ( ! current_user_can( 'activate_plugins' ) ) {
+		return;
+	}
 
 	if ( !is_multisite() ) {
     	delete_option('kgvid_video_embed_options');
@@ -10329,8 +10343,8 @@ function kgvid_uninstall_plugin() {
     	if ( is_array($sites) ) {
 
 			foreach ( $sites as $site ) {
-				delete_blog_option( $site->__get('id'), 'kgvid_video_embed_options' );
-				delete_blog_option( $site->__get('id'), 'kgvid_video_embed_queue');
+				delete_blog_option( $site->blog_id, 'kgvid_video_embed_options' );
+				delete_blog_option( $site->blog_id, 'kgvid_video_embed_queue');
 			}
 		}
     }

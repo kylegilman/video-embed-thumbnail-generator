@@ -105,16 +105,18 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.8 - December XX, 2022 =
-* Significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration.
+= 4.8 - January XX, 2023 =
+* Significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
 * Increased PHP requirement to 7.2.5
-* Now using more secure Symfony/Process library to escape and run FFMPEG commands instead of escapeshellcmd & exec.
+* Now using more secure Symfony/Process library to escape and run FFMPEG commands instead of escapeshellcmd & exec. The PHP command proc_open must be enabled on your server to use FFMPEG functions.
 * Sanitized, escaped, and validated many user inputs and echoed variables.
 * Enabled canceling encoding on Windows and added checks to ensure the correct process is being canceled on all platforms.
 * Fixed bug that disabled the Video.js big play button after switching resolutions.
-* Rearranged plugin directory structure.
+* Fixed bug that prevented "Embed Video from URL" tab from working correctly.
 * Updated Freemius SDK to v2.5.3
+* Fixed bug that caused timeouts when activating plugin on multisite networks.
 * Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.
+* Rearranged plugin file structure.
 
 = 4.7.5 - October 19, 2022 =
 * Changed official URL to https://www.videopack.video to avoid WordPress trademark violation.
@@ -126,7 +128,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Updated Video.js to v7.17.0
 * Updated Freemius SDK to v2.4.3
 * Added limited support for HLS and DASH streaming.
-* Added Pause, Resume, and Seek Google Analytics event tracking. 
+* Added Pause, Resume, and Seek Google Analytics event tracking.
 * Fixed a bug that reported multiple Play events when videos not in the WordPress database resumed.
 * Fixed some autoplay problems with Video.js v7.
 * Fixed a bug that caused a PHP 8 warning when the plugin is first installed.
@@ -140,7 +142,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 = 4.7.1 - July 19, 2021 =
 * Updated Video.js to version 7.13.3
-* Fixed bug that removed existing meta_query when loading attachments, which broke Woocommerce image importing and most likely some other queries. 
+* Fixed bug that removed existing meta_query when loading attachments, which broke Woocommerce image importing and most likely some other queries.
 * Updated shortcode inserted via 'Embed Video From URL' tab from 'KGVID' to 'videopack'
 * Fixed bug that caused errors when all default encode formats were disabled.
 * Fixed bug that broke playback on Twitter Player Cards.
@@ -176,7 +178,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Upgrade Notice ==
 
 = 4.8 =
-Videopack now requires PHP version 7.2.5. This Videopack update is a significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration.
+Videopack now requires PHP version 7.2.5. This Videopack update is a significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
 
 = 4.7 =
 "Video Embed & Thumbnail Generator" is now "Videopack" and I've removed old video players StrobeMediaPlayback and JW Player 6 that haven't been supported for several years. Freemius is also integrated on an opt-in basis to allow premium add-ons. More info in the <a href="https://wordpress.org/support/topic/removing-old-players-and-adding-freemius/">support forum</a>.
