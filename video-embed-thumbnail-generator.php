@@ -4020,9 +4020,28 @@ function kgvid_update_encode_queue() {
 
 		foreach ( $video_encode_queue as $video_key => $video_entry ) {
 
-			if ( $page == 'attachment' && array_key_exists('blog_id', $video_entry) && get_current_blog_id() != $video_entry['blog_id'] ) { //remove all entries from other blogs on attachment pages
+			if ( $page == 'attachment'
+				&& array_key_exists('blog_id', $video_entry)
+				&& get_current_blog_id() != $video_entry['blog_id']
+			) { //remove all entries from other blogs on attachment pages
+
 				unset($video_encode_queue[$video_key]);
 				continue;
+
+			}
+
+			$switched_blogs = false;
+
+			if ( $page == 'network_queue'
+				&& array_key_exists('blog_id', $video_entry)
+				&& get_current_blog_id() != $video_entry['blog_id']
+			) {
+				switch_to_blog($video_entry['blog_id']);
+				$switched_blogs = true;
+			}
+
+			if ( array_key_exists('blog_id', $video_entry) ) {
+				$video_entry['blog_id'] = false;
 			}
 
 			if ( !empty($video_entry['movieurl']) && !empty($video_entry['attachmentID']) ) {
@@ -4035,6 +4054,10 @@ function kgvid_update_encode_queue() {
 
 				$video_encode_queue[$video_key]['encode_formats'][$format]['meta_array'] = kgvid_encode_format_meta($encodevideo_info, $video_key, $format, $value['status'], $value['lastline'], $video_entry['attachmentID'], $video_entry['movieurl'], $page);
 
+			}
+
+			if ( $switched_blogs ) {
+				restore_current_blog();
 			}
 
 		}
@@ -4079,6 +4102,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		else { $encodeset = 'false'; }
 		$post = get_post($post_id);
 		$current_user = wp_get_current_user();
+
 		if ( $post && ( $current_user->ID == $post->post_author )
 			|| ( current_user_can('edit_others_video_encodes') )
 		) {
@@ -4121,7 +4145,6 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 					else { $meta = ' <strong>'.__('Encoded', 'video-embed-thumbnail-generator').'</strong>'; }
 				}
 				if ( $status != "canceling" ) {
-
 					if ( $encodevideo_info[$format]['writable']
 					&& current_user_can('encode_videos')
 					&& $user_delete_capability == true
