@@ -115,6 +115,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * Fixed bug that prevented "Embed Video from URL" tab from working correctly.
 * Updated Freemius SDK to v2.5.3
 * Fixed bug that caused timeouts when activating plugin on multisite networks.
+* Fixed bug that paused encoding queue after updating network settings.
 * Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.
 * Rearranged plugin file structure.
 
