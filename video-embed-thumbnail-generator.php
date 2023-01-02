@@ -4765,13 +4765,13 @@ function kgvid_validate_network_settings($input) {
 	}
 	else { $input['ffmpeg_exists'] = $options['ffmpeg_exists']; }
 
-	if ( !$input['queue_control'] ) { //don't reset queue control when saving settings
-		$input['queue_control'] = $options['queue_control'];
-	}
-
 	// load all settings and make sure they get a value of false if they weren't entered into the form
 	foreach ( $default_options as $key => $value ) {
 		if ( !array_key_exists($key, $input) ) { $input[$key] = false; }
+	}
+
+	if ( !$input['queue_control'] ) { //don't reset queue control when saving settings
+		$input['queue_control'] = $options['queue_control'];
 	}
 
 	return $input;
