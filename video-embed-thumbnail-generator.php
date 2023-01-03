@@ -616,10 +616,6 @@ function kgvid_save_attachment_meta($post_id, $kgvid_postmeta) {
 
 function kgvid_get_encode_queue() {
 
-	if ( defined( 'DOING_CRON' ) ) { //unlike AJAX, cron doesn't load plugin.php
-		require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
-	}
-
 	if ( is_videopack_active_for_network() ) {
 		$video_encode_queue = get_site_option('kgvid_video_embed_queue');
 	}
@@ -1066,7 +1062,7 @@ function kgvid_ProcessThumb ( $input, $output, $ffmpeg_path = false, $seek = '0'
 
 	$commandline = array_merge($before_thumb_options, $thumb_options);
 
-	$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($commandline);
+	$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($commandline);
 	$process->run();
 
 	return($process);
@@ -1732,7 +1728,7 @@ function kgvid_get_video_dimensions($video = false) {
 
 	}
 
-	$get_info = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess(
+	$get_info = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 		array(
 			$ffmpegPath,
 			'-i',
@@ -1777,7 +1773,7 @@ function kgvid_get_video_dimensions($video = false) {
 			default: $movie_info['rotate'] = ""; break;
 		}
 
-		$get_codecs = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess(
+		$get_codecs = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 			array(
 				$ffmpegPath,
 				'-i',
@@ -7409,7 +7405,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 			$thumb_id = wp_insert_attachment( $attachment, $final_posterpath, $post_id );
 			//you must first include the image.php file
 			//for the function wp_generate_attachment_metadata() to work
-			require_once(ABSPATH . 'wp-admin/includes/image.php');
+			require_once ABSPATH . 'wp-admin/includes/image.php';
 			$attach_data = wp_generate_attachment_metadata( $thumb_id, $final_posterpath );
 			wp_update_attachment_metadata( $thumb_id, $attach_data );
 		}
@@ -8555,7 +8551,10 @@ function kgvid_encode_videos() {
 
 						}
 
-						$start_encoding[] = array('video_key' => $video_key, 'queued_format' => $format );
+						$start_encoding[] = array(
+							'video_key' => $video_key,
+							'queued_format' => $format
+						);
 
 						$x++;
 						if ( $x == intval($options['simultaneous_encodes']) ) {
@@ -8578,7 +8577,8 @@ function kgvid_encode_videos() {
 
 			foreach( $start_encoding as $key => $queue_info ) {
 
-				extract($queue_info, EXTR_OVERWRITE);
+				$video_key = $queue_info['video_key'];
+				$queued_format = $queue_info['queued_format'];
 				$video = $video_encode_queue[$video_key];
 
 				if ( array_key_exists('blog_id', $video) ) { switch_to_blog( $video['blog_id'] ); }
@@ -8734,7 +8734,7 @@ function kgvid_encode_videos() {
 
 					$commandline = implode(' ', array_map('kgvid_escapeArgument', $encode_array)); //escape each argument in the encode array
 					$commandline = $commandline . ' > "${:LOGFILE}" 2>&1';
-					$shell_process = Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess::fromShellCommandline($commandline);
+					$shell_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline($commandline);
 					$shell_process->start(null, ['LOGFILE' => $logfile]);
 
 					sleep(1);
@@ -8806,7 +8806,7 @@ function kgvid_test_ffmpeg() {
 
 	if ( array_key_exists('encode_array', $options) && is_array($options['encode_array']) ) {
 
-		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($options['encode_array']);
+		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($options['encode_array']);
 
 		$process->run();
 
@@ -9046,8 +9046,8 @@ function kgvid_encode_progress() {
 										$new_id = wp_insert_attachment( $attachment, $format_info['filepath'], $parent_id );
 										// you must first include the image.php file
 										// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
-										require_once(ABSPATH . 'wp-admin/includes/image.php');
-										require_once(ABSPATH . 'wp-admin/includes/media.php');
+										require_once ABSPATH . 'wp-admin/includes/image.php';
+										require_once ABSPATH . 'wp-admin/includes/media.php';
 										$attach_data = wp_generate_attachment_metadata( $new_id, $format_info['filepath'] );
 										wp_update_attachment_metadata( $new_id, $attach_data );
 										update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
@@ -9314,8 +9314,8 @@ function kgvid_replace_video( $video_key, $format ) {
 
 		// you must first include the image.php file
 		// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
-		require_once(ABSPATH . 'wp-admin/includes/image.php');
-		require_once(ABSPATH . 'wp-admin/includes/media.php');
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
 		$attach_data = wp_generate_attachment_metadata( $video_id, $new_filename );
 		wp_update_attachment_metadata( $video_id, $attach_data );
 		update_attached_file( $video_id, $new_filename );
@@ -9500,7 +9500,7 @@ function kgvid_fix_moov_atom($filepath) {
 			$faststart_tmp_file = str_replace('.mp4', '-faststart.mp4', $filepath);
 
 
-			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess(
+			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 				array(
 					$options['app_path']."/".$options['moov'],
 					$filepath,
@@ -9527,7 +9527,7 @@ function kgvid_fix_moov_atom($filepath) {
 
 		if ( $options['moov'] == 'MP4Box' ) {
 
-			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess(
+			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 				array(
 					$options['app_path']."/".$options['moov'],
 					'-inter',
@@ -9591,7 +9591,7 @@ function kgvid_cancel_encode() {
 						'--no-headers'
 					);
 
-					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($check_pid_command);
+					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
 					$check_pid->run();
 					$process_info = explode(' ', trim($check_pid->getOutput()));
 
@@ -9620,7 +9620,7 @@ function kgvid_cancel_encode() {
 						'Get-CimInstance Win32_Process -Filter "handle = '.$kgvid_pid.'" | Format-Table -Property CommandLine | Out-String -Width 10000',
 					);
 
-					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess($check_pid_command);
+					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
 					$check_pid->run();
 
 					if ( intval($kgvid_pid) > 0
@@ -9630,7 +9630,7 @@ function kgvid_cancel_encode() {
 
 						$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
 
-						$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFmpegProcess::fromShellCommandline($commandline);
+						$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline($commandline);
 						$kill_process->run(null, ['KGVID_PID' => $kgvid_pid]);
 
 						if ( strpos($kill_process->getOutput(), 'SUCCESS') !== false ) {
