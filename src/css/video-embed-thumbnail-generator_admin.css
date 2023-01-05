@@ -65,6 +65,7 @@
 	 );
 	position: relative;
 	overflow: hidden;
+	margin-bottom: 5px;
 }
 
 .kgvid_meter_text {
@@ -74,7 +75,7 @@
 	color: white;
 	font-size: 80%;
 	position:relative;
-	top: -3px;
+	top: -4px;
 }
 
 .kgvid_cancel_button {
