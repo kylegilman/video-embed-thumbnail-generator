@@ -1022,7 +1022,7 @@ function kgvid_delete_video(movieurl, postID, format, childID, blogID) {
 			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).empty();
 			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).append('<strong>Deleted</strong>');
 			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+format).trigger('change');
-			setTimeout(function(){ kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) }, 1000);
+			setTimeout(function(){ kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) }, 3000);
 
 		}, "json" );
 
@@ -1326,9 +1326,8 @@ console.log('redraw');
 
 			}
 
-			setTimeout( function(){ kgvid_update_encode_queue() }, 5000 ); //start the loop
-
 			jQuery(encodebox).removeAttr('style');
+
 		}, "json" );
 	}
 }
