@@ -2396,7 +2396,12 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'queue_paused' => __('Queue is paused. Press play button at top of screen to start.', 'video-embed-thumbnail-generator'),
 				'queue_play' => __('Start encoding', 'video-embed-thumbnail-generator'),
 				'nothing_to_encode' => __('Nothing to encode', 'video-embed-thumbnail-generator'),
-				'canceling' => __('Canceling', 'video-embed-thumbnail-generator')
+				'canceling' => __('Canceling', 'video-embed-thumbnail-generator'),
+				'elapsed' => __('Elapsed:', 'video-embed-thumbnail-generator'),
+				'remaining' => __('Remaining:', 'video-embed-thumbnail-generator'),
+				'fps' => _x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator'),
+				'encoding_complete' => __('Encoding Complete', 'video-embed-thumbnail-generator'),
+				'encoding' => __('Encoding', 'video-embed-thumbnail-generator')
 		) );
 	}
 
@@ -4118,7 +4123,12 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 	if ( $encodeset == "on" || $status == "queued" ) { $checked = 'checked'; }
 
 	if ( $status != "notchecked" ) { //File is in queue
-		$meta = ' <strong>'.esc_html(ucfirst($status)).'</strong>';
+
+		$complete_data = '';
+		if ( $status == 'Encoding Complete' ) {
+			$complete_data = ' data-status="Encoding Complete"';
+		}
+		$meta = ' <strong'.$complete_data.'>'.esc_html(ucfirst(__($status, 'video-embed-thumbnail-generator'))).'</strong>';
 		if ( $status == "error" && !empty($lastline) ) {
 			$meta .= ': <span class="kgvid_warning">'.esc_html(stripslashes($lastline))."</span>";
 		}
@@ -4291,7 +4301,9 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			if ( !empty($video_encode_queue) ) {
 				foreach ($video_encode_queue as $video_key => $video_entry) {
 					if ( $video_entry['movieurl'] == $movieurl ) {
-						if ( is_array($video_entry) && array_key_exists('movie_info', $video_entry) ) {
+						if ( is_array($video_entry)
+							&& array_key_exists('movie_info', $video_entry)
+						) {
 							$actualwidth = $video_entry['movie_info']['width'];
 							$actualheight = $video_entry['movie_info']['height'];
 						}
@@ -4319,7 +4331,12 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	}
 	else { $ffmpeg_disabled_text = ""; }
 
-	if ( ($is_attachment && $user_ID != $post->post_author && !current_user_can('edit_others_video_encodes') ) || !current_user_can('encode_videos') ) {
+	if ( ($is_attachment
+			&& $user_ID != $post->post_author
+			&& !current_user_can('edit_others_video_encodes')
+		)
+		|| !current_user_can('encode_videos')
+		) {
 		$ffmpeg_disabled_text = ' disabled title="'.__('Insufficient priveleges to encode this video', 'video-embed-thumbnail-generator').'"';
 		$security_disabled = true;
 	}
@@ -4330,9 +4347,13 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		foreach ($video_encode_queue as $video_key => $video_entry) {
 			if ( $video_entry['movieurl'] == $movieurl ) {
 				foreach ( $video_entry['encode_formats'] as $format => $value ) {
-					if ( !array_key_exists($format, $video_formats) && $value['status'] != 'notchecked' ) {
+					if ( !array_key_exists($format, $video_formats)
+						&& $value['status'] != 'notchecked'
+					) {
 						$video_formats[$format]['name'] = $value['name'];
-						if ( array_key_exists('filepath', $value) && file_exists($value['filepath']) ) {
+						if ( array_key_exists('filepath', $value)
+							&& file_exists($value['filepath'])
+						) {
 							$encodevideo_info[$format]['exists'] = true;
 							if ( is_writable($value['filepath']) ) { $encodevideo_info[$format]['writable'] = true; }
 							else { $encodevideo_info[$format]['writable'] = false; }
@@ -4391,7 +4412,10 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 
 		if ( $format == 'fullres' ) {
 
-			if ( $encodevideo_info['fullres']['exists'] == true && $format_stats['status'] != "encoding" && $format_stats['status'] != "Encoding Complete" ) {
+			if ( $encodevideo_info['fullres']['exists'] == true
+				&& $format_stats['status'] != "encoding"
+				&& $format_stats['status'] != "Encoding Complete"
+			) {
 				unlink($encodevideo_info[$format]['filepath']);
 				$encodevideo_info['fullres']['exists'] = false;
 			}
@@ -4441,8 +4465,10 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$checkboxes .= '<input type="button" id="attachments-'.$blog_id_text.$post_id.'-kgflashmediaplayer-encode" name="attachments'.$blog_name_text.'['.$post_id.'][kgflashmediaplayer-encode]" class="button videopack-encode-button" value="'.$button_text.'" onclick="kgvid_enqueue_video_encode(\''.$post_id.'\', \''.$blog_id.'\');" '.$ffmpeg_disabled_text.$encode_disabled.'/><div style="display:block;" id="attachments-'.$blog_id_text.$post_id.'-encodeplaceholder"></div>';
 
 	if ( $page != "queue" ) {
-		if ( is_array($options['encode']) || $options['hide_video_formats'] == false ) {
-			$checkboxes .= '<small><em>'.__('Generates additional video formats compatible with most mobile & HTML5-compatible browsers', 'video-embed-thumbnail-generator').'</em></small>';
+		if ( is_array($options['encode'])
+			|| $options['hide_video_formats'] == false
+		) {
+			$checkboxes .= '<small><em>'.__('Generates additional video formats', 'video-embed-thumbnail-generator').'</em></small>';
 		}
 		else {
 			$checkboxes .= '<em>'.__('All additional video formats are disabled in Videopack settings', 'video-embed-thumbnail-generator').'</em>';
@@ -4455,7 +4481,11 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 			if ( array_key_exists('status', $last_format) && $last_format['status'] != "notchecked" ) { break; } //get the final queued format
 		}
 
-		if ( $page != "queue" && !$encoding_now && ($last_format['status'] == "queued" || $last_format['status'] == "canceling") ) {
+		if ( $page != "queue"
+			&& !$encoding_now
+			&& ($last_format['status'] == "queued"
+			|| $last_format['status'] == "canceling")
+		) {
 			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.esc_attr($video_entry['movieurl']).'", "'.esc_attr($video_entry['attachmentID']).'", "'.esc_attr($blog_id).'") }, 2000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
 		}
 
@@ -4470,6 +4500,7 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 	$arr = array('checkboxes'=>$checkboxes, 'encoding'=>$encoding_now );
 
 	return $arr;
+
 }
 
 function kgvid_generate_queue_table_header() {
@@ -8953,20 +8984,37 @@ function kgvid_encode_progress() {
 								}
 								else { $current_seconds = $time_matches[1]; }
 
+								$percent_done_text = "";
 								$percent_done = intval($current_seconds)/intval($video_entry['movie_info']['duration']);
 								$time_elapsed = time() - $format_info['started'];
-								if ( $percent_done != 0 ) { $time_remaining = date('H:i:s', round($time_elapsed / $percent_done) - $time_elapsed); }
-								else $time_remaining = "unknown";
+								if ( $percent_done != 0 ) {
+									$time_remaining = round($time_elapsed / $percent_done) - $time_elapsed;
+									if ( $time_remaining < 0 ) {
+										$time_remaining = 0;
+									}
+								}
+								else {
+									$time_remaining = "unknown";
+								}
 								$percent_done = round($percent_done*100);
-								if ( $percent_done < 20 ) { $percent_done_text = ""; }
-								else { $percent_done_text = strval($percent_done)."%"; }
+								if ( $percent_done >= 20 ) {
+									$percent_done_text = strval($percent_done)."%";
+								}
 
 								preg_match('/fps=\s?(.*?) /', $lastline, $fps_matches);
-								if ( is_array($fps_matches) && array_key_exists(1, $fps_matches) == true ) {
-									if ( $fps_matches[1] != 0 ) { $fps_match = $fps_matches[1]; }
-									else {  $fps_match = "10"; }
+								if ( is_array($fps_matches)
+									&& array_key_exists(1, $fps_matches) == true
+								) {
+									if ( $fps_matches[1] != 0 ) {
+										$fps_match = $fps_matches[1];
+									}
+									else {
+										$fps_match = "10";
+									}
 								}
-								else {  $fps_match = "10"; }
+								else {
+									$fps_match = "10";
+								}
 
 								$time_to_wait = strval(max(round(40000/(floatval($fps_match))), 1000)); //wait at least 1 second
 								if ( intval($time_to_wait) > 10000 ) { //wait no more than 10 seconds
@@ -8975,16 +9023,25 @@ function kgvid_encode_progress() {
 
 								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
 
-								$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
+								$encoding_time_array = array(
+									'current_seconds' => $current_seconds,
+									'duration' => intval($video_entry['movie_info']['duration']),
+									'elapsed' => $time_elapsed,
+									'remaining' => $time_remaining,
+									'fps' => $fps_match
+								);
+								$encoding_time_array = wp_json_encode($encoding_time_array);
+
+								$embed_display = '<strong data-status="encoding">'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" data-encoding_time="'.esc_attr($encoding_time_array).'" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
 
 								if ( current_user_can('encode_videos') && $format_info['PID'] ) {
 									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.esc_attr($video_entry["attachmentID"]).'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\''.esc_attr($video_entry["attachmentID"]).'\', \''.esc_attr($video_key).'\', \''.esc_attr($format).'\', \''.esc_attr($blog_id).'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
 								}
 
-								$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.date('H:i:s',$time_elapsed).'. '.__('Remaining:', 'video-embed-thumbnail-generator').' '.esc_html($time_remaining).'. '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.esc_html($fps_match).'</small></div>';
+								$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.esc_html(date('H:i:s',$time_elapsed)).' '.__('Remaining:', 'video-embed-thumbnail-generator').' '.esc_html(date('H:i:s',$time_remaining)).' '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.esc_html($fps_match).'</small></div>';
 							}
 							elseif ( time() - $format_info['started'] < 10 || ( file_exists($format_info['filepath']) && time() - filemtime($format_info['filepath']) < 10 ) ) { //not enough time has passed, so check again later
-								$embed_display = '<strong>'.__('Encoding', 'video-embed-thumbnail-generator').'</strong>';
+								$embed_display = '<strong data-status="encoding">'.__('Encoding', 'video-embed-thumbnail-generator').'</strong>';
 								$time_to_wait = 1000;
 								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
 							}
@@ -9057,7 +9114,7 @@ function kgvid_encode_progress() {
 
 								//finish inserting attachment
 
-								$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
+								$embed_display = '<strong data-status="Encoding Complete">'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
 								$next_video = kgvid_encode_videos(); //start the next queued video
 
@@ -9103,7 +9160,7 @@ function kgvid_encode_progress() {
 
 									}//auto publish post is on
 
-									$embed_display = '<strong>'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
+									$embed_display = '<strong data-status="Encoding Complete">'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
 								}//all formats for this video are complete
 
@@ -9130,7 +9187,7 @@ function kgvid_encode_progress() {
 
 							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = addslashes($lastline);
 
-							$embed_display = '<strong>'.__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
+							$embed_display = '<strong data-status="Error">'.__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
 
 							if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
 
@@ -9199,7 +9256,7 @@ function kgvid_encode_progress() {
 				} //if there's a queue and the video is encoding
 
 				elseif ( is_array($format_info) && array_key_exists('status', $format_info) && $format_info['status'] != "notchecked" ) {
-					$embed_display = "<strong>".esc_html(ucfirst($video_encode_queue[$video_key]['encode_formats'][$format]['status']))."</strong>";
+					$embed_display = "<strong data-status='".$video_encode_queue[$video_key]['encode_formats'][$format]['status']."'>".esc_html(ucfirst($video_encode_queue[$video_key]['encode_formats'][$format]['status']))."</strong>";
 				}
 
 				if ( !empty($embed_display) ) {
@@ -9379,9 +9436,7 @@ function kgvid_clear_completed_queue($type, $scope = 'site') {
 							|| (is_network_admin() && $scope == 'network')
 							|| (array_key_exists('blog_id', $queue_entry) && $queue_entry['blog_id'] == get_current_blog_id())
 						) {
-							if ( array_key_exists( 'PID', $value ) && intval($value['PID']) > 0 ) {
-								posix_kill($value['PID'], 15);
-							}
+							kgvid_cancel_encode($video_key, $format);
 							if ( array_key_exists( 'filepath', $value ) && file_exists($value['filepath']) ) {
 								unlink($value['filepath']);
 							}
@@ -9554,102 +9609,112 @@ function kgvid_fix_moov_atom($filepath) {
 
 }
 
-function kgvid_cancel_encode() {
+function kgvid_cancel_encode($video_key, $format) {
 
 	$canceled = false;
 
 	if ( current_user_can('encode_videos') ) {
 
-		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+		$options = kgvid_get_options();
 
-		if (isset($_POST['video_key'])) {
+		$video_encode_queue = kgvid_get_encode_queue();
 
-			$video_key = kgvid_sanitize_text_field($_POST['video_key']);
-			$format = kgvid_sanitize_text_field($_POST['format']);
+		if ( is_array($video_encode_queue)
+			&& array_key_exists($video_key, $video_encode_queue)
+			&& array_key_exists($format, $video_encode_queue[$video_key]['encode_formats'])
+			&& array_key_exists('PID', $video_encode_queue[$video_key]['encode_formats'][$format])
+		) {
 
-			$options = kgvid_get_options();
+			$kgvid_pid = $video_encode_queue[$video_key]['encode_formats'][$format]['PID'];
+			$logfile = $video_encode_queue[$video_key]['encode_formats'][$format]['logfile'];
 
-			$video_encode_queue = kgvid_get_encode_queue();
+			if ('\\' !== DIRECTORY_SEPARATOR) { //not Windows
 
-			if ( is_array($video_encode_queue)
-				&& array_key_exists($video_key, $video_encode_queue)
-				&& array_key_exists($format, $video_encode_queue[$video_key]['encode_formats'])
-				&& array_key_exists('PID', $video_encode_queue[$video_key]['encode_formats'][$format])
-			) {
+				$check_pid_command = array(
+					'ps',
+					'--ppid',
+					$kgvid_pid,
+					'-o',
+					'pid,cmd',
+					'--no-headers'
+				);
 
-				$kgvid_pid = $video_encode_queue[$video_key]['encode_formats'][$format]['PID'];
-				$logfile = $video_encode_queue[$video_key]['encode_formats'][$format]['logfile'];
+				$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
+				$check_pid->run();
+				$process_info = explode(' ', trim($check_pid->getOutput()));
 
-				if ('\\' !== DIRECTORY_SEPARATOR) { //not Windows
+				if ( intval($process_info[0]) > 0
+					&& strpos($video_encode_queue[$video_key]['encode_formats'][$format]['filepath'], $check_pid->getOutput()) !== false
+				) {
 
-					$check_pid_command = array(
-						'ps',
-						'--ppid',
-						$kgvid_pid,
-						'-o',
-						'pid,cmd',
-						'--no-headers'
-					);
+					$killed_process = posix_kill($process_info[0], 15);
 
-					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
-					$check_pid->run();
-					$process_info = explode(' ', trim($check_pid->getOutput()));
+					if ( $killed_process ) {
 
-					if ( intval($process_info[0]) > 0
-						&& strpos($video_encode_queue[$video_key]['encode_formats'][$format]['filepath'], $check_pid->getOutput()) !== false
-					) {
-
-						$killed_process = posix_kill($process_info[0], 15);
-
-						if ( $killed_process ) {
-
-							$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
-							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
-							$canceled = true;
-
-						}
-
-					}
-
-				}
-				else { //Windows
-
-					$check_pid_command = array(
-						'powershell',
-						'-Command',
-						'Get-CimInstance Win32_Process -Filter "handle = '.$kgvid_pid.'" | Format-Table -Property CommandLine | Out-String -Width 10000',
-					);
-
-					$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
-					$check_pid->run();
-
-					if ( intval($kgvid_pid) > 0
-						&& strpos($check_pid->getOutput(), $options['app_path'].'/'.$options['video_app']) !== false
-						&& strpos($check_pid->getOutput(), $logfile) !== false
-					) {
-
-						$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
-
-						$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline($commandline);
-						$kill_process->run(null, ['KGVID_PID' => $kgvid_pid]);
-
-						if ( strpos($kill_process->getOutput(), 'SUCCESS') !== false ) {
-
-							$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
-							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
-							$canceled = true;
-
-						}
+						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
+						$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
+						$canceled = true;
 
 					}
 
 				}
 
-				kgvid_save_encode_queue($video_encode_queue);
+			}
+			else { //Windows
+
+				$check_pid_command = array(
+					'powershell',
+					'-Command',
+					'Get-CimInstance Win32_Process -Filter "handle = '.$kgvid_pid.'" | Format-Table -Property CommandLine | Out-String -Width 10000',
+				);
+
+				$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
+				$check_pid->run();
+
+				if ( intval($kgvid_pid) > 0
+					&& strpos($check_pid->getOutput(), $options['app_path'].'/'.$options['video_app']) !== false
+					&& strpos($check_pid->getOutput(), $logfile) !== false
+				) {
+
+					$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
+
+					$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline($commandline);
+					$kill_process->run(null, ['KGVID_PID' => $kgvid_pid]);
+
+					if ( strpos($kill_process->getOutput(), 'SUCCESS') !== false ) {
+
+						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
+						$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
+						$canceled = true;
+
+					}
+
+				}
 
 			}
 
+			kgvid_save_encode_queue($video_encode_queue);
+
 		}
+
+	}
+
+	return $canceled;
+
+}
+
+function kgvid_ajax_cancel_encode() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	$canceled = false;
+
+	if (isset($_POST['video_key'])) {
+
+		$video_key = kgvid_sanitize_text_field($_POST['video_key']);
+		$format = kgvid_sanitize_text_field($_POST['format']);
+
+		$canceled = kgvid_cancel_encode($video_key, $format);
 
 	}
 
@@ -9657,7 +9722,7 @@ function kgvid_cancel_encode() {
 	die();
 
 }
-add_action('wp_ajax_kgvid_cancel_encode', 'kgvid_cancel_encode');
+add_action('wp_ajax_kgvid_cancel_encode', 'kgvid_ajax_cancel_encode');
 
 function kgvid_queue_control() {
 
@@ -9721,15 +9786,13 @@ function kgvid_ajax_delete_video() {
 		}
 		else {
 			if ( $blog_id ) { switch_to_blog($blog_id); }
-			$deleted = wp_delete_attachment($attachment_id);
+			$deleted = wp_delete_attachment($attachment_id, true);
 			if ( !empty($deleted) ) { $deleted = true; }
 			if ( $blog_id ) { restore_current_blog(); }
 		}
 
 		$transient_name = kgvid_set_transient_name($movieurl);
 		delete_transient( 'kgvid_' . $transient_name );
-
-
 
 	}
 
@@ -9757,7 +9820,7 @@ function kgvid_delete_video_attachment($video_id) {
 
 					foreach ( $video_entry['encode_formats'] as $format => $value ) {
 						if ( $value['status'] == "encoding" ) {
-							if ( intval($value['PID']) > 0 ) { posix_kill($value['PID'], 15); }
+							kgvid_cancel_encode($video_key, $format);
 							if ( file_exists($value['filepath']) ) { unlink($value['filepath']); }
 						}
 					}
@@ -9774,6 +9837,7 @@ function kgvid_delete_video_attachment($video_id) {
 						if ( array_key_exists('filepath', $value) ) {
 							if ( strpos($value['filepath'], $wp_attached_file) !== false ) {
 								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "deleted";
+								error_log('deleted');
 								kgvid_save_encode_queue($video_encode_queue);
 								break;
 							}//if the format has filepath information
