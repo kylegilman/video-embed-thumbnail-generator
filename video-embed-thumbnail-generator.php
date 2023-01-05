@@ -4484,11 +4484,10 @@ function kgvid_generate_encode_checkboxes($movieurl, $post_id, $page, $blog_id =
 		if ( $page != "queue"
 			&& !$encoding_now
 			&& ($last_format['status'] == "queued"
-			|| $last_format['status'] == "canceling")
+			|| $last_format['status'] == "canceling" )
 		) {
 			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("'.esc_attr($video_entry['movieurl']).'", "'.esc_attr($video_entry['attachmentID']).'", "'.esc_attr($blog_id).'") }, 2000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
 		}
-
 		else {
 			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 2000);</script>';
 		}
@@ -9837,7 +9836,6 @@ function kgvid_delete_video_attachment($video_id) {
 						if ( array_key_exists('filepath', $value) ) {
 							if ( strpos($value['filepath'], $wp_attached_file) !== false ) {
 								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "deleted";
-								error_log('deleted');
 								kgvid_save_encode_queue($video_encode_queue);
 								break;
 							}//if the format has filepath information
