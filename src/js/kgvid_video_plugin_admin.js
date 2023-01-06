@@ -1246,8 +1246,8 @@ console.log('increment');
 	var encoding_time = meta_entry.find('.kgvid_meter_bar').data('encoding_time');
 
 	if ( encoding_time ) {
-		encoding_time.current_seconds = parseInt(encoding_time.current_seconds) + (parseInt(encoding_time.fps) / 24);
-		percent_done = Math.round( parseInt(encoding_time.current_seconds) / parseInt(encoding_time.duration) * 100 );
+		encoding_time.current_seconds = encoding_time.current_seconds + (parseInt(encoding_time.fps) / 30);
+		percent_done = Math.round( encoding_time.current_seconds / parseInt(encoding_time.duration) * 100 );
 		if ( percent_done > 100 ) { percent_done = 100; }
 
 		if ( percent_done != 0 ) {
@@ -1286,8 +1286,8 @@ console.log('increment');
 
 	}
 	if ( typeof status !== 'undefined' && status == 'encoding' ) {
-		var intervalId = setTimeout(function(){ kgvid_increment_encode_progress(attachmentID, blog_id, format) }, 1000 );
 		meta_entry.parents('.kgvid_checkboxes_section').data(format+'_interval_id', intervalId);
+		var intervalId = setTimeout(function(){ kgvid_increment_encode_progress(attachmentID, blog_id, format) }, 1000 );
 	}
 
 }
