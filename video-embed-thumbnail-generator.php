@@ -9643,7 +9643,7 @@ function kgvid_cancel_encode($video_key, $format) {
 				$process_info = explode(' ', trim($check_pid->getOutput()));
 
 				if ( intval($process_info[0]) > 0
-					&& strpos($video_encode_queue[$video_key]['encode_formats'][$format]['filepath'], $check_pid->getOutput()) !== false
+					&& strpos($check_pid->getOutput(), $video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) !== false
 				) {
 
 					$killed_process = posix_kill($process_info[0], 15);
