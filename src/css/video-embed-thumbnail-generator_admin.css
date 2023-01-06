@@ -95,12 +95,14 @@
 	font-family:arial;
 	font-size:10px;
 	font-weight:bold;
+	line-height:12pt;
+	vertical-align:text-bottom;
 	padding:1px 3px 3px 3px;
 	margin-left:5px;
+	margin-bottom:3px;
 	position:relative;
-	top:-1px;
 	text-decoration:none;
-	height:14px;
+	height:13px;
 }
 
 .kgvid_cancel_button:hover {
