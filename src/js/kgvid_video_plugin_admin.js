@@ -1326,6 +1326,7 @@ console.log('redraw');
 
 			}
 
+			setTimeout( function(){ kgvid_update_encode_queue() }, 5000 ); //start the loop
 			jQuery(encodebox).removeAttr('style');
 
 		}, "json" );
