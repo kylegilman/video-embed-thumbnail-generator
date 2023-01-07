@@ -380,6 +380,7 @@ function kgvid_filter_validate_url( $uri ) { //multibyte compatible check if str
 }
 
 function kgvid_sanitize_text_field( $text_field ) { //recursively sanitizes user input
+$old_field = $text_field;
 
 	if ( is_array( $text_field ) ) {
 
@@ -411,7 +412,9 @@ function kgvid_sanitize_text_field( $text_field ) { //recursively sanitizes user
 		}
 
 	}
-
+if ( $text_field != $old_field ) {
+	error_log(print_r($text_field,true));
+}
     return $text_field;
 
 }
@@ -4799,6 +4802,8 @@ function kgvid_validate_network_settings($input) {
 	$options = get_site_option( 'kgvid_video_embed_network_options' );
 	$default_options = kgvid_default_network_options();
 
+	$input = kgvid_sanitize_text_field($input); //recursively sanitizes all the settings
+
 	if ( $input['app_path'] != $options['app_path'] || $input['video_app'] != $options['video_app'] ) {
 		$input = kgvid_validate_ffmpeg_settings($input);
 	}
@@ -6353,7 +6358,7 @@ function kgvid_validate_ffmpeg_settings($input) {
 	$input['app_path'] = $ffmpeg_info['app_path'];
 
 	if ( $ffmpeg_info['proc_open_enabled'] == false ) {
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "ffmpeg-disabled", __('proc_open is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable proc_open.', 'video-embed-thumbnail-generator'), "updated");
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "ffmpeg-disabled", __esc_html('proc_open is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable proc_open.', 'video-embed-thumbnail-generator'), "updated");
 		$input['ffmpeg_exists'] = "notinstalled";
 	}
 	elseif ( $ffmpeg_info['ffmpeg_exists'] == false ) {
@@ -6361,7 +6366,7 @@ function kgvid_validate_ffmpeg_settings($input) {
 		$textarea = '';
 		if ( count($ffmpeg_info['output']) > 2 ) { $textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">'.implode("\n", $ffmpeg_info['output']).'</textarea>'; }
 
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "ffmpeg-disabled", sprintf( __('%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator'), strtoupper($input['video_app']), $input['app_path'] ).'<br /><br />'.__('Error message:', 'video-embed-thumbnail-generator').' '.implode(" ", array_slice($ffmpeg_info['output'], -2, 2)).$textarea, "updated");
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "ffmpeg-disabled", sprintf( esc_html__('%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator'), esc_html(strtoupper($input['video_app'])), esc_html($input['app_path']) ).'<br /><br />'.esc_html__('Error message:', 'video-embed-thumbnail-generator').' '.implode(" ", esc_textarea(array_slice($ffmpeg_info['output'], -2, 2))).$textarea, "updated");
 		$input['ffmpeg_exists'] = "notinstalled";
 	}
 
@@ -6376,8 +6381,10 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 
 	if (isset ($_POST["video-embed-thumbnail-generator-reset"])) {
 		$input = $default_options;
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", __("Videopack settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", esc_html__("Videopack settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
 	}
+
+	$input = kgvid_sanitize_text_field($input); //recursively sanitizes all the settings
 
 	if ( $input['app_path'] != $options['app_path'] || strtoupper($input['video_app']) != strtoupper($options['video_app']) ) {
 		$input = kgvid_validate_ffmpeg_settings($input);
@@ -6396,23 +6403,21 @@ function kgvid_video_embed_options_validate($input) { //validate & sanitize inpu
 	}
 
 	if ( empty($input['width']) ) {
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "width-zero", __("You must enter a value for the maximum video width.", 'video-embed-thumbnail-generator') );
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "width-zero", esc_html__("You must enter a value for the maximum video width.", 'video-embed-thumbnail-generator') );
 		$input['width'] = $options['width'];
 	}
 	if ( empty($input['height']) ) {
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "height-zero", __("You must enter a value for the maximum video height.", 'video-embed-thumbnail-generator') );
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "height-zero", esc_html__("You must enter a value for the maximum video height.", 'video-embed-thumbnail-generator') );
 		$input['height'] = $options['height'];
 	}
 	if ( empty($input['gallery_width']) ) {
-		add_settings_error( 'video_embed_thumbnail_generator_settings', "gallery-width-zero", __("You must enter a value for the maximum gallery video width.", 'video-embed-thumbnail-generator') );
+		add_settings_error( 'video_embed_thumbnail_generator_settings', "gallery-width-zero", esc_html__("You must enter a value for the maximum gallery video width.", 'video-embed-thumbnail-generator') );
 		$input['gallery_width'] = $options['gallery_width'];
 	}
 
 	if ( array_key_exists('capabilities', $input) && is_array($input['capabilities']) && $input['capabilities'] !== $options['capabilities'] ) { kgvid_set_capabilities($input['capabilities']); }
 
 	if ( !array_key_exists('transient_cache', $input) && $options['transient_cache'] == "on" ) { kgvid_delete_transients(); } //if user is turning off transient cache option
-
-	$input['titlecode'] = wp_kses_post( $input['titlecode'] );
 
 	if ( is_array($input['custom_format']) && ( !empty($input['custom_format']['width']) || !empty($input['custom_format']['height']) ) ) {
 
@@ -6952,14 +6957,14 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 		$form_fields["kgflashmediaplayer-security"]["value"] = $nonce;
 
 		if ( $post->post_mime_type != 'image/gif' ) {
-			$form_fields["views"]["label"] = __('Video Stats', 'video-embed-thumbnail-generator');
+			$form_fields["views"]["label"] = esc_html__('Video Stats', 'video-embed-thumbnail-generator');
 			$form_fields["views"]["input"] = "html";
-			$form_fields["views"]["html"] = sprintf( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), '<strong>', esc_html( intval($kgvid_postmeta['starts']) ), '</strong>' ).'<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats('.esc_attr($post->ID).')" id="show-video-stats-'.esc_attr($post->ID).'"><br /><a class="kgvid-show-video">('.__('More...', 'video-embed-thumbnail-generator').')</a></span><div style="display:none;" id="video-'.esc_attr($post->ID).'-stats">'.
-			esc_html( intval($kgvid_postmeta['play_25']) ).' '.__('25%', 'video-embed-thumbnail-generator').
-			'<br /><strong>' . esc_html( intval($kgvid_postmeta['play_50']) ) . '</strong> '.__('50%', 'video-embed-thumbnail-generator').
-			'<br /><strong>' . esc_html( intval($kgvid_postmeta['play_75']) ) . '</strong> '.__('75%', 'video-embed-thumbnail-generator').
-			'<br />'.esc_html(sprintf( _n('%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator')), '<strong>', esc_html( intval($kgvid_postmeta['completeviews']) ), '</strong>' ).
-			'<p>'.__('Video ID:', 'video-embed-thumbnail-generator').' '.esc_attr($post->ID).'</p></div>';
+			$form_fields["views"]["html"] = sprintf( esc_html( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator') ), '<strong>', esc_html( intval($kgvid_postmeta['starts']) ), '</strong>' ).'<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats('.esc_attr($post->ID).')" id="show-video-stats-'.esc_attr($post->ID).'"><br /><a class="kgvid-show-video">('.esc_html__('More...', 'video-embed-thumbnail-generator').')</a></span><div style="display:none;" id="video-'.esc_attr($post->ID).'-stats">'.
+			esc_html( intval($kgvid_postmeta['play_25']) ).' '.esc_html__('25%', 'video-embed-thumbnail-generator').
+			'<br /><strong>' . esc_html( intval($kgvid_postmeta['play_50']) ) . '</strong> '.esc_html__('50%', 'video-embed-thumbnail-generator').
+			'<br /><strong>' . esc_html( intval($kgvid_postmeta['play_75']) ) . '</strong> '.esc_html__('75%', 'video-embed-thumbnail-generator').
+			'<br />'.sprintf( esc_html(_n('%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator')), '<strong>', esc_html( intval($kgvid_postmeta['completeviews']) ), '</strong>' ).
+			'<p>'.esc_html__('Video ID:', 'video-embed-thumbnail-generator').' '.esc_attr($post->ID).'</p></div>';
 
 			// ** Thumbnail section **//
 
@@ -7025,7 +7030,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 				if ( $img_editor_works ) {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-'.esc_attr($post->ID).'-container">
-						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.esc_attr($post->ID).')" id="show-thumb-video-'.esc_attr($post->ID).'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">'.__('Choose from video...', 'video-embed-thumbnail-generator').'</span></div>
+						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video('.esc_attr($post->ID).')" id="show-thumb-video-'.esc_attr($post->ID).'"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">'.esc_html__('Choose from video...', 'video-embed-thumbnail-generator').'</span></div>
 						<div style="display:none;" id="thumb-video-'.esc_attr($post->ID).'-player">
 							<video playsinline crossorigin="anonymous" muted preload="none" class="kgvid-thumb-video" width="200" data-allowed="'.esc_attr($options['browser_thumbnails']).'" onloadedmetadata="kgvid_thumb_video_loaded(\''.esc_attr($post->ID).'\');" id="thumb-video-'.esc_attr($post->ID).'">'.
 							wp_kses_post(implode("\n", $sources)).'
@@ -7045,11 +7050,11 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				}
 				$generate_content = '<div id="generate-thumb-'.esc_attr($post->ID).'-container" class="kgvid-tabs-content" data-ffmpeg="'.esc_attr($options['ffmpeg_exists']).'">
 				<input id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-numberofthumbs" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-numberofthumbs]" type="text" value="'.esc_attr($kgvid_postmeta['numberofthumbs']).'" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\''.esc_attr($post->ID).'\', \'onchange\');document.getElementById(\'attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-thumbtime\').value =\'\';" '.esc_attr($ffmpeg_disabled_text.$readonly).'/>
-				<input type="button" id="attachments-'. esc_attr($post->ID) .'-thumbgenerate" class="button" value="'._x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. esc_attr($post->ID) .', \'generate\');" '.esc_attr($ffmpeg_disabled_text).'/>
-				<input type="button" id="attachments-'. esc_attr($post->ID) .'-thumbrandomize" class="button" value="'._x('Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator').'" name="thumbrandomize" onclick="kgvid_generate_thumb('. esc_attr($post->ID) .', \'random\');" '.esc_attr($ffmpeg_disabled_text).'/>
-				<span style="white-space:nowrap;"><input type="checkbox" id="attachments-'. esc_attr($post->ID) .'-firstframe" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\'attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-thumbtime\').value =\'\';" '.checked( $kgvid_postmeta['forcefirst'], 'on', false ).' '.esc_attr($ffmpeg_disabled_text.$readonly).'/> <label for="attachments-'. esc_attr($post->ID) .'-firstframe">'.__('Force 1st frame thumbnail', 'video-embed-thumbnail-generator').'</label></span></div>';
+				<input type="button" id="attachments-'. esc_attr($post->ID) .'-thumbgenerate" class="button" value="'.esc_attr_x('Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator').'" name="thumbgenerate" onclick="kgvid_generate_thumb('. esc_attr($post->ID) .', \'generate\');" '.esc_attr($ffmpeg_disabled_text).'/>
+				<input type="button" id="attachments-'. esc_attr($post->ID) .'-thumbrandomize" class="button" value="'.esc_attr_x('Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator').'" name="thumbrandomize" onclick="kgvid_generate_thumb('. esc_attr($post->ID) .', \'random\');" '.esc_attr($ffmpeg_disabled_text).'/>
+				<span style="white-space:nowrap;"><input type="checkbox" id="attachments-'. esc_attr($post->ID) .'-firstframe" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\'attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-thumbtime\').value =\'\';" '.checked( $kgvid_postmeta['forcefirst'], 'on', false ).' '.esc_attr($ffmpeg_disabled_text.$readonly).'/> <label for="attachments-'. esc_attr($post->ID) .'-firstframe">'.esc_html__('Force 1st frame thumbnail', 'video-embed-thumbnail-generator').'</label></span></div>';
 
-				$thumbnail_timecode = __('Thumbnail timecode:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-thumbtime]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-thumbtime" type="text" value="'. esc_attr($kgvid_postmeta['thumbtime']) .'" style="width:60px;"'.esc_attr($readonly).'><br>';
+				$thumbnail_timecode = esc_html__('Thumbnail timecode:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-thumbtime]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-thumbtime" type="text" value="'. esc_attr($kgvid_postmeta['thumbtime']) .'" style="width:60px;"'.esc_attr($readonly).'><br>';
 
 			}
 
@@ -7064,31 +7069,31 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			'.$thumbnail_timecode.'
 			<div id="attachments-'.esc_attr($post->ID).'-thumbnailplaceholder" style="position:relative;">'. $thumbnail_html .'</div>';
 			if ( empty($security_disabled) ) {
-				$form_fields["generator"]["html"] .= '<span id="pick-thumbnail" class="button" style="margin:10px 0;" data-choose="'.__('Choose a Thumbnail', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as video thumbnail', 'video-embed-thumbnail-generator').'" data-change="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
-				<input type="checkbox" id="attachments-'. esc_attr($post->ID) .'-featured" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-featured]" '.checked( $kgvid_postmeta['featured'], 'on', false ).' '.$ffmpeg_disabled_text.'/> <label for="attachments-'. esc_attr($post->ID) .'-featured">'.__('Set thumbnail as featured image', 'video-embed-thumbnail-generator').'</label>';
+				$form_fields["generator"]["html"] .= '<span id="pick-thumbnail" class="button" style="margin:10px 0;" data-choose="'.esc_attr__('Choose a Thumbnail', 'video-embed-thumbnail-generator').'" data-update="'.esc_attr__('Set as video thumbnail', 'video-embed-thumbnail-generator').'" data-change="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this);">'.esc_html__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />
+				<input type="checkbox" id="attachments-'. esc_attr($post->ID) .'-featured" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-featured]" '.checked( $kgvid_postmeta['featured'], 'on', false ).' '.$ffmpeg_disabled_text.'/> <label for="attachments-'. esc_attr($post->ID) .'-featured">'.esc_html__('Set thumbnail as featured image', 'video-embed-thumbnail-generator').'</label>';
 			}
 
 			$form_fields["generator"]["html"] .= $update_script;
 
 			if ( empty($security_disabled) ) {
-				$form_fields["kgflashmediaplayer-poster"]["label"] = __("Thumbnail URL", 'video-embed-thumbnail-generator');
-				$form_fields["kgflashmediaplayer-poster"]["value"] = get_post_meta($post->ID, "_kgflashmediaplayer-poster", true);
-				$form_fields["kgflashmediaplayer-poster"]["helps"] = "<small>".sprintf( __('Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator'), "<a href='options-general.php?page=video_embed_thumbnail_generator_settings' target='_blank'>" )."</a>.</small>";
+				$form_fields["kgflashmediaplayer-poster"]["label"] = esc_html__("Thumbnail URL", 'video-embed-thumbnail-generator');
+				$form_fields["kgflashmediaplayer-poster"]["value"] = esc_url(get_post_meta($post->ID, "_kgflashmediaplayer-poster", true));
+				$form_fields["kgflashmediaplayer-poster"]["helps"] = "<small>".sprintf( esc_html__('Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator'), "<a href='options-general.php?page=video_embed_thumbnail_generator_settings' target='_blank'>" )."</a>.</small>";
 			}
 
 			$form_fields["kgflashmediaplayer-dimensions"]["label"] = __("Video Embed Dimensions", 'video-embed-thumbnail-generator');
 			$form_fields["kgflashmediaplayer-dimensions"]["input"] = "html";
-			$form_fields["kgflashmediaplayer-dimensions"]["html"] = __('Width:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-width]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-width" type="text" value="'.esc_attr($kgvid_postmeta['width']).'" style="width:50px;" data-minimum="'.esc_attr($options['minimum_width']).'" onchange="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);" onkeyup="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);"'.$readonly.'> '.__('Height:', 'video-embed-thumbnail-generator').'
+			$form_fields["kgflashmediaplayer-dimensions"]["html"] = __('Width:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-width]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-width" type="text" value="'.esc_attr($kgvid_postmeta['width']).'" style="width:50px;" data-minimum="'.esc_attr($options['minimum_width']).'" onchange="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);" onkeyup="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);"'.$readonly.'> '.esc_html__('Height:', 'video-embed-thumbnail-generator').'
 			<input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-height]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-height" type="text" value="'.esc_attr($kgvid_postmeta['height']).'" style="width:50px;" onchange="kgvid_set_dimension('.esc_attr($post->ID).', \'width\', this.value);" onkeyup="kgvid_set_dimension('.esc_attr($post->ID).', \'width\', this.value);"'.$readonly.'> <br />
 			<input type="checkbox" name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-lockaspect]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('.esc_attr($post->ID).', this.checked);" '.checked( $kgvid_postmeta['lockaspect'], 'on', false ).$security_disabled.'>
-			<label for="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-lockaspect"><small>'.__('Lock to aspect ratio', 'video-embed-thumbnail-generator').'</small></label>';
-			$form_fields["kgflashmediaplayer-dimensions"]["helps"] = "<small>".sprintf( __('Leave blank to use %sdefault dimensions', 'video-embed-thumbnail-generator'), "<a href='options-general.php?page=video_embed_thumbnail_generator_settings' target='_blank'>" )."</a>.</small>";
+			<label for="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-lockaspect"><small>'.esc_html__('Lock to aspect ratio', 'video-embed-thumbnail-generator').'</small></label>';
+			$form_fields["kgflashmediaplayer-dimensions"]["helps"] = "<small>".sprintf( esc_html__('Leave blank to use %sdefault dimensions', 'video-embed-thumbnail-generator'), "<a href='options-general.php?page=video_embed_thumbnail_generator_settings' target='_blank'>" )."</a>.</small>";
 
 		} //end if not GIF
 
 		$checkboxes = kgvid_generate_encode_checkboxes($movieurl, $post->ID, "attachment");
 
-		$form_fields["kgflashmediaplayer-encode"]["label"] = __("Additional Formats", 'video-embed-thumbnail-generator');
+		$form_fields["kgflashmediaplayer-encode"]["label"] = esc_html__("Additional Formats", 'video-embed-thumbnail-generator');
 		$form_fields["kgflashmediaplayer-encode"]["input"] = "html";
 		$form_fields["kgflashmediaplayer-encode"]["html"] = $checkboxes['checkboxes'];
 
@@ -7113,27 +7118,27 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 						if ( !array_key_exists( 'default', $kgvid_postmeta['track'][$track] ) ) { $kgvid_postmeta['track'][$track]['default'] = false; }
 
-						$tracks_html .= '<div id="kgflashmediaplayer-'.esc_attr($post->ID).'-trackdiv-'.esc_attr($track).'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'._x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.esc_attr(strval($track+1)).'</strong>';
+						$tracks_html .= '<div id="kgflashmediaplayer-'.esc_attr($post->ID).'-trackdiv-'.esc_attr($track).'" class="kgvid_thumbnail_box kgvid_track_box"><strong>'.esc_html_x('Track', 'captions track', 'video-embed-thumbnail-generator').' '.esc_attr(strval($track+1)).'</strong>';
 						if ( empty($security_disabled) ) {
 							$tracks_html .= '<span class="kgvid_track_box_removeable" data-trackid="'.esc_attr($track).'" onclick="jQuery(this).siblings(\'input\').val(\'\').attr(\'checked\', \'\').trigger(\'change\');">X</span>';
 						}
 						$tracks_html .= '<br />'.__('Track type:', 'video-embed-thumbnail-generator').' '.$track_type_select.'<br />';
 						if ( empty($security_disabled) ) {
-							$tracks_html .= '<span id="pick-track'.esc_attr($track).'" class="button" style="margin:10px 0;" data-choose="'.__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_src" onclick="kgvid_pick_attachment(this);">'.__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />';
+							$tracks_html .= '<span id="pick-track'.esc_attr($track).'" class="button" style="margin:10px 0;" data-choose="'.esc_attr__('Choose a Text File', 'video-embed-thumbnail-generator').'" data-update="'.esc_html__('Set as track source', 'video-embed-thumbnail-generator').'" data-change="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_src" onclick="kgvid_pick_attachment(this);">'.esc_html__('Choose from Library', 'video-embed-thumbnail-generator').'</span><br />';
 						}
 						$tracks_html .= 'URL: <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][src]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_src" type="text" value="'.esc_attr($kgvid_postmeta['track'][$track]['src']).'" class="text" style="width:180px;"'.$readonly.'><br />
-						'._x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][srclang]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_srclang" type="text" value="'.esc_attr($kgvid_postmeta['track'][$track]['srclang']).'" maxlength="2" style="width:40px;"'.$readonly.'><br />
-						'.__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][label]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_label" type="text" value="'.esc_attr($kgvid_postmeta['track'][$track]['label']).'" class="text" style="width:172px;"'.$readonly.'><br />
-						'.__('Default:', 'video-embed-thumbnail-generator').'<input '.checked($kgvid_postmeta['track'][$track]['default'], 'default', false).' name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][default]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_default" type="checkbox" value="default"'.$security_disabled.'></div>';
+						'.esc_html_x('Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][srclang]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_srclang" type="text" value="'.esc_attr($kgvid_postmeta['track'][$track]['srclang']).'" maxlength="2" style="width:40px;"'.$readonly.'><br />
+						'.esc_html__('Label:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][label]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_label" type="text" value="'.esc_attr($kgvid_postmeta['track'][$track]['label']).'" class="text" style="width:172px;"'.$readonly.'><br />
+						'.esc_html__('Default:', 'video-embed-thumbnail-generator').'<input '.checked($kgvid_postmeta['track'][$track]['default'], 'default', false).' name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-track]['.esc_attr($track).'][default]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-track_'.esc_attr($track).'_default" type="checkbox" value="default"'.$security_disabled.'></div>';
 					}
 				}
 			}
 
-			$form_fields["kgflashmediaplayer-track"]["label"] = __("Subtitles & Captions", 'video-embed-thumbnail-generator');
+			$form_fields["kgflashmediaplayer-track"]["label"] = esc_html__("Subtitles & Captions", 'video-embed-thumbnail-generator');
 			$form_fields["kgflashmediaplayer-track"]["input"] = "html";
 			$form_fields["kgflashmediaplayer-track"]["html"] = '<div id="kgflashmediaplayer-'.esc_attr($post->ID).'-trackdiv">'.$tracks_html.'</div>';
 			if ( empty($security_disabled) ) {
-				$form_fields["kgflashmediaplayer-track"]["html"] .= '<span class="button" id="kgflashmediaplayer-add_track" onclick="kgvid_add_subtitles('.esc_attr($post->ID).')">'.__('Add track', 'video-embed-thumbnail-generator').'</span>';
+				$form_fields["kgflashmediaplayer-track"]["html"] .= '<span class="button" id="kgflashmediaplayer-add_track" onclick="kgvid_add_subtitles('.esc_attr($post->ID).')">'.esc_html__('Add track', 'video-embed-thumbnail-generator').'</span>';
 			}
 
 			$items = array(
@@ -7147,13 +7152,13 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			}
 			$shortcode_select .= "</select>";
 
-			$form_fields["kgflashmediaplayer-options"]["label"] = __("Video Embed Options", 'video-embed-thumbnail-generator');
+			$form_fields["kgflashmediaplayer-options"]["label"] = esc_html__("Video Embed Options", 'video-embed-thumbnail-generator');
 			$form_fields["kgflashmediaplayer-options"]["input"] = "html";
 			$form_fields["kgflashmediaplayer-options"]["html"] = '<input type="checkbox" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-showtitle]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-showtitle" '.checked( $kgvid_postmeta['showtitle'], 'on', false ).$security_disabled.'>
-			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-showtitle">'.__('Insert title above video', 'video-embed-thumbnail-generator').'</label><br />
+			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-showtitle">'.esc_html__('Insert title above video', 'video-embed-thumbnail-generator').'</label><br />
 			<input type="checkbox" name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-downloadlink]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-downloadlink" '.checked( $kgvid_postmeta['downloadlink'], 'on', false ).$security_disabled.'>
-			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-downloadlink">'.__('Show download icon', 'video-embed-thumbnail-generator').'<em><small><br />'.__('Makes it easier for users to download file.', 'video-embed-thumbnail-generator').'</em></small></label><br />
-			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-embed">'._x('Insert', 'verb', 'video-embed-thumbnail-generator').'</label>
+			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-downloadlink">'.esc_html__('Show download icon', 'video-embed-thumbnail-generator').'<em><small><br />'.esc_html__('Makes it easier for users to download file.', 'video-embed-thumbnail-generator').'</em></small></label><br />
+			<label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-embed">'.esc_html_x('Insert', 'verb', 'video-embed-thumbnail-generator').'</label>
 			'.$shortcode_select.'
 			<script type="text/javascript">jQuery(function(){kgvid_hide_standard_wordpress_display_settings('.esc_attr($post->ID).');});</script>';
 
@@ -7177,14 +7182,14 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				}
 				$gallery_order_select .= "</select>";
 
-				$form_fields["kgflashmediaplayer-gallery"]["label"] = __("Gallery Settings (all optional)", 'video-embed-thumbnail-generator');
+				$form_fields["kgflashmediaplayer-gallery"]["label"] = esc_html__("Gallery Settings (all optional)", 'video-embed-thumbnail-generator');
 				$form_fields["kgflashmediaplayer-gallery"]["input"] = "html";
-				$form_fields["kgflashmediaplayer-gallery"]["html"] = '<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_thumb_width]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_thumb_width" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_thumb_width']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_thumb_width">'.__('Thumbnail Width', 'video-embed-thumbnail-generator').'</label><br />
+				$form_fields["kgflashmediaplayer-gallery"]["html"] = '<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_thumb_width]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_thumb_width" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_thumb_width']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_thumb_width">'.esc_html__('Thumbnail Width', 'video-embed-thumbnail-generator').'</label><br />
 				'.$gallery_orderby_select.' '.__('Order By', 'video-embed-thumbnail-generator').'<br />
 				'.$gallery_order_select.' '.__('Sort Order', 'video-embed-thumbnail-generator').'<br />
-				<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_exclude]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_exclude" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_exclude']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_exclude">'.__('Exclude', 'video-embed-thumbnail-generator').'</label><br />
-				<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_include]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_include" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_include']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_include">'.__('Include', 'video-embed-thumbnail-generator').'</label><br />
-				<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_id]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_id" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_id']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_id">'.__('Post ID', 'video-embed-thumbnail-generator').'</label>
+				<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_exclude]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_exclude" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_exclude']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_exclude">'.esc_html__('Exclude', 'video-embed-thumbnail-generator').'</label><br />
+				<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_include]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_include" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_include']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_include">'.esc_html__('Include', 'video-embed-thumbnail-generator').'</label><br />
+				<input name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-gallery_id]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_id" type ="text" value="'.esc_attr($kgvid_postmeta['gallery_id']).'" class="kgvid_50_width"> <label for="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-gallery_id">'.esc_html__('Post ID', 'video-embed-thumbnail-generator').'</label>
 				';
 
 			} //if video gallery
@@ -7209,11 +7214,11 @@ function kgvid_video_stats_column_data( $column_name, $id ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta($id);
 		if ( is_array($kgvid_postmeta) && array_key_exists('starts', $kgvid_postmeta) && intval($kgvid_postmeta['starts']) > 0 ) {
 			/* translators: Start refers to the number of times a video has been started */
-			wp_kses_post( printf( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['starts']), '</strong>' ) );
+			wp_kses_post( printf( esc_html( _n('%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval($kgvid_postmeta['starts']), 'video-embed-thumbnail-generator') ), '<strong>', esc_html(intval($kgvid_postmeta['starts'])), '</strong>' ) );
 			echo '<br><strong>'.esc_html(intval($kgvid_postmeta['play_25'])).'</strong> 25%'.
 			'<br><strong>'.esc_html(intval($kgvid_postmeta['play_50'])).'</strong> 50%'.
 			'<br><strong>'.esc_html(intval($kgvid_postmeta['play_75'])).'</strong> 75%<br>';
-			wp_kses_post( printf( _n('%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator'), '<strong>', intval($kgvid_postmeta['completeviews']), '</strong>' ) );
+			printf( esc_html( _n('%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval($kgvid_postmeta['completeviews']), 'video-embed-thumbnail-generator') ), '<strong>', esc_html($kgvid_postmeta['completeviews']), '</strong>' );
 
 		}
 	}
