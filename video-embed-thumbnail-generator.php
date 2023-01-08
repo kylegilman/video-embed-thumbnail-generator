@@ -6974,7 +6974,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 			$thumbnail_html = "";
 			if ( !empty($kgvid_postmeta['autothumb-error']) && empty($thumbnail_url) ) {
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'.esc_html($kgvid_postmeta['autothumb-error']).'</div>';
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">'.wp_kses_post($kgvid_postmeta['autothumb-error']).'</div>';
 			}
 			elseif ( !empty($thumbnail_url) ) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-thumb_id="'.esc_attr($thumbnail_id).'" src="'.esc_attr($thumbnail_url).'?'.rand().'"></div>';
@@ -7425,7 +7425,7 @@ function kgvid_save_thumb($post_id, $post_name, $thumb_url, $index=false) {
 
 		unlink($tmp_posterpath);
 
-		$desc = $post_name . ' '._x('thumbnail', 'text appended to newly created thumbnail titles', 'video-embed-thumbnail-generator');
+		$desc = $post_name . ' '.esc_html_x('thumbnail', 'text appended to newly created thumbnail titles', 'video-embed-thumbnail-generator');
 		if ( $index ) { $desc .= ' '.$index; }
 
 		//is image in uploads directory?
@@ -7517,9 +7517,9 @@ function kgvid_ajax_redraw_thumbnail_box() {
 	}
 
 	$response = array(
-		'thumb_url' => get_post_meta($post_id, "_kgflashmediaplayer-poster", true).'?'.rand(),
-		'thumbnail_size_url' => $thumbnail_size_url.'?'.rand(),
-		'thumb_error' => $kgvid_postmeta['autothumb-error']
+		'thumb_url' => esc_url(get_post_meta($post_id, "_kgflashmediaplayer-poster", true)).'?'.rand(),
+		'thumbnail_size_url' => esc_url($thumbnail_size_url).'?'.rand(),
+		'thumb_error' => wp_kses_post($kgvid_postmeta['autothumb-error'])
 	);
 	wp_send_json($response);
 
@@ -7540,6 +7540,7 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 	if( !empty($post['ID']) && isset($attachment['kgflashmediaplayer-url']) && $flag < 1 ) {
 
 		$options = kgvid_get_options();
+		$attachment = kgvid_sanitize_text_field($attachment);
 
 		$thumb_id = "";
 		if( isset($attachment['kgflashmediaplayer-poster']) ) {
@@ -7657,16 +7658,16 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 
 			if ($kgvid_postmeta['showtitle'] == "on" ) {
 			$titlecode = html_entity_decode(stripslashes($options['titlecode']));
-			if ( substr($titlecode, 0, 1) != '<' ) { $titlecode = '<'.$titlecode; }
+			if ( substr($titlecode, 0, 1) != '<' ) { $titlecode = '<'.wp_kses_post($titlecode); }
 			if ( substr($titlecode, -1, 1) != '>' ) { $titlecode .= '>'; }
 			$endtitlecode = str_replace("<", "</", $titlecode);
 			$endtitlecode_array = explode(' ', $endtitlecode);
 			if ( substr($endtitlecode_array[0], -1) != ">" ) { $endtitlecode = $endtitlecode_array[0].">"; }
-			$html .= $titlecode.'<span itemprop="name">'.$kgvid_postmeta["title"].'</span>'.$endtitlecode.'<br />';
+			$html .= $titlecode.'<span itemprop="name">'.esc_html($kgvid_postmeta["title"]).'</span>'.wp_kses_post($endtitlecode).'<br />';
 		}
 
-			$html .= '[videopack id="'.$attachment_id.'"';
-			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.$kgvid_postmeta["poster"].'"'; }
+			$html .= '[videopack id="'.esc_attr($attachment_id).'"';
+			if ( !empty($kgvid_postmeta['poster']) && empty($kgvid_postmeta['poster-id']) ) { $html .= ' poster="'.esc_url($kgvid_postmeta["poster"]).'"'; }
 
 			$insert_shortcode_atts = apply_filters('kgvid_insert_shortcode_atts', array(
 				'width',
@@ -7675,11 +7676,11 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 
 			foreach ( $insert_shortcode_atts as $att ) {
 				if ( array_key_exists($att, $kgvid_postmeta) && !empty($kgvid_postmeta[$att]) ) {
-					$html .= ' '.$att.'="'.$kgvid_postmeta[$att].'"';
+					$html .= ' '.esc_attr($att).'="'.esc_attr($kgvid_postmeta[$att]).'"';
 				}
 			}
 
-			$html .= ']'.$kgvid_postmeta["url"].'[/videopack]<br />';
+			$html .= ']'.esc_url($kgvid_postmeta["url"]).'[/videopack]<br />';
 		} //if embed code is enabled
 
 		if ($kgvid_postmeta['embed'] == "Video Gallery" ) {
@@ -7689,12 +7690,32 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 
 			$html = "";
 			$html .= '[videopack gallery="true"';
-			if ( !empty($kgvid_postmeta['gallery_thumb']) && $kgvid_postmeta['gallery_thumb'] != $options['gallery_thumb'] ) { $html .= ' gallery_thumb="'.$kgvid_postmeta["gallery_thumb"].'"'; }
-			if ( !empty($kgvid_postmeta['gallery_exclude']) ) { $html .= ' gallery_exclude="'.$kgvid_postmeta["gallery_exclude"].'"'; }
-			if ( !empty($kgvid_postmeta['gallery_include']) ) { $html .= ' gallery_include="'.$kgvid_postmeta["gallery_include"].'"'; }
-			if ( !empty($kgvid_postmeta['gallery_orderby']) && $kgvid_postmeta['gallery_orderby'] != "menu_order" ) { $html .= ' gallery_orderby="'.$kgvid_postmeta["gallery_orderby"].'"'; }
-			if ( !empty($kgvid_postmeta['gallery_order']) && $kgvid_postmeta['gallery_order'] != "ASC" ) { $html .= ' gallery_order="'.$kgvid_postmeta["gallery_order"].'"'; }
-			if ( !empty($kgvid_postmeta['gallery_id']) && $kgvid_postmeta['gallery_id'] != $parent_id ) { $html .= ' gallery_id="'.$kgvid_postmeta["gallery_id"].'"'; }
+			if ( !empty($kgvid_postmeta['gallery_thumb'])
+				&& $kgvid_postmeta['gallery_thumb'] != $options['gallery_thumb']
+			) {
+				$html .= ' gallery_thumb="'.esc_attr($kgvid_postmeta["gallery_thumb"]).'"';
+			}
+			if ( !empty($kgvid_postmeta['gallery_exclude']) ) {
+				$html .= ' gallery_exclude="'.esc_attr($kgvid_postmeta["gallery_exclude"]).'"';
+			}
+			if ( !empty($kgvid_postmeta['gallery_include']) ) {
+				$html .= ' gallery_include="'.esc_attr($kgvid_postmeta["gallery_include"]).'"';
+			}
+			if ( !empty($kgvid_postmeta['gallery_orderby'])
+				&& $kgvid_postmeta['gallery_orderby'] != "menu_order"
+			) {
+				$html .= ' gallery_orderby="'.esc_attr($kgvid_postmeta["gallery_orderby"]).'"';
+			}
+			if ( !empty($kgvid_postmeta['gallery_order'])
+				&& $kgvid_postmeta['gallery_order'] != "ASC"
+			) {
+				$html .= ' gallery_order="'.esc_attr($kgvid_postmeta["gallery_order"]).'"';
+			}
+			if ( !empty($kgvid_postmeta['gallery_id'])
+				&& $kgvid_postmeta['gallery_id'] != $parent_id
+			) {
+				$html .= ' gallery_id="'.esc_attr($kgvid_postmeta["gallery_id"]).'"';
+			}
 			$html .= '][/videopack]';
 		}
 
@@ -7706,7 +7727,7 @@ function kgvid_modify_media_insert($html, $attachment_id, $attachment) {
 add_filter('media_send_to_editor', 'kgvid_modify_media_insert' , 10, 3);
 
 function kgvid_embedurl_menu($tabs) {
-	$newtab = array( 'embedurl' => _x('Embed Video from URL', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator') );
+	$newtab = array( 'embedurl' => esc_html_x('Embed Video from URL', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator') );
 	if (is_array($tabs) ) { return array_merge($tabs, $newtab); }
 	else { return $newtab; }
 }
@@ -7737,56 +7758,56 @@ function kgvid_media_embedurl_process() {
 	<table id="kgflashmediaplayer-table" class="describe">
 	<tbody>
 				<tr>
-					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="videotitle"><?php _e('Video Title', 'video-embed-thumbnail-generator'); ?></label></span></th>
+					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="videotitle"><?php esc_html_e('Video Title', 'video-embed-thumbnail-generator'); ?></label></span></th>
 					<td class="field"><input type="text" id="videotitle" name="videotitle" value="" size="50" />
-					<p class="help"><small><?php _e('Add an optional header above the video.', 'video-embed-thumbnail-generator'); ?></small></p></td>
+					<p class="help"><small><?php esc_html_e('Add an optional header above the video.', 'video-embed-thumbnail-generator'); ?></small></p></td>
 				</tr>
 				<tr>
-					<th valign="top" scope="row" class="label"><label for="attachments-singleurl-kgflashmediaplayer-url">Video URL</label></th>
+					<th valign="top" scope="row" class="label"><label for="attachments-singleurl-kgflashmediaplayer-url"><?php esc_html_e('Video URL', 'video-embed-thumbnail-generator'); ?></label></th>
 					<td class="field"><input type="text" id="attachments-singleurl-kgflashmediaplayer-url" name="attachments[singleurl][kgflashmediaplayer-url]" value="" size="50" onchange="kgvid_set_singleurl();"/>
-					<p class="help"><small><?php _e('Specify the URL of the video file.', 'video-embed-thumbnail-generator'); ?></small></p></td>
+					<p class="help"><small><?php esc_html_e('Specify the URL of the video file.', 'video-embed-thumbnail-generator'); ?></small></p></td>
 				</tr>
 				<?php if ( current_user_can('make_video_thumbnails') && $options['ffmpeg_exists'] == 'on' ) { ?>
 				<tr>
-					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php _e('Thumbnails', 'video-embed-thumbnail-generator') ?></label></span></th>
+					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php esc_html_e('Thumbnails', 'video-embed-thumbnail-generator') ?></label></span></th>
 					<td class="field">
-						<input id="attachments-singleurl-kgflashmediaplayer-numberofthumbs" type="text" value="<?php echo esc_attr($options['generate_thumbs']); ?>" maxlength="2" size="4" style="width:35px;text-align:center;" title="<?php _e('Number of Thumbnails', 'video-embed-thumbnail-generator') ?>" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value='';" />
-						<input type="button" id="attachments-singleurl-thumbgenerate" class="button" value="<?php _e('Generate', 'video-embed-thumbnail-generator') ?>" name="thumbgenerate" onclick="kgvid_generate_thumb('singleurl', 'generate');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
-						<input type="button" id="attachments-singleurl-thumbrandomize" class="button" value="<?php _e('Randomize', 'video-embed-thumbnail-generator') ?>" name="thumbrandomize" onclick="kgvid_generate_thumb('singleurl', 'random');" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
-						<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe"><?php _e('Force 1st Frame Thumbnail', 'video-embed-thumbnail-generator') ?></label><br>
+						<input id="attachments-singleurl-kgflashmediaplayer-numberofthumbs" type="text" value="<?php echo esc_attr($options['generate_thumbs']); ?>" maxlength="2" size="4" style="width:35px;text-align:center;" title="<?php esc_attr_e('Number of Thumbnails', 'video-embed-thumbnail-generator') ?>" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value='';" />
+						<input type="button" id="attachments-singleurl-thumbgenerate" class="button" value="<?php esc_attr_e('Generate', 'video-embed-thumbnail-generator') ?>" name="thumbgenerate" onclick="kgvid_generate_thumb('singleurl', 'generate');" disabled title="<?php esc_attr_e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
+						<input type="button" id="attachments-singleurl-thumbrandomize" class="button" value="<?php esc_attr_e('Randomize', 'video-embed-thumbnail-generator') ?>" name="thumbrandomize" onclick="kgvid_generate_thumb('singleurl', 'random');" disabled title="<?php esc_attr_e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
+						<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe"><?php esc_html_e('Force 1st Frame Thumbnail', 'video-embed-thumbnail-generator') ?></label><br>
 						<div id="attachments-singleurl-thumbnailplaceholder"></div>
-						<span><?php _e('Thumbnail timecode:', 'video-embed-thumbnail-generator') ?></span> <input name="attachments[singleurl][kgflashmediaplayer-thumbtime]" id="attachments-singleurl-kgflashmediaplayer-thumbtime" type="text" value="" style="width:60px;"><br>
-						<input type="checkbox" <?php echo checked( $options["featured"], "on", false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> <?php _e('Set thumbnail as featured image', 'video-embed-thumbnail-generator') ?>
+						<span><?php esc_html_e('Thumbnail timecode:', 'video-embed-thumbnail-generator') ?></span> <input name="attachments[singleurl][kgflashmediaplayer-thumbtime]" id="attachments-singleurl-kgflashmediaplayer-thumbtime" type="text" value="" style="width:60px;"><br>
+						<input type="checkbox" <?php echo checked( $options["featured"], "on", false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> <?php esc_html_e('Set thumbnail as featured image', 'video-embed-thumbnail-generator') ?>
 					</td>
 				</tr>
 				<?php } ?>
 				<tr>
-					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments-singleurl_kgflashmediaplayer_poster"><?php _e('Thumbnail URL', 'video-embed-thumbnail-generator') ?></label></span></th>
+					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments-singleurl_kgflashmediaplayer_poster"><?php esc_html_e('Thumbnail URL', 'video-embed-thumbnail-generator') ?></label></span></th>
 					<td class="field"><input type="text" name="attachments[singleurl][kgflashmediaplayer-poster]" id="attachments-singleurl-kgflashmediaplayer-poster" value="" size="50" />
-					<p class="help"><small><?php printf( __('Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator'), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings" target="_blank">' ) ?></a>.</small></p></td>
+					<p class="help"><small><?php printf( esc_html__('Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator'), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings" target="_blank">' ) ?></a>.</small></p></td>
 				</tr>
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments-singleurl-kgflashmediaplayer-width"><?php _e('Dimensions', 'video-embed-thumbnail-generator') ?></label></span></th>
-					<td class="field"><?php _e('Width:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-width]" type="text" value="<?php echo esc_attr($maxwidth); ?>" id="attachments-singleurl-kgflashmediaplayer-width" type="text" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'height', this.value);" onkeyup="kgvid_set_dimension('singleurl', 'height', this.value);"> <?php _e('Height:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-height]" id="attachments-singleurl-kgflashmediaplayer-height" type="text" value="<?php echo esc_attr($maxheight); ?>" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'width', this.value);" onkeyup="kgvid-set-dimension('singleurl', 'width', this.value);"> <input type="checkbox" name="attachments[singleurl][kgflashmediaplayer-lockaspect]" id="attachments-singleurl-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('singleurl', this.checked);" checked> <label id="singleurl-lockaspect-label" for="attachments-singleurl-kgflashmediaplayer-lockaspect"><small><?php _e('Lock to Aspect Ratio', 'video-embed-thumbnail-generator') ?></small></label>
-					<p class="help"><small><?php printf( __('Leave blank to use %sdefault dimensions', 'video-embed-thumbnail-generator'), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings" target="_blank">' ) ?></a>.</small></p></td>
+					<td class="field"><?php esc_html_e('Width:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-width]" type="text" value="<?php echo esc_attr($maxwidth); ?>" id="attachments-singleurl-kgflashmediaplayer-width" type="text" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'height', this.value);" onkeyup="kgvid_set_dimension('singleurl', 'height', this.value);"> <?php esc_html_e('Height:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-height]" id="attachments-singleurl-kgflashmediaplayer-height" type="text" value="<?php echo esc_attr($maxheight); ?>" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'width', this.value);" onkeyup="kgvid-set-dimension('singleurl', 'width', this.value);"> <input type="checkbox" name="attachments[singleurl][kgflashmediaplayer-lockaspect]" id="attachments-singleurl-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('singleurl', this.checked);" checked> <label id="singleurl-lockaspect-label" for="attachments-singleurl-kgflashmediaplayer-lockaspect"><small><?php esc_html_e('Lock to Aspect Ratio', 'video-embed-thumbnail-generator') ?></small></label>
+					<p class="help"><small><?php printf( esc_html__('Leave blank to use %sdefault dimensions', 'video-embed-thumbnail-generator'), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings" target="_blank">' ) ?></a>.</small></p></td>
 				</tr>
 				<?php if ( current_user_can('encode_videos') ) { ?>
 				<tr>
-					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="html5"><?php _e('Additional Formats', 'video-embed-thumbnail-generator') ?></span></label></th>
+					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="html5"><?php esc_html_e('Additional Formats', 'video-embed-thumbnail-generator') ?></span></label></th>
 					<td><?php echo $checkboxes['checkboxes']; ?></td>
 				</tr>
 				<?php } ?>
 				<tr>
-					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php _e('Subtitles & Captions', 'video-embed-thumbnail-generator') ?></span></label></th>
-					<td><div id="kgflashmediaplayer-singleurl-trackdiv" class="kgvid_thumbnail_box kgvid_track_box"><?php _e('Track type:', 'video-embed-thumbnail-generator') ?><select name="attachments[singleurl][kgflashmediaplayer-track][kind]" id="attachments-singleurl-kgflashmediaplayer-track_kind"><option value="subtitles"><?php _e('subtitles', 'video-embed-thumbnail-generator') ?></option><option value="captions"><?php _e('captions', 'video-embed-thumbnail-generator') ?></option><option value="chapters"><?php _e('chapters', 'video-embed-thumbnail-generator') ?></option></select><br />URL: <input name="attachments[singleurl][kgflashmediaplayer-track][src]" id="attachments-singleurl-kgflashmediaplayer-track_src" type="text" value="" class="text"><br /><?php _e('Language code:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-track][srclang]" id="attachments-singleurl-kgflashmediaplayer-track_srclang" type="text" value="" maxlength="2" style="width:40px;"><br /><?php _e('Label:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-track][label]" id="attachments-singleurl-kgflashmediaplayer-track_label" type="text" value="" class="text"><br /><?php _e('Default:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-track][default]" id="attachments-singleurl-kgflashmediaplayer-track_default" type="checkbox" value="default"></div></td>
+					<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php esc_html_e('Subtitles & Captions', 'video-embed-thumbnail-generator') ?></span></label></th>
+					<td><div id="kgflashmediaplayer-singleurl-trackdiv" class="kgvid_thumbnail_box kgvid_track_box"><?php esc_html_e('Track type:', 'video-embed-thumbnail-generator') ?><select name="attachments[singleurl][kgflashmediaplayer-track][kind]" id="attachments-singleurl-kgflashmediaplayer-track_kind"><option value="subtitles"><?php esc_html_e('subtitles', 'video-embed-thumbnail-generator') ?></option><option value="captions"><?php esc_html_e('captions', 'video-embed-thumbnail-generator') ?></option><option value="chapters"><?php esc_html_e('chapters', 'video-embed-thumbnail-generator') ?></option></select><br /><?php esc_html_e('URL:', 'video-embed-thumbnail-generator'); ?> <input name="attachments[singleurl][kgflashmediaplayer-track][src]" id="attachments-singleurl-kgflashmediaplayer-track_src" type="text" value="" class="text"><br /><?php esc_html_e('Language code:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-track][srclang]" id="attachments-singleurl-kgflashmediaplayer-track_srclang" type="text" value="" maxlength="2" style="width:40px;"><br /><?php esc_html_e('Label:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-track][label]" id="attachments-singleurl-kgflashmediaplayer-track_label" type="text" value="" class="text"><br /><?php esc_html_e('Default:', 'video-embed-thumbnail-generator') ?> <input name="attachments[singleurl][kgflashmediaplayer-track][default]" id="attachments-singleurl-kgflashmediaplayer-track_default" type="checkbox" value="default"></div></td>
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label>Options</span></label></th>
-					<td><input type="checkbox" <?php echo checked( $options["downloadlink"], "on", false ); ?> name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink"><?php _e('Show download icon', 'video-embed-thumbnail-generator') ?><br /><small></em><?php _e('Makes it easier for users to download video file', 'video-embed-thumbnail-generator') ?></em></small></label></td>
+					<td><input type="checkbox" <?php echo checked( $options["downloadlink"], "on", false ); ?> name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink"><?php esc_html_e('Show download icon', 'video-embed-thumbnail-generator') ?><br /><small></em><?php esc_html_e('Makes it easier for users to download video file', 'video-embed-thumbnail-generator') ?></em></small></label></td>
 				</tr>
 				<tr class="submit">
 					<td></td>
 					<td>
-						<input type="button" onclick="kgvid_insert_shortcode();" name="insertonlybutton" id="insertonlybutton" class="button" value="<?php _e('Insert into Post', 'video-embed-thumbnail-generator') ?>" disabled title="<?php _e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
+						<input type="button" onclick="kgvid_insert_shortcode();" name="insertonlybutton" id="insertonlybutton" class="button" value="<?php esc_attr_e('Insert into Post', 'video-embed-thumbnail-generator') ?>" disabled title="<?php esc_attr_e('Please enter a valid video URL', 'video-embed-thumbnail-generator') ?>" />
 					</td>
 				</tr>
 	</tbody></table>
