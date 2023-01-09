@@ -2400,6 +2400,7 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 				'queue_play' => esc_html__('Start encoding', 'video-embed-thumbnail-generator'),
 				'nothing_to_encode' => esc_html__('Nothing to encode', 'video-embed-thumbnail-generator'),
 				'canceling' => esc_html__('Canceling', 'video-embed-thumbnail-generator'),
+				'canceled' => esc_html__('Canceled', 'video-embed-thumbnail-generator'),
 				'elapsed' => esc_html__('Elapsed:', 'video-embed-thumbnail-generator'),
 				'remaining' => esc_html__('Remaining:', 'video-embed-thumbnail-generator'),
 				'fps' => esc_html_x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator'),
@@ -9743,6 +9744,7 @@ function kgvid_cancel_encode($video_key, $format) {
 				$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
 				$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = esc_html__("Encoding was canceled.", 'video-embed-thumbnail-generator');
 				kgvid_save_encode_queue($video_encode_queue);
+				kgvid_encode_videos();
 
 			}
 
