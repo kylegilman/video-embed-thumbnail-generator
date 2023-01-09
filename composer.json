@@ -3,7 +3,8 @@
     "description": "Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.",
     "type": "wordpress-plugin",
     "require": {
-        "symfony/process": "^5.4"
+        "symfony/process": "^5.4",
+        "freemius/wordpress-sdk": "^2.5"
     },
     "license": "GNU General Public License",
     "autoload": {
