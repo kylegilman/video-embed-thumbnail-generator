@@ -105,14 +105,15 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.8 - January XX, 2023 =
-* Significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
+= 4.8 - January 9, 2023 =
+* Significant security update. There might be some FFMPEG features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
 * Increased PHP requirement to 7.2.5
-* Now using more secure Symfony/Process library to escape and run FFMPEG commands instead of escapeshellcmd & exec. The PHP command proc_open must be enabled on your server to use FFMPEG functions.
 * Sanitized, escaped, and validated many user inputs and echoed variables.
+* Now using more secure Symfony/Process library to escape and run FFMPEG commands instead of escapeshellcmd & exec. The PHP command proc_open must be enabled on your server to use FFMPEG functions.
+* Stopped using setlocale when escaping filenames with multibyte characters.
 * Enabled canceling encoding on Windows and added checks to ensure the correct process is being canceled on all platforms.
 * Fixed bug that disabled the Video.js big play button after switching resolutions.
-* Fixed bug that prevented "Embed Video from URL" tab from working correctly.
+* Fixed bug that prevented "Embed Video from URL" tab from working with FFMPEG features.
 * Updated Freemius SDK to v2.5.3
 * Fixed bug that caused timeouts when activating plugin on multisite networks.
 * Fixed bug that paused encoding queue after updating network settings.
@@ -179,7 +180,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Upgrade Notice ==
 
 = 4.8 =
-Videopack now requires PHP version 7.2.5. This Videopack update is a significant security overhaul. There might be some FFMPEG features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
+Videopack now requires PHP version 7.2.5. This Videopack update is a significant security update. There might be some features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
 
 = 4.7 =
 "Video Embed & Thumbnail Generator" is now "Videopack" and I've removed old video players StrobeMediaPlayback and JW Player 6 that haven't been supported for several years. Freemius is also integrated on an opt-in basis to allow premium add-ons. More info in the <a href="https://wordpress.org/support/topic/removing-old-players-and-adding-freemius/">support forum</a>.
