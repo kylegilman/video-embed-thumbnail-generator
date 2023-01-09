@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 4.9
 Tested up to: 6.1
 Requires PHP: 7.2.5
-Stable tag: 4.7.6
+Stable tag: 4.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -106,19 +106,21 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.8 - January 9, 2023 =
-* Significant security update. There might be some FFMPEG features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
+* Significant security update. There might be some features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
 * Increased PHP requirement to 7.2.5
 * Sanitized, escaped, and validated many user inputs and echoed variables.
 * Now using more secure Symfony/Process library to escape and run FFMPEG commands instead of escapeshellcmd & exec. The PHP command proc_open must be enabled on your server to use FFMPEG functions.
 * Stopped using setlocale when escaping filenames with multibyte characters.
-* Enabled canceling encoding on Windows and added checks to ensure the correct process is being canceled on all platforms.
+* Enabled canceling encoding on Windows servers and added checks to ensure the correct process is being canceled on all platforms. Partially encoded video files are now deleted after encoding is canceled.
+* Moved some encode progress updating to client-side to reduce server load, and generally attempted to improve stability of the encode queue.
+* Fixed bug that did not update video's featured image if one had already been set.
 * Fixed bug that disabled the Video.js big play button after switching resolutions.
-* Fixed bug that prevented "Embed Video from URL" tab from working with FFMPEG features.
+* Fixed bug that prevented "Embed Video from URL" tab from working.
 * Updated Freemius SDK to v2.5.3
 * Fixed bug that caused timeouts when activating plugin on multisite networks.
 * Fixed bug that paused encoding queue after updating network settings.
 * Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.
-* Rearranged plugin file structure.
+* Added Composer for package management and rearranged plugin file structure.
 
 = 4.7.5 - October 19, 2022 =
 * Changed official URL to https://www.videopack.video to avoid WordPress trademark violation.
