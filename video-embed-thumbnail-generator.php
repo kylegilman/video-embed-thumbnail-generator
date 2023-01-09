@@ -272,8 +272,8 @@ function kgvid_fs_custom_connect_message_on_update(
 	$freemius_link
 ) {
 	return sprintf(
-		__( 'Hi %1$s', 'video-embed-thumbnail-generator' ) . ',<br>' .
-		__( 'I changed the name of the Video Embed & Thumbnail Generator plugin to Videopack and released the first of what I hope will be several useful premium add-ons. I\'m using %5$s to license and update the add-ons. Please help me improve Videopack. If you opt-in, some data about your usage of Videopack will be sent to %5$s. If you skip this, that\'s okay! Videopack will still work just fine.', 'video-embed-thumbnail-generator' ),
+		esc_html__( 'Hi %1$s', 'video-embed-thumbnail-generator' ) . ',<br>' .
+		esc_html__( 'I changed the name of the Video Embed & Thumbnail Generator plugin to Videopack and released the first of what I hope will be several useful premium add-ons. I\'m using %5$s to license and update the add-ons. Please help me improve Videopack. If you opt-in, some data about your usage of Videopack will be sent to %5$s. If you skip this, that\'s okay! Videopack will still work just fine.', 'video-embed-thumbnail-generator' ),
 		esc_html($user_first_name),
 		'<b>' . esc_html($product_title) . '</b>',
 		'<b>' . esc_html($user_login) . '</b>',
@@ -289,8 +289,8 @@ function kgvid_videopack_fs_loaded() { //add Freemius customizations after Freem
 		videopack_fs()->add_filter('connect_message_on_update', 'kgvid_fs_custom_connect_message_on_update', 10, 6);
 
 		videopack_fs()->override_i18n( array(
-			'yee-haw' 		=> __( "Great", 'video-embed-thumbnail-generator' ),
-			'woot'          => __( 'Great', 'video-embed-thumbnail-generator' ),
+			'yee-haw' 		=> esc_html__( "Great", 'video-embed-thumbnail-generator' ),
+			'woot'          => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
 		) );
 
 		videopack_fs()->add_action('after_uninstall', 'kgvid_uninstall_plugin'); //add uninstall logic
@@ -300,7 +300,7 @@ function kgvid_videopack_fs_loaded() { //add Freemius customizations after Freem
 }
 add_action('videopack_fs_loaded', 'kgvid_videopack_fs_loaded');
 
-if ( file_exists(dirname(__FILE__) . '/lib/freemius/start.php') && ! function_exists( 'videopack_fs' ) ) {
+if ( file_exists(dirname(__FILE__) . '/vendor/freemius/wordpress-sdk/start.php') && ! function_exists( 'videopack_fs' ) ) {
     // Create a helper function for easy SDK access.
     function videopack_fs() {
         global $videopack_fs;
@@ -312,7 +312,7 @@ if ( file_exists(dirname(__FILE__) . '/lib/freemius/start.php') && ! function_ex
             }
 
             // Include Freemius SDK.
-			require_once dirname(__FILE__) . '/lib/freemius/start.php';
+			require_once dirname(__FILE__) . '/vendor/freemius/wordpress-sdk/start.php';
 
 			$init_options = array(
                 'id'                  => '7761',
@@ -643,8 +643,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 
 	$video_formats = array(
 		"fullres" => array(
-			"name" => __("same resolution H.264", 'video-embed-thumbnail-generator'),
-			"label" => _x('Full', 'Full resolution', 'video-embed-thumbnail-generator'),
+			"name" => esc_html__("same resolution H.264", 'video-embed-thumbnail-generator'),
+			"label" => esc_html_x('Full', 'Full resolution', 'video-embed-thumbnail-generator'),
 			"width" => INF,
 			"height" => INF,
 			"type" => "h264",
@@ -748,8 +748,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 
 		$video_formats = $video_formats + array(
 			"custom_h264" => array(
-				"name" => __('Custom MP4', 'video-embed-thumbnail-generator'),
-				"label" => __('Custom MP4', 'video-embed-thumbnail-generator'),
+				"name" => esc_html__('Custom MP4', 'video-embed-thumbnail-generator'),
+				"label" => esc_html__('Custom MP4', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "h264",
@@ -760,8 +760,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 				"default_encode" => false
 			),
 			"custom_webm" => array(
-				"name" => __('Custom WEBM', 'video-embed-thumbnail-generator'),
-				"label" => __('Custom WEBM', 'video-embed-thumbnail-generator'),
+				"name" => esc_html__('Custom WEBM', 'video-embed-thumbnail-generator'),
+				"label" => esc_html__('Custom WEBM', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "webm",
@@ -772,8 +772,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 				"default_encode" => false
 			),
 			"custom_vp9" => array(
-				"name" => __('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
-				"label" => __('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
+				"name" => esc_html__('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
+				"label" => esc_html__('Custom VP9 WEBM', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "vp9",
@@ -784,8 +784,8 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 				"default_encode" => false
 			),
 			"custom_ogg" => array(
-				"name" => __('Custom OGV', 'video-embed-thumbnail-generator'),
-				"label" => __('Custom OGV', 'video-embed-thumbnail-generator'),
+				"name" => esc_html__('Custom OGV', 'video-embed-thumbnail-generator'),
+				"label" => esc_html__('Custom OGV', 'video-embed-thumbnail-generator'),
 				"width" => 0,
 				"height" => 0,
 				"type" => "ogv",
@@ -806,7 +806,7 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 	if ( is_array($options) && isset($options['replace_format']) ) {
 
 		$video_formats['fullres'] = array(
-			'name' => sprintf( __("Replace original with %s", 'video-embed-thumbnail-generator'), $video_formats[$options['replace_format']]['name'] ),
+			'name' => sprintf( esc_html__("Replace original with %s", 'video-embed-thumbnail-generator'), $video_formats[$options['replace_format']]['name'] ),
 			'width' => $video_formats[$options['replace_format']]['width'],
 			'height' => $video_formats[$options['replace_format']]['height'],
 			'type' => $video_formats[$options['replace_format']]['type'],
@@ -893,7 +893,7 @@ add_action( 'wpmu_new_blog', 'kgvid_add_new_blog' );
 
 function kgvid_plugin_action_links($links) {
 
-	$links[] = '<a href="'.get_admin_url(null, "options-general.php?page=video_embed_thumbnail_generator_settings").'">'.__('Settings', 'video-embed-thumbnail-generator').'</a>';
+	$links[] = '<a href="'.get_admin_url(null, "options-general.php?page=video_embed_thumbnail_generator_settings").'">'.esc_html__('Settings', 'video-embed-thumbnail-generator').'</a>';
 	return $links;
 
 }
@@ -901,7 +901,7 @@ add_filter("plugin_action_links_".plugin_basename(__FILE__), 'kgvid_plugin_actio
 
 function kgvid_plugin_network_action_links($links) {
 
-	$links[] = '<a href="'.network_admin_url().'settings.php?page=video_embed_thumbnail_generator_settings">'.__('Network Settings', 'video-embed-thumbnail-generator').'</a>';
+	$links[] = '<a href="'.network_admin_url().'settings.php?page=video_embed_thumbnail_generator_settings">'.esc_html__('Network Settings', 'video-embed-thumbnail-generator').'</a>';
 	return $links;
 
 }
@@ -934,7 +934,7 @@ add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 function kgvid_showUpgradeNotification($currentPluginMetadata, $newPluginMetadata){
    // check "upgrade_notice"
    if (isset($newPluginMetadata->upgrade_notice) && strlen(trim($newPluginMetadata->upgrade_notice)) > 0){
-        echo __('Upgrade Notice', 'video-embed-thumbnail-generator').': ';
+        echo esc_html__('Upgrade Notice', 'video-embed-thumbnail-generator').': ';
         echo wp_kses_post($newPluginMetadata->upgrade_notice);
    }
 }
@@ -2278,32 +2278,32 @@ function kgvid_video_embed_enqueue_styles() {
 
 		}
 
-		wp_register_script( 'video-js', plugins_url("", __FILE__).'/lib/video-js/'.$videojs_register['path'].'/video.min.js', '', $videojs_register['version'], true );
-		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/lib/video-js/'.$videojs_register['path'].'/video-quality-selector.js', array('video-js'), $options['version'], true );
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/lib/video-js/'.$videojs_register['path'].'/video-js.min.css', '', $videojs_register['version'] );
-		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/lib/video-js/'.$videojs_register['path'].'/kg-video-js-skin.css', '', $options['version'] ); }
+		wp_register_script( 'video-js', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/video.min.js', '', $videojs_register['version'], true );
+		wp_register_script( 'video-quality-selector', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/video-quality-selector.js', array('video-js'), $options['version'], true );
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/video-js.min.css', '', $videojs_register['version'] );
+		if ( $options['js_skin'] == 'kg-video-js-skin' ){ wp_enqueue_style( 'video-js-kg-skin', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/kg-video-js-skin.css', '', $options['version'] ); }
 
 		$locale = kgvid_get_videojs_locale();
-		if ( $locale != 'en' && file_exists(plugin_dir_path(__FILE__).'includes/video-js/'.$videojs_register['path'].'/lang/'.$locale.'.js')) {
-			wp_register_script( 'videojs-l10n', plugins_url("", __FILE__).'/lib/video-js/'.$videojs_register['path'].'/lang/'.$locale.'.js', array('video-js'), $videojs_register['version'], true );
+		if ( $locale != 'en' && file_exists(plugin_dir_path(__FILE__).'/video-js/'.$videojs_register['path'].'/lang/'.$locale.'.js')) {
+			wp_register_script( 'videojs-l10n', plugins_url("", __FILE__).'/video-js/'.$videojs_register['path'].'/lang/'.$locale.'.js', array('video-js'), $videojs_register['version'], true );
 		}
 
 	}
 
-	wp_register_script( 'kgvid_video_embed', plugins_url("/src/js/kgvid_video_embed.js", __FILE__), $kgvid_video_embed_script_dependencies, $options['version'], true );
+	wp_register_script( 'kgvid_video_embed', plugins_url("/src/js/videopack.js", __FILE__), $kgvid_video_embed_script_dependencies, $options['version'], true );
 
 	wp_localize_script( 'kgvid_video_embed', 'kgvidL10n_frontend', array(
 		'ajaxurl' => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
 		'ajax_nonce' => wp_create_nonce('kgvid_frontend_nonce'),
-		'playstart' => _x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'pause' => _x("Pause", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'resume' => _x("Resume", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'seek' => _x("Seek", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'end' => _x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
-		'next' => _x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
-		'previous' => _x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator'),
-		'quality' => _x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator'),
-		'fullres' => _x("Full", 'Full resolution', 'video-embed-thumbnail-generator')
+		'playstart' => esc_html_x("Play Start", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'pause' => esc_html_x("Pause", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'resume' => esc_html_x("Resume", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'seek' => esc_html_x("Seek", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'end' => esc_html_x("Complete View", 'noun for Google Analytics event', 'video-embed-thumbnail-generator'),
+		'next' => esc_html_x("Next", 'button text to play next video', 'video-embed-thumbnail-generator'),
+		'previous' => esc_html_x("Previous", 'button text to play previous video', 'video-embed-thumbnail-generator'),
+		'quality' => esc_html_x("Quality", 'text above list of video resolutions', 'video-embed-thumbnail-generator'),
+		'fullres' => esc_html_x("Full", 'Full resolution', 'video-embed-thumbnail-generator')
 	) );
 
 	wp_register_script( 'simplemodal', plugins_url("/src/js/jquery.simplemodal.1.4.5.min.js", __FILE__), '', '1.4.5', true );
@@ -2327,13 +2327,13 @@ function kgvid_video_embed_enqueue_styles() {
 		}
 		wp_register_script( 'mejs-speed', $speed_path, array( 'mediaelement' ), $options['version'], true );
 
-		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/lib/video-js/v7/video-js.min.css', '', $options['videojs_version'] ); //gives access to video-js icons for resolution gear selector and social logos
+		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', $options['videojs_version'] ); //gives access to video-js icons for resolution gear selector and social logos
 
 	}
 
 	//plugin-related frontend styles, requires video-js
 	if ( $options['embed_method'] != 'None' ) {
-		wp_enqueue_style( 'kgvid_video_styles', plugins_url("/src/css/kgvid_styles.css", __FILE__), array( 'video-js' ), $options['version'] );
+		wp_enqueue_style( 'kgvid_video_styles', plugins_url("/src/css/videopack-styles.css", __FILE__), array( 'video-js' ), $options['version'] );
 	}
 
 	if ( $options['alwaysloadscripts'] == 'on' ) {
@@ -2350,61 +2350,63 @@ function enqueue_kgvid_script() { //loads plugin-related scripts in the admin ar
 
 		$options = kgvid_get_options();
 
-		wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url('/src/js/kgvid_video_plugin_admin.js', __FILE__), array('jquery'), $options['version'], true );
-		wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url('/src/css/video-embed-thumbnail-generator_admin.css', __FILE__), '', $options['version'] );
+		wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url('/src/js/videopack-admin.js', __FILE__), array('jquery'), $options['version'], true );
+		wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url('/src/css/videopack-styles-admin.css', __FILE__), '', $options['version'] );
 
 		wp_localize_script( 'kgvid_video_plugin_admin', 'kgvidL10n', array(
 				'ajax_nonce' => wp_create_nonce('kgvid_admin_nonce'),
-				'wait' => _x('Wait', 'please wait', 'video-embed-thumbnail-generator'),
-				'hidevideo' => __('Hide video...', 'video-embed-thumbnail-generator'),
-				'choosefromvideo' => __('Choose from video...', 'video-embed-thumbnail-generator'),
-				'cantloadvideo' => __('Can\'t load video', 'video-embed-thumbnail-generator'),
-				'cantmakethumbs' => sprintf( __('Error: unable to load video in browser for thumbnail generation and %1$s not found at %2$s', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ),
-				'choosethumbnail' => __('Choose Thumbnail:', 'video-embed-thumbnail-generator'),
-				'saveallthumbnails' => __('Save All Thumbnails', 'video-embed-thumbnail-generator'),
-				'saving' => __('Saving...', 'video-embed-thumbnail-generator'),
-				'loading' => __('Loading...', 'video-embed-thumbnail-generator'),
-				'generate' => __('Generate', 'video-embed-thumbnail-generator'),
-				'randomize' => __('Randomize', 'video-embed-thumbnail-generator'),
-				'ffmpegnotfound' => sprintf( __('%s not found', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']) ),
-				'pleasevalidurl' => __('Please enter a valid video URL', 'video-embed-thumbnail-generator'),
-				'deletemessage' => __("You are about to permanently delete the encoded video.\n 'Cancel' to stop, 'OK' to delete.", 'video-embed-thumbnail-generator'),
-				'saved' => __('Saved.', 'video-embed-thumbnail-generator'),
-				'runningtest' => __('Running test...', 'video-embed-thumbnail-generator'),
-				'ffmpegrequired' => __('FFMPEG or LIBAV required for these functions.', 'video-embed-thumbnail-generator'),
-				'featuredwarning' => __("You are about to set all existing video thumbnails previously generated by this plugin as the featured images for their posts. There is no 'undo' button, so proceed at your own risk.", 'video-embed-thumbnail-generator'),
-				'autothumbnailwarning' => __("You are about to create thumbnails for every video in your Media Library that doesn't already have one. This might take a long time. There is no 'undo' button, so proceed at your own risk.\n\nNumber of videos without thumbnails: ", 'video-embed-thumbnail-generator'),
-				'autoencodewarning' => __("You are about to add every video in your Media Library to the video encode queue if it hasn't already been encoded. This might take a long time.", 'video-embed-thumbnail-generator'),
-				'nothumbstomake' => __("No files generated. All videos are processed already.", 'video-embed-thumbnail-generator'),
-				'cancel_ok' => __("'Cancel' to stop, 'OK' to proceed.", 'video-embed-thumbnail-generator'),
-				'processing' => __('Processing...', 'video-embed-thumbnail-generator'),
-				'parentwarning_posts' => __("You are about to set all existing video thumbnails previously generated by this plugin as attachments of their posts rather than their associated videos. Proceed at your own risk.", 'video-embed-thumbnail-generator'),
-				'parentwarning_videos' => __("You are about to set all existing video thumbnails previously generated by this plugin as attachments of their videos rather than their associated posts. Proceed at your own risk.", 'video-embed-thumbnail-generator'),
-				'clearqueuedwarning' => __("You are about to clear all videos not yet encoded.", 'video-embed-thumbnail-generator'),
-				'clearallwarning' => __("You are about to clear all videos currently encoding, not yet encoded, completed successfully, and completed with errors.", 'video-embed-thumbnail-generator'),
-				'complete' => __('Complete', 'video-embed-thumbnail-generator'),
-				'tracktype' => __('Track type:', 'video-embed-thumbnail-generator'),
-				'subtitles' => __('subtitles', 'video-embed-thumbnail-generator'),
-				'captions' => __('captions', 'video-embed-thumbnail-generator'),
-				'chapters' => __('chapters', 'video-embed-thumbnail-generator'),
-				'choosetextfile' => __('Choose a Text File', 'video-embed-thumbnail-generator'),
-				'settracksource' => __('Set as track source', 'video-embed-thumbnail-generator'),
-				'choosefromlibrary' => __('Choose from Library', 'video-embed-thumbnail-generator'),
-				'languagecode' => __('Language code:', 'video-embed-thumbnail-generator'),
-				'label' => _x('Label:', 'noun', 'video-embed-thumbnail-generator'),
-				'trackdefault' => __('Default:', 'video-embed-thumbnail-generator'),
-				'custom' => _x('Custom', 'Custom format', 'video-embed-thumbnail-generator'),
-				'clearingcache' => __('Clearing URL cache...', 'video-embed-thumbnail-generator'),
-				'queue_pause' => __('Pause the queue. Any videos currently encoding will complete.', 'video-embed-thumbnail-generator'),
-				'queue_paused' => __('Queue is paused. Press play button at top of screen to start.', 'video-embed-thumbnail-generator'),
-				'queue_play' => __('Start encoding', 'video-embed-thumbnail-generator'),
-				'nothing_to_encode' => __('Nothing to encode', 'video-embed-thumbnail-generator'),
-				'canceling' => __('Canceling', 'video-embed-thumbnail-generator'),
-				'elapsed' => __('Elapsed:', 'video-embed-thumbnail-generator'),
-				'remaining' => __('Remaining:', 'video-embed-thumbnail-generator'),
-				'fps' => _x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator'),
-				'encoding_complete' => __('Encoding Complete', 'video-embed-thumbnail-generator'),
-				'encoding' => __('Encoding', 'video-embed-thumbnail-generator')
+				'wait' => esc_html_x('Wait', 'please wait', 'video-embed-thumbnail-generator'),
+				'hidevideo' => esc_html__('Hide video...', 'video-embed-thumbnail-generator'),
+				'choosefromvideo' => esc_html__('Choose from video...', 'video-embed-thumbnail-generator'),
+				'cantloadvideo' => esc_html__('Can\'t load video', 'video-embed-thumbnail-generator'),
+				'cantmakethumbs' => sprintf( esc_html__('Error: unable to load video in browser for thumbnail generation and %1$s not found at %2$s', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), $options['app_path'] ),
+				'choosethumbnail' => esc_html__('Choose Thumbnail:', 'video-embed-thumbnail-generator'),
+				'saveallthumbnails' => esc_html__('Save All Thumbnails', 'video-embed-thumbnail-generator'),
+				'saving' => esc_html__('Saving...', 'video-embed-thumbnail-generator'),
+				'loading' => esc_html__('Loading...', 'video-embed-thumbnail-generator'),
+				'generate' => esc_html__('Generate', 'video-embed-thumbnail-generator'),
+				'randomize' => esc_html__('Randomize', 'video-embed-thumbnail-generator'),
+				'ffmpegnotfound' => sprintf( esc_html__('%s not found', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']) ),
+				'pleasevalidurl' => esc_html__('Please enter a valid video URL', 'video-embed-thumbnail-generator'),
+				'deletemessage' => esc_html__("You are about to permanently delete the encoded video.\n 'Cancel' to stop, 'OK' to delete.", 'video-embed-thumbnail-generator'),
+				'saved' => esc_html__('Saved.', 'video-embed-thumbnail-generator'),
+				'runningtest' => esc_html__('Running test...', 'video-embed-thumbnail-generator'),
+				'ffmpegrequired' => esc_html__('FFMPEG or LIBAV required for these functions.', 'video-embed-thumbnail-generator'),
+				'featuredwarning' => esc_html__("You are about to set all existing video thumbnails previously generated by this plugin as the featured images for their posts. There is no 'undo' button, so proceed at your own risk.", 'video-embed-thumbnail-generator'),
+				'autothumbnailwarning' => esc_html__("You are about to create thumbnails for every video in your Media Library that doesn't already have one. This might take a long time. There is no 'undo' button, so proceed at your own risk.\n\nNumber of videos without thumbnails: ", 'video-embed-thumbnail-generator'),
+				'autoencodewarning' => esc_html__("You are about to add every video in your Media Library to the video encode queue if it hasn't already been encoded. This might take a long time.", 'video-embed-thumbnail-generator'),
+				'nothumbstomake' => esc_html__("No files generated. All videos are processed already.", 'video-embed-thumbnail-generator'),
+				'cancel_ok' => esc_html__("'Cancel' to stop, 'OK' to proceed.", 'video-embed-thumbnail-generator'),
+				'processing' => esc_html__('Processing...', 'video-embed-thumbnail-generator'),
+				'parentwarning_posts' => esc_html__("You are about to set all existing video thumbnails previously generated by this plugin as attachments of their posts rather than their associated videos. Proceed at your own risk.", 'video-embed-thumbnail-generator'),
+				'parentwarning_videos' => esc_html__("You are about to set all existing video thumbnails previously generated by this plugin as attachments of their videos rather than their associated posts. Proceed at your own risk.", 'video-embed-thumbnail-generator'),
+				'clearqueuedwarning' => esc_html__("You are about to clear all videos not yet encoded.", 'video-embed-thumbnail-generator'),
+				'clearallwarning' => esc_html__("You are about to clear all videos currently encoding, not yet encoded, completed successfully, and completed with errors.", 'video-embed-thumbnail-generator'),
+				'complete' => esc_html__('Complete', 'video-embed-thumbnail-generator'),
+				'tracktype' => esc_html__('Track type:', 'video-embed-thumbnail-generator'),
+				'subtitles' => esc_html__('subtitles', 'video-embed-thumbnail-generator'),
+				'captions' => esc_html__('captions', 'video-embed-thumbnail-generator'),
+				'chapters' => esc_html__('chapters', 'video-embed-thumbnail-generator'),
+				'choosetextfile' => esc_html__('Choose a Text File', 'video-embed-thumbnail-generator'),
+				'settracksource' => esc_html__('Set as track source', 'video-embed-thumbnail-generator'),
+				'choosefromlibrary' => esc_html__('Choose from Library', 'video-embed-thumbnail-generator'),
+				'languagecode' => esc_html__('Language code:', 'video-embed-thumbnail-generator'),
+				'label' => esc_html_x('Label:', 'noun', 'video-embed-thumbnail-generator'),
+				'trackdefault' => esc_html__('Default:', 'video-embed-thumbnail-generator'),
+				'custom' => esc_html_x('Custom', 'Custom format', 'video-embed-thumbnail-generator'),
+				'clearingcache' => esc_html__('Clearing URL cache...', 'video-embed-thumbnail-generator'),
+				'queue_pause' => esc_html__('Pause the queue. Any videos currently encoding will complete.', 'video-embed-thumbnail-generator'),
+				'queue_paused' => esc_html__('Queue is paused. Press play button at top of screen to start.', 'video-embed-thumbnail-generator'),
+				'queue_play' => esc_html__('Start encoding', 'video-embed-thumbnail-generator'),
+				'nothing_to_encode' => esc_html__('Nothing to encode', 'video-embed-thumbnail-generator'),
+				'canceling' => esc_html__('Canceling', 'video-embed-thumbnail-generator'),
+				'elapsed' => esc_html__('Elapsed:', 'video-embed-thumbnail-generator'),
+				'remaining' => esc_html__('Remaining:', 'video-embed-thumbnail-generator'),
+				'fps' => esc_html_x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator'),
+				'encoding_complete' => esc_html__('Encoding Complete', 'video-embed-thumbnail-generator'),
+				'encoding' => esc_html__('Encoding', 'video-embed-thumbnail-generator'),
+				'deleted' => esc_html__('Deleted', 'video-embed-thumbnail-generator'),
+				'not_deleted' => esc_html__('Unable to delete file', 'video-embed-thumbnail-generator')
 		) );
 	}
 
@@ -2911,7 +2913,7 @@ function kgvid_generate_video_description($query_atts, $post = false) {
 			$description = wp_trim_words(strip_tags(strip_shortcodes($post->post_content)));
 		}
 	}
-	if ( empty($description) ) { $description = __('Video', 'video-embed-thumbnail-generator'); }
+	if ( empty($description) ) { $description = esc_html__('Video', 'video-embed-thumbnail-generator'); }
 
 	return apply_filters('kgvid_generate_video_description', $description, $query_atts);
 
@@ -3250,7 +3252,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 			if ( $enable_resolutions_plugin ) {
 				$video_variables['enable_resolutions_plugin'] = "true";
 				if ( wp_script_is('kgvid_video_embed', 'enqueued') ) {
-					wp_dequeue_script('kgvid_video_embed'); //ensure that the video-quality-selector script is loaded before kgvid_video_embed.js
+					wp_dequeue_script('kgvid_video_embed'); //ensure that the video-quality-selector script is loaded before videopack.js
 				}
 				wp_enqueue_script( 'video-quality-selector' );
 				if ( $query_atts["auto_res"] == "highest" ) { $video_variables['default_res'] = end($h264_resolutions); }
@@ -4693,9 +4695,9 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 		}
 	}
 
-	if ( empty($html) ) { $html = "\t<tr><td colspan='".esc_attr($total_columns)."'><strong class='kgvid_queue_message'>".__('Queue is empty', 'video-embed-thumbnail-generator')."</strong></td></tr>\n"; }
+	if ( empty($html) ) { $html = "\t<tr><td colspan='".esc_attr($total_columns)."'><strong class='kgvid_queue_message'>".esc_html__('Queue is empty', 'video-embed-thumbnail-generator')."</strong></td></tr>\n"; }
 
-return $html;
+	return $html;
 
 }
 
@@ -4835,7 +4837,7 @@ function kgvid_network_settings_page() {
 			if (isset ($_POST["video-embed-thumbnail-generator-reset"])) { //reset button pressed
 				$default_network_options = kgvid_default_network_options();
 				$options_updated = update_site_option( 'kgvid_video_embed_network_options', $default_network_options );
-				add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", __("Videopack network settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
+				add_settings_error( 'video_embed_thumbnail_generator_settings', "options-reset", esc_html__("Videopack network settings reset to default values.", 'video-embed-thumbnail-generator'), "updated" );
 			}
 			else { //save button pressed
 				$input = kgvid_sanitize_text_field($_POST['kgvid_video_embed_options']);
@@ -5019,63 +5021,63 @@ function kgvid_video_embed_options_init() {
 
 	$options = kgvid_get_options();
 
-	add_settings_section('kgvid_video_embed_playback_settings', __('Default Video Playback Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_playback_settings_section_callback', 'video_embed_thumbnail_generator_settings');
-	add_settings_section('kgvid_video_embed_plugin_settings', __('Plugin Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_settings_section_callback', 'video_embed_thumbnail_generator_settings');
-	add_settings_section('kgvid_video_embed_encode_settings', __('Video Encoding Settings', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings');
-	add_settings_section('kgvid_video_embed_encode_test_settings', __('Video Encoding Test', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings');
+	add_settings_section('kgvid_video_embed_playback_settings', esc_html__('Default Video Playback Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_playback_settings_section_callback', 'video_embed_thumbnail_generator_settings');
+	add_settings_section('kgvid_video_embed_plugin_settings', esc_html__('Plugin Settings', 'video-embed-thumbnail-generator'), 'kgvid_plugin_settings_section_callback', 'video_embed_thumbnail_generator_settings');
+	add_settings_section('kgvid_video_embed_encode_settings', esc_html__('Video Encoding Settings', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings');
+	add_settings_section('kgvid_video_embed_encode_test_settings', esc_html__('Video Encoding Test', 'video-embed-thumbnail-generator'), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings');
 
-	add_settings_field('poster', __('Default thumbnail:', 'video-embed-thumbnail-generator'), 'kgvid_poster_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
-	add_settings_field('endofvideooverlay', __('End of video image:', 'video-embed-thumbnail-generator'), 'kgvid_endofvideooverlay_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings' );
-	add_settings_field('watermark', __('Watermark overlay:', 'video-embed-thumbnail-generator'), 'kgvid_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
-	add_settings_field('align', __('Video alignment:', 'video-embed-thumbnail-generator'), 'kgvid_align_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'align' ) );
-	add_settings_field('resize', __('Automatically adjust videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
-	add_settings_field('dimensions', __('Video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
-	add_settings_field('gallery_options', __('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
-	add_settings_field('controls', __('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controls_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controls' ) );
-	add_settings_field('js_skin', _x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
-	add_settings_field('custom_attributes', __('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
+	add_settings_field('poster', esc_html__('Default thumbnail:', 'video-embed-thumbnail-generator'), 'kgvid_poster_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
+	add_settings_field('endofvideooverlay', esc_html__('End of video image:', 'video-embed-thumbnail-generator'), 'kgvid_endofvideooverlay_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings' );
+	add_settings_field('watermark', esc_html__('Watermark overlay:', 'video-embed-thumbnail-generator'), 'kgvid_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
+	add_settings_field('align', esc_html__('Video alignment:', 'video-embed-thumbnail-generator'), 'kgvid_align_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'align' ) );
+	add_settings_field('resize', esc_html__('Automatically adjust videos:', 'video-embed-thumbnail-generator'), 'kgvid_resize_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
+	add_settings_field('dimensions', esc_html__('Video dimensions:', 'video-embed-thumbnail-generator'), 'kgvid_dimensions_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
+	add_settings_field('gallery_options', esc_html__('Video gallery:', 'video-embed-thumbnail-generator'), 'kgvid_video_gallery_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
+	add_settings_field('controls', esc_html__('Video controls:', 'video-embed-thumbnail-generator'), 'kgvid_controls_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controls' ) );
+	add_settings_field('js_skin', esc_html_x('Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator'), 'kgvid_js_skin_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
+	add_settings_field('custom_attributes', esc_html__('Custom attributes:', 'video-embed-thumbnail-generator'), 'kgvid_custom_attributes_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
 
-	add_settings_field('security', __('Video sharing:', 'video-embed-thumbnail-generator'), 'kgvid_security_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
-	add_settings_field('performance', __("Performance:", 'video-embed-thumbnail-generator'), 'kgvid_performance_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
-	add_settings_field('replacevideoshortcode', __("Replace video shortcode:", 'video-embed-thumbnail-generator'), 'kgvid_replace_video_shortcode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
-	add_settings_field('rewrite_attachment_url', __("Attachment URL Rewriting:", 'video-embed-thumbnail-generator'), 'kgvid_rewrite_attachment_url_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
-	add_settings_field('generate_thumbs', __('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
-	add_settings_field('featured', __('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
-	add_settings_field('thumb_parent', __('Attach thumbnails to:', 'video-embed-thumbnail-generator'), 'kgvid_thumb_parent_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
-	add_settings_field('user_roles', __('User capabilities:', 'video-embed-thumbnail-generator'), 'kgvid_user_roles_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'user_roles' ) );
-	add_settings_field('delete_children', __('Delete associated attachments:', 'video-embed-thumbnail-generator'), 'kgvid_delete_children_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'delete_children' ) );
-	add_settings_field('titlecode', __('Video title text HTML formatting:', 'video-embed-thumbnail-generator'), 'kgvid_titlecode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
-	add_settings_field('template', __('Attachment page design:', 'video-embed-thumbnail-generator'), 'kgvid_template_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template' ) );
-
-	if ( !is_plugin_active_for_network( plugin_basename('video_embed_thumbnail_generator_settings') ) ) {
-		add_settings_field('app_path', __('Path to applications folder on server:', 'video-embed-thumbnail-generator'), 'kgvid_app_path_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'app_path' ) );
-		add_settings_field('video_app', __('Application for thumbnails & encoding:', 'video-embed-thumbnail-generator'), 'kgvid_video_app_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_app' ) );
-	}
-
-	add_settings_field('browser_thumbnails', __('Enable in-browser thumbnails:', 'video-embed-thumbnail-generator'), 'kgvid_browser_thumbnails_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'browser_thumbnails' ) );
-	add_settings_field('encode_formats', __('Default video encode formats:', 'video-embed-thumbnail-generator'), 'kgvid_encode_formats_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings');
-	add_settings_field('automatic', __('Do automatically on upload:', 'video-embed-thumbnail-generator'), 'kgvid_automatic_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_encode' ) );
-	add_settings_field('automatic_encoded', __('Do automatically on completed encoding:', 'video-embed-thumbnail-generator'), 'kgvid_automatic_completed_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_publish_post' ) );
-	add_settings_field('old_videos', __('For previously uploaded videos:', 'video-embed-thumbnail-generator'), 'kgvid_old_video_buttons_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings' );
-	add_settings_field('error_email', __('Email encoding errors to:', 'video-embed-thumbnail-generator'), 'kgvid_error_email_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'error_email' ) );
-	add_settings_field('htaccess', __('htaccess login:', 'video-embed-thumbnail-generator'), 'kgvid_htaccess_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'htaccess_username' ) );
-	add_settings_field('ffmpeg_thumb_watermark', __('Add watermark to thumbnails:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_thumb_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_thumb_watermark' ) );
-	add_settings_field('ffmpeg_watermark', __('Add watermark to encoded files:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_watermark' ) );
-	if ( !is_plugin_active_for_network( plugin_basename('video_embed_thumbnail_generator_settings') ) ) {
-		add_settings_field('moov', __('Method to fix encoded H.264 headers for streaming:', 'video-embed-thumbnail-generator'), 'kgvid_moov_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'moov' ) );
-	}
-	add_settings_field('rate_control', __('Encode quality control method:', 'video-embed-thumbnail-generator'), 'kgvid_rate_control_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'rate_control' ) );
-	add_settings_field('CRFs', __('Constant Rate Factors (CRF):', 'video-embed-thumbnail-generator'), 'kgvid_CRF_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_CRF' ) );
-	add_settings_field('bitrate_multiplier', __('Average Bit Rate:', 'video-embed-thumbnail-generator'), 'kgvid_average_bitrate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'bitrate_multiplier' ) );
-	add_settings_field('h264_profile', __('H.264 profile:', 'video-embed-thumbnail-generator'), 'kgvid_h264_profile_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_profile' ) );
-	add_settings_field('audio_options', __('Audio:', 'video-embed-thumbnail-generator'), 'kgvid_audio_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'audio_bitrate' ) );
+	add_settings_field('security', esc_html__('Video sharing:', 'video-embed-thumbnail-generator'), 'kgvid_security_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
+	add_settings_field('performance', esc_html__("Performance:", 'video-embed-thumbnail-generator'), 'kgvid_performance_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
+	add_settings_field('replacevideoshortcode', esc_html__("Replace video shortcode:", 'video-embed-thumbnail-generator'), 'kgvid_replace_video_shortcode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
+	add_settings_field('rewrite_attachment_url', esc_html__("Attachment URL Rewriting:", 'video-embed-thumbnail-generator'), 'kgvid_rewrite_attachment_url_callback', __FILE__, 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
+	add_settings_field('generate_thumbs', esc_html__('Default number of thumbnails to generate:', 'video-embed-thumbnail-generator'), 'kgvid_generate_thumbs_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
+	add_settings_field('featured', esc_html__('Featured image:', 'video-embed-thumbnail-generator'), 'kgvid_featured_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
+	add_settings_field('thumb_parent', esc_html__('Attach thumbnails to:', 'video-embed-thumbnail-generator'), 'kgvid_thumb_parent_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
+	add_settings_field('user_roles', esc_html__('User capabilities:', 'video-embed-thumbnail-generator'), 'kgvid_user_roles_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'user_roles' ) );
+	add_settings_field('delete_children', esc_html__('Delete associated attachments:', 'video-embed-thumbnail-generator'), 'kgvid_delete_children_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'delete_children' ) );
+	add_settings_field('titlecode', esc_html__('Video title text HTML formatting:', 'video-embed-thumbnail-generator'), 'kgvid_titlecode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
+	add_settings_field('template', esc_html__('Attachment page design:', 'video-embed-thumbnail-generator'), 'kgvid_template_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template' ) );
 
 	if ( !is_plugin_active_for_network( plugin_basename('video_embed_thumbnail_generator_settings') ) ) {
-		add_settings_field('ffmpeg_options', __('FFMPEG legacy options:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_bitrate_flag' ) );
-		add_settings_field('execution', _x('Execution:', 'program execution options', 'video-embed-thumbnail-generator'), 'kgvid_execution_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'threads' ) );
+		add_settings_field('app_path', esc_html__('Path to applications folder on server:', 'video-embed-thumbnail-generator'), 'kgvid_app_path_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'app_path' ) );
+		add_settings_field('video_app', esc_html__('Application for thumbnails & encoding:', 'video-embed-thumbnail-generator'), 'kgvid_video_app_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_app' ) );
 	}
 
-	add_settings_field('test_ffmpeg', __('Test FFMPEG:', 'video-embed-thumbnail-generator'), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_test_settings' );
+	add_settings_field('browser_thumbnails', esc_html__('Enable in-browser thumbnails:', 'video-embed-thumbnail-generator'), 'kgvid_browser_thumbnails_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'browser_thumbnails' ) );
+	add_settings_field('encode_formats', esc_html__('Default video encode formats:', 'video-embed-thumbnail-generator'), 'kgvid_encode_formats_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings');
+	add_settings_field('automatic', esc_html__('Do automatically on upload:', 'video-embed-thumbnail-generator'), 'kgvid_automatic_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_encode' ) );
+	add_settings_field('automatic_encoded', esc_html__('Do automatically on completed encoding:', 'video-embed-thumbnail-generator'), 'kgvid_automatic_completed_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_publish_post' ) );
+	add_settings_field('old_videos', esc_html__('For previously uploaded videos:', 'video-embed-thumbnail-generator'), 'kgvid_old_video_buttons_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings' );
+	add_settings_field('error_email', esc_html__('Email encoding errors to:', 'video-embed-thumbnail-generator'), 'kgvid_error_email_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'error_email' ) );
+	add_settings_field('htaccess', esc_html__('htaccess login:', 'video-embed-thumbnail-generator'), 'kgvid_htaccess_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'htaccess_username' ) );
+	add_settings_field('ffmpeg_thumb_watermark', esc_html__('Add watermark to thumbnails:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_thumb_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_thumb_watermark' ) );
+	add_settings_field('ffmpeg_watermark', esc_html__('Add watermark to encoded files:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_watermark' ) );
+	if ( !is_plugin_active_for_network( plugin_basename('video_embed_thumbnail_generator_settings') ) ) {
+		add_settings_field('moov', esc_html__('Method to fix encoded H.264 headers for streaming:', 'video-embed-thumbnail-generator'), 'kgvid_moov_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'moov' ) );
+	}
+	add_settings_field('rate_control', esc_html__('Encode quality control method:', 'video-embed-thumbnail-generator'), 'kgvid_rate_control_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'rate_control' ) );
+	add_settings_field('CRFs', esc_html__('Constant Rate Factors (CRF):', 'video-embed-thumbnail-generator'), 'kgvid_CRF_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_CRF' ) );
+	add_settings_field('bitrate_multiplier', esc_html__('Average Bit Rate:', 'video-embed-thumbnail-generator'), 'kgvid_average_bitrate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'bitrate_multiplier' ) );
+	add_settings_field('h264_profile', esc_html__('H.264 profile:', 'video-embed-thumbnail-generator'), 'kgvid_h264_profile_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_profile' ) );
+	add_settings_field('audio_options', esc_html__('Audio:', 'video-embed-thumbnail-generator'), 'kgvid_audio_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'audio_bitrate' ) );
+
+	if ( !is_plugin_active_for_network( plugin_basename('video_embed_thumbnail_generator_settings') ) ) {
+		add_settings_field('ffmpeg_options', esc_html__('FFMPEG legacy options:', 'video-embed-thumbnail-generator'), 'kgvid_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_bitrate_flag' ) );
+		add_settings_field('execution', esc_html_x('Execution:', 'program execution options', 'video-embed-thumbnail-generator'), 'kgvid_execution_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'threads' ) );
+	}
+
+	add_settings_field('test_ffmpeg', esc_html__('Test FFMPEG:', 'video-embed-thumbnail-generator'), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_test_settings' );
 
 	if ( !function_exists( 'videopack_fs' ) ) {
 
@@ -5132,7 +5134,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 
 		$players = array(
 			"Video.js v7" => "Video.js v7",
-			"Video.js v5 (" . __("deprecated", 'video-embed-thumbnail-generator') . ")" => "Video.js",
+			"Video.js v5 (" . esc_html__("deprecated", 'video-embed-thumbnail-generator') . ")" => "Video.js",
 			__("WordPress Default", 'video-embed-thumbnail-generator') => "WordPress Default",
 			__("None", 'video-embed-thumbnail-generator') => "None"
 		);
@@ -5222,7 +5224,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 				$items[$format_stats['label']] = $format_stats['label'];
 			}
 		}
-		echo __('Default playback resolution', 'video-embed-thumbnail-generator')." ";
+		echo esc_html__('Default playback resolution', 'video-embed-thumbnail-generator')." ";
 		echo kgvid_generate_settings_select_html( 'auto_res', $options, $items, '', 'kgvid_hide_plugin_settings()' );
 		echo kgvid_tooltip_html( esc_html__('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.', 'video-embed-thumbnail-generator') );
 		echo "<p id='pixel_ratio_p'><input ".checked( $options['pixel_ratio'], "on", false )." id='pixel_ratio' name='kgvid_video_embed_options[pixel_ratio]' type='checkbox' /><label for='pixel_ratio'>".__('Use display pixel ratio for resolution calculation.', 'video-embed-thumbnail-generator')."</label>";
@@ -5744,7 +5746,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 		);
 		echo kgvid_generate_settings_select_html( 'moov', $options, $items, 'affects_ffmpeg', 'kgvid_moov_setting();' );
 		echo kgvid_tooltip_html( sprintf( esc_html__('By default %1$s places moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start and can prevent Flash players from playing them at all. Since approximately October 2012 %1$s can fix the problem at the end of the encoding process by using the option `movflags faststart`. This is the easiest and fastest way to correct the problem, but older versions of %1$s will not work if you select the movflags option. If you can\'t update to a new version of %1$s, select qt-faststart or MP4Box which will run after encoding is finished if they are installed on your server.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".esc_html(strtoupper($options['video_app']))."</strong>") );
-		echo "<p id='moov_path_p'>".sprintf( __('Path to %s:', 'video-embed-thumbnail-generator'), "<span class='kgvid_moov_option'>".esc_html($options['moov'])."</span>")." <input class='regular-text code affects_ffmpeg' id='moov_path' name='kgvid_video_embed_options[moov_path]' type='text' value='".esc_attr($options['moov_path'])."' /></p>";
+		echo "<p id='moov_path_p'>".sprintf( esc_html__('Path to %s:', 'video-embed-thumbnail-generator'), "<span class='kgvid_moov_option'>".esc_html($options['moov'])."</span>")." <input class='regular-text code affects_ffmpeg' id='moov_path' name='kgvid_video_embed_options[moov_path]' type='text' value='".esc_attr($options['moov_path'])."' /></p>";
 		echo "</div>\n\t";
 	}
 
@@ -5939,11 +5941,11 @@ function kgvid_tooltip_html( $tooltip_text ) {
 		$display_div = "";
 		if ( $options['ffmpeg_exists'] != "on" ) { $display_div = " style='display:none;'"; }
 
-		$video_formats['fullres']['name'] = __('Replace', 'video-embed-thumbnail-generator');
+		$video_formats['fullres']['name'] = esc_html__('Replace', 'video-embed-thumbnail-generator');
 		if ( array_key_exists('custom', $video_formats)
 			&& array_key_exists('name', $video_formats['custom'])
 		)  {
-			$video_formats['custom']['name'] = __('Custom', 'video-embed-thumbnail-generator');
+			$video_formats['custom']['name'] = esc_html__('Custom', 'video-embed-thumbnail-generator');
 		}
 
 		$sample_format_select = "<select id='sample_format' name='kgvid_video_embed_options[sample_format]' class='affects_ffmpeg'>";
@@ -5953,11 +5955,11 @@ function kgvid_tooltip_html( $tooltip_text ) {
 		}
 		$sample_format_select .= "</select>";
 
-		echo "<div id='ffmpeg_sample_div'".$display_div."><p>".sprintf( __('Sample %2$s encode command', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".esc_html(strtoupper($options['video_app']))."</strong>", $sample_format_select)."<br>";
+		echo "<div id='ffmpeg_sample_div'".esc_attr($display_div)."><p>".sprintf( esc_html__('Sample %2$s encode command', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".esc_html(strtoupper($options['video_app']))."</strong>", $sample_format_select)."<br>";
 		echo "<input ".checked( $options['sample_rotate'], 90, false )." id='sample_rotate' name='kgvid_video_embed_options[sample_rotate]' class='affects_ffmpeg affects_ffmpeg_thumb_watermark' value='90' type='checkbox' /> <label for='sample_rotate'>".esc_html__('Test video rotation.', 'video-embed-thumbnail-generator')."</label>";
 		echo kgvid_tooltip_html( sprintf( esc_html__('Tests %1$s\'s ability to rotate vertical videos shot on mobile devices.', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".esc_html(strtoupper($options['video_app']))."</strong>" ) );
 		echo "<textarea id='ffmpeg_h264_sample' class='ffmpeg_sample_code code' cols='100' rows='5' wrap='soft' readonly='yes'>".esc_textarea($encode_string_implode)."</textarea></p>";
-		echo "<p>".sprintf( __('%s test output:', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".esc_html(strtoupper($options['video_app']))."</strong>")."<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>".sprintf( __('For help interpreting this output, %s try our Wiki page on Github', 'video-embed-thumbnail-generator'), "<a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>")."</a>.</p></div>\n\t";
+		echo "<p>".sprintf( esc_html__('%s test output:', 'video-embed-thumbnail-generator'), "<strong class='video_app_name'>".esc_html(strtoupper($options['video_app']))."</strong>")."<br /><textarea id='ffmpeg_output' class='ffmpeg_sample_code code' cols='100' rows='20' wrap='soft' readonly='yes'></textarea><br>".sprintf( esc_html__('For help interpreting this output, %s try our Wiki page on Github', 'video-embed-thumbnail-generator'), "<a href='https://github.com/kylegilman/video-embed-thumbnail-generator/wiki/Interpreting-FFMPEG-or-LIBAV-messages'>")."</a>.</p></div>\n\t";
 	}
 
 //end of settings page callback functions
@@ -7081,9 +7083,9 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				$form_fields["kgflashmediaplayer-poster"]["helps"] = "<small>".sprintf( esc_html__('Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator'), "<a href='options-general.php?page=video_embed_thumbnail_generator_settings' target='_blank'>" )."</a>.</small>";
 			}
 
-			$form_fields["kgflashmediaplayer-dimensions"]["label"] = __("Video Embed Dimensions", 'video-embed-thumbnail-generator');
+			$form_fields["kgflashmediaplayer-dimensions"]["label"] = esc_html__("Video Embed Dimensions", 'video-embed-thumbnail-generator');
 			$form_fields["kgflashmediaplayer-dimensions"]["input"] = "html";
-			$form_fields["kgflashmediaplayer-dimensions"]["html"] = __('Width:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-width]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-width" type="text" value="'.esc_attr($kgvid_postmeta['width']).'" style="width:50px;" data-minimum="'.esc_attr($options['minimum_width']).'" onchange="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);" onkeyup="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);"'.$readonly.'> '.esc_html__('Height:', 'video-embed-thumbnail-generator').'
+			$form_fields["kgflashmediaplayer-dimensions"]["html"] = esc_html__('Width:', 'video-embed-thumbnail-generator').' <input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-width]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-width" type="text" value="'.esc_attr($kgvid_postmeta['width']).'" style="width:50px;" data-minimum="'.esc_attr($options['minimum_width']).'" onchange="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);" onkeyup="kgvid_set_dimension('.esc_attr($post->ID).', \'height\', this.value);"'.$readonly.'> '.esc_html__('Height:', 'video-embed-thumbnail-generator').'
 			<input name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-height]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-height" type="text" value="'.esc_attr($kgvid_postmeta['height']).'" style="width:50px;" onchange="kgvid_set_dimension('.esc_attr($post->ID).', \'width\', this.value);" onkeyup="kgvid_set_dimension('.esc_attr($post->ID).', \'width\', this.value);"'.$readonly.'> <br />
 			<input type="checkbox" name="attachments['. esc_attr($post->ID) .'][kgflashmediaplayer-lockaspect]" id="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('.esc_attr($post->ID).', this.checked);" '.checked( $kgvid_postmeta['lockaspect'], 'on', false ).$security_disabled.'>
 			<label for="attachments-'. esc_attr($post->ID) .'-kgflashmediaplayer-lockaspect"><small>'.esc_html__('Lock to aspect ratio', 'video-embed-thumbnail-generator').'</small></label>';
@@ -7108,7 +7110,11 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			if ( is_array($kgvid_postmeta['track']) ) {
 				foreach ( $kgvid_postmeta['track'] as $track => $track_attribute ) {
 					if ( !empty($kgvid_postmeta['track'][$track]['src']) ) {
-						$items = array(__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles", __("captions", 'video-embed-thumbnail-generator')=>"captions", __("chapters", 'video-embed-thumbnail-generator')=>"chapters");
+						$items = array(
+							__("subtitles", 'video-embed-thumbnail-generator')=>"subtitles",
+							__("captions", 'video-embed-thumbnail-generator')=>"captions",
+							__("chapters", 'video-embed-thumbnail-generator')=>"chapters"
+						);
 						$track_type_select = '<select name="attachments['.esc_attr($post->ID).'][kgflashmediaplayer-track]['.esc_attr($track).'][kind]" id="attachments-'.esc_attr($post->ID).'-kgflashmediaplayer-track_'.esc_attr($track).'_kind]"'.esc_attr($security_disabled).'>';
 						foreach($items as $name=>$value) {
 							$selected = ($kgvid_postmeta['track'][$track]['kind']==$value) ? ' selected="selected"' : '';
@@ -7201,7 +7207,7 @@ add_filter("attachment_fields_to_edit", "kgvid_image_attachment_fields_to_edit",
 
 function kgvid_add_video_stats_column($cols) { //add Video Stats column to media library
 
-	$cols['video_stats'] = __("Video Stats", 'video-embed-thumbnail-generator');
+	$cols['video_stats'] = esc_html__("Video Stats", 'video-embed-thumbnail-generator');
 	return $cols;
 
 }
@@ -7755,7 +7761,7 @@ function kgvid_media_embedurl_process() {
 
 	<div id="media-items">
 	<div class="media-item media-blank">
-	<table id="kgflashmediaplayer-table" class="describe">
+	<table id="kgflashmediaplayer-table" class="describe videopack-settings">
 	<tbody>
 				<tr>
 					<th valign="top" scope="row" class="label"><span class="alignleft"><label for="videotitle"><?php esc_html_e('Video Title', 'video-embed-thumbnail-generator'); ?></label></span></th>
@@ -7865,24 +7871,24 @@ function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 
 	$shortcode = '[videopack';
 	if ( $poster !="" ) { $shortcode .= ' poster="'.$poster.'"'; }
-	if ( !empty($dimensions['width']) ) { $shortcode .= ' width="'.$dimensions['width'].'"'; }
-	if ( !empty($dimensions['height']) ) { $shortcode .= ' height="'.$dimensions['height'].'"'; }
+	if ( !empty($dimensions['width']) ) { $shortcode .= ' width="'.esc_attr($dimensions['width']).'"'; }
+	if ( !empty($dimensions['height']) ) { $shortcode .= ' height="'.esc_attr($dimensions['height']).'"'; }
 	if ( is_array($kgvid_video_embed) && array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true' )  { $shortcode .= ' fullwidth="true"'; }
 	if ( $kgvid_postmeta['downloadlink'] == "on" ) { $shortcode .= ' downloadlink="true"'; }
 	if ( is_array($kgvid_video_embed) && array_key_exists('start', $kgvid_video_embed) ) {
-		$shortcode .= ' start="'.$kgvid_video_embed['start'].'"';
+		$shortcode .= ' start="'.esc_attr($kgvid_video_embed['start']).'"';
 	}
 	if ( is_array($kgvid_video_embed) && array_key_exists('gallery', $kgvid_video_embed) ) {
 		$shortcode .= ' autoplay="true"';
 	}
 	if ( is_array($kgvid_video_embed) && array_key_exists('sample', $kgvid_video_embed) ) {
-		if ( $options['overlay_title'] == "on" ) { $shortcode .= ' title="'._x('Sample Video', 'example video', 'video-embed-thumbnail-generator').'"'; }
-		if ( $options['overlay_embedcode'] == "on" ) { $shortcode .= ' embedcode="'.__('Sample Embed Code', 'video-embed-thumbnail-generator').'"'; }
-		$shortcode .= ' caption="'.__('If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator').'"';
+		if ( $options['overlay_title'] == "on" ) { $shortcode .= ' title="'.esc_attr_x('Sample Video', 'example video', 'video-embed-thumbnail-generator').'"'; }
+		if ( $options['overlay_embedcode'] == "on" ) { $shortcode .= ' embedcode="'.esc_attr__('Sample Embed Code', 'video-embed-thumbnail-generator').'"'; }
+		$shortcode .= ' caption="'.esc_attr__('If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator').'"';
 		if ( $options['downloadlink'] == "on" ) { $shortcode .= ' downloadlink="true"'; }
 	}
 
-	$shortcode .= ']'.$url.'[/videopack]';
+	$shortcode .= ']'.esc_url($url).'[/videopack]';
 
 	return $shortcode;
 
@@ -8022,11 +8028,11 @@ function kgvid_video_attachment_template() {
 			'author_url' => get_author_posts_url($author->ID, $author->nicename),
 			'title' => $post->post_title,
 			'type' => 'video',
-			'width' => $dimensions['width'],
-			'height' => $dimensions['height'],
-			'thumbnail_url' => $thumbnail_url,
-			'thumbnail_width' => $dimensions['width'],
-			'thumbnail_height' => $dimensions['height'],
+			'width' => esc_attr($dimensions['width']),
+			'height' => esc_attr($dimensions['height']),
+			'thumbnail_url' => esc_url($thumbnail_url),
+			'thumbnail_width' => esc_attr($dimensions['width']),
+			'thumbnail_height' => esc_attr($dimensions['height']),
 			'html' => "<iframe allowfullscreen src='".site_url('/')."?attachment_id=".$post->ID."&amp;videopack[enable]=true' frameborder='0' scrolling='no' width='".esc_attr($dimensions['width'])."' height='".esc_attr($dimensions['height'])."'></iframe>"
 		);
 
@@ -8073,7 +8079,9 @@ add_filter( 'embed_oembed_discover', 'kgvid_enable_oembed_discover' );
 
 function kgvid_cleanup_generated_logfiles_handler($logfile) {
 	$lastmodified = "";
-	if ( file_exists($logfile) ) { $lastmodified = filemtime($logfile); }
+	if ( strpos($logfile, '_encode.txt') !== false
+		&& file_exists($logfile)
+	) { $lastmodified = filemtime($logfile); }
 		if ( $lastmodified != false ) {
 			if ( time() - $lastmodified > 120 ) { unlink($logfile); }
 			else {
@@ -8122,7 +8130,12 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		}
 
 		$kgvid_postmeta = kgvid_get_attachment_meta($postID);
-		$keys = array( 'width' => 'actualwidth', 'height' => 'actualheight', 'duration' => 'duration', 'rotate' => 'rotate' );
+		$keys = array(
+			'width' => 'actualwidth',
+			'height' => 'actualheight',
+			'duration' => 'duration',
+			'rotate' => 'rotate'
+		);
 
 		if ( empty($kgvid_postmeta['duration']) ) {
 			$movie_info = kgvid_get_video_dimensions($moviefilepath);
@@ -8226,12 +8239,12 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 
 		$arr = array (
 			"thumbnaildisplaycode" => $thumbnaildisplaycode,
-			"movie_width" => $movie_width,
-			"movie_height" => $movie_height,
+			"movie_width" => esc_html($movie_width),
+			"movie_height" => esc_html($movie_height),
 			"lastthumbnumber" => $i,
-			"movieoffset" => $movieoffset,
-			"thumb_url" => $final_thumbnailurl,
-			"real_thumb_url" => $tmp_thumbnailurl
+			"movieoffset" => esc_html($movieoffset),
+			"thumb_url" => esc_url($final_thumbnailurl),
+			"real_thumb_url" => esc_url($tmp_thumbnailurl)
 		);
 
 		return $arr;
@@ -8239,7 +8252,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 	}//if ffmpeg can open movie
 
 	else {
-		$thumbnaildisplaycode = "<strong>".__('Can\'t open movie file.', 'video-embed-thumbnail-generator')."</strong><br />".wp_kses_post($movie_info['output']);
+		$thumbnaildisplaycode = "<strong>".esc_html__('Can\'t open movie file.', 'video-embed-thumbnail-generator')."</strong><br />".wp_kses_post($movie_info['output']);
 		$arr = array ( "thumbnaildisplaycode"=>$thumbnaildisplaycode, "embed_display"=>$thumbnaildisplaycode, "lastthumbnumber"=>"break" );
 		return $arr;
 	} //can't open movie
@@ -8279,7 +8292,12 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 		if ( $post_type == "attachment" ) { //if the video is in the database
 
 			$kgvid_postmeta = kgvid_get_attachment_meta($postID);
-			$keys = array( 'width' => 'actualwidth', 'height' => 'actualheight', 'duration' => 'duration', 'rotate' => 'rotate' );
+			$keys = array(
+				'width' => 'actualwidth',
+				'height' => 'actualheight',
+				'duration' => 'duration',
+				'rotate' => 'rotate'
+			);
 			foreach ( $keys as $info => $meta ) {
 				$kgvid_postmeta[$meta] = $movie_info[$info];
 			}
@@ -8391,13 +8409,13 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 			kgvid_save_encode_queue($video_encode_queue);
 			$queue_position = intval(key( array_slice( $video_encode_queue, -1, 1, TRUE ) ));
 			$new_queue_position = strval(intval($queue_position)+1);
-			if ( $queue_position == 0 ) { $embed_display = "<strong>".__('Starting', 'video-embed-thumbnail-generator')." ".esc_html( strtoupper($options['video_app']) )."... </strong>"; }
-			else { $embed_display = "<strong>".esc_html( sprintf( __('%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $new_queue_position ) )." </strong>";
+			if ( $queue_position == 0 ) { $embed_display = "<strong>".esc_html__('Starting', 'video-embed-thumbnail-generator')." ".esc_html( strtoupper($options['video_app']) )."... </strong>"; }
+			else { $embed_display = "<strong>". sprintf( esc_html__('%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator'), $imploded_encode_list, $new_queue_position ) ." </strong>";
 			}
 		}
 
 		if ( empty($encode_list) ) {
-			$embed_display = "<strong>".__('Nothing to encode.', 'video-embed-thumbnail-generator')."</strong>";
+			$embed_display = "<strong>".esc_html__('Nothing to encode.', 'video-embed-thumbnail-generator')."</strong>";
 			$transient = get_transient( 'kgvid_new_attachment_transient' );
 			if ( is_array($transient) && in_array($postID, $transient) ) {
 				$key = array_search($postID, $transient);
@@ -8447,7 +8465,7 @@ function kgvid_enqueue_videos($postID, $movieurl, $encode_checked, $parent_id, $
 	}
 	else {
 
-		$thumbnaildisplaycode = "<strong>".__('Can\'t open movie file.', 'video-embed-thumbnail-generator')."</strong><br />".wp_kses_post($movie_info['output']);
+		$thumbnaildisplaycode = "<strong>".esc_html__('Can\'t open movie file.', 'video-embed-thumbnail-generator')."</strong><br />".wp_kses_post($movie_info['output']);
 		$arr = array (
 			"thumbnaildisplaycode" => $thumbnaildisplaycode,
 			"embed_display" => $thumbnaildisplaycode,
@@ -8517,7 +8535,7 @@ function kgvid_callffmpeg() {
 		}
 	}
 	else {
-			$thumbnaildisplaycode = '<strong>'.esc_html( sprintf( __('Error: %1$s not found. Verify that %1$s is installed at %2$s and check the %3$sapplication path plugin setting', 'video-embed-thumbnail-generator'), strtoupper($options["video_app"]), $options["app_path"], '<a href="options-general.php?page=video_embed_thumbnail_generator_settings">' ) ).'</a>.</strong>' ;
+			$thumbnaildisplaycode = '<strong>'.esc_html( sprintf( esc_html__('Error: %1$s not found. Verify that %1$s is installed at %2$s and check the %3$sapplication path plugin setting', 'video-embed-thumbnail-generator'), esc_html(strtoupper($options["video_app"])), esc_html($options["app_path"]), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings">' ) ).'</a>.</strong>' ;
 
 			$arr = array (
 				"thumbnaildisplaycode" => $thumbnaildisplaycode,
@@ -8593,6 +8611,7 @@ function kgvid_encode_videos() {
 				}
 
 			}
+
 		}
 
 
@@ -8702,7 +8721,7 @@ function kgvid_encode_videos() {
 								}//if file doesn't already exist
 								else {
 
-									$embed_display = sprintf( __('%s already encoded', 'video-embed-thumbnail-generator'), $format_stats['name'] );
+									$embed_display = sprintf( esc_html__('%s already encoded', 'video-embed-thumbnail-generator'), $format_stats['name'] );
 									$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = 'Encoding Complete';
 
 								}
@@ -8711,21 +8730,21 @@ function kgvid_encode_videos() {
 							}//if the x264 library and an aac library is enabled
 							else {
 
-								$lastline = sprintf( __('%s missing library libx264 required for H.264 encoding', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']) );
+								$lastline = sprintf( esc_html__('%s missing library libx264 required for H.264 encoding', 'video-embed-thumbnail-generator'), esc_html(strtoupper($options['video_app'])) );
 
 								if ( !$aac_available ) {
 
 									array_pop($aac_array); //get rid of the built-in "aac" encoder since it can't really be "installed"
 									$lastaac = array_pop($aac_array);
 									$aac_list = implode(", ", $aac_array);
-									$aac_list .= ", ".__('or', 'video-embed-thumbnail-generator')." ".$lastaac;
-									$lastline .= " ".sprintf( __('and missing an AAC encoding library. Please install and enable libx264 and %s', 'video-embed-thumbnail-generator'), $aac_list );
+									$aac_list .= ", ".esc_html__('or', 'video-embed-thumbnail-generator')." ".$lastaac;
+									$lastline .= " ".sprintf( esc_html__('and missing an AAC encoding library. Please install and enable libx264 and %s', 'video-embed-thumbnail-generator'), $aac_list );
 
 								}
 
 								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "error";
 								$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
-								$embed_display = __("Missing libraries", 'video-embed-thumbnail-generator');
+								$embed_display = esc_html__("Missing libraries", 'video-embed-thumbnail-generator');
 
 							}
 
@@ -8746,7 +8765,7 @@ function kgvid_encode_videos() {
 								if ( $movie_info['configuration']['libvorbis'] == "true" && $movie_info['configuration'][$video_formats[$queued_format]['vcodec']] == "true" ) {
 
 									$encode_array = kgvid_generate_encode_array($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
-									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
+									$embed_display = sprintf( esc_html__('Encoding %s', 'video-embed-thumbnail-generator'), esc_html($video_formats[$queued_format]['name']) );
 
 								}//if the necessary libraries are enabled
 								else {
@@ -8765,18 +8784,18 @@ function kgvid_encode_videos() {
 
 									}
 
-									$lastline = sprintf( __('%1$s missing library %2$s required for %3$s encoding.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), implode(', ', $missing_libraries), $video_formats[$queued_format]['name']);
+									$lastline = esc_html( sprintf( __('%1$s missing library %2$s required for %3$s encoding.', 'video-embed-thumbnail-generator'), strtoupper($options['video_app']), implode(', ', $missing_libraries), $video_formats[$queued_format]['name']) );
 
 									$video_encode_queue[$video_key]['encode_formats'][$queued_format]['status'] = "error";
 									$video_encode_queue[$video_key]['encode_formats'][$queued_format]['lastline'] = $lastline;
-									$embed_display = __("Missing libraries", 'video-embed-thumbnail-generator');
+									$embed_display = esc_html__("Missing libraries", 'video-embed-thumbnail-generator');
 
 								}
 
 							}//if file doesn't already exist
 							else {
 
-								$embed_display = sprintf( __('%s already encoded.', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['vcodec'] );
+								$embed_display = esc_html( sprintf( __('%s already encoded.', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['vcodec'] ) );
 
 							}
 
@@ -8787,7 +8806,7 @@ function kgvid_encode_videos() {
 							if ( !$encodevideo_info[$queued_format]['exists'] ) {
 
 								$encode_array = kgvid_generate_encode_array($moviefilepath, $encodevideo_info[$queued_format]['filepath'], $movie_info, $queued_format, $encode_dimensions['width'], $encode_dimensions['height'], $movie_info['rotate']);
-									$embed_display = sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] );
+									$embed_display = esc_html( sprintf( __('Encoding %s', 'video-embed-thumbnail-generator'), $video_formats[$queued_format]['name'] ) );
 
 							}
 
@@ -8799,7 +8818,7 @@ function kgvid_encode_videos() {
 
 				if ( !empty($encode_array) ) {
 
-					$logfile = $uploads['path'].'/'.str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt';
+					$logfile = $uploads['path'].'/'.sanitize_file_name(str_replace(" ", "_", $encodevideo_info['moviefilebasename']).'_'.$queued_format.'_'.sprintf("%04s",mt_rand(1, 1000)).'_encode.txt');
 
 					$commandline = implode(' ', array_map('kgvid_escapeArgument', $encode_array)); //escape each argument in the encode array
 					$commandline = $commandline . ' > "${:LOGFILE}" 2>&1';
@@ -8810,7 +8829,7 @@ function kgvid_encode_videos() {
 
 					$processPID = $shell_process->getPID();
 
-					$args = array('logfile'=>$logfile);
+					$args = array('logfile' => $logfile);
 					wp_schedule_single_event(time()+600, 'kgvid_cleanup_generated_logfiles', $args);
 					if ( !wp_next_scheduled('kgvid_cleanup_queue', array ( 'scheduled' )) ) {
 						wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'kgvid_cleanup_queue', array ( 'scheduled' ) );
@@ -8846,7 +8865,8 @@ function kgvid_encode_videos() {
 
 	$arr = array (
 		"embed_display" => "<strong>".$embed_display."</strong>",
-		"video_key" => $video_key, "format"=>$queued_format,
+		"video_key" => $video_key,
+		"format" => $queued_format,
 		"actualwidth" => $movie_info['width'],
 		"actualheight" => $movie_info['height']
 	);
@@ -8935,7 +8955,7 @@ function kgvid_test_ffmpeg_thumb_watermark() {
 	$thumb = kgvid_make_thumbs('singleurl', $sample_video_path, 1, 1, 1, 0, true, 'generate');
 
 	if ( array_key_exists('real_thumb_url', $thumb) ) {
-		echo $thumb['real_thumb_url'];
+		echo esc_url($thumb['real_thumb_url']);
 	}
 	else { echo false; }
 
@@ -8948,7 +8968,7 @@ function kgvid_encode_progress() {
 
 	$video_encode_queue = kgvid_get_encode_queue();
 	$encode_progress = array();
-	$time_to_wait = 5000; //default 5 seconds between checking encode progress
+	$time_to_wait = 10000; //default 10 seconds between checking encode progress
 
 	if ( is_array($video_encode_queue) ) { //if there is an encode queue
 
@@ -9042,44 +9062,35 @@ function kgvid_encode_progress() {
 								preg_match('/fps=\s?(.*?) /', $lastline, $fps_matches);
 								if ( is_array($fps_matches)
 									&& array_key_exists(1, $fps_matches) == true
+									&& $fps_matches[1] != 0
 								) {
-									if ( $fps_matches[1] != 0 ) {
-										$fps_match = $fps_matches[1];
-									}
-									else {
-										$fps_match = "10";
-									}
+									$fps_match = $fps_matches[1];
 								}
 								else {
 									$fps_match = "10";
-								}
-
-								$time_to_wait = strval(max(round(40000/(floatval($fps_match))), 1000)); //wait at least 1 second
-								if ( intval($time_to_wait) > 10000 ) { //wait no more than 10 seconds
-									$time_to_wait = 10000;
 								}
 
 								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
 
 								$encoding_time_array = array(
 									'current_seconds' => $current_seconds,
-									'duration' => intval($video_entry['movie_info']['duration']),
+									'duration' => esc_html($video_entry['movie_info']['duration']),
 									'elapsed' => $time_elapsed,
 									'remaining' => $time_remaining,
-									'fps' => $fps_match
+									'fps' => esc_html($fps_match)
 								);
 								$encoding_time_array = wp_json_encode($encoding_time_array);
 
-								$embed_display = '<strong data-status="encoding">'.__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" data-encoding_time="'.esc_attr($encoding_time_array).'" style="width:'.$percent_done.'%;"><div class="kgvid_meter_text">'.$percent_done_text.'</div></div></div>';
+								$embed_display = '<strong data-status="encoding">'.esc_html__('Encoding', 'video-embed-thumbnail-generator').'</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" data-encoding_time="'.esc_attr($encoding_time_array).'" style="width:'.esc_attr($percent_done).'%;"><div class="kgvid_meter_text">'.esc_html($percent_done_text).'</div></div></div>';
 
 								if ( current_user_can('encode_videos') && $format_info['PID'] ) {
-									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.esc_attr($video_entry["attachmentID"]).'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\''.esc_attr($video_entry["attachmentID"]).'\', \''.esc_attr($video_key).'\', \''.esc_attr($format).'\', \''.esc_attr($blog_id).'\');">'.__('Cancel', 'video-embed-thumbnail-generator').'</a>';
+									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-'.esc_attr($video_entry["attachmentID"]).'-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\''.esc_attr($video_entry["attachmentID"]).'\', \''.esc_attr($video_key).'\', \''.esc_attr($format).'\', \''.esc_attr($blog_id).'\');">'.esc_html__('Cancel', 'video-embed-thumbnail-generator').'</a>';
 								}
 
-								$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.__('Elapsed:', 'video-embed-thumbnail-generator').' '.esc_html(date('H:i:s',$time_elapsed)).' '.__('Remaining:', 'video-embed-thumbnail-generator').' '.esc_html(date('H:i:s',$time_remaining)).' '._x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.esc_html($fps_match).'</small></div>';
+								$embed_display .= '<div class="kgvid_encoding_small_text"><small>'.esc_html__('Elapsed:', 'video-embed-thumbnail-generator').' '.esc_html(date('H:i:s',$time_elapsed)).' '.esc_html__('Remaining:', 'video-embed-thumbnail-generator').' '.esc_html(date('H:i:s',$time_remaining)).' '.esc_html_x('FPS:', 'Frames per second', 'video-embed-thumbnail-generator').' '.esc_html($fps_match).'</small></div>';
 							}
 							elseif ( time() - $format_info['started'] < 10 || ( file_exists($format_info['filepath']) && time() - filemtime($format_info['filepath']) < 10 ) ) { //not enough time has passed, so check again later
-								$embed_display = '<strong data-status="encoding">'.__('Encoding', 'video-embed-thumbnail-generator').'</strong>';
+								$embed_display = '<strong data-status="encoding">'.esc_html__('Encoding', 'video-embed-thumbnail-generator').'</strong>';
 								$time_to_wait = 1000;
 								wp_schedule_single_event(time()+60, 'kgvid_cron_queue_check');
 							}
@@ -9100,7 +9111,7 @@ function kgvid_encode_progress() {
 								} //fix the moov atom if the file was encoded by libx264
 								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "Encoding Complete";
 								$video_encode_queue[$video_key]['encode_formats'][$format]['ended'] = $ended;
-								$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = $lastline;
+								$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = wp_kses_post($lastline);
 
 								kgvid_save_encode_queue($video_encode_queue);
 
@@ -9152,7 +9163,7 @@ function kgvid_encode_progress() {
 
 								//finish inserting attachment
 
-								$embed_display = '<strong data-status="Encoding Complete">'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
+								$embed_display = '<strong data-status="Encoding Complete">'.esc_html__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
 								$next_video = kgvid_encode_videos(); //start the next queued video
 
@@ -9198,7 +9209,7 @@ function kgvid_encode_progress() {
 
 									}//auto publish post is on
 
-									$embed_display = '<strong data-status="Encoding Complete">'.__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
+									$embed_display = '<strong data-status="Encoding Complete">'.esc_html__('Encoding Complete', 'video-embed-thumbnail-generator').'</strong>';
 
 								}//all formats for this video are complete
 
@@ -9207,7 +9218,7 @@ function kgvid_encode_progress() {
 							else { //there was an unexpected output and the encoded file hasn't been modified in more than 10 seconds
 
 								if ( strpos($lastline, "signal 15") !== false ) { //if the encoding was intentionally canceled
-									$lastline = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
+									$lastline = esc_html__("Encoding was canceled.", 'video-embed-thumbnail-generator');
 								}
 								$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
 
@@ -9217,7 +9228,7 @@ function kgvid_encode_progress() {
 						else {
 
 							$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "error";
-							$lastline = __("No log file", 'video-embed-thumbnail-generator');
+							$lastline = esc_html__("No log file", 'video-embed-thumbnail-generator');
 
 						}
 
@@ -9225,7 +9236,7 @@ function kgvid_encode_progress() {
 
 							$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = addslashes($lastline);
 
-							$embed_display = '<strong data-status="Error">'.__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.stripslashes($lastline).'.</span>';
+							$embed_display = '<strong data-status="Error">'.esc_html__('Error:', 'video-embed-thumbnail-generator').' </strong><span class="kgvid_warning">'.esc_html($lastline).'.</span>';
 
 							if ( $video_encode_queue[$video_key]['encode_formats'][$format]['status'] == "error" ) {
 
@@ -9262,8 +9273,8 @@ function kgvid_encode_progress() {
 									if ( $user instanceof WP_User ) {
 										$mailed = wp_mail(
 											$user->user_email,
-											__('Video Encode Error', 'video-embed-thumbnail-generator'),
-											sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), esc_html( $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] ), esc_html( basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) ), '<a href="'.esc_url($admin_url.'/tools.php?page=kgvid_video_encoding_queue').'">'.esc_html($blog_title).'</a>' ),
+											esc_html__('Video Encode Error', 'video-embed-thumbnail-generator'),
+											sprintf( esc_html_x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), esc_html( $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] ), esc_html( basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) ), '<a href="'.esc_url($admin_url.'/tools.php?page=kgvid_video_encoding_queue').'">'.esc_html($blog_title).'</a>' ),
 											$headers
 										);
 									}
@@ -9272,8 +9283,8 @@ function kgvid_encode_progress() {
 										$network_info = get_current_site();
 										$mailed = wp_mail(
 											$super_user->user_email,
-											__('Video Encode Error', 'video-embed-thumbnail-generator'),
-											sprintf( _x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), esc_html( $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] ), esc_html( basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) ), '<a href="'.esc_url($admin_url.'/tools.php?page=kgvid_video_encoding_queue').'">'.esc_html($blog_title).'</a>' ).' '.sprintf( _x('on the %s network.', 'on the [name of multisite network] network.', 'video-embed-thumbnail-generator'), '<a href="'.network_admin_url("settings.php?page=kgvid_network_video_encoding_queue").'">'.esc_html($network_info->site_name).'</a>' ),
+											esc_html__('Video Encode Error', 'video-embed-thumbnail-generator'),
+											sprintf( esc_html_x('Error message "%1$s" while encoding video file %2$s at %3$s', '1 is the error message, 2 is the filename, 3 is the website name.', 'video-embed-thumbnail-generator'), esc_html( $video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] ), esc_html( basename($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) ), '<a href="'.esc_url($admin_url.'/tools.php?page=kgvid_video_encoding_queue').'">'.esc_html($blog_title).'</a>' ).' '.sprintf( esc_html_x('on the %s network.', 'on the [name of multisite network] network.', 'video-embed-thumbnail-generator'), '<a href="'.network_admin_url("settings.php?page=kgvid_network_video_encoding_queue").'">'.esc_html($network_info->site_name).'</a>' ),
 											$headers
 										);
 									}
@@ -9328,7 +9339,9 @@ function kgvid_replace_video( $video_key, $format ) {
 
 	if ( !empty($video_encode_queue) ) {
 		foreach ( $video_encode_queue[$video_key]['encode_formats'] as $encoding_format => $value ) { //make sure there isn't another encoding process using this original video
-			if ( $value['status'] == "encoding" || $value['status'] == "queued" ) {
+			if ( $value['status'] == "encoding"
+				|| $value['status'] == "queued"
+			) {
 				$replace = false;
 			}
 		}//end loop
@@ -9433,7 +9446,10 @@ function kgvid_replace_video( $video_key, $format ) {
 			clean_post_cache( $video_id ); //otherwise wp_update_post will get the cached version of the post and the old GUID
 		}
 
-		$post_update = array('ID' => $video_id, 'post_mime_type' => $new_mime['type']);
+		$post_update = array(
+			'ID' => $video_id,
+			'post_mime_type' => $new_mime['type']
+		);
 		wp_update_post($post_update);
 
 		$kgvid_postmeta = kgvid_get_attachment_meta($video_id);
@@ -9643,7 +9659,7 @@ function kgvid_fix_moov_atom($filepath) {
 
 	}//if there is an application selected for fixing moov atoms on libx264-encoded files.
 
-	return $output;
+	return wp_kses_post($output);
 
 }
 
@@ -9663,7 +9679,7 @@ function kgvid_cancel_encode($video_key, $format) {
 			&& array_key_exists('PID', $video_encode_queue[$video_key]['encode_formats'][$format])
 		) {
 
-			$kgvid_pid = $video_encode_queue[$video_key]['encode_formats'][$format]['PID'];
+			$kgvid_pid = intval($video_encode_queue[$video_key]['encode_formats'][$format]['PID']);
 			$logfile = $video_encode_queue[$video_key]['encode_formats'][$format]['logfile'];
 
 			if ('\\' !== DIRECTORY_SEPARATOR) { //not Windows
@@ -9685,15 +9701,7 @@ function kgvid_cancel_encode($video_key, $format) {
 					&& strpos($check_pid->getOutput(), $video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) !== false
 				) {
 
-					$killed_process = posix_kill($process_info[0], 15);
-
-					if ( $killed_process ) {
-
-						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
-						$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
-						$canceled = true;
-
-					}
+					$canceled = posix_kill($process_info[0], 15);
 
 				}
 
@@ -9721,8 +9729,6 @@ function kgvid_cancel_encode($video_key, $format) {
 
 					if ( strpos($kill_process->getOutput(), 'SUCCESS') !== false ) {
 
-						$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
-						$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = __("Encoding was canceled.", 'video-embed-thumbnail-generator');
 						$canceled = true;
 
 					}
@@ -9731,7 +9737,14 @@ function kgvid_cancel_encode($video_key, $format) {
 
 			}
 
-			kgvid_save_encode_queue($video_encode_queue);
+			if ( $canceled ) {
+
+				unlink($video_encode_queue[$video_key]['encode_formats'][$format]['filepath']);
+				$video_encode_queue[$video_key]['encode_formats'][$format]['status'] = "canceled";
+				$video_encode_queue[$video_key]['encode_formats'][$format]['lastline'] = esc_html__("Encoding was canceled.", 'video-embed-thumbnail-generator');
+				kgvid_save_encode_queue($video_encode_queue);
+
+			}
 
 		}
 
@@ -9764,31 +9777,31 @@ add_action('wp_ajax_kgvid_cancel_encode', 'kgvid_ajax_cancel_encode');
 
 function kgvid_queue_control() {
 
-	$success = 'false';
+	$success = false;
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
 	if ( isset($_POST['command']) && current_user_can('edit_others_video_encodes') ) {
 
-		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+		$command = kgvid_sanitize_text_field($_POST['command']);
+		$scope = kgvid_sanitize_text_field($_POST['scope']);
 
-		if ( $_POST['scope'] == 'site' ) {
+		if ( $scope == 'site' ) {
 
 			$options = kgvid_get_options();
-			$options['queue_control'] = $_POST['command'];
-			update_option('kgvid_video_embed_options', $options);
-			$success = 'true';
+			$options['queue_control'] = $command;
+			$success = update_option('kgvid_video_embed_options', $options);
 
 		}
 
-		if ( $_POST['scope'] == 'network' ) {
+		if ( $scope == 'network' ) {
 
 			$network_options = get_site_option('kgvid_video_embed_network_options');
-			$network_options['queue_control'] = $_POST['command'];
-			update_site_option('kgvid_video_embed_network_options', $network_options);
-			$success = 'true';
+			$network_options['queue_control'] = $command;
+			$success = update_site_option('kgvid_video_embed_network_options', $network_options);
 
 		}
 
-		if ( $_POST['command'] == 'play' ) {
+		if ( $command == 'play' ) {
 			kgvid_encode_videos();
 		}
 
@@ -9807,8 +9820,11 @@ function kgvid_ajax_delete_video() {
 	if ( current_user_can('encode_videos') ) {
 
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
 		$deleted = false;
-		$attachment_id = "";
+		$attachment_id = false;
+		$format = false;
+
 		if ( isset($_POST['movieurl']) ) { $movieurl = sanitize_url($_POST['movieurl']); }
 		if ( isset($_POST['postid']) ) { $post_id = kgvid_sanitize_text_field($_POST['postid']); }
 		if ( isset($_POST['format']) ) { $format = kgvid_sanitize_text_field($_POST['format']); }
@@ -9816,13 +9832,10 @@ function kgvid_ajax_delete_video() {
 		if ( isset($_POST['blogid']) ) { $blog_id = kgvid_sanitize_text_field($_POST['blogid']); }
 		else { $blog_id = false; }
 
-		if ( empty($attachment_id) ) { //if there's no post_meta giving us the attachment to delete
-			$encodevideo_info = kgvid_encodevideo_info($movieurl, $post_id);
-			if ( is_file($encodevideo_info[$format]['filepath']) ) {
-					$deleted = unlink($encodevideo_info[$format]['filepath']);
-			}
-		}
-		else {
+		if ( $attachment_id
+			&& $format
+			&& get_post_meta($attachment_id, '_kgflashmediaplayer-format', true) == $format
+		) {
 			if ( $blog_id ) { switch_to_blog($blog_id); }
 			$deleted = wp_delete_attachment($attachment_id, true);
 			if ( !empty($deleted) ) { $deleted = true; }
@@ -9843,7 +9856,7 @@ add_action('wp_ajax_kgvid_delete_video', 'kgvid_ajax_delete_video');
 function kgvid_delete_video_attachment($video_id) {
 
 	if ( strpos(get_post_mime_type( $video_id ), 'video') !== false
-		|| ! (get_post_meta($video_id, '_kgflashmediaplayer-format', true))
+		|| get_post_meta($video_id, '_kgflashmediaplayer-format', true)
 	) { //only do this for videos or other child formats
 
 		$parent_post = get_post($video_id);
@@ -10238,7 +10251,7 @@ function kgvid_count_play() {
 	kgvid_save_attachment_meta($post_id, $kgvid_postmeta);
 
 	if ( $show_views > 0 ) { //only return number of views if they are displayed on the site
-		echo sprintf( _n( '%s view', '%s views', $plays, 'video-embed-thumbnail-generator'), number_format($plays) );
+		echo esc_html( sprintf( _n( '%s view', '%s views', $plays, 'video-embed-thumbnail-generator'), number_format($plays) ) );
 	}
 	else { echo ' '; }
 
@@ -10254,70 +10267,70 @@ function kgvid_add_contextual_help_tab() {
 
 	get_current_screen()->add_help_tab( array(
         'id'        => 'kgvid-help-tab',
-        'title'     => __( 'Videopack Shortcode Reference' , 'video-embed-thumbnail-generator'),
-        'content'   => '<p><strong>'.__('Use these optional attributes in the [videopack] shortcode:', 'video-embed-thumbnail-generator').'</strong></p>
-<ul><li><code>id="xxx"</code> '.__('video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator').'</li>
-<li><code>videos="x"</code> '.__('number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
-<li><code>orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
-<li><code>order="ASC/DESC"</code> '.__('sort order.', 'video-embed-thumbnail-generator').'</li>
-<li><code>poster="https://www.example.com/image.jpg"</code> '.__('sets the thumbnail.', 'video-embed-thumbnail-generator').'</li>
-<li><code>endofvideooverlay="https://www.example.com/end_image.jpg"</code> '.__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
+        'title'     => esc_html__( 'Videopack Shortcode Reference' , 'video-embed-thumbnail-generator'),
+        'content'   => '<p><strong>'.esc_html__('Use these optional attributes in the [videopack] shortcode:', 'video-embed-thumbnail-generator').'</strong></p>
+<ul><li><code>id="xxx"</code> '.esc_html__('video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator').'</li>
+<li><code>videos="x"</code> '.esc_html__('number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
+<li><code>orderby="menu_order/title/post_date/rand/ID"</code> '.esc_html__('criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator').'</li>
+<li><code>order="ASC/DESC"</code> '.esc_html__('sort order.', 'video-embed-thumbnail-generator').'</li>
+<li><code>poster="https://www.example.com/image.jpg"</code> '.esc_html__('sets the thumbnail.', 'video-embed-thumbnail-generator').'</li>
+<li><code>endofvideooverlay="https://www.example.com/end_image.jpg"</code> '.esc_html__('sets the image shown when the video ends.', 'video-embed-thumbnail-generator').'</li>
 <li><code>width="xxx"</code></li>
 <li><code>height="xxx"</code></li>
-<li><code>fullwidth="true/false"</code> '.__('set video to always expand to fill its container.', 'video-embed-thumbnail-generator').'</li>
-<li><code>fixed_aspect="false/vertical/true"</code> '.__('set video to conform to the default aspect ratio. Vertical applies only if the video height is greater than the width.', 'video-embed-thumbnail-generator').'</li>
+<li><code>fullwidth="true/false"</code> '.esc_html__('set video to always expand to fill its container.', 'video-embed-thumbnail-generator').'</li>
+<li><code>fixed_aspect="false/vertical/true"</code> '.esc_html__('set video to conform to the default aspect ratio. Vertical applies only if the video height is greater than the width.', 'video-embed-thumbnail-generator').'</li>
 <li><code>align="left/right/center"</code></li>
-<li><code>inline="true/false"</code> '.__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
-<li><code>volume="0.x"</code> '.__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
-<li><code>muted="true/false"</code> '.__('Mutes the audio.', 'video-embed-thumbnail-generator').'</li>
-<li><code>controls="true/false"</code> '.__('Enables video controls.', 'video-embed-thumbnail-generator').'</li>
+<li><code>inline="true/false"</code> '.esc_html__('allow other content on the same line as the video', 'video-embed-thumbnail-generator').'</li>
+<li><code>volume="0.x"</code> '.esc_html__('pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator').'</li>
+<li><code>muted="true/false"</code> '.esc_html__('Mutes the audio.', 'video-embed-thumbnail-generator').'</li>
+<li><code>controls="true/false"</code> '.esc_html__('Enables video controls.', 'video-embed-thumbnail-generator').'</li>
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
-<li><code>playsinline="true/false"</code> '.__('Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gifmode="true/false"</code> '.__('Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator').'</li>
-<li><code>pauseothervideos="true/false"</code> '.__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>preload="metadata/auto/none"</code> '.__('indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator').'</li>
-<li><code>start="mm:ss"</code> '.__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
-<li><code>watermark="https://www.example.com/image.png"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>playsinline="true/false"</code> '.esc_html__('Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gifmode="true/false"</code> '.esc_html__('Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator').'</li>
+<li><code>pauseothervideos="true/false"</code> '.esc_html__('video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator').'</li>
+<li><code>preload="metadata/auto/none"</code> '.esc_html__('indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator').'</li>
+<li><code>start="mm:ss"</code> '.esc_html__('video will start playing at this timecode.', 'video-embed-thumbnail-generator').'</li>
+<li><code>watermark="https://www.example.com/image.png"</code> '.sprintf( esc_html__('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
 <li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>
-<li><code>watermark_url="https://www.example.com/"</code> '.sprintf( __('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
-<li><code>title="Video Title"</code> '.sprintf( __('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
-<li><code>embeddable="true/false"</code> '.__('enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator').'</li>
-<li><code>embedcode="html code"</code> '.sprintf( __('changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
-<li><code>view_count="true/false"</code> '.__('turns the view count on or off.', 'video-embed-thumbnail-generator').'</li>
-<li><code>count_views="quarters/start_complete/start/false"</code> '.__('sets the level of video view counting.', 'video-embed-thumbnail-generator').'</li>
-<li><code>caption="Caption"</code> '.__('text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator').'</li>
-<li><code>description="Description"</code> '.__('Used for metadata only.', 'video-embed-thumbnail-generator').'</li>
-<li><code>downloadlink="true/false"</code> '.__('shows a download icon overlay to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
-<li><code>right_click="true/false"</code> '.__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
-<li><code>resize="true/false"</code> '.__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li>
-<li><code>pixel_ratio="true/false"</code> '.__('account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator').'</li>
-<li><code>schema="true/false"</code> '.__('allow or disable Schema.org search engine metadata.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>watermark_url="https://www.example.com/"</code> '.sprintf( esc_html__('or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>title="Video Title"</code> '.sprintf( esc_html__('or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>embeddable="true/false"</code> '.esc_html__('enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator').'</li>
+<li><code>embedcode="html code"</code> '.sprintf( esc_html__('changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator'), $false_code ).'</li>
+<li><code>view_count="true/false"</code> '.esc_html__('turns the view count on or off.', 'video-embed-thumbnail-generator').'</li>
+<li><code>count_views="quarters/start_complete/start/false"</code> '.esc_html__('sets the level of video view counting.', 'video-embed-thumbnail-generator').'</li>
+<li><code>caption="Caption"</code> '.esc_html__('text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator').'</li>
+<li><code>description="Description"</code> '.esc_html__('Used for metadata only.', 'video-embed-thumbnail-generator').'</li>
+<li><code>downloadlink="true/false"</code> '.esc_html__('shows a download icon overlay to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator').'</li>
+<li><code>right_click="true/false"</code> '.esc_html__('allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator').'</li>
+<li><code>resize="true/false"</code> '.esc_html__('allow or disable responsive resizing.', 'video-embed-thumbnail-generator').'</li>
+<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> '.esc_html__('specify the video resolution when the page loads.', 'video-embed-thumbnail-generator').'</li>
+<li><code>pixel_ratio="true/false"</code> '.esc_html__('account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator').'</li>
+<li><code>schema="true/false"</code> '.esc_html__('allow or disable Schema.org search engine metadata.', 'video-embed-thumbnail-generator').'</li></ul>
 
-<p><strong>'.__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
-<ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>
+<p><strong>'.esc_html__('These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator').'</strong></p>
+<ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> '.esc_html__('URL of the WebVTT file.', 'video-embed-thumbnail-generator').'</li>
 <li><code>track_kind=subtitles/captions/chapters</code></li>
-<li><code>track_srclang=xx</code> '.__('the track\'s two-character language code (en, fr, es, etc)', 'video-embed-thumbnail-generator').'</li>
-<li><code>track_label="Track Label"</code> '.__('text that will be shown to the user when selecting the track.', 'video-embed-thumbnail-generator').'</li>
-<li><code>track_default="default"</code> '.__('track is enabled by default.', 'video-embed-thumbnail-generator').'</li></ul>
+<li><code>track_srclang=xx</code> '.esc_html__('the track\'s two-character language code (en, fr, es, etc)', 'video-embed-thumbnail-generator').'</li>
+<li><code>track_label="Track Label"</code> '.esc_html__('text that will be shown to the user when selecting the track.', 'video-embed-thumbnail-generator').'</li>
+<li><code>track_default="default"</code> '.esc_html__('track is enabled by default.', 'video-embed-thumbnail-generator').'</li></ul>
 
-<p><strong>'.__('These options will only affect Video.js playback', 'video-embed-thumbnail-generator').'</strong></p>
-<ul><li><code>skin="example-css-class"</code> '.sprintf( __('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="http://codepen.io/heff/pen/EarCt">' ).'</a></li>
-<li><code>nativecontrolsfortouch="true/false"</code> '.__('enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator').'</li>
+<p><strong>'.esc_html__('These options will only affect Video.js playback', 'video-embed-thumbnail-generator').'</strong></p>
+<ul><li><code>skin="example-css-class"</code> '.sprintf( esc_html__('Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator'), '<a href="http://codepen.io/heff/pen/EarCt">' ).'</a></li>
+<li><code>nativecontrolsfortouch="true/false"</code> '.esc_html__('enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator').'</li>
 </ul>
 
-<p><strong>'.__('These options are available for video galleries (options work the same as standard WordPress image galleries)', 'video-embed-thumbnail-generator').'</p></strong>
-<ul><li><code>gallery="true"</code> '.__('turns on the gallery', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_thumb="xxx"</code> '.__('width in pixels to display gallery thumbnails', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_exclude="15"</code> '.__('comma separated video attachment IDs. Excludes the videos from the gallery.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_include="65"</code> '.__('comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> '.__('criteria for sorting the gallery', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_order="ASC/DESC"</code> '.__('sort order', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_id="241"</code> '.__('post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_end="close/next"</code> '.__('either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator').'</li>
-<li><code>gallery_per_page="xx"</code> '.sprintf( __('or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator'), $false_code).'</li>
-<li><code>gallery_title="true/false"</code> '.__('display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator').'</li></ul>'
+<p><strong>'.esc_html__('These options are available for video galleries (options work the same as standard WordPress image galleries)', 'video-embed-thumbnail-generator').'</p></strong>
+<ul><li><code>gallery="true"</code> '.esc_html__('turns on the gallery', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_thumb="xxx"</code> '.esc_html__('width in pixels to display gallery thumbnails', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_exclude="15"</code> '.esc_html__('comma separated video attachment IDs. Excludes the videos from the gallery.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_include="65"</code> '.esc_html__('comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> '.esc_html__('criteria for sorting the gallery', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_order="ASC/DESC"</code> '.esc_html__('sort order', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_id="241"</code> '.esc_html__('post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_end="close/next"</code> '.esc_html__('either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator').'</li>
+<li><code>gallery_per_page="xx"</code> '.sprintf( esc_html__('or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator'), $false_code).'</li>
+<li><code>gallery_title="true/false"</code> '.esc_html__('display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator').'</li></ul>'
     ) );
 
 }
@@ -10344,7 +10357,7 @@ function kgvid_clear_first_embedded_video_meta() {
 	global $kgvid_video_id;
 	global $post;
 
-	if ( $kgvid_video_id == null && $post ) {
+	if ( $kgvid_video_id == null && $post ) { //there's no Videopack video on this page
 		$first_embedded_video_meta = get_post_meta($post->ID, '_kgvid_first_embedded_video', true);
 		if ( !empty($first_embedded_video_meta) ) {
 			delete_post_meta($post->ID, '_kgvid_first_embedded_video');
@@ -10391,9 +10404,16 @@ function kgvid_ajax_clear_transient_cache() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
-	kgvid_delete_transients();
+	if ( current_user_can('manage_options') ) {
 
-	echo true;
+		kgvid_delete_transients();
+		echo true;
+
+	}
+	else {
+		echo false;
+	}
+
 	die();
 
 }
