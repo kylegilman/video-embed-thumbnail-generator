@@ -1014,15 +1014,21 @@ function kgvid_delete_video(movieurl, postID, format, childID, blogID) {
 		var blog = kgvid_get_multisite_data(blogID);
 		var kgflashmediaplayersecurity = document.getElementsByName('attachments'+blog.name_text+'['+postID+'][kgflashmediaplayer-security]')[0].value;
 
-		jQuery.post(ajaxurl, { action: "kgvid_delete_video", security: kgflashmediaplayersecurity, movieurl: movieurl, postid: postID, format: format, childid: childID, blogid: blogID }, function(data) {
+		jQuery.post(ajaxurl, { action: "kgvid_delete_video", security: kgflashmediaplayersecurity, movieurl: movieurl, postid: postID, format: format, childid: childID, blogid: blogID }, function(deleted) {
 
-			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+format).prop('disabled', false);
-			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode').prop('disabled', false);
-			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode').css('display', 'inline');
-			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).empty();
-			jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).append('<strong>Deleted</strong>');
-			jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+format).trigger('change');
-			setTimeout(function(){ kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) }, 3000);
+			if ( deleted ) {
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode'+format).prop('disabled', false);
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode').prop('disabled', false);
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-encode').css('display', 'inline');
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).empty();
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).append('<strong>'+kgvidL10n.deleted+'</strong>');
+				jQuery('#attachments-'+postID+'-kgflashmediaplayer-encode'+format).trigger('change');
+				setTimeout(function(){ kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) }, 3000);
+			}
+			else {
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).empty();
+				jQuery('#attachments-'+blog.id_text+postID+'-kgflashmediaplayer-meta'+format).append('<strong>'+kgvidL10n.not_deleted+'</strong>');
+			}
 
 		}, "json" );
 
@@ -1436,7 +1442,7 @@ function kgvid_queue_control() {
     jQuery('#kgvid-encode-queue-control').addClass('kgvid-encode-queue-control-disabled kgvid-queue-control-updating').attr('title', kgvidL10n.loading).off('click.kgvid');
 
     jQuery.post(ajaxurl, { action:"kgvid_queue_control", security: kgflashmediaplayersecurity, command:command, scope: blog.scope }, function(success) {
-        if ( success == 'true' ) {
+        if ( success ) {
             jQuery('#kgvid-encode-queue-control').removeClass('kgvid-encode-queue-control-disabled kgvid-queue-control-updating dashicons-controls-'+command).addClass('dashicons-controls-'+opposite_command).attr('title', title).on('click.kgvid', kgvid_queue_control);
             kgvid_check_queue_again(250);
         }

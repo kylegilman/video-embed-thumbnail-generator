@@ -616,10 +616,6 @@ td.kgvid-encode-queue-paused, th.kgvid-encode-queue-paused {
 	margin-top: 5px;
 }
 
-#kgflashmediaplayer-table input {
-	width: auto;
-}
-
 .attachment-preview.type-video .thumbnail {
 	z-index: 0;
 }
