@@ -105,6 +105,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.8.1 - January XX, 2023 =
+* Added a check to remove partially encoded video files from video player source lists.
+
 = 4.8 - January 9, 2023 =
 * Significant security update. There might be some features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
 * Increased PHP requirement to 7.2.5

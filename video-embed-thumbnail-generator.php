@@ -3,7 +3,7 @@
 Plugin Name: Videopack
 Plugin URI: https://www.videopack.video/
 Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
-Version: 4.8
+Version: 4.8.1
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -61,7 +61,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.8',
+		"version" => '4.8.1',
 		"videojs_version" => '7.20.3',
 		"embed_method" => "Video.js v7",
 		"template" => false,
@@ -934,8 +934,10 @@ add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 function kgvid_showUpgradeNotification($currentPluginMetadata, $newPluginMetadata){
    // check "upgrade_notice"
    if (isset($newPluginMetadata->upgrade_notice) && strlen(trim($newPluginMetadata->upgrade_notice)) > 0){
-        echo esc_html__('Upgrade Notice', 'video-embed-thumbnail-generator').': ';
-        echo wp_kses_post($newPluginMetadata->upgrade_notice);
+		printf(
+			'<div class="update-message">%s</div>',
+			wpautop( $newPluginMetadata->upgrade_notice )
+		);
    }
 }
 add_action('in_plugin_update_message-video-embed-thumbnail-generator/video-embed-thumbnail-generator.php', 'kgvid_showUpgradeNotification', 10, 2);
@@ -1605,6 +1607,7 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 
 		$encodevideo_info[$format]['exists'] = false;
 		$encodevideo_info[$format]['writable'] = false;
+		$encodevideo_info[$format]['encoding'] = false;
 
 		//start with the new database info before checking other locations
 
@@ -1614,12 +1617,19 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 				$wp_attached_file = get_attached_file($child->ID);
 				$video_meta = wp_get_attachment_metadata( $child->ID );
 				$meta_format = get_post_meta($child->ID, '_kgflashmediaplayer-format', true);
-				if ( $meta_format == $format || ( substr($wp_attached_file, -strlen($format_stats['suffix'])) == $format_stats['suffix'] && $meta_format == false )  ) {
+
+				if ( $meta_format == $format
+					|| ( substr($wp_attached_file, -strlen($format_stats['suffix'])) == $format_stats['suffix']
+						&& $meta_format == false
+					)
+				) {
+
 					$encodevideo_info[$format]['url'] = wp_get_attachment_url($child->ID);
 					$encodevideo_info[$format]['filepath'] = $wp_attached_file;
 					$encodevideo_info[$format]['id'] = $child->ID;
 					$encodevideo_info[$format]['exists'] = true;
 					$encodevideo_info[$format]['writable'] = true;
+
 					if ( is_array($video_meta) && array_key_exists('width', $video_meta) ) {
 						$encodevideo_info[$format]['width'] = $video_meta['width'];
 					}
@@ -1679,7 +1689,8 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 			}//end if not on same server
 		}//end potential locations loop
 
-		if ( !$encodevideo_info[$format]['exists'] ) {
+		if ( $encodevideo_info[$format]['exists'] == false ) {
+
 			if ( get_post_type($postID) == "attachment" && is_writeable($encodevideo_info['encodepath']) ) {
 				$encodevideo_info[$format]['url'] = $sanitized_url['noextension'].$format_stats['suffix'];
 				$encodevideo_info[$format]['filepath'] = $encodevideo_info['encodepath'].$encodevideo_info['moviefilebasename'].$format_stats['suffix'];
@@ -1688,6 +1699,30 @@ function kgvid_encodevideo_info($movieurl, $postID) {
 				$encodevideo_info[$format]['url'] = $uploads['url'].'/'.$encodevideo_info['moviefilebasename'].$format_stats['suffix'];
 				$encodevideo_info[$format]['filepath'] = $uploads['path'].'/'.$encodevideo_info['moviefilebasename'].$format_stats['suffix'];
 			}
+
+		}
+		else { //if file exists, check if it's currently encoding
+
+			$video_encode_queue = kgvid_get_encode_queue();
+
+			if ( $video_encode_queue ) {
+
+				foreach ( $video_encode_queue as $video_key => $video_entry ) {
+
+					if ( array_key_exists('encode_formats', $video_entry)
+						&& array_key_exists($format, $video_entry['encode_formats'])
+						&& array_key_exists('filepath', $video_entry['encode_formats'][$format])
+						&& $video_entry['encode_formats'][$format]['filepath'] == $encodevideo_info[$format]['filepath']
+						&& array_key_exists('status', $video_entry['encode_formats'][$format])
+						&& $video_entry['encode_formats'][$format]['status'] == 'encoding'
+					) {
+						$encodevideo_info[$format]['encoding'] = true; //this format is currently encoding
+					}
+
+				}
+
+			}
+
 		}
 
 	}//end format loop
@@ -3105,6 +3140,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 
 		}
 		else { $encodevideo_info["original"]["exists"] = false; }
+		$encodevideo_info["original"]["encoding"] = false;
 
 		if ( is_admin() && defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 
@@ -3217,7 +3253,9 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 				if ( $format != "original" && $encodevideo_info[$format]["url"] == $content ) {
 					continue; //don't double up on non-H.264 video sources
 				}
-				if ( $encodevideo_info[$format]["exists"] ) {
+				if ( $encodevideo_info[$format]["exists"]
+					&& $encodevideo_info[$format]['encoding'] == false
+				) {
 
 					if ( array_key_exists('height', $encodevideo_info[$format]) && $format_stats['type'] == 'h264' ) {
 						$source_key = $encodevideo_info[$format]['height'];
@@ -7019,6 +7057,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 				$encodevideo_info = kgvid_encodevideo_info($movieurl, $post->ID);
 				if ( in_array($moviefiletype, $h264compatible) ) {
 					$encodevideo_info["original"]["exists"] = true;
+					$encodevideo_info["original"]["encoding"] = false;
 					$encodevideo_info["original"]["url"] = $movieurl;
 					$video_formats = array( "original" => array("mime" => "video/".$moviefiletype) ) + $video_formats;
 				}
@@ -7028,7 +7067,9 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 
 				foreach ($video_formats as $format => $format_stats) {
 					if ( $format != "original" && $encodevideo_info[$format]["url"] == $movieurl ) { unset($sources['original']); }
-					if ( $encodevideo_info[$format]["exists"] ) { $sources[$format] = '<source src="'.esc_attr($encodevideo_info[$format]["url"]).'" type="'.esc_attr($format_stats["mime"]).'">'; }
+					if ( $encodevideo_info[$format]["exists"]
+						&& $encodevideo_info[$format]['encoding'] == false
+					) { $sources[$format] = '<source src="'.esc_attr($encodevideo_info[$format]["url"]).'" type="'.esc_attr($format_stats["mime"]).'">'; }
 				}
 
 				if ( $img_editor_works ) {
