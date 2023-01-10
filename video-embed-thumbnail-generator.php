@@ -7950,39 +7950,6 @@ function kgvid_filter_video_attachment_content($content) {
 }
 add_filter( 'the_content', 'kgvid_filter_video_attachment_content' );
 
-function kgvid_generate_embeddable_video( $kgvid_video_embed ) {
-
-	global $content_width;
-	$content_width_save = $content_width;
-	$content_width = 2048;
-
-	remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
-	add_filter( 'show_admin_bar', '__return_false' );
-
-	$shortcode = kgvid_generate_attachment_shortcode($kgvid_video_embed);
-
-	$html = '<html style="background-color:transparent;"><head>';
-	ob_start();
-	wp_head();
-	$html .= ob_get_clean();
-	$html .= '<style>body:before, body:after{ content: none; } .kgvid_wrapper { margin:0 !important; }';
-	if ( array_key_exists('gallery', $kgvid_video_embed) ) { $html .= ' .kgvid_below_video { color:white; } .kgvid_below_video a { color:aaa; }'; }
-	$html .= '</style>';
-	$html .= '</head><body class="content" style="margin:0px; font-family: sans-serif; padding:0px; border:none;';
-	if ( array_key_exists('gallery', $kgvid_video_embed) ) { $html .= 'background-color:black; '; }
-	else { $html .= 'background-color:transparent; '; }
-	$html .= '">';
-	$html .= do_shortcode( $shortcode );
-	ob_start();
-	wp_footer();
-	$html .= ob_get_clean();
-	$html .= '</body></html>';
-	$content_width = $content_width_save; //reset $content_width
-
-	return apply_filters('kgvid_generate_embeddable_video', $html, $kgvid_video_embed);
-
-}
-
 function kgvid_video_attachment_template() {
 
 	global $post;
@@ -8003,13 +7970,21 @@ function kgvid_video_attachment_template() {
 
 	if ( $options['embeddable'] == 'false' && !array_key_exists('sample', $kgvid_video_embed) && !array_key_exists('gallery', $kgvid_video_embed) ) { $kgvid_video_embed['enable'] = 'false'; }
 
-	if ( is_array($kgvid_video_embed) && array_key_exists('enable', $kgvid_video_embed) && $kgvid_video_embed['enable'] == 'true'
-		&& ( ( is_object($post) && property_exists($post, 'post_mime_type') && strpos($post->post_mime_type, 'video') !== false ) || array_key_exists('sample', $kgvid_video_embed) )
-		) {
+	if ( is_array($kgvid_video_embed)
+		&& array_key_exists('enable', $kgvid_video_embed)
+		&& $kgvid_video_embed['enable'] == 'true'
+		&& ( ( is_object($post)
+				&& property_exists($post, 'post_mime_type')
+				&& strpos($post->post_mime_type, 'video') !== false
+			)
+			|| array_key_exists('sample', $kgvid_video_embed)
+		)
+	) {
 
-		$html = kgvid_generate_embeddable_video( $kgvid_video_embed );
+		remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
+		add_filter( 'show_admin_bar', '__return_false' );
 
-		echo $html;
+		include( dirname(__FILE__) . '/src/embeddable-video.php' );
 
 		exit;
 	}
