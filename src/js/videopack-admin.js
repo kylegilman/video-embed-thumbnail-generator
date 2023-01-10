@@ -1484,7 +1484,7 @@ function kgvid_save_plugin_settings(input_obj) {
 
 		jQuery.post(ajaxurl, { action:"kgvid_save_settings", security: kgflashmediaplayersecurity, setting: save_queue[0].id, value: setting_value, all_settings: all_settings }, function(data) {
 
-			if ( data ) {
+			if ( data != false ) {
 
 				if ( input_obj.type != "checkbox" ) { jQuery(input_obj).val(data.validated_value); }
 
@@ -1551,6 +1551,10 @@ function kgvid_save_plugin_settings(input_obj) {
 				jQuery( '#wpbody-content' ).data('save_queue', save_queue);
 				if ( save_queue.length > 0 ) { kgvid_ajax_save(); }
 
+			}
+			else {
+				jQuery( '#save_'+save_queue[0].id ).remove();
+				jQuery(input_obj).parents("td:first").append('<div class="error settings-error"><p><strong>'+kgvidL10n.not_saved+'</strong></p>');
 			}
 
 		}, "json" );
