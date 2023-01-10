@@ -8007,7 +8007,7 @@ function kgvid_video_attachment_template() {
 		remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
 		add_filter( 'show_admin_bar', '__return_false' );
 
-		include( dirname(__FILE__) . '/src/embeddable-video.php' );
+		include( dirname(__FILE__) . '/src/templates/embeddable-video.php' );
 
 		exit;
 	}
