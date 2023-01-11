@@ -942,7 +942,7 @@ add_action('in_plugin_update_message-video-embed-thumbnail-generator/video-embed
 
 function kgvid_check_if_capable($capability) {
 
-	global $wp_roles;
+	$wp_roles = wp_roles();;
 	$capable = array();
 
 	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
@@ -961,7 +961,7 @@ function kgvid_check_if_capable($capability) {
 
 function kgvid_set_capabilities($capabilities) {
 
-	global $wp_roles;
+	$wp_roles = wp_roles();;
 
 	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles') ) {
 
@@ -2575,9 +2575,9 @@ function kgvid_get_first_embedded_video( $post ) {
 
 function kgvid_video_embed_print_scripts() {
 
-	global $wp_query;
 	global $wpdb;
-    $posts = $wp_query->posts;
+
+    $posts = get_posts();
 	$pattern = get_shortcode_regex();
 	$options = kgvid_get_options();
 
@@ -2921,7 +2921,7 @@ function kgvid_generate_video_description($query_atts, $post = false) {
 	}
 	elseif ( $post != false || ( in_the_loop() && !is_attachment() ) ) {
 
-		if ( $post == false ) { global $post; }
+		if ( $post == false ) { $post = get_post(); }
 
 		$yoast_meta = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true ); //try Yoast SEO meta description tag
 		$aioseop_meta = get_post_meta( $post->ID, '_aioseop_description', true ); //try All in one SEO Pack meta description tag
@@ -5438,7 +5438,7 @@ function kgvid_tooltip_html( $tooltip_text ) {
 	}
 
 	function kgvid_user_roles_callback($page_scope = 'site') {
-		global $wp_roles;
+		$wp_roles = wp_roles();;
 		$options = kgvid_get_options();
 		$capabilities_checkboxes = array();
 		$capabilities = array(
@@ -7891,8 +7891,7 @@ add_filter('query_vars', 'kgvid_parameter_queryvars' );
 
 function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 
-	global $post;
-	global $wp_query;
+	$post = get_post();
 	$shortcode = '';
 
 	if ( $post && property_exists($post, 'ID') ) {
@@ -7942,7 +7941,7 @@ function kgvid_generate_attachment_shortcode($kgvid_video_embed) {
 
 function kgvid_filter_video_attachment_content($content) {
 
-	global $post;
+	$post = get_post();
 	$options = kgvid_get_options();
 
 	if ( $options['template'] == "gentle" && isset($post) && strpos($post->post_mime_type, "video") !== false ) {
@@ -10389,7 +10388,7 @@ add_action( 'save_post', 'kgvid_save_post' );
 function kgvid_clear_first_embedded_video_meta() {
 
 	global $kgvid_video_id;
-	global $post;
+	$post = get_post();
 
 	if ( $kgvid_video_id == null && $post ) { //there's no Videopack video on this page
 		$first_embedded_video_meta = get_post_meta($post->ID, '_kgvid_first_embedded_video', true);
@@ -10465,7 +10464,7 @@ function kgvid_cleanup_plugin() {
 	delete_transient('kgvid_new_attachment_transient');
 	delete_option('kgvid_video_embed_cms_switch');
 
-	global $wp_roles;
+	$wp_roles = wp_roles();;
 	if ( is_object($wp_roles) && property_exists($wp_roles, 'roles')
 		&& is_array($options) && array_key_exists('capabilities', $options)
 		) {
