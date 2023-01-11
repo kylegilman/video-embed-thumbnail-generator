@@ -2348,22 +2348,9 @@ function kgvid_video_embed_enqueue_styles() {
 
 	if ( $options['embed_method'] == "WordPress Default" ) {
 
-		global $wp_version;
+		wp_register_script( 'mejs_sourcechooser', plugins_url( 'js/mejs-source-chooser.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
 
-		if ( $wp_version >= 4.9 ) {
-			$sourcechooser_path = plugins_url( 'js/mejs-source-chooser.js', __FILE__ );
-		}
-		else {
-			$sourcechooser_path = plugins_url( 'js/mep-feature-sourcechooser.js', __FILE__ );
-		}
-		wp_register_script( 'mejs_sourcechooser', $sourcechooser_path, array( 'mediaelement' ), $options['version'], true );
-		if ( $wp_version >= 4.9 ) {
-			$speed_path = plugins_url( 'js/mejs-speed.js', __FILE__ );
-		}
-		else {
-			$speed_path = plugins_url( 'js/mep-speed.js', __FILE__ );;
-		}
-		wp_register_script( 'mejs-speed', $speed_path, array( 'mediaelement' ), $options['version'], true );
+		wp_register_script( 'mejs-speed', plugins_url( 'js/mejs-speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
 
 		wp_enqueue_style( 'video-js', plugins_url("", __FILE__).'/video-js/v7/video-js.min.css', '', $options['videojs_version'] ); //gives access to video-js icons for resolution gear selector and social logos
 
@@ -2590,7 +2577,6 @@ function kgvid_video_embed_print_scripts() {
 
 	global $wp_query;
 	global $wpdb;
-	global $wp_version;
     $posts = $wp_query->posts;
 	$pattern = get_shortcode_regex();
 	$options = kgvid_get_options();
@@ -2967,8 +2953,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 	global $kgvid_video_id;
 	if ( !$kgvid_video_id ) { $kgvid_video_id = 0; }
 
-	global $wp_version;
-
 	$options = kgvid_get_options();
 	$code = "";
 	$id_array = array();
@@ -3317,9 +3301,6 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 		} //if Video.js
 
 		$code .= '<div id="kgvid_'.esc_attr($div_suffix).'_wrapper" class="kgvid_wrapper';
-		if ( $wp_version < 4.9 && $options['embed_method'] == "WordPress Default" ) {
-			$code .= ' kgvid_compat_mep';
-		}
 		$code .= $aligncode.'">'."\n\t\t\t";
 		$code .= '<div id="video_'.esc_attr($div_suffix).'_div" class="fitvidsignore kgvid_videodiv" data-id="'.esc_attr($div_suffix).'" data-kgvid_video_vars="'.esc_attr(wp_json_encode($video_variables)).'" ';
 		if ( $query_atts["schema"] == "true" ) {
