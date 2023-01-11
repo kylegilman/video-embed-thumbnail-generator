@@ -2,24 +2,13 @@
 /**
  * Template for displaying a single embeddable video and nothing else
  */
-global $content_width;
-$content_width_save = $content_width;
-$content_width = 4096;
-global $post;
-global $wp_query;
 
-if ( is_object($wp_query) && isset($wp_query->query_vars['videopack']) ) {
-    $kgvid_video_embed = $wp_query->query_vars['videopack'];
+ if ( ! defined( 'ABSPATH' ) ) {
+	die( "Can't load this file directly" );
 }
-elseif ( is_object($wp_query) && isset($wp_query->query_vars['kgvid_video_embed']) ) {
-    $kgvid_video_embed = $wp_query->query_vars['kgvid_video_embed'];
-}
-
-$kgvid_video_embed['enable'] = 'true';
-
-$shortcode = kgvid_generate_attachment_shortcode($kgvid_video_embed);
 
 ?>
+<!DOCTYPE html>
 <html style="background-color:transparent;">
 <head>
 <?php wp_head(); ?>
@@ -30,4 +19,4 @@ $shortcode = kgvid_generate_attachment_shortcode($kgvid_video_embed);
 wp_footer(); ?>
 </body>
 </html>
-<?php $content_width = $content_width_save; //reset $content_width
+<?php
