@@ -106,7 +106,6 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.8.1 - January 11, 2023 =
-
 * Increased WordPress version requirement to 5.0
 * More escaping and sanitizing for security.
 * Fixed bug that caused a fatal error when checking for FFMPEG if proc_open isn't enabled.
