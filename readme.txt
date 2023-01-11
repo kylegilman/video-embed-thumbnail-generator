@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.2.5
-Stable tag: 4.8
+Stable tag: 4.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 * More escaping and sanitizing for security.
 * Fixed bug that caused a fatal error when checking for FFMPEG if proc_open isn't enabled.
 * Added a check to remove partially encoded video files from video player source lists.
+* Moved embedded video template into its own file.
 * Replaced most references to global variables with associated WordPress functions.
 
 = 4.8 - January 9, 2023 =
