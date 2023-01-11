@@ -1,6 +1,7 @@
 <?php
 /**
  * Template for displaying a single embeddable video and nothing else
+ * @package Videopack
  */
 
  if ( ! defined( 'ABSPATH' ) ) {
