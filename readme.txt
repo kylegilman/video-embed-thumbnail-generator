@@ -105,8 +105,13 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.8.1 - January XX, 2023 =
+= 4.8.1 - January 11, 2023 =
+
+* Increased WordPress version requirement to 5.0
+* More escaping and sanitizing for security.
+* Fixed bug that caused a fatal error when checking for FFMPEG if proc_open isn't enabled.
 * Added a check to remove partially encoded video files from video player source lists.
+* Replaced most references to global variables with associated WordPress functions.
 
 = 4.8 - January 9, 2023 =
 * Significant security update. There might be some features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
