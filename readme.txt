@@ -2,7 +2,7 @@
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
-Requires at least: 4.9
+Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.2.5
 Stable tag: 4.8
