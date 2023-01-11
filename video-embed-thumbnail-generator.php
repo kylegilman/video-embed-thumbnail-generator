@@ -7956,19 +7956,18 @@ add_filter( 'the_content', 'kgvid_filter_video_attachment_content' );
 
 function kgvid_video_attachment_template() {
 
-	global $post;
-	global $wp_query;
-	global $content_width;
-
+	$post = get_post();
 	$options = kgvid_get_options();
+	$kgvid_video_embed = get_query_var('videopack');
 
-	$kgvid_video_embed = array ( 'enable' => 'false' ); //turned off by default
-	if ( is_object($wp_query) && isset($wp_query->query_vars['videopack']) ) {
-		$kgvid_video_embed = $wp_query->query_vars['videopack'];
+
+	if ( empty($kgvid_video_embed) ) {
+		$kgvid_video_embed = get_query_var('kgvid_video_embed');
 	}
-	elseif ( is_object($wp_query) && isset($wp_query->query_vars['kgvid_video_embed']) ) {
-		$kgvid_video_embed = $wp_query->query_vars['kgvid_video_embed'];
+	if ( empty($kgvid_video_embed) ) {
+		$kgvid_video_embed = array ( 'enable' => 'false' ); //turned off by default
 	}
+
 	if ( $options['template'] == "old" ) { $kgvid_video_embed['enable'] = 'true'; } //regardless of any query settings, if we're using the old method it's turned on
 	if ( (!is_array($kgvid_video_embed) && $kgvid_video_embed == "true") ) { $kgvid_video_embed = array ( 'enable' => 'true' ); } //maintain backwards compatibility
 
@@ -7985,10 +7984,18 @@ function kgvid_video_attachment_template() {
 		)
 	) {
 
+		global $content_width;
+		$content_width_save = $content_width;
+		$content_width = 4096;
+
 		remove_action('wp_head', '_admin_bar_bump_cb'); //don't show the WordPress admin bar if you're logged in
 		add_filter( 'show_admin_bar', '__return_false' );
 
-		include( dirname(__FILE__) . '/src/templates/embeddable-video.php' );
+		$shortcode = kgvid_generate_attachment_shortcode($kgvid_video_embed);
+
+		include dirname(__FILE__) . '/src/partials/embeddable-video.php';
+
+		$content_width = $content_width_save; //reset $content_width
 
 		exit;
 	}
@@ -8029,7 +8036,11 @@ function kgvid_video_attachment_template() {
 		exit;
 	}
 
-	if ( $options['oembed_provider'] == "on" && is_array($kgvid_video_embed) && array_key_exists('oembed', $kgvid_video_embed) && array_key_exists('post_id', $kgvid_video_embed) ) {
+	if ( $options['oembed_provider'] == "on"
+		&& is_array($kgvid_video_embed)
+		&& array_key_exists('oembed', $kgvid_video_embed)
+		&& array_key_exists('post_id', $kgvid_video_embed)
+	) {
 
 		$post = get_post($kgvid_video_embed['post_id']);
 
