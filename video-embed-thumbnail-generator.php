@@ -1023,7 +1023,7 @@ function kgvid_ProcessThumb ( $input, $output, $ffmpeg_path = false, $seek = '0'
 	}
 
 	if ( $ffmpeg_path === false ) {
-		$ffmpeg_path = $options['app_path']."/".$options['video_app'];
+		$ffmpeg_path = $options['app_path'] ."/" . $options['video_app'];
 	}
 	else {
 		$ffmpeg_path = $ffmpeg_path . "/" . $options['video_app'];
@@ -6689,12 +6689,17 @@ function kgvid_schedule_attachment_processing($post_id, $force = false, $x = 1) 
 
 		$time_offset = ($x * 3);
 
-		wp_schedule_single_event( time() + $time_offset, 'kgvid_cron_new_attachment', array($post_id, $force) );
+		$already_scheduled = wp_get_scheduled_event('kgvid_cron_new_attachment', array($post_id, $force) );
+
+		if ( $already_scheduled === false ) {
+			wp_schedule_single_event( time() + $time_offset, 'kgvid_cron_new_attachment', array($post_id, $force) );
+		}
 
 		if ( $force === false ) {
 			$transient = get_transient( 'kgvid_new_attachment_transient' ); //error checking to avoid race conditions when using Add From Server
 			if ( is_array($transient) ) { $transient[] = $post_id; }
 			else { $transient = array($post_id); }
+			$transient = array_unique($transient);
 			set_transient( 'kgvid_new_attachment_transient', $transient, DAY_IN_SECONDS );
 		}
 
@@ -7076,7 +7081,7 @@ function kgvid_image_attachment_fields_to_edit($form_fields, $post) {
 			$update_script = "";
 			if ( $options['ffmpeg_exists'] == "on" && $options['auto_thumb'] == "on" && !$thumbnail_url && $created_time < 60 ) {
 				$update_script = '<script type="text/javascript">jQuery(function() { setTimeout(function(){ kgvid_redraw_thumbnail_box("'.esc_attr($post->ID).'") }, 5000); });</script>';
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;	display: inline-block;">Loading thumbnail...</span></div>';
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;	display: inline-block;">'. esc_html__('Loading thumbnail...'). '</span></div>';
 			}
 
 			if ( empty($security_disabled) && current_user_can('make_video_thumbnails') ) {
@@ -7605,10 +7610,10 @@ function kgvid_ajax_redraw_thumbnail_box() {
 		$thumbnail_src = wp_get_attachment_image_src($poster_id, 'thumbnail');
 		if ( is_array($thumbnail_src) && array_key_exists(0, $thumbnail_src) ) { $thumbnail_size_url = $thumbnail_src[0]; }
 	}
-
+	error_log(get_post_meta($post_id, "_kgflashmediaplayer-poster", true));
 	$response = array(
-		'thumb_url' => esc_url(get_post_meta($post_id, "_kgflashmediaplayer-poster", true)).'?'.rand(),
-		'thumbnail_size_url' => esc_url($thumbnail_size_url).'?'.rand(),
+		'thumb_url' => esc_url(get_post_meta($post_id, "_kgflashmediaplayer-poster", true)),
+		'thumbnail_size_url' => esc_url($thumbnail_size_url),
 		'thumb_error' => wp_kses_post($kgvid_postmeta['autothumb-error'])
 	);
 	wp_send_json($response);
@@ -8294,7 +8299,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 		$thumbnail_generator = kgvid_ProcessThumb(
 			$moviefilepath,
 			$thumbnailfilename[$i],
-			'',
+			$options['app_path'],
 			round($movieoffset),
 			$rotate_strings['rotate'],
 			$watermark_strings
@@ -8311,7 +8316,7 @@ function kgvid_make_thumbs($postID, $movieurl, $numberofthumbs, $i, $iincreaser,
 			"thumbnaildisplaycode" => $thumbnaildisplaycode,
 			"movie_width" => esc_html($movie_width),
 			"movie_height" => esc_html($movie_height),
-			"lastthumbnumber" => $i,
+			"lastthumbnumber" => absint($i),
 			"movieoffset" => esc_html($movieoffset),
 			"thumb_url" => esc_url($final_thumbnailurl),
 			"real_thumb_url" => esc_url($tmp_thumbnailurl)

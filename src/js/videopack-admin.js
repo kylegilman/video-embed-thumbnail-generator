@@ -1352,12 +1352,12 @@ function kgvid_redraw_thumbnail_box(postID) {
 
 		jQuery.post(ajaxurl, { action:"kgvid_redraw_thumbnail_box", security: kgflashmediaplayersecurity, post_id: postID }, function(data) {
 			if ( data.thumb_url ) {
-				jQuery('#attachments-'+postID+'-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'+data.thumb_url+'"></div>');
+				jQuery('#attachments-'+postID+'-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="'+data.thumb_url+'?'+Math.floor(Math.random()*10000)+'"></div>');
 				jQuery('#attachments-'+postID+'-kgflashmediaplayer-poster').val(data.thumb_url);
 				if ( data.thumbnail_size_url ) {
 					basename = data.thumb_url.substring(data.thumb_url.lastIndexOf('/')+1, data.thumb_url.indexOf('_thumb'))
 					jQuery('.attachment-preview.type-video:contains('+basename+')').parent().find('img')
-						.attr('src', data.thumbnail_size_url)
+						.attr('src', data.thumbnail_size_url+'?'+Math.floor(Math.random()*10000))
 						.css('width', '100%')
 						.css('height', '100%')
 						.css('padding-top', '0');
