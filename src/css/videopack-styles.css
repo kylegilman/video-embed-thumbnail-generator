@@ -432,12 +432,12 @@ input[type="text"].kgvid_start_at {
 	height: 24px;
 	background-color: #ddd;
 	text-align: center;
-	color: #ccc;
+	color: black;
 	border-radius: 12px;
 	font-size: 16px;
 	font-weight: 900;
 	border: 1px solid #888;
-	line-height: 20px;
+	line-height: 22px;
 	text-decoration: none;
 }
 
@@ -449,12 +449,7 @@ span.kgvid_gallery_pagination_arrow {
 .kgvid_gallery_pagination .kgvid_gallery_pagination_selected {
 	background-color: #666;
 	cursor: default;
-}
-
-.kgvid_gallery_pagination span a {
-	border: none;
-	text-decoration: none;
-	box-shadow: none;
+    color: white;
 }
 
 .kgvid_temp_thumb {
