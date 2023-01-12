@@ -3,7 +3,7 @@
 Plugin Name: Videopack
 Plugin URI: https://www.videopack.video/
 Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
-Version: 4.8.2
+Version: 4.8.3
 Author: Kyle Gilman
 Author URI: https://www.kylegilman.net/
 Text Domain: video-embed-thumbnail-generator
@@ -61,7 +61,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable('edit_others_posts');
 
 	$options = array(
-		"version" => '4.8.2',
+		"version" => '4.8.3',
 		"videojs_version" => '7.20.3',
 		"embed_method" => "Video.js v7",
 		"template" => false,
