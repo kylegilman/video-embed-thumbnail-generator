@@ -3656,7 +3656,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					$filepath = get_attached_file($id);
 					if ( file_exists($filepath) ) {
 						$forceable = true;
-						$download_code = "\t\t\t\t\t".'<a href="'.esc_attr(site_url('/').'?attachment_id='.($id).'&kgvid_video_embed&#91;download&#93;=true').'" title="'.esc_attr__('Click to download', 'video-embed-thumbnail-generator').'">';
+						$download_code = "\t\t\t\t\t".'<a href="'.esc_attr($content).'" title="'.esc_attr__('Click to download', 'video-embed-thumbnail-generator').'" download>';
 					}
 				}
 				if ( !$forceable ) { $download_code = '<a href="'.esc_attr($content).'" title="'.esc_attr__('Right-click or ctrl-click to download', 'video-embed-thumbnail-generator').'">'; }
@@ -3750,10 +3750,7 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					break;
 
 					case 'download':
-						if ( !empty($id) ) {
-							$watermark_href = site_url('/').'?attachment_id='.$id.'&kgvid_video_embed&#91;download&#93;=true';
-						}
-						else { $watermark_href = $content; }
+						$watermark_href = $content;
 					break;
 
 					case 'custom':
@@ -3761,7 +3758,11 @@ function kgvid_single_video_code($query_atts, $atts, $content, $post_id) {
 					break;
 
 				}
-				$code .= "<a target='_parent' href='".esc_attr($watermark_href)."'>";
+				$code .= "<a target='_parent' href='".esc_attr($watermark_href)."'";
+				if ( $query_atts['watermark_link_to'] == 'download' ) {
+					$code .= " download";
+				}
+				$code .= ">";
 			}
 			else { $watermark_link = false; }
 			$code .= "<img src='".esc_attr($query_atts["watermark"])."' alt='".esc_attr__('watermark', 'video-embed-thumbnail-generator')."'>";
@@ -7812,7 +7813,13 @@ function kgvid_video_attachment_fields_to_save($post, $attachment) {
 			}
 		}
 
-		$checkboxes = array( 'lockaspect', 'forcefirst', 'featured', 'showtitle', 'downloadlink' ); //make sure unchecked checkbox values are saved
+		$checkboxes = array(
+			'lockaspect',
+			'forcefirst',
+			'featured',
+			'showtitle',
+			'downloadlink'
+		); //make sure unchecked checkbox values are saved
 		foreach ( $checkboxes as $checkbox ) {
 			if( !isset($attachment['kgflashmediaplayer-'.$checkbox]) ) { $attachment['kgflashmediaplayer-'.$checkbox] = "false"; }
 		}
