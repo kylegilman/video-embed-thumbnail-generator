@@ -105,6 +105,15 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
+= 4.8.2 - January 12, 2023 =
+* Fixed bug that disabled the WordPress Default player.
+* Fixed bug that made videos on later pages of paginated video galleries 640x360 when using the WordPress Default player.
+* Fixed bug that broke resolution switching when using the WordPress Default player.
+* Fixed bug that broke single-click download links.
+* Fixed bug that caused errors when get_current_screen() was not defined.
+* Removed all 'javascript:void(0)' hrefs from video players.
+* More escaping and sanitizing for security.
+
 = 4.8.1 - January 11, 2023 =
 * Increased WordPress version requirement to 5.0
 * More escaping and sanitizing for security.
