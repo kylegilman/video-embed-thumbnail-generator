@@ -1,3 +1,17 @@
+/* var kgvid_observe_dom = new WebKitMutationObserver( function(mutations) {
+	mutations.forEach(function(mutation) {
+        for (var i = 0; i < mutation.addedNodes.length; i++) {
+			if ( jQuery('.kgvid_checkboxes_section').length > 0 ) {
+            	console.log(mutation.addedNodes[i]);
+			}
+		}
+    })
+}); */
+
+jQuery( document.body ).on( 'post-load', function () {
+    console.log('post-load');
+} );
+
 function kgvid_disable_thumb_buttons(postID, event) {
 
 	if ( jQuery('.compat-item').length > 0 ) { //only do this in the new media modal, not attachment page in media library
@@ -1339,6 +1353,8 @@ function kgvid_redraw_encode_checkboxes(movieurl, postID, blogID) {
 
 			setTimeout( function(){ kgvid_update_encode_queue() }, 5000 ); //start the loop
 			jQuery(encodebox).removeAttr('style');
+
+			jQuery( document.body ).trigger( 'post-load' );
 
 		}, "json" );
 	}

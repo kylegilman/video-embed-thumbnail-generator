@@ -106,7 +106,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 == Changelog ==
 
 = 4.8.3 - January XX, 2023 =
-* Changed single-click download link to use 'download' attribute instead of PHP-based streaming from the server. All modern browsers except Opera support it.
+* Added try/catch when running FFMPEG for better error reporting.
+* Changed single-click download link to use 'download' attribute instead of PHP-based streaming from the server.
+* Broke up plugin functions into separate files.
 
 = 4.8.2 - January 12, 2023 =
 * Fixed bug that disabled the WordPress Default player.
