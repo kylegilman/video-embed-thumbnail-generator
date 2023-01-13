@@ -13,8 +13,8 @@
 */
 .kg-video-js-skin {
   /* The base font size controls the size of everything, not just text.
-     All dimensions use em-based sizes so that the scale along with the font size.
-     Try increasing it to 15px and see what happens. */
+	 All dimensions use em-based sizes so that the scale along with the font size.
+	 Try increasing it to 15px and see what happens. */
   font-size: 10px;
   /* The main font color changes the ICON COLORS as well as the text */
   color: #fff;
@@ -26,13 +26,13 @@
    where it gets out of the way of valuable content in the poster image.*/
 .kg-video-js-skin .vjs-big-play-button {
   /* The font size is what makes the big play button...big.
-     All width/height values use ems, which are a multiple of the font size.
-     If the .kg-video-js-skin font-size is 10px, then 3em equals 30px.*/
+	 All width/height values use ems, which are a multiple of the font size.
+	 If the .kg-video-js-skin font-size is 10px, then 3em equals 30px.*/
   font-size: 3em;
   /* We're using SCSS vars here because the values are used in multiple places.
-     Now that font size is set, the following em values will be a multiple of the
-     new font size. If the font-size is 3em (30px), then setting any of
-     the following values to 3em would equal 30px. 3 * font-size. */
+	 Now that font size is set, the following em values will be a multiple of the
+	 new font size. If the font-size is 3em (30px), then setting any of
+	 the following values to 3em would equal 30px. 3 * font-size. */
   /* 1.5em = 45px default */
   line-height: 3em;
   height: 3em;

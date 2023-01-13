@@ -1,125 +1,128 @@
 <?php
-/*
-Plugin Name: Videopack
-Plugin URI: https://www.videopack.video/
-Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
-Version: 4.8.3
-Author: Kyle Gilman
-Author URI: https://www.kylegilman.net/
-Text Domain: video-embed-thumbnail-generator
-Domain Path: /languages
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-1) Includes code adapted from Joshua Eldridge's Flash Media Player Plugin
-   Website: http://wordpress.org/extend/plugins/flash-video-player/
-2) Includes code adapted from Gary Cao's Make Shortcodes User-Friendly tutorial
-   Website: http://www.wphardcore.com/2010/how-to-make-shortcodes-user-friendly/
-3) Includes code adapted from Justin Gable's "Modifying Wordpress' Default Method for Inserting Media"
-   Website: http://justingable.com/2008/10/03/modifying-wordpress-default-method-for-inserting-media/
-4) Includes Video-JS Player
-	Website: http://www.videojs.com/
-	License: http://www.gnu.org/licenses/lgpl.html
-5) Includes code adapted from Kathy Darling's custom solution for saving thumbnails
-	Website: http://www.kathyisawesome.com/
-6) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
-	Website: http://www.amiaud.org/tag/video/
-7) Includes Eric Martin's SimpleModal
-	Website: http://www.ericmmartin.com/projects/simplemodal/
-8) Includes Dominic's Video.js Resolution Selector
-	Website: https://github.com/dominic-p/videojs-resolution-selector
-
-=Translators=
-Spanish: Andrew Kurtis, Webhostinghub http://www.webhostinghub.com/
-French: F.R. "Friss" Ferry, friss.designs@gmail.com
-Bulgarian: Emil Georgiev, svinqvmraka@gmail.com
-
-*/
+/**
+ * Plugin Name
+ *
+ * @package           Videopack
+ * @author            Kyle Gilman
+ * @copyright         2023 Kyle Gilman
+ * @license           GPL-2.0-or-later
+ *
+ * @wordpress-plugin
+ * Plugin Name: Videopack
+ * Plugin URI: https://www.videopack.video/
+ * Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
+ * Version: 4.8.3
+ * Author: Kyle Gilman
+ * Author URI: https://www.kylegilman.net/
+ * Text Domain: video-embed-thumbnail-generator
+ * Domain Path: /languages
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * 1) Includes code adapted from Joshua Eldridge's Flash Media Player Plugin
+ *    Website: http://wordpress.org/extend/plugins/flash-video-player/
+ * 2) Includes code adapted from Gary Cao's Make Shortcodes User-Friendly tutorial
+ *    Website: http://www.wphardcore.com/2010/how-to-make-shortcodes-user-friendly/
+ * 3) Includes code adapted from Justin Gable's "Modifying WordPress' Default Method for Inserting Media"
+ *    Website: http://justingable.com/2008/10/03/modifying-wordpress-default-method-for-inserting-media/
+ * 4) Includes Video-JS Player
+ * Website: http://www.videojs.com/
+ * License: http://www.gnu.org/licenses/lgpl.html
+ * 5) Includes code adapted from Kathy Darling's custom solution for saving thumbnails
+ * Website: http://www.kathyisawesome.com/
+ * 6) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
+ * Website: http://www.amiaud.org/tag/video/
+ * 7) Includes Eric Martin's SimpleModal
+ * Website: http://www.ericmmartin.com/projects/simplemodal/
+ * 8) Includes Dominic's Video.js Resolution Selector
+ * Website: https://github.com/dominic-p/videojs-resolution-selector
+ *
+ * =Translators=
+ * Spanish: Andrew Kurtis, Webhostinghub http://www.webhostinghub.com/
+ * French: F.R. "Friss" Ferry, friss.designs@gmail.com
+ * Bulgarian: Emil Georgiev, svinqvmraka@gmail.com
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die( "Can't load this file directly" );
-}
-else {
+} else {
 
-	if ( ! defined('VIDEOPACK_BASENAME') ) {
-		define('VIDEOPACK_BASENAME', plugin_basename(__FILE__));
+	if ( ! defined( 'VIDEOPACK_BASENAME' ) ) {
+		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
 
-	require_once dirname(__FILE__) . '/vendor/autoload.php';
-	require_once dirname(__FILE__) . '/src/admin/videopack-freemius.php';
-	require_once dirname(__FILE__) . '/src/admin/videopack-admin.php';
-	require_once dirname(__FILE__) . '/src/admin/videopack-ffmpeg.php';
-	require_once dirname(__FILE__) . '/src/admin/videopack-admin-ajax.php';
-	require_once dirname(__FILE__) . '/src/public/videopack-public.php';
-	require_once dirname(__FILE__) . '/src/public/videopack-public-ajax.php';
+	require_once dirname( __FILE__ ) . '/vendor/autoload.php';
+	require_once dirname( __FILE__ ) . '/src/admin/videopack-freemius.php';
+	require_once dirname( __FILE__ ) . '/src/admin/videopack-admin.php';
+	require_once dirname( __FILE__ ) . '/src/admin/videopack-ffmpeg.php';
+	require_once dirname( __FILE__ ) . '/src/admin/videopack-admin-ajax.php';
+	require_once dirname( __FILE__ ) . '/src/public/videopack-public.php';
+	require_once dirname( __FILE__ ) . '/src/public/videopack-public-ajax.php';
 }
 
 function kgvid_video_embed_activation_hook( $network_wide ) {
 
-	if ( is_multisite() && $network_wide ) { // if activated on the entire network
+	if ( is_multisite() && $network_wide ) { // if activated on the entire network.
 
 		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
 
-		if( !is_array($network_options) ) {
+		if ( ! is_array( $network_options ) ) {
 
 			$network_options = kgvid_default_network_options();
 
-			$ffmpeg_check = kgvid_check_ffmpeg_exists($network_options, false);
+			$ffmpeg_check = kgvid_check_ffmpeg_exists( $network_options, false );
 			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
 				$network_options['ffmpeg_exists'] = 'on';
-				$network_options['app_path'] = $ffmpeg_check['app_path'];
-			}
-			else { $network_options['ffmpeg_exists'] = false; }
+				$network_options['app_path']      = $ffmpeg_check['app_path'];
+			} else {
+				$network_options['ffmpeg_exists'] = false; }
 
-			update_site_option('kgvid_video_embed_network_options', $network_options);
+			update_site_option( 'kgvid_video_embed_network_options', $network_options );
 
 		}// if network options haven't been set already
 
-	}
-	else { // Running on a single blog
+	} else { // Running on a single blog
 
 		$options = kgvid_register_default_options_fn();
-		kgvid_set_capabilities($options['capabilities']);
+		kgvid_set_capabilities( $options['capabilities'] );
 
 	}
 
 }
-register_activation_hook(__FILE__, 'kgvid_video_embed_activation_hook');
+register_activation_hook( __FILE__, 'kgvid_video_embed_activation_hook' );
 
 function kgvid_deactivate_plugin( $network_wide ) {
 
 	if ( is_multisite() && $network_wide ) {
 
 		$current_blog_id = get_current_blog_id();
-		$sites = get_sites();
+		$sites           = get_sites();
 
-		if ( is_array($sites) ) {
+		if ( is_array( $sites ) ) {
 
 			foreach ( $sites as $site ) {
 
-				switch_to_blog($site->blog_id);
+				switch_to_blog( $site->blog_id );
 				kgvid_cleanup_plugin();
 				restore_current_blog();
 
-			}//end loop through sites
+			} //end loop through sites.
+		} //end if there are sites.
+	} //end if network activated.
 
-		}//end if there are sites
-
-	}//end if network activated
-
-	else { //if not network activated
+	else { // if not network activated.
 		kgvid_cleanup_plugin();
 	}
 }
@@ -127,14 +130,14 @@ register_deactivation_hook( __FILE__, 'kgvid_deactivate_plugin' );
 
 function kgvid_register_uninstall_hook() {
 
-	if ( !function_exists( 'videopack_fs' ) ) {
+	if ( ! function_exists( 'videopack_fs' ) ) {
 
-		register_uninstall_hook( __FILE__, 'kgvid_uninstall_plugin' ); //register WP uninstall instead of Freemius uninstall hook
+		register_uninstall_hook( __FILE__, 'kgvid_uninstall_plugin' ); // register WP uninstall instead of Freemius uninstall hook
 
 	}
 
 }
-add_action('admin_init', 'kgvid_register_uninstall_hook' );
+add_action( 'admin_init', 'kgvid_register_uninstall_hook' );
 
 function kgvid_uninstall_plugin() {
 
@@ -142,24 +145,23 @@ function kgvid_uninstall_plugin() {
 		return;
 	}
 
-	if ( !is_multisite() ) {
-    	delete_option('kgvid_video_embed_options');
-    	delete_option('kgvid_video_embed_queue');
-    }
-    else {
+	if ( ! is_multisite() ) {
+		delete_option( 'kgvid_video_embed_options' );
+		delete_option( 'kgvid_video_embed_queue' );
+	} else {
 
-    	delete_site_option( 'kgvid_video_embed_network_options' );
-    	delete_site_option( 'kgvid_video_embed_queue' );
+		delete_site_option( 'kgvid_video_embed_network_options' );
+		delete_site_option( 'kgvid_video_embed_queue' );
 
-    	$sites = get_sites();
+		$sites = get_sites();
 
-    	if ( is_array($sites) ) {
+		if ( is_array( $sites ) ) {
 
 			foreach ( $sites as $site ) {
 				delete_blog_option( $site->blog_id, 'kgvid_video_embed_options' );
-				delete_blog_option( $site->blog_id, 'kgvid_video_embed_queue');
+				delete_blog_option( $site->blog_id, 'kgvid_video_embed_queue' );
 			}
 		}
-    }
+	}
 
 }
