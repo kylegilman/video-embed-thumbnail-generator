@@ -573,7 +573,7 @@ function kgvid_setup_video(id) {
 				}
 
 				if ( player.availableRes != undefined ) {
-					 kgvid_resize_video( id );
+					kgvid_resize_video( id );
 				}
 
 				if ( fullScreenApi.supportsFullScreen == false ) {

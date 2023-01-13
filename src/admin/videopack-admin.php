@@ -155,7 +155,6 @@ function kgvid_default_options_fn() {
 	}
 
 	return apply_filters( 'kgvid_default_options', $options );
-
 }
 
 function kgvid_default_network_options() {
@@ -179,7 +178,6 @@ function kgvid_default_network_options() {
 	);
 
 	return $network_options;
-
 }
 
 function is_videopack_active_for_network() {
@@ -194,7 +192,6 @@ function is_videopack_active_for_network() {
 	}
 
 	return false;
-
 }
 
 function kgvid_get_options() {
@@ -215,7 +212,6 @@ function kgvid_get_options() {
 	}
 
 	return $options;
-
 }
 
 function kgvid_filter_validate_url( $uri ) {
@@ -244,7 +240,6 @@ function kgvid_filter_validate_url( $uri ) {
 			return 1;
 		}
 	}
-
 }
 
 function kgvid_sanitize_text_field( $text_field ) {
@@ -256,27 +251,24 @@ function kgvid_sanitize_text_field( $text_field ) {
 		foreach ( $text_field as $key => &$value ) {
 			if ( is_array( $value ) ) {
 				$value = kgvid_sanitize_text_field( $value );
-			} else {
-				if ( $key === 'titlecode' ) { // special case for the titlecode Videopack setting
+			} elseif ( $key === 'titlecode' ) {
+				// special case for the titlecode Videopack setting
 					$value = wp_kses( $value, wp_kses_allowed_html( 'post' ) );
-				} elseif ( kgvid_filter_validate_url( $value ) ) { // if it's a URL
-					$value = sanitize_url( $value );
-				} else {
-					$value = sanitize_text_field( $value );
-				}
+			} elseif ( kgvid_filter_validate_url( $value ) ) { // if it's a URL
+				$value = sanitize_url( $value );
+			} else {
+				$value = sanitize_text_field( $value );
 			}
 		}
-	} else { // not an array
+	} elseif ( kgvid_filter_validate_url( $text_field ) ) { // not an array
 
-		if ( kgvid_filter_validate_url( $text_field ) ) { // if it's a URL
+		// if it's a URL
 			$text_field = sanitize_url( $text_field );
-		} else {
-			$text_field = sanitize_text_field( $text_field );
-		}
+	} else {
+		$text_field = sanitize_text_field( $text_field );
 	}
 
 	return $text_field;
-
 }
 
 function kgvid_escape_output( $output ) {
@@ -296,7 +288,6 @@ function kgvid_escape_output( $output ) {
 	}
 
 	return $output;
-
 }
 
 function kgvid_sanitize_url( $movieurl ) {
@@ -318,7 +309,6 @@ function kgvid_sanitize_url( $movieurl ) {
 	$sanitized_url['movieurl']     = esc_url_raw( str_replace( ' ', '%20', $movieurl ) );
 
 	return $sanitized_url;
-
 }
 
 function kgvid_get_jetpack_twitter_username() {
@@ -338,7 +328,6 @@ function kgvid_get_jetpack_twitter_username() {
 		$twitter_username = ''; }
 
 	return $twitter_username;
-
 }
 
 function kgvid_get_attachment_meta( $post_id ) {
@@ -436,7 +425,6 @@ function kgvid_get_attachment_meta( $post_id ) {
 	$kgvid_postmeta = array_merge( $meta_key_array, $kgvid_postmeta ); // make sure all keys are set
 
 	return apply_filters( 'kgvid_attachment_meta', $kgvid_postmeta );
-
 }
 
 function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
@@ -461,7 +449,6 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 		update_post_meta( $post_id, '_kgvid-meta', $kgvid_postmeta );
 
 	}
-
 }
 
 function kgvid_get_encode_queue() {
@@ -472,7 +459,6 @@ function kgvid_get_encode_queue() {
 		$video_encode_queue = get_option( 'kgvid_video_embed_queue' ); }
 
 	return $video_encode_queue;
-
 }
 
 function kgvid_save_encode_queue( $video_encode_queue ) {
@@ -481,7 +467,6 @@ function kgvid_save_encode_queue( $video_encode_queue ) {
 		update_site_option( 'kgvid_video_embed_queue', $video_encode_queue );
 	} else {
 		update_option( 'kgvid_video_embed_queue', $video_encode_queue ); }
-
 }
 
 function kgvid_video_formats( $return_replace = false, $return_customs = true, $return_dontembeds = true ) {
@@ -668,7 +653,6 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 	}
 
 	return apply_filters( 'kgvid_video_formats', $video_formats, $return_replace, $return_customs, $return_dontembeds );
-
 }
 
 function kgvid_register_default_options_fn() {
@@ -692,7 +676,6 @@ function kgvid_register_default_options_fn() {
 	}
 
 	return $options;
-
 }
 
 function kgvid_add_new_blog( $blog_id ) {
@@ -703,7 +686,6 @@ function kgvid_add_new_blog( $blog_id ) {
 	kgvid_set_capabilities( $network_options['default_capabilities'] );
 
 	restore_current_blog();
-
 }
 add_action( 'wpmu_new_blog', 'kgvid_add_new_blog' );
 
@@ -711,7 +693,6 @@ function kgvid_plugin_action_links( $links ) {
 
 	$links[] = '<a href="' . get_admin_url( null, 'options-general.php?page=video_embed_thumbnail_generator_settings' ) . '">' . esc_html__( 'Settings', 'video-embed-thumbnail-generator' ) . '</a>';
 	return $links;
-
 }
 add_filter( 'plugin_action_links_' . VIDEOPACK_BASENAME, 'kgvid_plugin_action_links' );
 
@@ -719,7 +700,6 @@ function kgvid_plugin_network_action_links( $links ) {
 
 	$links[] = '<a href="' . network_admin_url() . 'settings.php?page=video_embed_thumbnail_generator_settings">' . esc_html__( 'Network Settings', 'video-embed-thumbnail-generator' ) . '</a>';
 	return $links;
-
 }
 add_filter( 'network_admin_plugin_action_links_' . VIDEOPACK_BASENAME, 'kgvid_plugin_network_action_links' );
 
@@ -732,7 +712,6 @@ function kgvid_plugin_meta_links( $links, $file ) {
 		);
 	}
 	return $links;
-
 }
 add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 
@@ -764,7 +743,6 @@ function kgvid_check_if_capable( $capability ) {
 		}
 	}
 	return $capable;
-
 }
 
 function kgvid_set_capabilities( $capabilities ) {
@@ -792,7 +770,6 @@ function kgvid_set_capabilities( $capabilities ) {
 			}
 		}
 	}//end if $wp_roles defined
-
 }
 
 function kgvid_set_transient_name( $url ) {
@@ -804,7 +781,6 @@ function kgvid_set_transient_name( $url ) {
 		$search_url = substr( $search_url, -162 ); } //transients can't be more than 172 characters long. Including 'kgvid_' the URL has to be 162 characters or fewer
 
 	return $search_url;
-
 }
 
 function kgvid_url_to_id( $url ) {
@@ -849,7 +825,6 @@ function kgvid_url_to_id( $url ) {
 	}
 
 	return $post_id;
-
 }
 
 function kgvid_is_animated_gif( $filename ) {
@@ -897,7 +872,6 @@ function kgvid_is_video( $post ) {
 	}
 
 	return false;
-
 }
 
 function kgvid_url_exists( $url ) {
@@ -913,7 +887,6 @@ function kgvid_url_exists( $url ) {
 	$hdrs = @get_headers( $url, 0, $ssl_context );
 
 	return is_array( $hdrs ) ? preg_match( '/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/', $hdrs[0] ) : false;
-
 }
 
 function kgvid_add_mime_types( $existing_mimes ) {
@@ -922,7 +895,6 @@ function kgvid_add_mime_types( $existing_mimes ) {
 	$existing_mimes['m3u8'] = 'application/vnd.apple.mpegurl';
 
 	return $existing_mimes;
-
 }
 add_filter( 'mime_types', 'kgvid_add_mime_types' );
 
@@ -1000,7 +972,6 @@ function kgvid_url_mime_type( $url, $post_id = false ) {
 	}
 
 	return $mime_info;
-
 }
 
 function kgvid_is_empty_dir( $dir ) {
@@ -1111,7 +1082,6 @@ function enqueue_kgvid_script() {
 			)
 		);
 	}
-
 }
 add_action( 'wp_enqueue_media', 'enqueue_kgvid_script' ); // always enqueue scripts if media elements are loaded
 
@@ -1123,7 +1093,6 @@ function maybe_enqueue_kgvid_script( $hook_suffix ) {
 	) {
 		enqueue_kgvid_script();
 	}
-
 }
 add_action( 'admin_enqueue_scripts', 'maybe_enqueue_kgvid_script' ); // only enqueue scripts on settings page or encode queue
 
@@ -1155,7 +1124,6 @@ function kgvid_validate_network_settings( $input ) {
 	}
 
 	return $input;
-
 }
 
 function kgvid_network_settings_page() {
@@ -1173,9 +1141,9 @@ function kgvid_network_settings_page() {
 
 				$nonce = kgvid_sanitize_text_field( $_POST['kgvid_settings_security'] );
 				if ( ! wp_verify_nonce( $nonce, 'video-embed-thumbnail-generator-nonce' ) ) {
-					die; } else {
+					die; } elseif ( $reset ) {
 
-					if ( $reset ) { // reset button pressed
+					// reset button pressed
 						$default_network_options = kgvid_default_network_options();
 						$options_updated         = update_site_option( 'kgvid_video_embed_network_options', $default_network_options );
 						add_settings_error( 'video_embed_thumbnail_generator_settings', 'options-reset', esc_html__( 'Videopack network settings reset to default values.', 'video-embed-thumbnail-generator' ), 'updated' );
@@ -1183,7 +1151,6 @@ function kgvid_network_settings_page() {
 						$input             = kgvid_sanitize_text_field( $_POST['kgvid_video_embed_options'] );
 						$validated_options = kgvid_validate_network_settings( $input );
 						$options_updated   = update_site_option( 'kgvid_video_embed_network_options', $validated_options );
-					}
 					}
 			}
 
@@ -1226,11 +1193,11 @@ function kgvid_network_settings_page() {
 		</tbody>
 	</table>
 	<p class='submit'>
-		  <?php submit_button( esc_html__( 'Save Changes', 'video-embed-thumbnail-generator' ), 'primary', 'kgvid_submit', false, array( 'onclick' => "jQuery('form :disabled').prop('disabled', false);" ) ); ?>
-		  <?php submit_button( esc_html__( 'Reset Options', 'video-embed-thumbnail-generator' ), 'secondary', 'video-embed-thumbnail-generator-reset', false ); ?>
-	   </p>
-	   </form>
-	   <div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
+			<?php submit_button( esc_html__( 'Save Changes', 'video-embed-thumbnail-generator' ), 'primary', 'kgvid_submit', false, array( 'onclick' => "jQuery('form :disabled').prop('disabled', false);" ) ); ?>
+			<?php submit_button( esc_html__( 'Reset Options', 'video-embed-thumbnail-generator' ), 'secondary', 'video-embed-thumbnail-generator-reset', false ); ?>
+		</p>
+		</form>
+		<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 	<span><?php esc_html_e( 'If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator' ); ?></span>
 	<a href="https://www.videopack.video/donate/"><img alt="<?php esc_html__( 'Donate', 'video-embed-thumbnail-generator' ); ?>" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 	</div>
@@ -1279,7 +1246,6 @@ function kgvid_superadmin_capabilities_callback() {
 	echo '</select>';
 	echo kgvid_tooltip_html( sprintf( esc_html__( 'Can also be set on individual sites if the %s settings tab isn\'t disabled.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $network_options['video_app'] ) ) . '</strong>' ) );
 	echo "</div>\n\t";
-
 }
 
 function kgvid_add_settings_page() {
@@ -1311,10 +1277,10 @@ function kgvid_settings_page() {
 	<?php settings_fields( 'kgvid_video_embed_options' ); ?>
 	<input type="hidden" id="kgvid_settings_security" value="<?php echo wp_create_nonce( 'video-embed-thumbnail-generator-nonce' ); ?>">
 	<?php kgvid_do_settings_sections( 'video_embed_thumbnail_generator_settings' ); ?>
-	 <p class='submit'>
-		  <?php submit_button( esc_html__( 'Save Changes', 'video-embed-thumbnail-generator' ), 'primary', 'kgvid_submit', false, array( 'onclick' => "jQuery('form :disabled').prop('disabled', false);" ) ); ?>
-		  <?php submit_button( esc_html__( 'Reset Options', 'video-embed-thumbnail-generator' ), 'secondary', 'video-embed-thumbnail-generator-reset', false ); ?>
-	   </p>
+	<p class='submit'>
+			<?php submit_button( esc_html__( 'Save Changes', 'video-embed-thumbnail-generator' ), 'primary', 'kgvid_submit', false, array( 'onclick' => "jQuery('form :disabled').prop('disabled', false);" ) ); ?>
+			<?php submit_button( esc_html__( 'Reset Options', 'video-embed-thumbnail-generator' ), 'secondary', 'video-embed-thumbnail-generator-reset', false ); ?>
+		</p>
 	</form>
 	<div class="kgvid-donate-box wp-core-ui wp-ui-highlight">
 	<span><?php esc_html_e( 'If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator' ); ?></span>
@@ -1325,7 +1291,7 @@ function kgvid_settings_page() {
 		jQuery(function() {
 				kgvid_switch_settings_tab(document.URL.substr(document.URL.indexOf('#')+1));
 				jQuery('form :input').on('change', function() {
-					  kgvid_save_plugin_settings(this);
+						kgvid_save_plugin_settings(this);
 				});
 			}
 		);
@@ -1422,7 +1388,6 @@ function kgvid_video_embed_options_init() {
 	}
 
 	add_settings_field( 'test_ffmpeg', esc_html__( 'Test FFMPEG:', 'video-embed-thumbnail-generator' ), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_test_settings' );
-
 }
 add_action( 'admin_init', 'kgvid_video_embed_options_init' );
 
@@ -1442,7 +1407,6 @@ function kgvid_generate_settings_select_html( $option_name, $options, $items, $c
 	$selector_html .= '</select>';
 
 	return $selector_html;
-
 }
 
 function kgvid_tooltip_html( $tooltip_text ) {
@@ -1450,7 +1414,6 @@ function kgvid_tooltip_html( $tooltip_text ) {
 	$tooltip_html = "<span class='kgvid_tooltip wp-ui-text-highlight'><span class='kgvid_tooltip_classic'>" . wp_kses_post( $tooltip_text ) . '</span></span><br />';
 
 	return $tooltip_html;
-
 }
 
 // callback functions generating HTML for the settings form
@@ -1567,7 +1530,6 @@ function kgvid_resize_callback() {
 	echo "<p id='pixel_ratio_p'><input " . checked( $options['pixel_ratio'], 'on', false ) . " id='pixel_ratio' name='kgvid_video_embed_options[pixel_ratio]' type='checkbox' /><label for='pixel_ratio'>" . __( 'Use display pixel ratio for resolution calculation.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo kgvid_tooltip_html( esc_html__( 'Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.', 'video-embed-thumbnail-generator' ) );
 	echo "</p>\n\t";
-
 }
 
 function kgvid_dimensions_callback() {
@@ -1607,7 +1569,6 @@ function kgvid_video_gallery_callback() {
 		echo "style='display:none;' "; }
 	echo "id='gallery_per_page_span'><input class='small-text' id='gallery_per_page' name='kgvid_video_embed_options[gallery_per_page]' type='text' value='" . esc_attr( $options['gallery_per_page'] ) . "' /> " . esc_html__( 'videos per gallery page.', 'video-embed-thumbnail-generator' ) . '</span><br />';
 	echo ' <input ' . checked( $options['gallery_title'], 'on', false ) . " id='gallery_title' name='kgvid_video_embed_options[gallery_title]' type='checkbox' /> <label for='gallery_title'>" . esc_html__( 'Show video title overlay on thumbnails.', 'video-embed-thumbnail-generator' ) . "</label>\n\t";
-
 }
 
 function kgvid_controls_callback() {
@@ -1718,7 +1679,6 @@ function kgvid_performance_callback() {
 	echo '<input ' . checked( $options['alwaysloadscripts'], 'on', false ) . " id='alwaysloadscripts' name='kgvid_video_embed_options[alwaysloadscripts]' type='checkbox' /> <label for='alwaysloadscripts'>" . esc_html__( 'Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo kgvid_tooltip_html( esc_html__( "Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator' ) );
 	echo "\n\t";
-
 }
 
 function kgvid_replace_video_shortcode_callback() {
@@ -2201,7 +2161,6 @@ function kgvid_audio_options_callback() {
 	echo ' kbps<br />';
 	echo "<input class='affects_ffmpeg' " . checked( $options['audio_channels'], 'on', false ) . " id='audio_channels' name='kgvid_video_embed_options[audio_channels]' type='checkbox' /> <label for='audio_channels'>" . esc_html__( 'Always output stereo audio.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo "</div>\n\t";
-
 }
 
 function kgvid_ffmpeg_options_callback() {
@@ -2242,7 +2201,6 @@ function kgvid_execution_options_callback() {
 	echo '<input ' . checked( $options['nice'], 'on', false ) . " id='nice' name='kgvid_video_embed_options[nice]' class='affects_ffmpeg' type='checkbox' /> <label for='nice'>" . esc_html_x( 'Run', 'execute program', 'video-embed-thumbnail-generator' ) . '  <code>nice</code>.</label>';
 	echo kgvid_tooltip_html( sprintf( esc_html__( 'Tells %1$s to run at a lower priority to avoid monopolizing system resources.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) );
 	echo '</div>';
-
 }
 
 function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
@@ -2258,7 +2216,7 @@ function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 			update_option( 'kgvid_video_embed_options', $options );
 		}
 
-		$movie_info = kgvid_get_video_dimensions( plugin_dir_path( dirname( __FILE__ ) ) . 'images/sample-video-h264.mp4' );
+		$movie_info = kgvid_get_video_dimensions( plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4' );
 
 		if ( $movie_info['worked'] ) {
 
@@ -2266,9 +2224,9 @@ function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 
 			$encode_dimensions = kgvid_set_encode_dimensions( $movie_info, $video_formats[ $options['sample_format'] ] );
 			if ( empty( $options['sample_rotate'] ) ) {
-				$input = plugin_dir_path( dirname( __FILE__ ) ) . 'images/sample-video-h264.mp4';
+				$input = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
 			} else {
-				$input = plugin_dir_path( dirname( __FILE__ ) ) . 'images/sample-video-rotated-h264.mp4';
+				$input = plugin_dir_path( __DIR__ ) . 'images/sample-video-rotated-h264.mp4';
 			}
 			$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/sample-video-h264' . $video_formats[ $options['sample_format'] ]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $options['sample_rotate'] ) );
 			$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/sample-video-h264' . $video_formats[ $options['sample_format'] ]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $options['sample_rotate'] ) );
@@ -2708,7 +2666,6 @@ function kgvid_init_plugin() {
 		if ( $options !== $options_old ) {
 			update_option( 'kgvid_video_embed_options', $options ); }
 	}
-
 }
 add_action( 'init', 'kgvid_init_plugin' );
 
@@ -2777,7 +2734,7 @@ function kgvid_video_embed_options_validate( $input ) {
 				$input['custom_format']['name'] .= ' ' . $input['custom_format']['width'] . ' width';
 				$approx_height                   = round( intval( $input['custom_format']['width'] ) * 0.5625 );
 				if ( $approx_height % 2 != 0 ) {
-					$approx_height--; } //make sure it's an even number
+					--$approx_height; } //make sure it's an even number
 				$input['custom_format']['label'] = $approx_height . 'p';
 			}
 			if ( $input['custom_format']['format'] == 'h264' ) {
@@ -2799,10 +2756,9 @@ function kgvid_video_embed_options_validate( $input ) {
 			$input['custom_format']['default_encode'] = 'on';
 
 		} // if the custom format has been set
-		else {
+		elseif ( $input['sample_format'] == 'custom' ) {
 
-			if ( $input['sample_format'] == 'custom' ) {
-				$input['sample_format'] = 'mobile'; }
+				$input['sample_format'] = 'mobile';
 		}
 
 		if ( array_key_exists( 'auto_thumb_number', $input ) ) {
@@ -2858,7 +2814,6 @@ function kgvid_cron_check_post_parent_handler( $post_id ) {
 	if ( ! empty( $post->post_parent ) && ! empty( $video_thumbnail_id ) && empty( $post_thumbnail_id ) ) {
 		set_post_thumbnail( $post->post_parent, $video_thumbnail_id );
 	}
-
 }
 add_action( 'kgvid_cron_check_post_parent', 'kgvid_cron_check_post_parent_handler' );
 
@@ -2889,7 +2844,6 @@ function kgvid_change_thumbnail_parent( $post_id, $parent_id ) {
 			}
 		}//end loop through thumbnails
 	}//end if thumbnails
-
 }
 
 function kgvid_upload_page_change_thumbnail_parent( $location ) {
@@ -2925,7 +2879,6 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
 	}//end if changed parent
 
 	return $location;
-
 }
 add_filter( 'wp_redirect', 'kgvid_upload_page_change_thumbnail_parent' ); // when attachment parent is manually changed on the Media Library page
 
@@ -2948,7 +2901,6 @@ function kgvid_validate_post_updated( $post_id ) {
 			}
 		}
 	}
-
 }
 add_action( 'edit_attachment', 'kgvid_validate_post_updated' );
 
@@ -3007,16 +2959,15 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			$max[ $dimension ] = $options[ $dimension ];
 			if ( $dimensions_saved ) {
 				$set[ $dimension ] = $kgvid_postmeta[ $dimension ]; } elseif ( $dimension == 'width' && $options['minimum_width'] == 'on' ) {
-				$set[ $dimension ] = $max[ $dimension ]; } else {
-					if ( is_array( $video_meta ) && array_key_exists( $dimension, $video_meta ) && intval( $video_meta[ $dimension ] ) <= intval( $max[ $dimension ] ) ) {
+				$set[ $dimension ] = $max[ $dimension ]; } elseif ( is_array( $video_meta ) && array_key_exists( $dimension, $video_meta ) && intval( $video_meta[ $dimension ] ) <= intval( $max[ $dimension ] ) ) {
 						$set[ $dimension ] = $video_meta[ $dimension ]; } else {
-						$set[ $dimension ] = $max[ $dimension ]; }
-				}
-				if ( ! $dimensions_saved ) {
-					$kgvid_postmeta[ $dimension ] = $set[ $dimension ]; }
+						$set[ $dimension ] = $max[ $dimension ];
+						}
+						if ( ! $dimensions_saved ) {
+							$kgvid_postmeta[ $dimension ] = $set[ $dimension ]; }
 
-				$form_fields[ 'kgflashmediaplayer-max' . $dimension ]['input'] = 'hidden';
-				$form_fields[ 'kgflashmediaplayer-max' . $dimension ]['value'] = esc_attr( $max[ $dimension ] );
+						$form_fields[ 'kgflashmediaplayer-max' . $dimension ]['input'] = 'hidden';
+						$form_fields[ 'kgflashmediaplayer-max' . $dimension ]['value'] = esc_attr( $max[ $dimension ] );
 
 		}
 
@@ -3286,7 +3237,6 @@ function kgvid_add_video_stats_column( $cols ) {
 
 	$cols['video_stats'] = esc_html__( 'Video Stats', 'video-embed-thumbnail-generator' );
 	return $cols;
-
 }
 add_filter( 'manage_media_columns', 'kgvid_add_video_stats_column' );
 
@@ -3305,7 +3255,6 @@ function kgvid_video_stats_column_data( $column_name, $id ) {
 
 		}
 	}
-
 }
 add_action( 'manage_media_custom_column', 'kgvid_video_stats_column_data', 10, 2 );
 
@@ -3332,7 +3281,6 @@ function kgvid_hide_video_children( $wp_query_obj ) {
 		);
 
 	}//end if
-
 }
 add_action( 'pre_get_posts', 'kgvid_hide_video_children' );
 
@@ -3346,7 +3294,6 @@ function kgvid_decode_base64_png( $raw_png, $tmp_posterpath ) {
 	$editor      = wp_get_image_editor( $tmp_posterpath );
 
 	return $editor;
-
 }
 
 function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
@@ -3389,11 +3336,11 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 				} else {
 					$posterfile_noindex = str_replace( '_thumb' . $thumb_index, '_thumb', $posterfile_noextension );
 					$thumb_index        = intval( $thumb_index );
-					$thumb_index++;
+					++$thumb_index;
 				}
 
 				while ( is_file( $uploads['path'] . '/' . $posterfile_noindex . $thumb_index . '.jpg' ) ) {
-					$thumb_index++; // increment the filename until we get one that doesn't exist
+					++$thumb_index; // increment the filename until we get one that doesn't exist
 				}
 
 				$final_posterpath = $uploads['path'] . '/' . $posterfile_noindex . $thumb_index . '.jpg';
@@ -3503,7 +3450,6 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 		'thumb_url' => $thumb_url,
 	);
 	return $arr;
-
 }
 
 
@@ -3619,7 +3565,7 @@ function kgvid_video_attachment_fields_to_save( $post, $attachment ) {
 		kgvid_save_attachment_meta( $post['ID'], $kgvid_postmeta );
 
 	}
-	$flag++;
+	++$flag;
 	return $post;
 }
 add_filter( 'attachment_fields_to_save', 'kgvid_video_attachment_fields_to_save', null, 2 );
@@ -3713,7 +3659,6 @@ function kgvid_modify_media_insert( $html, $attachment_id, $attachment ) {
 	}
 
 	return $html;
-
 }
 add_filter( 'media_send_to_editor', 'kgvid_modify_media_insert', 10, 3 );
 
@@ -3886,12 +3831,10 @@ function kgvid_delete_video_attachment( $video_id ) {
 					if ( $options['delete_children'] == 'all' ) {
 						wp_delete_attachment( $post->ID, true ); } elseif ( strpos( $post->post_mime_type, 'video' ) !== false ) {
 						wp_delete_attachment( $post->ID, true ); } //only delete videos
-				} else {
-					if ( strpos( $post->post_mime_type, 'video' ) !== false ) {
+				} elseif ( strpos( $post->post_mime_type, 'video' ) !== false ) {
 						$format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
-						if ( $format ) {
-							$formats[ $format ] = $post->ID; }
-					}
+					if ( $format ) {
+						$formats[ $format ] = $post->ID; }
 				}
 			}//end loop
 			if ( $options['delete_children'] == 'none' ) { // find a child to be the new master video
@@ -3941,7 +3884,6 @@ function kgvid_delete_video_attachment( $video_id ) {
 
 	$transient_name = kgvid_set_transient_name( wp_get_attachment_url( $video_id ) );
 	delete_transient( 'kgvid_' . $transient_name );
-
 }
 add_action( 'delete_attachment', 'kgvid_delete_video_attachment' );
 
@@ -4018,7 +3960,6 @@ function kgvid_add_contextual_help_tab() {
 <li><code>gallery_title="true/false"</code> ' . esc_html__( 'display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator' ) . '</li></ul>',
 		)
 	);
-
 }
 add_action( 'admin_head-post.php', 'kgvid_add_contextual_help_tab' );
 add_action( 'admin_head-post-new.php', 'kgvid_add_contextual_help_tab' );
@@ -4034,7 +3975,6 @@ function kgvid_save_post( $post_id ) {
 		$response = wp_remote_get( get_permalink( $post_id ), array( 'blocking' => false ) );
 
 	}
-
 }
 add_action( 'save_post', 'kgvid_save_post' );
 
@@ -4068,5 +4008,4 @@ function kgvid_delete_transients() {
 
 		}
 	}
-
 }

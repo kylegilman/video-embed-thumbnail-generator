@@ -49,11 +49,10 @@ function kgvid_videopack_fs_loaded() {
 		videopack_fs()->add_action( 'after_uninstall', 'kgvid_uninstall_plugin' ); // add uninstall logic
 
 	}
-
 }
 add_action( 'videopack_fs_loaded', 'kgvid_videopack_fs_loaded' );
 
-if ( file_exists( dirname( __FILE__, 3 ) . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
+if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
 	// Create a helper function for easy SDK access.
 	function videopack_fs() {
 		global $videopack_fs;
@@ -65,7 +64,7 @@ if ( file_exists( dirname( __FILE__, 3 ) . '/vendor/freemius/wordpress-sdk/start
 			}
 
 			// Include Freemius SDK.
-			require_once dirname( __FILE__, 3 ) . '/vendor/freemius/wordpress-sdk/start.php';
+			require_once dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.php';
 
 			$init_options = array(
 				'id'             => '7761',

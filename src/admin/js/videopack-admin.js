@@ -808,7 +808,7 @@ function kgvid_saveall_thumbs(postID) {
 				setTimeout(
 					function(time_id, key) {
 						return function() {
-							  kgvid_save_canvas_thumb( postID, time_id, total, key );
+								kgvid_save_canvas_thumb( postID, time_id, total, key );
 						}
 					}(time_id,
 					key),
