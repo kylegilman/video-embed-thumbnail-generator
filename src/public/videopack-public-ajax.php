@@ -19,7 +19,6 @@ function kgvid_switch_gallery_page() {
 		$last_video_id = kgvid_sanitize_text_field( $_POST['last_video_id'] );
 		$code          = kgvid_gallery_page( $page_number, $query_atts, $last_video_id );
 		wp_send_json( $code );
-
 }
 add_action( 'wp_ajax_kgvid_switch_gallery_page', 'kgvid_switch_gallery_page' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_switch_gallery_page', 'kgvid_switch_gallery_page' ); // ajax for not logged in users
@@ -53,7 +52,6 @@ function kgvid_count_play() {
 			echo ' '; }
 
 		die(); // stop executing script
-
 }
 add_action( 'wp_ajax_kgvid_count_play', 'kgvid_count_play' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_count_play', 'kgvid_count_play' ); // ajax for not logged in users

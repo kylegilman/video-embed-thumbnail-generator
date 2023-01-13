@@ -63,13 +63,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
 
-	require_once dirname( __FILE__ ) . '/vendor/autoload.php';
-	require_once dirname( __FILE__ ) . '/src/admin/videopack-freemius.php';
-	require_once dirname( __FILE__ ) . '/src/admin/videopack-admin.php';
-	require_once dirname( __FILE__ ) . '/src/admin/videopack-ffmpeg.php';
-	require_once dirname( __FILE__ ) . '/src/admin/videopack-admin-ajax.php';
-	require_once dirname( __FILE__ ) . '/src/public/videopack-public.php';
-	require_once dirname( __FILE__ ) . '/src/public/videopack-public-ajax.php';
+	require_once __DIR__ . '/vendor/autoload.php';
+	require_once __DIR__ . '/src/admin/videopack-freemius.php';
+	require_once __DIR__ . '/src/admin/videopack-admin.php';
+	require_once __DIR__ . '/src/admin/videopack-ffmpeg.php';
+	require_once __DIR__ . '/src/admin/videopack-admin-ajax.php';
+	require_once __DIR__ . '/src/public/videopack-public.php';
+	require_once __DIR__ . '/src/public/videopack-public-ajax.php';
 }
 
 function kgvid_video_embed_activation_hook( $network_wide ) {
@@ -93,13 +93,12 @@ function kgvid_video_embed_activation_hook( $network_wide ) {
 
 		}// if network options haven't been set already
 
-	} else { // Running on a single blog
+	} else { // Running on a single blog.
 
 		$options = kgvid_register_default_options_fn();
 		kgvid_set_capabilities( $options['capabilities'] );
 
 	}
-
 }
 register_activation_hook( __FILE__, 'kgvid_video_embed_activation_hook' );
 
@@ -118,10 +117,9 @@ function kgvid_deactivate_plugin( $network_wide ) {
 				kgvid_cleanup_plugin();
 				restore_current_blog();
 
-			} //end loop through sites.
-		} //end if there are sites.
-	} //end if network activated.
-
+			} // end loop through sites.
+		} // end if there are sites.
+	} // end if network activated.
 	else { // if not network activated.
 		kgvid_cleanup_plugin();
 	}
@@ -132,10 +130,9 @@ function kgvid_register_uninstall_hook() {
 
 	if ( ! function_exists( 'videopack_fs' ) ) {
 
-		register_uninstall_hook( __FILE__, 'kgvid_uninstall_plugin' ); // register WP uninstall instead of Freemius uninstall hook
+		register_uninstall_hook( __FILE__, 'kgvid_uninstall_plugin' ); // register WP uninstall instead of Freemius uninstall hook.
 
 	}
-
 }
 add_action( 'admin_init', 'kgvid_register_uninstall_hook' );
 
@@ -163,5 +160,4 @@ function kgvid_uninstall_plugin() {
 			}
 		}
 	}
-
 }
