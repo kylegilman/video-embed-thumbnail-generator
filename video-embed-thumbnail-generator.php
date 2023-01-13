@@ -1120,7 +1120,7 @@ function kgvid_get_videojs_locale() {
 
 }
 
-function kgvid_ProcessThumb ( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array() ) {
+function kgvid_ProcessThumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array() ) {
 
 	$options = kgvid_get_options();
 	if ( empty($options) ) {
@@ -1171,9 +1171,14 @@ function kgvid_ProcessThumb ( $input, $output, $ffmpeg_path = false, $seek = '0'
 	$commandline = array_merge($before_thumb_options, $thumb_options);
 
 	$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($commandline);
-	$process->run();
 
-	return($process);
+	try {
+		$process->run();
+		return $process->getErrorOutput();
+	}
+	catch (\Exception $e) {
+		return $e->getMessage();
+	}
 
 }
 
@@ -1539,13 +1544,13 @@ function kgvid_check_ffmpeg_exists($options, $save) {
 			$options['app_path'] = $test_path;
 		}
 
-		$output = explode("\n", $ffmpeg_test->getErrorOutput());
+		$output = explode("\n", $ffmpeg_test);
 
 	}
 
 	if ( $save ) {
 
-		if ( $ffmpeg_exists == true ) { $options['ffmpeg_exists'] = "on"; }
+		if ( $ffmpeg_exists === true ) { $options['ffmpeg_exists'] = "on"; }
 		else {
 			$options['ffmpeg_exists'] = "notinstalled";
 			$options['browser_thumbnails'] = "on"; //if FFMPEG isn't around, this should be enabled
@@ -1882,8 +1887,13 @@ function kgvid_get_video_dimensions($video = false) {
 		)
 	);
 
-	$get_info->run();
-	$output = $get_info->getErrorOutput();
+	try {
+		$get_info->run();
+		$output = $get_info->getErrorOutput();
+	}
+	catch (\Exception $e) {
+		$output = $e->getMessage();
+	}
 
 	$regex = "/([0-9]{2,4})x([0-9]{2,4})/";
 
@@ -1928,8 +1938,13 @@ function kgvid_get_video_dimensions($video = false) {
 			)
 		);
 
-		$get_codecs->run();
-		$codec_output = $get_codecs->getOutput();
+		try {
+			$get_codecs->run();
+			$codec_output = $get_codecs->getOutput();
+		}
+		catch (\Exception $e) {
+			$codec_output = $e->getMessage();
+		}
 
 		$video_lib_array = array('libvorbis');
 		$video_formats = kgvid_video_formats();
@@ -1966,6 +1981,7 @@ function kgvid_get_video_dimensions($video = false) {
 	else {
 
 		$movie_info['worked'] = false;
+		$movie_info['output'] = $output;
 
 	}
 
@@ -9085,9 +9101,15 @@ function kgvid_test_ffmpeg() {
 
 		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($options['encode_array']);
 
-		$process->run();
+		try {
+			$process->run();
+			$output = $process->getErrorOutput();
+		}
+		catch (\Exception $e) {
+			$output = 'Error: ' . $e->getMessage();
+		}
 
-		$arr['output'] = esc_textarea($process->getErrorOutput());
+		$arr['output'] = esc_textarea($output);
 
 		if ( file_exists($uploads['path']."/sample-video-h264".$suffix) ) {
 
@@ -9781,6 +9803,28 @@ function kgvid_cleanup_queue_handler() {
 }
 add_action('kgvid_cleanup_queue', 'kgvid_cleanup_queue_handler');
 
+function kgvid_execute_moov_fixer($moov_fixer) {
+
+	try {
+		$moov_fixer->run();
+		$moov_error = $moov_fixer->getErrorOutput();
+	}
+	catch (\Exception $e) {
+		$moov_error = $e->getMessage();
+	}
+
+	$output = "\n".$moov_fixer->getCommandLine()."\n";
+
+	if ( !empty($moov_error) ) {
+		$output .= "\nError: " . $moov_error;
+	}
+
+	$output .= $moov_fixer->getOutput();
+
+	return $output;
+
+}
+
 function kgvid_fix_moov_atom($filepath) {
 
 	$options = kgvid_get_options();
@@ -9796,7 +9840,6 @@ function kgvid_fix_moov_atom($filepath) {
 
 			$faststart_tmp_file = str_replace('.mp4', '-faststart.mp4', $filepath);
 
-
 			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 				array(
 					$options['app_path']."/".$options['moov'],
@@ -9805,15 +9848,7 @@ function kgvid_fix_moov_atom($filepath) {
 				)
 			);
 
-			$moov_fixer->run();
-
-			$output .= "\n".$moov_fixer->getCommandLine()."\n";
-
-			if ( !empty($moov_fixer->getErrorOutput()) ) {
-				$output .= "\nError: " . $moov_fixer->getErrorOutput();
-			}
-
-			$output .= $moov_fixer->getOutput();
+			$output .= kgvid_execute_moov_fixer($moov_fixer);
 
 			if ( file_exists($faststart_tmp_file) ) {
 				unlink($filepath);
@@ -9833,15 +9868,7 @@ function kgvid_fix_moov_atom($filepath) {
 				)
 			);
 
-			$moov_fixer->run();
-
-			$output .= "\n".$moov_fixer->getCommandLine()."\n";
-
-			if ( !empty($moov_fixer->getErrorOutput()) ) {
-				$output .= "\nError: " . $moov_fixer->getErrorOutput();
-			}
-
-			$output .= $moov_fixer->getOutput();
+			$output .= kgvid_execute_moov_fixer($moov_fixer);
 
 		}//if MP4Box is selected
 
@@ -9882,11 +9909,19 @@ function kgvid_cancel_encode($video_key, $format) {
 				);
 
 				$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
-				$check_pid->run();
-				$process_info = explode(' ', trim($check_pid->getOutput()));
+
+				try {
+					$check_pid->run();
+					$output = $check_pid->getOutput();
+				}
+				catch (\Exception $e) {
+					$output = $e->getMessage();
+				}
+
+				$process_info = explode(' ', trim($output));
 
 				if ( intval($process_info[0]) > 0
-					&& strpos($check_pid->getOutput(), $video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) !== false
+					&& strpos($output, $video_encode_queue[$video_key]['encode_formats'][$format]['filepath']) !== false
 				) {
 
 					$canceled = posix_kill($process_info[0], 15);
@@ -9903,19 +9938,33 @@ function kgvid_cancel_encode($video_key, $format) {
 				);
 
 				$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process($check_pid_command);
-				$check_pid->run();
+
+				try {
+					$check_pid->run();
+					$output = $check_pid->getOutput();
+				}
+				catch (\Exception $e) {
+					$output = $e->getMessage();
+				}
 
 				if ( intval($kgvid_pid) > 0
-					&& strpos($check_pid->getOutput(), $options['app_path'].'/'.$options['video_app']) !== false
-					&& strpos($check_pid->getOutput(), $logfile) !== false
+					&& strpos($output, $options['app_path'].'/'.$options['video_app']) !== false
+					&& strpos($output, $logfile) !== false
 				) {
 
 					$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
 
 					$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline($commandline);
-					$kill_process->run(null, ['KGVID_PID' => $kgvid_pid]);
 
-					if ( strpos($kill_process->getOutput(), 'SUCCESS') !== false ) {
+					try {
+						$kill_process->run(null, ['KGVID_PID' => $kgvid_pid]);
+						$output = $kill_process->getOutput();
+					}
+					catch (\Exception $e) {
+						$output = $e->getMessage();
+					}
+
+					if ( strpos($output, 'SUCCESS') !== false ) {
 
 						$canceled = true;
 
