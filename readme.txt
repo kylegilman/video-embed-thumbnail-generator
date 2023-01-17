@@ -108,7 +108,9 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 = 4.8.3 - January XX, 2023 =
 * Added try/catch when running FFMPEG for better error reporting.
 * Changed single-click download link to use 'download' attribute instead of PHP-based streaming from the server.
+* Restored "Always output stereo audio" functionality.
 * Broke up plugin functions into separate files.
+* More escaping and sanitizing for security.
 
 = 4.8.2 - January 12, 2023 =
 * Fixed bug that disabled the WordPress Default player.
