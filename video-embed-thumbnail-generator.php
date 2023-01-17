@@ -119,8 +119,7 @@ function kgvid_deactivate_plugin( $network_wide ) {
 
 			} // end loop through sites.
 		} // end if there are sites.
-	} // end if network activated.
-	else { // if not network activated.
+	} else { // if not network activated.
 		kgvid_cleanup_plugin();
 	}
 }
