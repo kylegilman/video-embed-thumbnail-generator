@@ -53,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( current_user_can( 'encode_videos' ) ) { ?>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="html5"><?php esc_html_e( 'Additional Formats', 'video-embed-thumbnail-generator' ); ?></span></label></th>
-				<td><?php echo $checkboxes['checkboxes']; ?></td>
+				<td><?php echo wp_kses( $checkboxes['checkboxes'], kgvid_allowed_html( 'admin' ) ); ?></td>
 			</tr>
 			<?php } ?>
 			<tr>
