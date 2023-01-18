@@ -583,7 +583,7 @@ function kgvid_ajax_clear_completed_queue() {
 
 	}
 
-	echo ( $table );
+	echo wp_kses( $table, kgvid_allowed_html( 'admin' ) );
 	die();
 }
 add_action( 'wp_ajax_kgvid_clear_completed_queue', 'kgvid_ajax_clear_completed_queue' );
@@ -612,7 +612,7 @@ function kgvid_ajax_clear_queue_entry() {
 
 	}
 
-	echo ( $table );
+	echo wp_kses( $table, kgvid_allowed_html( 'admin' ) );
 	die();
 }
 add_action( 'wp_ajax_kgvid_clear_queue_entry', 'kgvid_ajax_clear_queue_entry' );
