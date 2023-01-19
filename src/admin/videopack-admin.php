@@ -2201,7 +2201,7 @@ function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 	$video_formats = kgvid_video_formats( false, false );
 	$encode_array  = array();
 
-	if ( $options['ffmpeg_exists'] == 'on' ) {
+	if ( $options['ffmpeg_exists'] === 'on' ) {
 
 		if ( ! isset( $video_formats[ $options['sample_format'] ] ) ) {
 			$options['sample_format'] = 'mobile';
@@ -2287,9 +2287,9 @@ function kgvid_init_plugin() {
 			}
 			restore_current_blog();
 
-			if ( ! isset( $network_options['ffmpeg_exists'] ) || $network_options['ffmpeg_exists'] == 'notchecked' ) {
+			if ( ! isset( $network_options['ffmpeg_exists'] ) || $network_options['ffmpeg_exists'] === 'notchecked' ) {
 				$ffmpeg_info = kgvid_check_ffmpeg_exists( $network_options, false );
-				if ( $ffmpeg_info['ffmpeg_exists'] == true ) {
+				if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
 					$network_options['ffmpeg_exists'] = 'on';
 				}
 				$network_options['app_path'] = $ffmpeg_info['app_path'];
@@ -2715,7 +2715,7 @@ function kgvid_video_embed_options_validate( $input ) {
 		$input['ffmpeg_exists'] = $options['ffmpeg_exists'];
 	}
 
-	if ( $input['ffmpeg_exists'] == 'notinstalled' ) {
+	if ( $input['ffmpeg_exists'] === 'notinstalled' ) {
 		$input['browser_thumbnails'] = 'on'; // in case a user had FFMPEG installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
 		$input['auto_encode']        = false;
 		$input['auto_encode_gif']    = false;
@@ -2787,7 +2787,6 @@ function kgvid_video_embed_options_validate( $input ) {
 
 	} // if the custom format has been set
 	elseif ( $input['sample_format'] == 'custom' ) {
-
 			$input['sample_format'] = 'mobile';
 	}
 
@@ -2967,7 +2966,9 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta( $post->ID );
 		$created_time   = time() - get_post_time( 'U', true, $post->ID );
 
-		if ( $user_ID == $post->post_author || current_user_can( 'edit_others_posts' ) ) {
+		if ( $user_ID === $post->post_author
+			|| current_user_can( 'edit_others_posts' )
+		) {
 			$readonly          = '';
 			$security_disabled = '';
 		} else {
@@ -3037,7 +3038,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			$form_fields['views']['label'] = esc_html__( 'Video Stats', 'video-embed-thumbnail-generator' );
 			$form_fields['views']['input'] = 'html';
 			/* translators: %1$s%2$d%3$s is '<strong>', a number, '</strong>' */
-			$form_fields['views']['html']  = sprintf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval( $kgvid_postmeta['starts'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( intval( $kgvid_postmeta['starts'] ) ), '</strong>' ) . '<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats(' . esc_attr( $post->ID ) . ')" id="show-video-stats-' . esc_attr( $post->ID ) . '"><br /><a class="kgvid-show-video">(' . esc_html__( 'More...', 'video-embed-thumbnail-generator' ) . ')</a></span><div style="display:none;" id="video-' . esc_attr( $post->ID ) . '-stats">' .
+			$form_fields['views']['html'] = sprintf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval( $kgvid_postmeta['starts'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( intval( $kgvid_postmeta['starts'] ) ), '</strong>' ) . '<span class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_video_stats(' . esc_attr( $post->ID ) . ')" id="show-video-stats-' . esc_attr( $post->ID ) . '"><br /><a class="kgvid-show-video">(' . esc_html__( 'More...', 'video-embed-thumbnail-generator' ) . ')</a></span><div style="display:none;" id="video-' . esc_attr( $post->ID ) . '-stats">' .
 			esc_html( intval( $kgvid_postmeta['play_25'] ) ) . ' ' . esc_html__( '25%', 'video-embed-thumbnail-generator' ) .
 			'<br /><strong>' . esc_html( intval( $kgvid_postmeta['play_50'] ) ) . '</strong> ' . esc_html__( '50%', 'video-embed-thumbnail-generator' ) .
 			'<br /><strong>' . esc_html( intval( $kgvid_postmeta['play_75'] ) ) . '</strong> ' . esc_html__( '75%', 'video-embed-thumbnail-generator' ) .
@@ -3065,7 +3066,9 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			$generate_content          = '';
 			$thumbnail_timecode        = '';
 
-			if ( ! isset( $options['ffmpeg_exists'] ) || $options['ffmpeg_exists'] == 'notchecked' ) {
+			if ( ! isset( $options['ffmpeg_exists'] )
+				|| $options['ffmpeg_exists'] === 'notchecked'
+			) {
 				kgvid_check_ffmpeg_exists( $options, true );
 			}
 
@@ -3766,14 +3769,14 @@ function kgvid_media_embedurl_process() {
 	$options = kgvid_get_options();
 	enqueue_kgvid_script();
 
-	if ( ! isset( $options['ffmpeg_exists'] ) || $options['ffmpeg_exists'] == 'notchecked' ) {
+	if ( ! isset( $options['ffmpeg_exists'] ) || $options['ffmpeg_exists'] === 'notchecked' ) {
 		kgvid_check_ffmpeg_exists( $options, true );
 		$options = kgvid_get_options();
 	}
 
-	$checkboxes    = kgvid_generate_encode_checkboxes( '', 'singleurl', 'attachment' );
-	$maxheight = $options['height'];
-	$maxwidth  = $options['width'];
+	$checkboxes = kgvid_generate_encode_checkboxes( '', 'singleurl', 'attachment' );
+	$maxheight  = $options['height'];
+	$maxwidth   = $options['width'];
 
 	media_upload_header();
 	include __DIR__ . '/partials/embed-url-page.php';
