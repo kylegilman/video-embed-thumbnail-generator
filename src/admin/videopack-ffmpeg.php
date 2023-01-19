@@ -3257,7 +3257,7 @@ function kgvid_replace_video( $video_key, $format ) {
 					foreach ( $gif_metadata['sizes'] as $size => $info ) {
 						$size_filename = $uploads['path'] . '/' . $info['file'];
 						if ( file_exists( $size_filename ) ) {
-							unlink( $size_filename );
+							wp_delete_file( $size_filename );
 						}
 					}
 				}
@@ -3365,7 +3365,7 @@ function kgvid_clear_completed_queue( $type, $scope = 'site' ) {
 						) {
 							kgvid_cancel_encode( $video_key, $format );
 							if ( array_key_exists( 'filepath', $value ) && file_exists( $value['filepath'] ) ) {
-								unlink( $value['filepath'] );
+								wp_delete_file( $value['filepath'] );
 							}
 						} else {
 							$keep[ $video_key ] = true;
@@ -3468,7 +3468,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 			$output .= kgvid_execute_moov_fixer( $moov_fixer );
 
 			if ( file_exists( $faststart_tmp_file ) ) {
-				unlink( $filepath );
+				wp_delete_file( $filepath );
 				rename( $faststart_tmp_file, $filepath );
 			}
 		}//if qt-faststart is selected
@@ -3584,7 +3584,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 
 			if ( $canceled ) {
 
-				unlink( $video_encode_queue[ $video_key ]['encode_formats'][ $format ]['filepath'] );
+				wp_delete_file( $video_encode_queue[ $video_key ]['encode_formats'][ $format ]['filepath'] );
 				$video_encode_queue[ $video_key ]['encode_formats'][ $format ]['status']   = 'canceled';
 				$video_encode_queue[ $video_key ]['encode_formats'][ $format ]['lastline'] = esc_html__( 'Encoding was canceled.', 'video-embed-thumbnail-generator' );
 				kgvid_save_encode_queue( $video_encode_queue );
