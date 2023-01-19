@@ -685,7 +685,7 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 				$play_translate    = 30;
 			}
 
-			$play_button_html = '<div class="' . esc_attr( $options['js_skin'] ) . '" ><button class="' . esc_attr( $play_button_class ) . '" style="-webkit-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -o-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -ms-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px);"></button></div>';
+			$play_button_html = '<div class="' . esc_attr( $options['js_skin'] ) . '" ><button type="button" class="' . esc_attr( $play_button_class ) . '" style="-webkit-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -o-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -ms-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px);"></button></div>';
 
 			$dimensions = kgvid_set_video_dimensions( $attachment->ID, true );
 

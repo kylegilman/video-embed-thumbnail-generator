@@ -1130,12 +1130,12 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 					if ( $encodevideo_info[ $format ]['writable']
 					&& current_user_can( 'encode_videos' )
 					&& $user_delete_capability == true
-					&& $format != 'fullres' ) {
-						if ( $was_picked != false ) {
-							$meta .= '<a id="unpick-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_clear_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');" href="javascript:void(0)">' . __( 'Clear Format', 'video-embed-thumbnail-generator' ) . '</a>';
-						} else {
-							$meta .= '<a id="delete-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_delete_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');" href="javascript:void(0)">' . esc_html__( 'Delete Permanently', 'video-embed-thumbnail-generator' ) . '</a>';
-						}
+					&& $format != 'fullres'
+				) {
+					if ( $was_picked != false ) {
+						$meta .= '<button type="button" id="unpick-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_clear_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . __( 'Clear Format', 'video-embed-thumbnail-generator' ) . '</button>';
+					} else {
+						$meta .= '<button type="button" id="delete-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_delete_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . esc_html__( 'Delete Permanently', 'video-embed-thumbnail-generator' ) . '</button>';
 					}
 				}
 				$disabled = ' disabled title="' . esc_attr__( 'Format already exists', 'video-embed-thumbnail-generator' ) . '"';
@@ -1671,11 +1671,11 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 				// Actions
 				$html .= "\t\t\t\t\t<td>";
-				$html .= "<a id='clear-" . esc_attr( $blog_id_text . $video_entry['attachmentID'] ) . "' class='submitdelete' href='javascript:void(0)' onclick='kgvid_encode_queue(\"delete\", " . esc_attr( $order ) . ', ' . esc_attr( $video_entry['attachmentID'] ) . ', "' . esc_attr( $blog_id ) . "\")'";
+				$html .= "<button type='button' id='clear-" . esc_attr( $blog_id_text . $video_entry['attachmentID'] ) . "' class='submitdelete kgvid-queue-action' onclick='kgvid_encode_queue(\"delete\", " . esc_attr( $order ) . ', ' . esc_attr( $video_entry['attachmentID'] ) . ', "' . esc_attr( $blog_id ) . "\")'";
 				if ( $currently_encoding[ $order ] ) {
 					$html .= " style='display:none;'";
 				}
-				$html .= '>Clear</a>';
+				$html .= '>Clear</button>';
 
 			} //end if current user can see this stuff
 			elseif ( $same_blog == false ) {
@@ -2944,7 +2944,7 @@ function kgvid_encode_progress() {
 								$embed_display = '<strong data-status="encoding">' . esc_html__( 'Encoding', 'video-embed-thumbnail-generator' ) . '</strong><br /><div class="kgvid_meter"><div class="kgvid_meter_bar" data-encoding_time="' . esc_attr( $encoding_time_array ) . '" style="width:' . esc_attr( $percent_done ) . '%;"><div class="kgvid_meter_text">' . esc_html( $percent_done_text ) . '</div></div></div>';
 
 								if ( current_user_can( 'encode_videos' ) && $format_info['PID'] ) {
-									$embed_display .= '<a href="javascript:void(0);" class="kgvid_cancel_button" id="attachments-' . esc_attr( $video_entry['attachmentID'] ) . '-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\'' . esc_attr( $video_entry['attachmentID'] ) . '\', \'' . esc_attr( $video_key ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . esc_html__( 'Cancel', 'video-embed-thumbnail-generator' ) . '</a>';
+									$embed_display .= '<button class="kgvid_cancel_button" type="button" id="attachments-' . esc_attr( $video_entry['attachmentID'] ) . '-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\'' . esc_attr( $video_entry['attachmentID'] ) . '\', \'' . esc_attr( $video_key ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . esc_html__( 'Cancel', 'video-embed-thumbnail-generator' ) . '</button>';
 								}
 
 								$embed_display .= '<div class="kgvid_encoding_small_text"><small>' . esc_html__( 'Elapsed:', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( date( 'H:i:s', $time_elapsed ) ) . ' ' . esc_html__( 'Remaining:', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( date( 'H:i:s', $time_remaining ) ) . ' ' . esc_html_x( 'FPS:', 'Frames per second', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( $fps_match ) . '</small></div>';
