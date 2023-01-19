@@ -217,7 +217,9 @@ function kgvid_ajax_generate_encode_checkboxes() {
 		kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
 	}
 
-	$checkboxes = kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id );
+	$checkboxes               = kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id );
+	$checkboxes['checkboxes'] = wp_kses( $checkboxes['checkboxes'], kgvid_allowed_html( 'admin' ) );
+	$checkboxes['encoding']   = esc_html( $checkboxes['encoding'] );
 
 	wp_send_json( $checkboxes );
 }

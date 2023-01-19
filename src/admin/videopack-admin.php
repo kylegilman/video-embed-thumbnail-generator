@@ -1731,7 +1731,7 @@ function kgvid_user_roles_callback( $page_scope = 'site' ) {
 		$capabilities_checkboxes[] = '</div>';
 
 	}//end foreach
-	echo wp_kses( implode( '', $capabilities_checkboxes ) . "\n\t", kgvid_allowed_html('admin') );
+	echo wp_kses( implode( '', $capabilities_checkboxes ) . "\n\t", kgvid_allowed_html( 'admin' ) );
 }
 
 function kgvid_thumb_parent_callback() {
@@ -1891,7 +1891,7 @@ function kgvid_automatic_callback() {
 	/* translators: %s is a video format */
 	echo '<input ' . checked( $options['auto_encode_gif'], 'on', false ) . " id='auto_encode_gif' name='kgvid_video_embed_options[auto_encode_gif]' type='checkbox' /> <label for='auto_encode_gif'>" . sprintf( esc_html__( 'Convert animated GIFs to %s.', 'video-embed-thumbnail-generator' ), '<span class="kgvid_replace_format">' . esc_html( strtoupper( $video_formats['fullres']['type'] ) ) . '</span>' ) . '</label><br />';
 	$auto_thumb_label = kgvid_generate_auto_thumb_label();
-	echo '<input ' . checked( $options['auto_thumb'], 'on', false ) . " id='auto_thumb' name='kgvid_video_embed_options[auto_thumb]' type='checkbox' /> <label id='auto_thumb_label' for='auto_thumb'>" . wp_kses_post( $auto_thumb_label ) . ' </label><br>';
+	echo '<input ' . checked( $options['auto_thumb'], 'on', false ) . " id='auto_thumb' name='kgvid_video_embed_options[auto_thumb]' type='checkbox' /> <label id='auto_thumb_label' for='auto_thumb'>" . wp_kses( $auto_thumb_label, kgvid_allowed_html( 'admin' ) ) . ' </label><br>';
 	echo "</div>\n\t";
 }
 
@@ -2252,7 +2252,7 @@ function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 	}
 	$sample_format_select .= '</select>';
 	/* translators: %1$s is the name of the video encoding application (usually FFMPEG). */
-	echo "<div id='ffmpeg_sample_div'" . esc_attr( $display_div ) . '><p>' . sprintf( esc_html__( 'Sample %2$s encode command', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>', wp_kses_post( $sample_format_select ) ) . '<br>';
+	echo "<div id='ffmpeg_sample_div'" . esc_attr( $display_div ) . '><p>' . sprintf( esc_html__( 'Sample %2$s encode command', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>', wp_kses( $sample_format_select, kgvid_allowed_html( 'admin' ) ) ) . '<br>';
 	echo '<input ' . checked( $options['sample_rotate'], 90, false ) . " id='sample_rotate' name='kgvid_video_embed_options[sample_rotate]' class='affects_ffmpeg affects_ffmpeg_thumb_watermark' value='90' type='checkbox' /> <label for='sample_rotate'>" . esc_html__( 'Test video rotation.', 'video-embed-thumbnail-generator' ) . '</label>';
 	/* translators: %1$s\'s is the name of the video encoding application (usually FFMPEG's). */
 	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'Tests %1$s\'s ability to rotate vertical videos shot on mobile devices.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) ) );

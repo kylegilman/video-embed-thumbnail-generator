@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php echo wp_kses_post( kgvid_generate_queue_table_header() ); ?>
 		</tfoot>
 		<tbody class="rows">
-			<?php echo kgvid_generate_queue_table(); ?>
+			<?php echo wp_kses( kgvid_generate_queue_table(), kgvid_allowed_html( 'admin' ) ); ?>
 		</tbody>
 	</table>
 	<p>
