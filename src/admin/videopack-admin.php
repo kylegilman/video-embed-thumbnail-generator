@@ -1422,19 +1422,19 @@ function kgvid_plugin_settings_section_callback() { }
 
 function kgvid_poster_callback() {
 	$options = kgvid_get_options();
-	echo "<input class='regular-text affects_player' id='poster' name='kgvid_video_embed_options[poster]' type='text' value='" . esc_attr( $options['poster'] ) . "' /> <span id='pick-thumbnail' class='button' data-choose='" . esc_html__( 'Choose a Thumbnail', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as video thumbnail', 'video-embed-thumbnail-generator' ) . "' data-change='poster' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</span>\n\t";
+	echo "<input class='regular-text affects_player' id='poster' name='kgvid_video_embed_options[poster]' type='text' value='" . esc_attr( $options['poster'] ) . "' /> <button id='pick-thumbnail' class='button' type='button' data-choose='" . esc_html__( 'Choose a Thumbnail', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as video thumbnail', 'video-embed-thumbnail-generator' ) . "' data-change='poster' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button>\n\t";
 }
 
 function kgvid_endofvideooverlay_callback() {
 	$options = kgvid_get_options();
 	echo "<input class='affects_player' " . checked( $options['endofvideooverlaysame'], 'on', false ) . " id='endofvideooverlaysame' name='kgvid_video_embed_options[endofvideooverlaysame]' type='checkbox' /> <label for='endofvideooverlaysame'>" . esc_html__( 'Display thumbnail image again when video ends.', 'video-embed-thumbnail-generator' ) . '</label><br />';
-	echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' " . disabled( $options['endofvideooverlaysame'], 'on', false ) . " type='text' value='" . esc_attr( $options['endofvideooverlay'] ) . "' /> <span id='pick-endofvideooverlay' class='button' data-choose='" . esc_attr__( 'Choose End of Video Image', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as end of video image', 'video-embed-thumbnail-generator' ) . "' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span><br />';
+	echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' " . disabled( $options['endofvideooverlaysame'], 'on', false ) . " type='text' value='" . esc_attr( $options['endofvideooverlay'] ) . "' /> <button id='pick-endofvideooverlay' class='button' type='button' data-choose='" . esc_attr__( 'Choose End of Video Image', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as end of video image', 'video-embed-thumbnail-generator' ) . "' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button><br />';
 	echo esc_html__( 'Display alternate image when video ends.', 'video-embed-thumbnail-generator' ) . "<small>\n\t";
 }
 
 function kgvid_watermark_callback() {
 	$options = kgvid_get_options();
-	echo esc_html__( 'Image:', 'video-embed-thumbnail-generator' ) . " <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='" . esc_attr( $options['watermark'] ) . "' /> <span id='pick-watermark' class='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as watermark', 'video-embed-thumbnail-generator' ) . "' data-change='watermark' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span><br />';
+	echo esc_html__( 'Image:', 'video-embed-thumbnail-generator' ) . " <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='" . esc_attr( $options['watermark'] ) . "' /> <button id='pick-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as watermark', 'video-embed-thumbnail-generator' ) . "' data-change='watermark' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button><br />';
 	echo esc_html__( 'Link to:', 'video-embed-thumbnail-generator' ) . ' ';
 	$items = array(
 		__( 'Home page', 'video-embed-thumbnail-generator' ) => 'home',
@@ -1641,7 +1641,7 @@ function kgvid_performance_callback() {
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'The plugin uses an uncached query to convert URLs to WordPress post IDs which can signficantly slow down sites with large numbers of videos. Caching the results of the query as a transient in the database can speed up loading time significantly, but will also add a lot of entries to your database. All transients are deleted on plugin deactivation.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 
-	echo "<p><a id='clear_transient_cache' class='button' href='javascript:void(0);' onclick='kgvid_clear_transient_cache();'>" . esc_html__( 'Clear URL cache', 'video-embed-thumbnail-generator' ) . '</a>';
+	echo "<p><button id='clear_transient_cache' class='button' type='button' onclick='kgvid_clear_transient_cache();'>" . esc_html__( 'Clear URL cache', 'video-embed-thumbnail-generator' ) . '</button>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "Recommended if your site's URL has changed.", 'video-embed-thumbnail-generator' ) ) );
 	echo '</p>';
 
@@ -1685,7 +1685,7 @@ function kgvid_featured_callback() {
 	$options = kgvid_get_options();
 	echo '<input ' . checked( $options['featured'], 'on', false ) . " id='featured' name='kgvid_video_embed_options[featured]' type='checkbox' /> <label for='featured'>" . esc_html__( 'Set generated video thumbnails as featured images.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If your theme uses the featured image meta tag, this will automatically set a video\'s parent post\'s featured image to the most recently saved thumbnail image.', 'video-embed-thumbnail-generator' ) ) );
-	echo "<a class='button' href='javascript:void(0);' onclick='kgvid_set_all_featured();'>" . esc_html_x( 'Set all as featured', 'implied "Set all thumbnails as featured"', 'video-embed-thumbnail-generator' ) . '</a>';
+	echo "<button class='button' type='button' onclick='kgvid_set_all_featured();'>" . esc_html_x( 'Set all as featured', 'implied "Set all thumbnails as featured"', 'video-embed-thumbnail-generator' ) . '</button>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If you\'ve generated thumbnails before enabling this option, this will set all existing thumbnails as featured images. Be careful!', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 }
@@ -1742,7 +1742,7 @@ function kgvid_thumb_parent_callback() {
 	);
 	echo wp_kses( kgvid_generate_settings_select_html( 'thumb_parent', $options, $items ), kgvid_allowed_html( 'admin' ) );
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'This depends on your theme. Thumbnails generated by the plugin can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator' ) ) );
-	echo "<a class='button' href='javascript:void(0);' onclick='kgvid_switch_parents();'>" . esc_html__( 'Set all parents', 'video-embed-thumbnail-generator' ) . '</a>';
+	echo "<button class='button' type='button' onclick='kgvid_switch_parents();'>" . esc_html__( 'Set all parents', 'video-embed-thumbnail-generator' ) . '</button>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If you\'ve generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 }
@@ -1906,10 +1906,10 @@ function kgvid_automatic_completed_callback() {
 function kgvid_old_video_buttons_callback() {
 	$options = kgvid_get_options();
 	echo "<div class='kgvid_video_app_required'>";
-	echo "<p><a id='generate_old_thumbs_button' class='button' href='javascript:void(0);' onclick='kgvid_auto_generate_old(\"thumbs\");'>" . esc_html__( 'Generate thumbnails', 'video-embed-thumbnail-generator' ) . '</a>';
+	echo "<p><button id='generate_old_thumbs_button' class='button' type='button' onclick='kgvid_auto_generate_old(\"thumbs\");'>" . esc_html__( 'Generate thumbnails', 'video-embed-thumbnail-generator' ) . '</button>';
 	/* translators: %1$s is the name of the video encoding application (usually FFMPEG). */
 	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'Use %s to automatically generate thumbnails for every video in the Media Library that doesn\'t already have them. Uses the automatic thumbnail settings above. This could take a very long time if you have a lot of videos. Proceed with caution!', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) ) );
-	echo "<p><a id='generate_old_encode_button' class='button' href='javascript:void(0);' onclick='kgvid_auto_generate_old(\"encode\");'>" . esc_html__( 'Encode videos', 'video-embed-thumbnail-generator' ) . '</a>';
+	echo "<p><button id='generate_old_encode_button' class='button' type='button' onclick='kgvid_auto_generate_old(\"encode\");'>" . esc_html__( 'Encode videos', 'video-embed-thumbnail-generator' ) . '</button>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Add every video in the Media Library to the encode queue if it hasn\'t already been encoded. Uses the default encode formats chosen above.', 'video-embed-thumbnail-generator' ) ) );
 	echo "</div>\n\t";
 }

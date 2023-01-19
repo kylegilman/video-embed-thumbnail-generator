@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p>
 		<?php
 		if ( current_user_can( 'edit_others_video_encodes' ) ) {
-			echo "<div class='attachment-info'><div class='actions'><a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>" . esc_html__( 'Clear All Completed', 'video-embed-thumbnail-generator' ) . "</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>" . esc_html__( 'Clear All Queued', 'video-embed-thumbnail-generator' ) . "</a> | <a href='javascript:void(0)' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>" . esc_html__( 'Clear All', 'video-embed-thumbnail-generator' ) . "</a> <span class='kgvid_queue_clear_info'>" . esc_html__( 'Completed videos are cleared weekly, or daily if there are more than 50 entries in the queue.' ) . '</div></div>';
+			echo "<div class='attachment-info'><div class='actions'><button type='button' class='kgvid-queue-action' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>" . esc_html__( 'Clear All Completed', 'video-embed-thumbnail-generator' ) . "</button> | <button type='button' class='kgvid-queue-action' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>" . esc_html__( 'Clear All Queued', 'video-embed-thumbnail-generator' ) . "</button> | <button type='button' class='kgvid-queue-action' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>" . esc_html__( 'Clear All', 'video-embed-thumbnail-generator' ) . "</button> <span class='kgvid_queue_clear_info'>" . esc_html__( 'Completed videos are cleared weekly, or daily if there are more than 50 entries in the queue.' ) . '</div></div>';
 		}
 
 		?>

@@ -217,6 +217,15 @@ div.kgvid_chosen_thumbnail_box {
 	width: 200px;
 }
 
+.kgvid_redraw_thumbnail_box {
+	height: 112px;
+}
+
+.kgvid_redraw_thumbnail_box span {
+	margin-top: 45px;
+	display: inline-block;
+}
+
 div.kgvid_thumbnail_overlay {
 	width: 100%;
 	background: #fff;
@@ -360,14 +369,24 @@ font-weight: normal;
 	width:40%;
 }
 
-a.kgvid_delete-format {
-	color: #d63638 !important;
+button.kgvid_delete-format, button.kgvid-queue-action {
+	cursor: pointer;
+	display: inline-block;
+  	position: relative;
+  	background-color: transparent;
 	text-decoration: none;
+	border: none;
+	color: #2271b1;
+	vertical-align: middle;
+}
+
+button.kgvid_delete-format {
+	color: #d63638;
 	display: block;
 }
 
-a.kgvid_delete-format:hover {
-	color: red !important;
+button.kgvid_delete-format:hover {
+	color: red;
 }
 
 .attachment-details.kgvid_spinner .settings-save-status {
