@@ -8,12 +8,77 @@
 	})
 }); */
 
-jQuery( document.body ).on(
-	'post-load',
-	function () {
-		console.log( 'post-load' );
+jQuery( kgvid_admin_page_ready() );
+
+function kgvid_admin_page_ready() {
+
+	if ( typeof pagenow !== 'undefined' ) {
+		if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings'
+			|| pagenow == 'settings_page_video_embed_thumbnail_generator_network_settings'
+		) {
+			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings' ) {
+				kgvid_switch_settings_tab(document.URL.substring(document.URL.indexOf('#')+1));
+			}
+
+			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_network_settings' ) {
+				kgvid_hide_plugin_settings();
+				kgvid_moov_setting()
+			}
+
+			jQuery('form :input').on('change', function() {
+				kgvid_save_plugin_settings(this);
+			});
+
+		}
+
+		if ( pagenow == 'post' ) {
+			if ( typeof wp.media != 'undefined' ) {
+				wp.media.view.Modal.prototype.on('open', function() {
+					wp.media.frame.on('selection:toggle', function() {
+						var attributes = wp.media.frame.state().get('selection').first().attributes;
+						attributes.blogID = false;
+						kgvid_attachment_selected(attributes);
+					});
+				});
+			}
+		}
+
+		if ( pagenow == 'upload' ) {
+			if ( typeof wp.media != 'undefined' ) {
+				wp.media.view.Modal.prototype.on('open', function() {
+					var attributes = wp.media.frame.state().attributes.model.attributes;
+					attributes.blogID = false;
+					kgvid_attachment_selected(attributes);
+				});
+			}
+		}
+
+		if ( pagenow == 'attachment' ) {
+			var attributes = {
+				id:     jQuery('#post_ID').val(),
+				url:    jQuery('#attachment_url').val(),
+				blogID: false
+			};
+			kgvid_attachment_selected(attributes);
+		}
+
 	}
-);
+
+}
+
+function kgvid_attachment_selected( attributes ) {
+	kgvid_hide_standard_wordpress_display_settings(attributes.id);
+	if ( jQuery('.kgvid_redraw_thumbnail_box').length ) {
+		setTimeout(function(){ kgvid_redraw_thumbnail_box(attributes.id) }, 5000);
+	}
+	if ( jQuery('.kgvid_checkboxes_section').first().data('checkboxes') == 'redraw' ) {
+		var percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes(attributes.url, attributes.id, attributes.blogID) }, 2000);
+		jQuery('#wpwrap').data('KGVIDCheckboxTimeout', percent_timeout);
+	}
+	if ( jQuery('.kgvid_checkboxes_section').first().data('checkboxes') == 'update' ) {
+		var percent_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 2000);
+	}
+}
 
 function kgvid_disable_thumb_buttons(postID, event) {
 
