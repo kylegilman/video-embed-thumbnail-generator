@@ -1130,7 +1130,7 @@ function maybe_enqueue_kgvid_script( $hook_suffix ) {
 add_action( 'admin_enqueue_scripts', 'maybe_enqueue_kgvid_script' ); // only enqueue scripts on settings page or encode queue
 
 function kgvid_add_network_settings_page() {
-	add_submenu_page( 'settings.php', esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_network_options', 'video_embed_thumbnail_generator_settings', 'kgvid_network_settings_page' );
+	add_submenu_page( 'settings.php', esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_network_options', 'video_embed_thumbnail_generator_network_settings', 'kgvid_network_settings_page' );
 }
 add_action( 'network_admin_menu', 'kgvid_add_network_settings_page' );
 
