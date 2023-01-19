@@ -1150,7 +1150,7 @@ function kgvid_check_download_link(id) {
 		}
 	  });
 
-	}
+}
 
 function kgvid_switch_gallery_page(obj, post_action) {
 
