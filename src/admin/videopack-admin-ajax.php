@@ -368,9 +368,7 @@ function kgvid_ajax_save_html5_thumb() {
 
 		$sanitized_url = kgvid_sanitize_url( $video_url );
 		$posterfile    = $sanitized_url['basename'] . '_thumb' . $index;
-		if ( ! file_exists( $uploads['path'] . '/thumb_tmp' ) ) {
-			mkdir( $uploads['path'] . '/thumb_tmp' );
-		}
+		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 		$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
 		$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
 
