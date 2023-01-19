@@ -36,13 +36,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<a href="https://www.videopack.video/donate/"><img alt="<?php esc_html__( 'Donate', 'video-embed-thumbnail-generator' ); ?>" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 	</form>
 	</div>
-	<script type='text/javascript'>
-		jQuery(function() {
-				kgvid_switch_settings_tab(document.URL.substr(document.URL.indexOf('#')+1));
-				jQuery('form :input').on('change', function() {
-						kgvid_save_plugin_settings(this);
-				});
-			}
-		);
-	</script>
 </div>
