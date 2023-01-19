@@ -1540,15 +1540,15 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 					}
 
 					if ( $options['twitter_button'] == 'on' ) {
-						$embed_code .= "<a title='" . esc_attr__( 'Share on Twitter', 'video-embed-thumbnail-generator' ) . "' href='" . esc_url( 'https://twitter.com/share?text=' . urlencode( $query_atts['title'] ) . '&url=' . urlencode( $permalink ) );
+						$embed_code .= "<a title='" . esc_attr__( 'Share on Twitter', 'video-embed-thumbnail-generator' ) . "' href='" . esc_url( 'https://twitter.com/share?text=' . rawurlencode( $query_atts['title'] ) . '&url=' . rawurlencode( $permalink ) );
 						if ( ! empty( $options['twitter_username'] ) ) {
-							$embed_code .= '&via=' . esc_attr( urlencode( $options['twitter_username'] ) );
+							$embed_code .= '&via=' . esc_attr( rawurlencode( $options['twitter_username'] ) );
 						}
 						$embed_code .= "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-twitter'></span></a>";
 					}
 
 					if ( $options['facebook_button'] == 'on' ) {
-						$embed_code .= "&nbsp;<a title='" . esc_attr__( 'Share on Facebook', 'video-embed-thumbnail-generator' ) . "' href='" . esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode( $permalink ) ) . "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-facebook'></span></a>";
+						$embed_code .= "&nbsp;<a title='" . esc_attr__( 'Share on Facebook', 'video-embed-thumbnail-generator' ) . "' href='" . esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $permalink ) ) . "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-facebook'></span></a>";
 					}
 
 					$embed_code .= '</div>';
