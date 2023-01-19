@@ -3072,9 +3072,12 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			$ffmpeg_disabled_text = '';
 
 			$update_script = '';
-			if ( $options['ffmpeg_exists'] == 'on' && $options['auto_thumb'] == 'on' && ! $thumbnail_url && $created_time < 60 ) {
-				$update_script  = '<script type="text/javascript">jQuery(function() { setTimeout(function(){ kgvid_redraw_thumbnail_box("' . esc_attr( $post->ID ) . '") }, 5000); });</script>';
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box" style="height:112px;"><span style="margin-top: 45px;	display: inline-block;">' . esc_html__( 'Loading thumbnail...' ) . '</span></div>';
+			if ( $options['ffmpeg_exists'] === 'on'
+				&& $options['auto_thumb'] === 'on'
+				&& ! $thumbnail_url
+				&& $created_time < 60
+			) {
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box kgvid_redraw_thumbnail_box" style="height:112px;"><span>' . esc_html__( 'Loading thumbnail...' ) . '</span></div>';
 			}
 
 			if ( empty( $security_disabled ) && current_user_can( 'make_video_thumbnails' ) ) {
@@ -3192,10 +3195,6 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 		$form_fields['kgflashmediaplayer-encode']['input'] = 'html';
 		$form_fields['kgflashmediaplayer-encode']['html']  = $checkboxes['checkboxes'];
 
-		if ( $options['ffmpeg_exists'] == 'on' && $options['auto_encode'] == 'on' && $created_time < 60 ) {
-			$form_fields['kgflashmediaplayer-encode']['html'] .= '<script type="text/javascript">jQuery(function() { percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("' . esc_url( $movieurl ) . '", "' . esc_attr( $post->ID ) . '", "") }, 5000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout); });</script>';
-		}
-
 		if ( $post->post_mime_type != 'image/gif' ) {
 
 			$tracks_html = '';
@@ -3260,8 +3259,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			<input type="checkbox" name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-downloadlink]" id="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-downloadlink" ' . checked( $kgvid_postmeta['downloadlink'], 'on', false ) . $security_disabled . '>
 			<label for="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-downloadlink">' . esc_html__( 'Show download icon', 'video-embed-thumbnail-generator' ) . '<em><small><br />' . esc_html__( 'Makes it easier for users to download file.', 'video-embed-thumbnail-generator' ) . '</em></small></label><br />
 			<label for="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-embed">' . esc_html_x( 'Insert', 'verb', 'video-embed-thumbnail-generator' ) . '</label>
-			' . $shortcode_select . '
-			<script type="text/javascript">jQuery(function(){kgvid_hide_standard_wordpress_display_settings(' . esc_attr( $post->ID ) . ');});</script>';
+			' . wp_kses( $shortcode_select, kgvid_allowed_html( 'admin' ) );
 
 			if ( $kgvid_postmeta['embed'] == 'Video Gallery' ) {
 

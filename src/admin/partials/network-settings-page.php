@@ -56,14 +56,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<span><?php esc_html_e( 'If you\'re getting some use out of this plugin, please consider donating a few dollars to support its future development.', 'video-embed-thumbnail-generator' ); ?></span>
 	<a href="https://www.videopack.video/donate/"><img alt="<?php esc_html__( 'Donate', 'video-embed-thumbnail-generator' ); ?>" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 	</div>
-	<script type='text/javascript'>
-			jQuery(function() {
-					kgvid_hide_plugin_settings();
-					kgvid_moov_setting();
-					jQuery('form :input').on('change',function() {
-						kgvid_save_plugin_settings(this);
-					});
-				}
-			);
-	</script>
 </div>

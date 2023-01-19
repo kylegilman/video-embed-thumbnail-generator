@@ -1401,7 +1401,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 			$encoding_now = true;
 		}
 
-		$checkboxes .= "\n\t\t\t" . '<li><input class="kgvid_encode_checkbox" type="checkbox" id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encode' . esc_attr( $format ) . '" name="attachments' . esc_attr( $blog_name_text ) . '[' . esc_attr( $post_id ) . '][kgflashmediaplayer-encode][' . esc_attr( $format ) . ']" ' . esc_attr( $meta_array['checked'] ) . ' ' . $ffmpeg_disabled_text . $meta_array['disabled'] . ' data-format="' . esc_attr( $format ) . '"> <label for="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encode' . $format . '">' . esc_html( $format_stats['name'] ) . '</label> <span id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-meta' . esc_attr( $format ) . '" class="kgvid_format_meta">' . $meta_array['meta'] . '</span>';
+		$checkbox[ $format ] = "\n\t\t\t" . '<li><input class="kgvid_encode_checkbox" type="checkbox" id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encode' . esc_attr( $format ) . '" name="attachments' . esc_attr( $blog_name_text ) . '[' . esc_attr( $post_id ) . '][kgflashmediaplayer-encode][' . esc_attr( $format ) . ']" ' . esc_attr( $meta_array['checked'] ) . ' ' . $ffmpeg_disabled_text . $meta_array['disabled'] . ' data-format="' . esc_attr( $format ) . '"> <label for="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encode' . $format . '">' . esc_html( $format_stats['name'] ) . '</label> <span id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-meta' . esc_attr( $format ) . '" class="kgvid_format_meta">' . $meta_array['meta'] . '</span>';
 
 		if ( ! $security_disabled
 			&& $is_attachment
@@ -1411,12 +1411,39 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 			&& $page != 'queue'
 		) {
 			/* translators: %s is the name of a video format */
-			$checkboxes .= "<span id='pick-" . esc_attr( $post_id ) . '-' . esc_attr( $format ) . "' class='button kgvid_encode_checkbox_button' data-choose='" . sprintf( esc_attr__( 'Choose %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' data-update='" . sprintf( esc_attr__( 'Set as %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' onclick='kgvid_pick_format(this, \"" . esc_attr( $post_id ) . '", "' . esc_attr( $format_stats['mime'] ) . '", "' . esc_attr( $format ) . '", "' . esc_attr( $movieurl ) . '", "' . esc_attr( $blog_id ) . "\");'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span>';
+			$checkbox[ $format ] .= "<button type='button' id='pick-" . esc_attr( $post_id ) . '-' . esc_attr( $format ) . "' class='button kgvid_encode_checkbox_button' data-choose='" . sprintf( esc_attr__( 'Choose %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' data-update='" . sprintf( esc_attr__( 'Set as %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' onclick='kgvid_pick_format(this, \"" . esc_attr( $post_id ) . '", "' . esc_attr( $format_stats['mime'] ) . '", "' . esc_attr( $format ) . '", "' . esc_attr( $movieurl ) . '", "' . esc_attr( $blog_id ) . "\");'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button>';
 		}
-		$checkboxes .= '</li>';
+		$checkbox[ $format ] .= '</li>';
 
 	}//end format loop
 
+	$checkboxes = '<div id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encodeboxes" class="kgvid_checkboxes_section"';
+
+	if ( $video_queued == true ) {
+		$i = count( $video_formats );
+		while ( $i > 0 ) {
+			$last_format = array_pop( $video_formats );
+			$i           = count( $video_formats );
+			if ( array_key_exists( 'status', $last_format )
+				&& $last_format['status'] !== 'notchecked'
+			) {
+				break;
+			} //get the final queued format
+		}
+
+		if ( $page !== 'queue'
+			&& ! $encoding_now
+			&& ( $last_format['status'] === 'queued'
+			|| $last_format['status'] === 'canceling' )
+		) {
+			$checkboxes .= ' data-checkboxes="redraw"';
+		} else {
+			$checkboxes .= ' data-checkboxes="update"';
+		}
+	}
+
+	$checkboxes .= '><ul>';
+	$checkboxes .= implode( $checkbox );
 	$checkboxes .= '</ul>';
 
 	if ( $something_to_encode == false ) {
@@ -1443,28 +1470,6 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		}
 	}
 
-	if ( $video_queued == true ) {
-		$i = count( $video_formats );
-		while ( $i > 0 ) {
-			$last_format = array_pop( $video_formats );
-			$i = count( $video_formats );
-			if ( array_key_exists( 'status', $last_format )
-				&& $last_format['status'] !== 'notchecked'
-			) {
-				break;
-			} //get the final queued format
-		}
-
-		if ( $page !== 'queue'
-			&& ! $encoding_now
-			&& ( $last_format['status'] === 'queued'
-			|| $last_format['status'] === 'canceling' )
-		) {
-			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_redraw_encode_checkboxes("' . esc_attr( $video_entry['movieurl'] ) . '", "' . esc_attr( $video_entry['attachmentID'] ) . '", "' . esc_attr( $blog_id ) . '") }, 2000); jQuery(\'#wpwrap\').data("KGVIDCheckboxTimeout", percent_timeout);</script>';
-		} else {
-			$checkboxes .= '<script type="text/javascript">percent_timeout = setTimeout(function(){ kgvid_update_encode_queue() }, 2000);</script>';
-		}
-	}
 	$checkboxes .= '</div>'; // close encodeboxes div
 
 	if ( ! empty( $blog_id )
