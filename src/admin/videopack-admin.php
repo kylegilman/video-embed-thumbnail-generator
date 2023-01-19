@@ -1028,7 +1028,7 @@ function kgvid_rrmdir( $dir ) {
 				if ( filetype( $dir . '/' . $object ) == 'dir' ) {
 					kgvid_rrmdir( $dir . '/' . $object );
 				} else {
-					unlink( $dir . '/' . $object );
+					wp_delete_file( $dir . '/' . $object );
 				}
 			}
 		}
@@ -3437,7 +3437,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 
 	if ( $success ) { // new file was copied into uploads directory
 
-		unlink( $tmp_posterpath );
+		wp_delete_file( $tmp_posterpath );
 
 		$desc = $post_name . ' ' . esc_html_x( 'thumbnail', 'text appended to newly created thumbnail titles', 'video-embed-thumbnail-generator' );
 		if ( $index ) {
@@ -3486,7 +3486,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 
 			// If error storing temporarily, unlink
 			if ( is_wp_error( $tmp ) ) {
-				@unlink( $file_array['tmp_name'] );
+				wp_delete_file( $file_array['tmp_name'] );
 				$file_array['tmp_name'] = '';
 			}
 
@@ -3495,7 +3495,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 
 			// If error storing permanently, unlink
 			if ( is_wp_error( $thumb_id ) ) {
-				@unlink( $file_array['tmp_name'] );
+				wp_delete_file( $file_array['tmp_name'] );
 				$arr = array(
 					'thumb_id'  => $thumb_id,
 					'thumb_url' => $thumb_url,
@@ -3832,7 +3832,7 @@ function kgvid_delete_video_attachment( $video_id ) {
 						if ( $value['status'] == 'encoding' ) {
 							kgvid_cancel_encode( $video_key, $format );
 							if ( file_exists( $value['filepath'] ) ) {
-								unlink( $value['filepath'] );
+								wp_delete_file( $value['filepath'] );
 							}
 						}
 					}
