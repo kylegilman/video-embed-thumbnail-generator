@@ -3297,25 +3297,7 @@ function kgvid_replace_video( $video_key, $format ) {
 		wp_update_attachment_metadata( $video_id, $attach_data );
 		update_attached_file( $video_id, $new_filename );
 
-		$new_mime = wp_check_filetype( $new_filename );
-		$post     = get_post( $video_id );
-		$new_guid = str_replace( $path_parts['extension'], $new_mime['ext'], $post->guid );
-
-		if ( $new_guid != $post->guid ) {
-			$post->guid = $new_guid;
-			global $wpdb;
-			$guid_change = $wpdb->update(
-				$wpdb->posts, // can't use wp_update_post because it won't change GUID
-				array(
-					'guid' => $new_guid,
-				),
-				array( 'ID' => $video_id ),
-				array( '%s', '%s' ),
-				array( '%d' )
-			);
-			clean_post_cache( $video_id ); // otherwise wp_update_post will get the cached version of the post and the old GUID
-		}
-
+		$new_mime    = wp_check_filetype( $new_filename );
 		$post_update = array(
 			'ID'             => $video_id,
 			'post_mime_type' => $new_mime['type'],
