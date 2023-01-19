@@ -2690,10 +2690,8 @@ function kgvid_video_embed_options_validate( $input ) {
 	$options         = kgvid_get_options();
 	$default_options = kgvid_default_options_fn();
 
-	if ( isset( $_POST['video-embed-thumbnail-generator-reset'] ) && isset( $_POST['kgvid_settings_security'] ) ) {
-
-		$nonce = kgvid_sanitize_text_field( wp_unslash( $_POST['kgvid_settings_security'] ) );
-		if ( ! wp_verify_nonce( $nonce, 'video-embed-thumbnail-generator-nonce' ) ) {
+	if ( isset( $_POST['video-embed-thumbnail-generator-reset'] ) ) {
+		if ( ! check_admin_referer( 'kgvid_video_embed_options-options' ) ) {
 			die();
 		} else {
 			$reset = true;
