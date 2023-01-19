@@ -53,9 +53,9 @@ function kgvid_allowed_html( $scope = 'public' ) {
 			'playsinline' => true,
 		),
 		'source' => array(
-			'src'      => true,
-			'data-*'   => true,
-			'type'     => true,
+			'src'    => true,
+			'data-*' => true,
+			'type'   => true,
 		),
 		'track'  => array(
 			'id',
@@ -87,19 +87,21 @@ function kgvid_allowed_html( $scope = 'public' ) {
 		'button' => array(
 			'class' => true,
 			'style' => true,
+			'onclick' => true,
+			'id' => true,
 		),
 	);
 
 	if ( $scope === 'admin' ) {
 		$admin_allowed = array(
 			'select' => array(
-				'id' => true,
-				'name' => true,
-				'class' => true,
+				'id'       => true,
+				'name'     => true,
+				'class'    => true,
 				'onchange' => true,
 			),
 			'option' => array(
-				'value' => true,
+				'value'    => true,
 				'selected' => true,
 			),
 		);

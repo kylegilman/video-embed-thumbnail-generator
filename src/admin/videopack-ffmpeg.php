@@ -294,7 +294,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 			$parsed_url['filename']  = $fileinfo['basename'];
 			$parsed_url['localpath'] = $document_root . $parsed_url['path'];
 			// just in case there is a double slash created when joining document_root and path
-			$parsed_url['localpath'] = preg_replace( '/\/\//', '/', $parsed_url['localpath'] );
+			$parsed_url['localpath']        = preg_replace( '/\/\//', '/', $parsed_url['localpath'] );
 			$encodevideo_info['encodepath'] = rtrim( $parsed_url['localpath'], $parsed_url['filename'] );
 		} else {
 			$encodevideo_info['sameserver'] = false;
@@ -791,7 +791,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 	$encode_array  = array( strtoupper( $options['video_app'] ) . ' not found' );
 	$video_formats = kgvid_video_formats();
 
-	if ( $options['ffmpeg_exists'] == 'on' && isset( $video_formats[ $format ] ) ) {
+	if ( $options['ffmpeg_exists'] === 'on' && isset( $video_formats[ $format ] ) ) {
 
 		if ( $options['video_app'] == 'avconv' || $options['video_bitrate_flag'] != 'on' ) {
 			$video_bitrate_flag = 'b:v';
@@ -1126,8 +1126,8 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 						$meta = ' <strong>' . __( 'Encoded', 'video-embed-thumbnail-generator' ) . '</strong>';
 					}
 				}
-				if ( $status !== 'canceling' ) {
-					if ( $encodevideo_info[ $format ]['writable']
+				if ( $status !== 'canceling'
+					&& $encodevideo_info[ $format ]['writable']
 					&& current_user_can( 'encode_videos' )
 					&& $user_delete_capability == true
 					&& $format != 'fullres'
@@ -1209,10 +1209,10 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 	$encoding_now        = false;
 	$encode_disabled     = '';
 	$post_mime_type      = '';
-	$actualwidth         = '1921';
 	$actualheight        = '1081';
 	$encodevideo_info    = array();
 	$is_attachment       = false;
+	$checkbox            = array();
 
 	if ( ! empty( $blog_id ) && $blog_id != 'false' ) {
 		switch_to_blog( $blog_id );
@@ -1270,7 +1270,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		unset( $video_formats['custom_vp9'] );
 	}
 
-	if ( $options['ffmpeg_exists'] == 'notinstalled' ) {
+	if ( $options['ffmpeg_exists'] === 'notinstalled' ) {
 		/* translators: %s is the name of the video encoding application (usually FFMPEG). */
 		$ffmpeg_disabled_text = 'disabled="disabled" title="' . sprintf( esc_attr_x( '%1$s not found at %2$s', 'ex: FFMPEG not found at /usr/local/bin', 'video-embed-thumbnail-generator' ), esc_attr( strtoupper( $options['video_app'] ) ), esc_attr( $options['app_path'] ) ) . '"';
 	} else {
@@ -1330,11 +1330,9 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		$video_formats = array_intersect_key( $video_formats, array_flip( $fullres_only ) );
 	}
 
-	$checkboxes = '<div id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encodeboxes" class="kgvid_checkboxes_section"><ul>';
-
 	foreach ( $video_formats as $format => $format_stats ) {
 
-		if ( strpos( $post_mime_type, strval( $format ) ) !== false ) {
+		if ( strpos( $post_mime_type, strval( $format ) ) != false ) {
 			continue;
 		} //skip webm or ogv checkbox if the video is webm or ogv
 
@@ -1349,7 +1347,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		if ( $format_stats['status'] == 'lowres' ||
 			(
 				$actualheight != ''
-				&& $format_stats['type'] === 'h264'
+				&& $format_stats['type'] == 'h264'
 				&& $format !== 'fullres'
 				&& (
 					( strpos( $post_mime_type, 'mp4' ) !== false && $actualheight <= $format_stats['height'] ) ||
@@ -1707,7 +1705,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 function kgvid_add_FFMPEG_Queue_Page() {
 	$options = kgvid_get_options();
-	if ( $options['ffmpeg_exists'] == 'on' ) { // only add the queue page if FFMPEG is installed
+	if ( $options['ffmpeg_exists'] === 'on' ) { // only add the queue page if FFMPEG is installed
 		add_submenu_page( 'tools.php', esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), 'encode_videos', 'kgvid_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page' );
 	}
 }
@@ -1771,7 +1769,7 @@ function kgvid_FFMPEG_Queue_Page() {
 function kgvid_validate_ffmpeg_settings( $input ) {
 
 	$ffmpeg_info = kgvid_check_ffmpeg_exists( $input, false );
-	if ( $ffmpeg_info['ffmpeg_exists'] == true ) {
+	if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
 		$input['ffmpeg_exists'] = 'on';
 	}
 	$input['app_path'] = $ffmpeg_info['app_path'];
