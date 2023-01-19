@@ -1459,7 +1459,10 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( $query_atts['view_count'] == 'true' ) {
 				$show_views = true;
 			}
-			if ( ! empty( $query_atts['caption'] ) || $show_views || $query_atts['downloadlink'] == 'true' ) {
+			if ( ! empty( $query_atts['caption'] )
+				|| $show_views
+				|| $query_atts['downloadlink'] == 'true'
+			) {
 				$code .= "\t\t\t" . '<div class="kgvid_below_video" id="video_' . esc_attr( $div_suffix ) . '_below">';
 				if ( $show_views ) {
 					/* translators: %s is a number */
@@ -1485,16 +1488,17 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			$code .= "\n\t\t\t\t<span class='kgvid_meta_icons'>";
 
 			if ( $query_atts['downloadlink'] == 'true' ) {
-				$forceable = false;
-				if ( ! empty( $id ) && $options['click_download'] == 'on' ) {
-					$filepath = get_attached_file( $id );
-					if ( file_exists( $filepath ) ) {
-						$forceable     = true;
-						$download_code = "\t\t\t\t\t" . '<a href="' . esc_attr( $content ) . '" title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '" download>';
+				if ( $options['click_download'] == 'on' ) {
+					$download_code = "\t\t\t\t\t" . '<a class="kgvid-download-link" href="' . esc_attr( $content ) . '" title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '" download';
+					if ( ! empty( $id ) ) {
+						$filepath = get_attached_file( $id );
+						if ( file_exists( $filepath ) ) {
+							$download_code .= ' data-alt_link="' . esc_attr( site_url( '/' ) . '?attachment_id=' . $id . '&kgvid_video_embed&#91;download&#93;=true' ) . '"';
+						}
 					}
-				}
-				if ( ! $forceable ) {
-					$download_code = '<a href="' . esc_attr( $content ) . '" title="' . esc_attr__( 'Right-click or ctrl-click to download', 'video-embed-thumbnail-generator' ) . '">';
+					$download_code .= '>';
+				} else {
+					$download_code = '<a href="' . esc_attr( $content ) . '" title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '" download>';
 				}
 				$download_code .= '<span class="kgvid-icons kgvid-icon-download"></span></a>';
 			} else {
