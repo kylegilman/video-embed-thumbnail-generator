@@ -2807,7 +2807,10 @@ function kgvid_cron_check_post_parent_handler( $post_id ) {
 	$video_thumbnail_id = get_post_thumbnail_id( $post_id );
 	$post_thumbnail_id  = get_post_thumbnail_id( $post->post_parent );
 
-	if ( ! empty( $post->post_parent ) && ! empty( $video_thumbnail_id ) && empty( $post_thumbnail_id ) ) {
+	if ( ! empty( $post->post_parent )
+		&& ! empty( $video_thumbnail_id )
+		&& empty( $post_thumbnail_id )
+	) {
 		set_post_thumbnail( $post->post_parent, $video_thumbnail_id );
 	}
 }
@@ -3989,10 +3992,17 @@ function kgvid_save_post( $post_id ) {
 	) {
 		// render the post when it's saved in case there's a do_shortcode call in it so open graph metadata makes it into wp_head()
 		$response = wp_remote_get( get_permalink( $post_id ), array( 'blocking' => false ) );
-
 	}
 }
 add_action( 'save_post', 'kgvid_save_post' );
+
+function kgvid_attachment_updated( $post_id ) {
+	$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
+	if ( ! empty( $featured_id ) ) {
+		set_post_thumbnail( $post_id, $featured_id );
+	}
+}
+add_action( 'attachment_updated', 'kgvid_attachment_updated' );
 
 function kgvid_delete_transients() {
 
