@@ -379,7 +379,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 				$encodevideo_info[ $format ]['exists']   = true;
 				$encodevideo_info[ $format ]['url']      = $location['url'];
 				$encodevideo_info[ $format ]['filepath'] = $location['filepath'];
-				if ( is_writable( $location['filepath'] ) ) {
+				if ( get_filesystem_method( array(), $location['filepath'], true ) === 'direct' ) {
 					$encodevideo_info[ $format ]['writable'] = true;
 				}
 				break;
@@ -406,7 +406,9 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 
 		if ( $encodevideo_info[ $format ]['exists'] == false ) {
 
-			if ( get_post_type( $post_id ) == 'attachment' && is_writeable( $encodevideo_info['encodepath'] ) ) {
+			if ( get_post_type( $post_id ) == 'attachment'
+				&& get_filesystem_method( array(), $encodevideo_info['encodepath'], true ) === 'direct'
+			) {
 				$encodevideo_info[ $format ]['url']      = $sanitized_url['noextension'] . $format_stats['suffix'];
 				$encodevideo_info[ $format ]['filepath'] = $encodevideo_info['encodepath'] . $encodevideo_info['moviefilebasename'] . $format_stats['suffix'];
 			} else {
@@ -1302,7 +1304,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 							&& file_exists( $value['filepath'] )
 						) {
 							$encodevideo_info[ $format ]['exists'] = true;
-							if ( is_writable( $value['filepath'] ) ) {
+							if ( get_filesystem_method( array(), $value['filepath'], true ) === 'direct' ) {
 								$encodevideo_info[ $format ]['writable'] = true;
 							} else {
 								$encodevideo_info[ $format ]['writable'] = false;
@@ -2004,7 +2006,14 @@ add_action( 'kgvid_cleanup_generated_logfiles', 'kgvid_cleanup_generated_logfile
 
 function kgvid_cleanup_generated_thumbnails_handler() {
 	$uploads = wp_upload_dir();
-	kgvid_rrmdir( $uploads['path'] . '/thumb_tmp' ); // remove the whole tmp file directory
+	//cron loads before admin files
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+	require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+	if ( get_filesystem_method( array(), $uploads['path'] . '/thumb_tmp', true ) === 'direct' ) {
+		$file_system_direct = new WP_Filesystem_Direct( false );
+		$file_system_direct->rmdir( $uploads['path'] . '/thumb_tmp', true ); // remove the whole tmp file directory
+	}
 }
 add_action( 'kgvid_cleanup_generated_thumbnails', 'kgvid_cleanup_generated_thumbnails_handler' );
 
@@ -2026,7 +2035,6 @@ function kgvid_schedule_cleanup_generated_files( $arg ) {
 function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincreaser, $thumbtimecode, $dofirstframe, $generate_button ) {
 
 	$options     = kgvid_get_options();
-	$ffmpeg_path = $options['app_path'] . '/' . $options['video_app'];
 	$uploads     = wp_upload_dir();
 
 	if ( get_post_type( $post_id ) == 'attachment' ) {
@@ -2071,9 +2079,8 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		$movie_width  = $movie_info['width'];
 		$movie_height = $movie_info['height'];
 
-		if ( ! file_exists( $uploads['path'] . '/thumb_tmp' ) ) {
-			mkdir( $uploads['path'] . '/thumb_tmp' );
-		}
+		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
+
 		if ( $movie_info['rotate'] === false
 			|| $options['ffmpeg_vpre'] == 'on'
 		) {
@@ -2772,9 +2779,7 @@ function kgvid_test_ffmpeg() {
 
 			if ( ! empty( $options['ffmpeg_watermark']['url'] ) ) {
 
-				if ( ! file_exists( $uploads['path'] . '/thumb_tmp' ) ) {
-					mkdir( $uploads['path'] . '/thumb_tmp' );
-				}
+				wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 
 				$watermark_test = kgvid_process_thumb(
 					$uploads['path'] . '/sample-video-h264' . $suffix,
@@ -3245,12 +3250,15 @@ function kgvid_replace_video( $video_key, $format ) {
 		}
 
 		if ( file_exists( $encoded_filename ) ) {
-			rename( $encoded_filename, $new_filename );
-			if ( file_exists( $original_filename ) && $original_filename != $new_filename ) {
-				wp_delete_file( $original_filename );
+			//can't be sure this is running in admin context
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+			require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+			if ( get_filesystem_method( array(), $new_filename, true ) === 'direct' ) {
+				$file_system_direct = new WP_Filesystem_Direct( false );
+				$file_system_direct->move( $encoded_filename, $new_filename );
 			}
-
-			if ( get_post_mime_type( $video_id ) == 'image/gif' ) {
+			if ( get_post_mime_type( $video_id ) === 'image/gif' ) {
 				$was_gif      = true;
 				$gif_metadata = wp_get_attachment_metadata( $video_id );
 				if ( array_key_exists( 'sizes', $gif_metadata ) ) {

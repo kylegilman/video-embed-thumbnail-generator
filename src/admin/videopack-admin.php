@@ -1004,39 +1004,6 @@ function kgvid_url_mime_type( $url, $post_id = false ) {
 	return $mime_info;
 }
 
-function kgvid_is_empty_dir( $dir ) {
-	$dh = @opendir( $dir );
-	if ( $dh ) {
-		while ( $file = readdir( $dh ) ) {
-			if ( $file != '.' && $file != '..' ) {
-				closedir( $dh );
-				return false;
-			}
-		}
-		closedir( $dh );
-		return true;
-	} else {
-		return false; // whatever the reason is : no such dir, not a dir, not readable
-	}
-}
-
-function kgvid_rrmdir( $dir ) {
-	if ( is_dir( $dir ) ) {
-		$objects = scandir( $dir );
-		foreach ( $objects as $object ) {
-			if ( $object != '.' && $object != '..' ) {
-				if ( filetype( $dir . '/' . $object ) == 'dir' ) {
-					kgvid_rrmdir( $dir . '/' . $object );
-				} else {
-					wp_delete_file( $dir . '/' . $object );
-				}
-			}
-		}
-		reset( $objects );
-		rmdir( $dir );
-	}
-}
-
 function kgvid_build_paired_attributes( $value, $key ) {
 	return $key . '="' . $value . '"';
 }
@@ -3484,7 +3451,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 			$file_array['name']     = basename( $matches[0] );
 			$file_array['tmp_name'] = $tmp;
 
-			// If error storing temporarily, unlink
+			// If error storing temporarily, delete
 			if ( is_wp_error( $tmp ) ) {
 				wp_delete_file( $file_array['tmp_name'] );
 				$file_array['tmp_name'] = '';
@@ -3493,7 +3460,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 			// do the validation and storage stuff
 			$thumb_id = media_handle_sideload( $file_array, $post_id, $desc );
 
-			// If error storing permanently, unlink
+			// If error storing permanently, delete
 			if ( is_wp_error( $thumb_id ) ) {
 				wp_delete_file( $file_array['tmp_name'] );
 				$arr = array(
