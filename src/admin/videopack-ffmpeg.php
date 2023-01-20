@@ -1431,20 +1431,20 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 				break;
 			} //get the final queued format
 		}
-
 		if ( $page !== 'queue'
 			&& ! $encoding_now
 			&& ( $last_format['status'] === 'queued'
 				|| $last_format['status'] === 'canceling'
-			)
-			|| ( $options['auto_encode'] === 'on'
-				&& time() - get_post_time( 'U', true, $post_id ) < 60
 			)
 		) {
 			$checkboxes .= ' data-checkboxes="redraw"';
 		} else {
 			$checkboxes .= ' data-checkboxes="update"';
 		}
+	} elseif ( $options['auto_encode'] === 'on'
+		&& time() - get_post_time( 'U', true, $post_id ) < 60
+	) {
+		$checkboxes .= ' data-checkboxes="redraw"';
 	}
 
 	$checkboxes .= '><ul>';
