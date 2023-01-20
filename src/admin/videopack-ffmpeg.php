@@ -286,7 +286,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 			$document_root                  = sanitize_text_field( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ) );
 			$encodevideo_info['sameserver'] = true;
 			$decodedurl                     = urldecode( $movieurl );
-			$parsed_url                     = parse_url( $decodedurl );
+			$parsed_url                     = wp_parse_url( $decodedurl );
 			$fileinfo                       = pathinfo( $decodedurl );
 			if ( array_key_exists( 'extension', $fileinfo ) ) {
 				$parsed_url['extension'] = $fileinfo['extension'];
@@ -405,7 +405,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 		}//end potential locations loop
 
 		if ( $encodevideo_info[ $format ]['exists'] == false ) {
-
+			require_once ABSPATH . 'wp-admin/includes/file.php';
 			if ( get_post_type( $post_id ) == 'attachment'
 				&& get_filesystem_method( array(), $encodevideo_info['encodepath'], true ) === 'direct'
 			) {
@@ -1072,7 +1072,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 
 		switch ( $status ) {
 			case 'lowres':
-				$status_l10n = __( 'lowres', 'video-embed-thumbnail-generator' );
+				$status_l10n = __( 'Low Resolution', 'video-embed-thumbnail-generator' );
 				break;
 			case 'queued':
 				$status_l10n = __( 'queued', 'video-embed-thumbnail-generator' );
@@ -1457,7 +1457,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		$button_text = esc_attr_x( 'Encode selected', 'Button text', 'video-embed-thumbnail-generator' );
 	}
 
-	// NOTE: $ffmpeg_disabled_text & $encode_disabled are already escaped and should not be escaped again
+	// NOTE: $ffmpeg_disabled_text & $encode_disabled are already escaped and don't need to be escaped again
 	$checkboxes .= '<input type="button" id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-kgflashmediaplayer-encode" name="attachments' . esc_attr( $blog_name_text ) . '[' . esc_attr( $post_id ) . '][kgflashmediaplayer-encode]" class="button videopack-encode-button" value="' . esc_attr( $button_text ) . '" onclick="kgvid_enqueue_video_encode(\'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $blog_id ) . '\');" ' . $ffmpeg_disabled_text . $encode_disabled . '/><div style="display:block;" id="attachments-' . esc_attr( $blog_id_text . $post_id ) . '-encodeplaceholder"></div>';
 
 	if ( $page != 'queue' ) {
@@ -2198,9 +2198,6 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 	}
 
 	$options     = kgvid_get_options();
-	$ffmpeg_path = $options['app_path'] . '/' . $options['video_app'];
-	$uploads     = wp_upload_dir();
-
 	$embed_display  = '';
 	$encode_list    = array();
 	$h264extensions = array( 'mp4', 'm4v', 'mov' );
@@ -2208,17 +2205,15 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 	$sanitized_url  = kgvid_sanitize_url( $movieurl );
 	$movieurl       = $sanitized_url['movieurl'];
 	$post_type      = get_post_type( $post_id );
-	if ( $post_type == 'attachment' ) {
+	if ( $post_type === 'attachment' ) {
 		$filepath = get_attached_file( $post_id );
 	} else {
 		$filepath = $movieurl;
 	}
-	$mime_type_check = kgvid_url_mime_type( $filepath );
 	$movie_info      = kgvid_get_video_dimensions( $filepath );
 
 	if ( $movie_info['worked'] == true ) { // if FFMPEG was able to open the file
 
-		$movie_width  = $movie_info['width'];
 		$movie_height = $movie_info['height'];
 
 		if ( $post_type == 'attachment' ) { // if the video is in the database
@@ -2238,15 +2233,21 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 		$encodevideo_info = kgvid_encodevideo_info( $movieurl, $post_id );
 
 		foreach ( $video_formats as $format => $format_stats ) {
-			if ( is_array( $encode_checked ) && array_key_exists( $format, $encode_checked ) && $encode_checked[ $format ] == 'true' ) {
+			if ( is_array( $encode_checked )
+				&& array_key_exists( $format, $encode_checked )
+				&& $encode_checked[ $format ] == 'true'
+			) {
 				if ( ! $encodevideo_info[ $format ]['exists'] ) {
 					$movie_extension = pathinfo( $movieurl, PATHINFO_EXTENSION );
 					if ( $format_stats['type'] == 'h264'
 					&& $format != 'fullres' && $movie_height <= $format_stats['height']
-					&& ( $encode_checked['fullres'] == 'true'
+					&& (
+						( array_key_exists( 'fullres', $encode_checked )
+							&& $encode_checked['fullres'] == 'true'
+						)
 						|| in_array( $movie_extension, $h264extensions )
 						|| $movie_height < $format_stats['height']
-					)
+						)
 					) {
 						$encode_formats[ $format ]['status'] = 'lowres'; // skip if the resolution of an existing video is lower than the HD format
 					} else {
@@ -2296,7 +2297,6 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 		}
 
 		$already_queued = false;
-		$format_removed = false;
 
 		if ( ! empty( $video_encode_queue ) ) {
 			foreach ( $video_encode_queue as $index => $entry ) {

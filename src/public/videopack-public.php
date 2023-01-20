@@ -78,6 +78,10 @@ function kgvid_allowed_html( $scope = 'public' ) {
 			'onclick' => true,
 			'onkeyup' => true,
 			'checked' => true,
+			'disabled' => true,
+			'id' => true,
+			'name' => true,
+			'data-*' => true,
 		),
 		'img'    => array(
 			'src'    => true,
@@ -89,6 +93,9 @@ function kgvid_allowed_html( $scope = 'public' ) {
 			'style' => true,
 			'onclick' => true,
 			'id' => true,
+			'disabled' => true,
+			'name' => true,
+			'type' => true,
 		),
 	);
 
@@ -99,10 +106,13 @@ function kgvid_allowed_html( $scope = 'public' ) {
 				'name'     => true,
 				'class'    => true,
 				'onchange' => true,
+				'disabled' => true,
 			),
 			'option' => array(
 				'value'    => true,
 				'selected' => true,
+				'id' => true,
+				'name' => true,
 			),
 		);
 
