@@ -165,15 +165,18 @@ function kgvid_default_network_options() {
 	$network_options = array(
 		'app_path'                        => $default_options['app_path'],
 		'video_app'                       => $default_options['video_app'],
+		'ffmpeg_exists'                   => $default_options['ffmpeg_exists'],
 		'moov'                            => $default_options['moov'],
 		'video_bitrate_flag'              => $default_options['video_bitrate_flag'],
 		'ffmpeg_vpre'                     => $default_options['ffmpeg_vpre'],
-		'nice'                            => $default_options['nice'],
+		'ffmpeg_auto_rotate'              => $default_options['ffmpeg_auto_rotate'],
+		'ffmpeg_old_rotation'             => $default_options['ffmpeg_old_rotation'],
+		'nostdin'                         => $default_options['nostdin'],
+		'simultaneous_encodes'            => $default_options['simultaneous_encodes'],
 		'threads'                         => $default_options['threads'],
-		'ffmpeg_exists'                   => $default_options['ffmpeg_exists'],
+		'nice'                            => $default_options['nice'],
 		'default_capabilities'            => $default_options['capabilities'],
 		'superadmin_only_ffmpeg_settings' => false,
-		'simultaneous_encodes'            => $default_options['simultaneous_encodes'],
 		'network_error_email'             => $default_options['error_email'],
 		'queue_control'                   => $default_options['queue_control'],
 	);
@@ -1097,7 +1100,7 @@ function maybe_enqueue_kgvid_script( $hook_suffix ) {
 add_action( 'admin_enqueue_scripts', 'maybe_enqueue_kgvid_script' ); // only enqueue scripts on settings page or encode queue
 
 function kgvid_add_network_settings_page() {
-	add_submenu_page( 'settings.php', esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_network_options', 'video_embed_thumbnail_generator_network_settings', 'kgvid_network_settings_page' );
+	add_submenu_page( 'settings.php', esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_network_options', 'video_embed_thumbnail_generator_settings', 'kgvid_network_settings_page' );
 }
 add_action( 'network_admin_menu', 'kgvid_add_network_settings_page' );
 
@@ -1108,7 +1111,9 @@ function kgvid_validate_network_settings( $input ) {
 
 	$input = kgvid_sanitize_text_field( $input ); // recursively sanitizes all the settings
 
-	if ( $input['app_path'] != $options['app_path'] || $input['video_app'] != $options['video_app'] ) {
+	if ( $input['app_path'] != $options['app_path']
+		|| $input['video_app'] != $options['video_app']
+	) {
 		$input = kgvid_validate_ffmpeg_settings( $input );
 	} else {
 		$input['ffmpeg_exists'] = $options['ffmpeg_exists'];
@@ -1151,7 +1156,9 @@ function kgvid_network_settings_page() {
 			$reset = false;
 		}
 
-		if ( $action === 'update_kgvid_network_settings' ) {
+		if ( $action === 'update_kgvid_network_settings'
+			&& current_user_can( 'manage_network_options' )
+		) {
 
 			if ( $reset ) {
 				// reset button pressed
@@ -1164,6 +1171,7 @@ function kgvid_network_settings_page() {
 				}
 				$validated_options = kgvid_validate_network_settings( $input );
 				$options_updated   = update_site_option( 'kgvid_video_embed_network_options', $validated_options );
+				add_settings_error( 'video_embed_thumbnail_generator_settings', 'options-saved', esc_html__( 'Videopack network settings saved.', 'video-embed-thumbnail-generator' ), 'updated' );
 			}
 		}
 	}
@@ -1224,32 +1232,33 @@ function kgvid_settings_page() {
 	include __DIR__ . '/partials/settings-page.php';
 }
 
-function kgvid_video_embed_options_init() {
+function kgvid_do_settings_sections( $page ) {
 
-	function kgvid_do_settings_sections( $page ) {
-		global $wp_settings_sections, $wp_settings_fields;
+	global $wp_settings_sections, $wp_settings_fields;
 
-		if ( ! isset( $wp_settings_sections[ $page ] ) ) {
-			return;
-		}
-
-		foreach ( (array) $wp_settings_sections[ $page ] as $section ) {
-			if ( $section['title'] ) {
-				echo "<h2 id='header_" . esc_attr( $section['id'] ) . "'>" . esc_html( $section['title'] ) . "</h2>\n";
-			}
-
-			if ( $section['callback'] ) {
-				call_user_func( $section['callback'], $section );
-			}
-
-			if ( ! isset( $wp_settings_fields ) || ! isset( $wp_settings_fields[ $page ] ) || ! isset( $wp_settings_fields[ $page ][ $section['id'] ] ) ) {
-				continue;
-			}
-			echo '<table class="form-table" id="table_' . esc_attr( $section['id'] ) . '">';
-			do_settings_fields( $page, $section['id'] );
-			echo '</table>';
-		}
+	if ( ! isset( $wp_settings_sections[ $page ] ) ) {
+		return;
 	}
+
+	foreach ( (array) $wp_settings_sections[ $page ] as $section ) {
+		if ( $section['title'] ) {
+			echo "<h2 id='header_" . esc_attr( $section['id'] ) . "'>" . esc_html( $section['title'] ) . "</h2>\n";
+		}
+
+		if ( $section['callback'] ) {
+			call_user_func( $section['callback'], $section );
+		}
+
+		if ( ! isset( $wp_settings_fields ) || ! isset( $wp_settings_fields[ $page ] ) || ! isset( $wp_settings_fields[ $page ][ $section['id'] ] ) ) {
+			continue;
+		}
+		echo '<table class="form-table" id="table_' . esc_attr( $section['id'] ) . '">';
+		do_settings_fields( $page, $section['id'] );
+		echo '</table>';
+	}
+}
+
+function kgvid_video_embed_options_init() {
 
 	register_setting( 'kgvid_video_embed_options', 'kgvid_video_embed_options', 'kgvid_video_embed_options_validate' );
 
@@ -2859,7 +2868,8 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
 	$current_screen = get_current_screen();
 	$options        = kgvid_get_options();
 
-	if ( 'upload' === $current_screen->id
+	if ( is_object( $current_screen )
+		&& 'upload' === $current_screen->id
 		&& isset( $_GET['media'] )
 		&& is_array( $_GET['media'] )
 		&& $options['thumb_parent'] === 'post'

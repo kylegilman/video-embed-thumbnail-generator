@@ -14,13 +14,13 @@ function kgvid_admin_page_ready() {
 
 	if ( typeof pagenow !== 'undefined' ) {
 		if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings'
-			|| pagenow == 'settings_page_video_embed_thumbnail_generator_network_settings'
+			|| pagenow == 'settings_page_video_embed_thumbnail_generator_settings-network'
 		) {
 			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings' ) {
 				kgvid_switch_settings_tab(document.URL.substring(document.URL.indexOf('#')+1));
 			}
 
-			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_network_settings' ) {
+			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings-network' ) {
 				kgvid_hide_plugin_settings();
 				kgvid_moov_setting()
 			}
