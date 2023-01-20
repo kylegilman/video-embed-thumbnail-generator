@@ -379,6 +379,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 				$encodevideo_info[ $format ]['exists']   = true;
 				$encodevideo_info[ $format ]['url']      = $location['url'];
 				$encodevideo_info[ $format ]['filepath'] = $location['filepath'];
+				require_once ABSPATH . 'wp-admin/includes/file.php';
 				if ( get_filesystem_method( array(), $location['filepath'], true ) === 'direct' ) {
 					$encodevideo_info[ $format ]['writable'] = true;
 				}
@@ -1434,7 +1435,11 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		if ( $page !== 'queue'
 			&& ! $encoding_now
 			&& ( $last_format['status'] === 'queued'
-			|| $last_format['status'] === 'canceling' )
+				|| $last_format['status'] === 'canceling'
+			)
+			|| ( $options['auto_encode'] === 'on'
+				&& time() - get_post_time( 'U', true, $post_id ) < 60
+			)
 		) {
 			$checkboxes .= ' data-checkboxes="redraw"';
 		} else {
@@ -1847,11 +1852,18 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 	$movieurl    = wp_get_attachment_url( $post_id );
 	$filepath    = get_attached_file( $post_id );
 	$is_animated = false;
-	if ( $post && $post->post_mime_type == 'image/gif' ) {
+	if ( $post
+		&& $post->post_mime_type == 'image/gif'
+	) {
 		$is_animated = kgvid_is_animated_gif( $filepath );
 	}
 
-	if ( $post && $post->post_mime_type != 'image/gif' && ( $force == 'thumbs' || $options['auto_thumb'] == 'on' ) ) {
+	if ( $post
+		&& $post->post_mime_type != 'image/gif'
+		&& ( $force == 'thumbs'
+			|| $options['auto_thumb'] == 'on'
+		)
+	) {
 
 		$thumb_output   = array();
 		$thumb_id       = array();
@@ -1943,8 +1955,13 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 		}//end setting main thumbnail
 	}//end if auto_thumb is on
 
-	if ( $post && ( $force == 'encode' || $options['auto_encode'] == 'on' )
-		&& ( ! $is_animated || $options['auto_encode_gif'] == 'on' )
+	if ( $post
+		&& ( $force == 'encode'
+			|| $options['auto_encode'] == 'on'
+		)
+		&& ( ! $is_animated
+			|| $options['auto_encode_gif'] == 'on'
+		)
 	) {
 
 		$video_formats       = kgvid_video_formats();
