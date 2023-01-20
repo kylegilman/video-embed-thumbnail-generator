@@ -1087,10 +1087,12 @@ function kgvid_change_singleurl(basename, oldbasename) {
 
 	jQuery( '#kgvid-form :input' ).each(
 		function(){
-			var newid = jQuery( this ).attr( "id" ).replace( oldbasename, basename );
-			jQuery( this ).attr( "id", newid );
+			if ( jQuery( this ).attr( "id" ) ) {
+				var newid = this.getAttribute( "id" ).replace( oldbasename, basename );
+				jQuery( this ).attr( "id", newid );
+			}
 			if ( jQuery( this ).attr( "name" ) ) {
-				var newname = jQuery( this ).attr( "name" ).replace( oldbasename, basename );
+				var newname = this.getAttribute( "name" ).replace( oldbasename, basename );
 				jQuery( this ).attr( "name", newname );
 			}
 		}
