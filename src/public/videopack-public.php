@@ -643,6 +643,11 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 
 		foreach ( $attachments->posts as $attachment ) {
 
+			if ( get_post_meta( $attachment->ID, '_kgflashmediaplayer-externalurl', true ) ) {
+				//skip any child formats of external URLs
+				continue;
+			}
+
 			$thumbnail_url    = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true );
 			$poster_id        = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true );
 			$thumbnail_srcset = false;
