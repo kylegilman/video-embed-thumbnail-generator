@@ -8,6 +8,25 @@
  * @subpackage Videopack/admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
+ function kgvid_get_encode_queue() {
+
+	if ( is_videopack_active_for_network() ) {
+		$video_encode_queue = get_site_option( 'kgvid_video_embed_queue' );
+	} else {
+		$video_encode_queue = get_option( 'kgvid_video_embed_queue' );
+	}
+
+	return $video_encode_queue;
+}
+
+function kgvid_save_encode_queue( $video_encode_queue ) {
+
+	if ( is_videopack_active_for_network() ) {
+		update_site_option( 'kgvid_video_embed_queue', $video_encode_queue );
+	} else {
+		update_option( 'kgvid_video_embed_queue', $video_encode_queue );
+	}
+}
 
 function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array() ) {
 
