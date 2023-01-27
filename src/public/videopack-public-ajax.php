@@ -25,7 +25,7 @@ function kgvid_switch_gallery_page() {
 	}
 
 	$code = kgvid_gallery_page( $page_number, $query_atts, $last_video_id );
-	wp_send_json( $code );
+	wp_send_json( wp_kses( $code, kgvid_allowed_html() ) );
 }
 add_action( 'wp_ajax_kgvid_switch_gallery_page', 'kgvid_switch_gallery_page' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_kgvid_switch_gallery_page', 'kgvid_switch_gallery_page' ); // ajax for not logged in users

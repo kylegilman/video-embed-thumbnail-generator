@@ -23,7 +23,7 @@ function kgvid_ajax_sanitize_url() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 	if ( isset( $_POST['movieurl'] ) ) {
-		$movieurl = sanitize_url( wp_unslash( $_POST['movieurl'] ) );
+		$movieurl = kgvid_sanitize_text_field( wp_unslash( $_POST['movieurl'] ) );
 	}
 	$sanitized_url = kgvid_sanitize_url( $movieurl );
 	wp_send_json( $sanitized_url );
@@ -474,6 +474,7 @@ function kgvid_ajax_redraw_thumbnail_box() {
 		'thumb_url'          => esc_url( get_post_meta( $post_id, '_kgflashmediaplayer-poster', true ) ),
 		'thumbnail_size_url' => esc_url( $thumbnail_size_url ),
 		'thumb_error'        => wp_kses_post( $kgvid_postmeta['autothumb-error'] ),
+		'thumb_id'           => esc_html( $poster_id ),
 	);
 	wp_send_json( $response );
 }
@@ -495,7 +496,7 @@ function kgvid_callffmpeg() {
 		$numberofthumbs = kgvid_sanitize_text_field( wp_unslash( $_POST['numberofthumbs'] ) );
 	}
 	if ( isset( $_POST['thumbnumber'] ) ) {
-		$i = kgvid_sanitize_text_field( $_POST['thumbnumber'] );
+		$i = kgvid_sanitize_text_field( wp_unslash( $_POST['thumbnumber'] ) );
 	}
 	if ( isset( $_POST['thumbnumberplusincreaser'] ) ) {
 		$iincreaser = kgvid_sanitize_text_field( wp_unslash( $_POST['thumbnumberplusincreaser'] ) );
