@@ -72,16 +72,16 @@ function kgvid_allowed_html( $scope = 'public' ) {
 			'target'  => true,
 		),
 		'input'  => array(
-			'class'   => true,
-			'type'    => true,
-			'value'   => true,
-			'onclick' => true,
-			'onkeyup' => true,
-			'checked' => true,
+			'class'    => true,
+			'type'     => true,
+			'value'    => true,
+			'onclick'  => true,
+			'onkeyup'  => true,
+			'checked'  => true,
 			'disabled' => true,
-			'id' => true,
-			'name' => true,
-			'data-*' => true,
+			'id'       => true,
+			'name'     => true,
+			'data-*'   => true,
 		),
 		'img'    => array(
 			'src'    => true,
@@ -89,13 +89,13 @@ function kgvid_allowed_html( $scope = 'public' ) {
 			'alt'    => true,
 		),
 		'button' => array(
-			'class' => true,
-			'style' => true,
-			'onclick' => true,
-			'id' => true,
+			'class'    => true,
+			'style'    => true,
+			'onclick'  => true,
+			'id'       => true,
 			'disabled' => true,
-			'name' => true,
-			'type' => true,
+			'name'     => true,
+			'type'     => true,
 		),
 	);
 
@@ -111,8 +111,8 @@ function kgvid_allowed_html( $scope = 'public' ) {
 			'option' => array(
 				'value'    => true,
 				'selected' => true,
-				'id' => true,
-				'name' => true,
+				'id'       => true,
+				'name'     => true,
 			),
 		);
 
@@ -373,9 +373,8 @@ function kgvid_get_first_embedded_video( $post ) {
 
 				if ( is_array( $attributes ) && array_key_exists( 'id', $attributes ) ) {
 					$url = wp_get_attachment_url( $attributes['id'] );
-				} //if there's an ID attribute
-
-				elseif ( ! empty( $matches[5][ $first_key ] ) ) { // there's a URL but no ID
+					//end if there's an ID attribute
+				} elseif ( ! empty( $matches[5][ $first_key ] ) ) { // there's a URL but no ID
 
 					$url = $matches[5][ $first_key ];
 					if ( ! is_array( $attributes ) ) {
@@ -383,8 +382,10 @@ function kgvid_get_first_embedded_video( $post ) {
 					}
 					$attributes['id'] = kgvid_url_to_id( $matches[5][ $first_key ] );
 
-				} elseif ( ( is_array( $attributes ) && ! array_key_exists( 'id', $attributes ) )
-						|| empty( $attributes )
+				} elseif ( ( is_array( $attributes )
+						&& ! array_key_exists( 'id', $attributes )
+					)
+					|| empty( $attributes )
 				) {
 
 					$post_id = $post->ID;
@@ -405,11 +406,12 @@ function kgvid_get_first_embedded_video( $post ) {
 						$attributes['id'] = $video_attachment[0]->ID;
 						$url              = wp_get_attachment_url( $attributes['id'] );
 					}
-				}//if no URL or ID attribute
-
-			}//if there's a KGVID shortcode in the post
-		}//if there's a shortcode in the post
-		elseif ( is_attachment() ) {
+					//end if no URL or ID attribute
+				}
+				//if there's a KGVID shortcode in the post
+			}
+			//end if there's a shortcode in the post
+		} elseif ( is_attachment() ) {
 			$attributes['id']  = $post->ID;
 			$attributes['url'] = wp_get_attachment_url( $post->ID );
 		}
@@ -803,7 +805,7 @@ function kgvid_generate_video_description( $query_atts, $post = false ) {
 		} elseif ( ! empty( $post->post_excerpt ) ) {
 			$description = $post->post_excerpt;
 		} else {
-			$description = wp_trim_words( strip_tags( strip_shortcodes( $post->post_content ) ) );
+			$description = wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ), true ) );
 		}
 	}
 	if ( empty( $description ) ) {
@@ -827,8 +829,23 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 	$code           = '';
 	$id_array       = array();
 	$video_formats  = kgvid_video_formats( false, true, false );
-	$compatible     = array( 'mp4', 'mov', 'm4v', 'ogv', 'ogg', 'webm', 'mpd', 'm3u8' );
-	$h264compatible = array( 'mp4', 'mov', 'm4v' );
+	$compatible     = array(
+		'mp4',
+		'mov',
+		'm4v',
+		'ogv',
+		'ogg',
+		'webm',
+		'mkv',
+		'mpd',
+		'm3u8',
+	);
+	$h264compatible = array(
+		'mp4',
+		'mov',
+		'm4v',
+		'mkv',
+	);
 
 	if ( ! empty( $query_atts['id'] ) ) {
 		$id_array[0] = $query_atts['id'];
@@ -1910,9 +1927,7 @@ function kgvid_shortcode( $atts, $content = '' ) {
 
 			$code = kgvid_single_video_code( $query_atts, $atts, $content, $post_id );
 
-		} //if not gallery
-
-		else { // if gallery
+		} else { // if gallery
 
 			static $kgvid_gallery_id = 0;
 			$gallery_query_index     = array(

@@ -2014,7 +2014,7 @@ function kgvid_moov_callback() {
 	);
 	echo wp_kses( kgvid_generate_settings_select_html( 'moov', $options, $items, 'affects_ffmpeg', 'kgvid_moov_setting();' ), kgvid_allowed_html( 'admin' ) );
 	/* translators: %1$s is the name of the video encoding application (usually FFMPEG). */
-	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'By default %1$s places moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start and can prevent Flash players from playing them at all. Since approximately October 2012 %1$s can fix the problem at the end of the encoding process by using the option `movflags faststart`. This is the easiest and fastest way to correct the problem, but older versions of %1$s will not work if you select the movflags option. If you can\'t update to a new version of %1$s, select qt-faststart or MP4Box which will run after encoding is finished if they are installed on your server.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'By default %1$s places moov atoms at the end of H.264 encoded files, which forces the entire file to download before playback can start. %1$s can fix the problem at the end of the encoding process by using the option `movflags faststart`. This is the easiest and fastest way to correct the problem, but older versions of %1$s will not work if you select the movflags option. If you can\'t update to a new version of %1$s, select qt-faststart or MP4Box which will run after encoding is finished if they are installed on your server.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) ) );
 	/* translators: %1$s is the name of the video encoding application (usually FFMPEG). */
 	echo "<p id='moov_path_p'>" . sprintf( esc_html__( 'Path to %s:', 'video-embed-thumbnail-generator' ), "<span class='kgvid_moov_option'>" . esc_html( $options['moov'] ) . '</span>' ) . " <input class='regular-text code affects_ffmpeg' id='moov_path' name='kgvid_video_embed_options[moov_path]' type='text' value='" . esc_attr( $options['moov_path'] ) . "' /></p>";
 	echo "</div>\n\t";
@@ -3357,7 +3357,7 @@ function kgvid_decode_base64_png( $raw_png, $tmp_posterpath ) {
 		$success = $wp_filesystem->put_contents( $tmp_posterpath, $decoded_png );
 
 		$editor = wp_get_image_editor( $tmp_posterpath );
-		if ( is_wp_error( $editor )	) {
+		if ( is_wp_error( $editor ) ) {
 			$wp_filesystem->delete( $tmp_posterpath );
 		}
 
@@ -3512,9 +3512,8 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 		$thumb_id = intval( $thumb_id );
 		update_post_meta( $post_id, '_kgflashmediaplayer-poster-id', $thumb_id );
 		update_post_meta( $thumb_id, '_kgflashmediaplayer-video-id', $video->ID );
-
-	} //end copied new file into uploads directory
-	else {
+		//end copied new file into uploads directory
+	} else {
 		$thumb_id = false;
 	}
 
@@ -3917,10 +3916,10 @@ function kgvid_delete_video_attachment( $video_id ) {
 					}
 				}
 			}
-		} //end if there are any children
-	} //end if video or other child format
-
-	elseif ( strpos( get_post_mime_type( $video_id ), 'image' ) !== false ) {
+			//end if there are any children
+		}
+		//end if video or other child format
+	} elseif ( strpos( get_post_mime_type( $video_id ), 'image' ) !== false ) {
 		$args  = array(
 			'numberposts' => '-1',
 			'post_type'   => 'attachment',
