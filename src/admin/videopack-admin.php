@@ -355,6 +355,7 @@ function kgvid_get_attachment_meta( $post_id ) {
 		'duration'            => '',
 		'aspect'              => '',
 		'original_replaced'   => '',
+		'featuredchanged'     => 'false',
 	);
 
 	if ( empty( $kgvid_postmeta ) ) {
