@@ -102,12 +102,37 @@ function kgvid_video_embed_activation_hook( $network_wide ) {
 }
 register_activation_hook( __FILE__, 'kgvid_video_embed_activation_hook' );
 
+function kgvid_cleanup_plugin() {
+
+	$options = kgvid_default_options_fn();
+
+	wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) );
+	wp_clear_scheduled_hook( 'kgvid_cleanup_generated_thumbnails' );
+	kgvid_cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
+
+	kgvid_delete_transients(); //clear URL cache
+	delete_transient( 'kgvid_new_attachment_transient' );
+	delete_option( 'kgvid_video_embed_cms_switch' );
+
+	$wp_roles = wp_roles();
+	if ( is_object( $wp_roles )
+		&& property_exists( $wp_roles, 'roles' )
+		&& is_array( $options )
+		&& array_key_exists( 'capabilities', $options )
+		) {
+		foreach ( $options['capabilities'] as $capability => $roles ) {
+			foreach ( $wp_roles->roles as $role => $role_info ) {
+				$wp_roles->remove_cap( $role, $capability );
+			}
+		}
+	}
+}
+
 function kgvid_deactivate_plugin( $network_wide ) {
 
 	if ( is_multisite() && $network_wide ) {
 
-		$current_blog_id = get_current_blog_id();
-		$sites           = get_sites();
+		$sites = get_sites();
 
 		if ( is_array( $sites ) ) {
 
