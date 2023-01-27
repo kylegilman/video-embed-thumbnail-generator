@@ -105,12 +105,20 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.8.3 - January XX, 2023 =
-* Added try/catch when running FFMPEG for better error reporting.
-* Changed single-click download link to use 'download' attribute instead of PHP-based streaming from the server.
-* Restored "Always output stereo audio" functionality.
+= 4.8.3 - January 27, 2023 =
+* Added try/catch when running FFMPEG for better error reporting and avoiding fatal errors on activation.
+* Improved process for automatically setting featured post images when thumbnails are chosen.
+* Added mkv as a supported file format. Playback will be inconsistent across browsers and devices.
+* Changed single-click download link to use browser's 'download' attribute instead of PHP-based streaming from the server whenever possible.
+* Restored settings "Always output stereo audio" and "Allow rewriting of WordPress attachment URLs"
+* Made several stability improvements to the video encoding queue processes.
+* Added Heartbeat API video encode queue check
+* Changed WP-Cron scheduled daily video encode queue cleanup to a single event for easier deactivation.
+* More escaping, sanitizing, and validation for security.
+* Removed all inline <script> outputs from the plugin for security.
+* Converted direct file functions like move() and rmdir() to WordPress Filesystem API.
 * Broke up plugin functions into separate files.
-* More escaping and sanitizing for security.
+* Changed all psuedo buttons to buttons.
 
 = 4.8.2 - January 12, 2023 =
 * Fixed bug that disabled the WordPress Default player.
