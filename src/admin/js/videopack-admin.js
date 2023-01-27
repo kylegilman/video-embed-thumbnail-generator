@@ -70,6 +70,12 @@ function kgvid_admin_page_ready() {
 			setTimeout( function(){ kgvid_update_encode_queue() }, 5000 );
 		}
 
+		if ( kgvidL10n.ffmpeg_exists == 'on' ) {
+			jQuery( document ).on( 'heartbeat-send', function ( event, data ) {
+				data.kgvid_encode_check = true;
+			});
+		}
+
 	}
 
 }
