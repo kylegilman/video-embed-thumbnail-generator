@@ -9,6 +9,16 @@
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 
+function kgvid_ajax_heartbeat( array $response, array $data ) {
+
+	if ( ! empty( $data['kgvid_encode_check'] ) ) {
+		kgvid_encode_videos();
+	}
+
+	return $response;
+}
+add_filter( 'heartbeat_received', 'kgvid_ajax_heartbeat', 10, 2 );
+
 function kgvid_ajax_sanitize_url() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
