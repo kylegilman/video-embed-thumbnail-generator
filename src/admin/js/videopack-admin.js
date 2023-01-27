@@ -1727,7 +1727,11 @@ function kgvid_redraw_thumbnail_box(postID) {
 						.css( 'height', '100%' )
 						.css( 'padding-top', '0' );
 					}
+					if ( data.thumb_id ) {
+						wp.media.featuredImage.set(data.thumb_id);
+					}
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).trigger( 'change' );
+
 				} else if ( data.thumb_error ) {
 					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><span>' + data.thumb_error + '</span></div>' );
 				} else {
