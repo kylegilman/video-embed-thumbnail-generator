@@ -2042,13 +2042,10 @@ add_action( 'kgvid_cleanup_generated_logfiles', 'kgvid_cleanup_generated_logfile
 
 function kgvid_cleanup_generated_thumbnails_handler() {
 	$uploads = wp_upload_dir();
-	//cron loads before admin files
-	require_once ABSPATH . 'wp-admin/includes/file.php';
-	require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
-	require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
-	if ( get_filesystem_method( array(), $uploads['path'] . '/thumb_tmp', true ) === 'direct' ) {
-		$file_system_direct = new WP_Filesystem_Direct( false );
-		$file_system_direct->rmdir( $uploads['path'] . '/thumb_tmp', true ); // remove the whole tmp file directory
+
+	if ( kgvid_can_write_direct( $uploads['path'] . '/thumb_tmp' ) ) {
+		global $wp_filesystem;
+		$wp_filesystem->rmdir( $uploads['path'] . '/thumb_tmp', true ); // remove the whole tmp file directory
 	}
 }
 add_action( 'kgvid_cleanup_generated_thumbnails', 'kgvid_cleanup_generated_thumbnails_handler' );
@@ -3286,13 +3283,9 @@ function kgvid_replace_video( $video_key, $format ) {
 		}
 
 		if ( file_exists( $encoded_filename ) ) {
-			//can't be sure this is running in admin context
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-			require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
-			require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
-			if ( get_filesystem_method( array(), $new_filename, true ) === 'direct' ) {
-				$file_system_direct = new WP_Filesystem_Direct( false );
-				$file_system_direct->move( $encoded_filename, $new_filename );
+			if ( kgvid_can_write_direct( dirname( $new_filename ) ) ) {
+				global $wp_filesystem;
+				$wp_filesystem->move( $encoded_filename, $new_filename, true );
 			}
 			if ( get_post_mime_type( $video_id ) === 'image/gif' ) {
 				$was_gif      = true;
