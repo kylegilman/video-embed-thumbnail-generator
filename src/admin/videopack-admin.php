@@ -264,9 +264,7 @@ function kgvid_sanitize_text_field( $text_field ) {
 				$value = sanitize_text_field( $value );
 			}
 		}
-	} elseif ( kgvid_filter_validate_url( $text_field ) ) { // not an array.
-
-		// if it's a URL.
+	} elseif ( kgvid_filter_validate_url( $text_field ) ) { // not an array, is a URL
 			$text_field = sanitize_url( $text_field );
 	} else {
 		$text_field = sanitize_text_field( $text_field );
@@ -318,10 +316,8 @@ function kgvid_get_jetpack_twitter_username() {
 
 function kgvid_get_attachment_meta( $post_id ) {
 
-	$options = kgvid_get_options();
-
+	$options        = kgvid_get_options();
 	$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
-
 	$meta_key_array = array(
 		'embed'               => 'Single Video',
 		'width'               => '',
@@ -697,16 +693,16 @@ function kgvid_plugin_meta_links( $links, $file ) {
 add_filter( 'plugin_row_meta', 'kgvid_plugin_meta_links', 10, 2 );
 
 // add plugin upgrade notification
-function kgvid_showUpgradeNotification( $currentPluginMetadata, $newPluginMetadata ) {
+function kgvid_showupgradenotification( $currentpluginmetadata, $newpluginmetadata ) {
 	// check "upgrade_notice"
-	if ( isset( $newPluginMetadata->upgrade_notice ) && strlen( trim( $newPluginMetadata->upgrade_notice ) ) > 0 ) {
+	if ( isset( $newpluginmetadata->upgrade_notice ) && strlen( trim( $newpluginmetadata->upgrade_notice ) ) > 0 ) {
 		printf(
 			'<div class="update-message">%s</div>',
 			wp_kses_post( $newpluginmetadata->upgrade_notice )
 		);
 	}
 }
-add_action( 'in_plugin_update_message-video-embed-thumbnail-generator/video-embed-thumbnail-generator.php', 'kgvid_showUpgradeNotification', 10, 2 );
+add_action( 'in_plugin_update_message-video-embed-thumbnail-generator/video-embed-thumbnail-generator.php', 'kgvid_showupgradenotification', 10, 2 );
 
 function kgvid_check_if_capable( $capability ) {
 
@@ -1028,6 +1024,7 @@ function enqueue_kgvid_script() {
 			'kgvidL10n',
 			array(
 				'ajax_nonce'           => wp_create_nonce( 'kgvid_admin_nonce' ),
+				'ffmpeg_exists'        => $options['ffmpeg_exists'],
 				'wait'                 => esc_html_x( 'Wait', 'please wait', 'video-embed-thumbnail-generator' ),
 				'hidevideo'            => esc_html__( 'Hide video...', 'video-embed-thumbnail-generator' ),
 				'choosefromvideo'      => esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ),
@@ -1310,7 +1307,7 @@ function kgvid_video_embed_options_init() {
 		add_settings_field( 'moov', esc_html__( 'Method to fix encoded H.264 headers for streaming:', 'video-embed-thumbnail-generator' ), 'kgvid_moov_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'moov' ) );
 	}
 	add_settings_field( 'rate_control', esc_html__( 'Encode quality control method:', 'video-embed-thumbnail-generator' ), 'kgvid_rate_control_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'rate_control' ) );
-	add_settings_field( 'CRFs', esc_html__( 'Constant Rate Factors (CRF):', 'video-embed-thumbnail-generator' ), 'kgvid_CRF_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_CRF' ) );
+	add_settings_field( 'CRFs', esc_html__( 'Constant Rate Factors (CRF):', 'video-embed-thumbnail-generator' ), 'kgvid_crf_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_CRF' ) );
 	add_settings_field( 'bitrate_multiplier', esc_html__( 'Average Bit Rate:', 'video-embed-thumbnail-generator' ), 'kgvid_average_bitrate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'bitrate_multiplier' ) );
 	add_settings_field( 'h264_profile', esc_html__( 'H.264 profile:', 'video-embed-thumbnail-generator' ), 'kgvid_h264_profile_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_profile' ) );
 	add_settings_field( 'audio_options', esc_html__( 'Audio:', 'video-embed-thumbnail-generator' ), 'kgvid_audio_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'audio_bitrate' ) );
@@ -2036,7 +2033,7 @@ function kgvid_rate_control_callback() {
 	echo "</div>\n\t";
 }
 
-function kgvid_CRF_options_callback() {
+function kgvid_crf_options_callback() {
 	$options = kgvid_get_options();
 	echo "<div class='kgvid_video_app_required'>";
 	for ( $i = 0; $i <= 51; $i++ ) {
@@ -2273,9 +2270,8 @@ function kgvid_init_plugin() {
 				$network_options['app_path'] = $ffmpeg_info['app_path'];
 			}
 			update_site_option( 'kgvid_video_embed_network_options', $network_options );
-
-		}//end setting initial network options
-		else { // network options introduced in version 4.3 exist already
+			//end setting initial network options
+		} else { // network options introduced in version 4.3 exist already
 
 			$network_options_old = $network_options;
 
@@ -2332,7 +2328,7 @@ function kgvid_init_plugin() {
 	$options_old     = $options; // save the values that are in the db
 	$default_options = kgvid_default_options_fn();
 
-	if ( empty( $options ) ) { // run if the new settings don't exist yet (before version 3.0)
+	if ( empty( $options ) ) { // run if settings aren't initialized yet
 
 		$options = array();
 
@@ -2363,7 +2359,7 @@ function kgvid_init_plugin() {
 
 		foreach ( $old_setting_equivalents as $new_setting => $old_setting ) { // apply any old settings to the new database entry then delete them
 			$old_setting_value = get_option( $old_setting, 'no_setting' );
-			if ( $old_setting_value != 'no_setting' ) {
+			if ( $old_setting_value !== 'no_setting' ) {
 				if ( $old_setting_value == 'true' ) {
 					$old_setting_value = 'on';
 				}
@@ -2371,7 +2367,9 @@ function kgvid_init_plugin() {
 				delete_option( $old_setting );
 			}
 		}
-		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'" );
+		if ( ! empty( $options ) ) {
+			$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'" );
+		}
 
 		foreach ( $default_options as $key => $value ) { // apply default values for any settings that didn't exist before
 			if ( ! array_key_exists( $key, $options ) ) {
@@ -2768,9 +2766,8 @@ function kgvid_video_embed_options_validate( $input ) {
 		$input['custom_format']['suffix'] = '-custom.' . $input['custom_format']['extension'];
 
 		$input['custom_format']['default_encode'] = 'on';
-
-	} // if the custom format has been set
-	elseif ( $input['sample_format'] == 'custom' ) {
+		// if the custom format has been set
+	} elseif ( $input['sample_format'] == 'custom' ) {
 			$input['sample_format'] = 'mobile';
 	}
 
@@ -2918,7 +2915,7 @@ function kgvid_validate_attachment_updated( $post_id ) {
 
 	if ( $is_video ) {
 
-		if ( $options['thumb_parent'] == 'post' ) {
+		if ( $options['thumb_parent'] === 'post' ) {
 			kgvid_change_thumbnail_parent( $post_id, $post->post_parent );
 		}
 
@@ -2955,7 +2952,6 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 
 		$user_ID        = get_current_user_id();
 		$movieurl       = wp_get_attachment_url( $post->ID );
-		$moviefile      = get_attached_file( $post->ID );
 		$kgvid_postmeta = kgvid_get_attachment_meta( $post->ID );
 		$created_time   = time() - get_post_time( 'U', true, $post->ID );
 
@@ -3021,7 +3017,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 		}
 
 		$form_fields['kgflashmediaplayer-aspect']['input'] = 'hidden';
-		$form_fields['kgflashmediaplayer-aspect']['value'] = esc_attr( round( $set['height'] / $set['width'], 5 ) );
+		$form_fields['kgflashmediaplayer-aspect']['value'] = esc_attr( round( intval( $set['height'] ) / intval( $set['width'] ), 5 ) );
 
 		$nonce = wp_create_nonce( 'video-embed-thumbnail-generator-nonce' );
 		$form_fields['kgflashmediaplayer-security']['input'] = 'hidden';
@@ -3541,8 +3537,10 @@ function kgvid_video_attachment_fields_to_save( $post, $attachment ) {
 	// $post['post_type'] == 'attachment'
 	static $flag = 0;
 
-	if ( ! empty( $post['ID'] ) && isset( $attachment['kgflashmediaplayer-url'] ) && $flag < 1 ) {
-
+	if ( ! empty( $post['ID'] )
+		&& isset( $attachment['kgflashmediaplayer-url'] )
+		&& $flag < 1
+	) {
 		$options    = kgvid_get_options();
 		$attachment = kgvid_sanitize_text_field( $attachment );
 
@@ -3567,7 +3565,6 @@ function kgvid_video_attachment_fields_to_save( $post, $attachment ) {
 				delete_post_meta( $post['ID'], '_kgflashmediaplayer-poster-id' );
 				delete_post_thumbnail( $post['ID'] );
 			} else {
-
 				update_post_meta( $post['ID'], '_kgflashmediaplayer-poster', $thumb_url );
 
 				if ( empty( $thumb_id ) ) { // we're not saving a new thumbnail
@@ -3649,7 +3646,9 @@ function kgvid_video_attachment_fields_to_save( $post, $attachment ) {
 		$kgvid_postmeta = array();
 
 		foreach ( $attachment as $kgflashmediaplayer_key => $value ) {
-			if ( strpos( $kgflashmediaplayer_key, 'kgflashmediaplayer-' ) !== false && $kgflashmediaplayer_key != 'kgflashmediaplayer-security' ) {
+			if ( strpos( $kgflashmediaplayer_key, 'kgflashmediaplayer-' ) !== false
+				&& $kgflashmediaplayer_key !== 'kgflashmediaplayer-security'
+			) {
 				$key                    = str_replace( 'kgflashmediaplayer-', '', $kgflashmediaplayer_key );
 				$kgvid_postmeta[ $key ] = $value;
 			}

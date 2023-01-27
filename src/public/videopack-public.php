@@ -656,10 +656,8 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 				$thumbnail_url    = wp_get_attachment_url( $poster_id );
 				$thumbnail_srcset = wp_get_attachment_image_srcset( $poster_id );
 				if ( intval( $query_atts['gallery_thumb'] ) <= get_option( 'medium_size_h' ) ) {
-					$poster_post = get_post( $poster_id );
-					if ( $poster_post->guid == $thumbnail_url ) {
-						$thumbnail_url = kgvid_get_attachment_medium_url( $poster_id );
-					} //use the "medium" size image if available
+					$thumbnail_url = kgvid_get_attachment_medium_url( $poster_id );
+					//use the "medium" size image if available
 				}
 			}
 			if ( ! $thumbnail_url ) {
