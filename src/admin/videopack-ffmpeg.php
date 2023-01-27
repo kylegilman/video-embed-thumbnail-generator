@@ -1729,13 +1729,13 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 	return $html;
 }
 
-function kgvid_add_FFMPEG_Queue_Page() {
+function kgvid_add_ffmpeg_queue_page() {
 	$options = kgvid_get_options();
 	if ( $options['ffmpeg_exists'] === 'on' ) { // only add the queue page if FFMPEG is installed
 		add_submenu_page( 'tools.php', esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), 'encode_videos', 'kgvid_video_encoding_queue', 'kgvid_FFMPEG_Queue_Page' );
 	}
 }
-add_action( 'admin_menu', 'kgvid_add_FFMPEG_Queue_Page' );
+add_action( 'admin_menu', 'kgvid_add_ffmpeg_queue_page' );
 
 function kgvid_add_network_queue_page() {
 	if ( is_videopack_active_for_network() ) {
@@ -2520,7 +2520,9 @@ function kgvid_encode_videos() {
 	$video_encode_queue = kgvid_get_encode_queue();
 	$video_formats      = kgvid_video_formats();
 
-	if ( ! empty( $video_encode_queue ) && $options['queue_control'] == 'play' ) {
+	if ( ! empty( $video_encode_queue )
+		&& $options['queue_control'] == 'play'
+	) {
 
 		$x = $options['simultaneous_encodes'];
 
@@ -2775,8 +2777,6 @@ function kgvid_encode_videos() {
 		'embed_display' => '<strong>' . $embed_display . '</strong>',
 		'video_key'     => $video_key,
 		'format'        => $queued_format,
-		'actualwidth'   => $movie_info['width'],
-		'actualheight'  => $movie_info['height'],
 	);
 
 	return $arr;
@@ -3067,7 +3067,9 @@ function kgvid_encode_progress() {
 
 								$next_video = kgvid_encode_videos(); // start the next queued video
 
-								if ( empty( $next_video['format'] ) || $next_video['video_key'] != $video_key ) {
+								if ( empty( $next_video['format'] )
+									|| $next_video['video_key'] != $video_key
+								) {
 
 									if ( $video_encode_queue[ $video_key ]['encode_formats']['fullres']['status'] == 'Encoding Complete' ) {
 										$new_movie_url = kgvid_replace_video( $video_key, 'fullres' );
