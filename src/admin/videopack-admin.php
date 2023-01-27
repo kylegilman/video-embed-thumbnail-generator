@@ -425,16 +425,22 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 
 		foreach ( $kgvid_postmeta as $key => $meta ) { // don't save if it's the same as the default values or empty
 
-			if ( ( array_key_exists( $key, $options ) && $meta == $options[ $key ] )
-				|| ( ! is_array( $kgvid_postmeta[ $key ] ) && strlen( $kgvid_postmeta[ $key ] ) == 0
-					&& ( ( array_key_exists( $key, $options ) && strlen( $options[ $key ] ) == 0 )
-					|| ! array_key_exists( $key, $options ) )
+			if ( ( array_key_exists( $key, $options )
+					&& $meta == $options[ $key ]
+				)
+				|| ( ! is_array( $kgvid_postmeta[ $key ] )
+					&& strlen( $kgvid_postmeta[ $key ] ) === 0
+					&& (
+						( array_key_exists( $key, $options )
+							&& strlen( $options[ $key ] ) === 0
+						)
+						|| ! array_key_exists( $key, $options )
+					)
 				)
 			) {
 				unset( $kgvid_postmeta[ $key ] );
 			}
 		}
-
 		update_post_meta( $post_id, '_kgvid-meta', $kgvid_postmeta );
 
 	}
@@ -2865,7 +2871,9 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
 
 			kgvid_change_thumbnail_parent( $post_id, $parent_id );
 
-			if ( $options['featured'] == 'on' && ! has_post_thumbnail( $parent_id ) ) {
+			if ( $options['featured'] == 'on'
+				&& ! has_post_thumbnail( $parent_id )
+			) {
 				$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
 				if ( ! empty( $featured_id ) ) {
 					set_post_thumbnail( $parent_id, $featured_id );
@@ -2878,7 +2886,7 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
 }
 add_filter( 'wp_redirect', 'kgvid_upload_page_change_thumbnail_parent' ); // when attachment parent is manually changed on the Media Library page
 
-function kgvid_validate_post_updated( $post_id ) {
+function kgvid_validate_attachment_updated( $post_id ) {
 
 	$options  = kgvid_get_options();
 	$post     = get_post( $post_id );
@@ -2890,15 +2898,18 @@ function kgvid_validate_post_updated( $post_id ) {
 			kgvid_change_thumbnail_parent( $post_id, $post->post_parent );
 		}
 
-		if ( $options['featured'] == 'on' ) {
-			$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
-			if ( ! empty( $featured_id ) && get_post_thumbnail_id( $post->post_parent ) != $featured_id ) {
-				set_post_thumbnail( $post->post_parent, $featured_id );
-			}
+		$featured_id    = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
+		$kgvid_postmeta = kgvid_get_attachment_meta( $post_id );
+		//this doesn't always get set in the old Media Library view
+		set_post_thumbnail( $post_id, $featured_id );
+		if ( $kgvid_postmeta['featuredchanged'] === 'true'
+			&& ! empty( $featured_id )
+		) {
+			set_post_thumbnail( $post->post_parent, $featured_id );
 		}
 	}
 }
-add_action( 'edit_attachment', 'kgvid_validate_post_updated' );
+add_action( 'edit_attachment', 'kgvid_validate_attachment_updated' );
 
 /**
  * Adding our custom fields to the $form_fields array
@@ -3017,7 +3028,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			if ( ! empty( $kgvid_postmeta['autothumb-error'] ) && empty( $thumbnail_url ) ) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">' . wp_kses_post( $kgvid_postmeta['autothumb-error'] ) . '</div>';
 			} elseif ( ! empty( $thumbnail_url ) ) {
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-thumb_id="' . esc_attr( $thumbnail_id ) . '" src="' . esc_attr( $thumbnail_url ) . '?' . rand() . '"></div>';
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' . esc_attr( $post->ID ) . '" width="200" data-thumb_id="' . esc_attr( $thumbnail_id ) . '" data-featuredchanged="' . esc_attr( $kgvid_postmeta['featuredchanged'] ) . '" src="' . esc_attr( $thumbnail_url ) . '?' . rand() . '"></div>';
 			}
 
 			$choose_from_video_content = '';
@@ -3038,7 +3049,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 				&& ! $thumbnail_url
 				&& $created_time < 60
 			) {
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box kgvid_redraw_thumbnail_box" style="height:112px;"><span>' . esc_html__( 'Loading thumbnail...' ) . '</span></div>';
+				$thumbnail_html = '<div id="thumbnail-' . esc_attr( $post->ID ) . '" class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box kgvid_redraw_thumbnail_box" style="height:112px;"><span>' . esc_html__( 'Loading thumbnail...' ) . '</span></div>';
 			}
 
 			if ( empty( $security_disabled ) && current_user_can( 'make_video_thumbnails' ) ) {
@@ -3379,7 +3390,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 			} else { // if a new thumbnail was just entered that's exactly the same as the old one, use the old one
 
 				$arr = array(
-					'thumb_id'  => $old_thumb_id,
+					'thumb_id'  => false,
 					'thumb_url' => $thumb_url,
 				);
 				return $arr;
@@ -3539,6 +3550,7 @@ function kgvid_video_attachment_fields_to_save( $post, $attachment ) {
 
 		if ( isset( $attachment['kgflashmediaplayer-featured'] ) ) {
 
+			$attachment['kgflashmediaplayer-featuredchanged'] = 'false';
 			if ( ! empty( $thumb_id ) ) {
 
 				if ( isset( $_POST['action'] )
@@ -3550,15 +3562,16 @@ function kgvid_video_attachment_fields_to_save( $post, $attachment ) {
 					check_ajax_referer( 'update-post_' . $id, 'nonce' );
 					$post_parent = kgvid_sanitize_text_field( wp_unslash( $_POST['post_id'] ) );
 				} elseif ( is_array( $post )
-					&& array_key_exists( 'post_parent', $post )
+					&& array_key_exists( 'post_ID', $post )
 				) {
-					$post_parent = $post['post_parent'];
+					$post_parent = wp_get_post_parent_id( $post['post_ID'] );
 				}
 
-				if ( isset( $post_parent ) ) {
+				if ( isset( $post_parent )
+					&& ! empty( $post_parent )
+				) {
 					set_post_thumbnail( $post_parent, $thumb_id );
-				} else {
-					$attachment['kgflashmediaplayer-noparent'] = true;
+					$attachment['kgflashmediaplayer-featuredchanged'] = 'true';
 				}
 			}
 		}
@@ -3985,14 +3998,6 @@ function kgvid_save_post( $post_id ) {
 	}
 }
 add_action( 'save_post', 'kgvid_save_post' );
-
-function kgvid_attachment_updated( $post_id ) {
-	$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
-	if ( ! empty( $featured_id ) ) {
-		set_post_thumbnail( $post_id, $featured_id );
-	}
-}
-add_action( 'attachment_updated', 'kgvid_attachment_updated' );
 
 function kgvid_delete_transients() {
 

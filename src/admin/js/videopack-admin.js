@@ -30,6 +30,16 @@ function kgvid_admin_page_ready() {
 							kgvid_attachment_selected(attributes);
 						}
 					});
+					wp.media.frame.on('attachment:compat:ready', function() {
+						var attributes = wp.media.frame.state().get('selection').first().attributes;
+						var thumb_id = jQuery('#thumbnail-' + attributes.id).data('thumb_id');
+						if ( jQuery('#thumbnail-'+attributes.id).data('featuredchanged') == true
+							&& jQuery('#attachments-' + attributes.id + '-featured').attr('checked')
+							&& thumb_id
+						) {
+							wp.media.featuredImage.set(thumb_id);
+						}
+					});
 					wp.media.frame.state().get('library').on('reset', function() {
 						wp.media.frame.trigger('selection:toggle');
 					});
