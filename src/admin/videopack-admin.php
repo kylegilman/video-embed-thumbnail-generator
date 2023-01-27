@@ -702,7 +702,7 @@ function kgvid_showUpgradeNotification( $currentPluginMetadata, $newPluginMetada
 	if ( isset( $newPluginMetadata->upgrade_notice ) && strlen( trim( $newPluginMetadata->upgrade_notice ) ) > 0 ) {
 		printf(
 			'<div class="update-message">%s</div>',
-			wpautop( $newPluginMetadata->upgrade_notice )
+			wp_kses_post( $newpluginmetadata->upgrade_notice )
 		);
 	}
 }
@@ -1478,7 +1478,7 @@ function kgvid_dimensions_callback() {
 	);
 	$select = kgvid_generate_settings_select_html( 'fixed_aspect', $options, $items );
 	/* translators: %s is html code for a drop-down select input */
-	echo sprintf( esc_html__( 'Constrain %s videos to default aspect ratio.', 'video-embed-thumbnail-generator' ), wp_kses_post( $select ) );
+	echo sprintf( esc_html__( 'Constrain %s videos to default aspect ratio.', 'video-embed-thumbnail-generator' ), wp_kses( $select, kgvid_allowed_html( 'admin' ) ) );
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'When set to "no," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.', 'video-embed-thumbnail-generator' ) ) );
 	echo '<input ' . checked( $options['minimum_width'], 'on', false ) . " id='minimum_width' name='kgvid_video_embed_options[minimum_width]' type='checkbox' /> <label for='minimum_width'>" . esc_html__( 'Enlarge lower resolution videos to max width.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Usually if a video\'s resolution is less than the max width, the video player is set to the actual width of the video. Enabling this will always set the same width regardless of the quality of the video. When necessary you can override by setting the dimensions manually.', 'video-embed-thumbnail-generator' ) ) );
@@ -1629,9 +1629,9 @@ function kgvid_performance_callback() {
 		__( 'start', 'video-embed-thumbnail-generator' ) => 'start',
 		__( 'no', 'video-embed-thumbnail-generator' )    => 'false',
 	);
-	$select = wp_kses( kgvid_generate_settings_select_html( 'count_views', $options, $items ), kgvid_allowed_html( 'admin' ) );
+	$select = kgvid_generate_settings_select_html( 'count_views', $options, $items );
 	/* translators: %s is a drop-down select input that has options like 'start and complete' or 'no' */
-	echo sprintf( esc_html__( 'Record %s views in the WordPress database.', 'video-embed-thumbnail-generator' ), wp_kses_post( $select ) );
+	echo sprintf( esc_html__( 'Record %s views in the WordPress database.', 'video-embed-thumbnail-generator' ), wp_kses( $select, kgvid_allowed_html( 'admin' ) ) );
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 
