@@ -2414,7 +2414,6 @@ function kgvid_init_plugin() {
 			}
 			if ( wp_next_scheduled( 'kgvid_cleanup_queue' ) != false ) { // kgvid_cleanup_queue needs an argument!
 				wp_clear_scheduled_hook( 'kgvid_cleanup_queue' );
-				wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'kgvid_cleanup_queue', array( 'scheduled' ) );
 			}
 		}
 		if ( $options['version'] < 4.1 ) {
@@ -2647,8 +2646,17 @@ function kgvid_init_plugin() {
 		}
 
 		if ( version_compare( $options['version'], '4.8', '<' ) ) {
-			$options['version'] = '4.8';
-			kgvid_check_ffmpeg_exists( $options, true ); // recheck because so much about executing FFMPEG has changed
+			$options['version']       = '4.8';
+			$ffmpeg_options           = kgvid_check_ffmpeg_exists( $options, false ); // recheck because so much about executing FFMPEG has changed
+			$options['ffmpeg_exists'] = $ffmpeg_options['ffmpeg_exists'];
+		}
+
+		if ( version_compare( $options['version'], '4.8.3', '<' ) ) {
+			$options['version'] = '4.8.3';
+			if ( wp_next_scheduled( 'kgvid_cleanup_queue', array( 'scheduled' ) ) != false ) {
+				wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) ); //don't need to run this forever
+				wp_schedule_single_event( time() + DAY_IN_SECONDS, 'kgvid_cleanup_queue', array( 'scheduled' ) );
+			}
 		}
 
 		if ( $options['version'] != $default_options['version'] ) {
