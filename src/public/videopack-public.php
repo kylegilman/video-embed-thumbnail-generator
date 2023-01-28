@@ -436,10 +436,7 @@ function kgvid_get_first_embedded_video( $post ) {
 
 function kgvid_video_embed_print_scripts() {
 
-	global $wpdb;
-
 	$posts   = get_posts();
-	$pattern = get_shortcode_regex();
 	$options = kgvid_get_options();
 
 	if ( ! empty( $posts ) && is_array( $posts ) ) {

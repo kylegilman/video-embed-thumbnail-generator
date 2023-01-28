@@ -948,7 +948,6 @@ function kgvid_get_generating_old() {
 				array(
 					'key'     => '_kgflashmediaplayer-poster',
 					'compare' => 'NOT EXISTS',
-					'value'   => 'completely',
 				),
 			),
 			'numberposts'    => -1,

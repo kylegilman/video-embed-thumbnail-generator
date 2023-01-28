@@ -2240,8 +2240,6 @@ function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 
 function kgvid_init_plugin() {
 
-	global $wpdb;
-
 	load_plugin_textdomain( 'video-embed-thumbnail-generator', false, dirname( VIDEOPACK_BASENAME ) . '/languages' );
 
 	if ( is_videopack_active_for_network() ) {
@@ -2368,7 +2366,16 @@ function kgvid_init_plugin() {
 			}
 		}
 		if ( ! empty( $options ) ) {
-			$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'wp_FMP%'" );
+			global $wpdb;
+			$fmp_options = $wpdb->get_col(
+				"SELECT option_name
+				FROM $wpdb->options
+				WHERE option_name
+				LIKE 'wp_FMP%'"
+			);
+			foreach ( $fmp_options as $fmp_option ) {
+				delete_option( $fmp_option );
+			}
 		}
 
 		foreach ( $default_options as $key => $value ) { // apply default values for any settings that didn't exist before
