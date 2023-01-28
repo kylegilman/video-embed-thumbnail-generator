@@ -619,6 +619,12 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 		'paged'          => $page_number,
 		'post_status'    => 'published',
 		'post_parent'    => $query_atts['gallery_id'],
+		'meta_query'     => array(
+			array(
+				'key'     => '_kgflashmediaplayer-externalurl',
+				'compare' => 'NOT EXISTS',
+			),
+		),
 	);
 
 	if ( ! empty( $query_atts['gallery_exclude'] ) ) {
@@ -644,11 +650,6 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 	if ( $attachments->have_posts() ) {
 
 		foreach ( $attachments->posts as $attachment ) {
-
-			if ( get_post_meta( $attachment->ID, '_kgflashmediaplayer-externalurl', true ) ) {
-				//skip any child formats of external URLs
-				continue;
-			}
 
 			$thumbnail_url    = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true );
 			$poster_id        = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true );
