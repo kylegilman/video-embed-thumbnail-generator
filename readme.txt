@@ -15,15 +15,15 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 = A plugin to make video players, thumbnails, multiple resolutions, and video galleries. =
 
-This video plugin adds several fields to any video uploaded to the WordPress Media Library. If your video can be played natively in your browser, or if you have FFMPEG installed on your server (optional), you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create an array to choose from. Click "Insert into Post" and you'll get a shortcode in the post editor that will make a flexible, responsive video player.
+This video plugin adds several options to any video uploaded to the WordPress Media Library. If your video can be played natively in your browser, or if you have FFMPEG installed on your server (optional), you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create a selection to choose from. Click "Insert into Post" and you'll get a shortcode in the post editor that will make a flexible, responsive video player.
 
-If you provide multiple H.264 resolutions, the plugin can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If FFMPEG is installed on your server the plugin can make the videos automatically.
+If you provide multiple H.264 resolutions, Videopack can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If FFMPEG is installed on your server Videopack can make the videos automatically.
 
-You can also use the plugin to create a popup video gallery. The shortcode uses options similar to the <a href="https://codex.wordpress.org/Gallery_Shortcode">WordPress image gallery shortcode</a>. In its simplest form it will create a gallery of all videos attached to the post.
+You can also use Videopack to create a popup video gallery. The shortcode uses options similar to the <a href="https://codex.wordpress.org/Gallery_Shortcode">WordPress image gallery shortcode</a>. In its simplest form it will create a gallery of all videos attached to the post.
 
 You can now add advertisements to your videos using the <a href="https://www.videopack.video/add-ons/videopack-ads/">Videopack Ads</a> premium add-on which you can purchase from the Add-ons tab of the Videopack Settings page or on the <a href="https://www.videopack.video/add-ons/videopack-ads/">Videopack website</a>.
 
-Not compatible with the new Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
+Not compatible with the Block Editor. Please continue to use the <a href="https://wordpress.org/plugins/classic-editor/">Classic Editor</a>.
 
 Visit the <a href="https://www.videopack.video/docs/">Videopack Documentation pages</a> for more info.
 
@@ -36,19 +36,17 @@ Visit the <a href="https://www.videopack.video/docs/">Videopack Documentation pa
 
 = Why doesn't my video play? =
 
-Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, flv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. It's confusing, but there is a codec usually identified simply as "MPEG-4" of "MPEG-4 Visual" which is not the same thing as H.264 even if it's in an mp4 container. mp4s with MPEG-4 video will not play in most browsers, and if you don't use AAC audio you won't get any audio. I highly recommend using <a href="http://handbrake.fr/">Handbrake</a> to make a file with H.264 video and AAC audio in an MP4 container.
+Most of the time your video doesn't play because it's not encoded in the right format. Videos have containers like mp4, mov, ogv, mkv, etc and within those containers there are video and audio codecs like H.264, MPEG-4, VP8, etc. The best option for this plugin is an mp4 container with H.264 video and AAC audio. It's confusing, but there is a codec usually identified simply as "MPEG-4" of "MPEG-4 Visual" which is not the same thing as H.264 even if it's in an mp4 container. mp4s with MPEG-4 video will not play in most browsers, and if you don't use AAC audio you won't get any audio. I highly recommend using <a href="http://handbrake.fr/">Handbrake</a> to make a file with H.264 video and AAC audio in an MP4 container.
 
 Use <a href="http://mediaarea.net/en/MediaInfo">MediaInfo</a> to get really detailed information about your media files.
-
-If your theme loads FitVids.js, it will break playback in Firefox. If you can figure out how to prevent your theme from loading FitVids.js you will not miss it.
 
 = Why does my video have to download completely before it starts playing? =
 
 mp4/m4v/mov files have something called a moov atom that gives the video player information about the content of the video (dimensions, duration, codecs, etc). Depending on the program you used to make your video, the moov atom can be at the beginning or the end of the file. Most video players will wait until they find the moov atom before starting playback. Otherwise it doesn't know how to display the information it's downloading. If it's at the beginning of the file, playback starts very soon after the user hits the play button. If it's at the end of the file, the whole video has to download before playback starts.
 
-There are a number of ways to fix this problem. Most video encoding programs have an option like "Web optimized," "Streaming," "Fast start," or "Progressive download." Try to find and enable that option in your program. If you can't do that, there are programs designed to move the moov atom to the head of the file. Try <a href="http://renaun.com/blog/code/qtindexswapper/">QTIndexSwapper</a> for Adobe Air (cross platform), <a href="http://www.datagoround.com/lab/">MP4 Faststart</a> for Windows, or <a href="http://mac.softpedia.com/get/Video/QTFastStart.shtml">QTFastStart</a> for Mac.
+There are a number of ways to fix this problem. Most video encoding programs have an option like "Web optimized," "Streaming," "Fast start," or "Progressive download." Try to find and enable that option in your program. If you can't do that, there are programs designed to move the moov atom to the head of the file. Try <a href="http://www.datagoround.com/lab/">MP4 Faststart</a> for Windows, or <a href="http://mac.softpedia.com/get/Video/QTFastStart.shtml">QTFastStart</a> for Mac.
 
-FFMPEG puts the moov atom at the end of the file, so this can be a problem. The plugin will fix this problem on newly encoded H.264 videos if you have a recent version of FFMPEG and enable the "movflags faststart" option in the plugin settings or if you have qt-faststart or MP4Box installed on your server.
+FFMPEG puts the moov atom at the end of the file, so this can be a problem. Videopack will fix this problem on newly encoded H.264 videos if you have a recent version of FFMPEG and enable the "movflags faststart" option in the Videopack settings or if you have qt-faststart or MP4Box installed on your server.
 
 = Why doesn't this work with YouTube? =
 
@@ -56,7 +54,7 @@ WordPress already has <a href="http://codex.wordpress.org/Embeds">a built-in sys
 
 = Why can't I make thumbnails? =
 
-If you're like most users and don't have FFMPEG installed on your server, the plugin relies on your browser's built-in ability to play videos. Google Chrome is best when making thumbnails because it supports the most formats. Wikipedia has <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">a great chart that explains which browsers work with which video formats</a>.
+If you're like most users and don't have FFMPEG installed on your server, Videopack relies on your browser's built-in ability to play videos. Google Chrome is best when making thumbnails because it supports the most formats. Wikipedia has <a href="http://en.wikipedia.org/wiki/HTML5_video#Browser_support">a great chart that explains which browsers work with which video formats</a>.
 
 = How can I change the watermark's size or position? =
 
@@ -88,13 +86,15 @@ If you want to put it in the upper left instead of the lower right, try somethin
 
 = I'm getting an error message FFMPEG not found at /usr/local/bin/. You can embed existing videos, but video thumbnail generation and Mobile/HTML5 video encoding is not possible without FFMPEG. =
 
-This plugin can use FFMPEG or LIBAV to make thumbnails and create alternate video formats. Unfortunately most servers don't have FFMPEG installed and most shared hosting plans don't allow you to install FFMPEG because of the system resources it requires. You're getting this error message because you don't have FFMPEG installed in the most common directory. If you know you have FFMPEG installed on your server, you'll need to find the actual path to the program and enter it in the plugin settings field `Path to applications on server`
+You can get instructions to install FFMPEG for several different Linux distributions at https://www.tecmint.com/install-ffmpeg-in-linux/ You do not need the obsolete <a href="https://ffmpeg-php.sourceforge.net/">FFMPEG-PHP module/extension</a>. It does not work with Videopack.
 
-Most of the features of the plugin will work without FFMPEG. You can generate embed shortcodes for your videos and make thumbnails on any host because that part of the plugin is JavaScript running in your browser. But without FFMPEG you won't be able to automatically generate thumbnails or encode alternate formats on the server. If you don't have your own VPS or dedicated server, Dreamhost and Arvixe are two of the few shared hosts I know of that has FFMPEG installed and available for users.
+Videopack can use FFMPEG or LIBAV to make thumbnails and create alternate video formats. Unfortunately most servers don't have FFMPEG installed and most shared hosting plans don't allow you to install FFMPEG because of the system resources it requires. You're getting this error message because you don't have FFMPEG installed in the most common directory. If you know you have FFMPEG installed on your server, you'll need to find the actual path to the program and enter it in the Videopack settings field `Path to applications on server`.
+
+Most of Videopack's features will work without FFMPEG. You can generate embed shortcodes for your videos and make thumbnails on any host because that part of Videopack is JavaScript running in your browser. But without FFMPEG you won't be able to automatically generate thumbnails or encode alternate formats on the server. If you don't have your own VPS or dedicated server, Dreamhost and Arvixe are two of the few shared hosts I know of that has FFMPEG installed and available for users.
 
 = How can I encode videos in directories protected by .htaccess passwords? =
 
-Enter the username & password in the plugin settings "FFMPEG Settings" tab, or use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
+Enter the username & password in the Videopack settings page, "FFMPEG Settings" tab, or use the "Embed from URL" tab and enter the URL in this format http://username:password@yourdomain.com/uploads/2012/01/awesomevid.mp4 in the Video URL field.
 
 == Screenshots ==
 
@@ -105,7 +105,7 @@ Enter the username & password in the plugin settings "FFMPEG Settings" tab, or u
 
 == Changelog ==
 
-= 4.8.3 - January 27, 2023 =
+= 4.8.3 - January 28, 2023 =
 * Added try/catch when running FFMPEG for better error reporting and avoiding fatal errors on activation.
 * Improved process for automatically setting featured post images when thumbnails are chosen.
 * Added mkv as a supported file format. Playback will be inconsistent across browsers and devices.
