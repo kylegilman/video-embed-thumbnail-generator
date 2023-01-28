@@ -396,13 +396,16 @@ function kgvid_setup_video(id) {
 		jQuery( '#video_' + id + '_div' ).bind( 'contextmenu',function() { return false; } );
 	}
 	if ( jQuery( '#video_' + id + '_div .kgvid-download-link' ).length
-		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr('download') != 'undefined'
-		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).data('alt_link') != 'undefined'
+		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr( 'download' ) != 'undefined'
+		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).data( 'alt_link' ) != 'undefined'
 	) {
-		jQuery( '#video_' + id + '_div .kgvid-download-link' ).on('click', function(e) {
-			e.preventDefault();
-			kgvid_check_download_link(id);
-		} );
+		jQuery( '#video_' + id + '_div .kgvid-download-link' ).on(
+			'click',
+			function(e) {
+				e.preventDefault();
+				kgvid_check_download_link( id );
+			}
+		);
 	}
 
 	if ( video_vars.player_type == "Video.js" || video_vars.player_type == "Video.js v7" ) {
@@ -1133,22 +1136,24 @@ function kgvid_video_counter(id, event) {
 
 function kgvid_check_download_link(id) {
 
-	var url = jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr('href');
-	jQuery.ajax({
-		type: 'HEAD',
-		url: url,
-		success: function() {
-			let link = document.createElement('a');
-			link.href = url;
-			link.setAttribute('download', '');
-			link.click();
-		},
-		error: function(xhr) {
-			let link = document.createElement('a');
-			link.href = jQuery( '#video_' + id + '_div .kgvid-download-link' ).data('alt_link');
-			link.click();
+	var url = jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr( 'href' );
+	jQuery.ajax(
+		{
+			type: 'HEAD',
+			url: url,
+			success: function() {
+				let link  = document.createElement( 'a' );
+				link.href = url;
+				link.setAttribute( 'download', '' );
+				link.click();
+			},
+			error: function(xhr) {
+				let link  = document.createElement( 'a' );
+				link.href = jQuery( '#video_' + id + '_div .kgvid-download-link' ).data( 'alt_link' );
+				link.click();
+			}
 		}
-	  });
+	);
 
 }
 
