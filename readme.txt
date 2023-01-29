@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.2.5
-Stable tag: 4.8.4
+Stable tag: 4.8.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.8.5 - January 28, 2023 =
+* Forgot to increase the plugin version number. This will stop endless Videopack updates available.
 
 = 4.8.4 - January 28, 2023 =
 * Fixed redirect validation error that caused "the link you followed has expired" errors.
