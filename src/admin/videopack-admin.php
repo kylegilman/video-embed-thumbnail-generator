@@ -15,8 +15,8 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.8.3',
-		'videojs_version'         => '7.20.3',
+		'version'                 => '4.8.4',
+		'videojs_version'         => '7.21.1',
 		'embed_method'            => 'Video.js v7',
 		'template'                => false,
 		'template_gentle'         => 'on',
@@ -2870,10 +2870,7 @@ function kgvid_change_thumbnail_parent( $post_id, $parent_id ) {
 
 function kgvid_upload_page_change_thumbnail_parent( $location ) {
 
-	if (
-		( ! is_admin()
-			&& ! check_admin_referer( 'bulk-media' )
-		)
+	if ( ! is_admin()
 		|| ! function_exists( 'get_current_screen' )
 	) {
 		return $location;
@@ -2887,6 +2884,7 @@ function kgvid_upload_page_change_thumbnail_parent( $location ) {
 		&& isset( $_GET['media'] )
 		&& is_array( $_GET['media'] )
 		&& $options['thumb_parent'] === 'post'
+		&& check_admin_referer( 'bulk-media' )
 	) {
 		$media = kgvid_sanitize_text_field( wp_unslash( $_GET['media'] ) );
 		if ( isset( $_GET['found_post_id'] ) ) {
