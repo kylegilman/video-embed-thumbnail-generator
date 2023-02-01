@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.2.5
-Stable tag: 4.8.5
+Stable tag: 4.8.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,11 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.8.6 - February 1, 2023 =
+* Made improvements to oEmbed responses for better, more universally accepted embedded videos.
+* Fixed bug that always returned the video attached to the most recent post when any posts or pages were embedded.
+* Fixed bug that disabled navigation between attachments in the Media Library.
 
 = 4.8.5 - January 28, 2023 =
 * Forgot to increase the plugin version number. This will stop endless Videopack updates available.
