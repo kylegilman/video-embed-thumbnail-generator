@@ -339,7 +339,8 @@ function kgvid_get_first_embedded_video( $post ) {
 	preg_match_all( '/' . $pattern . '/s', $shortcode_text, $matches );
 
 	if ( is_array( $matches )
-		&& array_key_exists( 2, $matches ) && array_key_exists( 5, $matches )
+		&& array_key_exists( 2, $matches )
+		&& array_key_exists( 5, $matches )
 		&& ( in_array( 'videopack', $matches[2] )
 			|| in_array( 'VIDEOPACK', $matches[2] )
 			|| in_array( 'KGVID', $matches[2] )
@@ -356,6 +357,7 @@ function kgvid_get_first_embedded_video( $post ) {
 				'FMP',
 			);
 
+			$first_key = false;
 			foreach ( $shortcode_names as $shortcode ) {
 				$first_key = array_search( $shortcode, $matches[2] );
 				if ( $first_key !== false ) {
@@ -371,7 +373,9 @@ function kgvid_get_first_embedded_video( $post ) {
 					$attributes = shortcode_parse_atts( $matches[3][ $first_key ] );
 				}
 
-				if ( is_array( $attributes ) && array_key_exists( 'id', $attributes ) ) {
+				if ( is_array( $attributes )
+					&& array_key_exists( 'id', $attributes )
+				) {
 					$url = wp_get_attachment_url( $attributes['id'] );
 					//end if there's an ID attribute
 				} elseif ( ! empty( $matches[5][ $first_key ] ) ) { // there's a URL but no ID
@@ -382,18 +386,17 @@ function kgvid_get_first_embedded_video( $post ) {
 					}
 					$attributes['id'] = kgvid_url_to_id( $matches[5][ $first_key ] );
 
-				} elseif ( ( is_array( $attributes )
+				} elseif (
+					( is_array( $attributes )
 						&& ! array_key_exists( 'id', $attributes )
 					)
 					|| empty( $attributes )
 				) {
 
-					$post_id = $post->ID;
-
 					$args             = array(
 						'numberposts'    => 1,
 						'post_mime_type' => 'video',
-						'post_parent'    => $post_id,
+						'post_parent'    => $post->ID,
 						'post_status'    => null,
 						'post_type'      => 'attachment',
 					);
@@ -436,11 +439,16 @@ function kgvid_get_first_embedded_video( $post ) {
 
 function kgvid_video_embed_print_scripts() {
 
-	$posts   = get_posts();
+	global $wp_query;
+	if ( ! isset( $wp_query ) ) {
+		return false;
+	}
 	$options = kgvid_get_options();
 
-	if ( ! empty( $posts ) && is_array( $posts ) ) {
-		foreach ( $posts as $post ) {
+	if ( ! empty( $wp_query->posts )
+		&& is_array( $wp_query->posts )
+	) {
+		foreach ( $wp_query->posts as $post ) {
 			$first_embedded_video = kgvid_get_first_embedded_video( $post );
 			if ( ! empty( $first_embedded_video['url'] ) ) { // if KGVID or FMP shortcode is in posts on this page.
 
@@ -474,7 +482,10 @@ function kgvid_video_embed_print_scripts() {
 					}
 				}
 
-				if ( $options['twitter_card'] == 'on' && array_key_exists( 'id', $first_embedded_video ) && ! empty( $first_embedded_video['id'] ) ) {
+				if ( $options['twitter_card'] == 'on'
+					&& array_key_exists( 'id', $first_embedded_video )
+					&& ! empty( $first_embedded_video['id'] )
+				) {
 
 					add_filter( 'jetpack_disable_twitter_cards', '__return_true', 99 );
 
@@ -522,7 +533,10 @@ function kgvid_change_oembed_data( $data, $post, $width, $height ) {
 
 	$first_embedded_video = kgvid_get_first_embedded_video( $post );
 
-	if ( ! empty( $data ) && ! empty( $first_embedded_video['url'] ) && $options['oembed_provider'] == 'on' ) {
+	if ( ! empty( $data )
+		&& ! empty( $first_embedded_video['url'] )
+		&& $options['oembed_provider'] == 'on'
+	) {
 
 		$data['type'] = 'video';
 
