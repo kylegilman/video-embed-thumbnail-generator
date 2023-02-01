@@ -63,12 +63,24 @@ function kgvid_admin_page_ready() {
 		}
 
 		if ( pagenow == 'upload' ) {
-			if ( typeof wp.media != 'undefined' ) {
-				wp.media.view.Modal.prototype.on(
+			if ( typeof wp.media.view.Modal.prototype !== 'undefined' ) {
+				wp.media.view.Modal.prototype.once(
 					'open',
 					function() {
-						var attributes = wp.media.frame.state().attributes.model.attributes;
-						kgvid_attachment_selected( attributes );
+						setTimeout(function(){
+							if ( typeof wp.media.frame.model.attributes !== 'undefined' ) {
+								var attributes = wp.media.frame.model.attributes;
+								kgvid_attachment_selected( attributes );
+								wp.media.frame.on(
+									'refresh',
+									function() {
+										var attributes = wp.media.frame.model.attributes;
+										kgvid_attachment_selected( attributes );
+									}
+								);
+							}
+						},
+					500 );
 					}
 				);
 			}
