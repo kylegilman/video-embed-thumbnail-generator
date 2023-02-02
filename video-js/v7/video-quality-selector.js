@@ -43,58 +43,58 @@ function kgvid_load_video_quality_selector() {
 	/***********************************************************************************
 	 * Setup our resolution menu items
 	 ***********************************************************************************/
-	videojs.ResolutionMenuItem = videojs.extend(
-		videojs.getComponent( 'MenuItem' ),
-		{
+	const MenuItem = videojs.getComponent( 'MenuItem' );
 
-			// Call variable to prevent the resolution change from being called twice
-			call_count : 0,
+	class ResolutionMenuItem extends MenuItem {
 
-			/** @constructor */
-			constructor : function( player, options ){
+		// Call variable to prevent the resolution change from being called twice
+		call_count = 0;
 
-				var touchstart = false;
+		/** @constructor */
+		constructor( player, options ) {
 
-				// Modify options for parent MenuItem class's init.
-				options.label    = methods.res_label( options.res );
-				options.selected = ( options.res.toString() === player.getCurrentRes().toString() );
+			var touchstart = false;
 
-				// Call the parent constructor
-				videojs.getComponent( 'MenuItem' ).call( this, player, options );
+			// Modify options for parent MenuItem class's init.
+			options.label    = methods.res_label( options.res );
+			options.selected = ( options.res.toString() === player.getCurrentRes().toString() );
 
-				// Store the resolution as a property
-				this.resolution = options.res;
+			// Call the parent constructor
+			super( player, options );
 
-				// Register our click and tap handlers
-				this.on( ['click', 'tap'], this.onClick );
+			// Store the resolution as a property
+			this.resolution = options.res;
 
-				// Toggle the selected class whenever the resolution changes
-				player.on(
-					'changeRes',
-					videojs.bind(
-						this,
-						function() {
+			// Register our click and tap handlers
+			this.on( ['click', 'tap'], this.onClick );
 
-							if ( this.resolution == player.getCurrentRes() ) {
+			// Toggle the selected class whenever the resolution changes
+			player.on(
+				'changeRes',
+				videojs.bind(
+					this,
+					function() {
 
-								this.selected( true );
+						if ( this.resolution == player.getCurrentRes() ) {
 
-							} else {
+							this.selected( true );
 
-								this.selected( false );
-							}
+						} else {
 
-							// Reset the call count
-							this.call_count = 0;
+							this.selected( false );
 						}
-					)
-				);
-			}
+
+						// Reset the call count
+						this.call_count = 0;
+					}
+				)
+			);
 		}
-	);
+	}
+
 
 	// Handle clicks on the menu items
-	videojs.ResolutionMenuItem.prototype.onClick = function() {
+	ResolutionMenuItem.prototype.onClick = function() {
 
 		// Check if this has already been called
 		if ( this.call_count > 0 ) {
@@ -110,48 +110,42 @@ function kgvid_load_video_quality_selector() {
 	/***********************************************************************************
 	 * Setup our resolution menu title item
 	 ***********************************************************************************/
-	videojs.ResolutionTitleMenuItem = videojs.extend(
-		videojs.getComponent( 'MenuItem' ),
-		{
+	class ResolutionTitleMenuItem extends MenuItem {
+		constructor( player, options ) {
 
-			constructor : function( player, options ) {
+			// Call the parent constructor
+			super( player, options );
 
-				// Call the parent constructor
-				videojs.getComponent( 'MenuItem' ).call( this, player, options );
-
-				// No click handler for the menu title
-				this.off( 'click' );
-			}
+			// No click handler for the menu title
+			this.off( 'click' );
 		}
-	);
+	}
 
 	/***********************************************************************************
 	 * Define our resolution selector button
 	 ***********************************************************************************/
-	videojs.ResolutionSelector = videojs.extend(
-		videojs.getComponent( 'MenuButton' ),
-		{
+	const MenuButton = videojs.getComponent( 'MenuButton' );
+	class ResolutionSelector extends MenuButton {
+		/** @constructor */
+		constructor( player, options ) {
 
-			/** @constructor */
-			constructor : function( player, options ) {
+			// Add our list of available resolutions to the player object
+			player.availableRes = options.available_res;
 
-				// Add our list of available resolutions to the player object
-				player.availableRes = options.available_res;
+			// Call the parent constructor
+			super( player, options );
 
-				// Call the parent constructor
-				videojs.getComponent( 'MenuButton' ).call( this, player, options );
-
-			}
 		}
-	);
+	}
+
 
 	// Set class for resolution selector button
-	videojs.ResolutionSelector.prototype.buildCSSClass = function buildCSSClass() {
-		return 'vjs-res-button vjs7-res-button ' + videojs.getComponent( 'MenuButton' ).prototype.buildCSSClass.call( this );
+	ResolutionSelector.prototype.buildCSSClass = function buildCSSClass() {
+		return 'vjs-res-button vjs7-res-button ' + MenuButton.prototype.buildCSSClass.call( this );
 	};
 
 	// Create a menu item for each available resolution
-	videojs.ResolutionSelector.prototype.createItems = function() {
+	ResolutionSelector.prototype.createItems = function() {
 
 		var player = this.player(),
 		items      = [],
@@ -165,7 +159,7 @@ function kgvid_load_video_quality_selector() {
 				continue; }
 
 			items.push(
-				new videojs.ResolutionMenuItem(
+				new ResolutionMenuItem(
 					player,
 					{
 						res : current_res,
@@ -197,7 +191,7 @@ function kgvid_load_video_quality_selector() {
 
 		// Add the menu title item
 		items.unshift(
-			new videojs.ResolutionTitleMenuItem(
+			new ResolutionTitleMenuItem(
 				player,
 				{
 
@@ -491,7 +485,7 @@ function kgvid_load_video_quality_selector() {
 				current_res = methods.res_label( current_res ); }
 
 			// Add the resolution selector button
-			resolutionSelector = new videojs.ResolutionSelector(
+			resolutionSelector = new ResolutionSelector(
 				player,
 				{
 					available_res	: available_res
