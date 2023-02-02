@@ -34,7 +34,10 @@ if ( ! isset( $kgvid_video_embed ) ) {
 <!DOCTYPE html>
 <html style="background-color:transparent;">
 <head>
-<?php wp_head(); ?>
+<?php
+wp_head();
+do_action( 'embed_head' );
+?>
 <style>body:before, body:after{ content: none; } .kgvid_wrapper { margin:0 !important; }
 <?php
 if ( array_key_exists( 'gallery', $kgvid_video_embed ) ) {
@@ -53,6 +56,7 @@ if ( array_key_exists( 'gallery', $kgvid_video_embed ) ) {
 <?php
 echo do_shortcode( $shortcode );
 wp_footer();
+do_action( 'embed_footer' );
 ?>
 </body>
 </html>

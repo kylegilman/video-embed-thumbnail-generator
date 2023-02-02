@@ -500,7 +500,7 @@ function kgvid_video_embed_print_scripts() {
 					if ( array_key_exists( 'poster', $first_embedded_video ) ) {
 						echo '<meta name="twitter:image" content="' . esc_url( str_replace( 'http://', 'https://', $first_embedded_video['poster'] ) ) . '">' . "\n";
 					}
-					echo '<meta name="twitter:player" content="' . esc_url( str_replace( 'http://', 'https://', get_attachment_link( $first_embedded_video['id'] ) ) ) . '?videopack[enable]=true">' . "\n";
+					echo '<meta name="twitter:player" content="' . esc_url( str_replace( 'http://', 'https://', get_post_embed_url( $first_embedded_video['id'] ) ) ) . '">' . "\n";
 					if ( array_key_exists( 'width', $first_embedded_video ) ) {
 						echo '<meta name="twitter:player:width" content="' . esc_attr( $first_embedded_video['width'] ) . '">' . "\n";
 					}
@@ -2177,9 +2177,7 @@ function kgvid_enable_oembed_discover() {
 	$options = kgvid_get_options();
 
 	if ( $options['oembed_security'] == 'on' ) {
-
 		return true;
-
 	} else {
 		return false;
 	}
