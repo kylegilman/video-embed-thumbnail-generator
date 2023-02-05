@@ -2172,18 +2172,6 @@ function kgvid_video_attachment_template() {
 }
 add_action( 'template_redirect', 'kgvid_video_attachment_template' );
 
-function kgvid_enable_oembed_discover() {
-
-	$options = kgvid_get_options();
-
-	if ( $options['oembed_security'] == 'on' ) {
-		return true;
-	} else {
-		return false;
-	}
-}
-add_filter( 'embed_oembed_discover', 'kgvid_enable_oembed_discover' );
-
 function kgvid_clear_first_embedded_video_meta() {
 
 	global $kgvid_video_id;
