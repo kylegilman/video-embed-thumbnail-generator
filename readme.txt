@@ -105,9 +105,10 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.8.6 - February 1, 2023 =
+= 4.8.6 - February 4, 2023 =
 * Made improvements to oEmbed responses for better, more universally accepted embedded videos.
-* Fixed bug that always returned the video attached to the most recent post when any posts or pages were embedded.
+* Removed obsolete setting "Enable oEmbeds from unknown providers"
+* Fixed bug that always returned the video attached to the most recent post when older posts or pages were embedded.
 * Fixed bug that disabled navigation between attachments in the Media Library.
 
 = 4.8.5 - January 28, 2023 =
