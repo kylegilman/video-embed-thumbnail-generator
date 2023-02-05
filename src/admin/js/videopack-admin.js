@@ -51,12 +51,14 @@ function kgvid_admin_page_ready() {
 								}
 							}
 						);
-						wp.media.frame.state().get( 'library' ).on(
-							'reset',
-							function() {
-								wp.media.frame.trigger( 'selection:toggle' );
-							}
-						);
+						if ( typeof wp.media.frame.state().get('library') !== 'undefined' ) {
+							wp.media.frame.state().get( 'library' ).on(
+								'reset',
+								function() {
+									wp.media.frame.trigger( 'selection:toggle' );
+								}
+							);
+						}
 					}
 				);
 			}
