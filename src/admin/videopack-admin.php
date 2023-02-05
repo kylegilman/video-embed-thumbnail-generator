@@ -115,7 +115,6 @@ function kgvid_default_options_fn() {
 		'schema'                  => 'on',
 		'twitter_card'            => false,
 		'oembed_provider'         => false,
-		'oembed_security'         => false,
 		'htaccess_login'          => '',
 		'htaccess_password'       => '',
 		'sample_format'           => 'mobile',
@@ -1603,9 +1602,7 @@ function kgvid_security_callback() {
 		echo " disabled='disabled' title='" . esc_attr__( 'Embedding disabled', 'video-embed-thumbnail-generator' ) . "'";
 	}
 	echo " /> <label for='oembed_provider'>" . esc_html_x( 'Change oEmbed to video instead of WordPress default photo/excerpt.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites (including Facebook & Twitter) will not show videos through oEmbed unless your link is https. In order to display the video properly, this will also remove some of the security features included in the built-in WordPress oEmbed system.', 'video-embed-thumbnail-generator' ) ) );
-	echo '<input ' . checked( $options['oembed_security'], 'on', false ) . " id='oembed_security' name='kgvid_video_embed_options[oembed_security]' type='checkbox' /> <label for='oembed_security'>" . esc_html_x( 'Enable oEmbeds from unknown providers.', '"oEmbed" is a proper noun and might not need translation', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Allows your own users to embed content from any oEmbed provider. User must have the "unfiltered_html" capability which is limited to Administrators and Editors by default.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Allows users of other websites to embed your videos using just the post URL rather than the full iframe embed code, much like Vimeo or YouTube. However, most social media sites (including Facebook & Twitter) will not show videos through oEmbed unless your link is https.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 }
 
