@@ -110,6 +110,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 * Removed obsolete setting "Enable oEmbeds from unknown providers"
 * Fixed bug that always returned the video attached to the most recent post when older posts or pages were embedded.
 * Fixed bug that disabled navigation between attachments in the Media Library.
+* Updated Video.js resolution switcher to newer API to avoid using deprecated .extend function.
 
 = 4.8.5 - January 28, 2023 =
 * Forgot to increase the plugin version number. This will stop endless Videopack updates available.
