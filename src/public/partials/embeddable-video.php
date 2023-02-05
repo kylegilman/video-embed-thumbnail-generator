@@ -25,7 +25,7 @@ if ( ! isset( $kgvid_video_embed ) ) {
 	if ( ! empty( $kgvid_video_embed['id'] ) ) {
 		$shortcode .= ' id="' . $kgvid_video_embed['id'] . '"';
 	}
-	$shortcode .= ' fullwidth="true"]' . $kgvid_video_embed['url'] . '[/videopack]';
+	$shortcode .= ' fullwidth="true" count_views="false" view_count="false"]' . $kgvid_video_embed['url'] . '[/videopack]';
 } else {
 	$shortcode = kgvid_generate_attachment_shortcode( $kgvid_video_embed );
 }
