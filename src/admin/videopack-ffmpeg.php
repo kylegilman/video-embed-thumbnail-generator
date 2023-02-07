@@ -56,6 +56,8 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 	}
 
 	$thumb_options = array(
+		'-vf',
+		'scale=iw*sar:ih',
 		'-qscale',
 		'1',
 		'-vframes',
@@ -2193,7 +2195,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 			kgvid_schedule_cleanup_generated_files( 'thumbs' );
 		}
 
-		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments[' . esc_attr( $post_id ) . '][thumb' . esc_attr( $i ) . ']" id="attachments-' . esc_attr( $post_id ) . '-thumb' . esc_attr( $i ) . '"><label for="kgflashmedia-' . esc_attr( $post_id ) . '-thumbradio' . esc_attr( $i ) . '"><img src="' . esc_attr( $tmp_thumbnailurl ) . '?' . rand() . '" width="200" height="' . esc_attr( $thumbnailheight ) . '" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments[' . esc_attr( $post_id ) . '][thumbradio_' . esc_attr( $post_id ) . ']" id="kgflashmedia-' . esc_attr( $post_id ) . '-thumbradio' . esc_attr( $i ) . '" value="' . esc_attr( $final_thumbnailurl ) . '" onchange="kgvid_select_thumbnail(this.value, \'' . esc_attr( $post_id ) . '\', ' . esc_attr( $movieoffset ) . ', jQuery(this).parent().find(\'img\')[0]);"></div>';
+		$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments[' . esc_attr( $post_id ) . '][thumb' . esc_attr( $i ) . ']" id="attachments-' . esc_attr( $post_id ) . '-thumb' . esc_attr( $i ) . '"><label for="kgflashmedia-' . esc_attr( $post_id ) . '-thumbradio' . esc_attr( $i ) . '"><img src="' . esc_attr( $tmp_thumbnailurl ) . '?' . rand() . '" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments[' . esc_attr( $post_id ) . '][thumbradio_' . esc_attr( $post_id ) . ']" id="kgflashmedia-' . esc_attr( $post_id ) . '-thumbradio' . esc_attr( $i ) . '" value="' . esc_attr( $final_thumbnailurl ) . '" onchange="kgvid_select_thumbnail(this.value, \'' . esc_attr( $post_id ) . '\', ' . esc_attr( $movieoffset ) . ', jQuery(this).parent().find(\'img\')[0]);"></div>';
 
 		++$i;
 

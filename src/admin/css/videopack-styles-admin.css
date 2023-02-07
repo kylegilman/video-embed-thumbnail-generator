@@ -253,6 +253,7 @@ div.kgvid_thumbnail_select {
 
 img.kgvid_thumbnail, canvas.kgvid_thumbnail {
 	margin:2px;
+	max-width:200px;
 }
 
 .kgvid_embedselect {
