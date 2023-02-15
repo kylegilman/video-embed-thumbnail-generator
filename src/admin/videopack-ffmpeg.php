@@ -2522,6 +2522,7 @@ function kgvid_encode_videos() {
 	$video_formats      = kgvid_video_formats();
 
 	if ( ! empty( $video_encode_queue )
+		&& is_array( $video_encode_queue )
 		&& $options['queue_control'] == 'play'
 	) {
 
