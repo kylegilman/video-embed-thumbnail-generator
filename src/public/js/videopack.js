@@ -317,7 +317,10 @@ function kgvid_add_hover(id) {
 
 function kgvid_load_videojs(video_vars) {
 
-	var videojs_options = { "language": video_vars.locale };
+	var videojs_options = {
+		"language": video_vars.locale,
+		"restoreEl": true
+	};
 
 	if ( videojs.browser.IS_IPHONE == true ) {
 		videojs_options.html5 = { "nativeTextTracks" : true };
@@ -351,6 +354,10 @@ function kgvid_load_videojs(video_vars) {
 		} else {
 			console.warn( 'Video Embed & Thumbnail Generator: Video.js version ' + videojs.VERSION + ' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.' );
 		}
+	}
+
+	if ( typeof videojs.getPlayer( 'video_' + video_vars.id ) !== 'undefined' ) {
+		videojs( 'video_' + video_vars.id ).dispose();
 	}
 
 	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){ kgvid_setup_video( video_vars.id ); } );
