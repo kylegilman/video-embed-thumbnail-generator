@@ -27,6 +27,7 @@ function kgvid_default_options_fn() {
 			'height' => '',
 		),
 		'hide_video_formats'      => 'on',
+		'hide_thumbnails'         => false,
 		'app_path'                => '/usr/local/bin',
 		'video_app'               => 'ffmpeg',
 		'ffmpeg_exists'           => 'notchecked',
@@ -1247,7 +1248,10 @@ function kgvid_do_settings_sections( $page ) {
 			call_user_func( $section['callback'], $section );
 		}
 
-		if ( ! isset( $wp_settings_fields ) || ! isset( $wp_settings_fields[ $page ] ) || ! isset( $wp_settings_fields[ $page ][ $section['id'] ] ) ) {
+		if ( ! isset( $wp_settings_fields )
+			|| ! isset( $wp_settings_fields[ $page ] )
+			|| ! isset( $wp_settings_fields[ $page ][ $section['id'] ] )
+		) {
 			continue;
 		}
 		echo '<table class="form-table" id="table_' . esc_attr( $section['id'] ) . '">';
@@ -1281,6 +1285,7 @@ function kgvid_video_embed_options_init() {
 	add_settings_field( 'replacevideoshortcode', esc_html__( 'Replace video shortcode:', 'video-embed-thumbnail-generator' ), 'kgvid_replace_video_shortcode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
 	add_settings_field( 'rewrite_attachment_url', esc_html__( 'Attachment URL Rewriting:', 'video-embed-thumbnail-generator' ), 'kgvid_rewrite_attachment_url_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
 	add_settings_field( 'generate_thumbs', esc_html__( 'Default number of thumbnails to generate:', 'video-embed-thumbnail-generator' ), 'kgvid_generate_thumbs_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
+	add_settings_field( 'generate_thumbs', esc_html__( 'Media Library:', 'video-embed-thumbnail-generator' ), 'kgvid_media_library_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'hide_thumbnails' ) );
 	add_settings_field( 'featured', esc_html__( 'Featured image:', 'video-embed-thumbnail-generator' ), 'kgvid_featured_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
 	add_settings_field( 'thumb_parent', esc_html__( 'Attach thumbnails to:', 'video-embed-thumbnail-generator' ), 'kgvid_thumb_parent_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
 	add_settings_field( 'user_roles', esc_html__( 'User capabilities:', 'video-embed-thumbnail-generator' ), 'kgvid_user_roles_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'user_roles' ) );
@@ -1651,6 +1656,11 @@ function kgvid_rewrite_attachment_url_callback() {
 function kgvid_generate_thumbs_callback() {
 	$options = kgvid_get_options();
 	echo "<input class='small-text' id='generate_thumbs' name='kgvid_video_embed_options[generate_thumbs]' maxlength='2' type='text' value='" . esc_attr( $options['generate_thumbs'] ) . "' />\n\t";
+}
+
+function kgvid_media_library_callback() {
+	$options = kgvid_get_options();
+	echo '<input ' . checked( $options['hide_thumbnails'], 'on', false ) . " id='hide_thumbnails' name='kgvid_video_embed_options[hide_thumbnails]' type='checkbox' /> <label for='hide_thumbnails'>" . esc_html__( 'Hide generated thumbnails from the Media Library.', 'video-embed-thumbnail-generator' ) . '</label>' . "\n\t";
 }
 
 function kgvid_featured_callback() {
@@ -2661,6 +2671,11 @@ function kgvid_init_plugin() {
 			}
 		}
 
+		if ( version_compare( $options['version'], '4.8.7', '<' ) ) {
+			$options['version']         = '4.8.7';
+			$options['hide_thumbnails'] = false;
+		}
+
 		if ( $options['version'] != $default_options['version'] ) {
 			$options['version'] = $default_options['version'];
 		}
@@ -3325,19 +3340,28 @@ function kgvid_hide_video_children( $wp_query_obj ) {
 
 	if ( is_admin()
 		&& is_array( $wp_query_obj->query_vars )
-		&& ( array_key_exists( 'post_type', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['post_type'] == 'attachment' ) // only deal with attachments
+		&& array_key_exists( 'post_type', $wp_query_obj->query_vars )
+		&& $wp_query_obj->query_vars['post_type'] == 'attachment' // only deal with attachments
 		&& ! array_key_exists( 'post_mime_type', $wp_query_obj->query_vars ) // show children when specifically displaying videos
 		&& ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) // hide children only when showing paged content (makes sure that -1 will actually return all attachments)
 	) {
 
+		$options    = kgvid_get_options();
 		$meta_query = $wp_query_obj->get( 'meta_query' );
 		if ( ! is_array( $meta_query ) ) {
 			$meta_query = array();
 		}
-		$meta_query[] = array(
+		$meta_query['relation'] = 'AND';
+		$meta_query[]           = array(
 			'key'     => '_kgflashmediaplayer-format',
 			'compare' => 'NOT EXISTS',
 		);
+		if ( $options['hide_thumbnails'] === 'on' ) {
+			$meta_query[] = array(
+				'key'     => '_kgflashmediaplayer-video-id',
+				'compare' => 'NOT EXISTS',
+			);
+		}
 		$wp_query_obj->set(
 			'meta_query',
 			$meta_query
