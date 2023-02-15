@@ -34,7 +34,7 @@ function kgvid_save_encode_queue( $video_encode_queue ) {
 	}
 }
 
-function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array() ) {
+function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array(), $total = 1 ) {
 
 	$options = kgvid_get_options();
 	if ( empty( $options ) ) {
@@ -47,30 +47,63 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 		$ffmpeg_path = $ffmpeg_path . '/' . $options['video_app'];
 	}
 
-	$before_thumb_options = array(
-		$ffmpeg_path,
-		'-y',
-		'-ss',
-		$seek,
-		'-i',
-		$input,
+	if ( $options['thumb_significant'] === false ) {
+		$before_thumb_options = array(
+			$ffmpeg_path,
+			'-y',
+			'-ss',
+			$seek,
+			'-i',
+			$input,
+		);
+
+		$thumb_options = array(
+			'-vf',
+			'scale=iw*sar:ih',
+			'-qscale',
+			'1',
+			'-vframes',
+			'1',
+		);
+
+	} else {
+		$before_thumb_options = array(
+			$ffmpeg_path,
+			'-y',
+			'-i',
+			$input,
+		);
+		if ( $total > 1 ) {
+			$thumb_options = array(
+				'-vf',
+				'select=gt(scene\,0.4),scale=iw*sar:ih',
+				'-vframes',
+				$total,
+				'-vsync',
+				'vfr',
+			);
+		} else {
+			$thumb_options = array(
+				'-vf',
+				'thumbnail,scale=iw*sar:ih',
+				'-vframes',
+				'1',
+			);
+		}
+	}
+	$all_thumb_options = array(
+		'-qscale',
+		'1',
+		'-f',
+		'mjpeg',
 	);
+
+	$thumb_options = array_merge( $thumb_options, $all_thumb_options );
 
 	if ( ! empty( $watermark_strings['input'] ) ) {
 		$before_thumb_options[] = '-i';
 		$before_thumb_options[] = $watermark_strings['input'];
 	}
-
-	$thumb_options = array(
-		'-vf',
-		'scale=iw*sar:ih',
-		'-qscale',
-		'1',
-		'-vframes',
-		'1',
-		'-f',
-		'mjpeg',
-	);
 
 	if ( ! empty( $rotate_array ) ) {
 		$thumb_options = array_merge( $thumb_options, $rotate_array );
@@ -2174,7 +2207,8 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 			$movieoffset = '0';
 		}
 
-		$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
+		//$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
+		$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb%d.jpg' );
 		$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
 		if ( ! empty( $options['htaccess_login'] ) && strpos( $moviefilepath, 'http://' ) === 0 ) {

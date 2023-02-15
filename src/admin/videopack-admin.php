@@ -102,6 +102,7 @@ function kgvid_default_options_fn() {
 		'auto_thumb'              => false,
 		'auto_thumb_number'       => 1,
 		'auto_thumb_position'     => 50,
+		'thumb_significant'        => 'on',
 		'right_click'             => 'on',
 		'resize'                  => 'on',
 		'auto_res'                => 'automatic',
@@ -1293,7 +1294,7 @@ function kgvid_video_embed_options_init() {
 		add_settings_field( 'video_app', esc_html__( 'Application for thumbnails & encoding:', 'video-embed-thumbnail-generator' ), 'kgvid_video_app_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'video_app' ) );
 	}
 
-	add_settings_field( 'browser_thumbnails', esc_html__( 'Enable in-browser thumbnails:', 'video-embed-thumbnail-generator' ), 'kgvid_browser_thumbnails_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'browser_thumbnails' ) );
+	add_settings_field( 'browser_thumbnails', esc_html__( 'Thumbnail options:', 'video-embed-thumbnail-generator' ), 'kgvid_thumbnail_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'browser_thumbnails' ) );
 	add_settings_field( 'encode_formats', esc_html__( 'Default video encode formats:', 'video-embed-thumbnail-generator' ), 'kgvid_encode_formats_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings' );
 	add_settings_field( 'automatic', esc_html__( 'Do automatically on upload:', 'video-embed-thumbnail-generator' ), 'kgvid_automatic_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_encode' ) );
 	add_settings_field( 'automatic_encoded', esc_html__( 'Do automatically on completed encoding:', 'video-embed-thumbnail-generator' ), 'kgvid_automatic_completed_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_publish_post' ) );
@@ -1780,11 +1781,13 @@ function kgvid_video_app_callback() {
 	echo "\n\t";
 }
 
-function kgvid_browser_thumbnails_callback() {
+function kgvid_thumbnail_options_callback() {
 	$options = kgvid_get_options();
 	echo "<div class='kgvid_video_app_required'>";
 	/* translators: %s is the name of the video encoding application (usually FFMPEG). */
-	echo '<input' . checked( $options['browser_thumbnails'], 'on', false ) . " id='browser_thumbnails' name='kgvid_video_embed_options[browser_thumbnails]' type='checkbox'" . disabled( empty( $options['ffmpeg_thumb_watermark']['url'] ), false, false ) . "/> <label for='browser_thumbnails'>" . sprintf( esc_html__( 'When possible, use the browser\'s built-in video capabilities to make thumbnails instead of %s.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_attr( strtoupper( $options['video_app'] ) ) . '</strong>' ) . "</label>\n\t";
+	echo '<input' . checked( $options['browser_thumbnails'], 'on', false ) . " id='browser_thumbnails' name='kgvid_video_embed_options[browser_thumbnails]' type='checkbox'" . disabled( empty( $options['ffmpeg_thumb_watermark']['url'] ), false, false ) . "/> <label for='browser_thumbnails'>" . sprintf( esc_html__( 'When possible, use the browser\'s built-in video capabilities to make thumbnails instead of %s.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_attr( strtoupper( $options['video_app'] ) ) . '</strong>' ) . "</label><br />\n\t";
+	/* translators: %s is the name of the video encoding application (usually FFMPEG). */
+	echo '<input' . checked( $options['thumb_significant'], 'on', false ) . " id='thumb_significant' name='kgvid_video_embed_options[thumb_significant]' type='checkbox'" . disabled( empty( $options['browser_thumbnails'] ), false, false ) . "/> <label for='browser_thumbnails'>" . sprintf( esc_html__( 'Use %s filters to find significant thumbnail frames.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_attr( strtoupper( $options['video_app'] ) ) . '</strong>' ) . "</label>\n\t";
 	echo '</div>';
 }
 
@@ -2659,6 +2662,11 @@ function kgvid_init_plugin() {
 				wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) ); //don't need to run this forever
 				wp_schedule_single_event( time() + DAY_IN_SECONDS, 'kgvid_cleanup_queue', array( 'scheduled' ) );
 			}
+		}
+
+		if ( version_compare( $options['version'], '4.8.7', '<' ) ) {
+			$options['version']           = '4.8.7';
+			$options['thumb_significant'] = false;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) {
