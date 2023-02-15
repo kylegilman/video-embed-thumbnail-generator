@@ -21,6 +21,12 @@ function kgvid_get_encode_queue() {
 
 function kgvid_save_encode_queue( $video_encode_queue ) {
 
+	if ( empty( $video_encode_queue )
+		|| ! is_array( $video_encode_queue )
+	) {
+		$video_encode_queue = array();
+	}
+
 	if ( is_videopack_active_for_network() ) {
 		update_site_option( 'kgvid_video_embed_queue', $video_encode_queue );
 	} else {
