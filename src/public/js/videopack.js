@@ -259,7 +259,9 @@ function kgvid_SetVideo(id) { // for galleries
 				var video_vars = jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars' );
 
 				if ( video_vars !== undefined ) {
-					if ( video_vars.player_type == "Video.js" || video_vars.player_type == "Video.js v7" ) {
+					if ( video_vars.player_type == "Video.js"
+						|| video_vars.player_type == "Video.js v7"
+					) {
 						eval( 'videojs.players.video_' + id ).pause();
 						setTimeout( function() { eval( 'videojs.players.video_' + id ).dispose(); }, 0 );
 					}
@@ -419,7 +421,10 @@ function kgvid_setup_video(id) {
 			}
 		}
 
-		if ( video_vars.player_type == "Video.js" && video_vars.autoplay == "true" && ! player.paused() && player.hasClass( 'vjs-paused' ) ) {
+		if ( video_vars.player_type == "Video.js"
+			&& video_vars.autoplay == "true"
+			&& ! player.paused() && player.hasClass( 'vjs-paused' )
+		) {
 			player.pause();
 			player.play();
 		}
@@ -460,7 +465,14 @@ function kgvid_setup_video(id) {
 				if ( video_vars.autoplay == "true"
 					&& player.paused()
 				) {
-					player.play();
+					var promise = player.play();
+					if ( typeof promise !== 'undefined' ) {
+						promise.then(function() {
+						// Autoplay started!
+						}).catch(function(error) {
+						// Autoplay was prevented.
+						});
+					}
 				}
 
 			}
@@ -470,55 +482,66 @@ function kgvid_setup_video(id) {
 			'play',
 			function kgvid_play_start(){
 
-			player.off( 'timeupdate', kgvid_timeupdate_poster );
-			if ( video_vars.meta ) {
-				kgvid_add_hover( id );
-				jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
-			}
-			if ( video_vars.autoplay == "true" ) {
-				jQuery( '#video_' + id + ' > .vjs-control-bar' ).removeClass( 'vjs-fade-in' );
-			}
-			if ( video_vars.endofvideooverlay != "" ) {
-				jQuery( '#video_' + id + ' > .vjs-poster' ).hide();
-			}
+				player.off( 'timeupdate', kgvid_timeupdate_poster );
+				if ( video_vars.meta ) {
+					kgvid_add_hover( id );
+					jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
+				}
+				if ( video_vars.autoplay == "true" ) {
+					jQuery( '#video_' + id + ' > .vjs-control-bar' ).removeClass( 'vjs-fade-in' );
+				}
+				if ( video_vars.endofvideooverlay != "" ) {
+					jQuery( '#video_' + id + ' > .vjs-poster' ).hide();
+				}
 
-			if ( video_vars.pauseothervideos == "true" && videojs.VERSION.split( '.' )[0] >= 5 ) {
-				jQuery.each(
-					videojs.getPlayers(),
-					function(otherPlayerId, otherPlayer) {
-						if ( player.id() != otherPlayerId
-						&& otherPlayer != null
-						&& ! otherPlayer.paused()
-						&& ! otherPlayer.autoplay() ) {
-							otherPlayer.pause();
+				if ( video_vars.pauseothervideos == "true"
+					&& videojs.VERSION.split( '.' )[0] >= 5
+				) {
+					jQuery.each(
+						videojs.getPlayers(),
+						function(otherPlayerId, otherPlayer) {
+							if ( player.id() != otherPlayerId
+							&& otherPlayer != null
+							&& ! otherPlayer.paused()
+							&& ! otherPlayer.autoplay() ) {
+								otherPlayer.pause();
+							}
 						}
+					);
+				}
+
+				kgvid_video_counter( id, 'play' );
+
+				player.on(
+					'timeupdate',
+					function(){
+
+						var percent_duration = Math.round( player.currentTime() / player.duration() * 100 );
+
+						if ( jQuery( '#video_' + id + '_div' ).data( "25" ) == undefined
+							&& percent_duration >= 25
+							&& percent_duration < 50
+						) {
+							jQuery( '#video_' + id + '_div' ).data( "25", true );
+							kgvid_video_counter( id, '25' );
+						} else if ( jQuery( '#video_' + id + '_div' ).data( "50" ) == undefined
+							&& percent_duration >= 50
+							&& percent_duration < 75
+						) {
+							jQuery( '#video_' + id + '_div' ).data( "50", true );
+							kgvid_video_counter( id, '50' );
+						} else if ( jQuery( '#video_' + id + '_div' ).data( "75" ) == undefined
+							&& percent_duration >= 75 && percent_duration < 100
+						) {
+							jQuery( '#video_' + id + '_div' ).data( "75", true );
+							kgvid_video_counter( id, '75' );
+					}
+					}
+
+						}
+
 					}
 				);
-			}
-
-			kgvid_video_counter( id, 'play' );
-
-			player.on(
-				'timeupdate',
-				function(){
-
-					var percent_duration = Math.round( player.currentTime() / player.duration() * 100 );
-
-					if ( jQuery( '#video_' + id + '_div' ).data( "25" ) == undefined && percent_duration >= 25 && percent_duration < 50 ) {
-						jQuery( '#video_' + id + '_div' ).data( "25", true );
-						kgvid_video_counter( id, '25' );
-					} else if ( jQuery( '#video_' + id + '_div' ).data( "50" ) == undefined && percent_duration >= 50 && percent_duration < 75 ) {
-						jQuery( '#video_' + id + '_div' ).data( "50", true );
-						kgvid_video_counter( id, '50' );
-					} else if ( jQuery( '#video_' + id + '_div' ).data( "75" ) == undefined && percent_duration >= 75 && percent_duration < 100 ) {
-						jQuery( '#video_' + id + '_div' ).data( "75", true );
-						kgvid_video_counter( id, '75' );
-
-					}
-
-				}
-			);
-
 			}
 		);
 
@@ -555,7 +578,9 @@ function kgvid_setup_video(id) {
 				setTimeout( function() { player.on( 'timeupdate', kgvid_timeupdate_poster ); }, 500 );
 
 			}
-			if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != "" && jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != null ) {
+			if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != ""
+				&& jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != null
+			) {
 				kgvid_video_gallery_end_action( id, jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) );
 			}
 			}
@@ -829,7 +854,12 @@ function kgvid_resize_video(id) {
 
 			} //if the video is embedded
 
-			if ( ( video_vars.player_type == "Video.js" || video_vars.player_type == "Video.js v7" ) && eval( 'videojs.players.video_' + id ) != null ) {
+			if (
+				( video_vars.player_type == "Video.js"
+					|| video_vars.player_type == "Video.js v7"
+				)
+				&& eval( 'videojs.players.video_' + id ) != null
+				) {
 
 				var player = eval( 'videojs.players.video_' + id );
 				if ( change_aspect ) {
