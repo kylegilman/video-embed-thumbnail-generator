@@ -515,7 +515,6 @@ function kgvid_setup_video(id) {
 				player.on(
 					'timeupdate',
 					function(){
-
 						var percent_duration = Math.round( player.currentTime() / player.duration() * 100 );
 
 						if ( jQuery( '#video_' + id + '_div' ).data( "25" ) == undefined
@@ -535,12 +534,9 @@ function kgvid_setup_video(id) {
 						) {
 							jQuery( '#video_' + id + '_div' ).data( "75", true );
 							kgvid_video_counter( id, '75' );
-					}
-					}
-
 						}
-
 					}
+
 				);
 			}
 		);
