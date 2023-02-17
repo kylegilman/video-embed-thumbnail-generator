@@ -105,7 +105,12 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.8.7 - February 4, 2023 =
+= 4.8.7 - February 17, 2023 =
+* Added Video.js v8 player which removes support for older browsers, especially IE. v7 is still available and will continue to be updated. v5 is deprecated and will be removed in a future update.
+* Updated Video.js resolution selector plugin to work with v8.
+* Added an option to hide Videopack-generated thumbnails from the Media Library.
+* Added a check for non-square pixels (SAR) when generating thumbnails.
+* Fixed bug that could cause an apparently empty video encode queue to crash admin pages.
 
 = 4.8.6 - February 4, 2023 =
 * Made improvements to oEmbed responses for better, more universally accepted embedded videos.

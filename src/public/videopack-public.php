@@ -234,7 +234,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	// Video.js styles
 
-	if ( $options['embed_method'] == 'Video.js' || $options['embed_method'] == 'Video.js v7' ) {
+	if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js' ) {
 
 		$kgvid_video_embed_script_dependencies[] = 'video-js';
 
@@ -249,8 +249,17 @@ function kgvid_video_embed_enqueue_styles() {
 		if ( $options['embed_method'] == 'Video.js v7' ) {
 
 			$videojs_register = array(
-				'version' => $options['videojs_version'],
+				'version' => '7.21.1',
 				'path'    => 'v7',
+			);
+
+		}
+
+		if ( $options['embed_method'] == 'Video.js v8' ) {
+
+			$videojs_register = array(
+				'version' => $options['videojs_version'],
+				'path'    => 'v8',
 			);
 
 		}
@@ -296,7 +305,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 		wp_register_script( 'mejs-speed', plugins_url( '/js/mejs-speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
 
-		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v7/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
+		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
 
 	}
 
@@ -571,7 +580,7 @@ function kgvid_enqueue_shortcode_scripts() {
 
 	$options = kgvid_get_options();
 
-	if ( $options['embed_method'] === 'Video.js' || $options['embed_method'] === 'Video.js v7' ) {
+	if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js' ) {
 
 			wp_enqueue_script( 'video-js' );
 			wp_enqueue_script( 'videojs-l10n' );
@@ -1139,8 +1148,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		);
 		$video_variables = apply_filters( 'kgvid_video_variables', $video_variables, $query_atts, $encodevideo_info );
 
-		if ( $options['embed_method'] == 'Video.js'
-			|| $options['embed_method'] == 'Video.js v7'
+		if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js'
 			|| $options['embed_method'] == 'None'
 		) {
 
@@ -1426,8 +1434,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			$code .= $executed_shortcode;
 		}
 
-		if ( $options['embed_method'] == 'Video.js'
-			|| $options['embed_method'] == 'Video.js v7'
+		if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js'
 			|| $options['embed_method'] == 'None'
 		) {
 
@@ -1912,9 +1919,7 @@ function kgvid_shortcode( $atts, $content = '' ) {
 	if ( ! is_feed() ) {
 
 		$options = kgvid_get_options();
-		if ( $options['embed_method'] != 'Video.js'
-			&& $options['embed_method'] != 'Video.js v7'
-		) {
+		if ( ! substr( $options['embed_method'], 0, 8 ) === 'Video.js' ) {
 			kgvid_enqueue_shortcode_scripts();
 		}
 
@@ -1974,7 +1979,7 @@ function kgvid_shortcode( $atts, $content = '' ) {
 
 		} //if gallery
 
-		if ( $options['embed_method'] == 'Video.js' || $options['embed_method'] == 'Video.js v7' ) {
+		if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js' ) {
 			kgvid_enqueue_shortcode_scripts();
 		}
 	} //if not feed
