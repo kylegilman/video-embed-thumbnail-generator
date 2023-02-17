@@ -16,8 +16,8 @@ function kgvid_default_options_fn() {
 
 	$options = array(
 		'version'                 => '4.8.7',
-		'videojs_version'         => '7.21.1',
-		'embed_method'            => 'Video.js v7',
+		'videojs_version'         => '8.0.4',
+		'embed_method'            => 'Video.js v8',
 		'template'                => false,
 		'template_gentle'         => 'on',
 		'replace_format'          => 'fullres',
@@ -1368,7 +1368,8 @@ function kgvid_plugin_playback_settings_section_callback() {
 	}
 
 	$players = array(
-		'Video.js v7'                                   => 'Video.js v7',
+		'Video.js v8' => 'Video.js v8',
+		'Video.js v7' => 'Video.js v7',
 		'Video.js v5 (' . esc_html__( 'deprecated', 'video-embed-thumbnail-generator' ) . ')' => 'Video.js',
 		__( 'WordPress Default', 'video-embed-thumbnail-generator' ) => 'WordPress Default',
 		__( 'None', 'video-embed-thumbnail-generator' ) => 'None',
@@ -1378,7 +1379,7 @@ function kgvid_plugin_playback_settings_section_callback() {
 
 	echo "<table class='form-table' id='table_kgvid_video_embed_embed_method'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>" . esc_html__( 'Video player:', 'video-embed-thumbnail-generator' ) . '</label></th><td>';
 	echo wp_kses( kgvid_generate_settings_select_html( 'embed_method', $options, $items, 'affects_player', 'kgvid_hide_plugin_settings();' ), kgvid_allowed_html( 'admin' ) );
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Video.js version 7 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.', 'video-embed-thumbnail-generator' ) ) );
 	echo "</td></tr></tbody></table>\n";
 
 	$sampleheight = intval( $options['height'] ) + 50;

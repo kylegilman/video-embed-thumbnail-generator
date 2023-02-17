@@ -2208,7 +2208,7 @@ function kgvid_hide_plugin_settings() {
 			jQuery( '#resize_div' ).hide();
 		}
 
-		if ( playback_option == "Video.js" || playback_option == "Video.js v7" ) {
+		if ( playback_option.startsWith('Video.js') ) {
 			jQuery( '#nativecontrolsfortouch' ).parents().eq( 1 ).show();
 			jQuery( '#js_skin' ).parents().eq( 1 ).show();
 			jQuery( '#playback_rate' ).parents().eq( 1 ).show();
