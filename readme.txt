@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.1
 Requires PHP: 7.2.5
-Stable tag: 4.8.7
+Stable tag: 4.8.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,6 +105,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
+= 4.8.8 - February XX, 2023 =
 = 4.8.7 - February 17, 2023 =
 * Added Video.js v8 player option which <a href="https://videojs.com/blog/videojs-8-and-vhs-3/">removes support for older browsers</a>. v7 is still available and will continue to be updated. v5 is deprecated and will be removed in a future update.
 * Updated Video.js resolution selector plugin to work with v8.
