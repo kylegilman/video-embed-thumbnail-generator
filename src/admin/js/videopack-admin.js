@@ -51,7 +51,8 @@ function kgvid_admin_page_ready() {
 								}
 							}
 						);
-						if ( typeof wp.media.frame.state().get('library') !== 'undefined' ) {
+						if ( typeof wp.media.frame.state() !== 'undefined'
+							&& typeof wp.media.frame.state().get('library') !== 'undefined' ) {
 							wp.media.frame.state().get( 'library' ).on(
 								'reset',
 								function() {
