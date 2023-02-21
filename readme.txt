@@ -106,6 +106,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 == Changelog ==
 
 = 4.8.8 - February XX, 2023 =
+* Removed SimpleModal library for pop-up videos and re-wrote to use a custom jQuery pop-up.
 * Fixed JavaScript error when adding media in block editor.
 
 = 4.8.7 - February 17, 2023 =
