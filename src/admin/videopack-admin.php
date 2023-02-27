@@ -314,10 +314,9 @@ function kgvid_get_jetpack_twitter_username() {
 	return $twitter_username;
 }
 
-function kgvid_get_attachment_meta( $post_id ) {
+function kgvid_get_attachment_meta_defaults() {
 
 	$options        = kgvid_get_options();
-	$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
 	$meta_key_array = array(
 		'embed'               => 'Single Video',
 		'width'               => '',
@@ -353,6 +352,14 @@ function kgvid_get_attachment_meta( $post_id ) {
 		'original_replaced'   => '',
 		'featuredchanged'     => 'false',
 	);
+
+	return $meta_key_array;
+}
+
+function kgvid_get_attachment_meta( $post_id ) {
+
+	$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
+	$meta_key_array = kgvid_get_attachment_meta_defaults();
 
 	if ( empty( $kgvid_postmeta ) ) {
 
@@ -3277,7 +3284,13 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 					$kgvid_postmeta['gallery_id'] = $post->post_parent;
 				}
 
-				$items                  = array( 'menu_order', 'title', 'post_date', 'rand', 'ID' );
+				$items                  = array(
+					'menu_order',
+					'title',
+					'post_date',
+					'rand',
+					'ID',
+				);
 				$gallery_orderby_select = '<select name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-gallery_orderby]" id="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-gallery_orderby">';
 				foreach ( $items as $item ) {
 					$selected                = ( $kgvid_postmeta['gallery_orderby'] == $item ) ? 'selected="selected"' : '';

@@ -328,6 +328,10 @@ input[type="text"].kgvid_start_at {
 	border: none;
 }
 
+.kgvid_video_gallery_thumb .kg-video-js-skin .vjs-big-play-button {
+    scale: 50%;
+}
+
 .kgvid_video_gallery_thumb .titlebackground {
 	position:absolute;
 	bottom:10px;

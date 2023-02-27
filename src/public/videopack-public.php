@@ -605,7 +605,7 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 	if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
 		$query_atts['gallery_orderby'] = 'menu_order ID';
 	}
-	if ( $options['gallery_pagination'] != 'on'
+	if ( $query_atts['gallery_pagination'] != 'on'
 		&& empty( $query_atts['gallery_per_page'] )
 		|| $query_atts['gallery_per_page'] == 'false'
 	) {
@@ -1061,9 +1061,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 				$aligncode .= ' kgvid_wrapper_inline_right';
 			}
 		} else {
-			if ( $query_atts['align'] == 'left' ) {
-				$aligncode = '';
-			}
+			$aligncode = '';
 			if ( $query_atts['align'] == 'center' ) {
 				$aligncode = ' kgvid_wrapper_auto_left kgvid_wrapper_auto_right';
 			}
@@ -1261,7 +1259,12 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		} //schema disabled
 
 		$track_keys = array( 'kind', 'srclang', 'src', 'label', 'default' );
-		if ( ! isset( $kgvid_postmeta ) || ( is_array( $kgvid_postmeta ) && ! is_array( $kgvid_postmeta['track'] ) ) ) {
+		if (
+			! isset( $kgvid_postmeta )
+			|| ( is_array( $kgvid_postmeta )
+				&& ! is_array( $kgvid_postmeta['track'] )
+			)
+		) {
 			$kgvid_postmeta['track']    = array();
 			$kgvid_postmeta['track'][0] = array(
 				'kind'    => '',
@@ -1768,6 +1771,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'playsinline'            => $options['playsinline'],
 		'skin'                   => $options['js_skin'],
 		'gallery'                => 'false',
+		'gallery_pagination'     => $options['gallery_pagination'],
 		'gallery_per_page'       => $options['gallery_per_page'],
 		'gallery_thumb'          => $options['gallery_thumb'],
 		'gallery_thumb_aspect'   => $options['gallery_thumb_aspect'],
@@ -1804,7 +1808,6 @@ function kgvid_shortcode_atts( $atts ) {
 		'track_default'          => '',
 	);
 
-	$custom_atts_return = array();
 	if ( ! empty( $options['custom_attributes'] ) ) {
 		preg_match_all( '/(\w+)\s*=\s*(["\'])((?:(?!\2).)*)\2/', $options['custom_attributes'], $custom_atts, PREG_SET_ORDER );
 		if ( ! empty( $custom_atts ) && is_array( $custom_atts ) ) {
@@ -1874,6 +1877,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'playback_rate',
 		'fullwidth',
 		'gallery_thumb_aspect',
+		'gallery_pagination',
 		'gallery_title',
 		'nativecontrolsfortouch',
 		'pixel_ratio',
@@ -1944,6 +1948,7 @@ function kgvid_shortcode( $atts, $content = '' ) {
 				'gallery_thumb_aspect',
 				'view_count',
 				'gallery_end',
+				'gallery_pagination',
 				'gallery_per_page',
 				'gallery_title',
 			);
@@ -1956,8 +1961,7 @@ function kgvid_shortcode( $atts, $content = '' ) {
 				$gallery_query_atts['gallery_orderby'] = 'RAND(' . rand() . ')'; // use the same seed on every page load
 			}
 
-			wp_enqueue_script( 'simplemodal' );
-
+			$aligncode = '';
 			if ( $query_atts['align'] == 'left' ) {
 				$aligncode = ' kgvid_textalign_left';
 			}
