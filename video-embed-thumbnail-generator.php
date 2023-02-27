@@ -44,8 +44,6 @@
  * Website: http://www.kathyisawesome.com/
  * 6) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
  * Website: http://www.amiaud.org/tag/video/
- * 7) Includes Eric Martin's SimpleModal
- * Website: http://www.ericmmartin.com/projects/simplemodal/
  * 8) Includes Dominic's Video.js Resolution Selector
  * Website: https://github.com/dominic-p/videojs-resolution-selector
  *
@@ -68,6 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	require_once __DIR__ . '/src/admin/videopack-admin.php';
 	require_once __DIR__ . '/src/admin/videopack-ffmpeg.php';
 	require_once __DIR__ . '/src/admin/videopack-admin-ajax.php';
+	require_once __DIR__ . '/src/admin/videopack-rest.php';
 	require_once __DIR__ . '/src/public/videopack-public.php';
 	require_once __DIR__ . '/src/public/videopack-public-ajax.php';
 }

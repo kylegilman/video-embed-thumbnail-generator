@@ -359,7 +359,7 @@ function kgvid_ajax_save_html5_thumb() {
 	if ( current_user_can( 'make_video_thumbnails' ) ) {
 
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		$uploads = wp_upload_dir();
+
 		if ( isset( $_POST['postID'] ) ) {
 			$post_id = kgvid_sanitize_text_field( wp_unslash( $_POST['postID'] ) );
 		}
@@ -376,42 +376,7 @@ function kgvid_ajax_save_html5_thumb() {
 			$index = intval( kgvid_sanitize_text_field( wp_unslash( $_POST['index'] ) ) ) + 1;
 		}
 
-		$sanitized_url = kgvid_sanitize_url( $video_url );
-		$posterfile    = $sanitized_url['basename'] . '_thumb' . $index;
-		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
-		$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
-		$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
-
-		$editor = kgvid_decode_base64_png( $raw_png, $tmp_posterpath );
-
-		if ( is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
-
-			$raw_post = file_get_contents( 'php://input' );
-			parse_str( $raw_post, $alt_post );
-			$editor = kgvid_decode_base64_png( $alt_post['raw_png'], $tmp_posterpath );
-
-		}
-
-		if ( is_wp_error( $editor ) ) {
-			$thumb_url = false;
-		} else {
-			$thumb_dimensions = $editor->get_size();
-			if ( $thumb_dimensions ) {
-				$kgvid_postmeta                 = kgvid_get_attachment_meta( $post_id );
-				$kgvid_postmeta['actualwidth']  = $thumb_dimensions['width'];
-				$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
-				kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
-			}
-			$editor->set_quality( 90 );
-			$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
-			wp_delete_file( $tmp_posterpath ); // delete png
-			if ( $total > 1 ) {
-				$post_name  = get_the_title( $post_id );
-				$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
-			}
-		}
-
-		kgvid_schedule_cleanup_generated_files( 'thumbs' );
+		$thumb_url = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
 
 	}
 
