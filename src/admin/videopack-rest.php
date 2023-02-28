@@ -42,12 +42,17 @@ function videopack_rest_send_thumb_data( $request ) {
 
 function videopack_prepare_attachment( $response, $attachment, $meta ) {
 	$new_meta = array(
-		'_kgvid-meta' => kgvid_get_attachment_meta( $attachment->ID ),
-		//'encodevideo_info' => kgvid_encodevideo_info( $attachment->url, $attachment->ID ),
+		'_kgvid-meta'                   => get_post_meta( $attachment->ID, '_kgvid-meta', true ),
 		'_kgflashmediaplayer-poster-id' => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true ),
-		'_kgflashmediaplayer-poster' => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true ),
+		'_kgflashmediaplayer-poster'    => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true ),
 	);
-	$response['meta'] = array_merge( $response['meta'], $new_meta );
+	if ( array_key_exists( 'meta', $response )
+		&& is_array( $response['meta'] )
+	) {
+		$response['meta'] = array_merge( $response['meta'], $new_meta );
+	} else {
+		$response['meta'] = $new_meta;
+	}
 	return $response;
 }
 add_filter( 'wp_prepare_attachment_for_js', 'videopack_prepare_attachment', 10, 3 );
@@ -88,171 +93,246 @@ function kgvid_register_attachment_meta() {
 				'schema' => array(
 					'type'  => 'object',
 					'properties' => array(
-						array(
-							'align'                  => array(
-								'type' => 'string',
+						'actualheight'        => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'autoplay'               => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'actualwidth'         => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'caption'                => array(
-								'type' => 'string',
+						),
+						'aspect'              => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'controls'               => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'autothumb-error'     => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'description'            => array(
-								'type' => 'string',
+						),
+						'completeviews'       => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'downloadlink'           => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'downloadlink'        => array(
+							'type' => array(
+								'string',
+								'boolean',
 							),
-							'embedcode'              => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'duration'            => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'embeddable'             => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'embed'               => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'endofvideooverlay'      => array(
-								'type' => 'string',
+						),
+						'encode'              => array(
+							'type' => 'object',
+							'additionalProperties' => true,
+						),
+						'featured'            => array(
+							'type' => array(
+								'string',
+								'boolean',
 							),
-							'endofvideooverlaysame'  => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'featuredchanged'     => array(
+							'type' => array(
+								'string',
+								'boolean',
 							),
-							'fixed_aspect'           => array(
-								'type' => 'string',
+						),
+						'forcefirst'          => array(
+							'type' => array(
+								'string',
+								'boolean',
 							),
-							'fullwidth'              => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'gallery_exclude'     => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery'                => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'gallery_id'          => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_end'            => array(
-								'type' => 'string',
+						),
+						'gallery_include'     => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_exclude'        => array(
-								'type' => 'string',
+						),
+						'gallery_order'       => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_id'             => array(
-								'type' => 'string',
+						),
+						'gallery_orderby'     => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_include'        => array(
-								'type' => 'string',
+						),
+						'gallery_thumb_width' => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_order'          => array(
-								'type' => 'string',
+						),
+						'height'              => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_orderby'        => array(
-								'type' => 'string',
+						),
+						'lockaspect'          => array(
+							'type' => array(
+								'string',
+								'boolean',
 							),
-							'gallery_pagination'     => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'maxheight'   => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_per_page'       => array(
-								'type' => 'number',
+						),
+						'maxwidth'   => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_thumb'          => array(
-								'type' => 'number',
+						),
+						'numberofthumbs'      => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'gallery_thumb_aspect'   => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'original_replaced'   => array(
+							'type' => array(
+								'string',
 							),
-							'height'                 => array(
-								'type' => 'number',
+						),
+						'pickedformat'        => array(
+							'type' => array(
+								'string',
 							),
-							'id'                     => array(
-								'type' => 'number',
+						),
+						'play_25'             => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'inline'                 => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'play_50'             => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'loop'                   => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'play_75'             => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'muted'                  => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'poster'   => array(
+							'type' => array(
+								'string',
 							),
-							'nativecontrolsfortouch' => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'rotate'              => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'order'                  => array(
-								'type' => 'string',
+						),
+						'showtitle'           => array(
+							'type' => array(
+								'string',
+								'boolean',
 							),
-							'orderby'                => array(
-								'type' => 'string',
+						),
+						'starts'              => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'pauseothervideos'       => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'thumbtime'           => array(
+							'type' => array(
+								'string',
+								'number',
 							),
-							'pixel_ratio'            => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'track'               => array(
+							'type' => 'array',
+							'items' => array(
+								'type' => 'object',
+								'properties' => array(
+									'src' => array(
+										'type' => array(
+											'string',
+											'number',
+										),
+									),
+									'kind' => array(
+										'type' => array(
+											'string',
+											'number',
+										),
+									),
+									'default' => array(
+										'type' => array(
+											'string',
+											'boolean',
+										),
+									),
+									'srclang' => array(
+										'type' => array(
+											'string',
+											'number',
+										),
+									),
+									'label' => array(
+										'type' => array(
+											'string',
+											'number',
+										),
+									),
+								),
 							),
-							'playback_rate'          => array(
-								'type' => array( 'boolean, string' ),
+						),
+						'url'   => array(
+							'type' => array(
+								'string',
 							),
-							'playsinline'            => array(
-								'type' => array( 'boolean, string' ),
-							),
-							'poster'                 => array(
-								'type' => 'string',
-							),
-							'preload'                => array(
-								'type' => 'string',
-							),
-							'resize'                 => array(
-								'type' => array( 'boolean, string' ),
-							),
-							'right_click' => array(
-								'type' => array( 'boolean, string' ),
-							),
-							'schema' => array(
-								'type' => array( 'boolean, string' ),
-							),
-							'skin' => array(
-								'type' => 'string',
-							),
-							'start' => array(
-								'type' => 'string',
-							),
-							'title' => array(
-								'type' => 'string',
-							),
-							'track_default' => array(
-								'type' => array( 'boolean, string' ),
-							),
-							'track_kind' => array(
-								'type' => 'string',
-							),
-							'track_label' => array(
-								'type' => 'string',
-							),
-							'track_src' => array(
-								'type' => 'string',
-							),
-							'track_srclang' => array(
-								'type' => 'string',
-							),
-							'videos' => array(
-								'type' => 'number',
-							),
-							'view_count' => array(
-								'type' => array( 'boolean, string' ),
-							),
-							'volume' => array(
-								'type' => 'number',
-							),
-							'watermark' => array(
-								'type' => 'string',
-							),
-							'watermark_link_to' => array(
-								'type' => 'string',
-							),
-							'watermark_url' => array(
-								'type' => 'string',
-							),
-							'width' => array(
-								'type' => 'number',
+						),
+						'width'               => array(
+							'type' => array(
+								'string',
+								'number',
 							),
 						),
 					),
@@ -265,3 +345,9 @@ function kgvid_register_attachment_meta() {
 	);
 }
 add_action( 'init', 'kgvid_register_attachment_meta' );
+
+function log_all_errors_to_debug_log($code, $message, $data, $wp_error ) {
+    error_log( $code . ': ' . $message );
+}
+
+add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );
