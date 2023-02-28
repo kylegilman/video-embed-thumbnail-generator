@@ -35,86 +35,42 @@ function videopack_rest_send_thumb_data( $request ) {
 	$total     = 2;
 	$index     = $request->get_param( 'index' );
 
-	$thumb_url = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
+	$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
 
-	return esc_url( $thumb_url );
+	return $thumb_info;
 }
 
-function videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index ) {
-
-	$uploads       = wp_upload_dir();
-	$sanitized_url = kgvid_sanitize_url( $video_url );
-	$posterfile    = $sanitized_url['basename'] . '_thumb' . $index;
-	wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
-	$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
-	$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
-
-	$editor = kgvid_decode_base64_png( $raw_png, $tmp_posterpath );
-
-	if ( is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
-
-		$raw_post = file_get_contents( 'php://input' );
-		parse_str( $raw_post, $alt_post );
-		$editor = kgvid_decode_base64_png( $alt_post['raw_png'], $tmp_posterpath );
-
-	}
-
-	if ( is_wp_error( $editor ) ) {
-		$thumb_url = false;
-	} else {
-		$thumb_dimensions = $editor->get_size();
-		if ( $thumb_dimensions ) {
-			$kgvid_postmeta                 = kgvid_get_attachment_meta( $post_id );
-			$kgvid_postmeta['actualwidth']  = $thumb_dimensions['width'];
-			$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
-			kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
-		}
-		$editor->set_quality( 90 );
-		$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
-		wp_delete_file( $tmp_posterpath ); // delete png
-		if ( $total > 1 ) {
-			$post_name  = get_the_title( $post_id );
-			$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
-		}
-	}
-
-	kgvid_schedule_cleanup_generated_files( 'thumbs' );
-
-	return $thumb_url;
-}
-
-function videopack_prepare_attachment( $response, $attachment, $request ) {
-
-	$response->data['meta']['videopack'] = array(
-		'kgvid_postmeta' => kgvid_get_attachment_meta( $attachment->ID ),
+function videopack_prepare_attachment( $response, $attachment, $meta ) {
+	$new_meta = array(
+		'_kgvid-meta' => kgvid_get_attachment_meta( $attachment->ID ),
 		//'encodevideo_info' => kgvid_encodevideo_info( $attachment->url, $attachment->ID ),
-		'poster_id' => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true ),
-		'poster' => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true ),
+		'_kgflashmediaplayer-poster-id' => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true ),
+		'_kgflashmediaplayer-poster' => get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true ),
 	);
+	$response['meta'] = array_merge( $response['meta'], $new_meta );
 	return $response;
 }
-//add_filter( 'rest_prepare_attachment', 'videopack_prepare_attachment', 10, 3 );
+add_filter( 'wp_prepare_attachment_for_js', 'videopack_prepare_attachment', 10, 3 );
 
 function kgvid_register_attachment_meta() {
 
 	$kgflashmedia_fields = array(
-		'poster'       => 'video poster URL',
-		'poster-id'    => 'video poster ID',
-		'format'       => 'video format',
-		'pickedformat' => 'picked video format',
-		'video-id'     => 'video parent ID',
-		'externalurl'  => 'external URL',
+		'poster'       => 'string',
+		'poster-id'    => 'number',
+		'format'       => 'string',
+		'pickedformat' => 'string',
+		'video-id'     => 'number',
+		'externalurl'  => 'string',
 	);
 
-	foreach ( $kgflashmedia_fields as $field_name => $description ) {
+	foreach ( $kgflashmedia_fields as $field_name => $type ) {
 		register_post_meta(
 			'attachment',
 			'_kgflashmediaplayer-' . $field_name,
 			array(
-				'type'         => 'string',
-				'description'  => 'Videopack ' . $description,
-				'single'       => true,
-				'show_in_rest' => true,
+				'type'          => $type,
+				'single'        => true,
+				'show_in_rest'  => true,
 				'auth_callback' => function() {
 					return current_user_can( 'edit_posts' );
 				},
@@ -132,11 +88,174 @@ function kgvid_register_attachment_meta() {
 				'schema' => array(
 					'type'  => 'object',
 					'properties' => array(
-						'numberofthumbs' => array(
-							'type' => 'number',
+						array(
+							'align'                  => array(
+								'type' => 'string',
+							),
+							'autoplay'               => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'caption'                => array(
+								'type' => 'string',
+							),
+							'controls'               => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'description'            => array(
+								'type' => 'string',
+							),
+							'downloadlink'           => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'embedcode'              => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'embeddable'             => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'endofvideooverlay'      => array(
+								'type' => 'string',
+							),
+							'endofvideooverlaysame'  => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'fixed_aspect'           => array(
+								'type' => 'string',
+							),
+							'fullwidth'              => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'gallery'                => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'gallery_end'            => array(
+								'type' => 'string',
+							),
+							'gallery_exclude'        => array(
+								'type' => 'string',
+							),
+							'gallery_id'             => array(
+								'type' => 'string',
+							),
+							'gallery_include'        => array(
+								'type' => 'string',
+							),
+							'gallery_order'          => array(
+								'type' => 'string',
+							),
+							'gallery_orderby'        => array(
+								'type' => 'string',
+							),
+							'gallery_pagination'     => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'gallery_per_page'       => array(
+								'type' => 'number',
+							),
+							'gallery_thumb'          => array(
+								'type' => 'number',
+							),
+							'gallery_thumb_aspect'   => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'height'                 => array(
+								'type' => 'number',
+							),
+							'id'                     => array(
+								'type' => 'number',
+							),
+							'inline'                 => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'loop'                   => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'muted'                  => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'nativecontrolsfortouch' => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'order'                  => array(
+								'type' => 'string',
+							),
+							'orderby'                => array(
+								'type' => 'string',
+							),
+							'pauseothervideos'       => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'pixel_ratio'            => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'playback_rate'          => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'playsinline'            => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'poster'                 => array(
+								'type' => 'string',
+							),
+							'preload'                => array(
+								'type' => 'string',
+							),
+							'resize'                 => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'right_click' => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'schema' => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'skin' => array(
+								'type' => 'string',
+							),
+							'start' => array(
+								'type' => 'string',
+							),
+							'title' => array(
+								'type' => 'string',
+							),
+							'track_default' => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'track_kind' => array(
+								'type' => 'string',
+							),
+							'track_label' => array(
+								'type' => 'string',
+							),
+							'track_src' => array(
+								'type' => 'string',
+							),
+							'track_srclang' => array(
+								'type' => 'string',
+							),
+							'videos' => array(
+								'type' => 'number',
+							),
+							'view_count' => array(
+								'type' => array( 'boolean, string' ),
+							),
+							'volume' => array(
+								'type' => 'number',
+							),
+							'watermark' => array(
+								'type' => 'string',
+							),
+							'watermark_link_to' => array(
+								'type' => 'string',
+							),
+							'watermark_url' => array(
+								'type' => 'string',
+							),
+							'width' => array(
+								'type' => 'number',
+							),
 						),
 					),
-					'additionalProperties' => true,
 				),
 			),
 			'auth_callback' => function() {
