@@ -351,6 +351,10 @@ function kgvid_get_attachment_meta_defaults() {
 		'aspect'              => '',
 		'original_replaced'   => '',
 		'featuredchanged'     => 'false',
+		'url'                 => '',
+		'poster'              => '',
+		'maxwidth'            => '',
+		'maxheight'           => '',
 	);
 
 	return $meta_key_array;
@@ -1222,9 +1226,31 @@ function kgvid_superadmin_capabilities_callback() {
 }
 
 function kgvid_add_settings_page() {
-	add_options_page( esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_options', 'video_embed_thumbnail_generator_settings', 'kgvid_settings_page' );
+	$page_hook_suffix = add_options_page( esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_options', 'video_embed_thumbnail_generator_settings', 'kgvid_settings_page' );
+
+	add_action( 'admin_print_scripts-' . $page_hook_suffix, 'kgvid_options_assets' );
 }
 add_action( 'admin_menu', 'kgvid_add_settings_page' );
+
+function kgvid_options_assets() {
+
+	$options = kgvid_get_options();
+
+	wp_enqueue_script(
+		'videopack-options-page',
+		plugins_url( '/build/build.js', __FILE__ ),
+		array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element' ),
+		$options['version'],
+		true
+	);
+
+	wp_enqueue_style(
+		'codeinwp-awesome-plugin-style',
+		plugins_url( '/build/build.css', __FILE__ ),
+		array( 'wp-components' ),
+		$options['version'],
+	);
+}
 
 function kgvid_settings_page() {
 	wp_enqueue_media();
@@ -3405,6 +3431,53 @@ function kgvid_decode_base64_png( $raw_png, $tmp_posterpath ) {
 	}
 
 	return false;
+}
+
+function videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index ) {
+
+	$uploads       = wp_upload_dir();
+	$sanitized_url = kgvid_sanitize_url( $video_url );
+	$posterfile    = $sanitized_url['basename'] . '_thumb' . $index;
+	wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
+	$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
+	$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
+	$thumb_info = array(
+		'thumb_id'  => false,
+		'thumb_url' => $thumb_url,
+	);
+
+	$editor = kgvid_decode_base64_png( $raw_png, $tmp_posterpath );
+
+	if ( is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
+
+		$raw_post = file_get_contents( 'php://input' );
+		parse_str( $raw_post, $alt_post );
+		$editor = kgvid_decode_base64_png( $alt_post['raw_png'], $tmp_posterpath );
+
+	}
+
+	if ( is_wp_error( $editor ) ) {
+		$thumb_url = false;
+	} else {
+		$thumb_dimensions = $editor->get_size();
+		if ( $thumb_dimensions ) {
+			$kgvid_postmeta                 = kgvid_get_attachment_meta( $post_id );
+			$kgvid_postmeta['actualwidth']  = $thumb_dimensions['width'];
+			$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
+			kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
+		}
+		$editor->set_quality( 90 );
+		$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
+		wp_delete_file( $tmp_posterpath ); // delete png
+		if ( $total > 1 ) {
+			$post_name  = get_the_title( $post_id );
+			$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
+		}
+	}
+
+	kgvid_schedule_cleanup_generated_files( 'thumbs' );
+
+	return $thumb_info;
 }
 
 function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
