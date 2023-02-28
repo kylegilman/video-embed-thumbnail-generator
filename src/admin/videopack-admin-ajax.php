@@ -376,11 +376,11 @@ function kgvid_ajax_save_html5_thumb() {
 			$index = intval( kgvid_sanitize_text_field( wp_unslash( $_POST['index'] ) ) ) + 1;
 		}
 
-		$thumb_url = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
+		$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
 
 	}
 
-	echo esc_url( $thumb_url );
+	echo esc_url( $thumb_info['thumb_url'] );
 	die();
 }
 add_action( 'wp_ajax_kgvid_save_html5_thumb', 'kgvid_ajax_save_html5_thumb' );
