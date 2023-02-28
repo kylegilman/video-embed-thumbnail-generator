@@ -1883,6 +1883,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'pixel_ratio',
 		'schema',
 		'gifmode',
+		'right_click',
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[ $query ] == 'on' ) {

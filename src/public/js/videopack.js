@@ -363,8 +363,12 @@ function kgvid_setup_video(id) {
 		kgvid_video_counter( id, 'play' );
 		jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
 	}
-	if ( video_vars.right_click != "on" ) {
-		jQuery( '#video_' + id + '_div' ).bind( 'contextmenu',function() { return false; } );
+	if ( video_vars.right_click != "true" ) {
+		jQuery( '#video_' + id + '_div' ).on( 'contextmenu',
+			function() {
+				return false;
+			}
+		);
 	}
 	if ( jQuery( '#video_' + id + '_div .kgvid-download-link' ).length
 		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr( 'download' ) != 'undefined'
