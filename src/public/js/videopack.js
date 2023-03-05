@@ -385,7 +385,7 @@ function kgvid_setup_video(id) {
 
 	if ( video_vars.player_type.startsWith('Video.js') ) {
 
-		var player = eval( 'videojs.players.video_' + id );
+		var player = eval( 'videojs.players["video_' + id + '"]');
 
 		if ( jQuery( '#video_' + id + '_flash_api' ).parent().is( '.fluid-width-video-wrapper' ) ) { // disables fitVids.js
 			jQuery( '#video_' + id + '_flash_api' ).unwrap();
@@ -827,10 +827,10 @@ function kgvid_resize_video(id) {
 			} //if the video is embedded
 
 			if ( video_vars.player_type.startsWith('Video.js')
-				&& eval( 'videojs.players.video_' + id ) != null
+				&& eval( 'videojs.players["video_' + id + '"]' ) != null
 			) {
 
-				var player = eval( 'videojs.players.video_' + id );
+				var player = eval( 'videojs.players["video_' + id + '"]' );
 				if ( change_aspect ) {
 					player.aspectRatio( Math.floor( set_width ) + ':' + Math.floor( set_height ) );
 				}
@@ -864,7 +864,7 @@ function kgvid_resize_video(id) {
 
 			if (
 				( video_vars.player_type.startsWith('Video.js')
-					&& eval( 'videojs.players.video_' + id ) != null
+					&& eval( 'videojs.players["video_' + id + '"]' ) != null
 				)
 				|| ( video_vars.player_type == "WordPress Default"
 					&& typeof mejs !== 'undefined'
@@ -1209,7 +1209,7 @@ function kgvid_share_icon_click(id) {
 
 	if ( video_vars.player_type.startsWith('Video.js') ) {
 
-		eval( 'videojs.players.video_' + id ).pause();
+		eval( 'videojs.players["video_' + id + '"]' ).pause();
 
 		if ( jQuery( '#video_' + id ).hasClass( 'vjs-has-started' ) ) {
 			player_element = ' .vjs-control-bar';
@@ -1247,7 +1247,7 @@ function kgvid_set_start_at(id) {
 	if ( jQuery( '#video_' + id + '_embed .kgvid_start_at_enable' ).prop( 'checked' ) ) {
 
 		if ( video_vars.player_type.startsWith('Video.js') ) {
-			var current_time = eval( 'videojs.players.video_' + id ).currentTime();
+			var current_time = eval( 'videojs.players["video_' + id + '"]' ).currentTime();
 		} else if ( video_vars.player_type == "WordPress Default" ) {
 			var current_time = jQuery( '#video_' + id + '_div video' )[0].getCurrentTime();
 		}

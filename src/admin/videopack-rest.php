@@ -21,6 +21,24 @@ function videopack_rest_routes() {
 			},
 		)
 	);
+	register_rest_route(
+		'videopack/v1',
+		'/sources',
+		array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'videopack_rest_video_sources',
+			'permission_callback' => '__return_true',
+		)
+	);
+	register_rest_route(
+		'videopack/v1',
+		'/attributes',
+		array(
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'videopack_rest_shortcode_atts',
+			'permission_callback' => '__return_true',
+		)
+	);
 }
 add_action( 'rest_api_init', 'videopack_rest_routes' );
 
@@ -28,7 +46,7 @@ function videopack_rest_send_thumb_data( $request ) {
 
 	$raw_png = $request->get_param( 'raw_png' );
 	if ( ! $raw_png ) {
-		return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing image data.', 'my-textdomain' ), array( 'status' => 400 ) );
+		return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing image data.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 	}
 	$post_id   = $request->get_param( 'postId' );
 	$video_url = $request->get_param( 'url' );
@@ -38,6 +56,26 @@ function videopack_rest_send_thumb_data( $request ) {
 	$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
 
 	return $thumb_info;
+}
+
+function videopack_rest_video_sources( $request ) {
+
+	$url = $request->get_param( 'url' );
+	if ( ! $url ) {
+		return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+	}
+	$post_id = $request->get_param( 'postId' );
+	$source_info = kgvid_prepare_sources( $url, $post_id );
+
+	return $source_info;
+}
+
+function videopack_rest_shortcode_atts( $request ) {
+
+	$atts = $request->get_params();
+	error_log(print_r($atts,true));
+	return 'Attributes!';
+	// return kgvid_shortcode_atts( $atts );
 }
 
 function videopack_prepare_attachment( $response, $attachment, $meta ) {

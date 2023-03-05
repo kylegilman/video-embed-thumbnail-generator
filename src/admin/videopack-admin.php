@@ -1293,9 +1293,19 @@ function kgvid_do_settings_sections( $page ) {
 	}
 }
 
-function kgvid_video_embed_options_init() {
+function kgvid_register_setting() {
+	register_setting(
+		'kgvid_video_embed',
+		'kgvid_video_embed_options',
+		array(
+			'type' => 'object',
+			'sanitize_callback' => 'kgvid_video_embed_options_validate',
+		),
+	);
+}
+add_action( 'admin_init', 'kgvid_register_setting' );
 
-	register_setting( 'kgvid_video_embed_options', 'kgvid_video_embed_options', 'kgvid_video_embed_options_validate' );
+function kgvid_video_embed_options_init() {
 
 	add_settings_section( 'kgvid_video_embed_playback_settings', esc_html__( 'Default Video Playback Settings', 'video-embed-thumbnail-generator' ), 'kgvid_plugin_playback_settings_section_callback', 'video_embed_thumbnail_generator_settings' );
 	add_settings_section( 'kgvid_video_embed_plugin_settings', esc_html__( 'Plugin Settings', 'video-embed-thumbnail-generator' ), 'kgvid_plugin_settings_section_callback', 'video_embed_thumbnail_generator_settings' );
