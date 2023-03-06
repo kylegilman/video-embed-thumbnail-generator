@@ -3952,7 +3952,9 @@ function kgvid_delete_video_attachment( $video_id ) {
 		$parent_id          = get_post( $video_id )->post_parent;
 		$wp_attached_file   = get_post_meta( $video_id, '_wp_attached_file', true );
 
-		if ( ! empty( $video_encode_queue ) ) { // remove any encode queue entry related to this attachment
+		if ( ! empty( $video_encode_queue )
+			&& is_array( $video_encode_queue )
+		) { // remove any encode queue entry related to this attachment
 			foreach ( $video_encode_queue as $video_key => $video_entry ) {
 				if ( $video_entry['attachmentID'] == $video_id ) {
 
