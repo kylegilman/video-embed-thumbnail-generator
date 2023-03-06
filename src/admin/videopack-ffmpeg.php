@@ -1273,7 +1273,9 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 
 			$post_mime_type = $check_mime_type['type'];
 
-			if ( ! empty( $video_encode_queue ) ) {
+			if ( ! empty( $video_encode_queue )
+				&& is_array( $video_encode_queue )
+			) {
 				foreach ( $video_encode_queue as $video_key => $video_entry ) {
 					if ( $video_entry['movieurl'] == $movieurl ) {
 						if ( is_array( $video_entry )
@@ -1322,7 +1324,10 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 	}
 
 	$video_key = false;
-	if ( ! empty( $video_encode_queue ) && ! empty( $movieurl ) ) {
+	if ( ! empty( $video_encode_queue )
+		&& is_array( $video_encode_queue )
+		&& ! empty( $movieurl )
+	) {
 		foreach ( $video_encode_queue as $video_key => $video_entry ) {
 			if ( $video_entry['movieurl'] == $movieurl ) {
 				foreach ( $video_entry['encode_formats'] as $format => $value ) {
@@ -1581,7 +1586,9 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 		$total_columns = 7;
 	}
 
-	if ( ! empty( $video_encode_queue ) ) {
+	if ( ! empty( $video_encode_queue )
+		&& is_array( $video_encode_queue )
+	) {
 
 		$video_formats      = kgvid_video_formats();
 		$currently_encoding = array();
@@ -2338,7 +2345,9 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 
 		$already_queued = false;
 
-		if ( ! empty( $video_encode_queue ) ) {
+		if ( ! empty( $video_encode_queue )
+			&& is_array( $video_encode_queue )
+		) {
 			foreach ( $video_encode_queue as $index => $entry ) {
 				if ( $entry['movieurl'] == $movieurl ) {
 					$already_queued = $index;
@@ -3240,7 +3249,9 @@ function kgvid_replace_video( $video_key, $format ) {
 	$video_id           = $video_encode_queue[ $video_key ]['attachmentID'];
 	$replace            = true;
 
-	if ( ! empty( $video_encode_queue ) ) {
+	if ( ! empty( $video_encode_queue )
+		&& is_array( $video_encode_queue )
+	) {
 		foreach ( $video_encode_queue[ $video_key ]['encode_formats'] as $encoding_format => $value ) { // make sure there isn't another encoding process using this original video
 			if ( $value['status'] == 'encoding'
 				|| $value['status'] == 'queued'
@@ -3370,7 +3381,9 @@ function kgvid_clear_completed_queue( $type, $scope = 'site' ) {
 
 	$video_encode_queue = kgvid_get_encode_queue();
 
-	if ( ! empty( $video_encode_queue ) && is_array( $video_encode_queue ) ) {
+	if ( ! empty( $video_encode_queue )
+		&& is_array( $video_encode_queue )
+	) {
 
 		$video_encode_queue  = array_reverse( $video_encode_queue );
 		$keep                = array();

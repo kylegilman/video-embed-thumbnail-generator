@@ -136,7 +136,9 @@ function kgvid_update_encode_queue() {
 	$options            = kgvid_get_options();
 	$video_encode_queue = kgvid_get_encode_queue();
 
-	if ( ! empty( $video_encode_queue ) ) {
+	if ( ! empty( $video_encode_queue )
+		&& is_array( $video_encode_queue )
+	) {
 
 		foreach ( $video_encode_queue as $video_key => $video_entry ) {
 
