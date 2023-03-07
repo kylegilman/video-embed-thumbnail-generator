@@ -11,9 +11,13 @@
 function kgvid_get_encode_queue() {
 
 	if ( is_videopack_active_for_network() ) {
-		$video_encode_queue = get_site_option( 'kgvid_video_embed_queue' );
+		$video_encode_queue = get_site_option( 'kgvid_video_embed_queue', array() );
 	} else {
-		$video_encode_queue = get_option( 'kgvid_video_embed_queue' );
+		$video_encode_queue = get_option( 'kgvid_video_embed_queue', array() );
+	}
+
+	if ( ! is_array( $video_encode_queue ) ) {
+		$video_encode_queue = array();
 	}
 
 	return $video_encode_queue;
