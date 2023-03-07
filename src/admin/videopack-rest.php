@@ -9,73 +9,154 @@
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 
-function videopack_rest_routes() {
-	register_rest_route(
-		'videopack/v1',
-		'/send-thumb',
-		array(
-			'methods'             => WP_REST_Server::CREATABLE,
-			'callback'            => 'videopack_rest_send_thumb_data',
-			'permission_callback' => function() {
-				return current_user_can( 'make_video_thumbnails' );
-			},
-		)
-	);
-	register_rest_route(
-		'videopack/v1',
-		'/sources',
-		array(
-			'methods'             => WP_REST_Server::READABLE,
-			'callback'            => 'videopack_rest_video_sources',
-			'permission_callback' => '__return_true',
-		)
-	);
-	register_rest_route(
-		'videopack/v1',
-		'/attributes',
-		array(
-			'methods'             => WP_REST_Server::READABLE,
-			'callback'            => 'videopack_rest_shortcode_atts',
-			'permission_callback' => '__return_true',
-		)
-	);
-}
-add_action( 'rest_api_init', 'videopack_rest_routes' );
+class Videopack_Custom_Controller extends WP_REST_Controller {
 
-function videopack_rest_send_thumb_data( $request ) {
-
-	$raw_png = $request->get_param( 'raw_png' );
-	if ( ! $raw_png ) {
-		return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing image data.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+	public function register_routes() {
+		$version   = '1';
+		$namespace = 'videopack/v' . $version;
+		register_rest_route(
+			$namespace,
+			'/send-thumb',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'send_thumb_data' ),
+				'permission_callback' => function() {
+					return current_user_can( 'make_video_thumbnails' );
+				},
+			)
+		);
+		register_rest_route(
+			$namespace,
+			'/sources',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'video_sources' ),
+				'permission_callback' => '__return_true',
+			),
+		);
+		register_rest_route(
+			$namespace,
+			'/ffmpeg/(?P<ffmpeg_action>\w+)',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'call_ffmpeg' ),
+				'permission_callback' => function() {
+					$options = kgvid_get_options();
+					return ( current_user_can( 'make_video_thumbnails' ) && $options['ffmpeg_exists'] === 'on' );
+				},
+				'args' => array(
+					'movieurl' => array(
+						'type' => 'string',
+					),
+					'numberofthumbs' => array(
+						'type'    => 'number',
+						'minimum' => 1,
+						'maximum' => 100,
+						'default' => 4,
+					),
+					'thumbnumber' => array(
+						'type' => 'number,'
+					),
+					'thumbnumberplusincreaser' => array(
+						'type' => 'number',
+					),
+					'ffmpeg_action'=> array(
+						'type' => 'string',
+						'required' => true,
+						'enum' => array(
+							'generate-thumb',
+							'save-thumb',
+						),
+					),
+					'attachmentID' => array(
+						'type' => 'number',
+					),
+					'generate_button'=> array(
+						'type' => 'string',
+					),
+					'thumbtimecode' => array(
+						'type' => array(
+							'number',
+							'string',
+							'boolean',
+						),
+					),
+					'dofirstframe' => array(
+						'type' => 'boolean',
+					),
+					'poster' => array(
+						'type' => 'string',
+					),
+				),
+			)
+		);
 	}
-	$post_id   = $request->get_param( 'postId' );
-	$video_url = $request->get_param( 'url' );
-	$total     = 2;
-	$index     = $request->get_param( 'index' );
 
-	$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
+	public function send_thumb_data( $request ) {
 
-	return $thumb_info;
-}
+		$raw_png = $request->get_param( 'raw_png' );
+		if ( ! $raw_png ) {
+			return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing image data.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+		$post_id   = $request->get_param( 'postId' );
+		$video_url = $request->get_param( 'url' );
+		$total     = 2;
+		$index     = $request->get_param( 'index' );
 
-function videopack_rest_video_sources( $request ) {
+		$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
 
-	$url = $request->get_param( 'url' );
-	if ( ! $url ) {
-		return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		return $thumb_info;
 	}
-	$post_id = $request->get_param( 'postId' );
-	$source_info = kgvid_prepare_sources( $url, $post_id );
 
-	return $source_info;
-}
+	public function video_sources( $request ) {
 
-function videopack_rest_shortcode_atts( $request ) {
+		$url = $request->get_param( 'url' );
+		if ( ! $url ) {
+			return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+		$post_id     = $request->get_param( 'postId' );
+		$source_info = kgvid_prepare_sources( $url, $post_id );
 
-	$atts = $request->get_params();
-	error_log(print_r($atts,true));
-	return 'Attributes!';
-	// return kgvid_shortcode_atts( $atts );
+		return $source_info;
+	}
+
+	public function call_ffmpeg( $request ) {
+
+		$params   = $request->get_params();
+		$response = array();
+
+		switch ( $params['ffmpeg_action'] ) {
+
+			case 'generate-thumb':
+				$response = kgvid_make_thumbs(
+					$params['post_id'],
+					$params['movieurl'],
+					$params['numberofthumbs'],
+					$params['thumbnumber'],
+					$params['thumbnumberplusincreaser'],
+					$params['thumbtimecode'],
+					$params['dofirstframe'],
+					$params['generate_button'],
+				);
+				break;
+
+			case 'save-thumb':
+				if ( is_numeric( $params['post_id'] ) ) {
+					$post_name = get_the_title( $params['post_id'] );
+				} else {
+					$post_name = str_replace( 'singleurl_', '', $params['post_id'] );
+				}
+				$response = kgvid_save_thumb(
+					$params['post_id'],
+					$post_name,
+					$params['thumburl'],
+					$params['index'],
+				);
+				break;
+		}
+
+		return $response;
+	}
 }
 
 function videopack_prepare_attachment( $response, $attachment, $meta ) {
@@ -384,8 +465,13 @@ function kgvid_register_attachment_meta() {
 }
 add_action( 'init', 'kgvid_register_attachment_meta' );
 
+function videopack_register_rest_routes() {
+	$controller = new Videopack_Custom_Controller();
+	$controller->register_routes();
+}
+add_action( 'rest_api_init', 'videopack_register_rest_routes' );
+
 function log_all_errors_to_debug_log($code, $message, $data, $wp_error ) {
     error_log( $code . ': ' . $message );
 }
-
 add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );
