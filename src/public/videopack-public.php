@@ -848,19 +848,6 @@ function kgvid_prepare_sources( $content, $id, $block_id = false ) {
 		'mkv',
 	);
 
-	$encodevideo_info['ffmpeg_settings'] = array(
-		'ffmpeg_exists'      => $options['ffmpeg_exists'] === 'on' ? true : false,
-		'browser_thumbnails' => $options['browser_thumbnails'] === 'on' ? true : false,
-	);
-	unset( $encodevideo_info['encodepath'] );
-	foreach ( $encodevideo_info as $key => $info ) {
-		if ( is_array( $encodevideo_info[ $key ] )
-			&& array_key_exists( 'filepath', $encodevideo_info[ $key ] )
-		) {
-			unset( $encodevideo_info[ $key ]['filepath'] );
-		}
-	}
-
 	if ( $block_id !== false ) {
 		$player_id = $block_id;
 	} else {
@@ -968,11 +955,16 @@ function kgvid_prepare_sources( $content, $id, $block_id = false ) {
 	krsort( $sources_data );
 	natsort( $h264_resolutions );
 
+	$ffmpeg_settings = array(
+		'ffmpeg_exists'      => $options['ffmpeg_exists'] === 'on' ? true : false,
+		'browser_thumbnails' => $options['browser_thumbnails'] === 'on' ? true : false,
+	);
+
 	return array(
 		'sources_data'              => $sources_data,
 		'h264_resolutions'          => $h264_resolutions,
 		'enable_resolutions_plugin' => $enable_resolutions_plugin,
-		'encodevideo_info'          => $encodevideo_info,
+		'ffmpeg_settings'           => $ffmpeg_settings,
 	);
 }
 
@@ -1282,7 +1274,9 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 				}
 
 				$default_key = intval( $video_variables['default_res'] );
-				if ( $video_variables['default_res'] && array_key_exists( $default_key, $source_info['sources_data'] ) ) {
+				if ( $video_variables['default_res']
+					&& array_key_exists( $default_key, $source_info['sources_data'] )
+				) {
 					$default_source = $source_info['sources_data'][ $default_key ];
 					unset( $source_info['sources_data'][ $default_key ] );
 					$source_info['sources_data'] = array( $default_key => $default_source ) + $source_info['sources_data'];

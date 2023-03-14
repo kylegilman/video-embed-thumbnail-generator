@@ -12,19 +12,130 @@
 class Videopack_Custom_Controller extends WP_REST_Controller {
 
 	public function register_routes() {
+
 		$version   = '1';
 		$namespace = 'videopack/v' . $version;
+
 		register_rest_route(
 			$namespace,
-			'/send-thumb',
+			'/settings',
 			array(
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'send_thumb_data' ),
-				'permission_callback' => function() {
-					return current_user_can( 'make_video_thumbnails' );
-				},
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'settings' ),
+				'permission_callback' => '__return_true',
+			),
+		);
+
+		register_rest_route(
+			$namespace,
+			'/thumb',
+			array(
+				/* array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'thumb_receive_data' ),
+					'permission_callback' => function() {
+						return current_user_can( 'make_video_thumbnails' );
+					},
+					'args'                => array(
+						'raw_png' => array(
+							'type' => 'string',
+							'required' => true,
+						),
+						'movieurl' => array(
+							'type' => 'string',
+							'required' => true,
+						),
+						'parent_id' => array(
+							'type' => 'number',
+							'required' => true,
+						),
+						'index' => array(
+							'type' => 'number',
+							'required' => true,
+						),
+					),
+				), */
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'thumb_save' ),
+					'permission_callback' => function() {
+						return current_user_can( 'make_video_thumbnails' );
+					},
+					'args'                => array(
+						'postId' => array(
+							'type' => array(
+								'number',
+								'string',
+							),
+							'required' => true,
+						),
+						'thumburl' => array(
+							'type' => 'string',
+							'required' => true,
+						),
+						'index' => array(
+							'type' => 'number',
+							'required' => true,
+						),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'thumb_generate' ),
+					'permission_callback' => function() {
+						$options = kgvid_get_options();
+						return ( current_user_can( 'make_video_thumbnails' ) && $options['ffmpeg_exists'] === 'on' );
+					},
+					'args'                => array(
+						'movieurl' => array(
+							'type' => 'string',
+							'required' => true,
+						),
+						'numberofthumbs' => array(
+							'type'    => 'number',
+							'minimum' => 1,
+							'maximum' => 100,
+							'default' => 4,
+							'required' => true,
+						),
+						'thumbnumber' => array(
+							'type' => 'number',
+							'required' => true,
+						),
+						'thumbnumberplusincreaser' => array(
+							'type' => 'number',
+							'required' => true,
+						),
+						'attachmentID' => array(
+							'type' => 'number',
+							'required' => true,
+						),
+						'generate_button' => array(
+							'type' => 'string',
+							'required' => true,
+						),
+						'thumbtimecode' => array(
+							'type' => array(
+								'number',
+								'string',
+							),
+							'required' => true,
+						),
+						'dofirstframe' => array(
+							'type' => 'boolean',
+							'required' => true,
+						),
+						'poster' => array(
+							'type' => 'string',
+						),
+						'parent_id' => array(
+							'type' => 'number',
+						),
+					),
+				),
 			)
 		);
+
 		register_rest_route(
 			$namespace,
 			'/sources',
@@ -32,80 +143,210 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'video_sources' ),
 				'permission_callback' => '__return_true',
+				'args'                => array(
+					'url'    => array(
+						'type' => 'string',
+					),
+					'postId' => array(
+						'type' => 'number',
+					),
+				),
 			),
 		);
 		register_rest_route(
 			$namespace,
-			'/ffmpeg/(?P<ffmpeg_action>\w+)',
+			'/checkboxes',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'call_ffmpeg' ),
+				'callback'            => array( $this, 'checkboxes' ),
 				'permission_callback' => function() {
-					$options = kgvid_get_options();
-					return ( current_user_can( 'make_video_thumbnails' ) && $options['ffmpeg_exists'] === 'on' );
+					return current_user_can( 'upload_files' );
 				},
-				'args' => array(
-					'movieurl' => array(
+				'args'                => array(
+					'url'    => array(
 						'type' => 'string',
 					),
-					'numberofthumbs' => array(
-						'type'    => 'number',
-						'minimum' => 1,
-						'maximum' => 100,
-						'default' => 4,
-					),
-					'thumbnumber' => array(
-						'type' => 'number,'
-					),
-					'thumbnumberplusincreaser' => array(
+					'postId' => array(
 						'type' => 'number',
-					),
-					'ffmpeg_action'=> array(
-						'type' => 'string',
-						'required' => true,
-						'enum' => array(
-							'generate-thumb',
-							'save-thumb',
-						),
-					),
-					'attachmentID' => array(
-						'type' => 'number',
-					),
-					'generate_button'=> array(
-						'type' => 'string',
-					),
-					'thumbtimecode' => array(
-						'type' => array(
-							'number',
-							'string',
-							'boolean',
-						),
-					),
-					'dofirstframe' => array(
-						'type' => 'boolean',
-					),
-					'poster' => array(
-						'type' => 'string',
 					),
 				),
-			)
+			),
+		);
+		register_rest_route(
+			$namespace,
+			'/queue/(?P<attachmentID>\w+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'queue_get' ),
+					'permission_callback' => function() {
+						$options = kgvid_get_options();
+						return ( $options['ffmpeg_exists'] === 'on' );
+					},
+					'args'                => array(
+						'attachmentID' => array(
+							'type' => 'number',
+						),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'queue_edit' ),
+					'permission_callback' => function() {
+						$options = kgvid_get_options();
+						return ( current_user_can( 'encode_videos' ) && $options['ffmpeg_exists'] === 'on' );
+					},
+					'args'                => array(
+						'movieurl' => array(
+							'type' => 'string',
+						),
+						'attachmentID' => array(
+							'type' => 'number',
+						),
+						'encodeformats' => array(
+							'type' => 'object',
+							'additionalProperties' => array(
+								'type' => 'boolean',
+							),
+						),
+						'parent_id' => array(
+							'type' => 'number',
+						),
+					),
+				),
+			),
 		);
 	}
 
-	public function send_thumb_data( $request ) {
+	/**
+	 * Recursively generate JSON schema from an array of default options
+	 *
+	 * @param array $default_options The array of default options.
+	 *
+	 * @return array The generated JSON schema.
+	 */
+	public function generate_json_schema( $default_options ) {
+		$schema = array();
+		foreach ( $default_options as $key => $value ) {
+			$type = 'string';
+			if ( is_numeric( $value ) ) {
+				$type = 'number';
+			} elseif ( $value === false || $value === 'on' ) {
+				$type = 'boolean';
+				if ( $value === 'on' ) {
+					$value = true;
+				}
+			} elseif ( is_array( $value ) ) {
+				$type = 'object';
+				$value = $this->generate_json_schema( $value );
+			}
+			$schema[ $key ] = array(
+				'type'    => $type,
+				'default' => $value,
+			);
+		}
+		return $schema;
+	}
 
-		$raw_png = $request->get_param( 'raw_png' );
+	public function clean_array( $dirty_array ) {
+		foreach ( $dirty_array as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$dirty_array[ $key ] = $this->clean_array( $value );
+			} elseif ( is_float( $value )
+				&& ( is_nan( $value )
+					|| is_infinite( $value )
+				)
+			) {
+				$dirty_array[ $key ] = null;
+			} elseif ( $key === 'filepath' ) {
+				unset( $dirty_array[ $key ] );
+			} elseif ( $value === 'checked' || $value === 'on' ) {
+				$dirty_array[ $key ] = true;
+			}
+		}
+		return $dirty_array;
+	}
+
+	public function settings() {
+
+		$options        = kgvid_get_options();
+		$unsafe_options = array(
+			'app_path',
+			'error_email',
+			'encode_array',
+			'capabilities',
+			'moov_path',
+			'ffmpeg_watermark',
+			'version',
+		);
+		foreach ( $unsafe_options as $unsafe_option ) {
+			if ( array_key_exists( $unsafe_option, $options ) ) {
+				unset( $options[ $unsafe_option ] );
+			}
+		}
+		foreach ( $options as $key => $value ) {
+			if ( $value === 'on' ) {
+				$options[ $key ] = true;
+			}
+		}
+		return $options;
+	}
+
+	/* public function thumb_receive_data( $request ) {
+
+		$params = $request->get_params();
+
 		if ( ! $raw_png ) {
 			return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing image data.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
-		$post_id   = $request->get_param( 'postId' );
-		$video_url = $request->get_param( 'url' );
-		$total     = 2;
-		$index     = $request->get_param( 'index' );
 
-		$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
+		$response = videopack_save_canvas_thumb(
+			$params['raw_png'],
+			$params['parent_id'],
+			$params['movieurl'],
+			2,
+			$params['index'],
+		);
 
-		return $thumb_info;
+		return $response;
+	} */
+
+	public function thumb_generate( $request ) {
+
+		$params   = $request->get_params();
+		$response = array();
+
+		$response = kgvid_make_thumbs(
+			$params['attachmentID'],
+			$params['movieurl'],
+			$params['numberofthumbs'],
+			$params['thumbnumber'],
+			$params['thumbnumberplusincreaser'],
+			$params['thumbtimecode'],
+			$params['dofirstframe'],
+			$params['generate_button'],
+		);
+
+		return $response;
+	}
+
+	public function thumb_save( $request ) {
+
+		$params = $request->get_params();
+
+		if ( is_numeric( $params['postId'] ) ) {
+			$post_name = get_the_title( $params['postId'] );
+		} else {
+			$post_name = str_replace( 'singleurl_', '', $params['postId'] );
+		}
+		$response = kgvid_save_thumb(
+			$params['postId'],
+			$post_name,
+			$params['thumburl'],
+			intval( $params['index'] ) + 1,
+		);
+
+		return $response;
 	}
 
 	public function video_sources( $request ) {
@@ -120,40 +361,53 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 		return $source_info;
 	}
 
-	public function call_ffmpeg( $request ) {
+	public function checkboxes( $request ) {
+
+		$url = $request->get_param( 'url' );
+		if ( ! $url ) {
+			return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+		$post_id    = $request->get_param( 'postId' );
+		$checkboxes = kgvid_generate_encode_checkboxes( $url, $post_id, 'attachment' );
+		$checkboxes = $this->clean_array( $checkboxes['data'] );
+
+		return $checkboxes;
+	}
+
+	public function queue_get( $request ) {
+
+		$params             = $request->get_params();
+		$found              = false;
+		$video_encode_queue = kgvid_get_encode_queue();
+		$video_encode_queue = $this->clean_array( $video_encode_queue );
+
+		if ( array_key_exists( 'attachmentID', $params ) ) {
+			foreach ( $video_encode_queue as $video_key => $video_entry ) {
+				if ( $video_entry['attachmentID'] === $params['attachmentID'] ) {
+					$video_encode_queue = $video_encode_queue[ $video_key ];
+					$found = true;
+					break;
+				}
+			}
+			if ( ! $found ) {
+				$video_encode_queue = array();
+			}
+		}
+
+		return $video_encode_queue;
+	}
+
+	public function queue_edit( $request ) {
 
 		$params   = $request->get_params();
 		$response = array();
 
-		switch ( $params['ffmpeg_action'] ) {
-
-			case 'generate-thumb':
-				$response = kgvid_make_thumbs(
-					$params['post_id'],
-					$params['movieurl'],
-					$params['numberofthumbs'],
-					$params['thumbnumber'],
-					$params['thumbnumberplusincreaser'],
-					$params['thumbtimecode'],
-					$params['dofirstframe'],
-					$params['generate_button'],
-				);
-				break;
-
-			case 'save-thumb':
-				if ( is_numeric( $params['post_id'] ) ) {
-					$post_name = get_the_title( $params['post_id'] );
-				} else {
-					$post_name = str_replace( 'singleurl_', '', $params['post_id'] );
-				}
-				$response = kgvid_save_thumb(
-					$params['post_id'],
-					$post_name,
-					$params['thumburl'],
-					$params['index'],
-				);
-				break;
-		}
+		$response = kgvid_enqueue_videos(
+			$params['attachmentID'],
+			$params['movieurl'],
+			$params['encodeformats'],
+			$params['parent_id'],
+		);
 
 		return $response;
 	}
@@ -261,8 +515,19 @@ function kgvid_register_attachment_meta() {
 							),
 						),
 						'encode'              => array(
-							'type' => 'object',
-							'additionalProperties' => true,
+							'type'                 => 'object',
+							'additionalProperties' => array(
+								'type' => array(
+									'string',
+									'boolean',
+								),
+								'enum' => array(
+									'on',
+									'notchecked',
+									true,
+									false,
+								),
+							),
 						),
 						'featured'            => array(
 							'type' => array(
