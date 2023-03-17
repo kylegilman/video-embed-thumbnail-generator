@@ -143,8 +143,8 @@ function kgvid_update_encode_queue() {
 		foreach ( $video_encode_queue as $video_key => $video_entry ) {
 
 			if ( $page === 'attachment'
-			&& array_key_exists( 'blog_id', $video_entry )
-			&& get_current_blog_id() !== $video_entry['blog_id']
+				&& array_key_exists( 'blog_id', $video_entry )
+				&& get_current_blog_id() !== $video_entry['blog_id']
 			) { // remove all entries from other blogs on attachment pages
 
 				unset( $video_encode_queue[ $video_key ] );

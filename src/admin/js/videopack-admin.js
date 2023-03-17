@@ -600,12 +600,13 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	var specifictimecode = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-thumbtime]' )[0].value;
 	if (specifictimecode === "0") {
-		specifictimecode = "firstframe"; firstframethumb = true;
+		specifictimecode = "firstframe";
+		firstframethumb = true;
 	}
-	if (buttonPushed == "random" || howmanythumbs > 1) {
+	if ( buttonPushed == "random" || howmanythumbs > 1 ) {
 		specifictimecode = 0;
 	}
-	if (specifictimecode != 0 ) {
+	if ( specifictimecode != 0 ) {
 		howmanythumbs = 1;
 	}
 
@@ -1578,7 +1579,9 @@ function kgvid_update_encode_queue() {
 						}
 					); // end loop through queue
 
-					if ( (page == 'queue' || page == 'network_queue') && ! jQuery( '#kgvid-encode-queue-control' ).hasClass( 'kgvid-queue-control-updating' ) ) {
+					if ( (page == 'queue' || page == 'network_queue')
+						&& ! jQuery( '#kgvid-encode-queue-control' ).hasClass( 'kgvid-queue-control-updating' )
+					) {
 
 						var opposite_command = 'play';
 						var title            = kgvidL10n.queue_play
@@ -2045,8 +2048,12 @@ function kgvid_save_plugin_settings(input_obj) {
 						);
 					}
 
-					if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() != '' && jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( input_obj ).hasClass( 'affects_ffmpeg_thumb_watermark' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
-						jQuery( '#browser_thumbnails' ).prop( 'checked', false ).prop( 'disabled', true ); // can't allow in-browser thumbnails with FFMPEG watermark
+					if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() != ''
+						&& jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on"
+						&& jQuery( input_obj ).hasClass( 'affects_ffmpeg_thumb_watermark' ) == true
+						&& jQuery( '#ffmpeg_output' ).length != 0
+					) {
+						//jQuery( '#browser_thumbnails' ).prop( 'checked', false ).prop( 'disabled', true ); // can't allow in-browser thumbnails with FFMPEG watermark
 						jQuery.post(
 							ajaxurl,
 							{ action: "kgvid_test_ffmpeg_thumb_watermark",
@@ -2258,9 +2265,9 @@ function kgvid_hide_plugin_settings() {
 		jQuery( "#ffmpeg_sample_div" ).slideDown( 1000 );
 	}
 
-	if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() !== '' ) {
+	/* if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() !== '' ) {
 		jQuery( '#browser_thumbnails' ).prop( 'disabled', true );
-	}
+	} */
 
 }
 
