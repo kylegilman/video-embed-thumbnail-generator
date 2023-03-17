@@ -88,7 +88,7 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 	$thumb_options[] = $output;
 
 	$commandline = array_merge( $before_thumb_options, $thumb_options );
-
+error_log(implode(' ', $commandline));
 	$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $commandline );
 
 	try {
@@ -1059,6 +1059,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 	$status_l10n            = $status;
 	$deletable              = false;
 	$was_picked             = false;
+	$encoding_time_array    = false;
 
 	if ( is_multisite() ) {
 		$blog_id = get_current_blog_id();
@@ -1194,16 +1195,16 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		if ( is_array( $progress )
 			&& array_key_exists( $video_key, $progress )
 			&& array_key_exists( $format, $progress[ $video_key ] )
-			&& array_key_exists( 'embed_display', $progress[ $video_key ][ $format ] )
 		) {
-			$meta = $progress[ $video_key ][ $format ]['embed_display'];
-		}
-		if ( is_array( $progress )
-			&& array_key_exists( $video_key, $progress )
-			&& array_key_exists( $format, $progress[ $video_key ] )
-			&& array_key_exists( 'time_to_wait', $progress[ $video_key ][ $format ] )
-		) {
-			$time_to_wait = $progress[ $video_key ][ $format ]['time_to_wait'];
+			if ( array_key_exists( 'embed_display', $progress[ $video_key ][ $format ] ) ) {
+				$meta = $progress[ $video_key ][ $format ]['embed_display'];
+			}
+			if ( array_key_exists( 'time_to_wait', $progress[ $video_key ][ $format ] ) ) {
+				$time_to_wait = $progress[ $video_key ][ $format ]['time_to_wait'];
+			}
+			if ( array_key_exists( 'encoding_time_array', $progress[ $video_key ][ $format ] ) ) {
+				$encoding_time_array = $progress[ $video_key ][ $format ]['encoding_time_array'];
+			}
 		}
 	}
 
@@ -1233,6 +1234,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		'was_picked'          => $was_picked,
 		'deletable'           => $deletable,
 		'child_id'            => $child_id,
+		'progress'            => $encoding_time_array,
 	);
 
 	return $meta_array;
@@ -2915,9 +2917,10 @@ add_action( 'wp_ajax_kgvid_test_ffmpeg_thumb_watermark', 'kgvid_test_ffmpeg_thum
 
 function kgvid_encode_progress() {
 
-	$video_encode_queue = kgvid_get_encode_queue();
-	$encode_progress    = array();
-	$time_to_wait       = 10000; // default 10 seconds between checking encode progress
+	$video_encode_queue  = kgvid_get_encode_queue();
+	$encode_progress     = array();
+	$encoding_time_array = array();
+	$time_to_wait        = 10000; // default 10 seconds between checking encode progress
 
 	if ( is_array( $video_encode_queue ) ) { // if there is an encode queue
 
@@ -2938,8 +2941,6 @@ function kgvid_encode_progress() {
 
 					$percent_done    = '';
 					$time_remaining  = '';
-					$other_message   = '';
-					$logfilecontents = '';
 					$lastline        = '';
 
 					if ( $video_entry['encode_formats'][ $format ]['status'] != 'Encoding Complete' ) {
@@ -3031,6 +3032,7 @@ function kgvid_encode_progress() {
 									'elapsed'         => $time_elapsed,
 									'remaining'       => $time_remaining,
 									'fps'             => esc_html( $fps_match ),
+									'percent_done'    => $percent_done,
 								);
 								$encoding_time_json  = wp_json_encode( $encoding_time_array );
 
@@ -3066,7 +3068,7 @@ function kgvid_encode_progress() {
 
 								kgvid_save_encode_queue( $video_encode_queue );
 
-								if ( $format != 'fullres' ) {
+								if ( $format != 'fullres' && file_exists( $format_info['filepath'] ) ) {
 
 									// insert the encoded video as a child attachment of the original video, or post if external original
 									if ( get_post_type( $video_entry['attachmentID'] ) == 'attachment' ) { // if the original video is in the database set that as parent

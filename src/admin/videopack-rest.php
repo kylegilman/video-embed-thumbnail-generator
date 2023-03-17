@@ -30,31 +30,6 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 			$namespace,
 			'/thumb',
 			array(
-				/* array(
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( $this, 'thumb_receive_data' ),
-					'permission_callback' => function() {
-						return current_user_can( 'make_video_thumbnails' );
-					},
-					'args'                => array(
-						'raw_png' => array(
-							'type' => 'string',
-							'required' => true,
-						),
-						'movieurl' => array(
-							'type' => 'string',
-							'required' => true,
-						),
-						'parent_id' => array(
-							'type' => 'number',
-							'required' => true,
-						),
-						'index' => array(
-							'type' => 'number',
-							'required' => true,
-						),
-					),
-				), */
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'thumb_save' ),
@@ -135,7 +110,6 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 				),
 			)
 		);
-
 		register_rest_route(
 			$namespace,
 			'/sources',
@@ -292,25 +266,6 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 		return $options;
 	}
 
-	/* public function thumb_receive_data( $request ) {
-
-		$params = $request->get_params();
-
-		if ( ! $raw_png ) {
-			return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing image data.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
-		}
-
-		$response = videopack_save_canvas_thumb(
-			$params['raw_png'],
-			$params['parent_id'],
-			$params['movieurl'],
-			2,
-			$params['index'],
-		);
-
-		return $response;
-	} */
-
 	public function thumb_generate( $request ) {
 
 		$params   = $request->get_params();
@@ -363,14 +318,10 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 
 	public function checkboxes( $request ) {
 
-		$url = $request->get_param( 'url' );
-		if ( ! $url ) {
-			return new WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
-		}
-		$post_id    = $request->get_param( 'postId' );
-		$checkboxes = kgvid_generate_encode_checkboxes( $url, $post_id, 'attachment' );
+		$params     = $request->get_params();
+		$checkboxes = kgvid_generate_encode_checkboxes( $params['url'], $params['postId'], 'attachment' );
 		$checkboxes = $this->clean_array( $checkboxes['data'] );
-
+		kgvid_encode_progress();
 		return $checkboxes;
 	}
 
@@ -394,6 +345,8 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 			}
 		}
 
+		kgvid_encode_progress();
+
 		return $video_encode_queue;
 	}
 
@@ -408,7 +361,7 @@ class Videopack_Custom_Controller extends WP_REST_Controller {
 			$params['encodeformats'],
 			$params['parent_id'],
 		);
-
+		kgvid_encode_videos();
 		return $response;
 	}
 }
@@ -739,4 +692,4 @@ add_action( 'rest_api_init', 'videopack_register_rest_routes' );
 function log_all_errors_to_debug_log($code, $message, $data, $wp_error ) {
     error_log( $code . ': ' . $message );
 }
-add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );
+//add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );

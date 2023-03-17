@@ -1224,7 +1224,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		) {
 
 			$default_aspect_ratio = intval( $options['height'] ) / intval( $options['width'] );
-			$query_atts['height'] = round( $query_atts['width'] * $default_aspect_ratio );
+			$query_atts['height'] = round( intval( $query_atts['width'] ) * $default_aspect_ratio );
 
 		}
 

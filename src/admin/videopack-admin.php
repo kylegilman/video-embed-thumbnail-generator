@@ -1236,7 +1236,7 @@ function kgvid_options_assets() {
 
 	$options = kgvid_get_options();
 
-	wp_enqueue_script(
+	/* wp_enqueue_script(
 		'videopack-options-page',
 		plugins_url( '/build/build.js', __FILE__ ),
 		array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element' ),
@@ -1249,7 +1249,7 @@ function kgvid_options_assets() {
 		plugins_url( '/build/build.css', __FILE__ ),
 		array( 'wp-components' ),
 		$options['version'],
-	);
+	); */
 }
 
 function kgvid_settings_page() {
@@ -1302,6 +1302,7 @@ function kgvid_register_setting() {
 			'sanitize_callback' => 'kgvid_video_embed_options_validate',
 		),
 	);
+	add_filter('https_ssl_verify', '__return_false'); ////// REMOVE THIS!!!!!!!!!
 }
 add_action( 'admin_init', 'kgvid_register_setting' );
 
@@ -1838,7 +1839,7 @@ function kgvid_browser_thumbnails_callback() {
 	$options = kgvid_get_options();
 	echo "<div class='kgvid_video_app_required'>";
 	/* translators: %s is the name of the video encoding application (usually FFMPEG). */
-	echo '<input' . checked( $options['browser_thumbnails'], 'on', false ) . " id='browser_thumbnails' name='kgvid_video_embed_options[browser_thumbnails]' type='checkbox'" . disabled( empty( $options['ffmpeg_thumb_watermark']['url'] ), false, false ) . "/> <label for='browser_thumbnails'>" . sprintf( esc_html__( 'When possible, use the browser\'s built-in video capabilities to make thumbnails instead of %s.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_attr( strtoupper( $options['video_app'] ) ) . '</strong>' ) . "</label>\n\t";
+	echo '<input' . checked( $options['browser_thumbnails'], 'on', false ) . " id='browser_thumbnails' name='kgvid_video_embed_options[browser_thumbnails]' type='checkbox' /> <label for='browser_thumbnails'>" . sprintf( esc_html__( 'When possible, use the browser\'s built-in video capabilities to make thumbnails instead of %s.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_attr( strtoupper( $options['video_app'] ) ) . '</strong>' ) . "</label>\n\t";
 	echo '</div>';
 }
 
@@ -2768,7 +2769,7 @@ function kgvid_video_embed_options_validate( $input ) {
 	}
 
 	if ( $input['ffmpeg_thumb_watermark']['url'] != '' ) { // can't use browser thumbnails with ffmpeg watermark
-		$input['browser_thumbnails'] = false;
+		//$input['browser_thumbnails'] = false;
 	}
 
 	if ( empty( $input['width'] ) ) {
@@ -3946,7 +3947,6 @@ function kgvid_delete_video_attachment( $video_id ) {
 		|| get_post_meta( $video_id, '_kgflashmediaplayer-format', true )
 	) { // only do this for videos or other child formats
 
-		$parent_post        = get_post( $video_id );
 		$options            = kgvid_get_options();
 		$video_encode_queue = kgvid_get_encode_queue();
 		$parent_id          = get_post( $video_id )->post_parent;
