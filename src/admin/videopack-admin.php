@@ -274,22 +274,25 @@ function kgvid_sanitize_text_field( $text_field ) {
 }
 
 function kgvid_sanitize_url( $movieurl ) {
+	$sanitized_url = array();
 
-	$movieurl        = rawurldecode( $movieurl );
-	$movie_extension = pathinfo( wp_parse_url( $movieurl, PHP_URL_PATH ), PATHINFO_EXTENSION );
+	$decoded_movieurl = rawurldecode( $movieurl );
+	$parsed_url       = wp_parse_url( $decoded_movieurl, PHP_URL_PATH );
+	$path_info        = pathinfo( $parsed_url );
 
-	if ( empty( $movie_extension ) ) {
+	if ( empty( $path_info['extension'] ) ) {
 		$sanitized_url['noextension'] = $movieurl;
-		$sanitized_url['basename']    = substr( $movieurl, -20 );
+		$sanitized_url['basename'] = substr( $movieurl, -20 );
 	} else {
-		$movieurl                     = strtok( $movieurl, '?' );
-		$sanitized_url['noextension'] = preg_replace( '/\\.[^.\\s]{3,4}$/', '', $movieurl );
-		$sanitized_url['basename']    = sanitize_file_name( basename( $movieurl ) );
-		$sanitized_url['basename']    = str_replace( '.' . $movie_extension, '', $sanitized_url['basename'] );
+		$no_extension_url   = preg_replace( '/\\.[^.\\s]{3,4}$/', '', $decoded_movieurl );
+		$sanitized_basename = sanitize_file_name( $path_info['basename'] );
+
+		$sanitized_url['noextension'] = $no_extension_url;
+		$sanitized_url['basename']    = str_replace( '.' . $path_info['extension'], '', $sanitized_basename );
 	}
 
 	$sanitized_url['singleurl_id'] = 'singleurl_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $sanitized_url['basename'] );
-	$sanitized_url['movieurl']     = esc_url_raw( str_replace( ' ', '%20', $movieurl ) );
+	$sanitized_url['movieurl']     = esc_url_raw( str_replace( ' ', '%20', $decoded_movieurl ) );
 
 	return $sanitized_url;
 }

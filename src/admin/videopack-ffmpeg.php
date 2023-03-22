@@ -8,6 +8,9 @@
  * @subpackage Videopack/admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
+
+use Videopack\admin\encode\FFMPEG_Process;
+
 function kgvid_get_encode_queue() {
 
 	if ( is_videopack_active_for_network() ) {
@@ -89,7 +92,7 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 
 	$commandline = array_merge( $before_thumb_options, $thumb_options );
 error_log(implode(' ', $commandline));
-	$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $commandline );
+	$process = new FFMPEG_process( $commandline );
 
 	try {
 		$process->run();
@@ -503,7 +506,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 		}
 	}
 
-	$get_info = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
+	$get_info = new FFMPEG_process(
 		array(
 			$ffmpeg_path,
 			'-i',
@@ -567,7 +570,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 				break;
 		}
 
-		$get_codecs = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
+		$get_codecs = new FFMPEG_Process(
 			array(
 				$ffmpeg_path,
 				'-i',
@@ -2789,7 +2792,7 @@ function kgvid_encode_videos() {
 
 					$commandline   = implode( ' ', array_map( 'kgvid_escape_argument', $encode_array ) ); // escape each argument in the encode array
 					$commandline   = $commandline . ' > "${:LOGFILE}" 2>&1';
-					$shell_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline( $commandline );
+					$shell_process = FFMPEG_Process::fromShellCommandline( $commandline );
 					$shell_process->start( null, array( 'LOGFILE' => $logfile ) );
 
 					sleep( 1 );
@@ -2847,7 +2850,7 @@ function kgvid_test_ffmpeg() {
 
 	if ( array_key_exists( 'encode_array', $options ) && is_array( $options['encode_array'] ) ) {
 
-		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $options['encode_array'] );
+		$process = new FFMPEG_process( $options['encode_array'] );
 
 		try {
 			$process->run();
@@ -3539,7 +3542,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 		) {
 			$faststart_tmp_file = str_replace( '.mp4', '-faststart.mp4', $filepath );
 
-			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
+			$moov_fixer = new FFMPEG_process(
 				array(
 					$options['app_path'] . '/' . $options['moov'],
 					$filepath,
@@ -3560,7 +3563,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 
 		if ( $options['moov'] == 'MP4Box' ) {
 
-			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
+			$moov_fixer = new FFMPEG_process(
 				array(
 					$options['app_path'] . '/' . $options['moov'],
 					'-inter',
@@ -3608,7 +3611,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 					'--no-headers',
 				);
 
-				$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $check_pid_command );
+				$check_pid = new FFMPEG_process( $check_pid_command );
 
 				try {
 					$check_pid->run();
@@ -3634,7 +3637,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 					'Get-CimInstance Win32_Process -Filter "handle = ' . $kgvid_pid . '" | Format-Table -Property CommandLine | Out-String -Width 10000',
 				);
 
-				$check_pid = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $check_pid_command );
+				$check_pid = new FFMPEG_process( $check_pid_command );
 
 				try {
 					$check_pid->run();
@@ -3650,7 +3653,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 
 					$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
 
-					$kill_process = Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process::fromShellCommandline( $commandline );
+					$kill_process = FFMPEG_Process::fromShellCommandline( $commandline );
 
 					try {
 						$kill_process->run( null, array( 'KGVID_PID' => $kgvid_pid ) );
