@@ -4,7 +4,7 @@ namespace Videopack\admin\encode;
 
 use Symfony\Component\Process\Process;
 
-class FFMPEG_Process extends Process {
+class FFmpeg_Process extends Process {
 
 	/**
 	 * Avoid stopping the running process when SIGTERM is received

@@ -4,7 +4,7 @@ This is a plugin that I developed for my own use in 2010 and since then it has g
 
 ### I will not provide support to anyone I suspect of using my plugin to break US copyright laws. I'm concerned about opening myself up to legal action from the copyright holders and as a filmmaker I am personally opposed to any reposting of people's videos. I explained this on my blog in 2008 and my feelings back then have not changed: http://www.kylegilman.net/2008/08/04/why-its-not-ok-to-repost-videos/ ###
 
-This plugin uses FFMPEG or LIBAV for some advanced features. This is an amazing program that is even more complicated and varied than the user experience of HTML5 video. I try to support as many versions and configurations of FFMPEG as possible on Linux and Windows servers. Most of you are on shared hosting and don't have the option to install FFMPEG. Those of you that have set up FFMPEG are in the minority. Unfortunately I don't have access to your server and I don't know how it's configured and I can not provide installation support.
+This plugin uses FFmpeg for some advanced features. This is an amazing program that is even more complicated and varied than the user experience of HTML5 video. I try to support as many versions and configurations of FFmpeg as possible on Linux and Windows servers. Most of you are on shared hosting and don't have the option to install FFmpeg. Those of you that have set up FFmpeg are in the minority. Unfortunately I don't have access to your server and I don't know how it's configured and I can not provide installation support.
 
 But I want to help you. So please help me out and follow these rules when creating new issues:
 
@@ -18,8 +18,8 @@ _Videos won't play, the player looks funny, etc_
 ### For back-end problems ###
 _Can't make thumbnails, can't encode videos, etc_
 
-1. If the plugin can't find FFMPEG at the path you entered, connect to your server via SSH and enter this command:
+1. If the plugin can't find FFmpeg at the path you entered, connect to your server via SSH and enter this command:
 `/usr/local/bin/ffmpeg -i /path/to/wordpress/wp-content/plugins/video-embed-thumbnail-generator/images/sample-video-h264.mp4 -vframes 1 -f mjpeg /path/to/wordpress/wp-content/uploads/2013/10/ffmpeg_exists_test.jpg`
-Replace `/usr/local/bin/` with the path to FFMPEG on your server if that's not where it's located and replace `/path/to/wordpress` with whatever the full path is to your WordPress installation. Usually that's something like `/home/username/public_html` but there are endless variations. On Linux servers you can get your current path by entering `pwd` at the command prompt.
-Once you run FFMPEG, paste the entire text output into your issue.
-1. If the plugin can find FFMPEG but videos aren't encoding, paste the full output of the FFMPEG test output area from the bottom of the FFMPEG Settings tab of the plugin settings page.
+Replace `/usr/local/bin/` with the path to FFmpeg on your server if that's not where it's located and replace `/path/to/wordpress` with whatever the full path is to your WordPress installation. Usually that's something like `/home/username/public_html` but there are endless variations. On Linux servers you can get your current path by entering `pwd` at the command prompt.
+Once you run FFmpeg, paste the entire text output into your issue.
+1. If the plugin can find FFmpeg but videos aren't encoding, paste the full output of the FFmpeg test output area from the bottom of the FFmpeg Settings tab of the plugin settings page.

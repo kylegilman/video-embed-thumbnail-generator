@@ -1,6 +1,6 @@
 <?php
 /**
- * The FFMPEG specific functionality of the Videopack plugin.
+ * The FFmpeg specific functionality of the Videopack plugin.
  *
  * @link       https://www.videopack.video
  *
@@ -9,7 +9,7 @@
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 
-use Videopack\admin\encode\FFMPEG_Process;
+use Videopack\admin\encode\FFmpeg_Process;
 
 function kgvid_get_encode_queue() {
 
@@ -92,7 +92,7 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 
 	$commandline = array_merge( $before_thumb_options, $thumb_options );
 error_log(implode(' ', $commandline));
-	$process = new FFMPEG_process( $commandline );
+	$process = new FFmpeg_process( $commandline );
 
 	try {
 		$process->run();
@@ -135,7 +135,7 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 
 		if ( ! file_exists( $uploads['path'] . '/ffmpeg_exists_test.jpg' )
 			&& substr( $test_path, -strlen( $options['video_app'] ) ) == $options['video_app']
-		) { // if FFMPEG has not executed successfully
+		) { // if FFmpeg has not executed successfully
 
 			$test_path = substr( $test_path, 0, -strlen( $options['video_app'] ) - 1 );
 
@@ -163,7 +163,7 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 			$options['ffmpeg_exists'] = 'on';
 		} else {
 			$options['ffmpeg_exists']      = 'notinstalled';
-			$options['browser_thumbnails'] = 'on'; // if FFMPEG isn't around, this should be enabled
+			$options['browser_thumbnails'] = 'on'; // if FFmpeg isn't around, this should be enabled
 		}
 
 		update_option( 'kgvid_video_embed_options', $options );
@@ -506,7 +506,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 		}
 	}
 
-	$get_info = new FFMPEG_process(
+	$get_info = new FFmpeg_process(
 		array(
 			$ffmpeg_path,
 			'-i',
@@ -570,7 +570,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 				break;
 		}
 
-		$get_codecs = new FFMPEG_Process(
+		$get_codecs = new FFmpeg_Process(
 			array(
 				$ffmpeg_path,
 				'-i',
@@ -1036,7 +1036,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 
 		$encode_array = apply_filters( 'kgvid_generate_encode_array', $encode_array, $input, $output, $movie_info, $format, $width, $height, $rotate, $nostdin );
 
-	} //if FFMPEG is found
+	} //if FFmpeg is found
 
 	$encode_array = array_filter( $encode_array, 'strlen' ); // remove empty elements
 
@@ -1323,8 +1323,8 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 	}
 
 	if ( $options['ffmpeg_exists'] === 'notinstalled' ) {
-		/* translators: %s is the name of the video encoding application (usually FFMPEG). */
-		$ffmpeg_disabled_text = 'disabled="disabled" title="' . sprintf( esc_attr_x( '%1$s not found at %2$s', 'ex: FFMPEG not found at /usr/local/bin', 'video-embed-thumbnail-generator' ), esc_attr( strtoupper( $options['video_app'] ) ), esc_attr( $options['app_path'] ) ) . '"';
+		/* translators: %s is the name of the video encoding application (usually FFmpeg). */
+		$ffmpeg_disabled_text = 'disabled="disabled" title="' . sprintf( esc_attr_x( '%1$s not found at %2$s', 'ex: FFmpeg not found at /usr/local/bin', 'video-embed-thumbnail-generator' ), esc_attr( strtoupper( $options['video_app'] ) ), esc_attr( $options['app_path'] ) ) . '"';
 	} else {
 		$ffmpeg_disabled_text = '';
 	}
@@ -1781,7 +1781,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 function kgvid_add_ffmpeg_queue_page() {
 	$options = kgvid_get_options();
-	if ( $options['ffmpeg_exists'] === 'on' ) { // only add the queue page if FFMPEG is installed
+	if ( $options['ffmpeg_exists'] === 'on' ) { // only add the queue page if FFmpeg is installed
 		add_submenu_page( 'tools.php', esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), 'encode_videos', 'kgvid_video_encoding_queue', 'kgvid_ffmpeg_queue_page' );
 	}
 }
@@ -1859,7 +1859,7 @@ function kgvid_validate_ffmpeg_settings( $input ) {
 		if ( count( $ffmpeg_info['output'] ) > 2 ) {
 			$textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">' . esc_textarea( implode( "\n", $ffmpeg_info['output'] ) ) . '</textarea>';
 		}
-		/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is the path to the application. */
+		/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is the path to the application. */
 		add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', sprintf( esc_html__( '%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $input['video_app'] ) ), esc_html( $input['app_path'] ) ) . '<br /><br />' . esc_html__( 'Error message:', 'video-embed-thumbnail-generator' ) . ' ' . esc_textarea( implode( ' ', array_slice( $ffmpeg_info['output'], -2, 2 ) ) ) . $textarea, 'updated' );
 
 		$input['ffmpeg_exists'] = 'notinstalled';
@@ -2154,7 +2154,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		$movie_info    = kgvid_get_video_dimensions( $moviefilepath );
 	}
 
-	if ( $movie_info['worked'] == true ) { // if FFMPEG was able to open the file
+	if ( $movie_info['worked'] == true ) { // if FFmpeg was able to open the file
 
 		$sanitized_url     = kgvid_sanitize_url( $movieurl );
 		$thumbnailfilebase = $uploads['url'] . '/thumb_tmp/' . $sanitized_url['basename'];
@@ -2296,7 +2296,7 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 	$new_queue_position      = false;
 	$already_queued          = false;
 
-	if ( $movie_info['worked'] == true ) { // if FFMPEG was able to open the file
+	if ( $movie_info['worked'] == true ) { // if FFmpeg was able to open the file
 
 		$movie_height = $movie_info['height'];
 
@@ -2707,7 +2707,7 @@ function kgvid_encode_videos() {
 								break; // don't bother looping through the rest if we already found the format
 								//end if the x264 library and an aac library is enabled
 							} else {
-								/* translators: %s is the name of the video encoding application (usually FFMPEG). */
+								/* translators: %s is the name of the video encoding application (usually FFmpeg). */
 								$lastline = sprintf( esc_html__( '%s missing library libx264 required for H.264 encoding', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ) );
 
 								if ( ! $aac_available ) {
@@ -2763,7 +2763,7 @@ function kgvid_encode_videos() {
 										$missing_libraries[] = $video_formats[ $queued_format ]['vcodec'];
 
 									}
-									/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is a list of video encoding libraries. */
+									/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is a list of video encoding libraries. */
 									$lastline = sprintf( esc_html__( '%1$s missing library %2$s required for %3$s encoding.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( implode( ', ', $missing_libraries ) ), esc_html( $video_formats[ $queued_format ]['name'] ) );
 
 									$video_encode_queue[ $video_key ]['encode_formats'][ $queued_format ]['status']   = 'error';
@@ -2792,7 +2792,7 @@ function kgvid_encode_videos() {
 
 					$commandline   = implode( ' ', array_map( 'kgvid_escape_argument', $encode_array ) ); // escape each argument in the encode array
 					$commandline   = $commandline . ' > "${:LOGFILE}" 2>&1';
-					$shell_process = FFMPEG_Process::fromShellCommandline( $commandline );
+					$shell_process = FFmpeg_Process::fromShellCommandline( $commandline );
 					$shell_process->start( null, array( 'LOGFILE' => $logfile ) );
 
 					sleep( 1 );
@@ -2850,7 +2850,7 @@ function kgvid_test_ffmpeg() {
 
 	if ( array_key_exists( 'encode_array', $options ) && is_array( $options['encode_array'] ) ) {
 
-		$process = new FFMPEG_process( $options['encode_array'] );
+		$process = new FFmpeg_process( $options['encode_array'] );
 
 		try {
 			$process->run();
@@ -2887,7 +2887,7 @@ function kgvid_test_ffmpeg() {
 
 		}
 	} else {
-		/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is the path to the application. */
+		/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is the path to the application. */
 		$arr['output'] = sprintf( esc_html__( '%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( $options['app_path'] ) );
 	}
 
@@ -2981,7 +2981,7 @@ function kgvid_encode_progress() {
 
 							if ( is_array( $time_matches )
 							&& array_key_exists( 1, $time_matches ) != true
-							) { // if something other than the regular FFMPEG encoding output check for these
+							) { // if something other than the regular FFmpeg encoding output check for these
 								preg_match( '/video:(.*?) /', $lastline, $video_matches );
 								preg_match( '/libx264 (.*?) /', $lastline, $libx264_matches );
 								preg_match( '/aac (.*?) /', $lastline, $aac_matches );
@@ -3542,7 +3542,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 		) {
 			$faststart_tmp_file = str_replace( '.mp4', '-faststart.mp4', $filepath );
 
-			$moov_fixer = new FFMPEG_process(
+			$moov_fixer = new FFmpeg_process(
 				array(
 					$options['app_path'] . '/' . $options['moov'],
 					$filepath,
@@ -3563,7 +3563,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 
 		if ( $options['moov'] == 'MP4Box' ) {
 
-			$moov_fixer = new FFMPEG_process(
+			$moov_fixer = new FFmpeg_process(
 				array(
 					$options['app_path'] . '/' . $options['moov'],
 					'-inter',
@@ -3611,7 +3611,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 					'--no-headers',
 				);
 
-				$check_pid = new FFMPEG_process( $check_pid_command );
+				$check_pid = new FFmpeg_process( $check_pid_command );
 
 				try {
 					$check_pid->run();
@@ -3637,7 +3637,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 					'Get-CimInstance Win32_Process -Filter "handle = ' . $kgvid_pid . '" | Format-Table -Property CommandLine | Out-String -Width 10000',
 				);
 
-				$check_pid = new FFMPEG_process( $check_pid_command );
+				$check_pid = new FFmpeg_process( $check_pid_command );
 
 				try {
 					$check_pid->run();
@@ -3653,7 +3653,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 
 					$commandline = 'taskkill /F /T /PID "${:KGVID_PID}"';
 
-					$kill_process = FFMPEG_Process::fromShellCommandline( $commandline );
+					$kill_process = FFmpeg_Process::fromShellCommandline( $commandline );
 
 					try {
 						$kill_process->run( null, array( 'KGVID_PID' => $kgvid_pid ) );

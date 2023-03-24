@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			)
 		) {
 			?>
-		<a href="#encoding" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( esc_html_x( '%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator' ), "<span class='video_app_name'>" . esc_html( strtoupper( $video_app ) ) . '</span>' ); ?></a>
+		<a href="#encoding" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( esc_html_x( '%s Settings', 'FFmpeg Settings, tab title', 'video-embed-thumbnail-generator' ), "<span class='video_app_name'>" . esc_html( strtoupper( $video_app ) ) . '</span>' ); ?></a>
 		<?php } ?>
 	</h2>
 	<form method="post" action="options.php" id="kgvid_settings_form">

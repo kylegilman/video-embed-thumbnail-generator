@@ -520,7 +520,7 @@ function kgvid_callffmpeg() {
 
 		}
 	} else {
-		/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is the path to the application. %3$s is invisible HTML that starts a link */
+		/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is the path to the application. %3$s is invisible HTML that starts a link */
 		$thumbnaildisplaycode = '<strong>' . wp_kses_post( sprintf( esc_html__( 'Error: %1$s not found. Verify that %1$s is installed at %2$s and check the %3$sapplication path plugin setting', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( $options['app_path'] ), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings">' ) ) . '</a>.</strong>';
 
 		$arr = array(

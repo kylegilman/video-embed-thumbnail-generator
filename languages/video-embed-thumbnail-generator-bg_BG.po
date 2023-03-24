@@ -135,8 +135,8 @@ msgstr "Тестване..."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:1141
-msgid "FFMPEG or LIBAV required for these functions."
-msgstr "FFMPEG или LIBAV са необходими за тези функции."
+msgid "FFmpeg or LIBAV required for these functions."
+msgstr "FFmpeg или LIBAV са необходими за тези функции."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:1142
@@ -288,7 +288,7 @@ msgstr "Вграждане:"
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:1854
-msgctxt "ex: FFMPEG not found at /usr/local/bin"
+msgctxt "ex: FFmpeg not found at /usr/local/bin"
 msgid "%1$s not found at %2$s"
 msgstr "%1$s не е намерен във %2$s"
 
@@ -461,8 +461,8 @@ msgstr "Метод за поправяне на  H.264 хедъри за стр�
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2238
 #: video-embed-thumbnail-generator.php:2456
-msgid "FFMPEG legacy options:"
-msgstr "FFMPEG наследени опции:"
+msgid "FFmpeg legacy options:"
+msgstr "FFmpeg наследени опции:"
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2242
@@ -504,7 +504,7 @@ msgstr "Общи"
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2301
-msgctxt "FFMPEG Settings, tab title"
+msgctxt "FFmpeg Settings, tab title"
 msgid "%s Settings"
 msgstr "%s настройки"
 
@@ -739,8 +739,8 @@ msgstr "Изпълнение:"
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2460
-msgid "Test FFMPEG:"
-msgstr "Тестване на FFMPEG:"
+msgid "Test FFmpeg:"
+msgstr "Тестване на FFmpeg:"
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2482
@@ -1216,14 +1216,14 @@ msgstr ""
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2796
 msgid ""
-"FFMPEG split into two separate branches in 2011. The new branch is called "
+"FFmpeg split into two separate branches in 2011. The new branch is called "
 "LIBAV and executes using \"avconv\" instead of \"ffmpeg.\" Both are still "
-"actively developed and FFMPEG frequently incorporates LIBAV features. Debian "
+"actively developed and FFmpeg frequently incorporates LIBAV features. Debian "
 "& Ubuntu users probably have LIBAV installed."
 msgstr ""
-"FFMPEG се раздели на няколко различни клона през 2011. Новият клон се казва "
+"FFmpeg се раздели на няколко различни клона през 2011. Новият клон се казва "
 "LIBAV и се изпълнява, използвайки \"avconv\", вместо \"ffmpeg\". И двата все "
-"още активно се разработват и FFMPEG често използва фукнции от LIBAV.  Debian "
+"още активно се разработват и FFmpeg често използва фукнции от LIBAV.  Debian "
 "и Ubuntu потребители, ней-вероятно имат инсталиран LIBAV."
 
 # @ video-embed-thumbnail-generator
@@ -1243,7 +1243,7 @@ msgstr "Заместване на оригиналът със H.264 със съ�
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2809
 msgid ""
-"If you have FFMPEG/LIBAV and the proper libraries installed, you can choose "
+"If you have FFmpeg/LIBAV and the proper libraries installed, you can choose "
 "to replace your uploaded video with an H.264 video, and also transcode into "
 "as many as five additional formats depending on the resolution of your "
 "original source. Different browsers have different playback capabilities. "
@@ -1257,7 +1257,7 @@ msgid ""
 "encoding OGV or WEBM unless you expect a large number of no-Flash sticklers "
 "visiting your site."
 msgstr ""
-"Ако имате инсталирани FFMPEG/LIBAV и подходящите библиотеки, можете да "
+"Ако имате инсталирани FFmpeg/LIBAV и подходящите библиотеки, можете да "
 "заместите каченото видео с H.264 видео и да ко конвертирате в най-много пет "
 "други формата, в зависимост от резолюцията на оригиналния източник. "
 "Различните браузъри имат различни възможности за възпроизвеждане. Повечето "
@@ -1448,7 +1448,7 @@ msgid ""
 "on recent phones, although officially Android only supports baseline. High "
 "profile is not recommended for mobile or Flash compatibility, and anything "
 "above high is designed for professional video and probably incompatible with "
-"consumer devices. Older versions of FFMPEG might ignore this setting "
+"consumer devices. Older versions of FFmpeg might ignore this setting "
 "altogether."
 msgstr ""
 "По-ниските профили ще увеличат малко размера на файла. Това зависи предимно "
@@ -1456,7 +1456,7 @@ msgstr ""
 "работят с по-новите у-ва, въпреки че официално, Android, поддържа само "
 "'baseline'. Високият профил не се препоръчва за съвместимост с мобилни у-ва "
 "или Flash, а всичко над него е за професионално видео и вероятно "
-"несъвместимо с обикновени потребителски у-ва. По-старите версии на FFMPEG е "
+"несъвместимо с обикновени потребителски у-ва. По-старите версии на FFmpeg е "
 "възможно да игрнорират тази настройка изяло."
 
 # @ video-embed-thumbnail-generator
@@ -1470,47 +1470,47 @@ msgstr "ниво"
 msgid ""
 "3.0 is default. Lower levels will lower maximum bit rates and decoding "
 "complexity. This mostly depends on your need for compatability with mobile "
-"devices. Older versions of FFMPEG might ignore this setting altogether."
+"devices. Older versions of FFmpeg might ignore this setting altogether."
 msgstr ""
 "3.0 по подразбиране. По-ниските нива ще намалят максималните битрейти и "
 "сложността на кодирането. Това зависи предимно от нуждата Ви за съвместимост "
-"с мобилни устройства. По-старите версии на FFMPEG може да игнорират тази "
+"с мобилни устройства. По-старите версии на FFmpeg може да игнорират тази "
 "настройка изяло."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2998
-msgid "Enable legacy FFMPEG \"-b\" and \"-ba\" bitrate flags."
-msgstr "Включи наследените FFMPEG \"-b\" и \"-ba\" флагове."
+msgid "Enable legacy FFmpeg \"-b\" and \"-ba\" bitrate flags."
+msgstr "Включи наследените FFmpeg \"-b\" и \"-ba\" флагове."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2998
 msgid ""
-"Enable if your installed version of FFMPEG is old enough that you can't use "
+"Enable if your installed version of FFmpeg is old enough that you can't use "
 "the newer -b:v flags (Dreamhost users must turn this on). It may cause newer "
-"versions of FFMPEG to fail."
+"versions of FFmpeg to fail."
 msgstr ""
-"Включете това, ако инсталираната версия на FFMPEG е достатъчно стара, че да "
+"Включете това, ако инсталираната версия на FFmpeg е достатъчно стара, че да "
 "не поддържа новите -b:v флагове(Потребители на Dreamhost ТРЯБВА да включат "
-"тази настройка). Може да предизвика проблеми в новите версии на FFMPEG."
+"тази настройка). Може да предизвика проблеми в новите версии на FFmpeg."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2999
-msgid "Enable legacy FFMPEG parameters."
-msgstr "Включете наследените(стари) параметри на FFMPEG."
+msgid "Enable legacy FFmpeg parameters."
+msgstr "Включете наследените(стари) параметри на FFmpeg."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:2999
 msgid ""
-"Enable if your installed version of FFMPEG is old enough that libx264 "
+"Enable if your installed version of FFmpeg is old enough that libx264 "
 "requires additional configuration to operate (Dreamhost users must turn this "
 "on). This should help if you can encode WEBM or OGV files but H264/Mobile "
-"files fail. It could cause newer versions of FFMPEG to fail."
+"files fail. It could cause newer versions of FFmpeg to fail."
 msgstr ""
-"Включете, ако инсталираната версия на FFMPEG е стара и libx264 изисква "
+"Включете, ако инсталираната версия на FFmpeg е стара и libx264 изисква "
 "допълнителна кофигураия за да се изпълнява (Потребители на Dreamhost ТРЯБВА "
 "да включат тази настройка). Това би трябвало да помогне, ако можете да "
 "кодирате WEBM или OGV файлове, но H264/мобилни файлове се провалят. Може да "
-"предизвика проблеми при по-нови версии на FFMPEG."
+"предизвика проблеми при по-нови версии на FFmpeg."
 
 # @ video-embed-thumbnail-generator
 #: video-embed-thumbnail-generator.php:3012
@@ -2316,10 +2316,10 @@ msgstr ""
 #. Description of the plugin/theme
 msgid ""
 "Generates thumbnails, HTML5-compliant videos, and embed codes for locally "
-"hosted videos. Requires FFMPEG or LIBAV for encoding."
+"hosted videos. Requires FFmpeg or LIBAV for encoding."
 msgstr ""
 "Генерира картинки, HTML5-съвместими видеа и кодове за вграждане за локални "
-"клипове. Нуждае се от FFMPEG или LIBAV за кодиране."
+"клипове. Нуждае се от FFmpeg или LIBAV за кодиране."
 
 #. Author of the plugin/theme
 msgid "Kyle Gilman"
@@ -2338,7 +2338,7 @@ msgstr "http://www.kylegilman.net/"
 #~ msgstr "Само за супер администратори:"
 
 # @ video-embed-thumbnail-generator
-#~ msgctxt "FFMPEG settings tab"
+#~ msgctxt "FFmpeg settings tab"
 #~ msgid "%s settings tab."
 #~ msgstr "Раздел с настройки за %s."
 
