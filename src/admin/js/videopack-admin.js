@@ -657,7 +657,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 					if ( jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' ) {
 
-						kgvid_ffmpeg_thumbs(); // call the FFMPEG loop if the browser can't do it
+						kgvid_ffmpeg_thumbs(); // call the FFmpeg loop if the browser can't do it
 
 					} else { // there's no way to make thumbnails
 
@@ -848,7 +848,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	if (
 		(
 			jQuery( '#thumb-video-' + postID ).data( 'allowed' ) != 'on'
-			&& jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' // call the FFMPEG loop if the browser can't do it
+			&& jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' // call the FFmpeg loop if the browser can't do it
 		)
 		|| jQuery( '#kgflashmediaplayer-table' ).length > 0 // or if it's the external URL dialog
 	) {
@@ -2053,7 +2053,7 @@ function kgvid_save_plugin_settings(input_obj) {
 						&& jQuery( input_obj ).hasClass( 'affects_ffmpeg_thumb_watermark' ) == true
 						&& jQuery( '#ffmpeg_output' ).length != 0
 					) {
-						//jQuery( '#browser_thumbnails' ).prop( 'checked', false ).prop( 'disabled', true ); // can't allow in-browser thumbnails with FFMPEG watermark
+						//jQuery( '#browser_thumbnails' ).prop( 'checked', false ).prop( 'disabled', true ); // can't allow in-browser thumbnails with FFmpeg watermark
 						jQuery.post(
 							ajaxurl,
 							{ action: "kgvid_test_ffmpeg_thumb_watermark",
@@ -2195,9 +2195,6 @@ function kgvid_switch_settings_tab(tab) {
 	}
 
 	kgvid_hide_plugin_settings();
-	if ( jQuery( '#video_app' ).length > 0 ) {
-		kgvid_hide_ffmpeg_settings();
-	}
 
 }
 
@@ -2268,22 +2265,6 @@ function kgvid_hide_plugin_settings() {
 	/* if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() !== '' ) {
 		jQuery( '#browser_thumbnails' ).prop( 'disabled', true );
 	} */
-
-}
-
-function kgvid_hide_ffmpeg_settings() {
-
-	var video_app = jQuery( '#video_app' ).val();
-
-	if (video_app == "ffmpeg") {
-		jQuery( '#video_bitrate_flag' ).parents().eq( 2 ).show();
-	}
-	if (video_app == "avconv") {
-		jQuery( '#video_bitrate_flag' ).parents().eq( 2 ).hide();
-		video_app = "libav";
-	}
-
-	jQuery( '.video_app_name' ).html( video_app.toUpperCase() );
 
 }
 

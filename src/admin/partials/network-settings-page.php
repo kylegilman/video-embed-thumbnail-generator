@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<td><?php kgvid_moov_callback(); ?></td>
 			</tr>
 			<tr>
-				<th scope='row'><label for='video_bitrate_flag'><?php esc_html_e( 'FFMPEG legacy options:', 'video-embed-thumbnail-generator' ); ?></label></th>
+				<th scope='row'><label for='video_bitrate_flag'><?php esc_html_e( 'FFmpeg legacy options:', 'video-embed-thumbnail-generator' ); ?></label></th>
 				<td><?php kgvid_ffmpeg_options_callback(); ?></td>
 			</tr>
 			<tr>

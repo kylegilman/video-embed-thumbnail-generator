@@ -103,12 +103,12 @@ msgid "set video to conform to the default aspect ratio. Vertical applies only i
 msgstr "καθορίζει το βίντεο ώστε να συμμορφώνεται με την προεπιλεγμένη αναλογία διαστάσεων. Το κάθετο ισχύει μόνο εάν το ύψος του βίντεο είναι μεγαλύτερο από το πλάτος."
 
 #: video-embed-thumbnail-generator.php:5356
-msgid "Recent versions of FFMPEG will automatically rotate mobile videos when necessary. Disable if your version of FFMPEG is old enough that vertical videos don't rotate correctly."
-msgstr "Οι πρόσφατες εκδόσεις του FFMPEG θα περιστρέφουν αυτόματα τα βίντεο για κινητά όταν είναι απαραίτητο. Απενεργοποιήστε εάν η έκδοσή σας του FFMPEG είναι αρκετά παλιά ώστε τα κατακόρυφα βίντεο να μην περιστρέφονται σωστά."
+msgid "Recent versions of FFmpeg will automatically rotate mobile videos when necessary. Disable if your version of FFmpeg is old enough that vertical videos don't rotate correctly."
+msgstr "Οι πρόσφατες εκδόσεις του FFmpeg θα περιστρέφουν αυτόματα τα βίντεο για κινητά όταν είναι απαραίτητο. Απενεργοποιήστε εάν η έκδοσή σας του FFmpeg είναι αρκετά παλιά ώστε τα κατακόρυφα βίντεο να μην περιστρέφονται σωστά."
 
 #: video-embed-thumbnail-generator.php:5356
-msgid "Enable automatic FFMPEG rotation."
-msgstr "Ενεργοποίηση αυτόματης περιστροφής του FFMPEG."
+msgid "Enable automatic FFmpeg rotation."
+msgstr "Ενεργοποίηση αυτόματης περιστροφής του FFmpeg."
 
 #: video-embed-thumbnail-generator.php:4916
 msgid "Recording views in the database requires writing to the database, which can overload a server getting a lot of views. To speed up page loading, only enable the level of view counting you need. If Google Analytics is loaded, quarter event tracking is always recorded because Google servers can handle it."
@@ -399,7 +399,7 @@ msgid "Email all encoding errors on the network to:"
 msgstr "Στείλτε με email όλα τα σφάλματα κωδικοποίησης στο δίκτυο:"
 
 #: video-embed-thumbnail-generator.php:4333
-msgctxt "Access FFMPEG settings tab"
+msgctxt "Access FFmpeg settings tab"
 msgid "Access %s settings tab."
 msgstr "Πρόσβαση στην καρτέλα ρυθμίσεων του %s."
 
@@ -461,8 +461,8 @@ msgid "Kyle Gilman"
 msgstr "Kyle Gilman"
 
 #. Description of the plugin
-msgid "Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFMPEG or LIBAV for encoding."
-msgstr "Δημιουργεί εικόνες προεπισκόπησης, βίντεο συμβατά με HTML5 και ενσωματώνει κωδικοποίηση για βίντεο που φιλοξενούνται τοπικά. Απαιτεί FFMPEG ή LIBAV για κωδικοποίηση."
+msgid "Generates thumbnails, HTML5-compliant videos, and embed codes for locally hosted videos. Requires FFmpeg or LIBAV for encoding."
+msgstr "Δημιουργεί εικόνες προεπισκόπησης, βίντεο συμβατά με HTML5 και ενσωματώνει κωδικοποίηση για βίντεο που φιλοξενούνται τοπικά. Απαιτεί FFmpeg ή LIBAV για κωδικοποίηση."
 
 #. Plugin URI of the plugin
 msgid "https://www.kylegilman.net/2011/01/18/video-embed-thumbnail-generator-wordpress-plugin/"
@@ -1053,8 +1053,8 @@ msgid "Simultaneous encodes."
 msgstr "Ταυτόχρονες κωδικοποιήσεις."
 
 #: video-embed-thumbnail-generator.php:5358
-msgid "Turn off this checkbox if your installed version of FFMPEG is old enough that it does not recognize the nostdin flag (Dreamhost users must turn this off)."
-msgstr "Απενεργοποιήστε αυτό το πλαίσιο ελέγχου εάν η εγκατεστημένη έκδοση του FFMPEG είναι αρκετά παλιά ώστε να μην αναγνωρίζει το nostdin flag (οι χρήστες του Dreamhost πρέπει να το απενεργοποιήσουν)."
+msgid "Turn off this checkbox if your installed version of FFmpeg is old enough that it does not recognize the nostdin flag (Dreamhost users must turn this off)."
+msgstr "Απενεργοποιήστε αυτό το πλαίσιο ελέγχου εάν η εγκατεστημένη έκδοση του FFmpeg είναι αρκετά παλιά ώστε να μην αναγνωρίζει το nostdin flag (οι χρήστες του Dreamhost πρέπει να το απενεργοποιήσουν)."
 
 #: video-embed-thumbnail-generator.php:5358
 msgid "Disable stdin."
@@ -1065,28 +1065,28 @@ msgid "Enable if vertical videos shot on mobile devices don't rotate correctly o
 msgstr "Ενεργοποιήστε εάν τα κατακόρυφα βίντεο που λαμβάνονται σε κινητές συσκευές δεν περιστρέφονται σωστά ή δημιουργούν σφάλματα. Εάν είναι απαραίτητοι οι παράμετροι τύπου libx264, η περιστροφή δεν θα λειτουργεί καθόλου."
 
 #: video-embed-thumbnail-generator.php:5357
-msgid "Enable legacy FFMPEG rotation method."
-msgstr "Ενεργοποίηση παλαιάς μεθόδου περιστροφής για FFMPEG."
+msgid "Enable legacy FFmpeg rotation method."
+msgstr "Ενεργοποίηση παλαιάς μεθόδου περιστροφής για FFmpeg."
 
 #: video-embed-thumbnail-generator.php:5355
-msgid "Enable if your installed version of FFMPEG is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFMPEG to fail."
-msgstr "Ενεργοποιήστε εάν η εγκατεστημένη έκδοση του FFMPEG είναι αρκετά παλιά ώστε το libx264 απαιτεί πρόσθετη διαμόρφωση για να λειτουργήσει (οι χρήστες του Dreamhost πρέπει να το ενεργοποιήσουν). Αυτό θα βοηθήσει εάν μπορείτε να κωδικοποιήσετε αρχεία WEBM ή OGV αλλά τα αρχεία H264/Mobile θα αποτύχουν. Θα μπορούσε να προκαλέσει την αποτυχία νεότερων εκδόσεων του FFMPEG."
+msgid "Enable if your installed version of FFmpeg is old enough that libx264 requires additional configuration to operate (Dreamhost users must turn this on). This should help if you can encode WEBM or OGV files but H264/Mobile files fail. It could cause newer versions of FFmpeg to fail."
+msgstr "Ενεργοποιήστε εάν η εγκατεστημένη έκδοση του FFmpeg είναι αρκετά παλιά ώστε το libx264 απαιτεί πρόσθετη διαμόρφωση για να λειτουργήσει (οι χρήστες του Dreamhost πρέπει να το ενεργοποιήσουν). Αυτό θα βοηθήσει εάν μπορείτε να κωδικοποιήσετε αρχεία WEBM ή OGV αλλά τα αρχεία H264/Mobile θα αποτύχουν. Θα μπορούσε να προκαλέσει την αποτυχία νεότερων εκδόσεων του FFmpeg."
 
 #: video-embed-thumbnail-generator.php:5355
 msgid "Enable legacy libx264 parameters."
 msgstr "Ενεργοποίηση παλαιάς μεθόδου περιστροφής για libx264."
 
 #: video-embed-thumbnail-generator.php:5354
-msgid "Enable if your installed version of FFMPEG is old enough that you can't use the newer -b:v flags (Dreamhost users must turn this on). It may cause newer versions of FFMPEG to fail."
-msgstr "Ενεργοποιήστε εάν η εγκατεστημένη έκδοση του FFMPEG είναι αρκετά παλιά ώστε να μην μπορείτε να χρησιμοποιήσετε τις νεότερες επισημάνσεις -b:v (οι χρήστες του Dreamhost πρέπει να το ενεργοποιήσουν). Μπορεί να προκαλέσει αποτυχία νεότερων εκδόσεων του FFMPEG."
+msgid "Enable if your installed version of FFmpeg is old enough that you can't use the newer -b:v flags (Dreamhost users must turn this on). It may cause newer versions of FFmpeg to fail."
+msgstr "Ενεργοποιήστε εάν η εγκατεστημένη έκδοση του FFmpeg είναι αρκετά παλιά ώστε να μην μπορείτε να χρησιμοποιήσετε τις νεότερες επισημάνσεις -b:v (οι χρήστες του Dreamhost πρέπει να το ενεργοποιήσουν). Μπορεί να προκαλέσει αποτυχία νεότερων εκδόσεων του FFmpeg."
 
 #: video-embed-thumbnail-generator.php:5354
-msgid "Enable legacy FFMPEG \"-b\" and \"-ba\" bitrate flags."
-msgstr "Ενεργοποίηση επισημάνσεων ρυθμού bit παλαιού τύπου για FFMPEG \"-b\" και \"-ba\"."
+msgid "Enable legacy FFmpeg \"-b\" and \"-ba\" bitrate flags."
+msgstr "Ενεργοποίηση επισημάνσεων ρυθμού bit παλαιού τύπου για FFmpeg \"-b\" και \"-ba\"."
 
 #: video-embed-thumbnail-generator.php:5334
-msgid "3.0 is default. Lower levels will lower maximum bit rates and decoding complexity. This mostly depends on your need for compatability with mobile devices. Older versions of FFMPEG might ignore this setting altogether."
-msgstr "Το 3.0 είναι η προεπιλογή. Τα χαμηλότερα επίπεδα θα μειώσουν τους μέγιστους ρυθμούς bit και την πολυπλοκότητα αποκωδικοποίησης. Αυτό εξαρτάται κυρίως από την ανάγκη σας για συμβατότητα με κινητές συσκευές. Οι παλαιότερες εκδόσεις του FFMPEG ενδέχεται να αγνοήσουν εντελώς αυτήν τη ρύθμιση."
+msgid "3.0 is default. Lower levels will lower maximum bit rates and decoding complexity. This mostly depends on your need for compatability with mobile devices. Older versions of FFmpeg might ignore this setting altogether."
+msgstr "Το 3.0 είναι η προεπιλογή. Τα χαμηλότερα επίπεδα θα μειώσουν τους μέγιστους ρυθμούς bit και την πολυπλοκότητα αποκωδικοποίησης. Αυτό εξαρτάται κυρίως από την ανάγκη σας για συμβατότητα με κινητές συσκευές. Οι παλαιότερες εκδόσεις του FFmpeg ενδέχεται να αγνοήσουν εντελώς αυτήν τη ρύθμιση."
 
 #: video-embed-thumbnail-generator.php:5334
 msgctxt "H.264 level. Might not need translation"
@@ -1094,8 +1094,8 @@ msgid "level"
 msgstr "επίπεδο"
 
 #: video-embed-thumbnail-generator.php:5327
-msgid "Lower profiles will slightly increase file sizes. This mostly depends on your need for compatability with Android devices. Main profile seems to work on all recent phones. High profile is not recommended for mobile or Flash compatibility, and anything above high is designed for professional video and probably incompatible with consumer devices. Older versions of FFMPEG might ignore this setting altogether."
-msgstr "Τα χαμηλότερα προφίλ θα αυξήσουν ελαφρώς τα μεγέθη αρχείων. Αυτό εξαρτάται κυρίως από την ανάγκη σας για συμβατότητα με συσκευές Android. Το κύριο προφίλ φαίνεται να λειτουργεί σε όλα τα πρόσφατα τηλέφωνα. Το υψηλό προφίλ δεν συνιστάται για συμβατότητα με φορητές συσκευές ή Flash και οτιδήποτε παραπάνω είναι σχεδιασμένο για επαγγελματικό βίντεο και πιθανώς ασύμβατο με καταναλωτικές συσκευές. Οι παλαιότερες εκδόσεις του FFMPEG ενδέχεται να αγνοήσουν αυτήν τη ρύθμιση εντελώς."
+msgid "Lower profiles will slightly increase file sizes. This mostly depends on your need for compatability with Android devices. Main profile seems to work on all recent phones. High profile is not recommended for mobile or Flash compatibility, and anything above high is designed for professional video and probably incompatible with consumer devices. Older versions of FFmpeg might ignore this setting altogether."
+msgstr "Τα χαμηλότερα προφίλ θα αυξήσουν ελαφρώς τα μεγέθη αρχείων. Αυτό εξαρτάται κυρίως από την ανάγκη σας για συμβατότητα με συσκευές Android. Το κύριο προφίλ φαίνεται να λειτουργεί σε όλα τα πρόσφατα τηλέφωνα. Το υψηλό προφίλ δεν συνιστάται για συμβατότητα με φορητές συσκευές ή Flash και οτιδήποτε παραπάνω είναι σχεδιασμένο για επαγγελματικό βίντεο και πιθανώς ασύμβατο με καταναλωτικές συσκευές. Οι παλαιότερες εκδόσεις του FFmpeg ενδέχεται να αγνοήσουν αυτήν τη ρύθμιση εντελώς."
 
 #: video-embed-thumbnail-generator.php:5327
 msgctxt "H.264 profile. Might not need translation"
@@ -1213,8 +1213,8 @@ msgstr[0] "Δημιουργήστε εικόνα προεπισκόπησης γ
 msgstr[1] "Δημιουργήστε εικόνες προεπισκόπησης για το %1$s και ορίστε την #%2$s ως την κύρια εικόνα."
 
 #: video-embed-thumbnail-generator.php:5077
-msgid "If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on most operating systems now. I no longer recommend encoding OGV or WEBM. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013. Most browsers except Safari currently support it."
-msgstr "Εάν έχετε εγκατεστημένο το FFMPEG/LIBAV και τις κατάλληλες βιβλιοθήκες, μπορείτε να επιλέξετε να αντικαταστήσετε το βίντεο που έχετε ανεβάσει με την προτιμώμενη μορφή σας, και επίσης να μετατρέψετε σε διάφορες πρόσθετες μορφές ανάλογα με την ανάλυση της αρχικής πηγής σας. Διαφορετικά προγράμματα περιήγησης έχουν διαφορετικές δυνατότητες αναπαραγωγής. Τα περισσότερα προγράμματα περιήγησης επιτραπέζιου υπολογιστή μπορούν να παίξουν H.264 και όλες οι σύγχρονες κινητές συσκευές μπορούν να παίξουν τουλάχιστον σε 360p H.264. Εάν δημιουργήσετε πολλές αναλύσεις σε H.264, η υψηλότερη ανάλυση που υποστηρίζεται από τη συσκευή θα προβάλλεται αυτόματα. Το πρόσθετο δεν θα μετατρέψει το βίντεό σας, οπότε αν ανεβάσετε ένα βίντεο σε 720p, δεν θα χάσετε το χρόνο σας δημιουργώντας μια έκδοση σε 1080p. Υπήρχε μια εποχή που φαινόταν καλή ιδέα να παρέχουμε OGV ή WEBM για ορισμένα προγράμματα περιήγησης επιτραπέζιων υπολογιστών, αλλά ακόμη και ο Firefox επιτρέπει την αναπαραγωγή σε H.264 στα περισσότερα λειτουργικά συστήματα τώρα. Δεν προτείνω πλέον την κωδικοποίηση σε OGV ή WEBM. Το WEBM VP9 είναι μια νέα τεχνολογία και απαιτεί έκδοση σε FFMPEG ή LIBAV νεότερη από τον Οκτώβριο του 2013. Τα περισσότερα προγράμματα περιήγησης εκτός από το Safari το υποστηρίζουν αυτήν τη στιγμή."
+msgid "If you have FFmpeg/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. Most desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but even Firefox allows H.264 playback on most operating systems now. I no longer recommend encoding OGV or WEBM. WEBM VP9 is a new technology and requires a version of FFmpeg or LIBAV newer than October 2013. Most browsers except Safari currently support it."
+msgstr "Εάν έχετε εγκατεστημένο το FFmpeg/LIBAV και τις κατάλληλες βιβλιοθήκες, μπορείτε να επιλέξετε να αντικαταστήσετε το βίντεο που έχετε ανεβάσει με την προτιμώμενη μορφή σας, και επίσης να μετατρέψετε σε διάφορες πρόσθετες μορφές ανάλογα με την ανάλυση της αρχικής πηγής σας. Διαφορετικά προγράμματα περιήγησης έχουν διαφορετικές δυνατότητες αναπαραγωγής. Τα περισσότερα προγράμματα περιήγησης επιτραπέζιου υπολογιστή μπορούν να παίξουν H.264 και όλες οι σύγχρονες κινητές συσκευές μπορούν να παίξουν τουλάχιστον σε 360p H.264. Εάν δημιουργήσετε πολλές αναλύσεις σε H.264, η υψηλότερη ανάλυση που υποστηρίζεται από τη συσκευή θα προβάλλεται αυτόματα. Το πρόσθετο δεν θα μετατρέψει το βίντεό σας, οπότε αν ανεβάσετε ένα βίντεο σε 720p, δεν θα χάσετε το χρόνο σας δημιουργώντας μια έκδοση σε 1080p. Υπήρχε μια εποχή που φαινόταν καλή ιδέα να παρέχουμε OGV ή WEBM για ορισμένα προγράμματα περιήγησης επιτραπέζιων υπολογιστών, αλλά ακόμη και ο Firefox επιτρέπει την αναπαραγωγή σε H.264 στα περισσότερα λειτουργικά συστήματα τώρα. Δεν προτείνω πλέον την κωδικοποίηση σε OGV ή WEBM. Το WEBM VP9 είναι μια νέα τεχνολογία και απαιτεί έκδοση σε FFmpeg ή LIBAV νεότερη από τον Οκτώβριο του 2013. Τα περισσότερα προγράμματα περιήγησης εκτός από το Safari το υποστηρίζουν αυτήν τη στιγμή."
 
 #: video-embed-thumbnail-generator.php:5068
 msgid "Replace original with"
@@ -1231,8 +1231,8 @@ msgid "When possible, use the browser's built-in video capabilities to make thum
 msgstr "Όταν είναι δυνατόν, χρησιμοποιήστε τις δυνατότητες ενσωμάτωσης βίντεο του προγράμματος περιήγησης για να δημιουργήσετε εικόνες προεπισκόπησης αντί για %s."
 
 #: video-embed-thumbnail-generator.php:5048
-msgid "FFMPEG split into two separate branches in 2011. The new branch is called LIBAV and executes using \"avconv\" instead of \"ffmpeg.\" Both are still actively developed and FFMPEG frequently incorporates LIBAV features. Debian & Ubuntu users probably have LIBAV installed."
-msgstr "Το FFMPEG χωρίστηκε σε δύο ξεχωριστά τμήματα το 2011. Το νέο τμήμα ονομάζεται LIBAV και εκτελείται χρησιμοποιώντας το \"avconv\" αντί του \"ffmpeg.\" Και τα δύο είναι ακόμα ενεργά αναπτυγμένα και το FFMPEG ενσωματώνει συχνά δυνατότητες LIBAV. Οι χρήστες του Debian & Ubuntu πιθανώς έχουν εγκαταστήσει το LIBAV."
+msgid "FFmpeg split into two separate branches in 2011. The new branch is called LIBAV and executes using \"avconv\" instead of \"ffmpeg.\" Both are still actively developed and FFmpeg frequently incorporates LIBAV features. Debian & Ubuntu users probably have LIBAV installed."
+msgstr "Το FFmpeg χωρίστηκε σε δύο ξεχωριστά τμήματα το 2011. Το νέο τμήμα ονομάζεται LIBAV και εκτελείται χρησιμοποιώντας το \"avconv\" αντί του \"ffmpeg.\" Και τα δύο είναι ακόμα ενεργά αναπτυγμένα και το FFmpeg ενσωματώνει συχνά δυνατότητες LIBAV. Οι χρήστες του Debian & Ubuntu πιθανώς έχουν εγκαταστήσει το LIBAV."
 
 #: video-embed-thumbnail-generator.php:5036
 msgid "This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn't usually end with %1$s. Example: %2$s."
@@ -1654,8 +1654,8 @@ msgid "WordPress Default"
 msgstr "Προεπιλογή για WordPress"
 
 #: video-embed-thumbnail-generator.php:4579
-msgid "Test FFMPEG:"
-msgstr "Δοκιμάστε το FFMPEG:"
+msgid "Test FFmpeg:"
+msgstr "Δοκιμάστε το FFmpeg:"
 
 #: video-embed-thumbnail-generator.php:4576
 msgctxt "program execution options"
@@ -1832,7 +1832,7 @@ msgid "Default Video Playback Settings"
 msgstr "Προεπιλεγμένες Ρυθμίσεις Αναπαραγωγής Βίντεο"
 
 #: video-embed-thumbnail-generator.php:4379
-msgctxt "FFMPEG Settings, tab title"
+msgctxt "FFmpeg Settings, tab title"
 msgid "%s Settings"
 msgstr "Ρυθμίσεις για %s"
 
@@ -1870,8 +1870,8 @@ msgstr "Εκτέλεση:"
 
 #: video-embed-thumbnail-generator.php:4290
 #: video-embed-thumbnail-generator.php:4575
-msgid "FFMPEG legacy options:"
-msgstr "Επιλογές παλαιού τύπου FFMPEG:"
+msgid "FFmpeg legacy options:"
+msgstr "Επιλογές παλαιού τύπου FFmpeg:"
 
 #: video-embed-thumbnail-generator.php:4286
 #: video-embed-thumbnail-generator.php:4566
@@ -2005,7 +2005,7 @@ msgid "Choose %s"
 msgstr "Επιλέξτε το %s"
 
 #: video-embed-thumbnail-generator.php:3823
-msgctxt "ex: FFMPEG not found at /usr/local/bin"
+msgctxt "ex: FFmpeg not found at /usr/local/bin"
 msgid "%1$s not found at %2$s"
 msgstr "Το %1$s δεν βρέθηκε στο %2$s"
 
@@ -2187,8 +2187,8 @@ msgid "You are about to set all existing video thumbnails previously generated b
 msgstr "Πρόκειται να ορίσετε όλες τις υπάρχουσες εικόνες προεπισκόπησης των βίντεο που είχαν δημιουργηθεί προηγουμένως από αυτό το πρόσθετο ως επιλεγμένες εικόνες για τις δημοσιεύσεις τους. Δεν υπάρχει κουμπί \"αναίρεσης\", οπότε προχωρήστε με δική σας ευθύνη."
 
 #: video-embed-thumbnail-generator.php:1918
-msgid "FFMPEG or LIBAV required for these functions."
-msgstr "Απαιτείται FFMPEG ή LIBAV για αυτές τις λειτουργίες."
+msgid "FFmpeg or LIBAV required for these functions."
+msgstr "Απαιτείται FFmpeg ή LIBAV για αυτές τις λειτουργίες."
 
 #: video-embed-thumbnail-generator.php:1917
 msgid "Running test..."
