@@ -26,7 +26,7 @@ class Encode_Format {
 		return get_object_vars( $this );
 	}
 
-	public static function from_array( $data ) {
+	public static function from_array( array $data ) {
 
 		$format = new self( $data['format'] );
 
@@ -45,7 +45,7 @@ class Encode_Format {
 		return $format;
 	}
 
-	protected function set_or_null( $data, $key ) {
+	protected function set_or_null( array $data, string $key ) {
 		if ( isset( $data[ $key ] ) ) {
 			return $data[ $key ];
 		}
@@ -113,7 +113,7 @@ class Encode_Format {
 	}
 
 	// Setters
-	public function set_status( $status ) {
+	public function set_status( string $status ) {
 		$allowed = array(
 			'queued',
 			'encoding',
@@ -127,56 +127,54 @@ class Encode_Format {
 		}
 	}
 
-	public function set_user_id( $user_id ) {
+	public function set_user_id( int $user_id ) {
 		$this->user_id = $user_id;
 	}
 
-	public function set_path( $path ) {
+	public function set_path( string $path ) {
 		$this->path = $path;
 	}
 
-	public function set_url( $url ) {
+	public function set_url( string $url ) {
 		$this->url = $url;
 	}
 
-	public function set_logfile( $logfile ) {
+	public function set_logfile( string $logfile ) {
 		$this->logfile = $logfile;
 	}
 
-	public function set_pid( $pid ) {
+	public function set_pid( int $pid ) {
 		$this->pid = $pid;
 	}
 
-	public function set_started( $started ) {
+	public function set_started( int $started ) {
 		$this->started = $started;
 	}
 
-	public function set_encode_array( $encode_array ) {
+	public function set_encode_array( array $encode_array ) {
 		$this->encode_array = $encode_array;
 	}
 
-	public function set_error( $error ) {
+	public function set_error( string $error ) {
 		$this->set_status( 'error' );
 		$this->error = $error;
 	}
 
-	public function set_ended( $ended ) {
+	public function set_ended( int $ended ) {
 		$this->ended = $ended;
 	}
 
-	public function set_queued( $path, $url, $user_id ) {
+	public function set_queued( string $path, string $url, int $user_id ) {
 		$this->set_status( 'queued' );
 		$this->set_path( $path );
 		$this->set_url( $url );
 		$this->set_user_id( $user_id );
 	}
 
-	public function set_encode_start( $logfile, $pid, $started, $encode_array ) {
+	public function set_encode_start( int $pid, int $started ) {
 		$this->set_status( 'encoding' );
-		$this->set_logfile( $logfile );
 		$this->set_pid( $pid );
 		$this->set_started( $started );
-		$this->set_encode_array( $encode_array );
 	}
 
 	protected function set_progress() {
@@ -223,5 +221,12 @@ class Encode_Format {
 	public function set_encode_complete() {
 		$this->set_status( 'complete' );
 		$this->set_ended( filemtime( $this->logfile ) );
+	}
+
+	public function set_canceled() {
+		$this->set_status( 'canceled' );
+		if ( current_user_can( 'encode_videos' ) ) {
+			wp_delete_file( $this->get_path() );
+		}
 	}
 }
