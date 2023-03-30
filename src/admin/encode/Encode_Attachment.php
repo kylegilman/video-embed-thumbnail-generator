@@ -598,17 +598,15 @@ class Encode_Attachment {
 
 	protected function check_potential_locations( array &$encode_info, array $sanitized_url, string $format ) {
 
-		$potential_locations = array(
-			'same_directory' => array(
-				'url'  => $sanitized_url['noextension'] . $this->video_formats[ $format ]['suffix'],
-				'path' => $encode_info['encodepath'] . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['suffix'],
-			),
-			'html5encodes'   => array(
-				'url'  => $this->uploads['baseurl'] . '/html5encodes/' . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
-				'path' => $this->uploads['basedir'] . '/html5encodes/' . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
-			),
+		$potential_locations['same_directory'] = array(
+			'url'  => $sanitized_url['noextension'] . $this->video_formats[ $format ]['suffix'],
+			'path' => $encode_info['encodepath'] . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['suffix'],
 		);
 		if ( array_key_exists( 'old_suffix', $this->video_formats[ $format ] ) ) {
+			$potential_locations['html5encodes']              = array(
+				'url'  => $this->uploads['baseurl'] . '/html5encodes/' . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
+				'path' => $this->uploads['basedir'] . '/html5encodes/' . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
+			);
 			$potential_locations['same_directory_old_suffix'] = array(
 				'url'  => $sanitized_url['noextension'] . $this->video_formats[ $format ]['old_suffix'],
 				'path' => $encode_info['encodepath'] . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
