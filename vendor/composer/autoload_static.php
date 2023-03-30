@@ -11,18 +11,22 @@ class ComposerStaticInit505d887b30d62b986403249f6e18ec7f
     );
 
     public static $prefixLengthsPsr4 = array (
+        'V' => 
+        array (
+            'Videopack\\' => 10,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Component\\Process\\' => 26,
         ),
-        'K' => 
-        array (
-            'Kylegilman\\VideoEmbedThumbnailGenerator\\' => 40,
-        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'Videopack\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
@@ -30,10 +34,6 @@ class ComposerStaticInit505d887b30d62b986403249f6e18ec7f
         'Symfony\\Component\\Process\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/process',
-        ),
-        'Kylegilman\\VideoEmbedThumbnailGenerator\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 

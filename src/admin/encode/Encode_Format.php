@@ -16,6 +16,7 @@ class Encode_Format {
 	private $error;
 	private $ended;
 	private $progress;
+	private $id;
 
 	public function __construct( $format ) {
 		$this->format = $format;
@@ -112,11 +113,16 @@ class Encode_Format {
 		return $this->ended;
 	}
 
+	public function get_id() {
+		return $this->id;
+	}
+
 	// Setters
 	public function set_status( string $status ) {
 		$allowed = array(
 			'queued',
 			'encoding',
+			'needs_insert',
 			'complete',
 			'canceled',
 			'deleted',
@@ -162,6 +168,10 @@ class Encode_Format {
 
 	public function set_ended( int $ended ) {
 		$this->ended = $ended;
+	}
+
+	public function set_id( int $id ) {
+		$this->id = $id;
 	}
 
 	public function set_queued( string $path, string $url, int $user_id ) {
@@ -210,7 +220,7 @@ class Encode_Format {
 			);
 
 			if ( $this->progress['progress'] === 'end' ) {
-				$this->set_encode_complete();
+				$this->set_needs_insert();
 			} elseif ( time() - filemtime( $this->logfile ) > 60 ) {
 				//it's been more than a minute since encoding progress was recorded
 				$this->set_error( __( 'Encoding stopped unexpectedly', 'video-embed-thumbnail-generator' ) );
@@ -218,8 +228,8 @@ class Encode_Format {
 		}
 	}
 
-	public function set_encode_complete() {
-		$this->set_status( 'complete' );
+	public function set_needs_insert() {
+		$this->set_status( 'needs_insert' );
 		$this->set_ended( filemtime( $this->logfile ) );
 	}
 

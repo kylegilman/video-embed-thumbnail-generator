@@ -2,8 +2,6 @@
 
 namespace Videopack\admin\encode;
 
-use Videopack\FFMPEG_Process;
-
 class Encode_Attachment {
 	/**
 	 * The ID of the video attachment.
@@ -22,6 +20,7 @@ class Encode_Attachment {
 	protected $options;
 	protected $uploads;
 	protected $video_formats;
+	protected $available_formats;
 	protected $encode_formats;
 	protected $queue_log;
 	protected $is_attachment;
@@ -34,9 +33,9 @@ class Encode_Attachment {
 	 * Constructor.
 	 *
 	 * @param int    $id   The ID of the video attachment.
-	 * @param string $url  The URL of the video.
+	 * @param string $url  The URL of the video if it's not an attachment.
 	 */
-	public function __construct( int $id, string $url ) {
+	public function __construct( int $id, string $url = null ) {
 		$this->id            = $id;
 		$this->url           = $url;
 		$this->options       = kgvid_get_options();
@@ -51,6 +50,9 @@ class Encode_Attachment {
 		$this->is_attachment = get_post_type( $this->id ) === 'attachment';
 		if ( $this->is_attachment ) {
 			$this->encode_input = get_attached_file( $this->id );
+			if ( ! $this->url ) {
+				$this->url = wp_get_attachment_url( $this->id );
+			}
 		} else {
 			$this->encode_input = $this->url;
 		}
@@ -78,31 +80,39 @@ class Encode_Attachment {
 				}
 			}
 		}
-
 	}
 
-	public function get_encoded_formats() {
-		if ( empty( $this->encode_formats ) ) {
+	public function get_formats() {
+		if ( ! $this->encode_formats ) {
 			$this->set_encode_formats();
 		}
 		return $this->encode_formats;
 	}
 
+	public function get_available_formats() {
+		if ( ! $this->available_formats ) {
+			$this->set_available_formats();
+		}
+		return $this->available_formats;
+	}
+
 	public function get_encode_format( string $format ) {
-		if ( ! empty( $this->encode_formats ) ) {
-			foreach ( $this->encode_formats as $encode_format ) {
+		$encode_formats = $this->get_formats();
+		if ( $encode_formats ) {
+			foreach ( $encode_formats as $encode_format ) {
 				if ( $encode_format->get_format() === $format ) {
 					return $encode_format;
 				}
 			}
 		}
-		return false;
+		return $encode_formats;
 	}
 
 	public function get_formats_by_status( string $status ) {
-		$formats = array();
-		if ( ! empty( $this->encode_formats ) ) {
-			foreach ( $this->encode_formats as $encode_format ) {
+		$formats        = array();
+		$encode_formats = $this->get_formats();
+		if ( $encode_formats ) {
+			foreach ( $encode_formats as $encode_format ) {
 				if ( $encode_format->get_status() === $status ) {
 					$formats[] = $encode_format;
 				}
@@ -111,9 +121,20 @@ class Encode_Attachment {
 		return $formats;
 	}
 
+	public function get_formats_array() {
+		$formats        = array();
+		$encode_formats = $this->get_formats();
+		if ( $encode_formats ) {
+			foreach ( $encode_formats as $encode_format ) {
+				$formats[] = $encode_format->to_array();
+			}
+		}
+		return $formats;
+	}
+
 	public function start_next_format() {
 		$formats = $this->get_formats_by_status( 'queued' );
-		if ( empty( $formats ) ) {
+		if ( ! $formats ) {
 			return false;
 		} else {
 			//grab the first queued Encode_Format object
@@ -122,7 +143,7 @@ class Encode_Attachment {
 		}
 	}
 
-	protected function start_encode( Encode_Format $encode_format ) {
+	public function start_encode( Encode_Format $encode_format ) {
 
 		$encode_array = $encode_format->get_encode_array();
 		$process      = new FFmpeg_Process( $encode_array );
@@ -141,14 +162,14 @@ class Encode_Attachment {
 
 	protected function get_encode_array( Encode_Format $encode_format ) {
 
-		if ( empty( $encode_format->get_encode_array() ) ) {
-			return $this->set_encode_array( $encode_format );
+		if ( ! $encode_format->get_encode_array() ) {
+			return $this->set_ffmpeg_flags( $encode_format );
 		} else {
 			return $encode_format->get_encode_array();
 		}
 	}
 
-	protected function set_encode_array( Encode_Format $encode_format ) {
+	protected function set_ffmpeg_flags( Encode_Format $encode_format ) {
 
 		$format         = $encode_format->get_format();
 		$video_metadata = $this->get_video_metadata();
@@ -156,21 +177,21 @@ class Encode_Attachment {
 		$width  = $video_metadata['actualwidth'];
 		$height = $video_metadata['actualheight'];
 
-		$rate_control_flag           = $this->get_rate_control_flag( $format );
-		$watermark_array             = $this->get_watermark_array();
-		$ffmpeg_options              = $this->get_encode_array_options( $format );
-		$encode_array_before_options = $this->get_encode_array_before_options( $watermark_array );
+		$rate_control_flag   = $this->get_rate_control_flag( $format );
+		$watermark_flags     = $this->get_watermark_flags();
+		$ffmpeg_flags        = $this->get_ffmpeg_flags( $format );
+		$ffmpeg_flags_before = $this->get_ffmpeg_flags_before( $watermark_flags );
 
 		$encode_array_after_options = array(
 			'-threads',
 			$this->options['threads'],
 		);
 
-		if ( ! empty( $watermark_array['input'] ) ) {
+		if ( $watermark_flags['input'] ) {
 			array_push(
 				$encode_array_after_options,
 				'-filter_complex',
-				$watermark_array['filter'],
+				$watermark_flags['filter'],
 			);
 		}
 
@@ -184,8 +205,8 @@ class Encode_Attachment {
 		);
 
 		$encode_array = array_merge(
-			$encode_array_before_options,
-			$ffmpeg_options,
+			$ffmpeg_flags_before,
+			$ffmpeg_flags,
 			$rate_control_flag,
 			$encode_array_after_options
 		);
@@ -243,7 +264,7 @@ class Encode_Attachment {
 		return $rate_control_flag;
 	}
 
-	protected function get_watermark_array() {
+	protected function get_watermark_flags() {
 
 		if ( is_array( $this->options['ffmpeg_watermark'] )
 			&& array_key_exists( 'url', $this->options['ffmpeg_watermark'] )
@@ -279,20 +300,20 @@ class Encode_Attachment {
 				}
 			}
 
-			$watermark_array['input']  = $this->options['ffmpeg_watermark']['url'];
-			$watermark_array['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v] [watermark]overlay=' . $watermark_align . 'main_w*' . round( $this->options['ffmpeg_watermark']['x'] / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $this->options['ffmpeg_watermark']['y'] / 100, 3 );
+			$watermark_flags['input']  = $this->options['ffmpeg_watermark']['url'];
+			$watermark_flags['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v] [watermark]overlay=' . $watermark_align . 'main_w*' . round( $this->options['ffmpeg_watermark']['x'] / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $this->options['ffmpeg_watermark']['y'] / 100, 3 );
 
 		} else {
 
-			$watermark_array['input']  = '';
-			$watermark_array['filter'] = '';
+			$watermark_flags['input']  = '';
+			$watermark_flags['filter'] = '';
 
 		}
 
-		return $watermark_array;
+		return $watermark_flags;
 	}
 
-	protected function get_encode_array_options( string $format ) {
+	protected function get_ffmpeg_flags( string $format ) {
 
 		$width  = $this->video_metadata['actualwidth'];
 		$height = $this->video_metadata['actualheight'];
@@ -334,7 +355,7 @@ class Encode_Attachment {
 				);
 			}
 
-			$ffmpeg_options = array(
+			$ffmpeg_flags = array(
 				'-acodec',
 				$aaclib,
 				'-b:a',
@@ -345,8 +366,8 @@ class Encode_Attachment {
 				'libx264',
 			);
 
-			$ffmpeg_options = array_merge(
-				$ffmpeg_options,
+			$ffmpeg_flags = array_merge(
+				$ffmpeg_flags,
 				$movflags,
 				$profile_array,
 				$level_array
@@ -354,7 +375,7 @@ class Encode_Attachment {
 
 		} else { // if it's not H.264 the settings are basically the same
 
-			$ffmpeg_options = array(
+			$ffmpeg_flags = array(
 				'-acodec',
 				'libvorbis',
 				'-b:a',
@@ -367,20 +388,20 @@ class Encode_Attachment {
 
 			if ( $this->options['rate_control'] == 'crf' ) {
 				if ( $this->video_formats[ $format ]['type'] == 'webm' ) {
-					$ffmpeg_options[] = '-b:v';
-					$ffmpeg_options[] = round( floatval( $this->options['bitrate_multiplier'] ) * 1.25 * $width * $height * 30 / 1024 ) . 'k'; // set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
+					$ffmpeg_flags[] = '-b:v';
+					$ffmpeg_flags[] = round( floatval( $this->options['bitrate_multiplier'] ) * 1.25 * $width * $height * 30 / 1024 ) . 'k'; // set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
 				}
 				if ( $this->video_formats[ $format ]['type'] == 'vp9' ) {
-					$ffmpeg_options[] = '-b:v';
-					$ffmpeg_options[] = '0';
+					$ffmpeg_flags[] = '-b:v';
+					$ffmpeg_flags[] = '0';
 				}
 			}
 		}
 
-		return $ffmpeg_options;
+		return $ffmpeg_flags;
 	}
 
-	protected function get_encode_array_before_options( array $watermark_array ) {
+	protected function get_ffmpeg_flags_before( array $watermark_flags ) {
 		$nice = '';
 		$sys  = strtoupper( PHP_OS ); // Get OS Name
 		if ( substr( $sys, 0, 3 ) != 'WIN' && $this->options['nice'] == 'on' ) {
@@ -393,7 +414,7 @@ class Encode_Attachment {
 			$this->encode_input = substr_replace( $this->encode_input, $this->options['htaccess_login'] . ':' . $this->options['htaccess_password'] . '@', 7, 0 );
 		}
 
-		$encode_array_before_options = array(
+		$ffmpeg_flags_before = array(
 			$nice,
 			$this->options['app_path'] . '/' . $this->options['video_app'],
 			'-y',
@@ -401,23 +422,23 @@ class Encode_Attachment {
 			$this->encode_input,
 		);
 
-		if ( ! empty( $watermark_array['input'] ) ) {
+		if ( ! empty( $watermark_flags['input'] ) ) {
 			array_push(
-				$encode_array_before_options,
+				$ffmpeg_flags_before,
 				'-i',
-				$watermark_array['input'],
+				$watermark_flags['input'],
 			);
 		}
 
 		if ( $this->options['audio_channels'] == 'on' ) {
 			array_push(
-				$encode_array_before_options,
+				$ffmpeg_flags_before,
 				'-ac',
 				'2',
 			);
 		}
 
-		return $encode_array_before_options;
+		return $ffmpeg_flags_before;
 	}
 
 	public function get_video_metadata() {
@@ -488,11 +509,8 @@ class Encode_Attachment {
 		return false;
 	}
 
-	public function get_encode_info( string $format, bool $recheck = false ) {
-
-		if ( ! array_key_exists( $format, $this->encode_info )
-			|| $recheck
-		) {
+	public function get_encode_info( string $format ) {
+		if ( ! array_key_exists( $format, $this->encode_info ) ) {
 			$this->set_encode_info( $format );
 		}
 		return $this->encode_info[ $format ];
@@ -501,27 +519,33 @@ class Encode_Attachment {
 	protected function set_encode_info( string $format ) {
 		$sanitized_url = kgvid_sanitize_url( $this->url );
 		$movieurl      = $sanitized_url['movieurl'];
-
-		$encode_info ['moviefilebasename'] = $sanitized_url['basename'];
-		$encode_info ['encodepath']        = $this->uploads['path'] . '/';
+		$encode_info   = array(
+			'moviefilebasename' => $sanitized_url['basename'],
+			'encodepath'        => $this->uploads['path'] . '/',
+		);
 
 		$children = $this->get_attachment_children( $sanitized_url['movieurl'] );
 		if ( $children ) {
-			$encode_info = $this->process_children( $encode_info, $children, $format );
+			$this->process_children( $encode_info, $children, $format );
+		}
+
+		if ( ! array_key_exists( 'exists', $encode_info )
+			|| (
+				array_key_exists( 'exists', $encode_info )
+				&& ! $encode_info['exists']
+			)
+		) {
+			$this->check_potential_locations( $encode_info, $sanitized_url, $format );
 		}
 
 		if ( ! $encode_info['exists'] ) {
-			$encode_info = $this->check_potential_locations( $encode_info, $sanitized_url, $format );
-		}
-
-		if ( ! $encode_info['exists'] ) {
-			$encode_info = $this->set_default_url_and_path( $encode_info, $sanitized_url, $format );
+			$this->set_default_url_and_path( $encode_info, $sanitized_url, $format );
 		}
 
 		$this->encode_info[ $format ] = apply_filters( 'kgvid_encodevideo_info', $encode_info, $movieurl, $this->id, $format );
 	}
 
-	private function get_attachment_children( string $movieurl ) {
+	protected function get_attachment_children( string $movieurl ) {
 		if ( $this->is_attachment ) {
 			$args = array(
 				'numberposts' => '-1',
@@ -542,7 +566,7 @@ class Encode_Attachment {
 		return $children;
 	}
 
-	private function process_children( array &$encode_info, array $children, string $format ) {
+	protected function process_children( array &$encode_info, array $children, string $format ) {
 
 		foreach ( $children as $child ) {
 			$wp_attached_file = get_attached_file( $child->ID );
@@ -572,7 +596,7 @@ class Encode_Attachment {
 		}
 	}
 
-	private function check_potential_locations( array &$encode_info, array $sanitized_url, string $format ) {
+	protected function check_potential_locations( array &$encode_info, array $sanitized_url, string $format ) {
 
 		$potential_locations = array(
 			'same_directory' => array(
@@ -610,7 +634,7 @@ class Encode_Attachment {
 		}
 	}
 
-	private function check_url_exists( array &$encode_info, array $sanitized_url, string $format, string $url ) {
+	protected function check_url_exists( array &$encode_info, array $sanitized_url, string $format, string $url ) {
 
 		$already_checked_url = get_post_meta( $this->id, '_kgflashmediaplayer-' . $sanitized_url['singleurl_id'] . '-' . $format, true );
 		if ( empty( $already_checked_url ) ) {
@@ -627,7 +651,7 @@ class Encode_Attachment {
 		}
 	}
 
-	private function set_default_url_and_path( array &$encode_info, array $sanitized_url, string $format ) {
+	protected function set_default_url_and_path( array &$encode_info, array $sanitized_url, string $format ) {
 
 		$moviefilename = $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['suffix'];
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -640,6 +664,51 @@ class Encode_Attachment {
 			$encode_info['url']  = $this->uploads['url'] . '/' . $moviefilename;
 			$encode_info['path'] = $this->uploads['path'] . '/' . $moviefilename;
 		}
+	}
+
+	protected function set_available_formats() {
+		$available_formats = array();
+
+		if ( $this->is_attachment ) {
+			$post_mime_type = get_post_mime_type( $this->id );
+		} else {
+			$check_mime_type = kgvid_url_mime_type( $movieurl );
+			$post_mime_type  = $check_mime_type['type'];
+		}
+
+		foreach ( $this->video_formats as $format => $format_info ) {
+			if ( strpos( $post_mime_type, strval( $format ) ) != false ) {
+				continue;
+			} //skip webm or ogv checkbox if the video is webm or ogv
+			if ( strpos( $format, 'custom_' ) !== 0
+				&& (
+					( $this->options['hide_video_formats']
+						&& is_array( $this->options['encode'] )
+						&& in_array( $format, $this->options['encode'] )
+					)
+					|| ! $this->options['hide_video_formats']
+				)
+			) {
+				$available_formats[ $format ] = $format_info;
+			}
+			$wp_attachment_metadata = wp_get_attachment_metadata( $this->id );
+			if ( $wp_attachment_metadata
+				&& array_key_exists( 'height', $wp_attachment_metadata )
+			) {
+				if ( $wp_attachment_metadata['height'] < $format_info['height']	) {
+					unset( $available_formats[ $format ] );
+				}
+			} else {
+				$video_metadata = $this->get_video_metadata();
+				if ( is_array( $video_metadata )
+					&& array_key_exists( 'height', $video_metadata )
+					&& $video_metadata['actualheight'] < $format_info['height']
+				) {
+					unset( $available_formats[ $format ] );
+				}
+			}
+		}
+		$this->available_formats = $available_formats;
 	}
 
 	protected function set_video_metadata() {
@@ -769,7 +838,7 @@ class Encode_Attachment {
 	/**
 	 * Cancel the encoding job.
 	 */
-	public function cancel_job( string $format ) {
+	public function cancel_encoding( string $format ) {
 		$canceled = false;
 		if ( current_user_can( 'delete_posts' ) ) {
 			$encode_format = $this->get_encode_format( $format );
@@ -800,9 +869,7 @@ class Encode_Attachment {
 				if ( intval( $process_info[0] ) > 0
 					&& strpos( $output, $encode_format->get_path() ) !== false
 				) {
-
 					$canceled = posix_kill( $process_info[0], 15 );
-
 				}
 			} else { // Windows
 
@@ -857,7 +924,58 @@ class Encode_Attachment {
 	public function delete_format( string $format ) {
 	}
 
-	/**
-	 * Other methods as needed.
-	 */
+	public function insert_attachment( Encode_Format $encode_format ) {
+		$format  = $encode_format->get_format();
+		$path    = $encode_format->get_path();
+		$url     = $encode_format->get_url();
+		$user_id = $encode_format->get_user_id();
+
+		if ( $format != 'fullres'
+			&& ! $encode_format->get_id()
+			&& file_exists( $path )
+		) {
+
+			// insert the encoded video as a child attachment of the original video, or post if external original
+			if ( ! $this->is_attachment ) { // if the original video is not in the database
+				$sanitized_url = kgvid_sanitize_url( $this->url );
+				$title         = $sanitized_url['basename'];
+			}
+			$video_id = kgvid_url_to_id( $url );
+			if ( ! $video_id ) {
+				$wp_filetype = wp_check_filetype( basename( $encode_format->get_path() ) );
+
+				$title = get_the_title( $this->id ) . ' ' . $this->encode_formats[ $format ]['name'];
+
+				if ( ! $user_id ) {
+					$parent_post = get_post( $this->id );
+					$user_id     = $parent_post->post_author;
+				}
+
+				$attachment = array(
+					'guid'           => $url,
+					'post_mime_type' => $wp_filetype['type'],
+					'post_title'     => $title,
+					'post_content'   => '',
+					'post_status'    => 'inherit',
+					'post_author'    => $user_id,
+				);
+
+				$new_id = wp_insert_attachment( $attachment, $path, $this->id );
+				// you must first include the image.php file
+				// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
+				require_once ABSPATH . 'wp-admin/includes/image.php';
+				require_once ABSPATH . 'wp-admin/includes/media.php';
+				$attach_data = wp_generate_attachment_metadata( $new_id, $path );
+				wp_update_attachment_metadata( $new_id, $attach_data );
+				update_post_meta( $new_id, '_kgflashmediaplayer-format', $format );
+				if ( ! $this->is_attachment ) {
+					update_post_meta( $new_id, '_kgflashmediaplayer-externalurl', $this->url );
+				} //connect new video to external url
+
+				$encode_format->set_id( $new_id );
+				$encode_format->set_status( 'complete' );
+				$this->save_format( $encode_format );
+			}
+		}
+	}
 }

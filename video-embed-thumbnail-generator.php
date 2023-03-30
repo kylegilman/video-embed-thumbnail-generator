@@ -66,7 +66,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	require_once __DIR__ . '/src/admin/videopack-admin.php';
 	require_once __DIR__ . '/src/admin/videopack-ffmpeg.php';
 	require_once __DIR__ . '/src/admin/videopack-admin-ajax.php';
-	require_once __DIR__ . '/src/admin/videopack-rest.php';
 	require_once __DIR__ . '/src/public/videopack-public.php';
 	require_once __DIR__ . '/src/public/videopack-public-ajax.php';
 }
