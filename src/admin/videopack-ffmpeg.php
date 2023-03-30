@@ -177,7 +177,6 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 function kgvid_set_video_dimensions( $id, $gallery = false ) {
 
 	$options        = kgvid_get_options();
-	$moviefile      = get_attached_file( $id );
 	$video_meta     = wp_get_attachment_metadata( $id );
 	$kgvid_postmeta = kgvid_get_attachment_meta( $id );
 
@@ -195,10 +194,10 @@ function kgvid_set_video_dimensions( $id, $gallery = false ) {
 		$kgvid_postmeta['height'] = $kgvid_postmeta['actualheight'];
 	}
 
-	if ( ! empty( $kgvid_postmeta['width'] ) && ! empty( $kgvid_postmeta['height'] ) ) {
-		$aspect_ratio = $kgvid_postmeta['height'] / $kgvid_postmeta['width'];
+	if ( ! empty( $kgvid_postmeta['width'] ) && ! empty( intval( $kgvid_postmeta['height'] ) ) ) {
+		$aspect_ratio = intval( $kgvid_postmeta['height'] ) / intval( $kgvid_postmeta['width'] );
 	} else {
-		$aspect_ratio = $options['height'] / $options['width'];
+		$aspect_ratio = intval( $options['height'] ) / intval( $options['width'] );
 	}
 
 	if ( $gallery ) {
@@ -242,21 +241,21 @@ function kgvid_set_encode_dimensions( $movie_info, $format_stats ) {
 		}
 
 		if ( intval( $movie_info['width'] ) > $format_stats['width'] ) {
-			$encode_movie_width = $format_stats['width'];
+			$encode_movie_width = intval( $format_stats['width'] );
 		} else {
-			$encode_movie_width = $movie_info['width'];
+			$encode_movie_width = intval( $movie_info['width'] );
 		}
 
-		$encode_movie_height = strval( round( floatval( $movie_info['height'] ) / floatval( $movie_info['width'] ) * $encode_movie_width ) );
+		$encode_movie_height = round( intval( $movie_info['height'] ) / intval( $movie_info['width'] ) * $encode_movie_width );
 
 		if ( $encode_movie_height % 2 !== 0 ) {
 			--$encode_movie_height;
 		} //if it's odd, decrease by 1 to make sure it's an even number
 
-		if ( intval( $encode_movie_height ) > $format_stats['height'] ) {
+		if ( intval( $encode_movie_height ) > intval( $format_stats['height'] ) ) {
 
-			$encode_movie_height = $format_stats['height'];
-			$encode_movie_width  = strval( round( floatval( $movie_info['width'] ) / floatval( $movie_info['height'] ) * $encode_movie_height ) );
+			$encode_movie_height = intval( $format_stats['height'] );
+			$encode_movie_width  = strval( round( intval( $movie_info['width'] ) / intval( $movie_info['height'] ) * $encode_movie_height ) );
 
 		}
 		if ( $encode_movie_width % 2 !== 0 ) {
@@ -756,7 +755,7 @@ function kgvid_ffmpeg_watermark_strings( $ffmpeg_watermark, $movie_width, $rotat
 		}
 
 		$watermark_strings['input']  = '-i "' . $ffmpeg_watermark['url'] . '" ';
-		$watermark_strings['filter'] = ' -filter_complex "[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( $ffmpeg_watermark['x'] / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $ffmpeg_watermark['y'] / 100, 3 ) . '"';
+		$watermark_strings['filter'] = ' -filter_complex "[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 ) . '"';
 
 	} else {
 
@@ -802,7 +801,7 @@ function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_width, $rotate_
 		}
 
 		$watermark_array['input']  = $ffmpeg_watermark['url'];
-		$watermark_array['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( $ffmpeg_watermark['x'] / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $ffmpeg_watermark['y'] / 100, 3 );
+		$watermark_array['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 );
 
 	} else {
 
