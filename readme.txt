@@ -105,9 +105,23 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 == Changelog ==
 
-= 4.8.8 - March XX, 2023 =
+= 4.9 - March XX, 2023 =
+* Added a Videopack Block.
+* Added ability to add an image overlay/watermark to video thumbnails without FFmpeg.
+* Substantially rewrote the video encode queuing system.
+* Added REST API endpoints for thumbnail generation and video encoding.
+* Changed many of the custom 'kgvid' hooks.
+* Removed Video.js v5.
+* Removed LIBAV/AVCONV support.
+* Changed capitalization of FFMPEG to FFmpeg.
+
+= 4.8.8 - March 30, 2023 =
 * Removed SimpleModal library for pop-up videos and re-wrote to use a custom jQuery pop-up.
+* Restored missing "Default number of thumbnails to generate" setting.
+* Fixed string divided by string errors.
 * Fixed JavaScript error when adding media in block editor.
+* Updated Freemius SDK to v2.5.6
+* Updated Symfony/Process to v5.4.21
 
 = 4.8.7 - February 17, 2023 =
 * Added Video.js v8 player option which <a href="https://videojs.com/blog/videojs-8-and-vhs-3/">removes support for older browsers</a>. v7 is still available and will continue to be updated. v5 is deprecated and will be removed in a future update.
