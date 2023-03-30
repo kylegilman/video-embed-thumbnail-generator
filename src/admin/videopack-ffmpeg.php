@@ -203,9 +203,9 @@ function kgvid_set_video_dimensions( $id, $gallery = false ) {
 	}
 
 	if ( ! empty( $kgvid_postmeta['width'] ) && ! empty( $kgvid_postmeta['height'] ) ) {
-		$aspect_ratio = $kgvid_postmeta['height'] / $kgvid_postmeta['width'];
+		$aspect_ratio = intval( $kgvid_postmeta['height'] ) / intval( $kgvid_postmeta['width'] );
 	} else {
-		$aspect_ratio = $options['height'] / $options['width'];
+		$aspect_ratio = intval( $options['height'] ) / intval( $options['width'] );
 	}
 
 	if ( $gallery ) {
@@ -254,7 +254,7 @@ function kgvid_set_encode_dimensions( $movie_info, $format_stats ) {
 			$encode_movie_width = $movie_info['width'];
 		}
 
-		$encode_movie_height = strval( round( floatval( $movie_info['height'] ) / floatval( $movie_info['width'] ) * $encode_movie_width ) );
+		$encode_movie_height = strval( round( intval( $movie_info['height'] ) / intval( $movie_info['width'] ) * $encode_movie_width ) );
 
 		if ( $encode_movie_height % 2 !== 0 ) {
 			--$encode_movie_height;
@@ -263,7 +263,7 @@ function kgvid_set_encode_dimensions( $movie_info, $format_stats ) {
 		if ( intval( $encode_movie_height ) > $format_stats['height'] ) {
 
 			$encode_movie_height = $format_stats['height'];
-			$encode_movie_width  = strval( round( floatval( $movie_info['width'] ) / floatval( $movie_info['height'] ) * $encode_movie_height ) );
+			$encode_movie_width  = strval( round( intval( $movie_info['width'] ) / intval( $movie_info['height'] ) * $encode_movie_height ) );
 
 		}
 		if ( $encode_movie_width % 2 !== 0 ) {
@@ -763,7 +763,7 @@ function kgvid_ffmpeg_watermark_strings( $ffmpeg_watermark, $movie_width, $rotat
 		}
 
 		$watermark_strings['input']  = '-i "' . $ffmpeg_watermark['url'] . '" ';
-		$watermark_strings['filter'] = ' -filter_complex "[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( $ffmpeg_watermark['x'] / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $ffmpeg_watermark['y'] / 100, 3 ) . '"';
+		$watermark_strings['filter'] = ' -filter_complex "[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 ) . '"';
 
 	} else {
 

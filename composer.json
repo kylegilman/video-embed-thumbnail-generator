@@ -10,7 +10,7 @@
     "license": "GNU General Public License",
     "autoload": {
         "psr-4": {
-            "Kylegilman\\VideoEmbedThumbnailGenerator\\": "src/"
+            "Videopack\\": "src/"
         }
     },
     "authors": [

@@ -6,7 +6,7 @@ use ActionScheduler;
 
 class Encode_Queue_Controller {
 
-	protected $queue;
+	protected $queued;
 	protected $encoding_now;
 	protected $queue_log;
 	protected $options;
@@ -14,7 +14,7 @@ class Encode_Queue_Controller {
 	public function __construct() {
 		$this->queue_log = new Encode_Queue_Log();
 		$this->options   = kgvid_get_options();
-		$this->set_queue();
+		$this->set_queued();
 		$this->set_encoding_now();
 		$this->check_encoding();
 	}
@@ -81,8 +81,8 @@ class Encode_Queue_Controller {
 	}
 
 	protected function store_queued_post_id( int $id, string $url ) {
-		if ( ! in_array( $id, $this->queue ) ) {
-			$this->queue[] = array(
+		if ( ! in_array( $id, $this->queued ) ) {
+			$this->queued[] = array(
 				'id'  => $id,
 				'url' => $url,
 			);
@@ -91,24 +91,32 @@ class Encode_Queue_Controller {
 	}
 
 	public function check_encoding() {
-		$formats  = array();
-		$encoding = $this->get_encoding_now();
-		if ( ! empty( $encoding ) ) {
+		$encoding_formats = array();
+		$encoding         = $this->get_encoding_now();
+		if ( $encoding ) {
 			foreach ( $encoding as $key => $args ) {
-				$encoder         = new Encode_Attachment( $args['id'], $args['url'] );
-				$formats[ $key ] = $encoder->get_formats_by_status( 'encoding' );
-				if ( empty( $formats[ $key ] ) ) {
-					unset( $this->encoding_now[ $key ] );
-					$this->save_encoding_now();
+				$encoder = new Encode_Attachment( $args['id'], $args['url'] );
+				$formats = $encoder->get_formats();
+				if ( $formats ) {
+					foreach ( $formats as $format ) {
+						switch ( $format->get_status() ) {
+							case 'encoding':
+								$encoding_formats[ $key ] = $format;
+								break;
+							case 'needs_insert':
+								$encoder->insert_attachment( $format );
+								break;
+						}
+					}
+					if ( ! array_key_exists( $key, $encoding_formats ) ) {
+						unset( $this->encoding_now[ $key ] );
+						$this->save_encoding_now();
+					}
 				}
 			}
-			if ( count( $this->encoding_now ) < $this->options['simultaneous_encodes']
-				&& $this->options['queue_control'] === 'play'
-			) {
-				$this->start_next_job();
-			}
 		}
-		return $formats;
+		$this->start_next_job();
+		return $encoding_formats;
 	}
 
 	public function add_to_queue( array $args ) {
@@ -124,14 +132,20 @@ class Encode_Queue_Controller {
 	}
 
 	protected function start_next_job() {
-		$queue = $this->get_queue();
-		if ( ! empty( $queue ) ) {
-			foreach ( $queue as $key => $args ) {
-				$encoder = new Encode_Attachment( $args['id'], $args['url'] );
-				$next    = $encoder->start_next_format();
-				if ( ! $next ) {
-					unset( $this->queue[ $key ] );
-					$this->save_queue();
+		if ( count( $this->encoding_now ) < $this->options['simultaneous_encodes']
+			&& $this->options['queue_control'] === 'play'
+		) {
+			$queue = $this->get_full_queue();
+			if ( $queue ) {
+				foreach ( $queue as $key => $args ) {
+					$encoder = new Encode_Attachment( $args['id'], $args['url'] );
+					$next    = $encoder->start_next_format();
+					if ( $next ) {
+						$this->encoding_now[] = $this->queued[ $key ];
+						$this->save_encoding_now();
+						unset( $this->queued[ $key ] );
+						$this->save_queue();
+					}
 				}
 			}
 		}
@@ -151,18 +165,40 @@ class Encode_Queue_Controller {
 		return $action_args;
 	}
 
+	public function get_full_queue() {
+		$encoding = $this->get_encoding_now();
+		$queued   = $this->get_queued();
+		return array_merge( $encoding, $queued );
+	}
+
+	public function get_full_queue_array() {
+		$queue_array = array();
+		$full_queue  = $this->get_full_queue();
+		if ( ! empty( $full_queue ) ) {
+			foreach ( $full_queue as $key => $args ) {
+				$encoder       = new Encode_Attachment( $args['id'], $args['url'] );
+				$queue_array[] = array(
+					'id'      => $args['id'],
+					'url'     => $args['url'],
+					'formats' => $encoder->get_formats_array(),
+				);
+			}
+		}
+		return $queue_array;
+	}
+
 	public function get_encoding_now() {
 		$this->set_encoding_now();
 		return $this->encoding_now;
 	}
 
-	public function get_queue() {
-		$this->set_queue();
-		return $this->queue;
+	public function get_queued() {
+		$this->set_queued();
+		return $this->queued;
 	}
 
-	protected function set_queue() {
-		$this->queue = get_option( 'videopack_encode_queue', array() );
+	protected function set_queued() {
+		$this->queued = get_option( 'videopack_encode_queue', array() );
 	}
 
 	protected function set_encoding_now() {
@@ -170,7 +206,7 @@ class Encode_Queue_Controller {
 	}
 
 	protected function save_queue() {
-		return update_option( 'videopack_encode_queue', $this->queue );
+		return update_option( 'videopack_encode_queue', $this->queued );
 	}
 
 	protected function save_encoding_now() {
