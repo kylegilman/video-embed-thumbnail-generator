@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
-Tested up to: 6.1
+Tested up to: 6.2
 Requires PHP: 7.2.5
 Stable tag: 4.8.8
 License: GPLv2 or later
@@ -105,9 +105,13 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.8.8 - February XX, 2023 =
+= 4.8.8 - March 30, 2023 =
 * Removed SimpleModal library for pop-up videos and re-wrote to use a custom jQuery pop-up.
+* Restored missing "Default number of thumbnails to generate" setting.
+* Fixed string divided by string errors.
 * Fixed JavaScript error when adding media in block editor.
+* Updated Freemius SDK to v2.5.6
+* Updated Symfony/Process to v5.4.21
 
 = 4.8.7 - February 17, 2023 =
 * Added Video.js v8 player option which <a href="https://videojs.com/blog/videojs-8-and-vhs-3/">removes support for older browsers</a>. v7 is still available and will continue to be updated. v5 is deprecated and will be removed in a future update.
