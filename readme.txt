@@ -105,6 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
+= 4.8.9 - March 30, 2023 =
+* Bumped version number because of files missing from the v4.8.8 distribution file.
+
 = 4.8.8 - March 30, 2023 =
 * Removed SimpleModal library for pop-up videos and re-wrote to use a custom jQuery pop-up.
 * Restored missing "Default number of thumbnails to generate" setting.
