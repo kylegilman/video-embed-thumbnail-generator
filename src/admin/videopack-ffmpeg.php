@@ -310,7 +310,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 		|| ! is_file( $moviefile )
 	) {
 
-		$url_parts = parse_url( $uploads['url'] );
+		$url_parts = wp_parse_url( $uploads['url'] );
 
 		if ( is_array( $url_parts )
 			&& array_key_exists( 'host', $url_parts )

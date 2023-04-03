@@ -221,7 +221,7 @@ class Videopack_REST extends \WP_REST_Controller {
 				)
 			) {
 				$dirty_array[ $key ] = null;
-			} elseif ( $key === 'filepath' ) {
+			} elseif ( strpos( $key, 'path' ) !== false ) {
 				unset( $dirty_array[ $key ] );
 			} elseif ( $value === 'checked' || $value === 'on' ) {
 				$dirty_array[ $key ] = true;

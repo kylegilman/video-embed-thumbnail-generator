@@ -37,6 +37,7 @@ function kgvid_default_options_fn() {
 		'ffmpeg_auto_rotate'      => 'on',
 		'nostdin'                 => false,
 		'moov'                    => 'movflag',
+		'moov_path'               => '',
 		'generate_thumbs'         => 4,
 		'featured'                => 'on',
 		'thumb_parent'            => 'video',
@@ -144,6 +145,7 @@ function kgvid_default_options_fn() {
 		'auto_publish_post'       => false,
 		'transient_cache'         => false,
 		'queue_control'           => 'play',
+		'encode_array'            => array(),
 	);
 
 	$video_formats = kgvid_video_formats();
@@ -282,7 +284,7 @@ function kgvid_sanitize_url( $movieurl ) {
 
 	if ( empty( $path_info['extension'] ) ) {
 		$sanitized_url['noextension'] = $movieurl;
-		$sanitized_url['basename'] = substr( $movieurl, -20 );
+		$sanitized_url['basename']    = substr( $movieurl, -20 );
 	} else {
 		$no_extension_url   = preg_replace( '/\\.[^.\\s]{3,4}$/', '', $decoded_movieurl );
 		$sanitized_basename = sanitize_file_name( $path_info['basename'] );
@@ -1235,8 +1237,13 @@ function kgvid_superadmin_capabilities_callback() {
 }
 
 function kgvid_add_settings_page() {
-	$page_hook_suffix = add_options_page( esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ), 'manage_options', 'video_embed_thumbnail_generator_settings', 'kgvid_settings_page' );
-
+	$page_hook_suffix = add_options_page(
+		esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
+		esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
+		'manage_options',
+		'video_embed_thumbnail_generator_settings',
+		'kgvid_settings_page'
+	);
 	add_action( 'admin_print_scripts-' . $page_hook_suffix, 'kgvid_options_assets' );
 }
 add_action( 'admin_menu', 'kgvid_add_settings_page' );
@@ -1267,7 +1274,8 @@ function kgvid_settings_page() {
 	$network_options = get_site_option( 'kgvid_video_embed_network_options' );
 	$video_app       = $options['video_app'];
 
-	include __DIR__ . '/partials/settings-page.php';
+	//include __DIR__ . '/partials/settings-page.php';
+	echo '<div id="videopack-settings-root"></div>';
 }
 
 function kgvid_do_settings_sections( $page ) {
@@ -1299,18 +1307,75 @@ function kgvid_do_settings_sections( $page ) {
 	}
 }
 
+function kgvid_settings_schema( array $options ) {
+	$schema = array();
+	foreach ( $options as $option => $value ) {
+		$att_type = 'string';
+		if ( $value === 'on' ) {
+			$value = true;
+		}
+		if ( $value === 'true' || $value === 'false' ) {
+			$value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+		}
+		if ( is_bool( $value ) ) {
+			$att_type = array( 'boolean', 'string' );
+		}
+		if ( is_numeric( $value ) ) {
+			if ( is_string( $value ) ) {
+				if ( filter_var( $value, FILTER_VALIDATE_INT )
+					|| $value === '0'
+				) {
+					$value = intval( $value );
+				} else {
+					$value = floatval( $value );
+				}
+			}
+			$att_type = array( 'number', 'string' );
+		}
+		if ( is_array( $value ) && ! empty( $value ) ) {
+			$schema[ $option ] = array(
+				'type'       => 'object',
+				'properties' => kgvid_settings_schema( $value ),
+			);
+		} else {
+			$schema[ $option ] = array(
+				'type'    => $att_type,
+				'default' => $value,
+			);
+		}
+	}
+	return $schema;
+}
+
 function kgvid_register_setting() {
+
+	$schema                 = kgvid_settings_schema( kgvid_default_options_fn() );
+	$schema['encode_array'] = array(
+		'type'    => 'array',
+		'items'   => array(
+			'type' => 'string',
+		),
+		'default' => array(),
+	);
+
 	register_setting(
 		'kgvid_video_embed',
 		'kgvid_video_embed_options',
 		array(
-			'type' => 'object',
+			'type'              => 'object',
 			'sanitize_callback' => 'kgvid_video_embed_options_validate',
-		),
+			'show_in_rest'      => array(
+				'schema' => array(
+					'type'       => 'object',
+					'properties' => $schema,
+				),
+			),
+		)
 	);
 	add_filter('https_ssl_verify', '__return_false'); ////// REMOVE THIS!!!!!!!!!
 }
 add_action( 'admin_init', 'kgvid_register_setting' );
+add_action( 'rest_api_init', 'kgvid_register_setting' );
 
 function kgvid_video_embed_options_init() {
 

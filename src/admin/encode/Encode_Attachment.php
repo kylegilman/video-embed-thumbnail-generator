@@ -195,7 +195,7 @@ class Encode_Attachment {
 			);
 		}
 
-		$logfile = $this->uploads['path'] . '/' . sanitize_file_name( str_replace( ' ', '_', $video_metadata['moviefilebasename'] ) . '_' . $format . '_' . sprintf( '%04s', wp_rand( 1, 1000 ) ) . '_encode.txt' );
+		$logfile = $this->uploads['path'] . '/' . sanitize_file_name( str_replace( ' ', '_', $video_metadata['basename'] ) . '_' . $format . '_' . sprintf( '%04s', wp_rand( 1, 1000 ) ) . '_encode.txt' );
 
 		array_push(
 			$encode_array_after_options,
@@ -520,8 +520,12 @@ class Encode_Attachment {
 		$sanitized_url = kgvid_sanitize_url( $this->url );
 		$movieurl      = $sanitized_url['movieurl'];
 		$encode_info   = array(
-			'moviefilebasename' => $sanitized_url['basename'],
-			'encodepath'        => $this->uploads['path'] . '/',
+			'basename'   => $sanitized_url['basename'],
+			'path'       => $this->uploads['path'] . '/',
+			'exists'     => false,
+			'writable'   => false,
+			'sameserver' => false,
+			'deletable'  => false,
 		);
 
 		$children = $this->get_attachment_children( $sanitized_url['movieurl'] );
@@ -529,12 +533,7 @@ class Encode_Attachment {
 			$this->process_children( $encode_info, $children, $format );
 		}
 
-		if ( ! array_key_exists( 'exists', $encode_info )
-			|| (
-				array_key_exists( 'exists', $encode_info )
-				&& ! $encode_info['exists']
-			)
-		) {
+		if ( ! $encode_info['exists'] ) {
 			$this->check_potential_locations( $encode_info, $sanitized_url, $format );
 		}
 
@@ -542,7 +541,7 @@ class Encode_Attachment {
 			$this->set_default_url_and_path( $encode_info, $sanitized_url, $format );
 		}
 
-		$this->encode_info[ $format ] = apply_filters( 'kgvid_encodevideo_info', $encode_info, $movieurl, $this->id, $format );
+		$this->encode_info[ $format ] = apply_filters( 'videopack_encode_info', $encode_info, $movieurl, $this->id, $format );
 	}
 
 	protected function get_attachment_children( string $movieurl ) {
@@ -579,11 +578,18 @@ class Encode_Attachment {
 					&& $meta_format == false
 				)
 			) {
-				$encode_info['url']      = wp_get_attachment_url( $child->ID );
-				$encode_info['path']     = $wp_attached_file;
-				$encode_info['id']       = $child->ID;
-				$encode_info['exists']   = true;
-				$encode_info['writable'] = true;
+				$encode_info['url']        = wp_get_attachment_url( $child->ID );
+				$encode_info['path']       = $wp_attached_file;
+				$encode_info['id']         = $child->ID;
+				$encode_info['exists']     = true;
+				$encode_info['writable']   = true;
+				$encode_info['sameserver'] = true;
+
+				if ( $child->post_author === get_current_user_id()
+					|| current_user_can( 'edit_others_video_encodes' )
+				) {
+					$encode_info['deletable'] = true;
+				}
 
 				if ( is_array( $video_meta ) && array_key_exists( 'width', $video_meta ) ) {
 					$encode_info['width'] = $video_meta['width'];
@@ -600,16 +606,16 @@ class Encode_Attachment {
 
 		$potential_locations['same_directory'] = array(
 			'url'  => $sanitized_url['noextension'] . $this->video_formats[ $format ]['suffix'],
-			'path' => $encode_info['encodepath'] . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['suffix'],
+			'path' => $encode_info['path'] . $encode_info['basename'] . $this->video_formats[ $format ]['suffix'],
 		);
 		if ( array_key_exists( 'old_suffix', $this->video_formats[ $format ] ) ) {
 			$potential_locations['html5encodes']              = array(
-				'url'  => $this->uploads['baseurl'] . '/html5encodes/' . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
-				'path' => $this->uploads['basedir'] . '/html5encodes/' . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
+				'url'  => $this->uploads['baseurl'] . '/html5encodes/' . $encode_info['basename'] . $this->video_formats[ $format ]['old_suffix'],
+				'path' => $this->uploads['basedir'] . '/html5encodes/' . $encode_info['basename'] . $this->video_formats[ $format ]['old_suffix'],
 			);
 			$potential_locations['same_directory_old_suffix'] = array(
 				'url'  => $sanitized_url['noextension'] . $this->video_formats[ $format ]['old_suffix'],
-				'path' => $encode_info['encodepath'] . $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['old_suffix'],
+				'path' => $encode_info['path'] . $encode_info['basename'] . $this->video_formats[ $format ]['old_suffix'],
 			);
 		}
 
@@ -623,7 +629,7 @@ class Encode_Attachment {
 					$encode_info['writable'] = true;
 				}
 				break;
-			} else if ( ! empty( $this->id )
+			} elseif ( ! empty( $this->id )
 				&& ! $encode_info['sameserver']
 				&& $name !== 'html5encodes'
 			) {
@@ -651,13 +657,13 @@ class Encode_Attachment {
 
 	protected function set_default_url_and_path( array &$encode_info, array $sanitized_url, string $format ) {
 
-		$moviefilename = $encode_info['moviefilebasename'] . $this->video_formats[ $format ]['suffix'];
+		$moviefilename = $encode_info['basename'] . $this->video_formats[ $format ]['suffix'];
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		if ( get_post_type( $this->id ) == 'attachment'
-			&& get_filesystem_method( array(), $encode_info['encodepath'], true ) === 'direct'
+			&& get_filesystem_method( array(), $encode_info['path'], true ) === 'direct'
 		) {
 			$encode_info['url']  = $sanitized_url['noextension'] . $this->video_formats[ $format ]['suffix'];
-			$encode_info['path'] = $encode_info['encodepath'] . $moviefilename;
+			$encode_info['path'] = $encode_info['path'] . $moviefilename;
 		} else {
 			$encode_info['url']  = $this->uploads['url'] . '/' . $moviefilename;
 			$encode_info['path'] = $this->uploads['path'] . '/' . $moviefilename;
@@ -670,19 +676,19 @@ class Encode_Attachment {
 		if ( $this->is_attachment ) {
 			$post_mime_type = get_post_mime_type( $this->id );
 		} else {
-			$check_mime_type = kgvid_url_mime_type( $movieurl );
+			$check_mime_type = kgvid_url_mime_type( $this->url );
 			$post_mime_type  = $check_mime_type['type'];
 		}
 
 		foreach ( $this->video_formats as $format => $format_info ) {
-			if ( strpos( $post_mime_type, strval( $format ) ) != false ) {
+			if ( strpos( $post_mime_type, strval( $format ) ) !== false ) {
 				continue;
 			} //skip webm or ogv checkbox if the video is webm or ogv
 			if ( strpos( $format, 'custom_' ) !== 0
 				&& (
 					( $this->options['hide_video_formats']
 						&& is_array( $this->options['encode'] )
-						&& in_array( $format, $this->options['encode'] )
+						&& array_key_exists( $format, $this->options['encode'] )
 					)
 					|| ! $this->options['hide_video_formats']
 				)
@@ -693,14 +699,14 @@ class Encode_Attachment {
 			if ( $wp_attachment_metadata
 				&& array_key_exists( 'height', $wp_attachment_metadata )
 			) {
-				if ( $wp_attachment_metadata['height'] < $format_info['height']	) {
+				if ( $wp_attachment_metadata['height'] <= $format_info['height'] ) {
 					unset( $available_formats[ $format ] );
 				}
 			} else {
 				$video_metadata = $this->get_video_metadata();
 				if ( is_array( $video_metadata )
 					&& array_key_exists( 'height', $video_metadata )
-					&& $video_metadata['actualheight'] < $format_info['height']
+					&& $video_metadata['actualheight'] <= $format_info['height']
 				) {
 					unset( $available_formats[ $format ] );
 				}
