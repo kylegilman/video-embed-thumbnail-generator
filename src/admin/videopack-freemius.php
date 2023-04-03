@@ -69,7 +69,6 @@ if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.
 			$init_options = array(
 				'id'             => '7761',
 				'slug'           => 'video-embed-thumbnail-generator',
-				'navigation'     => 'tabs',
 				'type'           => 'plugin',
 				'public_key'     => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
 				'is_premium'     => false,
