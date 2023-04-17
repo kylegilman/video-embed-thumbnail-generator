@@ -221,7 +221,7 @@ function kgvid_ajax_generate_encode_checkboxes() {
 		$kgvid_postmeta = kgvid_get_attachment_meta( $post_id );
 		foreach ( $encode_checked as $format => $checked ) {
 			if ( $checked === 'true' ) {
-				$kgvid_postmeta['encode'][ $format ] = 'on';
+				$kgvid_postmeta['encode'][ $format ] = true;
 			} else {
 				$kgvid_postmeta['encode'][ $format ] = 'notchecked';
 			}
@@ -281,7 +281,7 @@ function kgvid_ajax_save_settings() {
 
 				$options_updated = update_option( 'kgvid_video_embed_options', $validated_options );
 
-				if ( $validated_options['ffmpeg_exists'] === 'on' ) {
+				if ( $validated_options['ffmpeg_exists'] === true ) {
 
 					$movie_info        = kgvid_get_video_dimensions( plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4' );
 					$uploads           = wp_upload_dir();
@@ -501,7 +501,7 @@ function kgvid_callffmpeg() {
 		$action = kgvid_sanitize_text_field( wp_unslash( $_POST['ffmpeg_action'] ) );
 	}
 
-	if ( $options['ffmpeg_exists'] === 'on' ) {
+	if ( $options['ffmpeg_exists'] === true ) {
 
 		if ( $action === 'generate' && current_user_can( 'make_video_thumbnails' ) ) {
 

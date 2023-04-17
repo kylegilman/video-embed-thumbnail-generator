@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<td class="field"><input type="text" id="attachments-singleurl-kgflashmediaplayer-url" name="attachments[singleurl][kgflashmediaplayer-url]" value="" size="50" onchange="kgvid_set_singleurl();"/>
 				<p class="help"><small><?php esc_html_e( 'Specify the URL of the video file.', 'video-embed-thumbnail-generator' ); ?></small></p></td>
 			</tr>
-			<?php if ( current_user_can( 'make_video_thumbnails' ) && $options['ffmpeg_exists'] === 'on' ) { ?>
+			<?php if ( current_user_can( 'make_video_thumbnails' ) && $options['ffmpeg_exists'] === true ) { ?>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label><?php esc_html_e( 'Thumbnails', 'video-embed-thumbnail-generator' ); ?></label></span></th>
 				<td class="field">
@@ -36,7 +36,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<input type="checkbox" id="attachments-singleurl-firstframe" onchange="document.getElementById('attachments-singleurl-kgflashmediaplayer-thumbtime').value ='';" /><label for="attachments-singleurl-firstframe"><?php esc_html_e( 'Force 1st Frame Thumbnail', 'video-embed-thumbnail-generator' ); ?></label><br>
 					<div id="attachments-singleurl-thumbnailplaceholder"></div>
 					<span><?php esc_html_e( 'Thumbnail timecode:', 'video-embed-thumbnail-generator' ); ?></span> <input name="attachments[singleurl][kgflashmediaplayer-thumbtime]" id="attachments-singleurl-kgflashmediaplayer-thumbtime" type="text" value="" style="width:60px;"><br>
-					<input type="checkbox" <?php echo checked( $options['featured'], 'on', false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> <?php esc_html_e( 'Set thumbnail as featured image', 'video-embed-thumbnail-generator' ); ?>
+					<input type="checkbox" <?php echo checked( $options['featured'], true, false ); ?> id="attachments-singleurl-featured" name="attachments[singleurl][kgflashmediaplayer-featured]" /> <?php esc_html_e( 'Set thumbnail as featured image', 'video-embed-thumbnail-generator' ); ?>
 				</td>
 			</tr>
 			<?php } ?>
@@ -61,7 +61,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<td><div id="kgflashmediaplayer-singleurl-trackdiv" class="kgvid_thumbnail_box kgvid_track_box"><?php esc_html_e( 'Track type:', 'video-embed-thumbnail-generator' ); ?><select name="attachments[singleurl][kgflashmediaplayer-track][kind]" id="attachments-singleurl-kgflashmediaplayer-track_kind"><option value="subtitles"><?php esc_html_e( 'subtitles', 'video-embed-thumbnail-generator' ); ?></option><option value="captions"><?php esc_html_e( 'captions', 'video-embed-thumbnail-generator' ); ?></option><option value="chapters"><?php esc_html_e( 'chapters', 'video-embed-thumbnail-generator' ); ?></option></select><br /><?php esc_html_e( 'URL:', 'video-embed-thumbnail-generator' ); ?> <input name="attachments[singleurl][kgflashmediaplayer-track][src]" id="attachments-singleurl-kgflashmediaplayer-track_src" type="text" value="" class="text"><br /><?php esc_html_e( 'Language code:', 'video-embed-thumbnail-generator' ); ?> <input name="attachments[singleurl][kgflashmediaplayer-track][srclang]" id="attachments-singleurl-kgflashmediaplayer-track_srclang" type="text" value="" maxlength="2" style="width:40px;"><br /><?php esc_html_e( 'Label:', 'video-embed-thumbnail-generator' ); ?> <input name="attachments[singleurl][kgflashmediaplayer-track][label]" id="attachments-singleurl-kgflashmediaplayer-track_label" type="text" value="" class="text"><br /><?php esc_html_e( 'Default:', 'video-embed-thumbnail-generator' ); ?> <input name="attachments[singleurl][kgflashmediaplayer-track][default]" id="attachments-singleurl-kgflashmediaplayer-track_default" type="checkbox" value="default"></div></td>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label>Options</span></label></th>
-				<td><input type="checkbox" <?php echo checked( $options['downloadlink'], 'on', false ); ?> name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink"><?php esc_html_e( 'Show download icon', 'video-embed-thumbnail-generator' ); ?><br /><small></em><?php esc_html_e( 'Makes it easier for users to download video file', 'video-embed-thumbnail-generator' ); ?></em></small></label></td>
+				<td><input type="checkbox" <?php echo checked( $options['downloadlink'], true, false ); ?> name="downloadlink" id="downloadlink" value="true" class="field" /><label for="downloadlink"><?php esc_html_e( 'Show download icon', 'video-embed-thumbnail-generator' ); ?><br /><small></em><?php esc_html_e( 'Makes it easier for users to download video file', 'video-embed-thumbnail-generator' ); ?></em></small></label></td>
 			</tr>
 			<tr class="submit">
 				<td></td>

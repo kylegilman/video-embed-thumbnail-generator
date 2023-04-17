@@ -82,7 +82,7 @@ function kgvid_video_embed_activation_hook( $network_wide ) {
 
 			$ffmpeg_check = kgvid_check_ffmpeg_exists( $network_options, false );
 			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
-				$network_options['ffmpeg_exists'] = 'on';
+				$network_options['ffmpeg_exists'] = true;
 				$network_options['app_path']      = $ffmpeg_check['app_path'];
 			} else {
 				$network_options['ffmpeg_exists'] = false; }

@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		if ( ! is_multisite()
 			|| ( is_videopack_active_for_network()
-				&& $options['ffmpeg_exists'] === 'on'
+				&& $options['ffmpeg_exists'] === true
 				&& is_array( $network_options )
 				&& ( is_super_admin()
 					|| $network_options['superadmin_only_ffmpeg_settings'] == false

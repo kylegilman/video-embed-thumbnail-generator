@@ -80,7 +80,7 @@ class Videopack_REST extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function() {
-						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === 'on' );
+						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
 						'movieurl' => array(
@@ -175,7 +175,7 @@ class Videopack_REST extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'queue_get' ),
 					'permission_callback' => function() {
-						return ( $this->options['ffmpeg_exists'] === 'on' );
+						return ( $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
 						'id' => array(
@@ -187,7 +187,7 @@ class Videopack_REST extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'queue_edit' ),
 					'permission_callback' => function() {
-						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === 'on' );
+						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
 						'url' => array(
@@ -207,7 +207,7 @@ class Videopack_REST extends \WP_REST_Controller {
 						),
 					),
 				),
-			),
+			)
 		);
 	}
 
@@ -223,7 +223,7 @@ class Videopack_REST extends \WP_REST_Controller {
 				$dirty_array[ $key ] = null;
 			} elseif ( strpos( $key, 'path' ) !== false ) {
 				unset( $dirty_array[ $key ] );
-			} elseif ( $value === 'checked' || $value === 'on' ) {
+			} elseif ( $value === 'checked' || $value === true ) {
 				$dirty_array[ $key ] = true;
 			}
 		}
@@ -247,7 +247,7 @@ class Videopack_REST extends \WP_REST_Controller {
 			}
 		}
 		foreach ( $this->options as $key => $value ) {
-			if ( $value === 'on' ) {
+			if ( $value === true ) {
 				$this->options[ $key ] = true;
 			}
 		}
