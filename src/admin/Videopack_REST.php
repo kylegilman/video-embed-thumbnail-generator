@@ -30,7 +30,51 @@ class Videopack_REST extends \WP_REST_Controller {
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'settings' ),
 				'permission_callback' => '__return_true',
-			),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/defaults',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'defaults' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/roles',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'roles' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' ) && current_user_can( 'edit_users' );
+				},
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/users',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'users' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+				'args'                => array(
+					'capability' => array(
+						'type'     => 'string',
+						'enum'     => array(
+							'make_video_thumbnails',
+							'encode_videos',
+							'edit_others_video_encodes',
+						),
+					),
+				),
+			)
 		);
 
 		register_rest_route(
@@ -45,7 +89,17 @@ class Videopack_REST extends \WP_REST_Controller {
 						'type' => 'number',
 					),
 				),
-			),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/formats',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'formats' ),
+				'permission_callback' => '__return_true',
+			)
 		);
 
 		register_rest_route(
@@ -146,7 +200,7 @@ class Videopack_REST extends \WP_REST_Controller {
 						'type' => 'number',
 					),
 				),
-			),
+			)
 		);
 		register_rest_route(
 			$this->namespace,
@@ -165,7 +219,7 @@ class Videopack_REST extends \WP_REST_Controller {
 						'type' => 'number',
 					),
 				),
-			),
+			)
 		);
 		register_rest_route(
 			$this->namespace,
@@ -254,9 +308,44 @@ class Videopack_REST extends \WP_REST_Controller {
 		return $this->options;
 	}
 
+	public function defaults() {
+		$defaults = kgvid_default_options_fn();
+		return $defaults;
+	}
+
+	public function roles() {
+		if ( ! function_exists( 'get_editable_roles' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/user.php';
+		}
+		$roles = get_editable_roles();
+		return $roles;
+	}
+
+	public function users( \WP_REST_Request $request ) {
+		$capability       = $request->get_param( 'capability' );
+		$authorized_users = array();
+		if ( is_array( $this->options['capabilities'] )
+			&& array_key_exists( $capability, $this->options['capabilities'] )
+		) {
+			$users = get_users(
+				array(
+					'role__in' => array_keys( $this->options['capabilities'][ $capability ] ),
+				)
+			);
+			if ( $users ) {
+				foreach ( $users as $user ) {
+					$authorized_users[ $user->user_login ] = $user->ID;
+				}
+			}
+		}
+		return $authorized_users;
+	}
+
 	public function formats( \WP_REST_Request $request ) {
 		$params = $request->get_params();
-		if ( array_key_exists( 'id', $params ) ) {
+		if ( array_key_exists( 'id', $params )
+			&& get_post_type( $params['id'] ) === 'attachment'
+		) {
 			$encoder       = new encode\Encode_Attachment( $params['id'] );
 			$video_formats = $encoder->get_available_formats();
 			foreach ( $video_formats as $format => $format_info ) {
@@ -264,7 +353,11 @@ class Videopack_REST extends \WP_REST_Controller {
 				$video_formats[ $format ] = array_merge( $format_info, $encode_info );
 			}
 		} else {
-			$video_formats = kgvid_video_formats();
+			$unsorted_video_formats = kgvid_video_formats();
+			foreach ( $unsorted_video_formats as $format => $format_info ) {
+				$format_info['format'] = $format;
+				$video_formats[]       = $format_info;
+			}
 		}
 		$video_formats = $this->clean_array( $video_formats );
 		return $video_formats;
