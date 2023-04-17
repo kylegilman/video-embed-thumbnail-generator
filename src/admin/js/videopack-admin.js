@@ -103,7 +103,7 @@ function kgvid_admin_page_ready() {
 			setTimeout( function(){ kgvid_update_encode_queue() }, 5000 );
 		}
 
-		if ( kgvidL10n.ffmpeg_exists == 'on' ) {
+		if ( kgvidL10n.ffmpeg_exists == true ) {
 			jQuery( document ).on(
 				'heartbeat-send',
 				function ( event, data ) {
@@ -624,7 +624,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	kgvid_remove_mejs_player( postID );
 
-	if ( jQuery( '#' + video_id ).data( 'allowed' ) == "on" ) {
+	if ( jQuery( '#' + video_id ).data( 'allowed' ) == true ) {
 
 		video = document.getElementById( video_id );
 
@@ -655,7 +655,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 				if ( jQuery( video ).data( 'success' ) == false ) {
 
-					if ( jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' ) {
+					if ( jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == true ) {
 
 						kgvid_ffmpeg_thumbs(); // call the FFmpeg loop if the browser can't do it
 
@@ -736,7 +736,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-aspect]' )[0].value = kgvid_aspect;
 
 				if (parseInt( data.movie_width ) < parseInt( document.getElementsByName( maxwidthID )[0].value )
-					&& jQuery( '#attachments-' + postID + '-kgflashmediaplayer-width' ).data( 'minimum' ) != 'on'
+					&& jQuery( '#attachments-' + postID + '-kgflashmediaplayer-width' ).data( 'minimum' ) != true
 				) {
 					document.getElementById( widthID ).value = data.movie_width;
 				} else {
@@ -847,8 +847,8 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	if (
 		(
-			jQuery( '#thumb-video-' + postID ).data( 'allowed' ) != 'on'
-			&& jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' // call the FFmpeg loop if the browser can't do it
+			jQuery( '#thumb-video-' + postID ).data( 'allowed' ) != true
+			&& jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == true // call the FFmpeg loop if the browser can't do it
 		)
 		|| jQuery( '#kgflashmediaplayer-table' ).length > 0 // or if it's the external URL dialog
 	) {
@@ -1175,7 +1175,7 @@ function kgvid_change_singleurl(basename, oldbasename) {
 	document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-lockaspect' ).setAttribute( "onclick", "kgvid_set_aspect('" + basename + "', this.checked);" );
 	document.getElementById( 'singleurl-lockaspect-label' ).setAttribute( "for", "attachments-" + basename + "-kgflashmediaplayer-lockaspect" );
 
-	if ( document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-ffmpegexists' ).value == "on" ) {
+	if ( document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-ffmpegexists' ).value == true ) {
 		document.getElementById( 'attachments-' + basename + '-thumbgenerate' ).disabled          = false;
 		document.getElementById( 'attachments-' + basename + '-thumbgenerate' ).title             = "";
 		document.getElementById( 'attachments-' + basename + '-thumbrandomize' ).disabled         = false;
@@ -1240,7 +1240,7 @@ function kgvid_insert_shortcode() {
 	var posterurl                  = document.getElementById( 'attachments-' + basename + '-kgflashmediaplayer-poster' ).value;
 	var postid                     = parent.document.getElementById( 'post_ID' ).value;
 	if ( jQuery( '#attachments-' + basename + '-featured' ).is( ':checked' ) ) {
-		var set_featured = "on";
+		var set_featured = true;
 	} else {
 		var set_featured = false;
 	}
@@ -1951,7 +1951,7 @@ function kgvid_save_plugin_settings(input_obj) {
 
 	if ( input_obj.type == "checkbox" ) {
 		if ( input_obj.checked ) {
-			setting_value = "on";
+			setting_value = true;
 		} else {
 			setting_value = false;
 		}
@@ -2017,7 +2017,7 @@ function kgvid_save_plugin_settings(input_obj) {
 						jQuery( '#auto_thumb_label :input' ).on( 'change', function() { kgvid_save_plugin_settings( this ); } );
 					}
 
-					if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( input_obj ).hasClass( 'affects_ffmpeg' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
+					if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == true && jQuery( input_obj ).hasClass( 'affects_ffmpeg' ) == true && jQuery( '#ffmpeg_output' ).length != 0 ) {
 
 						if ( jQuery( '.kgvid_custom_format' ).filter( function() { return jQuery( this ).val(); } ).length == 0 ) { // if there's no custom format anymore
 							if ( jQuery( '#sample_format' ).val() == 'custom' ) {
@@ -2049,7 +2049,7 @@ function kgvid_save_plugin_settings(input_obj) {
 					}
 
 					if ( jQuery( '#ffmpeg_thumb_watermark_url' ).val() != ''
-						&& jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on"
+						&& jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == true
 						&& jQuery( input_obj ).hasClass( 'affects_ffmpeg_thumb_watermark' ) == true
 						&& jQuery( '#ffmpeg_output' ).length != 0
 					) {
@@ -2142,7 +2142,7 @@ function kgvid_switch_settings_tab(tab) {
 		jQuery( '#table_kgvid_video_embed_encode_settings' ).show();
 		jQuery( '#table_kgvid_video_embed_encode_test_settings' ).show();
 
-		if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == "on" && jQuery( '#ffmpeg_output' ).html() == "" ) {
+		if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == true && jQuery( '#ffmpeg_output' ).html() == "" ) {
 			jQuery( '#ffmpeg_output' ).html( 'Running test...' );
 			var kgflashmediaplayersecurity = document.getElementById( "kgvid_settings_security" ).value;
 			jQuery.post(
@@ -2255,7 +2255,7 @@ function kgvid_hide_plugin_settings() {
 		jQuery( "#ffmpeg_sample_div" ).slideUp( 1000 );
 
 	}
-	if ( ffmpeg_exists == "on" ) {
+	if ( ffmpeg_exists == true ) {
 		jQuery( ".kgvid_video_app_required" ).removeClass( "kgvid_thumbnail_overlay" );
 		jQuery( ".kgvid_video_app_required :input" ).prop( 'disabled', false );
 		jQuery( ".kgvid_video_app_required" ).removeAttr( 'title' );

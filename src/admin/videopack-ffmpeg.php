@@ -160,10 +160,10 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 	if ( $save ) {
 
 		if ( $ffmpeg_exists === true ) {
-			$options['ffmpeg_exists'] = 'on';
+			$options['ffmpeg_exists'] = true;
 		} else {
 			$options['ffmpeg_exists']      = 'notinstalled';
-			$options['browser_thumbnails'] = 'on'; // if FFmpeg isn't around, this should be enabled
+			$options['browser_thumbnails'] = true; // if FFmpeg isn't around, this should be enabled
 		}
 
 		update_option( 'kgvid_video_embed_options', $options );
@@ -216,7 +216,7 @@ function kgvid_set_video_dimensions( $id, $gallery = false ) {
 			$kgvid_postmeta['width'] = $options['gallery_width'];
 		}
 	} elseif ( intval( $kgvid_postmeta['width'] ) > intval( $options['width'] )
-		|| $options['minimum_width'] === 'on'
+		|| $options['minimum_width'] === true
 	) {
 			$kgvid_postmeta['width'] = $options['width'];
 	}
@@ -628,7 +628,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	$options = kgvid_get_options();
 
 	if ( $rotate === false
-	|| $options['ffmpeg_vpre'] === 'on' ) {
+	|| $options['ffmpeg_vpre'] === true ) {
 		$rotate = '';
 	}
 
@@ -645,7 +645,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'transpose=1[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on' || $options['ffmpeg_old_rotation'] == 'on' ) {
+			if ( $options['video_bitrate_flag'] == true || $options['ffmpeg_old_rotation'] == true ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
@@ -672,7 +672,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'transpose=2[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on' || $options['ffmpeg_old_rotation'] == 'on' ) {
+			if ( $options['video_bitrate_flag'] == true || $options['ffmpeg_old_rotation'] == true ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
@@ -698,7 +698,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'hflip,vflip[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on' || $options['ffmpeg_old_rotation'] == 'on' ) {
+			if ( $options['video_bitrate_flag'] == true || $options['ffmpeg_old_rotation'] == true ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
@@ -714,7 +714,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 			break;
 	}
 
-	if ( $options['ffmpeg_auto_rotate'] === 'on' ) {
+	if ( $options['ffmpeg_auto_rotate'] === true ) {
 		$rotate         = '';
 		$rotate_complex = '';
 	}
@@ -828,9 +828,9 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 	$encode_array  = array( strtoupper( $options['video_app'] ) . ' not found' );
 	$video_formats = kgvid_video_formats();
 
-	if ( $options['ffmpeg_exists'] === 'on' && isset( $video_formats[ $format ] ) ) {
+	if ( $options['ffmpeg_exists'] === true && isset( $video_formats[ $format ] ) ) {
 
-		if ( $options['video_app'] == 'avconv' || $options['video_bitrate_flag'] != 'on' ) {
+		if ( $options['video_app'] == 'avconv' || $options['video_bitrate_flag'] != true ) {
 			$video_bitrate_flag = 'b:v';
 			$audio_bitrate_flag = 'b:a';
 			$profile_flag       = 'profile:v';
@@ -874,7 +874,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$rate_control_flag = ' -' . $video_bitrate_flag . ' ' . round( floatval( $options['bitrate_multiplier'] ) * $width * $height * 30 / 1024 ) . 'k';
 		}
 
-		if ( $options['audio_channels'] === 'on' ) {
+		if ( $options['audio_channels'] === true ) {
 			$audio_channels_flag = array(
 				'-ac',
 				'2',
@@ -895,7 +895,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			}
 
 			$vpre_flags = array();
-			if ( $options['ffmpeg_vpre'] == 'on' ) {
+			if ( $options['ffmpeg_vpre'] == true ) {
 
 				$vpre_flags = '-coder 0 -flags +loop -cmp +chroma -partitions +parti8x8+parti4x4+partp8x8+partb8x8 -me_method hex -subq 6 -me_range 16 -g 250 -keyint_min 25 -sc_threshold 40 -i_qfactor 0.71 -b_strategy 1 -qcomp 0.6 -qmin 10 -qmax 51 -qdiff 4 -bf 0 -refs 1 -trellis 1 -flags2 +bpyramid+mixed_refs-wpred-dct8x8+fastpskip -wpredp 0 -rc_lookahead 30 -maxrate 10000000 -bufsize 10000000';
 
@@ -977,7 +977,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 
 		$nice = '';
 		$sys  = strtoupper( PHP_OS ); // Get OS Name
-		if ( substr( $sys, 0, 3 ) != 'WIN' && $options['nice'] == 'on' ) {
+		if ( substr( $sys, 0, 3 ) != 'WIN' && $options['nice'] == true ) {
 			$nice = 'nice';
 		}
 
@@ -988,7 +988,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		}
 
 		$nostdin = '';
-		if ( $options['nostdin'] === 'on'
+		if ( $options['nostdin'] === true
 			&& $options['video_app'] === 'ffmpeg'
 		) {
 			$nostdin = '-nostdin';
@@ -1008,7 +1008,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$encode_array_before_options[] = $watermark_strings['input'];
 		}
 
-		if ( $options['audio_channels'] == 'on' ) {
+		if ( $options['audio_channels'] == true ) {
 			$encode_array_before_options[] = '-ac';
 			$encode_array_before_options[] = '2';
 		}
@@ -1095,13 +1095,13 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		if ( is_array( $options['encode'] )
 		&& array_key_exists( $format, $options['encode'] )
 		) {
-			$encodeset = 'on';
+			$encodeset = true;
 		} else {
 			$encodeset = false;
 		}
 	}
 
-	if ( $encodeset === 'on'
+	if ( $encodeset === true
 		|| $status === 'queued'
 	) {
 		$checked = 'checked';
@@ -1508,7 +1508,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		} else {
 			$checkboxes .= ' data-checkboxes="update"';
 		}
-	} elseif ( $options['auto_encode'] === 'on'
+	} elseif ( $options['auto_encode'] === true
 		&& time() - get_post_time( 'U', true, $post_id ) < 60
 	) {
 		$checkboxes .= ' data-checkboxes="redraw"';
@@ -1781,7 +1781,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 function kgvid_add_ffmpeg_queue_page() {
 	$options = kgvid_get_options();
-	if ( $options['ffmpeg_exists'] === 'on' ) { // only add the queue page if FFmpeg is installed
+	if ( $options['ffmpeg_exists'] === true ) { // only add the queue page if FFmpeg is installed
 		add_submenu_page( 'tools.php', esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), 'encode_videos', 'kgvid_video_encoding_queue', 'kgvid_ffmpeg_queue_page' );
 	}
 }
@@ -1846,7 +1846,7 @@ function kgvid_validate_ffmpeg_settings( $input ) {
 
 	$ffmpeg_info = kgvid_check_ffmpeg_exists( $input, false );
 	if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
-		$input['ffmpeg_exists'] = 'on';
+		$input['ffmpeg_exists'] = true;
 	}
 	$input['app_path'] = $ffmpeg_info['app_path'];
 
@@ -1872,7 +1872,7 @@ function kgvid_add_attachment_handler( $post_id ) {
 
 	$options = kgvid_get_options();
 
-	if ( $options['auto_encode'] == 'on' || $options['auto_thumb'] == 'on' ) {
+	if ( $options['auto_encode'] == true || $options['auto_thumb'] == true ) {
 
 		kgvid_schedule_attachment_processing( $post_id );
 
@@ -1930,7 +1930,7 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 	if ( $post
 		&& $post->post_mime_type != 'image/gif'
 		&& ( $force == 'thumbs'
-			|| $options['auto_thumb'] == 'on'
+			|| $options['auto_thumb'] == true
 		)
 	) {
 
@@ -2014,7 +2014,7 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 			update_post_meta( $post_id, '_kgflashmediaplayer-poster', $thumb_output[ $thumb_key ]['thumb_url'] );
 			update_post_meta( $post_id, '_kgflashmediaplayer-poster-id', $thumb_id[ $thumb_key ] );
 			set_post_thumbnail( $post_id, $thumb_id[ $thumb_key ] );
-			if ( $options['featured'] == 'on' && ! empty( $thumb_id[ $thumb_key ] ) ) {
+			if ( $options['featured'] == true && ! empty( $thumb_id[ $thumb_key ] ) ) {
 				if ( ! empty( $post->post_parent ) ) {
 					set_post_thumbnail( $post->post_parent, $thumb_id[ $thumb_key ] );
 				} else { // video has no parent post yet
@@ -2026,10 +2026,10 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 
 	if ( $post
 		&& ( $force == 'encode'
-			|| $options['auto_encode'] == 'on'
+			|| $options['auto_encode'] == true
 		)
 		&& ( ! $is_animated
-			|| $options['auto_encode_gif'] == 'on'
+			|| $options['auto_encode_gif'] == true
 		)
 	) {
 
@@ -2052,7 +2052,7 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 
 		foreach ( $video_formats as $format => $format_stats ) {
 
-			if ( is_array( $options['encode'] ) && array_key_exists( $format, $options['encode'] ) && $options['encode'][ $format ] == 'on' ) {
+			if ( is_array( $options['encode'] ) && array_key_exists( $format, $options['encode'] ) && $options['encode'][ $format ] == true ) {
 				$encode_checked[ $format ] = 'true';
 				$something_to_encode       = true;
 			} else {
@@ -2165,7 +2165,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 
 		if ( $movie_info['rotate'] === false
-			|| $options['ffmpeg_vpre'] == 'on'
+			|| $options['ffmpeg_vpre'] == true
 		) {
 			$movie_info['rotate'] = '';
 		}
@@ -2339,7 +2339,7 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 						$encode_formats[ $format ]['name']   = $format_stats['name'];
 						$encode_list[ $format ]              = $format_stats['name'];
 						if ( isset( $kgvid_postmeta ) ) {
-							$kgvid_postmeta['encode'][ $format ] = 'on';
+							$kgvid_postmeta['encode'][ $format ] = true;
 						}
 					}
 					// end if video doesn't already exist
@@ -2532,7 +2532,7 @@ function kgivd_save_singleurl_poster( $parent_id, $poster, $movieurl, $set_featu
 		$thumb_info = kgvid_save_thumb( $parent_id, $sanitized_url['basename'], $poster );
 	}
 	if ( ! empty( $thumb_info['thumb_id'] )
-		&& $set_featured === 'on'
+		&& $set_featured === true
 	) {
 		set_post_thumbnail( $parent_id, $thumb_info['thumb_id'] );
 	}
@@ -3134,7 +3134,7 @@ function kgvid_encode_progress() {
 
 									$options = kgvid_get_options();
 
-									if ( $options['auto_publish_post'] == 'on' ) {
+									if ( $options['auto_publish_post'] == true ) {
 
 										$post_parent_queue = $video_encode_queue;
 										$publish_post      = true;
@@ -3407,7 +3407,7 @@ function kgvid_replace_video( $video_key, $format ) {
 		$kgvid_postmeta['original_replaced'] = $options['replace_format'];
 		kgvid_save_attachment_meta( $video_id, $kgvid_postmeta );
 
-		if ( $options['auto_thumb'] === 'on'
+		if ( $options['auto_thumb'] === true
 			&& isset( $was_gif )
 		) {
 			kgvid_cron_new_attachment_handler( $video_id, 'thumbs' );

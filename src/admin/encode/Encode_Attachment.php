@@ -404,7 +404,7 @@ class Encode_Attachment {
 	protected function get_ffmpeg_flags_before( array $watermark_flags ) {
 		$nice = '';
 		$sys  = strtoupper( PHP_OS ); // Get OS Name
-		if ( substr( $sys, 0, 3 ) != 'WIN' && $this->options['nice'] == 'on' ) {
+		if ( substr( $sys, 0, 3 ) != 'WIN' && $this->options['nice'] == true ) {
 			$nice = 'nice';
 		}
 
@@ -430,7 +430,7 @@ class Encode_Attachment {
 			);
 		}
 
-		if ( $this->options['audio_channels'] == 'on' ) {
+		if ( $this->options['audio_channels'] == true ) {
 			array_push(
 				$ffmpeg_flags_before,
 				'-ac',
