@@ -1119,6 +1119,16 @@ function maybe_enqueue_kgvid_script( $hook_suffix ) {
 	}
 	if ( $hook_suffix === 'settings_page_video_embed_thumbnail_generator_settings' ) {
 		kgvid_video_embed_enqueue_styles();
+		$js_skins = array(
+			'kg-video-js-skin',
+			'vjs-theme-city',
+			'vjs-theme-fantasy',
+			'vjs-theme-forest',
+			'vjs-theme-sea',
+		);
+		foreach ( $js_skins as $skin ) {
+			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $skin . '.css' );
+		}
 	}
 }
 add_action( 'admin_enqueue_scripts', 'maybe_enqueue_kgvid_script' ); // only enqueue scripts on settings page or encode queue
