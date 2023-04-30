@@ -238,14 +238,6 @@ function kgvid_video_embed_enqueue_styles() {
 
 		$kgvid_video_embed_script_dependencies[] = 'video-js';
 
-		if ( $options['embed_method'] == 'Video.js' ) {
-
-			$videojs_register = array(
-				'version' => '5.20.5',
-				'path'    => 'v5',
-			);
-
-		}
 		if ( $options['embed_method'] == 'Video.js v7' ) {
 
 			$videojs_register = array(
@@ -267,8 +259,10 @@ function kgvid_video_embed_enqueue_styles() {
 		wp_register_script( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video.min.js', '', $videojs_register['version'], true );
 		wp_register_script( 'video-quality-selector', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-quality-selector.js', array( 'video-js' ), $options['version'], true );
 		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-js.min.css', '', $videojs_register['version'] );
-		if ( $options['js_skin'] == 'kg-video-js-skin' ) {
-			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/kg-video-js-skin.css', '', $options['version'] );
+		if ( $options['js_skin'] !== 'default'
+			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $options['js_skin'] . '.css' )
+		) {
+			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $options['js_skin'] . '.css', '', $options['version'] );
 		}
 
 		$locale = kgvid_get_videojs_locale();
@@ -829,8 +823,14 @@ function kgvid_prepare_sources( $content, $id, $block_id = false ) {
 	$mp4already                = false;
 	$video_formats             = kgvid_video_formats( false, true, false );
 	$encodevideo_info          = kgvid_encodevideo_info( $content, $id );
-	$dimensions                = kgvid_set_video_dimensions( $id );
-	$compatible                = array(
+
+	if ( is_numeric( $id ) ) {
+		$dimensions = kgvid_set_video_dimensions( $id );
+	} else {
+		$dimensions = false;
+	}
+
+	$compatible     = array(
 		'mp4',
 		'mov',
 		'm4v',
@@ -841,7 +841,7 @@ function kgvid_prepare_sources( $content, $id, $block_id = false ) {
 		'mpd',
 		'm3u8',
 	);
-	$h264compatible            = array(
+	$h264compatible = array(
 		'mp4',
 		'mov',
 		'm4v',
@@ -878,7 +878,10 @@ function kgvid_prepare_sources( $content, $id, $block_id = false ) {
 		$encodevideo_info['original']['exists'] = true;
 		$encodevideo_info['original']['url']    = $content;
 
-		if ( is_array( $dimensions ) && array_key_exists( 'actualheight', $dimensions ) && ! empty( $dimensions['actualheight'] ) ) {
+		if ( is_array( $dimensions )
+			&& array_key_exists( 'actualheight', $dimensions )
+			&& ! empty( $dimensions['actualheight'] )
+		) {
 			$video_formats['original']['label']     = $dimensions['actualheight'] . 'p';
 			$video_formats['original']['height']    = $dimensions['actualheight'];
 			$encodevideo_info['original']['height'] = $dimensions['actualheight'];
