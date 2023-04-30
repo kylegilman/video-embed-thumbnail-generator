@@ -18,6 +18,7 @@ function kgvid_default_options_fn() {
 		'version'                 => '4.8.8',
 		'videojs_version'         => '8.0.4',
 		'embed_method'            => 'Video.js v8',
+		'plugin_url'              => plugin_dir_url( __FILE__ ),
 		'template'                => false,
 		'template_gentle'         => true,
 		'replace_format'          => 'fullres',
@@ -1324,7 +1325,7 @@ function kgvid_settings_schema( array $options ) {
 	$schema = array();
 	foreach ( $options as $option => $value ) {
 		$att_type = 'string';
-		if ( $value === true ) {
+		if ( $value === 'on' ) {
 			$value = true;
 		}
 		if ( $value === 'true' || $value === 'false' ) {
@@ -1372,7 +1373,7 @@ function kgvid_register_setting() {
 	);
 
 	register_setting(
-		'kgvid_video_embed',
+		'kgvid_video_embed_options',
 		'kgvid_video_embed_options',
 		array(
 			'type'              => 'object',

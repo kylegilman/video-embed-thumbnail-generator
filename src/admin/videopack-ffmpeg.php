@@ -184,7 +184,6 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 function kgvid_set_video_dimensions( $id, $gallery = false ) {
 
 	$options        = kgvid_get_options();
-	$moviefile      = get_attached_file( $id );
 	$video_meta     = wp_get_attachment_metadata( $id );
 	$kgvid_postmeta = kgvid_get_attachment_meta( $id );
 
