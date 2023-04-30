@@ -193,11 +193,14 @@ class Videopack_REST extends \WP_REST_Controller {
 				'callback'            => array( $this, 'video_sources' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'url'    => array(
+					'url' => array(
 						'type' => 'string',
 					),
-					'postId' => array(
-						'type' => 'number',
+					'id'  => array(
+						'type' => array(
+							'number',
+							'string',
+						),
 					),
 				),
 			)
@@ -407,7 +410,7 @@ class Videopack_REST extends \WP_REST_Controller {
 		if ( ! $url ) {
 			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
-		$post_id     = $request->get_param( 'postId' );
+		$post_id     = $request->get_param( 'id' );
 		$source_info = kgvid_prepare_sources( $url, $post_id );
 
 		return $source_info;
