@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.2
 Requires PHP: 7.2.5
-Stable tag: 4.8.9
+Stable tag: 4.8.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.8.10 - May 7, 2023 =
+* Fixed thumbnail generation bugs introduced in WordPress 6.2.
 
 = 4.8.9 - March 30, 2023 =
 * Bumped version number because of files missing from the v4.8.8 distribution file.

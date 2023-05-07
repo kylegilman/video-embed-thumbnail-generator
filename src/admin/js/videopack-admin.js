@@ -41,13 +41,15 @@ function kgvid_admin_page_ready() {
 						wp.media.frame.on(
 							'attachment:compat:ready',
 							function() {
-								var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
-								var thumb_id   = jQuery( '#thumbnail-' + attributes.id ).data( 'thumb_id' );
-								if ( jQuery( '#thumbnail-' + attributes.id ).data( 'featuredchanged' ) == true
-								&& jQuery( '#attachments-' + attributes.id + '-featured' ).attr( 'checked' )
-								&& thumb_id
-								) {
-									wp.media.featuredImage.set( thumb_id );
+								if ( typeof wp.media.frame.state().get( 'selection' ).first() != 'undefined' ) {
+									var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
+									var thumb_id   = jQuery( '#thumbnail-' + attributes.id ).data( 'thumb_id' );
+									if ( jQuery( '#thumbnail-' + attributes.id ).data( 'featuredchanged' ) == true
+									&& jQuery( '#attachments-' + attributes.id + '-featured' ).attr( 'checked' )
+									&& thumb_id
+									) {
+										wp.media.featuredImage.set( thumb_id );
+									}
 								}
 							}
 						);
@@ -129,24 +131,6 @@ function kgvid_attachment_selected( attributes ) {
 	}
 	if ( jQuery( '.kgvid_checkboxes_section' ).first().data( 'checkboxes' ) == 'update' ) {
 		var percent_timeout = setTimeout( function(){ kgvid_update_encode_queue() }, 2000 );
-	}
-}
-
-function kgvid_disable_thumb_buttons(postID, event) {
-
-	if ( jQuery( '.compat-item' ).length > 0 ) { // only do this in the new media modal, not attachment page in media library
-		if (event == "onblur") {
-			document.getElementById( 'attachments-' + postID + '-thumbgenerate' ).disabled  = false;
-			document.getElementById( 'attachments-' + postID + '-thumbrandomize' ).disabled = false;
-		} else {
-			document.getElementById( 'attachments-' + postID + '-thumbgenerate' ).disabled  = true;
-			document.getElementById( 'attachments-' + postID + '-thumbrandomize' ).disabled = true;
-		}
-
-		if (event == "onchange") {
-			document.getElementById( 'attachments-' + postID + '-thumbgenerate' ).value  = kgvidL10n.wait;
-			document.getElementById( 'attachments-' + postID + '-thumbrandomize' ).value = kgvidL10n.wait;
-		}
 	}
 }
 
@@ -881,12 +865,18 @@ function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 
 function kgvid_change_media_library_video_poster(post_id, thumb_url) {
 
-	if ( jQuery( 'div[data-id=' + post_id + '] .wp-video-shortcode.mejs-container' ).length > 0 && typeof mejs !== 'undefined' ) {
-		var mejs_id     = jQuery( 'div[data-id=' + post_id + '] .wp-video-shortcode.mejs-container' ).attr( 'id' );
-		var mejs_player = eval( 'mejs.players.' + mejs_id );
+	if ( ( jQuery( 'div[data-id=' + post_id + '] .wp-video-shortcode.mejs-container' ).length > 0
+		|| jQuery('.thumbnail.thumbnail-video .wp-video-shortcode.mejs-container').length > 0 )
+		&& typeof mejs !== 'undefined'
+	) {
+		if ( jQuery( 'div[data-id=' + post_id + '] .wp-video-shortcode.mejs-container' ).length > 0 ) {
+			var mejs_id = jQuery( 'div[data-id=' + post_id + '] .wp-video-shortcode.mejs-container' ).attr( 'id' );
+		} else if ( jQuery('.thumbnail.thumbnail-video .wp-video-shortcode.mejs-container').length > 0 ) {
+			var mejs_id = jQuery('.thumbnail.thumbnail-video .wp-video-shortcode.mejs-container').attr( 'id' );
+		}
+		var mejs_player = mejs.players[mejs_id];
 		mejs_player.setPoster( thumb_url );
 	}
-
 }
 
 function kgvid_save_canvas_thumb(postID, time_id, total, index) {
@@ -927,7 +917,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 
 					var time_display = kgvid_convert_to_timecode( canvas.dataset.movieoffset );
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).val( time_display );
-
+					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + png64dataURL + '"></div>' );
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( data ).trigger( 'change' );
 					if ( typeof pagenow === 'undefined'
 						|| pagenow == 'attachment'

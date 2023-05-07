@@ -15,7 +15,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.8.9',
+		'version'                 => '4.8.10',
 		'videojs_version'         => '8.0.4',
 		'embed_method'            => 'Video.js v8',
 		'template'                => false,
@@ -3156,7 +3156,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box">Thumbnail selection requires GD or Imagick PHP libraries.</div>';
 				}
 				$generate_content = '<div id="generate-thumb-' . esc_attr( $post->ID ) . '-container" class="kgvid-tabs-content" data-ffmpeg="' . esc_attr( $options['ffmpeg_exists'] ) . '">
-				<input id="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-numberofthumbs" name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-numberofthumbs]" type="text" value="' . esc_attr( $kgvid_postmeta['numberofthumbs'] ) . '" maxlength="2" style="width:35px;text-align:center;" onchange="kgvid_disable_thumb_buttons(\'' . esc_attr( $post->ID ) . '\', \'onchange\');document.getElementById(\'attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-thumbtime\').value =\'\';" ' . esc_attr( $ffmpeg_disabled_text . $readonly ) . '/>
+				<input id="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-numberofthumbs" name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-numberofthumbs]" type="text" value="' . esc_attr( $kgvid_postmeta['numberofthumbs'] ) . '" maxlength="2" style="width:35px;text-align:center;" onchange="document.getElementById(\'attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-thumbtime\').value =\'\';" ' . esc_attr( $ffmpeg_disabled_text . $readonly ) . '/>
 				<input type="button" id="attachments-' . esc_attr( $post->ID ) . '-thumbgenerate" class="button" value="' . esc_attr_x( 'Generate', 'Button text. Implied "Generate thumbnails"', 'video-embed-thumbnail-generator' ) . '" name="thumbgenerate" onclick="kgvid_generate_thumb(' . esc_attr( $post->ID ) . ', \'generate\');" ' . esc_attr( $ffmpeg_disabled_text ) . '/>
 				<input type="button" id="attachments-' . esc_attr( $post->ID ) . '-thumbrandomize" class="button" value="' . esc_attr_x( 'Randomize', 'Button text. Implied "Randomize thumbnail generation"', 'video-embed-thumbnail-generator' ) . '" name="thumbrandomize" onclick="kgvid_generate_thumb(' . esc_attr( $post->ID ) . ', \'random\');" ' . esc_attr( $ffmpeg_disabled_text ) . '/>
 				<span style="white-space:nowrap;"><input type="checkbox" id="attachments-' . esc_attr( $post->ID ) . '-firstframe" name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-forcefirst]" onchange="document.getElementById(\'attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-thumbtime\').value =\'\';" ' . checked( $kgvid_postmeta['forcefirst'], 'on', false ) . ' ' . esc_attr( $ffmpeg_disabled_text . $readonly ) . '/> <label for="attachments-' . esc_attr( $post->ID ) . '-firstframe">' . esc_html__( 'Force 1st frame thumbnail', 'video-embed-thumbnail-generator' ) . '</label></span></div>';
