@@ -309,7 +309,11 @@ function kgvid_video_embed_enqueue_styles() {
 
 	// plugin-related frontend styles, requires video-js
 	if ( $options['embed_method'] != 'None' ) {
-		wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), $options['version'] );
+		if ( $options['embed_method'] === 'Video.js v7' ) {
+			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles-v7.css', __FILE__ ), array( 'video-js' ), $options['version'] );
+		} else {
+			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), $options['version'] );
+		}
 	}
 
 	if ( $options['alwaysloadscripts'] == 'on' ) {

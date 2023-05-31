@@ -105,8 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.8.10 - May 7, 2023 =
-* Fixed thumbnail generation bugs introduced in WordPress 6.2.
+= 4.8.10 - May 31, 2023 =
+* Fixed thumbnail generation bugs introduced by WordPress 6.2.
+* Updated Video.js to v8.3.0
 
 = 4.8.9 - March 30, 2023 =
 * Bumped version number because of files missing from the v4.8.8 distribution file.

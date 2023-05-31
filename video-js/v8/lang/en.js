@@ -86,5 +86,12 @@ videojs.addLanguage('en', {
   "{1} is loading.": "{1} is loading.",
   "Exit Picture-in-Picture": "Exit Picture-in-Picture",
   "Picture-in-Picture": "Picture-in-Picture",
-  "No content": "No content"
+  "No content": "No content",
+  "Color": "Color",
+  "Opacity": "Opacity",
+  "Text Background": "Text Background",
+  "Caption Area Background": "Caption Area Background",
+  "Playing in Picture-in-Picture": "Playing in Picture-in-Picture",
+  "Skip backward {1} seconds": "Skip backward {1} seconds",
+  "Skip forward {1} seconds": "Skip forward {1} seconds"
 });

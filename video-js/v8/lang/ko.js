@@ -18,7 +18,7 @@ videojs.addLanguage('ko', {
   "Fullscreen": "전체 화면",
   "Exit Fullscreen": "전체 화면 해제",
   "Mute": "음소거",
-  "Unmute": "음소거 해제",
+  "Unmute": "소리 활성화하기",
   "Playback Rate": "재생 속도",
   "Subtitles": "서브타이틀",
   "subtitles off": "서브타이틀 끄기",
@@ -86,5 +86,9 @@ videojs.addLanguage('ko', {
   "{1} is loading.": "{1}이(가) 로딩 중입니다.",
   "Exit Picture-in-Picture": "Picture-in-Picture 종료",
   "Picture-in-Picture": "Picture-in-Picture",
-  "No content": "콘텐츠 없음"
+  "No content": "콘텐츠 없음",
+  "Color": "색상",
+  "Opacity": "투명도",
+  "Text Background": "텍스트 배경",
+  "Caption Area Background": "자막 배경"
 });
