@@ -478,7 +478,7 @@ span.kgvid_gallery_pagination_arrow {
 
 .kgvid_wrapper .vjs-res-button:before {
 	font-family: VideoJs;
-	content: "\f114"; /* Gear icon */
+	content: "\f110"; /* Gear icon */
 }
 
 .kgvid_wrapper .vjs-loading-spinner {
@@ -544,7 +544,7 @@ span.kgvid_gallery_pagination_arrow {
 }
 
 .kgvid_wrapper .mejs-controls .mejs-sourcechooser-button button:before {
-	content: "\f114";
+	content: "\f110";
 }
 
 /* mep-feature-sourcechooser backwards compatible plugin styles */

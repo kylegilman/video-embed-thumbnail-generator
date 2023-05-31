@@ -79,8 +79,10 @@ function kgvid_admin_page_ready() {
 								wp.media.frame.on(
 									'refresh',
 									function() {
-										var attributes = wp.media.frame.model.attributes;
-										kgvid_attachment_selected( attributes );
+										var attributes = wp.media.frame?.model?.attributes;
+										if ( typeof attributes !== 'undefined' ) {
+											kgvid_attachment_selected( attributes );
+										}
 									}
 								);
 							}
