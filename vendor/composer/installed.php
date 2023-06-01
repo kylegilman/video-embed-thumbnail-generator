@@ -3,7 +3,7 @@
         'name' => 'kylegilman/video-embed-thumbnail-generator',
         'pretty_version' => '4.8.x-dev',
         'version' => '4.8.9999999.9999999-dev',
-        'reference' => '6e53493e174631362bbc7ae072ac44f2f71a3e4a',
+        'reference' => '764b8be4766214a30182630ebe50a5f69ebe85f3',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'freemius/wordpress-sdk' => array(
-            'pretty_version' => '2.5.6',
-            'version' => '2.5.6.0',
-            'reference' => '095fc9ced29efef5b18f9b7242bb80b0b4ac6aff',
+            'pretty_version' => '2.5.8',
+            'version' => '2.5.8.0',
+            'reference' => 'bbbcf3d976a1fd90355037b163746fdca6c93a4c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../freemius/wordpress-sdk',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'kylegilman/video-embed-thumbnail-generator' => array(
             'pretty_version' => '4.8.x-dev',
             'version' => '4.8.9999999.9999999-dev',
-            'reference' => '6e53493e174631362bbc7ae072ac44f2f71a3e4a',
+            'reference' => '764b8be4766214a30182630ebe50a5f69ebe85f3',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -38,9 +38,9 @@
             'dev_requirement' => false,
         ),
         'symfony/process' => array(
-            'pretty_version' => 'v5.4.21',
-            'version' => '5.4.21.0',
-            'reference' => 'd4ce417ebcb0b7d090b4c178ed6d3accc518e8bd',
+            'pretty_version' => 'v5.4.24',
+            'version' => '5.4.24.0',
+            'reference' => 'e3c46cc5689c8782944274bb30702106ecbe3b64',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/process',
             'aliases' => array(),
