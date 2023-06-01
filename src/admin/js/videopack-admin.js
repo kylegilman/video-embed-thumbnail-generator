@@ -1031,13 +1031,12 @@ function kgvid_thumb_video_manual(postID) {
 		video = document.getElementById( 'thumb-video-' + postID + '_html5' );
 	}
 
-	var video_aspect = video.videoHeight / video.videoWidth;
 	var time_id      = Math.round( video.currentTime );
 	var time_display = kgvid_convert_to_timecode( video.currentTime );
 
 	jQuery( '#thumb-video-' + postID + '-player .button-secondary' ).prop( 'disabled', true );
 	jQuery( '#thumb-video-' + postID + '-player' ).fadeTo( 500, .25 );
-	jQuery( '#thumb-video-' + postID + '-container' ).prepend( '<div class="kgvid_save_overlay">' + kgvidL10n.saving + '</div>' );
+	jQuery( '#thumb-video-' + postID + '-container' ).prepend( '<div id="kgvid-save-'+ postID + '-thumb-manual" class="kgvid_save_overlay">' + kgvidL10n.saving + '</div>' );
 
 	document.getElementById( 'attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).value = time_display;
 
@@ -1050,6 +1049,8 @@ function kgvid_thumb_video_manual(postID) {
 		function() { // redraw the canvas after a delay to avoid Safari bug
 			canvas = kgvid_draw_thumb_canvas( canvas, video );
 			kgvid_save_canvas_thumb( postID, time_id, 1, 0 );
+			jQuery('#kgvid-save-'+ postID + '-thumb-manual').remove();
+			kgvid_reveal_thumb_video( postID );
 		},
 		250
 	);
