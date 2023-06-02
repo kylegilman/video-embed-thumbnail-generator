@@ -17,8 +17,8 @@ videojs.addLanguage('fr', {
   "progress bar timing: currentTime={1} duration={2}": "{1} de {2}",
   "Fullscreen": "Plein écran",
   "Exit Fullscreen": "Fenêtré",
-  "Mute": "Sourdine",
-  "Unmute": "Son activé",
+  "Mute": "Mettre en sourdine",
+  "Unmute": "Activer le son",
   "Playback Rate": "Vitesse de lecture",
   "Subtitles": "Sous-titres",
   "subtitles off": "Sous-titres désactivés",
@@ -86,5 +86,9 @@ videojs.addLanguage('fr', {
   "Exit Picture-in-Picture": "Quitter le mode image dans l'image",
   "Picture-in-Picture": "Image dans l'image",
   "{1} is loading.": "{1} en cours de chargement.",
-  "No content": "Aucun contenu"
+  "No content": "Aucun contenu",
+  "Color": "Couleur",
+  "Opacity": "Opacité",
+  "Text Background": "Arrière-plan du texte",
+  "Caption Area Background": "Arrière-plan de la zone de sous-titre"
 });
