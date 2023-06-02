@@ -371,14 +371,32 @@
          * @param string $url
          * @param array  $remote_args
          *
-         * @return mixed
+         * @return array|WP_Error The response array or a WP_Error on failure.
          */
         static function remote_request( $url, $remote_args ) {
             if ( ! class_exists( 'Freemius_Api_WordPress' ) ) {
                 require_once WP_FS__DIR_SDK . '/FreemiusWordPress.php';
             }
 
-            return Freemius_Api_WordPress::RemoteRequest( $url, $remote_args );
+            if ( method_exists( 'Freemius_Api_WordPress', 'RemoteRequest' ) ) {
+                return Freemius_Api_WordPress::RemoteRequest( $url, $remote_args );
+            }
+
+            // The following is for backward compatibility when a modified PHP SDK version is in use and the `Freemius_Api_WordPress:RemoteRequest()` method doesn't exist.
+            $response = wp_remote_request( $url, $remote_args );
+
+            if (
+                is_array( $response ) &&
+                (
+                    empty( $response['headers'] ) ||
+                    empty( $response['headers']['x-api-server'] )
+                )
+            ) {
+                // API is considered blocked if the response doesn't include the `x-api-server` header. When there's no error but this header doesn't exist, the response is usually not in the expected form (e.g., cannot be JSON-decoded).
+                $response = new WP_Error( 'api_blocked', htmlentities( $response['body'] ) );
+            }
+
+            return $response;
         }
 
 		/**
@@ -462,7 +480,7 @@
 
             if ( $is_http ) {
                 Freemius_Api_WordPress::SetHttp();
-            } else {
+            } else if ( method_exists( 'Freemius_Api_WordPress', 'SetHttps' ) ) {
                 Freemius_Api_WordPress::SetHttps();
             }
         }
