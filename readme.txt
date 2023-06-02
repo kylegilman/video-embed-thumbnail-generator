@@ -105,8 +105,8 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 == Changelog ==
 
-= 4.9 - March XX, 2023 =
-* Added a Videopack Block.
+= 4.9 - June XX, 2023 =
+* Added a Videopack Block for the block editor.
 * Added overlay/watermarks on video thumbnails without FFmpeg.
 * Added REST API endpoints for thumbnail generation and video encoding.
 * Substantially rewrote the video encode queuing system.
