@@ -328,10 +328,6 @@ input[type="text"].kgvid_start_at {
 	border: none;
 }
 
-.kgvid_video_gallery_thumb .kg-video-js-skin .vjs-big-play-button {
-    scale: 50%;
-}
-
 .kgvid_video_gallery_thumb .titlebackground {
 	position:absolute;
 	bottom:10px;
@@ -482,7 +478,7 @@ span.kgvid_gallery_pagination_arrow {
 
 .kgvid_wrapper .vjs-res-button:before {
 	font-family: VideoJs;
-	content: "\f114"; /* Gear icon */
+	content: "\f110"; /* Gear icon */
 }
 
 .kgvid_wrapper .vjs-loading-spinner {
@@ -548,7 +544,7 @@ span.kgvid_gallery_pagination_arrow {
 }
 
 .kgvid_wrapper .mejs-controls .mejs-sourcechooser-button button:before {
-	content: "\f114";
+	content: "\f110";
 }
 
 /* mep-feature-sourcechooser backwards compatible plugin styles */
