@@ -15,10 +15,12 @@ class Videopack_REST extends \WP_REST_Controller {
 
 	protected $namespace;
 	protected $options;
+	protected $uploads;
 
 	public function __construct() {
 		$this->namespace = 'videopack/v1';
 		$this->options   = kgvid_get_options();
+		$this->uploads   = wp_upload_dir();
 	}
 
 	public function register_routes() {
@@ -104,7 +106,7 @@ class Videopack_REST extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/thumb',
+			'/thumbs',
 			array(
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
@@ -262,6 +264,22 @@ class Videopack_REST extends \WP_REST_Controller {
 						'parent_id' => array(
 							'type' => 'number',
 						),
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/test/(?P<format>\w+)',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'test_ffmpeg' ),
+				'permission_callback' => function() {
+					return current_user_can( 'manage_options' );
+				},
+				'args'                => array(
+					'format' => array(
+						'type' => 'string',
 					),
 				),
 			)
@@ -481,6 +499,40 @@ class Videopack_REST extends \WP_REST_Controller {
 			'formats' => $params['formats'],
 		);
 		$response   = $controller->add_to_queue( $args );
+		return $response;
+	}
+
+	public function test_ffmpeg( \WP_REST_Request $request ) {
+		$format        = $request->get_param( 'format' );
+		$url           = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
+		$attachment    = new encode\Encode_Attachment( 'sample', $url );
+		$encode_info   = $attachment->get_encode_info( $format );
+		$encode_format = new encode\Encode_Format( $format );
+		$encode_format->set_queued(
+			$encode_info['path'],
+			$encode_info['url'],
+			get_current_user_id()
+		);
+		$encode_array = $attachment->get_encode_array( $encode_format );
+		$process      = new encode\FFmpeg_Process( $encode_array );
+		try {
+			$process->run();
+			$output = $process->getErrorOutput();
+		} catch ( \Exception $e ) {
+			$output = $e->getMessage();
+		}
+
+		if ( is_file( $encode_format->get_path() ) ) {
+			wp_delete_file( $encode_format->get_path() );
+		}
+		if ( is_file( $encode_format->get_logfile() ) ) {
+			wp_delete_file( $encode_format->get_logfile() );
+		}
+
+		$response = array(
+			'command' => implode( ' ', $encode_array ),
+			'output'  => $output,
+		);
 		return $response;
 	}
 }

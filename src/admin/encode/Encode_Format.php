@@ -118,7 +118,7 @@ class Encode_Format {
 	}
 
 	// Setters
-	public function set_status( string $status ) {
+	public function set_status( ?string $status ) {
 		$allowed = array(
 			'queued',
 			'encoding',
@@ -133,7 +133,7 @@ class Encode_Format {
 		}
 	}
 
-	public function set_user_id( int $user_id ) {
+	public function set_user_id( ?int $user_id ) {
 		$this->user_id = $user_id;
 	}
 
@@ -145,28 +145,28 @@ class Encode_Format {
 		$this->url = $url;
 	}
 
-	public function set_logfile( string $logfile ) {
+	public function set_logfile( ?string $logfile ) {
 		$this->logfile = $logfile;
 	}
 
-	public function set_pid( int $pid ) {
+	public function set_pid( ?int $pid ) {
 		$this->pid = $pid;
 	}
 
-	public function set_started( int $started ) {
+	public function set_started( ?int $started ) {
 		$this->started = $started;
 	}
 
-	public function set_encode_array( array $encode_array ) {
+	public function set_encode_array( ?array $encode_array ) {
 		$this->encode_array = $encode_array;
 	}
 
-	public function set_error( string $error ) {
+	public function set_error( ?string $error ) {
 		$this->set_status( 'error' );
 		$this->error = $error;
 	}
 
-	public function set_ended( int $ended ) {
+	public function set_ended( ?int $ended ) {
 		$this->ended = $ended;
 	}
 

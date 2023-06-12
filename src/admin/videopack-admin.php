@@ -15,7 +15,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.8.10',
+		'version'                 => '4.9',
 		'videojs_version'         => '8.3.0',
 		'embed_method'            => 'Video.js v8',
 		'plugin_url'              => plugin_dir_url( __FILE__ ),
@@ -29,7 +29,7 @@ function kgvid_default_options_fn() {
 		),
 		'hide_video_formats'      => true,
 		'hide_thumbnails'         => false,
-		'app_path'                => '/usr/local/bin',
+		'app_path'                => '',
 		'video_app'               => 'ffmpeg',
 		'ffmpeg_exists'           => 'notchecked',
 		'video_bitrate_flag'      => false,
@@ -1112,6 +1112,8 @@ add_action( 'wp_enqueue_media', 'enqueue_kgvid_script' ); // always enqueue scri
 
 function maybe_enqueue_kgvid_script( $hook_suffix ) {
 
+	$options = kgvid_get_options();
+
 	if ( $hook_suffix === 'settings_page_video_embed_thumbnail_generator_settings'
 		|| $hook_suffix === 'tools_page_kgvid_video_encoding_queue'
 		|| $hook_suffix === 'settings_page_kgvid_network_video_encoding_queue'
@@ -1128,7 +1130,7 @@ function maybe_enqueue_kgvid_script( $hook_suffix ) {
 			'vjs-theme-sea',
 		);
 		foreach ( $js_skins as $skin ) {
-			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $skin . '.css' );
+			wp_enqueue_style( $skin, plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $skin . '.css', '', $options['version'] );
 		}
 	}
 }
@@ -1331,7 +1333,9 @@ function kgvid_settings_schema( array $options ) {
 		if ( $value === 'true' || $value === 'false' ) {
 			$value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
 		}
-		if ( is_bool( $value ) ) {
+		if ( is_bool( $value )
+			|| $option === 'ffmpeg_exists'
+		) {
 			$att_type = array( 'boolean', 'string' );
 		}
 		if ( is_numeric( $value ) ) {
@@ -4327,7 +4331,7 @@ add_action( 'rest_api_init', 'videopack_register_rest_routes' );
 function log_all_errors_to_debug_log($code, $message, $data, $wp_error ) {
     error_log( $code . ': ' . $message );
 }
-//add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );
+add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );
 
 
 function kgvid_delete_video_attachment( $video_id ) {

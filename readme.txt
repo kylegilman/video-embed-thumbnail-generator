@@ -115,6 +115,7 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 * Removed LIBAV/AVCONV support.
 * Removed support for versions of FFmpeg that were more than 10 years old.
 * Changed capitalization of FFMPEG to FFmpeg.
+
 = 4.8.10 - June 1, 2023 =
 * Fixed thumbnail generation bugs introduced by WordPress 6.2.
 * Updated Video.js to v8.3.0
