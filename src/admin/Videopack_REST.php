@@ -281,6 +281,35 @@ class Videopack_REST extends \WP_REST_Controller {
 					'format' => array(
 						'type' => 'string',
 					),
+		register_rest_route(
+			$this->namespace,
+			'/wp-video',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'wp_video' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'src'           => array(
+						'type' => 'string',
+					),
+					'poster'        => array(
+						'type' => 'string',
+					),
+					'loop'          => array(
+						'type' => array( 'string', 'boolean' ),
+					),
+					'autoplay'      => array(
+						'type' => array( 'string', 'boolean' ),
+					),
+					'preload'       => array(
+						'type' => 'string',
+					),
+					'width'         => array(
+						'type' => array( 'string', 'number' ),
+					),
+					'height'        => array(
+						'type' => array( 'string', 'number' ),
+					),
 				),
 			)
 		);
@@ -533,6 +562,12 @@ class Videopack_REST extends \WP_REST_Controller {
 			'command' => implode( ' ', $encode_array ),
 			'output'  => $output,
 		);
+		return $response;
+	}
+
+	public function wp_video( \WP_REST_Request $request ) {
+		$params   = $request->get_params();
+		$response = wp_video_shortcode( $params );
 		return $response;
 	}
 
