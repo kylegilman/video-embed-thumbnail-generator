@@ -535,4 +535,30 @@ class Videopack_REST extends \WP_REST_Controller {
 		);
 		return $response;
 	}
+
+	public function add_data_to_rest_response() {
+		register_rest_field(
+			'attachment',
+			'srcset',
+			array(
+				'get_callback'    => 'get_image_srcset',
+				'update_callback' => null,
+				'schema'          => null,
+			)
+		);
+		register_rest_field(
+			'attachment',
+			'meta',
+			array(
+				'get_callback' => function ( $post ) {
+					return get_post_meta( $post['id'] );
+				},
+				'schema'       => null,
+			)
+		);
+	}
+
+	public function get_image_srcset( $post, $field_name, $request ) {
+		return wp_get_attachment_image_srcset( $post['id'] );
+	}
 }

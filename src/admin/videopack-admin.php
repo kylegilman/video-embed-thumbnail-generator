@@ -4325,6 +4325,7 @@ add_action( 'init', 'kgvid_register_attachment_meta' );
 function videopack_register_rest_routes() {
 	$controller = new Videopack\admin\Videopack_REST();
 	$controller->register_routes();
+	$controller->add_data_to_rest_response();
 }
 add_action( 'rest_api_init', 'videopack_register_rest_routes' );
 
