@@ -48,7 +48,9 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 		$options = kgvid_default_options_fn();
 	}
 
-	if ( $ffmpeg_path === false ) {
+	if ( $ffmpeg_path === '' ) {
+		$ffmpeg_path = $options['video_app'];
+	} elseif ( $ffmpeg_path === false ) {
 		$ffmpeg_path = $options['app_path'] . '/' . $options['video_app'];
 	} else {
 		$ffmpeg_path = $ffmpeg_path . '/' . $options['video_app'];
