@@ -270,10 +270,10 @@ class Videopack_REST extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/test/(?P<format>\w+)',
+			'/ffmpeg-test/(?P<format>\w+)',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'test_ffmpeg' ),
+				'callback'            => array( $this, 'ffmpeg_test' ),
 				'permission_callback' => function() {
 					return current_user_can( 'manage_options' );
 				},
@@ -281,6 +281,12 @@ class Videopack_REST extends \WP_REST_Controller {
 					'format' => array(
 						'type' => 'string',
 					),
+					'rotate' => array(
+						'type' => array( 'boolean', 'string' ),
+					),
+				),
+			)
+		);
 		register_rest_route(
 			$this->namespace,
 			'/wp-video',
@@ -531,9 +537,14 @@ class Videopack_REST extends \WP_REST_Controller {
 		return $response;
 	}
 
-	public function test_ffmpeg( \WP_REST_Request $request ) {
-		$format        = $request->get_param( 'format' );
-		$url           = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
+	public function ffmpeg_test( \WP_REST_Request $request ) {
+		$format = $request->get_param( 'format' );
+		$rotate = $request->get_param( 'rotate' );
+		if ( $rotate === true ) {
+			$url = plugin_dir_path( __DIR__ ) . 'images/sample-video-rotated-h264.mp4';
+		} else {
+			$url = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
+		}
 		$attachment    = new encode\Encode_Attachment( 'sample', $url );
 		$encode_info   = $attachment->get_encode_info( $format );
 		$encode_format = new encode\Encode_Format( $format );
