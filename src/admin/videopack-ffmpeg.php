@@ -1852,7 +1852,9 @@ function kgvid_validate_ffmpeg_settings( $input ) {
 	$input['app_path'] = $ffmpeg_info['app_path'];
 
 	if ( $ffmpeg_info['proc_open_enabled'] == false ) {
-		add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', esc_html__( 'proc_open is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable proc_open.', 'video-embed-thumbnail-generator' ), 'updated' );
+		if ( is_admin() ) {
+			add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', esc_html__( 'proc_open is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable proc_open.', 'video-embed-thumbnail-generator' ), 'updated' );
+		}
 		$input['ffmpeg_exists'] = 'notinstalled';
 	} elseif ( $ffmpeg_info['ffmpeg_exists'] === false ) {
 
@@ -1860,9 +1862,10 @@ function kgvid_validate_ffmpeg_settings( $input ) {
 		if ( count( $ffmpeg_info['output'] ) > 2 ) {
 			$textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">' . esc_textarea( implode( "\n", $ffmpeg_info['output'] ) ) . '</textarea>';
 		}
-		/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is the path to the application. */
-		add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', sprintf( esc_html__( '%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $input['video_app'] ) ), esc_html( $input['app_path'] ) ) . '<br /><br />' . esc_html__( 'Error message:', 'video-embed-thumbnail-generator' ) . ' ' . esc_textarea( implode( ' ', array_slice( $ffmpeg_info['output'], -2, 2 ) ) ) . $textarea, 'updated' );
-
+		/* %s is the path to the application. */
+		if ( is_admin() ) {
+			add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', sprintf( esc_html__( 'FFmpeg is not executing correctly at %s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without FFmpeg', 'video-embed-thumbnail-generator' ), esc_html( $input['app_path'] ) ) . '<br /><br />' . esc_html__( 'Error message:', 'video-embed-thumbnail-generator' ) . ' ' . esc_textarea( implode( ' ', array_slice( $ffmpeg_info['output'], -2, 2 ) ) ) . $textarea, 'updated' );
+		}
 		$input['ffmpeg_exists'] = 'notinstalled';
 	}
 
