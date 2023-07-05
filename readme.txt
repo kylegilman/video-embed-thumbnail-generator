@@ -3,9 +3,9 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
-Tested up to: 6.2
+Tested up to: 6.3
 Requires PHP: 7.2.5
-Stable tag: 4.8.10
+Stable tag: 4.8.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,10 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.8.11 - July 5, 2023 =
+* Fixed bug that always forced vertical videos into a 16:9 aspect ratio when using the Video.js player.
+* Updated Freemius SDK to v2.5.10
 
 = 4.8.10 - June 1, 2023 =
 * Fixed thumbnail generation bugs introduced by WordPress 6.2.
