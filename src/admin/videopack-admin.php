@@ -15,7 +15,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.8.10',
+		'version'                 => '4.8.11',
 		'videojs_version'         => '8.3.0',
 		'embed_method'            => 'Video.js v8',
 		'template'                => false,
@@ -2398,9 +2398,9 @@ function kgvid_init_plugin() {
 		if ( $options['version'] < 3.1 ) {
 			$options['version'] = 3.1;
 			if ( $options['ffmpeg_vpre'] == 'on' ) {
+				//if user has ffmpeg_vpre turned on, they need the old bitrate flags too
 				$options['video_bitrate_flag'] = 'on';
-			} //if user has ffmpeg_vpre turned on, they need the old bitrate flags too
-			else {
+			} else {
 				$options['video_bitrate_flag'] = false;
 			}
 			$options['watermark'] = '';
