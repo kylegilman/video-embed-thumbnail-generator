@@ -1131,6 +1131,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			'width'             => $query_atts['width'],
 			'height'            => $query_atts['height'],
 			'fullwidth'         => $query_atts['fullwidth'],
+			'fixed_aspect'      => $options['fixed_aspect'],
 			'countable'         => $countable,
 			'count_views'       => $query_atts['count_views'],
 			'start'             => $query_atts['start'],

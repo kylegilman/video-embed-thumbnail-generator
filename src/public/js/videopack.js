@@ -314,7 +314,12 @@ function kgvid_load_videojs(video_vars) {
 	} else {
 		videojs_options.fluid = false;
 	}
-	if ( videojs_options.fluid == true && video_vars.width != undefined && video_vars.width.indexOf( '%' ) === -1 && video_vars.height != undefined ) {
+	if ( videojs_options.fluid == true
+		&& video_vars.width != undefined
+		&& video_vars.width.indexOf( '%' ) === -1
+		&& video_vars.height != undefined
+		&& video_vars.fixed_aspect !== 'false'
+	) {
 		videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
 	}
 	if ( video_vars.nativecontrolsfortouch == "true" ) {
