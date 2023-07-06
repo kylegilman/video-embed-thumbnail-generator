@@ -724,52 +724,6 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	return $rotate_strings;
 }
 
-function kgvid_ffmpeg_watermark_strings( $ffmpeg_watermark, $movie_width, $rotate_complex = '' ) {
-
-	if ( is_array( $ffmpeg_watermark ) && array_key_exists( 'url', $ffmpeg_watermark ) && ! empty( $ffmpeg_watermark['url'] ) ) {
-
-		$watermark_width = strval( round( intval( $movie_width ) * ( intval( $ffmpeg_watermark['scale'] ) / 100 ) ) );
-
-		if ( $ffmpeg_watermark['align'] == 'right' ) {
-			$watermark_align = 'main_w-overlay_w-';
-		} elseif ( $ffmpeg_watermark['align'] == 'center' ) {
-			$watermark_align = 'main_w/2-overlay_w/2-';
-		} else {
-			$watermark_align = '';
-		} //left justified
-
-		if ( $ffmpeg_watermark['valign'] == 'bottom' ) {
-			$watermark_valign = 'main_h-overlay_h-';
-		} elseif ( $ffmpeg_watermark['valign'] == 'center' ) {
-			$watermark_valign = 'main_h/2-overlay_h/2-';
-		} else {
-			$watermark_valign = '';
-		} //top justified
-
-		if ( strpos( $ffmpeg_watermark['url'], 'http://' ) === 0 ) {
-			$watermark_id = false;
-			$watermark_id = kgvid_url_to_id( $ffmpeg_watermark['url'] );
-			if ( $watermark_id ) {
-				$watermark_file = get_attached_file( $watermark_id );
-				if ( file_exists( $watermark_file ) ) {
-					$ffmpeg_watermark['url'] = $watermark_file;
-				}
-			}
-		}
-
-		$watermark_strings['input']  = '-i "' . $ffmpeg_watermark['url'] . '" ';
-		$watermark_strings['filter'] = ' -filter_complex "[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 ) . '"';
-
-	} else {
-
-		$watermark_strings['input']  = '';
-		$watermark_strings['filter'] = '';
-
-	}
-
-	return $watermark_strings;
-}
-
 function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_width, $rotate_complex = '' ) {
 
 	if ( is_array( $ffmpeg_watermark ) && array_key_exists( 'url', $ffmpeg_watermark ) && ! empty( $ffmpeg_watermark['url'] ) ) {
@@ -1001,11 +955,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		if ( ! empty( $watermark_strings['input'] ) ) {
 			$encode_array_before_options[] = '-i';
 			$encode_array_before_options[] = $watermark_strings['input'];
-		}
-
-		if ( $options['audio_channels'] == 'on' ) {
-			$encode_array_before_options[] = '-ac';
-			$encode_array_before_options[] = '2';
 		}
 
 		$encode_array_after_options = array(
