@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.2.5
-Stable tag: 4.8.11
+Stable tag: 4.8.12
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.8.12 - July X, 2023 =
+* Fixed bug that rotated vertical videos incorrectly when encoding alternate video formats.
 
 = 4.8.11 - July 5, 2023 =
 * Fixed bug that always forced vertical videos into a 16:9 aspect ratio when using the Video.js player.
