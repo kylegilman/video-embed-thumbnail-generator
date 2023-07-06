@@ -534,12 +534,13 @@ function kgvid_get_video_dimensions( $video = false ) {
 		$movie_duration_seconds = floatval( substr( $duration, -5 ) );
 		$movie_info['duration'] = ( $movie_duration_hours * 60 * 60 ) + ( $movie_duration_minutes * 60 ) + $movie_duration_seconds;
 
-		preg_match( '/rotate          : (.*?)\n/', $output, $matches );
-		if ( $options['ffmpeg_vpre'] === false
+		preg_match( '/Video:.*?rotate\s*:\s*(.*?)\n/s', $output, $matches );
+
+		if ( $options['ffmpeg_vpre'] == false
 			&& is_array( $matches )
 			&& array_key_exists( 1, $matches ) === true
 		) {
-			$rotate = $matches[1];
+			$rotate = trim( strval( $matches[1] ) );
 		} else {
 			$rotate = '0';
 		}
@@ -641,7 +642,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
-				$rotate_array[] = '-metadata:s:v:0';
+				$rotate_array[] = '-metadata:s:v';
 				$rotate_array[] = 'rotate=0';
 
 				// swap height & width
@@ -668,7 +669,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
-				$rotate_array[] = '-metadata:s:v:0';
+				$rotate_array[] = '-metadata:s:v';
 				$rotate_array[] = 'rotate=0';
 
 				// swap height & width
@@ -690,11 +691,13 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'hflip,vflip[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on' || $options['ffmpeg_old_rotation'] == 'on' ) {
+			if ( $options['video_bitrate_flag'] == 'on'
+				|| $options['ffmpeg_old_rotation'] == 'on'
+			) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
-				$rotate_array[] = '-metadata:s:v:0';
+				$rotate_array[] = '-metadata:s:v';
 				$rotate_array[] = 'rotate=0';
 			}
 
@@ -707,7 +710,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	}
 
 	if ( $options['ffmpeg_auto_rotate'] === 'on' ) {
-		$rotate         = '';
+		$rotate_array   = array();
 		$rotate_complex = '';
 	}
 
