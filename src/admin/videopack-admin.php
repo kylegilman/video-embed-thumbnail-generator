@@ -604,7 +604,13 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 		);
 	}//end if
 
-	if ( is_array( $options ) && is_array( $options['custom_format'] ) && ( ! empty( $options['custom_format']['width'] ) || ! empty( $options['custom_format']['height'] ) ) ) {
+	if ( is_array( $options )
+		&& is_array( $options['custom_format'] )
+		&& (
+			! empty( $options['custom_format']['width'] )
+			|| ! empty( $options['custom_format']['height'] )
+		)
+	) {
 		$video_formats['custom'] = $options['custom_format'];
 		unset( $video_formats[ 'custom_' . $options['custom_format']['format'] ] );
 	}
