@@ -346,7 +346,6 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 
 		if ( $children ) {
 			foreach ( $children as $child ) {
-				$mime_type        = get_post_mime_type( $child->ID );
 				$wp_attached_file = get_attached_file( $child->ID );
 				$video_meta       = wp_get_attachment_metadata( $child->ID );
 				$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
@@ -406,7 +405,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 				$encodevideo_info[ $format ]['url']      = $location['url'];
 				$encodevideo_info[ $format ]['filepath'] = $location['filepath'];
 				require_once ABSPATH . 'wp-admin/includes/file.php';
-				if ( get_filesystem_method( array(), $location['filepath'], true ) === 'direct' ) {
+				if ( get_filesystem_method( array(), dirname( $location['filepath'] ), true ) === 'direct' ) {
 					$encodevideo_info[ $format ]['writable'] = true;
 				}
 				break;
@@ -434,7 +433,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 		if ( $encodevideo_info[ $format ]['exists'] == false ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 			if ( get_post_type( $post_id ) == 'attachment'
-				&& get_filesystem_method( array(), $encodevideo_info['encodepath'], true ) === 'direct'
+				&& get_filesystem_method( array(), dirname( $encodevideo_info['encodepath'] ), true ) === 'direct'
 			) {
 				$encodevideo_info[ $format ]['url']      = $sanitized_url['noextension'] . $format_stats['suffix'];
 				$encodevideo_info[ $format ]['filepath'] = $encodevideo_info['encodepath'] . $encodevideo_info['moviefilebasename'] . $format_stats['suffix'];
@@ -1089,7 +1088,9 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 
 	if ( ! empty( $encodevideo_info ) ) {
 
-		if ( array_key_exists( $format, $encodevideo_info ) && $encodevideo_info[ $format ]['exists'] ) { // if the video file exists
+		if ( array_key_exists( $format, $encodevideo_info )
+			&& $encodevideo_info[ $format ]['exists']
+		) { // if the video file exists
 
 			if ( array_key_exists( 'id', $encodevideo_info[ $format ] ) ) {
 				$child_id   = $encodevideo_info[ $format ]['id'];
@@ -1285,7 +1286,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 							&& file_exists( $value['filepath'] )
 						) {
 							$encodevideo_info[ $format ]['exists'] = true;
-							if ( get_filesystem_method( array(), $value['filepath'], true ) === 'direct' ) {
+							if ( get_filesystem_method( array(), dirname( $value['filepath'] ), true ) === 'direct' ) {
 								$encodevideo_info[ $format ]['writable'] = true;
 							} else {
 								$encodevideo_info[ $format ]['writable'] = false;
@@ -1330,6 +1331,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		if ( $format_stats['status'] == 'lowres' ||
 			(
 				$actualheight != ''
+				&& array_key_exists( 'type', $format_stats )
 				&& $format_stats['type'] == 'h264'
 				&& $format !== 'fullres'
 				&& (
