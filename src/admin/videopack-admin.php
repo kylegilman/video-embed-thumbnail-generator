@@ -23,7 +23,6 @@ function kgvid_default_options_fn() {
 		'replace_format'          => 'fullres',
 		'custom_format'           => array(
 			'format' => 'h264',
-			'width'  => '',
 			'height' => '',
 		),
 		'hide_video_formats'      => 'on',
@@ -606,12 +605,10 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 
 	if ( is_array( $options )
 		&& is_array( $options['custom_format'] )
-		&& (
-			! empty( $options['custom_format']['width'] )
-			|| ! empty( $options['custom_format']['height'] )
-		)
+		&& ! empty( $options['custom_format']['height'] )
 	) {
-		$video_formats['custom'] = $options['custom_format'];
+		$video_formats['custom']          = $options['custom_format'];
+		$video_formats['custom']['width'] = INF;
 		unset( $video_formats[ 'custom_' . $options['custom_format']['format'] ] );
 	}
 
@@ -1845,7 +1842,9 @@ function kgvid_encode_formats_callback() {
 		echo "<option value='" . esc_attr( $value ) . "'" . selected( $options['custom_format']['format'], $value, false ) . '>' . esc_html( $name ) . '</option>';
 	}
 	echo '</select> ';
-	echo "<small>Width: <input id='custom_format_width' name='kgvid_video_embed_options[custom_format][width]' class='small-text affects_ffmpeg kgvid_custom_format' value='" . esc_attr( $options['custom_format']['width'] ) . "' /> Height: <input id='custom_format_height' name='kgvid_video_embed_options[custom_format][height]' class='small-text affects_ffmpeg kgvid_custom_format' value='" . esc_attr( $options['custom_format']['height'] ) . "' /></small></label><br />";
+	echo "Height: <input id='custom_format_height' name='kgvid_video_embed_options[custom_format][height]' class='small-text affects_ffmpeg kgvid_custom_format' value='" . esc_attr( $options['custom_format']['height'] ) . "' />";
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Vertical videos will use this number for the width.', 'video-embed-thumbnail-generator' ) ) );
+	echo '</label><br>';
 	echo '<br><input ' . checked( $options['hide_video_formats'], 'on', false ) . " id='hide_video_formats' name='kgvid_video_embed_options[hide_video_formats]' type='checkbox' /> <label for='hide_video_formats'>" . esc_html__( 'Only show video formats selected above on attachment pages and encode queue.', 'video-embed-thumbnail-generator' );
 	echo "</div>\n\t";
 }

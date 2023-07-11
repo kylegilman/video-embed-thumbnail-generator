@@ -351,11 +351,8 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 				$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
 
 				if ( $meta_format == $format
-					|| ( substr( $wp_attached_file, -strlen( $format_stats['suffix'] ) ) === $format_stats['suffix']
-						&& $meta_format == false
-					)
+					|| substr( $wp_attached_file, -strlen( $format_stats['suffix'] ) ) === $format_stats['suffix']
 				) {
-
 					$encodevideo_info[ $format ]['url']      = wp_get_attachment_url( $child->ID );
 					$encodevideo_info[ $format ]['filepath'] = $wp_attached_file;
 					$encodevideo_info[ $format ]['id']       = $child->ID;
@@ -1114,6 +1111,9 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 					&& $user_delete_capability == true
 					&& $format != 'fullres'
 				) {
+					if ( strpos( $format, 'custom_' ) !== false ) {
+						$format = 'custom';
+					}
 					if ( $was_picked != false ) {
 						$meta .= '<button type="button" id="unpick-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_clear_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . __( 'Clear Format', 'video-embed-thumbnail-generator' ) . '</button>';
 					} else {
