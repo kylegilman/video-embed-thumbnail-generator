@@ -524,6 +524,11 @@ function kgvid_get_video_dimensions( $video = false ) {
 
 	$regex = '/([0-9]{2,4})x([0-9]{2,4})/';
 
+	$video_is_portrait = false;
+	if ( strpos( $output, 'displaymatrix: rotation of -90.00 degrees' ) !== false || strpos( $output, 'displaymatrix: rotation of 90.00 degrees' ) !== false) {
+		$video_is_portrait = true;
+	}
+
 	if ( ! empty( $output ) && preg_match( $regex, $output, $regs ) ) {
 		$result = $regs[0];
 	} else {
@@ -533,8 +538,13 @@ function kgvid_get_video_dimensions( $video = false ) {
 	if ( ! empty( $result ) ) {
 
 		$movie_info['worked'] = true;
-		$movie_info['width']  = $regs [1] ? $regs [1] : null;
-		$movie_info['height'] = $regs [2] ? $regs [2] : null;
+		if ( $video_is_portrait ) {
+			$movie_info['width']  = $regs [2] ? $regs [2] : null;
+			$movie_info['height'] = $regs [1] ? $regs [1] : null;
+		} else {
+			$movie_info['width']  = $regs [1] ? $regs [1] : null;
+			$movie_info['height'] = $regs [2] ? $regs [2] : null;
+		}
 
 		preg_match( '/Duration: (.*?),/', $output, $matches );
 		$duration               = $matches[1];
