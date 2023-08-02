@@ -1487,14 +1487,14 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		}
 		$code      .= "\t\t\t</div>\n";
 		$show_views = false;
-		if ( ( ! empty( $id ) && $query_atts['view_count'] == 'true' ) || ! empty( $query_atts['caption'] ) || $content == plugins_url( '/images/sample-video-h264.mp4', __DIR__ ) ) { // generate content below the video
+		if ( ( ! empty( $id ) && $query_atts['view_count'] == 'true' ) || ! empty( $query_atts['caption'] ) || $content == plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ ) ) { // generate content below the video
 			if ( is_array( $kgvid_postmeta ) && array_key_exists( 'starts', $kgvid_postmeta ) ) {
 				$view_count = number_format( intval( $kgvid_postmeta['starts'] ) );
 			} else {
 				$view_count               = '0';
 				$kgvid_postmeta['starts'] = 0;
 			}
-			if ( $content == plugins_url( '/images/sample-video-h264.mp4', __DIR__ ) ) {
+			if ( $content == plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ ) ) {
 				$view_count = 'XX';
 			}
 			if ( $query_atts['view_count'] == 'true' ) {
@@ -2033,7 +2033,7 @@ function kgvid_generate_attachment_shortcode( $kgvid_video_embed ) {
 	if ( is_array( $kgvid_video_embed )
 		&& array_key_exists( 'sample', $kgvid_video_embed )
 	) {
-		$url = plugins_url( '/images/sample-video-h264.mp4', __DIR__ );
+		$url = plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ );
 	} else {
 		$url = wp_get_attachment_url( $post_id );
 	}

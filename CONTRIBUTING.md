@@ -19,7 +19,7 @@ _Videos won't play, the player looks funny, etc_
 _Can't make thumbnails, can't encode videos, etc_
 
 1. If the plugin can't find FFMPEG at the path you entered, connect to your server via SSH and enter this command:
-`/usr/local/bin/ffmpeg -i /path/to/wordpress/wp-content/plugins/video-embed-thumbnail-generator/images/sample-video-h264.mp4 -vframes 1 -f mjpeg /path/to/wordpress/wp-content/uploads/2013/10/ffmpeg_exists_test.jpg`
+`/usr/local/bin/ffmpeg -i /path/to/wordpress/wp-content/plugins/video-embed-thumbnail-generator/images/Adobestock_469037984.mp4 -vframes 1 -f mjpeg /path/to/wordpress/wp-content/uploads/2013/10/ffmpeg_exists_test.jpg`
 Replace `/usr/local/bin/` with the path to FFMPEG on your server if that's not where it's located and replace `/path/to/wordpress` with whatever the full path is to your WordPress installation. Usually that's something like `/home/username/public_html` but there are endless variations. On Linux servers you can get your current path by entering `pwd` at the command prompt.
 Once you run FFMPEG, paste the entire text output into your issue.
 1. If the plugin can find FFMPEG but videos aren't encoding, paste the full output of the FFMPEG test output area from the bottom of the FFMPEG Settings tab of the plugin settings page.

@@ -105,8 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.8.12 - July 11, 2023 =
-* Removed width setting from custom video formats. Width will be calculated automatically to match the aspect ratio of the original video.
+= 4.8.12 - August XX, 2023 =
+* Revised FFMPEG scaling method to use the "scale" video filter instead of -s
+* Removed width setting from custom video encoding formats. Width will be calculated automatically to match the aspect ratio of the original video.
 * Fixed bug that rotated vertical videos incorrectly when encoding video formats.
 
 = 4.8.11 - July 5, 2023 =

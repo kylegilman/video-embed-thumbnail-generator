@@ -121,7 +121,7 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 		$proc_open_enabled = true;
 
 		$ffmpeg_test = kgvid_process_thumb(
-			plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4',
+			plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
 			$uploads['path'] . '/ffmpeg_exists_test.jpg',
 			$test_path
 		);
@@ -133,7 +133,7 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 			$test_path = substr( $test_path, 0, -strlen( $options['video_app'] ) - 1 );
 
 			$ffmpeg_test = kgvid_process_thumb(
-				plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4',
+				plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
 				$uploads['path'] . '/ffmpeg_exists_test.jpg',
 				$test_path
 			);
@@ -2763,9 +2763,10 @@ function kgvid_test_ffmpeg() {
 		$arr['output'] = esc_textarea( $output );
 
 		if ( file_exists( $uploads['path'] . '/sample-video-h264' . $suffix ) ) {
+		if ( file_exists( $uploads['path'] . '/Adobestock_469037984' . $suffix ) ) {
 
 			if ( $options['moov'] == 'qt-faststart' || $options['moov'] == 'MP4Box' ) {
-				$arr['output'] .= kgvid_fix_moov_atom( $uploads['path'] . '/sample-video-h264' . $suffix );
+				$arr['output'] .= kgvid_fix_moov_atom( $uploads['path'] . '/Adobestock_469037984' . $suffix );
 			}
 
 			if ( ! empty( $options['ffmpeg_watermark']['url'] ) ) {
@@ -2773,7 +2774,7 @@ function kgvid_test_ffmpeg() {
 				wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 
 				$watermark_test = kgvid_process_thumb(
-					$uploads['path'] . '/sample-video-h264' . $suffix,
+					$uploads['path'] . '/Adobestock_469037984' . $suffix,
 					$uploads['path'] . '/thumb_tmp/watermark_test.jpg'
 				);
 
@@ -2784,7 +2785,7 @@ function kgvid_test_ffmpeg() {
 				}
 			}
 
-			wp_delete_file( $uploads['path'] . '/sample-video-h264' . $suffix );
+			wp_delete_file( $uploads['path'] . '/Adobestock_469037984' . $suffix );
 
 		}
 	} else {
