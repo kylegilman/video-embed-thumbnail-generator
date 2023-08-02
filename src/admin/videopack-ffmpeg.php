@@ -617,7 +617,8 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	$options = kgvid_get_options();
 
 	if ( $rotate === false
-	|| $options['ffmpeg_vpre'] === 'on' ) {
+		|| $options['ffmpeg_vpre'] === 'on'
+	) {
 		$rotate = '';
 	}
 
@@ -627,25 +628,21 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 			if ( empty( $options['ffmpeg_watermark']['url'] ) ) {
 				$rotate_array = array(
 					'-vf',
-					'transpose=1',
+					'transpose=1,scale=' . $height . ':-1',
 				);
 			} else {
 				$rotate_array   = array();
 				$rotate_complex = 'transpose=1[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on' || $options['ffmpeg_old_rotation'] == 'on' ) {
+			if ( $options['video_bitrate_flag'] == 'on'
+				|| $options['ffmpeg_old_rotation'] == 'on'
+			) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
-				$rotate_array[] = '-metadata:s:v';
+				$rotate_array[] = '-metadata:s:v:0';
 				$rotate_array[] = 'rotate=0';
-
-				// swap height & width
-				$tmp    = $width;
-				$width  = $height;
-				$height = $tmp;
-
 			}
 
 			break;
@@ -665,13 +662,8 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
-				$rotate_array[] = '-metadata:s:v';
+				$rotate_array[] = '-metadata:s:v:0';
 				$rotate_array[] = 'rotate=0';
-
-				// swap height & width
-				$tmp    = $width;
-				$width  = $height;
-				$height = $tmp;
 			}
 
 			break;
@@ -693,7 +685,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_array[] = '-metadata';
 				$rotate_array[] = 'rotate=0';
 			} else {
-				$rotate_array[] = '-metadata:s:v';
+				$rotate_array[] = '-metadata:s:v:0';
 				$rotate_array[] = 'rotate=0';
 			}
 
@@ -703,11 +695,6 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 			$rotate_array   = array();
 			$rotate_complex = '';
 			break;
-	}
-
-	if ( $options['ffmpeg_auto_rotate'] === 'on' ) {
-		$rotate_array   = array();
-		$rotate_complex = '';
 	}
 
 	$rotate_strings = array(
@@ -720,29 +707,32 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	return $rotate_strings;
 }
 
-function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_width, $rotate_complex = '' ) {
+function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $rotate_complex ) {
 
-	if ( is_array( $ffmpeg_watermark ) && array_key_exists( 'url', $ffmpeg_watermark ) && ! empty( $ffmpeg_watermark['url'] ) ) {
+	if ( is_array( $ffmpeg_watermark )
+		&& array_key_exists( 'url', $ffmpeg_watermark )
+		&& ! empty( $ffmpeg_watermark['url'] )
+	) {
 
-		$watermark_width = strval( round( intval( $movie_width ) * ( intval( $ffmpeg_watermark['scale'] ) / 100 ) ) );
+		$watermark_height = strval( round( intval( $movie_height ) * ( intval( $ffmpeg_watermark['scale'] ) / 100 ) ) );
 
-		if ( $ffmpeg_watermark['align'] == 'right' ) {
+		if ( $ffmpeg_watermark['align'] === 'right' ) {
 			$watermark_align = 'main_w-overlay_w-';
-		} elseif ( $ffmpeg_watermark['align'] == 'center' ) {
+		} elseif ( $ffmpeg_watermark['align'] === 'center' ) {
 			$watermark_align = 'main_w/2-overlay_w/2-';
 		} else {
 			$watermark_align = '';
 		} //left justified
 
-		if ( $ffmpeg_watermark['valign'] == 'bottom' ) {
+		if ( $ffmpeg_watermark['valign'] === 'bottom' ) {
 			$watermark_valign = 'main_h-overlay_h-';
-		} elseif ( $ffmpeg_watermark['valign'] == 'center' ) {
+		} elseif ( $ffmpeg_watermark['valign'] === 'center' ) {
 			$watermark_valign = 'main_h/2-overlay_h/2-';
 		} else {
 			$watermark_valign = '';
 		} //top justified
 
-		if ( strpos( $ffmpeg_watermark['url'], 'http://' ) === 0 ) {
+		if ( strpos( $ffmpeg_watermark['url'], 'http' ) === 0 ) {
 			$watermark_id = false;
 			$watermark_id = kgvid_url_to_id( $ffmpeg_watermark['url'] );
 			if ( $watermark_id ) {
@@ -753,14 +743,16 @@ function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_width, $rotate_
 			}
 		}
 
+		$watermark_filters = '[1:v]scale=-1:' . $watermark_height . '[watermark];';
+		$scale_main_video  = '[0:v]scale=-2:' . $movie_height . '[scaled];';
+		$overlay_watermark = '[scaled][watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 );
+
 		$watermark_array['input']  = $ffmpeg_watermark['url'];
-		$watermark_array['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v]' . $rotate_complex . '[watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 );
+		$watermark_array['filter'] = $watermark_filters . $scale_main_video . $overlay_watermark;
 
 	} else {
-
 		$watermark_array['input']  = '';
-		$watermark_array['filter'] = '';
-
+		$watermark_array['filter'] = '[0:v]scale=-2:' . $movie_height;
 	}
 
 	return $watermark_array;
@@ -773,9 +765,13 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 	$encode_array  = array( strtoupper( $options['video_app'] ) . ' not found' );
 	$video_formats = kgvid_video_formats();
 
-	if ( $options['ffmpeg_exists'] === 'on' && isset( $video_formats[ $format ] ) ) {
+	if ( $options['ffmpeg_exists'] === 'on'
+		&& isset( $video_formats[ $format ] )
+	) {
 
-		if ( $options['video_app'] == 'avconv' || $options['video_bitrate_flag'] != 'on' ) {
+		if ( $options['video_app'] == 'avconv'
+			|| $options['video_bitrate_flag'] != 'on'
+		) {
 			$video_bitrate_flag = 'b:v';
 			$audio_bitrate_flag = 'b:a';
 			$profile_flag       = 'profile:v';
@@ -790,8 +786,8 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		}
 
 		$rotate_strings = kgvid_ffmpeg_rotate_array( $rotate, $width, $height );
-		$width          = $rotate_strings['width']; // in case rotation requires swapping height and width
-		$height         = $rotate_strings['height'];
+		//$width          = $rotate_strings['width']; // in case rotation requires swapping height and width
+		//$height         = $rotate_strings['height'];
 
 		if ( $options['rate_control'] === 'crf' ) {
 			$crf_option = $video_formats[ $format ]['type'] . '_CRF';
@@ -828,7 +824,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$audio_channels_flag = array();
 		}
 
-		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_watermark'], $movie_info['width'], $rotate_strings['complex'] );
+		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_watermark'], $height, $rotate_strings['complex'] );
 
 		if ( $video_formats[ $format ]['type'] === 'h264' ) {
 
@@ -862,7 +858,9 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 					'-' . $profile_flag,
 					$options['h264_profile'],
 				);
-				if ( $options['h264_profile'] != 'high422' && $options['h264_profile'] != 'high444' ) {
+				if ( $options['h264_profile'] != 'high422'
+					&& $options['h264_profile'] != 'high444'
+				) {
 					$profile_array[] = '-pix_fmt';
 					$profile_array[] = 'yuv420p'; // makes sure output is converted to 4:2:0
 				}
@@ -881,8 +879,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 				$aaclib,
 				'-' . $audio_bitrate_flag,
 				$options['audio_bitrate'] . 'k',
-				'-s',
-				$width . 'x' . $height,
 				'-vcodec',
 				'libx264',
 			);
@@ -902,8 +898,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 				'libvorbis',
 				'-' . $audio_bitrate_flag,
 				$options['audio_bitrate'] . 'k',
-				'-s',
-				$width . 'x' . $height,
 				'-vcodec',
 				$video_formats[ $format ]['vcodec'],
 			);
@@ -970,7 +964,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$ffmpeg_options,
 			$audio_channels_flag,
 			$rate_control_flag,
-			$rotate_strings['rotate'],
+			//$rotate_strings['rotate'],
 			$encode_array_after_options
 		);
 
@@ -2135,7 +2129,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		}
 
 		$rotate_strings    = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
-		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_thumb_watermark'], $movie_width, $rotate_strings['complex'] );
+		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_thumb_watermark'], $movie_height, $rotate_strings['complex'] );
 
 		$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
 		$tmp_thumbnailurl   = str_replace( ' ', '_', $tmp_thumbnailurl );
@@ -2762,7 +2756,6 @@ function kgvid_test_ffmpeg() {
 
 		$arr['output'] = esc_textarea( $output );
 
-		if ( file_exists( $uploads['path'] . '/sample-video-h264' . $suffix ) ) {
 		if ( file_exists( $uploads['path'] . '/Adobestock_469037984' . $suffix ) ) {
 
 			if ( $options['moov'] == 'qt-faststart' || $options['moov'] == 'MP4Box' ) {
@@ -2801,14 +2794,7 @@ function kgvid_test_ffmpeg_thumb_watermark() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
 
-	$options = get_option( 'kgvid_video_embed_options' );
-	if ( $options['sample_rotate'] != false ) {
-		$sample_video_path = plugin_dir_path( __DIR__ ) . 'images/sample-video-rotated-h264.mp4';
-	} else {
-		$sample_video_path = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
-	}
-
-	$thumb = kgvid_make_thumbs( 'singleurl', $sample_video_path, 1, 1, 1, 0, true, 'generate' );
+	$thumb = kgvid_make_thumbs( 'singleurl', plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4', 1, 1, 1, 0, true, 'generate' );
 
 	if ( array_key_exists( 'real_thumb_url', $thumb ) ) {
 		echo esc_url( $thumb['real_thumb_url'] );
@@ -3263,27 +3249,6 @@ function kgvid_replace_video( $video_key, $format ) {
 			}
 		}
 		$video_encode_queue[ $video_key ]['encode_formats'][ $format ]['url'] = $new_url;
-
-		if ( $video_encode_queue[ $video_key ]['movie_info']['rotate'] != '' ) { // if the video needed rotating
-			$video_encode_queue[ $video_key ]['movie_info']['rotate'] = ''; // clear rotation because we've just fixed that problem
-			$kgvid_postmeta           = kgvid_get_attachment_meta( $video_encode_queue[ $video_key ]['attachmentID'] );
-			$kgvid_postmeta['rotate'] = '';
-			kgvid_save_attachment_meta( $video_encode_queue[ $video_key ]['attachmentID'], $kgvid_postmeta );
-
-			$setwidth  = $video_encode_queue[ $video_key ]['movie_info']['width'];
-			$setheight = $video_encode_queue[ $video_key ]['movie_info']['height'];
-			if ( intval( $setwidth ) > intval( $setheight ) ) {  // swap the width and height meta if it hasn't already been done
-				$kgvid_postmeta['actualwidth']                           = $video_encode_queue[ $video_key ]['movie_info']['height'];
-				$kgvid_postmeta['width']                                 = $setheight;
-				$video_encode_queue[ $video_key ]['movie_info']['width'] = $video_encode_queue[ $video_key ]['movie_info']['height'];
-
-				$kgvid_postmeta['actualheight']                           = $video_encode_queue[ $video_key ]['movie_info']['width'];
-				$kgvid_postmeta['height']                                 = $setwidth;
-				$video_encode_queue[ $video_key ]['movie_info']['height'] = $video_encode_queue[ $video_key ]['movie_info']['width'];
-			}
-
-			kgvid_save_attachment_meta( $video_encode_queue[ $video_key ]['attachmentID'], $kgvid_postmeta );
-		}
 
 		kgvid_save_encode_queue( $video_encode_queue );
 
