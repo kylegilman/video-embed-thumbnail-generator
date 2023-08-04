@@ -1215,9 +1215,9 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 			$is_attachment = false;
 			unset( $video_formats['fullres'] );
 
-			$check_mime_type = kgvid_url_mime_type( $movieurl );
+			$mime_type_check = kgvid_url_mime_type( $movieurl );
 
-			$post_mime_type = $check_mime_type['type'];
+			$post_mime_type = $mime_type_check['type'];
 
 			if ( ! empty( $video_encode_queue ) ) {
 				foreach ( $video_encode_queue as $video_key => $video_entry ) {

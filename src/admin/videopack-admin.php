@@ -841,27 +841,51 @@ function kgvid_url_to_id( $url ) {
 }
 
 function kgvid_is_animated_gif( $filename ) {
+	// Attempt to use Imagick if available
+	if ( class_exists( 'Imagick' ) ) {
+		try {
+			$image  = new Imagick( $filename );
+			$frames = $image->coalesceImages();
 
-	$fh = @fopen( $filename, 'rb' );
+			$count = 0;
+			foreach ( $frames as $frame ) {
+				$count++;
+				if ( $count > 1 ) {
+					return true;
+				}
+			}
+		} catch ( Exception $e ) {
+			return false;
+		}
+	}
 
-	if ( ! $fh ) {
+	// Fallback to manual check using WP_Filesystem
+	global $wp_filesystem;
+	if ( ! $wp_filesystem ) {
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+	}
+
+	if ( ! $wp_filesystem->exists( $filename ) || ! $wp_filesystem->is_readable( $filename ) ) {
 		return false;
 	}
-	$count = 0;
-	// an animated gif contains multiple "frames", with each frame having a
-	// header made up of:
-	// * a static 4-byte sequence (\x00\x21\xF9\x04)
-	// * 4 variable bytes
-	// * a static 2-byte sequence (\x00\x2C) (some variants may use \x00\x21 ?)
 
-	// We read through the file til we reach the end of the file, or we've found
-	// at least 2 frame headers
-	while ( ! feof( $fh ) && $count < 2 ) {
-		$chunk  = fread( $fh, 1024 * 100 ); // read 100kb at a time
+	$count      = 0;
+	$offset     = 0;
+	$chunk_size = 1024 * 100; // read 100kb at a time
+
+	while ( $count < 2 ) {
+		$chunk = $wp_filesystem->get_contents( $filename, false, false, $offset, $chunk_size );
+		if ( false === $chunk ) {
+			break;
+		}
+
 		$count += preg_match_all( '#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches );
+
+		// Move the offset for the next read
+		$offset += $chunk_size;
 	}
 
-	fclose( $fh );
 	return $count > 1;
 }
 
