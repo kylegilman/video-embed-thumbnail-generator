@@ -2185,7 +2185,7 @@ function kgvid_execution_options_callback() {
 	echo '</div>';
 }
 
-function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
+function kgvid_test_ffmpeg_options_callback() {
 
 	$options       = kgvid_get_options();
 	$video_formats = kgvid_video_formats( false, false );
@@ -2210,8 +2210,24 @@ function kgvid_test_ffmpeg_options_callback( $scope = 'site' ) {
 			} else {
 				$input = plugin_dir_path( __DIR__ ) . 'images/AdobeStock_469037984-rotated.mp4';
 			}
-			$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/sample-video-h264' . $video_formats[ $options['sample_format'] ]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $options['sample_rotate'] ) );
-			$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/sample-video-h264' . $video_formats[ $options['sample_format'] ]['suffix'], $movie_info, $options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $options['sample_rotate'] ) );
+			$encode_array = kgvid_generate_encode_array(
+				$input,
+				$uploads['path'] . '/Adobestock_469037984' . $video_formats[ $options['sample_format'] ]['suffix'],
+				$movie_info,
+				$options['sample_format'],
+				$encode_dimensions['width'],
+				$encode_dimensions['height'],
+				intval( $options['sample_rotate'] )
+			);
+			$encode_array = kgvid_generate_encode_array(
+				$input,
+				$uploads['path'] . '/Adobestock_469037984' . $video_formats[ $options['sample_format'] ]['suffix'],
+				$movie_info,
+				$options['sample_format'],
+				$encode_dimensions['width'],
+				$encode_dimensions['height'],
+				intval( $options['sample_rotate'] )
+			);
 
 		} else {
 			$options['ffmpeg_exists'] = false;
