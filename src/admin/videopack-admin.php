@@ -958,76 +958,54 @@ add_filter( 'mime_types', 'kgvid_add_mime_types' );
 
 function kgvid_url_mime_type( $url, $post_id = false ) {
 
+	$mime_info = array(
+		'type' => '',
+		'ext'  => '',
+	);
+
+	if ( empty( $url ) || ! is_string( $url ) ) {
+		return $mime_info; // Return early if URL is not valid
+	}
+
 	$mime_info = wp_check_filetype( strtok( $url, '?' ) );
 
-	if ( array_key_exists( 'type', $mime_info ) && empty( $mime_info['type'] ) ) { // wp unable to determine mime type
+	if ( array_key_exists( 'type', $mime_info ) && ! empty( $mime_info['type'] ) ) {
+		return $mime_info;
+	}
 
-		$mime_info = '';
+	if ( $post_id ) {
+		$sanitized_url = kgvid_sanitize_url( $url );
+		$mime_info     = get_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url['singleurl_id'] . '-mime', true );
 
-		if ( $post_id != false ) {
-
-			$sanitized_url = kgvid_sanitize_url( $url );
-			$mime_info     = get_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url['singleurl_id'] . '-mime', true );
-
+		if ( ! empty( $mime_info ) ) {
+			return $mime_info;
 		}
+	}
 
-		if ( empty( $mime_info ) ) {
+	$args = array(
+		'sslverify' => false,
+		'method'    => 'HEAD',
+	);
 
-			$mime_type     = '';
-			$url_extension = '';
+	$response = wp_remote_head( $url, $args );
 
-			$context_options = array(
-				'ssl'  => array(
-					'verify_peer'      => false,
-					'verify_peer_name' => false,
-				),
-				'http' => array(
-					'method' => 'HEAD',
-				),
-			);
+	if ( is_wp_error( $response ) ) {
+		return $mime_info;
+	}
 
-			$context = stream_context_create( $context_options );
+	$headers       = wp_remote_retrieve_headers( $response );
+	$mime_type     = $headers['content-type'] ?? '';
+	$url_extension = array_search( $mime_type, wp_get_mime_types() );
+	$url_extension = explode( '|', $url_extension )[0];
 
-			$fp = fopen( $url, 'r', false, $context );
+	$mime_info = array(
+		'type' => $mime_type,
+		'ext'  => $url_extension,
+	);
 
-			if ( $fp ) {
-
-				$metadata = stream_get_meta_data( $fp );
-				fclose( $fp );
-
-				$headers = $metadata['wrapper_data'];
-
-				foreach ( $headers as $line ) {
-					if ( strtok( $line, ':' ) == 'Content-Type' ) {
-							$parts     = explode( ':', $line );
-							$mime_type = trim( $parts[1] );
-					}
-				}
-
-				if ( ! empty( $mime_type ) ) {
-					$wp_mime_types = wp_get_mime_types();
-					foreach ( $wp_mime_types as $extension => $type ) {
-						if ( $type == $mime_type ) {
-							$url_extension = $extension;
-							if ( strpos( $url_extension, '|' ) !== false ) {
-								$extensions    = explode( '|', $url_extension );
-								$url_extension = $extensions[0];
-							}
-							break;
-						}
-					}
-				}
-
-				$mime_info         = array();
-				$mime_info['type'] = $mime_type;
-				$mime_info['ext']  = $url_extension;
-
-				if ( $post_id != false ) {
-					$mime_info = update_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url['singleurl_id'] . '-mime', $mime_info );
-				}
-			}//end if
-		}//end if
-	}//end if
+	if ( $post_id ) {
+		update_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url['singleurl_id'] . '-mime', $mime_info );
+	}
 
 	return $mime_info;
 }
