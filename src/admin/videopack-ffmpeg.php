@@ -62,10 +62,8 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 	}
 
 	$thumb_options = array(
-		'-vf',
-		'scale=iw*sar:ih',
-		'-qscale',
-		'1',
+		'-q:v',
+		'2',
 		'-vframes',
 		'1',
 		'-f',
@@ -704,7 +702,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	return $rotate_strings;
 }
 
-function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $rotate_complex ) {
+function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $thumb = false ) {
 
 	if ( is_array( $ffmpeg_watermark )
 		&& array_key_exists( 'url', $ffmpeg_watermark )
@@ -741,15 +739,23 @@ function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $rotate
 		}
 
 		$watermark_filters = '[1:v]scale=-1:' . $watermark_height . '[watermark];';
-		$scale_main_video  = '[0:v]scale=-2:' . $movie_height . '[scaled];';
+		if ( $thumb ) {
+			$scale_main_video = '[0:v]scale=iw*sar:ih[scaled];';
+		} else {
+			$scale_main_video = '[0:v]scale=-2:' . $movie_height . '[scaled];';
+		}
 		$overlay_watermark = '[scaled][watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 );
 
 		$watermark_array['input']  = $ffmpeg_watermark['url'];
 		$watermark_array['filter'] = $watermark_filters . $scale_main_video . $overlay_watermark;
 
 	} else {
-		$watermark_array['input']  = '';
-		$watermark_array['filter'] = '[0:v]scale=-2:' . $movie_height;
+		$watermark_array['input'] = '';
+		if ( $thumb ) {
+			$watermark_array['filter'] = '[0:v]scale=iw*sar:ih';
+		} else {
+			$watermark_array['filter'] = '[0:v]scale=-2:' . $movie_height;
+		}
 	}
 
 	return $watermark_array;
@@ -811,7 +817,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$audio_channels_flag = array();
 		}
 
-		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_watermark'], $height, $rotate_strings['complex'] );
+		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_watermark'], $height, false );
 
 		if ( $video_formats[ $format ]['type'] === 'h264' ) {
 
@@ -2104,7 +2110,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		}
 
 		$rotate_strings    = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
-		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_thumb_watermark'], $movie_height, $rotate_strings['complex'] );
+		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_thumb_watermark'], $movie_height, true );
 
 		$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
 		$tmp_thumbnailurl   = str_replace( ' ', '_', $tmp_thumbnailurl );
