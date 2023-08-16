@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.2.5
-Stable tag: 4.8.12
+Stable tag: 4.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -88,7 +88,7 @@ If you want to put it in the upper left instead of the lower right, try somethin
 
 You can get instructions to install FFMPEG for several different Linux distributions at https://www.tecmint.com/install-ffmpeg-in-linux/ You do not need the obsolete <a href="https://ffmpeg-php.sourceforge.net/">FFMPEG-PHP module/extension</a>. It does not work with Videopack.
 
-Videopack can use FFMPEG or LIBAV to make thumbnails and create alternate video formats. Unfortunately most servers don't have FFMPEG installed and most shared hosting plans don't allow you to install FFMPEG because of the system resources it requires. You're getting this error message because you don't have FFMPEG installed in the most common directory. If you know you have FFMPEG installed on your server, you'll need to find the actual path to the program and enter it in the Videopack settings field `Path to applications on server`.
+Videopack can use FFMPEG to make thumbnails and create alternate video formats. Unfortunately most servers don't have FFMPEG installed and most shared hosting plans don't allow you to install FFMPEG because of the system resources it requires. You're getting this error message because you don't have FFMPEG installed in the most common directory. If you know you have FFMPEG installed on your server, you'll need to find the actual path to the program and enter it in the Videopack settings field `Path to applications on server`.
 
 Most of Videopack's features will work without FFMPEG. You can generate embed shortcodes for your videos and make thumbnails on any host because that part of Videopack is JavaScript running in your browser. But without FFMPEG you won't be able to automatically generate thumbnails or encode alternate formats on the server. If you don't have your own VPS or dedicated server, Dreamhost and Arvixe are two of the few shared hosts I know of that has FFMPEG installed and available for users.
 
@@ -105,7 +105,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.8.12 - August XX, 2023 =
+= 4.9 - August XX, 2023 =
+* Removed support for versions of FFMPEG older than approximately 10 years.
 * Improved methods for determining the mime type of URLs and animated GIF detection.
 * Revised FFMPEG scaling method to use the "scale" video filter instead of -s
 * Removed width setting from custom video encoding formats. Width will be calculated automatically to match the aspect ratio of the original video.
