@@ -532,8 +532,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 
 		preg_match( '/Video:.*?rotate\s*:\s*(.*?)\n/s', $output, $matches );
 
-		if ( $options['ffmpeg_vpre'] == false
-			&& is_array( $matches )
+		if ( is_array( $matches )
 			&& array_key_exists( 1, $matches ) === true
 		) {
 			$rotate = trim( strval( $matches[1] ) );
@@ -616,9 +615,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 
 	$options = kgvid_get_options();
 
-	if ( $rotate === false
-		|| $options['ffmpeg_vpre'] === 'on'
-	) {
+	if ( $rotate === false ) {
 		$rotate = '';
 	}
 
@@ -769,21 +766,11 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		&& isset( $video_formats[ $format ] )
 	) {
 
-		if ( $options['video_app'] == 'avconv'
-			|| $options['video_bitrate_flag'] != 'on'
-		) {
-			$video_bitrate_flag = 'b:v';
-			$audio_bitrate_flag = 'b:a';
-			$profile_flag       = 'profile:v';
-			$level_flag         = 'level:v';
-			$qscale_flag        = 'q:v';
-		} else {
-			$video_bitrate_flag = 'b';
-			$audio_bitrate_flag = 'ab';
-			$profile_flag       = 'profile';
-			$level_flag         = 'level';
-			$qscale_flag        = 'qscale';
-		}
+		$video_bitrate_flag = 'b:v';
+		$audio_bitrate_flag = 'b:a';
+		$profile_flag       = 'profile:v';
+		$level_flag         = 'level:v';
+		$qscale_flag        = 'q:v';
 
 		$rotate_strings = kgvid_ffmpeg_rotate_array( $rotate, $width, $height );
 		//$width          = $rotate_strings['width']; // in case rotation requires swapping height and width
@@ -835,15 +822,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 				}
 			}
 
-			$vpre_flags = array();
-			if ( $options['ffmpeg_vpre'] == 'on' ) {
-
-				$vpre_flags = '-coder 0 -flags +loop -cmp +chroma -partitions +parti8x8+parti4x4+partp8x8+partb8x8 -me_method hex -subq 6 -me_range 16 -g 250 -keyint_min 25 -sc_threshold 40 -i_qfactor 0.71 -b_strategy 1 -qcomp 0.6 -qmin 10 -qmax 51 -qdiff 4 -bf 0 -refs 1 -trellis 1 -flags2 +bpyramid+mixed_refs-wpred-dct8x8+fastpskip -wpredp 0 -rc_lookahead 30 -maxrate 10000000 -bufsize 10000000';
-
-				$vpre_flags = explode( ' ', $vpre_flags );
-
-			}
-
 			$movflags = array();
 			if ( $options['moov'] == 'movflag' ) {
 				$movflags = array(
@@ -885,7 +863,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 
 			$ffmpeg_options = array_merge(
 				$ffmpeg_options,
-				$vpre_flags,
 				$movflags,
 				$profile_array,
 				$level_array
@@ -2070,9 +2047,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 
 		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 
-		if ( $movie_info['rotate'] === false
-			|| $options['ffmpeg_vpre'] == 'on'
-		) {
+		if ( $movie_info['rotate'] === false ) {
 			$movie_info['rotate'] = '';
 		}
 		switch ( $movie_info['rotate'] ) { // if it's a sideways mobile video

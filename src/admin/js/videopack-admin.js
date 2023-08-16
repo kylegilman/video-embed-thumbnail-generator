@@ -2269,11 +2269,7 @@ function kgvid_hide_ffmpeg_settings() {
 
 	var video_app = jQuery( '#video_app' ).val();
 
-	if (video_app == "ffmpeg") {
-		jQuery( '#video_bitrate_flag' ).parents().eq( 2 ).show();
-	}
 	if (video_app == "avconv") {
-		jQuery( '#video_bitrate_flag' ).parents().eq( 2 ).hide();
 		video_app = "libav";
 	}
 
