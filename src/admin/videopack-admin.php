@@ -1366,7 +1366,6 @@ function kgvid_plugin_playback_settings_section_callback() {
 	$players = array(
 		'Video.js v8' => 'Video.js v8',
 		'Video.js v7' => 'Video.js v7',
-		'Video.js v5 (' . esc_html__( 'deprecated', 'video-embed-thumbnail-generator' ) . ')' => 'Video.js',
 		__( 'WordPress Default', 'video-embed-thumbnail-generator' ) => 'WordPress Default',
 		__( 'None', 'video-embed-thumbnail-generator' ) => 'None',
 	);
@@ -2666,6 +2665,13 @@ function kgvid_init_plugin() {
 		if ( version_compare( $options['version'], '4.8.7', '<' ) ) {
 			$options['version']         = '4.8.7';
 			$options['hide_thumbnails'] = false;
+		}
+
+		if ( version_compare( $options['version'], '4.9', '<' ) ) {
+			$options['version'] = '4.9';
+			if ( $options['embed_method'] === 'Video.js' ) {
+				$options['embed_method'] = 'Video.js v8';
+			}
 		}
 
 		if ( $options['version'] != $default_options['version'] ) {

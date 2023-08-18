@@ -157,9 +157,6 @@ function kgvid_get_videojs_locale() {
 		'zh-CN' => 'zh_CN',
 		'zh-TW' => 'zh_TW',
 	);
-	if ( $options['embed_method'] == 'Video.js' ) { // v5 doesn't have pt-PT
-		$locale_conversions['pt-BR'] = 'pt_PT';
-	}
 
 	$matching_locale = array_search( $locale, $locale_conversions );
 	if ( $matching_locale !== false ) {
@@ -238,14 +235,6 @@ function kgvid_video_embed_enqueue_styles() {
 
 		$kgvid_video_embed_script_dependencies[] = 'video-js';
 
-		if ( $options['embed_method'] == 'Video.js' ) {
-
-			$videojs_register = array(
-				'version' => '5.20.5',
-				'path'    => 'v5',
-			);
-
-		}
 		if ( $options['embed_method'] == 'Video.js v7' ) {
 
 			$videojs_register = array(
@@ -254,7 +243,6 @@ function kgvid_video_embed_enqueue_styles() {
 			);
 
 		}
-
 		if ( $options['embed_method'] == 'Video.js v8' ) {
 
 			$videojs_register = array(
@@ -1447,9 +1435,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( $query_atts['loop'] == 'true' ) {
 				$code .= 'loop ';
 			}
-			if ( $query_atts['autoplay'] == 'true'
-				&& $options['embed_method'] == 'None'
-			) {
+			if ( $query_atts['autoplay'] == 'true' ) {
 				$code .= 'autoplay ';
 			}
 			if ( $query_atts['controls'] != 'false' ) {
