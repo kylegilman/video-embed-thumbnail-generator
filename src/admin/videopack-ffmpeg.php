@@ -612,6 +612,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 
 	$options = kgvid_get_options();
+	$rotate_complex = '';
 
 	if ( $rotate === false ) {
 		$rotate = '';
@@ -630,15 +631,8 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'transpose=1[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on'
-				|| $options['ffmpeg_old_rotation'] == 'on'
-			) {
-				$rotate_array[] = '-metadata';
-				$rotate_array[] = 'rotate=0';
-			} else {
-				$rotate_array[] = '-metadata:s:v:0';
-				$rotate_array[] = 'rotate=0';
-			}
+			$rotate_array[] = '-metadata:s:v:0';
+			$rotate_array[] = 'rotate=0';
 
 			break;
 
@@ -653,13 +647,8 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'transpose=2[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on' || $options['ffmpeg_old_rotation'] == 'on' ) {
-				$rotate_array[] = '-metadata';
-				$rotate_array[] = 'rotate=0';
-			} else {
-				$rotate_array[] = '-metadata:s:v:0';
-				$rotate_array[] = 'rotate=0';
-			}
+			$rotate_array[] = '-metadata:s:v:0';
+			$rotate_array[] = 'rotate=0';
 
 			break;
 
@@ -674,15 +663,8 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'hflip,vflip[rotate];[rotate]';
 			}
 
-			if ( $options['video_bitrate_flag'] == 'on'
-				|| $options['ffmpeg_old_rotation'] == 'on'
-			) {
-				$rotate_array[] = '-metadata';
-				$rotate_array[] = 'rotate=0';
-			} else {
-				$rotate_array[] = '-metadata:s:v:0';
-				$rotate_array[] = 'rotate=0';
-			}
+			$rotate_array[] = '-metadata:s:v:0';
+			$rotate_array[] = 'rotate=0';
 
 			break;
 
