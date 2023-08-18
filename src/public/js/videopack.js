@@ -405,14 +405,6 @@ function kgvid_setup_video(id) {
 			}
 		}
 
-		if ( video_vars.player_type == "Video.js"
-			&& video_vars.autoplay == "true"
-			&& ! player.paused() && player.hasClass( 'vjs-paused' )
-		) {
-			player.pause();
-			player.play();
-		}
-
 		player.on(
 			'loadedmetadata',
 			function(){
@@ -951,23 +943,8 @@ function kgvid_resize_video(id) {
 								} else {
 									player.changeRes( set_res + 'p' );
 								}
-
-							}
-
-						}
-
-						if ( ( video_vars.player_type == "Video.js" ) && jQuery( '#video_' + id ).hasClass( 'vjs-has-started' ) == false ) {
-							if ( player.muted() == true ) {
-								player.muted( false );
-								player.muted( true );
-							} // reset volume and mute otherwise player doesn't display properly
-							if ( player.volume() != 1 ) {
-								var current_volume = player.volume();
-								player.volume( 1 );
-								player.volume( current_volume );
 							}
 						}
-
 					} //automatic
 				}
 			}
