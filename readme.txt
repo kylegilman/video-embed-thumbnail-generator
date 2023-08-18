@@ -106,6 +106,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 == Changelog ==
 
 = 4.9 - August XX, 2023 =
+* Removed Video.js v5.
 * Removed support for versions of FFMPEG older than approximately 10 years.
 * Improved methods for determining the mime type of URLs and animated GIF detection.
 * Revised FFMPEG scaling method to use the "scale" video filter instead of -s
