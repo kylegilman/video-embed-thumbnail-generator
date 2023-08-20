@@ -4,12 +4,46 @@
             "name": "freemius/wordpress-sdk",
             "version": "2.5.10",
             "version_normalized": "2.5.10.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Freemius/wordpress-sdk.git",
+                "reference": "05bac841008b705bff9636f782c96fb0a73e615b"
+            },
             "dist": {
                 "type": "zip",
-                "url": "C:\\Users\\kyleg\\Downloads\\wordpress-sdk-2.5.10.zip"
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/05bac841008b705bff9636f782c96fb0a73e615b",
+                "reference": "05bac841008b705bff9636f782c96fb0a73e615b",
+                "shasum": ""
             },
+            "require": {
+                "php": ">=5.2"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+                "wp-coding-standards/wpcs": "^2.3"
+            },
+            "time": "2023-07-18T06:35:08+00:00",
             "type": "library",
             "installation-source": "dist",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-only"
+            ],
+            "description": "Freemius WordPress SDK",
+            "homepage": "https://freemius.com",
+            "keywords": [
+                "freemius",
+                "plugin",
+                "sdk",
+                "theme",
+                "wordpress",
+                "wordpress-plugin",
+                "wordpress-theme"
+            ],
+            "support": {
+                "issues": "https://github.com/Freemius/wordpress-sdk/issues",
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.5.10"
+            },
             "install-path": "../freemius/wordpress-sdk"
         },
         {
@@ -100,24 +134,24 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.24",
-            "version_normalized": "5.4.24.0",
+            "version": "v5.4.26",
+            "version_normalized": "5.4.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "e3c46cc5689c8782944274bb30702106ecbe3b64"
+                "reference": "1a44dc377ec86a50fab40d066cd061e28a6b482f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/e3c46cc5689c8782944274bb30702106ecbe3b64",
-                "reference": "e3c46cc5689c8782944274bb30702106ecbe3b64",
+                "url": "https://api.github.com/repos/symfony/process/zipball/1a44dc377ec86a50fab40d066cd061e28a6b482f",
+                "reference": "1a44dc377ec86a50fab40d066cd061e28a6b482f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2.5",
                 "symfony/polyfill-php80": "^1.16"
             },
-            "time": "2023-05-17T11:26:05+00:00",
+            "time": "2023-07-12T15:44:31+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -145,7 +179,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.24"
+                "source": "https://github.com/symfony/process/tree/v5.4.26"
             },
             "funding": [
                 {
