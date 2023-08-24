@@ -2053,7 +2053,7 @@ function kgvid_save_plugin_settings(input_obj) {
 							{ action: "kgvid_test_ffmpeg_thumb_watermark",
 								security: kgflashmediaplayersecurity
 							},
-							function(thumb_url) {
+							function( thumb_url ) {
 								if ( thumb_url ) {
 									jQuery( '#ffmpeg_thumb_watermark_example' ).empty().append( '<img src="' + thumb_url + '?' + String( Math.floor( (Math.random() * 1000) + 1 ) ) + '" style="margin-top:10px;width:640px;">' ).slideDown( 'slow' );
 								}
