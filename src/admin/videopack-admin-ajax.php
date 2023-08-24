@@ -384,7 +384,7 @@ function kgvid_ajax_save_html5_thumb() {
 
 		$editor = kgvid_decode_base64_png( $raw_png, $tmp_posterpath );
 
-		if ( is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
+		if ( $editor === false || is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
 
 			$raw_post = file_get_contents( 'php://input' );
 			parse_str( $raw_post, $alt_post );
@@ -392,7 +392,7 @@ function kgvid_ajax_save_html5_thumb() {
 
 		}
 
-		if ( is_wp_error( $editor ) ) {
+		if ( $editor === false || is_wp_error( $editor ) ) {
 			$thumb_url = false;
 		} else {
 			$thumb_dimensions = $editor->get_size();
