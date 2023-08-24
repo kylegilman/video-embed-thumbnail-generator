@@ -238,7 +238,7 @@ function kgvid_video_embed_enqueue_styles() {
 		if ( $options['embed_method'] == 'Video.js v7' ) {
 
 			$videojs_register = array(
-				'version' => '7.21.1',
+				'version' => '7.21.5',
 				'path'    => 'v7',
 			);
 

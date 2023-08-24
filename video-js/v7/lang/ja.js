@@ -9,6 +9,8 @@ videojs.addLanguage('ja', {
   "Remaining Time": "残りの時間",
   "Stream Type": "ストリームの種類",
   "LIVE": "ライブ",
+  "Seek to live, currently behind live": "ライブまで再生位置を指定、現在ライブが遅れています。",
+  "Seek to live, currently playing live": "ライブまで再生位置を指定、現在ライブ中。",
   "Loaded": "ロード済み",
   "Progress": "進行状況",
   "Progress Bar": "シークバー",
@@ -16,7 +18,7 @@ videojs.addLanguage('ja', {
   "Fullscreen": "フルスクリーン",
   "Non-Fullscreen": "フルスクリーン以外",
   "Mute": "ミュート",
-  "Unmute": "ミュート解除",
+  "Unmute": "サウンドをオン",
   "Playback Rate": "再生レート",
   "Subtitles": "サブタイトル",
   "subtitles off": "サブタイトル オフ",
@@ -63,6 +65,8 @@ videojs.addLanguage('ja', {
   "Font Size": "文字サイズ",
   "Text Edge Style": "テキストのアウトラインのスタイル",
   "None": "なし",
+  "Raised": "浮き出し",
+  "Depressed": "浮き彫り",
   "Uniform": "均一",
   "Dropshadow": "影付き",
   "Font Family": "フォントの種類",
@@ -70,6 +74,8 @@ videojs.addLanguage('ja', {
   "Monospace Sans-Serif": "セリフなし等幅フォント",
   "Proportional Serif": "セリフあり可変幅フォント",
   "Monospace Serif": "セリフあり等幅フォント",
+  "Casual": "カジュアル",
+  "Script": "スクリプト",
   "Small Caps": "スモールキャピタル",
   "Reset": "リセット",
   "restore all settings to the default values": "すべての設定をデフォルト値に戻す",
@@ -79,5 +85,6 @@ videojs.addLanguage('ja', {
   "End of dialog window.": "ダイアログボックスの終了",
   "{1} is loading.": "{1}は読み込み中です。",
   "Exit Picture-in-Picture": "ピクチャーインピクチャー機能の終了",
-  "Picture-in-Picture": "ピクチャーインピクチャー"
+  "Picture-in-Picture": "ピクチャーインピクチャー",
+  "No content": "コンテンツなし"
 });

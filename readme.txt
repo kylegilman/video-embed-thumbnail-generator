@@ -114,6 +114,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 * Revised FFMPEG scaling method to use the "scale" video filter instead of -s
 * Removed width setting from custom video encoding formats. Width will be calculated automatically to match the aspect ratio of the original video.
 * Added new sample video to plugin settings page.
+* Updated Video.js to v8.5.2 and v7.21.5
 * Updated Symfony/Process to v5.4.26
 
 = 4.8.11 - July 5, 2023 =
