@@ -480,6 +480,79 @@ function kgvid_ajax_redraw_thumbnail_box() {
 }
 add_action( 'wp_ajax_kgvid_redraw_thumbnail_box', 'kgvid_ajax_redraw_thumbnail_box' );
 
+function kgvid_test_ffmpeg() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	$options       = kgvid_get_options();
+	$uploads       = wp_upload_dir();
+	$video_formats = kgvid_video_formats();
+	$suffix        = $video_formats[ $options['sample_format'] ]['suffix'];
+
+	if ( array_key_exists( 'encode_array', $options ) && is_array( $options['encode_array'] ) ) {
+
+		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $options['encode_array'] );
+
+		try {
+			$process->run();
+			$output = $process->getErrorOutput();
+		} catch ( \Exception $e ) {
+			$output = 'Error: ' . $e->getMessage();
+		}
+
+		$arr['output'] = esc_textarea( $output );
+
+		if ( file_exists( $uploads['path'] . '/Adobestock_469037984' . $suffix ) ) {
+
+			if ( $options['moov'] == 'qt-faststart' || $options['moov'] == 'MP4Box' ) {
+				$arr['output'] .= kgvid_fix_moov_atom( $uploads['path'] . '/Adobestock_469037984' . $suffix );
+			}
+
+			if ( ! empty( $options['ffmpeg_watermark']['url'] ) ) {
+
+				wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
+
+				$watermark_test = kgvid_process_thumb(
+					$uploads['path'] . '/Adobestock_469037984' . $suffix,
+					$uploads['path'] . '/thumb_tmp/watermark_test.jpg'
+				);
+
+				kgvid_schedule_cleanup_generated_files( 'thumbs' );
+
+				if ( file_exists( $uploads['path'] . '/thumb_tmp/watermark_test.jpg' ) ) {
+					$arr['watermark_preview'] = $uploads['url'] . '/thumb_tmp/watermark_test.jpg';
+				}
+			}
+
+			wp_delete_file( $uploads['path'] . '/Adobestock_469037984' . $suffix );
+
+		}
+	} else {
+		/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is the path to the application. */
+		$arr['output'] = sprintf( esc_html__( '%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( $options['app_path'] ) );
+	}
+
+	wp_send_json( $arr );
+}
+add_action( 'wp_ajax_kgvid_test_ffmpeg', 'kgvid_test_ffmpeg' );
+
+function kgvid_test_ffmpeg_thumb_watermark() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	$random_timecode = wp_rand( 0, 1092 ) / 1000;
+	$thumb           = kgvid_make_thumbs( 'singleurl', plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4', 1, 1, 1, $random_timecode, false, 'generate' );
+
+	if ( array_key_exists( 'real_thumb_url', $thumb ) ) {
+		echo esc_url( $thumb['real_thumb_url'] );
+	} else {
+		echo false;
+	}
+
+	die;
+}
+add_action( 'wp_ajax_kgvid_test_ffmpeg_thumb_watermark', 'kgvid_test_ffmpeg_thumb_watermark' );
+
 function kgvid_callffmpeg() {
 
 	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
