@@ -11,8 +11,8 @@ videojs.addLanguage('de', {
   "Progress": "Status",
   "Fullscreen": "Vollbild",
   "Non-Fullscreen": "Vollbildmodus beenden",
-  "Mute": "Ton aus",
-  "Unmute": "Ton ein",
+  "Mute": "Stumm schalten",
+  "Unmute": "Ton einschalten",
   "Playback Rate": "Wiedergabegeschwindigkeit",
   "Subtitles": "Untertitel",
   "subtitles off": "Untertitel aus",
@@ -85,5 +85,6 @@ videojs.addLanguage('de', {
   "Seek to live, currently behind live": "Zur Live-Übertragung wechseln. Aktuell wird es nicht live abgespielt.",
   "Seek to live, currently playing live": "Zur Live-Übertragung wechseln. Es wird aktuell live abgespielt.",
   "Exit Picture-in-Picture": "Bild-im-Bild-Modus beenden",
-  "Picture-in-Picture": "Bild-im-Bild-Modus"
+  "Picture-in-Picture": "Bild-im-Bild-Modus",
+  "No content": "Kein Inhalt"
 });
