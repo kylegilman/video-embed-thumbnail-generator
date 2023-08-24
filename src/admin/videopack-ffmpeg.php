@@ -475,20 +475,17 @@ function kgvid_get_video_dimensions( $video = false ) {
 	$movie_info   = array();
 	$codec_output = array();
 
-	if ( strpos( $video, 'http' ) === 0 ) { // if it's a URL
+	if ( kgvid_filter_validate_url( $video ) ) { // if it's a URL
 
 		$video_id = kgvid_url_to_id( $video );
 
 		if ( $video_id ) {
-
 			$video_path = get_attached_file( $video_id );
 			if ( file_exists( $video_path ) ) {
 				$video = $video_path;
 			}
-		} elseif ( ! empty( $options['htaccess_login'] )
-			&& strpos( $video, 'http' ) === 0
-		) { // not in the database
-				$video = substr_replace( $video, $options['htaccess_login'] . ':' . $options['htaccess_password'] . '@', 7, 0 );
+		} else { // not in the database
+				$video = kgvid_insert_htaccess_login( $video );
 		}
 	}
 
@@ -709,7 +706,7 @@ function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $thumb 
 			$watermark_valign = '';
 		} //top justified
 
-		if ( strpos( $ffmpeg_watermark['url'], 'http' ) === 0 ) {
+		if ( kgvid_filter_validate_url( $ffmpeg_watermark['url'] ) ) {
 			$watermark_id = false;
 			$watermark_id = kgvid_url_to_id( $ffmpeg_watermark['url'] );
 			if ( $watermark_id ) {
@@ -759,10 +756,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		$profile_flag       = 'profile:v';
 		$level_flag         = 'level:v';
 		$qscale_flag        = 'q:v';
-
-		$rotate_strings = kgvid_ffmpeg_rotate_array( $rotate, $width, $height );
-		//$width          = $rotate_strings['width']; // in case rotation requires swapping height and width
-		//$height         = $rotate_strings['height'];
 
 		if ( $options['rate_control'] === 'crf' ) {
 			$crf_option = $video_formats[ $format ]['type'] . '_CRF';
@@ -885,11 +878,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$nice = 'nice';
 		}
 
-		if ( ! empty( $options['htaccess_login'] )
-			&& strpos( $input, 'http://' ) === 0
-		) {
-			$input = substr_replace( $input, $options['htaccess_login'] . ':' . $options['htaccess_password'] . '@', 7, 0 );
-		}
+		$input = kgvid_insert_htaccess_login( $input );
 
 		$nostdin = '';
 		if ( $options['nostdin'] === 'on'
@@ -2021,7 +2010,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 			$movie_info['worked'] = true;
 		}
 	} else {
-		$moviefilepath = esc_url_raw( str_replace( ' ', '%20', $movieurl ) );
+		$moviefilepath = kgvid_sanitize_text_field( str_replace( ' ', '%20', $movieurl ) );
 		$movie_info    = kgvid_get_video_dimensions( $moviefilepath );
 	}
 
@@ -2052,13 +2041,13 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 
 		$jpgpath = $uploads['path'] . '/thumb_tmp/';
 
-		$movieoffset = round( ( floatval( $movie_info['duration'] ) * $iincreaser ) / ( $numberofthumbs * 2 ), 2 );
+		$movieoffset = round( ( floatval( $movie_info['duration'] ) * $iincreaser ) / ( $numberofthumbs * 2 ), 3 );
 		if ( $movieoffset > floatval( $movie_info['duration'] ) ) {
 			$movieoffset = floatval( $movie_info['duration'] );
 		}
 
 		if ( $generate_button === 'random' ) { // adjust offset random amount
-			$movieoffset = $movieoffset - rand( 0, round( intval( $movie_info['duration'] ) / $numberofthumbs ) );
+			$movieoffset = $movieoffset - wp_rand( 0, round( floatval( $movie_info['duration'], 3 ) / $numberofthumbs ) );
 			if ( $movieoffset < 0 ) {
 				$movieoffset = '0';
 			}
@@ -2087,10 +2076,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
 		$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
-		if ( ! empty( $options['htaccess_login'] ) && strpos( $moviefilepath, 'http://' ) === 0 ) {
-			$moviefilepath = substr_replace( $moviefilepath, $options['htaccess_login'] . ':' . $options['htaccess_password'] . '@', 7, 0 );
-		}
-
+		$moviefilepath     = kgvid_insert_htaccess_login( $moviefilepath );
 		$rotate_strings    = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
 		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_thumb_watermark'], $movie_height, true );
 
@@ -2102,7 +2088,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 			$moviefilepath,
 			$thumbnailfilename[ $i ],
 			$options['app_path'],
-			round( $movieoffset ),
+			round( $movieoffset, 3 ),
 			$rotate_strings['rotate'],
 			$watermark_strings
 		);

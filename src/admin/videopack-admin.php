@@ -238,6 +238,33 @@ function kgvid_filter_validate_url( $uri ) {
 	return false;
 }
 
+function kgvid_insert_htaccess_login( $url ) {
+
+	if ( ! empty( $options['htaccess_login'] )
+			&& kgvid_filter_validate_url( $url )
+	) {
+		$options = get_option( 'kgvid_video_embed_options' );
+
+		$url_parts = wp_parse_url( $url );
+		if ( ! isset( $url_parts['scheme'] ) || ! isset( $url_parts['host'] ) ) {
+			return false; // Invalid URL
+		}
+
+		$auth     = $options['htaccess_login'] . ':' . $options['htaccess_password'];
+		$port     = isset( $url_parts['port'] ) ? ':' . $url_parts['port'] : '';
+		$path     = isset( $url_parts['path'] ) ? $url_parts['path'] : '';
+		$query    = isset( $url_parts['query'] ) ? '?' . $url_parts['query'] : '';
+		$fragment = isset( $url_parts['fragment'] ) ? '#' . $url_parts['fragment'] : '';
+
+		$new_url = "{$url_parts['scheme']}://{$auth}@{$url_parts['host']}{$port}{$path}{$query}{$fragment}";
+
+		return $new_url;
+
+	} else {
+		return $url;
+	}
+}
+
 function kgvid_sanitize_text_field( $text_field ) {
 	// recursively sanitizes user input.
 	$old_field = $text_field;
