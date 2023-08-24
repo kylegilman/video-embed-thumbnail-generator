@@ -215,7 +215,7 @@ function kgvid_filter_validate_url( $uri ) {
 	$res = filter_var( $uri, FILTER_VALIDATE_URL );
 
 	if ( $res ) {
-		return $res;
+		return true;
 	}
 	// Check if it has unicode chars.
 	$l = mb_strlen( $uri );
@@ -232,9 +232,10 @@ function kgvid_filter_validate_url( $uri ) {
 		$res = filter_var( $s, FILTER_VALIDATE_URL );
 		if ( $res ) {
 			$uri = $res;
-			return 1;
+			return true;
 		}
 	}
+	return false;
 }
 
 function kgvid_sanitize_text_field( $text_field ) {
