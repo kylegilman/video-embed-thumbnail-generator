@@ -512,9 +512,12 @@ function kgvid_test_ffmpeg() {
 
 				wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 
-				$watermark_test = kgvid_process_thumb(
+				$random_timecode = wp_rand( 0, 1092 ) / 1000;
+				$watermark_test  = kgvid_process_thumb(
 					$uploads['path'] . '/Adobestock_469037984' . $suffix,
-					$uploads['path'] . '/thumb_tmp/watermark_test.jpg'
+					$uploads['path'] . '/thumb_tmp/watermark_test.jpg',
+					false,
+					$random_timecode
 				);
 
 				kgvid_schedule_cleanup_generated_files( 'thumbs' );
