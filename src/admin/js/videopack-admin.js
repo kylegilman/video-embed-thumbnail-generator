@@ -2218,6 +2218,17 @@ function kgvid_hide_plugin_settings() {
 			jQuery( '#resize_div' ).show();
 		}
 
+		if ( playback_option == "Video.js v8" ) {
+			jQuery( '#skip_buttons_span' ).show();
+			if ( jQuery( '#skip_buttons' ).prop( 'checked' ) ) {
+				jQuery( '#skip_forward_backward_span' ).show();
+			} else {
+				jQuery( '#skip_forward_backward_span' ).hide();
+			}
+		} else {
+			jQuery( '#skip_buttons_span' ).hide();
+		}
+
 		if ( playback_option == "WordPress Default" ) {
 			jQuery( '#auto_res' ).parents().eq( 1 ).show();
 			jQuery( '#playback_rate' ).parents().eq( 1 ).show();
