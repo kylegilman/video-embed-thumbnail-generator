@@ -108,6 +108,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 = 4.9 - August XX, 2023 =
 * Removed Video.js v5.
 * Removed support for versions of FFMPEG older than approximately 10 years.
+* Added options for skip forward/backward buttons in Video.js v8 players.
 * Fixed bug that rotated vertical videos incorrectly when encoding video formats.
 * Restored video thumbnail watermark previews on the settings page.
 * Improved methods for determining the mime type of URLs and animated GIF detection.

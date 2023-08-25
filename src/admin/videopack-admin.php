@@ -76,6 +76,9 @@ function kgvid_default_options_fn() {
 		'gifmode'                 => false,
 		'preload'                 => 'metadata',
 		'playback_rate'           => false,
+		'skip_buttons'            => false,
+		'skip_forward'            => 10,
+		'skip_backward'           => 10,
 		'endofvideooverlay'       => false,
 		'endofvideooverlaysame'   => '',
 		'skin'                    => 'kg-video-js-skin',
@@ -1537,10 +1540,6 @@ function kgvid_controls_callback() {
 
 	echo "<input class='affects_player' " . checked( $options['controls'], 'on', false ) . " id='controls' name='kgvid_video_embed_options[controls]' type='checkbox' /> <label for='controls'>" . esc_html__( 'Enable player controls.', 'video-embed-thumbnail-generator' ) . "</label><br />\n\t";
 
-	echo "<input class='affects_player' " . checked( $options['nativecontrolsfortouch'], 'on', false ) . " id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>" . esc_html__( 'Show native controls on mobile devices.', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.', 'video-embed-thumbnail-generator' ) ) );
-	echo "\n\t";
-
 	echo "<input class='affects_player' " . checked( $options['autoplay'], 'on', false ) . " id='autoplay' name='kgvid_video_embed_options[autoplay]' type='checkbox' /> <label for='autoplay'>" . esc_html__( 'Autoplay.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Most browsers will only autoplay videos if the video starts muted.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
@@ -1555,7 +1554,27 @@ function kgvid_controls_callback() {
 
 	echo "<input class='affects_player' " . checked( $options['playback_rate'], 'on', false ) . " id='playback_rate' name='kgvid_video_embed_options[playback_rate]' type='checkbox' /> <label for='playback_rate'>" . esc_html__( 'Enable variable playback rates.', 'video-embed-thumbnail-generator' ) . "</label><br>\n\t";
 
+	echo '<span id="skip_buttons_span"><input ' . checked( $options['skip_buttons'], 'on', false ) . " id='skip_buttons' name='kgvid_video_embed_options[skip_buttons]' onchange='kgvid_hide_plugin_settings()' type='checkbox' /> <label for='skip_buttons'>" . esc_html__( 'Show skip forward/backward controls.', 'video-embed-thumbnail-generator' ) . '</label><br />';
+	echo '<span ';
+	if ( $options['skip_buttons'] !== 'on' ) {
+		echo "style='display:none;' ";
+	}
+	echo "id='skip_forward_backward_span'> Skip backward: ";
+	$items = array(
+		__( '5 seconds', 'video-embed-thumbnail-generator' )  => 5,
+		__( '10 seconds', 'video-embed-thumbnail-generator' ) => 10,
+		__( '30 seconds', 'video-embed-thumbnail-generator' ) => 30,
+	);
+	echo wp_kses( kgvid_generate_settings_select_html( 'skip_backward', $options, $items, 'affects_player' ), kgvid_allowed_html( 'admin' ) );
+	echo '<br />Skip forward: ';
+	echo wp_kses( kgvid_generate_settings_select_html( 'skip_forward', $options, $items, 'affects_player' ), kgvid_allowed_html( 'admin' ) );
+	echo '<br /></span></span>';
+
 	echo '<input ' . checked( $options['pauseothervideos'], 'on', false ) . " id='pauseothervideos' name='kgvid_video_embed_options[pauseothervideos]' type='checkbox' /> <label for='pauseothervideos'>" . esc_html__( 'Pause other videos on page when starting a new video.', 'video-embed-thumbnail-generator' ) . "</label><br />\n\t";
+
+	echo "<input class='affects_player' " . checked( $options['nativecontrolsfortouch'], 'on', false ) . " id='nativecontrolsfortouch' name='kgvid_video_embed_options[nativecontrolsfortouch]' type='checkbox' /> <label for='nativecontrolsfortouch'>" . esc_html__( 'Show native controls on mobile devices.', 'video-embed-thumbnail-generator' ) . '</label>';
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Disable Video.js styling and show the built-in video controls on mobile devices. This will disable the resolution selection button.', 'video-embed-thumbnail-generator' ) ) );
+	echo "\n\t";
 
 	$items = array();
 	for ( $percent = 0; $percent <= 1.05; $percent = $percent + 0.05 ) {
@@ -2700,6 +2719,9 @@ function kgvid_init_plugin() {
 			if ( $options['embed_method'] === 'Video.js' ) {
 				$options['embed_method'] = 'Video.js v8';
 			}
+			$options['skip_buttons']  = false;
+			$options['skip_forward']  = 10;
+			$options['skip_backward'] = 10;
 		}
 
 		if ( $options['version'] != $default_options['version'] ) {

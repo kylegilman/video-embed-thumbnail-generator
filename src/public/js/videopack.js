@@ -300,14 +300,9 @@ function kgvid_load_videojs(video_vars) {
 
 	var videojs_options = {
 		"language": video_vars.locale,
-		"restoreEl": true
+		"restoreEl": true,
+		"responsive": true,
 	};
-
-	if ( videojs.browser.IS_IPHONE == true ) {
-		videojs_options.html5 = { "nativeTextTracks" : true };
-	} else {
-		videojs_options.html5 = { "nativeTextTracks" : false };
-	}
 
 	if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
 		videojs_options.fluid = true;
@@ -328,15 +323,27 @@ function kgvid_load_videojs(video_vars) {
 	if ( video_vars.playback_rate == "true" ) {
 		videojs_options.playbackRates = [0.5, 1, 1.25, 1.5, 2];
 	}
+
+	if ( 'forward' in video_vars.skip_buttons && 'backward' in video_vars.skip_buttons ) {
+		videojs_options.controlBar = {
+			skipButtons: {
+				forward: Number( video_vars.skip_buttons.forward ),
+				backward: Number( video_vars.skip_buttons.backward ),
+			}
+		}
+	}
+
 	if ( video_vars.enable_resolutions_plugin == "true" ) {
 
 		if ( videojs.VERSION.split( '.' )[0] >= 5 ) {
-
-			videojs_options.plugins = { "resolutionSelector" : { "force_types" : ["video/mp4"] } };
+			videojs_options.plugins = {
+				"resolutionSelector": {
+					"force_types": ["video/mp4"]
+				}
+			};
 			if ( video_vars.default_res ) {
 				videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
 			}
-
 		} else {
 			console.warn( 'Video Embed & Thumbnail Generator: Video.js version ' + videojs.VERSION + ' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.' );
 		}
@@ -345,7 +352,7 @@ function kgvid_load_videojs(video_vars) {
 	if ( typeof videojs.getPlayer( 'video_' + video_vars.id ) !== 'undefined' ) {
 		videojs( 'video_' + video_vars.id ).dispose();
 	}
-
+console.log(videojs_options);
 	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){ kgvid_setup_video( video_vars.id ); } );
 
 }

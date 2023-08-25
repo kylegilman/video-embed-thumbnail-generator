@@ -1135,8 +1135,18 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			'right_click'       => $query_atts['right_click'],
 			'playback_rate'     => $query_atts['playback_rate'],
 			'title'             => $stats_title,
+			'skip_buttons'      => array(),
 		);
 		$video_variables = apply_filters( 'kgvid_video_variables', $video_variables, $query_atts, $encodevideo_info );
+
+		if ( $options['embed_method'] === 'Video.js v8'
+			&& $options['skip_buttons'] == 'on'
+		) {
+			$video_variables['skip_buttons'] = array(
+				'forward'  => $options['skip_forward'],
+				'backward' => $options['skip_backward'],
+			);
+		}
 
 		if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js'
 			|| $options['embed_method'] == 'None'
