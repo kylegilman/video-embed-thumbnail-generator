@@ -1240,7 +1240,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( ! empty( $id )
 				&& $query_atts['embeddable'] == 'true'
 			) {
-				$schema_embedurl = site_url( '/' ) . '?attachment_id=' . $id . '&amp;kgvid_video_embed[enable]=true';
+				$schema_embedurl = site_url( '/' ) . '?attachment_id=' . $id . '&amp;videopack[enable]=true';
 			} else {
 				$schema_embedurl = $content;
 			}
