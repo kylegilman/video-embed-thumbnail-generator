@@ -4042,6 +4042,7 @@ function kgvid_add_contextual_help_tab() {
 <li><code>loop="true/false"</code></li>
 <li><code>autoplay="true/false"</code></li>
 <li><code>playsinline="true/false"</code> ' . esc_html__( 'Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator' ) . '</li>
+<li><code>skip_buttons="true/false"</code> ' . esc_html__( 'Add skip forward/backward buttons.', 'video-embed-thumbnail-generator' ) . '</li>
 <li><code>gifmode="true/false"</code> ' . esc_html__( 'Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator' ) . '</li>
 <li><code>pauseothervideos="true/false"</code> ' . esc_html__( 'video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator' ) . '</li>
 <li><code>preload="metadata/auto/none"</code> ' . esc_html__( 'indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator' ) . '</li>
