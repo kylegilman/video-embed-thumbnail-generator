@@ -765,6 +765,7 @@ function kgvid_setup_video(id) {
 	if ( video_vars.resize == "true"
 		|| video_vars.auto_res == "automatic"
 		|| window.location.search.indexOf( "kgvid_video_embed[enable]=true" ) !== -1
+		|| window.location.search.indexOf( "videopack[enable]=true" ) !== -1
 	) {
 		kgvid_resize_video( id );
 		var resizeId;
@@ -1251,13 +1252,13 @@ function kgvid_change_start_at(id) {
 	parsed_embed_code = jQuery.parseHTML( embed_code );
 	var old_src       = jQuery( parsed_embed_code ).attr( 'src' );
 
-	if ( old_src.indexOf( '&kgvid_video_embed[start]=' ) !== -1 ) { // start value exists
+	if ( old_src.indexOf( '&videopack[start]=' ) !== -1 ) { // start value exists
 		var src_array = old_src.split( '&' );
 		old_src       = src_array[0] + '&' + src_array[1];
 	}
 
 	if ( jQuery( '#video_' + id + '_embed .kgvid_start_at_enable' ).prop( 'checked' ) ) {
-		var new_src = old_src + '&kgvid_video_embed[start]=' + jQuery( '#video_' + id + '_embed .kgvid_start_at' ).val();
+		var new_src = old_src + '&videopack[start]=' + jQuery( '#video_' + id + '_embed .kgvid_start_at' ).val();
 	} else {
 		var new_src = old_src;
 	}
