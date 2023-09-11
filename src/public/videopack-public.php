@@ -1140,7 +1140,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		$video_variables = apply_filters( 'kgvid_video_variables', $video_variables, $query_atts, $encodevideo_info );
 
 		if ( $options['embed_method'] === 'Video.js v8'
-			&& $options['skip_buttons'] == 'on'
+			&& $query_atts['skip_buttons'] == 'true'
 		) {
 			$video_variables['skip_buttons'] = array(
 				'forward'  => $options['skip_forward'],
@@ -1784,6 +1784,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'muted'                  => $options['muted'],
 		'preload'                => $options['preload'],
 		'playback_rate'          => $options['playback_rate'],
+		'skip_buttons'           => $options['skip_buttons'],
 		'title'                  => $options['overlay_title'],
 		'embedcode'              => $options['overlay_embedcode'],
 		'embeddable'             => $options['embeddable'],
@@ -1881,6 +1882,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'pixel_ratio',
 		'schema',
 		'gifmode',
+		'skip_buttons',
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[ $query ] == 'on' ) {
