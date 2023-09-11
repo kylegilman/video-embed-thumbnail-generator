@@ -34,7 +34,7 @@ function kgvid_save_encode_queue( $video_encode_queue ) {
 	}
 }
 
-function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $watermark_strings = array() ) {
+function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $filter_complex = array() ) {
 
 	$options = kgvid_get_options();
 	if ( empty( $options ) ) {
@@ -56,9 +56,9 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 		$input,
 	);
 
-	if ( ! empty( $watermark_strings['input'] ) ) {
+	if ( ! empty( $filter_complex['input'] ) ) {
 		$before_thumb_options[] = '-i';
-		$before_thumb_options[] = $watermark_strings['input'];
+		$before_thumb_options[] = $filter_complex['input'];
 	}
 
 	$thumb_options = array(
@@ -74,9 +74,9 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 		$thumb_options = array_merge( $thumb_options, $rotate_array );
 	}
 
-	if ( ! empty( $watermark_strings['input'] ) ) {
+	if ( ! empty( $filter_complex['input'] ) ) {
 		$thumb_options[] = '-filter_complex';
-		$thumb_options[] = $watermark_strings['filter'];
+		$thumb_options[] = $filter_complex['filter'];
 	}
 
 	$thumb_options[] = $output;
@@ -681,7 +681,7 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 	return $rotate_strings;
 }
 
-function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $thumb = false ) {
+function kgvid_filter_complex( $ffmpeg_watermark, $movie_height, $thumb = false ) {
 
 	if ( is_array( $ffmpeg_watermark )
 		&& array_key_exists( 'url', $ffmpeg_watermark )
@@ -725,19 +725,19 @@ function kgvid_ffmpeg_watermark_array( $ffmpeg_watermark, $movie_height, $thumb 
 		}
 		$overlay_watermark = '[scaled][watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 );
 
-		$watermark_array['input']  = $ffmpeg_watermark['url'];
-		$watermark_array['filter'] = $watermark_filters . $scale_main_video . $overlay_watermark;
+		$filter_complex['input']  = $ffmpeg_watermark['url'];
+		$filter_complex['filter'] = $watermark_filters . $scale_main_video . $overlay_watermark;
 
 	} else {
-		$watermark_array['input'] = '';
+		$filter_complex['input'] = '';
 		if ( $thumb ) {
-			$watermark_array['filter'] = '[0:v]scale=iw*sar:ih';
+			$filter_complex['filter'] = '[0:v]scale=iw*sar:ih';
 		} else {
-			$watermark_array['filter'] = '[0:v]scale=-2:' . $movie_height;
+			$filter_complex['filter'] = '[0:v]scale=-2:' . $movie_height;
 		}
 	}
 
-	return $watermark_array;
+	return $filter_complex;
 }
 
 function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $width, $height, $rotate ) {
@@ -792,7 +792,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$audio_channels_flag = array();
 		}
 
-		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_watermark'], $height, false );
+		$filter_complex = kgvid_filter_complex( $options['ffmpeg_watermark'], $height, false );
 
 		if ( $video_formats[ $format ]['type'] === 'h264' ) {
 
@@ -896,9 +896,9 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$input,
 		);
 
-		if ( ! empty( $watermark_strings['input'] ) ) {
+		if ( ! empty( $filter_complex['input'] ) ) {
 			$encode_array_before_options[] = '-i';
-			$encode_array_before_options[] = $watermark_strings['input'];
+			$encode_array_before_options[] = $filter_complex['input'];
 		}
 
 		$encode_array_after_options = array(
@@ -906,11 +906,8 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$options['threads'],
 		);
 
-		if ( ! empty( $watermark_strings['input'] ) ) {
-			$encode_array_after_options[] = '-filter_complex';
-			$encode_array_after_options[] = $watermark_strings['filter'];
-		}
-
+		$encode_array_after_options[] = '-filter_complex';
+		$encode_array_after_options[] = $filter_complex['filter'];
 		$encode_array_after_options[] = $output;
 
 		$encode_array = array_merge(
@@ -918,7 +915,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$ffmpeg_options,
 			$audio_channels_flag,
 			$rate_control_flag,
-			//$rotate_strings['rotate'],
 			$encode_array_after_options
 		);
 
@@ -2047,7 +2043,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		}
 
 		if ( $generate_button === 'random' ) { // adjust offset random amount
-			$movieoffset = $movieoffset - wp_rand( 0, round( floatval( $movie_info['duration'], 3 ) / $numberofthumbs ) );
+			$movieoffset = $movieoffset - wp_rand( 0, round( floatval( $movie_info['duration'] ), 3 ) / $numberofthumbs );
 			if ( $movieoffset < 0 ) {
 				$movieoffset = '0';
 			}
@@ -2078,7 +2074,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 
 		$moviefilepath     = kgvid_insert_htaccess_login( $moviefilepath );
 		$rotate_strings    = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
-		$watermark_strings = kgvid_ffmpeg_watermark_array( $options['ffmpeg_thumb_watermark'], $movie_height, true );
+		$filter_complex = kgvid_filter_complex( $options['ffmpeg_thumb_watermark'], $movie_height, true );
 
 		$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
 		$tmp_thumbnailurl   = str_replace( ' ', '_', $tmp_thumbnailurl );
@@ -2090,7 +2086,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 			$options['app_path'],
 			round( $movieoffset, 3 ),
 			$rotate_strings['rotate'],
-			$watermark_strings
+			$filter_complex
 		);
 
 		if ( is_file( $thumbnailfilename[ $i ] ) ) {

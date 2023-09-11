@@ -1163,8 +1163,9 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 				if ( $encodevideo_info[ $format ]['exists']
 					&& $encodevideo_info[ $format ]['encoding'] == false
 				) {
-
-					if ( array_key_exists( 'height', $encodevideo_info[ $format ] ) && $format_stats['type'] == 'h264' ) {
+					if ( array_key_exists( 'height', $encodevideo_info[ $format ] )
+						&& $format_stats['type'] == 'h264'
+					) {
 						$source_key            = $encodevideo_info[ $format ]['height'];
 						$format_stats['label'] = str_replace( $format_stats['height'], $encodevideo_info[ $format ]['height'], $format_stats['label'] );
 					} else {
