@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.2.5
-Stable tag: 4.9
+Stable tag: 4.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.9.1 - September 14, 2023 =
+* Added option to change default behavior when inserting videos into a post.
 
 = 4.9 - September 12, 2023 =
 * Removed Video.js v5.
