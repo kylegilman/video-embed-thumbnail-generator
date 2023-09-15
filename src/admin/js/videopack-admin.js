@@ -2060,7 +2060,7 @@ function kgvid_save_plugin_settings(input_obj) {
 							{ action: "kgvid_test_ffmpeg_thumb_watermark",
 								security: kgflashmediaplayersecurity
 							},
-							function(thumb_url) {
+							function( thumb_url ) {
 								if ( thumb_url ) {
 									jQuery( '#ffmpeg_thumb_watermark_example' ).empty().append( '<img src="' + thumb_url + '?' + String( Math.floor( (Math.random() * 1000) + 1 ) ) + '" style="margin-top:10px;width:640px;">' ).slideDown( 'slow' );
 								}
@@ -2220,6 +2220,17 @@ function kgvid_hide_plugin_settings() {
 			jQuery( '#playback_rate' ).parents().eq( 1 ).show();
 			jQuery( '#auto_res' ).parents().eq( 1 ).show();
 			jQuery( '#resize_div' ).show();
+		}
+
+		if ( playback_option == "Video.js v8" ) {
+			jQuery( '#skip_buttons_span' ).show();
+			if ( jQuery( '#skip_buttons' ).prop( 'checked' ) ) {
+				jQuery( '#skip_forward_backward_span' ).show();
+			} else {
+				jQuery( '#skip_forward_backward_span' ).hide();
+			}
+		} else {
+			jQuery( '#skip_buttons_span' ).hide();
 		}
 
 		if ( playback_option == "WordPress Default" ) {

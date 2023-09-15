@@ -3,9 +3,9 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
-Tested up to: 6.2
+Tested up to: 6.3
 Requires PHP: 7.3
-Stable tag: 4.8.10
+Stable tag: 4.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,16 +105,35 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 == Changelog ==
 
-= 4.9 - June XX, 2023 =
+= 5.0 - October XX, 2023 =
 * Added a Videopack Block for the block editor.
 * Added overlay/watermarks on video thumbnails without FFmpeg.
 * Added REST API endpoints for thumbnail generation and video encoding.
 * Substantially rewrote the video encode queuing system.
-* Changed many of the custom 'kgvid' filter and action hooks.
-* Removed Video.js v5.
+* Changed custom 'kgvid' filters and action hooks to 'videopack'.
 * Removed LIBAV/AVCONV support.
-* Removed support for versions of FFmpeg that were more than 10 years old.
 * Changed capitalization of FFMPEG to FFmpeg.
+
+= 4.9.1 - September 14, 2023 =
+* Added option to change default behavior when inserting videos into a post.
+
+= 4.9 - September 12, 2023 =
+* Removed Video.js v5.
+* Removed support for FFMPEG versions older than approximately 10 years.
+* Added options for skip forward/backward buttons in Video.js v8 players.
+* Fixed bug that rotated vertical videos incorrectly when encoding video formats.
+* Restored video thumbnail watermark previews on the settings page.
+* Improved methods for determining the mime type of URLs and animated GIF detection.
+* Revised FFMPEG scaling method to use the "scale" video filter instead of -s
+* Removed width setting from custom video encoding formats. Width will be calculated automatically to match the aspect ratio of the original video.
+* Added new sample video to plugin settings page.
+* Updated Video.js to v8.5.2 and v7.21.5
+* Updated Freemius SDK to 2.5.12
+* Updated Symfony/Process to v5.4.28
+
+= 4.8.11 - July 5, 2023 =
+* Fixed bug that always forced vertical videos into a 16:9 aspect ratio when using the Video.js player.
+* Updated Freemius SDK to v2.5.10
 
 = 4.8.10 - June 1, 2023 =
 * Fixed thumbnail generation bugs introduced by WordPress 6.2.
