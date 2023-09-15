@@ -138,6 +138,7 @@ function kgvid_default_options_fn() {
 		'error_email'             => 'nobody',
 		'alwaysloadscripts'       => false,
 		'replace_video_shortcode' => false,
+		'default_insert'          => 'Single Video',
 		'rewrite_attachment_url'  => 'on',
 		'auto_publish_post'       => false,
 		'transient_cache'         => false,
@@ -341,7 +342,7 @@ function kgvid_get_attachment_meta( $post_id ) {
 	$options        = kgvid_get_options();
 	$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
 	$meta_key_array = array(
-		'embed'               => 'Single Video',
+		'embed'               => $options['default_insert'],
 		'width'               => '',
 		'height'              => '',
 		'actualwidth'         => '',
@@ -1686,6 +1687,13 @@ function kgvid_replace_video_shortcode_callback() {
 	$options = kgvid_get_options();
 	echo '<input ' . checked( $options['replace_video_shortcode'], 'on', false ) . " id='replace_video_shortcode' name='kgvid_video_embed_options[replace_video_shortcode]' type='checkbox' /> <label for='replace_video_shortcode'>" . esc_html__( 'Override any existing WordPress built-in "[video]" shortcodes.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "If you have posts or theme files that make use of the built-in WordPress video shortcode, the plugin can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator' ) ) );
+	echo esc_html__( '"Insert into post" button default behavior: ', 'video-embed-thumbnail-generator' );
+	$items = array(
+		__( 'Single Videopack Video', 'video-embed-thumbnail-generator' ) => 'Single Video',
+		__( 'Videopack Video Gallery', 'video-embed-thumbnail-generator' ) => 'Video Gallery',
+		__( 'WordPress Default [video]', 'video-embed-thumbnail-generator' ) => 'WordPress Default',
+	);
+	echo wp_kses( kgvid_generate_settings_select_html( 'default_insert', $options, $items ), kgvid_allowed_html( 'admin' ) );
 	echo "\n\t";
 }
 
@@ -2724,6 +2732,11 @@ function kgvid_init_plugin() {
 			$options['skip_backward'] = 10;
 		}
 
+		if ( version_compare( $options['version'], '4.9.1', '<' ) ) {
+			$options['version']        = '4.9.1';
+			$options['default_insert'] = 'Single Video';
+		}
+
 		if ( $options['version'] != $default_options['version'] ) {
 			$options['version'] = $default_options['version'];
 		}
@@ -3304,8 +3317,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			);
 			$shortcode_select = '<select name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-embed]" id="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-embed]">';
 			foreach ( $items as $name => $value ) {
-				$selected          = ( $kgvid_postmeta['embed'] == $value ) ? 'selected="selected"' : '';
-				$shortcode_select .= "<option value='" . esc_attr( $value ) . "' $selected>" . esc_html( $name ) . '</option>';
+				$shortcode_select .= "<option value='" . esc_attr( $value ) . "' " . selected( $kgvid_postmeta['embed'], $value, false ) . '>' . esc_html( $name ) . '</option>';
 			}
 			$shortcode_select .= '</select>';
 
