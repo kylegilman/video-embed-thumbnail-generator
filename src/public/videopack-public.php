@@ -157,9 +157,6 @@ function kgvid_get_videojs_locale() {
 		'zh-CN' => 'zh_CN',
 		'zh-TW' => 'zh_TW',
 	);
-	if ( $options['embed_method'] == 'Video.js' ) { // v5 doesn't have pt-PT
-		$locale_conversions['pt-BR'] = 'pt_PT';
-	}
 
 	$matching_locale = array_search( $locale, $locale_conversions );
 	if ( $matching_locale !== false ) {
@@ -241,12 +238,11 @@ function kgvid_video_embed_enqueue_styles() {
 		if ( $options['embed_method'] == 'Video.js v7' ) {
 
 			$videojs_register = array(
-				'version' => '7.21.1',
+				'version' => '7.21.5',
 				'path'    => 'v7',
 			);
 
 		}
-
 		if ( $options['embed_method'] == 'Video.js v8' ) {
 
 			$videojs_register = array(
@@ -1258,6 +1254,15 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		$video_variables = kgvid_prepare_video_vars( $query_atts, $id );
 		$source_info     = kgvid_prepare_sources( $content, $id_for_sources );
 
+		if ( $options['embed_method'] === 'Video.js v8'
+			&& $query_atts['skip_buttons'] == 'true'
+		) {
+			$video_variables['skip_buttons'] = array(
+				'forward'  => $options['skip_forward'],
+				'backward' => $options['skip_backward'],
+			);
+		}
+
 		if ( substr( $options['embed_method'], 0, 8 ) === 'Video.js'
 			|| $options['embed_method'] == 'None'
 		) {
@@ -1348,7 +1353,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( ! empty( $id )
 				&& $query_atts['embeddable'] == 'true'
 			) {
-				$schema_embedurl = site_url( '/' ) . '?attachment_id=' . $id . '&amp;kgvid_video_embed[enable]=true';
+				$schema_embedurl = site_url( '/' ) . '?attachment_id=' . $id . '&amp;videopack[enable]=true';
 			} else {
 				$schema_embedurl = $content;
 			}
@@ -1488,9 +1493,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( $query_atts['loop'] == 'true' ) {
 				$code .= 'loop ';
 			}
-			if ( $query_atts['autoplay'] == 'true'
-				&& $options['embed_method'] == 'None'
-			) {
+			if ( $query_atts['autoplay'] == 'true' ) {
 				$code .= 'autoplay ';
 			}
 			if ( $query_atts['controls'] != 'false' ) {
@@ -1528,14 +1531,14 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		}
 		$code      .= "\t\t\t</div>\n";
 		$show_views = false;
-		if ( ( ! empty( $id ) && $query_atts['view_count'] == 'true' ) || ! empty( $query_atts['caption'] ) || $content == plugins_url( '/images/sample-video-h264.mp4', __DIR__ ) ) { // generate content below the video
+		if ( ( ! empty( $id ) && $query_atts['view_count'] == 'true' ) || ! empty( $query_atts['caption'] ) || $content == plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ ) ) { // generate content below the video
 			if ( is_array( $kgvid_postmeta ) && array_key_exists( 'starts', $kgvid_postmeta ) ) {
 				$view_count = number_format( intval( $kgvid_postmeta['starts'] ) );
 			} else {
 				$view_count               = '0';
 				$kgvid_postmeta['starts'] = 0;
 			}
-			if ( $content == plugins_url( '/images/sample-video-h264.mp4', __DIR__ ) ) {
+			if ( $content == plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ ) ) {
 				$view_count = 'XX';
 			}
 			if ( $query_atts['view_count'] == 'true' ) {
@@ -1828,6 +1831,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'muted'                  => $options['muted'],
 		'preload'                => $options['preload'],
 		'playback_rate'          => $options['playback_rate'],
+		'skip_buttons'           => $options['skip_buttons'],
 		'title'                  => $options['overlay_title'],
 		'embedcode'              => $options['overlay_embedcode'],
 		'embeddable'             => $options['embeddable'],
@@ -1926,6 +1930,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'schema',
 		'gifmode',
 		'right_click',
+		'skip_buttons',
 	);
 	foreach ( $checkbox_convert as $query ) {
 		if ( $query_atts[ $query ] == true ) {
@@ -2075,7 +2080,7 @@ function kgvid_generate_attachment_shortcode( $kgvid_video_embed ) {
 	if ( is_array( $kgvid_video_embed )
 		&& array_key_exists( 'sample', $kgvid_video_embed )
 	) {
-		$url = plugins_url( '/images/sample-video-h264.mp4', __DIR__ );
+		$url = plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ );
 	} else {
 		$url = wp_get_attachment_url( $post_id );
 	}

@@ -283,21 +283,21 @@ function kgvid_ajax_save_settings() {
 
 				if ( $validated_options['ffmpeg_exists'] === true ) {
 
-					$movie_info        = kgvid_get_video_dimensions( plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4' );
+					$movie_info        = kgvid_get_video_dimensions( plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4' );
 					$uploads           = wp_upload_dir();
 					$video_formats     = kgvid_video_formats();
 					$encode_dimensions = kgvid_set_encode_dimensions( $movie_info, $video_formats[ $validated_options['sample_format'] ] );
 					if ( empty( $validated_options['sample_rotate'] ) ) {
 
-						$input = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
+						$input = plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4';
 
 					} else {
 
-						$input = plugin_dir_path( __DIR__ ) . 'images/sample-video-rotated-h264.mp4';
+						$input = plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984-rotated.mp4';
 
 					}
 
-					$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/sample-video-h264' . $video_formats[ $validated_options['sample_format'] ]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $validated_options['sample_rotate'] ) );
+					$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/Adobestock_469037984' . $video_formats[ $validated_options['sample_format'] ]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $validated_options['sample_rotate'] ) );
 
 					$auto_thumb_label = kgvid_generate_auto_thumb_label();
 
@@ -378,7 +378,42 @@ function kgvid_ajax_save_html5_thumb() {
 			$index = intval( kgvid_sanitize_text_field( wp_unslash( $_POST['index'] ) ) ) + 1;
 		}
 
-		$thumb_info = videopack_save_canvas_thumb( $raw_png, $post_id, $video_url, $total, $index );
+		$sanitized_url = kgvid_sanitize_url( $video_url );
+		$posterfile    = $sanitized_url['basename'] . '_thumb' . $index;
+		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
+		$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
+		$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
+
+		$editor = kgvid_decode_base64_png( $raw_png, $tmp_posterpath );
+
+		if ( $editor === false || is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
+
+			$raw_post = file_get_contents( 'php://input' );
+			parse_str( $raw_post, $alt_post );
+			$editor = kgvid_decode_base64_png( $alt_post['raw_png'], $tmp_posterpath );
+
+		}
+
+		if ( $editor === false || is_wp_error( $editor ) ) {
+			$thumb_url = false;
+		} else {
+			$thumb_dimensions = $editor->get_size();
+			if ( $thumb_dimensions ) {
+				$kgvid_postmeta                 = kgvid_get_attachment_meta( $post_id );
+				$kgvid_postmeta['actualwidth']  = $thumb_dimensions['width'];
+				$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
+				kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
+			}
+			$editor->set_quality( 90 );
+			$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
+			wp_delete_file( $tmp_posterpath ); // delete png
+			if ( $total > 1 ) {
+				$post_name  = get_the_title( $post_id );
+				$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
+			}
+		}
+
+		kgvid_schedule_cleanup_generated_files( 'thumbs' );
 
 	}
 
@@ -446,6 +481,82 @@ function kgvid_ajax_redraw_thumbnail_box() {
 	wp_send_json( $response );
 }
 add_action( 'wp_ajax_kgvid_redraw_thumbnail_box', 'kgvid_ajax_redraw_thumbnail_box' );
+
+function kgvid_test_ffmpeg() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	$options       = kgvid_get_options();
+	$uploads       = wp_upload_dir();
+	$video_formats = kgvid_video_formats();
+	$suffix        = $video_formats[ $options['sample_format'] ]['suffix'];
+
+	if ( array_key_exists( 'encode_array', $options ) && is_array( $options['encode_array'] ) ) {
+
+		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $options['encode_array'] );
+
+		try {
+			$process->run();
+			$output = $process->getErrorOutput();
+		} catch ( \Exception $e ) {
+			$output = 'Error: ' . $e->getMessage();
+		}
+
+		$arr['output'] = esc_textarea( $output );
+
+		if ( file_exists( $uploads['path'] . '/Adobestock_469037984' . $suffix ) ) {
+
+			if ( $options['moov'] == 'qt-faststart' || $options['moov'] == 'MP4Box' ) {
+				$arr['output'] .= kgvid_fix_moov_atom( $uploads['path'] . '/Adobestock_469037984' . $suffix );
+			}
+
+			if ( ! empty( $options['ffmpeg_watermark']['url'] ) ) {
+
+				wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
+
+				$random_timecode = wp_rand( 0, 1092 ) / 1000;
+				$watermark_test  = kgvid_process_thumb(
+					$uploads['path'] . '/Adobestock_469037984' . $suffix,
+					$uploads['path'] . '/thumb_tmp/watermark_test.jpg',
+					false,
+					$random_timecode
+				);
+
+				kgvid_schedule_cleanup_generated_files( 'thumbs' );
+
+				if ( file_exists( $uploads['path'] . '/thumb_tmp/watermark_test.jpg' ) ) {
+					$arr['watermark_preview'] = $uploads['url'] . '/thumb_tmp/watermark_test.jpg';
+				}
+			}
+
+			wp_delete_file( $uploads['path'] . '/Adobestock_469037984' . $suffix );
+
+		}
+	} else {
+		/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is the path to the application. */
+		$arr['output'] = sprintf( esc_html__( '%1$s is not executing correctly at %2$s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without %1$s.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( $options['app_path'] ) );
+	}
+
+	wp_send_json( $arr );
+}
+add_action( 'wp_ajax_kgvid_test_ffmpeg', 'kgvid_test_ffmpeg' );
+
+function kgvid_test_ffmpeg_thumb_watermark() {
+
+	check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
+
+	$random_timecode = wp_rand( 0, 1092 ) / 1000;
+	$thumb           = kgvid_make_thumbs( 'singleurl', plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4', 1, 1, 1, $random_timecode, false, 'generate' );
+
+	if ( array_key_exists( 'real_thumb_url', $thumb ) ) {
+		echo esc_url( $thumb['real_thumb_url'] );
+	} else {
+		echo false;
+	}
+
+	die;
+}
+add_action( 'wp_ajax_kgvid_test_ffmpeg_thumb_watermark', 'kgvid_test_ffmpeg_thumb_watermark' );
 
 function kgvid_callffmpeg() {
 
