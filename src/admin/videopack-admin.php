@@ -60,9 +60,8 @@ function kgvid_default_options_fn() {
 		'minimum_width'           => false,
 		'fullwidth'               => true,
 		'fixed_aspect'            => 'vertical',
-		'gallery_width'           => '960',
-		'gallery_thumb'           => '250',
-		'gallery_thumb_aspect'    => true,
+		'gallery_width'           => 80,
+		'gallery_columns'         => 4,
 		'gallery_end'             => '',
 		'gallery_pagination'      => false,
 		'gallery_per_page'        => false,
@@ -370,7 +369,7 @@ function kgvid_get_attachment_meta_defaults() {
 		'thumbtime'           => '',
 		'lockaspect'          => true,
 		'showtitle'           => '',
-		'gallery_thumb_width' => $options['gallery_thumb'],
+		'gallery_columns'     => $options['gallery_columns'],
 		'gallery_exclude'     => '',
 		'gallery_include'     => '',
 		'gallery_orderby'     => '',
@@ -1417,6 +1416,21 @@ function kgvid_register_setting() {
 }
 add_action( 'admin_init', 'kgvid_register_setting' );
 add_action( 'rest_api_init', 'kgvid_register_setting' );
+
+function log_detailed_rest_errors( $response, $handler, $request ) {
+	if ( is_wp_error( $response ) && $response->has_errors() ) {
+		$error_data = $response->get_error_data();
+		if ( isset( $error_data['status'] ) && $error_data['status'] === 400 && $response->get_error_code() === 'rest_additional_properties_forbidden' ) {
+			error_log( 'REST Request Error:' );
+			error_log( 'Path: ' . $request->get_route() );
+			error_log( 'Method: ' . $request->get_method() );
+			error_log( 'Parameters: ' . json_encode( $request->get_params() ) );
+			error_log( 'Error Message: ' . $response->get_error_message() );
+		}
+	}
+	return $response;
+}
+//add_action( 'rest_request_after_callbacks', 'log_detailed_rest_errors', 10, 3 );
 
 function kgvid_video_embed_options_init() {
 
@@ -4407,7 +4421,6 @@ function log_all_errors_to_debug_log($code, $message, $data, $wp_error ) {
     error_log( $code . ': ' . $message );
 }
 add_action( 'wp_error_added', 'log_all_errors_to_debug_log', 10, 4 );
-
 
 function kgvid_delete_video_attachment( $video_id ) {
 

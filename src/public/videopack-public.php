@@ -733,10 +733,6 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 
 			$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '\')" id="kgvid_video_gallery_thumb_kgvid_' . strval( $kgvid_video_id - 1 ) . '" data-id="kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '" data-width="' . esc_attr( $dimensions['width'] ) . '" data-height="' . esc_attr( $dimensions['height'] ) . '" data-meta="' . esc_attr( $below_video ) . '" data-gallery_end="' . esc_attr( $query_atts['gallery_end'] ) . '" data-popupcode="' . esc_attr( $popup_code ) . '" ' . $video_vars[0] . ' style="width:' . esc_attr( $query_atts['gallery_thumb'] ) . 'px;';
 
-			if ( $query_atts['gallery_thumb_aspect'] == 'true' ) {
-				$code .= ' height:' . esc_attr( round( $options['height'] / $options['width'] * $query_atts['gallery_thumb'] ) ) . 'px;';
-			}
-
 			$code .= '"><img';
 			if ( ! empty( $thumbnail_srcset ) ) {
 				$code .= ' srcset="' . esc_attr( $thumbnail_srcset ) . '"';
@@ -1769,6 +1765,7 @@ function kgvid_shortcode_atts( $atts ) {
 	$deprecated_atts = array(
 		'controlbar' => 'controls',
 		'mute'       => 'muted',
+		'gallery_thumb' => 'gallery_columns',
 	);
 
 	if ( is_array( $atts ) ) {
@@ -1786,6 +1783,11 @@ function kgvid_shortcode_atts( $atts ) {
 					} else {
 						$atts['controls'] = 'true';
 					}
+				}
+
+				if ( $new_att === 'gallery_columns' ) {
+					//convert thumbnail width to columns per row based on arbitrary 1000px width window
+					$atts['gallery_columns'] = round( 1000 / intval( $atts['gallery_columns'] ) );
 				}
 			}
 		}
@@ -1819,7 +1821,6 @@ function kgvid_shortcode_atts( $atts ) {
 		'gallery_pagination'     => $options['gallery_pagination'],
 		'gallery_per_page'       => $options['gallery_per_page'],
 		'gallery_thumb'          => $options['gallery_thumb'],
-		'gallery_thumb_aspect'   => $options['gallery_thumb_aspect'],
 		'gallery_orderby'        => 'menu_order ID',
 		'gallery_order'          => 'ASC',
 		'gallery_exclude'        => '',
@@ -1922,7 +1923,6 @@ function kgvid_shortcode_atts( $atts ) {
 		'muted',
 		'playback_rate',
 		'fullwidth',
-		'gallery_thumb_aspect',
 		'gallery_pagination',
 		'gallery_title',
 		'nativecontrolsfortouch',
@@ -1993,7 +1993,6 @@ function kgvid_shortcode( $atts, $content = '' ) {
 				'gallery_include',
 				'gallery_exclude',
 				'gallery_thumb',
-				'gallery_thumb_aspect',
 				'view_count',
 				'gallery_end',
 				'gallery_pagination',

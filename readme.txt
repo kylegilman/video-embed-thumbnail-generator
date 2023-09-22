@@ -107,9 +107,11 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 = 5.0 - October XX, 2023 =
 * Added a Videopack Block for the block editor.
-* Added overlay/watermarks on video thumbnails without FFmpeg.
+* Added watermarks for video thumbnails without requiring FFmpeg.
+* Redesigned settings page.
 * Added REST API endpoints for thumbnail generation and video encoding.
 * Substantially rewrote the video encode queuing system.
+* Replaced Gallery Thumbnail Width with Gallery Columns and removed Gallery Aspect Ratio setting.
 * Changed custom 'kgvid' filters and action hooks to 'videopack'.
 * Removed LIBAV/AVCONV support.
 * Changed capitalization of FFMPEG to FFmpeg.

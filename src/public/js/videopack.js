@@ -352,7 +352,7 @@ function kgvid_load_videojs(video_vars) {
 	if ( typeof videojs.getPlayer( 'video_' + video_vars.id ) !== 'undefined' ) {
 		videojs( 'video_' + video_vars.id ).dispose();
 	}
-console.log(videojs_options);
+
 	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){ kgvid_setup_video( video_vars.id ); } );
 
 }
