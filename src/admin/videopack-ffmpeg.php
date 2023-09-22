@@ -91,8 +91,7 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 	$thumb_options[] = $output;
 
 	$commandline = array_merge( $before_thumb_options, $thumb_options );
-error_log(implode(' ', $commandline));
-	$process = new FFmpeg_process( $commandline );
+	$process     = new FFmpeg_process( $commandline );
 
 	try {
 		$process->run();

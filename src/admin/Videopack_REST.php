@@ -595,5 +595,4 @@ class Videopack_REST extends \WP_REST_Controller {
 			)
 		);
 	}
-
 }
