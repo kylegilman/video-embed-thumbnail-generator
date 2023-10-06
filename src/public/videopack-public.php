@@ -1763,8 +1763,8 @@ function kgvid_shortcode_atts( $atts ) {
 	}
 
 	$deprecated_atts = array(
-		'controlbar' => 'controls',
-		'mute'       => 'muted',
+		'controlbar'    => 'controls',
+		'mute'          => 'muted',
 		'gallery_thumb' => 'gallery_columns',
 	);
 
@@ -1820,7 +1820,7 @@ function kgvid_shortcode_atts( $atts ) {
 		'gallery'                => 'false',
 		'gallery_pagination'     => $options['gallery_pagination'],
 		'gallery_per_page'       => $options['gallery_per_page'],
-		'gallery_thumb'          => $options['gallery_thumb'],
+		'gallery_columns'        => $options['gallery_columns'],
 		'gallery_orderby'        => 'menu_order ID',
 		'gallery_order'          => 'ASC',
 		'gallery_exclude'        => '',

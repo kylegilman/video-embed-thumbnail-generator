@@ -27,6 +27,30 @@ class Videopack_REST extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/video_gallery',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'video_gallery' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'orderby'  => array(
+						'type' => 'string',
+					),
+					'order'    => array(
+						'type' => 'string',
+					),
+					'per_page' => array(
+						'type' => 'number',
+					),
+					'parent'   => array(
+						'type' => 'number',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/settings',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -68,8 +92,8 @@ class Videopack_REST extends \WP_REST_Controller {
 				},
 				'args'                => array(
 					'capability' => array(
-						'type'     => 'string',
-						'enum'     => array(
+						'type' => 'string',
+						'enum' => array(
 							'make_video_thumbnails',
 							'encode_videos',
 							'edit_others_video_encodes',
@@ -457,6 +481,77 @@ class Videopack_REST extends \WP_REST_Controller {
 		return $response;
 	}
 
+	public function video_gallery( \WP_REST_Request $request ) {
+
+		$response   = array();
+		$query_atts = kgvid_shortcode_atts( $request->get_params() );
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'orderby'        => $query_atts['gallery_orderby'],
+			'order'          => $query_atts['gallery_order'],
+			'post_mime_type' => 'video',
+			'posts_per_page' => $query_atts['gallery_per_page'],
+			'paged'          => $request->get_param( 'page_number' ),
+			'post_status'    => 'published',
+			'post_parent'    => $query_atts['gallery_id'],
+			'meta_query' => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_kgflashmediaplayer-externalurl',
+					'value'   => '',
+					'compare' => '!=',
+				),
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'value'   => '',
+					'compare' => '=',
+				),
+			),
+		);
+
+		if ( ! empty( $query_atts['gallery_exclude'] ) ) {
+			$exclude_arr = wp_parse_id_list( $query_atts['gallery_exclude'] );
+			if ( ! empty( $exclude_arr ) ) {
+				$args['post__not_in'] = $exclude_arr;
+			}
+		}
+
+		if ( ! empty( $query_atts['gallery_include'] ) ) {
+			$include_arr = wp_parse_id_list( $query_atts['gallery_include'] );
+			if ( ! empty( $include_arr ) ) {
+				$args['post__in'] = $include_arr;
+				if ( $args['orderby'] == 'menu_order ID' ) {
+					$args['orderby'] = 'post__in'; // sort by order of IDs in the gallery_include parameter
+				}
+				unset( $args['post_parent'] );
+			}
+		}
+
+		$attachments = new \WP_Query( $args );
+
+		if ( $attachments->have_posts() ) {
+
+			$json_posts = array_map(
+				function( $post ) {
+					$post_data                         = wp_prepare_attachment_for_js( $post );
+					$post_data['image']['id']          = get_post_thumbnail_id( $post );
+					$post_data['image']['srcset']      = wp_get_attachment_image_srcset( $post_data['image']['id'] );
+					$post_data['videopack']['sources'] = kgvid_prepare_sources( $post->url, $post->ID );
+					return $post_data;
+				},
+				$attachments->posts
+			);
+
+			$response = array(
+				'posts'         => $json_posts,
+				'max_num_pages' => $attachments->max_num_pages,
+			);
+		}
+
+		return $response;
+	}
+
 	public function video_sources( \WP_REST_Request $request ) {
 
 		$url = $request->get_param( 'url' );
@@ -582,13 +677,21 @@ class Videopack_REST extends \WP_REST_Controller {
 		return $response;
 	}
 
+	public function prepare_data_for_rest_response( $post ) {
+		$url = wp_get_attachment_url( $post['id'] );
+		return array(
+			'srcset'  => wp_get_attachment_image_srcset( $post['id'] ),
+			'sources' => kgvid_prepare_sources( $url, $post['id'] ),
+		);
+	}
+
 	public function add_data_to_rest_response() {
 		register_rest_field(
 			'attachment',
-			'videopack_srcset',
+			'videopack',
 			array(
 				'get_callback'    => function ( $post ) {
-					return wp_get_attachment_image_srcset( $post['id'] );
+					return $this->prepare_data_for_rest_response( $post );
 				},
 				'update_callback' => null,
 				'schema'          => null,
