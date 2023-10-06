@@ -357,6 +357,7 @@ add_action( 'wp_ajax_kgvid_save_settings', 'kgvid_ajax_save_settings' );
 function kgvid_ajax_save_html5_thumb() {
 
 	$thumb_url = false;
+	$uploads   = wp_upload_dir();
 
 	if ( current_user_can( 'make_video_thumbnails' ) ) {
 
@@ -417,7 +418,7 @@ function kgvid_ajax_save_html5_thumb() {
 
 	}
 
-	echo esc_url( $thumb_info['thumb_url'] );
+	echo esc_url( $thumb_url );
 	die();
 }
 add_action( 'wp_ajax_kgvid_save_html5_thumb', 'kgvid_ajax_save_html5_thumb' );
