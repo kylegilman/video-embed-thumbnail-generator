@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.5.12",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "47aaeb6611c8f4c7a0a88793c0d79eafdebfbf4f"
+                "reference": "8a2bb8f6f45571ec1d05c23421568ca73704176c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/47aaeb6611c8f4c7a0a88793c0d79eafdebfbf4f",
-                "reference": "47aaeb6611c8f4c7a0a88793c0d79eafdebfbf4f",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/8a2bb8f6f45571ec1d05c23421568ca73704176c",
+                "reference": "8a2bb8f6f45571ec1d05c23421568ca73704176c",
                 "shasum": ""
             },
             "require": {
@@ -50,9 +50,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Freemius/wordpress-sdk/issues",
-                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.5.12"
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.6.0"
             },
-            "time": "2023-09-03T10:46:25+00:00"
+            "time": "2023-10-30T10:56:28+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -201,16 +201,16 @@
         },
         {
             "name": "woocommerce/action-scheduler",
-            "version": "3.6.3",
+            "version": "3.6.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/action-scheduler.git",
-                "reference": "c33dd732e37c90f37c3f9662f7eed888c11dc60d"
+                "reference": "e7dafe215be5ef823392204535ee2e241f99a8cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/c33dd732e37c90f37c3f9662f7eed888c11dc60d",
-                "reference": "c33dd732e37c90f37c3f9662f7eed888c11dc60d",
+                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/e7dafe215be5ef823392204535ee2e241f99a8cb",
+                "reference": "e7dafe215be5ef823392204535ee2e241f99a8cb",
                 "shasum": ""
             },
             "require-dev": {
@@ -235,9 +235,9 @@
             "homepage": "https://actionscheduler.org/",
             "support": {
                 "issues": "https://github.com/woocommerce/action-scheduler/issues",
-                "source": "https://github.com/woocommerce/action-scheduler/tree/3.6.3"
+                "source": "https://github.com/woocommerce/action-scheduler/tree/3.6.4"
             },
-            "time": "2023-09-13T13:40:20+00:00"
+            "time": "2023-10-11T18:24:47+00:00"
         }
     ],
     "packages-dev": [],
