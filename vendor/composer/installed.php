@@ -3,7 +3,7 @@
         'name' => 'kylegilman/video-embed-thumbnail-generator',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'dbdd4349a2fd0214e444fa90eb78d0f706396870',
+        'reference' => '5995faf07653a68c285ecf47109ceccbcd21dfd2',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'freemius/wordpress-sdk' => array(
-            'pretty_version' => '2.5.12',
-            'version' => '2.5.12.0',
-            'reference' => '47aaeb6611c8f4c7a0a88793c0d79eafdebfbf4f',
+            'pretty_version' => '2.6.0',
+            'version' => '2.6.0.0',
+            'reference' => '8a2bb8f6f45571ec1d05c23421568ca73704176c',
             'type' => 'library',
             'install_path' => __DIR__ . '/../freemius/wordpress-sdk',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'kylegilman/video-embed-thumbnail-generator' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'dbdd4349a2fd0214e444fa90eb78d0f706396870',
+            'reference' => '5995faf07653a68c285ecf47109ceccbcd21dfd2',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -47,9 +47,9 @@
             'dev_requirement' => false,
         ),
         'woocommerce/action-scheduler' => array(
-            'pretty_version' => '3.6.3',
-            'version' => '3.6.3.0',
-            'reference' => 'c33dd732e37c90f37c3f9662f7eed888c11dc60d',
+            'pretty_version' => '3.6.4',
+            'version' => '3.6.4.0',
+            'reference' => 'e7dafe215be5ef823392204535ee2e241f99a8cb',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../woocommerce/action-scheduler',
             'aliases' => array(),
