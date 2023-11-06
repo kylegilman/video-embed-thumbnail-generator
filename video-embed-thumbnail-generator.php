@@ -168,6 +168,11 @@ function kgvid_uninstall_plugin() {
 	if ( ! is_multisite() ) {
 		delete_option( 'kgvid_video_embed_options' );
 		delete_option( 'kgvid_video_embed_queue' );
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %s', $table_name ) );
+
 	} else {
 
 		delete_site_option( 'kgvid_video_embed_network_options' );
