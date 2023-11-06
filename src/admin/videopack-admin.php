@@ -1061,8 +1061,8 @@ function enqueue_kgvid_script() {
 
 		$options = kgvid_get_options();
 
-		wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url( '/js/videopack-admin.js', __FILE__ ), array( 'jquery' ), $options['version'], true );
-		wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url( '/css/videopack-styles-admin.css', __FILE__ ), '', $options['version'] );
+		wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url( '/js/videopack-admin.js', __FILE__ ), array( 'jquery' ), VIDEOPACK_VERSION, true );
+		wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url( '/css/videopack-styles-admin.css', __FILE__ ), '', VIDEOPACK_VERSION );
 
 		wp_localize_script(
 			'kgvid_video_plugin_admin',
@@ -1152,7 +1152,7 @@ function maybe_enqueue_kgvid_script( $hook_suffix ) {
 			'vjs-theme-sea',
 		);
 		foreach ( $js_skins as $skin ) {
-			wp_enqueue_style( $skin, plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $skin . '.css', '', $options['version'] );
+			wp_enqueue_style( $skin, plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $skin . '.css', '', VIDEOPACK_VERSION );
 		}
 	}
 }
@@ -1308,11 +1308,8 @@ function kgvid_options_assets() {
 
 function kgvid_settings_page() {
 	wp_enqueue_media();
-	$options         = kgvid_get_options();
-	$network_options = get_site_option( 'kgvid_video_embed_network_options' );
-	$video_app       = $options['video_app'];
+	wp_enqueue_global_styles();
 
-	//include __DIR__ . '/partials/settings-page.php';
 	echo '<div id="videopack-settings-root"></div>';
 }
 
