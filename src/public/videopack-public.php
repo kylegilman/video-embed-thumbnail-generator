@@ -253,12 +253,12 @@ function kgvid_video_embed_enqueue_styles() {
 		}
 
 		wp_register_script( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video.min.js', '', $videojs_register['version'], true );
-		wp_register_script( 'video-quality-selector', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-quality-selector.js', array( 'video-js' ), $options['version'], true );
+		wp_register_script( 'video-quality-selector', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-quality-selector.js', array( 'video-js' ), VIDEOPACK_VERSION, true );
 		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-js.min.css', '', $videojs_register['version'] );
 		if ( $options['js_skin'] !== 'default'
 			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $options['js_skin'] . '.css' )
 		) {
-			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $options['js_skin'] . '.css', '', $options['version'] );
+			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $options['js_skin'] . '.css', '', VIDEOPACK_VERSION );
 		}
 
 		$locale = kgvid_get_videojs_locale();
@@ -267,7 +267,7 @@ function kgvid_video_embed_enqueue_styles() {
 		}
 	}
 
-	wp_register_script( 'kgvid_video_embed', plugins_url( '/js/videopack.js', __FILE__ ), $kgvid_video_embed_script_dependencies, $options['version'], true );
+	wp_register_script( 'kgvid_video_embed', plugins_url( '/js/videopack.js', __FILE__ ), $kgvid_video_embed_script_dependencies, VIDEOPACK_VERSION, true );
 
 	wp_localize_script(
 		'kgvid_video_embed',
@@ -289,9 +289,9 @@ function kgvid_video_embed_enqueue_styles() {
 
 	if ( $options['embed_method'] == 'WordPress Default' ) {
 
-		wp_register_script( 'mejs_sourcechooser', plugins_url( '/js/mejs-source-chooser.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
+		wp_register_script( 'mejs_sourcechooser', plugins_url( '/js/mejs-source-chooser.js', __FILE__ ), array( 'mediaelement' ), VIDEOPACK_VERSION, true );
 
-		wp_register_script( 'mejs-speed', plugins_url( '/js/mejs-speed.js', __FILE__ ), array( 'mediaelement' ), $options['version'], true );
+		wp_register_script( 'mejs-speed', plugins_url( '/js/mejs-speed.js', __FILE__ ), array( 'mediaelement' ), VIDEOPACK_VERSION, true );
 
 		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
 
@@ -300,9 +300,9 @@ function kgvid_video_embed_enqueue_styles() {
 	// plugin-related frontend styles, requires video-js
 	if ( $options['embed_method'] != 'None' ) {
 		if ( $options['embed_method'] === 'Video.js v7' ) {
-			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles-v7.css', __FILE__ ), array( 'video-js' ), $options['version'] );
+			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles-v7.css', __FILE__ ), array( 'video-js' ), VIDEOPACK_VERSION );
 		} else {
-			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), $options['version'] );
+			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), VIDEOPACK_VERSION );
 		}
 	}
 
