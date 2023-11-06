@@ -14,9 +14,34 @@ class Encode_Queue_Controller {
 	public function __construct() {
 		$this->queue_log = new Encode_Queue_Log();
 		$this->options   = kgvid_get_options();
+		$this->add_table();
 		$this->set_queued();
 		$this->set_encoding_now();
 		$this->check_encoding();
+	}
+
+	private function add_table() {
+
+		global $wpdb;
+		$charset_collate = $wpdb->get_charset_collate();
+		$table_name      = $wpdb->prefix . 'videopack_encoding_queue';
+
+		$sql = "CREATE TABLE $table_name (
+			id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+			attachment_id BIGINT UNSIGNED NOT NULL,
+			url VARCHAR(255) NOT NULL,
+			status ENUM('queued', 'processing', 'completed', 'failed') NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			started_at DATETIME,
+			completed_at DATETIME,
+			failed_at DATETIME,
+			error_message TEXT,
+			version BIGINT UNSIGNED DEFAULT 0
+		) $charset_collate;";
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		maybe_create_table( $table_name, $sql );
+
 	}
 
 	public function start_queue() {
