@@ -27,23 +27,41 @@ class Videopack_REST extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/recent_videos',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'recent_videos' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'posts' => array(
+						'type' => 'number',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/video_gallery',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'video_gallery' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'orderby'  => array(
+					'gallery_orderby'  => array(
 						'type' => 'string',
 					),
-					'order'    => array(
+					'gallery_order'    => array(
 						'type' => 'string',
 					),
-					'per_page' => array(
+					'gallery_per_page' => array(
 						'type' => 'number',
 					),
-					'parent'   => array(
+					'gallery_id'   => array(
 						'type' => 'number',
+					),
+					'gallery_include' => array(
+						'type' => 'string',
 					),
 				),
 			)
@@ -481,6 +499,40 @@ class Videopack_REST extends \WP_REST_Controller {
 		return $response;
 	}
 
+	public function recent_videos( \WP_REST_Request $request ) {
+
+		$response = array();
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'orderby'        => 'post_date',
+			'order'          => 'DESC',
+			'post_mime_type' => 'video',
+			'posts_per_page' => $request->get_param( 'posts' ),
+			'post_status'    => 'published',
+			'fields'         => 'ids',
+			'meta_query' => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_kgflashmediaplayer-externalurl',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
+
+		$attachment_ids = new \WP_Query( $args );
+
+		if ( $attachment_ids->have_posts() ) {
+			$response = $attachment_ids->posts;
+		}
+
+		return $response;
+	}
+
 	public function video_gallery( \WP_REST_Request $request ) {
 
 		$response   = array();
@@ -496,16 +548,14 @@ class Videopack_REST extends \WP_REST_Controller {
 			'post_status'    => 'published',
 			'post_parent'    => $query_atts['gallery_id'],
 			'meta_query' => array(
-				'relation' => 'OR',
+				'relation' => 'AND',
 				array(
 					'key'     => '_kgflashmediaplayer-externalurl',
-					'value'   => '',
-					'compare' => '!=',
+					'compare' => 'NOT EXISTS',
 				),
 				array(
 					'key'     => '_kgflashmediaplayer-format',
-					'value'   => '',
-					'compare' => '=',
+					'compare' => 'NOT EXISTS',
 				),
 			),
 		);
@@ -537,7 +587,7 @@ class Videopack_REST extends \WP_REST_Controller {
 					$post_data                         = wp_prepare_attachment_for_js( $post );
 					$post_data['image']['id']          = get_post_thumbnail_id( $post );
 					$post_data['image']['srcset']      = wp_get_attachment_image_srcset( $post_data['image']['id'] );
-					$post_data['videopack']['sources'] = kgvid_prepare_sources( $post->url, $post->ID );
+					$post_data['videopack']['sources'] = kgvid_prepare_sources( wp_get_attachment_url( $post->ID ), $post->ID );
 					return $post_data;
 				},
 				$attachments->posts
