@@ -883,34 +883,36 @@ function kgvid_is_animated_gif( $filename ) {
 		}
 	}
 
-	// Fallback to manual check using WP_Filesystem
-	global $wp_filesystem;
-	if ( ! $wp_filesystem ) {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		WP_Filesystem();
-	}
+	// Read file in chunks if Imagick isn't available.
+	$fh = fopen( $filename, 'rb' );
 
-	if ( ! $wp_filesystem->exists( $filename ) || ! $wp_filesystem->is_readable( $filename ) ) {
+	if ( ! $fh ) {
 		return false;
 	}
 
-	$count      = 0;
-	$offset     = 0;
-	$chunk_size = 1024 * 100; // read 100kb at a time
+	$total_count = 0;
+	$chunk       = '';
 
-	while ( $count < 2 ) {
-		$chunk = $wp_filesystem->get_contents( $filename, false, false, $offset, $chunk_size );
-		if ( false === $chunk ) {
-			break;
+	while ( ! feof( $fh ) && $total_count < 2 ) {
+		// Read 100kb at a time and append it to the remaining chunk.
+		$chunk       .= fread( $fh, 1024 * 100 );
+		$count        = preg_match_all( '#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches );
+		$total_count += $count;
+
+		// Execute this block only if we found at least one match,
+		// and if we did not reach the maximum number of matches needed.
+		if ( $count > 0 && $total_count < 2 ) {
+			// Get the last full expression match.
+			$last_match = end( $matches[0] );
+			// Get the string after the last match.
+			$end   = strrpos( $chunk, $last_match ) + strlen( $last_match );
+			$chunk = substr( $chunk, $end );
 		}
-
-		$count += preg_match_all( '#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches );
-
-		// Move the offset for the next read
-		$offset += $chunk_size;
 	}
 
-	return $count > 1;
+	fclose( $fh );
+
+	return $total_count > 1;
 }
 
 function kgvid_is_video( $post ) {
