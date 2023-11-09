@@ -551,7 +551,7 @@ function kgvid_reveal_thumb_video(postID) {
 				}
 
 			},
-			1000
+			2000
 		);
 	} else if ( text.html() == kgvidL10n.hidevideo ) { // video is being hidden
 
