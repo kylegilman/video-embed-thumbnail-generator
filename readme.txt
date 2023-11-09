@@ -105,8 +105,11 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.1 - November 7, 2023 =
+= 4.9.1 - November 9, 2023 =
 * Added option to change default behavior when inserting videos into a post.
+* Added check for Videopack embed URLs to maintain embedding functionality after attachment pages were disabled in new WordPress 6.4 installations.
+* Improved animated GIF detection.
+* Increased video loading timeout when generating in-browser thumbnails.
 * Updated Video.js to v8.6.1 and Freemius SDK to v2.6.0.
 
 = 4.9 - September 12, 2023 =
