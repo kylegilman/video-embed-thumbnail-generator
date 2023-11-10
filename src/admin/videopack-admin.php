@@ -375,6 +375,7 @@ function kgvid_get_attachment_meta( $post_id ) {
 		'aspect'              => '',
 		'original_replaced'   => '',
 		'featuredchanged'     => 'false',
+		'animated'            => 'notchecked',
 	);
 
 	if ( empty( $kgvid_postmeta ) ) {
@@ -446,10 +447,11 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 		foreach ( $kgvid_postmeta as $key => $meta ) { // don't save if it's the same as the default values or empty
 
 			if ( ( array_key_exists( $key, $options )
-					&& $meta == $options[ $key ]
+					&& $meta === $options[ $key ]
 				)
-				|| ( ! is_array( $kgvid_postmeta[ $key ] )
-					&& strlen( $kgvid_postmeta[ $key ] ) === 0
+				|| ( ! is_array( $meta )
+					&& ! is_bool( $meta )
+					&& strlen( $meta ) === 0
 					&& (
 						( array_key_exists( $key, $options )
 							&& strlen( $options[ $key ] ) === 0
@@ -462,7 +464,6 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 			}
 		}
 		update_post_meta( $post_id, '_kgvid-meta', $kgvid_postmeta );
-
 	}
 }
 
@@ -920,10 +921,14 @@ function kgvid_is_video( $post ) {
 	if ( $post && is_object( $post ) && property_exists( $post, 'post_mime_type' ) ) {
 
 		if ( $post->post_mime_type == 'image/gif' ) {
-			$moviefile   = get_attached_file( $post->ID );
-			$is_animated = kgvid_is_animated_gif( $moviefile );
+			$moviefile      = get_attached_file( $post->ID );
+			$kgvid_postmeta = kgvid_get_attachment_meta( $post->ID );
+			if ( $kgvid_postmeta['animated'] === 'notchecked' ) {
+				$kgvid_postmeta['animated'] = kgvid_is_animated_gif( $moviefile );
+				kgvid_save_attachment_meta( $post->ID, $kgvid_postmeta );
+			}
 		} else {
-			$is_animated = false;
+			$kgvid_postmeta['animated'] = false;
 		}
 
 		if ( substr( $post->post_mime_type, 0, 5 ) === 'video'
@@ -932,7 +937,7 @@ function kgvid_is_video( $post ) {
 					&& get_post_meta( $post->ID, '_kgflashmediaplayer-externalurl', true ) == ''
 				)
 			)
-			|| $is_animated
+			|| $kgvid_postmeta['animated']
 		) { // if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
 
 			return true;
