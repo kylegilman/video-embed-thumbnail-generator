@@ -2143,6 +2143,20 @@ function kgvid_filter_video_attachment_content( $content ) {
 }
 add_filter( 'the_content', 'kgvid_filter_video_attachment_content' );
 
+function kgvid_redirect_canonical_attachment( $redirect_url, $requested_url ) {
+
+	if ( get_query_var( 'videopack', false ) !== false
+		|| get_query_var( 'kgvid_video_embed', false ) !== false
+	) {
+		// Return the original requested URL to cancel the redirect.
+		return $requested_url;
+	}
+
+	// If the query vars are not set, continue with the default redirection.
+	return $redirect_url;
+}
+add_filter( 'redirect_canonical', 'kgvid_redirect_canonical_attachment', 10, 2 );
+
 function kgvid_video_attachment_template() {
 
 	$post              = get_post();

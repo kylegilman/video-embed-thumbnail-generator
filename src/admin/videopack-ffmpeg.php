@@ -1315,19 +1315,21 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 			continue;
 		} //if the format is bigger than the original video, skip the checkbox
 
-		if ( ! empty( $encodevideo_info )
-			&& ! $encodevideo_info[ $format ]['exists']
-			&& (
-				strpos( $format, 'custom_' ) === 0 // skip custom formats that don't exist
-				|| ( $options['hide_video_formats']
-					&& is_array( $options['encode'] )
-					&& ! array_key_exists( $format, $options['encode'] )
-				) // skip options disabled in settings
-				|| ( $options['hide_video_formats']
-					&& ! is_array( $options['encode'] )
-				) // skip all options if they're all disabled
-			)
-		) {
+		if ( ! empty( $encodevideo_info ) && ! $encodevideo_info[ $format ]['exists']
+				&& (
+					strpos( $format, 'custom_' ) === 0 // skip custom formats that don't exist
+					|| (
+						$options['hide_video_formats']
+						&& is_array( $options['encode'] )
+						&& ! array_key_exists( $format, $options['encode'] )
+						&& $post_mime_type !== 'image/gif'
+					) // skip options disabled in settings
+					|| (
+						$options['hide_video_formats']
+						&& ! is_array( $options['encode'] )
+					) // skip all options if they're all disabled
+				)
+			) {
 			continue;
 		}
 

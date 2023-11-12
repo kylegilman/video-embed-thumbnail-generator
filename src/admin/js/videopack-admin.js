@@ -228,10 +228,8 @@ function kgvid_break_video_on_close(postID) {
 	var video = document.getElementById( 'thumb-video-' + postID );
 
 	if ( video != null ) {
-
-		var playButton = jQuery( ".kgvid-play-pause" );
-
-		playButton.off( "click.kgvid" );
+		jQuery( ".kgvid-play-pause" ).off( "click.kgvid" ).removeClass( 'kgvid-playing' );
+		jQuery( video ).off( '.kgvid' );
 		video.preload = "none";
 		video.src     = "";
 		video.load();
@@ -340,10 +338,6 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 			function(e) {
 				if ( video.paused == false ) {
 					video.pause();
-				}
-
-				if ( video.currentTime == 0 ) {
-					video.play(); // video won't seek in Chrome unless it has played once already
 				}
 
 				timeDrag = true;
@@ -523,41 +517,37 @@ function kgvid_reveal_thumb_video(postID) {
 
 		video = document.getElementById( 'thumb-video-' + postID );
 		jQuery( video ).data( 'busy', true );
+
+		jQuery( video ).one( 'error.kgvid', (e) => {
+			console.error(`Error attempting to load video: ${e.target.error.message}`);
+			alert( kgvidL10n.cantmakethumbs );
+			text.html( kgvidL10n.cantloadvideo );
+			jQuery( '#thumb-video-' + postID + '-player' ).hide();
+			jQuery( '#show-thumb-video-' + postID + ' :first' ).hide();
+		});
+
+		jQuery( video ).one( 'loadeddata', () => {
+			text.html( kgvidL10n.hidevideo );
+			jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).slideUp();
+			jQuery( video ).on(
+				'timeupdate.kgvid',
+				function() {
+					if (video.currentTime != 0) {
+						var thumbtimecode = kgvid_convert_to_timecode( document.getElementById( 'thumb-video-' + postID ).currentTime );
+						jQuery( '#attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).val( thumbtimecode );
+					}
+				}
+			);
+		});
+
 		video.src = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-url]' )[0].value;
 		jQuery( video ).attr( "preload", "metadata" );
 		video.load();
 
-		setTimeout(
-			function(){ // wait for video to start loading
-
-				if ( video.networkState == 1 || video.networkState == 2 ) {
-					text.html( kgvidL10n.hidevideo );
-					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).slideUp();
-					jQuery( video ).on(
-						'timeupdate.kgvid',
-						function() {
-							if (video.currentTime != 0) {
-								var thumbtimecode = kgvid_convert_to_timecode( document.getElementById( 'thumb-video-' + postID ).currentTime );
-								jQuery( '#attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).val( thumbtimecode );
-							}
-						}
-					);
-				} else {
-
-					text.html( kgvidL10n.cantloadvideo );
-					jQuery( '#thumb-video-' + postID + '-player' ).hide();
-					jQuery( '#show-thumb-video-' + postID + ' :first' ).hide();
-
-				}
-
-			},
-			1000
-		);
 	} else if ( text.html() == kgvidL10n.hidevideo ) { // video is being hidden
 
 		video = document.getElementById( 'thumb-video-' + postID );
 		video.pause();
-		jQuery( '#thumb-video-' + postID ).off( 'timeupdate.kgvid' );
 		kgvid_break_video_on_close( postID );
 		text.html( kgvidL10n.choosefromvideo );
 
@@ -630,37 +620,34 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				}
 			);
 
+			jQuery( video ).one(
+				"error.kgvid",
+				function(e) {
+					if ( jQuery( video ).data( 'success' ) == false ) {
+
+						if ( jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' ) {
+
+							kgvid_ffmpeg_thumbs(); // call the FFMPEG loop if the browser can't do it
+
+						} else { // there's no way to make thumbnails
+
+							jQuery( '#attachments-' + postID + '-thumbgenerate, #attachments-' + postID + '-thumbrandomize, #attachments-' + postID + '-firstframe, #attachments-' + postID + '-kgflashmediaplayer-thumbtime, #attachments-' + postID + '-kgflashmediaplayer-numberofthumbs' ).prop( 'disabled', true ).attr( 'title', kgvidL10n.cantmakethumbs );
+
+							jQuery( thumbnailplaceholderid ).empty();
+							jQuery( '#thumb-video-' + postID + '-container' ).hide();
+							console.error(`Error attempting to load video: ${e.target.error.message}`);
+
+							alert( kgvidL10n.cantmakethumbs );
+
+						}
+
+					}
+				}
+			);
+
 		} else {
 			kgvid_make_canvas_thumbs_loop();
 		}
-
-		setTimeout(
-			function(){ // wait for video to start loading
-
-				video = document.getElementById( video_id );
-
-				if ( jQuery( video ).data( 'success' ) == false ) {
-
-					if ( jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == true ) {
-
-						kgvid_ffmpeg_thumbs(); // call the FFmpeg loop if the browser can't do it
-
-					} else { // there's no way to make thumbnails
-
-						jQuery( '#attachments-' + postID + '-thumbgenerate, #attachments-' + postID + '-thumbrandomize, #attachments-' + postID + '-firstframe, #attachments-' + postID + '-kgflashmediaplayer-thumbtime, #attachments-' + postID + '-kgflashmediaplayer-numberofthumbs' ).prop( 'disabled', true ).attr( 'title', kgvidL10n.cantmakethumbs );
-
-						jQuery( thumbnailplaceholderid ).empty();
-						jQuery( '#thumb-video-' + postID + '-container' ).hide();
-
-						alert( kgvidL10n.cantmakethumbs );
-
-					}
-
-				}
-
-			},
-			2000
-		);
 
 	}
 
@@ -1050,8 +1037,10 @@ function kgvid_thumb_video_manual(postID) {
 		function() { // redraw the canvas after a delay to avoid Safari bug
 			canvas = kgvid_draw_thumb_canvas( canvas, video );
 			kgvid_save_canvas_thumb( postID, time_id, 1, 0 );
-			jQuery('#kgvid-save-'+ postID + '-thumb-manual').remove();
+			jQuery( '#kgvid-save-'+ postID + '-thumb-manual' ).remove();
+			jQuery( '#thumb-video-' + postID + '-player' ).stop().removeAttr( 'style' );
 			kgvid_reveal_thumb_video( postID );
+
 		},
 		250
 	);
