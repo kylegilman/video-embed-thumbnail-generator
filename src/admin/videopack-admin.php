@@ -383,6 +383,7 @@ function kgvid_get_attachment_meta_defaults() {
 		'poster'              => '',
 		'maxwidth'            => '',
 		'maxheight'           => '',
+		'animated'            => 'notchecked',
 	);
 
 	return $meta_key_array;
@@ -462,10 +463,11 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 		foreach ( $kgvid_postmeta as $key => $meta ) { // don't save if it's the same as the default values or empty
 
 			if ( ( array_key_exists( $key, $options )
-					&& $meta == $options[ $key ]
+					&& $meta === $options[ $key ]
 				)
-				|| ( ! is_array( $kgvid_postmeta[ $key ] )
-					&& strlen( $kgvid_postmeta[ $key ] ) === 0
+				|| ( ! is_array( $meta )
+					&& ! is_bool( $meta )
+					&& strlen( $meta ) === 0
 					&& (
 						( array_key_exists( $key, $options )
 							&& strlen( $options[ $key ] ) === 0
@@ -478,7 +480,6 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 			}
 		}
 		update_post_meta( $post_id, '_kgvid-meta', $kgvid_postmeta );
-
 	}
 }
 
@@ -899,34 +900,36 @@ function kgvid_is_animated_gif( $filename ) {
 		}
 	}
 
-	// Fallback to manual check using WP_Filesystem
-	global $wp_filesystem;
-	if ( ! $wp_filesystem ) {
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		WP_Filesystem();
-	}
+	// Read file in chunks if Imagick isn't available.
+	$fh = fopen( $filename, 'rb' );
 
-	if ( ! $wp_filesystem->exists( $filename ) || ! $wp_filesystem->is_readable( $filename ) ) {
+	if ( ! $fh ) {
 		return false;
 	}
 
-	$count      = 0;
-	$offset     = 0;
-	$chunk_size = 1024 * 100; // read 100kb at a time
+	$total_count = 0;
+	$chunk       = '';
 
-	while ( $count < 2 ) {
-		$chunk = $wp_filesystem->get_contents( $filename, false, false, $offset, $chunk_size );
-		if ( false === $chunk ) {
-			break;
+	while ( ! feof( $fh ) && $total_count < 2 ) {
+		// Read 100kb at a time and append it to the remaining chunk.
+		$chunk       .= fread( $fh, 1024 * 100 );
+		$count        = preg_match_all( '#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches );
+		$total_count += $count;
+
+		// Execute this block only if we found at least one match,
+		// and if we did not reach the maximum number of matches needed.
+		if ( $count > 0 && $total_count < 2 ) {
+			// Get the last full expression match.
+			$last_match = end( $matches[0] );
+			// Get the string after the last match.
+			$end   = strrpos( $chunk, $last_match ) + strlen( $last_match );
+			$chunk = substr( $chunk, $end );
 		}
-
-		$count += preg_match_all( '#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches );
-
-		// Move the offset for the next read
-		$offset += $chunk_size;
 	}
 
-	return $count > 1;
+	fclose( $fh );
+
+	return $total_count > 1;
 }
 
 function kgvid_is_video( $post ) {
@@ -934,10 +937,14 @@ function kgvid_is_video( $post ) {
 	if ( $post && is_object( $post ) && property_exists( $post, 'post_mime_type' ) ) {
 
 		if ( $post->post_mime_type == 'image/gif' ) {
-			$moviefile   = get_attached_file( $post->ID );
-			$is_animated = kgvid_is_animated_gif( $moviefile );
+			$moviefile      = get_attached_file( $post->ID );
+			$kgvid_postmeta = kgvid_get_attachment_meta( $post->ID );
+			if ( $kgvid_postmeta['animated'] === 'notchecked' ) {
+				$kgvid_postmeta['animated'] = kgvid_is_animated_gif( $moviefile );
+				kgvid_save_attachment_meta( $post->ID, $kgvid_postmeta );
+			}
 		} else {
-			$is_animated = false;
+			$kgvid_postmeta['animated'] = false;
 		}
 
 		if ( substr( $post->post_mime_type, 0, 5 ) === 'video'
@@ -946,7 +953,7 @@ function kgvid_is_video( $post ) {
 					&& get_post_meta( $post->ID, '_kgflashmediaplayer-externalurl', true ) == ''
 				)
 			)
-			|| $is_animated
+			|| $kgvid_postmeta['animated']
 		) { // if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
 
 			return true;

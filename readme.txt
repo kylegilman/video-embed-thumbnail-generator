@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
-Tested up to: 6.3
+Tested up to: 6.4
 Requires PHP: 7.3
 Stable tag: 4.9.1
 License: GPLv2 or later
@@ -116,8 +116,12 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 * Removed LIBAV/AVCONV support.
 * Changed capitalization of FFMPEG to FFmpeg.
 
-= 4.9.1 - September 14, 2023 =
+= 4.9.1 - November 10, 2023 =
+* Improved in-browser thumbnail generating process.
+* Improved animated GIF detection.
 * Added option to change default behavior when inserting videos into a post.
+* Added check for Videopack embed URLs to maintain embedding functionality after attachment pages were disabled in new WordPress 6.4 installations.
+* Updated Video.js to v8.6.1 and Freemius SDK to v2.6.0.
 
 = 4.9 - September 12, 2023 =
 * Removed Video.js v5.
