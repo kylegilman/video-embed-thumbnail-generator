@@ -77,11 +77,11 @@ class Encode_Attachment {
 
 	protected function set_ffmpeg_path() {
 		if ( $this->options['app_path'] === '' ) {
-			$this->ffmpeg_path = $this->options['video_app'];
+			$this->ffmpeg_path = 'ffmpeg';
 		} elseif ( $this->options['app_path'] === false ) {
-			$this->ffmpeg_path = $this->options['app_path'] . '/' . $this->options['video_app'];
+			$this->ffmpeg_path = $this->options['app_path'] . '/ffmpeg';
 		} else {
-			$this->ffmpeg_path = $this->options['app_path'] . '/' . $this->options['video_app'];
+			$this->ffmpeg_path = $this->options['app_path'] . '/ffmpeg';
 		}
 	}
 

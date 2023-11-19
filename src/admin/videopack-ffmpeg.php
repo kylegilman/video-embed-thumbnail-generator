@@ -49,11 +49,11 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 	}
 
 	if ( $ffmpeg_path === '' ) {
-		$ffmpeg_path = $options['video_app'];
+		$ffmpeg_path = 'ffmpeg';
 	} elseif ( $ffmpeg_path === false ) {
-		$ffmpeg_path = $options['app_path'] . '/' . $options['video_app'];
+		$ffmpeg_path = $options['app_path'] . '/ffmpeg';
 	} else {
-		$ffmpeg_path = $ffmpeg_path . '/' . $options['video_app'];
+		$ffmpeg_path = $ffmpeg_path . '/ffmpeg';
 	}
 
 	$before_thumb_options = array(
@@ -133,10 +133,10 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 		);
 
 		if ( ! file_exists( $uploads['path'] . '/ffmpeg_exists_test.jpg' )
-			&& substr( $test_path, -strlen( $options['video_app'] ) ) == $options['video_app']
+			&& substr( $test_path, -6 ) == 'ffmpeg'
 		) { // if FFmpeg has not executed successfully
 
-			$test_path = substr( $test_path, 0, -strlen( $options['video_app'] ) - 1 );
+			$test_path = substr( $test_path, 0, -7 );
 
 			$ffmpeg_test = kgvid_process_thumb(
 				plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
@@ -479,7 +479,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 function kgvid_get_video_dimensions( $video = false ) {
 
 	$options      = kgvid_get_options();
-	$ffmpeg_path  = $options['app_path'] . '/' . $options['video_app'];
+	$ffmpeg_path  = $options['app_path'] . '/ffmpeg';
 	$movie_info   = array();
 	$codec_output = array();
 
@@ -752,7 +752,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 
 	$options       = kgvid_get_options();
 	$libraries     = $movie_info['configuration'];
-	$encode_array  = array( strtoupper( $options['video_app'] ) . ' not found' );
+	$encode_array  = array( 'FFmpeg not found' );
 	$video_formats = kgvid_video_formats();
 
 	if ( $options['ffmpeg_exists'] === 'on'
@@ -889,15 +889,13 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		$input = kgvid_insert_htaccess_login( $input );
 
 		$nostdin = '';
-		if ( $options['nostdin'] === true
-			&& $options['video_app'] === 'ffmpeg'
-		) {
+		if ( $options['nostdin'] === true ) {
 			$nostdin = '-nostdin';
 		}
 
 		$encode_array_before_options = array(
 			$nice,
-			$options['app_path'] . '/' . $options['video_app'],
+			$options['app_path'] . '/ffmpeg',
 			$nostdin,
 			'-y',
 			'-i',
@@ -1220,8 +1218,8 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 	}
 
 	if ( $options['ffmpeg_exists'] === 'notinstalled' ) {
-		/* translators: %s is the name of the video encoding application (usually FFmpeg). */
-		$ffmpeg_disabled_text = 'disabled="disabled" title="' . sprintf( esc_attr_x( '%1$s not found at %2$s', 'ex: FFmpeg not found at /usr/local/bin', 'video-embed-thumbnail-generator' ), esc_attr( strtoupper( $options['video_app'] ) ), esc_attr( $options['app_path'] ) ) . '"';
+		/* translators: %s is the path to FFmpeg on the server. */
+		$ffmpeg_disabled_text = 'disabled="disabled" title="' . sprintf( esc_attr__( 'FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_attr( $options['app_path'] ) ) . '"';
 	} else {
 		$ffmpeg_disabled_text = '';
 	}
@@ -2334,7 +2332,7 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 			$queue_position     = intval( key( array_slice( $video_encode_queue, -1, 1, true ) ) );
 			$new_queue_position = strval( intval( $queue_position ) + 1 );
 			if ( $queue_position == 0 ) {
-				$embed_display = '<strong>' . esc_html__( 'Starting', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( strtoupper( $options['video_app'] ) ) . '... </strong>';
+				$embed_display = '<strong>' . esc_html__( 'Starting FFmpeg...', 'video-embed-thumbnail-generator' ) . '</strong>';
 			} else {
 				/* translators: %1$s is a list of video formats. %2$s is a number. */
 				$embed_display = '<strong>' . sprintf( esc_html__( '%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator' ), esc_html( $imploded_encode_list ), esc_html( $new_queue_position ) ) . ' </strong>';
@@ -2605,8 +2603,7 @@ function kgvid_encode_videos() {
 								break; // don't bother looping through the rest if we already found the format
 								//end if the x264 library and an aac library is enabled
 							} else {
-								/* translators: %s is the name of the video encoding application (usually FFmpeg). */
-								$lastline = sprintf( esc_html__( '%s missing library libx264 required for H.264 encoding', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ) );
+								$lastline = esc_html__( 'FFmpeg missing library libx264 required for H.264 encoding', 'video-embed-thumbnail-generator' );
 
 								if ( ! $aac_available ) {
 
@@ -2661,8 +2658,8 @@ function kgvid_encode_videos() {
 										$missing_libraries[] = $video_formats[ $queued_format ]['vcodec'];
 
 									}
-									/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is a list of video encoding libraries. */
-									$lastline = sprintf( esc_html__( '%1$s missing library %2$s required for %3$s encoding.', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( implode( ', ', $missing_libraries ) ), esc_html( $video_formats[ $queued_format ]['name'] ) );
+									/* translators: %1$s is a list of video encoding libraries. %2$s is a the name of a video format */
+									$lastline = sprintf( esc_html__( 'FFmpeg missing library %1$s required for %2$s encoding.', 'video-embed-thumbnail-generator' ), esc_html( implode( ', ', $missing_libraries ) ), esc_html( $video_formats[ $queued_format ]['name'] ) );
 
 									$video_encode_queue[ $video_key ]['encode_formats'][ $queued_format ]['status']   = 'error';
 									$video_encode_queue[ $video_key ]['encode_formats'][ $queued_format ]['lastline'] = $lastline;
@@ -3445,7 +3442,7 @@ function kgvid_cancel_encode( $video_key, $format ) {
 				}
 
 				if ( intval( $kgvid_pid ) > 0
-					&& strpos( $output, $options['app_path'] . '/' . $options['video_app'] ) !== false
+					&& strpos( $output, $options['app_path'] . '/ffmpeg' ) !== false
 					&& strpos( $output, $logfile ) !== false
 				) {
 
