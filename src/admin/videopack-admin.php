@@ -1081,8 +1081,8 @@ function enqueue_kgvid_script() {
 				'hidevideo'            => esc_html__( 'Hide video...', 'video-embed-thumbnail-generator' ),
 				'choosefromvideo'      => esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ),
 				'cantloadvideo'        => esc_html__( 'Can\'t load video', 'video-embed-thumbnail-generator' ),
-				/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is the path to the application. */
-				'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and %1$s not found at %2$s', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ), esc_html( $options['app_path'] ) ),
+				/* translators: %s is the path to FFmpeg. */
+				'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_html( $options['app_path'] ) ),
 				'choosethumbnail'      => esc_html__( 'Choose Thumbnail:', 'video-embed-thumbnail-generator' ),
 				'saveallthumbnails'    => esc_html__( 'Save All Thumbnails', 'video-embed-thumbnail-generator' ),
 				'saving'               => esc_html__( 'Saving...', 'video-embed-thumbnail-generator' ),
@@ -1090,7 +1090,7 @@ function enqueue_kgvid_script() {
 				'generate'             => esc_html__( 'Generate', 'video-embed-thumbnail-generator' ),
 				'randomize'            => esc_html__( 'Randomize', 'video-embed-thumbnail-generator' ),
 				/* translators: %s is the name of the video encoding application (usually FFmpeg). */
-				'ffmpegnotfound'       => sprintf( esc_html__( '%s not found', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $options['video_app'] ) ) ),
+				'ffmpegnotfound'       => esc_html__( 'FFmpeg not found', 'video-embed-thumbnail-generator' ),
 				'pleasevalidurl'       => esc_html__( 'Please enter a valid video URL', 'video-embed-thumbnail-generator' ),
 				'deletemessage'        => esc_html__( "You are about to permanently delete the encoded video.\n 'Cancel' to stop, 'OK' to delete.", 'video-embed-thumbnail-generator' ),
 				'saved'                => esc_html__( 'Saved.', 'video-embed-thumbnail-generator' ),
@@ -1177,9 +1177,7 @@ function kgvid_validate_network_settings( $input ) {
 
 	$input = kgvid_sanitize_text_field( $input ); // recursively sanitizes all the settings
 
-	if ( $input['app_path'] != $options['app_path']
-		|| $input['video_app'] != $options['video_app']
-	) {
+	if ( $input['app_path'] != $options['app_path']	) {
 		$input = kgvid_validate_ffmpeg_settings( $input );
 	} else {
 		$input['ffmpeg_exists'] = $options['ffmpeg_exists'];
@@ -1249,9 +1247,9 @@ function kgvid_superadmin_capabilities_callback() {
 
 	$network_options = get_site_option( 'kgvid_video_embed_network_options' );
 	/* translators: %s is the name of the video encoding application (usually FFmpeg). */
-	echo '<input ' . checked( $network_options['superadmin_only_ffmpeg_settings'], true, false ) . " id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>" . sprintf( esc_html_x( 'Can access %s settings tab.', 'Can access FFmpeg settings tab', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $network_options['video_app'] ) ) . '</strong>' ) . '</label>';
+	echo '<input ' . checked( $network_options['superadmin_only_ffmpeg_settings'], true, false ) . " id='superadmin_only_ffmpeg_settings' name='kgvid_video_embed_options[superadmin_only_ffmpeg_settings]' type='checkbox' /> <label for='superadmin_only_ffmpeg_settings'>" . esc_html__( 'Can access FFmpeg settings tab.', 'video-embed-thumbnail-generator' ) . '</label>';
 	/* translators: %s is the name of the video encoding application (usually FFmpeg). */
-	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'Only Super admins will be allowed to view and modify %s settings.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $network_options['video_app'] ) ) . '</strong>' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Only Super admins will be allowed to view and modify FFmpeg settings.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 
 	echo "<div class='kgvid_video_app_required'>";
@@ -1276,8 +1274,7 @@ function kgvid_superadmin_capabilities_callback() {
 		echo "<option value='" . esc_attr( $value ) . "' " . esc_attr( $selected ) . '>' . esc_html( $name ) . '</option>';
 	}
 	echo '</select>';
-	/* translators: %s is the name of the video encoding application (usually FFmpeg). */
-	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'Can also be set on individual sites if the %s settings tab isn\'t disabled.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $network_options['video_app'] ) ) . '</strong>' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "Can also be set on individual sites if the FFmpeg settings tab isn't disabled.", 'video-embed-thumbnail-generator' ) ) );
 	echo "</div>\n\t";
 }
 
@@ -1964,7 +1961,6 @@ function kgvid_encode_settings_section_callback() {
 	if ( is_plugin_active_for_network( VIDEOPACK_BASENAME ) ) {
 		$options = kgvid_get_options();
 		echo "<input type='hidden' id='app_path' data-ffmpeg_exists='" . esc_attr( $options['ffmpeg_exists'] ) . "' name='kgvid_video_embed_options[app_path]' value='" . esc_attr( $options['app_path'] ) . "'>";
-		echo "<input type='hidden' id='video_app' name='kgvid_video_embed_options[video_app]' value='" . esc_attr( strtoupper( $options['video_app'] ) ) . "'>";
 	}
 }
 
@@ -1972,8 +1968,8 @@ function kgvid_app_path_callback() {
 	$options = kgvid_get_options();
 
 	echo "<input class='affects_ffmpeg regular-text code' id='app_path' data-ffmpeg_exists='" . esc_attr( $options['ffmpeg_exists'] ) . "' name='kgvid_video_embed_options[app_path]' type='text' value='" . esc_attr( $options['app_path'] ) . "' />";
-	/* translators: %1$s is the name of the video encoding application (usually FFmpeg). %2$s is '<code>/usr/local/bin</code>'. */
-	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn\'t usually end with %1$s. Example: %2$s.', 'video-embed-thumbnail-generator' ), "<code><strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong></code>', '<code>/usr/local/bin</code>' ) ) );
+	/* translators: %s is '<code>/usr/local/bin</code>'. */
+	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( "This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn't usually end with FFmpeg. Example: %s.", 'video-embed-thumbnail-generator' ), '<code>/usr/local/bin</code>' ) ) );
 	echo "\n\t";
 }
 
@@ -2910,9 +2906,7 @@ function kgvid_video_embed_options_validate( $input ) {
 		add_settings_error( 'video_embed_thumbnail_generator_settings', 'options-reset', esc_html__( 'Videopack settings reset to default values.', 'video-embed-thumbnail-generator' ), 'updated' );
 	}
 
-	if ( $input['app_path'] != $options['app_path']
-	|| strtoupper( $input['video_app'] ) != strtoupper( $options['video_app'] )
-	) {
+	if ( $input['app_path'] != $options['app_path']	) {
 		$input = kgvid_validate_ffmpeg_settings( $input );
 	} else {
 		$input['ffmpeg_exists'] = $options['ffmpeg_exists'];

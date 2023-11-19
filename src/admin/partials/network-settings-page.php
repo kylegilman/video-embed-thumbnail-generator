@@ -21,10 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<tr valign='middle'>
 				<th scope='row'><label for='app_path'><?php esc_html_e( 'Path to applications on the server:', 'video-embed-thumbnail-generator' ); ?></label></th>
 				<td><?php kgvid_app_path_callback(); ?></td>
-			</tr>
-				<th scope='row'><label for='video_app'><?php esc_html_e( 'Application for thumbnails & encoding:', 'video-embed-thumbnail-generator' ); ?></label></th>
-				<td><?php kgvid_video_app_callback(); ?></td>
-			</tr>
 			<tr>
 				<th scope='row'><label for='moov'><?php esc_html_e( 'Method to fix encoded H.264 headers for streaming:', 'video-embed-thumbnail-generator' ); ?></label></th>
 				<td><?php kgvid_moov_callback(); ?></td>
