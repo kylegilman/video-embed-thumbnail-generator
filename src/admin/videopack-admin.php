@@ -15,8 +15,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '5.0',
-		'videojs_version'         => '8.5.2',
+		'videojs_version'         => '8.6.1',
 		'embed_method'            => 'Video.js v8',
 		'plugin_url'              => plugin_dir_url( __FILE__ ),
 		'template'                => false,
@@ -29,7 +28,6 @@ function kgvid_default_options_fn() {
 		'hide_video_formats'      => true,
 		'hide_thumbnails'         => false,
 		'app_path'                => '',
-		'video_app'               => 'ffmpeg',
 		'ffmpeg_exists'           => 'notchecked',
 		'nostdin'                 => false,
 		'moov'                    => 'movflag',
@@ -81,7 +79,7 @@ function kgvid_default_options_fn() {
 		'skip_forward'            => 10,
 		'skip_backward'           => 10,
 		'endofvideooverlay'       => false,
-		'endofvideooverlaysame'   => '',
+		'endofvideooverlaysame'   => false,
 		'skin'                    => 'kg-video-js-skin',
 		'js_skin'                 => 'kg-video-js-skin',
 		'custom_attributes'       => '',
@@ -165,7 +163,6 @@ function kgvid_default_network_options() {
 
 	$network_options = array(
 		'app_path'                        => $default_options['app_path'],
-		'video_app'                       => $default_options['video_app'],
 		'ffmpeg_exists'                   => $default_options['ffmpeg_exists'],
 		'moov'                            => $default_options['moov'],
 		'nostdin'                         => $default_options['nostdin'],
@@ -195,17 +192,52 @@ function is_videopack_active_for_network() {
 	return false;
 }
 
+/**
+ * Recursively intersects keys of two arrays.
+ *
+ * @param array $options_array Array to be filtered.
+ * @param array $default_array Default array with keys to keep.
+ * @return array Filtered array.
+ */
+function kgvid_recursive_intersect_key( $options_array, $default_array ) {
+
+	$result = array();
+
+	foreach ( $default_array as $key => $value ) {
+		if ( array_key_exists( $key, $options_array ) ) {
+			if ( is_array( $options_array[ $key ] ) && is_array( $value ) ) {
+				// Recursive call if both elements are arrays
+				$result[ $key ] = kgvid_recursive_intersect_key( $options_array[ $key ], $value );
+			} else {
+				// Direct assignment if not arrays
+				$result[ $key ] = $options_array[ $key ];
+			}
+		}
+	}
+
+	return $result;
+}
+
 function kgvid_get_options() {
 
-	$options = get_option( 'kgvid_video_embed_options' );
+	$options         = get_option( 'kgvid_video_embed_options' );
+	$options_old     = $options; // save the values that are in the db
+	$default_options = kgvid_default_options_fn();
+	$options         = kgvid_recursive_intersect_key( $options, $default_options );
+	$options         = array_merge( $default_options, $options );
+
+	if ( $options !== $options_old ) {
+		update_option( 'kgvid_video_embed_options', $options );
+	}
 
 	if ( is_videopack_active_for_network() ) {
 		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
-		if ( ! is_array( $options ) ) {
-			$options = kgvid_default_options_fn();
-		}
 		if ( is_array( $network_options ) ) {
-			if ( ! fs_is_network_admin() && $network_options['queue_control'] == 'play' && $options['queue_control'] == 'pause' ) {
+			if (
+				! fs_is_network_admin()
+				&& $network_options['queue_control'] == 'play'
+				&& $options['queue_control'] == 'pause'
+			) {
 				$network_options['queue_control'] = 'pause'; // allows local queue to pause while network queue continues.
 			}
 			$options = array_merge( $options, $network_options );
@@ -282,7 +314,7 @@ function kgvid_sanitize_text_field( $text_field ) {
 				$value = kgvid_sanitize_text_field( $value );
 			} elseif ( $key === 'titlecode' ) {
 				// special case for the titlecode Videopack setting.
-					$value = wp_kses_post( $value );
+				$value = wp_kses_post( $value );
 			} elseif ( kgvid_filter_validate_url( $value ) ) { // if it's a URL.
 				$value = sanitize_url( $value );
 			} else {
@@ -1347,6 +1379,7 @@ function kgvid_do_settings_sections( $page ) {
 }
 
 function kgvid_settings_schema( array $options ) {
+
 	$schema = array();
 	foreach ( $options as $option => $value ) {
 		$att_type = 'string';
@@ -1413,7 +1446,6 @@ function kgvid_register_setting() {
 			),
 		)
 	);
-	add_filter('https_ssl_verify', '__return_false'); ////// REMOVE THIS!!!!!!!!!
 }
 add_action( 'admin_init', 'kgvid_register_setting' );
 add_action( 'rest_api_init', 'kgvid_register_setting' );
@@ -1432,67 +1464,6 @@ function log_detailed_rest_errors( $response, $handler, $request ) {
 	return $response;
 }
 //add_action( 'rest_request_after_callbacks', 'log_detailed_rest_errors', 10, 3 );
-
-function kgvid_video_embed_options_init() {
-
-	add_settings_section( 'kgvid_video_embed_playback_settings', esc_html__( 'Default Video Playback Settings', 'video-embed-thumbnail-generator' ), 'kgvid_plugin_playback_settings_section_callback', 'video_embed_thumbnail_generator_settings' );
-	add_settings_section( 'kgvid_video_embed_plugin_settings', esc_html__( 'Plugin Settings', 'video-embed-thumbnail-generator' ), 'kgvid_plugin_settings_section_callback', 'video_embed_thumbnail_generator_settings' );
-	add_settings_section( 'kgvid_video_embed_encode_settings', esc_html__( 'Video Encoding Settings', 'video-embed-thumbnail-generator' ), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings' );
-	add_settings_section( 'kgvid_video_embed_encode_test_settings', esc_html__( 'Video Encoding Test', 'video-embed-thumbnail-generator' ), 'kgvid_encode_settings_section_callback', 'video_embed_thumbnail_generator_settings' );
-
-	add_settings_field( 'poster', esc_html__( 'Default thumbnail:', 'video-embed-thumbnail-generator' ), 'kgvid_poster_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'poster' ) );
-	add_settings_field( 'endofvideooverlay', esc_html__( 'End of video image:', 'video-embed-thumbnail-generator' ), 'kgvid_endofvideooverlay_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings' );
-	add_settings_field( 'watermark', esc_html__( 'Watermark overlay:', 'video-embed-thumbnail-generator' ), 'kgvid_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'watermark' ) );
-	add_settings_field( 'align', esc_html__( 'Video alignment:', 'video-embed-thumbnail-generator' ), 'kgvid_align_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'align' ) );
-	add_settings_field( 'resize', esc_html__( 'Automatically adjust videos:', 'video-embed-thumbnail-generator' ), 'kgvid_resize_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'resize' ) );
-	add_settings_field( 'dimensions', esc_html__( 'Video dimensions:', 'video-embed-thumbnail-generator' ), 'kgvid_dimensions_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'width' ) );
-	add_settings_field( 'gallery_options', esc_html__( 'Video gallery:', 'video-embed-thumbnail-generator' ), 'kgvid_video_gallery_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'gallery_width' ) );
-	add_settings_field( 'controls', esc_html__( 'Video controls:', 'video-embed-thumbnail-generator' ), 'kgvid_controls_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'controls' ) );
-	add_settings_field( 'js_skin', esc_html_x( 'Skin class:', 'CSS class for video skin', 'video-embed-thumbnail-generator' ), 'kgvid_js_skin_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'js_skin' ) );
-	add_settings_field( 'custom_attributes', esc_html__( 'Custom attributes:', 'video-embed-thumbnail-generator' ), 'kgvid_custom_attributes_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_playback_settings', array( 'label_for' => 'custom_attributes' ) );
-
-	add_settings_field( 'security', esc_html__( 'Video sharing:', 'video-embed-thumbnail-generator' ), 'kgvid_security_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'right_click' ) );
-	add_settings_field( 'performance', esc_html__( 'Performance:', 'video-embed-thumbnail-generator' ), 'kgvid_performance_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'count_views' ) );
-	add_settings_field( 'replacevideoshortcode', esc_html__( 'Replace video shortcode:', 'video-embed-thumbnail-generator' ), 'kgvid_replace_video_shortcode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'replace_video_shortcode' ) );
-	add_settings_field( 'rewrite_attachment_url', esc_html__( 'Attachment URL Rewriting:', 'video-embed-thumbnail-generator' ), 'kgvid_rewrite_attachment_url_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'rewrite_attachment_url' ) );
-	add_settings_field( 'generate_thumbs', esc_html__( 'Default number of thumbnails to generate:', 'video-embed-thumbnail-generator' ), 'kgvid_generate_thumbs_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'generate_thumbs' ) );
-	add_settings_field( 'hide_thumbnails', esc_html__( 'Media Library:', 'video-embed-thumbnail-generator' ), 'kgvid_media_library_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'hide_thumbnails' ) );
-	add_settings_field( 'featured', esc_html__( 'Featured image:', 'video-embed-thumbnail-generator' ), 'kgvid_featured_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'featured' ) );
-	add_settings_field( 'thumb_parent', esc_html__( 'Attach thumbnails to:', 'video-embed-thumbnail-generator' ), 'kgvid_thumb_parent_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'thumb_parent' ) );
-	add_settings_field( 'user_roles', esc_html__( 'User capabilities:', 'video-embed-thumbnail-generator' ), 'kgvid_user_roles_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'user_roles' ) );
-	add_settings_field( 'delete_children', esc_html__( 'Delete associated attachments:', 'video-embed-thumbnail-generator' ), 'kgvid_delete_children_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'delete_children' ) );
-	add_settings_field( 'titlecode', esc_html__( 'Video title text HTML formatting:', 'video-embed-thumbnail-generator' ), 'kgvid_titlecode_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'titlecode' ) );
-	add_settings_field( 'template', esc_html__( 'Attachment page design:', 'video-embed-thumbnail-generator' ), 'kgvid_template_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_plugin_settings', array( 'label_for' => 'template' ) );
-
-	if ( ! is_plugin_active_for_network( plugin_basename( 'video_embed_thumbnail_generator_settings' ) ) ) {
-		add_settings_field( 'app_path', esc_html__( 'Path to applications folder on server:', 'video-embed-thumbnail-generator' ), 'kgvid_app_path_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'app_path' ) );
-	}
-
-	add_settings_field( 'browser_thumbnails', esc_html__( 'Enable in-browser thumbnails:', 'video-embed-thumbnail-generator' ), 'kgvid_browser_thumbnails_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'browser_thumbnails' ) );
-	add_settings_field( 'encode_formats', esc_html__( 'Default video encode formats:', 'video-embed-thumbnail-generator' ), 'kgvid_encode_formats_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings' );
-	add_settings_field( 'automatic', esc_html__( 'Do automatically on upload:', 'video-embed-thumbnail-generator' ), 'kgvid_automatic_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_encode' ) );
-	add_settings_field( 'automatic_encoded', esc_html__( 'Do automatically on completed encoding:', 'video-embed-thumbnail-generator' ), 'kgvid_automatic_completed_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'auto_publish_post' ) );
-	add_settings_field( 'old_videos', esc_html__( 'For previously uploaded videos:', 'video-embed-thumbnail-generator' ), 'kgvid_old_video_buttons_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings' );
-	add_settings_field( 'error_email', esc_html__( 'Email encoding errors to:', 'video-embed-thumbnail-generator' ), 'kgvid_error_email_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'error_email' ) );
-	add_settings_field( 'htaccess', esc_html__( 'htaccess login:', 'video-embed-thumbnail-generator' ), 'kgvid_htaccess_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'htaccess_username' ) );
-	add_settings_field( 'ffmpeg_thumb_watermark', esc_html__( 'Add watermark to thumbnails:', 'video-embed-thumbnail-generator' ), 'kgvid_ffmpeg_thumb_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_thumb_watermark' ) );
-	add_settings_field( 'ffmpeg_watermark', esc_html__( 'Add watermark to encoded files:', 'video-embed-thumbnail-generator' ), 'kgvid_ffmpeg_watermark_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'ffmpeg_watermark' ) );
-	if ( ! is_plugin_active_for_network( plugin_basename( 'video_embed_thumbnail_generator_settings' ) ) ) {
-		add_settings_field( 'moov', esc_html__( 'Method to fix encoded H.264 headers for streaming:', 'video-embed-thumbnail-generator' ), 'kgvid_moov_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'moov' ) );
-	}
-	add_settings_field( 'rate_control', esc_html__( 'Encode quality control method:', 'video-embed-thumbnail-generator' ), 'kgvid_rate_control_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'rate_control' ) );
-	add_settings_field( 'CRFs', esc_html__( 'Constant Rate Factors (CRF):', 'video-embed-thumbnail-generator' ), 'kgvid_crf_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_CRF' ) );
-	add_settings_field( 'bitrate_multiplier', esc_html__( 'Average Bit Rate:', 'video-embed-thumbnail-generator' ), 'kgvid_average_bitrate_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'bitrate_multiplier' ) );
-	add_settings_field( 'h264_profile', esc_html__( 'H.264 profile:', 'video-embed-thumbnail-generator' ), 'kgvid_h264_profile_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'h264_profile' ) );
-	add_settings_field( 'audio_options', esc_html__( 'Audio:', 'video-embed-thumbnail-generator' ), 'kgvid_audio_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'audio_bitrate' ) );
-
-	if ( ! is_plugin_active_for_network( plugin_basename( 'video_embed_thumbnail_generator_settings' ) ) ) {
-		add_settings_field( 'execution', esc_html_x( 'Execution:', 'program execution options', 'video-embed-thumbnail-generator' ), 'kgvid_execution_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_settings', array( 'label_for' => 'threads' ) );
-	}
-
-	add_settings_field( 'test_ffmpeg', esc_html__( 'Test FFmpeg:', 'video-embed-thumbnail-generator' ), 'kgvid_test_ffmpeg_options_callback', 'video_embed_thumbnail_generator_settings', 'kgvid_video_embed_encode_test_settings' );
-}
-add_action( 'admin_init', 'kgvid_video_embed_options_init' );
 
 function kgvid_generate_settings_select_html( $option_name, $options, $items, $class_attr = '', $onchange = '' ) {
 
@@ -2521,366 +2492,7 @@ function kgvid_init_plugin() {
 		}
 	}//end network activation setup
 
-	$options         = kgvid_get_options();
-	$options_old     = $options; // save the values that are in the db
-	$default_options = kgvid_default_options_fn();
-
-	if ( empty( $options ) ) { // run if settings aren't initialized yet
-
-		$options = array();
-
-		$old_setting_equivalents = array(
-			'width'             => 'wp_FMP_width',
-			'height'            => 'wp_FMP_height',
-			'controlbar_style'  => 'wp_FMP_controlbar_style',
-			'poster'            => 'wp_FMP_poster',
-			'endofvideooverlay' => 'wp_FMP_endofvideooverlay',
-			'autohide'          => 'wp_FMP_autohide',
-			'autoplay'          => 'wp_FMP_autoplay',
-			'loop'              => 'wp_FMP_loop',
-			'playbutton'        => 'wp_FMP_playbutton',
-			'stream_type'       => 'wp_FMP_stream_type',
-			'scale_mode'        => 'wp_FMP_scale_mode',
-			'bgcolor'           => 'wp_FMP_bgcolor',
-			'configuration'     => 'wp_FMP_configuration',
-			'skin'              => 'wp_FMP_skin',
-			'app_path'          => 'wp_FMP_ffmpeg',
-			'ffmpeg_exists'     => 'wp_FMP_ffmpeg_exists',
-			'encode_mobile'     => 'wp_FMP_encodemobile',
-			'encode_ogg'        => 'wp_FMP_encodeogg',
-			'encode_webm'       => 'wp_FMP_encodewebm',
-			'template'          => 'wp_FMP_template',
-			'titlecode'         => 'wp_FMP_titlecode',
-		);
-
-		foreach ( $old_setting_equivalents as $new_setting => $old_setting ) { // apply any old settings to the new database entry then delete them
-			$old_setting_value = get_option( $old_setting, 'no_setting' );
-			if ( $old_setting_value !== 'no_setting' ) {
-				if ( $old_setting_value == 'true' ) {
-					$old_setting_value = true;
-				}
-				$options[ $new_setting ] = $old_setting_value;
-				delete_option( $old_setting );
-			}
-		}
-		if ( ! empty( $options ) ) {
-			global $wpdb;
-			$fmp_options = $wpdb->get_col(
-				"SELECT option_name
-				FROM $wpdb->options
-				WHERE option_name
-				LIKE 'wp_FMP%'"
-			);
-			foreach ( $fmp_options as $fmp_option ) {
-				delete_option( $fmp_option );
-			}
-		}
-
-		foreach ( $default_options as $key => $value ) { // apply default values for any settings that didn't exist before
-			if ( ! array_key_exists( $key, $options ) ) {
-				$options[ $key ] = $value;
-			}
-		}
-
-		update_option( 'kgvid_video_embed_options', $options );
-
-	} else { // user is already upgraded to version 3.0, but needs the extra options introduced in later versions
-		if ( $options['version'] < 3.1 ) {
-			$options['version'] = 3.1;
-			$options['watermark'] = '';
-		}
-		if ( $options['version'] < 4.0 ) {
-			$options['version']           = 4.0;
-			$options['overlay_title']     = false;
-			$options['overlay_embedcode'] = false;
-			$options['view_count']        = false;
-			$options['align']             = 'left';
-			$options['featured']          = true;
-			$options['thumb_parent']      = 'video';
-			$options['delete_children']   = 'encoded videos only';
-			if ( $options['template'] == true ) {
-				$options['template'] = 'old';
-			} else {
-				$options['template'] = 'gentle';
-			}
-			$checkbox_convert = array( 'autohide', 'endofvideooverlaysame', 'playbutton', 'loop', 'autoplay' );
-			foreach ( $checkbox_convert as $option ) {
-				if ( $options[ $option ] == 'true' ) {
-					$options[ $option ] = true;
-				} //some checkboxes were incorrectly set to "true" in older versions
-			}
-			if ( wp_next_scheduled( 'kgvid_cleanup_queue' ) != false ) { // kgvid_cleanup_queue needs an argument!
-				wp_clear_scheduled_hook( 'kgvid_cleanup_queue' );
-			}
-		}
-		if ( $options['version'] < 4.1 ) {
-			$options['version']    = 4.1;
-			$options['embeddable'] = true;
-			$options['inline']     = true;
-		}
-		if ( $options['version'] < 4.2 ) {
-			$options['version']             = 4.2;
-			$options['bitrate_multiplier']  = 0.1;
-			$options['h264_CRF']            = 23;
-			$options['webm_CRF']            = 10;
-			$options['ogv_CRF']             = 6;
-			$options['audio_bitrate']       = 160;
-			$options['threads']             = 1;
-			$options['nice']                = true;
-			$options['browser_thumbnails']  = true;
-			$options['rate_control']        = 'abr';
-			$options['h264_profile']        = 'none';
-			$options['h264_level']          = 'none';
-			$options['encode_fullres']      = false;
-			$options['auto_encode']         = false;
-			$options['auto_thumb']          = false;
-			$options['auto_thumb_position'] = 50;
-			$options['right_click']         = true;
-			$options['resize']              = true;
-			$options['htaccess_login']      = '';
-			$options['htaccess_password']   = '';
-			$options['minimum_width']       = false;
-
-			$options['endofvideooverlaysame'] = $options['endOfVideoOverlaySame'];
-			unset( $options['endOfVideoOverlaySame'] );
-			$options['endofvideooverlay'] = $options['endOfVideoOverlay'];
-			unset( $options['endOfVideoOverlaySame'] );
-
-			$upload_capable                                   = kgvid_check_if_capable( 'upload_files' );
-			$options['capabilities']['make_video_thumbnails'] = $upload_capable;
-			$options['capabilities']['encode_videos']         = $upload_capable;
-			kgvid_set_capabilities( $options['capabilities'] );
-
-			if ( array_key_exists( 'embeddable', $options ) && $options['embeddable'] != true ) {
-				$options['open_graph'] = false;
-			} else {
-				$options['open_graph'] = true;
-			}
-		}
-		if ( $options['version'] < 4.25 ) {
-			$options['version'] = 4.25;
-			kgvid_check_ffmpeg_exists( $options, true );
-		}
-		if ( $options['version'] < 4.3 ) {
-
-			$options['version']              = 4.3;
-			$options['preload']              = 'metadata';
-			$options['sample_format']        = 'mobile';
-			$options['ffmpeg_watermark']     = array(
-				'url'    => '',
-				'scale'  => '9',
-				'align'  => 'right',
-				'valign' => 'bottom',
-				'x'      => '6',
-				'y'      => '5',
-			);
-			$options['auto_thumb_number']    = 1;
-			$options['simultaneous_encodes'] = 1;
-			$options['downloadlink']         = false;
-
-			$edit_others_capable                                  = kgvid_check_if_capable( 'edit_others_posts' );
-			$options['capabilities']['edit_others_video_encodes'] = $edit_others_capable;
-			kgvid_set_capabilities( $options['capabilities'] );
-
-		}
-		if ( $options['version'] < 4.301 ) {
-			$options['version'] = 4.301;
-			if ( ! array_key_exists( 'capabilities', $options ) ) { // fix bug in 4.3 that didn't create capabilties for single installs
-				$options['capabilities'] = $default_options['capabilities'];
-			}
-			kgvid_set_capabilities( $options['capabilities'] );
-		}
-
-		if ( $options['version'] < 4.303 ) {
-			$options['version']           = 4.303;
-			$options['volume']            = 1;
-			$options['mute']              = false;
-			$options['custom_attributes'] = '';
-		}
-		if ( $options['version'] < 4.304 ) {
-			$options['version']     = 4.304;
-			$options['gallery_end'] = '';
-		}
-		if ( $options['version'] < 4.4 ) {
-			$options['version']        = 4.4;
-			$options['moov_path']      = $options['app_path'];
-			$options['replace_format'] = 'fullres';
-			$options['custom_format']  = array(
-				'format' => 'h264',
-				'width'  => '',
-				'height' => '',
-			);
-			$options['nostdin']        = false;
-			$options['fullwidth']      = false;
-			$options['auto_res']       = true;
-		}
-		if ( $options['version'] < 4.5 ) {
-			$options['version'] = 4.5;
-			if ( $options['auto_res'] == true ) {
-				$options['auto_res'] = 'automatic';
-			} else {
-				$options['auto_res'] = 'highest';
-			}
-			$options['watermark_link_to']   = 'none';
-			$options['watermark_url']       = '';
-			$options['encode_vp9']          = false;
-			$options['gallery_pagination']  = false;
-			$options['gallery_per_page']    = false;
-			$options['gallery_title']       = true;
-			$options['oembed_provider']     = true;
-			$options['oembed_security']     = false;
-			$options['click_download']      = 'on';
-		}
-
-		if ( $options['version'] < 4.6 ) {
-			$options['version'] = 4.6;
-			if ( ! array_key_exists( 'nativecontrolsfortouch', $options ) ) {
-				$options['nativecontrolsfortouch'] = true;
-			}
-			$options['facebook_button']  = false;
-			$options['sample_rotate']    = false;
-			$options['twitter_button']   = false;
-			$options['twitter_card']     = false;
-			$options['schema']           = true;
-			$options['error_email']      = 'nobody';
-			$options['auto_encode_gif']  = false;
-			$options['pixel_ratio']      = true;
-			$options['twitter_username'] = kgvid_get_jetpack_twitter_username();
-		}
-
-		if ( version_compare( $options['version'], '4.6.8', '<' ) ) {
-			$options['version'] = '4.6.8';
-			if ( $options['embed_method'] === 'WordPress Default' ) {
-				$options['pauseothervideos'] = true;
-			} else {
-				$options['pauseothervideos'] = false;
-			}
-			$options['alwaysloadscripts'] = false;
-		}
-
-		if ( version_compare( $options['version'], '4.6.14', '<' ) ) {
-			$options['version']      = '4.6.14';
-			$options['fixed_aspect'] = 'false';
-			$options['count_views']  = 'all';
-		}
-
-		if ( version_compare( $options['version'], '4.6.16', '<' ) ) {
-			$options['version']       = '4.6.16';
-			$options['playback_rate'] = false;
-			if ( $options['count_views'] == 'all' ) {
-				$options['count_views'] = 'quarters';
-			}
-		}
-
-		if ( version_compare( $options['version'], '4.6.20', '<' ) ) {
-			$options['version']            = '4.6.20';
-			$options['encode_480']         = false;
-			$options['hide_video_formats'] = false;
-		}
-
-		if ( version_compare( $options['version'], '4.6.21', '<' ) ) {
-			$options['version']                = '4.6.21';
-			$options['gallery_thumb_aspect']   = false;
-			$options['ffmpeg_thumb_watermark'] = array(
-				'url'    => '',
-				'scale'  => '50',
-				'align'  => 'center',
-				'valign' => 'center',
-				'x'      => '0',
-				'y'      => '0',
-			);
-		}
-
-		if ( version_compare( $options['version'], '4.6.22', '<' ) ) {
-			$options['version'] = '4.6.22';
-			$video_formats      = kgvid_video_formats();
-			foreach ( $video_formats as $format => $format_stats ) {
-				if ( array_key_exists( 'encode_' . $format, $options ) && $options[ 'encode_' . $format ] == true ) {
-					$options['encode'][ $format ] = $options[ 'encode_' . $format ];
-				}
-			}
-		}
-
-		if ( version_compare( $options['version'], '4.6.23', '<' ) ) {
-			$options['version']                 = '4.6.23';
-			$options['replace_video_shortcode'] = false;
-		}
-
-		if ( version_compare( $options['version'], '4.6.26', '<' ) ) {
-			$options['version']                = '4.6.26';
-			$options['rewrite_attachment_url'] = true;
-		}
-
-		if ( version_compare( $options['version'], '4.6.28', '<' ) ) {
-			$options['version']     = '4.6.28';
-			$options['playsinline'] = true;
-		}
-
-		if ( version_compare( $options['version'], '4.7', '<' ) ) {
-			$options['version'] = '4.7';
-			if ( $options['embed_method'] == 'Strobe Media Playback'
-				|| $options['embed_method'] == 'JW Player'
-			) { // change removed video players to new Video.js player
-				$options['embed_method'] = 'Video.js v7';
-			}
-			$options['controls'] = $options['controlbar_style']; // convert 'controlbar_style' option to 'controls' to match HTML5 convention
-			unset( $options['controlbar_style'] );
-			if ( $options['controls'] == 'none' ) {
-				$options['controls'] = false;
-			} else {
-				$options['controls'] = true;
-			}
-			$options['muted'] = $options['mute']; // convert 'mute' option to 'muted' to match HTML5 convention
-			unset( $options['mute'] );
-			$options['auto_publish_post'] = false;
-			$options['transient_cache']   = false;
-			$options['videojs_version']   = $default_options['videojs_version'];
-			$options['queue_control']     = 'play';
-			$options['gifmode']           = false;
-			$options['audio_channels']    = false;
-		}
-
-		if ( version_compare( $options['version'], '4.8', '<' ) ) {
-			$options['version']       = '4.8';
-			$ffmpeg_options           = kgvid_check_ffmpeg_exists( $options, false ); // recheck because so much about executing FFmpeg has changed
-			$options['ffmpeg_exists'] = $ffmpeg_options['ffmpeg_exists'];
-		}
-
-		if ( version_compare( $options['version'], '4.8.3', '<' ) ) {
-			$options['version'] = '4.8.3';
-			if ( wp_next_scheduled( 'kgvid_cleanup_queue', array( 'scheduled' ) ) != false ) {
-				wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) ); //don't need to run this forever
-				wp_schedule_single_event( time() + DAY_IN_SECONDS, 'kgvid_cleanup_queue', array( 'scheduled' ) );
-			}
-		}
-
-		if ( version_compare( $options['version'], '4.8.7', '<' ) ) {
-			$options['version']         = '4.8.7';
-			$options['hide_thumbnails'] = false;
-		}
-
-		if ( version_compare( $options['version'], '4.9', '<' ) ) {
-			$options['version'] = '4.9';
-			if ( $options['embed_method'] === 'Video.js' ) {
-				$options['embed_method'] = 'Video.js v8';
-			}
-			$options['skip_buttons']  = false;
-			$options['skip_forward']  = 10;
-			$options['skip_backward'] = 10;
-		}
-
-		if ( version_compare( $options['version'], '4.9.1', '<' ) ) {
-			$options['version']        = '4.9.1';
-			$options['default_insert'] = 'Single Video';
-		}
-
-		if ( $options['version'] != $default_options['version'] ) {
-			$options['version'] = $default_options['version'];
-		}
-		if ( $options !== $options_old ) {
-			update_option( 'kgvid_video_embed_options', $options );
-		}
-	}
+	$options = kgvid_get_options(); //ensure that options are loaded and updated with the right defaults
 }
 add_action( 'init', 'kgvid_init_plugin' );
 
@@ -3026,7 +2638,6 @@ function kgvid_video_embed_options_validate( $input ) {
 	}
 
 	// since this isn't user selectable it has to be re-entered every time
-	$input['version']         = $default_options['version'];
 	$input['videojs_version'] = $default_options['videojs_version'];
 
 	return $input;
