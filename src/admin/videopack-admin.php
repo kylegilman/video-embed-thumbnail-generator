@@ -221,14 +221,9 @@ function kgvid_recursive_intersect_key( $options_array, $default_array ) {
 function kgvid_get_options() {
 
 	$options         = get_option( 'kgvid_video_embed_options' );
-	$options_old     = $options; // save the values that are in the db
 	$default_options = kgvid_default_options_fn();
 	$options         = kgvid_recursive_intersect_key( $options, $default_options );
 	$options         = array_merge( $default_options, $options );
-
-	if ( $options !== $options_old ) {
-		update_option( 'kgvid_video_embed_options', $options );
-	}
 
 	if ( is_videopack_active_for_network() ) {
 		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
@@ -1112,7 +1107,7 @@ function enqueue_kgvid_script() {
 				'wait'                 => esc_html_x( 'Wait', 'please wait', 'video-embed-thumbnail-generator' ),
 				'hidevideo'            => esc_html__( 'Hide video...', 'video-embed-thumbnail-generator' ),
 				'choosefromvideo'      => esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ),
-				'cantloadvideo'        => esc_html__( 'Can\'t load video', 'video-embed-thumbnail-generator' ),
+				'cantloadvideo'        => esc_html__( "Can't load video", 'video-embed-thumbnail-generator' ),
 				/* translators: %s is the path to FFmpeg. */
 				'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_html( $options['app_path'] ) ),
 				'choosethumbnail'      => esc_html__( 'Choose Thumbnail:', 'video-embed-thumbnail-generator' ),
@@ -1347,35 +1342,6 @@ function kgvid_settings_page() {
 	wp_enqueue_global_styles();
 
 	echo '<div id="videopack-settings-root"></div>';
-}
-
-function kgvid_do_settings_sections( $page ) {
-
-	global $wp_settings_sections, $wp_settings_fields;
-
-	if ( ! isset( $wp_settings_sections[ $page ] ) ) {
-		return;
-	}
-
-	foreach ( (array) $wp_settings_sections[ $page ] as $section ) {
-		if ( $section['title'] ) {
-			echo "<h2 id='header_" . esc_attr( $section['id'] ) . "'>" . esc_html( $section['title'] ) . "</h2>\n";
-		}
-
-		if ( $section['callback'] ) {
-			call_user_func( $section['callback'], $section );
-		}
-
-		if ( ! isset( $wp_settings_fields )
-			|| ! isset( $wp_settings_fields[ $page ] )
-			|| ! isset( $wp_settings_fields[ $page ][ $section['id'] ] )
-		) {
-			continue;
-		}
-		echo '<table class="form-table" id="table_' . esc_attr( $section['id'] ) . '">';
-		do_settings_fields( $page, $section['id'] );
-		echo '</table>';
-	}
 }
 
 function kgvid_settings_schema( array $options ) {
@@ -3119,7 +3085,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 	} //only add fields if attachment is the right kind of video
 	return $form_fields;
 }
-add_filter( 'attachment_fields_to_edit', 'kgvid_image_attachment_fields_to_edit', 10, 2 );
+//add_filter( 'attachment_fields_to_edit', 'kgvid_image_attachment_fields_to_edit', 10, 2 );
 
 function kgvid_add_video_stats_column( $cols ) {
 	// add Video Stats column to media library
