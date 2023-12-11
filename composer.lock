@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.6.0",
+            "version": "2.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "8a2bb8f6f45571ec1d05c23421568ca73704176c"
+                "reference": "9fb47e3b864a0039c0cd96312a638b8324c0c30a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/8a2bb8f6f45571ec1d05c23421568ca73704176c",
-                "reference": "8a2bb8f6f45571ec1d05c23421568ca73704176c",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/9fb47e3b864a0039c0cd96312a638b8324c0c30a",
+                "reference": "9fb47e3b864a0039c0cd96312a638b8324c0c30a",
                 "shasum": ""
             },
             "require": {
@@ -50,9 +50,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Freemius/wordpress-sdk/issues",
-                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.6.0"
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.6.1"
             },
-            "time": "2023-10-30T10:56:28+00:00"
+            "time": "2023-12-03T15:10:12+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -248,5 +248,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
