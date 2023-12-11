@@ -41,7 +41,6 @@ class Encode_Queue_Controller {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		maybe_create_table( $table_name, $sql );
-
 	}
 
 	public function start_queue() {
