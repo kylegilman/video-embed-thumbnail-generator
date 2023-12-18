@@ -20,11 +20,8 @@ function kgvid_default_options_fn() {
 		'plugin_url'              => plugin_dir_url( __FILE__ ),
 		'template'                => false,
 		'template_gentle'         => true,
-		'replace_format'          => 'fullres',
-		'custom_format'           => array(
-			'format' => 'h264',
-			'height' => '',
-		),
+		'replace_format'          => 'h264',
+		'custom_resolution'       => false,
 		'hide_video_formats'      => true,
 		'hide_thumbnails'         => false,
 		'app_path'                => '',
@@ -36,7 +33,6 @@ function kgvid_default_options_fn() {
 		'featured'                => true,
 		'thumb_parent'            => 'video',
 		'delete_children'         => 'encoded videos only',
-		'titlecode'               => '<strong>',
 		'poster'                  => '',
 		'watermark'               => '',
 		'watermark_link_to'       => 'home',
@@ -85,8 +81,6 @@ function kgvid_default_options_fn() {
 		'custom_attributes'       => '',
 		'bitrate_multiplier'      => 0.1,
 		'h264_CRF'                => '23',
-		'webm_CRF'                => '10',
-		'ogv_CRF'                 => '6',
 		'audio_bitrate'           => 160,
 		'audio_channels'          => true,
 		'threads'                 => 1,
@@ -144,6 +138,21 @@ function kgvid_default_options_fn() {
 		'queue_control'           => 'play',
 		'encode_array'            => array(),
 	);
+
+
+	$video_codecs = videopack_get_video_codecs();
+	$resolutions  = videopack_get_video_resolutions();
+	foreach ( $video_codecs as $codec ) {
+		$options['encode'][ $codec->get_id() ]['crf'] = $codec->get_default_crf();
+		$options['encode'][ $codec->get_id() ]['vbr'] = $codec->get_default_vbr();
+		foreach ( $resolutions as $resolution => $resolution_details ) {
+			if ( $codec->get_default_encode() && $resolution_details['default_encode'] ) {
+				$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution ] = true;
+			} else {
+				$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution ] = false;
+			}
+		}
+	}
 
 	$video_formats = kgvid_video_formats();
 	foreach ( $video_formats as $format => $format_stats ) {
@@ -510,6 +519,80 @@ function kgvid_save_attachment_meta( $post_id, $kgvid_postmeta ) {
 	}
 }
 
+function videopack_get_video_codecs() {
+
+	$codecs = array(
+		new Videopack\admin\codec\Video_Codec_H264(),
+		new Videopack\admin\codec\Video_Codec_H265(),
+		new Videopack\admin\codec\Video_Codec_VP9(),
+		new Videopack\admin\codec\Video_Codec_AV1(),
+	);
+
+	return apply_filters( 'videopack_video_codecs', $codecs );
+}
+
+function videopack_get_video_resolutions() {
+
+	$options = kgvid_get_options();
+
+	$resolutions = array(
+		2160 => array(
+			'name'           => esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '2160p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => true,
+		),
+		1440 => array(
+			'name'           => esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '1440p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => false,
+		),
+		1080 => array(
+			'name'           => esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '1080p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => true,
+		),
+		720  => array(
+			'name'           => esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '720p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => true,
+		),
+		540  => array(
+			'name'           => esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '540p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => false,
+		),
+		480  => array(
+			'name'           => esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '480p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => true,
+		),
+		360  => array(
+			'name'           => esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '360p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => true,
+		),
+		240  => array(
+			'name'           => esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' ),
+			'label'          => esc_html__( '240p', 'video-embed-thumbnail-generator' ),
+			'default_encode' => false,
+		),
+	);
+
+	if ( is_array( $options ) && $options['custom_resolution'] ) {
+		$resolutions[ $options['custom_resolution'] ] = array(
+			/* translators: %s is the height of a video. Example: 'Custom (1080p)' */
+			'name'  => sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $options['custom_resolution'] ) ),
+			/* translators: %s is the height of a video. Example: '1080p' */
+			'label' => sprintf( esc_html__( '%sp', 'video-embed-thumbnail-generator' ), strval( $options['custom_resolution'] ) ),
+			'default_encode' => false,
+		);
+	}
+
+	krsort( $resolutions );
+
+	return apply_filters( 'videopack_video_resolutions', $resolutions );
+}
+
 function kgvid_video_formats( $return_replace = false, $return_customs = true, $return_dontembeds = true ) {
 
 	$options = get_option( 'kgvid_video_embed_options' );
@@ -795,6 +878,28 @@ function kgvid_check_if_capable( $capability ) {
 		}
 	}
 	return $capable;
+}
+
+function videopack_get_capable_users( string $capability ) {
+
+	$options          = kgvid_get_options();
+	$authorized_users = array();
+
+	if ( is_array( $options['capabilities'] )
+		&& array_key_exists( $capability, $options['capabilities'] )
+	) {
+		$users = get_users(
+			array(
+				'role__in' => array_keys( $options['capabilities'][ $capability ] ),
+			)
+		);
+		if ( $users ) {
+			foreach ( $users as $user ) {
+				$authorized_users[ $user->user_login ] = $user->ID;
+			}
+		}
+	}
+	return $authorized_users;
 }
 
 function kgvid_set_capabilities( $capabilities ) {
