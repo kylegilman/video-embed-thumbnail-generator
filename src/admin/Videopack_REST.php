@@ -101,28 +101,6 @@ class Videopack_REST extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/users',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'users' ),
-				'permission_callback' => function() {
-					return current_user_can( 'manage_options' );
-				},
-				'args'                => array(
-					'capability' => array(
-						'type' => 'string',
-						'enum' => array(
-							'make_video_thumbnails',
-							'encode_videos',
-							'edit_others_video_encodes',
-						),
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/formats/(?P<id>\w+)',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -417,26 +395,6 @@ class Videopack_REST extends \WP_REST_Controller {
 		}
 		$roles = get_editable_roles();
 		return $roles;
-	}
-
-	public function users( \WP_REST_Request $request ) {
-		$capability       = $request->get_param( 'capability' );
-		$authorized_users = array();
-		if ( is_array( $this->options['capabilities'] )
-			&& array_key_exists( $capability, $this->options['capabilities'] )
-		) {
-			$users = get_users(
-				array(
-					'role__in' => array_keys( $this->options['capabilities'][ $capability ] ),
-				)
-			);
-			if ( $users ) {
-				foreach ( $users as $user ) {
-					$authorized_users[ $user->user_login ] = $user->ID;
-				}
-			}
-		}
-		return $authorized_users;
 	}
 
 	public function formats( \WP_REST_Request $request ) {
