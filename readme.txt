@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.2.5
-Stable tag: 4.9.1
+Stable tag: 4.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.9.2 - December 18, 2023 =
 
 = 4.9.1 - November 10, 2023 =
 * Improved in-browser thumbnail generating process.
