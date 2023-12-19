@@ -1920,7 +1920,8 @@ function kgvid_shortcode( $atts, $content = '' ) {
 	if ( ! is_feed() ) {
 
 		$options = kgvid_get_options();
-		if ( ! substr( $options['embed_method'], 0, 8 ) === 'Video.js' ) {
+
+		if ( substr( $options['embed_method'], 0, 8 ) !== 'Video.js' ) {
 			kgvid_enqueue_shortcode_scripts();
 		}
 
