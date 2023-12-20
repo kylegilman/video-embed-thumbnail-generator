@@ -24,7 +24,7 @@ function kgvid_admin_page_ready() {
 
 		}
 
-		if ( pagenow == 'post' ) {
+		if ( pagenow !== 'attachment' ) {
 			if ( typeof wp.media != 'undefined' ) {
 				wp.media.view.Modal.prototype.on(
 					'open',
@@ -64,36 +64,32 @@ function kgvid_admin_page_ready() {
 						}
 					}
 				);
-			}
-		}
-
-		if ( pagenow == 'upload' ) {
-			if ( typeof wp.media.view.Modal.prototype !== 'undefined' ) {
-				wp.media.view.Modal.prototype.once(
-					'open',
-					function() {
-						setTimeout(function(){
-							if ( typeof wp.media.frame.model.attributes !== 'undefined' ) {
-								var attributes = wp.media.frame.model.attributes;
-								kgvid_attachment_selected( attributes );
-								wp.media.frame.on(
-									'refresh',
-									function() {
-										var attributes = wp.media.frame?.model?.attributes;
-										if ( typeof attributes !== 'undefined' ) {
-											kgvid_attachment_selected( attributes );
+				//for single-item Media Library frames. Usually found in upload.php
+				if ( typeof wp.media.view.Modal.prototype !== 'undefined' ) {
+					wp.media.view.Modal.prototype.once(
+						'open',
+						function() {
+							setTimeout(function(){
+								if ( typeof wp?.media?.frame?.model?.attributes !== 'undefined' ) {
+									var attributes = wp.media.frame.model.attributes;
+									kgvid_attachment_selected( attributes );
+									wp.media.frame.on(
+										'refresh',
+										function() {
+											var attributes = wp.media.frame?.model?.attributes;
+											if ( typeof attributes !== 'undefined' ) {
+												kgvid_attachment_selected( attributes );
+											}
 										}
-									}
-								);
-							}
-						},
-					500 );
-					}
-				);
+									);
+								}
+							},
+						500 );
+						}
+					);
+				}
 			}
-		}
-
-		if ( pagenow == 'attachment' ) {
+		} else {
 			var attributes = {
 				id:     jQuery( '#post_ID' ).val(),
 				url:    jQuery( '#attachment_url' ).val()
@@ -2486,7 +2482,76 @@ function kgvid_clear_transient_cache() {
 
 }
 
-function kgvid_pick_image(button) {
+function kgvid_pick_image(button, event) {
+
+	var pickFrame;
+
+	jQuery(
+		function() {
+
+			// Build the choose from library frame.
+
+			var $el = jQuery( button );
+			if ( typeof event !== 'undefined' ) {
+				event.preventDefault();
+			}
+
+			// If the media frame already exists, reopen it.
+			if ( pickFrame ) {
+				pickFrame.open();
+				return;
+			}
+
+			// Create the media frame.
+			pickFrame = wp.media.frames.customHeader = wp.media(
+				{
+					// Set the title of the modal.
+					title: $el.data( 'choose' ),
+
+					// Tell the modal to show only images.
+					library: {
+						type: 'image'
+					},
+
+					// Customize the submit button.
+					button: {
+						// Set the text of the button.
+						text: $el.data( 'update' ),
+						close: true
+					}
+				}
+			);
+
+			// When an image is selected, run a callback.
+			pickFrame.on(
+				'select',
+				function() {
+					// Grab the selected attachment.
+					const attachment = pickFrame.state().get( 'selection' ).first();
+					jQuery( '#' + $el.data( 'change' ) ).val( attachment.attributes.url );
+					if ( $el.data( 'change' ).slice( -25 ) == "kgflashmediaplayer-poster" ) {
+
+						jQuery( '#' + $el.data( 'change' ).slice( 0, -25 ) + 'thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' + $el.data( 'id' ) + '" width="200" data-thumb_id="' + attachment.attributes.id + '" data-featuredchanged="true" src="' + attachment.attributes.url + '"></div>' );
+
+						kgvid_change_media_library_video_poster( $el.data( 'id' ), attachment.attributes.url );
+
+						if ( wp?.media?.view?.settings?.post?.id !== 0 && jQuery('#attachments-' + $el.data( 'id' ) + '-featured').prop('checked')
+						) {
+							wp.media.featuredImage.set( attachment.attributes.id );
+						}
+					}
+					jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
+				}
+			);
+
+			pickFrame.on('open', function(){console.log(mejs?.players);});
+
+			pickFrame.open();
+		}
+	);
+}
+
+function kgvid_pick_attachment(button, event) {
 
 		var frame;
 
@@ -2512,66 +2577,6 @@ function kgvid_pick_image(button) {
 						// Set the title of the modal.
 						title: $el.data( 'choose' ),
 
-						// Tell the modal to show only images.
-						library: {
-							type: 'image'
-						},
-
-						// Customize the submit button.
-						button: {
-							// Set the text of the button.
-							text: $el.data( 'update' ),
-							close: true
-						}
-					}
-				);
-
-				// When an image is selected, run a callback.
-				frame.on(
-					'select',
-					function() {
-						// Grab the selected attachment.
-						var attachment = frame.state().get( 'selection' ).first();
-						jQuery( '#' + $el.data( 'change' ) ).val( attachment.attributes.url );
-						if ( $el.data( 'change' ).substring( -25 ) == "kgflashmediaplayer-poster" ) {
-							jQuery( '#' + $el.data( 'change' ).slice( 0, -25 ) + 'thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + attachment.attributes.url + '"></div>' );
-						}
-						jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
-					}
-				);
-
-				frame.open();
-			}
-		);
-
-}
-
-function kgvid_pick_attachment(button) {
-
-		var frame;
-
-		jQuery(
-			function() {
-
-				// Build the choose from library frame.
-
-				var $el = jQuery( button );
-				if ( typeof event !== 'undefined' ) {
-					event.preventDefault();
-				}
-
-				// If the media frame already exists, reopen it.
-				if ( frame ) {
-					frame.open();
-					return;
-				}
-
-				// Create the media frame.
-				frame = wp.media.frames.customHeader = wp.media(
-					{
-						// Set the title of the modal.
-						title: $el.data( 'choose' ),
-
 						// Customize the submit button.
 						button: {
 							// Set the text of the button.
@@ -2598,7 +2603,7 @@ function kgvid_pick_attachment(button) {
 
 }
 
-function kgvid_pick_format(button, parentID, mime, format, movieurl, blog_id) {
+function kgvid_pick_format(button, event, parentID, mime, format, movieurl, blog_id) {
 
 		var frame;
 
@@ -2692,6 +2697,6 @@ function kgvid_add_subtitles(id) {
 	var tracks   = jQuery( '#kgflashmediaplayer-' + id + '-trackdiv' );
 	track_number = tracks.children().length;
 	track_label  = track_number + 1;
-	tracks.append( '<div id="kgflashmediaplayer-' + id + '-trackdiv-' + track_number + '" class="kgvid_thumbnail_box kgvid_track_box"><strong>Track ' + track_label + '</strong><span class="kgvid_track_box_removeable">X</span><br />' + kgvidL10n.tracktype + ' <select name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][kind]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_kind]"><option value="subtitles">' + kgvidL10n.subtitles + '</option><option value="captions">' + kgvidL10n.captions + '</option><option value="chapters">' + kgvidL10n.chapters + '</option></select><br /><span id="pick-track' + track_number + '" class="button-secondary" style="margin:10px 0;" data-choose="' + kgvidL10n.choosetextfile + '" data-update="' + kgvidL10n.settracksource + '" data-change="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" onclick="kgvid_pick_attachment(this);">' + kgvidL10n.choosefromlibrary + '</span><br />URL: <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][src]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" type="text" value="" class="text" style="width:180px;"><br />' + kgvidL10n.languagecode + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][srclang]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_srclang" type="text" value="" maxlength="2" style="width:40px;"><br />' + kgvidL10n.label + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][label]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_label" type="text" value="" class="text" style="width:172px;"><br />' + kgvidL10n.trackdefault + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][default]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_default" type="checkbox" value="default"></div>' );
+	tracks.append( '<div id="kgflashmediaplayer-' + id + '-trackdiv-' + track_number + '" class="kgvid_thumbnail_box kgvid_track_box"><strong>Track ' + track_label + '</strong><span class="kgvid_track_box_removeable">X</span><br />' + kgvidL10n.tracktype + ' <select name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][kind]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_kind]"><option value="subtitles">' + kgvidL10n.subtitles + '</option><option value="captions">' + kgvidL10n.captions + '</option><option value="chapters">' + kgvidL10n.chapters + '</option></select><br /><span id="pick-track' + track_number + '" class="button-secondary" style="margin:10px 0;" data-choose="' + kgvidL10n.choosetextfile + '" data-update="' + kgvidL10n.settracksource + '" data-change="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" onclick="kgvid_pick_attachment(this, event);">' + kgvidL10n.choosefromlibrary + '</span><br />URL: <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][src]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" type="text" value="" class="text" style="width:180px;"><br />' + kgvidL10n.languagecode + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][srclang]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_srclang" type="text" value="" maxlength="2" style="width:40px;"><br />' + kgvidL10n.label + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][label]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_label" type="text" value="" class="text" style="width:172px;"><br />' + kgvidL10n.trackdefault + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][default]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_default" type="checkbox" value="default"></div>' );
 	jQuery( '.kgvid_track_box_removeable' ).on( 'click', function() { jQuery( this ).parent().remove(); jQuery( 'form.compat-item input' ).first().trigger( 'change' ); } );
 }

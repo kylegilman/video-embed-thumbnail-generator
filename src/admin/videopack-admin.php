@@ -1403,8 +1403,8 @@ function kgvid_plugin_playback_settings_section_callback() {
 	}
 
 	$players = array(
-		'Video.js v8' => 'Video.js v8',
-		'Video.js v7' => 'Video.js v7',
+		'Video.js v8'                                   => 'Video.js v8',
+		__( 'Video.js v7 (deprecated)', 'video-embed-thumbnail-generator' ) => 'Video.js v7',
 		__( 'WordPress Default', 'video-embed-thumbnail-generator' ) => 'WordPress Default',
 		__( 'None', 'video-embed-thumbnail-generator' ) => 'None',
 	);
@@ -1436,19 +1436,19 @@ function kgvid_plugin_settings_section_callback() { }
 
 function kgvid_poster_callback() {
 	$options = kgvid_get_options();
-	echo "<input class='regular-text affects_player' id='poster' name='kgvid_video_embed_options[poster]' type='text' value='" . esc_attr( $options['poster'] ) . "' /> <button id='pick-thumbnail' class='button' type='button' data-choose='" . esc_html__( 'Choose a Thumbnail', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as video thumbnail', 'video-embed-thumbnail-generator' ) . "' data-change='poster' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button>\n\t";
+	echo "<input class='regular-text affects_player' id='poster' name='kgvid_video_embed_options[poster]' type='text' value='" . esc_attr( $options['poster'] ) . "' /> <button id='pick-thumbnail' class='button' type='button' data-choose='" . esc_html__( 'Choose a Thumbnail', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as video thumbnail', 'video-embed-thumbnail-generator' ) . "' data-change='poster' onclick='kgvid_pick_image(this, event);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button>\n\t";
 }
 
 function kgvid_endofvideooverlay_callback() {
 	$options = kgvid_get_options();
 	echo "<input class='affects_player' " . checked( $options['endofvideooverlaysame'], 'on', false ) . " id='endofvideooverlaysame' name='kgvid_video_embed_options[endofvideooverlaysame]' type='checkbox' /> <label for='endofvideooverlaysame'>" . esc_html__( 'Display thumbnail image again when video ends.', 'video-embed-thumbnail-generator' ) . '</label><br />';
-	echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' " . disabled( $options['endofvideooverlaysame'], 'on', false ) . " type='text' value='" . esc_attr( $options['endofvideooverlay'] ) . "' /> <button id='pick-endofvideooverlay' class='button' type='button' data-choose='" . esc_attr__( 'Choose End of Video Image', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as end of video image', 'video-embed-thumbnail-generator' ) . "' data-change='endofvideooverlay' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button><br />';
+	echo "<input class='regular-text affects_player' id='endofvideooverlay' name='kgvid_video_embed_options[endofvideooverlay]' " . disabled( $options['endofvideooverlaysame'], 'on', false ) . " type='text' value='" . esc_attr( $options['endofvideooverlay'] ) . "' /> <button id='pick-endofvideooverlay' class='button' type='button' data-choose='" . esc_attr__( 'Choose End of Video Image', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as end of video image', 'video-embed-thumbnail-generator' ) . "' data-change='endofvideooverlay' onclick='kgvid_pick_image(this, event);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button><br />';
 	echo esc_html__( 'Display alternate image when video ends.', 'video-embed-thumbnail-generator' ) . "<small>\n\t";
 }
 
 function kgvid_watermark_callback() {
 	$options = kgvid_get_options();
-	echo esc_html__( 'Image:', 'video-embed-thumbnail-generator' ) . " <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='" . esc_attr( $options['watermark'] ) . "' /> <button id='pick-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as watermark', 'video-embed-thumbnail-generator' ) . "' data-change='watermark' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button><br />';
+	echo esc_html__( 'Image:', 'video-embed-thumbnail-generator' ) . " <input class='regular-text affects_player' id='watermark' name='kgvid_video_embed_options[watermark]' type='text' value='" . esc_attr( $options['watermark'] ) . "' /> <button id='pick-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as watermark', 'video-embed-thumbnail-generator' ) . "' data-change='watermark' onclick='kgvid_pick_image(this, event);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button><br />';
 	echo esc_html__( 'Link to:', 'video-embed-thumbnail-generator' ) . ' ';
 	$items = array(
 		__( 'Home page', 'video-embed-thumbnail-generator' ) => 'home',
@@ -1995,7 +1995,7 @@ function kgvid_htaccess_callback() {
 function kgvid_ffmpeg_thumb_watermark_callback() {
 	$options = kgvid_get_options();
 	echo "<div class='kgvid_video_app_required'>";
-	echo "<p><input class='regular-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_url' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][url]' type='text' value='" . esc_attr( $options['ffmpeg_thumb_watermark']['url'] ) . "' /> <button id='pick-ffmpeg-thumb-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as thumbnail watermark', 'video-embed-thumbnail-generator' ) . "' data-change='ffmpeg_thumb_watermark_url' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button></p>\n\t";
+	echo "<p><input class='regular-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_url' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][url]' type='text' value='" . esc_attr( $options['ffmpeg_thumb_watermark']['url'] ) . "' /> <button id='pick-ffmpeg-thumb-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as thumbnail watermark', 'video-embed-thumbnail-generator' ) . "' data-change='ffmpeg_thumb_watermark_url' onclick='kgvid_pick_image(this, event);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button></p>\n\t";
 	/* translators: %s%% is a percentage */
 	echo '<p>' . sprintf( esc_html__( 'Scale: %s%% of video covered by the watermark.', 'video-embed-thumbnail-generator' ), "<input class='small-text affects_ffmpeg_thumb_watermark' id='ffmpeg_thumb_watermark_scale' name='kgvid_video_embed_options[ffmpeg_thumb_watermark][scale]' type='text' value='" . esc_attr( $options['ffmpeg_thumb_watermark']['scale'] ) . "' maxlength='3' />" ) . '</p>';
 	$items = array(
@@ -2032,7 +2032,7 @@ function kgvid_ffmpeg_thumb_watermark_callback() {
 function kgvid_ffmpeg_watermark_callback() {
 	$options = kgvid_get_options();
 	echo "<div class='kgvid_video_app_required'>";
-	echo "<p><input class='regular-text affects_ffmpeg' id='ffmpeg_watermark_url' name='kgvid_video_embed_options[ffmpeg_watermark][url]' type='text' value='" . esc_attr( $options['ffmpeg_watermark']['url'] ) . "' /> <button id='pick-ffmpeg-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as watermark', 'video-embed-thumbnail-generator' ) . "' data-change='ffmpeg_watermark_url' onclick='kgvid_pick_image(this);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button></p>\n\t";
+	echo "<p><input class='regular-text affects_ffmpeg' id='ffmpeg_watermark_url' name='kgvid_video_embed_options[ffmpeg_watermark][url]' type='text' value='" . esc_attr( $options['ffmpeg_watermark']['url'] ) . "' /> <button id='pick-ffmpeg-watermark' class='button' type='button' data-choose='" . esc_attr__( 'Choose a Watermark', 'video-embed-thumbnail-generator' ) . "' data-update='" . esc_attr__( 'Set as watermark', 'video-embed-thumbnail-generator' ) . "' data-change='ffmpeg_watermark_url' onclick='kgvid_pick_image(this, event);'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . "</button></p>\n\t";
 	/* translators: %s%% is a percentage */
 	echo '<p>' . sprintf( esc_html__( 'Scale: %s%% of video covered by the watermark.', 'video-embed-thumbnail-generator' ), "<input class='small-text affects_ffmpeg' id='ffmpeg_watermark_scale' name='kgvid_video_embed_options[ffmpeg_watermark][scale]' type='text' value='" . esc_attr( $options['ffmpeg_watermark']['scale'] ) . "' maxlength='3' />" ) . '</p>';
 	$items = array(
@@ -3242,7 +3242,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			' . $thumbnail_timecode . '
 			<div id="attachments-' . esc_attr( $post->ID ) . '-thumbnailplaceholder" style="position:relative;">' . $thumbnail_html . '</div>';
 			if ( empty( $security_disabled ) ) {
-				$form_fields['generator']['html'] .= '<span id="pick-thumbnail" class="button" style="margin:10px 0;" data-choose="' . esc_attr__( 'Choose a Thumbnail', 'video-embed-thumbnail-generator' ) . '" data-update="' . esc_attr__( 'Set as video thumbnail', 'video-embed-thumbnail-generator' ) . '" data-change="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this);">' . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span><br />
+				$form_fields['generator']['html'] .= '<span id="pick-thumbnail" class="button" style="margin:10px 0;" data-choose="' . esc_attr__( 'Choose a Thumbnail', 'video-embed-thumbnail-generator' ) . '" data-id="' . esc_attr( $post->ID ) . '" data-update="' . esc_attr__( 'Set as video thumbnail', 'video-embed-thumbnail-generator' ) . '" data-change="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-poster" onclick="kgvid_pick_image(this, event);">' . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span><br />
 				<input type="checkbox" id="attachments-' . esc_attr( $post->ID ) . '-featured" name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-featured]" ' . checked( $kgvid_postmeta['featured'], 'on', false ) . ' ' . $ffmpeg_disabled_text . '/> <label for="attachments-' . esc_attr( $post->ID ) . '-featured">' . esc_html__( 'Set thumbnail as featured image', 'video-embed-thumbnail-generator' ) . '</label>';
 			}
 
@@ -3300,7 +3300,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 						}
 						$tracks_html .= '<br />' . __( 'Track type:', 'video-embed-thumbnail-generator' ) . ' ' . $track_type_select . '<br />';
 						if ( empty( $security_disabled ) ) {
-							$tracks_html .= '<span id="pick-track' . esc_attr( $track ) . '" class="button" style="margin:10px 0;" data-choose="' . esc_attr__( 'Choose a Text File', 'video-embed-thumbnail-generator' ) . '" data-update="' . esc_html__( 'Set as track source', 'video-embed-thumbnail-generator' ) . '" data-change="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-track_' . esc_attr( $track ) . '_src" onclick="kgvid_pick_attachment(this);">' . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span><br />';
+							$tracks_html .= '<span id="pick-track' . esc_attr( $track ) . '" class="button" style="margin:10px 0;" data-choose="' . esc_attr__( 'Choose a Text File', 'video-embed-thumbnail-generator' ) . '" data-update="' . esc_html__( 'Set as track source', 'video-embed-thumbnail-generator' ) . '" data-change="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-track_' . esc_attr( $track ) . '_src" onclick="kgvid_pick_attachment(this, event);">' . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</span><br />';
 						}
 						$tracks_html .= 'URL: <input name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-track][' . esc_attr( $track ) . '][src]" id="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-track_' . esc_attr( $track ) . '_src" type="text" value="' . esc_attr( $kgvid_postmeta['track'][ $track ]['src'] ) . '" class="text" style="width:180px;"' . $readonly . '><br />
 						' . esc_html_x( 'Language code:', 'two-letter code indicating track\'s language', 'video-embed-thumbnail-generator' ) . ' <input name="attachments[' . esc_attr( $post->ID ) . '][kgflashmediaplayer-track][' . esc_attr( $track ) . '][srclang]" id="attachments-' . esc_attr( $post->ID ) . '-kgflashmediaplayer-track_' . esc_attr( $track ) . '_srclang" type="text" value="' . esc_attr( $kgvid_postmeta['track'][ $track ]['srclang'] ) . '" maxlength="2" style="width:40px;"' . $readonly . '><br />
@@ -3466,21 +3466,27 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 	$options = kgvid_get_options();
 	$uploads = wp_upload_dir();
 
-	$posterfile       = pathinfo( $thumb_url, PATHINFO_BASENAME );
-	$tmp_posterpath   = $uploads['path'] . '/thumb_tmp/' . $posterfile;
-	$final_posterpath = $uploads['path'] . '/' . $posterfile;
+	$existing_thumb_id = attachment_url_to_postid( $thumb_url );
+	$posterfile        = pathinfo( $thumb_url, PATHINFO_BASENAME );
+	$tmp_posterpath    = $uploads['path'] . '/thumb_tmp/' . $posterfile;
+	$final_posterpath  = $uploads['path'] . '/' . $posterfile;
 
-	if ( is_file( $final_posterpath ) ) {
+	if ( ! is_file( $final_posterpath ) && $existing_thumb_id !== 0 ) {
+		return array(
+			'thumb_id'  => $existing_thumb_id,
+			'thumb_url' => $thumb_url,
+		);
+	} elseif ( is_file( $final_posterpath ) ) {
 
-		$old_thumb_id = attachment_url_to_postid( $thumb_url );
+		$existing_thumb_id = attachment_url_to_postid( $thumb_url );
 
-		if ( ! $old_thumb_id ) { // should be there but check if it was so big it was scaled down
-			$old_thumb_id = attachment_url_to_postid( str_replace( '.jpg', '-scaled.jpg', $thumb_url ) );
+		if ( ! $existing_thumb_id ) { // should be there but check if it was so big it was scaled down
+			$existing_thumb_id = attachment_url_to_postid( str_replace( '.jpg', '-scaled.jpg', $thumb_url ) );
 		}
 
-		if ( $old_thumb_id ) {
+		if ( $existing_thumb_id ) {
 
-			$existing_posterpath = wp_get_original_image_path( $old_thumb_id );
+			$existing_posterpath = wp_get_original_image_path( $existing_thumb_id );
 
 			if ( is_file( $tmp_posterpath )
 				&& abs( filemtime( $tmp_posterpath ) - filemtime( $existing_posterpath ) ) > 10 // file modified time more than 10 seconds different
@@ -3510,7 +3516,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 				$final_posterpath = $uploads['path'] . '/' . $posterfile_noindex . $thumb_index . '.jpg';
 				$thumb_url        = $uploads['url'] . '/' . $posterfile_noindex . $thumb_index . '.jpg';
 
-			} else { // if a new thumbnail was just entered that's exactly the same as the old one, use the old one
+			} elseif ( is_file( $tmp_posterpath ) ) { // if a new thumbnail was just entered that's exactly the same as the old one, use the old one
 
 				$arr = array(
 					'thumb_id'  => false,
@@ -3518,6 +3524,12 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 				);
 				return $arr;
 
+			} else {
+				$arr = array(
+					'thumb_id'  => $existing_thumb_id,
+					'thumb_url' => $thumb_url,
+				);
+				return $arr;
 			}
 		}
 	}
