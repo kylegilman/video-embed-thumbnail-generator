@@ -105,8 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.2 - December 20, 2023 =
+= 4.9.2 - December 28, 2023 =
 * Fixed WordPress Default player initialization.
+* Fixed unnecessary override of some redirect filters.
 * Improved manual selection of thumbnails.
 * Removed unnecessary browser console debugging messages.
 
