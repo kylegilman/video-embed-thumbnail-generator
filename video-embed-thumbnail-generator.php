@@ -63,13 +63,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
 
-	require_once __DIR__ . '/vendor/autoload.php';
-	require_once __DIR__ . '/src/admin/videopack-freemius.php';
-	require_once __DIR__ . '/src/admin/videopack-admin.php';
-	require_once __DIR__ . '/src/admin/videopack-ffmpeg.php';
-	require_once __DIR__ . '/src/admin/videopack-admin-ajax.php';
-	require_once __DIR__ . '/src/public/videopack-public.php';
-	require_once __DIR__ . '/src/public/videopack-public-ajax.php';
+	$required_files = array(
+		'/vendor/autoload.php',
+		'/src/admin/videopack-freemius.php',
+		'/src/admin/videopack-admin.php',
+		'/src/admin/videopack-ffmpeg.php',
+		'/src/admin/videopack-admin-ajax.php',
+		'/src/public/videopack-public.php',
+		'/src/public/videopack-public-ajax.php',
+	);
+
+	$missing_files = array_filter(
+		$required_files,
+		function ( $file ) {
+			return ! file_exists( __DIR__ . $file );
+		}
+	);
+
+	if ( ! empty( $missing_files ) ) {
+		if ( isset( $_GET['activate'] ) ) {
+			unset( $_GET['activate'] );
+		}
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		deactivate_plugins( VIDEOPACK_BASENAME );
+		add_action(
+			'admin_notices',
+			function () use ( $missing_files ) {
+				?>
+				<div class="notice notice-error is-dismissible">
+					<p><?php esc_html_e( 'Videopack has been deactivated due to missing plugin files:', 'video-embed-thumbnail-generator' ); ?></p>
+					<ul>
+						<?php foreach ( $missing_files as $file ) : ?>
+							<li><em><?php echo esc_html( dirname( VIDEOPACK_BASENAME ) . $file ); ?></em></li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+				<?php
+			}
+		);
+
+		return; // Stop further execution of the plugin
+	}
+
+	foreach ( $required_files as $file ) {
+		require_once __DIR__ . $file;
+	}
 }
 
 function kgvid_video_embed_activation_hook( $network_wide ) {
