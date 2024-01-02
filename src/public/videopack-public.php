@@ -1446,9 +1446,6 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( $query_atts['loop'] == 'true' ) {
 				$code .= 'loop ';
 			}
-			if ( $query_atts['autoplay'] == 'true' ) {
-				$code .= 'autoplay ';
-			}
 			if ( $query_atts['controls'] != 'false' ) {
 				$code .= 'controls ';
 			}
@@ -2116,7 +2113,8 @@ function kgvid_enable_redirect() {
 	}
 
 	$post     = get_post();
-	$is_video = is_object( $post )
+	$is_video = is_attachment()
+		&& is_object( $post )
 		&& property_exists( $post, 'post_mime_type' )
 		&& strpos( $post->post_mime_type, 'video' ) !== false;
 
@@ -2135,7 +2133,8 @@ function kgvid_enable_redirect() {
 
 function kgvid_redirect_canonical_attachment( $redirect_url, $requested_url ) {
 
-	if ( get_option( 'wp_attachment_pages_enabled' ) === 0
+	if ( get_option( 'wp_attachment_pages_enabled' ) === '0'
+		&& is_attachment()
 		&& kgvid_enable_redirect() !== false
 	) {
 		// Return the original requested URL to cancel the redirect.
