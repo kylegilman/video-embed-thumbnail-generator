@@ -13,20 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="wrap videopack-settings">
 	<h1><?php esc_html_e( 'Videopack Settings', 'video-embed-thumbnail-generator' ); ?></h1>
 	<h2 class="nav-tab-wrapper">
-		<a href="#general" id="general_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('general');"><?php echo esc_html_x( 'General', 'Adjective, tab title', 'video-embed-thumbnail-generator' ); ?></a>
 		<?php
-		if ( ! is_multisite()
-			|| ( is_videopack_active_for_network()
-				&& $options['ffmpeg_exists'] === 'on'
-				&& is_array( $network_options )
-				&& ( is_super_admin()
-					|| $network_options['superadmin_only_ffmpeg_settings'] == false
-				)
-			)
-		) {
-			?>
-		<a href="#encoding" id="encoding_tab" class="nav-tab" onclick="kgvid_switch_settings_tab('encoding');"><?php printf( esc_html_x( '%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator' ), "<span class='video_app_name'>" . esc_html( strtoupper( $video_app ) ) . '</span>' ); ?></a>
-		<?php } ?>
+		foreach ( $settings_tabs as $tab_id => $tab_title ) {
+			echo '<a href="#' . esc_attr( str_replace( 'videopack_', '', $tab_id ) ) . '" id="' . esc_attr( $tab_id ) . '_tab" class="nav-tab" data-tab_id="' . esc_attr( $tab_id ) . '" onclick="kgvid_switch_settings_tab(this.id)">' . esc_html( $tab_title ) . '</a>';
+		}
+		?>
 	</h2>
 	<form method="post" action="options.php" id="kgvid_settings_form">
 	<?php settings_fields( 'kgvid_video_embed_options' ); ?>

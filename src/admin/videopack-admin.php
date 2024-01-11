@@ -197,11 +197,18 @@ function kgvid_get_options() {
 
 	$options = get_option( 'kgvid_video_embed_options' );
 
+	$default_options = kgvid_default_options_fn();
+
+	// Ensure $options is an array, merge with defaults if necessary.
+	if ( ! is_array( $options ) ) {
+		$options = $default_options;
+	} else {
+		$options = array_merge( $default_options, $options );
+	}
+
 	if ( is_videopack_active_for_network() ) {
 		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
-		if ( ! is_array( $options ) ) {
-			$options = kgvid_default_options_fn();
-		}
+
 		if ( is_array( $network_options ) ) {
 			if ( ! fs_is_network_admin() && $network_options['queue_control'] == 'play' && $options['queue_control'] == 'pause' ) {
 				$network_options['queue_control'] = 'pause'; // allows local queue to pause while network queue continues.
@@ -337,11 +344,10 @@ function kgvid_get_jetpack_twitter_username() {
 	return $twitter_username;
 }
 
-function kgvid_get_attachment_meta( $post_id ) {
+function kgvid_get_default_attachment_meta() {
 
-	$options        = kgvid_get_options();
-	$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
-	$meta_key_array = array(
+	$options      = kgvid_get_options();
+	$default_meta = array(
 		'embed'               => $options['default_insert'],
 		'width'               => '',
 		'height'              => '',
@@ -377,6 +383,14 @@ function kgvid_get_attachment_meta( $post_id ) {
 		'featuredchanged'     => 'false',
 		'animated'            => 'notchecked',
 	);
+
+	return apply_filters( 'kgvid_default_attachment_meta', $default_meta );
+}
+
+function kgvid_get_attachment_meta( $post_id ) {
+
+	$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
+	$meta_key_array = kgvid_get_default_attachment_meta();
 
 	if ( empty( $kgvid_postmeta ) ) {
 
@@ -1264,6 +1278,25 @@ function kgvid_settings_page() {
 		$video_app = 'libav';
 	}
 
+	$settings_tabs = array(
+		'general' => esc_html_x( 'General', 'Adjective, tab title', 'video-embed-thumbnail-generator' ),
+	);
+
+	if ( ! is_multisite()
+		|| ( is_videopack_active_for_network()
+			&& $options['ffmpeg_exists'] === 'on'
+			&& is_array( $network_options )
+			&& ( is_super_admin()
+				|| $network_options['superadmin_only_ffmpeg_settings'] == false
+			)
+		)
+	) {
+		/* translators: %s is the name of the video encoding app. Usually 'FFMPEG' */
+		$settings_tabs['encoding'] = sprintf( esc_html_x( '%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $video_app ) ) );
+	}
+
+	$settings_tabs = apply_filters( 'videopack_settings_tabs', $settings_tabs );
+
 	include __DIR__ . '/partials/settings-page.php';
 }
 
@@ -1275,9 +1308,28 @@ function kgvid_do_settings_sections( $page ) {
 		return;
 	}
 
+	$general_sections = array(
+		'kgvid_video_embed_embed_method',
+		'kgvid_video_embed_playback_settings',
+		'kgvid_video_embed_plugin_settings',
+	);
+
+	$encoding_sections = array(
+		'kgvid_video_embed_encode_settings',
+		'kgvid_video_embed_encode_test_settings',
+	);
+
 	foreach ( (array) $wp_settings_sections[ $page ] as $section ) {
+
+		$tab_class = $section['id'] . '-tab';
+		if ( in_array( $section['id'], $general_sections ) ) {
+			$tab_class = 'general-tab';
+		} elseif ( in_array( $section['id'], $encoding_sections ) ) {
+			$tab_class = 'encoding-tab';
+		}
+
 		if ( $section['title'] ) {
-			echo "<h2 id='header_" . esc_attr( $section['id'] ) . "'>" . esc_html( $section['title'] ) . "</h2>\n";
+			echo "<h2 id='header_" . esc_attr( $section['id'] ) . "' class='" . esc_attr( $tab_class ) . "'>" . esc_html( $section['title'] ) . "</h2>\n";
 		}
 
 		if ( $section['callback'] ) {
@@ -1290,7 +1342,7 @@ function kgvid_do_settings_sections( $page ) {
 		) {
 			continue;
 		}
-		echo '<table class="form-table" id="table_' . esc_attr( $section['id'] ) . '">';
+		echo '<table class="form-table ' . esc_attr( $tab_class ) . '" id="table_' . esc_attr( $section['id'] ) . '">';
 		do_settings_fields( $page, $section['id'] );
 		echo '</table>';
 	}
@@ -1362,7 +1414,36 @@ add_action( 'admin_init', 'kgvid_video_embed_options_init' );
 
 function kgvid_generate_settings_select_html( $option_name, $options, $items, $class_attr = '', $onchange = '' ) {
 
-	$selector_html = "<select id='" . esc_attr( $option_name ) . "' name='kgvid_video_embed_options[" . esc_attr( $option_name ) . "]'";
+	// Determine if $option_name is an array and format id and name accordingly
+	if ( is_array( $option_name ) ) {
+		// Combine array elements with underscores for the id
+		$id = esc_attr( implode( '_', $option_name ) );
+
+		// Build the name attribute as a nested structure
+		$name = 'kgvid_video_embed_options';
+		foreach ( $option_name as $key ) {
+			$name .= '[' . esc_attr( $key ) . ']';
+		}
+
+		// Retrieve the selected option for array-based option names
+		$selected_option = $options;
+		foreach ( $option_name as $key ) {
+			if ( isset( $selected_option[ $key ]  )) {
+				$selected_option = $selected_option[ $key ];
+			} else {
+				// Break the loop if the key is not found
+				$selected_option = null;
+				break;
+			}
+		}
+	} else {
+		$id              = esc_attr( $option_name );
+		$name            = 'kgvid_video_embed_options[' . esc_attr( $option_name ) . ']';
+		$selected_option = isset( $options[ $option_name ] ) ? $options[ $option_name ] : null;
+	}
+
+	// Build the select element
+	$selector_html = "<select id='" . $id . "' name='" . $name . "'";
 	if ( ! empty( $class_attr ) ) {
 		$selector_html .= " class='" . esc_attr( $class_attr ) . "'";
 	}
@@ -1370,8 +1451,9 @@ function kgvid_generate_settings_select_html( $option_name, $options, $items, $c
 		$selector_html .= " onchange='" . esc_attr( $onchange ) . "'";
 	}
 	$selector_html .= '>';
-	foreach ( $items as $name => $value ) {
-		$selector_html .= "<option value='" . esc_attr( $value ) . "'" . selected( $options[ $option_name ], $value, false ) . '>' . esc_html( $name ) . '</option>';
+	foreach ( $items as $item_name => $value ) {
+		// Add options to the select
+		$selector_html .= "<option value='" . esc_attr( $value ) . "'" . selected( $selected_option, $value, false ) . '>' . esc_html( $item_name ) . '</option>';
 	}
 	$selector_html .= '</select>';
 
@@ -1411,13 +1493,13 @@ function kgvid_plugin_playback_settings_section_callback() {
 
 	$items = apply_filters( 'kgvid_available_video_players', $players );
 
-	echo "<table class='form-table' id='table_kgvid_video_embed_embed_method'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>" . esc_html__( 'Video player:', 'video-embed-thumbnail-generator' ) . '</label></th><td>';
+	echo "<table class='form-table general-tab' id='table_kgvid_video_embed_embed_method'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>" . esc_html__( 'Video player:', 'video-embed-thumbnail-generator' ) . '</label></th><td>';
 	echo wp_kses( kgvid_generate_settings_select_html( 'embed_method', $options, $items, 'affects_player', 'kgvid_hide_plugin_settings();' ), kgvid_allowed_html( 'admin' ) );
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.', 'video-embed-thumbnail-generator' ) ) );
 	echo "</td></tr></tbody></table>\n";
 
 	$sampleheight = intval( $options['height'] ) + 50;
-	echo "<div class='kgvid_setting_nearvid' style='width:" . esc_attr( $options['width'] ) . "px;'>";
+	echo "<div class='kgvid_setting_nearvid general-tab' style='width:" . esc_attr( $options['width'] ) . "px;'>";
 	echo "<div id='kgvid_above_sample_vid'>";
 	echo "<span><input class='affects_player' " . checked( $options['overlay_title'], 'on', false ) . " id='overlay_title' name='kgvid_video_embed_options[overlay_title]' type='checkbox' /><label for='overlay_title'>" . esc_html__( 'Overlay video title', 'video-embed-thumbnail-generator' ) . '</label></span>';
 	echo "<span><input class='affects_player' " . checked( $options['downloadlink'], 'on', false ) . " id='downloadlink' name='kgvid_video_embed_options[downloadlink]' type='checkbox' /> <label for='downloadlink'>" . esc_html__( 'Show download link', 'video-embed-thumbnail-generator' ) . '</label></span>';
