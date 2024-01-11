@@ -173,46 +173,45 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 }
 
 function kgvid_set_video_dimensions( $id, $gallery = false ) {
-
 	$options        = kgvid_get_options();
 	$video_meta     = wp_get_attachment_metadata( $id );
 	$kgvid_postmeta = kgvid_get_attachment_meta( $id );
 
-	if ( is_array( $video_meta ) && array_key_exists( 'width', $video_meta ) ) {
-		$kgvid_postmeta['actualwidth'] = $video_meta['width'];
-	}
+	// Set actual width and height from video metadata if available, otherwise use options
+	$kgvid_postmeta['actualwidth']  = isset( $video_meta['width'] ) ? $video_meta['width'] : $options['width'];
+	$kgvid_postmeta['actualheight'] = isset( $video_meta['height'] ) ? $video_meta['height'] : $options['height'];
+
+	// Set width and height if not already set
 	if ( empty( $kgvid_postmeta['width'] ) ) {
 		$kgvid_postmeta['width'] = $kgvid_postmeta['actualwidth'];
-	}
-
-	if ( is_array( $video_meta ) && array_key_exists( 'height', $video_meta ) ) {
-		$kgvid_postmeta['actualheight'] = $video_meta['height'];
 	}
 	if ( empty( $kgvid_postmeta['height'] ) ) {
 		$kgvid_postmeta['height'] = $kgvid_postmeta['actualheight'];
 	}
 
-	if ( ! empty( $kgvid_postmeta['width'] ) && ! empty( intval( $kgvid_postmeta['height'] ) ) ) {
-		$aspect_ratio = intval( $kgvid_postmeta['height'] ) / intval( $kgvid_postmeta['width'] );
+	// Calculate aspect ratio
+	if ( $kgvid_postmeta['width'] > 0 && $kgvid_postmeta['height'] > 0 ) {
+		$aspect_ratio = $kgvid_postmeta['height'] / $kgvid_postmeta['width'];
 	} else {
-		$aspect_ratio = intval( $options['height'] ) / intval( $options['width'] );
+		$aspect_ratio = $options['height'] / $options['width'];
 	}
 
+	// Adjust dimensions for gallery
 	if ( $gallery ) {
 		if ( ! empty( $kgvid_postmeta['actualwidth'] ) ) {
 			$kgvid_postmeta['width'] = $kgvid_postmeta['actualwidth'];
 		}
-		if ( intval( $kgvid_postmeta['width'] ) > intval( $options['gallery_width'] ) ) {
+		if ( $kgvid_postmeta['width'] > $options['gallery_width'] ) {
 			$kgvid_postmeta['width'] = $options['gallery_width'];
 		}
-	} elseif ( intval( $kgvid_postmeta['width'] ) > intval( $options['width'] )
-		|| $options['minimum_width'] === 'on'
-	) {
-			$kgvid_postmeta['width'] = $options['width'];
+	} elseif ( $kgvid_postmeta['width'] > $options['width'] || $options['minimum_width'] === 'on' ) {
+		$kgvid_postmeta['width'] = $options['width'];
 	}
 
-	$kgvid_postmeta['height'] = round( intval( $kgvid_postmeta['width'] ) * $aspect_ratio );
+	// Calculate height based on aspect ratio
+	$kgvid_postmeta['height'] = round( $kgvid_postmeta['width'] * $aspect_ratio );
 
+	// Prepare dimensions for return
 	$dimensions = array(
 		'width'        => strval( $kgvid_postmeta['width'] ),
 		'height'       => strval( $kgvid_postmeta['height'] ),
@@ -284,18 +283,20 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 	$encodevideo_info['moviefilebasename'] = $sanitized_url['basename'];
 	$encodevideo_info['encodepath']        = $uploads['path'] . '/';
 
-	if ( get_post_type( $post_id ) == 'attachment' ) { // if it's an attachment, not from URL
+	if ( get_post_type( $post_id ) === 'attachment' ) { // if it's an attachment, not from URL
 		$moviefile = get_attached_file( $post_id );
 		if ( $moviefile ) {
 			$path_parts                     = pathinfo( $moviefile );
 			$encodevideo_info['encodepath'] = $path_parts['dirname'] . '/';
 			$encodevideo_info['sameserver'] = true;
-			$args                           = array(
-				'numberposts' => '-1',
-				'post_parent' => $post_id,
-				'post_type'   => 'attachment',
-			);
+		} else { //it's an attachment, but the file is hosted remotely
+			$encodevideo_info['sameserver'] = false;
 		}
+		$args = array(
+			'numberposts' => '-1',
+			'post_parent' => $post_id,
+			'post_type'   => 'attachment',
+		);
 	} elseif ( $moviefile == ''
 		|| ! is_file( $moviefile )
 	) {
@@ -1931,6 +1932,8 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 
 		}
 	}//end if auto_encode
+
+	do_action( 'videopack_cron_new_attachment', $post_id );
 }
 add_action( 'kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler', 10, 2 );
 
@@ -2080,8 +2083,8 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
 		$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
-		$moviefilepath     = kgvid_insert_htaccess_login( $moviefilepath );
-		$rotate_strings    = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
+		$moviefilepath  = kgvid_insert_htaccess_login( $moviefilepath );
+		$rotate_strings = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
 		$filter_complex = kgvid_filter_complex( $options['ffmpeg_thumb_watermark'], $movie_height, true );
 
 		$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
