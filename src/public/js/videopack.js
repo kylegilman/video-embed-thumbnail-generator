@@ -300,9 +300,12 @@ function kgvid_load_videojs(video_vars) {
 
 	var videojs_options = {
 		"language": video_vars.locale,
-		"restoreEl": true,
 		"responsive": true,
 	};
+
+	if ( video_vars.autoplay == "true" ) {
+		videojs_options.autoplay = 'any';
+	}
 
 	if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
 		videojs_options.fluid = true;
@@ -353,7 +356,9 @@ function kgvid_load_videojs(video_vars) {
 		videojs( 'video_' + video_vars.id ).dispose();
 	}
 
-	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){ kgvid_setup_video( video_vars.id ); } );
+	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){
+		kgvid_setup_video( video_vars.id );
+	} );
 
 }
 
@@ -527,8 +532,8 @@ function kgvid_setup_video(id) {
 		player.on(
 			'pause',
 			function kgvid_play_pause(){
-			jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-			kgvid_video_counter( id, 'pause' );
+				jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
+				kgvid_video_counter( id, 'pause' );
 			}
 		);
 
