@@ -193,6 +193,22 @@ function is_videopack_active_for_network() {
 	return false;
 }
 
+function kgvid_merge_options_with_defaults( $options, $default_options ) {
+	foreach ( $default_options as $key => $value ) {
+		// Check if the key exists in $options. If not, set it to the default value
+		if ( ! array_key_exists( $key, $options ) ) {
+			$options[ $key ] = $value;
+		} elseif ( is_array( $value ) && ( ! isset( $options[ $key ] ) || is_array( $options[ $key ] ) ) ) {
+			if ( ! isset( $options[ $key ] ) ) {
+				$options[ $key ] = array();
+			}
+			$options[ $key ] = kgvid_merge_options_with_defaults( $options[ $key ], $value );
+		}
+		// If the key exists in $options and it's not an array, retain the existing value in $options
+	}
+	return $options;
+}
+
 function kgvid_get_options() {
 
 	$options = get_option( 'kgvid_video_embed_options' );
@@ -203,7 +219,7 @@ function kgvid_get_options() {
 	if ( ! is_array( $options ) ) {
 		$options = $default_options;
 	} else {
-		$options = array_merge( $default_options, $options );
+		$options = kgvid_merge_options_with_defaults( $options, $default_options );
 	}
 
 	if ( is_videopack_active_for_network() ) {
@@ -1450,7 +1466,7 @@ function kgvid_generate_settings_select_html( $option_name, $options, $items, $c
 	if ( ! empty( $onchange ) ) {
 		$selector_html .= " onchange='" . esc_attr( $onchange ) . "'";
 	}
-	$selector_html .= '>';
+	$selector_html .= disabled( empty( $items ), true, false ) . '>';
 	foreach ( $items as $item_name => $value ) {
 		// Add options to the select
 		$selector_html .= "<option value='" . esc_attr( $value ) . "'" . selected( $selected_option, $value, false ) . '>' . esc_html( $item_name ) . '</option>';
