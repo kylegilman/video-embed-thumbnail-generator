@@ -833,12 +833,7 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 
-	var kgflashmediaplayersecurity = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-security]' )[0].value;
-	var unscaledThumb = new Image();
-	unscaledThumb.src = thumbnail.src;
-	var canvas        = document.createElement( "canvas" );
-	canvas            = kgvid_draw_thumb_canvas( canvas, unscaledThumb );
-	var thumb_dataurl = canvas.toDataURL( 'image/jpeg', 0.8 );
+	var kgflashmediaplayersecurity = document.getElementsByName( 'attachments[' + post_id + '][kgflashmediaplayer-security]' )[0].value;
 
 	jQuery.ajax(
 		{
@@ -856,19 +851,19 @@ function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 	.done(
 		function( thumb_info ) {
 			if ( thumb_info ) {
-				kgvid_change_media_library_video_poster( post_id, thumb_dataurl );
+				kgvid_change_media_library_video_poster( post_id, thumb_info.thumb_url );
 
 				var time_display = kgvid_convert_to_timecode( movieoffset );
 				jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-thumbtime' ).val( time_display );
 				jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-numberofthumbs' ).val( '1' );
-				jQuery( '#attachments-' + post_id + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + thumbnail.src + '"></div>' );
+				jQuery( '#attachments-' + post_id + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + thumb_info.thumb_url + '"></div>' );
 				if ( jQuery( '#attachments-' + post_id + '-featured' ).prop( 'checked' )
 					&& thumb_info.thumb_id
 				) {
 					wp.media.featuredImage.set( thumb_info.thumb_id );
 				}
 				jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-poster' )
-					.val( thumb_url )
+					.val( thumb_info.thumb_url )
 					.trigger( 'change' );
 
 				if ( typeof pagenow === 'undefined'
@@ -939,6 +934,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( thumb_info.thumb_url ).trigger( 'change' );
 					if ( jQuery( '#attachments-' + postID + '-featured' ).prop( 'checked' )
 						&& thumb_info.thumb_id
+						&& pagenow !== 'upload'
 					) {
 						wp.media.featuredImage.set( thumb_info.thumb_id );
 					}
@@ -2548,8 +2544,6 @@ function kgvid_pick_image(button, event) {
 					jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
 				}
 			);
-
-			pickFrame.on('open', function(){console.log(mejs?.players);});
 
 			pickFrame.open();
 		}

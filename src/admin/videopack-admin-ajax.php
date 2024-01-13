@@ -459,8 +459,8 @@ function kgvid_ajax_save_thumb() {
 
 	}
 
-	echo esc_html( $thumb_info['thumb_id'] );
-	die();
+	wp_send_json( $thumb_info );
+
 }
 add_action( 'wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb' );
 
