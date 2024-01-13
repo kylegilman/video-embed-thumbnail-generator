@@ -1348,6 +1348,8 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 						$parsed_url = wp_parse_url( $source_url );
 						if ( $parsed_url && isset( $parsed_url['query'] ) && isset( $parsed_url['scheme'] ) && isset( $parsed_url['host'] ) && isset( $parsed_url['path'] ) ) {
 							$no_query_url = $parsed_url['scheme'] . '://' . $parsed_url['host'] . $parsed_url['path'];
+						} else {
+							$no_query_url = $source_url;
 						}
 						$shortcode_type                 = kgvid_url_mime_type( $encodevideo_info[ $format ]['url'], $post_id );
 						$attr[ $shortcode_type['ext'] ] = $no_query_url;
