@@ -200,9 +200,10 @@ function kgvid_SetVideo(id) { // for galleries
 		jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars', video_vars );
 
 		if ( video_vars.player_type.startsWith('Video.js') ) {
-			setTimeout( function() { kgvid_load_videojs( video_vars ); }, 0 );
-		} else {
-			setTimeout( function() { kgvid_setup_video( id ); }, 0 );
+			setTimeout( function() {
+				video_vars.autoplay = 'true';
+				kgvid_load_videojs( video_vars );
+			}, 0 );
 		}
 
 		if ( meta > 0 ) {
@@ -215,6 +216,7 @@ function kgvid_SetVideo(id) { // for galleries
 			jQuery( '#kgvid_' + id + '_wrapper video' ).mediaelementplayer(
 				{
 					success: function(mediaElement, domObject) {
+						kgvid_setup_video(id);
 						mediaElement.play();
 					},
 					features : [
@@ -234,12 +236,6 @@ function kgvid_SetVideo(id) { // for galleries
 }
 
 function kgvid_gallery_close() {
-
-	/* if ( viewport_original != "" ) {
-		viewport_meta.attr( 'content', viewport_original );
-	} else {
-		jQuery( '#kgvid_gallery_viewport' ).remove();
-	} */
 
 	var video_vars = jQuery( '#kgvid-videomodal-container .kgvid_videodiv' ).data( 'kgvid_video_vars' );
 
@@ -679,6 +675,7 @@ function kgvid_setup_video(id) {
 		player.on(
 			'play',
 			function(){
+
 				kgvid_add_hover( id );
 				jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
 
@@ -719,18 +716,6 @@ function kgvid_setup_video(id) {
 			function(){
 				jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
 				kgvid_video_counter( id, 'pause' );
-			}
-		);
-
-		jQuery( document ).on(
-			'mozfullscreenchange webkitfullscreenchange fullscreenchange',
-			function(){
-
-				var mejs_player = eval( 'mejs.players.' + mejs_id );
-
-				if ( mejs_player.isFullScreen ) {
-					// mejs_player.enterFullScreen();
-				}
 			}
 		);
 
@@ -947,14 +932,19 @@ function kgvid_resize_video(id) {
 										);
 									} else {
 										jQuery( player.media ).one(
-											'play',
+											'playing',
 											function() {
 												player.changeRes( set_res + 'p' );
 											}
 										);
 									}
 								} else {
-									player.changeRes( set_res + 'p' );
+									jQuery( player.media ).one(
+										'playing',
+										function() {
+											player.changeRes( set_res + 'p' );
+										}
+									);
 								}
 							}
 						}

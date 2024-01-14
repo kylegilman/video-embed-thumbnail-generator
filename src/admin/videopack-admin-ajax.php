@@ -460,7 +460,6 @@ function kgvid_ajax_save_thumb() {
 	}
 
 	wp_send_json( $thumb_info );
-
 }
 add_action( 'wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb' );
 

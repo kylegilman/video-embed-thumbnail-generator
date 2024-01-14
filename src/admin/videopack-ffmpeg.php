@@ -609,7 +609,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 
 function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 
-	$options = kgvid_get_options();
+	$options        = kgvid_get_options();
 	$rotate_complex = '';
 
 	if ( $rotate === false ) {
@@ -2274,7 +2274,9 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 					}
 				}//url matches existing queue entry
 			}//loop through queue
-		}//if there's already a queue
+		} else {
+			$video_encode_queue = array();
+		}
 
 		$imploded_encode_list = implode( ', ', $encode_list );
 

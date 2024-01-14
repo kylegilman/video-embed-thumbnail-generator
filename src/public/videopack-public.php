@@ -702,10 +702,9 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 			$dimensions = kgvid_set_video_dimensions( $attachment->ID, true );
 
 			$atts = array(
-				'autoplay' => 'true',
-				'id'       => $attachment->ID,
-				'width'    => $dimensions['width'],
-				'height'   => $dimensions['height'],
+				'id'     => $attachment->ID,
+				'width'  => $dimensions['width'],
+				'height' => $dimensions['height'],
 			);
 			if ( $kgvid_postmeta['downloadlink'] == 'on' ) {
 				$atts['downloadlink'] = 'true';
@@ -1182,7 +1181,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 					if ( strpos( $encodevideo_info[ $format ]['url'], '?' ) === false ) { // if there isn't already a query string in this URL
 						$encodevideo_info[ $format ]['url'] = $encodevideo_info[ $format ]['url'] . '?id=' . $kgvid_video_id;
 					}
-					$source_url = apply_filters( 'videopack_source_url', $encodevideo_info[ $format ]['url'] );
+					$source_url             = apply_filters( 'videopack_source_url', $encodevideo_info[ $format ]['url'] );
 					$sources[ $source_key ] = "\t\t\t\t\t" . '<source src="' . esc_url( $source_url ) . '" type="' . esc_attr( $format_stats['mime'] ) . '"';
 					if ( $format == 'vp9' ) {
 						$sources[ $source_key ] .= ' codecs="vp9, vorbis"';
@@ -1327,7 +1326,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 					} else {
 						$source_key = $x;
 					}
-					$source_url = apply_filters( 'videopack_source_url', $encodevideo_info[ $format ]['url'] );
+					$source_url             = apply_filters( 'videopack_source_url', $encodevideo_info[ $format ]['url'] );
 					$sources[ $source_key ] = '<source src="' . esc_url( $source_url ) . '" type="' . esc_attr( $format_stats['mime'] ) . '"';
 					if ( $format == 'vp9' ) {
 						$sources[ $source_key ] .= ' codecs="vp9, vorbis"';
@@ -1437,9 +1436,9 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			$executed_shortcode = wp_video_shortcode( $attr );
 			$content_width      = $content_width_save;
 
-			//if ( $enable_resolutions_plugin ) {
+			if ( $enable_resolutions_plugin ) {
 				$executed_shortcode = preg_replace( '/<source .*<a /', implode( ' />', $sources ) . ' /><a ', $executed_shortcode );
-			//}
+			}
 
 			if ( ! empty( $track_code ) ) {
 				$executed_shortcode = preg_replace( '/<a /', $track_code . '<a ', $executed_shortcode );
