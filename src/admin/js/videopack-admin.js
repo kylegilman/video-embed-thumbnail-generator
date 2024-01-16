@@ -54,6 +54,7 @@ function kgvid_admin_page_ready() {
 									if ( jQuery( '#thumbnail-' + attributes.id ).data( 'featuredchanged' ) == true
 										&& jQuery( '#attachments-' + attributes.id + '-featured' ).prop( 'checked' )
 										&& thumb_id
+										&& wp?.media?.view?.settings?.post?.id !== 0
 									) {
 										wp.media.featuredImage.set( thumb_id );
 									}
@@ -859,6 +860,7 @@ function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 				jQuery( '#attachments-' + post_id + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + thumb_info.thumb_url + '"></div>' );
 				if ( jQuery( '#attachments-' + post_id + '-featured' ).prop( 'checked' )
 					&& thumb_info.thumb_id
+					&& wp?.media?.view?.settings?.post?.id !== 0
 				) {
 					wp.media.featuredImage.set( thumb_info.thumb_id );
 				}
@@ -934,7 +936,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( thumb_info.thumb_url ).trigger( 'change' );
 					if ( jQuery( '#attachments-' + postID + '-featured' ).prop( 'checked' )
 						&& thumb_info.thumb_id
-						&& pagenow !== 'upload'
+						&& wp?.media?.view?.settings?.post?.id !== 0
 					) {
 						wp.media.featuredImage.set( thumb_info.thumb_id );
 					}
@@ -1797,7 +1799,9 @@ function kgvid_redraw_thumbnail_box(postID) {
 						.css( 'height', '100%' )
 						.css( 'padding-top', '0' );
 					}
-					if ( data.thumb_id ) {
+					if ( data.thumb_id
+						&& wp?.media?.view?.settings?.post?.id !== 0
+					) {
 						wp.media.featuredImage.set( data.thumb_id );
 					}
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).trigger( 'change' );
