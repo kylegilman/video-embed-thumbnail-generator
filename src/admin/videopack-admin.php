@@ -1750,7 +1750,7 @@ function kgvid_security_callback() {
 	echo "<input class='affects_player' " . checked( $options['right_click'], 'on', false ) . " id='right_click' name='kgvid_video_embed_options[right_click]' type='checkbox' /> <label for='right_click'>" . esc_html__( 'Allow right-clicking on videos.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'We can\'t prevent a user from simply saving the downloaded video file from the browser\'s cache, but disabling right-clicking will make it more difficult for casual users to save your videos.', 'video-embed-thumbnail-generator' ) ) );
 	echo '<input ' . checked( $options['click_download'], 'on', false ) . " id='click_download' name='kgvid_video_embed_options[click_download]' type='checkbox' /> <label for='click_download'>" . esc_html__( 'Allow single-click download link for videos.', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'The plugin creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Videopack creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video\'s WordPress database ID could potentially use the method to download videos they might not otherwise have access to.', 'video-embed-thumbnail-generator' ) ) );
 	echo '<input ' . checked( $options['oembed_provider'], 'on', false ) . " id='oembed_provider' name='kgvid_video_embed_options[oembed_provider]' type='checkbox'";
 	if ( $embed_disabled ) {
 		echo " disabled='disabled' title='" . esc_attr__( 'Embedding disabled', 'video-embed-thumbnail-generator' ) . "'";
@@ -1764,7 +1764,7 @@ function kgvid_performance_callback() {
 	$options = kgvid_get_options();
 
 	echo '<input ' . checked( $options['transient_cache'], 'on', false ) . " id='transient_cache' name='kgvid_video_embed_options[transient_cache]' type='checkbox' /> <label for='transient_cache'>" . esc_html__( 'Use experimental URL cache.', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'The plugin uses an uncached query to convert URLs to WordPress post IDs which can signficantly slow down sites with large numbers of videos. Caching the results of the query as a transient in the database can speed up loading time significantly, but will also add a lot of entries to your database. All transients are deleted on plugin deactivation.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Videopack uses an uncached query to convert URLs to WordPress post IDs which can signficantly slow down sites with large numbers of videos. Caching the results of the query as a transient in the database can speed up loading time significantly, but will also add a lot of entries to your database. All transients are deleted on plugin deactivation.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 
 	echo "<p><button id='clear_transient_cache' class='button' type='button' onclick='kgvid_clear_transient_cache();'>" . esc_html__( 'Clear URL cache', 'video-embed-thumbnail-generator' ) . '</button>';
@@ -1784,14 +1784,14 @@ function kgvid_performance_callback() {
 	echo "\n\t";
 
 	echo '<input ' . checked( $options['alwaysloadscripts'], 'on', false ) . " id='alwaysloadscripts' name='kgvid_video_embed_options[alwaysloadscripts]' type='checkbox' /> <label for='alwaysloadscripts'>" . esc_html__( 'Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "Usually the plugin's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "Usually Videopack's JavaScripts are only loaded if a video is present on the page. AJAX page loading can cause errors because the JavaScripts aren't loaded with the video content. Enabling this option will make sure the JavaScripts are always loaded.", 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 }
 
 function kgvid_replace_video_shortcode_callback() {
 	$options = kgvid_get_options();
 	echo '<input ' . checked( $options['replace_video_shortcode'], 'on', false ) . " id='replace_video_shortcode' name='kgvid_video_embed_options[replace_video_shortcode]' type='checkbox' /> <label for='replace_video_shortcode'>" . esc_html__( 'Override any existing WordPress built-in "[video]" shortcodes.', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "If you have posts or theme files that make use of the built-in WordPress video shortcode, the plugin can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( "If you have posts or theme files that make use of the built-in WordPress video shortcode, Videopack can override them with this plugin's embedded video player.", 'video-embed-thumbnail-generator' ) ) );
 	echo esc_html__( '"Insert into post" button default behavior: ', 'video-embed-thumbnail-generator' );
 	$items = array(
 		__( 'Single Videopack Video', 'video-embed-thumbnail-generator' ) => 'Single Video',
@@ -1805,7 +1805,7 @@ function kgvid_replace_video_shortcode_callback() {
 function kgvid_rewrite_attachment_url_callback() {
 	$options = kgvid_get_options();
 	echo '<input ' . checked( $options['rewrite_attachment_url'], 'on', false ) . " id='rewrite_attachment_url' name='kgvid_video_embed_options[rewrite_attachment_url]' type='checkbox' /> <label for='rewrite_attachment_url'>" . esc_html__( 'Allow rewriting of WordPress attachment URLs.', 'video-embed-thumbnail-generator' ) . '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if the plugin is changing your URLs to local files instead of the CDN.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If your videos are hosted on a CDN, WordPress might return incorrect URLs for attachments in the Media Library. Disable this setting if Videopack is changing your URLs to local files instead of the CDN.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 }
 
@@ -1879,7 +1879,7 @@ function kgvid_thumb_parent_callback() {
 		__( 'video', 'video_embed_thumbnail_generator_settings' ) => 'video',
 	);
 	echo wp_kses( kgvid_generate_settings_select_html( 'thumb_parent', $options, $items ), kgvid_allowed_html( 'admin' ) );
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'This depends on your theme. Thumbnails generated by the plugin can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'This depends on your theme. Thumbnails generated by Videopack can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.', 'video-embed-thumbnail-generator' ) ) );
 	echo "<button class='button' type='button' onclick='kgvid_switch_parents();'>" . esc_html__( 'Set all parents', 'video-embed-thumbnail-generator' ) . '</button>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If you\'ve generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
@@ -1913,7 +1913,7 @@ function kgvid_template_callback() {
 		__( 'Video only (deprecated)', 'video-embed-thumbnail-generator' ) => 'old',
 	);
 	echo wp_kses( kgvid_generate_settings_select_html( 'template', $options, $items ), kgvid_allowed_html( 'admin' ) );
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'The plugin can filter your media attachment page to display videos using your chosen settings, or completely replace your attachment template to show only the video. If you were one of the few people using iframe embed codes before version 4.0 of this plugin then you should continue to use "Video only" but otherwise it\'s not recommended.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Videopack can filter your media attachment page to display videos using your chosen settings, or completely replace your attachment template to show only the video. If you were one of the few people using iframe embed codes before version 4.0 of this plugin then you should continue to use "Video only" but otherwise it\'s not recommended.', 'video-embed-thumbnail-generator' ) ) );
 	echo "\n\t";
 }
 
@@ -1971,7 +1971,7 @@ function kgvid_encode_formats_callback() {
 	echo wp_kses( kgvid_generate_settings_select_html( 'replace_format', $options, $items, 'affects_ffmpeg', 'kgvid_change_replace_format();' ), kgvid_allowed_html( 'admin' ) );
 
 	echo '</label>';
-	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. All desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. The plugin will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but I no longer recommend encoding OGV or WEBM VP8. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013. Most browsers except Safari currently support it.', 'video-embed-thumbnail-generator' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'If you have FFMPEG/LIBAV and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Different browsers have different playback capabilities. All desktop browsers can play H.264, and all modern mobile devices can play at least 360p H.264. If you create multiple H.264 resolutions, the highest resolution supported by the device will be served up automatically. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. There was a time when it seemed like a good idea to provide OGV or WEBM for some desktop browsers, but I no longer recommend encoding OGV or WEBM VP8. WEBM VP9 is a new technology and requires a version of FFMPEG or LIBAV newer than October 2013. Most browsers except Safari currently support it.', 'video-embed-thumbnail-generator' ) ) );
 
 	if ( array_key_exists( 'fullres', $video_formats ) ) {
 		unset( $video_formats['fullres'] );
