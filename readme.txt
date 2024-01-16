@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.2.5
-Stable tag: 4.9.2
+Stable tag: 4.9.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.9.3 - January XX, 2024 =
 
 = 4.9.2 - January 13, 2024 =
 * Fixed unpausable audio on autoplayed Video.js players (including Video Galleries).
