@@ -27,7 +27,7 @@ function kgvid_default_options_fn() {
 		),
 		'hide_video_formats'      => 'on',
 		'hide_thumbnails'         => false,
-		'app_path'                => '/usr/local/bin',
+		'app_path'                => '',
 		'video_app'               => 'ffmpeg',
 		'ffmpeg_exists'           => 'notchecked',
 		'nostdin'                 => false,
@@ -1930,7 +1930,9 @@ function kgvid_app_path_callback() {
 
 	echo "<input class='affects_ffmpeg regular-text code' id='app_path' data-ffmpeg_exists='" . esc_attr( $options['ffmpeg_exists'] ) . "' name='kgvid_video_embed_options[app_path]' type='text' value='" . esc_attr( $options['app_path'] ) . "' />";
 	/* translators: %1$s is the name of the video encoding application (usually FFMPEG). %2$s is '<code>/usr/local/bin</code>'. */
-	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'This should be the folder where applications are installed on your server, not a direct path to an application, so it doesn\'t usually end with %1$s. Example: %2$s.', 'video-embed-thumbnail-generator' ), "<code><strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong></code>', '<code>/usr/local/bin</code>' ) ) );
+	echo wp_kses_post( kgvid_tooltip_html( sprintf( esc_html__( 'If Videopack can\'t find %1$s, you can manually enter the path to %1$s on your server. Example: %2$s.', 'video-embed-thumbnail-generator' ), "<strong class='video_app_name'>" . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>', '<code>/usr/local/bin</code>' ) ) );
+	/* translators: %s is the name of the video encoding application (usually FFMPEG). */
+	echo '<em><small>' . sprintf( esc_html__( 'Leave blank if %s is in your system PATH and Videopack will attempt to execute it automatically.', 'video-embed-thumbnail-generator' ), '<strong class="video_app_name">' . esc_html( strtoupper( $options['video_app'] ) ) . '</strong>' ) . '</small></em>';
 	echo "\n\t";
 }
 
