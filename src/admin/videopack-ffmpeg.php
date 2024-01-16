@@ -34,6 +34,13 @@ function kgvid_save_encode_queue( $video_encode_queue ) {
 	}
 }
 
+function kgvid_get_ffmpeg_path() {
+
+	$options = kgvid_get_options();
+
+	return ( $options['app_path'] === '' ) ? $options['video_app'] : $options['app_path'] . '/' . $options['video_app'];
+}
+
 function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $filter_complex = array() ) {
 
 	$options = kgvid_get_options();
@@ -41,7 +48,11 @@ function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0'
 		$options = kgvid_default_options_fn();
 	}
 
-	if ( $ffmpeg_path === false ) {
+	if ( $ffmpeg_path === ''
+		|| ( $ffmpeg_path === false && $options['app_path'] === '' )
+	) {
+		$ffmpeg_path = $options['video_app'];
+	} elseif ( $ffmpeg_path === false ) {
 		$ffmpeg_path = $options['app_path'] . '/' . $options['video_app'];
 	} else {
 		$ffmpeg_path = $ffmpeg_path . '/' . $options['video_app'];
@@ -472,7 +483,7 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 function kgvid_get_video_dimensions( $video = false ) {
 
 	$options      = kgvid_get_options();
-	$ffmpeg_path  = $options['app_path'] . '/' . $options['video_app'];
+	$ffmpeg_path  = kgvid_get_ffmpeg_path();
 	$movie_info   = array();
 	$codec_output = array();
 
@@ -752,6 +763,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		&& isset( $video_formats[ $format ] )
 	) {
 
+		$ffmpeg_path        = kgvid_get_ffmpeg_path();
 		$video_bitrate_flag = 'b:v';
 		$audio_bitrate_flag = 'b:a';
 		$profile_flag       = 'profile:v';
@@ -890,7 +902,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 
 		$encode_array_before_options = array(
 			$nice,
-			$options['app_path'] . '/' . $options['video_app'],
+			$ffmpeg_path,
 			$nostdin,
 			'-y',
 			'-i',
@@ -3285,6 +3297,8 @@ function kgvid_fix_moov_atom( $filepath ) {
 		if ( ! empty( $options['moov_path'] ) ) {
 			$options['app_path'] = $options['moov_path'];
 		}
+		$moov_full_path = ( $options['app_path'] === '' ) ? $options['moov'] : $options['app_path'] . '/' . $options['moov'];
+
 		if ( $options['moov'] == 'qt-faststart'
 		&& file_exists( $filepath )
 		) {
@@ -3292,7 +3306,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 
 			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 				array(
-					$options['app_path'] . '/' . $options['moov'],
+					$moov_full_path,
 					$filepath,
 					$faststart_tmp_file,
 				)
@@ -3313,7 +3327,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 
 			$moov_fixer = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process(
 				array(
-					$options['app_path'] . '/' . $options['moov'],
+					$moov_full_path,
 					'-inter',
 					'500',
 					$filepath,
@@ -3394,8 +3408,10 @@ function kgvid_cancel_encode( $video_key, $format ) {
 					$output = $e->getMessage();
 				}
 
+				$ffmpeg_path = kgvid_get_ffmpeg_path();
+
 				if ( intval( $kgvid_pid ) > 0
-					&& strpos( $output, $options['app_path'] . '/' . $options['video_app'] ) !== false
+					&& strpos( $output, $ffmpeg_path ) !== false
 					&& strpos( $output, $logfile ) !== false
 				) {
 
