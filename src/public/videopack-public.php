@@ -1436,9 +1436,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			$executed_shortcode = wp_video_shortcode( $attr );
 			$content_width      = $content_width_save;
 
-			if ( $enable_resolutions_plugin ) {
-				$executed_shortcode = preg_replace( '/<source .*<a /', implode( ' />', $sources ) . ' /><a ', $executed_shortcode );
-			}
+			$executed_shortcode = preg_replace( '/<source .*<a /', implode( ' />', $sources ) . ' /><a ', $executed_shortcode );
 
 			if ( ! empty( $track_code ) ) {
 				$executed_shortcode = preg_replace( '/<a /', $track_code . '<a ', $executed_shortcode );
