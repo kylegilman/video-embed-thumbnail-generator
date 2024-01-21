@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.6.0",
+            "version": "2.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "8a2bb8f6f45571ec1d05c23421568ca73704176c"
+                "reference": "ea3a288e52ff74c755b3c1eb857f41c5a2d899e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/8a2bb8f6f45571ec1d05c23421568ca73704176c",
-                "reference": "8a2bb8f6f45571ec1d05c23421568ca73704176c",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/ea3a288e52ff74c755b3c1eb857f41c5a2d899e5",
+                "reference": "ea3a288e52ff74c755b3c1eb857f41c5a2d899e5",
                 "shasum": ""
             },
             "require": {
@@ -50,9 +50,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Freemius/wordpress-sdk/issues",
-                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.6.0"
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.6.2"
             },
-            "time": "2023-10-30T10:56:28+00:00"
+            "time": "2023-12-31T12:29:30+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -139,16 +139,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.28",
+            "version": "v5.4.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "45261e1fccad1b5447a8d7a8e67aa7b4a9798b7b"
+                "reference": "8fa22178dfc368911dbd513b431cd9b06f9afe7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/45261e1fccad1b5447a8d7a8e67aa7b4a9798b7b",
-                "reference": "45261e1fccad1b5447a8d7a8e67aa7b4a9798b7b",
+                "url": "https://api.github.com/repos/symfony/process/zipball/8fa22178dfc368911dbd513b431cd9b06f9afe7a",
+                "reference": "8fa22178dfc368911dbd513b431cd9b06f9afe7a",
                 "shasum": ""
             },
             "require": {
@@ -181,7 +181,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.28"
+                "source": "https://github.com/symfony/process/tree/v5.4.34"
             },
             "funding": [
                 {
@@ -197,7 +197,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-08-07T10:36:04+00:00"
+            "time": "2023-12-02T08:41:43+00:00"
         }
     ],
     "packages-dev": [],
@@ -208,5 +208,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
