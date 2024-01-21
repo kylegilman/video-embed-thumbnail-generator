@@ -3299,17 +3299,17 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 					if ( $encodevideo_info[ $format ]['exists']
 						&& $encodevideo_info[ $format ]['encoding'] == false
 					) {
-						$sources[ $format ] = '<source src="' . esc_attr( $encodevideo_info[ $format ]['url'] ) . '" type="' . esc_attr( $format_stats['mime'] ) . '">';
+						$sources[] = array(
+							'src'  => esc_attr( $encodevideo_info[ $format ]['url'] ),
+							'type' => esc_attr( $format_stats['mime'] ),
+						);
 					}
 				}
 
 				if ( $img_editor_works ) {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-' . esc_attr( $post->ID ) . '-container">
 						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video(' . esc_attr( $post->ID ) . ')" id="show-thumb-video-' . esc_attr( $post->ID ) . '"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">' . esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ) . '</span></div>
-						<div style="display:none;" id="thumb-video-' . esc_attr( $post->ID ) . '-player">
-							<video playsinline crossorigin="anonymous" muted preload="none" class="kgvid-thumb-video" width="200" data-allowed="' . esc_attr( $options['browser_thumbnails'] ) . '" onloadedmetadata="kgvid_thumb_video_loaded(\'' . esc_attr( $post->ID ) . '\');" id="thumb-video-' . esc_attr( $post->ID ) . '">' .
-							wp_kses_post( implode( "\n", $sources ) ) . '
-							</video>
+						<div style="display:none;" id="thumb-video-' . esc_attr( $post->ID ) . '-player" data-allowed="' . esc_attr( $options['browser_thumbnails'] ) . '" data-sources="' . esc_attr( wp_json_encode( $sources ) ) . '">
 							<div class="kgvid-video-controls" tabindex="0">
 								<div class="kgvid-play-pause"></div>
 								<div class="kgvid-seek-bar">
@@ -3878,7 +3878,7 @@ function kgvid_modify_media_insert( $html, $attachment_id, $attachment ) {
 
 		if ( $kgvid_postmeta['embed'] == 'Single Video' ) {
 			$html                        = '';
-			$kgvid_postmeta['url']       = wp_get_attachment_url( $attachment_id );
+			$kgvid_postmeta['url']       = apply_filters( 'videopack_send_to_editor_url', wp_get_attachment_url( $attachment_id ) );
 			$kgvid_postmeta['title']     = get_the_title( $attachment_id );
 			$kgvid_postmeta['poster']    = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
 			$kgvid_postmeta['poster-id'] = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
