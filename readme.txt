@@ -105,9 +105,14 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.3 - January XX, 2024 =
+= 4.9.3 - January 22, 2024 =
 * Multiple fixes for in-browser thumbnail generation to make the process more stable.
-* Updated Video.js to v8.9.0
+* Restored inline "autoplay" attribute to Video.js video elements.
+* Enabled default Video.js keyboard controls.
+* Prevented page scrolling while pop-up video gallery is open.
+* Replaced WordPress Default player <source> elements with Videopack-generated ones for compatibility with URLs that contain query strings.
+* Updated method for determining the location of FFMPEG on the server to allow automatic discovery in the system PATH.
+* Updated Video.js to v8.9.0, Freemius SDK to v2.6.2 and Symfony/Process to v5.4.34.
 
 = 4.9.2 - January 13, 2024 =
 * Fixed unpausable audio on autoplayed Video.js players (including Video Galleries).
