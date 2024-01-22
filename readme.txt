@@ -106,6 +106,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 == Changelog ==
 
 = 4.9.3 - January XX, 2024 =
+* Multiple fixes for in-browser thumbnail generation to make the process more stable.
+* Updated Video.js to v8.9.0
 
 = 4.9.2 - January 13, 2024 =
 * Fixed unpausable audio on autoplayed Video.js players (including Video Galleries).
