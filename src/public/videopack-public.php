@@ -1456,6 +1456,9 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			if ( $query_atts['loop'] == 'true' ) {
 				$code .= 'loop ';
 			}
+			if ( $query_atts['autoplay'] == 'true' ) {
+				$code .= 'autoplay ';
+			}
 			if ( $query_atts['controls'] != 'false' ) {
 				$code .= 'controls ';
 			}
