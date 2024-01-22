@@ -1082,8 +1082,8 @@ function enqueue_kgvid_script() {
 
 		$options = kgvid_get_options();
 
-		wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url( '/js/videopack-admin.js', __FILE__ ), array( 'jquery' ), $options['version'], true );
-		wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url( '/css/videopack-styles-admin.css', __FILE__ ), '', $options['version'] );
+		wp_enqueue_script( 'kgvid_video_plugin_admin', plugins_url( '/js/videopack-admin.js', __FILE__ ), array( 'jquery' ), VIDEOPACK_VERSION, true );
+		wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url( '/css/videopack-styles-admin.css', __FILE__ ), '', VIDEOPACK_VERSION );
 
 		wp_localize_script(
 			'kgvid_video_plugin_admin',

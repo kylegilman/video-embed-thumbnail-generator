@@ -62,6 +62,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	if ( ! defined( 'VIDEOPACK_BASENAME' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
+	if ( ! defined( 'VIDEOPACK_VERSION' ) ) {
+		define( 'VIDEOPACK_VERSION', '4.9.3' );
+	}
 
 	$required_files = array(
 		'/vendor/autoload.php',
