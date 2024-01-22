@@ -77,6 +77,10 @@ function kgvid_convert_from_timecode(timecode) {
 
 }
 
+function kgvid_preventDefault(e) {
+	e.preventDefault();
+}
+
 function kgvid_SetVideo(id) { // for galleries
 
 	var gallery_id = jQuery( '#kgvid_video_gallery_thumb_' + id ).parent().attr( 'id' );
@@ -174,20 +178,35 @@ function kgvid_SetVideo(id) { // for galleries
 	jQuery( document ).on(
 		'keydown.kgvid',
 		function(e) {
-			switch (e.which) {
-				case 37: // left
+			switch (e.key) {
+				case 'ArrowLeft':
 					jQuery( '.kgvid_gallery_prev' ).trigger( 'click' );
 				break;
 
-				case 39: // right
+				case 'ArrowRight':
 					jQuery( '.kgvid_gallery_next' ).trigger( 'click' );
 				break;
 
+				case 'ArrowDown':
+				case 'ArrowUp':
+				case 'PageDown':
+				case 'PageUp':
+				case 'End':
+				case 'Home':
+				case ' ':
+					break;
+
+				case 'Escape':
+					kgvid_gallery_close();
+
 				default: return; // exit this handler for other keys
 			}
-			e.preventDefault(); // prevent the default action (scroll / move caret)
+			e.preventDefault(); // prevent the default action
 		}
 	);
+
+	window.addEventListener( 'wheel', kgvid_preventDefault, { passive: false } );
+    window.addEventListener( 'touchmove', kgvid_preventDefault, { passive: false } );
 
 	// load the video player embed code
 
@@ -247,7 +266,9 @@ function kgvid_gallery_close() {
 	}
 
 	jQuery( window ).off( 'resize', kgvid_resize_video( video_vars.id ) );
-	jQuery( document ).off( 'keydown.kgvid' ); // disable left/right navigation
+	jQuery( document ).off( 'keydown.kgvid' ); // restore default keyboard actions
+	window.removeEventListener( 'wheel', kgvid_preventDefault );
+	window.removeEventListener( 'touchmove', kgvid_preventDefault );
 	jQuery( '#kgvid-videomodal-overlay, #kgvid-videomodal-container' ).remove();
 }
 
@@ -297,6 +318,7 @@ function kgvid_load_videojs(video_vars) {
 	var videojs_options = {
 		"language": video_vars.locale,
 		"responsive": true,
+		"userActions" : { "hotkeys": true },
 	};
 
 	if ( video_vars.autoplay == "true" ) {
@@ -465,6 +487,8 @@ function kgvid_setup_video(id) {
 		player.on(
 			'play',
 			function kgvid_play_start(){
+
+				player.focus();
 
 				player.off( 'timeupdate', kgvid_timeupdate_poster );
 				if ( video_vars.meta ) {
@@ -675,6 +699,8 @@ function kgvid_setup_video(id) {
 		player.on(
 			'play',
 			function(){
+
+				document.getElementById(mejs_id).focus();
 
 				kgvid_add_hover( id );
 				jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
@@ -1156,7 +1182,6 @@ function kgvid_switch_gallery_page(obj, post_action) {
 		},
 		function(data) {
 			jQuery( '#' + gallery_id ).html( data );
-			kgvid_document_ready();
 			jQuery( '#' + gallery_id ).fadeTo( "fast", 1 );
 			if ( post_action == "next" ) {
 				kgvid_gallery_close();
@@ -1212,7 +1237,8 @@ function kgvid_share_icon_click(id) {
 	}//if WordPress Default player
 
 	if ( event == 'turn on' ) {
-		jQuery( '#video_' + id + '_div' ).off( 'mouseenter mouseleave focus focusout' );jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
+		jQuery( '#video_' + id + '_div' ).off( 'mouseenter mouseleave focus focusout' );
+		jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
 	} else {
 		kgvid_add_hover( id );
 	}
