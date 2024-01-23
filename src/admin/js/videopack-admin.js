@@ -2486,64 +2486,59 @@ function kgvid_clear_transient_cache() {
 function kgvid_pick_image(button, event) {
 
 	var pickFrame;
+	// Build the choose from library frame.
 
-	jQuery(
-		function() {
+	var $el = jQuery( button );
+	if ( typeof event !== 'undefined' ) {
+		event.preventDefault();
+	}
 
-			// Build the choose from library frame.
+	// Create the media frame.
+	pickFrame = wp.media(
+		{
+			// Set the title of the modal.
+			title: $el.data( 'choose' ),
 
-			var $el = jQuery( button );
-			if ( typeof event !== 'undefined' ) {
-				event.preventDefault();
-			}
+			// Tell the modal to show only images.
+			library: {
+				type: 'image',
+			},
 
-			// If the media frame already exists, reopen it.
-			if ( pickFrame ) {
-				pickFrame.open();
-				return;
-			}
+			// Customize the submit button.
+			button: {
+				// Set the text of the button.
+				text: $el.data( 'update' ),
+			},
 
-			// Create the media frame.
-			pickFrame = wp.media.frames.customHeader = wp.media(
-				{
-					// Set the title of the modal.
-					title: $el.data( 'choose' ),
-
-					// Tell the modal to show only images.
-					library: {
-						type: 'image'
-					},
-
-					// Customize the submit button.
-					button: {
-						// Set the text of the button.
-						text: $el.data( 'update' ),
-						close: true
-					}
-				}
-			);
-
-			// When an image is selected, run a callback.
-			pickFrame.on(
-				'select',
-				function() {
-					// Grab the selected attachment.
-					const attachment = pickFrame.state().get( 'selection' ).first();
-					jQuery( '#' + $el.data( 'change' ) ).val( attachment.attributes.url );
-					if ( $el.data( 'change' ).slice( -25 ) == "kgflashmediaplayer-poster" ) {
-
-						jQuery( '#' + $el.data( 'change' ).slice( 0, -25 ) + 'thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' + $el.data( 'id' ) + '" width="200" data-thumb_id="' + attachment.attributes.id + '" data-featuredchanged="true" src="' + attachment.attributes.url + '"></div>' );
-
-						kgvid_change_media_library_video_poster( $el.data( 'id' ), attachment.attributes.url );
-
-					}
-					jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
-				}
-			);
-
-			pickFrame.open();
+			multiple: false,
 		}
 	);
+
+	// When an image is selected, run a callback.
+	pickFrame.on(
+		'select',
+		function() {
+			// Grab the selected attachment.
+			const attachment = pickFrame.state().get( 'selection' ).first();
+			jQuery( '#' + $el.data( 'change' ) ).val( attachment.attributes.url );
+			if ( $el.data( 'change' ).slice( -25 ) == "kgflashmediaplayer-poster" ) {
+
+				jQuery( '#' + $el.data( 'change' ).slice( 0, -25 ) + 'thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' + $el.data( 'id' ) + '" width="200" data-thumb_id="' + attachment.attributes.id + '" data-featuredchanged="true" src="' + attachment.attributes.url + '"></div>' );
+
+				kgvid_change_media_library_video_poster( $el.data( 'id' ), attachment.attributes.url );
+
+				if ( pagenow === 'attachment'
+					&& wp?.media?.view?.settings?.post?.id !== 0
+				) {
+					wp.media.featuredImage.set( attachment.attributes.id );
+				}
+
+			}
+			jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
+		}
+	);
+
+	pickFrame.open();
 }
 
 function kgvid_pick_attachment(button, event) {
@@ -2689,9 +2684,106 @@ function kgvid_clear_video(movieurl, postID, video_id, blog_id) {
 }
 
 function kgvid_add_subtitles(id) {
-	var tracks   = jQuery( '#kgflashmediaplayer-' + id + '-trackdiv' );
-	track_number = tracks.children().length;
-	track_label  = track_number + 1;
-	tracks.append( '<div id="kgflashmediaplayer-' + id + '-trackdiv-' + track_number + '" class="kgvid_thumbnail_box kgvid_track_box"><strong>Track ' + track_label + '</strong><span class="kgvid_track_box_removeable">X</span><br />' + kgvidL10n.tracktype + ' <select name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][kind]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_kind]"><option value="subtitles">' + kgvidL10n.subtitles + '</option><option value="captions">' + kgvidL10n.captions + '</option><option value="chapters">' + kgvidL10n.chapters + '</option></select><br /><span id="pick-track' + track_number + '" class="button-secondary" style="margin:10px 0;" data-choose="' + kgvidL10n.choosetextfile + '" data-update="' + kgvidL10n.settracksource + '" data-change="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" onclick="kgvid_pick_attachment(this, event);">' + kgvidL10n.choosefromlibrary + '</span><br />URL: <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][src]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" type="text" value="" class="text" style="width:180px;"><br />' + kgvidL10n.languagecode + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][srclang]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_srclang" type="text" value="" maxlength="2" style="width:40px;"><br />' + kgvidL10n.label + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][label]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_label" type="text" value="" class="text" style="width:172px;"><br />' + kgvidL10n.trackdefault + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][default]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_default" type="checkbox" value="default"></div>' );
-	jQuery( '.kgvid_track_box_removeable' ).on( 'click', function() { jQuery( this ).parent().remove(); jQuery( 'form.compat-item input' ).first().trigger( 'change' ); } );
+
+    var tracks = jQuery('#kgflashmediaplayer-' + id + '-trackdiv');
+    var track_number = tracks.children().length;
+    var track_label = track_number + 1;
+
+    // Create the container div
+    var trackDiv = jQuery('<div/>', {
+        id: 'kgflashmediaplayer-' + id + '-trackdiv-' + track_number,
+        class: 'kgvid_thumbnail_box kgvid_track_box'
+    });
+
+    // Append elements to trackDiv
+    trackDiv.append(jQuery('<strong/>').text( kgvidL10n.track + ' ' + track_label));
+    var closeButton = jQuery('<button/>', {
+        type: 'button',
+        title: kgvidL10n.close,
+        class: 'kgvid_track_box_removeable'
+    }).append(jQuery('<span/>', { class: 'kgvid-icons kgvid-icon-cross' }));
+
+    trackDiv.append(closeButton);
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.tracktype + ' '));
+    trackDiv.append(jQuery('<select/>', {
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][kind]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_kind'
+    }).append(jQuery('<option/>', { value: 'subtitles', text: kgvidL10n.subtitles }))
+      .append(jQuery('<option/>', { value: 'captions', text: kgvidL10n.captions }))
+      .append(jQuery('<option/>', { value: 'chapters', text: kgvidL10n.chapters })));
+
+    trackDiv.append('<br />');
+
+    // Button for choosing from library
+    trackDiv.append(jQuery('<span/>', {
+        id: 'pick-track' + track_number,
+        class: 'button-secondary',
+        text: kgvidL10n.choosefromlibrary,
+        style: 'margin:10px 0;',
+        'data-choose': kgvidL10n.choosetextfile,
+        'data-update': kgvidL10n.settracksource,
+        'data-change': 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src',
+        click: function(event) { kgvid_pick_attachment(this, event); }
+    }));
+
+    trackDiv.append('<br />URL: ');
+
+    // Input for URL
+    trackDiv.append(jQuery('<input/>', {
+        type: 'text',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][src]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src',
+        class: 'text',
+        style: 'width:180px;'
+    }));
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.languagecode + ' '));
+
+    // Input for language code
+    trackDiv.append(jQuery('<input/>', {
+        type: 'text',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][srclang]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_srclang',
+        maxlength: '2',
+        style: 'width:40px;'
+    }));
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.label + ' '));
+
+    // Input for label
+    trackDiv.append(jQuery('<input/>', {
+        type: 'text',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][label]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_label',
+        class: 'text',
+        style: 'width:172px;'
+    }));
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.trackdefault + ' '));
+
+    // Checkbox for default
+    trackDiv.append(jQuery('<input/>', {
+        type: 'checkbox',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][default]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_default',
+        value: 'default'
+    }));
+
+    // Append the created div to the tracks container
+    tracks.append(trackDiv);
+
+    // Event Delegation for the removeable track box
+    jQuery(document).on('click', '.kgvid_track_box_removeable', function() {
+        jQuery(this).parent().remove();
+        jQuery('form.compat-item input').first().trigger('change');
+    });
 }
