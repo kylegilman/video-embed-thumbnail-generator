@@ -39,7 +39,10 @@ function kgvid_admin_page_ready() {
 						wp.media.frame.on(
 							'selection:toggle',
 							function() {
-								if ( typeof wp.media.frame.state().get( 'selection' ) !== 'undefined' ) {
+								if (
+									typeof wp.media.frame.state().get( 'selection' ) !== 'undefined'
+									&& typeof wp.media.frame.state().get( 'selection' ).first() !== 'undefined'
+								) {
 									var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
 									kgvid_attachment_selected( attributes );
 								}
@@ -48,7 +51,10 @@ function kgvid_admin_page_ready() {
 						wp.media.frame.on(
 							'attachment:compat:ready',
 							function() {
-								if ( typeof wp.media.frame.state().get( 'selection' ) != 'undefined' ) {
+								if (
+									typeof wp.media.frame.state().get( 'selection' ) != 'undefined'
+									&& typeof wp.media.frame.state().get( 'selection' ).first() !== 'undefined'
+								) {
 									var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
 									var thumb_id   = jQuery( '#thumbnail-' + attributes.id ).data( 'thumb_id' );
 									if ( jQuery( '#thumbnail-' + attributes.id ).data( 'featuredchanged' ) == true
