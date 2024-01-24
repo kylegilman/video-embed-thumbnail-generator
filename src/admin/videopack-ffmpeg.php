@@ -41,6 +41,13 @@ function kgvid_save_encode_queue( $video_encode_queue ) {
 	}
 }
 
+function kgvid_get_ffmpeg_path() {
+
+	$options = kgvid_get_options();
+
+	return ( $options['app_path'] === '' ) ? $options['video_app'] : $options['app_path'] . '/' . $options['video_app'];
+}
+
 function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $filter_complex = array() ) {
 
 	$options = kgvid_get_options();
@@ -181,36 +188,35 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 }
 
 function kgvid_set_video_dimensions( $id, $gallery = false ) {
-
 	$options        = kgvid_get_options();
 	$video_meta     = wp_get_attachment_metadata( $id );
 	$kgvid_postmeta = kgvid_get_attachment_meta( $id );
 
-	if ( is_array( $video_meta ) && array_key_exists( 'width', $video_meta ) ) {
-		$kgvid_postmeta['actualwidth'] = $video_meta['width'];
-	}
+	// Set actual width and height from video metadata if available, otherwise use options
+	$kgvid_postmeta['actualwidth']  = isset( $video_meta['width'] ) ? $video_meta['width'] : $options['width'];
+	$kgvid_postmeta['actualheight'] = isset( $video_meta['height'] ) ? $video_meta['height'] : $options['height'];
+
+	// Set width and height if not already set
 	if ( empty( $kgvid_postmeta['width'] ) ) {
 		$kgvid_postmeta['width'] = $kgvid_postmeta['actualwidth'];
-	}
-
-	if ( is_array( $video_meta ) && array_key_exists( 'height', $video_meta ) ) {
-		$kgvid_postmeta['actualheight'] = $video_meta['height'];
 	}
 	if ( empty( $kgvid_postmeta['height'] ) ) {
 		$kgvid_postmeta['height'] = $kgvid_postmeta['actualheight'];
 	}
 
-	if ( ! empty( $kgvid_postmeta['width'] ) && ! empty( intval( $kgvid_postmeta['height'] ) ) ) {
-		$aspect_ratio = intval( $kgvid_postmeta['height'] ) / intval( $kgvid_postmeta['width'] );
+	// Calculate aspect ratio
+	if ( $kgvid_postmeta['width'] > 0 && $kgvid_postmeta['height'] > 0 ) {
+		$aspect_ratio = $kgvid_postmeta['height'] / $kgvid_postmeta['width'];
 	} else {
-		$aspect_ratio = intval( $options['height'] ) / intval( $options['width'] );
+		$aspect_ratio = $options['height'] / $options['width'];
 	}
 
+	// Adjust dimensions for gallery
 	if ( $gallery ) {
 		if ( ! empty( $kgvid_postmeta['actualwidth'] ) ) {
 			$kgvid_postmeta['width'] = $kgvid_postmeta['actualwidth'];
 		}
-		if ( intval( $kgvid_postmeta['width'] ) > intval( $options['gallery_width'] ) ) {
+		if ( $kgvid_postmeta['width'] > $options['gallery_width'] ) {
 			$kgvid_postmeta['width'] = $options['gallery_width'];
 		}
 	} elseif ( intval( $kgvid_postmeta['width'] ) > intval( $options['width'] )
@@ -219,8 +225,10 @@ function kgvid_set_video_dimensions( $id, $gallery = false ) {
 			$kgvid_postmeta['width'] = $options['width'];
 	}
 
-	$kgvid_postmeta['height'] = round( intval( $kgvid_postmeta['width'] ) * $aspect_ratio );
+	// Calculate height based on aspect ratio
+	$kgvid_postmeta['height'] = round( $kgvid_postmeta['width'] * $aspect_ratio );
 
+	// Prepare dimensions for return
 	$dimensions = array(
 		'width'        => strval( $kgvid_postmeta['width'] ),
 		'height'       => strval( $kgvid_postmeta['height'] ),
@@ -292,18 +300,20 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 	$encodevideo_info['moviefilebasename'] = $sanitized_url['basename'];
 	$encodevideo_info['encodepath']        = $uploads['path'] . '/';
 
-	if ( get_post_type( $post_id ) == 'attachment' ) { // if it's an attachment, not from URL
+	if ( get_post_type( $post_id ) === 'attachment' ) { // if it's an attachment, not from URL
 		$moviefile = get_attached_file( $post_id );
 		if ( $moviefile ) {
 			$path_parts                     = pathinfo( $moviefile );
 			$encodevideo_info['encodepath'] = $path_parts['dirname'] . '/';
 			$encodevideo_info['sameserver'] = true;
-			$args                           = array(
-				'numberposts' => '-1',
-				'post_parent' => $post_id,
-				'post_type'   => 'attachment',
-			);
+		} else { //it's an attachment, but the file is hosted remotely
+			$encodevideo_info['sameserver'] = false;
 		}
+		$args = array(
+			'numberposts' => '-1',
+			'post_parent' => $post_id,
+			'post_type'   => 'attachment',
+		);
 	} elseif ( $moviefile == ''
 		|| ! is_file( $moviefile )
 	) {
@@ -616,7 +626,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 
 function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 
-	$options = kgvid_get_options();
+	$options        = kgvid_get_options();
 	$rotate_complex = '';
 
 	if ( $rotate === false ) {
@@ -759,6 +769,7 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		&& isset( $video_formats[ $format ] )
 	) {
 
+		$ffmpeg_path        = kgvid_get_ffmpeg_path();
 		$video_bitrate_flag = 'b:v';
 		$audio_bitrate_flag = 'b:a';
 		$profile_flag       = 'profile:v';
@@ -1371,7 +1382,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 			&& $page != 'queue'
 		) {
 			/* translators: %s is the name of a video format */
-			$checkbox[ $format ] .= "<button type='button' id='pick-" . esc_attr( $post_id ) . '-' . esc_attr( $format ) . "' class='button kgvid_encode_checkbox_button' data-choose='" . sprintf( esc_attr__( 'Choose %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' data-update='" . sprintf( esc_attr__( 'Set as %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' onclick='kgvid_pick_format(this, \"" . esc_attr( $post_id ) . '", "' . esc_attr( $format_stats['mime'] ) . '", "' . esc_attr( $format ) . '", "' . esc_attr( $movieurl ) . '", "' . esc_attr( $blog_id ) . "\");'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button>';
+			$checkbox[ $format ] .= "<button type='button' id='pick-" . esc_attr( $post_id ) . '-' . esc_attr( $format ) . "' class='button kgvid_encode_checkbox_button' data-choose='" . sprintf( esc_attr__( 'Choose %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' data-update='" . sprintf( esc_attr__( 'Set as %s', 'video-embed-thumbnail-generator' ), esc_attr( $format_stats['name'] ) ) . "' onclick='kgvid_pick_format(this, event, \"" . esc_attr( $post_id ) . '", "' . esc_attr( $format_stats['mime'] ) . '", "' . esc_attr( $format ) . '", "' . esc_attr( $movieurl ) . '", "' . esc_attr( $blog_id ) . "\");'>" . esc_html__( 'Choose from Library', 'video-embed-thumbnail-generator' ) . '</button>';
 		}
 		$checkbox[ $format ] .= '</li>';
 
@@ -1968,6 +1979,8 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 
 		}
 	}//end if auto_encode
+
+	do_action( 'videopack_cron_new_attachment', $post_id );
 }
 add_action( 'kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler', 10, 2 );
 
@@ -2117,8 +2130,8 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
 		$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
-		$moviefilepath     = kgvid_insert_htaccess_login( $moviefilepath );
-		$rotate_strings    = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
+		$moviefilepath  = kgvid_insert_htaccess_login( $moviefilepath );
+		$rotate_strings = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
 		$filter_complex = kgvid_filter_complex( $options['ffmpeg_thumb_watermark'], $movie_height, true );
 
 		$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
@@ -2311,7 +2324,9 @@ function kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $parent_id,
 					}
 				}//url matches existing queue entry
 			}//loop through queue
-		}//if there's already a queue
+		} else {
+			$video_encode_queue = array();
+		}
 
 		$imploded_encode_list = implode( ', ', $encode_list );
 
@@ -3332,6 +3347,8 @@ function kgvid_fix_moov_atom( $filepath ) {
 		if ( ! empty( $options['moov_path'] ) ) {
 			$options['app_path'] = $options['moov_path'];
 		}
+		$moov_full_path = ( $options['app_path'] === '' ) ? $options['moov'] : $options['app_path'] . '/' . $options['moov'];
+
 		if ( $options['moov'] == 'qt-faststart'
 		&& file_exists( $filepath )
 		) {
@@ -3339,7 +3356,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 
 			$moov_fixer = new FFmpeg_process(
 				array(
-					$options['app_path'] . '/' . $options['moov'],
+					$moov_full_path,
 					$filepath,
 					$faststart_tmp_file,
 				)
@@ -3360,7 +3377,7 @@ function kgvid_fix_moov_atom( $filepath ) {
 
 			$moov_fixer = new FFmpeg_process(
 				array(
-					$options['app_path'] . '/' . $options['moov'],
+					$moov_full_path,
 					'-inter',
 					'500',
 					$filepath,
@@ -3440,6 +3457,8 @@ function kgvid_cancel_encode( $video_key, $format ) {
 				} catch ( \Exception $e ) {
 					$output = $e->getMessage();
 				}
+
+				$ffmpeg_path = kgvid_get_ffmpeg_path();
 
 				if ( intval( $kgvid_pid ) > 0
 					&& strpos( $output, $options['app_path'] . '/ffmpeg' ) !== false

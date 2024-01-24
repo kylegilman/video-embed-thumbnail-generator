@@ -7,7 +7,14 @@ function kgvid_admin_page_ready() {
 			|| pagenow == 'settings_page_video_embed_thumbnail_generator_settings-network'
 		) {
 			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings' ) {
-				kgvid_switch_settings_tab( document.URL.substring( document.URL.indexOf( '#' ) + 1 ) );
+				var currentUrl = new URL(document.URL);
+				var hash = currentUrl.hash;
+				if (hash && hash.length > 1) {
+					activeTab = hash.substring(1) + '_tab';
+				} else {
+					activeTab = 'general_tab';
+				}
+				kgvid_switch_settings_tab( activeTab );
 			}
 
 			if ( pagenow == 'settings_page_video_embed_thumbnail_generator_settings-network' ) {
@@ -24,7 +31,7 @@ function kgvid_admin_page_ready() {
 
 		}
 
-		if ( pagenow == 'post' ) {
+		if ( pagenow !== 'attachment' ) {
 			if ( typeof wp.media != 'undefined' ) {
 				wp.media.view.Modal.prototype.on(
 					'open',
@@ -32,7 +39,10 @@ function kgvid_admin_page_ready() {
 						wp.media.frame.on(
 							'selection:toggle',
 							function() {
-								if ( typeof wp.media.frame.state().get( 'selection' ).first() != 'undefined' ) {
+								if (
+									typeof wp.media.frame.state().get( 'selection' ) !== 'undefined'
+									&& typeof wp.media.frame.state().get( 'selection' ).first() !== 'undefined'
+								) {
 									var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
 									kgvid_attachment_selected( attributes );
 								}
@@ -41,12 +51,16 @@ function kgvid_admin_page_ready() {
 						wp.media.frame.on(
 							'attachment:compat:ready',
 							function() {
-								if ( typeof wp.media.frame.state().get( 'selection' ).first() != 'undefined' ) {
+								if (
+									typeof wp.media.frame.state().get( 'selection' ) != 'undefined'
+									&& typeof wp.media.frame.state().get( 'selection' ).first() !== 'undefined'
+								) {
 									var attributes = wp.media.frame.state().get( 'selection' ).first().attributes;
 									var thumb_id   = jQuery( '#thumbnail-' + attributes.id ).data( 'thumb_id' );
 									if ( jQuery( '#thumbnail-' + attributes.id ).data( 'featuredchanged' ) == true
-									&& jQuery( '#attachments-' + attributes.id + '-featured' ).attr( 'checked' )
-									&& thumb_id
+										&& jQuery( '#attachments-' + attributes.id + '-featured' ).prop( 'checked' )
+										&& thumb_id
+										&& wp?.media?.view?.settings?.post?.id !== 0
 									) {
 										wp.media.featuredImage.set( thumb_id );
 									}
@@ -64,36 +78,32 @@ function kgvid_admin_page_ready() {
 						}
 					}
 				);
-			}
-		}
-
-		if ( pagenow == 'upload' ) {
-			if ( typeof wp.media.view.Modal.prototype !== 'undefined' ) {
-				wp.media.view.Modal.prototype.once(
-					'open',
-					function() {
-						setTimeout(function(){
-							if ( typeof wp.media.frame.model.attributes !== 'undefined' ) {
-								var attributes = wp.media.frame.model.attributes;
-								kgvid_attachment_selected( attributes );
-								wp.media.frame.on(
-									'refresh',
-									function() {
-										var attributes = wp.media.frame?.model?.attributes;
-										if ( typeof attributes !== 'undefined' ) {
-											kgvid_attachment_selected( attributes );
+				//for single-item Media Library frames. Usually found in upload.php
+				if ( typeof wp.media.view.Modal.prototype !== 'undefined' ) {
+					wp.media.view.Modal.prototype.once(
+						'open',
+						function() {
+							setTimeout(function(){
+								if ( typeof wp?.media?.frame?.model?.attributes !== 'undefined' ) {
+									var attributes = wp.media.frame.model.attributes;
+									kgvid_attachment_selected( attributes );
+									wp.media.frame.on(
+										'refresh',
+										function() {
+											var attributes = wp.media.frame?.model?.attributes;
+											if ( typeof attributes !== 'undefined' ) {
+												kgvid_attachment_selected( attributes );
+											}
 										}
-									}
-								);
-							}
-						},
-					500 );
-					}
-				);
+									);
+								}
+							},
+						500 );
+						}
+					);
+				}
 			}
-		}
-
-		if ( pagenow == 'attachment' ) {
+		} else {
 			var attributes = {
 				id:     jQuery( '#post_ID' ).val(),
 				url:    jQuery( '#attachment_url' ).val()
@@ -223,22 +233,6 @@ function kgvid_convert_from_timecode(timecode) {
 
 }
 
-function kgvid_break_video_on_close(postID) {
-
-	var video = document.getElementById( 'thumb-video-' + postID );
-
-	if ( video != null ) {
-		jQuery( ".kgvid-play-pause" ).off( "click.kgvid" ).removeClass( 'kgvid-playing' );
-		jQuery( video ).off( '.kgvid' );
-		video.preload = "none";
-		video.src     = "";
-		video.load();
-		jQuery( video ).data( 'setup', false );
-		jQuery( video ).data( 'busy', false );
-	}
-
-};
-
 function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for making thumbnails
 
 	var video = document.getElementById( 'thumb-video-' + postID );
@@ -249,7 +243,7 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 				function(){
 					jQuery( '#thumb-video-' + postID + '-container' ).hide();
 					jQuery( '#thumb-video-' + postID ).data( 'allowed', 'off' );
-					kgvid_break_video_on_close( postID );
+					jQuery('#thumb-video-' + postID).remove();
 				}
 			);
 	}
@@ -262,30 +256,19 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 
 	if ( video != null && jQuery( video ).data( 'setup' ) != true ) {
 
-		if ( typeof wp !== 'undefined' ) {
-			ed_id        = wp.media.editor.id();
-			var ed_media = wp.media.editor.get( ed_id ); // Then we try to first get the editor
-			ed_media     = 'undefined' != typeof( ed_media ) ? ed_media : wp.media.editor.add( ed_id ); // If it hasn't been created yet, we create it
-
-			if ( ed_media ) {
-				ed_media.on(
-					'escape',
-					function(postID) {
-						return function() {
-							if ( jQuery( '#show-thumb-video-' + postID + ' .kgvid-show-video' ).html() == kgvidL10n.hidevideo ) {
-								kgvid_reveal_thumb_video( postID );
-							}
-							// kgvid_break_video_on_close(postID);
-						}
-					}(postID)
-				);
-			}
+		if (typeof wp !== 'undefined' && wp.media && wp.media.frame) {
+			// Listen for the close event on the media frame
+			wp.media.frame.on('close', function() {
+				if (jQuery('#show-thumb-video-' + postID + ' .kgvid-show-video').html() == kgvidL10n.hidevideo) {
+					kgvid_reveal_thumb_video(postID);
+				}
+				jQuery('#thumb-video-' + postID).remove();
+			});
 		}
 
 		video.removeAttribute( 'height' ); // disables changes made by mejs
 		video.removeAttribute( 'style' );
 		video.setAttribute( 'width', '200' );
-		video.controls = '';
 
 		var playButton   = jQuery( ".kgvid-play-pause" );
 		var seekBar      = jQuery( ".kgvid-seek-bar" );
@@ -332,7 +315,7 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 			}
 		);
 
-		var timeDrag = false;   /* Drag status */
+		var timeDrag = false;   // Drag status
 		seekBar.on(
 			'mousedown',
 			function(e) {
@@ -455,7 +438,7 @@ function kgvid_thumb_video_loaded(postID) { // sets up mini custom player for ma
 		jQuery( '.kgvid-video-controls' ).trigger( 'focus' );
 		jQuery( video ).data( 'setup', true );
 		if ( jQuery( video ).data( 'busy' ) != true ) {
-			kgvid_break_video_on_close( postID );
+			jQuery('#thumb-video-' + postID).remove();
 		}
 	}
 }
@@ -487,24 +470,34 @@ function kgvid_reveal_video_stats(postID) {
 
 }
 
-function kgvid_remove_mejs_player(postID) {
+function kgvid_add_thumb_video(postID) {
+    // Create a new video element
+    var video = document.createElement('video');
 
-	if ( jQuery( '#thumb-video-' + postID + '-player .mejs-container' ).attr( 'id' ) !== undefined
-		&& typeof mejs !== 'undefined'
-	) { // this is the Media Library pop-up introduced in WordPress 4.0
+    // Set properties of the video element
+    video.setAttribute('playsinline', '');
+    video.setAttribute('crossorigin', 'anonymous');
+	video.setAttribute('muted', '');
+    video.muted = true; //need to do this or it will play audio
+    video.setAttribute('preload', 'none');
+    video.classList.add('kgvid-thumb-video');
+    video.width = 200; // Set the width of the video
+    video.id = 'thumb-video-' + postID;
 
-		var mejs_id     = jQuery( '#thumb-video-' + postID + '-player .mejs-container' ).attr( 'id' );
-		var mejs_player = eval( 'mejs.players.' + mejs_id );
-		if ( typeof mejs_player !== 'undefined' ) {
-			if ( ! mejs_player.paused ) {
-				mejs_player.pause();
-			}
-			mejs_player.remove();
-		}
-
+	var sources = jQuery('#thumb-video-' + postID + '-player').data('sources');
+	if ( sources.length > 0 ) {
+		sources.forEach(function(source) {
+			var sourceElem = document.createElement('source');
+			sourceElem.src = source.src;
+			sourceElem.type = source.type;
+			video.appendChild(sourceElem);
+		});
 	}
 
+    jQuery( '#thumb-video-' + postID + '-player' ).prepend(video);
+	video.onloadedmetadata = () => kgvid_thumb_video_loaded(postID);
 }
+
 
 function kgvid_reveal_thumb_video(postID) {
 
@@ -513,9 +506,11 @@ function kgvid_reveal_thumb_video(postID) {
 
 	if ( text.html() == kgvidL10n.choosefromvideo ) { // video is being revealed
 
-		kgvid_remove_mejs_player( postID );
-
 		video = document.getElementById( 'thumb-video-' + postID );
+		if ( ! video ) {
+			kgvid_add_thumb_video( postID );
+			video = document.getElementById( 'thumb-video-' + postID );
+		}
 		jQuery( video ).data( 'busy', true );
 
 		jQuery( video ).one( 'error.kgvid', (e) => {
@@ -546,9 +541,7 @@ function kgvid_reveal_thumb_video(postID) {
 
 	} else if ( text.html() == kgvidL10n.hidevideo ) { // video is being hidden
 
-		video = document.getElementById( 'thumb-video-' + postID );
-		video.pause();
-		kgvid_break_video_on_close( postID );
+		jQuery('#thumb-video-' + postID).remove();
 		text.html( kgvidL10n.choosefromvideo );
 
 		if ( jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).is( ":visible" ) == false ) {
@@ -598,14 +591,16 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 	var iincreaser             = 0;
 	var video_id               = 'thumb-video-' + postID;
 
-	kgvid_remove_mejs_player( postID );
-
-	if ( jQuery( '#' + video_id ).data( 'allowed' ) == true ) {
+	if ( jQuery( '#' + video_id + '-player' ).data( 'allowed' ) == "on" ) {
 
 		video = document.getElementById( video_id );
 
-		if ( video.preload == "none" ) {
+		if ( ! video ) {
+			kgvid_add_thumb_video( postID );
+			video = document.getElementById( video_id );
+		}
 
+		if ( video.preload == "none" ) {
 			video.src     = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-url]' )[0].value;
 			video.preload = "metadata";
 			video.load();
@@ -616,7 +611,11 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 				"loadedmetadata.kgvid",
 				function() {
 					jQuery( video ).data( 'success', true );
-					kgvid_make_canvas_thumbs_loop();
+					kgvid_make_canvas_thumbs_loop().then(() => {
+						kgvid_canvas_thumbs_complete();
+					}).catch(error => {
+						console.error(error);
+					});
 				}
 			);
 
@@ -646,7 +645,11 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 			);
 
 		} else {
-			kgvid_make_canvas_thumbs_loop();
+			kgvid_make_canvas_thumbs_loop().then(() => {
+				kgvid_canvas_thumbs_complete();
+			}).catch(error => {
+				console.error(error);
+			});
 		}
 
 	}
@@ -727,101 +730,100 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 	function kgvid_make_canvas_thumbs_loop() {
 
-		if (video.networkState == 1
-			|| video.networkState == 2
-		) { // if the browser can load the video, use it to make thumbnails
+		return new Promise((resolve, reject) => {
 
-			var thumbnails   = [];
+			if (video.networkState == 1 || video.networkState == 2) { // if the browser can load the video, use it to make thumbnails
+				var thumbnails = [];
+				var iincreaser = 0;
+				var increaser = 0;
 
-			jQuery( '#' + video_id ).on(
-				'seeked.kgvid',
-				function(){ // when the video is finished seeking
+				// Additional logic for setting up thumbnails array
+				for (var i = 1; i <= howmanythumbs; i++) {
+					iincreaser = i + increaser;
+					increaser++;
+					var movieoffset = Math.round((video.duration * iincreaser) / (howmanythumbs * 2) * 100) / 100;
 
-					var thumbnail_saved = jQuery( video ).data( 'thumbnail_data' );
-					if ( typeof thumbnail_saved !== 'undefined'
-						&& thumbnail_saved.length > 0
-					) { // if there are any thumbnails that haven't been generated
-
-						if ( video.paused == false ) {
-							video.pause();
-						}
-
-						time_id = Math.round( video.currentTime * 100 );
-
-						jQuery( thumbnailboxID ).append( '<div style="display:none;" class="kgvid_thumbnail_select" name="attachments[' + postID + '][thumb' + time_id + ']" id="attachments-' + postID + '-thumb' + time_id + '"><label for="kgflashmedia-' + postID + '-thumbradio' + time_id + '"><canvas class="kgvid_thumbnail" id="' + postID + '_thumb_' + time_id + '" data-movieoffset="' + video.currentTime + '"></canvas></label><br /><input type="radio" name="attachments[' + postID + '][thumbradio' + time_id + ']" id="kgflashmedia-' + postID + '-thumbradio' + time_id + '" value="' + video.currentTime + '" onchange="kgvid_save_canvas_thumb(\'' + postID + '\', \'' + time_id + '\', 1, 0);"></div>' );
-						var canvas = document.getElementById( postID + '_thumb_' + time_id );
-						canvas     = kgvid_draw_thumb_canvas( canvas, video );
-						jQuery( '#attachments-' + postID + '-thumb' + time_id ).animate( {opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000 );
-
-						thumbnail_saved.splice( 0,1 );
-						jQuery( video ).data( 'thumbnail_data', thumbnail_saved );
-						if ( thumbnail_saved.length > 0 ) {
-							video.currentTime = thumbnail_saved[0];
-						} else {
-							jQuery( video ).off( 'seeked.kgvid' );
-							jQuery( video ).off( 'loadedmetadata.kgvid' );
-							video.preload = "none";
-							video.load();
-							jQuery( thumbnailboxoverlayID ).fadeTo( 2000, 1 );
-							jQuery( cancelthumbdivID ).animate( {opacity: 0, height: 'toggle'}, 500 );
-							jQuery( thumbnailboxID ).prepend( '<div id="saveallthumbs-' + postID + '-div"><input style="display:none;" type="button" id="attachments-' + postID + '-saveallthumbs" class="button-secondary kgvid-centered-block" value="' + kgvidL10n.saveallthumbnails + '" name="attachments-' + postID + '-saveallthumbs" onclick="kgvid_saveall_thumbs(\'' + postID + '\');"></div>' );
-							jQuery( '#attachments-' + postID + '-saveallthumbs' ).animate( {opacity: 'toggle', height: 'toggle'}, 500 );
-							jQuery( video ).removeData( 'thumbnail_data' );
-							kgvid_break_video_on_close( postID );
+					if (buttonPushed == "random") { // adjust offset random amount
+						var random_offset = Math.round(Math.random() * video.duration / howmanythumbs);
+						movieoffset = movieoffset - random_offset;
+						if (movieoffset < 0) {
+							movieoffset = 0;
 						}
 					}
-				}
-			);
 
-			for ( i; i <= howmanythumbs; i++ ) {
-				iincreaser = i + increaser;
-				increaser++;
-				var movieoffset = Math.round( (video.duration * iincreaser) / (howmanythumbs * 2) * 100 ) / 100;
-
-				if (buttonPushed == "random") { // adjust offset random amount
-					var random_offset = Math.round( Math.random() * video.duration / howmanythumbs );
-					movieoffset       = movieoffset - random_offset;
-					if (movieoffset < 0) {
-						movieoffset = 0;
-					}
+					thumbnails.push(movieoffset); // add offset to array
 				}
 
-				thumbnails.push( movieoffset ); // add offset to array
-			}
-
-			if ( firstframethumb ) {
-				thumbnails[0] = 0;
-			}
-
-			if ( specifictimecode ) {
-				var thumbtimecode = kgvid_convert_from_timecode( specifictimecode );
-				thumbnails        = [thumbtimecode];
-			}
-
-			video.play();
-
-			jQuery( video ).on(
-				'loadeddata',
-				function(){
-					var thumbnail_saved = jQuery( video ).data( 'thumbnail_data' );
-					if ( typeof thumbnail_saved !== 'undefined'
-						&& thumbnail_saved.length > 0
-					) {
-						video.currentTime = thumbnail_saved[0];
-					}
+				if (firstframethumb) {
+					thumbnails[0] = 0;
 				}
-			);
 
-			jQuery( video ).data( 'thumbnail_data', thumbnails );
+				if (specifictimecode) {
+					var thumbtimecode = kgvid_convert_from_timecode(specifictimecode);
+					thumbnails = [thumbtimecode];
+				}
 
-		}
+				jQuery(video).data('thumbnail_data', thumbnails);
 
-	}//end canvas thumb function
+				if (thumbnails.length > 0) {
+					jQuery(video).on('seeked.kgvid', function () {
+
+						var thumbnail_saved = jQuery(video).data('thumbnail_data');
+						if (typeof thumbnail_saved !== 'undefined' && thumbnail_saved.length > 0) {
+							if (video.paused == false) {
+								video.pause();
+							}
+
+							var time_id = Math.round(video.currentTime * 100);
+
+							jQuery( thumbnailboxID ).append( '<div style="display:none;" class="kgvid_thumbnail_select" name="attachments[' + postID + '][thumb' + time_id + ']" id="attachments-' + postID + '-thumb' + time_id + '"><label for="kgflashmedia-' + postID + '-thumbradio' + time_id + '"><canvas class="kgvid_thumbnail" id="' + postID + '_thumb_' + time_id + '" data-movieoffset="' + video.currentTime + '"></canvas></label><br /><input type="radio" name="attachments[' + postID + '][thumbradio' + time_id + ']" id="kgflashmedia-' + postID + '-thumbradio' + time_id + '" value="' + video.currentTime + '" onchange="kgvid_save_canvas_thumb(\'' + postID + '\', \'' + time_id + '\', 1, 0);"></div>' );
+							var canvas = document.getElementById( postID + '_thumb_' + time_id );
+							canvas     = kgvid_draw_thumb_canvas( canvas, video );
+							jQuery( '#attachments-' + postID + '-thumb' + time_id ).animate( {opacity: 'toggle', height: 'toggle', width: 'toggle'}, 1000 );
+
+							thumbnail_saved.splice(0, 1);
+							jQuery(video).data('thumbnail_data', thumbnail_saved);
+
+							if (thumbnail_saved.length > 0) {
+								video.currentTime = thumbnail_saved[0];
+							} else {
+								resolve();
+							}
+						}
+					});
+
+					video.currentTime = thumbnails[0]; // Start processing the first thumbnail
+					video.play();
+				} else {
+					reject('No thumbnails to process');
+				}
+			} else {
+				reject('Video cannot load');
+			}
+		});
+	}
+
+	function kgvid_canvas_thumbs_complete() {
+
+		jQuery(video).off('seeked.kgvid');
+		jQuery(video).off('loadedmetadata.kgvid');
+		video.preload = "none";
+		video.load();
+
+		jQuery(thumbnailboxoverlayID).fadeTo(2000, 1);
+		jQuery(cancelthumbdivID).animate({opacity: 0, height: 'toggle'}, 500);
+
+		jQuery(thumbnailboxID).prepend('<div id="saveallthumbs-' + postID + '-div"><input style="display:none;" type="button" id="attachments-' + postID + '-saveallthumbs" class="button-secondary kgvid-centered-block" value="' + kgvidL10n.saveallthumbnails + '" name="attachments-' + postID + '-saveallthumbs" onclick="kgvid_saveall_thumbs(\'' + postID + '\');"></div>');
+		jQuery('#attachments-' + postID + '-saveallthumbs').animate({opacity: 'toggle', height: 'toggle'}, 500);
+
+		jQuery(video).removeData('thumbnail_data');
+		jQuery('#thumb-video-' + postID).remove();
+	}
 
 	if (
 		(
-			jQuery( '#thumb-video-' + postID ).data( 'allowed' ) != true
-			&& jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == true // call the FFmpeg loop if the browser can't do it
+			jQuery( '#thumb-video-' + postID + '-player' ).data( 'allowed' ) != 'on'
+			&& jQuery( '#generate-thumb-' + postID + '-container' ).data( 'ffmpeg' ) == 'on' // call the FFMPEG loop if the browser can't do it
 		)
 		|| jQuery( '#kgflashmediaplayer-table' ).length > 0 // or if it's the external URL dialog
 	) {
@@ -831,28 +833,48 @@ function kgvid_generate_thumb(postID, buttonPushed) {
 
 function kgvid_select_thumbnail(thumb_url, post_id, movieoffset, thumbnail) {
 
-	jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-poster' )
-		.val( thumb_url )
-		.trigger( 'change' );
+	var kgflashmediaplayersecurity = document.getElementsByName( 'attachments[' + post_id + '][kgflashmediaplayer-security]' )[0].value;
 
-	var unscaledThumb = new Image();
-	unscaledThumb.src = thumbnail.src;
-	var canvas        = document.createElement( "canvas" );
-	canvas            = kgvid_draw_thumb_canvas( canvas, unscaledThumb );
-	var thumb_dataurl = canvas.toDataURL( 'image/jpeg', 0.8 );
+	jQuery.ajax(
+		{
+			type: "POST",
+			url: ajaxurl,
+			data: {
+				action:'kgvid_save_thumb',
+				security: kgflashmediaplayersecurity,
+				post_id: post_id,
+				thumburl: thumb_url,
+			},
+			dataType: 'json'
+		}
+	)
+	.done(
+		function( thumb_info ) {
+			if ( thumb_info ) {
+				kgvid_change_media_library_video_poster( post_id, thumb_info.thumb_url );
 
-	kgvid_change_media_library_video_poster( post_id, thumb_dataurl );
+				var time_display = kgvid_convert_to_timecode( movieoffset );
+				jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-thumbtime' ).val( time_display );
+				jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-numberofthumbs' ).val( '1' );
+				jQuery( '#attachments-' + post_id + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + thumb_info.thumb_url + '"></div>' );
+				if ( jQuery( '#attachments-' + post_id + '-featured' ).prop( 'checked' )
+					&& thumb_info.thumb_id
+					&& wp?.media?.view?.settings?.post?.id !== 0
+				) {
+					wp.media.featuredImage.set( thumb_info.thumb_id );
+				}
+				jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-poster' )
+					.val( thumb_info.thumb_url )
+					.trigger( 'change' );
 
-	var time_display = kgvid_convert_to_timecode( movieoffset );
-	jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-thumbtime' ).val( time_display );
-	jQuery( '#attachments-' + post_id + '-kgflashmediaplayer-numberofthumbs' ).val( '1' );
-	jQuery( '#attachments-' + post_id + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + thumbnail.src + '"></div>' );
-
-	if ( typeof pagenow === 'undefined'
-		|| pagenow == 'attachment'
-	) {
-		jQuery( '#publish' ).trigger( 'click' );
-	}
+				if ( typeof pagenow === 'undefined'
+					|| pagenow == 'attachment'
+				) {
+					jQuery( '#publish' ).trigger( 'click' );
+				}
+			}
+		}
+	);
 
 }
 
@@ -888,30 +910,35 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 		{
 			type: "POST",
 			url: ajaxurl,
-			data: { action:"kgvid_save_html5_thumb",
+			data: {
+				action:"kgvid_save_html5_thumb",
 				security: kgflashmediaplayersecurity,
 				url: video_url,
 				offset: time_id,
 				postID: postID,
 				total: total,
 				index: index,
-				raw_png: png64dataURL
+				raw_png: png64dataURL,
 			},
-			dataType: 'text'
+			dataType: 'json'
 		}
 	)
 	.done(
-		function(data) {
-			if ( data ) {
+		function( thumb_info ) {
+			if ( thumb_info ) {
 				if ( total == 1 ) {
 					document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-autothumb-error]' )[0].value = '';
-
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-numberofthumbs' ).val( '1' );
-
 					var time_display = kgvid_convert_to_timecode( canvas.dataset.movieoffset );
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).val( time_display );
-					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + png64dataURL + '"></div>' );
-					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( data ).trigger( 'change' );
+					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-featuredchanged="true" src="' + png64dataURL + '"></div>' );
+					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( thumb_info.thumb_url ).trigger( 'change' );
+					if ( jQuery( '#attachments-' + postID + '-featured' ).prop( 'checked' )
+						&& thumb_info.thumb_id
+						&& wp?.media?.view?.settings?.post?.id !== 0
+					) {
+						wp.media.featuredImage.set( thumb_info.thumb_id );
+					}
 					if ( typeof pagenow === 'undefined'
 						|| pagenow == 'attachment'
 					) {
@@ -951,64 +978,54 @@ function kgvid_thumbnail_saveall_progress(postID, total) {
 }
 
 function kgvid_saveall_thumbs(postID) {
-
 	var kgflashmediaplayersecurity = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-security]' )[0].value;
 	var thumbnails                 = jQuery( '#attachments-' + postID + '-kgflashmediaplayer-thumbnailbox' ).find( '.kgvid_thumbnail' );
 	var total                      = thumbnails.length;
 
 	jQuery( '#saveallthumbs-' + postID + '-div' ).append( '<br><div style="margin:5px;" id="saving_thumbs_meter" class="kgvid_meter"><div class="kgvid_meter_bar" style="width:0%;"><div class="kgvid_meter_text"></div></div></div><span id="saving_thumbs_status"> ' + kgvidL10n.saving + '</span>' );
 
-	jQuery.each(
-		thumbnails,
-		function(key, value) {
-			if ( value.tagName.toLowerCase() == "canvas" ) {
-				var time_id = value.id.split( "_" ).pop();
-				setTimeout(
-					function(time_id, key) {
-						return function() {
-								kgvid_save_canvas_thumb( postID, time_id, total, key );
-						}
-					}(time_id,
-					key),
-					0
-				);
-			} else { // thumbnails were made by ffmpeg
-
-				thumb_url = value.src.split( "?" )[0].replace( '/thumb_tmp/', '/' );
-
-				if ( isNaN( postID ) ) { // dealing with an external URL
-					var postid = parent.document.getElementById( 'post_ID' ).value;
+	function processThumbnail(key, value) {
+		return new Promise((resolve, reject) => {
+			if (value.tagName.toLowerCase() == "canvas") {
+				var time_id = value.id.split("_").pop();
+				kgvid_save_canvas_thumb(postID, time_id, total, key);
+				resolve();
+			} else {
+				var thumb_url = value.src.split("?")[0].replace('/thumb_tmp/', '/');
+				if (isNaN(postID)) {
+					postID = parent.document.getElementById('post_ID').value;
 				}
-
-				setTimeout(
-					function(thumb_url, key) {
-						return function() {
-							jQuery.ajax(
-								{
-									type: "POST",
-									url: ajaxurl,
-									data: {
-										action:'kgvid_save_thumb',
-										security: kgflashmediaplayersecurity,
-										post_id: postID,
-										thumburl: thumb_url,
-										index: key
-									},
-									async: false
-								}
-							)
-							.done(
-								function(thumb_url) {
-									kgvid_thumbnail_saveall_progress( postID, total );
-								}
-							);
-						}
-					}( thumb_url, key ),
-					0
-				);
+				jQuery.ajax({
+					type: "POST",
+					url: ajaxurl,
+					data: {
+						action: 'kgvid_save_thumb',
+						security: kgflashmediaplayersecurity,
+						post_id: postID,
+						thumburl: thumb_url,
+						index: key
+					}
+				}).done(function() {
+					kgvid_thumbnail_saveall_progress(postID, total);
+					resolve();
+				}).fail(reject);
 			}
-		}
-	); // end each loop
+		});
+	}
+
+	function processThumbnails(thumbnails) {
+		var promises = [];
+		thumbnails.each(function(key, value) {
+			promises.push(processThumbnail(key, value));
+		});
+		return Promise.all(promises);
+	}
+
+	processThumbnails(thumbnails).then(function() {
+
+	}).catch(function(error) {
+		console.error("Error processing thumbnails", error);
+	});
 }
 
 function kgvid_thumb_video_manual(postID) {
@@ -1783,7 +1800,9 @@ function kgvid_redraw_thumbnail_box(postID) {
 						.css( 'height', '100%' )
 						.css( 'padding-top', '0' );
 					}
-					if ( data.thumb_id ) {
+					if ( data.thumb_id
+						&& wp?.media?.view?.settings?.post?.id !== 0
+					) {
 						wp.media.featuredImage.set( data.thumb_id );
 					}
 					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).trigger( 'change' );
@@ -1933,6 +1952,9 @@ function kgvid_queue_control() {
 
 function kgvid_save_plugin_settings(input_obj) {
 
+	if ( jQuery(input_obj).hasClass('videopack-no-save') ) {
+		return;
+	}
 	jQuery( '#setting-error-options-reset' ).fadeOut() // if settings were reset previously, clear the warning
 	jQuery( '.settings-error' ).fadeOut(); // clear error messages
 
@@ -1969,6 +1991,7 @@ function kgvid_save_plugin_settings(input_obj) {
 			{ action:"kgvid_save_settings",
 				security: kgflashmediaplayersecurity,
 				setting: save_queue[0].id,
+				name: save_queue[0].name,
 				value: setting_value,
 				all_settings: all_settings
 			},
@@ -2083,9 +2106,9 @@ function kgvid_save_plugin_settings(input_obj) {
 
 	save_queue = jQuery( '#wpbody-content' ).data( 'save_queue' );
 	if ( save_queue == undefined || save_queue.length == 0 ) {
-		var save_queue = [{ 'id':input_obj.id, 'value':setting_value }];
+		var save_queue = [ { 'id':input_obj.id, 'name':input_obj.name, 'value':setting_value } ];
 	} else {
-		save_queue.push( { 'id':input_obj.id, 'value':setting_value } );
+		save_queue.push( { 'id':input_obj.id, 'name':input_obj.name, 'value':setting_value } );
 	}
 	jQuery( '#wpbody-content' ).data( 'save_queue', save_queue );
 	if ( save_queue.length == 1 ) {
@@ -2116,21 +2139,21 @@ function kgvid_embeddable_switch(checked) {
 	}
 }
 
-function kgvid_switch_settings_tab(tab) {
+function kgvid_switch_settings_tab( tab ) {
 
-	if ( tab == "encoding" ) {
+	var tabs = jQuery('.nav-tab-wrapper .nav-tab');
 
-		jQuery( "#general_tab" ).removeClass( "nav-tab-active" );
-		jQuery( "#encoding_tab" ).addClass( "nav-tab-active" );
+    // Loop through each tab and remove the 'nav-tab-active' class
+    tabs.each( function() {
+        jQuery( this ).removeClass('nav-tab-active');
+		jQuery( '.' + jQuery( this ).data('tab_id') + '-tab' ).hide();
+		if ( this.id == tab ) {
+			jQuery( this ).addClass('nav-tab-active');
+			jQuery( '.' + jQuery( this ).data('tab_id') + '-tab' ).show();
+		}
+    });
 
-		jQuery( '#header_kgvid_video_embed_playback_settings, #header_kgvid_video_embed_plugin_settings' ).hide();
-		jQuery( '#header_kgvid_video_embed_encode_settings' ).show();
-		jQuery( '#header_kgvid_video_embed_encode_test_settings' ).show();
-
-		jQuery( '#table_kgvid_video_embed_embed_method, #table_kgvid_video_embed_playback_settings, #table_kgvid_video_embed_flash_settings, #table_kgvid_video_embed_plugin_settings' ).hide();
-		jQuery( ".kgvid_setting_nearvid" ).hide();
-		jQuery( '#table_kgvid_video_embed_encode_settings' ).show();
-		jQuery( '#table_kgvid_video_embed_encode_test_settings' ).show();
+	if ( tab == "encoding_tab" ) {
 
 		if ( jQuery( '#app_path' ).data( 'ffmpeg_exists' ) == true && jQuery( '#ffmpeg_output' ).html() == "" ) {
 			jQuery( '#ffmpeg_output' ).html( 'Running test...' );
@@ -2165,23 +2188,6 @@ function kgvid_switch_settings_tab(tab) {
 				);
 			}
 		}
-	} else { // General tab
-
-		var playback_option = jQuery( '#embed_method' ).val();
-
-		jQuery( "#general_tab" ).addClass( "nav-tab-active" );
-		jQuery( "#encoding_tab" ).removeClass( "nav-tab-active" );
-
-		jQuery( '#header_kgvid_video_embed_playback_settings, #header_kgvid_video_embed_plugin_settings' ).show();
-		jQuery( '#header_kgvid_video_embed_encode_settings' ).hide();
-		jQuery( '#header_kgvid_video_embed_encode_test_settings' ).hide();
-
-		jQuery( '#table_kgvid_video_embed_embed_method, #table_kgvid_video_embed_playback_settings, #table_kgvid_video_embed_flash_settings, #table_kgvid_video_embed_plugin_settings' ).show();
-		jQuery( ".kgvid_setting_nearvid" ).show();
-
-		jQuery( '#table_kgvid_video_embed_encode_settings' ).hide();
-		jQuery( '#table_kgvid_video_embed_encode_test_settings' ).hide();
-
 	}
 
 	kgvid_hide_plugin_settings();
@@ -2478,7 +2484,65 @@ function kgvid_clear_transient_cache() {
 
 }
 
-function kgvid_pick_image(button) {
+function kgvid_pick_image(button, event) {
+
+	var pickFrame;
+	// Build the choose from library frame.
+
+	var $el = jQuery( button );
+	if ( typeof event !== 'undefined' ) {
+		event.preventDefault();
+	}
+
+	// Create the media frame.
+	pickFrame = wp.media(
+		{
+			// Set the title of the modal.
+			title: $el.data( 'choose' ),
+
+			// Tell the modal to show only images.
+			library: {
+				type: 'image',
+			},
+
+			// Customize the submit button.
+			button: {
+				// Set the text of the button.
+				text: $el.data( 'update' ),
+			},
+
+			multiple: false,
+		}
+	);
+
+	// When an image is selected, run a callback.
+	pickFrame.on(
+		'select',
+		function() {
+			// Grab the selected attachment.
+			const attachment = pickFrame.state().get( 'selection' ).first();
+			jQuery( '#' + $el.data( 'change' ) ).val( attachment.attributes.url );
+			if ( $el.data( 'change' ).slice( -25 ) == "kgflashmediaplayer-poster" ) {
+
+				jQuery( '#' + $el.data( 'change' ).slice( 0, -25 ) + 'thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' + $el.data( 'id' ) + '" width="200" data-thumb_id="' + attachment.attributes.id + '" data-featuredchanged="true" src="' + attachment.attributes.url + '"></div>' );
+
+				kgvid_change_media_library_video_poster( $el.data( 'id' ), attachment.attributes.url );
+
+				if ( pagenow === 'attachment'
+					&& wp?.media?.view?.settings?.post?.id !== 0
+				) {
+					wp.media.featuredImage.set( attachment.attributes.id );
+				}
+
+			}
+			jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
+		}
+	);
+
+	pickFrame.open();
+}
+
+function kgvid_pick_attachment(button, event) {
 
 		var frame;
 
@@ -2504,66 +2568,6 @@ function kgvid_pick_image(button) {
 						// Set the title of the modal.
 						title: $el.data( 'choose' ),
 
-						// Tell the modal to show only images.
-						library: {
-							type: 'image'
-						},
-
-						// Customize the submit button.
-						button: {
-							// Set the text of the button.
-							text: $el.data( 'update' ),
-							close: true
-						}
-					}
-				);
-
-				// When an image is selected, run a callback.
-				frame.on(
-					'select',
-					function() {
-						// Grab the selected attachment.
-						var attachment = frame.state().get( 'selection' ).first();
-						jQuery( '#' + $el.data( 'change' ) ).val( attachment.attributes.url );
-						if ( $el.data( 'change' ).substring( -25 ) == "kgflashmediaplayer-poster" ) {
-							jQuery( '#' + $el.data( 'change' ).slice( 0, -25 ) + 'thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" src="' + attachment.attributes.url + '"></div>' );
-						}
-						jQuery( '#' + $el.data( 'change' ) ).trigger( 'change' );
-					}
-				);
-
-				frame.open();
-			}
-		);
-
-}
-
-function kgvid_pick_attachment(button) {
-
-		var frame;
-
-		jQuery(
-			function() {
-
-				// Build the choose from library frame.
-
-				var $el = jQuery( button );
-				if ( typeof event !== 'undefined' ) {
-					event.preventDefault();
-				}
-
-				// If the media frame already exists, reopen it.
-				if ( frame ) {
-					frame.open();
-					return;
-				}
-
-				// Create the media frame.
-				frame = wp.media.frames.customHeader = wp.media(
-					{
-						// Set the title of the modal.
-						title: $el.data( 'choose' ),
-
 						// Customize the submit button.
 						button: {
 							// Set the text of the button.
@@ -2590,7 +2594,7 @@ function kgvid_pick_attachment(button) {
 
 }
 
-function kgvid_pick_format(button, parentID, mime, format, movieurl, blog_id) {
+function kgvid_pick_format(button, event, parentID, mime, format, movieurl, blog_id) {
 
 		var frame;
 
@@ -2681,9 +2685,106 @@ function kgvid_clear_video(movieurl, postID, video_id, blog_id) {
 }
 
 function kgvid_add_subtitles(id) {
-	var tracks   = jQuery( '#kgflashmediaplayer-' + id + '-trackdiv' );
-	track_number = tracks.children().length;
-	track_label  = track_number + 1;
-	tracks.append( '<div id="kgflashmediaplayer-' + id + '-trackdiv-' + track_number + '" class="kgvid_thumbnail_box kgvid_track_box"><strong>Track ' + track_label + '</strong><span class="kgvid_track_box_removeable">X</span><br />' + kgvidL10n.tracktype + ' <select name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][kind]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_kind]"><option value="subtitles">' + kgvidL10n.subtitles + '</option><option value="captions">' + kgvidL10n.captions + '</option><option value="chapters">' + kgvidL10n.chapters + '</option></select><br /><span id="pick-track' + track_number + '" class="button-secondary" style="margin:10px 0;" data-choose="' + kgvidL10n.choosetextfile + '" data-update="' + kgvidL10n.settracksource + '" data-change="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" onclick="kgvid_pick_attachment(this);">' + kgvidL10n.choosefromlibrary + '</span><br />URL: <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][src]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src" type="text" value="" class="text" style="width:180px;"><br />' + kgvidL10n.languagecode + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][srclang]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_srclang" type="text" value="" maxlength="2" style="width:40px;"><br />' + kgvidL10n.label + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][label]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_label" type="text" value="" class="text" style="width:172px;"><br />' + kgvidL10n.trackdefault + ' <input name="attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][default]" id="attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_default" type="checkbox" value="default"></div>' );
-	jQuery( '.kgvid_track_box_removeable' ).on( 'click', function() { jQuery( this ).parent().remove(); jQuery( 'form.compat-item input' ).first().trigger( 'change' ); } );
+
+    var tracks = jQuery('#kgflashmediaplayer-' + id + '-trackdiv');
+    var track_number = tracks.children().length;
+    var track_label = track_number + 1;
+
+    // Create the container div
+    var trackDiv = jQuery('<div/>', {
+        id: 'kgflashmediaplayer-' + id + '-trackdiv-' + track_number,
+        class: 'kgvid_thumbnail_box kgvid_track_box'
+    });
+
+    // Append elements to trackDiv
+    trackDiv.append(jQuery('<strong/>').text( kgvidL10n.track + ' ' + track_label));
+    var closeButton = jQuery('<button/>', {
+        type: 'button',
+        title: kgvidL10n.close,
+        class: 'kgvid_track_box_removeable'
+    }).append(jQuery('<span/>', { class: 'kgvid-icons kgvid-icon-cross' }));
+
+    trackDiv.append(closeButton);
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.tracktype + ' '));
+    trackDiv.append(jQuery('<select/>', {
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][kind]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_kind'
+    }).append(jQuery('<option/>', { value: 'subtitles', text: kgvidL10n.subtitles }))
+      .append(jQuery('<option/>', { value: 'captions', text: kgvidL10n.captions }))
+      .append(jQuery('<option/>', { value: 'chapters', text: kgvidL10n.chapters })));
+
+    trackDiv.append('<br />');
+
+    // Button for choosing from library
+    trackDiv.append(jQuery('<span/>', {
+        id: 'pick-track' + track_number,
+        class: 'button-secondary',
+        text: kgvidL10n.choosefromlibrary,
+        style: 'margin:10px 0;',
+        'data-choose': kgvidL10n.choosetextfile,
+        'data-update': kgvidL10n.settracksource,
+        'data-change': 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src',
+        click: function(event) { kgvid_pick_attachment(this, event); }
+    }));
+
+    trackDiv.append('<br />URL: ');
+
+    // Input for URL
+    trackDiv.append(jQuery('<input/>', {
+        type: 'text',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][src]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_src',
+        class: 'text',
+        style: 'width:180px;'
+    }));
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.languagecode + ' '));
+
+    // Input for language code
+    trackDiv.append(jQuery('<input/>', {
+        type: 'text',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][srclang]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_srclang',
+        maxlength: '2',
+        style: 'width:40px;'
+    }));
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.label + ' '));
+
+    // Input for label
+    trackDiv.append(jQuery('<input/>', {
+        type: 'text',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][label]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_label',
+        class: 'text',
+        style: 'width:172px;'
+    }));
+
+    trackDiv.append('<br />');
+
+    trackDiv.append(jQuery('<span/>').text(kgvidL10n.trackdefault + ' '));
+
+    // Checkbox for default
+    trackDiv.append(jQuery('<input/>', {
+        type: 'checkbox',
+        name: 'attachments[' + id + '][kgflashmediaplayer-track][' + track_number + '][default]',
+        id: 'attachments-' + id + '-kgflashmediaplayer-track_' + track_number + '_default',
+        value: 'default'
+    }));
+
+    // Append the created div to the tracks container
+    tracks.append(trackDiv);
+
+    // Event Delegation for the removeable track box
+    jQuery(document).on('click', '.kgvid_track_box_removeable', function() {
+        jQuery(this).parent().remove();
+        jQuery('form.compat-item input').first().trigger('change');
+    });
 }

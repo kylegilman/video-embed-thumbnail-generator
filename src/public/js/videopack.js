@@ -77,6 +77,10 @@ function kgvid_convert_from_timecode(timecode) {
 
 }
 
+function kgvid_preventDefault(e) {
+	e.preventDefault();
+}
+
 function kgvid_SetVideo(id) { // for galleries
 
 	var gallery_id = jQuery( '#kgvid_video_gallery_thumb_' + id ).parent().attr( 'id' );
@@ -174,20 +178,35 @@ function kgvid_SetVideo(id) { // for galleries
 	jQuery( document ).on(
 		'keydown.kgvid',
 		function(e) {
-			switch (e.which) {
-				case 37: // left
+			switch (e.key) {
+				case 'ArrowLeft':
 					jQuery( '.kgvid_gallery_prev' ).trigger( 'click' );
 				break;
 
-				case 39: // right
+				case 'ArrowRight':
 					jQuery( '.kgvid_gallery_next' ).trigger( 'click' );
 				break;
 
+				case 'ArrowDown':
+				case 'ArrowUp':
+				case 'PageDown':
+				case 'PageUp':
+				case 'End':
+				case 'Home':
+				case ' ':
+					break;
+
+				case 'Escape':
+					kgvid_gallery_close();
+
 				default: return; // exit this handler for other keys
 			}
-			e.preventDefault(); // prevent the default action (scroll / move caret)
+			e.preventDefault(); // prevent the default action
 		}
 	);
+
+	window.addEventListener( 'wheel', kgvid_preventDefault, { passive: false } );
+    window.addEventListener( 'touchmove', kgvid_preventDefault, { passive: false } );
 
 	// load the video player embed code
 
@@ -200,9 +219,10 @@ function kgvid_SetVideo(id) { // for galleries
 		jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars', video_vars );
 
 		if ( video_vars.player_type.startsWith('Video.js') ) {
-			setTimeout( function() { kgvid_load_videojs( video_vars ); }, 0 );
-		} else {
-			setTimeout( function() { kgvid_setup_video( id ); }, 0 );
+			setTimeout( function() {
+				video_vars.autoplay = 'true';
+				kgvid_load_videojs( video_vars );
+			}, 0 );
 		}
 
 		if ( meta > 0 ) {
@@ -215,6 +235,7 @@ function kgvid_SetVideo(id) { // for galleries
 			jQuery( '#kgvid_' + id + '_wrapper video' ).mediaelementplayer(
 				{
 					success: function(mediaElement, domObject) {
+						kgvid_setup_video(id);
 						mediaElement.play();
 					},
 					features : [
@@ -235,12 +256,6 @@ function kgvid_SetVideo(id) { // for galleries
 
 function kgvid_gallery_close() {
 
-	/* if ( viewport_original != "" ) {
-		viewport_meta.attr( 'content', viewport_original );
-	} else {
-		jQuery( '#kgvid_gallery_viewport' ).remove();
-	} */
-
 	var video_vars = jQuery( '#kgvid-videomodal-container .kgvid_videodiv' ).data( 'kgvid_video_vars' );
 
 	if ( video_vars !== undefined ) {
@@ -251,7 +266,9 @@ function kgvid_gallery_close() {
 	}
 
 	jQuery( window ).off( 'resize', kgvid_resize_video( video_vars.id ) );
-	jQuery( document ).off( 'keydown.kgvid' ); // disable left/right navigation
+	jQuery( document ).off( 'keydown.kgvid' ); // restore default keyboard actions
+	window.removeEventListener( 'wheel', kgvid_preventDefault );
+	window.removeEventListener( 'touchmove', kgvid_preventDefault );
 	jQuery( '#kgvid-videomodal-overlay, #kgvid-videomodal-container' ).remove();
 }
 
@@ -300,9 +317,13 @@ function kgvid_load_videojs(video_vars) {
 
 	var videojs_options = {
 		"language": video_vars.locale,
-		"restoreEl": true,
 		"responsive": true,
+		"userActions" : { "hotkeys": true },
 	};
+
+	if ( video_vars.autoplay == "true" ) {
+		videojs_options.autoplay = 'any';
+	}
 
 	if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
 		videojs_options.fluid = true;
@@ -353,7 +374,9 @@ function kgvid_load_videojs(video_vars) {
 		videojs( 'video_' + video_vars.id ).dispose();
 	}
 
-	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){ kgvid_setup_video( video_vars.id ); } );
+	videojs( 'video_' + video_vars.id, videojs_options ).ready( function(){
+		kgvid_setup_video( video_vars.id );
+	} );
 
 }
 
@@ -469,6 +492,8 @@ function kgvid_setup_video(id) {
 			'play',
 			function kgvid_play_start(){
 
+				player.focus();
+
 				player.off( 'timeupdate', kgvid_timeupdate_poster );
 				if ( video_vars.meta ) {
 					kgvid_add_hover( id );
@@ -531,8 +556,8 @@ function kgvid_setup_video(id) {
 		player.on(
 			'pause',
 			function kgvid_play_pause(){
-			jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-			kgvid_video_counter( id, 'pause' );
+				jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
+				kgvid_video_counter( id, 'pause' );
 			}
 		);
 
@@ -678,6 +703,9 @@ function kgvid_setup_video(id) {
 		player.on(
 			'play',
 			function(){
+
+				document.getElementById(mejs_id).focus();
+
 				kgvid_add_hover( id );
 				jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
 
@@ -718,18 +746,6 @@ function kgvid_setup_video(id) {
 			function(){
 				jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
 				kgvid_video_counter( id, 'pause' );
-			}
-		);
-
-		jQuery( document ).on(
-			'mozfullscreenchange webkitfullscreenchange fullscreenchange',
-			function(){
-
-				var mejs_player = eval( 'mejs.players.' + mejs_id );
-
-				if ( mejs_player.isFullScreen ) {
-					// mejs_player.enterFullScreen();
-				}
 			}
 		);
 
@@ -946,14 +962,19 @@ function kgvid_resize_video(id) {
 										);
 									} else {
 										jQuery( player.media ).one(
-											'play',
+											'playing',
 											function() {
 												player.changeRes( set_res + 'p' );
 											}
 										);
 									}
 								} else {
-									player.changeRes( set_res + 'p' );
+									jQuery( player.media ).one(
+										'playing',
+										function() {
+											player.changeRes( set_res + 'p' );
+										}
+									);
 								}
 							}
 						}
@@ -1165,7 +1186,6 @@ function kgvid_switch_gallery_page(obj, post_action) {
 		},
 		function(data) {
 			jQuery( '#' + gallery_id ).html( data );
-			kgvid_document_ready();
 			jQuery( '#' + gallery_id ).fadeTo( "fast", 1 );
 			if ( post_action == "next" ) {
 				kgvid_gallery_close();
@@ -1221,7 +1241,8 @@ function kgvid_share_icon_click(id) {
 	}//if WordPress Default player
 
 	if ( event == 'turn on' ) {
-		jQuery( '#video_' + id + '_div' ).off( 'mouseenter mouseleave focus focusout' );jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
+		jQuery( '#video_' + id + '_div' ).off( 'mouseenter mouseleave focus focusout' );
+		jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
 	} else {
 		kgvid_add_hover( id );
 	}

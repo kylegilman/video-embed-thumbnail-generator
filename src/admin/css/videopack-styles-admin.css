@@ -188,22 +188,23 @@ div.kgvid_track_box:hover {
 	background-color: #F7F7F7;
 }
 
-.compat-item .field .kgvid_track_box input {
+.kgvid_thumbnail_box.kgvid_track_box input[type="text"] {
 	margin-top: 3px;
 }
 
 .kgvid_track_box_removeable {
-	width: 15px;
-	height: 15px;
 	float: right;
-	text-align: right;
-	font-weight: bold;
-	color: #BC0B0B;
 	cursor: pointer;
+	border: none;
+	padding: 0;
 }
 
 .kgvid_track_box_removeable:hover {
 	color: red;
+}
+
+.kgvid-icon-cross::before {
+	content: "\2716";
 }
 
 div.kgvid_chosen_thumbnail_box {
