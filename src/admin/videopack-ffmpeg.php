@@ -41,13 +41,6 @@ function kgvid_save_encode_queue( $video_encode_queue ) {
 	}
 }
 
-function kgvid_get_ffmpeg_path() {
-
-	$options = kgvid_get_options();
-
-	return ( $options['app_path'] === '' ) ? $options['video_app'] : $options['app_path'] . '/' . $options['video_app'];
-}
-
 function kgvid_process_thumb( $input, $output, $ffmpeg_path = false, $seek = '0', $rotate_array = array(), $filter_complex = array() ) {
 
 	$options = kgvid_get_options();
@@ -769,7 +762,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 		&& isset( $video_formats[ $format ] )
 	) {
 
-		$ffmpeg_path        = kgvid_get_ffmpeg_path();
 		$video_bitrate_flag = 'b:v';
 		$audio_bitrate_flag = 'b:a';
 		$profile_flag       = 'profile:v';
@@ -1083,7 +1075,7 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 						$meta .= '<button type="button" id="unpick-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_clear_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . __( 'Clear Format', 'video-embed-thumbnail-generator' ) . '</button>';
 					} else {
 						$deletable = true;
-						$meta .= '<button type="button" id="delete-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_delete_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . esc_html__( 'Delete Permanently', 'video-embed-thumbnail-generator' ) . '</button>';
+						$meta     .= '<button type="button" id="delete-' . esc_attr( $post_id ) . '-' . esc_attr( $format ) . '" class="kgvid_delete-format" onclick="kgvid_delete_video(\'' . esc_attr( $movieurl ) . '\', \'' . esc_attr( $post_id ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $child_id ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . esc_html__( 'Delete Permanently', 'video-embed-thumbnail-generator' ) . '</button>';
 					}
 				}
 				$disabled = ' disabled title="' . esc_attr__( 'Format already exists', 'video-embed-thumbnail-generator' ) . '"';
@@ -3457,8 +3449,6 @@ function kgvid_cancel_encode( $video_key, $format ) {
 				} catch ( \Exception $e ) {
 					$output = $e->getMessage();
 				}
-
-				$ffmpeg_path = kgvid_get_ffmpeg_path();
 
 				if ( intval( $kgvid_pid ) > 0
 					&& strpos( $output, $options['app_path'] . '/ffmpeg' ) !== false
