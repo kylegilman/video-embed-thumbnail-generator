@@ -93,7 +93,7 @@ class Videopack_REST extends \WP_REST_Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'roles' ),
-				'permission_callback' => function() {
+				'permission_callback' => function () {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_users' );
 				},
 			)
@@ -131,7 +131,7 @@ class Videopack_REST extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'thumb_save' ),
-					'permission_callback' => function() {
+					'permission_callback' => function () {
 						return current_user_can( 'make_video_thumbnails' );
 					},
 					'args'                => array(
@@ -155,7 +155,7 @@ class Videopack_REST extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
-					'permission_callback' => function() {
+					'permission_callback' => function () {
 						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
@@ -233,7 +233,7 @@ class Videopack_REST extends \WP_REST_Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'checkboxes' ),
-				'permission_callback' => function() {
+				'permission_callback' => function () {
 					return current_user_can( 'upload_files' );
 				},
 				'args'                => array(
@@ -253,7 +253,7 @@ class Videopack_REST extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'queue_get' ),
-					'permission_callback' => function() {
+					'permission_callback' => function () {
 						return ( $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
@@ -265,7 +265,7 @@ class Videopack_REST extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'queue_edit' ),
-					'permission_callback' => function() {
+					'permission_callback' => function () {
 						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
@@ -294,7 +294,7 @@ class Videopack_REST extends \WP_REST_Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'ffmpeg_test' ),
-				'permission_callback' => function() {
+				'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
 				},
 				'args'                => array(
@@ -541,7 +541,7 @@ class Videopack_REST extends \WP_REST_Controller {
 		if ( $attachments->have_posts() ) {
 
 			$json_posts = array_map(
-				function( $post ) {
+				function ( $post ) {
 					$post_data                         = wp_prepare_attachment_for_js( $post );
 					$post_data['image']['id']          = get_post_thumbnail_id( $post );
 					$post_data['image']['srcset']      = wp_get_attachment_image_srcset( $post_data['image']['id'] );

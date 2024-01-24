@@ -83,6 +83,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	);
 
 	if ( ! empty( $missing_files ) ) {
+
 		if ( isset( $_GET['activate'] ) ) {
 			unset( $_GET['activate'] );
 		}
