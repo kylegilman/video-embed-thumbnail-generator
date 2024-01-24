@@ -193,7 +193,7 @@ class Video_Codec {
 	 * @return float Rate control settings.
 	 */
 	public function get_default_crf() {
-		return $this->rate_control['rate_control']['crf']['default'];
+		return $this->rate_control['crf']['default'];
 	}
 
 	/**
@@ -202,7 +202,7 @@ class Video_Codec {
 	 * @return float Rate control settings.
 	 */
 	public function get_default_vbr() {
-		return $this->rate_control['rate_control']['vbr']['default'];
+		return $this->rate_control['vbr']['default'];
 	}
 
 	/**
