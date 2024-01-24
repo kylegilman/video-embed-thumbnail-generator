@@ -250,6 +250,9 @@ function kgvid_ajax_save_settings() {
 		if ( isset( $_POST['setting'] ) ) {
 			$setting = kgvid_sanitize_text_field( wp_unslash( $_POST['setting'] ) );
 		}
+		if ( isset( $_POST['name'] ) ) {
+			$name = kgvid_sanitize_text_field( wp_unslash( $_POST['name'] ) );
+		}
 		if ( isset( $_POST['value'] ) ) {
 			$value = kgvid_sanitize_text_field( wp_unslash( $_POST['value'] ) );
 		}
@@ -304,14 +307,20 @@ function kgvid_ajax_save_settings() {
 				}
 			}
 
-			if ( strpos( $setting, 'capability' ) !== false
-				|| strpos( $setting, 'default_capabilities' ) !== false
-				|| strpos( $setting, 'ffmpeg_watermark' ) !== false
-				|| strpos( $setting, 'ffmpeg_thumb_watermark' ) !== false
-				|| strpos( $setting, 'custom_format' ) !== false
-				|| strpos( $setting, 'encode' ) !== false
-			) {
-				$validated_options[ $setting ] = $value;
+			//check if the option is a nested array
+			$trimmed_name = str_replace( 'kgvid_video_embed_options', '', $name );
+			preg_match_all( '/\[([^\]]+)\]/', $trimmed_name, $matches );
+			if ( $matches && count( $matches[1] ) > 1 ) {
+				$validated_value = $validated_options;
+				foreach ( $matches[1] as $key ) {
+					if ( isset( $validated_value[ $key ] ) ) {
+						$validated_value = $validated_value[ $key ];
+					} else {
+						$validated_value = $value;
+					}
+				}
+			} else {
+				$validated_value = $validated_options[ $setting ];
 			}
 
 			if ( ! empty( $wp_settings_errors ) ) {
@@ -340,7 +349,7 @@ function kgvid_ajax_save_settings() {
 
 			$arr = array(
 				'error_message'    => wp_kses_post( $error_message ),
-				'validated_value'  => wp_kses_post( $validated_options[ $setting ] ),
+				'validated_value'  => wp_kses_post( $validated_value ),
 				'ffmpeg_exists'    => esc_html( $validated_options['ffmpeg_exists'] ),
 				'encode_string'    => trim( implode( ' ', $encode_array ) ),
 				'app_path'         => esc_attr( $validated_options['app_path'] ),
@@ -356,8 +365,10 @@ add_action( 'wp_ajax_kgvid_save_settings', 'kgvid_ajax_save_settings' );
 
 function kgvid_ajax_save_html5_thumb() {
 
-	$thumb_url = false;
-	$uploads   = wp_upload_dir();
+	$thumb_info = array(
+		'thumb_id'  => false,
+		'thumb_url' => false,
+	);
 
 	if ( current_user_can( 'make_video_thumbnails' ) ) {
 
@@ -408,18 +419,17 @@ function kgvid_ajax_save_html5_thumb() {
 			$editor->set_quality( 90 );
 			$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
 			wp_delete_file( $tmp_posterpath ); // delete png
-			if ( $total > 1 ) {
-				$post_name  = get_the_title( $post_id );
-				$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
-			}
+
+			$post_name  = get_the_title( $post_id );
+			$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
+
 		}
 
 		kgvid_schedule_cleanup_generated_files( 'thumbs' );
 
 	}
 
-	echo esc_url( $thumb_url );
-	die();
+	wp_send_json( $thumb_info );
 }
 add_action( 'wp_ajax_kgvid_save_html5_thumb', 'kgvid_ajax_save_html5_thumb' );
 
@@ -451,8 +461,7 @@ function kgvid_ajax_save_thumb() {
 
 	}
 
-	echo esc_html( $thumb_info['thumb_id'] );
-	die();
+	wp_send_json( $thumb_info );
 }
 add_action( 'wp_ajax_kgvid_save_thumb', 'kgvid_ajax_save_thumb' );
 
