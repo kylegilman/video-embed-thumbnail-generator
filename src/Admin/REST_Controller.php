@@ -9,18 +9,28 @@
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 
-namespace Videopack\admin;
+namespace Videopack\Admin;
 
-class Videopack_REST extends \WP_REST_Controller {
+class REST_Controller extends \WP_REST_Controller {
 
 	protected $namespace;
+	protected $plugin_options;
+	protected $video_player;
 	protected $options;
 	protected $uploads;
 
 	public function __construct() {
-		$this->namespace = 'videopack/v1';
-		$this->options   = kgvid_get_options();
-		$this->uploads   = wp_upload_dir();
+		$this->namespace      = 'videopack/v1';
+		$this->plugin_options = Options::get_instance();
+		$this->video_player   = new \Videopack\Frontend\Video_Player();
+		$this->options        = $this->plugin_options->get_options();
+		$this->uploads        = wp_upload_dir();
+	}
+
+
+	public function add_rest_routes() {
+		$this->register_routes();
+		$this->add_data_to_rest_response();
 	}
 
 	public function register_routes() {
@@ -385,7 +395,7 @@ class Videopack_REST extends \WP_REST_Controller {
 	}
 
 	public function defaults() {
-		$defaults = kgvid_default_options_fn();
+		$defaults = $this->plugin_options->get_default();
 		return $defaults;
 	}
 
@@ -423,8 +433,9 @@ class Videopack_REST extends \WP_REST_Controller {
 
 		$params   = $request->get_params();
 		$response = array();
+		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails();
 
-		$response = kgvid_make_thumbs(
+		$response = $ffmpeg_thumbnails->make(
 			$params['attachmentID'],
 			$params['movieurl'],
 			$params['numberofthumbs'],
@@ -440,14 +451,15 @@ class Videopack_REST extends \WP_REST_Controller {
 
 	public function thumb_save( \WP_REST_Request $request ) {
 
-		$params = $request->get_params();
+		$params     = $request->get_params();
+		$thumbnails = new Thumbnails\Thumbnails();
 
 		if ( is_numeric( $params['postId'] ) ) {
 			$post_name = get_the_title( $params['postId'] );
 		} else {
 			$post_name = str_replace( 'singleurl_', '', $params['postId'] );
 		}
-		$response = kgvid_save_thumb(
+		$response = $thumbnails->save(
 			$params['postId'],
 			$post_name,
 			$params['thumburl'],
@@ -494,7 +506,8 @@ class Videopack_REST extends \WP_REST_Controller {
 	public function video_gallery( \WP_REST_Request $request ) {
 
 		$response   = array();
-		$query_atts = kgvid_shortcode_atts( $request->get_params() );
+		$shortcode  = new \Videopack\Frontend\Shortcode();
+		$query_atts = $shortcode->atts( $request->get_params() );
 
 		$args = array(
 			'post_type'      => 'attachment',
@@ -545,7 +558,7 @@ class Videopack_REST extends \WP_REST_Controller {
 					$post_data                         = wp_prepare_attachment_for_js( $post );
 					$post_data['image']['id']          = get_post_thumbnail_id( $post );
 					$post_data['image']['srcset']      = wp_get_attachment_image_srcset( $post_data['image']['id'] );
-					$post_data['videopack']['sources'] = kgvid_prepare_sources( wp_get_attachment_url( $post->ID ), $post->ID );
+					$post_data['videopack']['sources'] = $this->video_player->prepare_sources( wp_get_attachment_url( $post->ID ), $post->ID );
 					return $post_data;
 				},
 				$attachments->posts
@@ -567,7 +580,7 @@ class Videopack_REST extends \WP_REST_Controller {
 			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
 		$post_id     = $request->get_param( 'id' );
-		$source_info = kgvid_prepare_sources( $url, $post_id );
+		$source_info = $this->video_player->prepare_sources( $url, $post_id );
 
 		return $source_info;
 	}
@@ -689,7 +702,7 @@ class Videopack_REST extends \WP_REST_Controller {
 		$url = wp_get_attachment_url( $post['id'] );
 		return array(
 			'srcset'  => wp_get_attachment_image_srcset( $post['id'] ),
-			'sources' => kgvid_prepare_sources( $url, $post['id'] ),
+			'sources' => $this->video_player->prepare_sources( $url, $post['id'] ),
 		);
 	}
 
@@ -705,5 +718,24 @@ class Videopack_REST extends \WP_REST_Controller {
 				'schema'          => null,
 			)
 		);
+	}
+
+	public function log_detailed_rest_errors( $response, $handler, $request ) {
+		if ( is_wp_error( $response ) && $response->has_errors() ) {
+			$error_data = $response->get_error_data();
+			if ( isset( $error_data['status'] ) && $error_data['status'] === 400 && $response->get_error_code() === 'rest_additional_properties_forbidden' ) {
+				error_log( 'REST Request Error:' );
+				error_log( 'Path: ' . $request->get_route() );
+				error_log( 'Method: ' . $request->get_method() );
+				error_log( 'Parameters: ' . json_encode( $request->get_params() ) );
+				error_log( 'Error Message: ' . $response->get_error_message() );
+			}
+		}
+		return $response;
+	}
+	//add_action( 'rest_request_after_callbacks', 'log_detailed_rest_errors', 10, 3 );
+
+	public function log_all_errors_to_debug_log( $code, $message, $data, $wp_error ) {
+		error_log( $code . ': ' . $message );
 	}
 }
