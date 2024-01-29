@@ -128,7 +128,7 @@ function kgvid_SetVideo(id) { // for galleries
 			&& jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).html() != "1"
 		)
 	) {
-		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_prev kgvid-icons kgvid-icon-left-arrow" title="' + kgvidL10n_frontend.previous + '"></button>';
+		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_prev kgvid-icons kgvid-icon-left-arrow" title="' + videopack_l10n.previous + '"></button>';
 	}
 	if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).next( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).length > 0
 		|| (
@@ -136,7 +136,7 @@ function kgvid_SetVideo(id) { // for galleries
 			&& jQuery( '#' + gallery_id + ' .kgvid_gallery_page_number' ).last().html() > jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).html()
 		)
 	) {
-		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_next kgvid-icons kgvid-icon-right-arrow" title="' + kgvidL10n_frontend.next + '"></button>';
+		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_next kgvid-icons kgvid-icon-right-arrow" title="' + videopack_l10n.next + '"></button>';
 	}
 
 	jQuery( '#kgvid-videomodal-container' ).prepend( nav_code );
@@ -1086,11 +1086,11 @@ function kgvid_video_counter(id, event) {
 				}
 
 				jQuery( '#video_' + id + '_div' ).data( "played", "played" );
-				kgvid_send_google_analytics( kgvidL10n_frontend.playstart, video_vars.title );
+				kgvid_send_google_analytics( videopack_l10n.playstart, video_vars.title );
 
 			} else { // Resume
 
-				kgvid_send_google_analytics( kgvidL10n_frontend.resume, video_vars.title );
+				kgvid_send_google_analytics( videopack_l10n.resume, video_vars.title );
 
 			}
 
@@ -1102,7 +1102,7 @@ function kgvid_video_counter(id, event) {
 				changed = true;
 			}
 
-			kgvid_send_google_analytics( kgvidL10n_frontend[event], video_vars.title );
+			kgvid_send_google_analytics( videopack_l10n[event], video_vars.title );
 
 		}
 
@@ -1125,10 +1125,10 @@ function kgvid_video_counter(id, event) {
 			)
 		) {
 			jQuery.post(
-				kgvidL10n_frontend.ajaxurl,
+				videopack_l10n.ajaxurl,
 				{
 					action: 'kgvid_count_play',
-					security: kgvidL10n_frontend.ajax_nonce,
+					security: videopack_l10n.ajax_nonce,
 					post_id: video_vars.attachment_id,
 					video_event: event,
 					show_views: jQuery( '#video_' + id + '_viewcount' ).length
@@ -1176,10 +1176,10 @@ function kgvid_switch_gallery_page(obj, post_action) {
 	jQuery( '#' + gallery_id ).fadeTo( "fast", 0.5 );
 
 	jQuery.post(
-		kgvidL10n_frontend.ajaxurl,
+		videopack_l10n.ajaxurl,
 		{
 			action: 'kgvid_switch_gallery_page',
-			security: kgvidL10n_frontend.ajax_nonce,
+			security: videopack_l10n.ajax_nonce,
 			page: page,
 			query_atts: query_atts,
 			last_video_id: last_id

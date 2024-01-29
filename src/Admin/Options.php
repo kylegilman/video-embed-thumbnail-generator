@@ -1,13 +1,13 @@
 <?php
 
-namespace Videopack\admin;
+namespace Videopack\Admin;
 
-class Videopack_Options {
+class Options {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Videopack_Options
+	 * @var Videopack
 	 */
 	private static $instance = null;
 
@@ -28,97 +28,14 @@ class Videopack_Options {
 	/**
 	 * A private constructor; prevents direct creation of object.
 	 */
-	private function __construct() {
-		$this->init_options();
-	}
+	private function __construct() { }
 
-	/**
-	 * Initialize the plugin options.
-	 */
-	private function init_options() {
-		$options               = get_option( 'videopack_options' );
-		$this->default_options = $this->set_default_options();
-		$options               = $this->recursive_intersect_key( $options, $this->default_options );
-		$options               = array_merge( $this->default_options, $options );
-		$this->options         = $options;
-	}
-
-	public function register_setting() {
-
-		$schema                 = $this->settings_schema( $this->default_options );
-		$schema['encode_array'] = array(
-			'type'    => 'array',
-			'items'   => array(
-				'type' => 'string',
-			),
-			'default' => array(),
-		);
-
-		register_setting(
-			'videopack_options',
-			'videopack_options',
-			array(
-				'type'              => 'object',
-				'sanitize_callback' => array( $this, 'validate_options' ),
-				'show_in_rest'      => array(
-					'schema' => array(
-						'type'       => 'object',
-						'properties' => $schema,
-					),
-				),
-			)
-		);
-	}
-
-	protected function settings_schema( array $options ) {
-
-		$schema = array();
-		foreach ( $options as $option => $value ) {
-			$att_type = 'string';
-			if ( $value === 'on' ) {
-				$value = true;
-			}
-			if ( $value === 'true' || $value === 'false' ) {
-				$value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
-			}
-			if ( is_bool( $value )
-				|| $option === 'ffmpeg_exists'
-			) {
-				$att_type = array( 'boolean', 'string' );
-			}
-			if ( is_numeric( $value ) ) {
-				if ( is_string( $value ) ) {
-					if ( filter_var( $value, FILTER_VALIDATE_INT )
-						|| $value === '0'
-					) {
-						$value = intval( $value );
-					} else {
-						$value = floatval( $value );
-					}
-				}
-				$att_type = array( 'number', 'string' );
-			}
-			if ( is_array( $value ) && ! empty( $value ) ) {
-				$schema[ $option ] = array(
-					'type'       => 'object',
-					'properties' => kgvid_settings_schema( $value ),
-				);
-			} else {
-				$schema[ $option ] = array(
-					'type'    => $att_type,
-					'default' => $value,
-				);
-			}
-		}
-		return $schema;
-	}
-
-	/**
+		/**
 	 * Returns default options.
 	 *
 	 * @return array
 	 */
-	protected function set_default_options() {
+	public function get_default() {
 
 		$upload_capable      = $this->check_if_capable( 'upload_files' );
 		$edit_others_capable = $this->check_if_capable( 'edit_others_posts' );
@@ -259,12 +176,108 @@ class Videopack_Options {
 		return apply_filters( 'videopack_default_options', $options );
 	}
 
+	public function load_options() {
+
+		$saved_options         = get_option( 'videopack_options', array() );
+		$this->default_options = $this->get_default();
+
+		if ( ! $saved_options ) { // this is the first time the plugin has run, or they're reset to defaults
+			$options = $this->init_options();
+		} else {
+			$options = $this->merge_options_with_defaults( $saved_options, $this->default_options );
+		}
+
+		if ( $options !== $saved_options ) {
+			update_option( 'videopack_options', $options );
+		}
+
+		$this->options = $options;
+	}
+
+	/**
+	 * Initialize the plugin options.
+	 */
+	private function init_options() {
+
+		$old_options = get_option( 'kgvid_video_embed_options', array() );
+
+		if ( $old_options ) {
+			delete_option( 'kgvid_video_embed_options' );
+		}
+
+		$this->set_capabilities( $this->default_options['capabilities'] );
+
+		return $this->merge_options_with_defaults( $old_options, $this->default_options );
+	}
+
+	public function register_videopack_options() {
+
+		register_setting(
+			'videopack_options',
+			'videopack_options',
+			array(
+				'type'              => 'object',
+				'sanitize_callback' => array( $this, 'validate_options' ),
+				'show_in_rest'      => array(
+					'schema' => array(
+						'type'       => 'object',
+						'properties' => $this->settings_schema( $this->default_options ),
+					),
+				),
+			)
+		);
+	}
+
+	protected function settings_schema( array $options ) {
+
+		$schema = array();
+
+		foreach ( $options as $option => $value ) {
+			$att_type = 'string';
+			if ( $value === 'on' ) {
+				$value = true;
+			}
+			if ( $value === 'true' || $value === 'false' ) {
+				$value = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+			}
+			if ( is_bool( $value )
+				|| $option === 'ffmpeg_exists'
+			) {
+				$att_type = array( 'boolean', 'string' );
+			}
+			if ( is_numeric( $value ) ) {
+				if ( is_string( $value ) ) {
+					if ( filter_var( $value, FILTER_VALIDATE_INT )
+						|| $value === '0'
+					) {
+						$value = intval( $value );
+					} else {
+						$value = floatval( $value );
+					}
+				}
+				$att_type = array( 'number', 'string' );
+			}
+			if ( is_array( $value ) && ! empty( $value ) ) {
+				$schema[ $option ] = array(
+					'type'       => 'object',
+					'properties' => $this->settings_schema( $value ),
+				);
+			} else {
+				$schema[ $option ] = array(
+					'type'    => $att_type,
+					'default' => $value,
+				);
+			}
+		}
+		return $schema;
+	}
+
 	public function save_default_options() {
 		// add default values for options
 
-		if ( $this->options === 'notchecked' ) {
+		if ( $this->options['ffmpeg_exists'] === 'notchecked' ) {
 
-			$ffmpeg_check = kgvid_check_ffmpeg_exists( $options, false );
+			$ffmpeg_check = $this->check_ffmpeg_exists( $this->options, false );
 			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
 				$options['ffmpeg_exists'] = true;
 				$options['app_path']      = $ffmpeg_check['app_path'];
@@ -284,6 +297,9 @@ class Videopack_Options {
 	 * @return array
 	 */
 	public function get_options() {
+		if ( ! $this->options ) {
+			$this->load_options();
+		}
 		return $this->options;
 	}
 
@@ -371,10 +387,10 @@ class Videopack_Options {
 	public function validate_options( $input ) {
 		// validate & sanitize input from settings API
 
-		$input = kgvid_sanitize_text_field( $input ); // recursively sanitizes all the settings
+		$input = \Videopack\Common\Sanitize::text_field( $input ); // recursively sanitizes all the settings
 
 		if ( $input['app_path'] != $this->options['app_path'] ) {
-			$input = kgvid_validate_ffmpeg_settings( $input );
+			$input = $this->validate_ffmpeg_settings( $input );
 		} else {
 			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'];
 		}
@@ -400,11 +416,11 @@ class Videopack_Options {
 		}
 
 		if ( array_key_exists( 'capabilities', $input ) && is_array( $input['capabilities'] ) && $input['capabilities'] !== $this->options['capabilities'] ) {
-			kgvid_set_capabilities( $input['capabilities'] );
+			$this->set_capabilities( $input['capabilities'] );
 		}
 
 		if ( ! array_key_exists( 'transient_cache', $input ) && $this->options['transient_cache'] == true ) {
-			kgvid_delete_transients();
+			(new Cleanup)->delete_transients();
 		} //if user is turning off transient cache option
 
 		if ( array_key_exists( 'auto_thumb_number', $input ) ) {
@@ -454,6 +470,103 @@ class Videopack_Options {
 		return $input;
 	}
 
+	public function validate_ffmpeg_settings( $input ) {
+
+		$ffmpeg_info = $this->check_ffmpeg_exists( $input, false );
+		if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
+			$input['ffmpeg_exists'] = true;
+		}
+		$input['app_path'] = $ffmpeg_info['app_path'];
+
+		if ( $ffmpeg_info['proc_open_enabled'] == false ) {
+			if ( is_admin() ) {
+				add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', esc_html__( 'proc_open is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable proc_open.', 'video-embed-thumbnail-generator' ), 'updated' );
+			}
+			$input['ffmpeg_exists'] = 'notinstalled';
+		} elseif ( $ffmpeg_info['ffmpeg_exists'] === false ) {
+
+			$textarea = '';
+			if ( count( $ffmpeg_info['output'] ) > 2 ) {
+				$textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">' . esc_textarea( implode( "\n", $ffmpeg_info['output'] ) ) . '</textarea>';
+			}
+			/* %s is the path to the application. */
+			if ( is_admin() ) {
+				add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', sprintf( esc_html__( 'FFmpeg is not executing correctly at %s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without FFmpeg', 'video-embed-thumbnail-generator' ), esc_html( $input['app_path'] ) ) . '<br /><br />' . esc_html__( 'Error message:', 'video-embed-thumbnail-generator' ) . ' ' . esc_textarea( implode( ' ', array_slice( $ffmpeg_info['output'], -2, 2 ) ) ) . $textarea, 'updated' );
+			}
+			$input['ffmpeg_exists'] = 'notinstalled';
+		}
+
+		return $input;
+	}
+
+	public function check_ffmpeg_exists( $options, $save ) {
+
+		$proc_open_enabled = false;
+		$ffmpeg_exists     = false;
+		$output            = array();
+		$function          = '';
+		$uploads           = wp_upload_dir();
+		$test_path         = rtrim( $options['app_path'], '/' );
+		$ffmpeg_thumbnails = new \Videopack\Admin\Thumbnails\FFmpeg_Thumbnails();
+
+		if ( function_exists( 'proc_open' ) ) {
+
+			$proc_open_enabled = true;
+
+			$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
+				plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
+				$uploads['path'] . '/ffmpeg_exists_test.jpg',
+				$test_path
+			);
+
+			if ( ! file_exists( $uploads['path'] . '/ffmpeg_exists_test.jpg' )
+				&& substr( $test_path, -6 ) == 'ffmpeg'
+			) { // if FFmpeg has not executed successfully
+
+				$test_path = substr( $test_path, 0, -7 );
+
+				$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
+					plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
+					$uploads['path'] . '/ffmpeg_exists_test.jpg',
+					$test_path
+				);
+
+			}
+
+			if ( file_exists( $uploads['path'] . '/ffmpeg_exists_test.jpg' ) ) { // FFMEG has executed successfully
+				$ffmpeg_exists = true;
+				wp_delete_file( $uploads['path'] . '/ffmpeg_exists_test.jpg' );
+				$options['app_path'] = $test_path;
+			}
+
+			$output = explode( "\n", $ffmpeg_test );
+
+		}
+
+		if ( $save ) {
+
+			if ( $ffmpeg_exists === true ) {
+				$options['ffmpeg_exists'] = true;
+			} else {
+				$options['ffmpeg_exists']      = 'notinstalled';
+				$options['browser_thumbnails'] = true; // if FFmpeg isn't around, this should be enabled
+			}
+
+			update_option( 'kgvid_video_embed_options', $options );
+
+		}
+
+		$arr = array(
+			'proc_open_enabled' => $proc_open_enabled,
+			'ffmpeg_exists'     => $ffmpeg_exists,
+			'output'            => $output,
+			'function'          => $function,
+			'app_path'          => $options['app_path'],
+		);
+
+		return $arr;
+	}
+
 	protected function check_if_capable( $capability ) {
 
 		$wp_roles = wp_roles();
@@ -476,24 +589,35 @@ class Videopack_Options {
 		return $capable;
 	}
 
-	protected function set_capabilities( $capabilities ) {
+	public function set_capabilities( array $capabilities ) {
 
 		$wp_roles = wp_roles();
 
-		if ( is_object( $wp_roles ) && property_exists( $wp_roles, 'roles' ) ) {
+		if ( is_object( $wp_roles )
+			&& property_exists( $wp_roles, 'roles' )
+		) {
 
 			foreach ( $this->default_options['capabilities'] as $default_capability => $default_enabled ) {
-				if ( is_array( $capabilities ) && ! array_key_exists( $default_capability, $capabilities ) ) {
+				if ( is_array( $capabilities )
+					&& ! array_key_exists( $default_capability, $capabilities )
+				) {
 					$capabilities[ $default_capability ] = array();
 				}
 			}
 
 			foreach ( $capabilities as $capability => $enabled_roles ) {
 				foreach ( $wp_roles->roles as $role => $role_info ) { // check all roles
-					if ( is_array( $role_info['capabilities'] ) && ! array_key_exists( $capability, $role_info['capabilities'] ) && array_key_exists( $role, $enabled_roles ) && $enabled_roles[ $role ] == true ) {
+					if ( is_array( $role_info['capabilities'] )
+						&& ! array_key_exists( $capability, $role_info['capabilities'] )
+						&& array_key_exists( $role, $enabled_roles )
+						&& $enabled_roles[ $role ] == true
+					) {
 						$wp_roles->add_cap( $role, $capability );
 					}
-					if ( is_array( $role_info['capabilities'] ) && array_key_exists( $capability, $role_info['capabilities'] ) && ! array_key_exists( $role, $enabled_roles ) ) {
+					if ( is_array( $role_info['capabilities'] )
+						&& array_key_exists( $capability, $role_info['capabilities'] )
+						&& ! array_key_exists( $role, $enabled_roles )
+					) {
 						$wp_roles->remove_cap( $role, $capability );
 					}
 				}
@@ -501,36 +625,66 @@ class Videopack_Options {
 		}//end if
 	}
 
-	/**
-	 * Recursively intersects keys of two arrays.
-	 *
-	 * @param array $options_array Array to be filtered.
-	 * @param array $default_array Default array with keys to keep.
-	 * @return array Filtered array.
-	 */
-	protected function recursive_intersect_key( $options_array, $default_array ) {
+	public function videopack_get_capable_users( string $capability ) {
 
-		$result = array();
+		$authorized_users = array();
 
-		foreach ( $default_array as $key => $value ) {
-			if ( array_key_exists( $key, $options_array ) ) {
-				if ( is_array( $options_array[ $key ] ) && is_array( $value ) ) {
-					// Recursive call if both elements are arrays
-					$result[ $key ] = $this->recursive_intersect_key( $options_array[ $key ], $value );
-				} else {
-					// Direct assignment if not arrays
-					$result[ $key ] = $options_array[ $key ];
+		if ( is_array( $this->options['capabilities'] )
+			&& array_key_exists( $capability, $this->options['capabilities'] )
+		) {
+			$users = get_users(
+				array(
+					'role__in' => array_keys( $this->options['capabilities'][ $capability ] ),
+				)
+			);
+			if ( $users ) {
+				foreach ( $users as $user ) {
+					$authorized_users[ $user->user_login ] = $user->ID;
 				}
 			}
 		}
+		return $authorized_users;
+	}
 
-		return $result;
+	public function merge_options_with_defaults( array $options, array $default_options ) {
+
+		foreach ( $default_options as $key => $value ) {
+			// Check if the key exists in $options. If not, set it to the default value
+			if ( ! array_key_exists( $key, $options ) ) {
+				$options[ $key ] = $value;
+			} elseif ( is_array( $value ) && ( ! isset( $options[ $key ] ) || is_array( $options[ $key ] ) ) ) {
+				if ( ! isset( $options[ $key ] ) ) {
+					$options[ $key ] = array();
+				}
+				$options[ $key ] = $this->merge_options_with_defaults( $options[ $key ], $value );
+			}
+			// If the key exists in $options and it's not an array, retain the existing value in $options
+		}
+		return $options;
+	}
+
+	public function add_settings_page() {
+		$page_hook_suffix = add_options_page(
+			esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
+			esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
+			'manage_options',
+			'video_embed_thumbnail_generator_settings',
+			'kgvid_settings_page'
+		);
+		add_action( 'admin_print_scripts-' . $page_hook_suffix, 'kgvid_options_assets' );
+	}
+
+	public function output_settings_page() {
+		wp_enqueue_media();
+		wp_enqueue_global_styles();
+
+		echo '<div id="videopack-settings-root"></div>';
 	}
 
 	/**
 	 * Ensures only one instance of the class is loaded or can be loaded.
 	 *
-	 * @return Videopack_Options
+	 * @return Options
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -538,5 +692,4 @@ class Videopack_Options {
 		}
 		return self::$instance;
 	}
-
 }

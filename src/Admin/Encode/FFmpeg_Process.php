@@ -1,6 +1,6 @@
 <?php
 
-namespace Videopack\admin\encode;
+namespace Videopack\Admin\Encode;
 
 use Symfony\Component\Process\Process;
 

@@ -59,10 +59,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	if ( ! defined( 'VIDEOPACK_BASENAME' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
-		define( 'VIDEOPACK_VERSION', '5.0' );
 	}
 	if ( ! defined( 'VIDEOPACK_VERSION' ) ) {
-		define( 'VIDEOPACK_VERSION', '4.9.5' );
+		define( 'VIDEOPACK_VERSION', '5.0' );
 	}
 
 	$required_files = array(
@@ -113,37 +112,79 @@ if ( ! defined( 'ABSPATH' ) ) {
 	}
 }
 
-function kgvid_video_embed_activation_hook( $network_wide ) {
+function videopack_fs_loaded() {
+	// add Freemius customizations after Freemius is loaded
 
-	if ( is_multisite() && $network_wide ) { // if activated on the entire network.
+	if ( function_exists( 'videopack_fs' ) ) {
 
-		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
+		videopack_fs()->add_filter( 'connect_message_on_update', 'kgvid_fs_custom_connect_message_on_update', 10, 6 );
 
-		if ( ! is_array( $network_options ) ) {
+		videopack_fs()->override_i18n(
+			array(
+				'yee-haw' => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
+				'woot'    => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
+			)
+		);
 
-			$network_options = kgvid_default_network_options();
-
-			$ffmpeg_check = kgvid_check_ffmpeg_exists( $network_options, false );
-			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
-				$network_options['ffmpeg_exists'] = true;
-				$network_options['app_path']      = $ffmpeg_check['app_path'];
-			} else {
-				$network_options['ffmpeg_exists'] = false; }
-
-			update_site_option( 'kgvid_video_embed_network_options', $network_options );
-
-		}// if network options haven't been set already
-
-	} else { // Running on a single blog.
-
-		$options = kgvid_register_default_options_fn();
-		kgvid_set_capabilities( $options['capabilities'] );
+		videopack_fs()->add_action( 'after_uninstall', 'kgvid_uninstall_plugin' ); // add uninstall logic
 
 	}
 }
-register_activation_hook( __FILE__, 'kgvid_video_embed_activation_hook' );
+add_action( 'videopack_fs_loaded', 'videopack_fs_loaded' );
 
-function kgvid_cleanup_plugin() {
+if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
+	// Create a helper function for easy SDK access.
+	function videopack_fs() {
+		global $videopack_fs;
+
+		if ( ! isset( $videopack_fs ) ) {
+			// Activate multisite network integration.
+			if ( ! defined( 'WP_FS__PRODUCT_7761_MULTISITE' ) ) {
+				define( 'WP_FS__PRODUCT_7761_MULTISITE', true );
+			}
+
+			// Include Freemius SDK.
+			require_once dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.php';
+
+			$init_options = array(
+				'id'             => '7761',
+				'slug'           => 'video-embed-thumbnail-generator',
+				'type'           => 'plugin',
+				'public_key'     => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
+				'is_premium'     => false,
+				'has_addons'     => true,
+				'has_paid_plans' => false,
+				'menu'           => array(
+					'slug'    => 'video_embed_thumbnail_generator_settings',
+					'contact' => false,
+					'support' => false,
+					'network' => true,
+					'parent'  => array(
+						'slug' => 'options-general.php',
+					),
+				),
+			);
+
+			if ( fs_is_network_admin() ) {
+				$init_options['navigation']     = 'menu';
+				$init_options['menu']['parent'] = array(
+					'slug' => 'settings.php',
+				);
+			}
+
+			$videopack_fs = fs_dynamic_init( $init_options );
+		}
+
+		return $videopack_fs;
+	}
+
+	// Init Freemius.
+	videopack_fs();
+	// Signal that SDK was initiated.
+	do_action( 'videopack_fs_loaded' );
+}
+
+function videopack_cleanup_plugin() {
 
 	$options = kgvid_default_options_fn();
 
@@ -169,7 +210,7 @@ function kgvid_cleanup_plugin() {
 	}
 }
 
-function kgvid_deactivate_plugin( $network_wide ) {
+function videopack_deactivate_plugin( $network_wide ) {
 
 	if ( is_multisite() && $network_wide ) {
 
@@ -180,35 +221,35 @@ function kgvid_deactivate_plugin( $network_wide ) {
 			foreach ( $sites as $site ) {
 
 				switch_to_blog( $site->blog_id );
-				kgvid_cleanup_plugin();
+				videopack_cleanup_plugin();
 				restore_current_blog();
 
 			} // end loop through sites.
 		} // end if there are sites.
 	} else { // if not network activated.
-		kgvid_cleanup_plugin();
+		videopack_cleanup_plugin();
 	}
 }
-register_deactivation_hook( __FILE__, 'kgvid_deactivate_plugin' );
+register_deactivation_hook( __FILE__, 'videopack_deactivate_plugin' );
 
-function kgvid_register_uninstall_hook() {
+function videopack_register_uninstall_hook() {
 
 	if ( ! function_exists( 'videopack_fs' ) ) {
 
-		register_uninstall_hook( __FILE__, 'kgvid_uninstall_plugin' ); // register WP uninstall instead of Freemius uninstall hook.
+		register_uninstall_hook( __FILE__, 'videopack_uninstall_plugin' ); // register WP uninstall instead of Freemius uninstall hook.
 
 	}
 }
-add_action( 'admin_init', 'kgvid_register_uninstall_hook' );
+add_action( 'admin_init', 'videopack_register_uninstall_hook' );
 
-function kgvid_uninstall_plugin() {
+function videopack_uninstall_plugin() {
 
 	if ( ! current_user_can( 'activate_plugins' ) ) {
 		return;
 	}
 
 	if ( ! is_multisite() ) {
-		delete_option( 'kgvid_video_embed_options' );
+		delete_option( 'videopack_options' );
 		delete_option( 'kgvid_video_embed_queue' );
 
 		global $wpdb;
@@ -225,9 +266,25 @@ function kgvid_uninstall_plugin() {
 		if ( is_array( $sites ) ) {
 
 			foreach ( $sites as $site ) {
-				delete_blog_option( $site->blog_id, 'kgvid_video_embed_options' );
+				delete_blog_option( $site->blog_id, 'videopack_options' );
 				delete_blog_option( $site->blog_id, 'kgvid_video_embed_queue' );
 			}
 		}
 	}
 }
+
+/**
+ * Begins execution of the plugin.
+ *
+ * Since everything within the plugin is registered via hooks,
+ * then kicking off the plugin from this point in the file does
+ * not affect the page life cycle.
+ *
+ * @since    1.0.0
+ */
+function run_videopack() {
+
+	$plugin = new Videopack\Videopack();
+	$plugin->run();
+}
+run_videopack();
