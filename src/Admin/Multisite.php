@@ -2,18 +2,18 @@
 
 namespace Videopack\Admin;
 
-use Videopack\Common\Sanitize;
+use Videopack\Common\Validate;
 
 class Multisite {
 
 	protected $default_network_options;
-	protected $plugin_options;
+	protected $options_manager;
 	protected $default_options;
 
-	public function __construct() {
+	public function __construct( $options_manager ) {
+		$this->options_manager         = $options_manager;
+		$this->default_options         = $options_manager->get_default();
 		$this->default_network_options = $this->get_default();
-		$this->plugin_options          = Options::get_instance();
-		$this->default_options         = $this->plugin_options->get_default();
 	}
 
 	public function get_default() {
@@ -56,7 +56,7 @@ class Multisite {
 			if ( ! isset( $network_options['ffmpeg_exists'] )
 				|| $network_options['ffmpeg_exists'] === 'notchecked'
 			) {
-				$ffmpeg_info = $this->plugin_options->check_ffmpeg_exists( $network_options, false );
+				$ffmpeg_info = $this->options_manager->check_ffmpeg_exists( $network_options, false );
 				if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
 					$network_options['ffmpeg_exists'] = true;
 				}
@@ -85,9 +85,9 @@ class Multisite {
 
 		if ( empty( $local_options ) ) {
 
-			$options = $this->plugin_options->get_default();
+			$options = $this->options_manager->get_default();
 			$updated = update_option( 'kgvid_video_embed_options', $options );
-			$this->plugin_options->set_capabilities( $network_options['default_capabilities'] );
+			$this->options_manager->set_capabilities( $network_options['default_capabilities'] );
 
 		}
 	}
@@ -111,8 +111,7 @@ class Multisite {
 		switch_to_blog( $blog_id );
 
 		$network_options = get_site_option( 'kgvid_video_embed_network_options' );
-		$plugin_options  = Options::get_instance();
-		$plugin_options->set_capabilities( $network_options['default_capabilities'] );
+		$this->options_manager->set_capabilities( $network_options['default_capabilities'] );
 
 		restore_current_blog();
 	}
@@ -150,10 +149,10 @@ class Multisite {
 	public function validate_settings( $input ) {
 
 		$options = get_site_option( 'kgvid_video_embed_network_options' );
-		$input   = Sanitize::text_field( $input ); // recursively sanitizes all the settings
+		$input   = Validate::text_field( $input ); // recursively sanitizes all the settings
 
 		if ( $input['app_path'] != $options['app_path'] ) {
-			$input = $this->plugin_options->validate_ffmpeg_settings( $input );
+			$input = $this->options_manager->validate_ffmpeg_settings( $input );
 		} else {
 			$input['ffmpeg_exists'] = $options['ffmpeg_exists'];
 		}
@@ -177,7 +176,7 @@ class Multisite {
 		if ( isset( $_POST['kgvid_settings_security'] )
 			&& isset( $_POST['action'] )
 		) {
-			$nonce = Sanitize::text_field( wp_unslash( $_POST['kgvid_settings_security'] ) );
+			$nonce = Validate::text_field( wp_unslash( $_POST['kgvid_settings_security'] ) );
 			if ( ! isset( $nonce )
 				|| ! wp_verify_nonce( $nonce, 'video-embed-thumbnail-generator-nonce' )
 			) {
@@ -185,7 +184,7 @@ class Multisite {
 			}
 
 			if ( isset( $_POST['action'] ) ) {
-				$action = Sanitize::text_field( wp_unslash( $_POST['action'] ) );
+				$action = Validate::text_field( wp_unslash( $_POST['action'] ) );
 			} else {
 				$action = false;
 			}
@@ -205,7 +204,7 @@ class Multisite {
 					add_settings_error( 'video_embed_thumbnail_generator_settings', 'options-reset', esc_html__( 'Videopack network settings reset to default values.', 'video-embed-thumbnail-generator' ), 'updated' );
 				} else { // save button pressed
 					if ( isset( $_POST['kgvid_video_embed_options'] ) ) {
-						$input = Sanitize::text_field( wp_unslash( $_POST['kgvid_video_embed_options'] ) );
+						$input = Validate::text_field( wp_unslash( $_POST['kgvid_video_embed_options'] ) );
 					}
 					$validated_options = $this->validate_settings( $input );
 					$options_updated   = update_site_option( 'kgvid_video_embed_network_options', $validated_options );

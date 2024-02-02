@@ -6,8 +6,8 @@ class Attachment_Meta {
 
 	protected $options;
 
-	public function __construct() {
-		$this->options = Options::get_instance()->get_options();
+	public function __construct( $options_manager ) {
+		$this->options = $options_manager->get_options();
 	}
 
 	public function get_defaults() {
@@ -59,7 +59,7 @@ class Attachment_Meta {
 	public function get( $post_id ) {
 
 		$kgvid_postmeta = get_post_meta( $post_id, '_kgvid-meta', true );
-		$meta_key_array = $this->get_default();
+		$meta_key_array = $this->get_defaults();
 
 		if ( empty( $kgvid_postmeta ) ) {
 
@@ -112,9 +112,27 @@ class Attachment_Meta {
 			if ( $old_meta_exists ) {
 				$this->save( $post_id, $kgvid_postmeta );
 			}
-		}//end if
+		}
 
 		$kgvid_postmeta = array_merge( $meta_key_array, $kgvid_postmeta ); // make sure all keys are set
+
+		if ( ! $kgvid_postmeta['actualwidth'] || ! $kgvid_postmeta['actualheight'] ) {
+
+			$video_meta = wp_get_attachment_metadata( $post_id );
+			$changed    = false;
+
+			if ( ! $kgvid_postmeta['actualwidth'] && $video_meta['width'] ) {
+				$kgvid_postmeta['actualwidth'] = $video_meta['width'];
+				$changed                       = true;
+			}
+			if ( ! $kgvid_postmeta['actualheight'] && $video_meta['height'] ) {
+				$kgvid_postmeta['actualheight'] = $video_meta['height'];
+				$changed                       = true;
+			}
+			if ( $changed ) {
+				$this->save( $post_id, $kgvid_postmeta );
+			}
+		}
 
 		return apply_filters( 'videopack_attachment_meta', $kgvid_postmeta );
 	}
@@ -167,7 +185,7 @@ class Attachment_Meta {
 		}
 
 		if ( $post_id ) {
-			$sanitized_url = \Videopack\Common\Sanitize::url( $url );
+			$sanitized_url = \Videopack\Common\Validate::sanitize_url( $url );
 			$mime_info     = get_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url['singleurl_id'] . '-mime', true );
 
 			if ( ! empty( $mime_info ) ) {
@@ -238,261 +256,7 @@ class Attachment_Meta {
 				'show_in_rest'  => array(
 					'schema' => array(
 						'type'  => 'object',
-						'properties' => array(
-							'actualheight'        => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'actualwidth'         => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'aspect'              => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'autothumb-error'     => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'completeviews'       => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'downloadlink'        => array(
-								'type' => array(
-									'string',
-									'boolean',
-								),
-							),
-							'duration'            => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'embed'               => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'encode'              => array(
-								'type'                 => 'object',
-								'additionalProperties' => array(
-									'type' => array(
-										'string',
-										'boolean',
-									),
-									'enum' => array(
-										true,
-										'notchecked',
-										true,
-										false,
-									),
-								),
-							),
-							'featured'            => array(
-								'type' => array(
-									'string',
-									'boolean',
-								),
-							),
-							'featuredchanged'     => array(
-								'type' => array(
-									'string',
-									'boolean',
-								),
-							),
-							'forcefirst'          => array(
-								'type' => array(
-									'string',
-									'boolean',
-								),
-							),
-							'gallery_exclude'     => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'gallery_id'          => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'gallery_include'     => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'gallery_order'       => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'gallery_orderby'     => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'gallery_thumb_width' => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'height'              => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'lockaspect'          => array(
-								'type' => array(
-									'string',
-									'boolean',
-								),
-							),
-							'maxheight'   => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'maxwidth'   => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'numberofthumbs'      => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'original_replaced'   => array(
-								'type' => array(
-									'string',
-								),
-							),
-							'pickedformat'        => array(
-								'type' => array(
-									'string',
-								),
-							),
-							'play_25'             => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'play_50'             => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'play_75'             => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'poster'   => array(
-								'type' => array(
-									'string',
-								),
-							),
-							'rotate'              => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'showtitle'           => array(
-								'type' => array(
-									'string',
-									'boolean',
-								),
-							),
-							'starts'              => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'thumbtime'           => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-							'track'               => array(
-								'type' => 'array',
-								'items' => array(
-									'type' => 'object',
-									'properties' => array(
-										'src' => array(
-											'type' => array(
-												'string',
-												'number',
-											),
-										),
-										'kind' => array(
-											'type' => array(
-												'string',
-												'number',
-											),
-										),
-										'default' => array(
-											'type' => array(
-												'string',
-												'boolean',
-											),
-										),
-										'srclang' => array(
-											'type' => array(
-												'string',
-												'number',
-											),
-										),
-										'label' => array(
-											'type' => array(
-												'string',
-												'number',
-											),
-										),
-									),
-								),
-							),
-							'url'   => array(
-								'type' => array(
-									'string',
-								),
-							),
-							'width'               => array(
-								'type' => array(
-									'string',
-									'number',
-								),
-							),
-						),
+						'properties' => $this->schema(),
 					),
 				),
 				'auth_callback' => function () {
@@ -500,5 +264,266 @@ class Attachment_Meta {
 				},
 			)
 		);
+	}
+
+	public function schema() {
+
+		$schema = array(
+			'actualheight'        => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'actualwidth'         => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'aspect'              => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'autothumb-error'     => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'completeviews'       => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'downloadlink'        => array(
+				'type' => array(
+					'string',
+					'boolean',
+				),
+			),
+			'duration'            => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'embed'               => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'encode'              => array(
+				'type'                 => 'object',
+				'additionalProperties' => array(
+					'type' => array(
+						'string',
+						'boolean',
+					),
+					'enum' => array(
+						true,
+						'notchecked',
+						true,
+						false,
+					),
+				),
+			),
+			'featured'            => array(
+				'type' => array(
+					'string',
+					'boolean',
+				),
+			),
+			'featuredchanged'     => array(
+				'type' => array(
+					'string',
+					'boolean',
+				),
+			),
+			'forcefirst'          => array(
+				'type' => array(
+					'string',
+					'boolean',
+				),
+			),
+			'gallery_exclude'     => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'gallery_id'          => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'gallery_include'     => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'gallery_order'       => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'gallery_orderby'     => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'gallery_thumb_width' => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'height'              => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'lockaspect'          => array(
+				'type' => array(
+					'string',
+					'boolean',
+				),
+			),
+			'maxheight'   => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'maxwidth'   => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'numberofthumbs'      => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'original_replaced'   => array(
+				'type' => array(
+					'string',
+				),
+			),
+			'pickedformat'        => array(
+				'type' => array(
+					'string',
+				),
+			),
+			'play_25'             => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'play_50'             => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'play_75'             => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'poster'   => array(
+				'type' => array(
+					'string',
+				),
+			),
+			'rotate'              => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'showtitle'           => array(
+				'type' => array(
+					'string',
+					'boolean',
+				),
+			),
+			'starts'              => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'thumbtime'           => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+			'track'               => array(
+				'type' => 'array',
+				'items' => array(
+					'type' => 'object',
+					'properties' => array(
+						'src' => array(
+							'type' => array(
+								'string',
+								'number',
+							),
+						),
+						'kind' => array(
+							'type' => array(
+								'string',
+								'number',
+							),
+						),
+						'default' => array(
+							'type' => array(
+								'string',
+								'boolean',
+							),
+						),
+						'srclang' => array(
+							'type' => array(
+								'string',
+								'number',
+							),
+						),
+						'label' => array(
+							'type' => array(
+								'string',
+								'number',
+							),
+						),
+					),
+				),
+			),
+			'url'                 => array(
+				'type' => array(
+					'string',
+				),
+			),
+			'width'               => array(
+				'type' => array(
+					'string',
+					'number',
+				),
+			),
+		);
+
+		return apply_filters( 'videopack_post_meta_schema', $schema );
 	}
 }

@@ -14,17 +14,17 @@ namespace Videopack\Admin;
 class REST_Controller extends \WP_REST_Controller {
 
 	protected $namespace;
-	protected $plugin_options;
+	protected $options_manager;
 	protected $video_player;
 	protected $options;
 	protected $uploads;
 
-	public function __construct() {
-		$this->namespace      = 'videopack/v1';
-		$this->plugin_options = Options::get_instance();
-		$this->video_player   = new \Videopack\Frontend\Video_Player();
-		$this->options        = $this->plugin_options->get_options();
-		$this->uploads        = wp_upload_dir();
+	public function __construct( $options_manager ) {
+		$this->namespace       = 'videopack/v1';
+		$this->options_manager = $options_manager;
+		$this->video_player    = new \Videopack\Frontend\Video_Player( $options_manager );
+		$this->options         = $options_manager->get_options();
+		$this->uploads         = wp_upload_dir();
 	}
 
 
@@ -67,10 +67,10 @@ class REST_Controller extends \WP_REST_Controller {
 					'gallery_per_page' => array(
 						'type' => 'number',
 					),
-					'gallery_id'   => array(
+					'gallery_id'       => array(
 						'type' => 'number',
 					),
-					'gallery_include' => array(
+					'gallery_include'  => array(
 						'type' => 'string',
 					),
 				),
@@ -395,7 +395,7 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	public function defaults() {
-		$defaults = $this->plugin_options->get_default();
+		$defaults = $this->options_manager->get_default();
 		return $defaults;
 	}
 

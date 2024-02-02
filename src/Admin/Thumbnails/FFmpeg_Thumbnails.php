@@ -6,8 +6,8 @@ class FFmpeg_Thumbnails {
 
 	protected $options;
 
-	public function __construct() {
-		$this->options = \Videopack\Admin\Options::get_instance()->get_options();
+	public function __construct( $options_manager ) {
+		$this->options = $options_manager->get_options();
 	}
 
 	public function process_thumb(
@@ -76,7 +76,7 @@ class FFmpeg_Thumbnails {
 
 		$uploads         = wp_upload_dir();
 		$attachment_meta = new \Videopack\Admin\Attachment_Meta();
-		$sanitize        = new \Videopack\Common\Sanitize();
+		$sanitize        = new \Videopack\Common\Validate();
 
 		if ( get_post_type( $post_id ) == 'attachment' ) {
 			$moviefilepath = get_attached_file( $post_id );
@@ -93,7 +93,7 @@ class FFmpeg_Thumbnails {
 			);
 
 			if ( empty( $kgvid_postmeta['duration'] ) ) {
-				$movie_info = kgvid_get_video_dimensions( $moviefilepath );
+				$movie_info = \Videopack\Common\Video_Dimensions::get( $moviefilepath );
 				foreach ( $keys as $info => $meta ) {
 					if ( ! empty( $movie_info[ $info ] ) ) {
 						$kgvid_postmeta[ $meta ] = $movie_info[ $info ];
@@ -109,7 +109,7 @@ class FFmpeg_Thumbnails {
 			}
 		} else {
 			$moviefilepath = $sanitize->text_field( str_replace( ' ', '%20', $movieurl ) );
-			$movie_info    = kgvid_get_video_dimensions( $moviefilepath );
+			$movie_info    = \Videopack\Common\Video_Dimensions::get( $moviefilepath );
 		}
 
 		if ( $movie_info['worked'] == true ) { // if FFmpeg was able to open the file
@@ -174,8 +174,8 @@ class FFmpeg_Thumbnails {
 			$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
 			$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
-			$rotate_strings = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
-			$filter_complex = kgvid_filter_complex( $this->options['ffmpeg_thumb_watermark'], $movie_height, true );
+			$rotate_strings = $this->rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
+			$filter_complex = $this->filter_complex( $this->options['ffmpeg_thumb_watermark'], $movie_height, true );
 
 			$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
 			$tmp_thumbnailurl   = str_replace( ' ', '_', $tmp_thumbnailurl );
@@ -220,5 +220,138 @@ class FFmpeg_Thumbnails {
 			);
 			return $arr;
 		} //can't open movie
+	}
+
+	public function rotate_array( $rotate, $width, $height ) {
+
+		$rotate_complex = '';
+
+		if ( $rotate === false ) {
+			$rotate = '';
+		}
+
+		switch ( $rotate ) { // if it's a sideways mobile video
+
+			case 90:
+				if ( empty( $this->options['ffmpeg_watermark']['url'] ) ) {
+					$rotate_array = array(
+						'-vf',
+						'transpose=1,scale=' . $height . ':-1',
+					);
+				} else {
+					$rotate_array   = array();
+					$rotate_complex = 'transpose=1[rotate];[rotate]';
+				}
+
+				$rotate_array[] = '-metadata:s:v:0';
+				$rotate_array[] = 'rotate=0';
+
+				break;
+
+			case 270:
+				if ( empty( $this->options['ffmpeg_watermark']['url'] ) ) {
+					$rotate_array = array(
+						'-vf',
+						'transpose=2',
+					);
+				} else {
+					$rotate_array   = array();
+					$rotate_complex = 'transpose=2[rotate];[rotate]';
+				}
+
+				$rotate_array[] = '-metadata:s:v:0';
+				$rotate_array[] = 'rotate=0';
+
+				break;
+
+			case 180:
+				if ( empty( $this->options['ffmpeg_watermark']['url'] ) ) {
+					$rotate_array = array(
+						'-vf',
+						'hflip,vflip',
+					);
+				} else {
+					$rotate_array   = array();
+					$rotate_complex = 'hflip,vflip[rotate];[rotate]';
+				}
+
+				$rotate_array[] = '-metadata:s:v:0';
+				$rotate_array[] = 'rotate=0';
+
+				break;
+
+			default:
+				$rotate_array   = array();
+				$rotate_complex = '';
+				break;
+		}
+
+		$rotate_strings = array(
+			'rotate'  => $rotate_array,
+			'complex' => $rotate_complex,
+			'width'   => $width,
+			'height'  => $height,
+		);
+
+		return $rotate_strings;
+	}
+
+	public function filter_complex( $ffmpeg_watermark, $movie_height, $thumb = false ) {
+
+		if ( is_array( $ffmpeg_watermark )
+			&& array_key_exists( 'url', $ffmpeg_watermark )
+			&& ! empty( $ffmpeg_watermark['url'] )
+		) {
+
+			$watermark_height = strval( round( intval( $movie_height ) * ( intval( $ffmpeg_watermark['scale'] ) / 100 ) ) );
+
+			if ( $ffmpeg_watermark['align'] === 'right' ) {
+				$watermark_align = 'main_w-overlay_w-';
+			} elseif ( $ffmpeg_watermark['align'] === 'center' ) {
+				$watermark_align = 'main_w/2-overlay_w/2-';
+			} else {
+				$watermark_align = '';
+			} //left justified
+
+			if ( $ffmpeg_watermark['valign'] === 'bottom' ) {
+				$watermark_valign = 'main_h-overlay_h-';
+			} elseif ( $ffmpeg_watermark['valign'] === 'center' ) {
+				$watermark_valign = 'main_h/2-overlay_h/2-';
+			} else {
+				$watermark_valign = '';
+			} //top justified
+
+			if ( \Videopack\Common\Validate::filter_validate_url( $ffmpeg_watermark['url'] ) ) {
+				$watermark_id = false;
+				$watermark_id = ( new \Videopack\Admin\Attachment() )->url_to_id( $ffmpeg_watermark['url'] );
+				if ( $watermark_id ) {
+					$watermark_file = get_attached_file( $watermark_id );
+					if ( file_exists( $watermark_file ) ) {
+						$ffmpeg_watermark['url'] = $watermark_file;
+					}
+				}
+			}
+
+			$watermark_filters = '[1:v]scale=-1:' . $watermark_height . '[watermark];';
+			if ( $thumb ) {
+				$scale_main_video = '[0:v]scale=iw*sar:ih[scaled];';
+			} else {
+				$scale_main_video = '[0:v]scale=-2:' . $movie_height . '[scaled];';
+			}
+			$overlay_watermark = '[scaled][watermark]overlay=' . $watermark_align . 'main_w*' . round( intval( $ffmpeg_watermark['x'] ) / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( intval( $ffmpeg_watermark['y'] ) / 100, 3 );
+
+			$filter_complex['input']  = $ffmpeg_watermark['url'];
+			$filter_complex['filter'] = $watermark_filters . $scale_main_video . $overlay_watermark;
+
+		} else {
+			$filter_complex['input'] = '';
+			if ( $thumb ) {
+				$filter_complex['filter'] = '[0:v]scale=iw*sar:ih';
+			} else {
+				$filter_complex['filter'] = '[0:v]scale=-2:' . $movie_height;
+			}
+		}
+
+		return $filter_complex;
 	}
 }

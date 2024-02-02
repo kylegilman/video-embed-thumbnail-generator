@@ -7,9 +7,10 @@ class Metadata {
 	protected $options;
 	protected $attachment_meta;
 
-	public function __construct() {
-		$this->options         = \Videopack\Admin\Options::get_instance()->get_options();
-		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta();
+	public function __construct( $options_manager ) {
+
+		$this->options         = $options_manager->get_options();
+		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
 	}
 
 	public function get_first_embedded_video( $post ) {

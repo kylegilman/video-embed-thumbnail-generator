@@ -4,10 +4,12 @@ namespace Videopack\Admin;
 
 class Screens {
 
+	protected $options_manager;
 	protected $options;
 
-	public function __construct() {
-		$this->options = Options::get_instance()->get_options();
+	public function __construct( $options_manager ) {
+		$this->options_manager = $options_manager;
+		$this->options = $options_manager->get_options();
 	}
 
 	public function plugin_action_links( $links ) {
@@ -35,6 +37,24 @@ class Screens {
 				wp_kses_post( $newpluginmetadata->upgrade_notice )
 			);
 		}
+	}
+
+	public function add_settings_page() {
+		$page_hook_suffix = add_options_page(
+			esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
+			esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
+			'manage_options',
+			'video_embed_thumbnail_generator_settings',
+			'kgvid_settings_page'
+		);
+		add_action( 'admin_print_scripts-' . $page_hook_suffix, 'kgvid_options_assets' );
+	}
+
+	public function output_settings_page() {
+		wp_enqueue_media();
+		wp_enqueue_global_styles();
+
+		echo '<div id="videopack-settings-root"></div>';
 	}
 
 	public function add_encode_queue_page() {
@@ -68,7 +88,7 @@ class Screens {
 
 		if ( $column_name == 'video_stats' ) {
 
-			$kgvid_postmeta = ( new Attachment_Meta() )->get( $id );
+			$kgvid_postmeta = ( new Attachment_Meta( $this->options_manager ) )->get( $id );
 			if ( is_array( $kgvid_postmeta ) && array_key_exists( 'starts', $kgvid_postmeta ) && intval( $kgvid_postmeta['starts'] ) > 0 ) {
 				/* translators: Start refers to the number of times a video has been started */
 				wp_kses_post( printf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval( $kgvid_postmeta['starts'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( intval( $kgvid_postmeta['starts'] ) ), '</strong>' ) );
@@ -131,16 +151,16 @@ class Screens {
 			&& $this->options['thumb_parent'] === 'post'
 			&& check_admin_referer( 'bulk-media' )
 		) {
-			$media = \Videopack\Common\Sanitize::text_field( wp_unslash( $_GET['media'] ) );
+			$media = \Videopack\Common\Validate::text_field( wp_unslash( $_GET['media'] ) );
 			if ( isset( $_GET['found_post_id'] ) ) {
-				$parent_id = (int) \Videopack\Common\Sanitize::text_field( wp_unslash( $_GET['found_post_id'] ) );
+				$parent_id = (int) \Videopack\Common\Validate::text_field( wp_unslash( $_GET['found_post_id'] ) );
 			} else {
 				$parent_id = 0;
 			}
 
 			foreach ( $media as $post_id ) {
 
-				( new Attachment() )->change_thumbnail_parent( $post_id, $parent_id );
+				( new Attachment( $this->options_manager ) )->change_thumbnail_parent( $post_id, $parent_id );
 
 				if ( $this->options['featured'] == true
 					&& ! has_post_thumbnail( $parent_id )

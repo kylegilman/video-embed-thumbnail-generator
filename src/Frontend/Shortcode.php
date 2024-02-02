@@ -7,9 +7,9 @@ class Shortcode {
 	protected $options;
 	protected $assets;
 
-	public function __construct() {
-		$this->options = \Videopack\Admin\Options::get_instance()->get_options();
-		$this->assets  = new Assets();
+	public function __construct( $options_manager ) {
+		$this->options = $options_manager->get_options();
+		$this->assets  = new Assets( $options_manager );
 	}
 
 	public function add() {
@@ -296,7 +296,7 @@ class Shortcode {
 			}
 		} //if not feed
 
-		$code = wp_kses( $code, ( new \Videopack\Common\Sanitize() )->allowed_html() );
+		$code = wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
 
 		return apply_filters( 'kgvid_shortcode', $code, $query_atts, $content );
 	}

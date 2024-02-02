@@ -30,7 +30,7 @@ class Options {
 	 */
 	private function __construct() { }
 
-		/**
+	/**
 	 * Returns default options.
 	 *
 	 * @return array
@@ -384,10 +384,35 @@ class Options {
 		return apply_filters( 'videopack_video_resolutions', $resolutions );
 	}
 
+	public function get_video_formats() {
+
+		$video_formats = array();
+
+		if ( is_array( $this->options['encode'] ) ) {
+
+			$video_resolutions = $this->get_video_resolutions();
+
+			foreach ( $this->options['encode'] as $codec => $codec_details ) {
+
+				$video_formats[ $codec ] = array();
+
+				foreach ( $codec_details['resolutions'] as $resolution => $enabled ) {
+
+					if ( $enabled ) {
+
+						$video_formats[ $codec ][ $resolution ] = $video_resolutions[ $resolution ];
+					}
+				}
+			}
+		}
+
+		return $video_formats;
+	}
+
 	public function validate_options( $input ) {
 		// validate & sanitize input from settings API
 
-		$input = \Videopack\Common\Sanitize::text_field( $input ); // recursively sanitizes all the settings
+		$input = \Videopack\Common\Validate::text_field( $input ); // recursively sanitizes all the settings
 
 		if ( $input['app_path'] != $this->options['app_path'] ) {
 			$input = $this->validate_ffmpeg_settings( $input );
@@ -661,24 +686,6 @@ class Options {
 			// If the key exists in $options and it's not an array, retain the existing value in $options
 		}
 		return $options;
-	}
-
-	public function add_settings_page() {
-		$page_hook_suffix = add_options_page(
-			esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
-			esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
-			'manage_options',
-			'video_embed_thumbnail_generator_settings',
-			'kgvid_settings_page'
-		);
-		add_action( 'admin_print_scripts-' . $page_hook_suffix, 'kgvid_options_assets' );
-	}
-
-	public function output_settings_page() {
-		wp_enqueue_media();
-		wp_enqueue_global_styles();
-
-		echo '<div id="videopack-settings-root"></div>';
 	}
 
 	/**

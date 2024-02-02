@@ -2,7 +2,7 @@
 
 namespace Videopack\Common;
 
-class Sanitize {
+class Validate {
 
 	public function allowed_html( $scope = 'public' ) {
 
@@ -163,7 +163,7 @@ class Sanitize {
 		return $text_field;
 	}
 
-	protected function filter_validate_url( $uri ) {
+	public static function filter_validate_url( $uri ) {
 		// multibyte compatible check if string is a URL.
 
 		$res = filter_var( $uri, FILTER_VALIDATE_URL );
@@ -192,7 +192,7 @@ class Sanitize {
 		return false;
 	}
 
-	public static function url( $movieurl ) {
+	public static function sanitize_url( $movieurl ) {
 		$sanitized_url = array();
 
 		$decoded_movieurl = rawurldecode( $movieurl );

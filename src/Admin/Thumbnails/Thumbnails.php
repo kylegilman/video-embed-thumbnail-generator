@@ -6,8 +6,8 @@ class Thumbnails {
 
 	protected $options;
 
-	public function __construct() {
-		$this->options = \Videopack\Admin\Options::get_instance()->get_options();
+	public function __construct( $options_manager ) {
+		$this->options = $options_manager->get_options();
 	}
 
 	public function decode_base64_png( $raw_png, $tmp_posterpath ) {
