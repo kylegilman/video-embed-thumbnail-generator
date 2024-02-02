@@ -17,7 +17,7 @@ Makes video thumbnails, allows resolution switching, and embeds responsive self-
 
 This video plugin adds several options to any video uploaded to the WordPress Media Library. If your video can be played natively in your browser, or if you have FFMPEG installed on your server (optional), you can generate thumbnails from your video. Using either the "Generate" or "Randomize" buttons will create a selection to choose from. Click "Insert into Post" and you'll get a shortcode in the post editor that will make a flexible, responsive video player.
 
-If you provide multiple H.264 resolutions, Videopack can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If FFMPEG is installed on your server Videopack can make the videos automatically.
+If you provide multiple H.264 resolutions, Videopack can automatically select the one closest to the size of the player or a resolution of your choice, and provide a button for users to select the resolution manually. If FFMPEG is installed on your server, Videopack can encode the videos automatically.
 
 You can also use Videopack to create a popup video gallery. The shortcode uses options similar to the <a href="https://codex.wordpress.org/Gallery_Shortcode">WordPress image gallery shortcode</a>. In its simplest form it will create a gallery of all videos attached to the post.
 
@@ -105,7 +105,8 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.5 - January XX, 2024 =
+= 4.9.5 - February 3, 2024 =
+* Fixed bug that set the "FFMPEG Exists" option to an invalid value when upgrading to Videopack v4.8. If no settings that triggered a check for FFMPEG were changed in the year since then, FFMPEG would not execute.
 
 = 4.9.4 - January 23, 2024 =
 * Fixed bugs that interfered with Media Library functions that don't involve videos, including image gallery editing.

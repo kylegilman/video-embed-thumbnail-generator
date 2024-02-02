@@ -2812,12 +2812,6 @@ function kgvid_init_plugin() {
 			$options['audio_channels']    = false;
 		}
 
-		if ( version_compare( $options['version'], '4.8', '<' ) ) {
-			$options['version']       = '4.8';
-			$ffmpeg_options           = kgvid_check_ffmpeg_exists( $options, false ); // recheck because so much about executing FFMPEG has changed
-			$options['ffmpeg_exists'] = $ffmpeg_options['ffmpeg_exists'];
-		}
-
 		if ( version_compare( $options['version'], '4.8.3', '<' ) ) {
 			$options['version'] = '4.8.3';
 			if ( wp_next_scheduled( 'kgvid_cleanup_queue', array( 'scheduled' ) ) != false ) {
@@ -2844,6 +2838,13 @@ function kgvid_init_plugin() {
 		if ( version_compare( $options['version'], '4.9.1', '<' ) ) {
 			$options['version']        = '4.9.1';
 			$options['default_insert'] = 'Single Video';
+		}
+
+		if ( version_compare( $options['version'], '4.9.5', '<' ) ) {
+			$options['version'] = '4.9.5';
+			if ( $options['ffmpeg_exists'] === true ) {
+				$options['ffmpeg_exists'] = 'on';
+			}
 		}
 
 		if ( $options['version'] != $default_options['version'] ) {
@@ -3008,7 +3009,11 @@ function kgvid_video_embed_options_validate( $input ) {
 
 function kgvid_cron_check_post_parent_handler( $post_id ) {
 
-	$post               = get_post( $post_id );
+	$post = get_post( $post_id );
+
+	if ( $post === null ) {
+		return;
+	}
 	$video_thumbnail_id = get_post_thumbnail_id( $post_id );
 	$post_thumbnail_id  = get_post_thumbnail_id( $post->post_parent );
 
