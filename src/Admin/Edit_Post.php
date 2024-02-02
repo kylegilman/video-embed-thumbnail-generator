@@ -4,10 +4,13 @@ namespace Videopack\Admin;
 
 class Edit_Posts {
 
+	protected $options_manager;
 	protected $options;
 
-	public function __construct() {
-		$this->options = Options::get_instance()->get_options();
+	public function __construct( $options_manager ) {
+
+		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 	}
 
 	public function modify_media_insert( $html, $attachment_id, $attachment ) {
@@ -16,7 +19,7 @@ class Edit_Posts {
 
 		if ( substr( $mime_type, 0, 5 ) == 'video' ) {
 
-			$kgvid_postmeta = kgvid_get_attachment_meta( $attachment_id );
+			$kgvid_postmeta = ( new Attachment_Meta( $this->options_manager ) )->get( $attachment_id );
 
 			if ( $kgvid_postmeta['embed'] == 'Single Video' ) {
 				$html                        = '';
@@ -47,7 +50,7 @@ class Edit_Posts {
 				}
 
 				$insert_shortcode_atts = apply_filters(
-					'kgvid_insert_shortcode_atts',
+					'videopack_insert_shortcode_atts',
 					array(
 						'width',
 						'height',
@@ -114,7 +117,7 @@ class Edit_Posts {
 
 	public function embedurl_page() {
 
-		( new Assets() )->enqueue_videopack_scripts();
+		( new Assets( $this->options_manager ) )->enqueue_videopack_scripts();
 
 		$checkboxes = kgvid_generate_encode_checkboxes( '', 'singleurl', 'attachment' );
 		$maxheight  = $this->options['height'];
@@ -123,7 +126,6 @@ class Edit_Posts {
 		media_upload_header();
 
 		include __DIR__ . '/partials/embed-url-page.php';
-
 	}
 
 	public function embedurl_handle() {

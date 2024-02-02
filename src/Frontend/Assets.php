@@ -6,9 +6,9 @@ class Assets {
 
 	protected $options;
 
-	public function __construct() {
+	public function __construct( $options_manager ) {
 
-		$this->options = \Videopack\Admin\Options::get_instance()->get_options();
+		$this->options = $options_manager->get_options();
 	}
 
 	public function enqueue_shortcode_scripts() {

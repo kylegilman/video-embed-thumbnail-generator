@@ -7,9 +7,9 @@ class Template {
 	protected $options;
 	protected $metadata;
 
-	public function __construct() {
-		$this->options  = \Videopack\Admin\Options::get_instance()->get_options();
-		$this->metadata = new \Videopack\Frontend\Metadata();
+	public function __construct( $options_manager ) {
+		$this->options  = $options_manager->get_options();
+		$this->metadata = new \Videopack\Frontend\Metadata( $options_manager );
 	}
 
 	public function change_oembed_data( $data, $post, $width, $height ) {

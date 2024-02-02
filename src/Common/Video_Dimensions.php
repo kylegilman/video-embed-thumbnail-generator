@@ -8,8 +8,9 @@ class Video_Dimensions {
 
 	public static function get( $id, $gallery = false ) {
 
-		$options         = \Videopack\Admin\Options::get_instance()->get_options();
-		$attachment_meta = new \Videopack\Admin\Attachment_Meta();
+		$options_manager = \Videopack\Admin\Options::get_instance();
+		$options         = $options_manager->get_options();
+		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
 		$video_meta      = wp_get_attachment_metadata( $id );
 		$kgvid_postmeta  = $attachment_meta->get( $id );
 

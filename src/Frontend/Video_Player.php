@@ -9,8 +9,8 @@ class Video_Player {
 	protected $options;
 	protected $shortcode;
 
-	public function __construct() {
-		$this->options = \Videopack\Admin\Options::get_instance()->get_options();
+	public function __construct( $options_manager ) {
+		$this->options   = $options_manager->get_options();
 		$this->shortcode = new \Videopack\Frontend\Shortcode();
 	}
 
@@ -282,7 +282,7 @@ class Video_Player {
 				$content = get_bloginfo( 'url' ) . $content;
 			}
 			$content     = apply_filters( 'kgvid_filter_url', trim( $content ) );
-			$id_array[0] = ( new \Videopack\Admin\Attachment() )->url_to_id( $content );
+			$id_array[0] = ( new Attachment() )->url_to_id( $content );
 		}
 
 		$original_content = $content;

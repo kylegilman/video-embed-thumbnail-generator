@@ -4,12 +4,15 @@ namespace Videopack\Frontend;
 
 class Gallery {
 
+	protected $options_manager;
 	protected $options;
 	protected $attachment_meta;
 
-	public function __construct() {
-		$this->options         = \Videopack\Admin\Options::get_instance()->get_options();
-		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta();
+	public function __construct( $options_manager ) {
+
+		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
+		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
 	}
 
 	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
@@ -80,7 +83,7 @@ class Gallery {
 					$thumbnail_url    = wp_get_attachment_url( $poster_id );
 					$thumbnail_srcset = wp_get_attachment_image_srcset( $poster_id );
 					if ( intval( $query_atts['gallery_thumb'] ) <= get_option( 'medium_size_h' ) ) {
-						$thumbnail_url = ( new Shortcode() )->get_attachment_medium_url( $poster_id );
+						$thumbnail_url = ( new Shortcode( $this->options_manager ) )->get_attachment_medium_url( $poster_id );
 						//use the "medium" size image if available
 					}
 				}

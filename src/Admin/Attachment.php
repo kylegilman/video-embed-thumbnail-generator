@@ -4,20 +4,24 @@ namespace Videopack\Admin;
 
 class Attachment {
 
+	protected $options_manager;
 	protected $options;
+	protected $video_formats;
 	protected $attachment_meta;
 
-	public function __construct() {
-		$this->options         = Options::get_instance()->get_options();
-		$this->attachment_meta = new Attachment_Meta();
+	public function __construct( $options_manager ) {
+
+		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
+		$this->video_formats   = $options_manager->get_video_formats();
+		$this->attachment_meta = new Attachment_Meta( $options_manager );
 	}
 
 	public function url_to_id( $url ) {
 
 		global $wpdb;
-		$post_id       = false;
-		$video_formats = kgvid_video_formats();
-		$search_url    = $this->set_transient_name( $url );
+		$post_id    = false;
+		$search_url = $this->get_transient_name( $url );
 
 		if ( $this->options['transient_cache'] == true ) {
 			$post_id = get_transient( 'kgvid_' . $search_url );
@@ -39,9 +43,9 @@ class Attachment {
 			);
 
 			if ( ! $post_id && $this->options['ffmpeg_exists'] === true
-				&& $video_formats['fullres']['extension'] !== pathinfo( $url, PATHINFO_EXTENSION )
+				&& $this->video_formats['fullres']['extension'] !== pathinfo( $url, PATHINFO_EXTENSION )
 			) {
-				$search_url = str_replace( pathinfo( $url, PATHINFO_EXTENSION ), $video_formats['fullres']['extension'], $url );
+				$search_url = str_replace( pathinfo( $url, PATHINFO_EXTENSION ), $this->video_formats['fullres']['extension'], $url );
 				$post_id    = (int) $wpdb->get_var(
 					$wpdb->prepare(
 						"SELECT post_id
@@ -72,7 +76,7 @@ class Attachment {
 					$post_id = 'not found'; // don't save a transient value that could evaluate as false
 				}
 
-				set_transient( 'kgvid_' . $search_url, $post_id, MONTH_IN_SECONDS );
+				set_transient( 'videopack_' . $search_url, $post_id, MONTH_IN_SECONDS );
 			}
 		}//end if
 
@@ -312,7 +316,7 @@ class Attachment {
 			}
 		}
 
-		$transient_name = $this->set_transient_name( wp_get_attachment_url( $video_id ) );
+		$transient_name = $this->get_transient_name( wp_get_attachment_url( $video_id ) );
 		delete_transient( 'kgvid_' . $transient_name );
 	}
 
@@ -583,7 +587,7 @@ class Attachment {
 		}
 	}
 
-	public function set_transient_name( $url ) {
+	public function get_transient_name( $url ) {
 
 		$url = str_replace( ' ', '', $url ); // in case a url with spaces got through
 		// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back.
