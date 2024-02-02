@@ -42,11 +42,7 @@
  * License: http://www.gnu.org/licenses/lgpl.html
  * 5) Includes code adapted from Kathy Darling's custom solution for saving thumbnails
  * Website: http://www.kathyisawesome.com/
- * 6) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
- * Website: http://www.amiaud.org/tag/video/
- * 7) Includes Eric Martin's SimpleModal
- * Website: http://www.ericmmartin.com/projects/simplemodal/
- * 8) Includes Dominic's Video.js Resolution Selector
+ * 6) Includes Dominic's Video.js Resolution Selector
  * Website: https://github.com/dominic-p/videojs-resolution-selector
  *
  * =Translators=
