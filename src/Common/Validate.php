@@ -193,26 +193,36 @@ class Validate {
 	}
 
 	public static function sanitize_url( $movieurl ) {
-		$sanitized_url = array();
 
 		$decoded_movieurl = rawurldecode( $movieurl );
 		$parsed_url       = wp_parse_url( $decoded_movieurl, PHP_URL_PATH );
 		$path_info        = pathinfo( $parsed_url );
 
+		// Initialize sanitized URL array with consistent keys
+		$sanitized_url = array(
+			'noextension'  => '',
+			'basename'     => '',
+			'singleurl_id' => '',
+			'movieurl'     => esc_url_raw( $decoded_movieurl ),
+		);
+
 		if ( empty( $path_info['extension'] ) ) {
 			$sanitized_url['noextension'] = $movieurl;
-			$sanitized_url['basename']    = substr( $movieurl, -20 );
-		} else {
-			$no_extension_url   = preg_replace( '/\\.[^.\\s]{3,4}$/', '', $decoded_movieurl );
-			$sanitized_basename = sanitize_file_name( $path_info['basename'] );
-
-			$sanitized_url['noextension'] = $no_extension_url;
-			$sanitized_url['basename']    = str_replace( '.' . $path_info['extension'], '', $sanitized_basename );
+			$sanitized_url['basename'] = substr( $movieurl, -20 );
+			// Early return if no extension is found
+			return self::finalize_sanitized_url( $sanitized_url );
 		}
 
-		$sanitized_url['singleurl_id'] = 'singleurl_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $sanitized_url['basename'] );
-		$sanitized_url['movieurl']     = esc_url_raw( str_replace( ' ', '%20', $decoded_movieurl ) );
+		$no_extension_url             = preg_replace( '/\\.[^.\\s]{3,4}$/', '', $decoded_movieurl );
+		$sanitized_basename           = sanitize_file_name( $path_info['basename'] );
+		$sanitized_url['noextension'] = $no_extension_url;
+		$sanitized_url['basename']    = str_replace( '.' . $path_info['extension'], '', $sanitized_basename );
 
+		return self::finalize_sanitized_url( $sanitized_url );
+	}
+
+	private static function finalize_sanitized_url( $sanitized_url ) {
+		$sanitized_url['singleurl_id'] = 'singleurl_' . sanitize_key( $sanitized_url['basename'] );
 		return $sanitized_url;
 	}
 }

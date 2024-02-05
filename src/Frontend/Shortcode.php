@@ -4,12 +4,14 @@ namespace Videopack\Frontend;
 
 class Shortcode {
 
+	protected $options_manager;
 	protected $options;
 	protected $assets;
 
 	public function __construct( $options_manager ) {
-		$this->options = $options_manager->get_options();
-		$this->assets  = new Assets( $options_manager );
+		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
+		$this->assets          = new Assets( $options_manager );
 	}
 
 	public function add() {
@@ -133,7 +135,7 @@ class Shortcode {
 			}
 		}
 
-		$default_atts = apply_filters( 'kgvid_default_shortcode_atts', $default_atts );
+		$default_atts = apply_filters( 'videopack_default_shortcode_atts', $default_atts );
 
 		$query_atts = shortcode_atts( $default_atts, $atts, 'videopack' );
 
@@ -245,7 +247,7 @@ class Shortcode {
 
 			if ( $query_atts['gallery'] != 'true' ) { // if this is not a pop-up gallery
 
-				$code = ( new Video_Player() )->single_video_code( $query_atts, $atts, $content, $post_id );
+				$code = ( new Video_Players\Player( $this->options_manager ) )->single_video_code( $query_atts, $atts, $content, $post_id );
 
 			} else { // if gallery
 
@@ -284,7 +286,7 @@ class Shortcode {
 				}
 
 				$code .= '<div class="kgvid_gallerywrapper' . esc_attr( $aligncode ) . '" id="kgvid_gallery_' . esc_attr( $kgvid_gallery_id ) . '" data-query_atts="' . esc_attr( wp_json_encode( $gallery_query_atts ) ) . '">';
-				$code .= ( new Gallery() )->gallery_page( 1, $gallery_query_atts );
+				$code .= ( new Gallery( $this->options_manager ) )->gallery_page( 1, $gallery_query_atts );
 				$code .= '</div>'; // end wrapper div
 
 				++$kgvid_gallery_id;
@@ -331,7 +333,7 @@ class Shortcode {
 			$post_id = 1;
 		}
 
-		$kgvid_postmeta = ( new \Videopack\Admin\Attachment_Meta() )->get( $post_id );
+		$kgvid_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options_manager ) )->get( $post_id );
 
 		if ( is_array( $kgvid_video_embed )
 			&& array_key_exists( 'sample', $kgvid_video_embed )

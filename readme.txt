@@ -112,7 +112,7 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 * Added REST API endpoints for thumbnail generation and video encoding.
 * Substantially rewrote the video encode queuing system.
 * Replaced Gallery Thumbnail Width with Gallery Columns and removed Gallery Aspect Ratio setting.
-* Changed custom 'kgvid' filters and action hooks to 'videopack'.
+* Changed custom 'kgvid_' filters and action hooks to 'videopack_'.
 * Removed LIBAV/AVCONV support.
 * Changed capitalization of FFMPEG to FFmpeg.
 

@@ -21,8 +21,6 @@ class Multisite {
 		$default_network_options = array(
 			'app_path'                        => $this->default_options['app_path'],
 			'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'],
-			'moov'                            => $this->default_options['moov'],
-			'nostdin'                         => $this->default_options['nostdin'],
 			'simultaneous_encodes'            => $this->default_options['simultaneous_encodes'],
 			'threads'                         => $this->default_options['threads'],
 			'nice'                            => $this->default_options['nice'],
@@ -92,7 +90,7 @@ class Multisite {
 		}
 	}
 
-	public function is_videopack_active_for_network() {
+	public static function is_videopack_active_for_network() {
 
 		if ( ! is_multisite() ) {
 			return false;

@@ -25,6 +25,8 @@ class Options {
 	 */
 	protected $default_options = array();
 
+	protected $video_player_id = 0;
+
 	/**
 	 * A private constructor; prevents direct creation of object.
 	 */
@@ -156,7 +158,6 @@ class Options {
 			'auto_publish_post'       => false,
 			'transient_cache'         => false,
 			'queue_control'           => 'play',
-			'encode_array'            => array(),
 		);
 
 		$video_codecs = $this->get_video_codecs();
@@ -165,7 +166,7 @@ class Options {
 			$options['encode'][ $codec->get_id() ]['crf'] = $codec->get_default_crf();
 			$options['encode'][ $codec->get_id() ]['vbr'] = $codec->get_default_vbr();
 			foreach ( $resolutions as $resolution => $resolution_details ) {
-				if ( $codec->get_default_encode() && $resolution_details['default_encode'] ) {
+				if ( $codec->get_default_encode() && $resolution_details['default_encode'] === true ) {
 					$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution ] = true;
 				} else {
 					$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution ] = false;
@@ -369,7 +370,7 @@ class Options {
 			),
 		);
 
-		if ( is_array( $this->options ) && $this->options['custom_resolution'] ) {
+		if ( is_array( $this->options ) && isset( $this->options['custom_resolution'] ) ) {
 			$resolutions[ $this->options['custom_resolution'] ] = array(
 				/* translators: %s is the height of a video. Example: 'Custom (1080p)' */
 				'name'           => sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) ),
@@ -686,6 +687,15 @@ class Options {
 			// If the key exists in $options and it's not an array, retain the existing value in $options
 		}
 		return $options;
+	}
+
+	public function get_video_player_id() {
+		return $this->video_player_id;
+	}
+
+	public function increment_video_player_id() {
+		$this->video_player_id++;
+		return $this->video_player_id;
 	}
 
 	/**

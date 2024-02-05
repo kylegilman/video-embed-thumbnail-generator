@@ -79,6 +79,58 @@ class Thumbnails {
 		return $thumb_info;
 	}
 
+	public function generate_evenly_distributed_timecodes( $number_of_thumbnails, $duration, $random = false ) {
+
+		$timecodes = array();
+
+		if ( $number_of_thumbnails < 1 || $duration <= 0 ) {
+			return $timecodes;
+		}
+
+		$interval = $duration / ( $number_of_thumbnails + 1 );
+
+		for ( $i = 1; $i <= $number_of_thumbnails; $i++ ) {
+			$timecode = $interval * $i;
+
+			if ( $random ) {
+				$random_subtraction = wp_rand( 0, floor( $interval ) );
+				$timecode          -= $random_subtraction;
+
+				// Ensure the first timecode is not less than 0
+				if ( $i === 1 && $timecode < 0 ) {
+					$timecode = 0;
+				}
+			}
+
+			$timecodes[] = round( $timecode, 3 );
+		}
+
+		return $timecodes;
+	}
+
+	public function get_offset( $index, $total_thumbnails, $duration, $random = false ) {
+
+		if ( $total_thumbnails < 1 || $duration <= 0 || $index < 1 || $index > $total_thumbnails ) {
+			return false;
+		}
+
+		$interval = $duration / ( $total_thumbnails + 1 );
+		$offset   = $interval * $index;
+
+		if ( $random ) {
+			$random_subtraction = wp_rand( 0, floor( $interval ) );
+			$offset            -= $random_subtraction;
+
+			if ( $offset < 0 ) {
+				$offset = 0;
+			} elseif ( $offset > $duration ) {
+				$offset = $duration;
+			}
+		}
+
+		return round( $offset, 3 );
+	}
+
 	public function save( $post_id, $post_name, $thumb_url, $index = false ) {
 
 		$user_ID = get_current_user_id();

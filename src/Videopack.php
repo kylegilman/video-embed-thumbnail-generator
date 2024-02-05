@@ -179,15 +179,17 @@ class Videopack {
 		$this->loader->add_action( 'media_upload_embedurl', $edit_posts, 'embedurl_handle' );
 		$this->loader->add_action( 'save_post', $edit_posts, 'render_post' );
 
-		$multisite = new Admin\Multisite( $this->options_manager );
-		$this->loader->add_action( 'wpmu_new_blog', $multisite, 'add_new_blog' );
-		$this->loader->add_filter( 'network_admin_plugin_action_links_' . VIDEOPACK_BASENAME, $multisite, 'network_admin_action_links' );
-		$this->loader->add_action( 'network_admin_menu', $multisite, 'add_network_settings_page' );
-		$this->loader->add_action( 'network_admin_menu', $multisite, 'add_network_queue_page' );
+		if ( Admin\Multisite::is_videopack_active_for_network() ) {
+			$multisite = new Admin\Multisite( $this->options_manager );
+			$this->loader->add_action( 'wpmu_new_blog', $multisite, 'add_new_blog' );
+			$this->loader->add_filter( 'network_admin_plugin_action_links_' . VIDEOPACK_BASENAME, $multisite, 'network_admin_action_links' );
+			$this->loader->add_action( 'network_admin_menu', $multisite, 'add_network_settings_page' );
+			$this->loader->add_action( 'network_admin_menu', $multisite, 'add_network_queue_page' );
+		}
 
 		$rest_controller = new Admin\REST_Controller( $this->options_manager );
 		$this->loader->add_action( 'rest_api_init', $rest_controller, 'add_rest_routes' );
-		$this->loader->add_action( 'wp_error_added', $rest_controller, 'log_all_errors_to_debug_log' );
+		$this->loader->add_action( 'wp_error_added', $rest_controller, 'log_all_errors_to_debug_log', 10, 4 );
 
 		$admin_screens = new Admin\Screens( $this->options_manager );
 		$this->loader->add_filter( 'plugin_action_links_' . VIDEOPACK_BASENAME, $admin_screens, 'plugin_action_links' );
