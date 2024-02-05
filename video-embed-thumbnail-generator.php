@@ -42,9 +42,7 @@
  * License: http://www.gnu.org/licenses/lgpl.html
  * 5) Includes code adapted from Kathy Darling's custom solution for saving thumbnails
  * Website: http://www.kathyisawesome.com/
- * 6) Includes code adapted from Jean-Marc Amiaud's "Replace WordPress default media icon with preview image"
- * Website: http://www.amiaud.org/tag/video/
- * 8) Includes Dominic's Video.js Resolution Selector
+ * 6) Includes Dominic's Video.js Resolution Selector
  * Website: https://github.com/dominic-p/videojs-resolution-selector
  *
  * =Translators=
@@ -64,52 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		define( 'VIDEOPACK_VERSION', '5.0' );
 	}
 
-	$required_files = array(
-		'/vendor/autoload.php',
-		'/src/admin/videopack-freemius.php',
-		'/src/admin/videopack-admin.php',
-		'/src/admin/videopack-ffmpeg.php',
-		'/src/admin/videopack-admin-ajax.php',
-		'/src/public/videopack-public.php',
-		'/src/public/videopack-public-ajax.php',
-	);
-
-	$missing_files = array_filter(
-		$required_files,
-		function ( $file ) {
-			return ! file_exists( __DIR__ . $file );
-		}
-	);
-
-	if ( ! empty( $missing_files ) ) {
-
-		if ( isset( $_GET['activate'] ) ) {
-			unset( $_GET['activate'] );
-		}
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		deactivate_plugins( VIDEOPACK_BASENAME );
-		add_action(
-			'admin_notices',
-			function () use ( $missing_files ) {
-				?>
-				<div class="notice notice-error is-dismissible">
-					<p><?php esc_html_e( 'Videopack has been deactivated due to missing plugin files:', 'video-embed-thumbnail-generator' ); ?></p>
-					<ul>
-						<?php foreach ( $missing_files as $file ) : ?>
-							<li><em><?php echo esc_html( dirname( VIDEOPACK_BASENAME ) . $file ); ?></em></li>
-						<?php endforeach; ?>
-					</ul>
-				</div>
-				<?php
-			}
-		);
-
-		return; // Stop further execution of the plugin
-	}
-
-	foreach ( $required_files as $file ) {
-		require_once __DIR__ . $file;
-	}
+	require __DIR__ . '/vendor/autoload.php';
 }
 
 function videopack_fs_loaded() {

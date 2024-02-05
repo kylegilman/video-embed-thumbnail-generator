@@ -4,10 +4,12 @@ namespace Videopack\Admin\Thumbnails;
 
 class FFmpeg_Thumbnails {
 
+	protected $options_manager;
 	protected $options;
 
 	public function __construct( $options_manager ) {
-		$this->options = $options_manager->get_options();
+		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 	}
 
 	public function process_thumb(
@@ -76,7 +78,7 @@ class FFmpeg_Thumbnails {
 
 		$uploads         = wp_upload_dir();
 		$attachment_meta = new \Videopack\Admin\Attachment_Meta();
-		$sanitize        = new \Videopack\Common\Validate();
+		$validate        = new \Videopack\Common\Validate();
 
 		if ( get_post_type( $post_id ) == 'attachment' ) {
 			$moviefilepath = get_attached_file( $post_id );
@@ -93,7 +95,7 @@ class FFmpeg_Thumbnails {
 			);
 
 			if ( empty( $kgvid_postmeta['duration'] ) ) {
-				$movie_info = \Videopack\Common\Video_Dimensions::get( $moviefilepath );
+				$movie_info = kgvid_get_movie_info( $moviefilepath ); //this is not a real function, it's a placeholder
 				foreach ( $keys as $info => $meta ) {
 					if ( ! empty( $movie_info[ $info ] ) ) {
 						$kgvid_postmeta[ $meta ] = $movie_info[ $info ];
@@ -108,13 +110,13 @@ class FFmpeg_Thumbnails {
 				$movie_info['worked'] = true;
 			}
 		} else {
-			$moviefilepath = $sanitize->text_field( str_replace( ' ', '%20', $movieurl ) );
-			$movie_info    = \Videopack\Common\Video_Dimensions::get( $moviefilepath );
+			$moviefilepath = $validate->text_field( str_replace( ' ', '%20', $movieurl ) );
+			$movie_info    = kgvid_get_movie_info( $moviefilepath ); //this is not a real function, it's a placeholder
 		}
 
 		if ( $movie_info['worked'] == true ) { // if FFmpeg was able to open the file
 
-			$sanitized_url     = $sanitize->url( $movieurl );
+			$sanitized_url     = $validate->sanitize_url( $movieurl );
 			$thumbnailfilebase = $uploads['url'] . '/thumb_tmp/' . $sanitized_url['basename'];
 
 			$movie_width  = $movie_info['width'];

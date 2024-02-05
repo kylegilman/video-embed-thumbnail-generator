@@ -4,11 +4,13 @@ namespace Videopack\Frontend;
 
 class Metadata {
 
+	protected $options_manager;
 	protected $options;
 	protected $attachment_meta;
 
 	public function __construct( $options_manager ) {
 
+		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
 	}
@@ -85,7 +87,7 @@ class Metadata {
 						if ( ! is_array( $attributes ) ) {
 							$attributes = array();
 						}
-						$attributes['id'] = ( new \Videopack\Admin\Attachment() )->url_to_id( $matches[5][ $first_key ] );
+						$attributes['id'] = ( new \Videopack\Admin\Attachment( $this->options_manager ) )->url_to_id( $matches[5][ $first_key ] );
 
 					} elseif (
 						( is_array( $attributes )

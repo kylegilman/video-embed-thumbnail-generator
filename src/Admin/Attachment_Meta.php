@@ -116,22 +116,24 @@ class Attachment_Meta {
 
 		$kgvid_postmeta = array_merge( $meta_key_array, $kgvid_postmeta ); // make sure all keys are set
 
-		if ( ! $kgvid_postmeta['actualwidth'] || ! $kgvid_postmeta['actualheight'] ) {
+		$get_from_wp_meta = array(
+			'actualwidth'  => 'width',
+			'actualheight' => 'height',
+			'duration'     => 'length',
+		);
 
-			$video_meta = wp_get_attachment_metadata( $post_id );
-			$changed    = false;
+		$video_meta = wp_get_attachment_metadata( $post_id );
+		$changed    = false;
 
-			if ( ! $kgvid_postmeta['actualwidth'] && $video_meta['width'] ) {
-				$kgvid_postmeta['actualwidth'] = $video_meta['width'];
-				$changed                       = true;
+		foreach ( $get_from_wp_meta as $kgvid_key => $wp_key ) {
+			if ( ! $kgvid_postmeta[ $kgvid_key ] && isset( $video_meta[ $wp_key ] ) ) {
+				$kgvid_postmeta[ $kgvid_key ] = $video_meta[ $wp_key ];
+				$changed                      = true;
 			}
-			if ( ! $kgvid_postmeta['actualheight'] && $video_meta['height'] ) {
-				$kgvid_postmeta['actualheight'] = $video_meta['height'];
-				$changed                       = true;
-			}
-			if ( $changed ) {
-				$this->save( $post_id, $kgvid_postmeta );
-			}
+		}
+
+		if ( $changed ) {
+			$this->save( $post_id, $kgvid_postmeta );
 		}
 
 		return apply_filters( 'videopack_attachment_meta', $kgvid_postmeta );

@@ -22,7 +22,7 @@ class REST_Controller extends \WP_REST_Controller {
 	public function __construct( $options_manager ) {
 		$this->namespace       = 'videopack/v1';
 		$this->options_manager = $options_manager;
-		$this->video_player    = new \Videopack\Frontend\Video_Player( $options_manager );
+		$this->video_player    = new \Videopack\Frontend\Video_Players\Video_Player( $options_manager );
 		$this->options         = $options_manager->get_options();
 		$this->uploads         = wp_upload_dir();
 	}
@@ -145,8 +145,8 @@ class REST_Controller extends \WP_REST_Controller {
 						return current_user_can( 'make_video_thumbnails' );
 					},
 					'args'                => array(
-						'postId' => array(
-							'type' => array(
+						'postId'   => array(
+							'type'     => array(
 								'number',
 								'string',
 							),
@@ -419,7 +419,7 @@ class REST_Controller extends \WP_REST_Controller {
 				$video_formats[ $format ] = array_merge( $format_info, $encode_info );
 			}
 		} else {
-			$unsorted_video_formats = kgvid_video_formats();
+			$unsorted_video_formats = $this->options_manager->get_video_formats();
 			foreach ( $unsorted_video_formats as $format => $format_info ) {
 				$format_info['format'] = $format;
 				$video_formats[]       = $format_info;
@@ -433,7 +433,7 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$params   = $request->get_params();
 		$response = array();
-		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails();
+		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
 
 		$response = $ffmpeg_thumbnails->make(
 			$params['attachmentID'],
@@ -452,7 +452,7 @@ class REST_Controller extends \WP_REST_Controller {
 	public function thumb_save( \WP_REST_Request $request ) {
 
 		$params     = $request->get_params();
-		$thumbnails = new Thumbnails\Thumbnails();
+		$thumbnails = new Thumbnails\Thumbnails( $this->options_manager );
 
 		if ( is_numeric( $params['postId'] ) ) {
 			$post_name = get_the_title( $params['postId'] );
@@ -506,7 +506,7 @@ class REST_Controller extends \WP_REST_Controller {
 	public function video_gallery( \WP_REST_Request $request ) {
 
 		$response   = array();
-		$shortcode  = new \Videopack\Frontend\Shortcode();
+		$shortcode  = new \Videopack\Frontend\Shortcode( $this->options_manager );
 		$query_atts = $shortcode->atts( $request->get_params() );
 
 		$args = array(
@@ -620,10 +620,10 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$params = $request->get_params();
 		if ( array_key_exists( 'id', $params ) ) {
-			$encoder = new encode\Encode_Attachment( $params['id'] );
+			$encoder = new Encode\Encode_Attachment( $params['id'] );
 			return $encoder->get_formats_array();
 		} else {
-			$controller = new encode\Encode_Queue_Controller();
+			$controller = new Encode\Encode_Queue_Controller();
 			return $controller->get_full_queue_array();
 		}
 	}
@@ -643,7 +643,7 @@ class REST_Controller extends \WP_REST_Controller {
 		return $response; */
 
 		$params     = $request->get_params();
-		$controller = new encode\Encode_Queue_Controller();
+		$controller = new Encode\Encode_Queue_Controller();
 		$args       = array(
 			'id'      => $params['id'],
 			'url'     => $params['url'],

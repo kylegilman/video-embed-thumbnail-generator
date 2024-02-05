@@ -45,9 +45,27 @@ class Screens {
 			esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
 			'manage_options',
 			'video_embed_thumbnail_generator_settings',
-			'kgvid_settings_page'
+			array( $this, 'output_settings_page' )
 		);
-		add_action( 'admin_print_scripts-' . $page_hook_suffix, 'kgvid_options_assets' );
+		add_action( 'admin_print_scripts-' . $page_hook_suffix, array( $this, 'enqueue_settings_page_assets' ) );
+	}
+
+	public function enqueue_settings_page_assets() {
+
+		wp_enqueue_script(
+			'videopack-settings-page',
+			plugins_url( '/build/build.js', __FILE__ ),
+			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element' ),
+			VIDEOPACK_VERSION,
+			true
+		);
+
+		wp_enqueue_style(
+			'videopack-settings-page-styles',
+			plugins_url( '/build/build.css', __FILE__ ),
+			array( 'wp-components' ),
+			VIDEOPACK_VERSION,
+		);
 	}
 
 	public function output_settings_page() {
