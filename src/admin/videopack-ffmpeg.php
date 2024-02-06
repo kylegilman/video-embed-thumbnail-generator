@@ -183,6 +183,33 @@ function kgvid_check_ffmpeg_exists( $options, $save ) {
 	return $arr;
 }
 
+function kgvid_ffmpeg_test_encode() {
+
+	$options           = kgvid_get_options();
+	$movie_info        = kgvid_get_video_dimensions( plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4' );
+	$uploads           = wp_upload_dir();
+	$video_formats     = kgvid_video_formats();
+	$encode_dimensions = kgvid_set_encode_dimensions( $movie_info, $video_formats[ $options['sample_format'] ] );
+
+	if ( empty( $options['sample_rotate'] ) ) {
+		$input = plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4';
+	} else {
+		$input = plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984-rotated.mp4';
+	}
+
+	$encode_array = kgvid_generate_encode_array(
+		$input,
+		$uploads['path'] . '/Adobestock_469037984' . $video_formats[ $options['sample_format'] ]['suffix'],
+		$movie_info,
+		$options['sample_format'],
+		$encode_dimensions['width'],
+		$encode_dimensions['height'],
+		intval( $options['sample_rotate'] ),
+	);
+
+	return $encode_array;
+}
+
 function kgvid_set_video_dimensions( $id, $gallery = false ) {
 	$options        = kgvid_get_options();
 	$video_meta     = wp_get_attachment_metadata( $id );
@@ -933,9 +960,6 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 	} //if FFMPEG is found
 
 	$encode_array = array_filter( $encode_array, 'strlen' ); // remove empty elements
-
-	$options['encode_array'] = $encode_array;
-	update_option( 'kgvid_video_embed_options', $options );
 
 	return $encode_array;
 }
