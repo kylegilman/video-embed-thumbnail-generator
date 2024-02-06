@@ -640,7 +640,6 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'transpose=1[rotate];[rotate]';
 			}
 
-			$rotate_array[] = '-metadata:s:v:0';
 			$rotate_array[] = 'rotate=0';
 
 			break;
@@ -656,7 +655,6 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'transpose=2[rotate];[rotate]';
 			}
 
-			$rotate_array[] = '-metadata:s:v:0';
 			$rotate_array[] = 'rotate=0';
 
 			break;
@@ -672,7 +670,6 @@ function kgvid_ffmpeg_rotate_array( $rotate, $width, $height ) {
 				$rotate_complex = 'hflip,vflip[rotate];[rotate]';
 			}
 
-			$rotate_array[] = '-metadata:s:v:0';
 			$rotate_array[] = 'rotate=0';
 
 			break;
@@ -2046,6 +2043,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		if ( $movie_info['rotate'] === false ) {
 			$movie_info['rotate'] = '';
 		}
+
 		switch ( $movie_info['rotate'] ) { // if it's a sideways mobile video
 			case 90:
 			case 270:
@@ -2055,8 +2053,6 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 				$movie_height = $tmp;
 				break;
 		}
-
-		$thumbnailheight = strval( round( floatval( $movie_height ) / floatval( $movie_width ) * 200 ) );
 
 		$jpgpath = $uploads['path'] . '/thumb_tmp/';
 
@@ -2096,7 +2092,7 @@ function kgvid_make_thumbs( $post_id, $movieurl, $numberofthumbs, $i, $iincrease
 		$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
 		$moviefilepath  = kgvid_insert_htaccess_login( $moviefilepath );
-		$rotate_strings = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
+		$rotate_strings = kgvid_ffmpeg_rotate_array( $movie_info['rotate'], $movie_width, $movie_height );
 		$filter_complex = kgvid_filter_complex( $options['ffmpeg_thumb_watermark'], $movie_height, true );
 
 		$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
