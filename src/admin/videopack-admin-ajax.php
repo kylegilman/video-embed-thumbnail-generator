@@ -273,35 +273,16 @@ function kgvid_ajax_save_settings() {
 				&& ! array_key_exists( 'embed_method', $all_settings['kgvid_video_embed_options'] )
 			) {
 
-				$validated_options = kgvid_validate_network_settings( $all_settings['kgvid_video_embed_options'] );
-				$options_updated   = update_site_option( 'kgvid_video_embed_network_options', $validated_options );
+				$options_updated = update_site_option( 'kgvid_video_embed_network_options', $all_settings['kgvid_video_embed_options'] );
 
 			} else { // single site on the network
 
-				$validated_options = kgvid_video_embed_options_validate( $all_settings['kgvid_video_embed_options'] );
+				$options_updated = update_option( 'kgvid_video_embed_options', $all_settings['kgvid_video_embed_options'] );
+				$options         = kgvid_get_options();
 
-				$options_updated = update_option( 'kgvid_video_embed_options', $validated_options );
-
-				if ( $validated_options['ffmpeg_exists'] === 'on' ) {
-
-					$movie_info        = kgvid_get_video_dimensions( plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4' );
-					$uploads           = wp_upload_dir();
-					$video_formats     = kgvid_video_formats();
-					$encode_dimensions = kgvid_set_encode_dimensions( $movie_info, $video_formats[ $validated_options['sample_format'] ] );
-					if ( empty( $validated_options['sample_rotate'] ) ) {
-
-						$input = plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4';
-
-					} else {
-
-						$input = plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984-rotated.mp4';
-
-					}
-
-					$encode_array = kgvid_generate_encode_array( $input, $uploads['path'] . '/Adobestock_469037984' . $video_formats[ $validated_options['sample_format'] ]['suffix'], $movie_info, $validated_options['sample_format'], $encode_dimensions['width'], $encode_dimensions['height'], intval( $validated_options['sample_rotate'] ) );
-
+				if ( $options['ffmpeg_exists'] === 'on' ) {
+					$encode_array = kgvid_ffmpeg_test_encode();
 					$auto_thumb_label = kgvid_generate_auto_thumb_label();
-
 				}
 			}
 
@@ -309,7 +290,7 @@ function kgvid_ajax_save_settings() {
 			$trimmed_name = str_replace( 'kgvid_video_embed_options', '', $name );
 			preg_match_all( '/\[([^\]]+)\]/', $trimmed_name, $matches );
 			if ( $matches && count( $matches[1] ) > 1 ) {
-				$validated_value = $validated_options;
+				$validated_value = $options;
 				foreach ( $matches[1] as $key ) {
 					if ( isset( $validated_value[ $key ] ) ) {
 						$validated_value = $validated_value[ $key ];
@@ -318,7 +299,7 @@ function kgvid_ajax_save_settings() {
 					}
 				}
 			} else {
-				$validated_value = $validated_options[ $setting ];
+				$validated_value = $options[ $setting ];
 			}
 
 			if ( ! empty( $wp_settings_errors ) ) {
@@ -348,9 +329,9 @@ function kgvid_ajax_save_settings() {
 			$arr = array(
 				'error_message'    => wp_kses_post( $error_message ),
 				'validated_value'  => wp_kses_post( $validated_value ),
-				'ffmpeg_exists'    => esc_html( $validated_options['ffmpeg_exists'] ),
+				'ffmpeg_exists'    => esc_html( $options['ffmpeg_exists'] ),
 				'encode_string'    => trim( implode( ' ', $encode_array ) ),
-				'app_path'         => esc_attr( $validated_options['app_path'] ),
+				'app_path'         => esc_attr( $options['app_path'] ),
 				'auto_thumb_label' => wp_kses( $auto_thumb_label, $allowed_html ),
 			);
 
@@ -498,10 +479,11 @@ function kgvid_test_ffmpeg() {
 	$uploads       = wp_upload_dir();
 	$video_formats = kgvid_video_formats();
 	$suffix        = $video_formats[ $options['sample_format'] ]['suffix'];
+	$encode_array  = kgvid_ffmpeg_test_encode();
 
-	if ( array_key_exists( 'encode_array', $options ) && is_array( $options['encode_array'] ) ) {
+	if ( is_array( $encode_array ) ) {
 
-		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $options['encode_array'] );
+		$process = new Kylegilman\VideoEmbedThumbnailGenerator\FFMPEG_Process( $encode_array );
 
 		try {
 			$process->run();
