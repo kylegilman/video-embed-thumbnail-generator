@@ -105,9 +105,12 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.5 - February 6, 2024 =
+= 4.9.5 - February 7, 2024 =
+* Fixed bug that failed to save some Videopack settings when they were disabled.
 * Fixed thumbnail rotation bug for vertical videos when using FFMPEG versions earlier than 6.0.
 * Fixed bug that set the "FFMPEG Exists" option to an invalid value when upgrading to Videopack v4.8. If no settings that triggered a check for FFMPEG were changed in the year since then, FFMPEG would not execute.
+* Improved options validation and FFMPEG test encode process.
+* Removed "Insert title above video" option when inserting videos into posts.
 
 = 4.9.4 - January 23, 2024 =
 * Fixed bugs that interfered with Media Library functions that don't involve videos, including image gallery editing.
