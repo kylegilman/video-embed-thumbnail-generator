@@ -3,7 +3,7 @@
         'name' => 'kylegilman/video-embed-thumbnail-generator',
         'pretty_version' => '4.9.x-dev',
         'version' => '4.9.9999999.9999999-dev',
-        'reference' => '1c17aad27812604d41689b5abe3a86079340f7f9',
+        'reference' => 'fe487a8e7fc5ec9bf4cc457a8df19cbdb76daa80',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'kylegilman/video-embed-thumbnail-generator' => array(
             'pretty_version' => '4.9.x-dev',
             'version' => '4.9.9999999.9999999-dev',
-            'reference' => '1c17aad27812604d41689b5abe3a86079340f7f9',
+            'reference' => 'fe487a8e7fc5ec9bf4cc457a8df19cbdb76daa80',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
