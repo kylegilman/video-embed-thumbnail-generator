@@ -11,7 +11,7 @@
  * Plugin Name: Videopack
  * Plugin URI: https://www.videopack.video/
  * Description: Makes video thumbnails, allows resolution switching, and embeds responsive self-hosted videos and galleries.
- * Version: 4.9.5
+ * Version: 4.9.6
  * Author: Kyle Gilman
  * Author URI: https://www.kylegilman.net/
  * Text Domain: video-embed-thumbnail-generator
@@ -59,7 +59,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
 	if ( ! defined( 'VIDEOPACK_VERSION' ) ) {
-		define( 'VIDEOPACK_VERSION', '4.9.5' );
+		define( 'VIDEOPACK_VERSION', '4.9.6' );
 	}
 
 	$required_files = array(
