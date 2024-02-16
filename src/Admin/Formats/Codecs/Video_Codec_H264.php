@@ -1,6 +1,6 @@
 <?php
 
-namespace Videopack\Admin\Codec;
+namespace Videopack\Admin\Formats\Codecs;
 
 class Video_Codec_H264 extends Video_Codec {
 	public function __construct() {
@@ -10,7 +10,7 @@ class Video_Codec_H264 extends Video_Codec {
 			'id'             => 'h264',
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
-			'codecs_string'  => 'avc1',
+			'fourcc'         => 'avc1',
 			'vcodec'         => 'libx264',
 			'rate_control'   => array(
 				'crf' => array(
