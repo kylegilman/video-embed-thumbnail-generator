@@ -105,6 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
+= 4.9.6 - February 16, 2024 =
+* Disabled Chromecast overlay on videos used to make thumbnails.
+
 = 4.9.5 - February 7, 2024 =
 * Fixed bug that failed to save some Videopack settings when they were disabled.
 * Fixed thumbnail rotation bug for vertical videos when using FFMPEG versions earlier than 6.0.

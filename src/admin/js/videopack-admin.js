@@ -480,6 +480,7 @@ function kgvid_add_thumb_video(postID) {
 	video.setAttribute('muted', '');
     video.muted = true; //need to do this or it will play audio
     video.setAttribute('preload', 'none');
+	video.disableRemotePlayback = true;
     video.classList.add('kgvid-thumb-video');
     video.width = 200; // Set the width of the video
     video.id = 'thumb-video-' + postID;
