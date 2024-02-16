@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ae9b60d990864315e601354ab483be6",
+    "content-hash": "f31f36fc970b5de2509a8413cad823d7",
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
