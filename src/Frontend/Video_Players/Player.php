@@ -16,26 +16,7 @@ abstract class Player {
 		$this->player_id = $options_manager->increment_video_player_id();
 	}
 
-	public function compatible_extensions() {
-
-		$compatible = array(
-			'mp4',
-			'mov',
-			'm4v',
-			'ogv',
-			'ogg',
-			'webm',
-			'mkv',
-			'mpd',
-			'm3u8',
-		);
-
-		return apply_filters( 'videopack_compatible_extensions', $compatible );
-	}
-
 	public function prepare_sources( $content, $id, $block_id = false ) {
-
-		global $kgvid_video_id;
 
 		$enable_resolutions_plugin = false;
 		$x                         = 20;
