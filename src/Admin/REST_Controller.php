@@ -15,14 +15,12 @@ class REST_Controller extends \WP_REST_Controller {
 
 	protected $namespace;
 	protected $options_manager;
-	protected $video_player;
 	protected $options;
 	protected $uploads;
 
 	public function __construct( $options_manager ) {
 		$this->namespace       = 'videopack/v1';
 		$this->options_manager = $options_manager;
-		$this->video_player    = new \Videopack\Frontend\Video_Players\Video_Player( $options_manager );
 		$this->options         = $options_manager->get_options();
 		$this->uploads         = wp_upload_dir();
 	}
@@ -375,7 +373,6 @@ class REST_Controller extends \WP_REST_Controller {
 		$unsafe_options = array(
 			'app_path',
 			'error_email',
-			'encode_array',
 			'capabilities',
 			'moov_path',
 			'ffmpeg_watermark',
@@ -505,51 +502,11 @@ class REST_Controller extends \WP_REST_Controller {
 
 	public function video_gallery( \WP_REST_Request $request ) {
 
-		$response   = array();
-		$shortcode  = new \Videopack\Frontend\Shortcode( $this->options_manager );
-		$query_atts = $shortcode->atts( $request->get_params() );
-
-		$args = array(
-			'post_type'      => 'attachment',
-			'orderby'        => $query_atts['gallery_orderby'],
-			'order'          => $query_atts['gallery_order'],
-			'post_mime_type' => 'video',
-			'posts_per_page' => $query_atts['gallery_per_page'],
-			'paged'          => $request->get_param( 'page_number' ),
-			'post_status'    => 'published',
-			'post_parent'    => $query_atts['gallery_id'],
-			'meta_query' => array(
-				'relation' => 'AND',
-				array(
-					'key'     => '_kgflashmediaplayer-externalurl',
-					'compare' => 'NOT EXISTS',
-				),
-				array(
-					'key'     => '_kgflashmediaplayer-format',
-					'compare' => 'NOT EXISTS',
-				),
-			),
-		);
-
-		if ( ! empty( $query_atts['gallery_exclude'] ) ) {
-			$exclude_arr = wp_parse_id_list( $query_atts['gallery_exclude'] );
-			if ( ! empty( $exclude_arr ) ) {
-				$args['post__not_in'] = $exclude_arr;
-			}
-		}
-
-		if ( ! empty( $query_atts['gallery_include'] ) ) {
-			$include_arr = wp_parse_id_list( $query_atts['gallery_include'] );
-			if ( ! empty( $include_arr ) ) {
-				$args['post__in'] = $include_arr;
-				if ( $args['orderby'] == 'menu_order ID' ) {
-					$args['orderby'] = 'post__in'; // sort by order of IDs in the gallery_include parameter
-				}
-				unset( $args['post_parent'] );
-			}
-		}
-
-		$attachments = new \WP_Query( $args );
+		$response    = array();
+		$shortcode   = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$query_atts  = $shortcode->atts( $request->get_params() );
+		$gallery     = new \Videopack\Frontend\Gallery( $this->options_manager );
+		$attachments = $gallery->get_gallery_videos( $request->get_param( 'page' ), $query_atts );
 
 		if ( $attachments->have_posts() ) {
 
