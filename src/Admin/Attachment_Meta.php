@@ -51,6 +51,8 @@ class Attachment_Meta {
 			'maxwidth'          => '',
 			'maxheight'         => '',
 			'animated'          => 'notchecked',
+			'frame_rate'        => '',
+			'fourcc'            => '',
 		);
 
 		return apply_filters( 'videopack_default_attachment_meta', $meta_key_array );
@@ -132,11 +134,31 @@ class Attachment_Meta {
 			}
 		}
 
+		if ( ! $kgvid_postmeta['fourcc'] || ! $kgvid_postmeta['frame_rate'] ) {
+			$video_path = get_attached_file( $post_id );
+			$video_info = wp_read_video_metadata( $video_path );
+
+			if ( ! $kgvid_postmeta['fourcc'] && isset( $video_info['video']['fourcc'] ) ) {
+				$kgvid_postmeta['fourcc'] = $video_info['video']['fourcc'];
+				$changed                  = true;
+			}
+
+			if ( ! $kgvid_postmeta['frame_rate'] && isset( $video_info['video']['frame_rate'] ) ) {
+				$kgvid_postmeta['frame_rate'] = $video_info['video']['frame_rate'];
+				$changed                      = true;
+			}
+		}
+
 		if ( $changed ) {
 			$this->save( $post_id, $kgvid_postmeta );
 		}
 
-		return apply_filters( 'videopack_attachment_meta', $kgvid_postmeta );
+		/**
+		 * Filters the custom Videopack attachment meta array.
+		 * @param array $kgvid_postmeta The custom Videopack attachment meta array.
+		 * @param int   $post_id        The attachment ID.
+		 */
+		return apply_filters( 'videopack_attachment_meta', $kgvid_postmeta, $post_id );
 	}
 
 	public function save( $post_id, $kgvid_postmeta ) {
