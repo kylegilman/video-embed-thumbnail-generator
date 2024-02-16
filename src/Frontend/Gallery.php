@@ -2,6 +2,8 @@
 
 namespace Videopack\Frontend;
 
+use WP_Hook;
+
 class Gallery {
 
 	protected $options_manager;
@@ -15,14 +17,7 @@ class Gallery {
 		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
 	}
 
-	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
-
-		global $kgvid_video_id;
-		if ( ! $kgvid_video_id ) {
-			$kgvid_video_id = $last_video_id + 1;
-		}
-
-		$code = '';
+	public function get_gallery_videos( $page_number, $query_atts ) {
 
 		if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
@@ -43,9 +38,14 @@ class Gallery {
 			'paged'          => $page_number,
 			'post_status'    => 'published',
 			'post_parent'    => $query_atts['gallery_id'],
-			'meta_query'     => array(
+			'meta_query' => array(
+				'relation' => 'AND',
 				array(
 					'key'     => '_kgflashmediaplayer-externalurl',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => '_kgflashmediaplayer-format',
 					'compare' => 'NOT EXISTS',
 				),
 			),
@@ -70,6 +70,28 @@ class Gallery {
 		}
 
 		$attachments = new \WP_Query( $args );
+
+		if ( $attachments->have_posts() ) {
+			return $attachments;
+		}
+
+		return new \WP_Query(
+			array(
+				'post__in' => array(0), // No post has the ID of 0.
+			)
+		);
+	}
+
+	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
+
+		global $kgvid_video_id;
+		if ( ! $kgvid_video_id ) {
+			$kgvid_video_id = $last_video_id + 1;
+		}
+
+		$code = '';
+
+		$attachments = $this->get_gallery_videos( $page_number, $query_atts );
 
 		if ( $attachments->have_posts() ) {
 
