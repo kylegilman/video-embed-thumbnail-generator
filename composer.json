@@ -4,7 +4,7 @@
     "type": "wordpress-plugin",
     "require": {
         "symfony/process": "^5.4",
-        "freemius/wordpress-sdk": "^2.5"
+        "freemius/wordpress-sdk": "^2.6"
     },
     "license": "GNU General Public License",
     "autoload": {
