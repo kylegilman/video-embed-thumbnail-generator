@@ -165,15 +165,19 @@ class Options {
 		foreach ( $video_codecs as $codec ) {
 			$options['encode'][ $codec->get_id() ]['crf'] = $codec->get_default_crf();
 			$options['encode'][ $codec->get_id() ]['vbr'] = $codec->get_default_vbr();
-			foreach ( $resolutions as $resolution => $resolution_details ) {
-				if ( $codec->get_default_encode() && $resolution_details['default_encode'] === true ) {
-					$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution ] = true;
+			foreach ( $resolutions as $resolution ) {
+				if ( $codec->is_default_encode() && $resolution->is_default_encode() ) {
+					$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = true;
 				} else {
-					$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution ] = false;
+					$options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = false;
 				}
 			}
 		}
 
+		/**
+		 * Filters the default options.
+		 * @param array $options Array of default options.
+		 */
 		return apply_filters( 'videopack_default_options', $options );
 	}
 
@@ -312,12 +316,16 @@ class Options {
 	public function get_video_codecs() {
 
 		$codecs = array(
-			new codec\Video_Codec_H264(),
-			new codec\Video_Codec_H265(),
-			new codec\Video_Codec_VP9(),
-			new codec\Video_Codec_AV1(),
+			new Formats\Codecs\Video_Codec_H264(),
+			new Formats\Codecs\Video_Codec_H265(),
+			new Formats\Codecs\Video_Codec_VP9(),
+			new Formats\Codecs\Video_Codec_AV1(),
 		);
 
+		/**
+		 * Filters the available video codecs.
+		 * @param \Videopack\Admin\Formats\Codecs\Video_Codec[] $codecs Array of Videopack\Admin\Formats\Codecs\Video_Codec objects.
+		 */
 		return apply_filters( 'videopack_video_codecs', $codecs );
 	}
 
@@ -327,83 +335,95 @@ class Options {
 	 * @return array
 	 */
 	public function get_video_resolutions() {
-		$resolutions = array(
-			2160 => array(
-				'name'           => esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '2160p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => true,
+
+		$resolutions = array();
+
+		$resolution_properties = array(
+			array(
+				'height'          => 2160,
+				'name'            => esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => true,
 			),
-			1440 => array(
-				'name'           => esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '1440p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => false,
+			array(
+				'height'          => 1440,
+				'name'            => esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => false,
 			),
-			1080 => array(
-				'name'           => esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '1080p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => true,
+			array(
+				'height'          => 1080,
+				'name'            => esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => true,
 			),
-			720  => array(
-				'name'           => esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '720p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => true,
+			array(
+				'height'          => 720,
+				'name'            => esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => true,
 			),
-			540  => array(
-				'name'           => esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '540p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => false,
+			array(
+				'height'          => 540,
+				'name'            => esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => false,
 			),
-			480  => array(
-				'name'           => esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '480p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => true,
+			array(
+				'height'          => 480,
+				'name'            => esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => true,
 			),
-			360  => array(
-				'name'           => esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '360p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => true,
+			array(
+				'height'          => 360,
+				'name'            => esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => true,
 			),
-			240  => array(
-				'name'           => esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' ),
-				'label'          => esc_html__( '240p', 'video-embed-thumbnail-generator' ),
-				'default_encode' => false,
+			array(
+				'height'          => 240,
+				'name'            => esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' ),
+				'default_encode'  => false,
 			),
 		);
 
 		if ( is_array( $this->options ) && isset( $this->options['custom_resolution'] ) ) {
-			$resolutions[ $this->options['custom_resolution'] ] = array(
-				/* translators: %s is the height of a video. Example: 'Custom (1080p)' */
+			$resolution_properties[] = array(
+				'height'         => $this->options['custom_resolution'],
+				/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
 				'name'           => sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) ),
-				/* translators: %s is the height of a video. Example: '1080p' */
-				'label'          => sprintf( esc_html__( '%sp', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) ),
 				'default_encode' => false,
 			);
 		}
 
-		krsort( $resolutions );
+		foreach ( $resolution_properties as $properties ) {
+			$resolutions[] = new Formats\Video_Resolution( $properties );
+		}
 
+		//sort so highest resolution is first
+		usort( $resolutions, function( $a, $b ) {
+			if ( $a->get_height() == $b->get_height() ) {
+				return 0;
+			}
+			return ( $a->get_height() > $b->get_height() ) ? -1 : 1;
+		});
+
+		/**
+		 * Filters the available video resolutions.
+		 * @param \Videopack\Admin\Formats\Video_Resolution[] $resolutions Array of Videopack\Admin\Formats\Video_Resolution objects.
+		 */
 		return apply_filters( 'videopack_video_resolutions', $resolutions );
 	}
 
 	public function get_video_formats() {
 
-		$video_formats = array();
+		$video_formats     = array();
+		$video_resolutions = $this->get_video_resolutions();
+		$video_codecs      = $this->get_video_codecs();
 
-		if ( is_array( $this->options['encode'] ) ) {
-
-			$video_resolutions = $this->get_video_resolutions();
-
-			foreach ( $this->options['encode'] as $codec => $codec_details ) {
-
-				$video_formats[ $codec ] = array();
-
-				foreach ( $codec_details['resolutions'] as $resolution => $enabled ) {
-
-					if ( $enabled ) {
-
-						$video_formats[ $codec ][ $resolution ] = $video_resolutions[ $resolution ];
-					}
+		foreach ( $video_codecs as $codec ) {
+			foreach ( $video_resolutions as $resolution ) {
+				if ( is_array($this->options) && isset($this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] ) ) {
+					$enabled = $this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ];
+				} else {
+					$enabled = false;
 				}
+				$format = new Formats\Video_Format( $codec, $resolution, $enabled );
+				$video_formats[ $format->get_id() ] = $format;
 			}
 		}
 
