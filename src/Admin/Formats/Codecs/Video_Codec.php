@@ -1,6 +1,6 @@
 <?php
 
-namespace Videopack\Admin\Codec;
+namespace Videopack\Admin\Formats\Codecs;
 
 /**
  * Base class for a video codec.
@@ -39,14 +39,14 @@ class Video_Codec {
 	 *
 	 * @var string
 	 */
-	protected $mime;
+	protected $mime_type;
 
 	/**
 	 * Codec string.
 	 *
 	 * @var string
 	 */
-	protected $codecs_string;
+	protected $fourcc;
 
 	/**
 	 * Video codec.
@@ -80,7 +80,7 @@ class Video_Codec {
 		$this->id             = $properties['id'] ?? 'h264';
 		$this->container      = $properties['container'] ?? 'mp4';
 		$this->mime           = $properties['mime'] ?? 'video/mp4';
-		$this->codecs_string  = $properties['codecs_string'] ?? '';
+		$this->fourcc         = $properties['fourcc'] ?? 'avc1';
 		$this->vcodec         = $properties['vcodec'] ?? 'libx264';
 		$this->rate_control   = $properties['rate_control'] ?? array(
 			'crf' => array(
@@ -108,7 +108,7 @@ class Video_Codec {
 			'id'             => $this->id,
 			'container'      => $this->container,
 			'mime'           => $this->mime,
-			'codecs_string'  => $this->codecs_string,
+			'fourcc'         => $this->fourcc,
 			'vcodec'         => $this->vcodec,
 			'rate_control'   => $this->rate_control,
 			'default_encode' => $this->default_encode,
@@ -156,8 +156,8 @@ class Video_Codec {
 	 *
 	 * @return string MIME type.
 	 */
-	public function get_mime() {
-		return $this->mime;
+	public function get_mime_type() {
+		return $this->mime_type;
 	}
 
 	/**
@@ -165,8 +165,8 @@ class Video_Codec {
 	 *
 	 * @return string Codec string.
 	 */
-	public function get_codecs_string() {
-		return $this->codecs_string;
+	public function get_fourcc() {
+		return $this->fourcc;
 	}
 
 	/**
@@ -210,7 +210,7 @@ class Video_Codec {
 	 *
 	 * @return bool Default encoding flag.
 	 */
-	public function get_default_encode() {
+	public function is_default_encode() {
 		return $this->default_encode;
 	}
 
