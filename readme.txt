@@ -105,8 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.6 - February 16, 2024 =
-* Disabled Chromecast overlay on videos used to make thumbnails.
+= 4.9.6 - February 18, 2024 =
+* Fixed uninstall routine for more complete cleanup when deleting the plugin.
+* Disabled Chromecast overlay button on videos used to make thumbnails.
 
 = 4.9.5 - February 7, 2024 =
 * Fixed bug that failed to save some Videopack settings when they were disabled.
