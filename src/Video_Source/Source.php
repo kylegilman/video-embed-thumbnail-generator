@@ -1,6 +1,6 @@
 <?php
 
-namespace Videopack\Admin\Input;
+namespace Videopack\Video_Source;
 
 /**
  * Class Video_Input
@@ -13,7 +13,7 @@ namespace Videopack\Admin\Input;
  * @param string $type
  * @param \Videopack\Admin\Options $options_manager
  */
-abstract class Video_Input {
+abstract class Source {
 	/**
 	 * Primary source of the video. This could be a URL, attachment ID, or other source.
 	 * @var string|int $source
@@ -63,9 +63,15 @@ abstract class Video_Input {
 
 	/**
 	 * Is the video source on the same server as the WordPress installation?
-	 * @var boolean $same_server
+	 * @var boolean $local
 	 */
-	protected $same_server;
+	protected $local;
+
+	/**
+	 * Parent ID. Could be a post ID, attachment ID, or null.
+	 * @var int|null $parent_id
+	 */
+	protected $parent_id;
 
 	/**
 	 * Array of parts of the video path. Used for generating thumbnails, encoding video formats, and other file operations.
@@ -74,6 +80,7 @@ abstract class Video_Input {
 	 *     @type string $basename
 	 *     @type string $extension
 	 *     @type string $filename
+	 *     @type string $no_extension
 	 * }
 	 */
 	protected $path_parts;
@@ -95,6 +102,12 @@ abstract class Video_Input {
 	 * @var \Videopack\Admin\Formats\Codecs\Video_Codec $codec
 	 */
 	protected $codec;
+
+	/**
+	 * Video resolution.
+	 * @var \Videopack\Admin\Formats\Video_Resolution $resolution
+	 */
+	protected $resolution;
 
 	/**
 	 * @var int $width
@@ -154,7 +167,8 @@ abstract class Video_Input {
 		string $type,
 		\Videopack\Admin\Options $options_manager,
 		$format = null,
-		$exists = null
+		$exists = null,
+		$parent_id = null
 	) {
 		$this->source          = $source;
 		$this->type            = $type;
@@ -163,9 +177,10 @@ abstract class Video_Input {
 		$this->video_formats   = $this->options_manager->get_video_formats();
 		$this->format          = $format;
 		$this->exists          = $exists;
+		$this->parent_id       = $parent_id;
 	}
 
-	abstract protected function fetch_metadata();
+	abstract protected function set_metadata();
 
 	protected function validate_source( $source ): bool {
 
@@ -213,13 +228,44 @@ abstract class Video_Input {
 		return $this->direct_path;
 	}
 
-	abstract protected function set_same_server(): void;
+	abstract protected function set_local(): void;
 
-	public function is_same_server(): bool {
-		if ( ! isset( $this->same_server ) ) {
-			$this->set_same_server();
+	public function is_local(): bool {
+		if ( ! isset( $this->local ) ) {
+			$this->set_local();
 		}
-		return $this->same_server;
+		return $this->local;
+	}
+
+	protected function get_current_post_id(): int {
+		$post = get_post();
+		if ( is_a( $post, 'WP_Post' ) ) {
+			return $post->ID;
+		}
+
+		if ( ! is_admin() ) {
+			$queried_object_id = get_queried_object_id();
+			if ( ! empty( $queried_object_id ) ) {
+				return $queried_object_id;
+			}
+		}
+
+		// No post ID found
+		return null;
+	}
+
+	abstract protected function set_parent_id(): void;
+
+	public function get_parent_id(): int {
+		if ( ! $this->parent_id ) {
+			$this->set_parent_id();
+		}
+		return $this->parent_id;
+	}
+
+	public function get_new_file_path(): string {
+		$uploads = wp_upload_dir();
+		return $uploads['path'];
 	}
 
 	protected function set_path_parts(): void {
@@ -320,6 +366,28 @@ abstract class Video_Input {
 		return $this->mime_type;
 	}
 
+	public function get_format(): string {
+		if ( ! $this->format ) {
+			$this->set_format();
+		}
+		return $this->format;
+	}
+
+	protected function set_format(): void {
+		$codec      = $this->get_codec();
+		$resolution = $this->get_resolution();
+
+		if ( $codec && $resolution ) {
+			$formats = $this->options_manager->get_video_formats();
+			foreach ( $formats as $format ) {
+				if ( $format->get_codec() === $codec && $format->get_resolution() === $resolution ) {
+					$this->format = $format->get_id();
+					break;
+				}
+			}
+		}
+	}
+
 	public function get_preferred_codecs(): array {
 		$preferred_codecs = array(
 			'video/mp4'  => 'h264',
@@ -362,16 +430,88 @@ abstract class Video_Input {
 		return false;
 	}
 
-	abstract protected function set_codec(): void;
+	public function get_fourcc(): string {
+		if ( ! isset( $this->metadata['fourcc'] ) ) {
+			$this->set_fourcc();
+		}
+		return $this->metadata['fourcc'];
+	}
 
-	public function get_codec(): \Videopack\Admin\Formats\Codecs\Video_Codec {
+	protected function set_fourcc(): void {
+		if ( $this->exists() && $this->is_local() ) {
+			$video_info = wp_read_video_metadata( $this->source );
+			if ( isset( $video_info['video']['fourcc'] ) ) {
+				$this->metadata['fourcc'] = $video_info['video']['fourcc'];
+			}
+		}
+	}
+
+	protected function set_codec(): void {
+
+		$codecs = $this->options_manager->get_video_codecs();
+
+		if ( $this->get_format() ) {
+			$formats = $this->options_manager->get_video_formats();
+			if ( array_key_exists( $this->format, $formats ) ) {
+				$this->codec = $formats[ $this->format ]->get_codec();
+			}
+		} elseif ( $this->get_fourcc() ) {
+			foreach ( $codecs as $codec ) {
+				if ( $codec->get_fourcc() === $this->get_fourcc() ) {
+					$this->codec = $codec;
+					break;
+				}
+			}
+		} else {
+			$codec = $this->get_codec_by_mime_type();
+			if ( $codec ) {
+				$this->codec = $codec;
+			}
+		}
+	}
+
+	public function get_codec() {
 		if ( ! $this->codec ) {
 			$this->set_codec();
 		}
 		return $this->codec;
 	}
 
-	abstract protected function set_dimensions();
+	protected function set_resolution(): void {
+
+		if ( $this->get_format() ) {
+			$formats = $this->options_manager->get_video_formats();
+			if ( array_key_exists( $this->format, $formats ) ) {
+				$this->resolution = $formats[ $this->format ]->get_resolution();
+			}
+		} elseif ( $this->get_height() ) {
+			$resolutions = $this->options_manager->get_video_resolutions();
+			foreach ( $resolutions as $resolution ) {
+				if ( $resolution->get_height() === $this->get_height() ) {
+					$this->resolution = $resolution;
+					break;
+				}
+			}
+		}
+	}
+
+	public function get_resolution() {
+		if ( ! $this->resolution ) {
+			$this->set_resolution();
+		}
+		return $this->resolution;
+	}
+
+	protected function set_dimensions(): void {
+
+		if ( $this->metadata['width'] ) {
+			$this->width = $this->metadata['width'];
+		}
+
+		if ( $this->metadata['height'] ) {
+			$this->height = $this->metadata['height'];
+		}
+	}
 
 	public function get_dimensions(): array {
 
@@ -383,6 +523,24 @@ abstract class Video_Input {
 			'width'  => $this->width,
 			'height' => $this->height,
 		);
+	}
+
+	public function get_width(): int {
+
+		if ( ! $this->width ) {
+			$this->set_dimensions();
+		}
+
+		return $this->width;
+	}
+
+	public function get_height(): int {
+
+		if ( ! $this->height ) {
+			$this->set_dimensions();
+		}
+
+		return $this->height;
 	}
 
 	protected function set_aspect_ratio(): void {
@@ -404,7 +562,9 @@ abstract class Video_Input {
 		return $this->aspect_ratio;
 	}
 
-	abstract protected function set_duration(): void;
+	protected function set_duration(): void {
+		$this->duration = $this->metadata['duration'];
+	}
 
 	public function get_duration(): float {
 
@@ -452,6 +612,10 @@ abstract class Video_Input {
 
 	abstract protected function set_child_sources(): void;
 
+	public function set_child_source( $format_id, \Videopack\Video_Source\Source $source ): void {
+		$this->child_sources[ $format_id ] = $source;
+	}
+
 	protected function find_attachment_children(): array {
 		if ( is_numeric( $this->source ) ) {
 			$args = array(
@@ -477,13 +641,152 @@ abstract class Video_Input {
 		return get_posts( $args );
 	}
 
+	protected function find_format_in_posts( $posts, \Videopack\Admin\Formats\Video_Format $format ): bool {
 
-	protected function is_format_in_same_directory( string $suffix ) {
-		$file = $this->get_no_extension() . $suffix;
-		if ( file_exists( $file ) ) {
-			return $file;
+		if ( $posts ) {
+			foreach ( $posts as $post ) {
+				if ( is_a( $post, 'WP_Post' ) ) {
+					$meta_format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
+					if ( $meta_format === $format->get_id()
+						|| $meta_format === $format->get_legacy_id()
+					) {
+						$this->set_child_source(
+							$format->get_id(),
+							Source_Factory::create(
+								$post->ID,
+								$this->options_manager,
+								$format->get_id(),
+								true,
+								'attachment_local'
+							)
+						);
+						return true;
+					}
+				}
+			}
 		}
 		return false;
+	}
+
+	protected function find_format_in_same_directory( \Videopack\Admin\Formats\Video_Format $format ) {
+
+		$file = $this->get_no_extension() . $format->get_suffix();
+		if ( ! file_exists( $file ) ) {
+			$legacy_file = $this->get_no_extension() . $format->get_legacy_suffix();
+			if ( file_exists( $legacy_file ) ) {
+				$file = $legacy_file;
+			}
+		}
+
+		if ( file_exists( $file ) ) {
+
+			$attachment_manager = new \Videopack\Admin\Attachment( $this->options_manager );
+			$attachment_id      = $attachment_manager->url_to_id( $file );
+
+			if ( $attachment_id ) {
+				$this->set_child_source(
+					$format->get_id(),
+					Source_Factory::create(
+						$attachment_id,
+						$this->options_manager,
+						$format->get_id(),
+						true,
+						'attachment_local'
+					)
+				);
+				return true;
+			}
+
+			$this->set_child_source(
+				$format->get_id(),
+				Source_Factory::create(
+					$file,
+					$this->options_manager,
+					$format->get_id(),
+					true,
+					'file_local'
+				)
+			);
+			return true;
+		}
+
+		return false;
+	}
+
+	protected function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, $post_id ) {
+
+		$sanitized_url = \Videopack\Common\Validate::sanitize_url( $this->url );
+		$potential_url = $this->get_no_extension() . $format->get_suffix();
+		$meta_key      = '_videopack-' . $sanitized_url['singleurl_id'] . '-' . $format->get_id();
+
+		$already_checked_url = get_post_meta( $post_id, $meta_key, true );
+		if ( empty( $already_checked_url ) ) {
+			if ( $this->url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
+				update_post_meta( $post_id, $meta_key, $potential_url );
+				$this->set_child_source(
+					$format->get_id(),
+					Source_Factory::create(
+						$potential_url,
+						$this->options_manager,
+						$format->get_id(),
+						true,
+						'url'
+					)
+				);
+				return true;
+			} else {
+				update_post_meta( $post_id, $meta_key, 'not found' );
+			}
+		} elseif ( substr( $already_checked_url, 0, 4 ) == 'http' ) { // url already checked
+			// if it smells like a URL...
+			$this->set_child_source(
+				$format->get_id(),
+				Source_Factory::create(
+					$already_checked_url,
+					$this->options_manager,
+					$format->get_id(),
+					true,
+					'url'
+				)
+			);
+			return true;
+		}
+		return false;
+	}
+
+	protected function create_source_placeholder( \Videopack\Admin\Formats\Video_Format $format ) {
+
+		$this->set_child_source(
+			$format->get_id(),
+			Source_Factory::create(
+				$this->get_new_file_path() . $this->get_basename() . $format->get_suffix(),
+				$this->options_manager,
+				$format->get_id(),
+				false,
+				'placeholder_local'
+			)
+		);
+	}
+
+	protected function url_exists( $url ) {
+
+		$transient_key = 'videopack_url_exists_' . md5( $url );
+		$exists        = get_transient( $transient_key );
+
+		if ( $exists ) {
+			return true;
+		}
+
+		$response = wp_remote_head( $url, array( 'redirection' => 5 ) );
+
+		if ( is_wp_error( $response ) ) {
+			return false; // In case of error, consider the URL does not exist
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		$exists        = ( $response_code >= 200 && $response_code < 300 );
+		set_transient( $transient_key, $exists, DAY_IN_SECONDS );
+		return ( $exists );
 	}
 
 	public function get_video_player_source(): array {
