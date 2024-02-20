@@ -47,7 +47,7 @@ class Video_Resolution {
 		if ( isset( $properties['label'] ) ) {
 			$this->label = $properties['label'];
 		} else {
-			$this->label = $this->id . 'p';
+			$this->label = $this->height . 'p';
 		}
 
 		if ( isset( $properties['id'] ) ) {
@@ -100,5 +100,14 @@ class Video_Resolution {
 	 */
 	public function get_height() {
 		return $this->height;
+	}
+
+	public function set_height( $height ) {
+		if ( ! $this->height ) {
+			$this->height = intval( $height );
+		}
+		if ( ! $this->label ) {
+			$this->label = $height . 'p';
+		}
 	}
 }
