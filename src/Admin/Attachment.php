@@ -23,8 +23,8 @@ class Attachment {
 		$post_id    = false;
 		$search_url = $this->get_transient_name( $url );
 
-		if ( $this->options['transient_cache'] == true ) {
-			$post_id = get_transient( 'kgvid_' . $search_url );
+		if ( $this->options['transient_cache'] === true ) {
+			$post_id = get_transient( 'videopack_url_cache_' . md5( $search_url ) );
 		}
 
 		if ( $post_id === false ) {
@@ -76,7 +76,7 @@ class Attachment {
 					$post_id = 'not found'; // don't save a transient value that could evaluate as false
 				}
 
-				set_transient( 'videopack_' . $search_url, $post_id, MONTH_IN_SECONDS );
+				set_transient( 'videopack_url_cache_' . md5( $search_url ), $post_id, MONTH_IN_SECONDS );
 			}
 		}//end if
 
@@ -84,7 +84,12 @@ class Attachment {
 			$post_id = null;
 		}
 
-		return $post_id;
+		/**
+		 * Filters the post ID returned for a given URL.
+		 * @param int|null $post_id The post ID.
+		 * @param string $url The URL.
+		 */
+		return apply_filters( 'videopack_url_to_id', $post_id, $url );
 	}
 
 	public function is_animated_gif( $filename ) {
