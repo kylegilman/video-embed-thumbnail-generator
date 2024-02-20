@@ -191,6 +191,19 @@ class Attachment_Meta {
 		}
 	}
 
+	public function add_extra_video_metadata( $metadata, $file, $file_format, $data ) {
+
+		if ( ! empty( $data['video']['fourcc'] ) ) {
+			$metadata['fourcc'] = $data['video']['fourcc'];
+		}
+
+		if ( ! empty( $data['video']['frame_rate'] ) ) {
+			$metadata['frame_rate'] = $data['video']['frame_rate'];
+		}
+
+		return $metadata;
+	}
+
 	public function url_mime_type( $url, $post_id = false ) {
 
 		$mime_info = array(
