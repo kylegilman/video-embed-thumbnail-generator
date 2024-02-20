@@ -159,6 +159,7 @@ class Videopack {
 
 		$attachment_meta = new Admin\Attachment_Meta( $this->options_manager );
 		$this->loader->add_action( 'init', $attachment_meta, 'register' );
+		$this->loader->add_action( 'wp_read_video_metadata', $attachment_meta, 'add_extra_video_metadata', 10, 4 );
 
 		$plugin_attachment = new Admin\Attachment( $this->options_manager );
 		$this->loader->add_action( 'delete_attachment', $plugin_attachment, 'delete_video_attachment' );
