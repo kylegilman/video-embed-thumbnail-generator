@@ -139,13 +139,15 @@ if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.
 
 function videopack_cleanup_plugin() {
 
-	$options = kgvid_default_options_fn();
+	$options_manager = \Videopack\Admin\Options::get_instance();
+	$options		 = $options_manager->get_options();
+	$cleanup         = new \Videopack\Admin\Cleanup();
 
 	wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) );
 	wp_clear_scheduled_hook( 'kgvid_cleanup_generated_thumbnails' );
-	kgvid_cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
+	$cleanup->cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
 
-	kgvid_delete_transients(); //clear URL cache
+	$cleanup->delete_transients(); //clear URL cache
 	delete_transient( 'kgvid_new_attachment_transient' );
 	delete_option( 'kgvid_video_embed_cms_switch' );
 
@@ -206,7 +208,7 @@ function videopack_uninstall_plugin() {
 		delete_option( 'kgvid_video_embed_queue' );
 
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
+		$table_name = $wpdb->prefix . 'videopack_queue';
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %s', $table_name ) );
 
 	} else {
@@ -233,7 +235,7 @@ function videopack_uninstall_plugin() {
  * then kicking off the plugin from this point in the file does
  * not affect the page life cycle.
  *
- * @since    1.0.0
+ * @since    5.0.0
  */
 function run_videopack() {
 
