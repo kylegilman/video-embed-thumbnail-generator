@@ -340,6 +340,13 @@ class Options {
 
 		$resolution_properties = array(
 			array(
+				'id'              => 'fullres',
+				'height'          => false,
+				'name'            => esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' ),
+				'label'           => false,
+				'default_encode'  => false,
+			),
+			array(
 				'height'          => 2160,
 				'name'            => esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
 				'default_encode'  => true,
@@ -417,7 +424,9 @@ class Options {
 
 		foreach ( $video_codecs as $codec ) {
 			foreach ( $video_resolutions as $resolution ) {
-				if ( is_array($this->options) && isset($this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] ) ) {
+				if ( is_array( $this->options )
+					&& isset( $this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] )
+				) {
 					$enabled = $this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ];
 				} else {
 					$enabled = false;
