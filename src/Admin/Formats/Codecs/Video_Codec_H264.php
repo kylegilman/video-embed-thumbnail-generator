@@ -10,7 +10,7 @@ class Video_Codec_H264 extends Video_Codec {
 			'id'             => 'h264',
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
-			'fourcc'         => 'avc1',
+			'codecs_att'     => 'avc1',
 			'vcodec'         => 'libx264',
 			'rate_control'   => array(
 				'crf' => array(

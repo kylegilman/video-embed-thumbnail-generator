@@ -52,7 +52,7 @@ class Attachment_Meta {
 			'maxheight'         => '',
 			'animated'          => 'notchecked',
 			'frame_rate'        => '',
-			'fourcc'            => '',
+			'codec'             => '',
 		);
 
 		return apply_filters( 'videopack_default_attachment_meta', $meta_key_array );
@@ -134,17 +134,17 @@ class Attachment_Meta {
 			}
 		}
 
-		if ( ! $kgvid_postmeta['fourcc'] || ! $kgvid_postmeta['frame_rate'] ) {
+		if ( ! $kgvid_postmeta['codec'] || ! $kgvid_postmeta['frame_rate'] ) {
 			$video_path = get_attached_file( $post_id );
 			$video_info = wp_read_video_metadata( $video_path );
 
-			if ( ! $kgvid_postmeta['fourcc'] && isset( $video_info['video']['fourcc'] ) ) {
-				$kgvid_postmeta['fourcc'] = $video_info['video']['fourcc'];
+			if ( ! $kgvid_postmeta['codec'] && isset( $video_info['codec'] ) ) {
+				$kgvid_postmeta['codec'] = $video_info['codec'];
 				$changed                  = true;
 			}
 
-			if ( ! $kgvid_postmeta['frame_rate'] && isset( $video_info['video']['frame_rate'] ) ) {
-				$kgvid_postmeta['frame_rate'] = $video_info['video']['frame_rate'];
+			if ( ! $kgvid_postmeta['frame_rate'] && isset( $video_info['frame_rate'] ) ) {
+				$kgvid_postmeta['frame_rate'] = $video_info['frame_rate'];
 				$changed                      = true;
 			}
 		}
@@ -193,8 +193,10 @@ class Attachment_Meta {
 
 	public function add_extra_video_metadata( $metadata, $file, $file_format, $data ) {
 
-		if ( ! empty( $data['video']['fourcc'] ) ) {
-			$metadata['fourcc'] = $data['video']['fourcc'];
+		if ( isset( $data['video']['dataformat'] ) && $data['video']['dataformat'] !== 'quicktime' ) {
+			$metadata['codec'] = str_replace( 'V_', '', $data['video']['dataformat'] );
+		} elseif ( isset( $data['video']['fourcc'] ) ) {
+			$metadata['codec'] = $data['video']['fourcc'];
 		}
 
 		if ( ! empty( $data['video']['frame_rate'] ) ) {

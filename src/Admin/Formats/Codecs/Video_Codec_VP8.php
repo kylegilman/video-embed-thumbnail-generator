@@ -10,7 +10,7 @@ class Video_Codec_VP8 extends Video_Codec {
 			'id'             => 'vp8',
 			'container'      => 'webm',
 			'mime'           => 'video/webm',
-			'fourcc'         => 'vp80',
+			'codecs_att'     => 'vp8',
 			'vcodec'         => 'libvpx',
 			'rate_control'   => array(
 				'crf' => array(
