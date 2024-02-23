@@ -10,7 +10,7 @@ class Video_Codec_OGV extends Video_Codec {
 			'id'             => 'ogv',
 			'container'      => 'ogv',
 			'mime'           => 'video/ogg',
-			'fourcc'         => 'theo',
+			'codecs_att'     => 'theora',
 			'vcodec'         => 'libtheora',
 			'rate_control'   => array(
 				'crf' => array(

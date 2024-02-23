@@ -46,7 +46,7 @@ class Video_Codec {
 	 *
 	 * @var string
 	 */
-	protected $fourcc;
+	protected $codecs_att;
 
 	/**
 	 * Video codec.
@@ -79,8 +79,8 @@ class Video_Codec {
 		$this->label          = $properties['label'] ?? 'Video';
 		$this->id             = $properties['id'] ?? 'h264';
 		$this->container      = $properties['container'] ?? 'mp4';
-		$this->mime           = $properties['mime'] ?? 'video/mp4';
-		$this->fourcc         = $properties['fourcc'] ?? 'avc1';
+		$this->mime_type      = $properties['mime'] ?? 'video/mp4';
+		$this->codecs_att     = $properties['codecs_att'] ?? 'avc1';
 		$this->vcodec         = $properties['vcodec'] ?? 'libx264';
 		$this->rate_control   = $properties['rate_control'] ?? array(
 			'crf' => array(
@@ -107,8 +107,8 @@ class Video_Codec {
 			'label'          => $this->label,
 			'id'             => $this->id,
 			'container'      => $this->container,
-			'mime'           => $this->mime,
-			'fourcc'         => $this->fourcc,
+			'mime_type'      => $this->mime_type,
+			'codecs_att'     => $this->codecs_att,
 			'vcodec'         => $this->vcodec,
 			'rate_control'   => $this->rate_control,
 			'default_encode' => $this->default_encode,
@@ -165,8 +165,8 @@ class Video_Codec {
 	 *
 	 * @return string Codec string.
 	 */
-	public function get_fourcc() {
-		return $this->fourcc;
+	public function get_codecs_att() {
+		return $this->codecs_att;
 	}
 
 	/**

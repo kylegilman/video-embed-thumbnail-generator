@@ -10,7 +10,7 @@ class Video_Codec_H265 extends Video_Codec {
 			'id'             => 'h265',
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
-			'fourcc'         => 'hev1',
+			'codecs_att'     => 'hev1',
 			'vcodec'         => 'libx265',
 			'rate_control'   => array(
 				'crf' => array(
