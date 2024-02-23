@@ -215,8 +215,8 @@ class Videopack {
 	 */
 	private function define_frontend_hooks() {
 
-		$frontend_assets = new Frontend\Assets( $this->options_manager );
-		$this->loader->add_action( 'wp_enqueue_scripts', $frontend_assets, 'enqueue_assets' );
+		$frontend_player = Frontend\Video_Players\Player_Factory::create( $this->options_manager );
+		$frontend_player->register_hooks();
 
 		$frontend_metadata = new Frontend\Metadata( $this->options_manager );
 		$this->loader->add_action( 'wp_head', $frontend_metadata, 'print_scripts' );

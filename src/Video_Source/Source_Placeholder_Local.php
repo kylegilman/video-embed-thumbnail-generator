@@ -2,37 +2,37 @@
 
 namespace Videopack\Video_Source;
 
-class Source_File_Local extends Source {
+class Source_Placeholder_Local extends Source {
 
 	public function __construct(
 		string $source,
 		\Videopack\Admin\Options $options_manager,
 		$format = null,
-		$exists = null,
+		$exists = false,
 		$parent_id = null
 	) {
 
 		if ( $this->validate_source( $source ) ) {
-			parent::__construct( $source, 'file_local', $options_manager, $format, $exists, $parent_id );
+			parent::__construct( $source, 'placeholder_local', $options_manager, $format, $exists, $parent_id );
 		} else {
 			throw new \Exception( esc_html__( 'Source is empty.', 'video-embed-thumbnail-generator' ) );
 		}
 	}
 
 	public function set_metadata( array $metadata = null ): void {
-		if ( $metadata ) {
-			$this->metadata = $metadata;
-			return;
-		}
-		$this->metadata = wp_read_video_metadata( $this->source );
+		$this->metadata = array(
+			'height' => $this->get_resolution()->get_height(),
+			'fourcc' => $this->get_codec()->get_codecs_att(),
+		);
 	}
+
 
 	protected function set_url(): void {
 		$this->url = str_replace( ABSPATH, site_url( '/' ), $this->source );
 	}
 
 	protected function set_exists(): void {
-		$this->exists = file_exists( $this->source );
+		$this->exists = false;
 	}
 
 	protected function set_direct_path(): void {
@@ -43,16 +43,8 @@ class Source_File_Local extends Source {
 		$this->local = true;
 	}
 
-	protected function set_child_sources(): void {
-
-		foreach ( $this->video_formats as $format ) {
-
-			$same_directory = $this->find_format_in_same_directory( $format );
-			if ( $same_directory ) {
-				continue;
-			}
-
-			$this->create_source_placeholder( $format );
-		}
-	}
+	/**
+	 * Placeholder sources cannot have children.
+	 */
+	protected function set_child_sources(): void {}
 }

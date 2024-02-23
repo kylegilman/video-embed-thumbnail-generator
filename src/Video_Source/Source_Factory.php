@@ -14,11 +14,12 @@ class Source_Factory {
 	) {
 
 		if ( ! $source_type ) {
-			list( $source, $source_type ) = self::determine_input_type( $source, $options_manager, $exists );
+			list( $source, $source_type ) = self::determine_source_type( $source, $options_manager, $exists );
 		}
+
 		/**
-		 * Allow modification of the input type or direct overriding of the instance creation
-		 * for custom input types.
+		 * Allow modification of the source type or direct overriding of the instance creation
+		 * for custom source types.
 		 * @param Source|null $video_source_instance
 		 * @param mixed       $source                 attachment ID, file path, URL, etc.
 		 * @param Options     $options_manager
@@ -27,10 +28,10 @@ class Source_Factory {
 		 * @param int|null    $parent_id
 		 * @param string      $source_type            as determined by the factory
 		 */
-		$video_input_instance = apply_filters( 'videopack_source_class', null, $source, $options_manager, $format, $exists, $parent_id, $source_type );
+		$video_source_instance = apply_filters( 'videopack_source_class', null, $source, $options_manager, $format, $exists, $parent_id, $source_type );
 
-		if ( null !== $video_input_instance ) {
-			return $video_input_instance;
+		if ( null !== $video_source_instance ) {
+			return $video_source_instance;
 		}
 
 		switch ( $source_type ) {
@@ -40,14 +41,14 @@ class Source_Factory {
 				return new Source_File_Local( $source, $options_manager, $format, $exists, $parent_id );
 			case 'url':
 				return new Source_Url( $source, $options_manager, $format, $exists, $parent_id );
-			case 'placeholder_local':
+			case 'placeholder':
 				return new Source_Placeholder_Local( $source, $options_manager, $format, false, $parent_id );
 		}
 
 		return null;
 	}
 
-	protected static function determine_input_type( $source, $options_manager ) {
+	protected static function determine_source_type( $source, $options_manager ) {
 
 		if ( is_numeric( $source ) && get_post_type( $source ) === 'attachment' ) {
 			return array( $source, 'attachment_local' );
@@ -60,6 +61,6 @@ class Source_Factory {
 			}
 			return array( $source, 'url' );
 		}
-		return array( $source, 'placeholder_local' );
+		return array( $source, 'placeholder' );
 	}
 }
