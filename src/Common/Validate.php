@@ -208,7 +208,7 @@ class Validate {
 
 		if ( empty( $path_info['extension'] ) ) {
 			$sanitized_url['noextension'] = $movieurl;
-			$sanitized_url['basename'] = substr( $movieurl, -20 );
+			$sanitized_url['basename']    = substr( $movieurl, -20 );
 			// Early return if no extension is found
 			return self::finalize_sanitized_url( $sanitized_url );
 		}

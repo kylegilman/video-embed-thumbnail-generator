@@ -19,6 +19,12 @@ class Source_Url extends Source {
 		}
 	}
 
+	public function set_metadata( array $metadata = null ): void {
+		if ( $metadata ) {
+			$this->metadata = $metadata;
+		}
+	}
+
 	protected function set_url(): void {
 		$this->url = $this->source;
 	}
@@ -33,22 +39,6 @@ class Source_Url extends Source {
 
 	protected function set_local(): void {
 		$this->local = false;
-	}
-
-	protected function set_parent_id(): void {
-		$this->get_current_post_id();
-	}
-
-	protected function set_title(): void {
-		$this->title = basename( $this->source );
-	}
-
-	protected function set_mime_type(): void {
-		$this->mime_type = mime_content_type( $this->source );
-	}
-
-	public function set_metadata(): void {
-		$this->metadata = wp_read_video_metadata( $this->source );
 	}
 
 	protected function set_child_sources(): void {

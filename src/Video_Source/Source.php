@@ -3,7 +3,7 @@
 namespace Videopack\Video_Source;
 
 /**
- * Class Video_Input
+ * Class Video_Source
  * Defines the base class for video input types.
  *
  * @since 5.0.0
@@ -19,6 +19,12 @@ abstract class Source {
 	 * @var string|int $source
 	 */
 	protected $source;
+
+	/**
+	 * Unique ID of the video source. This could be an attachment ID or other identifier based on filename.
+	 * @var string $source_id
+	 */
+	protected $source_id;
 
 	/**
 	 * Videopack Options manager class instance
@@ -147,13 +153,13 @@ abstract class Source {
 	protected $compatible;
 
 	/**
-	 * Array of \Videopack\Admin\Formats\Video_Input objects.
+	 * Array of \Videopack\Admin\Formats\Video_Source objects.
 	 * @var array $child_sources
 	 */
 	protected $child_sources;
 
 	/**
-	 * Video_Input constructor.
+	 * Video_Source constructor.
 	 *
 	 * @param string|int $source
 	 * @param string $type
@@ -180,7 +186,7 @@ abstract class Source {
 		$this->parent_id       = $parent_id;
 	}
 
-	abstract protected function set_metadata();
+	abstract public function set_metadata( array $metadata = null ): void;
 
 	protected function validate_source( $source ): bool {
 
@@ -201,6 +207,18 @@ abstract class Source {
 		$this->source = $source;
 	}
 
+	public function get_source_id(): string {
+		if ( ! $this->source_id ) {
+			$this->set_source_id();
+		}
+		return $this->source_id;
+	}
+
+	protected function set_source_id(): void {
+		$sanitized_url   = \Videopack\Common\Validate::sanitize_url( $this->url );
+		$this->source_id = $sanitized_url['singleurl_id'];
+	}
+
 	abstract protected function set_url(): void;
 
 	public function get_url(): string {
@@ -208,6 +226,10 @@ abstract class Source {
 			$this->set_url();
 		}
 		return $this->url;
+	}
+
+	public function get_download_url(): string {
+		return $this->get_url();
 	}
 
 	abstract protected function set_exists(): void;
@@ -254,7 +276,9 @@ abstract class Source {
 		return null;
 	}
 
-	abstract protected function set_parent_id(): void;
+	protected function set_parent_id(): void {
+		$this->get_current_post_id();
+	}
 
 	public function get_parent_id(): int {
 		if ( ! $this->parent_id ) {
@@ -348,7 +372,9 @@ abstract class Source {
 		return $this->compatible;
 	}
 
-	abstract protected function set_title(): void;
+	protected function set_title(): void {
+		$this->title = basename( $this->source );
+	}
 
 	public function get_title(): string {
 		if ( ! $this->title ) {
@@ -357,7 +383,13 @@ abstract class Source {
 		return $this->title;
 	}
 
-	abstract protected function set_mime_type(): void;
+	protected function set_mime_type(): void {
+		if ( $this->get_codec() ) {
+			$this->mime_type = $this->get_codec()->get_mime_type();
+		} else {
+			$this->mime_type = mime_content_type( $this->source );
+		}
+	}
 
 	public function get_mime_type(): string {
 		if ( ! $this->mime_type ) {
@@ -430,19 +462,21 @@ abstract class Source {
 		return false;
 	}
 
-	public function get_fourcc(): string {
-		if ( ! isset( $this->metadata['fourcc'] ) ) {
-			$this->set_fourcc();
+	public function get_metadata_codec(): string {
+		if ( ! isset( $this->metadata['codec'] ) ) {
+			$this->set_metadata_codec();
 		}
-		return $this->metadata['fourcc'];
+		return $this->metadata['codec'];
 	}
 
-	protected function set_fourcc(): void {
+	protected function set_metadata_codec(): void {
+
 		if ( $this->exists() && $this->is_local() ) {
-			$video_info = wp_read_video_metadata( $this->source );
-			if ( isset( $video_info['video']['fourcc'] ) ) {
-				$this->metadata['fourcc'] = $video_info['video']['fourcc'];
-			}
+			$video_metadata = wp_read_video_metadata( $this->source );
+		}
+
+		if ( isset( $video_metadata['codec'] ) ) {
+			$this->metadata['codec'] = $video_metadata['codec'];
 		}
 	}
 
@@ -455,9 +489,9 @@ abstract class Source {
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$this->codec = $formats[ $this->format ]->get_codec();
 			}
-		} elseif ( $this->get_fourcc() ) {
+		} elseif ( $this->get_metadata_codec() ) {
 			foreach ( $codecs as $codec ) {
-				if ( $codec->get_fourcc() === $this->get_fourcc() ) {
+				if ( $codec->get_codecs_att() === $this->get_metadata_codec() ) {
 					$this->codec = $codec;
 					break;
 				}
@@ -612,8 +646,15 @@ abstract class Source {
 
 	abstract protected function set_child_sources(): void;
 
-	public function set_child_source( $format_id, \Videopack\Video_Source\Source $source ): void {
-		$this->child_sources[ $format_id ] = $source;
+	public function set_child_source( string $format_id, $source, bool $exists, string $source_type ): void {
+		$this->child_sources[ $format_id ] = Source_Factory::create(
+			$source,
+			$this->options_manager,
+			$format_id,
+			$exists,
+			$this->get_parent_id(),
+			$source_type
+		);
 	}
 
 	protected function find_attachment_children(): array {
@@ -652,13 +693,9 @@ abstract class Source {
 					) {
 						$this->set_child_source(
 							$format->get_id(),
-							Source_Factory::create(
-								$post->ID,
-								$this->options_manager,
-								$format->get_id(),
-								true,
-								'attachment_local'
-							)
+							$post->ID,
+							true,
+							'attachment_local'
 						);
 						return true;
 					}
@@ -686,26 +723,18 @@ abstract class Source {
 			if ( $attachment_id ) {
 				$this->set_child_source(
 					$format->get_id(),
-					Source_Factory::create(
-						$attachment_id,
-						$this->options_manager,
-						$format->get_id(),
-						true,
-						'attachment_local'
-					)
+					$attachment_id,
+					true,
+					'attachment_local'
 				);
 				return true;
 			}
 
 			$this->set_child_source(
 				$format->get_id(),
-				Source_Factory::create(
-					$file,
-					$this->options_manager,
-					$format->get_id(),
-					true,
-					'file_local'
-				)
+				$file,
+				true,
+				'file_local'
 			);
 			return true;
 		}
@@ -725,13 +754,10 @@ abstract class Source {
 				update_post_meta( $post_id, $meta_key, $potential_url );
 				$this->set_child_source(
 					$format->get_id(),
-					Source_Factory::create(
-						$potential_url,
-						$this->options_manager,
-						$format->get_id(),
-						true,
-						'url'
-					)
+					$potential_url,
+					true,
+					$this->get_parent_id(),
+					'url'
 				);
 				return true;
 			} else {
@@ -741,13 +767,9 @@ abstract class Source {
 			// if it smells like a URL...
 			$this->set_child_source(
 				$format->get_id(),
-				Source_Factory::create(
-					$already_checked_url,
-					$this->options_manager,
-					$format->get_id(),
-					true,
-					'url'
-				)
+				$already_checked_url,
+				true,
+				'url'
 			);
 			return true;
 		}
@@ -758,13 +780,9 @@ abstract class Source {
 
 		$this->set_child_source(
 			$format->get_id(),
-			Source_Factory::create(
-				$this->get_new_file_path() . $this->get_basename() . $format->get_suffix(),
-				$this->options_manager,
-				$format->get_id(),
-				false,
-				'placeholder_local'
-			)
+			$this->get_new_file_path() . $this->get_basename() . $format->get_suffix(),
+			false,
+			'placeholder'
 		);
 	}
 
@@ -789,17 +807,24 @@ abstract class Source {
 		return ( $exists );
 	}
 
+	protected function get_codecs_att(): string {
+		$codecs = '';
+		if ( $this->get_metadata_codec() ) {
+			$codecs = $this->get_metadata_codec();
+		} elseif ( $this->get_codec() ) {
+			$codecs = $this->get_codec()->get_codecs_att();
+		}
+		return $codecs;
+	}
+
 	public function get_video_player_source(): array {
 
 		$video_player_source = array(
-			'src'   => $this->get_url(),
-			'type'  => $this->get_mime_type(),
-			'codec' => '',
+			'src'        => $this->get_url(),
+			'type'       => $this->get_mime_type(),
+			'codecs'     => $this->get_codecs_att(),
+			'resolution' => $this->get_resolution(),
 		);
-
-		if ( $this->get_codec() ) {
-			$video_player_source['codec'] = $this->get_codec()->get_fourcc();
-		}
 
 		return $video_player_source;
 	}

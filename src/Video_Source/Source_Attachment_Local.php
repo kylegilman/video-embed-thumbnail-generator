@@ -33,6 +33,21 @@ class Source_Attachment_Local extends Source {
 		return true;
 	}
 
+	public function set_source_id(): void {
+		$this->source_id = $this->source;
+	}
+
+	public function set_metadata( array $metadata = null ): void {
+		if ( $metadata ) {
+			$this->metadata = $metadata;
+			return;
+		}
+		if ( ! $this->meta_manager ) {
+			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
+		}
+		$this->metadata = $this->meta_manager->get( $this->source );
+	}
+
 	protected function set_url(): void {
 		$this->url = wp_get_attachment_url( $this->source );
 	}
@@ -63,13 +78,6 @@ class Source_Attachment_Local extends Source {
 
 	protected function set_mime_type(): void {
 		$this->mime_type = get_post_mime_type( $this->source );
-	}
-
-	public function set_metadata(): void {
-		if ( ! $this->meta_manager ) {
-			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
-		}
-		$this->metadata = $this->meta_manager->get( $this->source );
 	}
 
 	protected function set_child_sources(): void {
