@@ -33,8 +33,8 @@ class Source_Attachment_Local extends Source {
 		return true;
 	}
 
-	public function set_source_id(): void {
-		$this->source_id = $this->source;
+	public function set_id(): void {
+		$this->id = $this->source;
 	}
 
 	public function set_metadata( array $metadata = null ): void {
