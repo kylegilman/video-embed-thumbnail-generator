@@ -12,6 +12,573 @@ class Options {
 	private static $instance = null;
 
 	/**
+     * Version of Video.js in use.
+     * @var string
+     */
+    public $videojs_version = '8.6.1';
+
+    /**
+     * Video player.
+     * @var string
+     */
+    public $embed_method = 'Video.js v8';
+
+    /**
+     * Whether to use a custom template for video output.
+     * @var bool
+     */
+    public $template = false;
+
+    /**
+     * Enable gentle template failover if the custom template is missing.
+     * @var bool
+     */
+    public $template_gentle = true;
+
+    /**
+     * Default video format to replace in the player.
+     * @var string
+     */
+    public $replace_format = 'h264';
+
+    /**
+     * Allow custom video resolutions.
+     * @var bool|int
+     */
+    public $custom_resolution = false;
+
+    /**
+     * Hide child video formats in the Admin area.
+     * @var bool
+     */
+    public $hide_video_formats = true;
+
+    /**
+     * Hide generated thumbnails in the Admin area.
+     * @var bool
+     */
+    public $hide_thumbnails = false;
+
+    /**
+     * Path to the FFmpeg application.
+     * @var string
+     */
+    public $app_path = '';
+
+    /**
+     * Is FFmpeg installed and working.
+     * @var string|bool
+     */
+    public $ffmpeg_exists = 'notchecked';
+
+    /**
+     * Default number of thumbnails to generate.
+     * @var int
+     */
+    public $generate_thumbs = 4;
+
+    /**
+     * Set generated thumbnail as post's featured thumbnail.
+     * @var bool
+     */
+    public $featured = true;
+
+    /**
+     * Parent post type for video thumbnails.
+     * @var string
+     */
+    public $thumb_parent = 'video';
+
+    /**
+     * Criteria for deleting associated media upon video deletion.
+     * @var string
+     */
+    public $delete_children = 'encoded videos only';
+
+    /**
+     * Default poster image URL for videos.
+     * @var string
+     */
+    public $poster = '';
+
+    /**
+     * Watermark image URL.
+     * @var string
+     */
+    public $watermark = '';
+
+    /**
+     * Link target for the watermark.
+     * @var string
+     */
+    public $watermark_link_to = 'home';
+
+    /**
+     * Custom link target for the watermark.
+     * @var string
+     */
+    public $watermark_url = '';
+
+    /**
+     * Overlay video title on the player.
+     * @var bool
+     */
+    public $overlay_title = true;
+
+    /**
+     * Enable embedding code overlay on the player.
+     * @var bool
+     */
+    public $overlay_embedcode = false;
+
+    /**
+     * Display a Facebook share button on the player.
+     * @var bool
+     */
+    public $facebook_button = false;
+
+    /**
+     * Enable a download link for the video.
+     * @var bool
+     */
+    public $downloadlink = false;
+
+    /**
+     * Enable single-click download methods.
+     * @var bool
+     */
+    public $click_download = true;
+
+    /**
+     * Show view count below video.
+     * @var bool
+     */
+    public $view_count = false;
+
+    /**
+     * Level of view count tracking. Acceptable values are 'start_complete', 'quarters', 'start', 'none'.
+     * @var string
+     */
+    public $count_views = 'start_complete';
+
+    /**
+     * Allow videos to be embedded on other sites.
+     * @var bool
+     */
+    public $embeddable = true;
+
+    /**
+     * Default alignment for the video player. Acceptable values are 'left', 'center', 'right'.
+     * @var string
+     */
+    public $align = 'left';
+
+    /**
+     * Default width for the video player.
+     * @var int
+     */
+    public $width = 640;
+
+    /**
+     * Default height for the video player.
+     * @var int
+     */
+    public $height = 360;
+
+    /**
+     * Fixed aspect ratio setting for the video player. Acceptable values are true, false, and 'vertical'.
+     * @var bool|string
+     */
+    public $fixed_aspect = 'vertical';
+
+    /**
+     * Width of the gallery thumbnail images.
+     * @var int
+     */
+    public $gallery_width = 80;
+
+    /**
+     * Number of columns in video galleries.
+     * @var int
+     */
+    public $gallery_columns = 4;
+
+    /**
+     * Custom content to display at the end of video galleries.
+     * @var string
+     */
+    public $gallery_end = '';
+
+    /**
+     * Enable pagination for video galleries.
+     * @var bool
+     */
+    public $gallery_pagination = false;
+
+    /**
+     * Number of videos per page in galleries.
+     * @var bool
+     */
+    public $gallery_per_page = false;
+
+    /**
+     * Display titles in video galleries.
+     * @var bool
+     */
+    public $gallery_title = true;
+
+    /**
+     * Use native controls for touch devices.
+     * @var bool
+     */
+    public $nativecontrolsfortouch = false;
+
+    /**
+     * Show player controls.
+     * @var bool
+     */
+    public $controls = true;
+
+    /**
+     * Autoplay videos.
+     * @var bool
+     */
+    public $autoplay = false;
+
+    /**
+     * Pause other videos when a new video is played.
+     * @var bool
+     */
+    public $pauseothervideos = true;
+
+    /**
+     * Loop video playback.
+     * @var bool
+     */
+    public $loop = false;
+
+    /**
+     * Play videos inline on mobile devices.
+     * @var bool
+     */
+    public $playsinline = true;
+
+    /**
+     * Initial volume of the video player.
+     * @var float
+     */
+    public $volume = 1.0;
+
+    /**
+     * Start videos in muted state.
+     * @var bool
+     */
+    public $muted = false;
+
+    /**
+     * Enable GIF mode for videos.
+     * @var bool
+     */
+    public $gifmode = false;
+
+    /**
+     * Preload setting for videos.
+     * @var string
+     */
+    public $preload = 'metadata';
+
+    /**
+     * Enable playback rate control.
+     * @var bool
+     */
+    public $playback_rate = false;
+
+    /**
+     * Enable skip buttons in the player.
+     * @var bool
+     */
+    public $skip_buttons = false;
+
+    /**
+     * Time to skip forward in seconds.
+     * @var int
+     */
+    public $skip_forward = 10;
+
+    /**
+     * Time to skip backward in seconds.
+     * @var int
+     */
+    public $skip_backward = 10;
+
+    /**
+     * Show overlay at the end of videos.
+     * @var bool
+     */
+    public $endofvideooverlay = false;
+
+    /**
+     * Use the same overlay for all videos at the end.
+     * @var bool
+     */
+    public $endofvideooverlaysame = false;
+
+    /**
+     * Skin class for the video player.
+     * @var string
+     */
+    public $skin = 'kg-video-js-skin';
+
+    /**
+     * JavaScript skin class for the video player.
+     * @var string
+     */
+    public $js_skin = 'kg-video-js-skin';
+
+    /**
+     * Custom attributes for video player element.
+     * @var string
+     */
+    public $custom_attributes = '';
+
+    /**
+     * Bitrate multiplier for encoding.
+     * @var float
+     */
+    public $bitrate_multiplier = 0.1;
+
+    /**
+     * Constant Rate Factor for H.264 encoding.
+     * @var string
+     */
+    public $h264_CRF = '23';
+
+    /**
+     * Audio bitrate for encoding in kbps.
+     * @var int
+     */
+    public $audio_bitrate = 160;
+
+    /**
+     * Enable audio channel modification.
+     * @var bool
+     */
+    public $audio_channels = true;
+
+    /**
+     * Number of threads for video processing.
+     * @var int
+     */
+    public $threads = 1;
+
+    /**
+     * Adjust process priority for video encoding.
+     * @var bool
+     */
+    public $nice = true;
+
+    /**
+     * Generate browser-compatible thumbnails.
+     * @var bool
+     */
+    public $browser_thumbnails = true;
+
+    /**
+     * Rate control method for video encoding.
+     * @var string
+     */
+    public $rate_control = 'crf';
+
+    /**
+     * H.264 profile for video encoding.
+     * @var string
+     */
+    public $h264_profile = 'baseline';
+
+    /**
+     * H.264 level for video encoding.
+     * @var string
+     */
+    public $h264_level = '3.0';
+
+    /**
+     * Automatically encode videos upon upload.
+     * @var bool
+     */
+    public $auto_encode = false;
+
+    /**
+     * Automatically encode GIFs upon upload.
+     * @var bool
+     */
+    public $auto_encode_gif = false;
+
+    /**
+     * Automatically generate thumbnails for videos.
+     * @var bool
+     */
+    public $auto_thumb = false;
+
+    /**
+     * Number of thumbnails to automatically generate.
+     * @var int
+     */
+    public $auto_thumb_number = 1;
+
+    /**
+     * Position for automatic thumbnail generation.
+     * @var int
+     */
+    public $auto_thumb_position = 50;
+
+    /**
+     * Enable right-click on video player.
+     * @var bool
+     */
+    public $right_click = true;
+
+    /**
+     * Enable video resizing.
+     * @var bool
+     */
+    public $resize = true;
+
+    /**
+     * Default video playback resolution. Acceptable values are 'automatic', 'highest', 'lowest'.
+     * @var string
+     */
+    public $auto_res = 'automatic';
+
+    /**
+     * Enable adjustment for pixel ratio when automatically setting playback resolution.
+     * @var bool
+     */
+    public $pixel_ratio = true;
+
+    /**
+     * User capabilities for video processing.
+     * Structured as a nested object.
+     * @var Capabilities
+     */
+    public $capabilities;
+
+    /**
+     * Enable Open Graph tags for videos.
+     * @var bool
+     */
+    public $open_graph = false;
+
+    /**
+     * Enable Schema.org markup for videos.
+     * @var bool
+     */
+    public $schema = true;
+
+    /**
+     * Enable Twitter card markup for videos.
+     * @var bool
+     */
+    public $twitter_card = false;
+
+    /**
+     * Enable oEmbed provider functionality.
+     * @var bool
+     */
+    public $oembed_provider = false;
+
+    /**
+     * Login for .htaccess protected directories.
+     * @var string
+     */
+    public $htaccess_login = '';
+
+    /**
+     * Password for .htaccess protected directories.
+     * @var string
+     */
+    public $htaccess_password = '';
+
+    /**
+     * Default sample format for video encoding.
+     * @var string
+     */
+    public $sample_format = 'mobile';
+
+    /**
+     * Test FFmpeg encode settings on a vertical video.
+     * @var bool
+     */
+    public $sample_rotate = false;
+
+    /**
+     * Watermark settings for thumbnail generation with FFmpeg.
+     * Structured as a nested object.
+     * @var Watermark
+     */
+    public $ffmpeg_thumb_watermark;
+
+    /**
+     * Watermark settings for video encoding with FFmpeg.
+     * Structured as a nested object.
+     * @var Watermark
+     */
+    public $ffmpeg_watermark;
+
+    /**
+     * Maximum number of simultaneous video encoding processes.
+     * @var int
+     */
+    public $simultaneous_encodes = 1;
+
+    /**
+     * Email address to receive error notifications.
+     * @var string
+     */
+    public $error_email = 'nobody';
+
+    /**
+     * Always load video player scripts, regardless of post content.
+     * @var bool
+     */
+    public $alwaysloadscripts = false;
+
+    /**
+     * Replace the default WordPress video shortcode with the Videopack player.
+     * @var bool
+     */
+    public $replace_video_shortcode = false;
+
+    /**
+     * Default method for inserting videos into posts. Acceptable values are 'Single Video', 'Video Gallery', 'WordPress Default'.
+     * @var string
+     */
+    public $default_insert = 'Single Video';
+
+    /**
+     * Enable rewriting of attachment URLs.
+     * @var string
+     */
+    public $rewrite_attachment_url = true;
+
+    /**
+     * Automatically publish posts after video processing.
+     * @var bool
+     */
+    public $auto_publish_post = false;
+
+    /**
+     * Enable transient caching for URL to Attachment ID lookups.
+     * @var bool
+     */
+    public $transient_cache = false;
+
+    /**
+     * Control behavior for video encoding queue. Acceptable values are 'play' and 'pause'
+     * @var string
+     */
+    public $queue_control = 'play';
+
+	/**
 	 * Options array.
 	 *
 	 * @var array
