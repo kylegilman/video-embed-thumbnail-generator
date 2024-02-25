@@ -294,7 +294,7 @@ class Attachment_Meta {
 				'single'        => true,
 				'show_in_rest'  => array(
 					'schema' => array(
-						'type'  => 'object',
+						'type'       => 'object',
 						'properties' => $this->schema(),
 					),
 				),

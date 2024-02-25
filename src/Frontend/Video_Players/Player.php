@@ -88,16 +88,23 @@ abstract class Player {
 		return array( 'jquery' );
 	}
 
-	public function enqueue_shortcode_scripts() {
+	public function enqueue_shortcode_scripts(): void {
 		do_action( 'videopack_enqueue_shortcode_scripts' );
 		wp_enqueue_script( 'videopack' );
+	}
+
+	public function get_source(): ?\Videopack\Video_Source\Source {
+		if ( $this->source instanceof \Videopack\Video_Source\Source ) {
+			return $this->source;
+		}
+		return null;
 	}
 
 	public function set_source( \Videopack\Video_Source\Source $source ) {
 		$this->source = $source;
 	}
 
-	public function set_atts( array $atts ) {
+	public function set_atts( array $atts ): void {
 		$this->atts = $atts;
 	}
 
@@ -105,27 +112,20 @@ abstract class Player {
 		return $this->player_id;
 	}
 
-	public function get_sources(): array {
-		if ( ! $this->sources ) {
+	public function get_sources(): ?array {
+		if ( ! $this->sources && $this->get_source() ) {
 			$this->set_sources();
 		}
 		return $this->sources;
 	}
 
-	public function get_main_source_url(): string {
-		if ( ! $this->sources ) {
-			$this->set_sources();
-		}
-		return $this->sources[0]['src'];
-	}
-
 	protected function set_sources(): void {
 
-		if ( $this->source->is_compatible() ) {
-			$sources[ $this->source->get_format() ] = $this->source->get_video_player_source();
+		if ( $this->get_source()->is_compatible() ) {
+			$sources[ $this->get_source()->get_format() ] = $this->get_source()->get_video_player_source();
 		}
-		if ( $this->source->get_child_sources() ) {
-			foreach ( $this->source->get_child_sources() as $child_source ) {
+		if ( $this->get_source()->get_child_sources() ) {
+			foreach ( $this->get_source()->get_child_sources() as $child_source ) {
 				if ( $child_source->exists() && $child_source->is_compatible() ) {
 					$sources[ $child_source->get_format() ] = $child_source->get_video_player_source();
 				}
@@ -133,15 +133,25 @@ abstract class Player {
 		}
 	}
 
-	public function get_poster() {
+	public function get_main_source_url(): string {
+		if ( ! $this->sources && $this->get_source() ) {
+			$this->set_sources();
+		}
+		if ( isset( $this->sources[0]['src'] ) ) {
+			return $this->sources[0]['src'];
+		}
+		return '';
+	}
+
+	public function get_poster(): string {
 		return $this->atts['poster'];
 	}
 
-	protected function prepare_video_vars() {
+	protected function prepare_video_vars(): array {
 
 		$video_variables = array(
-			'id'                => 'videopack_player_' . $this->player_id,
-			'attachment_id'     => $id,
+			'id'                => 'videopack_player_' . $this->get_id(),
+			'attachment_id'     => $this->get_source() ? $this->get_source()->get_id() : 0,
 			'player_type'       => $this->options['embed_method'],
 			'width'             => $this->atts['width'],
 			'height'            => $this->atts['height'],
@@ -153,9 +163,7 @@ abstract class Player {
 			'pauseothervideos'  => $this->atts['pauseothervideos'],
 			'set_volume'        => $this->atts['volume'],
 			'muted'             => $this->atts['muted'],
-			'meta'              => $this->has_meta_bar(),
 			'endofvideooverlay' => $this->atts['endofvideooverlay'],
-			'resize'            => $this->atts['resize'],
 			'auto_res'          => $this->atts['auto_res'],
 			'pixel_ratio'       => $this->atts['pixel_ratio'],
 			'right_click'       => $this->atts['right_click'],
@@ -166,26 +174,28 @@ abstract class Player {
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
 	}
 
-	public function video_code( $atts ) {
+	public function get_player_code( $atts ): string {
 
 		$this->set_atts( $atts );
 
-		$video_code  = '<div class="videopack-wrapper>';
-		$video_code .= '<div class="videopack-player">';
+		$player_code  = '<div class="videopack-wrapper>';
+		$player_code .= '<div class="videopack-player">';
 		if ( $this->has_meta_bar() ) {
-			$video_code .= $this->meta_bar();
+			$player_code .= $this->get_meta_bar_code();
 		}
-		$video_code .= $this->video();
-		$video_code .= '</div>';
-		$video_code .= $this->below_video();
-		$video_code .= '</div>';
+		$player_code .= $this->get_video_code();
+		$player_code .= '</div>';
+		if ( $this->has_below_video() ) {
+			$player_code .= $this->get_below_video_code();
+		}
+		$player_code .= '</div>';
 
-		return $video_code;
+		return apply_filters( 'videopack_video_player_code', $player_code, $this->atts );
 	}
 
 	protected function has_meta_bar(): bool {
 		return apply_filters(
-			'videopack_has_meta_bar',
+			'videopack_video_player_has_meta_bar',
 			$this->atts['title'] !== false
 			|| $this->atts['embedcode'] !== false
 			|| $this->atts['downloadlink'] === true
@@ -197,7 +207,7 @@ abstract class Player {
 
 	protected function has_embed_meta(): bool {
 		return apply_filters(
-			'videopack_has_embed_meta',
+			'videopack_video_player_has_embed_meta',
 			$this->atts['embeddable']
 			&& ( $this->atts['embedcode'] !== false
 				|| $this->options['twitter_button'] == true
@@ -207,9 +217,9 @@ abstract class Player {
 		);
 	}
 
-	protected function meta_bar(): string {
+	protected function get_meta_bar_code(): string {
 
-		$meta_bar  = '<div class="videopack-meta-bar is-visible">';
+		$meta_bar = '<div class="videopack-meta-bar is-visible">';
 		if ( $this->atts['title'] !== false ) {
 			$meta_bar .= '<span class="videopack-title">' . esc_html( $this->atts['title'] ) . '</span>';
 		}
@@ -219,32 +229,37 @@ abstract class Player {
 		}
 		$meta_bar .= '<a class="download-link" href="' . $this->source->get_download_url() . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"></a>';
 
-		return $meta_bar;
+		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
 	}
 
-	protected function video(): string {
-		$video  = '<video id="videopack_video_' . $this->get_id() . '" ';
-		$video .= 'class="' . esc_attr( implode( ' ', $this->video_classes() ) ) . '" ';
-		$video .= esc_attr( implode( ' ', $this->boolean_video_attributes() ) ) . ' ';
-		$video .= implode( ' ', $this->string_video_attributes() ) . ' ';
-		$video .= '" >';
+	protected function get_video_code(): string {
 
-		$video .= $this->source_elements();
+		$video = '';
 
-		$video .= '</video>';
+		if ( $this->get_source() ) {
+			$video .= '<video id="videopack_video_' . $this->get_id() . '" ';
+			$video .= 'class="' . esc_attr( implode( ' ', $this->get_video_classes() ) ) . '" ';
+			$video .= esc_attr( implode( ' ', $this->get_boolean_video_attributes() ) ) . ' ';
+			$video .= implode( ' ', $this->get_string_video_attributes() ) . ' ';
+			$video .= '" >';
 
-		return $video;
+			$video .= $this->get_source_elements();
+
+			$video .= '</video>';
+		}
+
+		return apply_filters( 'videopack_video_player_code', $video, $this->atts );
 	}
 
-	protected function video_classes(): array {
+	protected function get_video_classes(): array {
 		$classes = array(
 			'videopack-video',
 		);
 
-		return apply_filters( 'videopack_video_classes', $classes, $this->atts );
+		return apply_filters( 'videopack_video_player_classes', $classes, $this->atts );
 	}
 
-	protected function boolean_video_attributes(): array {
+	protected function get_boolean_video_attributes(): array {
 		$attribute_names = array(
 			'autoplay',
 			'controls',
@@ -262,7 +277,7 @@ abstract class Player {
 		return $enabled_attributes;
 	}
 
-	protected function string_video_attributes(): array {
+	protected function get_string_video_attributes(): array {
 
 		$attribute_names = array(
 			'poster',
@@ -280,7 +295,7 @@ abstract class Player {
 		return $string_video_atts;
 	}
 
-	protected function source_elements(): string {
+	protected function get_source_elements(): string {
 		$source_elements = '';
 
 		foreach ( $this->get_sources() as $source ) {
@@ -289,14 +304,14 @@ abstract class Player {
 				$source_elements .= '; codecs=' . $source['codecs'];
 			}
 			$source_elements .= '"';
-			$source_elements .= $this->source_atts( $source );
+			$source_elements .= $this->get_source_atts( $source );
 			$source_elements .= ' />';
 		}
 
-		return $source_elements;
+		return apply_filters( 'videopack_video_player_sources', $source_elements, $this->atts );
 	}
 
-	protected function source_atts( $source ): string {
+	protected function get_source_atts( array $source ): string {
 		$atts = '';
 		if ( ! empty( $source['resolution'] ) ) {
 			$atts .= ' data-res="' . $source['resolution'] . '"';
@@ -304,10 +319,27 @@ abstract class Player {
 		if ( ! empty( $source['default_res'] ) ) {
 			$atts .= ' data-default_res="' . $source['default_res'] . '"';
 		}
-		return $atts;
+		return apply_filters( 'videopack_video_player_source_attributes', $atts, $source, $this->atts );
 	}
 
-	protected function below_video(): string {
+	protected function has_below_video(): bool {
+		return apply_filters(
+			'videopack_video_player_has_below_video',
+			( ! empty( $this->atts['caption'] )
+				|| $this->atts['view_count']
+			),
+			$this->atts
+		);
+	}
+
+	protected function get_below_video_code(): string {
+		$below_video = '<div class="videopack-below-video">';
+		if ( $this->atts['view_count'] ) {
+			$below_video .= '<span class="videopack-view-count">' . esc_html( $this->get_source()->get_views() ) . '</span>';
+		}
+		if ( ! empty( $this->atts['caption'] ) ) {
+			$below_video .= '<p class="videopack-caption">' . esc_html( $this->atts['caption'] ) . '</p>';
+		}
 		return '';
 	}
 
