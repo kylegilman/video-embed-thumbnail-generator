@@ -22,9 +22,9 @@ abstract class Source {
 
 	/**
 	 * Unique ID of the video source. This could be an attachment ID or other identifier based on filename.
-	 * @var string $source_id
+	 * @var string $id
 	 */
-	protected $source_id;
+	protected $id;
 
 	/**
 	 * Videopack Options manager class instance
@@ -207,16 +207,16 @@ abstract class Source {
 		$this->source = $source;
 	}
 
-	public function get_source_id(): string {
-		if ( ! $this->source_id ) {
-			$this->set_source_id();
+	public function get_id(): string {
+		if ( ! $this->id ) {
+			$this->set_id();
 		}
-		return $this->source_id;
+		return $this->id;
 	}
 
-	protected function set_source_id(): void {
-		$sanitized_url   = \Videopack\Common\Validate::sanitize_url( $this->url );
-		$this->source_id = $sanitized_url['singleurl_id'];
+	protected function set_id(): void {
+		$sanitized_url = \Videopack\Common\Validate::sanitize_url( $this->url );
+		$this->id      = $sanitized_url['singleurl_id'];
 	}
 
 	abstract protected function set_url(): void;
@@ -607,6 +607,13 @@ abstract class Source {
 		}
 
 		return $this->duration;
+	}
+
+	protected function get_views(): ?int {
+		if ( ! isset( $this->metadata['starts'] ) ) {
+			$this->set_metadata();
+		}
+		return $this->metadata['starts'];
 	}
 
 	public function is_original(): bool {
