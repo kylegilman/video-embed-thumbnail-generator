@@ -4,6 +4,14 @@ namespace Videopack\Frontend\Video_Players;
 
 class Player_Video_Js extends Player {
 
+	public function register_hooks() {
+
+		parent::register_hooks();
+
+		add_filter( 'videopack_video_player_data', array( $this, 'filter_video_vars' ), 10, 2 );
+		add_filter( 'videopack_video_player_classes', array( $this, 'filter_video_classes' ), 10, 2 );
+	}
+
 	public function register_scripts() {
 
 		wp_register_script(
@@ -99,27 +107,23 @@ class Player_Video_Js extends Player {
 		return $locale;
 	}
 
-	protected function prepare_video_vars() {
+	protected function filter_video_vars( $video_variables, $atts ) {
 
-		$video_variables = parent::prepare_video_vars();
-
-		$video_variables['nativecontrolsfortouch'] = $this->atts['nativecontrolsfortouch'];
+		$video_variables['nativecontrolsfortouch'] = $atts['nativecontrolsfortouch'];
 		$video_variables['locale']                 = $this->get_videojs_locale();
 
 		return $video_variables;
 	}
 
-	protected function video_classes(): array {
-
-		$classes = parent::video_classes();
+	public function filter_video_classes( $classes, $atts ): array {
 
 		$classes[] = 'video-js';
 
 		if ( empty( $this->options['js_skin'] ) ) {
 			$this->options['js_skin'] = 'vjs-default-skin';
 		}
-		if ( array_key_exists( 'skin', $this->atts ) ) {
-			$this->options['js_skin'] = $this->atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
+		if ( array_key_exists( 'skin', $atts ) ) {
+			$this->options['js_skin'] = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
 		}
 
 		$classes[] = $this->options['js_skin'];
