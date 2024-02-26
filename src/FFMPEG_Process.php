@@ -14,5 +14,4 @@ class FFMPEG_Process extends Process {
 	public function getName() {
 		return 'ffmpeg process';
 	}
-
 }
