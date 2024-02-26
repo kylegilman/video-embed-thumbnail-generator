@@ -2509,7 +2509,7 @@ function kgvid_init_plugin() {
 
 	} else { // user is already upgraded to version 3.0, but needs the extra options introduced in later versions
 		if ( $options['version'] < 3.1 ) {
-			$options['version'] = 3.1;
+			$options['version']   = 3.1;
 			$options['watermark'] = '';
 		}
 		if ( $options['version'] < 4.0 ) {
@@ -4082,75 +4082,79 @@ add_action( 'delete_attachment', 'kgvid_delete_video_attachment' );
 function kgvid_add_contextual_help_tab() {
 
 	$false_code = '<code>"false"</code>';
+
+	$content  = '<p><strong>' . esc_html__( 'Use these optional attributes in the [videopack] shortcode:', 'video-embed-thumbnail-generator' ) . '</strong></p>';
+	$content .= '<ul><li><code>id="xxx"</code> ' . esc_html__( 'video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>videos="x"</code> ' . esc_html__( 'number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>orderby="menu_order/title/post_date/rand/ID"</code> ' . esc_html__( 'criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>order="ASC/DESC"</code> ' . esc_html__( 'sort order.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>poster="https://www.example.com/image.jpg"</code> ' . esc_html__( 'sets the thumbnail.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>endofvideooverlay="https://www.example.com/end_image.jpg"</code> ' . esc_html__( 'sets the image shown when the video ends.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>width="xxx"</code></li>';
+	$content .= '<li><code>height="xxx"</code></li>';
+	$content .= '<li><code>fullwidth="true/false"</code> ' . esc_html__( 'set video to always expand to fill its container.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>fixed_aspect="false/vertical/true"</code> ' . esc_html__( 'set video to conform to the default aspect ratio. Vertical applies only if the video height is greater than the width.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>align="left/right/center"</code></li>';
+	$content .= '<li><code>inline="true/false"</code> ' . esc_html__( 'allow other content on the same line as the video', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>volume="0.x"</code> ' . esc_html__( 'pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>muted="true/false"</code> ' . esc_html__( 'Mutes the audio.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>controls="true/false"</code> ' . esc_html__( 'Enables video controls.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>loop="true/false"</code></li>';
+	$content .= '<li><code>autoplay="true/false"</code></li>';
+	$content .= '<li><code>playsinline="true/false"</code> ' . esc_html__( 'Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>skip_buttons="true/false"</code> ' . esc_html__( 'Add skip forward/backward buttons.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gifmode="true/false"</code> ' . esc_html__( 'Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>pauseothervideos="true/false"</code> ' . esc_html__( 'video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>preload="metadata/auto/none"</code> ' . esc_html__( 'indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>start="mm:ss"</code> ' . esc_html__( 'video will start playing at this timecode.', 'video-embed-thumbnail-generator' ) . '</li>';
 	/* translators: %s is '<code>"false"</code>' */
+	$content .= '<li><code>watermark="https://www.example.com/image.png"</code> ' . sprintf( esc_html__( 'or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>';
+	$content .= '<li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>';
+	/* translators: %s is '<code>"false"</code>' */
+	$content .= '<li><code>watermark_url="https://www.example.com/"</code> ' . sprintf( esc_html__( 'or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>';
+	/* translators: %s is '<code>"false"</code>' */
+	$content .= '<li><code>title="Video Title"</code> ' . sprintf( esc_html__( 'or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>';
+	$content .= '<li><code>embeddable="true/false"</code> ' . esc_html__( 'enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator' ) . '</li>';
+	/* translators: %s is '<code>"false"</code>' */
+	$content .= '<li><code>embedcode="html code"</code> ' . sprintf( esc_html__( 'changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>';
+	$content .= '<li><code>view_count="true/false"</code> ' . esc_html__( 'turns the view count on or off.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>count_views="quarters/start_complete/start/false"</code> ' . esc_html__( 'sets the level of video view counting.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>caption="Caption"</code> ' . esc_html__( 'text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>description="Description"</code> ' . esc_html__( 'Used for metadata only.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>downloadlink="true/false"</code> ' . esc_html__( 'shows a download icon overlay to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>right_click="true/false"</code> ' . esc_html__( 'allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>resize="true/false"</code> ' . esc_html__( 'allow or disable responsive resizing.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> ' . esc_html__( 'specify the video resolution when the page loads.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>pixel_ratio="true/false"</code> ' . esc_html__( 'account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>schema="true/false"</code> ' . esc_html__( 'allow or disable Schema.org search engine metadata.', 'video-embed-thumbnail-generator' ) . '</li></ul>';
+	$content .= '<p><strong>' . esc_html__( 'These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator' ) . '</strong></p>';
+	$content .= '<ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> ' . esc_html__( 'URL of the WebVTT file.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>track_kind=subtitles/captions/chapters</code></li>';
+	$content .= '<li><code>track_srclang=xx</code> ' . esc_html__( 'the track\'s two-character language code (en, fr, es, etc)', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>track_label="Track Label"</code> ' . esc_html__( 'text that will be shown to the user when selecting the track.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>track_default="default"</code> ' . esc_html__( 'track is enabled by default.', 'video-embed-thumbnail-generator' ) . '</li></ul>';
+	$content .= '<p><strong>' . esc_html__( 'These options will only affect Video.js playback', 'video-embed-thumbnail-generator' ) . '</strong></p>';
+	/* translators: %s is '<code>"false"</code>' */
+	$content .= '<ul><li><code>skin="example-css-class"</code> ' . sprintf( esc_html__( 'Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator' ), '<a href="http://codepen.io/heff/pen/EarCt">' ) . '</a></li>';
+	$content .= '<li><code>nativecontrolsfortouch="true/false"</code> ' . esc_html__( 'enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator' ) . '</li></ul>';
+	$content .= '<p><strong>' . esc_html__( 'These options are available for video galleries (options work the same as standard WordPress image galleries)', 'video-embed-thumbnail-generator' ) . '</p></strong>';
+	$content .= '<ul><li><code>gallery="true"</code> ' . esc_html__( 'turns on the gallery', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_thumb="xxx"</code> ' . esc_html__( 'width in pixels to display gallery thumbnails', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_exclude="15"</code> ' . esc_html__( 'comma separated video attachment IDs. Excludes the videos from the gallery.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_include="65"</code> ' . esc_html__( 'comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> ' . esc_html__( 'criteria for sorting the gallery', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_order="ASC/DESC"</code> ' . esc_html__( 'sort order', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_id="241"</code> ' . esc_html__( 'post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator' ) . '</li>';
+	$content .= '<li><code>gallery_end="close/next"</code> ' . esc_html__( 'either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator' ) . '</li>';
+	/* translators: %s is '<code>"false"</code>' */
+	$content .= '<li><code>gallery_per_page="xx"</code> ' . sprintf( esc_html__( 'or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>';
+	$content .= '<li><code>gallery_title="true/false"</code> ' . esc_html__( 'display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator' ) . '</li></ul>';
+
 	get_current_screen()->add_help_tab(
 		array(
 			'id'      => 'kgvid-help-tab',
 			'title'   => esc_html__( 'Videopack Shortcode Reference', 'video-embed-thumbnail-generator' ),
-			'content' => '<p><strong>' . esc_html__( 'Use these optional attributes in the [videopack] shortcode:', 'video-embed-thumbnail-generator' ) . '</strong></p>
-<ul><li><code>id="xxx"</code> ' . esc_html__( 'video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>videos="x"</code> ' . esc_html__( 'number of attached videos to display if no URL or ID is given.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>orderby="menu_order/title/post_date/rand/ID"</code> ' . esc_html__( 'criteria for sorting attached videos if no URL or ID is given.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>order="ASC/DESC"</code> ' . esc_html__( 'sort order.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>poster="https://www.example.com/image.jpg"</code> ' . esc_html__( 'sets the thumbnail.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>endofvideooverlay="https://www.example.com/end_image.jpg"</code> ' . esc_html__( 'sets the image shown when the video ends.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>width="xxx"</code></li>
-<li><code>height="xxx"</code></li>
-<li><code>fullwidth="true/false"</code> ' . esc_html__( 'set video to always expand to fill its container.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>fixed_aspect="false/vertical/true"</code> ' . esc_html__( 'set video to conform to the default aspect ratio. Vertical applies only if the video height is greater than the width.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>align="left/right/center"</code></li>
-<li><code>inline="true/false"</code> ' . esc_html__( 'allow other content on the same line as the video', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>volume="0.x"</code> ' . esc_html__( 'pre-sets the volume for unusually loud videos. Value between 0 and 1.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>muted="true/false"</code> ' . esc_html__( 'Mutes the audio.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>controls="true/false"</code> ' . esc_html__( 'Enables video controls.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>loop="true/false"</code></li>
-<li><code>autoplay="true/false"</code></li>
-<li><code>playsinline="true/false"</code> ' . esc_html__( 'Play inline on iPhones instead of fullscreen.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>skip_buttons="true/false"</code> ' . esc_html__( 'Add skip forward/backward buttons.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gifmode="true/false"</code> ' . esc_html__( 'Videos behave like animated GIFs. autoplay, muted, loop, and playsinline will be enabled. Controls and other overlays will be disabled.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>pauseothervideos="true/false"</code> ' . esc_html__( 'video will pause other videos on the page when it starts playing.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>preload="metadata/auto/none"</code> ' . esc_html__( 'indicate how much of the video should be loaded when the page loads.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>start="mm:ss"</code> ' . esc_html__( 'video will start playing at this timecode.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>watermark="https://www.example.com/image.png"</code> ' . sprintf( esc_html__( 'or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-<li><code>watermark_link_to="home/parent/attachment/download/false"</code></li>
-<li><code>watermark_url="https://www.example.com/"</code> ' . sprintf( esc_html__( 'or %s to disable. If this is set, it will override the watermark_link_to setting.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-<li><code>title="Video Title"</code> ' . sprintf( esc_html__( 'or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-<li><code>embeddable="true/false"</code> ' . esc_html__( 'enable or disable video embedding and sharing icons.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>embedcode="html code"</code> ' . sprintf( esc_html__( 'changes text displayed in the embed code overlay in order to provide a custom method for embedding a video or %s to disable.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-<li><code>view_count="true/false"</code> ' . esc_html__( 'turns the view count on or off.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>count_views="quarters/start_complete/start/false"</code> ' . esc_html__( 'sets the level of video view counting.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>caption="Caption"</code> ' . esc_html__( 'text that is displayed below the video (not subtitles or closed captioning)', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>description="Description"</code> ' . esc_html__( 'Used for metadata only.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>downloadlink="true/false"</code> ' . esc_html__( 'shows a download icon overlay to make it easier for users to save the video file to their computers.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>right_click="true/false"</code> ' . esc_html__( 'allow or disable right-clicking on the video player.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>resize="true/false"</code> ' . esc_html__( 'allow or disable responsive resizing.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>auto_res="automatic/highest/lowest/1080p/720p/360p/custom"</code> ' . esc_html__( 'specify the video resolution when the page loads.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>pixel_ratio="true/false"</code> ' . esc_html__( 'account for high-density (retina) displays when choosing automatic video resolution.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>schema="true/false"</code> ' . esc_html__( 'allow or disable Schema.org search engine metadata.', 'video-embed-thumbnail-generator' ) . '</li></ul>
-
-<p><strong>' . esc_html__( 'These options will add a subtitle/caption track.', 'video-embed-thumbnail-generator' ) . '</strong></p>
-<ul><li><code>track_src="http://www.example.com/subtitles.vtt_.txt"</code> ' . esc_html__( 'URL of the WebVTT file.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>track_kind=subtitles/captions/chapters</code></li>
-<li><code>track_srclang=xx</code> ' . esc_html__( 'the track\'s two-character language code (en, fr, es, etc)', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>track_label="Track Label"</code> ' . esc_html__( 'text that will be shown to the user when selecting the track.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>track_default="default"</code> ' . esc_html__( 'track is enabled by default.', 'video-embed-thumbnail-generator' ) . '</li></ul>
-
-<p><strong>' . esc_html__( 'These options will only affect Video.js playback', 'video-embed-thumbnail-generator' ) . '</strong></p>
-<ul><li><code>skin="example-css-class"</code> ' . sprintf( esc_html__( 'Completely change the look of the video player. %sInstructions here.', 'video-embed-thumbnail-generator' ), '<a href="http://codepen.io/heff/pen/EarCt">' ) . '</a></li>
-<li><code>nativecontrolsfortouch="true/false"</code> ' . esc_html__( 'enables or disables native controls on touchscreen devices.', 'video-embed-thumbnail-generator' ) . '</li>
-</ul>
-
-<p><strong>' . esc_html__( 'These options are available for video galleries (options work the same as standard WordPress image galleries)', 'video-embed-thumbnail-generator' ) . '</p></strong>
-<ul><li><code>gallery="true"</code> ' . esc_html__( 'turns on the gallery', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_thumb="xxx"</code> ' . esc_html__( 'width in pixels to display gallery thumbnails', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_exclude="15"</code> ' . esc_html__( 'comma separated video attachment IDs. Excludes the videos from the gallery.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_include="65"</code> ' . esc_html__( 'comma separated video attachment IDs. Includes only these videos in the gallery. Please note that include and exclude cannot be used together.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_orderby="menu_order/title/post_date/rand/ID"</code> ' . esc_html__( 'criteria for sorting the gallery', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_order="ASC/DESC"</code> ' . esc_html__( 'sort order', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_id="241"</code> ' . esc_html__( 'post ID to display a gallery made up of videos associated with a different post.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_end="close/next"</code> ' . esc_html__( 'either close the pop-up or start playing the next video when the current video finishes playing.', 'video-embed-thumbnail-generator' ) . '</li>
-<li><code>gallery_per_page="xx"</code> ' . sprintf( esc_html__( 'or %s to disable pagination. Number of video thumbnails to show on each gallery page.', 'video-embed-thumbnail-generator' ), $false_code ) . '</li>
-<li><code>gallery_title="true/false"</code> ' . esc_html__( 'display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator' ) . '</li></ul>',
+			'content' => $content,
 		)
 	);
 }

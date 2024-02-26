@@ -43,11 +43,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments-singleurl_kgflashmediaplayer_poster"><?php esc_html_e( 'Thumbnail URL', 'video-embed-thumbnail-generator' ); ?></label></span></th>
 				<td class="field"><input type="text" name="attachments[singleurl][kgflashmediaplayer-poster]" id="attachments-singleurl-kgflashmediaplayer-poster" value="" size="50" />
+<?php /* translators: %s is an <a> element that links to Videopack settings */ ?>
 				<p class="help"><small><?php printf( esc_html__( 'Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator' ), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings" target="_blank">' ); ?></a>.</small></p></td>
 			</tr>
 			<tr>
 				<th valign="top" scope="row" class="label"><span class="alignleft"><label for="attachments-singleurl-kgflashmediaplayer-width"><?php esc_html_e( 'Dimensions', 'video-embed-thumbnail-generator' ); ?></label></span></th>
 				<td class="field"><?php esc_html_e( 'Width:', 'video-embed-thumbnail-generator' ); ?> <input name="attachments[singleurl][kgflashmediaplayer-width]" type="text" value="<?php echo esc_attr( $maxwidth ); ?>" id="attachments-singleurl-kgflashmediaplayer-width" type="text" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'height', this.value);" onkeyup="kgvid_set_dimension('singleurl', 'height', this.value);"> <?php esc_html_e( 'Height:', 'video-embed-thumbnail-generator' ); ?> <input name="attachments[singleurl][kgflashmediaplayer-height]" id="attachments-singleurl-kgflashmediaplayer-height" type="text" value="<?php echo esc_attr( $maxheight ); ?>" class="kgvid_50_width" onchange="kgvid_set_dimension('singleurl', 'width', this.value);" onkeyup="kgvid-set-dimension('singleurl', 'width', this.value);"> <input type="checkbox" name="attachments[singleurl][kgflashmediaplayer-lockaspect]" id="attachments-singleurl-kgflashmediaplayer-lockaspect" onclick="kgvid_set_aspect('singleurl', this.checked);" checked> <label id="singleurl-lockaspect-label" for="attachments-singleurl-kgflashmediaplayer-lockaspect"><small><?php esc_html_e( 'Lock to Aspect Ratio', 'video-embed-thumbnail-generator' ); ?></small></label>
+<?php /* translators: %s is an <a> element that links to Videopack settings */ ?>
 				<p class="help"><small><?php printf( esc_html__( 'Leave blank to use %sdefault dimensions', 'video-embed-thumbnail-generator' ), '<a href="options-general.php?page=video_embed_thumbnail_generator_settings" target="_blank">' ); ?></a>.</small></p></td>
 			</tr>
 			<?php if ( current_user_can( 'encode_videos' ) ) { ?>
