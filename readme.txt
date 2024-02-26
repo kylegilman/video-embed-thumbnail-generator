@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kyleg
 Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
 Requires at least: 5.0
 Tested up to: 6.4
-Requires PHP: 7.2.5
+Requires PHP: 7.2
 Stable tag: 4.9.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -105,9 +105,10 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.6 - February 18, 2024 =
+= 4.9.6 - February 26, 2024 =
 * Fixed uninstall routine for more complete cleanup when deleting the plugin.
 * Disabled Chromecast overlay button on videos used to make thumbnails.
+* Removed comma after final parameter in function call that caused errors in PHP versions earlier than 7.3.
 
 = 4.9.5 - February 7, 2024 =
 * Fixed bug that failed to save some Videopack settings when they were disabled.
