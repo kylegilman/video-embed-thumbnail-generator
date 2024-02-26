@@ -204,7 +204,7 @@ function kgvid_ffmpeg_test_encode() {
 		$options['sample_format'],
 		$encode_dimensions['width'],
 		$encode_dimensions['height'],
-		intval( $options['sample_rotate'] ),
+		intval( $options['sample_rotate'] )
 	);
 
 	return $encode_array;
@@ -2851,7 +2851,7 @@ function kgvid_encode_progress() {
 									$embed_display .= '<button class="kgvid_cancel_button" type="button" id="attachments-' . esc_attr( $video_entry['attachmentID'] ) . '-kgflashmediaplayer-cancelencode" onclick="kgvid_cancel_encode(\'' . esc_attr( $video_entry['attachmentID'] ) . '\', \'' . esc_attr( $video_key ) . '\', \'' . esc_attr( $format ) . '\', \'' . esc_attr( $blog_id ) . '\');">' . esc_html__( 'Cancel', 'video-embed-thumbnail-generator' ) . '</button>';
 								}
 
-								$embed_display .= '<div class="kgvid_encoding_small_text"><small>' . esc_html__( 'Elapsed:', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( date( 'H:i:s', $time_elapsed ) ) . ' ' . esc_html__( 'Remaining:', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( date( 'H:i:s', $time_remaining ) ) . ' ' . esc_html_x( 'FPS:', 'Frames per second', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( $fps_match ) . '</small></div>';
+								$embed_display .= '<div class="kgvid_encoding_small_text"><small>' . esc_html__( 'Elapsed:', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( gmdate( 'H:i:s', $time_elapsed ) ) . ' ' . esc_html__( 'Remaining:', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( gmdate( 'H:i:s', $time_remaining ) ) . ' ' . esc_html_x( 'FPS:', 'Frames per second', 'video-embed-thumbnail-generator' ) . ' ' . esc_html( $fps_match ) . '</small></div>';
 							} elseif ( time() - $format_info['started'] < 10 || ( file_exists( $format_info['filepath'] ) && time() - filemtime( $format_info['filepath'] ) < 10 ) ) { // not enough time has passed, so check again later
 								$embed_display = '<strong data-status="encoding">' . esc_html__( 'Encoding', 'video-embed-thumbnail-generator' ) . '</strong>';
 								$time_to_wait  = 1000;
