@@ -15,7 +15,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.9.6',
+		'version'                 => '4.9.7',
 		'videojs_version'         => '8.9.0',
 		'embed_method'            => 'Video.js v8',
 		'template'                => false,
