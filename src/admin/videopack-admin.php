@@ -3177,15 +3177,18 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 
 			$thumbnail_url = get_post_meta( $post->ID, '_kgflashmediaplayer-poster', true );
 			$thumbnail_id  = get_post_meta( $post->ID, '_kgflashmediaplayer-poster-id', true );
+			$thumbnail_img = false;
 			if ( is_ssl() ) {
 				$thumbnail_url = str_replace( 'http:', 'https:', $thumbnail_url );
 			}
-
+			if ( $thumbnail_id !== false ) {
+				$thumbnail_img = wp_get_attachment_image_src( $thumbnail_id, array(200, 200) );
+			}
 			$thumbnail_html = '';
 			if ( ! empty( $kgvid_postmeta['autothumb-error'] ) && empty( $thumbnail_url ) ) {
 				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">' . wp_kses_post( $kgvid_postmeta['autothumb-error'] ) . '</div>';
-			} elseif ( ! empty( $thumbnail_url ) ) {
-				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' . esc_attr( $post->ID ) . '" width="200" data-thumb_id="' . esc_attr( $thumbnail_id ) . '" data-featuredchanged="' . esc_attr( $kgvid_postmeta['featuredchanged'] ) . '" src="' . esc_attr( $thumbnail_url ) . '?' . rand() . '"></div>';
+			} elseif ( ! empty( $thumbnail_url ) || $thumbnail_img ) {
+				$thumbnail_html = '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img id="thumbnail-' . esc_attr( $post->ID ) . '" width="200" data-thumb_id="' . esc_attr( $thumbnail_id ) . '" data-featuredchanged="' . esc_attr( $kgvid_postmeta['featuredchanged'] ) . '" src="' . esc_attr( $thumbnail_img ? $thumbnail_img[0] : $thumbnail_url ) . '"></div>';
 			}
 
 			$choose_from_video_content = '';
@@ -3210,6 +3213,15 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 			}
 
 			if ( empty( $security_disabled ) && current_user_can( 'make_video_thumbnails' ) ) {
+
+				/**
+				 * Fires before the thumbnail-generation UI is rendered.
+				 *
+				 * @since 4.9.7
+				 *
+				 * @param WP_Post $post The current post object.
+				 */
+				do_action( 'videopack_pre_thumbnail_media_library_ui', $post );
 
 				if ( ! empty( $kgvid_postmeta['thumbtime'] ) ) {
 					$kgvid_postmeta['numberofthumbs'] = '1';
@@ -3302,7 +3314,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 
 			if ( empty( $security_disabled ) ) {
 				$form_fields['kgflashmediaplayer-poster']['label'] = esc_html__( 'Thumbnail URL', 'video-embed-thumbnail-generator' );
-				$form_fields['kgflashmediaplayer-poster']['value'] = esc_url( get_post_meta( $post->ID, '_kgflashmediaplayer-poster', true ) );
+				$form_fields['kgflashmediaplayer-poster']['value'] = esc_url( strtok( $thumbnail_url, '?' ) );
 				/* translators: %s is an <a> tag */
 				$form_fields['kgflashmediaplayer-poster']['helps'] = '<small>' . sprintf( esc_html__( 'Leave blank to use %sdefault thumbnail', 'video-embed-thumbnail-generator' ), "<a href='options-general.php?page=video_embed_thumbnail_generator_settings' target='_blank'>" ) . '</a>.</small>';
 			}
@@ -3667,6 +3679,16 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 		$thumb_id = intval( $thumb_id );
 		update_post_meta( $post_id, '_kgflashmediaplayer-poster-id', $thumb_id );
 		update_post_meta( $thumb_id, '_kgflashmediaplayer-video-id', $video->ID );
+		/**
+		 * Filters the URL of newly-saved thumbnail images.
+		 *
+		 * @since 4.9.7
+		 *
+		 * @param string  $thumb_url Thumbnail URL.
+		 * @param int     $thumb_id  Thumbnail ID.
+		 * @return string $thumb_url The filtered URL of the newly-saved thumbnail.
+		 */
+		$thumb_url = apply_filters( 'videopack_post_save_thumb', $thumb_url, $thumb_id );
 		//end copied new file into uploads directory
 	} else {
 		$thumb_id = false;
