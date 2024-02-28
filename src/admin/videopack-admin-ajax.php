@@ -396,6 +396,17 @@ function kgvid_ajax_save_html5_thumb() {
 				kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
 			}
 			$editor->set_quality( 90 );
+
+			/**
+			 * Filters the image editor used to save the canvas thumbnail. Allows resizing, reducing quality, etc.
+			 *
+			 * @since 4.9.7
+			 *
+			 * @param WP_Image_Editor $editor The image editor.
+			 * @return WP_Image_Editor
+			 */
+			$editor = apply_filters( 'videopack_save_canvas_thumb_image_editor', $editor );
+
 			$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
 			wp_delete_file( $tmp_posterpath ); // delete png
 
