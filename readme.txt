@@ -105,6 +105,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
+= 4.9.7 - March 1, 2024 =
+* Restored Freemius SDK after accidentally disabling it in 4.9.6.
+
 = 4.9.6 - February 26, 2024 =
 * Fixed uninstall routine for more complete cleanup when deleting the plugin.
 * Disabled Chromecast overlay button on videos used to make thumbnails.

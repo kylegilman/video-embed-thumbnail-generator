@@ -10,12 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ?>
-<div class="wrap videopack-settings">
+<div class="wrap videopack-settings fs-section fs-full-size-wrapper">
 	<h1><?php esc_html_e( 'Videopack Settings', 'video-embed-thumbnail-generator' ); ?></h1>
 	<h2 class="nav-tab-wrapper">
 		<?php
 		foreach ( $settings_tabs as $tab_id => $tab_title ) {
-			echo '<a href="#' . esc_attr( str_replace( 'videopack_', '', $tab_id ) ) . '" id="' . esc_attr( $tab_id ) . '_tab" class="nav-tab" data-tab_id="' . esc_attr( $tab_id ) . '" onclick="kgvid_switch_settings_tab(this.id)">' . esc_html( $tab_title ) . '</a>';
+			echo '<a href="#' . esc_attr( str_replace( 'videopack_', '', $tab_id ) ) . '" id="' . esc_attr( $tab_id ) . '_tab" class="nav-tab fs-tab" data-tab_id="' . esc_attr( $tab_id ) . '" onclick="kgvid_switch_settings_tab(this.id)">' . esc_html( $tab_title ) . '</a>';
 		}
 		?>
 	</h2>

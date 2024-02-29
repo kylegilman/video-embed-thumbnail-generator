@@ -3182,7 +3182,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 				$thumbnail_url = str_replace( 'http:', 'https:', $thumbnail_url );
 			}
 			if ( $thumbnail_id !== false ) {
-				$thumbnail_img = wp_get_attachment_image_src( $thumbnail_id, array(200, 200) );
+				$thumbnail_img = wp_get_attachment_image_src( $thumbnail_id, array( 200, 200 ) );
 			}
 			$thumbnail_html = '';
 			if ( ! empty( $kgvid_postmeta['autothumb-error'] ) && empty( $thumbnail_url ) ) {
