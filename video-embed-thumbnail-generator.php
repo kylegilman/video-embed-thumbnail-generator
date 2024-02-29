@@ -237,7 +237,7 @@ function kgvid_videopack_fs_loaded() {
 }
 add_action( 'videopack_fs_loaded', 'kgvid_videopack_fs_loaded' );
 
-if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
+if ( file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
 	// Create a helper function for easy SDK access.
 	function videopack_fs() {
 		global $videopack_fs;
@@ -249,7 +249,7 @@ if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.
 			}
 
 			// Include Freemius SDK.
-			require_once dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.php';
+			require_once __DIR__ . '/vendor/freemius/wordpress-sdk/start.php';
 
 			$init_options = array(
 				'id'             => '7761',
