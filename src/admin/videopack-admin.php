@@ -5,7 +5,6 @@
  * @link       https://www.videopack.video
  *
  * @package    Videopack
- * @subpackage Videopack/admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 
@@ -153,6 +152,10 @@ function kgvid_default_options_fn() {
 		}
 	}
 
+	/**
+	 * Filters the default Videopack plugin options. Allows addition of new options.
+	 * @param array $options The default options.
+	 */
 	return apply_filters( 'kgvid_default_options', $options );
 }
 
@@ -388,6 +391,10 @@ function kgvid_get_default_attachment_meta() {
 		'animated'            => 'notchecked',
 	);
 
+	/**
+	 * Filters the default custom Videopack attachment meta. Allows addition of new meta keys.
+	 * @param array $default_meta The default attachment meta.
+	 */
 	return apply_filters( 'kgvid_default_attachment_meta', $default_meta );
 }
 
@@ -451,6 +458,10 @@ function kgvid_get_attachment_meta( $post_id ) {
 
 	$kgvid_postmeta = array_merge( $meta_key_array, $kgvid_postmeta ); // make sure all keys are set
 
+	/**
+	 * Filters the custom Videopack attachment meta.
+	 * @param array $kgvid_postmeta The attachment meta.
+	 */
 	return apply_filters( 'kgvid_attachment_meta', $kgvid_postmeta );
 }
 
@@ -674,6 +685,13 @@ function kgvid_video_formats( $return_replace = false, $return_customs = true, $
 		}
 	}
 
+	/**
+	 * Filters the video formats available for encoding and video playback.
+	 * @param array $video_formats The video formats.
+	 * @param bool $return_replace Whether to return the replace format.
+	 * @param bool $return_customs Whether to return the custom formats.
+	 * @param bool $return_dontembeds Whether to return the formats that should not be embedded.
+	 */
 	return apply_filters( 'kgvid_video_formats', $video_formats, $return_replace, $return_customs, $return_dontembeds );
 }
 
@@ -1300,6 +1318,15 @@ function kgvid_settings_page() {
 		$settings_tabs['encoding'] = sprintf( esc_html_x( '%s Settings', 'FFMPEG Settings, tab title', 'video-embed-thumbnail-generator' ), esc_html( strtoupper( $video_app ) ) );
 	}
 
+	/**
+	 * Filters the tabs for the Videopack settings page.
+	 * @param array $settings_tabs {
+	 *     An array tabs.
+	 *
+	 *     @type string $key ID for the tab. Used to show or hide corresponding settings blocks.
+	 *     @type string $value Localizable title for the tab.
+	 * }
+	 */
 	$settings_tabs = apply_filters( 'videopack_settings_tabs', $settings_tabs );
 
 	include __DIR__ . '/partials/settings-page.php';
@@ -1494,7 +1521,15 @@ function kgvid_plugin_playback_settings_section_callback() {
 		__( 'WordPress Default', 'video-embed-thumbnail-generator' ) => 'WordPress Default',
 		__( 'None', 'video-embed-thumbnail-generator' ) => 'None',
 	);
-
+	/**
+	 * Filters the available video players.
+	 * @param array $players {
+	 *    An array of video players.
+	 *
+	 *    @type string $key The localizable name of the player.
+	 *    @type string $value The ID of the player.
+	 * }
+	 */
 	$items = apply_filters( 'kgvid_available_video_players', $players );
 
 	echo "<table class='form-table general-tab' id='table_kgvid_video_embed_embed_method'><tbody><tr valign='middle'><th scope='row'><label for='embed_method'>" . esc_html__( 'Video player:', 'video-embed-thumbnail-generator' ) . '</label></th><td>';
@@ -3686,7 +3721,6 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 		 *
 		 * @param string  $thumb_url Thumbnail URL.
 		 * @param int     $thumb_id  Thumbnail ID.
-		 * @return string $thumb_url The filtered URL of the newly-saved thumbnail.
 		 */
 		$thumb_url = apply_filters( 'videopack_post_save_thumb', $thumb_url, $thumb_id );
 		//end copied new file into uploads directory
@@ -3849,6 +3883,13 @@ function kgvid_modify_media_insert( $html, $attachment_id, $attachment ) {
 
 		if ( $kgvid_postmeta['embed'] == 'Single Video' ) {
 			$html                        = '';
+
+			/**
+			 * Filters the URL of the video to be inserted into the Classic Editor from the Insert into post button.
+			 *
+			 * @since 4.9.3
+			 * @param string $url The URL of the video to be inserted.
+			 */
 			$kgvid_postmeta['url']       = apply_filters( 'videopack_send_to_editor_url', wp_get_attachment_url( $attachment_id ) );
 			$kgvid_postmeta['title']     = get_the_title( $attachment_id );
 			$kgvid_postmeta['poster']    = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
@@ -3859,6 +3900,12 @@ function kgvid_modify_media_insert( $html, $attachment_id, $attachment ) {
 				$html .= ' poster="' . esc_url( $kgvid_postmeta['poster'] ) . '"';
 			}
 
+			/**
+			 * Filters the attributes of the shortcode that are inserted into the Classic Editor from the Insert into post button.
+			 *
+			 * @since 4.8.3
+			 * @param array $insert_shortcode_atts An array of shortcode attributes to be inserted.
+			 */
 			$insert_shortcode_atts = apply_filters(
 				'kgvid_insert_shortcode_atts',
 				array(

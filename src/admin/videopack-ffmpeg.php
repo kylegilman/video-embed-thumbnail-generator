@@ -113,6 +113,10 @@ function kgvid_aac_encoders() {
 		'libfaac',
 	);
 
+	/**
+	 * Filter the preferred FFMPEG AAC encoders.
+	 * @param array $aac_array List of AAC encoding libraries.
+	 */
 	return apply_filters( 'kgvid_aac_encoders', $aac_array );
 }
 
