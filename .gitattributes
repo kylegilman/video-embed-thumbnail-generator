@@ -7,3 +7,5 @@
 /.gitignore export-ignore
 /.CONTRIBUTING.md export-ignore
 /.README.md export-ignore
+
+* text=auto
