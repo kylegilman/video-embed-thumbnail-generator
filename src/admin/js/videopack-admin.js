@@ -895,69 +895,64 @@ function kgvid_change_media_library_video_poster(post_id, thumb_url) {
 }
 
 function kgvid_save_canvas_thumb(postID, time_id, total, index) {
+	var kgflashmediaplayersecurity = document.getElementsByName('attachments[' + postID + '][kgflashmediaplayer-security]')[0].value;
 
-	var kgflashmediaplayersecurity = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-security]' )[0].value;
+	var video_url = document.getElementsByName('attachments[' + postID + '][kgflashmediaplayer-url]')[0].value;
+	const path = new URL(video_url).pathname;
+	let filename = decodeURIComponent(path.split('/').pop());
+	const lastDotIndex = filename.lastIndexOf('.');
+	if (lastDotIndex > -1) {
+		filename = filename.substring(0, lastDotIndex);
+	}
+	filename = filename + '_thumb' + (parseInt(index) + 1) + '.jpg';
+	var canvas = document.getElementById(postID + '_thumb_' + time_id);
 
-	var video_url    = document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-url]' )[0].value;
-	var canvas       = document.getElementById( postID + '_thumb_' + time_id );
-	var png64dataURL = canvas.toDataURL( 'image/jpeg', 0.8 ); // this is what saves the image. Do this after selection.
+	jQuery('#attachments-' + postID + '-thumbnailplaceholder canvas').fadeTo(500, .25);
+	jQuery('#attachments-' + postID + '-thumbnailplaceholder input').prop('disabled', true);
+	jQuery('#attachments-' + postID + '-thumbnailplaceholder').prepend('<div class="kgvid_save_overlay">' + kgvidL10n.saving + '</div>');
 
-	jQuery( '#attachments-' + postID + '-thumbnailplaceholder canvas' ).fadeTo( 500, .25 );
-	jQuery( '#attachments-' + postID + '-thumbnailplaceholder input' ).prop( 'disabled', true );
-	jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).prepend( '<div class="kgvid_save_overlay">' + kgvidL10n.saving + '</div>' )
+	canvas.toBlob(function(blob) {
+		var formData = new FormData();
+		formData.append('action', 'kgvid_save_html5_thumb');
+		formData.append('security', kgflashmediaplayersecurity);
+		formData.append('postID', postID);
+		formData.append('index', index);
+		formData.append('file', blob, filename);
 
-	jQuery.ajax(
-		{
+		jQuery.ajax({
 			type: "POST",
 			url: ajaxurl,
-			data: {
-				action:"kgvid_save_html5_thumb",
-				security: kgflashmediaplayersecurity,
-				url: video_url,
-				offset: time_id,
-				postID: postID,
-				total: total,
-				index: index,
-				raw_png: png64dataURL,
-			},
+			data: formData,
+			processData: false,  // Tell jQuery not to process the data
+			contentType: false,  // Tell jQuery not to set contentType
 			dataType: 'json'
-		}
-	)
-	.done(
-		function( thumb_info ) {
-			if ( thumb_info ) {
-				if ( total == 1 ) {
-					document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-autothumb-error]' )[0].value = '';
-					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-numberofthumbs' ).val( '1' );
-					var time_display = kgvid_convert_to_timecode( canvas.dataset.movieoffset );
-					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-thumbtime' ).val( time_display );
-					jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-featuredchanged="true" src="' + png64dataURL + '"></div>' );
-					jQuery( '#attachments-' + postID + '-kgflashmediaplayer-poster' ).val( thumb_info.thumb_url ).trigger( 'change' );
-					if ( jQuery( '#attachments-' + postID + '-featured' ).prop( 'checked' )
-						&& thumb_info.thumb_id
-						&& wp?.media?.view?.settings?.post?.id !== 0
-					) {
-						wp.media.featuredImage.set( thumb_info.thumb_id );
+		}).done(function(thumb_info) {
+			if (thumb_info) {
+				if (total == 1) {
+					document.getElementsByName('attachments[' + postID + '][kgflashmediaplayer-autothumb-error]')[0].value = '';
+					jQuery('#attachments-' + postID + '-kgflashmediaplayer-numberofthumbs').val('1');
+					var time_display = kgvid_convert_to_timecode(canvas.dataset.movieoffset);
+					jQuery('#attachments-' + postID + '-kgflashmediaplayer-thumbtime').val(time_display);
+					var objectURL = URL.createObjectURL(blob);
+					jQuery('#attachments-' + postID + '-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-featuredchanged="true" src="' + objectURL + '"></div>');
+					jQuery('#attachments-' + postID + '-kgflashmediaplayer-poster').val(thumb_info.thumb_url).trigger('change');
+					if (jQuery('#attachments-' + postID + '-featured').prop('checked') && thumb_info.thumb_id && wp?.media?.view?.settings?.post?.id !== 0) {
+						wp.media.featuredImage.set(thumb_info.thumb_id);
 					}
-					if ( typeof pagenow === 'undefined'
-						|| pagenow == 'attachment'
-					) {
-						jQuery( '#publish' ).trigger( 'click' );
+					if (typeof pagenow === 'undefined' || pagenow == 'attachment') {
+						jQuery('#publish').trigger('click');
 					}
-					kgvid_change_media_library_video_poster( postID, png64dataURL );
+					kgvid_change_media_library_video_poster(postID, objectURL);
 				} else {
-					kgvid_thumbnail_saveall_progress( postID, total );
+					kgvid_thumbnail_saveall_progress(postID, total);
 				}
 			}
-		}
-	)
-	.fail(
-		function(xhr, textStatus, errorThrown) {
-			document.getElementsByName( 'attachments[' + postID + '][kgflashmediaplayer-autothumb-error]' )[0].value = errorThrown;
-			jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).empty();
-			jQuery( '#attachments-' + postID + '-thumbnailplaceholder' ).html( '<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">' + errorThrown + '</div>' );
-		}
-	);
+		}).fail(function(xhr, textStatus, errorThrown) {
+			document.getElementsByName('attachments[' + postID + '][kgflashmediaplayer-autothumb-error]')[0].value = errorThrown;
+			jQuery('#attachments-' + postID + '-thumbnailplaceholder').empty();
+			jQuery('#attachments-' + postID + '-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">' + errorThrown + '</div>');
+		});
+	}, 'image/jpeg', 0.8);
 }
 
 function kgvid_thumbnail_saveall_progress(postID, total) {
