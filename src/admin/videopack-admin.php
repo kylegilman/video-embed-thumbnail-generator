@@ -3502,13 +3502,17 @@ add_action( 'manage_media_custom_column', 'kgvid_video_stats_column_data', 10, 2
 
 function kgvid_hide_video_children( $wp_query_obj ) {
 
-	if ( is_admin()
-		&& is_array( $wp_query_obj->query_vars )
-		&& array_key_exists( 'post_type', $wp_query_obj->query_vars )
-		&& $wp_query_obj->query_vars['post_type'] == 'attachment' // only deal with attachments
-		&& ! array_key_exists( 'post_mime_type', $wp_query_obj->query_vars ) // show children when specifically displaying videos
-		&& ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) // hide children only when showing paged content (makes sure that -1 will actually return all attachments)
-	) {
+	$is_admin_and_attachments = is_admin()
+		&& isset( $wp_query_obj->query_vars['post_type'] )
+		&& $wp_query_obj->query_vars['post_type'] == 'attachment';
+
+	$not_displaying_videos = ! isset( $wp_query_obj->query_vars['post_mime_type'] )
+		|| $wp_query_obj->query_vars['post_mime_type'] !== 'video';
+
+	$is_paged_content = isset( $wp_query_obj->query_vars['posts_per_page'] )
+		&& $wp_query_obj->query_vars['posts_per_page'] > 0;
+
+	if ( $is_admin_and_attachments && $not_displaying_videos && $is_paged_content ) {
 
 		$options    = kgvid_get_options();
 		$meta_query = $wp_query_obj->get( 'meta_query' );
@@ -3535,26 +3539,18 @@ function kgvid_hide_video_children( $wp_query_obj ) {
 }
 add_action( 'pre_get_posts', 'kgvid_hide_video_children' );
 
-function kgvid_decode_base64_png( $raw_png, $tmp_posterpath ) {
+function kgvid_thumb_tmp_upload_dir( $uploads ) {
 
-	$raw_png     = str_replace( 'data:image/png;base64,', '', $raw_png );
-	$raw_png     = str_replace( 'data:image/jpeg;base64,', '', $raw_png );
-	$raw_png     = str_replace( ' ', '+', $raw_png );
-	$decoded_png = base64_decode( $raw_png );
+	$custom_dir      = '/thumb_tmp';
+	$uploads['path'] = $uploads['path'] . $custom_dir;
+	$uploads['url']  = $uploads['url'] . $custom_dir;
 
-	if ( kgvid_can_write_direct( dirname( $tmp_posterpath ) ) ) {
-		global $wp_filesystem;
-		$success = $wp_filesystem->put_contents( $tmp_posterpath, $decoded_png );
-
-		$editor = wp_get_image_editor( $tmp_posterpath );
-		if ( is_wp_error( $editor ) ) {
-			$wp_filesystem->delete( $tmp_posterpath );
-		}
-
-		return $editor;
+	// Ensure the directory exists. WP will not automatically create it.
+	if ( ! file_exists( $uploads['path'] ) ) {
+		wp_mkdir_p( $uploads['path'] );
 	}
 
-	return false;
+	return $uploads;
 }
 
 function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {

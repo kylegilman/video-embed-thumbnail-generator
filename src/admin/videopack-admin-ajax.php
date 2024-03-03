@@ -281,7 +281,7 @@ function kgvid_ajax_save_settings() {
 				$options         = kgvid_get_options();
 
 				if ( $options['ffmpeg_exists'] === 'on' ) {
-					$encode_array = kgvid_ffmpeg_test_encode();
+					$encode_array     = kgvid_ffmpeg_test_encode();
 					$auto_thumb_label = kgvid_generate_auto_thumb_label();
 				}
 			}
@@ -352,71 +352,56 @@ function kgvid_ajax_save_html5_thumb() {
 	if ( current_user_can( 'make_video_thumbnails' ) ) {
 
 		check_ajax_referer( 'video-embed-thumbnail-generator-nonce', 'security' );
-		$uploads = wp_upload_dir();
-		if ( isset( $_POST['postID'] ) ) {
-			$post_id = kgvid_sanitize_text_field( wp_unslash( $_POST['postID'] ) );
-		}
-		if ( isset( $_POST['raw_png'] ) ) {
-			$raw_png = kgvid_sanitize_text_field( wp_unslash( $_POST['raw_png'] ) );
-		}
-		if ( isset( $_POST['url'] ) ) {
-			$video_url = kgvid_sanitize_text_field( wp_unslash( $_POST['url'] ) );
-		}
-		if ( isset( $_POST['total'] ) ) {
-			$total = kgvid_sanitize_text_field( wp_unslash( $_POST['total'] ) );
-		}
-		if ( isset( $_POST['index'] ) ) {
-			$index = intval( kgvid_sanitize_text_field( wp_unslash( $_POST['index'] ) ) ) + 1;
-		}
 
-		$sanitized_url = kgvid_sanitize_url( $video_url );
-		$posterfile    = $sanitized_url['basename'] . '_thumb' . $index;
-		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
-		$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
-		$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
+		$post_id = isset( $_POST['postID'] ) ? kgvid_sanitize_text_field( wp_unslash( $_POST['postID'] ) ) : '';
+		$index   = isset( $_POST['index'] ) ? intval( kgvid_sanitize_text_field( wp_unslash( $_POST['index'] ) ) ) + 1 : 1;
 
-		$editor = kgvid_decode_base64_png( $raw_png, $tmp_posterpath );
+		if ( isset( $_FILES['file'] ) && isset( $_FILES['file']['name'] ) ) {
 
-		if ( $editor === false || is_wp_error( $editor ) ) { // couldn't open the image. Try the alternate php://input
-
-			$raw_post = file_get_contents( 'php://input' );
-			parse_str( $raw_post, $alt_post );
-			$editor = kgvid_decode_base64_png( $alt_post['raw_png'], $tmp_posterpath );
-
-		}
-
-		if ( $editor === false || is_wp_error( $editor ) ) {
-			$thumb_url = false;
-		} else {
-			$thumb_dimensions = $editor->get_size();
-			if ( $thumb_dimensions ) {
-				$kgvid_postmeta                 = kgvid_get_attachment_meta( $post_id );
-				$kgvid_postmeta['actualwidth']  = $thumb_dimensions['width'];
-				$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
-				kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
+			add_filter( 'upload_dir', 'kgvid_thumb_tmp_upload_dir' );
+			$uploads = wp_upload_dir();
+			$sanitized_file_name = sanitize_file_name( $_FILES['file']['name'] );
+			if ( file_exists( $uploads['path'] . '/' . $sanitized_file_name ) ) {
+				wp_delete_file( $uploads['path'] . '/' . $sanitized_file_name );
 			}
-			$editor->set_quality( 90 );
+			$uploaded = wp_handle_upload( $_FILES['file'], array( 'test_form' => false ) );
+			remove_filter( 'upload_dir', 'kgvid_thumb_tmp_upload_dir' );
 
-			/**
-			 * Filters the image editor used to save the canvas thumbnail. Allows resizing, reducing quality, etc.
-			 *
-			 * @since 4.9.7
-			 *
-			 * @param WP_Image_Editor $editor The image editor.
-			 * @return WP_Image_Editor
-			 */
-			$editor = apply_filters( 'videopack_save_canvas_thumb_image_editor', $editor );
+			if ( $uploaded && ! isset( $uploaded['error'] ) && isset( $uploaded['file'] ) ) {
+				$editor = wp_get_image_editor( $uploaded['file'] );
+				if ( is_wp_error( $editor ) ) {
+					wp_delete_file( $uploaded['file'] );
+				} else {
+					$thumb_dimensions = $editor->get_size();
+					if ( $thumb_dimensions ) {
+						$kgvid_postmeta                 = kgvid_get_attachment_meta( $post_id );
+						$kgvid_postmeta['actualwidth']  = $thumb_dimensions['width'];
+						$kgvid_postmeta['actualheight'] = $thumb_dimensions['height'];
+						kgvid_save_attachment_meta( $post_id, $kgvid_postmeta );
+					}
+					$editor->set_quality( 80 );
 
-			$new_image_info = $editor->save( $uploads['path'] . '/thumb_tmp/' . $posterfile . '.jpg', 'image/jpeg' );
-			wp_delete_file( $tmp_posterpath ); // delete png
+					/**
+					 * Filters the image editor used to save the canvas thumbnail. Allows resizing, reducing quality, etc.
+					 *
+					 * @since 4.9.7
+					 *
+					 * @param WP_Image_Editor $editor The image editor.
+					 * @return WP_Image_Editor
+					 */
+					$editor = apply_filters( 'videopack_save_canvas_thumb_image_editor', $editor );
+					$editor->save( $uploaded['file'] );
 
-			$post_name  = get_the_title( $post_id );
-			$thumb_info = kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index );
-
+					$post_name  = get_the_title( $post_id );
+					$uploads    = wp_upload_dir();
+					$final_url  = $uploads['url'] . '/' . basename( $uploaded['file'] );
+					$thumb_info = kgvid_save_thumb( $post_id, $post_name, $final_url, $index );
+				}
+			}
 		}
 
+		// Clean up and respond
 		kgvid_schedule_cleanup_generated_files( 'thumbs' );
-
 	}
 
 	wp_send_json( $thumb_info );
