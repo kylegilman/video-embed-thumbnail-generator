@@ -14,7 +14,7 @@ function kgvid_default_options_fn() {
 	$edit_others_capable = kgvid_check_if_capable( 'edit_others_posts' );
 
 	$options = array(
-		'version'                 => '4.9.7',
+		'version'                 => '4.10',
 		'videojs_version'         => '8.9.0',
 		'embed_method'            => 'Video.js v8',
 		'template'                => false,
@@ -3252,7 +3252,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 				/**
 				 * Fires before the thumbnail-generation UI is rendered.
 				 *
-				 * @since 4.9.7
+				 * @since 4.10
 				 *
 				 * @param WP_Post $post The current post object.
 				 */
@@ -3713,7 +3713,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 		/**
 		 * Filters the URL of newly-saved thumbnail images.
 		 *
-		 * @since 4.9.7
+		 * @since 4.10
 		 *
 		 * @param string  $thumb_url Thumbnail URL.
 		 * @param int     $thumb_id  Thumbnail ID.
