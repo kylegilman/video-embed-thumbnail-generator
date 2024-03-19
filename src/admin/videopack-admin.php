@@ -3563,6 +3563,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 	$posterfile        = pathinfo( $thumb_url, PATHINFO_BASENAME );
 	$tmp_posterpath    = $uploads['path'] . '/thumb_tmp/' . $posterfile;
 	$final_posterpath  = $uploads['path'] . '/' . $posterfile;
+	$thumb_index = $index;
 
 	if ( ! is_file( $final_posterpath ) && $existing_thumb_id !== 0 ) {
 		return array(
@@ -3588,7 +3589,6 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 
 				$posterfile_noextension = pathinfo( $thumb_url, PATHINFO_FILENAME );
 
-				$thumb_index = $index;
 				if ( $thumb_index === false ) {
 					$thumb_index = substr( $posterfile_noextension, strpos( $posterfile_noextension, '_thumb' ) + 6 );
 				}
@@ -3640,7 +3640,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 
 		$desc = $post_name . ' ' . esc_html_x( 'thumbnail', 'text appended to newly created thumbnail titles', 'video-embed-thumbnail-generator' );
 		if ( $index ) {
-			$desc .= ' ' . $index;
+			$desc .= ' ' . $thumb_index;
 		}
 
 		// is image in uploads directory?
