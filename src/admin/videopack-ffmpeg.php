@@ -612,7 +612,7 @@ function kgvid_get_video_dimensions( $video = false ) {
 			$codec_output = $e->getMessage();
 		}
 
-		$video_lib_array = array( 'libvorbis' );
+		$video_lib_array = array( 'libvorbis', 'libopus' );
 		$video_formats   = kgvid_video_formats();
 
 		foreach ( $video_formats as $format => $format_stats ) {
@@ -819,9 +819,19 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 				$average_bitrate   = round( 102 + 0.000876 * $width * $height + 1.554 * pow( 10, -10 ) * pow( $width * $height, 2 ) );
 				$maxrate           = round( $average_bitrate * 1.45 );
 				$minrate           = round( $average_bitrate * .5 );
-				$rate_control_flag = ' -' . $video_bitrate_flag . ' ' . $average_bitrate . 'k -maxrate ' . $maxrate . 'k -minrate ' . $minrate . 'k';
+				$rate_control_flag = array(
+					'-' . $video_bitrate_flag,
+					$average_bitrate . 'k',
+					'-maxrate',
+					$maxrate . 'k',
+					'-minrate',
+					$minrate . 'k',
+				);
 		} else {
-			$rate_control_flag = ' -' . $video_bitrate_flag . ' ' . round( floatval( $options['bitrate_multiplier'] ) * $width * $height * 30 / 1024 ) . 'k';
+			$rate_control_flag = array(
+				'-' . $video_bitrate_flag,
+				round( floatval( $options['bitrate_multiplier'] ) * $width * $height * 30 / 1024 ) . 'k',
+			);
 		}
 
 		if ( $options['audio_channels'] === 'on' ) {
@@ -892,9 +902,15 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 
 		} else { // if it's not H.264 the settings are basically the same
 
+			if ( $video_formats[ $format ]['type'] === 'ogv' ) {
+				$audio_codec = 'libvorbis';
+			} else {
+				$audio_codec = 'libopus';
+			}
+
 			$ffmpeg_options = array(
 				'-acodec',
-				'libvorbis',
+				$audio_codec,
 				'-' . $audio_bitrate_flag,
 				$options['audio_bitrate'] . 'k',
 				'-vcodec',
@@ -1326,20 +1342,20 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 		} //if the format is bigger than the original video, skip the checkbox
 
 		if ( ! empty( $encodevideo_info ) && ! $encodevideo_info[ $format ]['exists']
-				&& (
-					strpos( $format, 'custom_' ) === 0 // skip custom formats that don't exist
-					|| (
-						$options['hide_video_formats']
-						&& is_array( $options['encode'] )
-						&& ! array_key_exists( $format, $options['encode'] )
-						&& $post_mime_type !== 'image/gif'
-					) // skip options disabled in settings
-					|| (
-						$options['hide_video_formats']
-						&& ! is_array( $options['encode'] )
-					) // skip all options if they're all disabled
-				)
-			) {
+			&& (
+				strpos( $format, 'custom_' ) === 0 // skip custom formats that don't exist
+				|| (
+					$options['hide_video_formats']
+					&& is_array( $options['encode'] )
+					&& ! $options['encode'][ $format ]
+					&& $post_mime_type !== 'image/gif'
+				) // skip options disabled in settings
+				|| (
+					$options['hide_video_formats']
+					&& ! is_array( $options['encode'] )
+				) // skip all options if they're all disabled
+			)
+		) {
 			continue;
 		}
 
@@ -2629,7 +2645,13 @@ function kgvid_encode_videos() {
 								&& filesize( $encodevideo_info[ $queued_format ]['filepath'] ) < 24576 )
 							) {
 
-								if ( $movie_info['configuration']['libvorbis'] == 'true'
+								if ( $format_stats['type'] === 'ogv' ) {
+									$audio_codec = 'libvorbis';
+								} else {
+									$audio_codec = 'libopus';
+								}
+
+								if ( $movie_info['configuration'][ $audio_codec ] == 'true'
 									&& $movie_info['configuration'][ $video_formats[ $queued_format ]['vcodec'] ] == 'true'
 								) {
 
@@ -2641,9 +2663,9 @@ function kgvid_encode_videos() {
 
 									$missing_libraries = array();
 
-									if ( $movie_info['configuration']['libvorbis'] == 'false' ) {
+									if ( $movie_info['configuration'][ $audio_codec ] == 'false' ) {
 
-										$missing_libraries[] = 'libvorbis';
+										$missing_libraries[] = $audio_codec;
 
 									}
 
@@ -2782,26 +2804,15 @@ function kgvid_encode_progress() {
 							fclose( $fp );
 							$lastline = strrev( rtrim( $read, "\n\r" ) );
 
-							$time_matches    = '';
-							$video_matches   = '';
-							$libx264_matches = '';
-							$fps_matches     = '';
-							$fps_match       = '';
+							$fps_match     = '';
+							$time_match    = preg_match( '/time=(.*?) /', $lastline, $time_matches );
+							$lsize_match   = preg_match( '/Lsize=/', $lastline );
+							$video_match   = preg_match( '/video:(.*?) /', $lastline );
+							$libx264_match = preg_match( '/libx264 (.*?) /', $lastline );
+							$aac_match     = preg_match( '/aac (.*?) /', $lastline );
+							$queue_match   = preg_match( '/queue on closing/', $lastline );
 
-							preg_match( '/time=(.*?) /', $lastline, $time_matches );
-
-							if ( is_array( $time_matches )
-							&& array_key_exists( 1, $time_matches ) != true
-							) { // if something other than the regular FFMPEG encoding output check for these
-								preg_match( '/video:(.*?) /', $lastline, $video_matches );
-								preg_match( '/libx264 (.*?) /', $lastline, $libx264_matches );
-								preg_match( '/aac (.*?) /', $lastline, $aac_matches );
-								$queue_match = preg_match( '/queue on closing/', $lastline );
-							}
-
-							if ( is_array( $time_matches )
-								&& array_key_exists( 1, $time_matches ) == true
-							) { // still encoding
+							if ( preg_match( '/(?<!L)size=/', $lastline ) && $time_match && isset( $time_matches[1] ) ) { // still encoding
 
 								if ( strpos( $time_matches[1], ':' ) !== false ) {
 									$current_hours   = intval( substr( $time_matches[1], -11, 2 ) );
@@ -2829,8 +2840,7 @@ function kgvid_encode_progress() {
 								}
 
 								preg_match( '/fps=\s?(.*?) /', $lastline, $fps_matches );
-								if ( is_array( $fps_matches )
-									&& array_key_exists( 1, $fps_matches ) == true
+								if ( isset( $fps_matches[1] )
 									&& $fps_matches[1] != 0
 								) {
 									$fps_match = $fps_matches[1];
@@ -2860,19 +2870,14 @@ function kgvid_encode_progress() {
 								$embed_display = '<strong data-status="encoding">' . esc_html__( 'Encoding', 'video-embed-thumbnail-generator' ) . '</strong>';
 								$time_to_wait  = 1000;
 								wp_schedule_single_event( time() + 60, 'kgvid_cron_queue_check' );
-							} elseif (
-								( is_array( $video_matches ) && array_key_exists( 1, $video_matches ) == true )
-								|| ( is_array( $libx264_matches ) && array_key_exists( 1, $libx264_matches ) == true )
-								|| ( is_array( $aac_matches ) && array_key_exists( 1, $aac_matches ) == true )
-								|| ( $queue_match )
-							) { // encoding complete
+							} elseif ( $lsize_match || $video_match || $libx264_match || $aac_match || $queue_match ) { // encoding complete
 
 								$percent_done   = 100;
 								$ended          = filemtime( $format_info['logfile'] );
 								$time_elapsed   = $ended - $format_info['started'];
 								$time_remaining = '0';
 								$fps_match      = '10';
-								if ( is_array( $libx264_matches ) && array_key_exists( 1, $libx264_matches ) ) {
+								if ( $libx264_match || $aac_match ) {
 									$moov_output = kgvid_fix_moov_atom( $format_info['filepath'] );
 								} //fix the moov atom if the file was encoded by libx264
 								$video_encode_queue[ $video_key ]['encode_formats'][ $format ]['status']   = 'Encoding Complete';
