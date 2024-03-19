@@ -384,7 +384,7 @@ function kgvid_ajax_save_html5_thumb() {
 					/**
 					 * Filters the image editor used to save the canvas thumbnail. Allows resizing, reducing quality, etc.
 					 *
-					 * @since 4.9.7
+					 * @since 4.10
 					 *
 					 * @param WP_Image_Editor $editor The image editor.
 					 * @return WP_Image_Editor

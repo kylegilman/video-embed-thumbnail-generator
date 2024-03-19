@@ -3,9 +3,9 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 4.9.7
+Stable tag: 4.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,9 +105,13 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.9.7 - March 2, 2024 =
-* Restored Freemius SDK after accidentally disabling it in 4.9.6.
+= 4.10 - March 16, 2024 =
+* Changed browser-thumbnail upload process to use blobs instead of data URLs and switched to wp_handle_upload instead of custom process. No longer using base64_decode() on the server.
 * Added custom hooks related to thumbnail generation.
+* Restored Freemius SDK after accidentally disabling it in 4.9.6.
+* Changed audio codec for VP8/VP9 encoding from libvorbis to libopus.
+* Updated FFMPEG status checking to account for log output changes in FFMPEG version 6.1
+* Fixed errors when FFMPEG "Encode quality control method" was set to Average Bit Rate.
 
 = 4.9.6 - February 26, 2024 =
 * Fixed uninstall routine for more complete cleanup when deleting the plugin.
