@@ -156,6 +156,7 @@ function kgvid_get_videojs_locale() {
 		'pt-PT' => 'pt_PT',
 		'zh-CN' => 'zh_CN',
 		'zh-TW' => 'zh_TW',
+		'en-GB' => 'en_GB',
 	);
 
 	$matching_locale = array_search( $locale, $locale_conversions );
@@ -235,33 +236,16 @@ function kgvid_video_embed_enqueue_styles() {
 
 		$kgvid_video_embed_script_dependencies[] = 'video-js';
 
-		if ( $options['embed_method'] == 'Video.js v7' ) {
-
-			$videojs_register = array(
-				'version' => '7.21.5',
-				'path'    => 'v7',
-			);
-
-		}
-		if ( $options['embed_method'] == 'Video.js v8' ) {
-
-			$videojs_register = array(
-				'version' => $options['videojs_version'],
-				'path'    => 'v8',
-			);
-
-		}
-
-		wp_register_script( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video.min.js', '', $videojs_register['version'], true );
-		wp_register_script( 'video-quality-selector', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-quality-selector.js', array( 'video-js' ), VIDEOPACK_VERSION, true );
-		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/video-js.min.css', '', $videojs_register['version'] );
+		wp_register_script( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video.min.js', '', $options['videojs_version'], true );
+		wp_register_script( 'video-quality-selector', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-quality-selector.js', array( 'video-js' ), VIDEOPACK_VERSION, true );
+		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', $options['videojs_version'] );
 		if ( $options['js_skin'] == 'kg-video-js-skin' ) {
-			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/kg-video-js-skin.css', '', VIDEOPACK_VERSION );
+			wp_enqueue_style( 'video-js-kg-skin', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/kg-video-js-skin.css', '', VIDEOPACK_VERSION );
 		}
 
 		$locale = kgvid_get_videojs_locale();
-		if ( $locale != 'en' && file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/lang/' . $locale . '.js' ) ) {
-			wp_register_script( 'videojs-l10n', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/' . $videojs_register['path'] . '/lang/' . $locale . '.js', array( 'video-js' ), $videojs_register['version'], true );
+		if ( $locale != 'en' && file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/lang/' . $locale . '.js' ) ) {
+			wp_register_script( 'videojs-l10n', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/lang/' . $locale . '.js', array( 'video-js' ), $options['videojs_version'], true );
 		}
 	}
 
@@ -297,11 +281,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 	// plugin-related frontend styles, requires video-js
 	if ( $options['embed_method'] != 'None' ) {
-		if ( $options['embed_method'] === 'Video.js v7' ) {
-			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles-v7.css', __FILE__ ), array( 'video-js' ), VIDEOPACK_VERSION );
-		} else {
-			wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), VIDEOPACK_VERSION );
-		}
+		wp_enqueue_style( 'kgvid_video_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), VIDEOPACK_VERSION );
 	}
 
 	if ( $options['alwaysloadscripts'] == 'on' ) {

@@ -105,13 +105,15 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10 - March 16, 2024 =
+= 4.10 - March 23, 2024 =
 * Changed browser-thumbnail upload process to use blobs instead of data URLs and switched to wp_handle_upload instead of custom process. No longer using base64_decode() on the server.
+* Removed Video.js v7
 * Added custom hooks related to thumbnail generation.
 * Restored Freemius SDK after accidentally disabling it in 4.9.6.
 * Changed audio codec for VP8/VP9 encoding from libvorbis to libopus.
 * Updated FFMPEG status checking to account for log output changes in FFMPEG version 6.1
 * Fixed errors when FFMPEG "Encode quality control method" was set to Average Bit Rate.
+* Updated Video.js to v8.10.0 and Symfony/Process to v5.4.36
 
 = 4.9.6 - February 26, 2024 =
 * Fixed uninstall routine for more complete cleanup when deleting the plugin.
