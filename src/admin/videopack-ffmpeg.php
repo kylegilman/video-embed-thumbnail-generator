@@ -501,6 +501,20 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 		}
 	}//end format loop
 
+	/**
+	 * Filter the data about available video formats.
+	 * @param array $encodevideo_info {
+	 *    An array of video formats.
+	 *
+	 *    @type array $format {
+	 *       @type string $url The potential URL of the video.
+	 *       @type string $filepath The potential file path of the video.
+	 *       @type bool $exists Whether the video exists.
+	 *       @type bool $writable Whether the video is writable.
+	 *       @type bool $encoding Whether the video is currently encoding.
+	 *   }
+	 * }
+	 */
 	return apply_filters( 'kgvid_encodevideo_info', $encodevideo_info, $movieurl, $post_id );
 }
 
@@ -646,6 +660,24 @@ function kgvid_get_video_dimensions( $video = false ) {
 
 	}
 
+	/**
+	 * Filter the video metadata retrieved from FFMPEG output.
+	 *
+	 * @param array $movie_info {
+	 *   An array of video metadata.
+	 *   @type bool $worked Whether the video metadata was successfully retrieved.
+	 *   @type int $width The width of the video.
+	 *   @type int $height The height of the video.
+	 *   @type int $duration The duration of the video.
+	 *   @type int $rotate The rotation of the video.
+	 *   @type array $configuration An array of video codecs and their availability.
+	 *   @type string $output The output of the FFMPEG command.
+	 * }
+	 * @param string $video The video file path or URL.
+	 * @param array $output The output of the FFMPEG command.
+	 * @param array $codec_output The output of the FFMPEG -codecs command.
+	 *
+	 */
 	return apply_filters( 'kgvid_get_video_dimensions', $movie_info, $video, $output, $codec_output );
 }
 
@@ -975,6 +1007,18 @@ function kgvid_generate_encode_array( $input, $output, $movie_info, $format, $wi
 			$encode_array_after_options
 		);
 
+		/**
+		 * Filter the array of FFMPEG options for encoding a video.
+		 * @param array $encode_array The array of FFMPEG options.
+		 * @param string $input The input video file path.
+		 * @param string $output The output video file path.
+		 * @param array $movie_info The metadata of the video.
+		 * @param string $format The format of the video.
+		 * @param int $width The width of the video.
+		 * @param int $height The height of the video.
+		 * @param int $rotate The rotation of the video.
+		 * @param string $nostdin The -nostdin flag for FFMPEG.
+		 */
 		$encode_array = apply_filters( 'kgvid_generate_encode_array', $encode_array, $input, $output, $movie_info, $format, $width, $height, $rotate, $nostdin );
 
 	} //if FFMPEG is found

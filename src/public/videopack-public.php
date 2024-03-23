@@ -181,6 +181,10 @@ function kvid_readfile_chunked( $file, $retbytes = true ) {
 		return false;
 	}
 
+	/**
+	 * Filters whether to log file downloads.
+	 * @param bool $download_log Whether to log file downloads.
+	 */
 	$download_log = apply_filters( 'kg_file_download_logger_start', false );
 
 	$output_resource = fopen( 'php://output', 'w' );
@@ -525,6 +529,13 @@ function kgvid_change_oembed_data( $data, $post, $width, $height ) {
 		}
 	}
 
+	/**
+	 * Filters the oEmbed data for a given post.
+	 * @param array $data The oEmbed data.
+	 * @param WP_Post $post The post object.
+	 * @param int $width The requested width.
+	 * @param int $height The requested height.
+	 */
 	return apply_filters( 'kgvid_change_oembed_data', $data, $post, $width, $height );
 }
 if ( function_exists( 'get_oembed_response_data' ) ) {
@@ -754,6 +765,11 @@ function kgvid_gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 		}
 	} //if there are attachments
 
+	/**
+	 * Filters the video gallery page HTML.
+	 * @param string $code The HTML for the video gallery page.
+	 * @param int $kgvid_video_id ID number of the most recent video.
+	 */
 	return apply_filters( 'kgvid_gallery_page', $code, $kgvid_video_id );
 }
 
@@ -786,6 +802,11 @@ function kgvid_generate_video_description( $query_atts, $post = false ) {
 		$description = esc_html__( 'Video', 'video-embed-thumbnail-generator' );
 	}
 
+	/**
+	 * Filters the video description.
+	 * @param string $description The video description.
+	 * @param array $query_atts The videopack shortcode attributes.
+	 */
 	return apply_filters( 'kgvid_generate_video_description', $description, $query_atts );
 }
 
@@ -803,6 +824,10 @@ function kgvid_compatible_extensions() {
 		'm3u8',
 	);
 
+	/**
+	 * Filters the list of Videopack-compatible video file extensions.
+	 * @param array $compatible The list of compatible video file extensions.
+	 */
 	return apply_filters( 'videopack_compatible_extensions', $compatible );
 }
 
@@ -858,6 +883,10 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 		if ( substr( $content, 0, 1 ) == '/' ) {
 			$content = get_bloginfo( 'url' ) . $content;
 		}
+		/**
+		 * Filters the URL in the Videopack shortcode.
+		 * @param string $content The video URL.
+		 */
 		$content     = apply_filters( 'kgvid_filter_url', trim( $content ) );
 		$id_array[0] = kgvid_url_to_id( $content );
 	}
@@ -1091,6 +1120,10 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 				'playsinline'  => 'true',
 			);
 
+			/**
+			 * Filters the attributes that are set when video players have GIF mode enabled.
+			 * @param array $gifmode_atts The attributes for GIF mode.
+			 */
 			$gifmode_atts = apply_filters( 'kgvid_gifmode_atts', $gifmode_atts );
 
 			foreach ( $gifmode_atts as $gifmode_key => $gifmode_value ) {
@@ -1123,6 +1156,13 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			'title'             => $stats_title,
 			'skip_buttons'      => array(),
 		);
+
+		/**
+		 * Filters the video variables.
+		 * @param array $video_variables Metadata provided in video players' data-kgvid_video_vars attribute.
+		 * @param array $query_atts The Videopack shortcode attributes.
+		 * @param array $encodevideo_info Metadata regarding which video formats exist and where they're located.
+		 */
 		$video_variables = apply_filters( 'kgvid_video_variables', $video_variables, $query_atts, $encodevideo_info );
 
 		if ( $options['embed_method'] === 'Video.js v8'
@@ -1161,6 +1201,10 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 					if ( strpos( $encodevideo_info[ $format ]['url'], '?' ) === false ) { // if there isn't already a query string in this URL
 						$encodevideo_info[ $format ]['url'] = $encodevideo_info[ $format ]['url'] . '?id=' . $kgvid_video_id;
 					}
+					/**
+					 * Filters a video <source> URL.
+					 * @param string $source_url The video URL.
+					 */
 					$source_url             = apply_filters( 'videopack_source_url', $encodevideo_info[ $format ]['url'] );
 					$sources[ $source_key ] = "\t\t\t\t\t" . '<source src="' . esc_url( $source_url ) . '" type="' . esc_attr( $format_stats['mime'] ) . '"';
 					if ( $format == 'vp9' ) {
@@ -1523,6 +1567,10 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 			$code .= "\n\t\t\t\t<span class='kgvid_meta_icons'>";
 
 			if ( $query_atts['downloadlink'] == 'true' ) {
+				/**
+				 * Filters embedded video download link.
+				 * @param string $content The video URL.
+				 */
 				$download_link = apply_filters( 'videopack_download_link', $content );
 				$download_code = "\t\t\t\t\t" . '<a class="kgvid-download-link" href="' . esc_attr( $download_link ) . '" title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '" download';
 				if ( $options['click_download'] === 'on'
@@ -1559,6 +1607,10 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 						$iframeurl = $query_atts['embedcode'];
 					}
 					$iframecode  = "<iframe src='" . esc_attr( $iframeurl ) . "' frameborder='0' scrolling='no' width='" . esc_attr( $query_atts['width'] ) . "' height='" . esc_attr( $query_atts['height'] ) . " allowfullscreen allow='autoplay; fullscreen'></iframe>";
+					/**
+					 * Filters the embed code displayed in video players.
+					 * @param string $iframecode The embed code.
+					 */
 					$iframecode  = apply_filters( 'kgvid_embedcode', $iframecode, $iframeurl, $id, $query_atts );
 					$embed_code .= "<span class='kgvid_embedcode_container'><span class='kgvid-icons kgvid-icon-embed'></span>
 					<span>" . esc_html_x( 'Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator' ) . " </span><span><input class='kgvid_embedcode' type='text' value='" . esc_attr( $iframecode ) . "' onClick='this.select();'></span> <span class='kgvid_start_time'><input type='checkbox' class='kgvid_start_at_enable' onclick='kgvid_set_start_at(\"" . esc_attr( $div_suffix ) . "\")'> " . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . " <input type='text' class='kgvid_start_at' onkeyup='kgvid_change_start_at(\"" . esc_attr( $div_suffix ) . "\")'></span></span>";
@@ -1682,6 +1734,14 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 
 	} //end id_array loop
 
+	/**
+	 * Filters the video player code output.
+	 * @param string $code The video player code.
+	 * @param array $query_atts The filtered shortcode attributes.
+	 * @param array $atts The unfiltered shortcode attributes.
+	 * @param string $content The video URL.
+	 * @param int|string $post_id The post ID.
+	 */
 	return apply_filters( 'kgvid_single_video_code', $code, $query_atts, $atts, $content, $post_id );
 }
 
@@ -1819,6 +1879,10 @@ function kgvid_shortcode_atts( $atts ) {
 		}
 	}
 
+	/**
+	 * Filters the default shortcode attributes.
+	 * @param array $default_atts The default shortcode attributes.
+	 */
 	$default_atts = apply_filters( 'kgvid_default_shortcode_atts', $default_atts );
 
 	$query_atts = shortcode_atts( $default_atts, $atts, 'videopack' );
@@ -1848,6 +1912,10 @@ function kgvid_shortcode_atts( $atts ) {
 			'width',
 		);
 
+		/**
+		 * Filters the allowed attributes that can be changed via query attributes in the URL.
+		 * @param array $allowed_query_var_atts The allowed query attributes.
+		 */
 		$allowed_query_var_atts = apply_filters( 'kgvid_allowed_query_var_atts', $allowed_query_var_atts );
 
 		foreach ( $kgvid_video_embed_query_var as $key => $value ) {
@@ -1907,6 +1975,10 @@ function kgvid_shortcode_atts( $atts ) {
 		$query_atts['view_count'] = 'false';
 	}
 
+	/**
+	 * Filters the shortcode attributes.
+	 * @param array $query_atts The shortcode attributes.
+	 */
 	return apply_filters( 'kgvid_shortcode_atts', $query_atts );
 }
 
@@ -1986,6 +2058,12 @@ function kgvid_shortcode( $atts, $content = '' ) {
 
 	$code = wp_kses( $code, kgvid_allowed_html() );
 
+	/**
+	 * Filters the shortcode output.
+	 * @param string $code The shortcode output.
+	 * @param array $query_atts The shortcode attributes.
+	 * @param string $content The video URL.
+	 */
 	return apply_filters( 'kgvid_shortcode', $code, $query_atts, $content );
 }
 add_shortcode( 'FMP', 'kgvid_shortcode' );
