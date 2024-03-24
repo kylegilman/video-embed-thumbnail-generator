@@ -1162,7 +1162,7 @@ add_action( 'wp_enqueue_media', 'enqueue_kgvid_script' ); // always enqueue scri
 
 function maybe_enqueue_kgvid_script( $hook_suffix ) {
 
-	if ( $hook_suffix === 'settings_page_video_embed_thumbnail_generator_settings'
+	if ( strpos( $hook_suffix, 'settings_page_video_embed_thumbnail_generator_settings' ) !== false
 		|| $hook_suffix === 'tools_page_kgvid_video_encoding_queue'
 		|| $hook_suffix === 'settings_page_kgvid_network_video_encoding_queue'
 	) {
@@ -1516,7 +1516,7 @@ function kgvid_plugin_playback_settings_section_callback() {
 	}
 
 	$players = array(
-		'Video.js'                                   => 'Video.js v8',
+		'Video.js v8'                                   => 'Video.js v8',
 		__( 'WordPress Default', 'video-embed-thumbnail-generator' ) => 'WordPress Default',
 		__( 'None', 'video-embed-thumbnail-generator' ) => 'None',
 	);

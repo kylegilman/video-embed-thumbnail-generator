@@ -1031,7 +1031,7 @@ function kgvid_get_generating_old() {
 
 	}
 	/**
-	 * Filters the arguments used to get the thumbnails or videos that need to be generated.
+	 * Filters the arguments used to retrieve the thumbnails or videos that need to be generated.
 	 * @param array $args arguments used in the get_posts function.
 	 */
 	$args = apply_filters( 'kgvid_get_generating_old', $args, $type );
