@@ -830,7 +830,6 @@ function kgvid_set_transient_name( $url ) {
 
 function kgvid_url_to_id( $url ) {
 
-	global $wpdb;
 	$options       = kgvid_get_options();
 	$post_id       = false;
 	$video_formats = kgvid_video_formats();
@@ -842,35 +841,13 @@ function kgvid_url_to_id( $url ) {
 
 	if ( $post_id === false ) {
 
-		$post_id = (int) $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT post_id
-				FROM $wpdb->postmeta
-				WHERE meta_key = '_wp_attached_file'
-				AND meta_value LIKE RIGHT(%s, CHAR_LENGTH(meta_value))
-				AND LENGTH(meta_value) > 0",
-				array(
-					$search_url,
-				)
-			)
-		);
+		$post_id = attachment_url_to_postid( $search_url );
 
 		if ( ! $post_id && $options['ffmpeg_exists'] === 'on'
 			&& $video_formats['fullres']['extension'] !== pathinfo( $url, PATHINFO_EXTENSION )
 		) {
 			$search_url = str_replace( pathinfo( $url, PATHINFO_EXTENSION ), $video_formats['fullres']['extension'], $url );
-			$post_id    = (int) $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT post_id
-					FROM $wpdb->postmeta
-					WHERE meta_key = '_wp_attached_file'
-					AND meta_value LIKE RIGHT(%s, CHAR_LENGTH(meta_value))
-					AND LENGTH(meta_value) > 0",
-					array(
-						$search_url,
-					)
-				)
-			);
+			$post_id    = attachment_url_to_postid( $search_url );
 			if ( $post_id ) {
 				$kgvid_postmeta = kgvid_get_attachment_meta( $post_id );
 			}
@@ -2838,9 +2815,6 @@ function kgvid_video_embed_options_validate( $input ) {
 	}
 
 	$input = kgvid_merge_options_with_defaults( $input, $options );
-	// since this isn't user selectable it has to be re-entered every time
-	//$input['version']         = $default_options['version'];
-	//$input['videojs_version'] = $default_options['videojs_version'];
 
 	return $input;
 }
@@ -3413,7 +3387,7 @@ function kgvid_save_thumb( $post_id, $post_name, $thumb_url, $index = false ) {
 	$posterfile        = pathinfo( $thumb_url, PATHINFO_BASENAME );
 	$tmp_posterpath    = $uploads['path'] . '/thumb_tmp/' . $posterfile;
 	$final_posterpath  = $uploads['path'] . '/' . $posterfile;
-	$thumb_index = $index;
+	$thumb_index       = $index;
 
 	if ( ! is_file( $final_posterpath ) && $existing_thumb_id !== 0 ) {
 		return array(
@@ -3728,7 +3702,7 @@ function kgvid_modify_media_insert( $html, $attachment_id, $attachment ) {
 		$kgvid_postmeta = kgvid_get_attachment_meta( $attachment_id );
 
 		if ( $kgvid_postmeta['embed'] == 'Single Video' ) {
-			$html                        = '';
+			$html = '';
 
 			/**
 			 * Filters the URL of the video to be inserted into the Classic Editor from the Insert into post button.
