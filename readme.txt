@@ -105,8 +105,17 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.1 - March 26, 2024 =
+= 4.10.1 - April 7, 2024 =
+* Switched custom database query for looking up attachment IDs via URLs to the WordPress function attachment_url_to_postid() which could result in some video URLs no longer returning attachment IDs when the video player code is generated. That would prevent features like video play counting, and would only apply to shortcodes that don't include attachment IDs. Please let me know if this happens to you.
+* Revised thumbnail generation to work with PNG as a fallback when GD is not configured to support JPG.
+* Fixed "replace original" encoding when newly-encoded files are a different format from the original. Original formats are now deleted after the replacement encode format is complete.
+* Added extra check that attachment files are deleted when deleting encoded video formats.
+* Fixed bug that always enabled the custom format encode setting.
 * Fixed typo in FFMPEG rotation test filename.
+* Made sample video on the Videopack settings page responsive.
+* Added WordPress Playground Blueprint for easy plugin previews.
+* Added a VIDEOPACK_FREEMIUS_ENABLED constant to disable loading Freemius.
+* Confirmed compatibility with FFMPEG v7.0
 
 = 4.10 - March 24, 2024 =
 * Changed browser-thumbnail upload process to use blobs instead of data URLs and switched to wp_handle_upload instead of custom process for enhanced security.
