@@ -289,6 +289,19 @@ div.wrap.videopack-settings.fs-section {
 	height: 1.5rem;
 }
 
+div#kgvid_samplevideo_container {
+	width: 100%;
+	position: relative;
+}
+
+iframe#kgvid_samplevideo {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
 .ffmpeg_sample_code {
 background: #f0f0f1;
 outline: 2px solid #a7aaad;
