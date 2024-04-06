@@ -61,6 +61,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	if ( ! defined( 'VIDEOPACK_VERSION' ) ) {
 		define( 'VIDEOPACK_VERSION', '4.10.1' );
 	}
+	if ( ! defined( 'VIDEOPACK_FREEMIUS_ENABLED' ) ) {
+		define( 'VIDEOPACK_FREEMIUS_ENABLED', true );
+	}
 
 	$required_files = array(
 		'/vendor/autoload.php',
@@ -237,7 +240,7 @@ function kgvid_videopack_fs_loaded() {
 }
 add_action( 'videopack_fs_loaded', 'kgvid_videopack_fs_loaded' );
 
-if ( file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
+if ( VIDEOPACK_FREEMIUS_ENABLED && file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
 	// Create a helper function for easy SDK access.
 	function videopack_fs() {
 		global $videopack_fs;
