@@ -1606,7 +1606,7 @@ function kgvid_single_video_code( $query_atts, $atts, $content, $post_id ) {
 					} else {
 						$iframeurl = $query_atts['embedcode'];
 					}
-					$iframecode  = "<iframe src='" . esc_attr( $iframeurl ) . "' frameborder='0' scrolling='no' width='" . esc_attr( $query_atts['width'] ) . "' height='" . esc_attr( $query_atts['height'] ) . " allowfullscreen allow='autoplay; fullscreen'></iframe>";
+					$iframecode = "<iframe src='" . esc_attr( $iframeurl ) . "' frameborder='0' scrolling='no' width='" . esc_attr( $query_atts['width'] ) . "' height='" . esc_attr( $query_atts['height'] ) . " allowfullscreen allow='autoplay; fullscreen'></iframe>";
 					/**
 					 * Filters the embed code displayed in video players.
 					 * @param string $iframecode The embed code.

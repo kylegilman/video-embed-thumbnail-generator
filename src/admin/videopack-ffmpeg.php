@@ -481,18 +481,14 @@ function kgvid_encodevideo_info( $movieurl, $post_id ) {
 			}
 		} else { // if file exists, check if it's currently encoding
 
-					$video_encode_queue = kgvid_get_encode_queue();
+			$video_encode_queue = kgvid_get_encode_queue();
 
 			if ( $video_encode_queue ) {
 
 				foreach ( $video_encode_queue as $video_key => $video_entry ) {
 
-					if ( array_key_exists( 'encode_formats', $video_entry )
-					&& array_key_exists( $format, $video_entry['encode_formats'] )
-					&& array_key_exists( 'filepath', $video_entry['encode_formats'][ $format ] )
-					&& $video_entry['encode_formats'][ $format ]['filepath'] == $encodevideo_info[ $format ]['filepath']
-					&& array_key_exists( 'status', $video_entry['encode_formats'][ $format ] )
-					&& $video_entry['encode_formats'][ $format ]['status'] == 'encoding'
+					if ( ( $video_entry['encode_formats'][ $format ]['filepath'] ?? null ) === ( $encodevideo_info[ $format ]['filepath'] ?? null )
+						&& ( $video_entry['encode_formats'][ $format ]['status'] ?? null ) === 'encoding'
 					) {
 						$encodevideo_info[ $format ]['encoding'] = true; // this format is currently encoding
 					}
@@ -1391,7 +1387,7 @@ function kgvid_generate_encode_checkboxes( $movieurl, $post_id, $page, $blog_id 
 				|| (
 					$options['hide_video_formats']
 					&& is_array( $options['encode'] )
-					&& ! $options['encode'][ $format ]
+					&& ( ! isset( $options['encode'][ $format ] ) || ! $options['encode'][ $format ] )
 					&& $post_mime_type !== 'image/gif'
 				) // skip options disabled in settings
 				|| (
@@ -3203,6 +3199,7 @@ function kgvid_replace_video( $video_key, $format ) {
 		if ( file_exists( $encoded_filename ) ) {
 			if ( kgvid_can_write_direct( dirname( $new_filename ) ) ) {
 				global $wp_filesystem;
+				wp_delete_file( $original_filename );
 				$wp_filesystem->move( $encoded_filename, $new_filename, true );
 			}
 			if ( get_post_mime_type( $video_id ) === 'image/gif' ) {
