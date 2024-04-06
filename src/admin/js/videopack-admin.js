@@ -2013,7 +2013,7 @@ function kgvid_save_plugin_settings(input_obj) {
 							dimension = data.validated_value
 						}
 						jQuery( '#kgvid_samplevideo' ).attr( save_queue[0].id, dimension );
-						jQuery( '.kgvid_setting_nearvid' ).width( jQuery( '#width' ).val() );
+						jQuery( '#kgvid_samplevideo_container' ).css( 'padding-top', ( ( parseInt( jQuery( '#height' ).val() ) + 50 ) / parseInt( jQuery( '#width' ).val() ) * 100 ) + '%' );
 					}
 					if ( save_queue[0].id == "app_path" || save_queue[0].id == "video_app" ) {
 						jQuery( '#app_path' ).val( data.app_path );
