@@ -1076,6 +1076,18 @@ function kgvid_url_mime_type( $url, $post_id = false ) {
 	return $mime_info;
 }
 
+function kgvid_image_editor_compatible() {
+
+	$jpeg_supported = wp_image_editor_supports( array( 'mime_type' => 'image/jpeg' ) );
+	$png_supported  = wp_image_editor_supports( array( 'mime_type' => 'image/png' ) );
+
+	if ( $jpeg_supported || $png_supported ) {
+		return true;
+	}
+
+	return false;
+}
+
 function kgvid_build_paired_attributes( $value, $key ) {
 	return $key . '="' . $value . '"';
 }
@@ -1096,6 +1108,7 @@ function enqueue_kgvid_script() {
 			array(
 				'ajax_nonce'           => wp_create_nonce( 'kgvid_admin_nonce' ),
 				'ffmpeg_exists'        => $options['ffmpeg_exists'],
+				'jpeg_support'         => wp_image_editor_supports( array( 'mime_type' => 'image/jpeg' ) ),
 				'wait'                 => esc_html_x( 'Wait', 'please wait', 'video-embed-thumbnail-generator' ),
 				'hidevideo'            => esc_html__( 'Hide video...', 'video-embed-thumbnail-generator' ),
 				'choosefromvideo'      => esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ),
@@ -3107,14 +3120,6 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 					$kgvid_postmeta['numberofthumbs'] = '1';
 				}
 
-				$args             = array(
-					'mime_type' => 'image/jpeg',
-					'methods'   => array(
-						'save',
-					),
-				);
-				$img_editor_works = wp_image_editor_supports( $args );
-
 				$moviefiletype  = pathinfo( $movieurl, PATHINFO_EXTENSION );
 				$h264compatible = array( 'mp4', 'mov', 'm4v' );
 				if ( $moviefiletype == 'mov' || $moviefiletype == 'm4v' ) {
@@ -3150,7 +3155,7 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 					}
 				}
 
-				if ( $img_editor_works ) {
+				if ( kgvid_image_editor_compatible() ) {
 					$choose_from_video_content = '<div class="kgvid_thumbnail_box kgvid-tabs-content" id="thumb-video-' . esc_attr( $post->ID ) . '-container">
 						<div class="kgvid-reveal-thumb-video" onclick="kgvid_reveal_thumb_video(' . esc_attr( $post->ID ) . ')" id="show-thumb-video-' . esc_attr( $post->ID ) . '"><span class="kgvid-right-arrow"></span><span class="kgvid-show-video">' . esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ) . '</span></div>
 						<div style="display:none;" id="thumb-video-' . esc_attr( $post->ID ) . '-player" data-allowed="' . esc_attr( $options['browser_thumbnails'] ) . '" data-sources="' . esc_attr( wp_json_encode( $sources ) ) . '">
