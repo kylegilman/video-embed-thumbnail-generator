@@ -904,7 +904,13 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 	if (lastDotIndex > -1) {
 		filename = filename.substring(0, lastDotIndex);
 	}
-	filename = filename + '_thumb' + (parseInt(index) + 1) + '.jpg';
+	var extension = 'jpg'
+	var mimeType = 'image/jpeg';
+	if ( kgvidL10n.jpeg_support != true ) {
+		extension = 'png';
+		mimeType = 'image/png';
+	}
+	filename = filename + '_thumb' + (parseInt(index) + 1) + '.' + extension;
 	var canvas = document.getElementById(postID + '_thumb_' + time_id);
 
 	jQuery('#attachments-' + postID + '-thumbnailplaceholder canvas').fadeTo(500, .25);
@@ -935,12 +941,12 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 					jQuery('#attachments-' + postID + '-kgflashmediaplayer-thumbtime').val(time_display);
 					var objectURL = URL.createObjectURL(blob);
 					jQuery('#attachments-' + postID + '-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box"><img width="200" data-featuredchanged="true" src="' + objectURL + '"></div>');
-					jQuery('#attachments-' + postID + '-kgflashmediaplayer-poster').val(thumb_info.thumb_url).trigger('change');
+					if ( thumb_info.thumb_url ) { jQuery('#attachments-' + postID + '-kgflashmediaplayer-poster').val(thumb_info.thumb_url).trigger('change'); }
 					if (jQuery('#attachments-' + postID + '-featured').prop('checked') && thumb_info.thumb_id && wp?.media?.view?.settings?.post?.id !== 0) {
 						wp.media.featuredImage.set(thumb_info.thumb_id);
 					}
 					if (typeof pagenow === 'undefined' || pagenow == 'attachment') {
-						jQuery('#publish').trigger('click');
+						//jQuery('#publish').trigger('click');
 					}
 					kgvid_change_media_library_video_poster(postID, objectURL);
 				} else {
@@ -952,7 +958,7 @@ function kgvid_save_canvas_thumb(postID, time_id, total, index) {
 			jQuery('#attachments-' + postID + '-thumbnailplaceholder').empty();
 			jQuery('#attachments-' + postID + '-thumbnailplaceholder').html('<div class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box">' + errorThrown + '</div>');
 		});
-	}, 'image/jpeg', 0.8);
+	}, mimeType, 0.8);
 }
 
 function kgvid_thumbnail_saveall_progress(postID, total) {
