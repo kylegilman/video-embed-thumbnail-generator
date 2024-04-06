@@ -359,7 +359,7 @@ function kgvid_ajax_save_html5_thumb() {
 		if ( isset( $_FILES['file'] ) && isset( $_FILES['file']['name'] ) ) {
 
 			add_filter( 'upload_dir', 'kgvid_thumb_tmp_upload_dir' );
-			$uploads = wp_upload_dir();
+			$uploads             = wp_upload_dir();
 			$sanitized_file_name = sanitize_file_name( $_FILES['file']['name'] );
 			if ( file_exists( $uploads['path'] . '/' . $sanitized_file_name ) ) {
 				wp_delete_file( $uploads['path'] . '/' . $sanitized_file_name );
@@ -783,12 +783,17 @@ function kgvid_ajax_delete_video() {
 		if ( $attachment_id
 			&& $format
 			&& get_post_meta( $attachment_id, '_kgflashmediaplayer-format', true ) === $format
+			&& get_post_status( $attachment_id )
 		) {
 			if ( $blog_id ) {
 				switch_to_blog( $blog_id );
 			}
-			$deleted = wp_delete_attachment( $attachment_id, true );
-			if ( ! empty( $deleted ) ) {
+			$filename = get_attached_file( $attachment_id );
+			$deleted  = wp_delete_attachment( $attachment_id, true );
+			if ( ! empty( $deleted ) && ! file_exists( $filename ) ) {
+				$deleted = true;
+			} elseif ( file_exists( $filename ) ) {
+				wp_delete_file( $filename );
 				$deleted = true;
 			}
 			if ( $blog_id ) {
