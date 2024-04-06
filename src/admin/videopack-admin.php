@@ -1999,7 +1999,7 @@ function kgvid_encode_formats_callback() {
 		echo '<input type="hidden" name="kgvid_video_embed_options[encode][' . esc_attr( $format ) . ']" value="false"><input ' . checked( is_array( $options['encode'] ) && array_key_exists( $format, $options['encode'] ) && $options['encode'][ $format ] == 'on', true, false ) . " id='encode_" . esc_attr( $format ) . "' name='kgvid_video_embed_options[encode][" . esc_attr( $format ) . "]' type='checkbox' /> <label for='encode_" . esc_attr( $format ) . "'>" . esc_html( $format_stats['name'] ) . '</label><br />';
 	}
 
-	echo '<input type="hidden" name="kgvid_video_embed_options[encode][custom]" value="false"><input ' . checked( is_array( $options['encode'] ) && array_key_exists( 'custom', $options['encode'] ), true, false ) . " id='encode_custom' name='kgvid_video_embed_options[encode][custom]' type='checkbox' /> <label for='encode_custom'>" . esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
+	echo '<input type="hidden" name="kgvid_video_embed_options[encode][custom]" value="false"><input ' . checked( is_array( $options['encode'] ) && $options['encode']['custom'] === 'on', true, false ) . " id='encode_custom' name='kgvid_video_embed_options[encode][custom]' type='checkbox' /> <label for='encode_custom'>" . esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
 	$items = array(
 		'H.264'    => 'h264',
 		'WEBM VP8' => 'webm',
