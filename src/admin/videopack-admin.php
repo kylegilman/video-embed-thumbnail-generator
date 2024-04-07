@@ -1526,7 +1526,7 @@ function kgvid_plugin_playback_settings_section_callback() {
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Video.js is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.', 'video-embed-thumbnail-generator' ) ) );
 	echo "</td></tr></tbody></table>\n";
 
-	echo "<div class='kgvid_setting_nearvid general-tab'>";
+	echo "<div class='kgvid_setting_nearvid general-tab' style='max-width:" . esc_attr( $options['width'] ) . "px;'>";
 	echo "<div id='kgvid_above_sample_vid'>";
 	echo "<span><input type='hidden' name='kgvid_video_embed_options[overlay_title]' value='false'><input class='affects_player' " . checked( $options['overlay_title'], 'on', false ) . " id='overlay_title' name='kgvid_video_embed_options[overlay_title]' type='checkbox' /><label for='overlay_title'>" . esc_html__( 'Overlay video title', 'video-embed-thumbnail-generator' ) . '</label></span>';
 	echo "<span><input class='affects_player' " . checked( $options['downloadlink'], 'on', false ) . " id='downloadlink' name='kgvid_video_embed_options[downloadlink]' type='checkbox' /> <label for='downloadlink'>" . esc_html__( 'Show download link', 'video-embed-thumbnail-generator' ) . '</label></span>';
@@ -1536,8 +1536,7 @@ function kgvid_plugin_playback_settings_section_callback() {
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Enter your Twitter username in the Video Sharing section below.', 'video-embed-thumbnail-generator' ) ) );
 	echo "<input type='hidden' name='kgvid_video_embed_options[facebook_button]' value='false'><input class='affects_player' " . checked( $options['facebook_button'], 'on', false ) . " id='facebook_button' name='kgvid_video_embed_options[facebook_button]' type='checkbox' /> <label for='facebook_button'>" . esc_html__( 'Facebook button', 'video-embed-thumbnail-generator' ) . '</label></span></div>';
 	$iframeurl = site_url( '/' ) . '?videopack[enable]=true&videopack[sample]=true';
-	$sampleheight = intval( $options['height'] ) + 50;
-	$aspect_ratio = round( $sampleheight / intval( $options['width'] ) * 100, 2 );
+	$aspect_ratio = round( ( ( intval( $options['height'] ) / intval( $options['width'] ) ) * 100 ) + 4, 2 );
 	echo "<div id='kgvid_samplevideo_container' style='padding-top:" . esc_attr( $aspect_ratio ) . "%'><iframe id='kgvid_samplevideo' src='" . esc_attr( $iframeurl ) . "' scrolling='no'></iframe></div>";
 	echo "<div style='float:right;'><input type='hidden' name='kgvid_video_embed_options[view_count]' value='false'><input class='affects_player' " . checked( $options['view_count'], 'on', false ) . " id='view_count' name='kgvid_video_embed_options[view_count]' type='checkbox' /> <label for='view_count'>" . esc_html__( 'Show view count', 'video-embed-thumbnail-generator' ) . '</label></div>';
 	echo "<hr style='width:100%;'></div>\n\t";
