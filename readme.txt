@@ -116,6 +116,7 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 * Added WordPress Playground Blueprint for easy plugin previews.
 * Added a VIDEOPACK_FREEMIUS_ENABLED constant to disable loading Freemius.
 * Confirmed compatibility with FFMPEG v7.0
+* Updated Freemius SDK to v2.7.0
 
 = 4.10 - March 24, 2024 =
 * Changed browser-thumbnail upload process to use blobs instead of data URLs and switched to wp_handle_upload instead of custom process for enhanced security.
