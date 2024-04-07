@@ -2006,14 +2006,8 @@ function kgvid_save_plugin_settings(input_obj) {
 						jQuery( input_obj ).parents( "td:first" ).append( '<div class="error settings-error"><p><strong>' + data.error_message + '</strong></p>' );
 					}
 					if ( save_queue[0].id == "width" || save_queue[0].id == "height" ) {
-						var dimension = "";
-						if ( save_queue[0].id == "height" ) {
-							dimension = parseInt( data.validated_value ) + 25;
-						} else {
-							dimension = data.validated_value
-						}
-						jQuery( '#kgvid_samplevideo' ).attr( save_queue[0].id, dimension );
-						jQuery( '#kgvid_samplevideo_container' ).css( 'padding-top', ( ( parseInt( jQuery( '#height' ).val() ) + 50 ) / parseInt( jQuery( '#width' ).val() ) * 100 ) + '%' );
+						jQuery( '.kgvid_setting_nearvid').css( 'max-width', jQuery( '#width' ).val() + 'px' );
+						jQuery( '#kgvid_samplevideo_container' ).css( 'padding-top', ( parseInt( jQuery( '#height' ).val() ) / parseInt( jQuery( '#width' ).val() ) * 100 ) + 4 + '%' );
 					}
 					if ( save_queue[0].id == "app_path" || save_queue[0].id == "video_app" ) {
 						jQuery( '#app_path' ).val( data.app_path );
