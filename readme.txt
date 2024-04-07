@@ -5,7 +5,7 @@ Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 5.0
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 4.10.1
+Stable tag: 4.10.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,9 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 4. Shortcode inserted into the post content by the plugin.
 
 == Changelog ==
+
+= 4.10.2 - April 8, 2024 =
+* Better resizing for the settings page sample video.
 
 = 4.10.1 - April 7, 2024 =
 * Switched custom database query for looking up attachment IDs via URLs to the WordPress function attachment_url_to_postid() which could result in some video URLs no longer returning attachment IDs when the video player code is generated. That would prevent features like video play counting, and would only apply to shortcodes that don't include attachment IDs. Please let me know if this happens to you.
