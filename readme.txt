@@ -1,11 +1,11 @@
 === Videopack ===
 Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
-Tags: video, video player, video gallery, video thumbnail, ffmpeg, resolution
+Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.5
 Requires PHP: 7.3
-Stable tag: 4.9.5
+Stable tag: 4.10.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -105,7 +105,7 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 == Changelog ==
 
-= 5.0 - April XX, 2024 =
+= 5.0 - May XX, 2024 =
 * Substantially rewrote the entire plugin.
 * Added a Videopack Block for the block editor.
 * Added watermarks for video thumbnails without requiring FFmpeg.
@@ -116,7 +116,40 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 * Removed LIBAV/AVCONV support.
 * Changed capitalization of FFMPEG to FFmpeg.
 
-= 4.9.5 - January XX, 2024 =
+= 4.10.1 - April 7, 2024 =
+* Switched custom database query for looking up attachment IDs via URLs to the WordPress function attachment_url_to_postid() which could result in some video URLs no longer returning attachment IDs when the video player code is generated. That would prevent features like video play counting, and would only apply to shortcodes that don't include attachment IDs. Please let me know if this happens to you.
+* Revised thumbnail generation to work with PNG as a fallback when GD is not configured to support JPG.
+* Fixed "replace original" encoding when newly-encoded files are a different format from the original. Original formats are now deleted after the replacement encode format is complete.
+* Added extra check that attachment files are deleted when deleting encoded video formats.
+* Fixed bug that always enabled the custom format encode setting.
+* Fixed typo in FFMPEG rotation test filename.
+* Made sample video on the Videopack settings page responsive.
+* Added WordPress Playground Blueprint for easy plugin previews.
+* Added a VIDEOPACK_FREEMIUS_ENABLED constant to disable loading Freemius.
+* Confirmed compatibility with FFMPEG v7.0
+* Updated Freemius SDK to v2.7.0
+
+= 4.10 - March 24, 2024 =
+* Changed browser-thumbnail upload process to use blobs instead of data URLs and switched to wp_handle_upload instead of custom process for enhanced security.
+* Removed Video.js v7
+* Restored Freemius SDK after accidentally disabling it in 4.9.6.
+* Changed audio codec for VP8/VP9 encoding from libvorbis to libopus.
+* Updated FFMPEG status checking to account for log output changes in FFMPEG version 6.1
+* Fixed errors when FFMPEG "Encode quality control method" was set to Average Bit Rate.
+* Added custom hooks related to thumbnail generation.
+* Updated Video.js to v8.10.0 and Symfony/Process to v5.4.36
+
+= 4.9.6 - February 26, 2024 =
+* Fixed uninstall routine for more complete cleanup when deleting the plugin.
+* Disabled Chromecast overlay button on videos used to make thumbnails.
+* Removed comma after final parameter in function call that caused errors in PHP versions earlier than 7.3.
+
+= 4.9.5 - February 7, 2024 =
+* Fixed bug that failed to save some Videopack settings when they were disabled.
+* Fixed thumbnail rotation bug for vertical videos when using FFMPEG versions earlier than 6.0.
+* Fixed bug that set the "FFMPEG Exists" option to an invalid value when upgrading to Videopack v4.8. If no settings that triggered a check for FFMPEG were changed in the year since then, FFMPEG would not execute.
+* Improved options validation and FFMPEG test encode process.
+* Removed "Insert title above video" option when inserting videos into posts.
 
 = 4.9.4 - January 23, 2024 =
 * Fixed bugs that interfered with Media Library functions that don't involve videos, including image gallery editing.
@@ -161,152 +194,6 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 * Updated Video.js to v8.5.2 and v7.21.5
 * Updated Freemius SDK to 2.5.12
 * Updated Symfony/Process to v5.4.28
-
-= 4.8.11 - July 5, 2023 =
-* Fixed bug that always forced vertical videos into a 16:9 aspect ratio when using the Video.js player.
-* Updated Freemius SDK to v2.5.10
-
-= 4.8.10 - June 1, 2023 =
-* Fixed thumbnail generation bugs introduced by WordPress 6.2.
-* Updated Video.js to v8.3.0
-* Updated Freemius SDK to v2.5.8
-* Updated Symfony/Process to v5.4.24
-
-= 4.8.9 - March 30, 2023 =
-* Bumped version number because of files missing from the v4.8.8 distribution file.
-
-= 4.8.8 - March 30, 2023 =
-* Removed SimpleModal library for pop-up videos and re-wrote to use a custom jQuery pop-up.
-* Restored missing "Default number of thumbnails to generate" setting.
-* Fixed string divided by string errors.
-* Fixed JavaScript error when adding media in block editor.
-* Updated Freemius SDK to v2.5.6
-* Updated Symfony/Process to v5.4.21
-
-= 4.8.7 - February 17, 2023 =
-* Added Video.js v8 player option which <a href="https://videojs.com/blog/videojs-8-and-vhs-3/">removes support for older browsers</a>. v7 is still available and will continue to be updated. v5 is deprecated and will be removed in a future update.
-* Updated Video.js resolution selector plugin to work with v8.
-* Added an option to hide Videopack-generated thumbnails from the Media Library.
-* Added a check for non-square pixels (SAR) when generating thumbnails.
-* Fixed bug that could cause an apparently empty video encode queue to crash admin pages.
-
-= 4.8.6 - February 4, 2023 =
-* Made improvements to oEmbed responses for better, more universally accepted embedded videos.
-* Removed obsolete setting "Enable oEmbeds from unknown providers"
-* Fixed bug that always returned the video attached to the most recent post when older posts or pages were embedded.
-* Fixed bug that disabled navigation between attachments in the Media Library.
-* Updated Video.js resolution switcher to newer API to avoid using deprecated .extend function.
-
-= 4.8.5 - January 28, 2023 =
-* Forgot to increase the plugin version number. This will stop endless Videopack updates available.
-
-= 4.8.4 - January 28, 2023 =
-* Fixed redirect validation error that caused "the link you followed has expired" errors.
-* Updated Video.js to v7.21.1
-
-= 4.8.3 - January 28, 2023 =
-* Added try/catch when running FFmpeg for better error reporting and avoiding fatal errors on activation.
-* Improved process for automatically setting featured post images when thumbnails are chosen.
-* Added mkv as a supported file format. Playback will be inconsistent across browsers and devices.
-* Changed single-click download link to use browser's 'download' attribute instead of PHP-based streaming from the server whenever possible.
-* Restored settings "Always output stereo audio" and "Allow rewriting of WordPress attachment URLs"
-* Made several stability improvements to the video encoding queue processes.
-* Added Heartbeat API video encode queue check
-* Changed WP-Cron scheduled daily video encode queue cleanup to a single event for easier deactivation.
-* More escaping, sanitizing, and validation for security.
-* Removed all inline <script> outputs from the plugin for security.
-* Converted direct file functions like move() and rmdir() to WordPress Filesystem API.
-* Broke up plugin functions into separate files.
-* Changed all psuedo buttons to buttons.
-
-= 4.8.2 - January 12, 2023 =
-* Fixed bug that disabled the WordPress Default player.
-* Fixed bug that made videos on later pages of paginated video galleries 640x360 when using the WordPress Default player.
-* Fixed bug that broke resolution switching when using the WordPress Default player.
-* Fixed bug that broke single-click download links.
-* Fixed bug that caused errors when get_current_screen() was not defined.
-* Removed all 'javascript:void(0)' hrefs from video players.
-* More escaping and sanitizing for security.
-
-= 4.8.1 - January 11, 2023 =
-* Increased WordPress version requirement to 5.0
-* More escaping and sanitizing for security.
-* Fixed bug that caused a fatal error when checking for FFmpeg if proc_open isn't enabled.
-* Added a check to remove partially encoded video files from video player source lists.
-* Moved embedded video template into its own file.
-* Replaced most references to global variables with associated WordPress functions.
-
-= 4.8 - January 9, 2023 =
-* Significant security update. There might be some features that break because I wasn't able to test every possible configuration. Use <a href="https://wordpress.org/plugins/wp-rollback/">WP Rollback</a> to return to version 4.7.5 if you encounter any big problems.
-* Increased PHP requirement to 7.2.5
-* Sanitized, escaped, and validated many user inputs and echoed variables.
-* Now using more secure Symfony/Process library to escape and run FFmpeg commands instead of escapeshellcmd & exec. The PHP command proc_open must be enabled on your server to use FFmpeg functions.
-* Stopped using setlocale when escaping filenames with multibyte characters.
-* Enabled canceling encoding on Windows servers and added checks to ensure the correct process is being canceled on all platforms. Partially encoded video files are now deleted after encoding is canceled.
-* Moved some encode progress updating to client-side to reduce server load, and generally attempted to improve stability of the encode queue.
-* Fixed bug that did not update video's featured image if one had already been set.
-* Fixed bug that disabled the Video.js big play button after switching resolutions.
-* Fixed bug that prevented "Embed Video from URL" tab from working.
-* Updated Freemius SDK to v2.5.3
-* Fixed bug that caused timeouts when activating plugin on multisite networks.
-* Fixed bug that paused encoding queue after updating network settings.
-* Re-ordered AAC encoder library preferences to avoid using old, deprecated libraries libvo_aacenc and libfaac.
-* Added Composer for package management and rearranged plugin file structure.
-
-= 4.7.5 - October 19, 2022 =
-* Changed official URL to https://www.videopack.video to avoid WordPress trademark violation.
-* Updated Video.js to v7.20.3
-* Adjusted video player script registration order to avoid undefined variables on page load.
-* Modified CSS for video player info bar to prevent it from extending beyond the edge of the video.
-
-= 4.7.4 - February 26, 2022 =
-* Updated Video.js to v7.17.0
-* Updated Freemius SDK to v2.4.3
-* Added limited support for HLS and DASH streaming.
-* Added Pause, Resume, and Seek Google Analytics event tracking.
-* Fixed a bug that reported multiple Play events when videos not in the WordPress database resumed.
-* Fixed some autoplay problems with Video.js v7.
-* Fixed a bug that caused a PHP 8 warning when the plugin is first installed.
-
-= 4.7.3 - August 16, 2021 =
-* Updated Video.js to version 7.14.3
-* Fixed bug that localized front-end JavaScript multiple times if multiple videos were embedded on the page.
-
-= 4.7.2 - July 22, 2021 =
-* Added video player option "None" which will disable all plugin-related CSS and JS on the front end.
-
-= 4.7.1 - July 19, 2021 =
-* Updated Video.js to version 7.13.3
-* Fixed bug that removed existing meta_query when loading attachments, which broke Woocommerce image importing and most likely some other queries.
-* Updated shortcode inserted via 'Embed Video From URL' tab from 'KGVID' to 'videopack'
-* Fixed bug that caused errors when all default encode formats were disabled.
-* Fixed bug that broke playback on Twitter Player Cards.
-* Changed video encode queue page design to make it clearer when the queue is paused.
-* Added fallback logic in case the Freemius SDK files are removed from the distribution. The Freemius SDK is not required to run Videopack unless you would like to use a premium add-on.
-* Updated Admin styles to conform to standardized WordPress color palette.
-
-= 4.7 - March 16, 2021 =
-* Changed plugin name to Videopack.
-* The shortcode is now [videopack] by default but older [KGVID] shortcodes will still work.
-* Added Freemius SDK to facilitate selling premium Videopack add-ons.
-* Released a <a href="https://www.videopack.video/add-ons/ads/">premium add-on for video ads</a>.
-* Added Video.js v7 player option.
-* Deprecated Video.js v5 player.
-* Removed JW Player & Strobe Media Playback player options.
-* Removed obsolete Video-js.swf Flash player and unused Video.js font files.
-* Added GIF Mode setting to make videos behave like GIFs (autoplay, loop, muted, etc).
-* Removed dashicons library from the front end and fixed multiple CSS issues.
-* Added option to use an experimental cache for a complicated URL-to-ID database query that should speed up plugin execution on sites with large numbers of videos.
-* Adding attachment 'id' attribute to shortcodes inserted into posts, and prioritizing the 'id' attribute over URLs when embedding videos to avoid making the URL-to-ID query when possible.
-* Added option to automatically publish draft posts when attached videos are finished encoding.
-* Renamed 'controlbar' option to 'controls' and 'mute' to 'muted' to match HTML5 terms.
-* Improved bulk processing of videos using the "Generate thumbnails" or "Encode videos" buttons from the FFmpeg Settings tab.
-* Added pause/resume control to video encode queue.
-* Added automatic localization for Video.js player elements.
-* Fixed bugs related to saving thumbnails with existing filenames and large thumbnails that are automatically scaled down and renamed by WordPress's large image resizing introduced in WordPress version 5.3.
-* Fixed bugs that prevented clearing encode queue in non-multisite environments.
-* Fixed bug that added videos to encode queue even if there was nothing to encode.
-* Fixed bug that wouldn't show a sample video on the settings page if there were no posts in the WordPress database.
 
 <a href="https://www.videopack.video/docs/changelog/">See the full changelog on the Videopack website.</a>
 
