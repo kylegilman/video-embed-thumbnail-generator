@@ -40,7 +40,7 @@ class Thumbnails {
 		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 		$tmp_posterpath = $uploads['path'] . '/thumb_tmp/' . $posterfile . '.png';
 		$thumb_url      = $uploads['url'] . '/' . $posterfile . '.jpg';
-		$thumb_info = array(
+		$thumb_info     = array(
 			'thumb_id'  => false,
 			'thumb_url' => $thumb_url,
 		);

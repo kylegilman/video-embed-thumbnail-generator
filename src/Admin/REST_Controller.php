@@ -151,11 +151,11 @@ class REST_Controller extends \WP_REST_Controller {
 							'required' => true,
 						),
 						'thumburl' => array(
-							'type' => 'string',
+							'type'     => 'string',
 							'required' => true,
 						),
-						'index' => array(
-							'type' => 'number',
+						'index'    => array(
+							'type'     => 'number',
 							'required' => true,
 						),
 					),
@@ -167,48 +167,48 @@ class REST_Controller extends \WP_REST_Controller {
 						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
-						'movieurl' => array(
-							'type' => 'string',
+						'movieurl'                 => array(
+							'type'     => 'string',
 							'required' => true,
 						),
-						'numberofthumbs' => array(
-							'type'    => 'number',
-							'minimum' => 1,
-							'maximum' => 100,
-							'default' => 4,
+						'numberofthumbs'           => array(
+							'type'     => 'number',
+							'minimum'  => 1,
+							'maximum'  => 100,
+							'default'  => 4,
 							'required' => true,
 						),
-						'thumbnumber' => array(
-							'type' => 'number',
+						'thumbnumber'              => array(
+							'type'     => 'number',
 							'required' => true,
 						),
 						'thumbnumberplusincreaser' => array(
-							'type' => 'number',
+							'type'     => 'number',
 							'required' => true,
 						),
-						'attachmentID' => array(
-							'type' => 'number',
+						'attachmentID'             => array(
+							'type'     => 'number',
 							'required' => true,
 						),
-						'generate_button' => array(
-							'type' => 'string',
+						'generate_button'          => array(
+							'type'     => 'string',
 							'required' => true,
 						),
-						'thumbtimecode' => array(
-							'type' => array(
+						'thumbtimecode'            => array(
+							'type'     => array(
 								'number',
 								'string',
 							),
 							'required' => true,
 						),
-						'dofirstframe' => array(
-							'type' => 'boolean',
+						'dofirstframe'             => array(
+							'type'     => 'boolean',
 							'required' => true,
 						),
-						'poster' => array(
+						'poster'                   => array(
 							'type' => 'string',
 						),
-						'parent_id' => array(
+						'parent_id'                => array(
 							'type' => 'number',
 						),
 					),
@@ -277,14 +277,14 @@ class REST_Controller extends \WP_REST_Controller {
 						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
-						'url' => array(
+						'url'       => array(
 							'type' => 'string',
 						),
-						'id' => array(
+						'id'        => array(
 							'type' => 'number',
 						),
-						'formats' => array(
-							'type' => 'object',
+						'formats'   => array(
+							'type'                 => 'object',
 							'additionalProperties' => array(
 								'type' => 'boolean',
 							),
@@ -323,25 +323,25 @@ class REST_Controller extends \WP_REST_Controller {
 				'callback'            => array( $this, 'wp_video' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'src'           => array(
+					'src'      => array(
 						'type' => 'string',
 					),
-					'poster'        => array(
+					'poster'   => array(
 						'type' => 'string',
 					),
-					'loop'          => array(
+					'loop'     => array(
 						'type' => array( 'string', 'boolean' ),
 					),
-					'autoplay'      => array(
+					'autoplay' => array(
 						'type' => array( 'string', 'boolean' ),
 					),
-					'preload'       => array(
+					'preload'  => array(
 						'type' => 'string',
 					),
-					'width'         => array(
+					'width'    => array(
 						'type' => array( 'string', 'number' ),
 					),
-					'height'        => array(
+					'height'   => array(
 						'type' => array( 'string', 'number' ),
 					),
 				),
@@ -428,8 +428,8 @@ class REST_Controller extends \WP_REST_Controller {
 
 	public function thumb_generate( \WP_REST_Request $request ) {
 
-		$params   = $request->get_params();
-		$response = array();
+		$params            = $request->get_params();
+		$response          = array();
 		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
 
 		$response = $ffmpeg_thumbnails->make(
@@ -478,7 +478,7 @@ class REST_Controller extends \WP_REST_Controller {
 			'posts_per_page' => $request->get_param( 'posts' ),
 			'post_status'    => 'published',
 			'fields'         => 'ids',
-			'meta_query' => array(
+			'meta_query'     => array(
 				'relation' => 'AND',
 				array(
 					'key'     => '_kgflashmediaplayer-externalurl',

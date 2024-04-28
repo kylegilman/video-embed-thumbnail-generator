@@ -67,7 +67,7 @@ class Player_Video_Js extends Player {
 		}
 	}
 
-	public function enqueue_shortcode_scripts() {
+	public function enqueue_scripts(): void {
 
 		wp_enqueue_script( 'video-js' );
 		wp_enqueue_script( 'videojs-l10n' );
@@ -76,7 +76,7 @@ class Player_Video_Js extends Player {
 			wp_enqueue_script( 'video-quality-selector' );
 		}
 
-		parent::enqueue_shortcode_scripts();
+		parent::enqueue_scripts();
 	}
 
 	public function get_videopack_script_dependencies(): array {

@@ -46,7 +46,7 @@ class Template {
 
 	public function filter_video_attachment_content( $content ) {
 
-		$post    = get_post();
+		$post = get_post();
 
 		if ( $this->options['template'] == 'gentle'
 			&& isset( $post )
