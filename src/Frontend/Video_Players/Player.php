@@ -76,7 +76,7 @@ abstract class Player {
 		);
 
 		if ( $this->options['alwaysloadscripts'] == true ) {
-			$this->enqueue_shortcode_scripts();
+			$this->enqueue_scripts();
 		}
 	}
 
@@ -88,8 +88,8 @@ abstract class Player {
 		return array( 'jquery' );
 	}
 
-	public function enqueue_shortcode_scripts(): void {
-		do_action( 'videopack_enqueue_shortcode_scripts' );
+	public function enqueue_scripts(): void {
+		do_action( 'videopack_enqueue_player_scripts' );
 		wp_enqueue_script( 'videopack' );
 	}
 
@@ -353,8 +353,8 @@ abstract class Player {
 			$kgvid_video_id = 0;
 		}
 
-		$code          = '';
-		$id_array      = array();
+		$code     = '';
+		$id_array = array();
 
 		if ( ! empty( $query_atts['id'] ) ) {
 			$id_array[0] = $query_atts['id'];
@@ -487,7 +487,7 @@ abstract class Player {
 				}
 
 				$query_atts['countable'] = true;
-				$id_for_sources = $id;
+				$id_for_sources          = $id;
 
 			} else { // video is not in the database
 

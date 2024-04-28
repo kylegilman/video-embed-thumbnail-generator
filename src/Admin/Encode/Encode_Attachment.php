@@ -845,7 +845,7 @@ class Encode_Attachment {
 
 		if ( ! empty( $result ) ) {
 
-			$metadata['worked'] = true;
+			$metadata['worked']       = true;
 			$metadata['actualwidth']  = $regs [1] ? $regs [1] : null;
 			$metadata['actualheight'] = $regs [2] ? $regs [2] : null;
 

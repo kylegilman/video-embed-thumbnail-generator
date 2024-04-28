@@ -38,7 +38,7 @@ class Gallery {
 			'paged'          => $page_number,
 			'post_status'    => 'published',
 			'post_parent'    => $query_atts['gallery_id'],
-			'meta_query' => array(
+			'meta_query'     => array(
 				'relation' => 'AND',
 				array(
 					'key'     => '_kgflashmediaplayer-externalurl',
@@ -77,7 +77,7 @@ class Gallery {
 
 		return new \WP_Query(
 			array(
-				'post__in' => array(0), // No post has the ID of 0.
+				'post__in' => array( 0 ), // No post has the ID of 0.
 			)
 		);
 	}

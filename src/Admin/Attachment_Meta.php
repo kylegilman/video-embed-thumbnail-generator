@@ -140,7 +140,7 @@ class Attachment_Meta {
 
 			if ( ! $kgvid_postmeta['codec'] && isset( $video_info['codec'] ) ) {
 				$kgvid_postmeta['codec'] = $video_info['codec'];
-				$changed                  = true;
+				$changed                 = true;
 			}
 
 			if ( ! $kgvid_postmeta['frame_rate'] && isset( $video_info['frame_rate'] ) ) {
@@ -437,13 +437,13 @@ class Attachment_Meta {
 					'boolean',
 				),
 			),
-			'maxheight'   => array(
+			'maxheight'           => array(
 				'type' => array(
 					'string',
 					'number',
 				),
 			),
-			'maxwidth'   => array(
+			'maxwidth'            => array(
 				'type' => array(
 					'string',
 					'number',
@@ -483,7 +483,7 @@ class Attachment_Meta {
 					'number',
 				),
 			),
-			'poster'   => array(
+			'poster'              => array(
 				'type' => array(
 					'string',
 				),
@@ -513,17 +513,17 @@ class Attachment_Meta {
 				),
 			),
 			'track'               => array(
-				'type' => 'array',
+				'type'  => 'array',
 				'items' => array(
-					'type' => 'object',
+					'type'       => 'object',
 					'properties' => array(
-						'src' => array(
+						'src'     => array(
 							'type' => array(
 								'string',
 								'number',
 							),
 						),
-						'kind' => array(
+						'kind'    => array(
 							'type' => array(
 								'string',
 								'number',
@@ -541,7 +541,7 @@ class Attachment_Meta {
 								'number',
 							),
 						),
-						'label' => array(
+						'label'   => array(
 							'type' => array(
 								'string',
 								'number',

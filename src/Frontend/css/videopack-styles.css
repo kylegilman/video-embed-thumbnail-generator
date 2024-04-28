@@ -329,7 +329,7 @@ input[type="text"].kgvid_start_at {
 }
 
 .kgvid_video_gallery_thumb .kg-video-js-skin .vjs-big-play-button {
-    scale: 50%;
+	scale: 50%;
 }
 
 .kgvid_video_gallery_thumb .titlebackground {
@@ -413,7 +413,7 @@ input[type="text"].kgvid_start_at {
 	text-decoration: none;
 	top: -26px;
 	background-color: transparent;
-    border: none;
+	border: none;
 }
 
 #kgvid-videomodal-container .wp-video, .kgvid_wrapper .wp-video {

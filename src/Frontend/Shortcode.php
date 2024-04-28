@@ -6,12 +6,12 @@ class Shortcode {
 
 	protected $options_manager;
 	protected $options;
-	protected $assets;
+	protected $player;
 
 	public function __construct( $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
-		$this->assets          = new Assets( $options_manager );
+		$this->player          = \Videopack\Frontend\Video_Players\Player_Factory::create( $options_manager );
 	}
 
 	public function add() {
@@ -235,7 +235,7 @@ class Shortcode {
 		if ( ! is_feed() ) {
 
 			if ( substr( $this->options['embed_method'], 0, 8 ) !== 'Video.js' ) {
-				$this->assets->enqueue_shortcode_scripts();
+				$this->player->enqueue_scripts();
 			}
 
 			$post_id = get_the_ID();
@@ -294,7 +294,7 @@ class Shortcode {
 			} //if gallery
 
 			if ( substr( $this->options['embed_method'], 0, 8 ) === 'Video.js' ) {
-				$this->assets->enqueue_shortcode_scripts();
+				$this->player->enqueue_scripts();
 			}
 		} //if not feed
 

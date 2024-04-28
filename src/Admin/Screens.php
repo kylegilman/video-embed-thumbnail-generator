@@ -9,7 +9,7 @@ class Screens {
 
 	public function __construct( $options_manager ) {
 		$this->options_manager = $options_manager;
-		$this->options = $options_manager->get_options();
+		$this->options         = $options_manager->get_options();
 	}
 
 	public function plugin_action_links( $links ) {

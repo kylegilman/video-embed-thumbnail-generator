@@ -350,5 +350,4 @@ class Encode_Queue_Controller {
 	protected function save_encoding_now() {
 		return update_option( 'videopack_encoding_now', $this->encoding_now );
 	}
-
 }
