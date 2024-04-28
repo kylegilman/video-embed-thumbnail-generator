@@ -107,7 +107,7 @@ class Assets {
 				'vjs-theme-sea',
 			);
 			foreach ( $js_skins as $skin ) {
-				wp_enqueue_style( $skin, plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/skins/' . $skin . '.css', '', VIDEOPACK_VERSION );
+				wp_enqueue_style( $skin, plugins_url( '', dirname( __DIR__ ) ) . '/video-js/skins/' . $skin . '.css', '', VIDEOPACK_VERSION );
 			}
 		}
 	}
