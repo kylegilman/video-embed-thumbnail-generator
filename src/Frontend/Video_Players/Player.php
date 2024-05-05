@@ -335,6 +335,10 @@ abstract class Player {
 	protected function get_below_video_code(): string {
 		$below_video = '<div class="videopack-below-video">';
 		if ( $this->atts['view_count'] ) {
+			$source = $this->get_source();
+			if ( $source ) {
+				$view_count = $source->get_views();
+			}
 			$below_video .= '<span class="videopack-view-count">' . esc_html( $this->get_source()->get_views() ) . '</span>';
 		}
 		if ( ! empty( $this->atts['caption'] ) ) {
