@@ -105,11 +105,12 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.2 - April 8, 2024 =
+= 4.10.2 - May 8, 2024 =
+* Fixed bug that prevented disabling the "Set all videos to expand to 100% of their containers" setting.
 * Better resizing for the settings page sample video.
 
 = 4.10.1 - April 7, 2024 =
-* Switched custom database query for looking up attachment IDs via URLs to the WordPress function attachment_url_to_postid() which could result in some video URLs no longer returning attachment IDs when the video player code is generated. That would prevent features like video play counting, and would only apply to shortcodes that don't include attachment IDs. Please let me know if this happens to you.
+* Switched custom database query for looking up attachment IDs via URLs to the WordPress function attachment_url_to_postid() which could result in some video URLs no longer returning attachment IDs when the video player code is generated. That would prevent features like video play recording in the WordPress database, and would only apply to shortcodes that don't include attachment IDs. Please let me know if this happens to you.
 * Revised thumbnail generation to work with PNG as a fallback when GD is not configured to support JPG.
 * Fixed "replace original" encoding when newly-encoded files are a different format from the original. Original formats are now deleted after the replacement encode format is complete.
 * Added extra check that attachment files are deleted when deleting encoded video formats.

@@ -1614,6 +1614,7 @@ function kgvid_resize_callback() {
 
 function kgvid_dimensions_callback() {
 	$options = kgvid_get_options();
+	echo '<input type="hidden" name="kgvid_video_embed_options[fullwidth]" value="false">';
 	echo '<input ' . checked( $options['fullwidth'], 'on', false ) . " id='fullwidth' name='kgvid_video_embed_options[fullwidth]' type='checkbox' /> <label for='fullwidth'>" . esc_html__( 'Set all videos to expand to 100% of their containers.', 'video-embed-thumbnail-generator' ) . '</label>';
 	echo wp_kses_post( kgvid_tooltip_html( esc_html__( 'Enabling this will ignore any other width settings and set the width of the video to the width of the container it\'s in.', 'video-embed-thumbnail-generator' ) ) );
 	echo esc_html__( 'Default Width:', 'video-embed-thumbnail-generator' ) . " <input class='small-text affects_player' id='width' name='kgvid_video_embed_options[width]' type='text' value='" . esc_attr( $options['width'] ) . "' /> " . esc_html__( 'Height:', 'video-embed-thumbnail-generator' ) . " <input class='small-text affects_player' id='height' name='kgvid_video_embed_options[height]' type='text' value='" . esc_attr( $options['height'] ) . "' /><br />";
