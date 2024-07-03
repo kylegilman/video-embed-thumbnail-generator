@@ -4174,12 +4174,16 @@
                 ! empty( $this->_storage->connectivity_test ) &&
                 isset( $this->_storage->connectivity_test['is_active'] )
             ) {
-                $is_active = $this->_storage->connectivity_test['is_active'];
+                $is_connected = isset( $this->_storage->connectivity_test['is_connected'] ) ?
+                    $this->_storage->connectivity_test['is_connected'] :
+                    null;
+                $is_active    = ( $this->_storage->connectivity_test['is_active'] || is_object( $this->_site ) );
             } else {
-                $is_active = $this->should_turn_fs_on( $this->apply_filters( 'is_plugin_update', $this->is_plugin_update() ) );
-
-                $this->store_connectivity_info( (object) array( 'is_active' => $is_active ), null );
+                $is_connected = null;
+                $is_active    = $this->should_turn_fs_on( $this->apply_filters( 'is_plugin_update', $this->is_plugin_update() ) );
             }
+
+            $this->store_connectivity_info( (object) array( 'is_active' => $is_active ), $is_connected );
 
             if ( $is_active ) {
                 $this->_is_on = true;
@@ -5484,7 +5488,12 @@
                 'affiliate_moderation' => $this->get_option( $plugin_info, 'has_affiliation' ),
                 'bundle_id'            => $this->get_option( $plugin_info, 'bundle_id', null ),
                 'bundle_public_key'    => $this->get_option( $plugin_info, 'bundle_public_key', null ),
-                'opt_in_moderation'    => $this->get_option( $plugin_info, 'opt_in', null ),
+                'opt_in_moderation'    => $this->get_option(
+                    $plugin_info,
+                    'opt_in',
+                    // For backward compatibility, we support both parameter names: opt_in and opt_in_moderation.
+                    $this->get_option( $plugin_info, 'opt_in_moderation', null )
+                ),
             ) );
 
             if ( $plugin->is_updated() ) {
@@ -20815,7 +20824,7 @@
          *
          * @return bool|FS_Plugin_Tag
          */
-        function get_update( $plugin_id = false, $flush = true, $expiration = WP_FS__TIME_24_HOURS_IN_SEC, $newer_than = false ) {
+        function get_update( $plugin_id = false, $flush = true, $expiration = FS_Plugin_Updater::UPDATES_CHECK_CACHE_EXPIRATION, $newer_than = false ) {
             $this->_logger->entrance();
 
             if ( ! is_numeric( $plugin_id ) ) {
@@ -21347,7 +21356,9 @@
                 /**
                  * Sync licenses. Pass the site's license ID so that the foreign licenses will be fetched if the license
                  * associated with that ID is not included in the user's licenses collection.
+                 * Save previous value to manage remote license renewals.
                  */
+                $was_license_expired_before_sync = is_object( $this->_license ) && $this->_license->is_expired();
                 $this->_sync_licenses(
                     $site->license_id,
                     ( $is_context_single_site ?
@@ -21481,6 +21492,14 @@
                                     $plan_change = 'expired';
                                 }
                             }
+                        } else if ( $was_license_expired_before_sync ) {
+                            /**
+                             * If license was expired but it is not anymore.
+                             *
+                             *
+                             * @author Daniele Alessandra (@danielealessandra)
+                             */
+                            $plan_change = 'extended';
                         }
                     }
 
@@ -21555,6 +21574,12 @@
                             'trial_promotion',
                             'trial_expired',
                             'activation_complete',
+                            'license_expired',
+                        ) );
+                        break;
+                    case 'extended':
+                        $this->_admin_notices->remove_sticky( array(
+                            'trial_expired',
                             'license_expired',
                         ) );
                         break;
@@ -22468,7 +22493,7 @@
             $background = false,
             $plugin_id = false,
             $flush = true,
-            $expiration = WP_FS__TIME_24_HOURS_IN_SEC,
+            $expiration = FS_Plugin_Updater::UPDATES_CHECK_CACHE_EXPIRATION,
             $newer_than = false
         ) {
             $this->_logger->entrance();
