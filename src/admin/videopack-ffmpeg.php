@@ -1057,8 +1057,8 @@ function kgvid_encode_format_meta( $encodevideo_info, $video_key, $format, $stat
 		$post         = get_post( $post_id );
 		$current_user = wp_get_current_user();
 
-		if ( $post && ( $current_user->ID == $post->post_author )
-		|| ( current_user_can( 'edit_others_video_encodes' ) )
+		if ( ( $post && ( $current_user->ID == $post->post_author ) )
+			|| current_user_can( 'edit_others_video_encodes' )
 		) {
 			$user_delete_capability = true;
 		}
@@ -1550,7 +1550,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 	$video_encode_queue = kgvid_get_encode_queue();
 	$nonce              = wp_create_nonce( 'video-embed-thumbnail-generator-nonce' );
 
-	$crons = _get_cron_array();
+	$crons = get_option( 'cron' );
 
 	if ( $crons ) {
 		foreach ( $crons as $timestamp => $cron_job ) {
@@ -1559,6 +1559,9 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 					if ( is_array( $cron_info ) && array_key_exists( 'args', $cron_info ) ) {
 						$post = get_post( $cron_info['args'][0] );
 						if ( $post ) {
+							if ( ! is_array( $video_encode_queue ) ) {
+								$video_encode_queue = array();
+							}
 							$video_encode_queue[] = array(
 								'attachmentID'   => $post->ID,
 								'parent_id'      => $post->post_parent,
