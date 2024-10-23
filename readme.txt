@@ -105,10 +105,10 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.3 - July X, 2024 =
+= 4.10.3 - October X, 2024 =
 * Fixed bug that left FFMPEG settings enabled when FFMPEG is not present on server.
 * Fixed bug that limited the list of users to email encoding errors to.
-* Updated Video.js to v8.16.1, Freemius SDK to v2.7.3, and Symfony/Process to v5.4.40
+* Updated Video.js to v8.18.1, Freemius SDK to v2.9.0, and Symfony/Process to v5.4.44
 
 = 4.10.2 - May 8, 2024 =
 * Fixed bug that prevented disabling the "Set all videos to expand to 100% of their containers" setting.
