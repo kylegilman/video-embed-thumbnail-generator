@@ -151,6 +151,7 @@ function kgvid_cleanup_plugin() {
 
 	kgvid_delete_transients(); //clear URL cache
 	delete_transient( 'kgvid_new_attachment_transient' );
+	delete_transient( 'videopack_cron_error' );
 	delete_option( 'kgvid_video_embed_cms_switch' );
 
 	$wp_roles = wp_roles();

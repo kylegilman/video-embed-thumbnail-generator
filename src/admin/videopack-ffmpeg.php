@@ -1550,7 +1550,8 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 	$video_encode_queue = kgvid_get_encode_queue();
 	$nonce              = wp_create_nonce( 'video-embed-thumbnail-generator-nonce' );
 
-	$crons = get_option( 'cron' );
+	$crons        = get_option( 'cron' );
+	$cron_problem = false;
 
 	if ( $crons ) {
 		foreach ( $crons as $timestamp => $cron_job ) {
@@ -1558,7 +1559,7 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 				foreach ( $cron_job['kgvid_cron_new_attachment'] as $id => $cron_info ) {
 					if ( is_array( $cron_info ) && array_key_exists( 'args', $cron_info ) ) {
 						$post = get_post( $cron_info['args'][0] );
-						if ( $post ) {
+						if ( $post && time() - $timestamp < HOUR_IN_SECONDS ) {
 							if ( ! is_array( $video_encode_queue ) ) {
 								$video_encode_queue = array();
 							}
@@ -1568,6 +1569,9 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 								'movieurl'       => wp_get_attachment_url( $post->ID ),
 								'encode_formats' => 'temp',
 							);
+						}
+						if ( time() - $timestamp > HOUR_IN_SECONDS ) {
+							set_transient( 'videopack_cron_error', true, YEAR_IN_SECONDS );
 						}
 					}
 				}
@@ -1712,11 +1716,13 @@ function kgvid_generate_queue_table( $scope = 'site' ) {
 
 				// Actions
 				$html .= "\t\t\t\t\t<td>";
-				$html .= "<button type='button' id='clear-" . esc_attr( $blog_id_text . $video_entry['attachmentID'] ) . "' class='submitdelete kgvid-queue-action' onclick='kgvid_encode_queue(\"delete\", " . esc_attr( $order ) . ', ' . esc_attr( $video_entry['attachmentID'] ) . ', "' . esc_attr( $blog_id ) . "\")'";
-				if ( $currently_encoding[ $order ] ) {
-					$html .= " style='display:none;'";
+				if ( is_array( $video_entry['encode_formats'] ) ) {
+					$html .= "<button type='button' id='clear-" . esc_attr( $blog_id_text . $video_entry['attachmentID'] ) . "' class='submitdelete kgvid-queue-action' onclick='kgvid_encode_queue(\"delete\", " . esc_attr( $order ) . ', ' . esc_attr( $video_entry['attachmentID'] ) . ', "' . esc_attr( $blog_id ) . "\")'";
+					if ( $currently_encoding[ $order ] ) {
+						$html .= " style='display:none;'";
+					}
+					$html .= '>Clear</button>';
 				}
-				$html .= '>Clear</button>';
 				//end if current user can see this stuff
 			} elseif ( $same_blog == false ) {
 				$html .= "<td colspan='" . esc_attr( $total_columns - 1 ) . "'><strong class='kgvid_queue_message'>" . esc_html__( "Other site's video", 'video-embed-thumbnail-generator' ) . '</strong></td>';
@@ -2029,6 +2035,7 @@ function kgvid_cron_new_attachment_handler( $post_id, $force = false ) {
 		}
 	}//end if auto_encode
 
+	delete_transient( 'videopack_cron_error' );
 	do_action( 'videopack_cron_new_attachment', $post_id );
 }
 add_action( 'kgvid_cron_new_attachment', 'kgvid_cron_new_attachment_handler', 10, 2 );

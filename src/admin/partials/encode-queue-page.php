@@ -19,6 +19,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</h1>
 	<form method="post" action="tools.php?page=kgvid_video_encoding_queue">
 	<?php wp_nonce_field( 'video-embed-thumbnail-generator-nonce', 'video-embed-thumbnail-generator-nonce' ); ?>
+	<?php
+	if ( get_transient( 'videopack_cron_error' ) ) {
+
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$wp_control_url = admin_url( 'plugin-install.php?s=wp-crontrol&tab=search&type=term' );
+		} else {
+			$wp_control_url = 'https://wordpress.org/plugins/wp-crontrol/';
+		}
+
+		/* translators: placeholders are <a> and </a> link tags */
+		echo "<div class='notice notice-warning'><p>" . sprintf( esc_html__( 'A video was set to automatically encode more than an hour ago and was only added to the queue because this page was loaded. WP Cron is probably not executing correctly. Use the %1$sWP Crontrol plugin%2$s to troubleshoot WP Cron problems.', 'video-embed-thumbnail-generator' ), '<a href="' . esc_url( $wp_control_url ) . '">', '</a>' ) . '</p></div>';
+	}
+	?>
 	<table class="widefat" id="kgvid_encode_queue_table">
 		<thead>
 			<?php echo wp_kses_post( kgvid_generate_queue_table_header() ); ?>
@@ -35,7 +48,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		if ( current_user_can( 'edit_others_video_encodes' ) ) {
 			echo "<div class='attachment-info'><div class='actions'><button type='button' class='kgvid-queue-action' onclick='kgvid_encode_queue(\"clear_completed\", 0, 0);'>" . esc_html__( 'Clear All Completed', 'video-embed-thumbnail-generator' ) . "</button> | <button type='button' class='kgvid-queue-action' onclick='kgvid_encode_queue(\"clear_queued\", 0, 0, \"\");'>" . esc_html__( 'Clear All Queued', 'video-embed-thumbnail-generator' ) . "</button> | <button type='button' class='kgvid-queue-action' onclick='kgvid_encode_queue(\"clear_all\", 0, 0, \"\");'>" . esc_html__( 'Clear All', 'video-embed-thumbnail-generator' ) . "</button> <span class='kgvid_queue_clear_info'>" . esc_html__( 'Completed videos are cleared weekly, or daily if there are more than 50 entries in the queue.' ) . '</div></div>';
 		}
-
 		?>
 	</p>
 	</form>

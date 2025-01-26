@@ -3082,6 +3082,24 @@ function kgvid_image_attachment_fields_to_edit( $form_fields, $post ) {
 				$thumbnail_html = '<div id="thumbnail-' . esc_attr( $post->ID ) . '" class="kgvid_thumbnail_box kgvid_chosen_thumbnail_box kgvid_redraw_thumbnail_box" style="height:112px;"><span>' . esc_html__( 'Loading thumbnail...' ) . '</span></div>';
 			}
 
+			$crons = get_option( 'cron' );
+
+			if ( $crons ) {
+				foreach ( $crons as $timestamp => $cron_job ) {
+					if ( is_array( $cron_job ) && array_key_exists( 'kgvid_cron_new_attachment', $cron_job ) ) {
+						foreach ( $cron_job['kgvid_cron_new_attachment'] as $id => $cron_info ) {
+							if ( is_array( $cron_info )
+								&& array_key_exists( 'args', $cron_info )
+								&& $post->ID === $cron_info['args'][0]
+								&& time() - $timestamp > HOUR_IN_SECONDS
+							) {
+								set_transient( 'videopack_cron_error', true, YEAR_IN_SECONDS );
+							}
+						}
+					}
+				}
+			}
+
 			if ( empty( $security_disabled ) && current_user_can( 'make_video_thumbnails' ) ) {
 
 				/**
