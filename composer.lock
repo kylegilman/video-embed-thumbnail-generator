@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.9.0",
+            "version": "2.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "56696717c5f0b7fb395618e88e1b592d1893e5dc"
+                "reference": "5f57de9d7504b37b0ee9f5da44b6699c99854dd2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/56696717c5f0b7fb395618e88e1b592d1893e5dc",
-                "reference": "56696717c5f0b7fb395618e88e1b592d1893e5dc",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/5f57de9d7504b37b0ee9f5da44b6699c99854dd2",
+                "reference": "5f57de9d7504b37b0ee9f5da44b6699c99854dd2",
                 "shasum": ""
             },
             "require": {
@@ -33,6 +33,11 @@
                 "wp-coding-standards/wpcs": "^2.3"
             },
             "type": "library",
+            "autoload": {
+                "files": [
+                    "start.php"
+                ]
+            },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-3.0-only"
@@ -50,9 +55,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Freemius/wordpress-sdk/issues",
-                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.9.0"
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.10.1"
             },
-            "time": "2024-10-21T10:21:58+00:00"
+            "time": "2024-12-11T11:36:51+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -74,8 +79,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -136,16 +141,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.44",
+            "version": "v5.4.47",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "1b9fa82b5c62cd49da8c9e3952dd8531ada65096"
+                "reference": "5d1662fb32ebc94f17ddb8d635454a776066733d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/1b9fa82b5c62cd49da8c9e3952dd8531ada65096",
-                "reference": "1b9fa82b5c62cd49da8c9e3952dd8531ada65096",
+                "url": "https://api.github.com/repos/symfony/process/zipball/5d1662fb32ebc94f17ddb8d635454a776066733d",
+                "reference": "5d1662fb32ebc94f17ddb8d635454a776066733d",
                 "shasum": ""
             },
             "require": {
@@ -178,7 +183,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.44"
+                "source": "https://github.com/symfony/process/tree/v5.4.47"
             },
             "funding": [
                 {
@@ -194,7 +199,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-17T12:46:43+00:00"
+            "time": "2024-11-06T11:36:42+00:00"
         }
     ],
     "packages-dev": [],
