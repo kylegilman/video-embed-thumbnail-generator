@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.7.2",
+            "version": "2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "eeac5f905746822207729ed0d944c4434ee165ff"
+                "reference": "9ad5477e4f0a39999b96bb21d0327bc6841d4590"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/eeac5f905746822207729ed0d944c4434ee165ff",
-                "reference": "eeac5f905746822207729ed0d944c4434ee165ff",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/9ad5477e4f0a39999b96bb21d0327bc6841d4590",
+                "reference": "9ad5477e4f0a39999b96bb21d0327bc6841d4590",
                 "shasum": ""
             },
             "require": {
@@ -33,6 +33,11 @@
                 "wp-coding-standards/wpcs": "^2.3"
             },
             "type": "library",
+            "autoload": {
+                "files": [
+                    "start.php"
+                ]
+            },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-3.0-only"
@@ -50,9 +55,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Freemius/wordpress-sdk/issues",
-                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.7.2"
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.11.0"
             },
-            "time": "2024-04-24T10:16:16+00:00"
+            "time": "2025-02-09T07:06:24+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -74,8 +79,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -136,16 +141,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.46",
+            "version": "v5.4.47",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "01906871cb9b5e3cf872863b91aba4ec9767daf4"
+                "reference": "5d1662fb32ebc94f17ddb8d635454a776066733d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/01906871cb9b5e3cf872863b91aba4ec9767daf4",
-                "reference": "01906871cb9b5e3cf872863b91aba4ec9767daf4",
+                "url": "https://api.github.com/repos/symfony/process/zipball/5d1662fb32ebc94f17ddb8d635454a776066733d",
+                "reference": "5d1662fb32ebc94f17ddb8d635454a776066733d",
                 "shasum": ""
             },
             "require": {
@@ -178,7 +183,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.46"
+                "source": "https://github.com/symfony/process/tree/v5.4.47"
             },
             "funding": [
                 {
@@ -194,24 +199,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-06T09:18:28+00:00"
+            "time": "2024-11-06T11:36:42+00:00"
         },
         {
             "name": "woocommerce/action-scheduler",
-            "version": "3.7.4",
+            "version": "3.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/action-scheduler.git",
-                "reference": "5fb655253dc004bb7a6d840da807f0949aea8bcd"
+                "reference": "efbb7953f72a433086335b249292f280dd43ddfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/5fb655253dc004bb7a6d840da807f0949aea8bcd",
-                "reference": "5fb655253dc004bb7a6d840da807f0949aea8bcd",
+                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/efbb7953f72a433086335b249292f280dd43ddfe",
+                "reference": "efbb7953f72a433086335b249292f280dd43ddfe",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.6"
+                "php": ">=7.1"
             },
             "require-dev": {
                 "phpunit/phpunit": "^7.5",
@@ -235,18 +240,18 @@
             "homepage": "https://actionscheduler.org/",
             "support": {
                 "issues": "https://github.com/woocommerce/action-scheduler/issues",
-                "source": "https://github.com/woocommerce/action-scheduler/tree/3.7.4"
+                "source": "https://github.com/woocommerce/action-scheduler/tree/3.9.2"
             },
-            "time": "2024-04-05T14:42:07+00:00"
+            "time": "2025-02-03T09:09:30+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
