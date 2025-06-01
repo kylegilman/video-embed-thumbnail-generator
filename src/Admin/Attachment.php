@@ -4,15 +4,17 @@ namespace Videopack\Admin;
 
 class Attachment {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var Options $options_manager
+	 */
 	protected $options_manager;
-	protected $options;
 	protected $video_formats;
 	protected $attachment_meta;
 
-	public function __construct( $options_manager ) {
+	public function __construct( Options $options_manager ) {
 
 		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
 		$this->video_formats   = $options_manager->get_video_formats();
 		$this->attachment_meta = new Attachment_Meta( $options_manager );
 	}
@@ -23,7 +25,7 @@ class Attachment {
 		$post_id    = false;
 		$search_url = $this->get_transient_name( $url );
 
-		if ( $this->options['transient_cache'] === true ) {
+		if ( $this->options_manager->transient_cache === true ) {
 			$post_id = get_transient( 'videopack_url_cache_' . md5( $search_url ) );
 		}
 
@@ -42,7 +44,7 @@ class Attachment {
 				)
 			);
 
-			if ( ! $post_id && $this->options['ffmpeg_exists'] === true
+			if ( ! $post_id && $this->options_manager->ffmpeg_exists === true
 				&& $this->video_formats['fullres']['extension'] !== pathinfo( $url, PATHINFO_EXTENSION )
 			) {
 				$search_url = str_replace( pathinfo( $url, PATHINFO_EXTENSION ), $this->video_formats['fullres']['extension'], $url );
@@ -71,7 +73,7 @@ class Attachment {
 				}
 			}
 
-			if ( $this->options['transient_cache'] === true ) {
+			if ( $this->options_manager->transient_cache === true ) {
 				if ( ! $post_id ) {
 					$post_id = 'not found'; // don't save a transient value that could evaluate as false
 				}
@@ -263,8 +265,8 @@ class Attachment {
 							'post_parent' => $parent_id,
 						)
 					); // set post_parent field to the original video's post_parent
-					if ( $this->options['delete_children'] != 'none' ) {
-						if ( $this->options['delete_children'] == 'all' ) {
+					if ( $this->options_manager->delete_children != 'none' ) {
+						if ( $this->options_manager->delete_children == 'all' ) {
 							wp_delete_attachment( $post->ID, true );
 						} elseif ( strpos( $post->post_mime_type, 'video' ) !== false ) {
 							wp_delete_attachment( $post->ID, true );
@@ -276,7 +278,7 @@ class Attachment {
 						}
 					}
 				}//end loop
-				if ( $this->options['delete_children'] == 'none' ) { // find a child to be the new master video
+				if ( $this->options_manager->delete_children == 'none' ) { // find a child to be the new master video
 					$video_formats = kgvid_video_formats();
 					foreach ( $video_formats as $format => $format_stats ) {
 						if ( array_key_exists( $format, $formats ) ) {
@@ -327,7 +329,7 @@ class Attachment {
 
 	public function add_attachment_handler( $post_id ) {
 
-		if ( $this->options['auto_encode'] == true || $this->options['auto_thumb'] == true ) {
+		if ( $this->options_manager->auto_encode == true || $this->options_manager->auto_thumb == true ) {
 
 			$this->schedule_attachment_processing( $post_id );
 
@@ -364,12 +366,14 @@ class Attachment {
 
 	public function cron_new_attachment_handler( $post_id, $force = false ) {
 
-		$thumbnails        = new Thumbnails\Thumbnails();
-		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails();
+		$thumbnails        = new Thumbnails\Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
+		$auto_encode       = $this->options_manager->auto_encode;
+		$auto_thumb        = $this->options_manager->auto_thumb;
 
 		if ( $force != false ) {
-			$this->options['auto_encode'] = false;
-			$this->options['auto_thumb']  = false;
+			$auto_encode = false;
+			$auto_thumb  = false;
 		}
 
 		$post        = get_post( $post_id );
@@ -385,17 +389,17 @@ class Attachment {
 		if ( $post
 			&& $post->post_mime_type != 'image/gif'
 			&& ( $force == 'thumbs'
-				|| $this->options['auto_thumb'] == true
+				|| $auto_thumb == true
 			)
 		) {
 
 			$thumb_output   = array();
 			$thumb_id       = array();
-			$numberofthumbs = intval( $this->options['auto_thumb_number'] );
+			$numberofthumbs = intval( $this->options_manager->auto_thumb_number );
 
 			if ( $numberofthumbs == 1 ) {
 
-				switch ( $this->options['auto_thumb_position'] ) {
+				switch ( $this->options_manager->auto_thumb_position ) {
 					case 0:
 						$imaginary_numberofthumbs = 1;
 						$iincreaser               = 1;
@@ -429,7 +433,7 @@ class Attachment {
 
 			if ( $numberofthumbs > 1 ) {
 
-				$thumb_key = intval( $this->options['auto_thumb_position'] );
+				$thumb_key = intval( $this->options_manager->auto_thumb_position );
 
 				$i          = 1;
 				$increaser  = 0;
@@ -469,7 +473,7 @@ class Attachment {
 				update_post_meta( $post_id, '_kgflashmediaplayer-poster', $thumb_output[ $thumb_key ]['thumb_url'] );
 				update_post_meta( $post_id, '_kgflashmediaplayer-poster-id', $thumb_id[ $thumb_key ] );
 				set_post_thumbnail( $post_id, $thumb_id[ $thumb_key ] );
-				if ( $this->options['featured'] == true && ! empty( $thumb_id[ $thumb_key ] ) ) {
+				if ( $this->options_manager->featured == true && ! empty( $thumb_id[ $thumb_key ] ) ) {
 					if ( ! empty( $post->post_parent ) ) {
 						set_post_thumbnail( $post->post_parent, $thumb_id[ $thumb_key ] );
 					} else { // video has no parent post yet
@@ -481,10 +485,10 @@ class Attachment {
 
 		if ( $post
 			&& ( $force == 'encode'
-				|| $this->options['auto_encode'] == true
+				|| $auto_encode == true
 			)
 			&& ( ! $is_animated
-				|| $this->options['auto_encode_gif'] == true
+				|| $this->options_manager->auto_encode_gif == true
 			)
 		) {
 
@@ -495,9 +499,9 @@ class Attachment {
 			$encode_checked      = array();
 
 			if ( substr( basename( $filepath, '.' . $extension ), -10 ) == '-noreplace'
-				|| ( array_key_exists( 'original_replaced', $kgvid_postmeta ) && $kgvid_postmeta['original_replaced'] == $this->options['replace_format'] )
+				|| ( array_key_exists( 'original_replaced', $kgvid_postmeta ) && $kgvid_postmeta['original_replaced'] == $this->options_manager->replace_format )
 			) {
-				$this->options['encode']['fullres'] = false;
+				$this->options_manager->encode['fullres'] = false;
 			}
 
 			if ( $post->post_mime_type === 'image/gif' ) {
@@ -507,7 +511,10 @@ class Attachment {
 
 			foreach ( $video_formats as $format => $format_stats ) {
 
-				if ( is_array( $this->options['encode'] ) && array_key_exists( $format, $this->options['encode'] ) && $this->options['encode'][ $format ] == true ) {
+				if ( is_array( $this->options_manager->encode )
+					&& array_key_exists( $format, $this->options_manager->encode )
+					&& $this->options_manager->encode[ $format ] == true
+				) {
 					$encode_checked[ $format ] = 'true';
 					$something_to_encode       = true;
 				} else {
@@ -576,7 +583,7 @@ class Attachment {
 
 		if ( $is_video ) {
 
-			if ( $this->options['thumb_parent'] === 'post' ) {
+			if ( $this->options_manager->thumb_parent === 'post' ) {
 				$this->change_thumbnail_parent( $post_id, $post->post_parent );
 			}
 

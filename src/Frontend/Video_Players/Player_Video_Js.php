@@ -18,7 +18,7 @@ class Player_Video_Js extends Player {
 			'video-js',
 			plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video.min.js',
 			'',
-			$this->options['videojs_version'],
+			VIDEOPACK_VIDEOJS_VERSION,
 			true
 		);
 
@@ -36,7 +36,7 @@ class Player_Video_Js extends Player {
 				'videojs-l10n',
 				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/lang/' . $locale . '.js',
 				array( 'video-js' ),
-				$this->options['videojs_version'],
+				VIDEOPACK_VIDEOJS_VERSION,
 				true
 			);
 		}
@@ -52,15 +52,15 @@ class Player_Video_Js extends Player {
 			'video-js',
 			plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css',
 			'',
-			$this->options['videojs_version']
+			VIDEOPACK_VIDEOJS_VERSION
 		);
 
-		if ( $this->options['js_skin'] !== 'default'
-			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options['js_skin'] . '.css' )
+		if ( $this->options_manager->skin !== 'default'
+			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options_manager->js_skin . '.css' )
 		) {
 			wp_enqueue_style(
 				'video-js-kg-skin',
-				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options['js_skin'] . '.css',
+				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options_manager->skin . '.css',
 				'',
 				VIDEOPACK_VERSION
 			);
@@ -72,7 +72,7 @@ class Player_Video_Js extends Player {
 		wp_enqueue_script( 'video-js' );
 		wp_enqueue_script( 'videojs-l10n' );
 
-		if ( $this->options['alwaysloadscripts'] == true ) {
+		if ( $this->options_manager->alwaysloadscripts == true ) {
 			wp_enqueue_script( 'video-quality-selector' );
 		}
 
@@ -119,14 +119,14 @@ class Player_Video_Js extends Player {
 
 		$classes[] = 'video-js';
 
-		if ( empty( $this->options['js_skin'] ) ) {
-			$this->options['js_skin'] = 'vjs-default-skin';
+		if ( empty( $this->options_manager->js_skin ) ) {
+			$this->options_manager->skin = 'vjs-default-skin';
 		}
 		if ( array_key_exists( 'skin', $atts ) ) {
-			$this->options['js_skin'] = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
+			$this->options_manager->skin = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
 		}
 
-		$classes[] = $this->options['js_skin'];
+		$classes[] = $this->options_manager->skin;
 
 		return $classes;
 	}

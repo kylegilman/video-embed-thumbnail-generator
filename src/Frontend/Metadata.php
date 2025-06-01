@@ -4,11 +4,15 @@ namespace Videopack\Frontend;
 
 class Metadata {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
 	protected $options_manager;
 	protected $options;
 	protected $attachment_meta;
 
-	public function __construct( $options_manager ) {
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
@@ -128,7 +132,7 @@ class Metadata {
 
 				$kgvid_postmeta           = $this->attachment_meta->get( $attributes['id'] );
 				$kgvid_postmeta['poster'] = get_post_meta( $attributes['id'], '_kgflashmediaplayer-poster', true );
-				$dimensions               = \Videopack\Common\Video_Dimensions::get( $attributes['id'] );
+				$dimensions               = new \Videopack\Common\Video_Dimensions( $this->options_manager, $attributes['id'] );
 				$attributes               = array_merge( $dimensions, array_filter( $kgvid_postmeta ), $attributes );
 
 			}
@@ -156,7 +160,7 @@ class Metadata {
 				$first_embedded_video = $this->get_first_embedded_video( $post );
 				if ( ! empty( $first_embedded_video['url'] ) ) { // if KGVID or FMP shortcode is in posts on this page.
 
-					if ( $this->options['open_graph'] == true ) {
+					if ( $this->options_manager->open_graph == true ) {
 
 						remove_action( 'wp_head', 'jetpack_og_tags' );
 						echo '<meta property="og:url" content="' . esc_url( get_permalink( $post ) ) . '" >' . "\n";
@@ -183,43 +187,6 @@ class Metadata {
 									echo '<meta property="og:image:height" content="' . esc_attr( $first_embedded_video['height'] ) . '" >' . "\n";
 								}
 							}
-						}
-					}
-
-					if ( $this->options['twitter_card'] == true
-						&& array_key_exists( 'id', $first_embedded_video )
-						&& ! empty( $first_embedded_video['id'] )
-					) {
-
-						add_filter( 'jetpack_disable_twitter_cards', '__return_true', 99 );
-
-						echo '<meta name="twitter:card" content="player">' . "\n";
-						if ( ! empty( $this->options['twitter_username'] ) ) {
-							echo '<meta name="twitter:site" content="@' . esc_attr( $this->options['twitter_username'] ) . '">' . "\n";
-						}
-						echo '<meta name="twitter:title" content="' . esc_attr( $post->post_title ) . '">' . "\n";
-						echo '<meta name="twitter:description" content="' . esc_attr( substr( $this->generate_video_description( $first_embedded_video, $post ), 0, 200 ) ) . '">' . "\n";
-						if ( array_key_exists( 'poster', $first_embedded_video ) ) {
-							echo '<meta name="twitter:image" content="' . esc_url( str_replace( 'http://', 'https://', $first_embedded_video['poster'] ) ) . '">' . "\n";
-						}
-						echo '<meta name="twitter:player" content="' . esc_url( str_replace( 'http://', 'https://', get_post_embed_url( $first_embedded_video['id'] ) ) ) . '">' . "\n";
-						if ( array_key_exists( 'width', $first_embedded_video ) ) {
-							echo '<meta name="twitter:player:width" content="' . esc_attr( $first_embedded_video['width'] ) . '">' . "\n";
-						}
-						if ( array_key_exists( 'height', $first_embedded_video ) ) {
-							echo '<meta name="twitter:player:height" content="' . esc_attr( $first_embedded_video['height'] ) . '">' . "\n";
-						}
-
-						$encodevideo_info = kgvid_encodevideo_info( $first_embedded_video['url'], $first_embedded_video['id'] );
-						$twitter_stream   = false;
-						if ( array_key_exists( 'mobile', $encodevideo_info ) && $encodevideo_info['mobile']['exists'] ) {
-							$twitter_stream = $encodevideo_info['mobile']['url'];
-						} elseif ( get_post_mime_type( $first_embedded_video['id'] ) == 'video/mp4' ) {
-							$twitter_stream = $first_embedded_video['url'];
-						}
-						if ( $twitter_stream ) {
-							echo '<meta name="twitter:player:stream" content="' . esc_url( str_replace( 'http://', 'https://', $twitter_stream ) ) . '">' . "\n";
-							echo '<meta name="twitter:player:stream:content_type" content="video/mp4; codecs=&quot;avc1.42E01E1, mp4a.40.2&quot;">' . "\n";
 						}
 					}
 

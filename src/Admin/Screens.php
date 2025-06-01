@@ -4,12 +4,14 @@ namespace Videopack\Admin;
 
 class Screens {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
 	protected $options_manager;
-	protected $options;
 
-	public function __construct( $options_manager ) {
+	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
 	}
 
 	public function plugin_action_links( $links ) {
@@ -54,7 +56,7 @@ class Screens {
 
 		wp_enqueue_script(
 			'videopack-settings-page',
-			plugins_url( '/build/build.js', __FILE__ ),
+			plugins_url( 'videopack-block/build/settings.js' ),
 			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element' ),
 			VIDEOPACK_VERSION,
 			true
@@ -62,9 +64,9 @@ class Screens {
 
 		wp_enqueue_style(
 			'videopack-settings-page-styles',
-			plugins_url( '/build/build.css', __FILE__ ),
+			plugins_url( 'videopack-block/build/settings.css' ),
 			array( 'wp-components' ),
-			VIDEOPACK_VERSION,
+			VIDEOPACK_VERSION
 		);
 	}
 
@@ -76,7 +78,7 @@ class Screens {
 	}
 
 	public function add_encode_queue_page() {
-		if ( $this->options['ffmpeg_exists'] === true ) { // only add the queue page if FFmpeg is installed
+		if ( $this->options_manager->ffmpeg_exists === true ) { // only add the queue page if FFmpeg is installed
 			add_submenu_page(
 				'tools.php',
 				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
@@ -139,7 +141,7 @@ class Screens {
 				'key'     => '_kgflashmediaplayer-format',
 				'compare' => 'NOT EXISTS',
 			);
-			if ( $this->options['hide_thumbnails'] === true ) {
+			if ( $this->options_manager->hide_thumbnails === true ) {
 				$meta_query[] = array(
 					'key'     => '_kgflashmediaplayer-video-id',
 					'compare' => 'NOT EXISTS',
@@ -166,7 +168,7 @@ class Screens {
 			&& 'upload' === $current_screen->id
 			&& isset( $_GET['media'] )
 			&& is_array( $_GET['media'] )
-			&& $this->options['thumb_parent'] === 'post'
+			&& $this->options_manager->thumb_parent === 'post'
 			&& check_admin_referer( 'bulk-media' )
 		) {
 			$media = \Videopack\Common\Validate::text_field( wp_unslash( $_GET['media'] ) );
@@ -180,7 +182,7 @@ class Screens {
 
 				( new Attachment( $this->options_manager ) )->change_thumbnail_parent( $post_id, $parent_id );
 
-				if ( $this->options['featured'] == true
+				if ( $this->options_manager->featured == true
 					&& ! has_post_thumbnail( $parent_id )
 				) {
 					$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );

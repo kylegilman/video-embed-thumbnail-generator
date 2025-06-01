@@ -29,7 +29,7 @@ class Player_WordPress_Default extends Player {
 
 		parent::enqueue_styles();
 
-		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', $this->options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
+		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', VIDEOPACK_VIDEOJS_VERSION ); // gives access to video-js icons for resolution gear selector and social logos
 	}
 
 	public function modify_video_shortcode_output( $output ) {

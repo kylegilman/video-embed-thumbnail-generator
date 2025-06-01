@@ -4,12 +4,16 @@ namespace Videopack\Frontend;
 
 class Template {
 
-	protected $options;
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
+	protected $options_manager;
 	protected $metadata;
 
-	public function __construct( $options_manager ) {
-		$this->options  = $options_manager->get_options();
-		$this->metadata = new \Videopack\Frontend\Metadata( $options_manager );
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
+		$this->options_manager = $options_manager;
+		$this->metadata        = new \Videopack\Frontend\Metadata( $options_manager );
 	}
 
 	public function change_oembed_data( $data, $post, $width, $height ) {
@@ -18,7 +22,7 @@ class Template {
 
 		if ( ! empty( $data )
 			&& ! empty( $first_embedded_video['url'] )
-			&& $this->options['oembed_provider'] == true
+			&& $this->options_manager->oembed_provider == true
 		) {
 
 			$data['type'] = 'video';
@@ -35,7 +39,7 @@ class Template {
 
 		$current_post = get_post();
 
-		if ( $this->options['oembed_provider'] === true ) {
+		if ( $this->options_manager->oembed_provider === true ) {
 			$first_embedded_video = $this->metadata->get_first_embedded_video( $current_post );
 			if ( array_key_exists( 'id', $first_embedded_video ) ) {
 				$template = __DIR__ . '/partials/embeddable-video.php';
@@ -48,7 +52,7 @@ class Template {
 
 		$post = get_post();
 
-		if ( $this->options['template'] == 'gentle'
+		if ( $this->options_manager->template == 'gentle'
 			&& isset( $post )
 			&& strpos( $post->post_mime_type, 'video' ) !== false
 		) {
@@ -66,12 +70,12 @@ class Template {
 
 		// Default values
 		$kgvid_video_embed += array(
-			'enable'   => $this->options['template'] === 'old' ? 'true' : 'false',
+			'enable'   => $this->options_manager->template === 'old' ? 'true' : 'false',
 			'download' => 'false',
 		);
 
 		// Update enable condition
-		if ( $this->options['embeddable'] === 'false' &&
+		if ( $this->options_manager->embeddable === 'false' &&
 			! array_key_exists( 'sample', $kgvid_video_embed ) &&
 			! array_key_exists( 'gallery', $kgvid_video_embed ) ) {
 			$kgvid_video_embed['enable'] = 'false';
@@ -83,11 +87,11 @@ class Template {
 			&& property_exists( $post, 'post_mime_type' )
 			&& strpos( $post->post_mime_type, 'video' ) !== false;
 
-		if ( $is_video
+		if ( ( $is_video
 			&& (
 				$kgvid_video_embed['enable'] === 'true'
-				|| ( $kgvid_video_embed['download'] === 'true' && $this->options['click_download'] === 'on' )
-			)
+				|| ( $kgvid_video_embed['download'] === 'true' && $this->options_manager->click_download === 'on' )
+			) )
 			|| array_key_exists( 'sample', $kgvid_video_embed )
 		) {
 			return $kgvid_video_embed;

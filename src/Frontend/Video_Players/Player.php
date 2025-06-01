@@ -75,7 +75,7 @@ abstract class Player {
 			)
 		);
 
-		if ( $this->options['alwaysloadscripts'] == true ) {
+		if ( $this->options_manager->alwaysloadscripts == true ) {
 			$this->enqueue_scripts();
 		}
 	}
@@ -152,7 +152,7 @@ abstract class Player {
 		$video_variables = array(
 			'id'                => 'videopack_player_' . $this->get_id(),
 			'attachment_id'     => $this->get_source() ? $this->get_source()->get_id() : 0,
-			'player_type'       => $this->options['embed_method'],
+			'player_type'       => $this->options_manager->embed_method,
 			'width'             => $this->atts['width'],
 			'height'            => $this->atts['height'],
 			'fullwidth'         => $this->atts['fullwidth'],
@@ -198,9 +198,7 @@ abstract class Player {
 			'videopack_video_player_has_meta_bar',
 			$this->atts['title'] !== false
 			|| $this->atts['embedcode'] !== false
-			|| $this->atts['downloadlink'] === true
-			|| $this->options['twitter_button'] == true
-			|| $this->options['facebook_button'] == true,
+			|| $this->atts['downloadlink'] === true,
 			$this->atts
 		);
 	}
@@ -209,10 +207,7 @@ abstract class Player {
 		return apply_filters(
 			'videopack_video_player_has_embed_meta',
 			$this->atts['embeddable']
-			&& ( $this->atts['embedcode'] !== false
-				|| $this->options['twitter_button'] == true
-				|| $this->options['facebook_button'] == true
-			),
+			&& $this->atts['embedcode'] !== false,
 			$this->atts
 		);
 	}
@@ -391,7 +386,7 @@ abstract class Player {
 				$content = get_bloginfo( 'url' ) . $content;
 			}
 			$content     = apply_filters( 'kgvid_filter_url', trim( $content ) );
-			$id_array[0] = ( new Attachment() )->url_to_id( $content );
+			$id_array[0] = ( new \Videopack\Admin\Attachment( $this->options_manager ) )->url_to_id( $content );
 		}
 
 		$original_content = $content;
@@ -400,7 +395,7 @@ abstract class Player {
 
 			$query_atts = $this->shortcode->atts( $atts ); // reset values so they can be different with multiple videos
 			$content    = $original_content;
-			$dimensions = array();
+			unset( $dimensions );
 
 			if ( $query_atts['gallery'] == 'false'
 				&& $kgvid_video_id === 0
@@ -422,7 +417,7 @@ abstract class Player {
 					continue;
 				}
 
-				if ( $this->options['rewrite_attachment_url'] == true ) {
+				if ( $this->options_manager->rewrite_attachment_url == true ) {
 
 					$rewrite_url = true;
 
@@ -450,11 +445,11 @@ abstract class Player {
 				$attachment_info = get_post( $id );
 				$kgvid_postmeta  = ( new \Videopack\Admin\Attachment_Meta() )->get( $id );
 
-				$dimensions = ( new \Videopack\Common\Video_Dimensions() )->get( $id );
+				$dimensions = new \Videopack\Common\Video_Dimensions( $this->options_manager, $id );
 
 				if ( empty( $atts['width'] ) ) {
-					$query_atts['width']  = $dimensions['width'];
-					$query_atts['height'] = $dimensions['height'];
+					$query_atts['width']  = $dimensions->width;
+					$query_atts['height'] = $dimensions->height;
 				}
 
 				$poster_id = get_post_meta( $id, '_kgflashmediaplayer-poster-id', true );
@@ -533,8 +528,8 @@ abstract class Player {
 			}
 
 			if ( $query_atts['width'] == '100%' ) {
-				$query_atts['width']     = $this->options['width'];
-				$query_atts['height']    = $this->options['height'];
+				$query_atts['width']     = $this->options_manager->width;
+				$query_atts['height']    = $this->options_manager->height;
 				$query_atts['fullwidth'] = 'true';
 			}
 
@@ -542,7 +537,7 @@ abstract class Player {
 				|| $query_atts['fixed_aspect'] == 'true'
 			) {
 
-				$default_aspect_ratio = intval( $this->options['height'] ) / intval( $this->options['width'] );
+				$default_aspect_ratio = intval( $this->options_manager->height ) / intval( $this->options_manager->width );
 				$query_atts['height'] = round( intval( $query_atts['width'] ) * $default_aspect_ratio );
 
 			}
@@ -570,17 +565,17 @@ abstract class Player {
 			$video_variables = $this->prepare_video_vars( $query_atts, $id );
 			$source_info     = $this->prepare_sources( $content, $id_for_sources );
 
-			if ( $this->options['embed_method'] === 'Video.js v8'
+			if ( $this->options_manager->embed_method === 'Video.js'
 				&& $query_atts['skip_buttons'] == 'true'
 			) {
 				$video_variables['skip_buttons'] = array(
-					'forward'  => $this->options['skip_forward'],
-					'backward' => $this->options['skip_backward'],
+					'forward'  => $this->options_manager->skip_forward,
+					'backward' => $this->options_manager->skip_backward,
 				);
 			}
 
-			if ( substr( $this->options['embed_method'], 0, 8 ) === 'Video.js'
-				|| $this->options['embed_method'] == 'None'
+			if ( substr( $this->options_manager->embed_method, 0, 8 ) === 'Video.js'
+				|| $this->options_manager->embed_method == 'None'
 			) {
 
 				if ( $source_info['enable_resolutions_plugin'] ) {
@@ -614,7 +609,7 @@ abstract class Player {
 				}
 			} //if Video.js
 
-			if ( $this->options['embed_method'] == 'WordPress Default' ) {
+			if ( $this->options_manager->embed_method == 'WordPress Default' ) {
 				if ( $source_info['enable_resolutions_plugin'] ) {
 
 					$default_key = false;
@@ -724,7 +719,7 @@ abstract class Player {
 						}
 					}
 
-					if ( $this->options['embed_method'] == 'WordPress Default'
+					if ( $this->options_manager->embed_method == 'WordPress Default'
 						&& $track_attribute['kind'] == 'captions'
 					) {
 						$track_attribute['kind'] = 'subtitles';
@@ -733,7 +728,7 @@ abstract class Player {
 				}
 			}
 
-			if ( $this->options['embed_method'] == 'WordPress Default' ) {
+			if ( $this->options_manager->embed_method == 'WordPress Default' ) {
 
 				if ( $query_atts['poster'] != '' ) {
 					$attr['poster'] = $query_atts['poster'];
@@ -795,8 +790,8 @@ abstract class Player {
 				$code .= $executed_shortcode;
 			}
 
-			if ( substr( $this->options['embed_method'], 0, 8 ) === 'Video.js'
-				|| $this->options['embed_method'] == 'None'
+			if ( substr( $this->options_manager->embed_method, 0, 8 ) === 'Video.js'
+				|| $this->options_manager->embed_method == 'None'
 			) {
 
 				$code .= "\n\t\t\t\t" . '<video id="video_' . esc_attr( $video_variables['id'] ) . '" ';
@@ -819,20 +814,20 @@ abstract class Player {
 				if ( $query_atts['poster'] != '' ) {
 					$code .= 'poster="' . esc_url( $query_atts['poster'] ) . '" ';
 				}
-				if ( $this->options['embed_method'] != 'None' ) {
+				if ( $this->options_manager->embed_method != 'None' ) {
 					$code .= 'width="' . esc_attr( $query_atts['width'] ) . '" height="' . esc_attr( $query_atts['height'] ) . '"';
 				} else {
 					$code .= 'width="100%"';
 				}
 
-				if ( $this->options['embed_method'] != 'None' ) {
-					if ( $this->options['js_skin'] == '' ) {
-						$this->options['js_skin'] = 'vjs-default-skin';
+				if ( $this->options_manager->embed_method != 'None' ) {
+					if ( $this->options_manager->skin == '' ) {
+						$this->options_manager->skin = 'vjs-default-skin';
 					}
 					if ( is_array( $atts ) && array_key_exists( 'skin', $atts ) ) {
-						$this->options['js_skin'] = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
+						$this->options_manager->skin = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
 					}
-					$code .= ' class="fitvidsignore ' . esc_attr( 'video-js ' . $this->options['js_skin'] ) . '">' . "\n";
+					$code .= ' class="fitvidsignore ' . esc_attr( 'video-js ' . $this->options_manager->skin ) . '">' . "\n";
 				} else {
 					$code .= ' class="fitvidsignore">' . "\n";
 				}
@@ -894,7 +889,7 @@ abstract class Player {
 				if ( $query_atts['downloadlink'] == 'true' ) {
 					$download_link = apply_filters( 'videopack_download_link', $content );
 					$download_code = "\t\t\t\t\t" . '<a class="kgvid-download-link" href="' . esc_attr( $download_link ) . '" title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '" download';
-					if ( $this->options['click_download'] === 'on'
+					if ( $this->options_manager->click_download === 'on'
 						&& ! empty( $id )
 					) {
 						$filepath = get_attached_file( $id );
@@ -909,10 +904,7 @@ abstract class Player {
 				}
 
 				if ( $query_atts['embeddable'] == 'true'
-					&& ( $query_atts['embedcode'] != 'false'
-						|| $this->options['twitter_button'] == true
-						|| $this->options['facebook_button'] == true
-					)
+					&& $query_atts['embedcode'] != 'false'
 				) {
 
 					$embed_code  = "\t\t\t\t<span id='kgvid_" . esc_attr( $video_variables['id'] ) . "_shareicon' class='vjs-icon-share' onclick='kgvid_share_icon_click(\"" . esc_attr( $video_variables['id'] ) . "\");'></span>\n";
@@ -933,33 +925,6 @@ abstract class Player {
 						<span>" . esc_html_x( 'Embed:', 'precedes code for embedding video', 'video-embed-thumbnail-generator' ) . " </span><span><input class='kgvid_embedcode' type='text' value='" . esc_attr( $iframecode ) . "' onClick='this.select();'></span> <span class='kgvid_start_time'><input type='checkbox' class='kgvid_start_at_enable' onclick='kgvid_set_start_at(\"" . esc_attr( $video_variables['id'] ) . "\")'> " . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . " <input type='text' class='kgvid_start_at' onkeyup='kgvid_change_start_at(\"" . esc_attr( $video_variables['id'] ) . "\")'></span></span>";
 					} //embed code
 
-					if ( $this->options['twitter_button'] == true || $this->options['facebook_button'] == true ) {
-
-						$embed_code .= "<div class='kgvid_social_icons'>";
-						if ( in_the_loop() ) {
-							$permalink = get_permalink();
-						} elseif ( ! empty( $id ) ) {
-							$permalink = get_attachment_link( $id );
-						} else {
-							$permalink = $content;
-						}
-
-						if ( $this->options['twitter_button'] == true ) {
-							$embed_code .= "<a title='" . esc_attr__( 'Share on Twitter', 'video-embed-thumbnail-generator' ) . "' href='" . esc_url( 'https://twitter.com/share?text=' . rawurlencode( $query_atts['title'] ) . '&url=' . rawurlencode( $permalink ) );
-							if ( ! empty( $this->options['twitter_username'] ) ) {
-								$embed_code .= '&via=' . esc_attr( rawurlencode( $this->options['twitter_username'] ) );
-							}
-							$embed_code .= "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-twitter'></span></a>";
-						}
-
-						if ( $this->options['facebook_button'] == true ) {
-							$embed_code .= "&nbsp;<a title='" . esc_attr__( 'Share on Facebook', 'video-embed-thumbnail-generator' ) . "' href='" . esc_url( 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $permalink ) ) . "' onclick='window.open(this.href, \"\", \"menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600\");return false;'><span class='vjs-icon-facebook'></span></a>";
-						}
-
-						$embed_code .= '</div>';
-
-					}
-
 					$embed_code .= "</div></div>\n";
 				} else {
 					$embed_code = '';
@@ -976,7 +941,7 @@ abstract class Player {
 
 			if ( ! empty( $query_atts['watermark'] )
 				&& $query_atts['watermark'] != 'false'
-				&& $this->options['embed_method'] != 'None'
+				&& $this->options_manager->embed_method != 'None'
 			) {
 				$watermark_id = ( new Attachment() )->url_to_id( $query_atts['watermark'] );
 				if ( $watermark_id ) {

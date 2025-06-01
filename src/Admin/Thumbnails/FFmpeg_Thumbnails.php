@@ -4,12 +4,14 @@ namespace Videopack\Admin\Thumbnails;
 
 class FFmpeg_Thumbnails {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
 	protected $options_manager;
-	protected $options;
 
-	public function __construct( $options_manager ) {
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
 	}
 
 	public function process_thumb(
@@ -24,7 +26,7 @@ class FFmpeg_Thumbnails {
 		if ( $ffmpeg_path === '' ) {
 			$ffmpeg_path = 'ffmpeg';
 		} elseif ( $ffmpeg_path === false ) {
-			$ffmpeg_path = $this->options['app_path'] . '/ffmpeg';
+			$ffmpeg_path = $this->options_manager->app_path . '/ffmpeg';
 		} else {
 			$ffmpeg_path = $ffmpeg_path . '/ffmpeg';
 		}
@@ -177,7 +179,7 @@ class FFmpeg_Thumbnails {
 			$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
 
 			$rotate_strings = $this->rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
-			$filter_complex = $this->filter_complex( $this->options['ffmpeg_thumb_watermark'], $movie_height, true );
+			$filter_complex = $this->filter_complex( $this->options_manager->ffmpeg_thumb_watermark, $movie_height, true );
 
 			$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
 			$tmp_thumbnailurl   = str_replace( ' ', '_', $tmp_thumbnailurl );
@@ -186,7 +188,7 @@ class FFmpeg_Thumbnails {
 			$thumbnail_generator = $this->process_thumb(
 				$moviefilepath,
 				$thumbnailfilename[ $i ],
-				$this->options['app_path'],
+				$this->options_manager->app_path,
 				round( $movieoffset, 3 ),
 				$rotate_strings['rotate'],
 				$filter_complex
@@ -235,7 +237,7 @@ class FFmpeg_Thumbnails {
 		switch ( $rotate ) { // if it's a sideways mobile video
 
 			case 90:
-				if ( empty( $this->options['ffmpeg_watermark']['url'] ) ) {
+				if ( empty( $this->options_manager->ffmpeg_watermark->url ) ) {
 					$rotate_array = array(
 						'-vf',
 						'transpose=1,scale=' . $height . ':-1',
@@ -251,7 +253,7 @@ class FFmpeg_Thumbnails {
 				break;
 
 			case 270:
-				if ( empty( $this->options['ffmpeg_watermark']['url'] ) ) {
+				if ( empty( $this->options_manager->ffmpeg_watermark->url ) ) {
 					$rotate_array = array(
 						'-vf',
 						'transpose=2',
@@ -267,7 +269,7 @@ class FFmpeg_Thumbnails {
 				break;
 
 			case 180:
-				if ( empty( $this->options['ffmpeg_watermark']['url'] ) ) {
+				if ( empty( $this->options_manager->ffmpeg_watermark->url ) ) {
 					$rotate_array = array(
 						'-vf',
 						'hflip,vflip',

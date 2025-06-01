@@ -16,8 +16,11 @@ class Encode_Attachment {
 	 * @var string
 	 */
 	protected $url;
-
-	protected $options;
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
+	protected $options_manager;
 	protected $uploads;
 	protected $video_formats;
 	protected $available_formats;
@@ -33,16 +36,21 @@ class Encode_Attachment {
 	/**
 	 * Constructor.
 	 *
-	 * @param int    $id   The ID of the video attachment.
-	 * @param string $url  The URL of the video if it's not an attachment.
+	 * @param \Videopack\Admin\Options $options_manager
+	 * @param int|string $id The ID of the video attachment.
+	 * @param string $url The URL of the video if it's not an attachment.
 	 */
-	public function __construct( $id, string $url = null ) {
-		$this->id            = $id;
-		$this->url           = $url;
-		$this->options       = \Videopack\Admin\Options::get_instance()->get_options();
-		$this->uploads       = wp_upload_dir();
-		$this->video_formats = kgvid_video_formats();
-		$this->queue_log     = array();
+	public function __construct(
+		\Videopack\Admin\Options $options_manager,
+		$id,
+		string $url = null
+	) {
+		$this->options_manager = $options_manager;
+		$this->id              = $id;
+		$this->url             = $url;
+		$this->uploads         = wp_upload_dir();
+		$this->video_formats   = kgvid_video_formats();
+		$this->queue_log       = array();
 		$this->set_is_attachment();
 		$this->set_encode_formats();
 		$this->set_ffmpeg_path();
@@ -76,12 +84,12 @@ class Encode_Attachment {
 	}
 
 	protected function set_ffmpeg_path() {
-		if ( $this->options['app_path'] === '' ) {
+		if ( $this->options_manager->app_path === '' ) {
 			$this->ffmpeg_path = 'ffmpeg';
-		} elseif ( $this->options['app_path'] === false ) {
-			$this->ffmpeg_path = $this->options['app_path'] . '/ffmpeg';
+		} elseif ( $this->options_manager->app_path === false ) {
+			$this->ffmpeg_path = $this->options_manager->app_path . '/ffmpeg';
 		} else {
-			$this->ffmpeg_path = $this->options['app_path'] . '/ffmpeg';
+			$this->ffmpeg_path = $this->options_manager->app_path . '/ffmpeg';
 		}
 	}
 
@@ -251,7 +259,7 @@ class Encode_Attachment {
 
 		$encode_array_after_options = array(
 			'-threads',
-			$this->options['threads'],
+			$this->options_manager->threads,
 		);
 
 		if ( $watermark_flags['input'] ) {
@@ -304,10 +312,10 @@ class Encode_Attachment {
 
 		$dimensions = $this->get_encode_dimensions( $format );
 
-		if ( $this->options['rate_control'] === 'crf' ) {
+		if ( $this->options_manager->rate_control === 'crf' ) {
 			$crf_option = $this->video_formats[ $format ]['type'] . '_CRF';
 			if ( $this->video_formats[ $format ]['type'] == 'vp9' ) {
-				$this->options['vp9_CRF'] = round( ( -0.000002554 * $dimensions['width'] * $dimensions['height'] ) + 35 ); // formula to generate close to Google-recommended CRFs https://developers.google.com/media/vp9/settings/vod/
+				$this->options_manager->vp9_CRF = round( ( -0.000002554 * $dimensions['width'] * $dimensions['height'] ) + 35 ); // formula to generate close to Google-recommended CRFs https://developers.google.com/media/vp9/settings/vod/
 			}
 			$crf_flag = 'crf';
 			if ( $this->video_formats[ $format ]['type'] == 'ogv' ) { // ogg doesn't do CRF
@@ -316,7 +324,7 @@ class Encode_Attachment {
 			if ( isset( $this->options[ $crf_option ] ) ) {
 				$rate_control_flag = array(
 					'-' . $crf_flag,
-					$this->options[ $crf_option ],
+					$this->options_manager->$crf_option,
 				);
 			} else {
 				$rate_control_flag = array();
@@ -336,7 +344,7 @@ class Encode_Attachment {
 		} else {
 			$rate_control_flag = array(
 				'-b:v',
-				round( floatval( $this->options['bitrate_multiplier'] ) * $dimensions['width'] * $dimensions['height'] * 30 / 1024 ) . 'k',
+				round( floatval( $this->options_manager->bitrate_multiplier ) * $dimensions['width'] * $dimensions['height'] * 30 / 1024 ) . 'k',
 			);
 		}
 
@@ -345,42 +353,41 @@ class Encode_Attachment {
 
 	protected function get_watermark_flags() {
 
-		if ( is_array( $this->options['ffmpeg_watermark'] )
-			&& array_key_exists( 'url', $this->options['ffmpeg_watermark'] )
-			&& ! empty( $this->options['ffmpeg_watermark']['url'] )
-		) {
+		$watermark = $this->options_manager->ffmpeg_watermark;
 
-			$watermark_width = strval( round( intval( $this->video_metadata['actualwidth'] ) * ( intval( $this->options['ffmpeg_watermark']['scale'] ) / 100 ) ) );
+		if ( ! empty( $watermark->url ) ) {
 
-			if ( $this->options['ffmpeg_watermark']['align'] == 'right' ) {
+			$watermark_width = strval( round( intval( $this->video_metadata['actualwidth'] ) * ( intval( $watermark->scale ) / 100 ) ) );
+
+			if ( $watermark->align == 'right' ) {
 				$watermark_align = 'main_w-overlay_w-';
-			} elseif ( $this->options['ffmpeg_watermark']['align'] == 'center' ) {
+			} elseif ( $watermark->align == 'center' ) {
 				$watermark_align = 'main_w/2-overlay_w/2-';
 			} else {
 				$watermark_align = '';
 			} //left justified
 
-			if ( $this->options['ffmpeg_watermark']['valign'] == 'bottom' ) {
+			if ( $watermark->valign == 'bottom' ) {
 				$watermark_valign = 'main_h-overlay_h-';
-			} elseif ( $this->options['ffmpeg_watermark']['valign'] == 'center' ) {
+			} elseif ( $watermark->valign == 'center' ) {
 				$watermark_valign = 'main_h/2-overlay_h/2-';
 			} else {
 				$watermark_valign = '';
 			} //top justified
 
-			if ( strpos( $this->options['ffmpeg_watermark']['url'], 'http://' ) === 0 ) {
+			if ( strpos( $watermark->url, 'http://' ) === 0 ) {
 				$watermark_id = false;
-				$watermark_id = kgvid_url_to_id( $this->options['ffmpeg_watermark']['url'] );
+				$watermark_id = kgvid_url_to_id( $watermark->url );
 				if ( $watermark_id ) {
 					$watermark_file = get_attached_file( $watermark_id );
 					if ( file_exists( $watermark_file ) ) {
-						$this->options['ffmpeg_watermark']['url'] = $watermark_file;
+						$watermark->url = $watermark_file;
 					}
 				}
 			}
 
-			$watermark_flags['input']  = $this->options['ffmpeg_watermark']['url'];
-			$watermark_flags['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v] [watermark]overlay=' . $watermark_align . 'main_w*' . round( $this->options['ffmpeg_watermark']['x'] / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $this->options['ffmpeg_watermark']['y'] / 100, 3 );
+			$watermark_flags['input']  = $watermark->url;
+			$watermark_flags['filter'] = '[1:v]scale=' . $watermark_width . ':-1[watermark];[0:v] [watermark]overlay=' . $watermark_align . 'main_w*' . round( $watermark->x / 100, 3 ) . ':' . $watermark_valign . 'main_w*' . round( $watermark->y / 100, 3 );
 
 		} else {
 
@@ -405,31 +412,28 @@ class Encode_Attachment {
 				}
 			}
 
-			$movflags = array();
-			if ( $this->options['moov'] === 'movflag' ) {
-				$movflags = array(
-					'-movflags',
-					'faststart',
-				);
-			}
+			$movflags = array(
+				'-movflags',
+				'faststart',
+			);
 
 			$profile_array = array();
-			if ( $this->options['h264_profile'] !== 'none' ) {
+			if ( $this->options_manager->h264_profile !== 'none' ) {
 				$profile_array = array(
 					'-profile:v',
-					$this->options['h264_profile'],
+					$this->options_manager->h264_profile,
 				);
-				if ( $this->options['h264_profile'] != 'high422' && $this->options['h264_profile'] != 'high444' ) {
+				if ( $this->options_manager->h264_profile != 'high422' && $this->options_manager->h264_profile != 'high444' ) {
 					$profile_array[] = '-pix_fmt';
 					$profile_array[] = 'yuv420p'; // makes sure output is converted to 4:2:0
 				}
 			}
 
 			$level_array = array();
-			if ( $this->options['h264_level'] != 'none' ) {
+			if ( $this->options_manager->h264_level != 'none' ) {
 				$level_array = array(
 					'-level:v',
-					round( floatval( $this->options['h264_level'] ) * 10 ),
+					round( floatval( $this->options_manager->h264_level ) * 10 ),
 				);
 			}
 
@@ -437,7 +441,7 @@ class Encode_Attachment {
 				'-acodec',
 				$aaclib,
 				'-b:a',
-				$this->options['audio_bitrate'] . 'k',
+				$this->options_manager->audio_bitrate . 'k',
 				'-s',
 				$dimensions['width'] . 'x' . $dimensions['height'],
 				'-vcodec',
@@ -457,17 +461,17 @@ class Encode_Attachment {
 				'-acodec',
 				'libvorbis',
 				'-b:a',
-				$this->options['audio_bitrate'] . 'k',
+				$this->options_manager->audio_bitrate . 'k',
 				'-s',
 				$dimensions['width'] . 'x' . $dimensions['height'],
 				'-vcodec',
 				$this->video_formats[ $format ]['vcodec'],
 			);
 
-			if ( $this->options['rate_control'] == 'crf' ) {
+			if ( $this->options_manager->rate_control == 'crf' ) {
 				if ( $this->video_formats[ $format ]['type'] == 'webm' ) {
 					$ffmpeg_flags[] = '-b:v';
-					$ffmpeg_flags[] = round( floatval( $this->options['bitrate_multiplier'] ) * 1.25 * $dimensions['width'] * $dimensions['height'] * 30 / 1024 ) . 'k'; // set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
+					$ffmpeg_flags[] = round( floatval( $this->options_manager->bitrate_multiplier ) * 1.25 * $dimensions['width'] * $dimensions['height'] * 30 / 1024 ) . 'k'; // set a max bitrate 25% larger than the ABR. Otherwise libvpx goes way too low.
 				}
 				if ( $this->video_formats[ $format ]['type'] == 'vp9' ) {
 					$ffmpeg_flags[] = '-b:v';
@@ -482,14 +486,14 @@ class Encode_Attachment {
 	protected function get_ffmpeg_flags_before( array $watermark_flags ) {
 		$nice = '';
 		$sys  = strtoupper( PHP_OS ); // Get OS Name
-		if ( substr( $sys, 0, 3 ) != 'WIN' && $this->options['nice'] == true ) {
+		if ( substr( $sys, 0, 3 ) != 'WIN' && $this->options_manager->nice == true ) {
 			$nice = 'nice';
 		}
 
-		if ( ! empty( $this->options['htaccess_login'] )
-			&& strpos( $this->encode_input, 'http://' ) === 0
+		if ( ! empty( $this->options_manager->htaccess_login )
+			&& strpos( $this->encode_input, 'http' ) === 0
 		) {
-			$this->encode_input = substr_replace( $this->encode_input, $this->options['htaccess_login'] . ':' . $this->options['htaccess_password'] . '@', 7, 0 );
+			$this->encode_input = substr_replace( $this->encode_input, $this->options_manager->htaccess_login . ':' . $this->options_manager->htaccess_password . '@', 7, 0 );
 		}
 
 		$ffmpeg_flags_before = array(
@@ -508,11 +512,11 @@ class Encode_Attachment {
 			);
 		}
 
-		if ( $this->options['audio_channels'] == true ) {
+		if ( $this->options_manager->audio_channels == true ) {
 			array_push(
 				$ffmpeg_flags_before,
 				'-ac',
-				'2',
+				'2'
 			);
 		}
 
@@ -779,11 +783,11 @@ class Encode_Attachment {
 			} //skip webm or ogv checkbox if the video is webm or ogv
 			if ( strpos( $format, 'custom_' ) !== 0
 				&& (
-					( $this->options['hide_video_formats']
-						&& is_array( $this->options['encode'] )
-						&& array_key_exists( $format, $this->options['encode'] )
+					( $this->options_manager->hide_video_formats
+						&& is_array( $this->options_manager->encode )
+						&& array_key_exists( $format, $this->options_manager->encode )
 					)
-					|| ! $this->options['hide_video_formats']
+					|| ! $this->options_manager->hide_video_formats
 				)
 			) {
 				$available_formats[ $format ] = $format_info;

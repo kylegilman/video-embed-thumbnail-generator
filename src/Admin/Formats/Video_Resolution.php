@@ -53,7 +53,7 @@ class Video_Resolution {
 		if ( isset( $properties['id'] ) ) {
 			$this->id = $properties['id'];
 		} else {
-			$this->id = intval( $this->height );
+			$this->id = strval( $this->height );
 		}
 	}
 

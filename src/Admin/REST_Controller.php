@@ -13,15 +13,17 @@ namespace Videopack\Admin;
 
 class REST_Controller extends \WP_REST_Controller {
 
-	protected $namespace;
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
 	protected $options_manager;
-	protected $options;
+	protected $namespace;
 	protected $uploads;
 
-	public function __construct( $options_manager ) {
-		$this->namespace       = 'videopack/v1';
+	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
+		$this->namespace       = 'videopack/v1';
 		$this->uploads         = wp_upload_dir();
 	}
 
@@ -164,7 +166,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
-						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
+						return ( current_user_can( 'make_video_thumbnails' ) && $this->options_manager->ffmpeg_exists === true );
 					},
 					'args'                => array(
 						'movieurl'                 => array(
@@ -262,7 +264,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'queue_get' ),
 					'permission_callback' => function () {
-						return ( $this->options['ffmpeg_exists'] === true );
+						return ( $this->options_manager->ffmpeg_exists === true );
 					},
 					'args'                => array(
 						'id' => array(
@@ -274,7 +276,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'queue_edit' ),
 					'permission_callback' => function () {
-						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === true );
+						return ( current_user_can( 'encode_videos' ) && $this->options_manager->ffmpeg_exists === true );
 					},
 					'args'                => array(
 						'url'       => array(
@@ -376,19 +378,20 @@ class REST_Controller extends \WP_REST_Controller {
 			'capabilities',
 			'moov_path',
 			'ffmpeg_watermark',
-			'version',
 		);
+		$options_array  = get_object_vars( $this->options_manager );
+
 		foreach ( $unsafe_options as $unsafe_option ) {
-			if ( array_key_exists( $unsafe_option, $this->options ) ) {
-				unset( $this->options[ $unsafe_option ] );
+			if ( array_key_exists( $unsafe_option, $options_array ) ) {
+				unset( $options_array[ $unsafe_option ] );
 			}
 		}
 		foreach ( $this->options as $key => $value ) {
 			if ( $value === true ) {
-				$this->options[ $key ] = true;
+				$options_array[ $key ] = true;
 			}
 		}
-		return $this->options;
+		return $options_array;
 	}
 
 	public function defaults() {
@@ -409,7 +412,7 @@ class REST_Controller extends \WP_REST_Controller {
 		if ( array_key_exists( 'id', $params )
 			&& get_post_type( $params['id'] ) === 'attachment'
 		) {
-			$encoder       = new encode\Encode_Attachment( $params['id'] );
+			$encoder       = new encode\Encode_Attachment( $this->options_manager, $params['id'] );
 			$video_formats = $encoder->get_available_formats();
 			foreach ( $video_formats as $format => $format_info ) {
 				$encode_info              = $encoder->get_encode_info( $format );
@@ -577,10 +580,10 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$params = $request->get_params();
 		if ( array_key_exists( 'id', $params ) ) {
-			$encoder = new Encode\Encode_Attachment( $params['id'] );
+			$encoder = new Encode\Encode_Attachment( $this->options_manager, $params['id'] );
 			return $encoder->get_formats_array();
 		} else {
-			$controller = new Encode\Encode_Queue_Controller();
+			$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
 			return $controller->get_full_queue_array();
 		}
 	}
@@ -600,7 +603,7 @@ class REST_Controller extends \WP_REST_Controller {
 		return $response; */
 
 		$params     = $request->get_params();
-		$controller = new Encode\Encode_Queue_Controller();
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
 		$args       = array(
 			'id'      => $params['id'],
 			'url'     => $params['url'],
@@ -618,7 +621,7 @@ class REST_Controller extends \WP_REST_Controller {
 		} else {
 			$url = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
 		}
-		$attachment    = new encode\Encode_Attachment( 'sample', $url );
+		$attachment    = new encode\Encode_Attachment( $this->options_manager, 'sample', $url );
 		$encode_info   = $attachment->get_encode_info( $format );
 		$encode_format = new encode\Encode_Format( $format );
 		$encode_format->set_queued(

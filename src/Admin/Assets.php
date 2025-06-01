@@ -4,10 +4,14 @@ namespace Videopack\Admin;
 
 class Assets {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var Options $options_manager
+	 */
 	protected $options_manager;
 	protected $options;
 
-	public function __construct( $options_manager ) {
+	public function __construct( Options $options_manager ) {
 
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
@@ -18,21 +22,21 @@ class Assets {
 
 		if ( ! wp_script_is( 'videopack_admin', 'enqueued' ) ) {
 
-			wp_enqueue_script( 'videopack_admin', plugins_url( '/js/videopack-admin.js', __FILE__ ), array( 'jquery' ), VIDEOPACK_VERSION, true );
-			wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url( '/css/videopack-styles-admin.css', __FILE__ ), '', VIDEOPACK_VERSION );
+			//wp_enqueue_script( 'videopack_admin', plugins_url( '/js/videopack-admin.js', __FILE__ ), array( 'jquery' ), VIDEOPACK_VERSION, true );
+			//wp_enqueue_style( 'video_embed_thumbnail_generator_style', plugins_url( '/css/videopack-styles-admin.css', __FILE__ ), '', VIDEOPACK_VERSION );
 
 			wp_localize_script(
 				'videopack_admin',
 				'videopack_admin_L10n',
 				array(
 					'ajax_nonce'           => wp_create_nonce( 'kgvid_admin_nonce' ),
-					'ffmpeg_exists'        => $this->options['ffmpeg_exists'],
+					'ffmpeg_exists'        => $this->options_manager->ffmpeg_exists,
 					'wait'                 => esc_html_x( 'Wait', 'please wait', 'video-embed-thumbnail-generator' ),
 					'hidevideo'            => esc_html__( 'Hide video...', 'video-embed-thumbnail-generator' ),
 					'choosefromvideo'      => esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ),
 					'cantloadvideo'        => esc_html__( "Can't load video", 'video-embed-thumbnail-generator' ),
 					/* translators: %s is the path to FFmpeg. */
-					'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_html( $this->options['app_path'] ) ),
+					'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_html( $this->options_manager->app_path ) ),
 					'choosethumbnail'      => esc_html__( 'Choose Thumbnail:', 'video-embed-thumbnail-generator' ),
 					'saveallthumbnails'    => esc_html__( 'Save All Thumbnails', 'video-embed-thumbnail-generator' ),
 					'saving'               => esc_html__( 'Saving...', 'video-embed-thumbnail-generator' ),
@@ -98,7 +102,7 @@ class Assets {
 			$this->enqueue_videopack_scripts();
 		}
 		if ( $hook_suffix === 'settings_page_video_embed_thumbnail_generator_settings' ) {
-			( new \Videopack\Frontend\Assets( $this->options_manager ) )->enqueue_assets();
+			//$this->enqueue_videopack_scripts();
 			$js_skins = array(
 				'kg-video-js-skin',
 				'vjs-theme-city',

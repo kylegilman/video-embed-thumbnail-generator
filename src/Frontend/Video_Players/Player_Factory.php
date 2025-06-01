@@ -15,7 +15,7 @@ class Player_Factory {
 		$player  = null;
 		$options = $options_manager->get_options();
 
-		switch ( $options['embed_method'] ) {
+		switch ( $options_manager->embed_method ) {
 			case 'Video.js v8':
 				$player = new Player_Video_Js( $options_manager );
 				break;
