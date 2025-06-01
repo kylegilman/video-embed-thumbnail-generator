@@ -1,19 +1,23 @@
 <?php
 
-namespace Videopack\admin\encode;
+namespace Videopack\Admin\Encode;
 
 use ActionScheduler;
 
 class Encode_Queue_Controller {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
+	protected $options_manager;
 	protected $queued;
 	protected $encoding_now;
 	protected $queue_log;
-	protected $options;
 
-	public function __construct() {
-		$this->queue_log = new Encode_Queue_Log();
-		$this->options   = kgvid_get_options();
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
+		$this->queue_log       = new Encode_Queue_Log();
+		$this->options_manager = $options_manager;
 		$this->add_table();
 		$this->set_queued();
 		$this->set_encoding_now();
@@ -44,14 +48,14 @@ class Encode_Queue_Controller {
 	}
 
 	public function start_queue() {
-		$this->options['queue_control'] = 'play';
-		update_option( 'kgvid_video_embed_options', $this->options );
+		$this->options_manager->queue_control = 'play';
+		$this->options_manager->save_options();
 		$this->start_next_job();
 	}
 
 	public function pause_queue() {
-		$this->options['queue_control'] = 'pause';
-		update_option( 'kgvid_video_embed_options', $this->options );
+		$this->options_manager->queue_control = 'pause';
+		$this->options_manager->save_options();
 	}
 
 	/**
@@ -119,7 +123,7 @@ class Encode_Queue_Controller {
 		$encoding         = $this->get_encoding_now();
 		if ( $encoding ) {
 			foreach ( $encoding as $key => $args ) {
-				$encoder = new Encode_Attachment( $args['id'], $args['url'] );
+				$encoder = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
 				$formats = $encoder->get_formats();
 				if ( $formats ) {
 					foreach ( $formats as $format ) {
@@ -144,7 +148,7 @@ class Encode_Queue_Controller {
 	}
 
 	public function add_to_queue( array $args ) {
-		$encoder = new Encode_Attachment( $args['id'], $args['url'] );
+		$encoder = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
 		foreach ( $args['formats'] as $format ) {
 			$action = $encoder->try_to_queue( $format );
 			if ( $action === 'queued' ) {
@@ -156,13 +160,13 @@ class Encode_Queue_Controller {
 	}
 
 	protected function start_next_job() {
-		if ( count( $this->encoding_now ) < $this->options['simultaneous_encodes']
-			&& $this->options['queue_control'] === 'play'
+		if ( count( $this->encoding_now ) < $this->options_manager->simultaneous_encodes
+			&& $this->options_manager->queue_control === 'play'
 		) {
 			$queue = $this->get_full_queue();
 			if ( $queue ) {
 				foreach ( $queue as $key => $args ) {
-					$encoder = new Encode_Attachment( $args['id'], $args['url'] );
+					$encoder = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
 					$next    = $encoder->start_next_format();
 					if ( $next ) {
 						$this->encoding_now[] = $this->queued[ $key ];
@@ -200,7 +204,7 @@ class Encode_Queue_Controller {
 		$full_queue  = $this->get_full_queue();
 		if ( ! empty( $full_queue ) ) {
 			foreach ( $full_queue as $key => $args ) {
-				$encoder       = new Encode_Attachment( $args['id'], $args['url'] );
+				$encoder       = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
 				$queue_array[] = array(
 					'id'      => $args['id'],
 					'url'     => $args['url'],
@@ -221,7 +225,7 @@ class Encode_Queue_Controller {
 		return $this->queued;
 	}
 
-	function kgvid_replace_video( $video_key, $format ) {
+	public function kgvid_replace_video( $video_key, $format ) {
 
 		$options            = kgvid_get_options();
 		$video_encode_queue = kgvid_get_encode_queue();
