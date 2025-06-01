@@ -10,6 +10,6 @@ class Init {
 			$multisite->init();
 		}//end network activation setup
 
-		$videopack_options = \Videopack\Admin\Options::get_instance();
+		$videopack_options = new \Videopack\Admin\Options();
 	}
 }

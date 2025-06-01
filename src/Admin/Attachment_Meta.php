@@ -4,21 +4,25 @@ namespace Videopack\Admin;
 
 class Attachment_Meta {
 
-	protected $options;
+	/**
+	 * Videopack Options manager class instance
+	 * @var Options $options_manager
+	 */
+	protected $options_manager;
 
-	public function __construct( $options_manager ) {
-		$this->options = $options_manager->get_options();
+	public function __construct( Options $options_manager ) {
+		$this->options_manager = $options_manager;
 	}
 
 	public function get_defaults() {
 
 		$meta_key_array = array(
-			'embed'             => $this->options['default_insert'],
+			'embed'             => $this->options_manager->default_insert,
 			'width'             => '',
 			'height'            => '',
 			'actualwidth'       => '',
 			'actualheight'      => '',
-			'downloadlink'      => $this->options['downloadlink'],
+			'downloadlink'      => $this->options_manager->downloadlink,
 			'track'             => '',
 			'starts'            => '0',
 			'play_25'           => '0',
@@ -26,17 +30,17 @@ class Attachment_Meta {
 			'play_75'           => '0',
 			'completeviews'     => '0',
 			'pickedformat'      => '',
-			'encode'            => $this->options['encode'],
+			'encode'            => $this->options_manager->encode,
 			'rotate'            => '',
 			'autothumb-error'   => '',
-			'numberofthumbs'    => $this->options['generate_thumbs'],
+			'numberofthumbs'    => $this->options_manager->generate_thumbs,
 			'randomize'         => '',
 			'forcefirst'        => '',
-			'featured'          => $this->options['featured'],
+			'featured'          => $this->options_manager->featured,
 			'thumbtime'         => '',
 			'lockaspect'        => true,
 			'showtitle'         => '',
-			'gallery_columns'   => $this->options['gallery_columns'],
+			'gallery_columns'   => $this->options_manager->gallery_columns,
 			'gallery_exclude'   => '',
 			'gallery_include'   => '',
 			'gallery_orderby'   => '',

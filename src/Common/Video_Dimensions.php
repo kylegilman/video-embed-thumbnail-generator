@@ -4,60 +4,62 @@ namespace Videopack\Common;
 
 class Video_Dimensions {
 
-	private function __construct() { }
+	protected $options_manager;
+	protected $id;
+	protected $gallery;
 
-	public static function get( $id, $gallery = false ) {
+	public $width;
+	public $height;
+	public $actualwidth;
+	public $actualheight;
 
-		$options_manager = \Videopack\Admin\Options::get_instance();
-		$options         = $options_manager->get_options();
-		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
-		$video_meta      = wp_get_attachment_metadata( $id );
-		$kgvid_postmeta  = $attachment_meta->get( $id );
+	public function __construct( \Videopack\Admin\Options $options_manager, $id, bool $gallery = false ) {
+		$this->options_manager = $options_manager;
+		$this->id              = $id;
+		$this->gallery         = $gallery;
+		$this->set();
+	}
+
+	public function set() {
+
+		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
+		$video_meta      = wp_get_attachment_metadata( $this->id );
+		$kgvid_postmeta  = $attachment_meta->get( $this->id );
+		$this->width     = $kgvid_postmeta['width'];
+		$this->height    = $kgvid_postmeta['height'];
 
 		// Set actual width and height from video metadata if available, otherwise use options
-		$kgvid_postmeta['actualwidth']  = isset( $video_meta['width'] ) ? $video_meta['width'] : $options['width'];
-		$kgvid_postmeta['actualheight'] = isset( $video_meta['height'] ) ? $video_meta['height'] : $options['height'];
+		$this->actualwidth  = isset( $video_meta['width'] ) ? $video_meta['width'] : $this->options_manager->width;
+		$this->actualheight = isset( $video_meta['height'] ) ? $video_meta['height'] : $this->options_manager->height;
 
 		// Set width and height if not already set
-		if ( empty( $kgvid_postmeta['width'] ) ) {
-			$kgvid_postmeta['width'] = $kgvid_postmeta['actualwidth'];
+		if ( empty( $this->width ) ) {
+			$this->width = $this->actualwidth;
 		}
-		if ( empty( $kgvid_postmeta['height'] ) ) {
-			$kgvid_postmeta['height'] = $kgvid_postmeta['actualheight'];
+		if ( empty( $this->height ) ) {
+			$this->height = $this->actualheight;
 		}
 
 		// Calculate aspect ratio
-		if ( $kgvid_postmeta['width'] > 0 && $kgvid_postmeta['height'] > 0 ) {
-			$aspect_ratio = $kgvid_postmeta['height'] / $kgvid_postmeta['width'];
+		if ( $this->width > 0 && $this->height > 0 ) {
+			$aspect_ratio = $this->height / $this->width;
 		} else {
-			$aspect_ratio = $options['height'] / $options['width'];
+			$aspect_ratio = $this->options_manager->height / $this->options_manager->width;
 		}
 
 		// Adjust dimensions for gallery
-		if ( $gallery ) {
-			if ( ! empty( $kgvid_postmeta['actualwidth'] ) ) {
-				$kgvid_postmeta['width'] = $kgvid_postmeta['actualwidth'];
+		if ( $this->gallery ) {
+			if ( ! empty( $this->actualwidth ) ) {
+				$this->width = $this->actualwidth;
 			}
-			if ( $kgvid_postmeta['width'] > $options['gallery_width'] ) {
-				$kgvid_postmeta['width'] = $options['gallery_width'];
+			if ( $this->width > $this->options_manager->gallery_width ) {
+				$this->width = $this->options_manager->gallery_width;
 			}
-		} elseif ( intval( $kgvid_postmeta['width'] ) > intval( $options['width'] )
-			|| $options['minimum_width'] === true
-		) {
-				$kgvid_postmeta['width'] = $options['width'];
+		} elseif ( intval( $this->width ) > intval( $this->options_manager->width ) ) {
+				$this->width = $this->options_manager->width;
 		}
 
 		// Calculate height based on aspect ratio
-		$kgvid_postmeta['height'] = round( $kgvid_postmeta['width'] * $aspect_ratio );
-
-		// Prepare dimensions for return
-		$dimensions = array(
-			'width'        => strval( $kgvid_postmeta['width'] ),
-			'height'       => strval( $kgvid_postmeta['height'] ),
-			'actualwidth'  => strval( $kgvid_postmeta['actualwidth'] ),
-			'actualheight' => strval( $kgvid_postmeta['actualheight'] ),
-		);
-
-		return $dimensions;
+		$this->height = round( $this->width * $aspect_ratio );
 	}
 }

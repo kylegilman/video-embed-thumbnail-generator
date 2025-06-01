@@ -4,13 +4,15 @@ namespace Videopack\Frontend;
 
 class Shortcode {
 
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
 	protected $options_manager;
-	protected $options;
 	protected $player;
 
-	public function __construct( $options_manager ) {
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
 		$this->player          = \Videopack\Frontend\Video_Players\Player_Factory::create( $options_manager );
 	}
 
@@ -61,77 +63,73 @@ class Shortcode {
 		}
 
 		$default_atts = array(
-			'id'                     => '',
-			'orderby'                => 'menu_order ID',
-			'order'                  => 'ASC',
-			'videos'                 => -1,
-			'width'                  => $this->options['width'],
-			'height'                 => $this->options['height'],
-			'fullwidth'              => $this->options['fullwidth'],
-			'fixed_aspect'           => $this->options['fixed_aspect'],
-			'align'                  => $this->options['align'],
-			'controls'               => $this->options['controls'],
-			'poster'                 => $this->options['poster'],
-			'start'                  => '',
-			'watermark'              => $this->options['watermark'],
-			'watermark_link_to'      => $this->options['watermark_link_to'],
-			'watermark_url'          => $this->options['watermark_url'],
-			'endofvideooverlay'      => $this->options['endofvideooverlay'],
-			'endofvideooverlaysame'  => $this->options['endofvideooverlaysame'],
-			'loop'                   => $this->options['loop'],
-			'autoplay'               => $this->options['autoplay'],
-			'gifmode'                => $this->options['gifmode'],
-			'pauseothervideos'       => $this->options['pauseothervideos'],
-			'playsinline'            => $this->options['playsinline'],
-			'skin'                   => $this->options['js_skin'],
-			'gallery'                => 'false',
-			'gallery_pagination'     => $this->options['gallery_pagination'],
-			'gallery_per_page'       => $this->options['gallery_per_page'],
-			'gallery_columns'        => $this->options['gallery_columns'],
-			'gallery_orderby'        => 'menu_order ID',
-			'gallery_order'          => 'ASC',
-			'gallery_exclude'        => '',
-			'gallery_include'        => '',
-			'gallery_id'             => $post_id,
-			'gallery_end'            => $this->options['gallery_end'],
-			'gallery_title'          => $this->options['gallery_title'],
-			'volume'                 => $this->options['volume'],
-			'muted'                  => $this->options['muted'],
-			'preload'                => $this->options['preload'],
-			'playback_rate'          => $this->options['playback_rate'],
-			'skip_buttons'           => $this->options['skip_buttons'],
-			'title'                  => $this->options['overlay_title'],
-			'embedcode'              => $this->options['overlay_embedcode'],
-			'embeddable'             => $this->options['embeddable'],
-			'view_count'             => $this->options['view_count'],
-			'count_views'            => $this->options['count_views'],
-			'caption'                => '',
-			'description'            => '',
-			'inline'                 => $this->options['inline'],
-			'downloadlink'           => $this->options['downloadlink'],
-			'right_click'            => $this->options['right_click'],
-			'resize'                 => $this->options['resize'],
-			'auto_res'               => $this->options['auto_res'],
-			'pixel_ratio'            => $this->options['pixel_ratio'],
-			'nativecontrolsfortouch' => $this->options['nativecontrolsfortouch'],
-			'schema'                 => $this->options['schema'],
-			'track_kind'             => 'subtitles',
-			'track_srclang'          => substr( get_bloginfo( 'language' ), 0, 2 ),
-			'track_src'              => '',
-			'track_label'            => get_bloginfo( 'language' ),
-			'track_default'          => '',
+			'id'              => '',
+			'orderby'         => 'menu_order ID',
+			'order'           => 'ASC',
+			'videos'          => -1,
+			'start'           => '',
+			'gallery'         => 'false',
+			'gallery_orderby' => 'menu_order ID',
+			'gallery_order'   => 'ASC',
+			'gallery_exclude' => '',
+			'gallery_include' => '',
+			'gallery_id'      => $post_id,
+			'caption'         => '',
+			'description'     => '',
+			'track_kind'      => 'subtitles',
+			'track_srclang'   => substr( get_bloginfo( 'language' ), 0, 2 ),
+			'track_src'       => '',
+			'track_label'     => get_bloginfo( 'language' ),
+			'track_default'   => '',
 		);
 
-		if ( ! empty( $this->options['custom_attributes'] ) ) {
-			preg_match_all( '/(\w+)\s*=\s*(["\'])((?:(?!\2).)*)\2/', $this->options['custom_attributes'], $custom_atts, PREG_SET_ORDER );
-			if ( ! empty( $custom_atts ) && is_array( $custom_atts ) ) {
-				foreach ( $custom_atts as $custom_att ) {
-					if ( array_key_exists( $custom_att[1], $default_atts ) ) {
-						$default_atts[ $custom_att[1] ] = $custom_att[3];
-					} else {
-						$default_atts['custom_atts'][ $custom_att[1] ] = $custom_att[3];
-					}
-				}
+		$options_atts = array(
+			'width',
+			'height',
+			'fullwidth',
+			'fixed_aspect',
+			'align',
+			'controls',
+			'poster',
+			'watermark',
+			'watermark_link_to',
+			'watermark_url',
+			'endofvideooverlay',
+			'endofvideooverlaysame',
+			'loop',
+			'autoplay',
+			'gifmode',
+			'pauseothervideos',
+			'playsinline',
+			'skin',
+			'gallery_pagination',
+			'gallery_per_page',
+			'gallery_columns',
+			'gallery_end',
+			'gallery_title',
+			'volume',
+			'muted',
+			'preload',
+			'playback_rate',
+			'skip_buttons',
+			'title',
+			'embedcode',
+			'embeddable',
+			'view_count',
+			'count_views',
+			'inline',
+			'downloadlink',
+			'right_click',
+			'resize',
+			'auto_res',
+			'pixel_ratio',
+			'nativecontrolsfortouch',
+			'schema',
+		);
+
+		foreach ( $options_atts as $att ) {
+			if ( property_exists( $this->options_manager, $att ) ) {
+				$default_atts[ $att ] = $this->options_manager->{$att};
 			}
 		}
 
@@ -234,7 +232,7 @@ class Shortcode {
 
 		if ( ! is_feed() ) {
 
-			if ( substr( $this->options['embed_method'], 0, 8 ) !== 'Video.js' ) {
+			if ( substr( $this->options_manager->embed_method, 0, 8 ) !== 'Video.js' ) {
 				$this->player->enqueue_scripts();
 			}
 
@@ -293,7 +291,7 @@ class Shortcode {
 
 			} //if gallery
 
-			if ( substr( $this->options['embed_method'], 0, 8 ) === 'Video.js' ) {
+			if ( substr( $this->options_manager->embed_method, 0, 8 ) === 'Video.js' ) {
 				$this->player->enqueue_scripts();
 			}
 		} //if not feed
@@ -368,14 +366,14 @@ class Shortcode {
 			$shortcode .= ' autoplay="true"';
 		}
 		if ( is_array( $kgvid_video_embed ) && array_key_exists( 'sample', $kgvid_video_embed ) ) {
-			if ( $this->options['overlay_title'] == true ) {
+			if ( $this->options_manager->overlay_title == true ) {
 				$shortcode .= ' title="' . esc_attr_x( 'Sample Video', 'example video', 'video-embed-thumbnail-generator' ) . '"';
 			}
-			if ( $this->options['overlay_embedcode'] == true ) {
+			if ( $this->options_manager->overlay_embedcode == true ) {
 				$shortcode .= ' embedcode="' . esc_attr__( 'Sample Embed Code', 'video-embed-thumbnail-generator' ) . '"';
 			}
 			$shortcode .= ' caption="' . esc_attr__( 'If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator' ) . '"';
-			if ( $this->options['downloadlink'] == true ) {
+			if ( $this->options_manager->downloadlink == true ) {
 				$shortcode .= ' downloadlink="true"';
 			}
 		}
@@ -395,7 +393,7 @@ class Shortcode {
 
 	public function overwrite_video_shortcode() {
 
-		if ( $this->options['replace_video_shortcode'] == true ) {
+		if ( $this->options_manager->replace_video_shortcode == true ) {
 			remove_shortcode( 'video' );
 			add_shortcode( 'video', array( $this, 'replace_video_shortcode' ) );
 		}

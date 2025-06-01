@@ -6,11 +6,15 @@ use Videopack\Common\Validate;
 
 class Multisite {
 
-	protected $default_network_options;
+	/**
+	 * Videopack Options manager class instance
+	 * @var Options $options_manager
+	 */
 	protected $options_manager;
+	protected $default_network_options;
 	protected $default_options;
 
-	public function __construct( $options_manager ) {
+	public function __construct( Options $options_manager ) {
 		$this->options_manager         = $options_manager;
 		$this->default_options         = $options_manager->get_default();
 		$this->default_network_options = $this->get_default();
@@ -54,7 +58,7 @@ class Multisite {
 			if ( ! isset( $network_options['ffmpeg_exists'] )
 				|| $network_options['ffmpeg_exists'] === 'notchecked'
 			) {
-				$ffmpeg_info = $this->options_manager->check_ffmpeg_exists( $network_options, false );
+				$ffmpeg_info = $this->options_manager->check_ffmpeg_exists( $network_options['app_path'] );
 				if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
 					$network_options['ffmpeg_exists'] = true;
 				}

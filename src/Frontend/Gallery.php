@@ -5,12 +5,15 @@ namespace Videopack\Frontend;
 use WP_Hook;
 
 class Gallery {
-
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
 	protected $options_manager;
 	protected $options;
 	protected $attachment_meta;
 
-	public function __construct( $options_manager ) {
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
@@ -110,7 +113,7 @@ class Gallery {
 					}
 				}
 				if ( ! $thumbnail_url ) {
-					$thumbnail_url = $this->options['poster'];
+					$thumbnail_url = $this->options_manager->poster;
 				} //use the default poster if no thumbnail set
 				if ( ! $thumbnail_url ) {
 					$thumbnail_url = plugins_url( '/images/nothumbnail.jpg', __DIR__ );} //use the blank image if no other option
@@ -132,7 +135,7 @@ class Gallery {
 
 				$play_button_html = '';
 
-				if ( $this->options['embed_method'] == 'WordPress Default' ) {
+				if ( $this->options_manager->embed_method == 'WordPress Default' ) {
 
 					$library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
 					if ( 'mediaelement' === $library && did_action( 'init' ) ) {
@@ -149,14 +152,14 @@ class Gallery {
 					$play_translate    = 30;
 				}
 
-				$play_button_html = '<div class="' . esc_attr( $this->options['js_skin'] ) . '" ><button type="button" class="' . esc_attr( $play_button_class ) . '" style="-webkit-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -o-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -ms-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px);"></button></div>';
+				$play_button_html = '<div class="' . esc_attr( $this->options_manager->skin ) . '" ><button type="button" class="' . esc_attr( $play_button_class ) . '" style="-webkit-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -o-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -ms-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px);"></button></div>';
 
-				$dimensions = \Videopack\Common\Video_Dimensions::get( $attachment->ID, true );
+				$dimensions = new \Videopack\Common\Video_Dimensions( $this->options_manager, $attachment->ID, true );
 
 				$atts = array(
 					'id'     => $attachment->ID,
-					'width'  => $dimensions['width'],
-					'height' => $dimensions['height'],
+					'width'  => $dimensions->width,
+					'height' => $dimensions->height,
 				);
 				if ( $kgvid_postmeta['downloadlink'] == true ) {
 					$atts['downloadlink'] = 'true';
@@ -169,18 +172,19 @@ class Gallery {
 					$post_id = 1;
 				}
 				$content    = '';
-				$popup_code = ( new Video_Player() )->single_video_code( $popup_atts, $atts, $content, $post_id );
+				$player     = Video_Players\Player_Factory::create( $this->options_manager );
+				$popup_code = $player->single_video_code( $popup_atts, $atts, $content, $post_id );
 				preg_match( '/data-kgvid_video_vars=".*?"/', $popup_code, $video_vars );
 				$popup_code = str_replace( array( "\r", "\n", "\t", $video_vars[0] ), '', $popup_code );
 
-				if ( $this->options['js_skin'] == '' ) {
-					$this->options['js_skin'] = 'vjs-default-skin';
+				if ( $this->options_manager->skin == '' ) {
+					$this->options_manager->skin = 'vjs-default-skin';
 				}
 				if ( is_array( $query_atts ) && array_key_exists( 'skin', $query_atts ) ) {
-					$this->options['js_skin'] = $query_atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
+					$this->options_manager->skin = $query_atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
 				}
 
-				$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '\')" id="kgvid_video_gallery_thumb_kgvid_' . strval( $kgvid_video_id - 1 ) . '" data-id="kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '" data-width="' . esc_attr( $dimensions['width'] ) . '" data-height="' . esc_attr( $dimensions['height'] ) . '" data-meta="' . esc_attr( $below_video ) . '" data-gallery_end="' . esc_attr( $query_atts['gallery_end'] ) . '" data-popupcode="' . esc_attr( $popup_code ) . '" ' . $video_vars[0] . ' style="width:' . esc_attr( $query_atts['gallery_thumb'] ) . 'px;';
+				$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '\')" id="kgvid_video_gallery_thumb_kgvid_' . strval( $kgvid_video_id - 1 ) . '" data-id="kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '" data-width="' . esc_attr( $dimensions->width ) . '" data-height="' . esc_attr( $dimensions->height ) . '" data-meta="' . esc_attr( $below_video ) . '" data-gallery_end="' . esc_attr( $query_atts['gallery_end'] ) . '" data-popupcode="' . esc_attr( $popup_code ) . '" ' . $video_vars[0] . ' style="width:' . esc_attr( $query_atts['gallery_thumb'] ) . 'px;';
 
 				$code .= '"><img';
 				if ( ! empty( $thumbnail_srcset ) ) {

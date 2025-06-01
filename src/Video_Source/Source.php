@@ -586,7 +586,7 @@ abstract class Source {
 		if ( ! empty( $this->width ) && ! empty( $this->height ) ) {
 			$this->aspect_ratio = $this->height / $this->width;
 		} else {
-			$this->aspect_ratio = $this->options['height'] / $this->options['width'];
+			$this->aspect_ratio = $this->options_manager->height / $this->options_manager->width;
 		}
 	}
 

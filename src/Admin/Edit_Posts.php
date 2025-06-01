@@ -5,12 +5,10 @@ namespace Videopack\Admin;
 class Edit_Posts {
 
 	protected $options_manager;
-	protected $options;
 
-	public function __construct( $options_manager ) {
+	public function __construct( Options $options_manager ) {
 
 		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
 	}
 
 	public function modify_media_insert( $html, $attachment_id, $attachment ) {
@@ -27,22 +25,6 @@ class Edit_Posts {
 				$kgvid_postmeta['title']     = get_the_title( $attachment_id );
 				$kgvid_postmeta['poster']    = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
 				$kgvid_postmeta['poster-id'] = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
-
-				if ( $kgvid_postmeta['showtitle'] == true ) {
-					$titlecode = html_entity_decode( stripslashes( $this->options['titlecode'] ) );
-					if ( substr( $titlecode, 0, 1 ) != '<' ) {
-						$titlecode = '<' . wp_kses_post( $titlecode );
-					}
-					if ( substr( $titlecode, -1, 1 ) != '>' ) {
-						$titlecode .= '>';
-					}
-					$endtitlecode       = str_replace( '<', '</', $titlecode );
-					$endtitlecode_array = explode( ' ', $endtitlecode );
-					if ( substr( $endtitlecode_array[0], -1 ) != '>' ) {
-						$endtitlecode = $endtitlecode_array[0] . '>';
-					}
-					$html .= $titlecode . '<span itemprop="name">' . esc_html( $kgvid_postmeta['title'] ) . '</span>' . wp_kses_post( $endtitlecode ) . '<br />';
-				}
 
 				$html .= '[videopack id="' . esc_attr( $attachment_id ) . '"';
 				if ( ! empty( $kgvid_postmeta['poster'] ) && empty( $kgvid_postmeta['poster-id'] ) ) {
@@ -73,8 +55,8 @@ class Edit_Posts {
 
 				$html  = '';
 				$html .= '[videopack gallery="true"';
-				if ( ! empty( $kgvid_postmeta['gallery_thumb'] )
-					&& $kgvid_postmeta['gallery_thumb'] != $this->options['gallery_thumb']
+				if ( ! empty( $kgvid_postmeta['gallery_columns'] )
+					&& $kgvid_postmeta['gallery_columns'] != $this->options_manager->gallery_columns
 				) {
 					$html .= ' gallery_thumb="' . esc_attr( $kgvid_postmeta['gallery_thumb'] ) . '"';
 				}
@@ -120,8 +102,8 @@ class Edit_Posts {
 		( new Assets( $this->options_manager ) )->enqueue_videopack_scripts();
 
 		$checkboxes = kgvid_generate_encode_checkboxes( '', 'singleurl', 'attachment' );
-		$maxheight  = $this->options['height'];
-		$maxwidth   = $this->options['width'];
+		$maxheight  = $this->options_manager->height;
+		$maxwidth   = $this->options_manager->width;
 
 		media_upload_header();
 
@@ -135,7 +117,7 @@ class Edit_Posts {
 	public function render_post( $post_id ) {
 
 		if ( ! wp_is_post_revision( $post_id ) && ! wp_is_post_autosave( $post_id )
-			&& ( $this->options['open_graph'] == true || $this->options['twitter_card'] == true )
+			&& ( $this->options_manager->open_graph == true )
 		) {
 			// render the post when it's saved in case there's a do_shortcode call in it so open graph metadata makes it into wp_head()
 			$response = wp_remote_get( get_permalink( $post_id ), array( 'blocking' => false ) );

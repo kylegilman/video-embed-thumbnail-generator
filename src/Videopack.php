@@ -64,7 +64,7 @@ class Videopack {
 	 *
 	 * @since 5.0.0
 	 * @access protected
-	 * @var    Admin\Options    $options_manager    The options manager instance.
+	 * @var    Admin\Options    $options_manager    The options manager.
 	 */
 	protected $options_manager;
 
@@ -137,7 +137,7 @@ class Videopack {
 	 */
 	private function load_options_manager() {
 
-		$this->options_manager = Admin\Options::get_instance();
+		$this->options_manager = new Admin\Options();
 	}
 
 	/**
