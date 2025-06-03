@@ -15,8 +15,8 @@ class Player_Factory {
 		$player  = null;
 		$options = $options_manager->get_options();
 
-		switch ( $options_manager->embed_method ) {
-			case 'Video.js v8':
+		switch ( $options['embed_method'] ) {
+			case 'Video.js':
 				$player = new Player_Video_Js( $options_manager );
 				break;
 			case 'WordPress Default':

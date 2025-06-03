@@ -15,14 +15,16 @@ class REST_Controller extends \WP_REST_Controller {
 
 	/**
 	 * Videopack Options manager class instance
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var Options $options_manager
 	 */
 	protected $options_manager;
+	protected $options;
 	protected $namespace;
 	protected $uploads;
 
 	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 		$this->namespace       = 'videopack/v1';
 		$this->uploads         = wp_upload_dir();
 	}
@@ -166,7 +168,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'thumb_generate' ),
 					'permission_callback' => function () {
-						return ( current_user_can( 'make_video_thumbnails' ) && $this->options_manager->ffmpeg_exists === true );
+						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
 						'movieurl'                 => array(
@@ -264,7 +266,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'queue_get' ),
 					'permission_callback' => function () {
-						return ( $this->options_manager->ffmpeg_exists === true );
+						return ( $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
 						'id' => array(
@@ -276,7 +278,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'queue_edit' ),
 					'permission_callback' => function () {
-						return ( current_user_can( 'encode_videos' ) && $this->options_manager->ffmpeg_exists === true );
+						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
 						'url'       => array(
@@ -371,27 +373,27 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	public function settings() {
+		// $this->options is populated in the constructor with all global options.
+		$all_options = $this->options;
+		$safe_options = array();
 
-		$unsafe_options = array(
+		// Define keys that should not be exposed via this REST endpoint.
+		$unsafe_keys = array(
 			'app_path',
 			'error_email',
 			'capabilities',
-			'moov_path',
 			'ffmpeg_watermark',
+			'ffmpeg_thumb_watermark',
+			'htaccess_login',
+			'htaccess_password',
 		);
-		$options_array  = get_object_vars( $this->options_manager );
 
-		foreach ( $unsafe_options as $unsafe_option ) {
-			if ( array_key_exists( $unsafe_option, $options_array ) ) {
-				unset( $options_array[ $unsafe_option ] );
+		foreach ( $all_options as $key => $value ) {
+			if ( ! in_array( $key, $unsafe_keys, true ) ) {
+				$safe_options[ $key ] = $value;
 			}
 		}
-		foreach ( $this->options as $key => $value ) {
-			if ( $value === true ) {
-				$options_array[ $key ] = true;
-			}
-		}
-		return $options_array;
+		return $safe_options;
 	}
 
 	public function defaults() {

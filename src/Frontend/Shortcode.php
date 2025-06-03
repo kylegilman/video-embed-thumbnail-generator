@@ -9,10 +9,12 @@ class Shortcode {
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+	protected $options;
 	protected $player;
 
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 		$this->player          = \Videopack\Frontend\Video_Players\Player_Factory::create( $options_manager );
 	}
 
@@ -128,8 +130,8 @@ class Shortcode {
 		);
 
 		foreach ( $options_atts as $att ) {
-			if ( property_exists( $this->options_manager, $att ) ) {
-				$default_atts[ $att ] = $this->options_manager->{$att};
+			if ( array_key_exists( $att, $this->options ) ) {
+				$default_atts[ $att ] = $this->options[ $att ];
 			}
 		}
 
@@ -232,7 +234,7 @@ class Shortcode {
 
 		if ( ! is_feed() ) {
 
-			if ( substr( $this->options_manager->embed_method, 0, 8 ) !== 'Video.js' ) {
+			if ( substr( $this->options['embed_method'], 0, 8 ) !== 'Video.js' ) {
 				$this->player->enqueue_scripts();
 			}
 
@@ -291,7 +293,7 @@ class Shortcode {
 
 			} //if gallery
 
-			if ( substr( $this->options_manager->embed_method, 0, 8 ) === 'Video.js' ) {
+			if ( substr( $this->options['embed_method'], 0, 8 ) === 'Video.js' ) {
 				$this->player->enqueue_scripts();
 			}
 		} //if not feed
@@ -366,14 +368,14 @@ class Shortcode {
 			$shortcode .= ' autoplay="true"';
 		}
 		if ( is_array( $kgvid_video_embed ) && array_key_exists( 'sample', $kgvid_video_embed ) ) {
-			if ( $this->options_manager->overlay_title == true ) {
+			if ( $this->options['overlay_title'] == true ) {
 				$shortcode .= ' title="' . esc_attr_x( 'Sample Video', 'example video', 'video-embed-thumbnail-generator' ) . '"';
 			}
-			if ( $this->options_manager->overlay_embedcode == true ) {
+			if ( $this->options['overlay_embedcode'] == true ) {
 				$shortcode .= ' embedcode="' . esc_attr__( 'Sample Embed Code', 'video-embed-thumbnail-generator' ) . '"';
 			}
 			$shortcode .= ' caption="' . esc_attr__( 'If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator' ) . '"';
-			if ( $this->options_manager->downloadlink == true ) {
+			if ( $this->options['downloadlink'] == true ) {
 				$shortcode .= ' downloadlink="true"';
 			}
 		}
@@ -393,7 +395,7 @@ class Shortcode {
 
 	public function overwrite_video_shortcode() {
 
-		if ( $this->options_manager->replace_video_shortcode == true ) {
+		if ( $this->options['replace_video_shortcode'] == true ) {
 			remove_shortcode( 'video' );
 			add_shortcode( 'video', array( $this, 'replace_video_shortcode' ) );
 		}

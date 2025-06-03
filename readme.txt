@@ -105,7 +105,7 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 == Changelog ==
 
-= 5.0 - May XX, 2024 =
+= 5.0 - July XX, 2025 =
 * Substantially rewrote the entire plugin.
 * Added a Videopack Block for the block editor.
 * Added watermarks for video thumbnails without requiring FFmpeg.

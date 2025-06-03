@@ -48,14 +48,14 @@ class Encode_Queue_Controller {
 	}
 
 	public function start_queue() {
-		$this->options_manager->queue_control = 'play';
-		$this->options_manager->save_options();
+		$this->options['queue_control'] = 'play';
+		$this->options_manager->save_options( $this->options );
 		$this->start_next_job();
 	}
 
 	public function pause_queue() {
-		$this->options_manager->queue_control = 'pause';
-		$this->options_manager->save_options();
+		$this->options['queue_control'] = 'pause';
+		$this->options_manager->save_options( $this->options );
 	}
 
 	/**
