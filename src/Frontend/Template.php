@@ -9,10 +9,12 @@ class Template {
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+	protected $options;
 	protected $metadata;
 
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 		$this->metadata        = new \Videopack\Frontend\Metadata( $options_manager );
 	}
 
@@ -22,7 +24,7 @@ class Template {
 
 		if ( ! empty( $data )
 			&& ! empty( $first_embedded_video['url'] )
-			&& $this->options_manager->oembed_provider == true
+			&& $this->options['oembed_provider'] === true
 		) {
 
 			$data['type'] = 'video';
@@ -39,7 +41,7 @@ class Template {
 
 		$current_post = get_post();
 
-		if ( $this->options_manager->oembed_provider === true ) {
+		if ( $this->options['oembed_provider'] === true ) {
 			$first_embedded_video = $this->metadata->get_first_embedded_video( $current_post );
 			if ( array_key_exists( 'id', $first_embedded_video ) ) {
 				$template = __DIR__ . '/partials/embeddable-video.php';
@@ -52,7 +54,7 @@ class Template {
 
 		$post = get_post();
 
-		if ( $this->options_manager->template == 'gentle'
+		if ( $this->options['template'] === 'gentle'
 			&& isset( $post )
 			&& strpos( $post->post_mime_type, 'video' ) !== false
 		) {
@@ -70,12 +72,12 @@ class Template {
 
 		// Default values
 		$kgvid_video_embed += array(
-			'enable'   => $this->options_manager->template === 'old' ? 'true' : 'false',
+			'enable'   => $this->options['template'] === 'old' ? 'true' : 'false',
 			'download' => 'false',
 		);
 
 		// Update enable condition
-		if ( $this->options_manager->embeddable === 'false' &&
+		if ( $this->options['embeddable'] === false &&
 			! array_key_exists( 'sample', $kgvid_video_embed ) &&
 			! array_key_exists( 'gallery', $kgvid_video_embed ) ) {
 			$kgvid_video_embed['enable'] = 'false';
@@ -90,7 +92,7 @@ class Template {
 		if ( ( $is_video
 			&& (
 				$kgvid_video_embed['enable'] === 'true'
-				|| ( $kgvid_video_embed['download'] === 'true' && $this->options_manager->click_download === 'on' )
+				|| ( $kgvid_video_embed['download'] === 'true' && $this->options['click_download'] === true )
 			) )
 			|| array_key_exists( 'sample', $kgvid_video_embed )
 		) {
@@ -103,7 +105,7 @@ class Template {
 	public function redirect_canonical_attachment( $redirect_url, $requested_url ) {
 
 		if ( get_option( 'wp_attachment_pages_enabled' ) === '0'
-			&& is_attachment()
+			&& is_attachment() // Keep original logic
 			&& $this->enable_redirect() !== false
 		) {
 			// Return the original requested URL to cancel the redirect.

@@ -3,16 +3,19 @@
 namespace Videopack\Admin;
 
 class Edit_Posts {
-
+	/**
+	 * Videopack Options manager class instance
+	 * @var Options $options_manager
+	 */
 	protected $options_manager;
+	protected $options;
 
 	public function __construct( Options $options_manager ) {
-
 		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 	}
 
 	public function modify_media_insert( $html, $attachment_id, $attachment ) {
-
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( substr( $mime_type, 0, 5 ) == 'video' ) {
@@ -56,7 +59,7 @@ class Edit_Posts {
 				$html  = '';
 				$html .= '[videopack gallery="true"';
 				if ( ! empty( $kgvid_postmeta['gallery_columns'] )
-					&& $kgvid_postmeta['gallery_columns'] != $this->options_manager->gallery_columns
+					&& $kgvid_postmeta['gallery_columns'] != $this->options['gallery_columns']
 				) {
 					$html .= ' gallery_thumb="' . esc_attr( $kgvid_postmeta['gallery_thumb'] ) . '"';
 				}
@@ -102,8 +105,8 @@ class Edit_Posts {
 		( new Assets( $this->options_manager ) )->enqueue_videopack_scripts();
 
 		$checkboxes = kgvid_generate_encode_checkboxes( '', 'singleurl', 'attachment' );
-		$maxheight  = $this->options_manager->height;
-		$maxwidth   = $this->options_manager->width;
+		$maxheight  = $this->options['height'];
+		$maxwidth   = $this->options['width'];
 
 		media_upload_header();
 
@@ -117,7 +120,7 @@ class Edit_Posts {
 	public function render_post( $post_id ) {
 
 		if ( ! wp_is_post_revision( $post_id ) && ! wp_is_post_autosave( $post_id )
-			&& ( $this->options_manager->open_graph == true )
+			&& ( $this->options['open_graph'] == true )
 		) {
 			// render the post when it's saved in case there's a do_shortcode call in it so open graph metadata makes it into wp_head()
 			$response = wp_remote_get( get_permalink( $post_id ), array( 'blocking' => false ) );

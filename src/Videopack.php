@@ -42,24 +42,6 @@ class Videopack {
 	protected $loader;
 
 	/**
-	 * The unique identifier of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string    $plugin_name    The string used to uniquely identify this plugin.
-	 */
-	protected $plugin_name;
-
-	/**
-	 * The current version of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   protected
-	 * @var      string    $version    The current version of the plugin.
-	 */
-	protected $version;
-
-	/**
 	 * The options manager instance.
 	 *
 	 * @since 5.0.0
@@ -78,13 +60,6 @@ class Videopack {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'VIDEOPACK_VERSION' ) ) {
-			$this->version = VIDEOPACK_VERSION;
-		} else {
-			$this->version = '5.0.0';
-		}
-		$this->plugin_name = 'videopack';
-
 		$this->load_loader();
 		$this->set_locale();
 		$this->load_options_manager();
@@ -130,14 +105,19 @@ class Videopack {
 	}
 
 	/**
-	 * Load the options manager instance.
+	 * Load the options manager.
 	 *
 	 * @since    5.0.0
 	 * @access   private
 	 */
 	private function load_options_manager() {
 
-		$this->options_manager = new Admin\Options();
+		$options_manager = new Admin\Options();
+
+		/**
+		 * Allows replacement of the Options class
+		 */
+		$this->options_manager = apply_filters( 'videopack_options_manager', $options_manager );
 	}
 
 	/**
@@ -159,7 +139,6 @@ class Videopack {
 
 		$attachment_meta = new Admin\Attachment_Meta( $this->options_manager );
 		$this->loader->add_action( 'init', $attachment_meta, 'register' );
-		$this->loader->add_action( 'wp_read_video_metadata', $attachment_meta, 'add_extra_video_metadata', 10, 4 );
 
 		$plugin_attachment = new Admin\Attachment( $this->options_manager );
 		$this->loader->add_action( 'delete_attachment', $plugin_attachment, 'delete_video_attachment' );
@@ -168,6 +147,7 @@ class Videopack {
 		$this->loader->add_action( 'videopack_cron_check_post_parent', $plugin_attachment, 'cron_check_post_parent_handler' );
 		$this->loader->add_action( 'edit_attachment', $plugin_attachment, 'validate_attachment_updated' );
 		$this->loader->add_filter( 'mime_types', $plugin_attachment, 'add_mime_types' );
+		$this->loader->add_action( 'wp_read_video_metadata', $plugin_attachment, 'add_extra_video_metadata', 10, 4 );
 
 		$plugin_cleanup = new Admin\Cleanup();
 		$this->loader->add_action( 'videopack_cleanup_generated_logfiles', $plugin_cleanup, 'cleanup_generated_logfiles_handler' );
@@ -246,17 +226,6 @@ class Videopack {
 	}
 
 	/**
-	 * The name of the plugin used to uniquely identify it within the context of
-	 * WordPress and to define internationalization functionality.
-	 *
-	 * @since     1.0.0
-	 * @return    string    The name of the plugin.
-	 */
-	public function get_plugin_name() {
-		return $this->plugin_name;
-	}
-
-	/**
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
@@ -264,15 +233,5 @@ class Videopack {
 	 */
 	public function get_loader() {
 		return $this->loader;
-	}
-
-	/**
-	 * Retrieve the version number of the plugin.
-	 *
-	 * @since     1.0.0
-	 * @return    string    The version number of the plugin.
-	 */
-	public function get_version() {
-		return $this->version;
 	}
 }

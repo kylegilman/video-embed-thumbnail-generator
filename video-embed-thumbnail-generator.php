@@ -146,6 +146,8 @@ if ( file_exists( dirname( __DIR__, 2 ) . '/vendor/freemius/wordpress-sdk/start.
 function videopack_cleanup_plugin() {
 
 	$options_manager = new \Videopack\Admin\Options();
+	$options_manager->load_options();
+	$current_options = $options_manager->get_options();
 	$cleanup         = new \Videopack\Admin\Cleanup();
 
 	wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) );
@@ -159,10 +161,10 @@ function videopack_cleanup_plugin() {
 	$wp_roles = wp_roles();
 	if ( is_object( $wp_roles )
 		&& property_exists( $wp_roles, 'roles' )
-		&& is_array( $options_manager->capabilities )
+		&& isset( $current_options['capabilities'] ) && is_array( $current_options['capabilities'] )
 		) {
-		foreach ( $options_manager->capabilities as $capability => $roles ) {
-			foreach ( $wp_roles->roles as $role => $role_info ) {
+		foreach ( array_keys( $current_options['capabilities'] ) as $capability ) {
+			foreach ( array_keys( $wp_roles->roles ) as $role ) {
 				$wp_roles->remove_cap( $role, $capability );
 			}
 		}

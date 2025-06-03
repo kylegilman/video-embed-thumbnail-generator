@@ -5,6 +5,7 @@ namespace Videopack\Common;
 class Video_Dimensions {
 
 	protected $options_manager;
+	protected $options;
 	protected $id;
 	protected $gallery;
 
@@ -16,6 +17,7 @@ class Video_Dimensions {
 	public function __construct( \Videopack\Admin\Options $options_manager, $id, bool $gallery = false ) {
 		$this->options_manager = $options_manager;
 		$this->id              = $id;
+		$this->options         = $options_manager->get_options();
 		$this->gallery         = $gallery;
 		$this->set();
 	}
@@ -29,8 +31,8 @@ class Video_Dimensions {
 		$this->height    = $kgvid_postmeta['height'];
 
 		// Set actual width and height from video metadata if available, otherwise use options
-		$this->actualwidth  = isset( $video_meta['width'] ) ? $video_meta['width'] : $this->options_manager->width;
-		$this->actualheight = isset( $video_meta['height'] ) ? $video_meta['height'] : $this->options_manager->height;
+		$this->actualwidth  = isset( $video_meta['width'] ) ? $video_meta['width'] : $this->options['width'];
+		$this->actualheight = isset( $video_meta['height'] ) ? $video_meta['height'] : $this->options['height'];
 
 		// Set width and height if not already set
 		if ( empty( $this->width ) ) {
@@ -44,7 +46,7 @@ class Video_Dimensions {
 		if ( $this->width > 0 && $this->height > 0 ) {
 			$aspect_ratio = $this->height / $this->width;
 		} else {
-			$aspect_ratio = $this->options_manager->height / $this->options_manager->width;
+			$aspect_ratio = $this->options['height'] / $this->options['width'];
 		}
 
 		// Adjust dimensions for gallery
@@ -52,11 +54,11 @@ class Video_Dimensions {
 			if ( ! empty( $this->actualwidth ) ) {
 				$this->width = $this->actualwidth;
 			}
-			if ( $this->width > $this->options_manager->gallery_width ) {
-				$this->width = $this->options_manager->gallery_width;
+			if ( $this->width > $this->options['gallery_width'] ) {
+				$this->width = $this->options['gallery_width'];
 			}
-		} elseif ( intval( $this->width ) > intval( $this->options_manager->width ) ) {
-				$this->width = $this->options_manager->width;
+		} elseif ( intval( $this->width ) > intval( $this->options['width'] ) ) {
+				$this->width = $this->options['width'];
 		}
 
 		// Calculate height based on aspect ratio

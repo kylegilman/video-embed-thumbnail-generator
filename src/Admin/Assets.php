@@ -30,13 +30,13 @@ class Assets {
 				'videopack_admin_L10n',
 				array(
 					'ajax_nonce'           => wp_create_nonce( 'kgvid_admin_nonce' ),
-					'ffmpeg_exists'        => $this->options_manager->ffmpeg_exists,
+					'ffmpeg_exists'        => $this->options['ffmpeg_exists'],
 					'wait'                 => esc_html_x( 'Wait', 'please wait', 'video-embed-thumbnail-generator' ),
 					'hidevideo'            => esc_html__( 'Hide video...', 'video-embed-thumbnail-generator' ),
 					'choosefromvideo'      => esc_html__( 'Choose from video...', 'video-embed-thumbnail-generator' ),
 					'cantloadvideo'        => esc_html__( "Can't load video", 'video-embed-thumbnail-generator' ),
 					/* translators: %s is the path to FFmpeg. */
-					'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_html( $this->options_manager->app_path ) ),
+					'cantmakethumbs'       => sprintf( esc_html__( 'Error: unable to load video in browser for thumbnail generation and FFmpeg not found at %s', 'video-embed-thumbnail-generator' ), esc_html( $this->options['app_path'] ) ),
 					'choosethumbnail'      => esc_html__( 'Choose Thumbnail:', 'video-embed-thumbnail-generator' ),
 					'saveallthumbnails'    => esc_html__( 'Save All Thumbnails', 'video-embed-thumbnail-generator' ),
 					'saving'               => esc_html__( 'Saving...', 'video-embed-thumbnail-generator' ),

@@ -55,12 +55,12 @@ class Player_Video_Js extends Player {
 			VIDEOPACK_VIDEOJS_VERSION
 		);
 
-		if ( $this->options_manager->skin !== 'default'
-			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options_manager->js_skin . '.css' )
+		if ( $this->options['skin'] !== 'default'
+			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options['skin'] . '.css' )
 		) {
 			wp_enqueue_style(
 				'video-js-kg-skin',
-				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options_manager->skin . '.css',
+				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options['skin'] . '.css',
 				'',
 				VIDEOPACK_VERSION
 			);
@@ -72,7 +72,7 @@ class Player_Video_Js extends Player {
 		wp_enqueue_script( 'video-js' );
 		wp_enqueue_script( 'videojs-l10n' );
 
-		if ( $this->options_manager->alwaysloadscripts == true ) {
+		if ( $this->options['alwaysloadscripts'] == true ) {
 			wp_enqueue_script( 'video-quality-selector' );
 		}
 
@@ -119,14 +119,14 @@ class Player_Video_Js extends Player {
 
 		$classes[] = 'video-js';
 
-		if ( empty( $this->options_manager->js_skin ) ) {
-			$this->options_manager->skin = 'vjs-default-skin';
+		if ( empty( $this->options['skin'] ) ) {
+			$this->options['skin'] = 'vjs-default-skin';
 		}
 		if ( array_key_exists( 'skin', $atts ) ) {
-			$this->options_manager->skin = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
+			$this->options['skin'] = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
 		}
 
-		$classes[] = $this->options_manager->skin;
+		$classes[] = $this->options['skin'];
 
 		return $classes;
 	}

@@ -160,7 +160,7 @@ class Metadata {
 				$first_embedded_video = $this->get_first_embedded_video( $post );
 				if ( ! empty( $first_embedded_video['url'] ) ) { // if KGVID or FMP shortcode is in posts on this page.
 
-					if ( $this->options_manager->open_graph == true ) {
+					if ( $this->options['open_graph'] == true ) {
 
 						remove_action( 'wp_head', 'jetpack_og_tags' );
 						echo '<meta property="og:url" content="' . esc_url( get_permalink( $post ) ) . '" >' . "\n";

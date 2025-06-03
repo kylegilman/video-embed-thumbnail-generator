@@ -6,12 +6,14 @@ class Screens {
 
 	/**
 	 * Videopack Options manager class instance
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var Options $options_manager
 	 */
 	protected $options_manager;
+	protected $options;
 
 	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
+		$this->options         = $options_manager->get_options();
 	}
 
 	public function plugin_action_links( $links ) {
@@ -78,7 +80,7 @@ class Screens {
 	}
 
 	public function add_encode_queue_page() {
-		if ( $this->options_manager->ffmpeg_exists === true ) { // only add the queue page if FFmpeg is installed
+		if ( $this->options['ffmpeg_exists'] === true ) { // only add the queue page if FFmpeg is installed
 			add_submenu_page(
 				'tools.php',
 				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
@@ -141,7 +143,7 @@ class Screens {
 				'key'     => '_kgflashmediaplayer-format',
 				'compare' => 'NOT EXISTS',
 			);
-			if ( $this->options_manager->hide_thumbnails === true ) {
+			if ( $this->options['hide_thumbnails'] === true ) {
 				$meta_query[] = array(
 					'key'     => '_kgflashmediaplayer-video-id',
 					'compare' => 'NOT EXISTS',
@@ -167,8 +169,8 @@ class Screens {
 		if ( is_object( $current_screen )
 			&& 'upload' === $current_screen->id
 			&& isset( $_GET['media'] )
-			&& is_array( $_GET['media'] )
-			&& $this->options_manager->thumb_parent === 'post'
+			&& is_array( $_GET['media'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			&& $this->options['thumb_parent'] === 'post'
 			&& check_admin_referer( 'bulk-media' )
 		) {
 			$media = \Videopack\Common\Validate::text_field( wp_unslash( $_GET['media'] ) );
@@ -182,7 +184,7 @@ class Screens {
 
 				( new Attachment( $this->options_manager ) )->change_thumbnail_parent( $post_id, $parent_id );
 
-				if ( $this->options_manager->featured == true
+				if ( $this->options['featured'] == true
 					&& ! has_post_thumbnail( $parent_id )
 				) {
 					$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );

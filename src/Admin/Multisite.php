@@ -12,10 +12,12 @@ class Multisite {
 	 */
 	protected $options_manager;
 	protected $default_network_options;
+	protected $options; // Global options for the current site/network context
 	protected $default_options;
 
 	public function __construct( Options $options_manager ) {
 		$this->options_manager         = $options_manager;
+		$this->options                 = $options_manager->get_options(); // Load current site/network options
 		$this->default_options         = $options_manager->get_default();
 		$this->default_network_options = $this->get_default();
 	}
@@ -136,7 +138,7 @@ class Multisite {
 	}
 
 	public function add_network_queue_page() {
-		if ( $this->is_videopack_active_for_network() ) {
+		if ( $this->is_videopack_active_for_network() && $this->options['ffmpeg_exists'] === true ) {
 			add_submenu_page(
 				'settings.php',
 				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
