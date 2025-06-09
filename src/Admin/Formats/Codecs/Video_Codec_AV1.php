@@ -12,6 +12,7 @@ class Video_Codec_AV1 extends Video_Codec {
 			'mime'           => 'video/webm',
 			'codecs_att'     => 'av01',
 			'vcodec'         => 'libaom-av1',
+			'acodec'         => 'aac',
 			'rate_control'   => array(
 				'crf' => array(
 					'min'     => 0,

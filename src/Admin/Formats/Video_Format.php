@@ -83,6 +83,11 @@ class Video_Format {
 		return $this->codec->get_id() . '_' . $this->resolution->get_id();
 	}
 
+	/**
+	 * Get the old id used in Videopack version 4
+	 *
+	 * @return string
+	 */
 	public function get_legacy_id() {
 		if ( $this->codec->get_id() === 'h264' ) {
 			if ( $this->resolution->get_height() === 360 ) {
@@ -99,6 +104,11 @@ class Video_Format {
 		return false;
 	}
 
+	/**
+	 * Get the old filename suffix used in Videopack version 4
+	 *
+	 * @return string
+	 */
 	public function get_legacy_suffix() {
 		if ( $this->codec->get_id() === 'h264' ) {
 			return '-' . $this->resolution->get_id() . '.mp4';
@@ -135,7 +145,7 @@ class Video_Format {
 	/**
 	 * Get the video codec.
 	 *
-	 * @return \Videopack\Admin\Codec\Video_Codec
+	 * @return \Videopack\Admin\Formats\Codecs\Video_Codec
 	 */
 	public function get_codec() {
 		return $this->codec;
@@ -148,5 +158,15 @@ class Video_Format {
 	 */
 	public function get_resolution() {
 		return $this->resolution;
+	}
+
+	/**
+	 * Checks if this video format is intended to replace the original file.
+	 *
+	 * @return bool True if the format replaces the original, false otherwise.
+	 */
+	public function get_replaces_original() {
+		// A format replaces the original if its resolution ID is 'fullres'.
+		return $this->resolution->get_id() === 'fullres';
 	}
 }

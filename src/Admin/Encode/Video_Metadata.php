@@ -8,6 +8,7 @@ class Video_Metadata {
 	protected $encode_input;
 	protected $is_attachment;
 	protected $ffmpeg_path;
+	protected $options_manager;
 
 	public $worked;
 	public $actualwidth;
@@ -20,22 +21,30 @@ class Video_Metadata {
 		string $encode_input,
 		bool $is_attachment,
 		string $ffmpeg_path,
+		\Videopack\Admin\Options $options_manager
 	) {
 		$this->id            = $id;
 		$this->encode_input  = $encode_input;
 		$this->is_attachment = $is_attachment;
 		$this->ffmpeg_path   = $ffmpeg_path;
+		$this->options_manager = $options_manager;
 		$this->set_video_metadata();
 	}
 
 	protected function set_video_metadata() {
+		$attachment_meta_instance = null;
 
 		if ( $this->is_attachment ) {
-			$kgvid_postmeta = kgvid_get_attachment_meta( $this->id );
-			if ( array_key_exists( 'worked', $kgvid_postmeta )
+			$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $this->id );
+			$kgvid_postmeta           = $attachment_meta_instance->get(); // get() returns the array
+
+			if ( isset( $kgvid_postmeta['worked'] ) && $kgvid_postmeta['worked']
 			) {
-				
-				$this->video_metadata = $kgvid_postmeta;
+				$this->worked       = true;
+				$this->actualwidth  = $kgvid_postmeta['actualwidth'] ?? null;
+				$this->actualheight = $kgvid_postmeta['actualheight'] ?? null;
+				$this->duration     = $kgvid_postmeta['duration'] ?? null;
+				$this->rotate       = $kgvid_postmeta['rotate'] ?? '';
 				return;
 			}
 		}
@@ -107,11 +116,20 @@ class Video_Metadata {
 		}
 
 		if ( $this->is_attachment ) {
-			$metadata = array_merge( $kgvid_postmeta, $metadata );
-			kgvid_save_attachment_meta( $this->id, $metadata );
+			if ( ! $attachment_meta_instance ) {
+				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $this->id );
+			}
+			$existing_postmeta = $attachment_meta_instance->get();
+
+			$metadata_to_save = array(
+				'worked'       => $this->worked,
+				'actualwidth'  => $this->actualwidth,
+				'actualheight' => $this->actualheight,
+				'duration'     => $this->duration,
+				'rotate'       => $this->rotate,
+			);
+			$merged_meta = array_merge( $existing_postmeta, $metadata_to_save );
+			$attachment_meta_instance->save( $merged_meta );
 		}
-
-		$this->video_metadata = $metadata;
 	}
-
 }

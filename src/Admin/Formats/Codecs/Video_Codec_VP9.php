@@ -12,6 +12,7 @@ class Video_Codec_VP9 extends Video_Codec {
 			'mime'           => 'video/webm',
 			'codecs_att'     => 'vp9',
 			'vcodec'         => 'libvpx-vp9',
+			'acodec'         => 'libopus',
 			'rate_control'   => array(
 				'crf' => array(
 					'min'     => 0,
@@ -27,5 +28,19 @@ class Video_Codec_VP9 extends Video_Codec {
 		);
 
 		parent::__construct( $properties );
+	}
+
+	protected function get_ffmpeg_vbr_flags( $plugin_options, array $dimensions ) {
+		$average_bitrate = max( 100, $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] ) );
+
+		$vbr_flags   = array();
+		$vbr_flags[] = '-b:v';
+		$vbr_flags[] = $average_bitrate . 'k';
+		$vbr_flags[] = '-minrate';
+		$vbr_flags[] = round( $average_bitrate * .5 ) . 'k';
+		$vbr_flags[] = '-maxrate';
+		$vbr_flags[] = round( $average_bitrate * 1.45 ) . 'k';
+
+		return $vbr_flags;
 	}
 }

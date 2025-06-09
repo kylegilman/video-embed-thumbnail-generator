@@ -49,11 +49,18 @@ class Video_Codec {
 	protected $codecs_att;
 
 	/**
-	 * Video codec.
+	 * Video codec library.
 	 *
 	 * @var string
 	 */
 	protected $vcodec;
+
+	/**
+	 * Audio codec library.
+	 *
+	 * @var string
+	 */
+	protected $acodec;
 
 	/**
 	 * Rate control settings.
@@ -82,6 +89,7 @@ class Video_Codec {
 		$this->mime_type      = $properties['mime'] ?? 'video/mp4';
 		$this->codecs_att     = $properties['codecs_att'] ?? 'avc1';
 		$this->vcodec         = $properties['vcodec'] ?? 'libx264';
+		$this->acodec         = $properties['acodec'] ?? 'aac';
 		$this->rate_control   = $properties['rate_control'] ?? array(
 			'crf' => array(
 				'min'     => 0,
@@ -110,6 +118,7 @@ class Video_Codec {
 			'mime_type'      => $this->mime_type,
 			'codecs_att'     => $this->codecs_att,
 			'vcodec'         => $this->vcodec,
+			'acodec'         => $this->acodec,
 			'rate_control'   => $this->rate_control,
 			'default_encode' => $this->default_encode,
 		);
@@ -178,6 +187,48 @@ class Video_Codec {
 		return $this->vcodec;
 	}
 
+	protected function aac_encoders() {
+
+		$aac_array = array(
+			'libfdk_aac', // Generally highest quality
+			'aac',        // FFmpeg's native AAC encoder
+			'libfaac',
+		);
+
+		/**
+		 * Filter the preferred FFMPEG AAC encoders.
+		 * @param array $aac_array List of AAC encoding libraries.
+		 */
+		return apply_filters( 'videopack_aac_encoders', $aac_array );
+	}
+
+	/**
+	 * Get the audio codec.
+	 *
+	 * @return string Audio codec.
+	 */
+	public function get_acodec( array $codecs = null ) {
+
+		$audio_codec = $this->acodec;
+
+		if ( ! empty( $codecs ) ) {
+			if ( $this->acodec == 'aac' ) {
+				$aac_array = $this->aac_encoders();
+				foreach ( $aac_array as $preferred_aaclib ) {
+					if ( ! empty( $codecs[ $preferred_aaclib ] ) && $codecs[ $preferred_aaclib ] === true ) {
+						$audio_codec = $preferred_aaclib;
+						break;
+					}
+				}
+			} elseif ( $this->acodec == 'libopus'
+				&& ( ! array_key_exists( 'libopus', $codecs ) || ! $codecs['libopus'] )
+			) {
+				$audio_codec = 'libvorbis';
+			}
+		}
+		return $audio_codec;
+	}
+
 	/**
 	 * Get the rate control settings.
 	 *
@@ -221,12 +272,64 @@ class Video_Codec {
 	 * @param float $height The height of the video.
 	 * @return float The calculated bitrate.
 	 */
-	public function get_bitrate( float $width, float $height ) {
+	public function get_bitrate( array $dimensions, $rate_control = null ) {
 		return round(
-			( $this->rate_control['vbr']['default']
-			* 10 ** ( -3 )
-			* $width * $height )
+			( $rate_control ?? $this->rate_control['vbr']['default']
+			* 0.001
+			* $dimensions['width'] * $dimensions['height'] )
 			+ $this->rate_control['vbr']['constant']
 		);
+	}
+
+	protected function get_ffmpeg_crf_flags( array $plugin_options ) {
+			$crf_flags   = array();
+			$crf_flags[] = '-crf';
+			$crf_flags[] = $plugin_options['encode'][ $this->id ]['crf'];
+			return $crf_flags;
+	}
+
+	protected function get_ffmpeg_vbr_flags( $plugin_options, array $dimensions ) {
+			$vbr_flags   = array();
+			$vbr_flags[] = '-b:v';
+			$vbr_flags[] = max( 100, $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] ) ) . 'k';
+			return $vbr_flags;
+	}
+
+	protected function get_ffmpeg_rate_control_flags( array $plugin_options, array $dimensions = null ) {
+		if ( $plugin_options['rate_control'] === 'crf' ) {
+			return $this->get_ffmpeg_crf_flags( $plugin_options );
+		} elseif ( $plugin_options['rate_control'] === 'vbr' ) {
+			return $this->get_ffmpeg_vbr_flags( $plugin_options, $dimensions );
+		}
+		return array();
+	}
+
+	/**
+	 * Get codec-specific FFmpeg flags.
+	 *
+	 * @param array $plugin_options The global plugin options.
+	 * @param array $dimensions     Associative array with 'width' and 'height'.
+	 * @param array $codecs Associative array of available FFmpeg encoders.
+	 * @return array An array of FFmpeg flags.
+	 */
+	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ) {
+
+		$flags   = array();
+		$flags[] = '-acodec';
+		$flags[] = $this->get_acodec( $codecs );
+		$flags[] = '-vcodec';
+		$flags[] = $this->get_vcodec();
+
+		$flags[] = $this->get_ffmpeg_rate_control_flags( $plugin_options, $dimensions );
+
+		$flags[] = '-s';
+		$flags[] = $dimensions['width'] . 'x' . $dimensions['height'];
+
+		if ( $this->container === 'mp4' ) {
+			$flags[] = '-movflags';
+			$flags[] = 'faststart';
+		}
+
+		return $flags;
 	}
 }
