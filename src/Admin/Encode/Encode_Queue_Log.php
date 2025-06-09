@@ -3,21 +3,29 @@
 namespace Videopack\admin\encode;
 
 class Encode_Queue_Log {
+	/**
+	 * Videopack Options manager class instance
+	 * @var \Videopack\Admin\Options $options_manager
+	 */
+	protected $options_manager;
 
 	private $log;
-	private $video_formats;
 	private $user;
 
-	public function __construct() {
-		$this->log           = array();
-		$this->video_formats = kgvid_video_formats();
-		$this->user          = wp_get_current_user();
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
+		$this->options_manager = $options_manager;
+		$this->log             = array();
+		$this->user            = wp_get_current_user();
 	}
 
-	public function add_to_log( $action, $format = false ) {
+	public function add_to_log( $action, $format_id = false ) {
 
-		if ( $format ) {
-			$name = $this->video_formats[ $format ]['name'];
+		if ( $format_id ) {
+			$video_formats_objects = $this->options_manager->get_video_formats();
+			// Ensure $video_formats_objects is an array and the key exists
+			$name = ( is_array( $video_formats_objects ) && isset( $video_formats_objects[ $format_id ] ) )
+					? $video_formats_objects[ $format_id ]->get_name()
+					: $format_id;
 		} else {
 			$name = '';
 		}

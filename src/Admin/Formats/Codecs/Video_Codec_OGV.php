@@ -12,6 +12,7 @@ class Video_Codec_OGV extends Video_Codec {
 			'mime'           => 'video/ogg',
 			'codecs_att'     => 'theora',
 			'vcodec'         => 'libtheora',
+			'acodec'         => 'libvorbis',
 			'rate_control'   => array(
 				'crf' => array(
 					'min'     => 0,
@@ -27,5 +28,12 @@ class Video_Codec_OGV extends Video_Codec {
 		);
 
 		parent::__construct( $properties );
+	}
+
+	protected function get_ffmpeg_crf_flags( array $plugin_options ) {
+			$crf_flags   = array();
+			$crf_flags[] = '-q:v';
+			$crf_flags[] = $plugin_options['encode'][ $this->id ]['crf'];
+			return $crf_flags;
 	}
 }

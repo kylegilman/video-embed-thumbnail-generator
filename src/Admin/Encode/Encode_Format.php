@@ -4,7 +4,7 @@ namespace Videopack\Admin\Encode;
 
 class Encode_Format {
 
-	private $format;
+	private $format_id;
 	private $status;
 	private $path;
 	private $url;
@@ -16,20 +16,25 @@ class Encode_Format {
 	private $error;
 	private $ended;
 	private $progress;
+	private $encode_width;
+	private $encode_height;
 	private $id;
+	private $job_id; // ID from the wp_videopack_encoding_queue table
+	private $temp_watermark_path;
 
-	public function __construct( $format ) {
-		$this->format = $format;
+	public function __construct( string $format_id ) {
+		$this->format_id = $format_id;
 	}
 
 	// Helper methods for converting to/from arrays
 	public function to_array() {
-		return get_object_vars( $this );
+		$vars = get_object_vars( $this );
+		return $vars;
 	}
 
 	public static function from_array( array $data ) {
 
-		$format = new self( $data['format'] );
+		$format = new self( $data['format_id'] ); // Use 'format_id' from DB
 
 		$format->set_status( $format->set_or_null( $data, 'status' ) );
 		$format->set_user_id( $format->set_or_null( $data, 'user_id' ) );
@@ -42,6 +47,10 @@ class Encode_Format {
 		$format->set_error( $format->set_or_null( $data, 'error' ) );
 		$format->set_ended( $format->set_or_null( $data, 'ended' ) );
 		$format->set_progress();
+		$format->set_encode_width( $format->set_or_null( $data, 'encode_width' ) );
+		$format->set_encode_height( $format->set_or_null( $data, 'encode_height' ) );
+		$format->set_job_id( $format->set_or_null( $data, 'job_id' ) );
+		$format->set_temp_watermark_path( $format->set_or_null( $data, 'temp_watermark_path' ) );
 
 		return $format;
 	}
@@ -68,8 +77,8 @@ class Encode_Format {
 		}
 	}
 
-	public function get_format() {
-		return $this->format;
+	public function get_format_id() {
+		return $this->format_id;
 	}
 
 	public function get_status() {
@@ -115,6 +124,22 @@ class Encode_Format {
 
 	public function get_id() {
 		return $this->id;
+	}
+
+	public function get_encode_width() {
+		return $this->encode_width;
+	}
+
+	public function get_encode_height() {
+		return $this->encode_height;
+	}
+
+	public function get_job_id() {
+		return $this->job_id;
+	}
+
+	public function get_temp_watermark_path() {
+		return $this->temp_watermark_path;
 	}
 
 	// Setters
@@ -172,6 +197,22 @@ class Encode_Format {
 
 	public function set_id( int $id ) {
 		$this->id = $id;
+	}
+
+	public function set_encode_width( ?int $width ) {
+		$this->encode_width = $width;
+	}
+
+	public function set_encode_height( ?int $height ) {
+		$this->encode_height = $height;
+	}
+
+	public function set_job_id( ?int $job_id ) {
+		$this->job_id = $job_id;
+	}
+
+	public function set_temp_watermark_path( ?string $path ) {
+		$this->temp_watermark_path = $path;
 	}
 
 	public function set_queued( string $path, string $url, int $user_id ) {

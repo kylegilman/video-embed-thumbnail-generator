@@ -11,46 +11,61 @@ class Encode_Queue_Controller {
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
-	protected $queued;
-	protected $encoding_now;
+	protected $options;
 	protected $queue_log;
+	protected $db_table_name;
 
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->queue_log       = new Encode_Queue_Log();
 		$this->options_manager = $options_manager;
+		$this->options         = $this->options_manager->get_options();
+		$this->queue_log       = new Encode_Queue_Log( $this->options_manager ); // Pass options_manager
+		global $wpdb;
+		$this->db_table_name = $wpdb->prefix . 'videopack_encoding_queue';
 		$this->add_table();
-		$this->set_queued();
-		$this->set_encoding_now();
-		$this->check_encoding();
 	}
 
 	private function add_table() {
 
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
-		$table_name      = $wpdb->prefix . 'videopack_encoding_queue';
 
-		$sql = "CREATE TABLE $table_name (
+		$sql = "CREATE TABLE $this->db_table_name (
 			id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-			attachment_id BIGINT UNSIGNED NOT NULL,
-			url VARCHAR(255) NOT NULL,
-			status ENUM('queued', 'processing', 'completed', 'failed') NOT NULL,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			started_at DATETIME,
-			completed_at DATETIME,
-			failed_at DATETIME,
-			error_message TEXT,
-			version BIGINT UNSIGNED DEFAULT 0
+			attachment_id BIGINT UNSIGNED NULL,
+			input_url VARCHAR(1024) NOT NULL,
+			format_id VARCHAR(100) NOT NULL,
+			status ENUM('queued', 'processing', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled') NOT NULL DEFAULT 'queued',
+			output_path VARCHAR(1024) NULL,
+			output_url VARCHAR(1024) NULL,
+			user_id BIGINT UNSIGNED NULL,
+			pid INT NULL,
+			logfile_path VARCHAR(1024) NULL,
+			action_id BIGINT UNSIGNED NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			started_at DATETIME NULL,
+			completed_at DATETIME NULL,
+			failed_at DATETIME NULL,
+			error_message TEXT NULL,
+			temp_watermark_path VARCHAR(1024) NULL,
+			retry_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
+			encode_options_hash VARCHAR(32) NULL,
+			INDEX idx_attachment_id (attachment_id),
+			INDEX idx_input_url (input_url(191)),
+			INDEX idx_format_id (format_id),
+			INDEX idx_status (status),
+			INDEX idx_action_id (action_id)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-		maybe_create_table( $table_name, $sql );
+		dbDelta( $sql ); // Use dbDelta for modifications and creation
 	}
 
 	public function start_queue() {
 		$this->options['queue_control'] = 'play';
 		$this->options_manager->save_options( $this->options );
-		$this->start_next_job();
+		// Optionally, trigger a one-off action to process any 'queued' items.
+		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
 	}
 
 	public function pause_queue() {
@@ -60,121 +75,322 @@ class Encode_Queue_Controller {
 
 	/**
 	 * Schedule the encoding job.
+	 * Add jobs to the custom DB table video_encoding_queue
+	 * and scheduling an ActionScheduler task to handle each job.
 	 *
-	 * @param array $formats The formats to encode.
+	 * @param array $args {
+	 *     Required. An array of arguments.
+	 *     @type int|string $id      Attachment ID or unique identifier for external URLs.
+	 *     @type string     $url     Input URL of the video.
+	 *     @type array      $formats Array of format_id strings to encode.
+	 * }
+	 * @return array Log of actions taken.
 	 */
-	public function schedule_job( array $args ) {
-
+	public function enqueue_encodes( array $args ) {
 		$required = array(
 			'id',
 			'url',
 			'formats',
 		);
 
-		if ( $this->required_keys( $args, $required ) ) {
-
-			$args      = kgvid_sanitize_text_field( $args );
-			$action_id = as_enqueue_async_action(
-				array( __CLASS__, 'add_to_queue' ),
-				$args,
-				'videopack',
-			);
-
+		if ( ! $this->required_keys( $args, $required ) || ! is_array( $args['formats'] ) ) {
+			$this->queue_log->add_to_log( 'error_invalid_args' );
+			return $this->queue_log->get_log();
 		}
 
-		// Store the scheduled action's ID in your custom option
-		//$this->store_action_id( $action_id );
-	}
+		$attachment_identifier = sanitize_text_field( $args['id'] );
+		$input_url             = esc_url_raw( $args['url'] );
+		$user_id               = get_current_user_id();
 
-	protected function store_action_id( int $action_id ) {
-		// Get the existing scheduled action IDs from the wp_options table
-		$queued_action_ids = get_option( 'videopack_encode_queue', array() );
+		// Instantiate Encode_Attachment once for pre-flight checks if needed,
+		// or move pre-flight check logic here.
+		// For simplicity, let's assume pre-flight checks are done before calling this,
+		// or we can add them. The old `try_to_queue` logic from Encode_Attachment
+		// would be a good reference.
 
-		// Add the new action ID to the array
-		$queued_action_ids[] = $action_id;
+		global $wpdb;
 
-		// Update the wp_options entry with the new array of action IDs
-		update_option( 'videopack_encode_queue', $queued_action_ids );
+		foreach ( $args['formats'] as $format_to_encode ) {
+			$format_id = sanitize_text_field( $format_to_encode );
+
+			// Instantiate Encode_Info to determine output path/URL
+			// This requires the Video_Format object for the given $format_id
+			$all_video_formats   = $this->options_manager->get_video_formats();
+			$video_format_config = $all_video_formats[ $format_id ] ?? null;
+
+			if ( ! $video_format_config ) {
+				$this->queue_log->add_to_log( 'error_invalid_format_key', $format_id );
+				continue;
+			}
+
+			$is_attachment   = is_numeric( $attachment_identifier ) && get_post_type( $attachment_identifier ) === 'attachment';
+			$encode_info_obj = new Encode_Info( $attachment_identifier, $input_url, $is_attachment, $video_format_config );
+
+			// Basic check: Does a file already exist at the target path?
+			// More robust checks (like in old try_to_queue) can be added here.
+			if ( $encode_info_obj->exists ) {
+				$this->queue_log->add_to_log( 'already_exists', $format_id );
+				continue;
+			}
+
+			$job_data = array(
+				'attachment_id' => $is_attachment ? (int) $attachment_identifier : null,
+				'input_url'     => $input_url,
+				'format_id'     => $format_id,
+				'status'        => 'queued',
+				'output_path'   => $encode_info_obj->path,
+				'output_url'    => $encode_info_obj->url,
+				'user_id'       => $user_id,
+				'created_at'    => current_time( 'mysql', true ),
+				'updated_at'    => current_time( 'mysql', true ),
+			);
+
+			$inserted = $wpdb->insert( $this->db_table_name, $job_data );
+
+			if ( $inserted ) {
+				$job_id    = $wpdb->insert_id;
+				$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+				if ( $action_id ) {
+					$wpdb->update(
+						$this->db_table_name,
+						array( 'action_id' => $action_id ),
+						array( 'id' => $job_id )
+					);
+					$this->queue_log->add_to_log( 'queued', $format_id );
+				} else {
+					// Failed to schedule action, maybe mark job as failed or retry DB insert.
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'status' => 'failed',
+							'error_message' => 'Failed to schedule ActionScheduler task.',
+						),
+						array( 'id' => $job_id )
+					);
+					$this->queue_log->add_to_log( 'error_scheduling', $format_id );
+				}
+			} else {
+				$this->queue_log->add_to_log( 'error_db_insert', $format_id );
+			}
+		}
+		return $this->queue_log->get_log();
 	}
 
 	protected function required_keys( array $args, array $required ) {
-		if ( is_array( $args ) ) {
-			foreach ( $required as $key ) {
-				if ( ! array_key_exists( $key, $args ) ) {
-					return false;
-				}
+		foreach ( $required as $key ) {
+			if ( ! array_key_exists( $key, $args ) ) {
+				return false;
 			}
 		}
 		return true;
 	}
 
-	protected function store_queued_post_id( int $id, string $url ) {
-		if ( ! in_array( $id, $this->queued ) ) {
-			$this->queued[] = array(
-				'id'  => $id,
-				'url' => $url,
+	/**
+	 * ActionScheduler callback to handle a specific encoding job.
+	 *
+	 * @param int $job_id The ID of the job from the custom DB table.
+	 */
+	public function handle_job_action( $job_id ) {
+		global $wpdb;
+		$job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE id = %d", $job_id ), ARRAY_A );
+
+		if ( ! $job ) {
+			// Log error: job not found
+			return;
+		}
+
+		// Re-fetch options in case they changed since constructor
+		$this->options = $this->options_manager->get_options();
+
+		$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
+
+		$encoder = new Encode_Attachment( $this->options_manager, $attachment_id_or_url, $job['input_url'] );
+
+		switch ( $job['status'] ) {
+			case 'queued':
+				if ( $this->options['queue_control'] !== 'play' ) {
+					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if paused
+					return;
+				}
+
+				$processing_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE status = %s", 'processing' ) );
+				if ( $processing_count >= (int) $this->options['simultaneous_encodes'] ) {
+					as_schedule_single_action( time() + 120, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if limit reached
+					return;
+				}
+
+				// Update job to 'processing'
+				$wpdb->update(
+					$this->db_table_name,
+					array(
+						'status' => 'processing',
+						'started_at' => current_time( 'mysql', true ),
+					),
+					array( 'id' => $job_id )
+				);
+
+				$encode_format_obj = new Encode_Format( $job['format_id'] );
+				$encode_format_obj->set_path( $job['output_path'] );
+				$encode_format_obj->set_url( $job['output_url'] );
+
+				$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID
+
+				if ( $started_format->get_pid() && $started_format->get_status() === 'encoding' ) {
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'pid'          => $started_format->get_pid(),
+							'logfile_path' => $started_format->get_logfile(),
+						),
+						array( 'id' => $job_id )
+					);
+					as_schedule_single_action( time() + 60, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+				} else {
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'status'        => 'failed',
+							'error_message' => 'Failed to start FFmpeg: ' . $started_format->get_error(),
+							'failed_at' => current_time( 'mysql', true ),
+						),
+						array( 'id' => $job_id )
+					);
+				}
+				break;
+
+			case 'processing':
+				// This part also requires Encode_Format to be aware of the DB job or be populated from it.
+				$encode_format_obj = new Encode_Format( $job['format_id'] );
+				$encode_format_obj->set_status( 'encoding' ); // Critical for get_progress()
+				$encode_format_obj->set_logfile( $job['logfile_path'] );
+				$encode_format_obj->set_pid( $job['pid'] );
+				$encode_format_obj->set_path( $job['output_path'] ); // Needed for cancel_encoding if it checks path
+
+				$progress_status = $encode_format_obj->get_progress(); // This calls set_progress() which updates status
+
+				if ( $encode_format_obj->get_status() === 'needs_insert' ) {
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'status' => 'needs_insert',
+							'completed_at' => current_time( 'mysql', true ),
+						),
+						array( 'id' => $job_id )
+					);
+					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Process insertion immediately
+				} elseif ( $encode_format_obj->get_status() === 'error' ) {
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'status' => 'failed',
+							'error_message' => $encode_format_obj->get_error(),
+							'failed_at' => current_time( 'mysql', true ),
+						),
+						array( 'id' => $job_id )
+					);
+				} elseif ( $progress_status === 'recheck' || $encode_format_obj->get_status() === 'encoding' ) {
+					// If logfile not found yet, or still encoding, recheck.
+					as_schedule_single_action( time() + 60, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+				}
+
+				// Cleanup temporary watermark if job is now in a terminal state
+				if ( ( $encode_format_obj->get_status() === 'needs_insert' || $encode_format_obj->get_status() === 'failed' )
+					&& ! empty( $job['temp_watermark_path'] )
+					&& file_exists( $job['temp_watermark_path'] )
+				) {
+					wp_delete_file( $job['temp_watermark_path'] );
+					// clear the path from DB:
+					$wpdb->update(
+						$this->db_table_name,
+						array( 'temp_watermark_path' => null ),
+						array( 'id' => $job_id )
+					);
+				}
+				break;
+
+			case 'needs_insert':
+			case 'pending_replacement': // Treat same as needs_insert for now, insert_attachment handles the logic
+				$encode_format_obj = new Encode_Format( $job['format_id'] );
+				$encode_format_obj->set_path( $job['output_path'] );
+				$encode_format_obj->set_url( $job['output_url'] );
+				$encode_format_obj->set_user_id( $job['user_id'] );
+				// insert_attachment needs the Video_Format config to check get_replaces_original()
+				// and to get other Encode_Format objects for the same attachment (this part is tricky with DB)
+
+				// For insert_attachment to work correctly with the 'pending_replacement' logic,
+				// it needs to query the DB for other jobs related to $job['attachment_id'] or $job['input_url'].
+				// This is a significant change from its current post_meta based approach.
+				// For now, we'll assume a simplified call.
+				$inserted = $encoder->insert_attachment( $encode_format_obj ); // This method needs heavy refactoring for DB.
+
+				if ( $inserted || $encode_format_obj->get_status() === 'complete' ) { // insert_attachment might set status to complete
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'status' => 'completed',
+							'completed_at' => current_time( 'mysql', true ),
+						),
+						array( 'id' => $job_id )
+					);
+				} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
+					$wpdb->update(
+						$this->db_table_name,
+						array( 'status' => 'pending_replacement' ),
+						array( 'id' => $job_id )
+					);
+					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Recheck later
+				} else {
+					$error_msg = $encode_format_obj->get_error() ? $encode_format_obj->get_error() : 'Insert attachment failed.';
+					$wpdb->update(
+						$this->db_table_name,
+						array(
+							'status' => 'failed',
+							'error_message' => $error_msg,
+							'failed_at' => current_time( 'mysql', true ),
+						),
+						array( 'id' => $job_id )
+					);
+				}
+				break;
+
+				// 'completed', 'failed', 'canceled' are terminal states, no action needed by default.
+		}
+
+		// After handling a job, try to process the next pending job from the queue.
+		as_schedule_single_action( time() + 10, 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+	}
+
+	/**
+	 * ActionScheduler callback to pick up the next 'queued' job.
+	 */
+	public function process_pending_jobs_action() {
+		global $wpdb;
+		if ( $this->options['queue_control'] !== 'play' ) {
+			return; // Queue is paused
+		}
+
+		$processing_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE status = %s", 'processing' ) );
+		if ( $processing_count >= (int) $this->options['simultaneous_encodes'] ) {
+			return; // Max concurrent jobs reached
+		}
+
+		$next_job = $wpdb->get_row(
+			$wpdb->prepare( "SELECT id FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE status = %s ORDER BY created_at ASC LIMIT 1", 'queued' ),
+			ARRAY_A
+		);
+
+		if ( $next_job && isset( $next_job['id'] ) ) {
+			// Schedule to handle this specific job.
+			// Check if an action for this job_id with status 'queued' is already scheduled to avoid duplicates.
+			$existing_actions = as_get_scheduled_actions(
+				array(
+					'hook'   => 'videopack_handle_job',
+					'args'   => array( 'job_id' => $next_job['id'] ),
+					'status' => \ActionScheduler_Store::STATUS_PENDING,
+				)
 			);
-			$this->save_queue();
-		}
-	}
-
-	public function check_encoding() {
-		$encoding_formats = array();
-		$encoding         = $this->get_encoding_now();
-		if ( $encoding ) {
-			foreach ( $encoding as $key => $args ) {
-				$encoder = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
-				$formats = $encoder->get_formats();
-				if ( $formats ) {
-					foreach ( $formats as $format ) {
-						switch ( $format->get_status() ) {
-							case 'encoding':
-								$encoding_formats[ $key ] = $format;
-								break;
-							case 'needs_insert':
-								$encoder->insert_attachment( $format );
-								break;
-						}
-					}
-					if ( ! array_key_exists( $key, $encoding_formats ) ) {
-						unset( $this->encoding_now[ $key ] );
-						$this->save_encoding_now();
-					}
-				}
-			}
-		}
-		$this->start_next_job();
-		return $encoding_formats;
-	}
-
-	public function add_to_queue( array $args ) {
-		$encoder = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
-		foreach ( $args['formats'] as $format ) {
-			$action = $encoder->try_to_queue( $format );
-			if ( $action === 'queued' ) {
-				$this->store_queued_post_id( $args['id'], $args['url'] );
-			}
-			$this->queue_log->add_to_log( $action, $format );
-		}
-		return $this->queue_log->get_log();
-	}
-
-	protected function start_next_job() {
-		if ( count( $this->encoding_now ) < $this->options_manager->simultaneous_encodes
-			&& $this->options_manager->queue_control === 'play'
-		) {
-			$queue = $this->get_full_queue();
-			if ( $queue ) {
-				foreach ( $queue as $key => $args ) {
-					$encoder = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
-					$next    = $encoder->start_next_format();
-					if ( $next ) {
-						$this->encoding_now[] = $this->queued[ $key ];
-						$this->save_encoding_now();
-						unset( $this->queued[ $key ] );
-						$this->save_queue();
-					}
-				}
+			if ( empty( $existing_actions ) ) {
+				as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $next_job['id'] ), 'videopack_encode_jobs' );
 			}
 		}
 	}
@@ -194,164 +410,36 @@ class Encode_Queue_Controller {
 	}
 
 	public function get_full_queue() {
-		$encoding = $this->get_encoding_now();
-		$queued   = $this->get_queued();
-		return array_merge( $encoding, $queued );
+		global $wpdb;
+		// Returns all non-completed/failed/canceled jobs
+		$results = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE status NOT IN (%s, %s, %s) ORDER BY created_at ASC", 'completed', 'failed', 'canceled' ),
+			ARRAY_A
+		);
+		return ! empty( $results ) ? $results : array();
 	}
 
 	public function get_full_queue_array() {
-		$queue_array = array();
-		$full_queue  = $this->get_full_queue();
-		if ( ! empty( $full_queue ) ) {
-			foreach ( $full_queue as $key => $args ) {
-				$encoder       = new Encode_Attachment( $this->options_manager, $args['id'], $args['url'] );
-				$queue_array[] = array(
-					'id'      => $args['id'],
-					'url'     => $args['url'],
-					'formats' => $encoder->get_formats_array(),
-				);
-			}
-		}
-		return $queue_array;
+		// This method's purpose might change. It used to return Encode_Format arrays.
+		// Now it should probably return the raw DB rows or a simplified version.
+		return $this->get_full_queue();
 	}
 
 	public function get_encoding_now() {
-		$this->set_encoding_now();
-		return $this->encoding_now;
+		global $wpdb;
+		$results = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE status = %s ORDER BY started_at ASC", 'processing' ),
+			ARRAY_A
+		);
+		return ! empty( $results ) ? $results : array();
 	}
 
 	public function get_queued() {
-		$this->set_queued();
-		return $this->queued;
-	}
-
-	public function kgvid_replace_video( $video_key, $format ) {
-
-		$options            = kgvid_get_options();
-		$video_encode_queue = kgvid_get_encode_queue();
-		$video_formats      = kgvid_video_formats();
-		$encoded_filename   = $video_encode_queue[ $video_key ]['encode_formats'][ $format ]['filepath'];
-		$video_id           = $video_encode_queue[ $video_key ]['attachmentID'];
-		$replace            = true;
-
-		if ( ! empty( $video_encode_queue )
-			&& is_array( $video_encode_queue )
-		) {
-			foreach ( $video_encode_queue[ $video_key ]['encode_formats'] as $encoding_format => $value ) { // make sure there isn't another encoding process using this original video
-				if ( $value['status'] == 'encoding'
-					|| $value['status'] == 'queued'
-				) {
-					$replace = false;
-				}
-			}//end loop
-		}
-
-		if ( $replace == false ) {
-			wp_schedule_single_event( time() + 60, 'kgvid_cron_replace_video_check', array( $video_key, $format ) );
-			return $video_encode_queue[ $video_key ]['movieurl'];
-		} else {
-
-			$original_filename = get_attached_file( $video_id );
-			$path_parts        = pathinfo( $original_filename );
-
-			if ( $path_parts['extension'] !== $video_formats[ $format ]['extension'] ) {
-				$new_filename                                 = str_replace( '-fullres', '', $encoded_filename );
-				$sanitized_url                                = kgvid_sanitize_url( $video_encode_queue[ $video_key ]['movieurl'] );
-				$new_url                                      = $sanitized_url['noextension'] . '.' . $video_formats[ $format ]['extension'];
-				$video_encode_queue[ $video_key ]['movieurl'] = $new_url;
-
-				global $wpdb;
-				// find posts that use the old filename
-				$results = $wpdb->get_results(
-					$wpdb->prepare(
-						"SELECT ID
-						FROM $wpdb->posts
-						WHERE `post_content` LIKE %s",
-						'%' . $sanitized_url['basename'] . '.' . $path_parts['extension'] . '%'
-					)
-				);
-				if ( $results ) {
-					foreach ( $results as $result ) {
-						$post               = get_post( $result->ID );
-						$post->post_content = str_replace( $sanitized_url['noextension'] . '.' . $path_parts['extension'], $new_url, $post->post_content );
-						wp_update_post( $post );
-					}
-				}
-			} else {
-				if ( strpos( $original_filename, 'http' ) !== false ) {
-					$original_filename = str_replace( '-fullres', '', $encoded_filename );
-				}
-				$new_filename = $original_filename;
-				$new_url      = $video_encode_queue[ $video_key ]['movieurl'];
-			}
-
-			if ( file_exists( $encoded_filename ) ) {
-				if ( kgvid_can_write_direct( dirname( $new_filename ) ) ) {
-					global $wp_filesystem;
-					$wp_filesystem->move( $encoded_filename, $new_filename, true );
-				}
-				if ( get_post_mime_type( $video_id ) === 'image/gif' ) {
-					$was_gif      = true;
-					$gif_metadata = wp_get_attachment_metadata( $video_id );
-					if ( array_key_exists( 'sizes', $gif_metadata ) ) {
-						$uploads = wp_upload_dir();
-						foreach ( $gif_metadata['sizes'] as $size => $info ) {
-							$size_filename = $uploads['path'] . '/' . $info['file'];
-							if ( file_exists( $size_filename ) ) {
-								wp_delete_file( $size_filename );
-							}
-						}
-					}
-				}
-			}
-			$video_encode_queue[ $video_key ]['encode_formats'][ $format ]['url'] = $new_url;
-
-			kgvid_save_encode_queue( $video_encode_queue );
-
-			// you must first include the image.php file
-			// for the function wp_generate_attachment_metadata() to work and media.php for wp_read_video_metadata() in WP 3.6+
-			require_once ABSPATH . 'wp-admin/includes/image.php';
-			require_once ABSPATH . 'wp-admin/includes/media.php';
-			$attach_data = wp_generate_attachment_metadata( $video_id, $new_filename );
-			wp_update_attachment_metadata( $video_id, $attach_data );
-			update_attached_file( $video_id, $new_filename );
-
-			$new_mime    = wp_check_filetype( $new_filename );
-			$post_update = array(
-				'ID'             => $video_id,
-				'post_mime_type' => $new_mime['type'],
-			);
-			wp_update_post( $post_update );
-
-			$kgvid_postmeta                      = kgvid_get_attachment_meta( $video_id );
-			$kgvid_postmeta['original_replaced'] = $options['replace_format'];
-			kgvid_save_attachment_meta( $video_id, $kgvid_postmeta );
-
-			if ( $options['auto_thumb'] === true
-				&& isset( $was_gif )
-			) {
-				kgvid_cron_new_attachment_handler( $video_id, 'thumbs' );
-			}
-
-			return $new_url;
-
-		}//end replace true
-	}
-	add_action( 'kgvid_cron_replace_video_check', 'kgvid_replace_video', 10, 2 );
-
-	protected function set_queued() {
-		$this->queued = get_option( 'videopack_encode_queue', array() );
-	}
-
-	protected function set_encoding_now() {
-		$this->encoding_now = get_option( 'videopack_encoding_now', array() );
-	}
-
-	protected function save_queue() {
-		return update_option( 'videopack_encode_queue', $this->queued );
-	}
-
-	protected function save_encoding_now() {
-		return update_option( 'videopack_encoding_now', $this->encoding_now );
+		global $wpdb;
+		$results = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM $wpdb->prefix . 'videopack_encoding_queue' WHERE status = %s ORDER BY created_at ASC", 'queued' ),
+			ARRAY_A
+		);
+		return ! empty( $results ) ? $results : array();
 	}
 }

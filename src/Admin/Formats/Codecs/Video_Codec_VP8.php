@@ -12,6 +12,7 @@ class Video_Codec_VP8 extends Video_Codec {
 			'mime'           => 'video/webm',
 			'codecs_att'     => 'vp8',
 			'vcodec'         => 'libvpx',
+			'acodec'         => 'libvorbis',
 			'rate_control'   => array(
 				'crf' => array(
 					'min'     => 4,
