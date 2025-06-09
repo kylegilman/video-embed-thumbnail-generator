@@ -10,91 +10,91 @@ class Attachment_Meta {
 	 */
 	protected $options_manager;
 	protected $options;
+	protected $meta_data = array();
 	protected $post_id;
-
-	public $embed;
-	public $width;
-	public $height;
-	public $actualwidth;
-	public $actualheight;
-	public $downloadlink;
-	public $track;
-	public $starts = 0;
-	public $play_25 = 0;
-	public $play_50 = 0;
-	public $play_75 = 0;
-	public $completeviews = 0;
-	public $pickedformat;
-	public $encode;
-	public $rotate;
-	public $autothumb_error;
-	public $numberofthumbs;
-	public $randomize;
-	public $forcefirst;
-	public $featured;
-	public $thumbtime;
-	public $lockaspect = true;
-	public $showtitle;
-	public $gallery_columns;
-	public $gallery_exclude;
-	public $gallery_include;
-	public $gallery_orderby;
-	public $gallery_order;
-	public $gallery_id;
-	public $duration;
-	public $aspect;
-	public $original_replaced;
-	public $featuredchanged = false;
-	public $url;
-	public $poster;
-	public $maxwidth;
-	public $maxheight;
-	public $animated = 'notchecked';
-	public $frame_rate;
-	public $codec;
-	public $worked = false;
 
 	public function __construct( Options $options_manager, $post_id = false ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->post_id         = $post_id;
-		$this->downloadlink    = $this->options['downloadlink'];
-		$this->encode          = $this->options['encode'];
-		$this->numberofthumbs  = $this->options['generate_thumbs'];
-		$this->featured        = $this->options['featured'];
-		$this->gallery_columns = $this->options['gallery_columns'];
-		$this->get();
+		$this->meta_data       = $this->get();
+	}
+
+	protected function get_defaults() {
+		// Default values for all meta fields
+		// Many will come from the global plugin options
+		return array(
+			'embed'             => $this->options['default_insert'] ?? 'Single Video',
+			'width'             => $this->options['width'] ?? null,
+			'height'            => $this->options['height'] ?? null,
+			'actualwidth'       => null,
+			'actualheight'      => null,
+			'downloadlink'      => $this->options['downloadlink'] ?? false,
+			'track'             => array(),
+			'starts'            => 0,
+			'play_25'           => 0,
+			'play_50'           => 0,
+			'play_75'           => 0,
+			'completeviews'     => 0,
+			'pickedformat'      => null,
+			'encode'            => $this->options['encode'] ?? array(),
+			'rotate'            => null,
+			'autothumb_error'   => null,
+			'numberofthumbs'    => $this->options['generate_thumbs'] ?? 4,
+			'randomize'         => false,
+			'forcefirst'        => false,
+			'featured'          => $this->options['featured'] ?? true,
+			'thumbtime'         => null,
+			'lockaspect'        => true,
+			'showtitle'         => true,
+			'gallery_columns'   => $this->options['gallery_columns'] ?? 4,
+			'gallery_exclude'   => null,
+			'gallery_include'   => null,
+			'gallery_orderby'   => 'menu_order ID',
+			'gallery_order'     => 'ASC',
+			'gallery_id'        => null,
+			'duration'          => null,
+			'aspect'            => null,
+			'original_replaced' => null,
+			'featuredchanged'   => false,
+			'url'               => null,
+			'poster'            => null,
+			'maxwidth'          => null,
+			'maxheight'         => null,
+			'animated'          => 'notchecked',
+			'frame_rate'        => null,
+			'codec'             => null,
+			'worked'            => false,
+		);
 	}
 
 	public function get() {
+		$current_meta = get_post_meta( $this->post_id, '_kgvid-meta', true );
+		if ( ! is_array( $current_meta ) ) {
+			$current_meta = array();
+		}
 
-		$kgvid_postmeta = get_post_meta( $this->post_id, '_kgvid-meta', true );
-		$meta_key_array = $this->get_defaults();
+		$defaults = $this->get_defaults();
 
-		if ( empty( $kgvid_postmeta ) ) {
-
-			$kgvid_postmeta = array();
+		if ( empty( $current_meta ) ) {
+			// Attempt to migrate old meta if _kgvid-meta is empty
+			$migrated_meta = array();
+			$embed_old     = get_post_meta( $this->post_id, '_kgflashmediaplayer-embed', true );
 
 			$embed = get_post_meta( $this->post_id, '_kgflashmediaplayer-embed', true ); // this was always saved if you modified the attachment.
 
-			if ( ! empty( $embed ) ) { // old meta values exist
-
-				foreach ( $meta_key_array as $key => $value ) { // read old meta keys and delete them
-					$kgvid_postmeta[ $key ] = get_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key, true );
-					if ( $kgvid_postmeta[ $key ] === 'checked' ) {
-						$kgvid_postmeta[ $key ] = true;
+			if ( ! empty( $embed_old ) ) { // old meta values exist
+				foreach ( $defaults as $key => $default_value ) {
+					$old_meta_value = get_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key, true );
+					if ( $old_meta_value !== false && $old_meta_value !== null ) { // Check if meta existed
+						if ( $old_meta_value === 'checked' ) {
+							$migrated_meta[ $key ] = true;
+						} else {
+							$migrated_meta[ $key ] = $old_meta_value;
+						}
 					}
 					delete_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key );
 				}
-
-				foreach ( $kgvid_postmeta as $key => $value ) {
-					if ( $value === null ) {
-						unset( $kgvid_postmeta[ $key ] ); // remove empty elements
-					}
-				}
-
-				$this->save( $this->post_id, $kgvid_postmeta );
-
 			}
 
 			$old_meta_encode_keys = array(
@@ -110,55 +110,66 @@ class Attachment_Meta {
 
 			$old_meta_exists = false;
 
-			foreach ( $old_meta_encode_keys as $old_key ) {
-				if ( array_key_exists( $old_key, $kgvid_postmeta ) ) {
-					$format                              = str_replace( 'encode', '', $old_key );
-					$kgvid_postmeta['encode'][ $format ] = $kgvid_postmeta[ $old_key ];
-					unset( $kgvid_postmeta[ $old_key ] );
-					$old_meta_exists = true;
+			// Handle old encode keys if they were part of the migrated_meta
+			if ( ! empty( $migrated_meta ) ) {
+				$migrated_meta['encode'] = $migrated_meta['encode'] ?? array(); // Ensure 'encode' key exists
+				foreach ( $old_meta_encode_keys as $old_key ) {
+					if ( array_key_exists( $old_key, $migrated_meta ) ) {
+						$format                             = str_replace( 'encode', '', $old_key );
+						$migrated_meta['encode'][ $format ] = $migrated_meta[ $old_key ];
+						unset( $migrated_meta[ $old_key ] );
+						$old_meta_exists = true;
+					}
 				}
 			}
-
-			if ( $old_meta_exists ) {
-				$this->save( $this->post_id, $kgvid_postmeta );
-			}
+			$current_meta = $migrated_meta; // Use migrated meta as the base if old meta existed
 		}
 
-		$kgvid_postmeta = array_merge( $meta_key_array, $kgvid_postmeta ); // make sure all keys are set
+		// Merge database meta with defaults to ensure all keys are present
+		$meta_data = array_merge( $defaults, $current_meta );
 
 		$get_from_wp_meta = array(
 			'actualwidth'  => 'width',
 			'actualheight' => 'height',
 			'duration'     => 'length',
+			'codec'        => 'videocodec', //  'videocodec' from wp_read_video_metadata
+			'frame_rate'   => 'frame_rate',
 		);
 
 		$video_meta = wp_get_attachment_metadata( $this->post_id );
 		$changed    = false;
 
 		foreach ( $get_from_wp_meta as $kgvid_key => $wp_key ) {
-			if ( ! $kgvid_postmeta[ $kgvid_key ] && isset( $video_meta[ $wp_key ] ) ) {
-				$kgvid_postmeta[ $kgvid_key ] = $video_meta[ $wp_key ];
-				$changed                      = true;
+			if ( empty( $meta_data[ $kgvid_key ] ) && ! empty( $video_meta[ $wp_key ] ) ) {
+				$meta_data[ $kgvid_key ] = $video_meta[ $wp_key ];
+				$changed                 = true;
 			}
 		}
 
-		if ( ! $kgvid_postmeta['codec'] || ! $kgvid_postmeta['frame_rate'] ) {
+		// Fallback to wp_read_video_metadata if still missing codec or frame_rate
+		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) ) {
 			$video_path = get_attached_file( $this->post_id );
-			$video_info = wp_read_video_metadata( $video_path );
-
-			if ( ! $kgvid_postmeta['codec'] && isset( $video_info['codec'] ) ) {
-				$kgvid_postmeta['codec'] = $video_info['codec'];
-				$changed                 = true;
-			}
-
-			if ( ! $kgvid_postmeta['frame_rate'] && isset( $video_info['frame_rate'] ) ) {
-				$kgvid_postmeta['frame_rate'] = $video_info['frame_rate'];
-				$changed                      = true;
+			if ( $video_path ) {
+				$video_info = wp_read_video_metadata( $video_path );
+				if ( $video_info ) {
+					if ( empty( $meta_data['codec'] ) && ! empty( $video_info['codec'] ) ) {
+						$meta_data['codec'] = $video_info['codec'];
+						$changed            = true;
+					}
+					if ( empty( $meta_data['codec'] ) && ! empty( $video_info['videocodec'] ) ) { // common key from wp_read_video_metadata
+						$meta_data['codec'] = $video_info['videocodec'];
+						$changed            = true;
+					}
+					if ( empty( $meta_data['frame_rate'] ) && ! empty( $video_info['frame_rate'] ) ) {
+						$meta_data['frame_rate'] = $video_info['frame_rate'];
+						$changed                 = true;
+					}
+				}
 			}
 		}
 
 		if ( $changed ) {
-			$this->save( $this->post_id, $kgvid_postmeta );
+			$this->save( $meta_data );
 		}
 
 		/**
@@ -166,36 +177,34 @@ class Attachment_Meta {
 		 * @param array $kgvid_postmeta The custom Videopack attachment meta array.
 		 * @param int   $post_id        The attachment ID.
 		 */
-		return apply_filters( 'videopack_attachment_meta', $kgvid_postmeta, $this->post_id );
+		$this->meta_data = $meta_data; // Update instance property
+		return apply_filters( 'videopack_attachment_meta', $this->meta_data, $this->post_id );
 	}
 
-	public function save() {
+	public function save( array $meta_to_save ) {
+		if ( ! $this->post_id ) {
+			return;
+		}
 
-		if ( is_array( $kgvid_postmeta ) ) {
+		$defaults        = $this->get_defaults();
+		$meta_to_persist = array();
 
-			$kgvid_old_postmeta = $this->get( $this->post_id );
-			$kgvid_postmeta     = array_merge( $kgvid_old_postmeta, $kgvid_postmeta ); // make sure all keys are saved
-
-			foreach ( $kgvid_postmeta as $key => $meta ) { // don't save if it's the same as the default values or empty
-
-				if ( ( array_key_exists( $key, $this->options )
-						&& $meta === $this->options[ $key ]
-					)
-					|| ( ! is_array( $meta )
-						&& ! is_bool( $meta )
-						&& strlen( $meta ) === 0
-						&& (
-							( array_key_exists( $key, $this->options )
-								&& strlen( $this->options[ $key ] ) === 0
-							)
-							|| ! array_key_exists( $key, $this->options )
-						)
-					)
-				) {
-					unset( $kgvid_postmeta[ $key ] );
-				}
+		foreach ( $meta_to_save as $key => $value ) {
+			// Only save if the key is not in defaults (custom meta) or if the value differs from the default.
+			// Also, ensure empty arrays that are default as empty arrays are not saved unless they become non-empty.
+			if (
+				! array_key_exists( $key, $defaults )
+				|| ( $value !== $defaults[ $key ] )
+				|| ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ $key ] ) )
+			) {
+				$meta_to_persist[ $key ] = $value;
 			}
-			update_post_meta( $this->post_id, '_kgvid-meta', $kgvid_postmeta );
+		}
+
+		if ( empty( $meta_to_persist ) ) {
+			delete_post_meta( $this->post_id, '_kgvid-meta' );
+		} else {
+			update_post_meta( $this->post_id, '_kgvid-meta', $meta_to_persist );
 		}
 	}
 
@@ -300,13 +309,8 @@ class Attachment_Meta {
 
 	public function schema() {
 
-		$schema = array(
-			'actualheight'        => array(
-				'type' => array(
-					'string',
-					'number',
-				),
-			),
+		// Master list of all possible schema definitions
+		$full_schema_definitions = array(
 			'actualwidth'         => array(
 				'type' => array(
 					'string',
@@ -562,6 +566,14 @@ class Attachment_Meta {
 			),
 		);
 
-		return apply_filters( 'videopack_post_meta_schema', $schema );
+		// Get the authoritative list of keys from get_defaults()
+		$default_keys = array_keys( $this->get_defaults() );
+
+		// Filter the full schema definitions to include only those keys present in defaults
+		$final_schema = array_intersect_key( $full_schema_definitions, array_flip( $default_keys ) );
+
+		// Ensure all default keys have at least a basic schema if not defined in full_schema_definitions
+
+		return apply_filters( 'videopack_post_meta_schema', $final_schema );
 	}
 }
