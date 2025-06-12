@@ -121,6 +121,14 @@ class Videopack {
 	}
 
 	/**
+	 * Callback for the 'videopack_get_options_manager' filter.
+	 * Returns the initialized Options manager instance.
+	 */
+	public function get_options_manager_instance( $value = null ) {
+		return $this->options_manager;
+	}
+
+	/**
 	 * Register all of the hooks related to the admin area functionality
 	 * of the plugin.
 	 *
@@ -130,6 +138,7 @@ class Videopack {
 	private function define_admin_hooks() {
 
 		$this->loader->add_action( 'init', $this->options_manager, 'load_options' );
+		$this->loader->add_filter( 'videopack_get_options_manager', $this, 'get_options_manager_instance', 10, 1 );
 		$this->loader->add_action( 'admin_init', $this->options_manager, 'register_videopack_options' );
 		$this->loader->add_action( 'rest_api_init', $this->options_manager, 'register_videopack_options' );
 
