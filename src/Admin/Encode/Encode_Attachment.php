@@ -185,7 +185,7 @@ class Encode_Attachment {
 	public function get_encode_format( string $format ) {
 		$encode_formats = $this->get_formats();
 		if ( $encode_formats ) {
-			foreach ( $encode_formats as $encode_format_obj ) { // Renamed for clarity
+			foreach ( $encode_formats as $encode_format_obj ) {
 				if ( $encode_format_obj->get_format_id() === $format ) {
 					return $encode_format_obj;
 				}
@@ -374,7 +374,7 @@ class Encode_Attachment {
 		// Ensure Video_Format config exists for the format_id
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 		if ( ! $video_format_config ) {
-			// translators: %s is the video format id.
+			// translators: %s is the video format id (ex. 'mp4_720p').
 			$encode_format->set_error( sprintf( __( 'Video format configuration not found for %s in set_encode_array.', 'video-embed-thumbnail-generator' ), $format_id ) );
 			return array(); // Return empty array, error is set on object
 		}
@@ -625,8 +625,6 @@ class Encode_Attachment {
 	 * @return string Status string: 'ok_to_queue', 'already_exists', 'lowres', 'vcodec_unavailable', 'error_invalid_format_key'.
 	 */
 	public function check_if_can_queue( string $format_id ) {
-		// This method no longer calls already_queued (which checks post_meta)
-		// The DB check for an existing job for this format/input will be done by Encode_Queue_Controller.
 
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 		if ( ! $video_format_config ) {
@@ -646,20 +644,21 @@ class Encode_Attachment {
 			if ( ! $video_format_config->get_replaces_original() && is_numeric( $target_height ) && $video_metadata->actualheight <= $target_height ) {
 				return 'lowres';
 			}
-		} elseif ( ! $video_metadata || ! $video_metadata->worked ) {
-			// Cannot get video metadata, might be an issue with the source.
-			// Depending on strictness, could return an error or allow queueing.
-			// For now, let it pass, FFmpeg will fail later if source is bad.
 		}
 
-		$codecs = $this->get_codecs();
-		$vcodec = $video_format_config->get_codec()->get_vcodec();
+		$codecs    = $this->get_codecs();
+		$codec_obj = $video_format_config->get_codec();
+		$vcodec    = $codec_obj->get_vcodec();
 		// Check if the required video codec for this format is available in FFmpeg.
 		if ( ! $codecs || ! isset( $codecs[ $vcodec ] ) || ! $codecs[ $vcodec ] ) {
 			return 'vcodec_unavailable';
 		}
 
-		// Add more checks if needed (e.g., audio codec availability)
+		$acodec = $codec_obj->get_acodec();
+		// Check if the required audio codec for this format is available in FFmpeg.
+		if ( ! $codecs || ! isset( $codecs[ $acodec ] ) || ! $codecs[ $acodec ] ) {
+			return 'acodec_unavailable';
+		}
 
 		return 'ok_to_queue';
 	}
@@ -668,10 +667,6 @@ class Encode_Attachment {
 		if ( $this->encode_formats ) {
 			foreach ( $this->encode_formats as $encode_format_obj ) {
 				if ( $encode_format_obj->get_format_id() === $format_id ) {
-					// Optionally, also check status if "already queued" means not 'failed' or 'canceled'
-					// if (!in_array($encode_format_obj->get_status(), ['failed', 'canceled', 'completed'])) {
-					//    return $encode_format_obj;
-					// }
 					return $encode_format_obj; // Returns the Encode_Format object if found
 				}
 			}
@@ -680,57 +675,101 @@ class Encode_Attachment {
 	}
 
 	protected function set_available_formats() {
-		$available_formats = array();
-		$post_mime_type    = '';
+		$all_defined_formats = $this->video_formats; // All possible formats from Options
+		$available_formats   = array();
+
+		// Get source properties once
+		$post_mime_type          = '';
+		$source_video_codec_name = '';
+		$video_metadata          = $this->get_video_metadata();
 
 		if ( $this->is_attachment && is_numeric( $this->id ) ) {
 			$post_mime_type = get_post_mime_type( $this->id );
 		} elseif ( ! empty( $this->url ) ) {
 			// For external URLs, try to get mime type from URL headers if necessary,
-			// or assume it's a video type that can be processed.
-			// The existing Attachment_Meta->url_mime_type could be used here if robust.
-			// For simplicity, if not an attachment, we might not filter by mime type initially.
-			// $attachment_meta_util = new \Videopack\Admin\Attachment_Meta( $this->options_manager, false );
-			// $check_mime_type      = $attachment_meta_util->url_mime_type( $this->url, $this->id );
-			// $post_mime_type       = $check_mime_type['type'] ?? '';
+			$attachment_meta_util = new \Videopack\Admin\Attachment_Meta( $this->options_manager, false );
+			$check_mime_type      = $attachment_meta_util->url_mime_type( $this->url, false );
+			$post_mime_type       = $check_mime_type['type'] ?? '';
 		}
 
-		foreach ( $this->video_formats as $format_key => $video_format_obj ) { // $video_format_obj is Video_Format
-			// Skip if source mime type matches the format's container type (e.g. don't offer to encode MP4 to MP4 of same res)
-			// This needs more nuanced logic, e.g. mp4 to mp4_different_profile is valid.
-			// For now, a simple check:
-			// if ( $post_mime_type && $video_format_obj->get_codec() && strpos( $post_mime_type, $video_format_obj->get_codec()->get_container() ) !== false ) {
-				// continue;
-			// }
+		if ( $video_metadata && $video_metadata->worked ) {
+			$source_video_codec_name = $video_metadata->codec;
+		}
 
-			// Logic from old code to hide formats based on options
-			if ( strpos( $format_key, 'custom_' ) !== 0 // Assuming custom formats are handled differently or always shown
-				&& (
-					( ! empty( $this->options['hide_video_formats'] )
-						&& is_array( $this->options['encode'] )
-						&& array_key_exists( $format_key, $this->options['encode'] )
-					)
-					|| empty( $this->options['hide_video_formats'] )
-				)
+		$normalized_source_codec = '';
+		if ( ! empty( $source_video_codec_name ) ) {
+			$normalized_source_codec = strtolower( trim( $source_video_codec_name ) );
+			// Normalize common variations from FFmpeg output to match Video_Codec IDs
+			if ( 'hevc' === $normalized_source_codec ) {
+				$normalized_source_codec = 'h265';
+			} elseif ( 'theora' === $normalized_source_codec ) {
+				$normalized_source_codec = 'ogv';
+			}
+			// Add other normalizations if necessary
+		}
+
+		foreach ( $all_defined_formats as $format_key => $video_format_obj ) {
+			$target_codec_obj = $video_format_obj->get_codec();
+			if ( ! $target_codec_obj ) { // Should not happen if formats are well-defined
+				continue;
+			}
+			$target_mime_type = $target_codec_obj->get_mime_type();
+			$target_codec_id  = $target_codec_obj->get_id();
+
+			$target_resolution_obj = $video_format_obj->get_resolution();
+			if ( ! $target_resolution_obj ) { // Should not happen
+				continue;
+			}
+			$target_resolution_id = $target_resolution_obj->get_id();
+
+			// 1. Skip if source is already this exact format (mime and codec)
+			if ( ! empty( $post_mime_type ) &&
+				! empty( $normalized_source_codec ) &&
+				$post_mime_type === $target_mime_type &&
+				$normalized_source_codec === $target_codec_id
 			) {
-				$available_formats[ $format_key ] = $video_format_obj;
+				continue;
 			}
 
-			// Logic to remove format if source is already smaller or equal in height
-			$video_metadata = $this->get_video_metadata(); // Ensure metadata is loaded
-			if ( $video_metadata && $video_metadata->worked && $video_format_obj->get_resolution() ) {
-				$target_height = $video_format_obj->get_resolution()->get_height();
-				if ( is_numeric( $target_height ) && $video_metadata->actualheight <= $target_height && ! $video_format_obj->get_replaces_original() ) {
-					unset( $available_formats[ $format_key ] );
+			// 2. Check based on 'hide_video_formats' option and explicit enablement in settings
+			$is_potentially_available = false;
+			if ( strpos( $format_key, 'custom_' ) === 0 ) { // Custom formats are always potentially available if defined.
+				$is_potentially_available = true;
+			} elseif ( empty( $this->options['hide_video_formats'] ) ) { // If not hiding, all non-custom are potentially available.
+				$is_potentially_available = true;
+			} elseif ( isset( $this->options['encode'][ $target_codec_id ]['resolutions'][ $target_resolution_id ] ) &&
+					true === $this->options['encode'][ $target_codec_id ]['resolutions'][ $target_resolution_id ]
+			) { // If hiding, only show if explicitly enabled in options.
+				$is_potentially_available = true;
+			}
+
+			if ( ! $is_potentially_available ) {
+				continue; // Skip if not enabled by plugin options.
+			}
+
+			// 3. Check if source resolution is already too low (unless it's 'fullres')
+			if ( $video_metadata && $video_metadata->worked && $target_resolution_obj ) {
+				$target_height = $target_resolution_obj->get_height();
+				// A format "replaces_original" if its resolution ID is 'fullres'.
+				// So, if it does NOT replace original, and target height is numeric,
+				// and source height is already less than or equal to target, then skip.
+				if ( is_numeric( $target_height ) &&
+					! $video_format_obj->get_replaces_original() &&
+					(int) $video_metadata->actualheight <= (int) $target_height
+				) {
+					continue; // Skip if source is already this resolution or smaller and not 'fullres'.
 				}
 			}
+			// If all checks pass, add to available formats
+			$available_formats[ $format_key ] = $video_format_obj;
 		}
 		$this->available_formats = $available_formats;
 	}
 
 	public function set_codecs() {
-		$codec_list            = array(); // Initialize
-		$ffmpeg_codecs_process = new FFmpeg_Process( // Renamed variable
+
+		$codec_list            = array();
+		$ffmpeg_codecs_process = new FFmpeg_Process(
 			array(
 				$this->ffmpeg_path,
 				'-codecs',
@@ -741,59 +780,43 @@ class Encode_Attachment {
 			$ffmpeg_codecs_process->run();
 			$codec_output = $ffmpeg_codecs_process->getOutput();
 		} catch ( \Exception $e ) {
-			// Log this error or handle it more gracefully
-			// error_log("FFmpeg -codecs command failed: " . $e->getMessage());
 			$codec_output = ''; // Ensure $codec_output is a string
 		}
 
 		// Build a list of video codecs we are interested in from $this->video_formats
-		$video_lib_array = array();
-		foreach ( $this->video_formats as $video_format_obj ) { // $video_format_obj is Video_Format
-			if ( $video_format_obj && $video_format_obj->get_codec() ) {
-				$vcodec = $video_format_obj->get_codec()->get_vcodec();
-				if ( $vcodec && ! in_array( $vcodec, $video_lib_array, true ) ) {
-					$video_lib_array[] = $vcodec;
-				}
-			}
-		}
-		// Ensure libvorbis is checked if not already derived
-		if ( ! in_array( 'libvorbis', $video_lib_array, true ) ) {
-			$video_lib_array[] = 'libvorbis';
-		}
-
-		$aac_array = $this->aac_encoders();
-		$lib_list  = array_unique( array_merge( $video_lib_array, $aac_array ) ); // Ensure unique list
-
 		if ( ! empty( $codec_output ) ) {
-			foreach ( $lib_list as $lib ) {
-				if ( empty( $lib ) ) {
-					continue; // Skip empty library names
-				}
-				// More robust check for codec availability:
-				// D. = Decoding supported
-				// .E = Encoding supported
-				// ..V = Video codec
-				// ..A = Audio codec
-				// ..S = Subtitle codec
-				// ...I = Intra frame only codec
-				// ....L = Lossy compression
-				// .....S = Lossless compression
-				// Example line: " DEV.LS h264                 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (decoders: h264 h264_qsv h264_cuvid ) (encoders: libx264 libx264rgb h264_amf h264_nvenc h264_qsv )"
-				// We need to check for ".E" and the library name.
-				if ( preg_match( '/\s\.E[\.VASILDS]{5}\s+' . preg_quote( $lib, '/' ) . '\s+/m', $codec_output ) ||
-					preg_match( '/\s\.E[\.VASILDS]{5}\s+.*\(encoders:.*' . preg_quote( $lib, '/' ) . '.*\)/m', $codec_output ) ) {
-					$codec_list[ $lib ] = true;
-				} else {
-					$codec_list[ $lib ] = false;
-				}
-			}
-		} else {
-			// If $codec_output is empty, assume all are false
-			foreach ( $lib_list as $lib ) {
-				if ( empty( $lib ) ) {
+			$lines = explode( "\n", $codec_output );
+			$parsing_codecs = false;
+			foreach ( $lines as $line ) {
+				if ( trim( $line ) === '-------' ) {
+					$parsing_codecs = true;
 					continue;
 				}
-				$codec_list[ $lib ] = false;
+				if ( ! $parsing_codecs || empty( trim( $line ) ) ) {
+					continue;
+				}
+
+				// Regex to parse the codec line:
+				// Example line: " DEA.L. libfdk_aac           Fraunhofer FDK AAC (encoders: libfdk_aac )"
+				// Captures:
+				// $matches[1] = D flag or .
+				// $matches[2] = E flag or .
+				// ...
+				// $matches[9] = codec name (e.g., libfdk_aac)
+				if ( preg_match( '/^\s*([D\.])([E\.])([V\.])([A\.])([S\.])([I\.])([L\.])([S\.])\s+([a-zA-Z0-9_\-]+)\s+.*/', $line, $matches ) ) {
+					$is_encoder = ( $matches[2] === 'E' );
+					$codec_name = $matches[9];
+					if ( ! empty( $codec_name ) ) {
+						// We only care if it's an encoder. Store true if it is, false otherwise,
+						// or simply only store true for encoders.
+						// For the purpose of $this->codecs, we only need to know if an encoder is available.
+						if ( $is_encoder ) {
+							$codec_list[ $codec_name ] = true;
+						} elseif ( ! isset( $codec_list[ $codec_name ] ) ) { // If not an encoder, and not already set as true
+							$codec_list[ $codec_name ] = false;
+						}
+					}
+				}
 			}
 		}
 
@@ -803,70 +826,96 @@ class Encode_Attachment {
 	/**
 	 * Cancel the encoding job.
 	 */
-	public function cancel_encoding( string $format_id_or_job_id ) {
-		// Parameter can be format_id or job_id
-		$canceled = false;
-		if ( ! current_user_can( 'delete_posts' ) ) { // Or a more specific capability
+	public function cancel_encoding( int $job_id ) {
+
+		$canceled      = false;
+		$encode_format = $this->get_encode_format_by_job_id( $job_id );
+
+		if ( ! $encode_format ) { // If format object couldn't be retrieved
 			return false;
 		}
 
-		// Try to get Encode_Format by job_id first, then by format_id if numeric check fails
-		$encode_format = null;
-		if ( is_numeric( $format_id_or_job_id ) ) {
-			$encode_format = $this->get_encode_format_by_job_id( (int) $format_id_or_job_id );
-		}
-		if ( ! $encode_format && is_string( $format_id_or_job_id ) ) {
-			$encode_format = $this->get_encode_format( $format_id_or_job_id );
+		// Capability check:
+		// User can cancel if they started the job and can 'encode_videos',
+		// OR if they can 'edit_others_video_encodes'.
+		$can_cancel_own_job = ( get_current_user_id() === $encode_format->get_user_id() && current_user_can( 'encode_videos' ) );
+
+		if ( ! ( $can_cancel_own_job || current_user_can( 'edit_others_video_encodes' ) ) ) {
+			$encode_format->set_error( __( 'User does not have permission to cancel this encoding job.', 'video-embed-thumbnail-generator' ) );
+			$this->save_format( $encode_format );
+			return false;
 		}
 
-		if ( ! $encode_format || ! $encode_format->get_pid() || $encode_format->get_status() !== 'encoding' ) {
-			return false; // No PID or not encoding
+		if ( ! $encode_format->get_pid() || 'encoding' !== $encode_format->get_status() ) {
+			return false;
 		}
 
 		$pid = $encode_format->get_pid();
 
 		if ( '\\' !== DIRECTORY_SEPARATOR ) { // not Windows
-			// Check if the process with $pid is indeed our ffmpeg process
-			// A more robust check might involve checking the command line of the process.
-			// `ps -p $pid -o cmd=` can get the command.
-			// For now, we assume posix_kill is sufficient if PID exists.
-			if ( posix_kill( $pid, 0 ) ) { // Check if process exists
+			if ( function_exists( 'posix_kill' ) && posix_kill( $pid, 0 ) ) { // Check if process exists
 				$canceled = posix_kill( $pid, SIGTERM ); // Send SIGTERM (15)
-				if ( ! $canceled ) { // If SIGTERM failed, try SIGKILL
+				// If SIGTERM failed or to be more aggressive, try SIGKILL after a short delay
+				if ( ! $canceled || ( $canceled && posix_kill( $pid, 0 ) ) ) { // Check if still alive after SIGTERM
 					sleep( 1 ); // Give it a second
-					$canceled = posix_kill( $pid, SIGKILL ); // Send SIGKILL (9)
+					if ( posix_kill( $pid, 0 ) ) { // Check again before SIGKILL
+						$canceled = posix_kill( $pid, SIGKILL ); // Send SIGKILL (9)
+						if ( ! $canceled && posix_kill( $pid, 0 ) ) {
+							// translators: %d is the process ID.
+							$encode_format->set_error( __( 'Failed to kill process with SIGTERM or SIGKILL.', 'video-embed-thumbnail-generator' ) );
+						}
+					} else {
+						$canceled = true; // Process was gone after SIGTERM or sleep
+					}
 				}
+			} elseif ( function_exists( 'posix_kill' ) && ! posix_kill( $pid, 0 ) ) {
+				// Process with PID did not exist or no permission to signal.
+				// Assuming it's already gone if it was our process.
+				$canceled = true; // Consider it canceled if the process is gone.
+				$encode_format->set_error( sprintf( __( 'Process not found or no permission to send cancel signal.', 'video-embed-thumbnail-generator' ), $pid ) );
+			} else {
+				// posix_kill not available.
+				// translators: %d is the process ID.
+				$encode_format->set_error( __( 'posix_kill function not available to cancel process.', 'video-embed-thumbnail-generator' ) );
 			}
 		} else { // Windows
-			// The command `tasklist /FI "PID eq $pid"` can check if PID exists.
-			// `wmic process where processid="$pid" get commandline` can get command.
-			// For now, directly attempt taskkill.
-			$commandline  = 'taskkill /F /T /PID ' . intval( $pid ); // Ensure PID is int
-			$kill_process = FFmpeg_Process::fromShellCommandline( $commandline );
+			// First, check if the process exists.
+			$check_pid_command = FFmpeg_Process::fromShellCommandline( 'tasklist /NH /FI "PID eq ' . intval( $pid ) . '"' );
 			try {
-				$kill_process->run();
-				// taskkill doesn't always output "SUCCESS". Check exit code.
-				if ( $kill_process->isSuccessful() ) {
-					$canceled = true;
+				$check_pid_command->run();
+				if ( $check_pid_command->isSuccessful() && strpos( $check_pid_command->getOutput(), (string) $pid ) !== false ) {
+					// Process exists, attempt to kill it.
+					$commandline  = 'taskkill /F /T /PID ' . intval( $pid );
+					$kill_process = FFmpeg_Process::fromShellCommandline( $commandline );
+					try {
+						$kill_process->run();
+						if ( $kill_process->isSuccessful() ) {
+							$canceled = true;
+						} else {
+							// translators: %s is the error output from taskkill.
+							$encode_format->set_error( sprintf( __( 'Taskkill failed: %s', 'video-embed-thumbnail-generator' ), $kill_process->getErrorOutput() ) );
+						}
+					} catch ( \Exception $e ) {
+						// translators: %s is the exception message.
+						$encode_format->set_error( sprintf( __( 'Exception during taskkill: %s', 'video-embed-thumbnail-generator' ), $e->getMessage() ) );
+					}
 				} else {
-					// error_log("Taskkill failed for PID $pid: " . $kill_process->getErrorOutput());
+					// Process not found by tasklist, assume it's already gone.
+					$canceled = true;
+					$encode_format->set_error( __( 'Process not found via tasklist, assuming canceled.', 'video-embed-thumbnail-generator' ) );
 				}
 			} catch ( \Exception $e ) {
-				// error_log("Exception during taskkill for PID $pid: " . $e->getMessage());
+				// translators: %s is the exception message.
+				$encode_format->set_error( sprintf( __( 'Exception during tasklist check: %s', 'video-embed-thumbnail-generator' ), $e->getMessage() ) );
 			}
 		}
 
 		if ( $canceled ) {
 			$encode_format->set_canceled();
-			$this->save_format( $encode_format ); // Save status to DB
-			// Optionally delete the partially encoded file
-			if ( $encode_format->get_path() && file_exists( $encode_format->get_path() ) ) {
-				wp_delete_file( $encode_format->get_path() );
-			}
-			if ( $encode_format->get_logfile() && file_exists( $encode_format->get_logfile() ) ) {
-				wp_delete_file( $encode_format->get_logfile() );
-			}
+			$this->cleanup_encode_files( $encode_format ); // Attempt to clean up files, errors will be set on $encode_format
 		}
+
+		$this->save_format( $encode_format );
 		return $canceled;
 	}
 
@@ -884,14 +933,18 @@ class Encode_Attachment {
 			if ( ! function_exists( 'WP_Filesystem' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/file.php';
 			}
-			if ( ! WP_Filesystem() ) {
-				return __( 'WordPress filesystem initialization failed.', 'video-embed-thumbnail-generator' );
+			// Attempt to initialize the filesystem.
+			if ( ! WP_Filesystem() ) { // This will try to request credentials if needed.
+				// If WP_Filesystem() returns false, it means it couldn't initialize (e.g. credentials not provided).
+				$replacing_format->set_error( __( 'WordPress filesystem initialization failed. Please ensure credentials are set if required.', 'video-embed-thumbnail-generator' ) );
+				return false;
 			}
 		}
 
 		$video_id = $this->id; // Original attachment ID
 		if ( ! is_numeric( $video_id ) || get_post_type( $video_id ) !== 'attachment' ) {
-			return __( 'Original item is not a valid attachment ID for replacement.', 'video-embed-thumbnail-generator' );
+			$replacing_format->set_error( __( 'Original item is not a valid attachment ID for replacement.', 'video-embed-thumbnail-generator' ) );
+			return false;
 		}
 
 		$encoded_filepath    = $replacing_format->get_path();
@@ -899,15 +952,20 @@ class Encode_Attachment {
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 
 		if ( ! $video_format_config ) {
-			return sprintf( __( 'Video format configuration not found for format: %s', 'video-embed-thumbnail-generator' ), $format_id );
+			// translators: %s is the video format id (ex. 'mp4_720p').
+			$replacing_format->set_error( sprintf( __( 'Video format configuration not found for format: %s', 'video-embed-thumbnail-generator' ), $format_id ) );
+			return false;
 		}
 		if ( ! $encoded_filepath || ! $wp_filesystem->exists( $encoded_filepath ) ) {
-			return sprintf( __( 'Encoded file not found at %s.', 'video-embed-thumbnail-generator' ), $encoded_filepath );
+			// translators: %s is a file path.
+			$replacing_format->set_error( sprintf( __( 'Encoded file not found at %s.', 'video-embed-thumbnail-generator' ), $encoded_filepath ) );
+			return false;
 		}
 
 		$original_filepath = get_attached_file( $video_id );
 		if ( ! $original_filepath ) {
-			return __( 'Could not retrieve original attachment file path.', 'video-embed-thumbnail-generator' );
+			$replacing_format->set_error( __( 'Could not retrieve original attachment file path.', 'video-embed-thumbnail-generator' ) );
+			return false;
 		}
 
 		$path_parts    = pathinfo( $original_filepath );
@@ -925,16 +983,14 @@ class Encode_Attachment {
 		// Perform file replacement
 		// Delete the original file first if it's different from the new target name
 		if ( $original_filepath !== $new_filename && $wp_filesystem->exists( $original_filepath ) ) {
-			if ( ! $wp_filesystem->delete( $original_filepath ) ) {
-				// return sprintf( __( 'Failed to delete original file at %s.', 'video-embed-thumbnail-generator' ), $original_filepath );
-				// Non-fatal, maybe the original was already gone or permissions issue. Log it.
-				// error_log("Videopack: Could not delete original file $original_filepath during replacement for attachment $video_id");
-			}
+			$wp_filesystem->delete( $original_filepath );
 		}
 
 		// Move the encoded file to the new (or original) location/name
 		if ( ! $wp_filesystem->move( $encoded_filepath, $new_filename, true ) ) { // true for overwrite
-			return sprintf( __( 'Failed to move encoded file from %1$s to %2$s.', 'video-embed-thumbnail-generator' ), $encoded_filepath, $new_filename );
+			// translators: %1$s and %2$s are both file paths.
+			$replacing_format->set_error( sprintf( __( 'Failed to move encoded file from %1$s to %2$s.', 'video-embed-thumbnail-generator' ), $encoded_filepath, $new_filename ) );
+			return false;
 		}
 
 		// Update WordPress attachment metadata and post content references
@@ -982,8 +1038,10 @@ class Encode_Attachment {
 		wp_update_post( $post_update );
 
 		// Update Videopack custom meta using Attachment_Meta
-		$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $video_id );
-		$attachment_meta_instance->save_meta( 'original_replaced', $format_id );
+		$attachment_meta_instance          = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $video_id );
+		$current_meta                      = $attachment_meta_instance->get();
+		$current_meta['original_replaced'] = $format_id;
+		$attachment_meta_instance->save( $current_meta );
 
 		// Trigger thumbnail regeneration if needed
 		do_action( 'videopack_cron_new_attachment', $video_id, 'thumbs' );
@@ -998,27 +1056,87 @@ class Encode_Attachment {
 	/**
 	 * Delete the encoded file.
 	 */
-	public function delete_format( string $format_id_or_job_id ) {
-		// This method should delete the physical file and update the DB job status to 'deleted' or remove the row.
-		// For now, placeholder.
-		$encode_format = null;
-		if ( is_numeric( $format_id_or_job_id ) ) {
-			$encode_format = $this->get_encode_format_by_job_id( (int) $format_id_or_job_id );
-		}
-		if ( ! $encode_format && is_string( $format_id_or_job_id ) ) {
-			$encode_format = $this->get_encode_format( $format_id_or_job_id );
+	public function delete_format( int $job_id ) {
+		$encode_format = $this->get_encode_format_by_job_id( $job_id );
+
+		if ( ! $encode_format ) {
+			// Job not found in DB.
+			return false;
 		}
 
-		if ( $encode_format && $encode_format->get_path() && file_exists( $encode_format->get_path() ) ) {
-			if ( wp_delete_file( $encode_format->get_path() ) ) {
-				$encode_format->set_status( 'deleted' ); // Or a new status
-				// $encode_format->set_path(null);
-				// $encode_format->set_url(null);
-				$this->save_format( $encode_format ); // Update DB
-				return true;
+		// Capability check:
+		// User can delete if they started the job and can 'encode_videos' (or a more specific 'delete_video_encodes'),
+		// OR if they can 'edit_others_video_encodes' (or 'delete_others_video_encodes').
+		$can_delete_own_job    = ( get_current_user_id() === $encode_format->get_user_id() && current_user_can( 'encode_videos' ) );
+		$can_delete_others_job = current_user_can( 'edit_others_video_encodes' );
+
+		if ( ! ( $can_delete_own_job || $can_delete_others_job ) ) {
+			$encode_format->set_error( __( 'User does not have permission to delete this encoding job.', 'video-embed-thumbnail-generator' ) );
+			$this->save_format( $encode_format );
+			return false;
+		}
+
+		// Attempt to clean up all associated files.
+		// cleanup_encode_files will set an error on $encode_format if it fails.
+		if ( ! $this->cleanup_encode_files( $encode_format ) ) {
+			// An error occurred during file cleanup and was set on $encode_format.
+			$this->save_format( $encode_format ); // Save the error.
+			// Proceed to mark as deleted in DB anyway, but the error will be logged.
+		}
+
+		// Delete the WordPress attachment if this format created one (and it's not the original)
+		$wp_attachment_id = $encode_format->get_id(); // This is the WP attachment ID for the encoded version
+		if ( $wp_attachment_id && get_post_type( $wp_attachment_id ) === 'attachment' ) {
+			// Ensure this is not the original attachment ID that was replaced
+			$is_original_attachment = ( $this->is_attachment && is_numeric( $this->id ) && (int) $this->id === (int) $wp_attachment_id );
+			if ( ! $is_original_attachment ) {
+				if ( ! wp_delete_attachment( $wp_attachment_id, true ) ) {
+					// translators: %d is the attachment ID.
+					$encode_format->set_error( sprintf( __( 'Failed to delete child attachment ID: %d. Please delete manually.', 'video-embed-thumbnail-generator' ), $wp_attachment_id ) );
+					// Continue to mark the job as deleted, but with an error.
+				}
 			}
 		}
-		return false;
+
+		// Mark the job status as 'deleted' in the database.
+		$encode_format->set_status( 'deleted' );
+		// Clear path and URL as the files are gone (or should be)
+		$encode_format->set_path( null );
+		$encode_format->set_url( null );
+		$encode_format->set_logfile( null );
+		$encode_format->set_temp_watermark_path( null );
+
+		$this->save_format( $encode_format ); // Save the 'deleted' status and any errors.
+
+		return true; // Indicates the deletion process was attempted. Check $encode_format->get_error() for issues.
+	}
+
+	/**
+	 * Cleans up files associated with an encoding job.
+	 *
+	 * @param Encode_Format $encode_format The format object.
+	 * @return bool True if all deletions were successful or files didn't exist, false if any deletion failed.
+	 */
+	protected function cleanup_encode_files( Encode_Format $encode_format ) {
+		$success = true;
+
+		// Files to delete
+		$files_to_delete = array(
+			$encode_format->get_path(),
+			$encode_format->get_logfile(),
+			$encode_format->get_temp_watermark_path(),
+		);
+
+		foreach ( $files_to_delete as $file_path ) {
+			if ( $file_path && file_exists( $file_path ) ) {
+				if ( ! wp_delete_file( $file_path ) ) {
+					// translators: %s is the file path.
+					$encode_format->set_error( sprintf( __( 'Failed to delete file: %s', 'video-embed-thumbnail-generator' ), $file_path ) );
+					$success = false; // Mark failure but continue trying to delete other files.
+				}
+			}
+		}
+		return $success;
 	}
 
 	public function insert_attachment( Encode_Format $encode_format ) {
@@ -1029,12 +1147,14 @@ class Encode_Attachment {
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 
 		if ( ! $video_format_config ) {
+			// translators: %s is the video format id (ex. 'mp4_720p').
 			$encode_format->set_error( sprintf( __( 'Video format configuration not found for format: %s', 'video-embed-thumbnail-generator' ), $format_id ) );
 			$this->save_format( $encode_format ); // Save error to DB
 			return false;
 		}
 
 		if ( ! $path || ! file_exists( $path ) ) {
+			// translators: %1$s is the file path. %2$s is the format ID (ex. 'mp4_720p')
 			$encode_format->set_error( sprintf( __( 'Encoded file not found at path: %1$s for format %2$s', 'video-embed-thumbnail-generator' ), $path, $format_id ) );
 			$this->save_format( $encode_format );
 			return false;
@@ -1073,87 +1193,101 @@ class Encode_Attachment {
 				$result = $this->replace_original( $encode_format );
 				if ( true === $result ) {
 					$encode_format->set_status( 'complete' );
-					// replace_original now updates the $encode_format object with new path/url
-					$this->save_format( $encode_format ); // Save final state to DB
-					return true; // Indicate success
-				} else {
-					$encode_format->set_error( sprintf( __( 'Failed to replace original: %s', 'video-embed-thumbnail-generator' ), is_string( $result ) ? $result : 'Unknown error' ) );
-					$this->save_format( $encode_format ); // Save error to DB
-					return false; // Indicate failure
-				}
-			}
-		} else {
-			// If not replacing the original, insert as a new child attachment
-			if ( ! $encode_format->get_id() ) { // Check if Encode_Format already has a WP attachment ID
-
-				$parent_post_id = 0; // Default for non-attachments or if original is not an attachment
-				if ( $this->is_attachment && is_numeric( $this->id ) ) {
-					$parent_post_id = (int) $this->id;
-				}
-
-				$existing_attachment_id = $this->attachment_manager->url_to_id( $url );
-
-				if ( ! $existing_attachment_id ) {
-					$wp_filetype = wp_check_filetype( basename( $path ) );
-					$title_base  = $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( $this->id );
-					$title       = $title_base . ' ' . $video_format_config->get_name();
-
-					// Determine author for the new attachment
-					$author_id_from_parent = $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id();
-					$author_id             = $user_id ? $user_id : $author_id_from_parent;
-					if ( ! $author_id ) {
-						$author_id = get_current_user_id() ?: 1; // Fallback
-					}
-
-					$attachment_data = array(
-						'guid'           => $url,
-						'post_mime_type' => $wp_filetype['type'],
-						'post_title'     => $title,
-						'post_content'   => '',
-						'post_status'    => 'inherit',
-						'post_author'    => $author_id,
-					);
-
-					$new_attachment_id = wp_insert_attachment( $attachment_data, $path, $parent_post_id );
-
-					if ( ! is_wp_error( $new_attachment_id ) ) {
-						if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
-							require_once ABSPATH . 'wp-admin/includes/image.php';
-						}
-						if ( ! function_exists( 'wp_read_video_metadata' ) ) {
-							require_once ABSPATH . 'wp-admin/includes/media.php';
-						}
-						$attach_meta = wp_generate_attachment_metadata( $new_attachment_id, $path );
-						wp_update_attachment_metadata( $new_attachment_id, $attach_meta );
-
-						update_post_meta( $new_attachment_id, '_kgflashmediaplayer-format', $format_id );
-						if ( ! $this->is_attachment && ! empty( $this->url ) ) { // If original was an external URL
-							update_post_meta( $new_attachment_id, '_kgflashmediaplayer-externalurl', $this->url );
-						}
-
-						$encode_format->set_id( $new_attachment_id ); // Set WP attachment ID on Encode_Format
-						$encode_format->set_status( 'complete' );
-						$this->save_format( $encode_format ); // Save to DB
-						return true;
-					} else {
-						$encode_format->set_error( __( 'Failed to insert new attachment: ', 'video-embed-thumbnail-generator' ) . $new_attachment_id->get_error_message() );
-						$this->save_format( $encode_format );
-						return false;
-					}
-				} else {
-					// Attachment with this URL already exists, mark as complete
-					$encode_format->set_id( $existing_attachment_id );
-					$encode_format->set_status( 'complete' );
+					// replace_original updates the $encode_format object with new path/url
 					$this->save_format( $encode_format );
 					return true;
+				} else {
+					// replace_original sets the error on $encode_format and returns false.
+					$this->save_format( $encode_format );
+					return false;
 				}
-			} elseif ( $encode_format->get_id() && file_exists( $path ) ) {
-				// Already has an attachment ID and file exists, ensure status is complete
+			}
+		} elseif ( ! $encode_format->get_id() ) { // If not replacing the original, insert as a new child attachment. Check if Encode_Format already has a WP attachment ID
+
+			$parent_post_id = 0; // Default for non-attachments or if original is not an attachment
+			if ( $this->is_attachment && is_numeric( $this->id ) ) {
+				$parent_post_id = (int) $this->id;
+			}
+
+			$existing_attachment_id = $this->attachment_manager->url_to_id( $url );
+
+			if ( ! $existing_attachment_id ) {
+				$wp_filetype = wp_check_filetype( basename( $path ) );
+				$title_base  = $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( $this->id );
+				$title       = $title_base . ' ' . $video_format_config->get_name();
+
+				// Determine author for the new attachment
+				$author_id_from_parent = $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id();
+				if ( $user_id ) {
+					$author_id = $user_id;
+				} else {
+					$author_id = $author_id_from_parent;
+				}
+				if ( ! $author_id ) {
+					$author_id = get_current_user_id();
+				}
+
+				$attachment_data = array(
+					'guid'           => $url,
+					'post_mime_type' => $wp_filetype['type'],
+					'post_title'     => $title,
+					'post_content'   => '',
+					'post_status'    => 'inherit',
+					'post_author'    => $author_id,
+				);
+
+				$new_attachment_id = wp_insert_attachment( $attachment_data, $path, $parent_post_id );
+
+				if ( ! is_wp_error( $new_attachment_id ) ) {
+					if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/image.php';
+					}
+					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+					}
+					$attach_meta = wp_generate_attachment_metadata( $new_attachment_id, $path );
+					wp_update_attachment_metadata( $new_attachment_id, $attach_meta );
+
+					update_post_meta( $new_attachment_id, '_kgflashmediaplayer-format', $format_id );
+					if ( ! $this->is_attachment && ! empty( $this->url ) ) { // If original was an external URL
+						update_post_meta( $new_attachment_id, '_kgflashmediaplayer-externalurl', $this->url );
+					}
+
+					$encode_format->set_id( $new_attachment_id ); // Set WP attachment ID on Encode_Format
+					$encode_format->set_status( 'complete' );
+					$this->save_format( $encode_format ); // Save to DB
+					return true;
+				} else {
+					$encode_format->set_error( __( 'Failed to insert new attachment: ', 'video-embed-thumbnail-generator' ) . $new_attachment_id->get_error_message() );
+					$this->save_format( $encode_format );
+					return false;
+				}
+			} else {
+				// Attachment with this URL already exists, mark as complete
+				$encode_format->set_id( $existing_attachment_id );
 				$encode_format->set_status( 'complete' );
 				$this->save_format( $encode_format );
 				return true;
 			}
+		} elseif ( $encode_format->get_id() && file_exists( $path ) ) {
+			// Already has an attachment ID and file exists, ensure status is complete
+			$encode_format->set_status( 'complete' );
+			$this->save_format( $encode_format );
+			return true;
+		} elseif ( $encode_format->get_id() && ! file_exists( $path ) ) {
+			// Has an attachment ID, but the file is missing. This is an error.
+			// translators: %1$d is the attachment ID. %2$s is the file path.
+			$encode_format->set_error( sprintf( __( 'Encoded file is missing for existing attachment ID %1$d at path: %2$s', 'video-embed-thumbnail-generator' ), $encode_format->get_id(), $path ) );
+			$this->save_format( $encode_format );
+			return false;
 		}
-		return false; // Should not be reached if logic is correct
+
+		// Fallback: If reached, it's an unexpected state or unhandled condition.
+		// Avoid overwriting a more specific error if one was already set and not returned from.
+		if ( ! $encode_format->get_error() && 'complete' !== $encode_format->get_status() ) {
+			$encode_format->set_error( __( 'An unexpected error occurred during attachment processing.', 'video-embed-thumbnail-generator' ) );
+		}
+		$this->save_format( $encode_format ); // Ensure any state/error is saved.
+		return false;
 	}
 }
