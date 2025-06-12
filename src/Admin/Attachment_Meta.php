@@ -20,7 +20,7 @@ class Attachment_Meta {
 		$this->meta_data       = $this->get();
 	}
 
-	protected function get_defaults() {
+	public function get_defaults() {
 		// Default values for all meta fields
 		// Many will come from the global plugin options
 		return array(
@@ -312,202 +312,182 @@ class Attachment_Meta {
 		// Master list of all possible schema definitions
 		$full_schema_definitions = array(
 			'actualwidth'         => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ),
+			),
+			'actualheight'        => array(
+				'type' => array( 'string', 'number', 'null' ),
 			),
 			'aspect'              => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ),
 			),
-			'autothumb-error'     => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+			'autothumb_error'     => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'codec'               => array(
+				'type' => array( 'string', 'null' ), // Video codec name, e.g., "h264"
 			),
 			'completeviews'       => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Count of complete views
 			),
 			'downloadlink'        => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Enable download link
 			),
 			'duration'            => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ), // Duration in seconds, can be string or number
 			),
 			'embed'               => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Embed type/method
 			),
 			'encode'              => array(
 				'type'                 => 'object',
 				'additionalProperties' => array(
+					// This allows for dynamic keys like 'h264', 'vp9' etc.
 					'type' => array(
 						'string',
 						'boolean',
 					),
 					'enum' => array(
 						true,
-						'notchecked',
-						true,
 						false,
+						'notchecked',
 					),
-				),
+				), // Encode settings object
 			),
 			'featured'            => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Set as featured image
 			),
 			'featuredchanged'     => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Internal flag for featured image changes
 			),
 			'forcefirst'          => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Force first frame for thumbnail
+			),
+			'frame_rate'          => array(
+				'type' => array( 'string', 'number', 'null' ), // Frame rate, e.g., "29.97" or 25
 			),
 			'gallery_exclude'     => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // IDs to exclude from gallery
 			),
 			'gallery_id'          => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Post ID for gallery source
 			),
 			'gallery_include'     => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // IDs to include in gallery
 			),
 			'gallery_order'       => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Gallery order (ASC/DESC)
 			),
 			'gallery_orderby'     => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Gallery orderby field
 			),
 			'gallery_thumb_width' => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Gallery thumbnail width
 			),
 			'height'              => array(
 				'type' => array(
 					'string',
 					'number',
+					'null', // Player height
 				),
 			),
 			'lockaspect'          => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Lock aspect ratio
 			),
 			'maxheight'           => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ), // Max height for player
 			),
 			'maxwidth'            => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ), // Max width for player
 			),
 			'numberofthumbs'      => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Number of thumbnails
 			),
 			'original_replaced'   => array(
-				'type' => array(
-					'string',
-				),
+				'type' => array( 'string', 'null' ), // ID of format that replaced original, or null
 			),
 			'pickedformat'        => array(
-				'type' => array(
-					'string',
-				),
+				'type' => array( 'string', 'null' ), // ID of the format picked as primary
 			),
 			'play_25'             => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Play count at 25%
 			),
 			'play_50'             => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Play count at 50%
 			),
 			'play_75'             => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Play count at 75%
 			),
 			'poster'              => array(
-				'type' => array(
-					'string',
-				),
+				'type' => array( 'string', 'null' ), // URL to poster image
 			),
 			'rotate'              => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ), // Rotation value
 			),
 			'showtitle'           => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Show title overlay
 			),
 			'starts'              => array(
 				'type' => array(
 					'string',
 					'number',
-				),
+				), // Number of times video started
 			),
 			'thumbtime'           => array(
-				'type' => array(
-					'string',
-					'number',
-				),
+				'type' => array( 'string', 'number', 'null' ), // Timestamp for thumbnail
 			),
 			'track'               => array(
 				'type'  => 'array',
@@ -548,21 +528,20 @@ class Attachment_Meta {
 				),
 			),
 			'url'                 => array(
-				'type' => array(
-					'string',
-				),
+				'type' => array( 'string', 'null' ), // URL of the video if external or specific format
 			),
 			'width'               => array(
 				'type' => array(
 					'string',
 					'number',
+					'null', // Player width
 				),
 			),
 			'worked'              => array(
 				'type' => array(
 					'string',
 					'boolean',
-				),
+				), // Indicates if metadata retrieval worked
 			),
 		);
 
