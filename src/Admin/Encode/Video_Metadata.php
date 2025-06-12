@@ -14,6 +14,7 @@ class Video_Metadata {
 	public $actualwidth;
 	public $actualheight;
 	public $duration;
+	public $codec;
 	public $rotate;
 
 	public function __construct(
@@ -23,10 +24,10 @@ class Video_Metadata {
 		string $ffmpeg_path,
 		\Videopack\Admin\Options $options_manager
 	) {
-		$this->id            = $id;
-		$this->encode_input  = $encode_input;
-		$this->is_attachment = $is_attachment;
-		$this->ffmpeg_path   = $ffmpeg_path;
+		$this->id              = $id;
+		$this->encode_input    = $encode_input;
+		$this->is_attachment   = $is_attachment;
+		$this->ffmpeg_path     = $ffmpeg_path;
 		$this->options_manager = $options_manager;
 		$this->set_video_metadata();
 	}
@@ -44,6 +45,7 @@ class Video_Metadata {
 				$this->actualwidth  = $kgvid_postmeta['actualwidth'] ?? null;
 				$this->actualheight = $kgvid_postmeta['actualheight'] ?? null;
 				$this->duration     = $kgvid_postmeta['duration'] ?? null;
+				$this->codec        = $kgvid_postmeta['codec'] ?? null;
 				$this->rotate       = $kgvid_postmeta['rotate'] ?? '';
 				return;
 			}
@@ -77,6 +79,11 @@ class Video_Metadata {
 			$this->worked       = true;
 			$this->actualwidth  = $regs [1] ? $regs [1] : null;
 			$this->actualheight = $regs [2] ? $regs [2] : null;
+
+			// Attempt to parse video codec from FFmpeg output
+			if ( preg_match( '/Stream #\d+:\d+[^:]*: Video: ([a-zA-Z0-9-]+)/', $output, $codec_matches ) ) {
+				$this->codec = strtolower( $codec_matches[1] );
+			}
 
 			preg_match( '/Duration: (.*?),/', $output, $matches );
 			$duration               = $matches[1];
@@ -126,9 +133,17 @@ class Video_Metadata {
 				'actualwidth'  => $this->actualwidth,
 				'actualheight' => $this->actualheight,
 				'duration'     => $this->duration,
+				// Only add codec if it was derived and not already present or different in existing meta
+				// This ensures we save it if FFmpeg found it and WP didn't, or if it's more specific.
+				'codec'        => ( ! empty( $this->video_codec_name ) && ( empty( $existing_postmeta['codec'] ) || $existing_postmeta['codec'] !== $this->codec ) ) ? $this->codec : $existing_postmeta['codec'],
 				'rotate'       => $this->rotate,
 			);
+
 			$merged_meta = array_merge( $existing_postmeta, $metadata_to_save );
+			// Ensure 'codec' is explicitly set if it was null and now has a value
+			if ( empty( $existing_postmeta['codec'] ) && ! empty( $this->video_codec_name ) ) {
+				$merged_meta['codec'] = $this->codec;
+			}
 			$attachment_meta_instance->save( $merged_meta );
 		}
 	}
