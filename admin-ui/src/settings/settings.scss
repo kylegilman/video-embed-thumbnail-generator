@@ -1,0 +1,132 @@
+.wrap.videopack-settings {
+	max-width: 65rem;
+	margin: 10px auto;
+}
+
+.videopack-settings-icon {
+	vertical-align: text-bottom;
+	margin-right: 10px;
+}
+
+.components-flex {
+	&.videopack-flex-bottom {
+		align-items: flex-end;
+	}
+
+	&.videopack-player-settings {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+.videopack-flex-left {
+	justify-content: flex-start;
+	align-items: flex-end;
+}
+
+.videopack-library-button {
+	margin-left: 20px;
+	margin-bottom: 5px;
+	vertical-align: text-bottom;
+
+	&.no-vertical-align {
+		vertical-align: unset;
+	}
+}
+
+.videopack-volume-control {
+	width: 225px;
+}
+
+.components-tooltip {
+	white-space: normal;
+	max-width: 400px;
+	background: var(--wp-admin-theme-color-darker-20);
+	box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.videopack-tooltip svg {
+	margin-left: 5px;
+	margin-bottom: 5px;
+}
+
+.videopack-settings-slider {
+	&.components-range-control{
+		margin-bottom: 46px;
+	}
+	.components-range-control__mark-label {
+		margin-top: 20px;
+		white-space: normal;
+		width: 14px;
+	}
+}
+
+.videopack-settings .components-base-control.components-toggle-control {
+    margin-bottom: 10px;
+}
+
+.videopack-setting-auto-width .components-base-control {
+	display: inline-block;
+	vertical-align: text-bottom;
+}
+
+.videopack-setting-reduced-width .components-base-control {
+	width: 30rem;
+	display: inline-block;
+	vertical-align: text-bottom;
+	margin-right: 10px;
+}
+
+span.videopack-setting-auto-width {
+	margin-right: 20px;
+}
+
+.videopack-monospace .components-text-control__input {
+	font-family: monospace;
+}
+
+button.components-button.videopack-settings-reset.is-primary {
+	margin: 0px 10px 10px 10px;
+}
+
+.videopack-setting-radio-group {
+	margin-bottom: 20px;
+}
+
+.videopack-setting-extra-margin {
+	margin-top: 25px;
+}
+
+.components-base-control.videopack-setting-auto-thumb {
+	display: inline-block;
+}
+
+.components-base-control.videopack-setting-auto-thumb .components-text-control__input {
+	max-width: 4rem;
+	margin: 0 7px;
+}
+
+.components-base-control.components-range-control.videopack-setting-auto-thumb {
+	width: 20rem;
+	vertical-align: middle;
+	margin: 0px 10px;
+}
+
+.videopack-setting-bitrate-examples {
+	margin-top: -36px;
+	margin-bottom: 30px;
+	color: lightslategray;
+	display: flex;
+	justify-content: space-evenly;
+}
+
+.videopack-clear-button {
+	margin-bottom: 20px;
+}
+
+.videopack-setting-capabilities p {
+	font-size: 11px;
+	font-weight: 500;
+	margin-top: 0;
+	text-transform: uppercase;
+}
