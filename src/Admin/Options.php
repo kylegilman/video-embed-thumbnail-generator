@@ -183,7 +183,7 @@ class Options {
 			$default_options['encode'][ $codec->get_id() ]['vbr'] = $codec->get_default_vbr();
 			foreach ( $resolutions as $resolution ) {
 				if ( $codec->is_default_encode() && $resolution->is_default_encode() ) {
-					$default_options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = true; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+					$default_options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = true;
 				} else {
 					$default_options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = false;
 				}
@@ -213,7 +213,6 @@ class Options {
 		}
 
 		$this->options = $options;
-		// Public properties are no longer set directly. Access via $this->options['key'] or get_options()['key']
 
 		/**
 		 * Fires after the Videopack options have been loaded and processed.
@@ -241,7 +240,7 @@ class Options {
 	private function init_options( array $current_default_options ) {
 
 		$options_to_init = $current_default_options;
-		$old_options = get_option( 'kgvid_video_embed_options', array() );
+		$old_options     = get_option( 'kgvid_video_embed_options', array() );
 
 		if ( $old_options ) {
 			// Merge old options into the new structure, respecting new defaults for missing keys.
@@ -275,7 +274,7 @@ class Options {
 				'sanitize_callback' => array( $this, 'validate_options' ),
 				'show_in_rest'      => array(
 					'schema' => array(
-						'type'       => 'object', // The top-level 'videopack_options' is an object.
+						'type'       => 'object',
 						'properties' => $this->settings_schema( $this->get_default() ), // Schema based on all defaults.
 					),
 				),
@@ -283,7 +282,7 @@ class Options {
 		);
 	}
 
-	protected function settings_schema( array $options ) {
+	public function settings_schema( array $options ) {
 
 		$schema = array();
 
@@ -293,7 +292,7 @@ class Options {
 			// Handle specific known object-like array structures first
 			if ( $option === 'ffmpeg_thumb_watermark' || $option === 'ffmpeg_watermark' ) {
 				$schema[ $option ] = array(
-					'type'       => 'object', // Representing an associative array
+					'type'       => 'object',
 					'properties' => array(
 						'url'    => array( 'type' => 'string' ),
 						'scale'  => array( 'type' => array( 'string', 'number' ) ), // string because form values can be strings

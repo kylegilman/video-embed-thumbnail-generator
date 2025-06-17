@@ -209,27 +209,34 @@ function videopack_uninstall_plugin() {
 		return;
 	}
 
+	global $wpdb;
+
 	if ( ! is_multisite() ) {
 		delete_option( 'videopack_options' );
-		delete_option( 'kgvid_video_embed_queue' );
 
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'videopack_queue';
-		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %s', $table_name ) );
-
+		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
+		$wpdb->query( "DROP TABLE IF EXISTS `$table_name`" );
 	} else {
+		// Delete network-wide options
+		delete_site_option( 'videopack_network_options' );
 
-		delete_site_option( 'kgvid_video_embed_network_options' );
-		delete_site_option( 'kgvid_video_embed_queue' );
+		// Clean up options for the main site
+		$main_blog_id = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
+		delete_blog_option( $main_blog_id, 'videopack_options' );
 
-		$sites = get_sites();
+		// Drop the central queue table from the main site
+		$original_blog_id = get_current_blog_id();
+		$switched = false;
+		if ( $original_blog_id != $main_blog_id ) {
+			switch_to_blog( $main_blog_id );
+			$switched = true;
+		}
 
-		if ( is_array( $sites ) ) {
+		$table_name = $wpdb->prefix . 'videopack_encoding_queue'; // $wpdb->prefix is now main site's
+		$wpdb->query( "DROP TABLE IF EXISTS `$table_name`" );
 
-			foreach ( $sites as $site ) {
-				delete_blog_option( $site->blog_id, 'videopack_options' );
-				delete_blog_option( $site->blog_id, 'kgvid_video_embed_queue' );
-			}
+		if ( $switched ) {
+			restore_current_blog();
 		}
 	}
 }
