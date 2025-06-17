@@ -193,6 +193,13 @@ class Videopack {
 		$this->loader->add_action( 'wp_redirect', $admin_screens, 'upload_page_change_thumbnail_parent' );
 		$this->loader->add_action( 'admin_head-post.php', $admin_screens, 'add_contextual_help_tab' );
 		$this->loader->add_action( 'admin_head-post-new.php', $admin_screens, 'add_contextual_help_tab' );
+
+		// Admin UI (Block, React Settings, Media Library Enhancements) hooks.
+		$admin_ui = new Admin\Ui( $this->options_manager );
+		$this->loader->add_action( 'init', $admin_ui, 'block_init' );
+		$this->loader->add_action( 'enqueue_block_assets', $admin_ui, 'enqueue_block_assets' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_settings' );
+		$this->loader->add_action( 'wp_enqueue_media', $admin_ui, 'enqueue_attachment_details' );
 	}
 
 	/**

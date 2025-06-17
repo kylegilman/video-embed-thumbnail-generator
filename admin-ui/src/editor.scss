@@ -1,0 +1,165 @@
+ @use '@wordpress/base-styles/colors';
+ @use '@wordpress/base-styles/variables';
+
+.wp-block-create-block-videopack-block {
+	border: 1px dotted #f00;
+}
+
+// Provide special styling for the placeholder.
+// @todo: this particular minimal style of placeholder could be componentized further.
+.wp-block-videopack-videopack-block {
+	// Show Placeholder style on-select.
+	&.is-selected .components-placeholder {
+		// Block UI appearance.
+		color: colors.$gray-900;
+		background-color: colors.$white;
+		box-shadow: inset 0 0 0 variables.$border-width colors.$gray-900;
+		border: none;
+
+		// @todo: this should eventually be overridden by a custom border-radius set in the inspector.
+		border-radius: variables.$radius-block-ui;
+
+		> svg {
+			opacity: 0;
+		}
+
+		.components-placeholder__illustration {
+			display: none;
+		}
+
+		&::before {
+			opacity: 0;
+		}
+	}
+
+	// Remove the transition while we still have a legacy placeholder style.
+	// Otherwise the content jumps between the 1px placeholder border, and any inherited custom
+	// parent border that may get applied when you deselect.
+	.components-placeholder__label,
+	.components-placeholder__instructions,
+	.components-button {
+		transition: none;
+	}
+}
+
+.wp-block[data-align="center"] > .wp-block-video {
+	text-align: center;
+}
+
+.wp-block-video {
+	position: relative;
+
+	&.is-transient video {
+		opacity: 0.3;
+	}
+
+	// Shown while video is being uploaded
+	.components-spinner {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-top: -9px;
+		margin-left: -9px;
+	}
+}
+
+.editor-video-poster-control {
+	.components-base-control__label {
+		display: block;
+	}
+
+	.components-button {
+		margin-right: variables.$grid-unit-10;
+	}
+}
+
+picture.vjs-poster {
+	pointer-events: none;
+}
+
+.videopack-formats-list {
+
+	width: 90%;
+	margin-top: -27px;
+	margin-bottom: 0;
+
+	li {
+		margin-top: 27px;
+	}
+
+	button.components-button.is-link.is-destructive {
+		margin-top: 3px;
+	}
+
+	.components-checkbox-control {
+		display: inline-block;
+		margin-bottom: 7px;
+	}
+	.videopack-meter {
+		background-color: var(--wp--preset--color--tertiary);
+		display: inline-block;
+  		width: 70%;
+		margin-right: 10px;
+		border-radius: 4px;
+		height: 19px;
+	}
+
+	.videopack-meter-bar {
+		background: linear-gradient(
+			90deg,
+			var(--wp-admin-theme-color),
+			var(--wp-admin-theme-color-darker-10)
+		);
+		border-radius: inherit;
+	}
+
+	.videopack-meter-text {
+		color: white;
+		text-align: right;
+		margin-right: 5px;
+		line-height: 19px;
+		font-size: 10px;
+	}
+
+	span.videopack-format {
+		margin-right: 15px;
+		vertical-align: middle;
+		display: inline-flex;
+	}
+
+	.videopack-format-status {
+		text-transform:capitalize;
+		display: inline-flex;
+		vertical-align: middle;
+		font-size: 11px;
+		margin-right: 11px;
+		font-weight: 300;
+	}
+
+	.videopack-encode-progress {
+		margin-top: 4px;
+	}
+
+	.videopack-encode-progress-small-text {
+		width: 90%;
+		font-size: 10px;
+		display: flex;
+		justify-content: space-between;
+		margin-top: 2px;
+	}
+
+	&.no-ffmpeg {
+		span {
+			margin-right: 8px;
+		}
+		button {
+			height: inherit;
+			font-size: inherit;
+		}
+	}
+}
+
+.videopack-encode-message {
+	margin-left: 8px;
+    font-weight: 300;
+}
