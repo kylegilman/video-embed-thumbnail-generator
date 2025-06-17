@@ -35,6 +35,7 @@ class Encode_Attachment {
 	protected $codecs;
 	protected $encode_info = array();
 	protected $ffmpeg_path;
+	protected $queue_table_name;
 	protected $current_temp_watermark_path = null;
 
 	/**
@@ -59,6 +60,7 @@ class Encode_Attachment {
 		$this->queue_log          = array();
 		$this->set_is_attachment();
 		$this->set_encode_formats();
+		$this->set_queue_table_name();
 		$this->set_ffmpeg_path();
 	}
 
@@ -87,11 +89,12 @@ class Encode_Attachment {
 		global $wpdb;
 		$this->encode_formats = array();
 		$results              = null;
+		$current_blog_id      = get_current_blog_id(); // Assumes context is correctly set by caller
 
 		if ( $this->is_attachment && is_numeric( $this->id ) ) {
-			$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}videopack_encoding_queue WHERE attachment_id = %d", $this->id ), ARRAY_A );
+			$results = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE attachment_id = %d AND blog_id = %d', $this->queue_table_name, $this->id, $current_blog_id ), ARRAY_A );
 		} elseif ( ! empty( $this->url ) ) {
-			$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}videopack_encoding_queue WHERE input_url = %s", $this->url ), ARRAY_A );
+			$results = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE input_url = %s AND blog_id = %d', $this->queue_table_name, $this->url, $current_blog_id ), ARRAY_A );
 		} else {
 			return; // Not enough info to fetch formats
 		}
@@ -102,6 +105,16 @@ class Encode_Attachment {
 				$job_data['job_id']     = $job_data['id'];
 				$this->encode_formats[] = Encode_Format::from_array( $job_data );
 			}
+		}
+	}
+
+	protected function set_queue_table_name() {
+		global $wpdb;
+		if ( is_multisite() ) {
+			$main_site_id = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
+			$this->queue_table_name = $wpdb->get_blog_prefix( $main_site_id ) . 'videopack_encoding_queue';
+		} else {
+			$this->queue_table_name = $wpdb->prefix . 'videopack_encoding_queue';
 		}
 	}
 
@@ -145,7 +158,7 @@ class Encode_Attachment {
 		// If status is 'failed', set 'failed_at'
 		if ( 'failed' === $data_to_save['status'] ) {
 			// Check if failed_at is already set in the DB to avoid overwriting it.
-			$current_failed_at = $wpdb->get_var( $wpdb->prepare( "SELECT failed_at FROM {$wpdb->prefix}videopack_encoding_queue WHERE id = %d", $job_id ) );
+			$current_failed_at = $wpdb->get_var( $wpdb->prepare( 'SELECT failed_at FROM %i WHERE id = %d', $this->queue_table_name, $job_id ) );
 			if ( empty( $current_failed_at ) ) {
 				$db_data['failed_at'] = current_time( 'mysql', true );
 			}
@@ -160,7 +173,7 @@ class Encode_Attachment {
 		);
 
 		if ( ! empty( $db_data ) ) {
-			$wpdb->update( $wpdb->prefix . 'videopack_encoding_queue', $db_data, array( 'id' => $job_id ) );
+			$wpdb->update( $this->queue_table_name, $db_data, array( 'id' => $job_id ) );
 		}
 
 		// After saving to DB, refresh $this->encode_formats if necessary,
@@ -210,11 +223,12 @@ class Encode_Attachment {
 		global $wpdb;
 		$formats = array();
 		$results = null;
+		$current_blog_id = get_current_blog_id(); // Assumes context is correctly set by caller
 
 		if ( $this->is_attachment && is_numeric( $this->id ) ) {
-			$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}videopack_encoding_queue WHERE attachment_id = %d AND status = %s", $this->id, $status ), ARRAY_A );
+			$results = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE attachment_id = %d AND blog_id = %d AND status = %s', $this->queue_table_name, $this->id, $current_blog_id, $status ), ARRAY_A );
 		} elseif ( ! empty( $this->url ) ) {
-			$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}videopack_encoding_queue WHERE input_url = %s AND status = %s", $this->url, $status ), ARRAY_A );
+			$results = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE input_url = %s AND blog_id = %d AND status = %s', $this->queue_table_name, $this->url, $current_blog_id, $status ), ARRAY_A );
 		} else {
 			return $formats; // Not enough info.
 		}
@@ -1163,21 +1177,27 @@ class Encode_Attachment {
 		// Check if this format is intended to replace the original
 		if ( $video_format_config->get_replaces_original() ) {
 			global $wpdb;
+			$current_blog_id = get_current_blog_id(); // Assumes context is correctly set
+
 			// Check if any other formats for this attachment are still encoding or queued in the DB
 			$pending_job_count = 0;
 			if ( $this->is_attachment && is_numeric( $this->id ) ) {
-				$pending_job_count = $wpdb->get_var(
+				$pending_job_count = (int) $wpdb->get_var(
 					$wpdb->prepare(
-						"SELECT COUNT(*) FROM {$wpdb->prefix}videopack_encoding_queue WHERE attachment_id = %d AND status IN ('encoding', 'queued') AND id != %d",
+						"SELECT COUNT(*) FROM %i WHERE attachment_id = %d AND blog_id = %d AND status IN ('encoding', 'queued', 'processing') AND id != %d",
+						$this->queue_table_name,
 						$this->id,
+						$current_blog_id,
 						$encode_format->get_job_id()
 					)
 				);
 			} elseif ( ! empty( $this->url ) ) {
-				$pending_job_count = $wpdb->get_var(
+				$pending_job_count = (int) $wpdb->get_var(
 					$wpdb->prepare(
-						"SELECT COUNT(*) FROM {$wpdb->prefix}videopack_encoding_queue WHERE input_url = %s AND status IN ('encoding', 'queued') AND id != %d",
+						"SELECT COUNT(*) FROM %i WHERE input_url = %s AND blog_id = %d AND status IN ('encoding', 'queued', 'processing') AND id != %d",
+						$this->queue_table_name,
 						$this->url,
+						$current_blog_id,
 						$encode_format->get_job_id()
 					)
 				);

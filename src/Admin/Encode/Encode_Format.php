@@ -151,6 +151,7 @@ class Encode_Format {
 			'complete',
 			'canceled',
 			'deleted',
+			'pending_replacement',
 			'error',
 		);
 		if ( in_array( $status, $allowed ) ) {

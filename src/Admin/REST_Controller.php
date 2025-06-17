@@ -373,8 +373,7 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	public function settings() {
-		// $this->options is populated in the constructor with all global options.
-		$all_options = $this->options;
+		$all_options  = $this->options;
 		$safe_options = array();
 
 		// Define keys that should not be exposed via this REST endpoint.
@@ -558,28 +557,6 @@ class REST_Controller extends \WP_REST_Controller {
 
 	public function queue_get( \WP_REST_Request $request ) {
 
-		/* $params             = $request->get_params();
-		$found              = false;
-		$video_encode_queue = kgvid_get_encode_queue();
-		$video_encode_queue = $this->clean_array( $video_encode_queue );
-
-		if ( array_key_exists( 'attachmentID', $params ) ) {
-			foreach ( $video_encode_queue as $video_key => $video_entry ) {
-				if ( $video_entry['attachmentID'] === $params['attachmentID'] ) {
-					$video_encode_queue = $video_encode_queue[ $video_key ];
-					$found = true;
-					break;
-				}
-			}
-			if ( ! $found ) {
-				$video_encode_queue = array();
-			}
-		}
-
-		kgvid_encode_progress();
-
-		return $video_encode_queue; */
-
 		$params = $request->get_params();
 		if ( array_key_exists( 'id', $params ) ) {
 			$encoder = new Encode\Encode_Attachment( $this->options_manager, $params['id'] );
@@ -591,18 +568,6 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	public function queue_edit( \WP_REST_Request $request ) {
-
-		/* $params   = $request->get_params();
-		$response = array();
-
-		$response = kgvid_enqueue_videos(
-			$params['attachmentID'],
-			$params['movieurl'],
-			$params['encodeformats'],
-			$params['parent_id'],
-		);
-		kgvid_encode_videos();
-		return $response; */
 
 		$params     = $request->get_params();
 		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
