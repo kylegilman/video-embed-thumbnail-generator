@@ -2,10 +2,6 @@
 
 namespace Videopack\Admin\Encode;
 
-use Videopack\Admin\Thumbnails\FFmpeg_Thumbnails;
-
-use Videopack\Admin\Options;
-
 /**
  * Handles running diagnostic FFmpeg encoding tests.
  */
@@ -13,7 +9,7 @@ class FFmpeg_Tester {
 
 	/**
 	 * Videopack Options manager class instance
-	 * @var Options $options_manager
+	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
 
@@ -22,7 +18,7 @@ class FFmpeg_Tester {
 	 *
 	 * @param Options $options_manager The Videopack Options manager instance.
 	 */
-	public function __construct( Options $options_manager ) {
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 	}
 
@@ -109,7 +105,7 @@ class FFmpeg_Tester {
 		$output            = array();
 		$uploads           = wp_upload_dir();
 		$test_path         = rtrim( (string) $app_path, '/' );
-		$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new \Videopack\Admin\Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
 
 		if ( function_exists( 'proc_open' ) ) {
 			$proc_open_enabled = true;
