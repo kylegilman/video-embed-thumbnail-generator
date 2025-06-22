@@ -252,7 +252,8 @@ class Options {
 		$this->set_capabilities( $options_to_init['capabilities'] ?? $this->default_capabilities );
 
 		if ( $options_to_init['ffmpeg_exists'] === 'notchecked' ) {
-			$ffmpeg_check = $this->check_ffmpeg_exists( $options_to_init['app_path'] );
+			$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
+			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( $options_to_init['app_path'] );
 			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_init['ffmpeg_exists'] = true;
 				$options_to_init['app_path']      = $ffmpeg_check['app_path'];
@@ -346,7 +347,8 @@ class Options {
 		$options_to_save = $this->get_default(); // Get all defaults, including from add-ons
 
 		if ( $options_to_save['ffmpeg_exists'] === 'notchecked' ) {
-			$ffmpeg_check = $this->check_ffmpeg_exists( $options_to_save['app_path'] );
+			$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
+			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( $options_to_save['app_path'] );
 			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_save['ffmpeg_exists'] = true;
 				$options_to_save['app_path']      = $ffmpeg_check['app_path'];
@@ -603,9 +605,10 @@ class Options {
 
 		$input = \Videopack\Common\Validate::text_field( $input ); // recursively sanitizes all the settings
 
-		// Use $this->options for current values, not public properties
+		$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
+		// Use $this->options for current values, not public properties.
 		if ( $input['app_path'] != $this->options['app_path'] ) {
-			$input = $this->validate_ffmpeg_settings( $input );
+			$input = $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
 		} else {
 			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'];
 		}
@@ -682,9 +685,9 @@ class Options {
 		return $input;
 	}
 
-	public function validate_ffmpeg_settings( $input ) {
+	public function validate_ffmpeg_settings( array $input, Encode\FFmpeg_Tester $ffmpeg_tester ) {
 
-		$ffmpeg_info = $this->check_ffmpeg_exists( $input['app_path'] );
+		$ffmpeg_info = $ffmpeg_tester->check_ffmpeg_exists( $input['app_path'] );
 		if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
 			$input['ffmpeg_exists'] = true;
 		}
@@ -710,61 +713,6 @@ class Options {
 		}
 
 		return $input;
-	}
-
-	public function check_ffmpeg_exists( $app_path ) {
-
-		$proc_open_enabled = false;
-		$ffmpeg_exists     = false;
-		$output            = array();
-		$function          = '';
-		$uploads           = wp_upload_dir();
-		$test_path         = rtrim( (string) $app_path, '/' );
-		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this );
-
-		if ( function_exists( 'proc_open' ) ) {
-
-			$proc_open_enabled = true;
-
-			$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
-				plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
-				$uploads['path'] . '/ffmpeg_exists_test.jpg',
-				$test_path
-			);
-
-			if ( ! file_exists( $uploads['path'] . '/ffmpeg_exists_test.jpg' )
-				&& substr( $test_path, -6 ) == 'ffmpeg'
-			) { // if FFmpeg has not executed successfully
-
-				$test_path = substr( $test_path, 0, -7 );
-
-				$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
-					plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
-					$uploads['path'] . '/ffmpeg_exists_test.jpg',
-					$test_path
-				);
-
-			}
-
-			if ( file_exists( $uploads['path'] . '/ffmpeg_exists_test.jpg' ) ) { // FFMEG has executed successfully
-				$ffmpeg_exists = true;
-				wp_delete_file( $uploads['path'] . '/ffmpeg_exists_test.jpg' );
-				$app_path = $test_path;
-			}
-
-			$output = explode( "\n", $ffmpeg_test );
-
-		}
-
-		$arr = array(
-			'proc_open_enabled' => $proc_open_enabled,
-			'ffmpeg_exists'     => $ffmpeg_exists,
-			'output'            => $output,
-			'function'          => $function,
-			'app_path'          => $app_path,
-		);
-
-		return $arr;
 	}
 
 	protected function get_roles_with_capability( $capability ) {

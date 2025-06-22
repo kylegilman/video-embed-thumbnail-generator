@@ -20,13 +20,11 @@ class REST_Controller extends \WP_REST_Controller {
 	protected $options_manager;
 	protected $options;
 	protected $namespace;
-	protected $uploads;
 
 	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->namespace       = 'videopack/v1';
-		$this->uploads         = wp_upload_dir();
 	}
 
 
@@ -114,7 +112,7 @@ class REST_Controller extends \WP_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/formats/(?P<id>\w+)',
-			array(
+			array( // This route handles specific attachment IDs.
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'formats' ),
 				'permission_callback' => '__return_true',
@@ -133,6 +131,12 @@ class REST_Controller extends \WP_REST_Controller {
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'formats' ),
 				'permission_callback' => '__return_true',
+				'args'                => array(
+					'url' => array( // This route handles video URLs.
+						'type'   => 'string',
+						'format' => 'uri',
+					),
+				),
 			)
 		);
 
@@ -171,7 +175,7 @@ class REST_Controller extends \WP_REST_Controller {
 						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
-						'movieurl'                 => array(
+						'url'                      => array(
 							'type'     => 'string',
 							'required' => true,
 						),
@@ -221,6 +225,23 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/queue/(?P<job_id>\d+)',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'queue_delete' ),
+				'permission_callback' => function () {
+					return is_user_logged_in();
+				},
+				'args'                => array(
+					'job_id' => array(
+						'type' => 'integer',
+						'required' => true,
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
 			'/sources',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -235,25 +256,6 @@ class REST_Controller extends \WP_REST_Controller {
 							'number',
 							'string',
 						),
-					),
-				),
-			)
-		);
-		register_rest_route(
-			$this->namespace,
-			'/checkboxes',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'checkboxes' ),
-				'permission_callback' => function () {
-					return current_user_can( 'upload_files' );
-				},
-				'args'                => array(
-					'url'    => array(
-						'type' => 'string',
-					),
-					'postId' => array(
-						'type' => 'number',
 					),
 				),
 			)
@@ -278,7 +280,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'queue_edit' ),
 					'permission_callback' => function () {
-						return ( current_user_can( 'encode_videos' ) && $this->options['ffmpeg_exists'] === true );
+						return current_user_can( 'encode_videos' );
 					},
 					'args'                => array(
 						'url'       => array(
@@ -408,26 +410,61 @@ class REST_Controller extends \WP_REST_Controller {
 		return $roles;
 	}
 
+	/**
+	 * REST callback to get video formats and their encoding status for a specific attachment or URL.
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return array|\WP_Error Array of format data on success, or WP_Error object on failure.
+	 */
 	public function formats( \WP_REST_Request $request ) {
-		$params = $request->get_params();
-		if ( array_key_exists( 'id', $params )
-			&& get_post_type( $params['id'] ) === 'attachment'
-		) {
-			$encoder       = new encode\Encode_Attachment( $this->options_manager, $params['id'] );
-			$video_formats = $encoder->get_available_formats();
-			foreach ( $video_formats as $format => $format_info ) {
-				$encode_info              = $encoder->get_encode_info( $format );
-				$video_formats[ $format ] = array_merge( $format_info, $encode_info );
+		$params              = $request->get_params();
+		$encoder             = null;
+		$video_formats_data  = array();
+		$all_defined_formats = $this->options_manager->get_video_formats(); // These are Video_Format objects.
+
+		if ( ! empty( $params['id'] ) && get_post_type( $params['id'] ) === 'attachment' ) {
+			$encoder = new encode\Encode_Attachment( $this->options_manager, (int) $params['id'] );
+		} elseif ( ! empty( $params['url'] ) ) {
+			$input_url     = esc_url_raw( $params['url'] );
+			$sanitized_url = new Sanitize_Url( $input_url );
+			// For external URLs, the 'id' parameter in Encode_Attachment constructor is used for internal tracking (like singleurl_id).
+			$encoder = new encode\Encode_Attachment( $this->options_manager, $sanitized_url->singleurl_id, $input_url );
+		}
+
+		if ( $encoder ) {
+			// Specific video requested: get its encoding jobs (Encode_Format objects from the DB).
+			$encoded_jobs = $encoder->get_formats(); // Returns array of Encode_Format objects.
+
+			foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
+				$format_array           = $video_format_obj->to_array();
+				$format_array['status'] = 'not_encoded'; // Default status if no job found.
+
+				// Find if there's an existing job for this format.
+				$matching_encode_format = null;
+				foreach ( $encoded_jobs as $job_obj ) {
+					if ( $job_obj->get_format_id() === $format_id ) {
+						$matching_encode_format = $job_obj;
+						break;
+					}
+				}
+
+				if ( $matching_encode_format ) {
+					// Merge with data from the Encode_Format object (the job).
+					$job_data_array = $matching_encode_format->to_array();
+					$format_array   = array_merge( $format_array, $job_data_array );
+				}
+				$video_formats_data[] = $format_array;
 			}
 		} else {
-			$unsorted_video_formats = $this->options_manager->get_video_formats();
-			foreach ( $unsorted_video_formats as $format => $format_info ) {
-				$format_info['format'] = $format;
-				$video_formats[]       = $format_info;
+			// No specific video: return all defined formats with their default properties.
+			foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
+				$format_array           = $video_format_obj->to_array();
+				$format_array['status'] = 'defined'; // Indicate it's just a definition.
+				$video_formats_data[]   = $format_array;
 			}
 		}
-		$video_formats = $this->clean_array( $video_formats );
-		return $video_formats;
+
+		return $this->clean_array( $video_formats_data );
 	}
 
 	public function thumb_generate( \WP_REST_Request $request ) {
@@ -438,13 +475,13 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$response = $ffmpeg_thumbnails->make(
 			$params['attachmentID'],
-			$params['movieurl'],
+			$params['url'],
 			$params['numberofthumbs'],
 			$params['thumbnumber'],
 			$params['thumbnumberplusincreaser'],
 			$params['thumbtimecode'],
 			$params['dofirstframe'],
-			$params['generate_button'],
+			$params['generate_button']
 		);
 
 		return $response;
@@ -464,7 +501,7 @@ class REST_Controller extends \WP_REST_Controller {
 			$params['postId'],
 			$post_name,
 			$params['thumburl'],
-			intval( $params['index'] ) + 1,
+			intval( $params['index'] ) + 1
 		);
 
 		return $response;
@@ -546,15 +583,6 @@ class REST_Controller extends \WP_REST_Controller {
 		return $source_info;
 	}
 
-	public function checkboxes( \WP_REST_Request $request ) {
-
-		$params     = $request->get_params();
-		$checkboxes = kgvid_generate_encode_checkboxes( $params['url'], $params['postId'], 'attachment' );
-		$checkboxes = $this->clean_array( $checkboxes['data'] );
-		kgvid_encode_progress();
-		return $checkboxes;
-	}
-
 	public function queue_get( \WP_REST_Request $request ) {
 
 		$params = $request->get_params();
@@ -569,54 +597,68 @@ class REST_Controller extends \WP_REST_Controller {
 
 	public function queue_edit( \WP_REST_Request $request ) {
 
-		$params     = $request->get_params();
-		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
-		$args       = array(
-			'id'      => $params['id'],
-			'url'     => $params['url'],
-			'formats' => $params['formats'],
+		$params = $request->get_params();
+		// Filter formats to only include those explicitly marked for encoding.
+		$formats_to_enqueue = array_keys(
+			array_filter(
+				$params['formats'],
+				function ( $value ) {
+					return (bool) $value;
+				}
+			)
 		);
-		$response   = $controller->add_to_queue( $args );
+
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$video_url  = $params['url'] ?? null;
+		if ( empty( $video_url ) ) {
+			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing video URL.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+		$args     = array(
+			'id'      => $params['id'],
+			'url'     => $video_url,
+			'formats' => $formats_to_enqueue,
+		);
+		$response = $controller->enqueue_encodes( $args );
 		return $response;
 	}
 
+	/**
+	 * REST callback to delete an encoding queue job.
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function queue_delete( \WP_REST_Request $request ) {
+		$job_id = (int) $request->get_param( 'job_id' );
+		if ( empty( $job_id ) ) {
+			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing job ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$result     = $controller->delete_job( $job_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		// Clean array to remove paths before sending to UI.
+		$response_data = $this->clean_array( $result );
+		return new \WP_REST_Response( $response_data, 200 );
+	}
+
 	public function ffmpeg_test( \WP_REST_Request $request ) {
-		$format = $request->get_param( 'format' );
-		$rotate = $request->get_param( 'rotate' );
-		if ( $rotate === true ) {
-			$url = plugin_dir_path( __DIR__ ) . 'images/sample-video-rotated-h264.mp4';
-		} else {
-			$url = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
-		}
-		$attachment    = new encode\Encode_Attachment( $this->options_manager, 'sample', $url );
-		$encode_info   = $attachment->get_encode_info( $format );
-		$encode_format = new encode\Encode_Format( $format );
-		$encode_format->set_queued(
-			$encode_info['path'],
-			$encode_info['url'],
-			get_current_user_id()
-		);
-		$encode_array = $attachment->get_encode_array( $encode_format );
-		$process      = new encode\FFmpeg_Process( $encode_array );
-		try {
-			$process->run();
-			$output = $process->getErrorOutput();
-		} catch ( \Exception $e ) {
-			$output = $e->getMessage();
+		$format = $request->get_param( 'format' ); // Already validated by REST route args.
+		$rotate = $request->get_param( 'rotate' ); // Already validated by REST route args.
+
+		$tester = new encode\FFmpeg_Tester( $this->options_manager ); // FFmpeg_Tester now handles the check_ffmpeg_exists logic.
+		$result = $tester->run_test_encode( $format, (bool) $rotate );
+
+		// If the FFmpeg_Tester returns an invalid format message, convert it to a WP_Error.
+		if ( isset( $result['output'] ) && strpos( $result['output'], __( 'Invalid video format specified.', 'video-embed-thumbnail-generator' ) ) !== false ) {
+			return new \WP_Error( 'rest_invalid_format', $result['output'], array( 'status' => 400 ) );
 		}
 
-		if ( is_file( $encode_format->get_path() ) ) {
-			wp_delete_file( $encode_format->get_path() );
-		}
-		if ( is_file( $encode_format->get_logfile() ) ) {
-			wp_delete_file( $encode_format->get_logfile() );
-		}
-
-		$response = array(
-			'command' => implode( ' ', $encode_array ),
-			'output'  => $output,
-		);
-		return $response;
+		return $result;
 	}
 
 	public function wp_video( \WP_REST_Request $request ) {

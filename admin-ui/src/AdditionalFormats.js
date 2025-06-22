@@ -38,22 +38,40 @@ const AdditionalFormats = ( {
 	const { ffmpeg_exists } = options;
 	const [ videoFormats, setVideoFormats ] = useState();
 	const [ encodeMessage, setEncodeMessage ] = useState();
-	const [ formatToDelete, setFormatToDelete ] = useState();
+	const [ itemToDelete, setItemToDelete ] = useState( null ); // { type: 'file'/'job', formatId: string, jobId?: int, childId?: int, name?: string }
+	const [ deleteInProgress, setDeleteInProgress ] = useState( null ); // Stores formatId or jobId being deleted
 	const [ isConfirmOpen, setIsConfirmOpen ] = useState( false );
 	const [ isLoading, setIsLoading ] = useState( false );
+	const [ isEncoding, setIsEncoding ] = useState( false );
 	const checkboxTimerRef = useRef(null);
 	const progressTimerRef = useRef(null);
 	const queueApiPath = '/videopack/v1/queue';
 
-	useEffect( () => {
-		apiFetch({ path: '/videopack/v1/formats/' + id })
-		.then( response => {
+	const fetchVideoFormats = () => {
+		if ( ! id ) return; // Don't fetch if there's no ID.
+		apiFetch( { path: '/videopack/v1/formats/' + id } ).then( ( response ) => {
 			setVideoFormats( response );
-			console.log(response);
-		});
-	}, [id] );
+			// Initialize .checked property if not present
+			if ( response && typeof response === 'object' ) {
+				const initializedFormats = { ...response };
+				Object.keys( initializedFormats ).forEach( ( key ) => {
+					if (
+						initializedFormats[ key ] &&
+						typeof initializedFormats[ key ].checked === 'undefined'
+					) {
+						initializedFormats[ key ].checked = false;
+					}
+				} );
+				setVideoFormats( initializedFormats );
+			}
+		} );
+	};
 
-	const isEmpty = (value) => {
+	useEffect(() => {
+		fetchVideoFormats();
+	}, [id]); // Fetch formats when the attachment ID changes
+
+	const isEmpty = ( value ) => {
 
 		if( value === false
 			|| value === null
@@ -67,7 +85,7 @@ const AdditionalFormats = ( {
 		return false;
 	};
 
-	const deepEqual = (obj1, obj2) => {
+	const deepEqual = ( obj1, obj2 ) => {
 
 		if (obj1 === obj2) {
 			return true;
@@ -103,10 +121,11 @@ const AdditionalFormats = ( {
 		return select( 'core' ).getSite();
 	}, [] );
 
-	const isEncodingNow = () => {
+	const checkIsEncoding = ( formats ) => {
 		if ( ! videoFormats ) {
 			return false;
 		}
+		// Check if any format has status 'processing' or 'encoding'
 		return Object.values(videoFormats).some(
 			(format) => format.hasOwnProperty('encoding_now') && format.encoding_now
 		);
@@ -114,7 +133,7 @@ const AdditionalFormats = ( {
 
 	const incrementEncodeProgress = () => {
 		console.log('progress');
-		if ( isEncodingNow() ) {
+		if ( isEncoding ) { // Use the state variable
 			const updatedVideoFormats = Object.entries(videoFormats).reduce((updated, [key, format]) => {
 				if ( ! isEmpty( format.progress ) ) {
 
@@ -156,26 +175,27 @@ const AdditionalFormats = ( {
 		}
 	}
 
-	const updateVideoFormats = () => {
+	const pollVideoFormats = () => {
 		console.log('update');
 		if ( src && id ) {
-			apiFetch({
-				path: '/videopack/v1/formats/' + id,
-				method: 'GET',
-			})
+			apiFetch({ path: '/videopack/v1/formats/' + id, method: 'GET' })
 			.then( response => {
 				if ( ! deepEqual( videoFormats, response ) ) {
 					setVideoFormats(response);
 				}
-			} );
+			} ).catch(error => console.error("Error polling video formats:", error));
 		}
 	}
 
 	useEffect( () => {
+		// Set initial encoding state based on fetched formats
+		setIsEncoding( checkIsEncoding( videoFormats ) );
 
-		checkboxTimerRef.current = setTimeout( updateVideoFormats, 5000 );
+		// Schedule polling for updates
+		checkboxTimerRef.current = setTimeout( pollVideoFormats, 5000 );
 
-		if ( ! isEncodingNow() ) {
+		// Manage progress timer based on encoding state
+		if ( ! isEncoding ) {
 			clearInterval(progressTimerRef.current);
 			progressTimerRef.current = null;
 
@@ -196,92 +216,42 @@ const AdditionalFormats = ( {
 			}
 		};
 
-	}, [videoFormats] );
-
-	const somethingToEncode = () => {
-		if ( videoFormats ) {
-			return Object.values(videoFormats).some((obj) => obj.exists === false);
-		}
-		return false;
-	};
-
-	const buildVideoFormats = () => {
-		let nextVideoFormats = videoFormats;
-		if ( nextVideoFormats ) {
-			// Hide video formats that are not enabled in the plugin settings.
-			const visibleVideoFormats = () => {
-				Object.keys( options.encode ).reduce( ( acc, key ) => {
-					if ( nextVideoFormats.hasOwnProperty( key ) ) {
-						acc[key] = nextVideoFormats[key];
-					}
-					return acc;
-				} );
-			}
-			// Hide video formats that are higher resolution than the original video.
-			const lowResVideoFormats = () => {
-				Object.fromEntries(
-					Object.entries(nextVideoFormats).filter( ( [key, format] ) => {
-						return ! format.height || format.height === 0 || format.height > height;
-					})
-				);
-			}
-			if ( options.hide_video_formats ) {
-				nextVideoFormats = visibleVideoFormats();
-			}
-			nextVideoFormats = lowResVideoFormats();
-		}
-	}
+	}, [videoFormats, isEncoding] ); // Depend on videoFormats and isEncoding state
 
 	const handleFormatCheckbox = ( event, format ) => {
 		setVideoFormats(prevVideoFormats => {
-			prevVideoFormats[format].checked = event;
-			return { ...prevVideoFormats };
+			const updatedFormats = { ...prevVideoFormats };
+			if (updatedFormats[format]) {
+				updatedFormats[format].checked = event;
+			}
+			return updatedFormats;
 		});
-
-		const currentKgvidMeta = attachmentRecord.meta?.['_kgvid-meta'] || {};
-		const updatedKgvidMeta = {
-			...currentKgvidMeta.encode,
-			[format]: event ? true : 'notchecked',
-		};
-		attachmentRecord.edit( {
-			meta: {
-				'_kgvid-meta': {
-					'encode': updatedKgvidMeta,
-				}
-			},
-		} )
-		.then( response => {
-			attachmentRecord.save()
-			.then( response => {
-				console.log(attachmentRecord);
-			});
-		} )
-		.catch( error => {
-			console.error(error);
-		});
+		// Note: Checkbox state is now purely UI. Saving to DB happens on "Encode" button click.
 	}
 
 	const onSelectFormat = ( media ) => {
 		console.log('select');
 	}
 
-	const handleEncode = () => {
+	const handleEnqueue = () => {
 
 		setIsLoading(true);
 
-		const kgvid_encode = Object.entries( videoFormats )
+		// Get list of format IDs that are checked and available
+		const formatsToEncode = Object.entries( videoFormats )
+			.filter( ( [ key, value ] ) => value.checked && value.is_available && value.status !== 'queued' && value.status !== 'processing' && value.status !== 'completed' )
 			.reduce( ( acc, [ key, value ] ) => {
-				acc[key] = value.checked ? true : false;
+				acc[key] = true; // Backend expects an object { format_id: true, ... }
 				return acc;
-			}, {}
-		);
+			}, {} );
+
 
 		apiFetch({
 			path: queueApiPath + '/' + id,
 			method: 'PUT',
 			data: {
-				movieurl: src,
-				encodeformats: kgvid_encode,
+				url: src,
+				formats: formatsToEncode, // Send array of format IDs
 				parent_id: attachmentRecord?.record?.post
 			}
 		})
@@ -331,19 +301,23 @@ const AdditionalFormats = ( {
 				}
 			}
 			setEncodeMessage( queueMessage() );
-			setIsLoading(false);
-			updateVideoFormats();
+			setIsLoading( false );
+			fetchVideoFormats(); // Re-fetch to update statuses
 
 		} )
 		.catch( error => {
 			console.error(error);
+			setEncodeMessage( sprintf( __( 'Error enqueueing: %s' ), error.message ) );
+			setIsLoading( false );
+			fetchVideoFormats(); // Re-fetch to ensure UI is consistent
 		} );
 	}
 
 	const formatPickable = ( format ) => {
-		if ( videoFormats
+		if ( videoFormats && videoFormats[format]
 			&& (
-				! videoFormats[format].exists
+				// A format is "pickable" if the file doesn't exist AND it's not already queued/processing/completed
+				( ! videoFormats[format].exists && videoFormats[format].status === 'not_queued' )
 				|| videoFormats[format].was_picked
 			)
 			&& ! videoFormats[format].encoding_now
@@ -353,48 +327,94 @@ const AdditionalFormats = ( {
 		return false;
 	}
 
-	const handleFormatDelete = ( format ) => {
-
+	// Deletes the actual media file (WP Attachment)
+	const handleFileDelete = ( formatId ) => {
+		const formatData = videoFormats?.[formatId];
+		if ( !formatData || !formatData.child_id ) {
+			setEncodeMessage( __( 'Error: Cannot delete file, missing attachment ID.' ) );
+			console.error('Cannot delete file: Missing child_id for format', formatId);
+			return;
+		}
+		setDeleteInProgress(formatId); // Mark this formatId as being deleted
 		apiFetch({
-			path: `/wp/v2/media/${videoFormats[format].child_id}?force=true`,
+			path: `/wp/v2/media/${formatData.child_id}?force=true`,
 			method: 'DELETE',
 		  }).then(() => {
-			setVideoFormats(prevVideoFormats => {
-				prevVideoFormats[ format ] = {
-					...prevVideoFormats[ format ],
-					exists: false,
-					status: 'deleted',
-					status_l10n: __( 'deleted' ),
-					deletable: false,
-					checked: true,
-				}
-				return { ...prevVideoFormats };
-			});
+			setEncodeMessage( __( 'File deleted successfully.' ) );
+			fetchVideoFormats(); // Re-fetch to get the latest status from backend
 		  }).catch((error) => {
-			console.error(error);
+			console.error('File delete failed:', error);
+			setEncodeMessage( sprintf( __( 'Error deleting file: %s' ), error.message ) );
+			fetchVideoFormats(); // Re-fetch to get the latest status
+		  }).finally(() => {
+			setDeleteInProgress(null);
 		  });
 	}
 
-	const confirmFormatDelete = ( format ) => {
-		setFormatToDelete( format );
+	// Deletes/Cancels a queue job
+	const handleJobDelete = ( jobId ) => {
+		if ( !jobId ) {
+			setEncodeMessage( __( 'Error: Cannot delete job, missing job ID.' ) );
+			console.error('Cannot delete job: Missing job ID');
+			return;
+		}
+		setDeleteInProgress(jobId); // Mark this jobId as being deleted
+		apiFetch({
+			path: `${queueApiPath}/${jobId}`,
+			method: 'DELETE',
+		}).then((response) => {
+			setEncodeMessage( __( 'Job cancelled/deleted successfully.' ) );
+			fetchVideoFormats(); // Re-fetch to get the latest status
+		}).catch((error) => {
+			console.error('Job delete failed:', error);
+			setEncodeMessage( sprintf( __( 'Error deleting job: %s' ), error.message ) );
+			fetchVideoFormats(); // Re-fetch to get the latest status
+		}).finally(() => {
+			setDeleteInProgress(null);
+		});
+	}
+
+
+	const openConfirmDialog = ( type, formatId ) => {
+		const formatData = videoFormats?.[formatId];
+		if (!formatData) return;
+
+		setItemToDelete({
+			type, // 'file' or 'job'
+			formatId,
+			jobId: formatData.job_id,
+			childId: formatData.child_id,
+			name: formatData.name,
+		});
 		setIsConfirmOpen( true );
 	}
+
 	const handleConfirm = () => {
 		setIsConfirmOpen( false );
-		handleFormatDelete( formatToDelete );
-		setFormatToDelete( null );
+		if (itemToDelete) {
+			if (itemToDelete.type === 'file' && itemToDelete.childId) {
+				handleFileDelete( itemToDelete.formatId );
+			} else if (itemToDelete.type === 'job' && itemToDelete.jobId) {
+				handleJobDelete( itemToDelete.jobId );
+			}
+		}
+		setItemToDelete( null );
 	};
+
 	const handleCancel = () => {
-		setFormatToDelete( null );
+		setItemToDelete( null );
 		setIsConfirmOpen( false );
 	};
 
 	const convertToTimecode = ( time ) => {
-		const padZero = (num) => num.toString().padStart(2, '0');
+		if ( time === null || time === undefined || isNaN( time ) ) {
+			return '--:--';
+		}
+		const padZero = (num) => Math.floor(num).toString().padStart(2, '0');
 
 		const h = Math.floor(time / 3600);
 		const m = Math.floor((time % 3600) / 60);
-		const s = time % 60;
+		const s = Math.floor(time % 60);
 
 		const hh = h > 0 ? padZero(h) + ':' : '';
 		const mm = padZero(m);
@@ -405,12 +425,16 @@ const AdditionalFormats = ( {
 
 	const EncodeProgress = ( { format } ) => {
 
-		if ( ! isEmpty( videoFormats[format]?.progress ) ) {
+		const formatData = videoFormats?.[format];
 
-			const percentText = sprintf( __( '%d%%' ), videoFormats[format].progress.percent_done );
-			const onCancel = () => {
-				console.log('cancel');
-			}
+		if ( formatData?.status === 'processing' && ! isEmpty( formatData?.progress ) ) {
+
+			const percentText = sprintf( __( '%d%%' ), formatData.progress.percent_done );
+			const onCancelJob = () => {
+				if ( formatData.job_id ) {
+					handleJobDelete( formatData.job_id );
+				}
+			};
 
 			return(
 				<div className='videopack-encode-progress'>
@@ -420,41 +444,107 @@ const AdditionalFormats = ( {
 							style={ { width: percentText } }
 						>
 							<div className='videopack-meter-text'>
-								{ videoFormats[format].progress.percent_done > 20 && percentText }
+								{ formatData.progress.percent_done > 20 && percentText }
 							</div>
 						</div>
 					</div>
-					<Button
-						onClick={ onCancel }
-						variant='secondary'
-						isDestructive
-						size='small'
-					>
-						{ __( 'Cancel' ) }
-					</Button>
+					{ formatData.job_id && (
+						<Button
+							onClick={ onCancelJob }
+							variant='secondary'
+							isDestructive
+							size='small'
+							isBusy={ deleteInProgress === formatData.job_id }
+						>
+							{ __( 'Cancel' ) }
+						</Button>
+					) }
 					<div className='videopack-encode-progress-small-text'>
 						<span>
-							{ __( 'Elapsed:' ) + ' ' + convertToTimecode( videoFormats[format].progress.elapsed ) }
+							{ __( 'Elapsed:' ) + ' ' + convertToTimecode( formatData.progress.elapsed ) }
 						</span>
 						<span>
-							{ __( 'Remaining:' ) + ' ' + convertToTimecode( videoFormats[format].progress.remaining ) }
+							{ __( 'Remaining:' ) + ' ' + convertToTimecode( formatData.progress.remaining ) }
 						</span>
 						<span>
-							{ __( 'fps:' ) + ' ' + videoFormats[format].progress.fps }
+							{ __( 'fps:' ) + ' ' + formatData.progress.fps }
 						</span>
 					</div>
+				</div>
+			);
+		}
+		// Display error message if status is failed
+		if ( formatData?.status === 'failed' && ! isEmpty( formatData?.error_message ) ) {
+			return (
+				<div className='videopack-encode-error'>
+					{ sprintf( __( 'Error: %s' ), formatData.error_message ) }
+					{ formatData.job_id && ( // Allow deleting failed jobs
+						<Button
+							onClick={ () => openConfirmDialog( 'job', format ) }
+							variant='link'
+							text={ __('Delete Job') }
+							isDestructive
+							isBusy={ deleteInProgress === formatData.job_id }
+						/>
+					) }
 				</div>
 			);
 		}
 		return null;
 	}
 
+	const somethingToEncode = () => {
+		if ( videoFormats ) {
+			// Check if any format is checked AND available AND not already in a terminal/pending state
+			return Object.values(videoFormats).some(
+				(obj) => obj.checked && obj.is_available && obj.status !== 'queued' && obj.status !== 'processing' && obj.status !== 'completed' && obj.status !== 'pending_replacement'
+			);
+		}
+		return false;
+	};
+
 	const encodeButtonTitle = () => {
 		if ( somethingToEncode() ) {
 			return isLoading ? __( 'Loading...' ) : __( 'Encode selected formats' );
 		}
 		else {
-			return __( 'Nothing to encode' );
+			return __( 'Select formats to encode' );
+		}
+	}
+
+	const getDisplayFormats = () => {
+		if ( !videoFormats ) return {};
+		let displayFormats = { ...videoFormats };
+
+		if ( options.hide_video_formats && options.encode ) {
+			displayFormats = Object.fromEntries(
+				Object.entries(displayFormats).filter( ( [key, format] ) =>
+					( options.encode[key] === true ) || ( format.status !== 'not_queued' )
+				)
+			);
+		}
+
+		if ( attachmentRecord?.record?.media_details?.height ) {
+			const sourceHeight = attachmentRecord.record.media_details.height;
+			displayFormats = Object.fromEntries(
+				Object.entries(displayFormats).filter( ( [key, format] ) =>
+					!format.height || format.height <= sourceHeight || format.replaces_original === true
+				)
+			);
+		}
+		return displayFormats;
+	};
+
+	const displayFormats = getDisplayFormats();
+	const isEncodeButtonDisabled = isLoading || !ffmpeg_exists || !somethingToEncode();
+
+	const confirmDialogMessage = () => {
+		if (!itemToDelete) return '';
+		if (itemToDelete.type === 'file') {
+			return sprintf( __( 'You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.' ), itemToDelete.name );
+		}
+		if (itemToDelete.type === 'job') {
+			return sprintf( __( 'You are about to permanently delete the encoding job for the %s video. This will also delete the encoded video file if it exists (if created by this job and not yet a separate attachment). This action cannot be undone.' ), itemToDelete.name );
 		}
 	}
 
@@ -466,30 +556,47 @@ const AdditionalFormats = ( {
 					{ videoFormats
 						? <>
 						<ul className={ `videopack-formats-list${ ffmpeg_exists ? '' : ' no-ffmpeg' }` }>
-							{ Object.keys( videoFormats ).map( ( format ) => (
-								<li key={ format } >
-									{ ( ffmpeg_exists && ! videoFormats[format].exists )
+							{ Object.keys( displayFormats ).map( ( formatId ) => {
+								const formatData = displayFormats[formatId];
+								if (!formatData) return null; // Should not happen if displayFormats is derived correctly
+
+								const isCheckboxDisabled = !ffmpeg_exists || !formatData.is_available || formatData.status !== 'not_queued';
+
+								return (
+								<li key={ formatId } >
+									{ ( ffmpeg_exists && formatData.is_available && formatData.status === 'not_queued' )
 										? <CheckboxControl
 											__nextHasNoMarginBottom
 											className='videopack-format'
-											label={ videoFormats[format].name }
-											checked={ videoFormats[format].checked }
-											disabled={ videoFormats[format].exists }
-											onChange={ ( event ) => handleFormatCheckbox( event, format ) }
+											label={ formatData.name }
+											checked={ formatData.checked }
+											disabled={ isCheckboxDisabled }
+											onChange={ ( event ) => handleFormatCheckbox( event, formatId ) }
 										/>
 										: <span className='videopack-format'>
-											{ videoFormats[format].name }
+											{ formatData.name }
 										</span>
 									}
-									{ videoFormats[format].status != 'notchecked' &&
+									{ formatData.status !== 'not_queued' &&
 										<span className='videopack-format-status'>
-											{ videoFormats[format].status_l10n }
+											{ formatData.status_l10n }
 										</span>
 									}
-									{ formatPickable( format ) &&
+									{ formatData.exists && formatData.status === 'not_queued' && !formatData.was_picked && (
+										<Button
+											variant="secondary"
+											onClick={ () => onSelectFormat( formatData ) } // Implement onSelectFormat for linking
+											className='videopack-format-button'
+											size='small'
+											title={ __( 'Link existing file' ) }
+										>
+											{ __( 'Link' ) }
+										</Button>
+									)}
+									{ formatData.was_picked && ( // Show "Replace" if it was manually picked/linked
 										<MediaUpload
-											title={ sprintf( __( 'Choose %s From Library' ), videoFormats[format].name ) }
-											onSelect={ onSelectFormat }
+											title={ sprintf( __( 'Replace %s' ), formatData.name ) }
+											onSelect={ onSelectFormat } // Implement replace logic
 											allowedTypes={ ['video'] }
 											render={ ( { open } ) => (
 											<Button
@@ -497,38 +604,36 @@ const AdditionalFormats = ( {
 												onClick={ open }
 												className='videopack-format-button'
 												size='small'
-												title={ __( 'Choose From Library' ) }
+												title={ __( 'Replace file' ) }
 											>
-												{ videoFormats[format].was_picked
-												? __( 'Replace' )
-												: __( 'Pick' ) }
+												{ __( 'Replace' ) }
 											</Button>
 											) }
 										/>
-									}
-									{ videoFormats[format].deletable &&
+									)}
+									{ formatData.deletable && formatData.child_id && ( // Delete FILE button
 										<Button
-											isBusy={ formatToDelete && formatToDelete === format }
-											onClick={ () => confirmFormatDelete( format ) }
+											isBusy={ deleteInProgress === formatId }
+											onClick={ () => openConfirmDialog( 'file', formatId ) }
 											variant='link'
-											text={ __('Delete Permanently') }
+											text={ __('Delete File') }
 											isDestructive
 										/>
-									}
-									{ videoFormats[format].status === 'encoding' &&
-										<EncodeProgress format={ format } />
+									)}
+									{ (formatData.status === 'processing' || formatData.status === 'failed') &&
+										<EncodeProgress format={ formatId } />
 									}
 									<Divider />
 								</li>
-							) )
-							}
+								);
+							}) }
 						</ul>
 						<ConfirmDialog
 							isOpen={ isConfirmOpen }
 							onConfirm={ handleConfirm }
 							onCancel={ handleCancel }
 						>
-							{ sprintf( __( 'You are about to permanently delete the encoded %s video from your site. This action cannot be undone.' ), videoFormats?.[formatToDelete]?.name ) }
+							{ confirmDialogMessage() }
 						</ConfirmDialog>
 						</>
 						: <><Spinner /></>
@@ -538,10 +643,10 @@ const AdditionalFormats = ( {
 					<PanelRow>
 						<Button
 							variant="secondary"
-							onClick={ handleEncode }
+							onClick={ handleEnqueue }
 							title={ encodeButtonTitle() }
 							text={ __( 'Encode' ) }
-							disabled={ ! somethingToEncode() }
+							disabled={ isEncodeButtonDisabled }
 						>
 						</Button>
 						{ isLoading && <Spinner /> }
