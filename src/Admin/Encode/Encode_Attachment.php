@@ -688,6 +688,98 @@ class Encode_Attachment {
 		return false;
 	}
 
+	/**
+	 * Queues a specific video format for encoding.
+	 * This method performs pre-flight checks, inserts the job into the database,
+	 * and schedules an ActionScheduler task to process it.
+	 *
+	 * @param string $format_id The ID of the video format to queue (e.g., 'h264_720p').
+	 * @param int    $user_id   The ID of the user who initiated the queueing.
+	 * @param int    $blog_id   The ID of the blog where the job originated.
+	 * @return array An associative array with 'status' ('success' or 'failed') and 'reason' or 'job_id'.
+	 */
+	public function queue_format( string $format_id, int $user_id, int $blog_id ) {
+		global $wpdb;
+
+		// 1. Pre-flight check: Determine if this format can be queued for this video.
+		$can_queue_status = $this->check_if_can_queue( $format_id );
+		if ( 'ok_to_queue' !== $can_queue_status ) {
+			return array(
+				'status' => 'failed',
+				'reason' => $can_queue_status,
+			);
+		}
+
+		// 2. Get Video_Format configuration object.
+		$all_video_formats   = $this->options_manager->get_video_formats();
+		$video_format_config = $all_video_formats[ $format_id ] ?? null;
+
+		if ( ! $video_format_config ) {
+			return array(
+				'status' => 'failed',
+				'reason' => 'error_invalid_format_key',
+			);
+		}
+
+		// 3. Determine output paths/URLs for the new job using Encode_Info.
+		$is_attachment   = is_numeric( $this->id ) && get_post_type( $this->id ) === 'attachment';
+		$encode_info_obj = new Encode_Info( $this->id, $this->url, $is_attachment, $video_format_config );
+
+		// 4. Prepare job data for database insertion.
+		$job_data = array(
+			'blog_id'       => $blog_id,
+			'attachment_id' => $is_attachment ? (int) $this->id : null,
+			'input_url'     => $this->url,
+			'format_id'     => $format_id,
+			'status'        => 'queued',
+			'output_path'   => $encode_info_obj->path,
+			'output_url'    => $encode_info_obj->url,
+			'user_id'       => $user_id,
+			'created_at'    => current_time( 'mysql', true ),
+			'updated_at'    => current_time( 'mysql', true ),
+		);
+
+		// 5. Insert the job into the queue table.
+		$inserted = $wpdb->insert( $this->queue_table_name, $job_data );
+
+		if ( ! $inserted ) {
+			return array(
+				'status' => 'failed',
+				'reason' => 'error_db_insert',
+			);
+		}
+
+		$job_id = $wpdb->insert_id;
+
+		// 6. Schedule an ActionScheduler task to handle this job.
+		$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+
+		if ( ! $action_id ) {
+			// If scheduling fails, mark job as failed in DB.
+			$wpdb->update(
+				$this->queue_table_name,
+				array(
+					'status'        => 'failed',
+					'error_message' => 'Failed to schedule ActionScheduler task.',
+				),
+				array( 'id' => $job_id )
+			);
+			return array(
+				'status' => 'failed',
+				'reason' => 'error_scheduling',
+			);
+		}
+
+		// 7. Update the job with the ActionScheduler action ID.
+		$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
+
+		return array(
+			'status' => 'success',
+			'job_id' => $job_id,
+			'action_id' => $action_id,
+		);
+	}
+
 	protected function set_available_formats() {
 		$all_defined_formats = $this->video_formats; // All possible formats from Options
 		$available_formats   = array();
@@ -1221,75 +1313,6 @@ class Encode_Attachment {
 					$this->save_format( $encode_format );
 					return false;
 				}
-
-	/**
-	 * Queues a specific video format for encoding.
-	 * This method performs pre-flight checks, inserts the job into the database,
-	 * and schedules an ActionScheduler task to process it.
-	 *
-	 * @param string $format_id The ID of the video format to queue (e.g., 'h264_720p').
-	 * @param int    $user_id   The ID of the user who initiated the queueing.
-	 * @param int    $blog_id   The ID of the blog where the job originated.
-	 * @return array An associative array with 'status' ('success' or 'failed') and 'reason' or 'job_id'.
-	 */
-	public function queue_format( string $format_id, int $user_id, int $blog_id ) {
-		global $wpdb;
-
-		// 1. Pre-flight check: Determine if this format can be queued for this video.
-		$can_queue_status = $this->check_if_can_queue( $format_id );
-		if ( 'ok_to_queue' !== $can_queue_status ) {
-			return array( 'status' => 'failed', 'reason' => $can_queue_status );
-		}
-
-		// 2. Get Video_Format configuration object.
-		$all_video_formats   = $this->options_manager->get_video_formats();
-		$video_format_config = $all_video_formats[ $format_id ] ?? null;
-
-		if ( ! $video_format_config ) {
-			return array( 'status' => 'failed', 'reason' => 'error_invalid_format_key' );
-		}
-
-		// 3. Determine output paths/URLs for the new job using Encode_Info.
-		$is_attachment   = is_numeric( $this->id ) && get_post_type( $this->id ) === 'attachment';
-		$encode_info_obj = new Encode_Info( $this->id, $this->url, $is_attachment, $video_format_config );
-
-		// 4. Prepare job data for database insertion.
-		$job_data = array(
-			'blog_id'       => $blog_id,
-			'attachment_id' => $is_attachment ? (int) $this->id : null,
-			'input_url'     => $this->url,
-			'format_id'     => $format_id,
-			'status'        => 'queued',
-			'output_path'   => $encode_info_obj->path,
-			'output_url'    => $encode_info_obj->url,
-			'user_id'       => $user_id,
-			'created_at'    => current_time( 'mysql', true ),
-			'updated_at'    => current_time( 'mysql', true ),
-		);
-
-		// 5. Insert the job into the queue table.
-		$inserted = $wpdb->insert( $this->queue_table_name, $job_data );
-
-		if ( ! $inserted ) {
-			return array( 'status' => 'failed', 'reason' => 'error_db_insert' );
-		}
-
-		$job_id = $wpdb->insert_id;
-
-		// 6. Schedule an ActionScheduler task to handle this job.
-		$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-
-		if ( ! $action_id ) {
-			// If scheduling fails, mark job as failed in DB.
-			$wpdb->update( $this->queue_table_name, array( 'status' => 'failed', 'error_message' => 'Failed to schedule ActionScheduler task.' ), array( 'id' => $job_id ) );
-			return array( 'status' => 'failed', 'reason' => 'error_scheduling' );
-		}
-
-		// 7. Update the job with the ActionScheduler action ID.
-		$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
-
-		return array( 'status' => 'success', 'job_id' => $job_id, 'action_id' => $action_id );
-	}
 			}
 		} elseif ( ! $encode_format->get_id() ) { // If not replacing the original, insert as a new child attachment. Check if Encode_Format already has a WP attachment ID
 
