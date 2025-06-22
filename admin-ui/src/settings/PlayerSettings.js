@@ -78,8 +78,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		htaccess_password,
 		ffmpeg_thumb_watermark,
 		ffmpeg_watermark,
-		moov,
-		moov_path,
 		rate_control,
 		h264_CRF,
 		webm_CRF,

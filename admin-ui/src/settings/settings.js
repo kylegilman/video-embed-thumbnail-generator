@@ -44,11 +44,11 @@ const VideopackSettingsPage = () => {
 	};
 
 	const updateSettingsState = ( response ) => {
-		if ( response?.kgvid_video_embed_options ) {
-			setSettings( response.kgvid_video_embed_options );
+		if ( response?.videopack_options ) {
+			setSettings( response.videopack_options );
 			testFfmpeg(
-				response.kgvid_video_embed_options.sample_format,
-				response.kgvid_video_embed_options.sample_rotate
+				response.videopack_options.sample_format,
+				response.videopack_options.sample_rotate
 			);
 		}
 		console.log( response );
@@ -94,7 +94,7 @@ const VideopackSettingsPage = () => {
 			path: '/wp/v2/settings',
 			method: 'POST',
 			data: {
-				kgvid_video_embed_options: newSettings,
+				videopack_options: newSettings,
 			},
 		} )
 			.then( ( response ) => {

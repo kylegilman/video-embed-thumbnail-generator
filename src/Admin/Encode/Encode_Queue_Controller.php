@@ -94,15 +94,13 @@ class Encode_Queue_Controller {
 	 * @return array Log of actions taken.
 	 */
 	public function enqueue_encodes( array $args ) {
-		global $wpdb;
-
 		$required = array(
 			'id',
 			'url',
 			'formats',
 		);
 
-		if ( ! $this->required_keys( $args, $required ) || ! is_array( $args['formats'] ) ) {
+		if ( ! $this->required_keys( $args, $required ) || ! is_array( $args['formats'] ) || empty( $args['formats'] ) ) {
 			$this->queue_log->add_to_log( 'error_invalid_args' );
 			return $this->queue_log->get_log();
 		}
@@ -112,75 +110,11 @@ class Encode_Queue_Controller {
 		$user_id               = get_current_user_id();
 		$current_blog_id       = get_current_blog_id();
 
-		// Instantiate Encode_Attachment once to perform pre-flight checks for all formats.
-		// This also initializes video metadata and available codecs if not already done.
 		$encoder = new Encode_Attachment( $this->options_manager, $attachment_identifier, $input_url );
-
 		foreach ( $args['formats'] as $format_to_encode ) {
 			$format_id = sanitize_text_field( $format_to_encode );
-
-			// Perform pre-flight checks using Encode_Attachment
-			$can_queue_status = $encoder->check_if_can_queue( $format_id );
-
-			if ( 'ok_to_queue' === $can_queue_status ) {
-				// Get Video_Format config (needed for Encode_Info)
-				$all_video_formats   = $this->options_manager->get_video_formats();
-				$video_format_config = $all_video_formats[ $format_id ] ?? null;
-
-				// This check should ideally be redundant if check_if_can_queue worked,
-				// but as a safeguard:
-				if ( ! $video_format_config ) {
-					$this->queue_log->add_to_log( 'error_invalid_format_key', $format_id );
-					continue;
-				}
-
-				$is_attachment   = is_numeric( $attachment_identifier ) && get_post_type( $attachment_identifier ) === 'attachment';
-				$encode_info_obj = new Encode_Info( $attachment_identifier, $input_url, $is_attachment, $video_format_config );
-
-				$job_data = array(
-					'blog_id'       => $current_blog_id,
-					'attachment_id' => $is_attachment ? (int) $attachment_identifier : null,
-					'input_url'     => $input_url,
-					'format_id'     => $format_id,
-					'status'        => 'queued',
-					'output_path'   => $encode_info_obj->path,
-					'output_url'    => $encode_info_obj->url,
-					'user_id'       => $user_id,
-					'created_at'    => current_time( 'mysql', true ),
-					'updated_at'    => current_time( 'mysql', true ),
-				);
-
-				$inserted = $wpdb->insert( $this->queue_table_name, $job_data );
-
-				if ( $inserted ) {
-					$job_id    = $wpdb->insert_id;
-					$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-					if ( $action_id ) {
-						$wpdb->update(
-							$this->queue_table_name,
-							array( 'action_id' => $action_id ),
-							array( 'id' => $job_id )
-						);
-						$this->queue_log->add_to_log( 'queued', $format_id );
-					} else {
-						$wpdb->update(
-							$this->queue_table_name,
-							array(
-								'status'        => 'failed',
-								'error_message' => 'Failed to schedule ActionScheduler task.',
-							),
-							array( 'id' => $job_id )
-						);
-						$this->queue_log->add_to_log( 'error_scheduling', $format_id );
-					}
-				} else {
-					$this->queue_log->add_to_log( 'error_db_insert', $format_id );
-				}
-			} else {
-				// Log the reason why it wasn't queued based on $can_queue_status
-				// e.g., 'already_exists', 'lowres', 'vcodec_unavailable', etc.
-				$this->queue_log->add_to_log( $can_queue_status, $format_id );
-			}
+			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id );
+			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
 		}
 		return $this->queue_log->get_log();
 	}
@@ -472,5 +406,135 @@ class Encode_Queue_Controller {
 	public function get_queue_for_network() {
 		// Gets non-terminal jobs for all blogs
 		return $this->get_queue_items( null );
+	}
+
+	/**
+	 * Deletes a specific encoding job from the queue.
+	 * This method handles the logic for finding the job, switching blog context (if multisite),
+	 * delegating to Encode_Attachment for actual deletion, and returning the final status.
+	 *
+	 * @param int $job_id The ID of the job to delete.
+	 * @return array|\WP_Error An array representing the deleted job's final state on success,
+	 * or a WP_Error object on failure (e.g., job not found, permission denied).
+	 */
+	public function delete_job( int $job_id ) {
+		global $wpdb;
+
+		$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+
+		if ( ! $job ) {
+			return new \WP_Error( 'videopack_job_not_found', __( 'Encoding job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+
+		$original_blog_id = false;
+		if ( is_multisite() ) {
+			$original_blog_id = get_current_blog_id();
+			if ( (int) $job['blog_id'] !== $original_blog_id ) {
+				switch_to_blog( (int) $job['blog_id'] );
+			}
+		}
+
+		try {
+			$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
+			$input_url            = $job['input_url']; // Use input_url from job data.
+
+			// Instantiate Encode_Attachment for the source related to this job.
+			$encoder = new Encode_Attachment( $this->options_manager, $attachment_id_or_url, $input_url );
+
+			// The delete_format method handles capability checks internally based on the job's user_id.
+			$success = $encoder->delete_format( $job_id );
+
+			// After deletion attempt, re-fetch the job to get its final status and error message.
+			$updated_job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+
+			if ( ! $success ) {
+				// If delete_format returned false, it means the initial check failed (e.g., permissions).
+				// The error message should be set on the Encode_Format object and saved to the DB.
+				$error_message = $updated_job['error_message'] ?? __( 'Failed to delete encoding job due to an unknown error.', 'video-embed-thumbnail-generator' );
+				// Check if the error message indicates a permission issue.
+				if ( strpos( $error_message, 'User does not have permission' ) !== false ) {
+					return new \WP_Error( 'videopack_permission_denied', $error_message, array( 'status' => 403 ) );
+				}
+				return new \WP_Error( 'videopack_delete_failed', $error_message, array( 'status' => 500 ) );
+			}
+
+			return Encode_Format::from_array( $updated_job )->to_array();
+		} finally {
+			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
+				restore_current_blog();
+			}
+		}
+	}
+
+	/**
+	 * Get all queue items with details sanitized based on user permissions and context.
+	 * This is used for the main queue view page.
+	 *
+	 * @return array An array of all queue items.
+	 */
+	public function get_full_queue_array() {
+		// Get all jobs, regardless of status. Pass an empty array to get_queue_items to bypass default status filtering.
+		$all_jobs = $this->get_queue_items( null, array() );
+
+		if ( empty( $all_jobs ) ) {
+			return array();
+		}
+
+		// Pre-fetch user capabilities to avoid repeated calls in loop.
+		$current_user_id   = get_current_user_id();
+		$can_edit_others   = current_user_can( 'edit_others_video_encodes' );
+		$can_encode_videos = current_user_can( 'encode_videos' );
+		$processed_jobs    = array();
+
+		foreach ( $all_jobs as $job ) {
+			// Determine if the current user can edit this specific job.
+			$is_own_job       = ( (int) $job['user_id'] === $current_user_id );
+			$job['can_edit'] = ( $can_edit_others || ( $can_encode_videos && $is_own_job ) );
+			$processed_jobs[] = $job;
+		}
+
+		// Super admins can see everything, always, regardless of context.
+		if ( current_user_can( 'manage_network' ) ) {
+			return $processed_jobs;
+		}
+
+		// For non-super-admins, we need to sanitize jobs from other blogs.
+		$current_blog_id = get_current_blog_id();
+		$sanitized_jobs  = array();
+
+		foreach ( $processed_jobs as $job ) {
+			if ( (int) $job['blog_id'] === $current_blog_id ) {
+				// This job belongs to the current site, show all details.
+				$sanitized_jobs[] = $job;
+			} else {
+				// This job is from another site, show only non-sensitive data.
+				$sanitized_jobs[] = array(
+					'id'                  => $job['id'],
+					'blog_id'             => $job['blog_id'],
+					'attachment_id'       => null,
+					'input_url'           => __( 'Job from another site', 'video-embed-thumbnail-generator' ),
+					'format_id'           => $job['format_id'],
+					'status'              => $job['status'],
+					'output_path'         => null,
+					'output_url'          => null,
+					'user_id'             => null,
+					'pid'                 => null,
+					'logfile_path'        => null,
+					'action_id'           => null,
+					'created_at'          => $job['created_at'],
+					'updated_at'          => $job['updated_at'],
+					'started_at'          => $job['started_at'],
+					'completed_at'        => $job['completed_at'],
+					'failed_at'           => $job['failed_at'],
+					'error_message'       => null,
+					'temp_watermark_path' => null,
+					'retry_count'         => $job['retry_count'],
+					'encode_options_hash' => null,
+					'can_edit'            => false, // Non-super-admins can never edit jobs on other sites.
+				);
+			}
+		}
+
+		return $sanitized_jobs;
 	}
 }

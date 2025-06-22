@@ -169,4 +169,42 @@ class Video_Format {
 		// A format replaces the original if its resolution ID is 'fullres'.
 		return $this->resolution->get_id() === 'fullres';
 	}
+
+	/**
+	 * Convert the Video_Format object to an associative array.
+	 *
+	 * @return array An associative array representation of the object.
+	 */
+	public function to_array() {
+		$codec      = $this->get_codec();
+		$resolution = $this->get_resolution();
+
+		return array(
+			'id'                => $this->get_id(),
+			'name'              => $this->get_name(),
+			'label'             => $this->get_label(),
+			'legacy_id'         => $this->get_legacy_id(),
+			'legacy_suffix'     => $this->get_legacy_suffix(),
+			'suffix'            => $this->get_suffix(),
+			'replaces_original' => $this->get_replaces_original(),
+			'codec'             => array(
+				'id'                => $codec->get_id(),
+				'name'              => $codec->get_name(),
+				'container'         => $codec->get_container(),
+				'mime_type'         => $codec->get_mime_type(),
+				'vcodec'            => $codec->get_vcodec(),
+				'acodec'            => $codec->get_acodec(),
+				'default_crf'       => $codec->get_default_crf(),
+				'default_vbr'       => $codec->get_default_vbr(),
+				'is_default_encode' => $codec->is_default_encode(),
+			),
+			'resolution'        => array(
+				'id'                => $resolution->get_id(),
+				'height'            => $resolution->get_height(),
+				'name'              => $resolution->get_name(),
+				'label'             => $resolution->get_label(),
+				'is_default_encode' => $resolution->is_default_encode(),
+			),
+		);
+	}
 }

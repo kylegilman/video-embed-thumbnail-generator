@@ -384,7 +384,7 @@ const Thumbnails = ( {
 			const path = addQueryArgs(
 				thumbApiPath,
 				{
-					movieurl: src,
+					url: src,
 					numberofthumbs: numberofthumbs,
 					thumbnumber: i,
 					thumbnumberplusincreaser: iincreaser,
