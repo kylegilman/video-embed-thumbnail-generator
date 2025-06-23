@@ -32,7 +32,7 @@ const Thumbnails = ( {
 	attachmentRecord,
 	options,
 } ) => {
-	const { id, numberofthumbs, src, poster, poster_id } = attributes;
+	const { id, total_thumbnails, src, poster, poster_id } = attributes;
 	const thumbVideoPanel = useRef();
 	const videoRef = useRef();
 	const currentThumb = useRef();
@@ -69,22 +69,15 @@ const Thumbnails = ( {
 			&& ! options?.browser_thumbnails
 		) {
 			const newThumbImages = [];
-			let increaser  = 0;
-			let iincreaser = 0;
-			for (let i = 1; i <= Number(numberofthumbs); i++) {
-				iincreaser = i + increaser;
-				const response = await generateThumb(i, iincreaser, type);
-				increaser++;
-				console.log(response);
-				let thumb = {
+			for (let i = 1; i <= Number(total_thumbnails); i++) {
+				const response = await generateThumb(i, type);
+				const thumb = {
 					src: response.real_thumb_url,
 					type: 'ffmpeg',
-					thumb_url: response.thumb_url,
-				}
+				};
 				newThumbImages.push(thumb);
-				setThumbChoices([...newThumbImages]);
+				setThumbChoices([...newThumbImages]); // Update incrementally
 			}
-			setIsSaving(false);
 		} else {
 			generateThumbCanvases(type);
 		}
@@ -92,7 +85,7 @@ const Thumbnails = ( {
 
 	const generateThumbCanvases = useCallback(async (type) => {
 
-		const thumbsInt = Number( numberofthumbs );
+		const thumbsInt = Number( total_thumbnails );
 
 		const newThumbCanvases = [];
 		const timePoints = [...Array(thumbsInt)].map(
@@ -109,12 +102,13 @@ const Thumbnails = ( {
 		const timeupdateListener = () => {
 
 			let thumb;
-			drawCanvasThumb()
+			drawCanvasThumb() // This now returns a Promise resolving to a canvas object
 				.then( ( canvas ) => {
 					try{
 						thumb = {
 							src: canvas.toDataURL(),
 							type: 'canvas',
+							canvasObject: canvas, // Store the canvas object for later upload
 						}
 					} catch (error) {
 						console.error(error);
@@ -201,24 +195,57 @@ const Thumbnails = ( {
 		event.currentTarget.classList.add('saving');
 		setIsSaving(true);
 		if( thumb.type === 'ffmpeg' ) {
-			setImgAsPoster( thumb.thumb_url, index );
+			setImgAsPoster( thumb.src ); // Pass the canvas object directly
 		} else {
-			setCanvasAsPoster( thumb.src, index );
+			setCanvasAsPoster( thumb.canvasObject, index ); // Pass the canvas object directly
 		}
 	}
 
-	const dataURLtoBinaryString = ( dataURL, fileName ) => {
-		const byteString = atob( dataURL.split( ',' )[ 1 ] );
-		//const mimeString = dataURL.split( ',' )[ 0 ].split( ':' )[ 1 ].split( ';' )[ 0 ];
-		const arrayBuffer = new ArrayBuffer( byteString.length );
-		const intArray = new Uint8Array( arrayBuffer );
+	const handleSaveAllThumbnails = async () => {
+		setIsSaving(true); // Show spinner for the whole operation
+		const firstThumbType = thumbChoices[0]?.type; // Assuming all generated thumbs are of the same type
 
-		for ( let i = 0; i < byteString.length; i++ ) {
-			intArray[ i ] = byteString.charCodeAt( i );
+		if (firstThumbType === 'canvas') {
+			// For canvas thumbnails, upload each one individually using uploadMedia
+			for (const [index, thumb] of thumbChoices.entries()) {
+				try {
+					const videoFilename = getFilename(src);
+					const thumbBasename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
+
+					const file = await new Promise(resolve => thumb.canvasObject.toBlob(blob => {
+						resolve(new File([blob], `${thumbBasename}_thumb_canvas_${index + 1}.png`, { type: "image/png" }));
+					}, 'image/png'));
+
+					await uploadMedia({ // No need to store response, just upload
+						filesList: [file],
+						allowedTypes: ['image/png'],
+						title: `${thumbBasename} ${__('thumbnail')} ${index + 1}`,
+					});
+				} catch (error) {
+					console.error(`Error uploading canvas thumbnail ${index + 1}:`, error);
+					// Optionally, show a notice for individual failures.
+				}
+			}
+			setThumbChoices([]); // Clear choices after saving
+		} else if (firstThumbType === 'ffmpeg') {
+			// For FFmpeg thumbnails, send their temporary URLs to the server to be saved
+			const thumbUrls = thumbChoices.map(thumb => thumb.src);
+			try {
+				await apiFetch({
+					path: `${thumbApiPath}/save_all`,
+					method: 'POST',
+					data: {
+						attachment_id: id,
+						thumb_urls: thumbUrls,
+					}
+				});
+				setThumbChoices([]); // Clear choices after saving
+			} catch (error) {
+				console.error('Error saving all FFmpeg thumbnails:', error);
+			}
 		}
-
-		return arrayBuffer;
-	}
+		setIsSaving(false); // Hide spinner after all operations complete
+	};
 
 	function drawWatermarkOnCanvas( canvas ) {
 		return new Promise(async ( resolve, reject ) => {
@@ -294,58 +321,38 @@ const Thumbnails = ( {
 		});
 	}
 
-	const waitForAttachmentRecord = ( uploadMediaOptions ) => {
-		return new Promise( ( resolve, reject ) => {
-			const onFileChange = ( mediaArray ) => {
-				const media = mediaArray[0];
-				if (media && media.hasOwnProperty('id')) {
-					resolve( media );
-				}
-			};
-
-			const onError = (error) => {
-				reject(error);
-			};
-
-			uploadMedia({
-				...uploadMediaOptions,
-				onFileChange,
-				onError,
-			});
-		});
-	}
-
-	const setCanvasAsPoster = async( rawPng, index ) => {
+	const setCanvasAsPoster = async( canvasObject, thumbnailIndex = null ) => {
 
 		const videoFilename = getFilename( src );
 		const thumbBasename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
+		const filenameSuffix = thumbnailIndex !== null ? `_thumb_canvas_${thumbnailIndex + 1}.png` : '_thumb_canvas.png';
+		const titleSuffix = thumbnailIndex !== null ? ` ${__('thumbnail')} ${thumbnailIndex + 1}` : ` ${__('thumbnail')}`;
 
 		try {
-			const binaryString = dataURLtoBinaryString( rawPng );
-			const file = new File(
-				[ binaryString ],
-				thumbBasename + '_thumb' + ( index + 1 ) + '.png',
-				{ type: "image/png" }
-			);
+			const file = await new Promise(resolve => canvasObject.toBlob(blob => {
+				resolve(new File([blob], `${thumbBasename}${filenameSuffix}`, { type: "image/png" }));
+			}, 'image/png'));
+
 			setIsSaving(true);
-			const media = await waitForAttachmentRecord( {
+			// uploadMedia returns a promise that resolves with the media object.
+			const media = await uploadMedia( {
 				filesList: [ file ],
 				allowedTypes: [ 'image/png' ],
-				title: thumbBasename + ' ' + __( 'thumbnail' ) + ' ' + (index + 1),
+				title: `${thumbBasename}${titleSuffix}`,
 			} );
 			setPosterData(media.url, media.id);
 			setIsSaving(false);
 		} catch ( error ) {
 			console.error( __('Upload error:'), error );
-			createErrorNotice( error, { type: 'snackbar' } );
+			// createErrorNotice( error, { type: 'snackbar' } ); // Assuming createErrorNotice is available if needed
 		}
 	}
 
 	const setPosterData = ( new_poster, new_poster_id ) => {
 		setAttributes( { poster: new_poster, poster_id: new_poster_id } );
 		setThumbChoices([]);
-		attachmentRecord.edit( {
-			featured_media: Number(new_poster_id),
+		attachmentRecord?.edit( {
+			featured_media: new_poster_id ? Number(new_poster_id) : null,
 			meta: {
 				'_kgflashmediaplayer-poster': new_poster,
 				'_kgflashmediaplayer-poster-id': Number(new_poster_id),
@@ -368,9 +375,9 @@ const Thumbnails = ( {
 				path: thumbApiPath,
 				method: 'PUT',
 				data: {
-					post_id: id,
+					attachment_id: id,
 					thumburl: thumb_url,
-					index: index,
+					thumbnail_index: index,
 				}
 			});
 			setPosterData(response.thumb_url, response.thumb_id);
@@ -379,20 +386,16 @@ const Thumbnails = ( {
 		}
 	}
 
-	const generateThumb = async( i, iincreaser, type ) => {
+	const generateThumb = async( i, type ) => {
 		try{
 			const path = addQueryArgs(
 				thumbApiPath,
 				{
 					url: src,
-					numberofthumbs: numberofthumbs,
-					thumbnumber: i,
-					thumbnumberplusincreaser: iincreaser,
-					attachmentID: id,
+					total_thumbnails: total_thumbnails,
+					thumbnail_index: i,
+					attachment_id: id,
 					generate_button: type,
-					thumbtimecode: 0,
-					dofirstframe: false,
-					poster: poster,
 				}
 			);
 
@@ -445,10 +448,10 @@ const Thumbnails = ( {
 		event.preventDefault(); // prevent the default action (scroll / move caret)
 	}
 
-	const handleUseThisFrame = () => {
+	const handleUseThisFrame = async () => {
 		setIsSaving(true);
-		const canvas = drawCanvasThumb();
-		setCanvasAsPoster( canvas.toDataURL(), 0 );
+		const canvas = await drawCanvasThumb(); // Await the canvas object (no index for single frame)
+		setCanvasAsPoster( canvas ); // Pass the canvas object directly, index will be null
 	}
 
 	const handleToggleVideoPlayer = ( event ) => {
@@ -503,13 +506,13 @@ const Thumbnails = ( {
 				</Button>
 			) }
 			</BaseControl>
-			<TextControl
-				value={ numberofthumbs }
+			<TextControl // This is the UI control for total_thumbnails.
+				value={ total_thumbnails }
 				onChange={ (value) => {
 					if ( ! value ) {
-						setAttributes( { numberofthumbs: '' } );
+						setAttributes( { total_thumbnails: '' } );
 					} else {
-						setAttributes( { numberofthumbs: Number(value) } );
+						setAttributes( { total_thumbnails: Number(value) } );
 					}
 				} }
 				className='videopack-numberofthumbs'
@@ -531,6 +534,14 @@ const Thumbnails = ( {
 			>
 				{ __( 'Random' ) }
 			</Button>
+			{ thumbChoices.length > 0 &&
+				<Button
+					variant='primary'
+					onClick={ handleSaveAllThumbnails }
+					disabled={ isSaving }>
+					{ __( 'Save All' ) }
+				</Button>
+			}
 			{ thumbChoices.length > 0 &&
 				<div className={ `videopack-thumbnail-holder${ isSaving ? ' disabled' : '' }` }>
 					{ thumbChoices.map( ( thumb, index ) => (

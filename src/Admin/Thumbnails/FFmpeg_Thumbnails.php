@@ -78,154 +78,86 @@ class FFmpeg_Thumbnails {
 		}
 	}
 
-	public function make( $post_id, $movieurl, $numberofthumbs, $i, $iincreaser, $thumbtimecode, $dofirstframe, $generate_button ) {
-
-		$uploads         = wp_upload_dir();
-		$attachment_meta = new \Videopack\Admin\Attachment_Meta();
-		$validate        = new \Videopack\Common\Validate();
-
-		if ( get_post_type( $post_id ) == 'attachment' ) {
-			$moviefilepath = get_attached_file( $post_id );
-			if ( ! file_exists( $moviefilepath ) ) {
-				$moviefilepath = esc_url_raw( str_replace( ' ', '%20', $movieurl ) );
-			}
-
-			$kgvid_postmeta = $attachment_meta->get( $post_id );
-			$keys           = array(
-				'width'    => 'actualwidth',
-				'height'   => 'actualheight',
-				'duration' => 'duration',
-				'rotate'   => 'rotate',
-			);
-
-			if ( empty( $kgvid_postmeta['duration'] ) ) {
-				$movie_info = kgvid_get_movie_info( $moviefilepath ); //this is not a real function, it's a placeholder
-				foreach ( $keys as $info => $meta ) {
-					if ( ! empty( $movie_info[ $info ] ) ) {
-						$kgvid_postmeta[ $meta ] = $movie_info[ $info ];
-					}
-				}
-				$attachment_meta->save( $post_id, $kgvid_postmeta );
-			} else { // post meta is already set
-				$movie_info = array();
-				foreach ( $keys as $info => $meta ) {
-					$movie_info[ $info ] = $kgvid_postmeta[ $meta ];
-				}
-				$movie_info['worked'] = true;
-			}
-		} else {
-			$moviefilepath = $validate->text_field( str_replace( ' ', '%20', $movieurl ) );
-			$movie_info    = kgvid_get_movie_info( $moviefilepath ); //this is not a real function, it's a placeholder
+	/**
+	 * Generates a single temporary thumbnail image for a given video.
+	 *
+	 * @param int    $attachment_id    The ID of the source video attachment.
+	 * @param int    $total_thumbnails The total number of thumbnails being generated in this batch.
+	 * @param int    $thumbnail_index  The 1-based index of the thumbnail to generate.
+	 * @param bool   $is_random        Whether to use a random offset for the timecode.
+	 * @return array|\WP_Error An array with 'path' and 'url' of the generated temp file on success, or WP_Error on failure.
+	 */
+	public function generate_single_thumbnail_data( int $attachment_id, int $total_thumbnails, int $thumbnail_index, bool $is_random ) {
+		// 1. Get video metadata.
+		$input_path = get_attached_file( $attachment_id );
+		if ( ! $input_path || ! file_exists( $input_path ) ) {
+			return new \WP_Error( 'file_not_found', __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
+		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $attachment_id, $input_path, true, $ffmpeg_path, $this->options_manager );
+		if ( ! $video_metadata->worked || ! $video_metadata->duration ) { // Check for duration as well.
+			return new \WP_Error( 'metadata_failed', __( 'Could not read video metadata.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
 		}
 
-		if ( $movie_info['worked'] == true ) { // if FFmpeg was able to open the file
+		// 2. Calculate timecode.
+		// This logic creates evenly spaced points, e.g., for 4 thumbnails, at 12.5%, 37.5%, 62.5%, 87.5%.
+		$timecode = ( ( $thumbnail_index - 0.5 ) / $total_thumbnails ) * $video_metadata->duration;
+		if ( $is_random ) {
+			// For random, subtract a random amount from the evenly spaced point.
+			$random_max_subtraction = $video_metadata->duration / $total_thumbnails;
+			$random_subtraction     = ( mt_rand() / mt_getrandmax() ) * $random_max_subtraction;
+			$timecode              -= $random_subtraction;
+		}
+		$timecode = max( 0, round( $timecode, 3 ) );
+		if ( $timecode < 0 ) { // Ensure timecode is not negative.
+			return new \WP_Error( 'timecode_calculation_failed', __( 'Could not calculate timecodes for thumbnails.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+		}
 
-			$sanitized_url     = $validate->sanitize_url( $movieurl );
-			$thumbnailfilebase = $uploads['url'] . '/thumb_tmp/' . $sanitized_url['basename'];
+		// 3. Generate temp thumbnail.
+		return $this->generate_temp_thumbnail( $input_path, $timecode, $video_metadata );
+	}
 
-			$movie_width  = $movie_info['width'];
-			$movie_height = $movie_info['height'];
+	/**
+	 * Generates a single thumbnail image from a video at a specific timecode into a temporary directory.
+	 *
+	 * @param string                               $input_path     The full path to the input video file.
+	 * @param float                                $timecode       The time in seconds to capture the thumbnail from.
+	 * @param \Videopack\Admin\Encode\Video_Metadata $video_metadata The metadata object for the video.
+	 * @return array|\WP_Error An array with 'path' and 'url' of the generated temp file on success, or WP_Error on failure.
+	 */
+	protected function generate_temp_thumbnail( string $input_path, float $timecode, \Videopack\Admin\Encode\Video_Metadata $video_metadata ) {
+		$uploads = wp_upload_dir();
+		wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
 
-			wp_mkdir_p( $uploads['path'] . '/thumb_tmp' );
+		$sanitized_basename = sanitize_file_name( pathinfo( $input_path, PATHINFO_FILENAME ) );
+		$unique_id          = uniqid();
+		$temp_filename      = "{$sanitized_basename}_thumb_{$unique_id}.jpg";
+		$temp_filepath      = $uploads['path'] . '/thumb_tmp/' . $temp_filename;
+		$temp_fileurl       = $uploads['url'] . '/thumb_tmp/' . $temp_filename;
 
-			if ( $movie_info['rotate'] === false ) {
-				$movie_info['rotate'] = '';
-			}
-			switch ( $movie_info['rotate'] ) { // if it's a sideways mobile video
-				case 90:
-				case 270:
-					// swap height & width
-					$tmp          = $movie_width;
-					$movie_width  = $movie_height;
-					$movie_height = $tmp;
-					break;
-			}
+		$rotate_strings = $this->rotate_array( $video_metadata->rotate, $video_metadata->actualwidth, $video_metadata->actualheight );
+		$filter_complex = $this->filter_complex( $this->options['ffmpeg_thumb_watermark'], $video_metadata->actualheight, true );
 
-			$thumbnailheight = strval( round( floatval( $movie_height ) / floatval( $movie_width ) * 200 ) );
+		$output = $this->process_thumb(
+			$input_path,
+			$temp_filepath,
+			$this->options['app_path'],
+			$timecode,
+			$rotate_strings['rotate'],
+			$filter_complex
+		);
 
-			$jpgpath = $uploads['path'] . '/thumb_tmp/';
+		if ( ! is_file( $temp_filepath ) ) {
+			return new \WP_Error( 'thumbnail_generation_failed', __( 'FFmpeg failed to generate the thumbnail.', 'video-embed-thumbnail-generator' ), array( 'output' => $output ) );
+		}
 
-			$movieoffset = round( ( floatval( $movie_info['duration'] ) * $iincreaser ) / ( $numberofthumbs * 2 ), 3 );
-			if ( $movieoffset > floatval( $movie_info['duration'] ) ) {
-				$movieoffset = floatval( $movie_info['duration'] );
-			}
+		// Schedule cleanup for the temp directory.
+		( new \Videopack\Admin\Cleanup() )->schedule( 'thumbs' );
 
-			if ( $generate_button === 'random' ) { // adjust offset random amount
-				$movieoffset = $movieoffset - wp_rand( 0, round( floatval( $movie_info['duration'] ), 3 ) / $numberofthumbs );
-				if ( $movieoffset < 0 ) {
-					$movieoffset = '0';
-				}
-			}
-			if ( $thumbtimecode ) { // if a specific thumbnail timecode is set
-				if ( $thumbtimecode === 'firstframe' ) {
-					$thumbtimecode = '0';
-				}
-				$timecode_array = explode( ':', $thumbtimecode );
-				$timecode_array = array_reverse( $timecode_array );
-				if ( array_key_exists( 1, $timecode_array ) ) {
-					$timecode_array[1] = $timecode_array[1] * 60;
-				}
-				if ( array_key_exists( 2, $timecode_array ) ) {
-					$timecode_array[2] = $timecode_array[2] * 3600;
-				}
-				$thumbtimecode = array_sum( $timecode_array );
-				$movieoffset   = $thumbtimecode;
-				$i             = $numberofthumbs + 1;
-			}
-
-			if ( $dofirstframe == 'true' && $i == 1 ) {
-				$movieoffset = '0';
-			}
-
-			$thumbnailfilename[ $i ] = str_replace( ' ', '_', $sanitized_url['basename'] . '_thumb' . $i . '.jpg' );
-			$thumbnailfilename[ $i ] = $jpgpath . $thumbnailfilename[ $i ];
-
-			$rotate_strings = $this->rotate_array( $movie_info['rotate'], $movie_info['width'], $movie_info['height'] );
-			$filter_complex = $this->filter_complex( $this->options['ffmpeg_thumb_watermark'], $movie_height, true );
-
-			$tmp_thumbnailurl   = $thumbnailfilebase . '_thumb' . $i . '.jpg';
-			$tmp_thumbnailurl   = str_replace( ' ', '_', $tmp_thumbnailurl );
-			$final_thumbnailurl = str_replace( '/thumb_tmp/', '/', $tmp_thumbnailurl );
-
-			$thumbnail_generator = $this->process_thumb(
-				$moviefilepath,
-				$thumbnailfilename[ $i ],
-				$this->options['app_path'],
-				round( $movieoffset, 3 ),
-				$rotate_strings['rotate'],
-				$filter_complex
-			);
-
-			if ( is_file( $thumbnailfilename[ $i ] ) ) {
-				$cleanup = new \Videopack\Admin\Cleanup();
-				$cleanup->schedule( 'thumbs' );
-			}
-
-			$thumbnaildisplaycode = '<div class="kgvid_thumbnail_select" name="attachments[' . esc_attr( $post_id ) . '][thumb' . esc_attr( $i ) . ']" id="attachments-' . esc_attr( $post_id ) . '-thumb' . esc_attr( $i ) . '"><label for="kgflashmedia-' . esc_attr( $post_id ) . '-thumbradio' . esc_attr( $i ) . '"><img src="' . esc_attr( $tmp_thumbnailurl ) . '?' . rand() . '" class="kgvid_thumbnail"></label><br /><input type="radio" name="attachments[' . esc_attr( $post_id ) . '][thumbradio_' . esc_attr( $post_id ) . ']" id="kgflashmedia-' . esc_attr( $post_id ) . '-thumbradio' . esc_attr( $i ) . '" value="' . esc_attr( $final_thumbnailurl ) . '" onchange="kgvid_select_thumbnail(this.value, \'' . esc_attr( $post_id ) . '\', ' . esc_attr( $movieoffset ) . ', jQuery(this).parent().find(\'img\')[0]);"></div>';
-
-			++$i;
-
-			$arr = array(
-				'thumbnaildisplaycode' => $thumbnaildisplaycode,
-				'movie_width'          => esc_html( $movie_width ),
-				'movie_height'         => esc_html( $movie_height ),
-				'lastthumbnumber'      => absint( $i ),
-				'movieoffset'          => esc_html( $movieoffset ),
-				'thumb_url'            => esc_url( $final_thumbnailurl ),
-				'real_thumb_url'       => esc_url( $tmp_thumbnailurl ),
-			);
-
-			return $arr;
-			//if ffmpeg can open movie
-		} else {
-			$thumbnaildisplaycode = '<strong>' . esc_html__( 'Can\'t open movie file.', 'video-embed-thumbnail-generator' ) . '</strong><br />' . wp_kses_post( $movie_info['output'] );
-			$arr                  = array(
-				'thumbnaildisplaycode' => $thumbnaildisplaycode,
-				'embed_display'        => $thumbnaildisplaycode,
-				'lastthumbnumber'      => 'break',
-			);
-			return $arr;
-		} //can't open movie
+		return array(
+			'path' => $temp_filepath,
+			'url'  => $temp_fileurl,
+		);
 	}
 
 	public function rotate_array( $rotate, $width, $height ) {
@@ -359,5 +291,167 @@ class FFmpeg_Thumbnails {
 		}
 
 		return $filter_complex;
+	}
+
+	/**
+	 * Saves a thumbnail image to the Media Library and links it to a video attachment.
+	 *
+	 * This method handles both temporary files generated by FFmpeg and external URLs (sideloading).
+	 * It ensures unique filenames and updates relevant post meta.
+	 *
+	 * @param int    $attachment_id   The ID of the video attachment to link the thumbnail to.
+	 * @param string $post_name       The title of the video post (used for thumbnail title/description).
+	 * @param string $thumb_url       The URL of the thumbnail image (can be a temporary local URL or an external URL).
+	 * @param int|false $thumbnail_index The 1-based index of the thumbnail in a set, or false if not part of a set.
+	 * @return array An associative array with 'thumb_id' (new attachment ID) and 'thumb_url' (final URL),
+	 *               or an array with 'thumb_id' = false on failure.
+	 */
+	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false ) {
+
+		$user_ID = get_current_user_id();
+		$uploads = wp_upload_dir();
+
+		// 1. Check if this exact URL already exists as an attachment.
+		$existing_attachment_id = attachment_url_to_postid( $thumb_url );
+		if ( $existing_attachment_id ) {
+			return array(
+				'thumb_id'  => $existing_attachment_id,
+				'thumb_url' => $thumb_url,
+			);
+		}
+
+		$thumb_id         = false; // Initialize thumb_id to false (failure)
+		$final_poster_url = $thumb_url; // Assume external URL for sideloading by default
+
+		// Determine if the thumbnail is a temporary file generated by FFmpeg.
+		$is_local_temp_file = ( strpos( $thumb_url, trailingslashit( $uploads['url'] ) . 'thumb_tmp/' ) === 0 );
+
+		if ( $is_local_temp_file ) {
+			$posterfile_basename = pathinfo( $thumb_url, PATHINFO_BASENAME ); // e.g., video_thumb_uniqueid.jpg
+			$tmp_posterpath      = $uploads['path'] . '/thumb_tmp/' . $posterfile_basename;
+
+			if ( ! is_file( $tmp_posterpath ) ) {
+				// Temporary file not found, cannot proceed.
+				return array(
+					'thumb_id'  => false,
+					'thumb_url' => $thumb_url,
+				);
+			}
+
+			// Generate a unique filename in the main uploads directory.
+			$filename_parts = explode( '_thumb_', $posterfile_basename ); // e.g., ['video', 'uniqueid.jpg']
+			$base_filename  = sanitize_file_name( $filename_parts[0] ?? 'thumbnail' );
+			$extension      = pathinfo( $posterfile_basename, PATHINFO_EXTENSION );
+
+			$unique_suffix = uniqid();
+			if ( $thumbnail_index !== false ) {
+				$unique_suffix = 'idx' . $thumbnail_index . '_' . $unique_suffix;
+			}
+			$new_filename_base = "{$base_filename}_thumb_{$unique_suffix}";
+			$final_posterpath  = $uploads['path'] . '/' . $new_filename_base . '.' . $extension;
+			$final_poster_url  = $uploads['url'] . '/' . $new_filename_base . '.' . $extension;
+
+			// Copy the temporary file to its final destination.
+			$success = copy( $tmp_posterpath, $final_posterpath );
+			wp_delete_file( $tmp_posterpath ); // Clean up the temporary file immediately.
+
+			if ( ! $success ) {
+				return array(
+					'thumb_id' => false,
+					'thumb_url' => $thumb_url,
+				); // Failed to copy.
+			}
+
+			$desc = $post_name . ' ' . esc_html_x( 'thumbnail', 'text appended to newly created thumbnail titles', 'video-embed-thumbnail-generator' );
+			if ( $thumbnail_index ) {
+				$desc .= ' ' . $thumbnail_index;
+			}
+
+			$video     = get_post( $attachment_id );
+			$parent_id = $attachment_id; // The video is the parent by default.
+			if ( $this->options['thumb_parent'] === 'post' ) {
+				if ( ! empty( $video->post_parent ) ) {
+					$parent_id = $video->post_parent; // The parent post becomes the parent.
+				}
+			}
+
+			$wp_filetype = wp_check_filetype( basename( $final_posterpath ), null );
+			if ( empty( $wp_filetype['type'] ) ) {
+				// Fallback if filetype is not detected (e.g., due to missing extension)
+				$wp_filetype['type'] = 'image/jpeg';
+			}
+
+			if ( $user_ID == 0 ) { // If no user ID, use video's author.
+				$user_ID = $video->post_author;
+			}
+
+			$attachment = array(
+				'guid'           => $final_poster_url,
+				'post_mime_type' => $wp_filetype['type'],
+				'post_title'     => $desc,
+				'post_content'   => '',
+				'post_status'    => 'inherit',
+				'post_author'    => $user_ID,
+			);
+
+			$thumb_id = wp_insert_attachment( $attachment, $final_posterpath, $parent_id ); // Insert attachment.
+			// you must first include the image.php file
+			// for the function wp_generate_attachment_metadata() to work
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+			$attach_data = wp_generate_attachment_metadata( $thumb_id, $final_posterpath );
+			wp_update_attachment_metadata( $thumb_id, $attach_data );
+		} else { // Not a local temporary file, so it's an external URL to sideload.
+			$tmp = download_url( $thumb_url );
+
+			// Set variables for storage
+			// fix file filename for query strings
+			preg_match( '/[^\?]+\.(jpg|JPG|jpe|JPE|jpeg|JPEG|gif|GIF|png|PNG)/', $thumb_url, $matches );
+			$file_array['name']     = basename( $matches[0] ?? 'thumbnail.jpg' ); // Ensure a default name.
+			$file_array['tmp_name'] = $tmp;
+
+			// If error storing temporarily, delete
+			if ( is_wp_error( $tmp ) ) {
+				wp_delete_file( $file_array['tmp_name'] );
+				$arr = array(
+					'thumb_id'  => false,
+					'thumb_url' => $thumb_url,
+				);
+				return $arr;
+			}
+
+			// do the validation and storage stuff
+			$thumb_id = media_handle_sideload( $file_array, $parent_id, $desc ); // Sideload the file.
+
+			// If error storing permanently, delete
+			if ( is_wp_error( $thumb_id ) ) {
+				wp_delete_file( $file_array['tmp_name'] );
+				$arr = array(
+					'thumb_id'  => $thumb_id,
+					'thumb_url' => $thumb_url,
+				);
+				return $arr;
+			}
+
+			// After sideload, the final URL is wp_get_attachment_url($thumb_id)
+			$final_poster_url = wp_get_attachment_url( $thumb_id );
+		}
+
+		// Update post meta for the video attachment.
+		// Use the new _videopack-meta key for consistency.
+		$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
+		$current_meta             = $attachment_meta_instance->get();
+		$current_meta['poster']   = $final_poster_url;
+		$current_meta['poster_id'] = intval( $thumb_id );
+		$attachment_meta_instance->save( $current_meta );
+
+		// Also update the thumbnail's own meta to link back to the video.
+		update_post_meta( $thumb_id, '_videopack-video-id', $attachment_id );
+
+		// Return the final result.
+		$arr = array(
+			'thumb_id'  => $thumb_id,
+			'thumb_url' => $final_poster_url,
+		);
+		return $arr;
 	}
 }
