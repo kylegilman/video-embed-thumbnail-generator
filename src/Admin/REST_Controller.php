@@ -151,18 +151,18 @@ class REST_Controller extends \WP_REST_Controller {
 						return current_user_can( 'make_video_thumbnails' );
 					},
 					'args'                => array(
-						'postId'   => array(
+						'attachment_id'   => array(
 							'type'     => array(
 								'number',
 								'string',
 							),
 							'required' => true,
 						),
-						'thumburl' => array(
+						'thumburl'        => array(
 							'type'     => 'string',
 							'required' => true,
 						),
-						'index'    => array(
+						'thumbnail_index' => array(
 							'type'     => 'number',
 							'required' => true,
 						),
@@ -178,46 +178,50 @@ class REST_Controller extends \WP_REST_Controller {
 						'url'                      => array(
 							'type'     => 'string',
 							'required' => true,
-						),
-						'numberofthumbs'           => array(
+						), // The video URL, for context.
+						'total_thumbnails'         => array( // Renamed from numberofthumbs.
 							'type'     => 'number',
 							'minimum'  => 1,
 							'maximum'  => 100,
 							'default'  => 4,
 							'required' => true,
-						),
-						'thumbnumber'              => array(
+						), // Total number of thumbs being generated in this batch.
+						'thumbnail_index'          => array( // Renamed from thumbnumber.
 							'type'     => 'number',
 							'required' => true,
-						),
-						'thumbnumberplusincreaser' => array(
+						), // The 1-based index of the thumbnail to generate.
+						'attachment_id'            => array( // Renamed from attachmentID.
 							'type'     => 'number',
 							'required' => true,
-						),
-						'attachmentID'             => array(
-							'type'     => 'number',
-							'required' => true,
-						),
-						'generate_button'          => array(
+						), // The ID of the source video attachment.
+						'generate_button'          => array( // This parameter name is fine as it's a UI-specific action, not a data field.
 							'type'     => 'string',
 							'required' => true,
 						),
-						'thumbtimecode'            => array(
-							'type'     => array(
-								'number',
-								'string',
-							),
-							'required' => true,
-						),
-						'dofirstframe'             => array(
-							'type'     => 'boolean',
-							'required' => true,
-						),
-						'poster'                   => array(
-							'type' => 'string',
-						),
-						'parent_id'                => array(
-							'type' => 'number',
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/thumbs/save_all',
+			array(
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => array( $this, 'thumb_save_all' ),
+				'permission_callback' => function () {
+					return current_user_can( 'make_video_thumbnails' );
+				},
+				'args'                => array(
+					'attachment_id' => array(
+						'type'     => 'number',
+						'required' => true,
+					),
+					'thumb_urls'   => array(
+						'type'     => 'array',
+						'required' => true,
+						'items'    => array(
+							'type'   => 'string',
+							'format' => 'uri',
 						),
 					),
 				),
@@ -469,39 +473,53 @@ class REST_Controller extends \WP_REST_Controller {
 
 	public function thumb_generate( \WP_REST_Request $request ) {
 
-		$params            = $request->get_params();
-		$response          = array();
 		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
-
-		$response = $ffmpeg_thumbnails->make(
-			$params['attachmentID'],
-			$params['url'],
-			$params['numberofthumbs'],
-			$params['thumbnumber'],
-			$params['thumbnumberplusincreaser'],
-			$params['thumbtimecode'],
-			$params['dofirstframe'],
-			$params['generate_button']
+		$result            = $ffmpeg_thumbnails->generate_single_thumbnail_data(
+			$request->get_param( 'attachment_id' ),
+			$request->get_param( 'total_thumbnails' ),
+			$request->get_param( 'thumbnail_index' ),
+			( $request->get_param( 'generate_button' ) === 'random' ) // Whether to use a random offset for the timecode.
 		);
 
-		return $response;
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		// The result is an array with 'path' and 'url'. The client only needs the URL.
+		return new \WP_REST_Response( array( 'real_thumb_url' => $result['url'] ), 200 );
+	}
+
+	public function thumb_save_all( \WP_REST_Request $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$thumb_urls    = $request->get_param( 'thumb_urls' );
+
+		$thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
+		$post_name  = get_the_title( $attachment_id );
+		$results    = array();
+
+		foreach ( $thumb_urls as $index => $url ) {
+			$results[] = $thumbnails->save( $attachment_id, $post_name, $url, $index + 1 );
+		}
+
+		return new \WP_REST_Response( $results, 200 );
 	}
 
 	public function thumb_save( \WP_REST_Request $request ) {
 
 		$params     = $request->get_params();
-		$thumbnails = new Thumbnails\Thumbnails( $this->options_manager );
+		$attachment_id = $params['attachment_id'];
+		$thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
 
-		if ( is_numeric( $params['postId'] ) ) {
-			$post_name = get_the_title( $params['postId'] );
+		if ( is_numeric( $attachment_id ) ) {
+			$post_name = get_the_title( $attachment_id );
 		} else {
-			$post_name = str_replace( 'singleurl_', '', $params['postId'] );
+			$post_name = str_replace( 'singleurl_', '', $attachment_id );
 		}
 		$response = $thumbnails->save(
-			$params['postId'],
+			$attachment_id,
 			$post_name,
 			$params['thumburl'],
-			intval( $params['index'] ) + 1
+			intval( $params['thumbnail_index'] ) + 1
 		);
 
 		return $response;

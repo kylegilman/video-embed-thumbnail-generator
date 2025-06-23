@@ -93,7 +93,7 @@ class Options {
 			'queue_control'           => 'play', // Control behavior for video encoding queue ('play', 'pause').
 
 			// Thumbnail Settings.
-			'generate_thumbs'         => 4, // Default number of thumbnails to generate when manually creating.
+			'total_thumbnails'        => 4, // Default total_thumbnails to generate when manually creating.
 			'featured'                => true, // Set generated thumbnail as post's featured thumbnail.
 			'browser_thumbnails'      => true, // Use browser technology to generate thumbnails instead of FFmpeg if FFmpeg is unavailable.
 
@@ -246,6 +246,12 @@ class Options {
 			// Merge old options into the new structure, respecting new defaults for missing keys.
 			$options_to_init = $this->merge_options_with_defaults( (array) $old_options, $options_to_init );
 			delete_option( 'kgvid_video_embed_options' );
+		}
+
+		// Migration: If old options had 'generate_thumbs', transfer its value to 'total_thumbnails'
+		if ( isset( $options_to_init['generate_thumbs'] ) && ! isset( $options_to_init['total_thumbnails'] ) ) {
+			$options_to_init['total_thumbnails'] = $options_to_init['generate_thumbs'];
+			unset( $options_to_init['generate_thumbs'] );
 		}
 
 		// Set capabilities based on the potentially merged old options or new defaults.

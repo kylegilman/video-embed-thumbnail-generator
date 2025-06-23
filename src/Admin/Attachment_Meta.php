@@ -38,13 +38,13 @@ class Attachment_Meta {
 			'completeviews'     => 0,
 			'pickedformat'      => null,
 			'encode'            => $this->options['encode'] ?? array(),
-			'rotate'            => null,
+			'rotate'            => null, // Rotation value for video.
 			'autothumb_error'   => null,
-			'numberofthumbs'    => $this->options['generate_thumbs'] ?? 4,
+			'total_thumbnails'  => $this->options['generate_thumbs'] ?? 4, // Default number of thumbnails to generate.
 			'randomize'         => false,
 			'forcefirst'        => false,
 			'featured'          => $this->options['featured'] ?? true,
-			'thumbtime'         => null,
+			'thumbtime'         => null, // Timecode for a single thumbnail.
 			'lockaspect'        => true,
 			'showtitle'         => true,
 			'gallery_columns'   => $this->options['gallery_columns'] ?? 4,
@@ -57,7 +57,7 @@ class Attachment_Meta {
 			'aspect'            => null,
 			'original_replaced' => null,
 			'featuredchanged'   => false,
-			'url'               => null,
+			'url'               => null, // This is the URL of the original video, not the attachment URL.
 			'poster'            => null,
 			'maxwidth'          => null,
 			'maxheight'         => null,
@@ -69,60 +69,75 @@ class Attachment_Meta {
 	}
 
 	public function get() {
-		$current_meta = get_post_meta( $this->post_id, '_kgvid-meta', true );
+		$current_meta = get_post_meta( $this->post_id, '_videopack-meta', true );
 		if ( ! is_array( $current_meta ) ) {
 			$current_meta = array();
 		}
 
 		$defaults = $this->get_defaults();
+		$migrated = false; // Flag to indicate if a migration happened
 
+		// Attempt to migrate from _kgvid-meta if _videopack-meta is empty
 		if ( empty( $current_meta ) ) {
-			// Attempt to migrate old meta if _kgvid-meta is empty
-			$migrated_meta = array();
-			$embed_old     = get_post_meta( $this->post_id, '_kgflashmediaplayer-embed', true );
+			$legacy_kgvid_meta = get_post_meta( $this->post_id, '_kgvid-meta', true );
+			if ( is_array( $legacy_kgvid_meta ) && ! empty( $legacy_kgvid_meta ) ) {
+				$current_meta = $legacy_kgvid_meta;
+				// Perform numberofthumbs migration
+				if ( isset( $current_meta['numberofthumbs'] ) && ! isset( $current_meta['total_thumbnails'] ) ) {
+					$current_meta['total_thumbnails'] = $current_meta['numberofthumbs'];
+					unset( $current_meta['numberofthumbs'] );
+				}
+				$migrated = true;
+				// Delete old meta after successful migration
+				delete_post_meta( $this->post_id, '_kgvid-meta' );
+			}
+		}
 
-			$embed = get_post_meta( $this->post_id, '_kgflashmediaplayer-embed', true ); // this was always saved if you modified the attachment.
-
-			if ( ! empty( $embed_old ) ) { // old meta values exist
+		// Attempt to migrate from _kgflashmediaplayer- if _videopack-meta AND _kgvid-meta are empty
+		if ( empty( $current_meta ) ) {
+			$embed_old = get_post_meta( $this->post_id, '_kgflashmediaplayer-embed', true );
+			if ( ! empty( $embed_old ) ) { // Old meta values exist
+				$temp_migrated_meta = array();
 				foreach ( $defaults as $key => $default_value ) {
 					$old_meta_value = get_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key, true );
-					if ( $old_meta_value !== false && $old_meta_value !== null ) { // Check if meta existed
-						if ( $old_meta_value === 'checked' ) {
-							$migrated_meta[ $key ] = true;
-						} else {
-							$migrated_meta[ $key ] = $old_meta_value;
-						}
+					if ( $old_meta_value !== false && $old_meta_value !== null ) {
+						$temp_migrated_meta[ $key ] = ( $old_meta_value === 'checked' ) ? true : $old_meta_value;
+						// Delete old individual meta keys
+						delete_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key );
 					}
-					delete_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key );
 				}
-			}
-
-			$old_meta_encode_keys = array(
-				'encodefullres',
-				'encode1080',
-				'encode720',
-				'encode480',
-				'encodemobile',
-				'encodewebm',
-				'encodeogg',
-				'encodecustom',
-			);
-
-			$old_meta_exists = false;
-
-			// Handle old encode keys if they were part of the migrated_meta
-			if ( ! empty( $migrated_meta ) ) {
-				$migrated_meta['encode'] = $migrated_meta['encode'] ?? array(); // Ensure 'encode' key exists
+				// Handle old encode keys
+				$old_meta_encode_keys = array(
+					'encodefullres',
+					'encode1080',
+					'encode720',
+					'encode480',
+					'encodemobile',
+					'encodewebm',
+					'encodeogg',
+					'encodecustom',
+				);
+				$temp_migrated_meta['encode'] = $temp_migrated_meta['encode'] ?? array();
 				foreach ( $old_meta_encode_keys as $old_key ) {
-					if ( array_key_exists( $old_key, $migrated_meta ) ) {
-						$format                             = str_replace( 'encode', '', $old_key );
-						$migrated_meta['encode'][ $format ] = $migrated_meta[ $old_key ];
-						unset( $migrated_meta[ $old_key ] );
-						$old_meta_exists = true;
+					if ( array_key_exists( $old_key, $temp_migrated_meta ) ) {
+						$format = str_replace( 'encode', '', $old_key );
+						$temp_migrated_meta['encode'][ $format ] = $temp_migrated_meta[ $old_key ];
+						unset( $temp_migrated_meta[ $old_key ] );
 					}
 				}
+				// Perform numberofthumbs migration on this temp data
+				if ( isset( $temp_migrated_meta['numberofthumbs'] ) && ! isset( $temp_migrated_meta['total_thumbnails'] ) ) {
+					$temp_migrated_meta['total_thumbnails'] = $temp_migrated_meta['numberofthumbs'];
+					unset( $temp_migrated_meta['numberofthumbs'] );
+				}
+				$current_meta = $temp_migrated_meta;
+				$migrated = true;
 			}
-			$current_meta = $migrated_meta; // Use migrated meta as the base if old meta existed
+		}
+
+		// If any migration happened, save the current_meta to _videopack-meta
+		if ( $migrated ) {
+			$this->save( $current_meta ); // This will save to _videopack-meta
 		}
 
 		// Merge database meta with defaults to ensure all keys are present
@@ -169,7 +184,7 @@ class Attachment_Meta {
 		}
 
 		if ( $changed ) {
-			$this->save( $meta_data );
+			$this->save( $meta_data ); // Save to _videopack-meta
 		}
 
 		/**
@@ -201,10 +216,10 @@ class Attachment_Meta {
 			}
 		}
 
-		if ( empty( $meta_to_persist ) ) {
-			delete_post_meta( $this->post_id, '_kgvid-meta' );
+		if ( empty( $meta_to_persist ) ) { // If no custom meta to save, delete the meta key.
+			delete_post_meta( $this->post_id, '_videopack-meta' );
 		} else {
-			update_post_meta( $this->post_id, '_kgvid-meta', $meta_to_persist );
+			update_post_meta( $this->post_id, '_videopack-meta', $meta_to_persist );
 		}
 	}
 
@@ -290,9 +305,27 @@ class Attachment_Meta {
 		register_post_meta(
 			'attachment',
 			'_kgvid-meta',
-			array(
+			array( // This is the old meta key, keep it registered for migration purposes but don't show in REST.
 				'type'          => 'object',
 				'description'   => 'Videopack postmeta',
+				'single'        => true,
+				'show_in_rest'  => array(
+					'schema' => array(
+						'type'       => 'object',
+						'properties' => $this->schema(),
+					),
+				),
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+		register_post_meta(
+			'attachment',
+			'_videopack-meta', // The new canonical meta key.
+			array(
+				'type'          => 'object',
+				'description'   => 'Videopack postmeta (new format)',
 				'single'        => true,
 				'show_in_rest'  => array(
 					'schema' => array(
@@ -438,7 +471,7 @@ class Attachment_Meta {
 			'maxwidth'            => array(
 				'type' => array( 'string', 'number', 'null' ), // Max width for player
 			),
-			'numberofthumbs'      => array(
+			'total_thumbnails'    => array(
 				'type' => array(
 					'string',
 					'number',
