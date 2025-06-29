@@ -17,5 +17,10 @@ module.exports = {
 			'attachment-details',
 			'attachment-details.js'
 		),
+		'encode-queue': path.resolve(
+			process.cwd(),
+			'src',
+			'encode-queue.js'
+		),
 	},
 };
