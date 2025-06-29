@@ -1,0 +1,26 @@
+.videopack-encode-queue {
+	.videopack-queue-controls {
+		display: flex;
+		gap: 10px;
+		margin-bottom: 20px;
+		align-items: center;
+	}
+
+	.videopack-progress-bar-container {
+		width: 100%;
+		background-color: #e0e0e0;
+		border-radius: 4px;
+		overflow: hidden;
+		height: 20px;
+	}
+
+	.videopack-progress-bar {
+		height: 100%;
+		background-color: #3582c4; // WordPress blue
+		text-align: center;
+		color: white;
+		line-height: 20px;
+		font-size: 12px;
+		transition: width 0.5s ease-in-out;
+	}
+}
