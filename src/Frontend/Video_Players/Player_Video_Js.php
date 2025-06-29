@@ -118,15 +118,13 @@ class Player_Video_Js extends Player {
 	public function filter_video_classes( $classes, $atts ): array {
 
 		$classes[] = 'video-js';
-
-		if ( empty( $this->options['skin'] ) ) {
-			$this->options['skin'] = 'vjs-default-skin';
-		}
-		if ( array_key_exists( 'skin', $atts ) ) {
-			$this->options['skin'] = $atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
+		$skin      = $this->options['skin'] ?? 'vjs-default-skin';
+		if ( empty( $skin ) ) {
+			$skin = 'vjs-default-skin';
 		}
 
-		$classes[] = $this->options['skin'];
+		// Allow user to set skin for individual videos using the skin="" attribute.
+		$classes[] = $atts['skin'] ?? $skin;
 
 		return $classes;
 	}

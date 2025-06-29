@@ -132,8 +132,8 @@ class Metadata {
 
 				$kgvid_postmeta           = $this->attachment_meta->get( $attributes['id'] );
 				$kgvid_postmeta['poster'] = get_post_meta( $attributes['id'], '_kgflashmediaplayer-poster', true );
-				$dimensions               = new \Videopack\Common\Video_Dimensions( $this->options_manager, $attributes['id'] );
-				$attributes               = array_merge( $dimensions, array_filter( $kgvid_postmeta ), $attributes );
+				$dimensions               = $this->calculate_video_dimensions( (int) $attributes['id'] );
+				$attributes               = array_merge( $dimensions, array_filter( (array) $kgvid_postmeta ), $attributes );
 
 			}
 		}
@@ -144,6 +144,53 @@ class Metadata {
 
 		$attributes['url'] = $url;
 		return $attributes;
+	}
+
+	/**
+	 * Calculate video dimensions based on attachment metadata and plugin options.
+	 *
+	 * @param int  $id The attachment ID.
+	 * @param bool $gallery Whether the video is in a gallery context.
+	 * @return array An array containing width, height, actualwidth, and actualheight.
+	 */
+	private function calculate_video_dimensions( int $id, bool $gallery = false ): array {
+		$video_meta     = wp_get_attachment_metadata( $id );
+		$kgvid_postmeta = $this->attachment_meta->get( $id );
+
+		$width  = $kgvid_postmeta['width'] ?? null;
+		$height = $kgvid_postmeta['height'] ?? null;
+
+		// Set actual width and height from video metadata if available, otherwise use options
+		$actualwidth  = $video_meta['width'] ?? $this->options['width'];
+		$actualheight = $video_meta['height'] ?? $this->options['height'];
+
+		// Set width and height if not already set
+		if ( empty( $width ) ) {
+			$width = $actualwidth;
+		}
+		if ( empty( $height ) ) {
+			$height = $actualheight;
+		}
+
+		// Calculate aspect ratio
+		$aspect_ratio = ( $width > 0 && $height > 0 )
+			? $height / $width
+			: $this->options['height'] / $this->options['width'];
+
+		// Adjust dimensions for gallery or max width
+		if ( $gallery ) {
+			$width = ! empty( $actualwidth ) ? $actualwidth : $width;
+			if ( $width > $this->options['gallery_width'] ) {
+				$width = $this->options['gallery_width'];
+			}
+		} elseif ( (int) $width > (int) $this->options['width'] ) {
+			$width = $this->options['width'];
+		}
+
+		// Calculate height based on aspect ratio
+		$height = round( $width * $aspect_ratio );
+
+		return compact( 'width', 'height', 'actualwidth', 'actualheight' );
 	}
 
 	public function print_scripts() {

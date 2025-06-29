@@ -25,8 +25,10 @@ class Gallery {
 		if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
-		if ( $query_atts['gallery_pagination'] != true
-			&& empty( $query_atts['gallery_per_page'] )
+		if ( (
+			$query_atts['gallery_pagination'] != true
+				&& empty( $query_atts['gallery_per_page'] )
+			)
 			|| $query_atts['gallery_per_page'] == 'false'
 		) {
 			$query_atts['gallery_per_page'] = -1;
@@ -85,147 +87,136 @@ class Gallery {
 		);
 	}
 
-	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
-
-		global $kgvid_video_id;
-		if ( ! $kgvid_video_id ) {
-			$kgvid_video_id = $last_video_id + 1;
+	/**
+	 * Prepares all necessary data for a single video to be used by the gallery frontend.
+	 *
+	 * @param \WP_Post $attachment The video attachment post object.
+	 * @param array    $gallery_atts The attributes for the gallery.
+	 * @return array|null The prepared data array or null on failure.
+	 */
+	public function prepare_video_data_for_js( \WP_Post $attachment, array $gallery_atts ): ?array {
+		$shortcode = new Shortcode( $this->options_manager );
+		$source    = \Videopack\Video_Source\Source_Factory::create( $attachment->ID, $this->options_manager );
+		if ( ! $source ) {
+			return null;
 		}
 
-		$code = '';
+		// The shortcode class has logic to determine final attributes based on defaults, meta, and shortcode atts.
+		// We need to replicate that to get the correct poster, dimensions, etc.
+		$single_video_atts = array_merge( $gallery_atts, array( 'id' => $attachment->ID ) );
+		$final_atts        = $shortcode->get_final_atts( $single_video_atts, $source );
 
+		$player = Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+		$player->set_source( $source );
+		$player->set_atts( $final_atts );
+
+		$player_vars               = $player->prepare_video_vars();
+		$player_vars['id']         = 'videopack_player_gallery_' . $attachment->ID; // Ensure a unique ID for the player instance.
+		$player_vars['sources']    = $player->get_sources();
+		$player_vars['poster']     = $final_atts['poster'];
+		$player_vars['attachment'] = $attachment->ID;
+
+		$poster_id = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true );
+		if ( ! $poster_id ) {
+			$poster_id = get_post_thumbnail_id( $attachment->ID );
+		}
+
+		return array(
+			'attachment_id' => $attachment->ID,
+			'title'         => get_the_title( $attachment ),
+			'poster_url'    => $final_atts['poster'],
+			'poster_srcset' => $poster_id ? wp_get_attachment_image_srcset( $poster_id, 'medium_large' ) : '',
+			'player_vars'   => $player_vars,
+		);
+	}
+
+	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
 		$attachments = $this->get_gallery_videos( $page_number, $query_atts );
+		$videos_data = array();
 
 		if ( $attachments->have_posts() ) {
-
 			foreach ( $attachments->posts as $attachment ) {
-
-				$thumbnail_url    = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster', true );
-				$poster_id        = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true );
-				$thumbnail_srcset = false;
-
-				if ( ! empty( $poster_id ) ) {
-					$thumbnail_url    = wp_get_attachment_url( $poster_id );
-					$thumbnail_srcset = wp_get_attachment_image_srcset( $poster_id );
-					if ( intval( $query_atts['gallery_thumb'] ) <= get_option( 'medium_size_h' ) ) {
-						$thumbnail_url = ( new Shortcode( $this->options_manager ) )->get_attachment_medium_url( $poster_id );
-						//use the "medium" size image if available
-					}
+				$video_data = $this->prepare_video_data_for_js( $attachment, $query_atts );
+				if ( $video_data ) {
+					$videos_data[] = $video_data;
+					// Add player vars to the inline script data for the initial page load.
+					$script = sprintf(
+						'window.Videopack = window.Videopack || {}; window.Videopack.player_data = window.Videopack.player_data || {}; window.Videopack.player_data["%1$s"] = %2$s;',
+						$video_data['player_vars']['id'],
+						wp_json_encode( $video_data['player_vars'] )
+					);
+					wp_add_inline_script( 'videopack', $script );
 				}
-				if ( ! $thumbnail_url ) {
-					$thumbnail_url = $this->options['poster'];
-				} //use the default poster if no thumbnail set
-				if ( ! $thumbnail_url ) {
-					$thumbnail_url = plugins_url( '/images/nothumbnail.jpg', __DIR__ );} //use the blank image if no other option
-
-				if ( is_admin() && defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-					if ( $thumbnail_url ) {
-						$thumbnail_url = set_url_scheme( $thumbnail_url );
-					}
-				}
-
-				$below_video = 0;
-				if ( ! empty( $attachment->post_excerpt )
-					|| $query_atts['view_count'] == 'true'
-				) {
-					$below_video = 1;
-				}
-
-				$kgvid_postmeta = $this->attachment_meta->get( $attachment->ID );
-
-				$play_button_html = '';
-
-				if ( $this->options['embed_method'] == 'WordPress Default' ) {
-
-					$library = apply_filters( 'wp_video_shortcode_library', 'mediaelement' );
-					if ( 'mediaelement' === $library && did_action( 'init' ) ) {
-						wp_enqueue_style( 'wp-mediaelement' );
-						wp_enqueue_script( 'wp-mediaelement' );
-					}
-
-					$play_button_class = 'mejs-overlay-button';
-					$play_scale        = strval( round( intval( $query_atts['gallery_thumb'] ) / 400, 2 ) );
-					$play_translate    = 5;
-				} else {
-					$play_button_class = 'vjs-big-play-button';
-					$play_scale        = strval( round( intval( $query_atts['gallery_thumb'] ) / 600, 2 ) );
-					$play_translate    = 30;
-				}
-
-				$play_button_html = '<div class="' . esc_attr( $this->options['skin'] ) . '" ><button type="button" class="' . esc_attr( $play_button_class ) . '" style="-webkit-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -o-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); -ms-transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px); transform: scale(' . esc_attr( $play_scale ) . ') translateY(-' . esc_attr( $play_translate ) . 'px);"></button></div>';
-
-				$dimensions = new \Videopack\Common\Video_Dimensions( $this->options_manager, $attachment->ID, true );
-
-				$atts = array(
-					'id'     => $attachment->ID,
-					'width'  => $dimensions->width,
-					'height' => $dimensions->height,
-				);
-				if ( $kgvid_postmeta['downloadlink'] == true ) {
-					$atts['downloadlink'] = 'true';
-				}
-
-				$popup_atts = kgvid_shortcode_atts( $atts );
-				if ( in_the_loop() ) {
-					$post_id = get_the_ID();
-				} else {
-					$post_id = 1;
-				}
-				$content    = '';
-				$player     = Video_Players\Player_Factory::create( $this->options_manager );
-				$popup_code = $player->single_video_code( $popup_atts, $atts, $content, $post_id );
-				preg_match( '/data-kgvid_video_vars=".*?"/', $popup_code, $video_vars );
-				$popup_code = str_replace( array( "\r", "\n", "\t", $video_vars[0] ), '', $popup_code );
-
-				if ( $this->options['skin'] == '' ) {
-					$this->options['skin'] = 'vjs-default-skin';
-				}
-				if ( is_array( $query_atts ) && array_key_exists( 'skin', $query_atts ) ) {
-					$this->options['skin'] = $query_atts['skin']; // allows user to set skin for individual videos using the skin="" attribute
-				}
-
-				$code .= '<div class="kgvid_video_gallery_thumb" onclick="kgvid_SetVideo(\'kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '\')" id="kgvid_video_gallery_thumb_kgvid_' . strval( $kgvid_video_id - 1 ) . '" data-id="kgvid_' . esc_attr( $kgvid_video_id - 1 ) . '" data-width="' . esc_attr( $dimensions->width ) . '" data-height="' . esc_attr( $dimensions->height ) . '" data-meta="' . esc_attr( $below_video ) . '" data-gallery_end="' . esc_attr( $query_atts['gallery_end'] ) . '" data-popupcode="' . esc_attr( $popup_code ) . '" ' . $video_vars[0] . ' style="width:' . esc_attr( $query_atts['gallery_thumb'] ) . 'px;';
-
-				$code .= '"><img';
-				if ( ! empty( $thumbnail_srcset ) ) {
-					$code .= ' srcset="' . esc_attr( $thumbnail_srcset ) . '"';
-				}
-				$code .= ' src="' . esc_url( $thumbnail_url ) . '"';
-				$code .= ' alt="' . esc_attr( $attachment->post_title ) . '">' . $play_button_html;
-
-				if ( $query_atts['gallery_title'] == 'true' ) {
-					$code .= '<div class="titlebackground"><div class="videotitle">' . esc_html( $attachment->post_title ) . '</div></div>';
-				}
-
-				$code .= '</div>' . "\n\t\t\t";
-
-			} //end attachment loop
-
-			if ( $attachments->max_num_pages > 1 ) {
-
-				$code .= '<div class="kgvid_gallery_pagination">';
-				$code .= '<span class="kgvid_gallery_pagination_arrow"';
-				if ( $page_number == 1 ) {
-					$code .= ' style="visibility:hidden;"';
-				}
-				$code .= ' onclick="kgvid_switch_gallery_page(jQuery(this).siblings(\'.kgvid_gallery_pagination_selected\').prev(), \'none\');" title="' . esc_attr__( 'Previous', 'video-embed-thumbnail-generator' ) . '">&larr;</span> ';
-				for ( $x = 1; $x <= $attachments->max_num_pages; $x++ ) {
-					if ( $x == $page_number ) {
-						$code .= '<span class="kgvid_gallery_pagination_selected">' . $x . '</span> ';
-					} else {
-						$code .= '<span class="kgvid_gallery_page_number" onclick="kgvid_switch_gallery_page(this, \'none\');">' . esc_html( $x ) . '</span> ';
-					}
-				}
-				$code .= '<span class="kgvid_gallery_pagination_arrow"';
-				if ( $page_number == $attachments->max_num_pages ) {
-					$code .= ' style="visibility:hidden;"';
-				}
-				$code .= ' onclick="kgvid_switch_gallery_page(jQuery(this).siblings(\'.kgvid_gallery_pagination_selected\').next(), \'none\');" title="' . esc_attr__( 'Next', 'video-embed-thumbnail-generator' ) . '">&rarr;</span>';
-				$code .= '</div>';
-
 			}
-		} //if there are attachments
+		}
+		ob_start();
+		?>
+		<div class="videopack-gallery-wrapper" data-gallery-settings="<?php echo esc_attr( wp_json_encode( $query_atts ) ); ?>">
+			<div class="videopack-gallery-grid">
+				<?php foreach ( $videos_data as $video ) : ?>
+					<div class="videopack-gallery-thumbnail" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>" style="width: <?php echo esc_attr( $query_atts['gallery_thumb'] ); ?>px;">
+						<a href="#">
+							<img src="<?php echo esc_url( $video['poster_url'] ); ?>"
+								<?php
+								if ( ! empty( $video['poster_srcset'] ) ) {
+									printf( 'srcset="%s"', esc_attr( $video['poster_srcset'] ) );
+								}
+								?>
+								alt="<?php echo esc_attr( $video['title'] ); ?>">
+							<div class="videopack-gallery-play-button"></div>
+							<?php if ( 'true' === $query_atts['gallery_title'] ) : ?>
+								<div class="videopack-gallery-title-overlay">
+									<span><?php echo esc_html( $video['title'] ); ?></span>
+								</div>
+							<?php endif; ?>
+						</a>
+					</div>
+				<?php endforeach; ?>
+			</div>
 
-		return apply_filters( 'kgvid_gallery_page', $code, $kgvid_video_id );
+			<div class="videopack-gallery-pagination">
+				<?php echo $this->render_pagination_html( $attachments->max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</div>
+
+			<!-- Gallery Popup Modal -->
+			<div class="videopack-gallery-popup" style="display: none;">
+				<div class="videopack-gallery-popup-overlay"></div>
+				<div class="videopack-gallery-popup-content">
+					<button class="videopack-gallery-popup-close">&times;</button>
+					<div class="videopack-gallery-player-container">
+						<!-- Player will be inserted here by JS -->
+					</div>
+					<button class="videopack-gallery-popup-prev">&larr;</button>
+					<button class="videopack-gallery-popup-next">&rarr;</button>
+				</div>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	public function render_pagination_html( $max_pages, $current_page ) {
+		if ( $max_pages <= 1 ) {
+			return '';
+		}
+		ob_start();
+		?>
+		<span class="videopack-gallery-pagination-arrow prev" <?php echo ( 1 === $current_page ) ? 'style="visibility:hidden;"' : ''; ?>>
+			<a href="#" data-page="<?php echo esc_attr( $current_page - 1 ); ?>">&larr;</a>
+		</span>
+		<?php for ( $i = 1; $i <= $max_pages; $i++ ) : ?>
+			<?php if ( $i === $current_page ) : ?>
+				<span class="videopack-gallery-pagination-selected"><?php echo esc_html( $i ); ?></span>
+			<?php else : ?>
+				<span class="videopack-gallery-page-number">
+					<a href="#" data-page="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></a>
+				</span>
+			<?php endif; ?>
+		<?php endfor; ?>
+		<span class="videopack-gallery-pagination-arrow next" <?php echo ( $current_page === $max_pages ) ? 'style="visibility:hidden;"' : ''; ?>>
+			<a href="#" data-page="<?php echo esc_attr( $current_page + 1 ); ?>">&rarr;</a>
+		</span>
+		<?php
+		return ob_get_clean();
 	}
 }

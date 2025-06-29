@@ -10,12 +10,10 @@ class Shortcode {
 	 */
 	protected $options_manager;
 	protected $options;
-	protected $player;
 
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
-		$this->player          = \Videopack\Frontend\Video_Players\Player_Factory::create( $options_manager );
 	}
 
 	public function add() {
@@ -227,76 +225,205 @@ class Shortcode {
 		return apply_filters( 'videopack_shortcode_atts', $query_atts );
 	}
 
+	/**
+	 * Get the final, resolved attributes for a video.
+	 *
+	 * This method consolidates the logic for determining the final attributes for a video,
+	 * merging defaults, user-provided attributes, and data from the video source itself.
+	 *
+	 * @param array                           $atts   The raw shortcode attributes.
+	 * @param \Videopack\Video_Source\Source $source The video source object.
+	 * @return array The final, resolved attributes.
+	 */
+	public function get_final_atts( array $atts, \Videopack\Video_Source\Source $source ): array {
+		$query_atts = $this->atts( $atts );
+
+		// Populate shortcode attributes with data from the Source object, if not already set by the user.
+		if ( empty( $query_atts['poster'] ) ) {
+			$query_atts['poster'] = $source->get_poster();
+		}
+		if ( empty( $query_atts['title'] ) ) {
+			$query_atts['title'] = $source->get_title();
+		}
+		if ( empty( $query_atts['caption'] ) ) {
+			$query_atts['caption'] = $source->get_caption();
+		}
+		if ( empty( $query_atts['description'] ) ) {
+			$query_atts['description'] = $source->get_description();
+		}
+		// Handle text tracks.
+		if ( ! empty( $query_atts['track_src'] ) ) {
+			// If a single track is defined by shortcode attributes, use it.
+			$query_atts['tracks'] = array(
+				array(
+					'kind'    => $query_atts['track_kind'],
+					'srclang' => $query_atts['track_srclang'],
+					'src'     => $query_atts['track_src'],
+					'label'   => $query_atts['track_label'],
+					'default' => $query_atts['track_default'],
+				),
+			);
+		} else {
+			// Otherwise, get all tracks from the source's metadata.
+			$query_atts['tracks'] = $source->get_tracks();
+		}
+		if ( empty( $query_atts['view_count'] ) ) {
+			$query_atts['view_count'] = $source->get_views();
+		}
+
+		// Set default dimensions from source if not provided in shortcode.
+		if ( empty( $atts['width'] ) && $source->get_width() ) {
+			$query_atts['width'] = $source->get_width();
+		}
+		if ( empty( $atts['height'] ) && $source->get_height() ) {
+			$query_atts['height'] = $source->get_height();
+		}
+
+		// Apply GIF mode overrides if enabled.
+		if ( $query_atts['gifmode'] === 'true' ) {
+			$gifmode_atts = array(
+				'muted'        => 'true',
+				'autoplay'     => 'true',
+				'loop'         => 'true',
+				'controls'     => 'false',
+				'title'        => 'false',
+				'embeddable'   => 'false',
+				'downloadlink' => 'false',
+				'playsinline'  => 'true',
+				'view_count'   => 'false',
+			);
+			$gifmode_atts = apply_filters( 'kgvid_gifmode_atts', $gifmode_atts ); // Consider updating filter name.
+			$query_atts   = array_merge( $query_atts, $gifmode_atts );
+		}
+
+		// Handle responsive width/height and fixed aspect ratio.
+		if ( $query_atts['width'] === '100%' ) {
+			$query_atts['width']     = $this->options['width'];
+			$query_atts['height']    = $this->options['height'];
+			$query_atts['fullwidth'] = 'true';
+		}
+
+		return $query_atts;
+	}
+
 	public function do( $atts, $content = '' ) {
 
 		$code       = '';
 		$query_atts = '';
 
-		if ( ! is_feed() ) {
+		if ( is_feed() ) {
+			return '';
+		}
 
-			if ( substr( $this->options['embed_method'], 0, 8 ) !== 'Video.js' ) {
-				$this->player->enqueue_scripts();
+		$post_id = get_the_ID();
+		if ( ! $post_id ) {
+			$post_id = get_queried_object_id();
+		}
+
+		// Determine the video source based on shortcode attributes or content
+		$source_input = '';
+		if ( ! empty( $query_atts['id'] ) ) {
+			$source_input = $query_atts['id'];
+		} elseif ( ! empty( $content ) ) {
+			// Workaround for relative video URL
+			if ( substr( $content, 0, 1 ) === '/' ) {
+				$content = get_bloginfo( 'url' ) . $content;
+			}
+			$source_input = trim( $content );
+		} else {
+			// If no explicit source, try to find the first video attachment of the current post
+			$args              = array(
+				'numberposts'    => 1,
+				'post_mime_type' => 'video',
+				'post_parent'    => $post_id,
+				'post_status'    => null,
+				'post_type'      => 'attachment', //phpcs:ignore
+				'orderby'        => $query_atts['orderby'],
+				'order'          => $query_atts['order'],
+			);
+			$video_attachments = get_posts( $args );
+			if ( $video_attachments ) {
+				$source_input = $video_attachments[0]->ID;
+			} else {
+				return ''; // No video source found, return empty
+			}
+		}
+
+		// Create the Source object
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager, null, null, $post_id );
+
+		if ( ! $source || ! $source->exists() ) {
+			return ''; // Source not found or doesn't exist
+		}
+
+		// Get the final, resolved attributes for the video.
+		$query_atts = $this->get_final_atts( $atts, $source );
+
+		$code = '';
+		if ( $query_atts['gallery'] !== 'true' ) { // If this is a single video shortcode
+
+			// Determine the player type based on shortcode attribute or global option
+			if ( isset( $query_atts['embed_method'] ) ) {
+				$player_type = $query_atts['embed_method'];
+			} else {
+				$player_type = $this->options['embed_method'];
+			}
+			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options_manager );
+
+			// Set the source and final attributes on the player instance
+			$player->set_source( $source );
+			$player->set_atts( $query_atts );
+
+			// Enqueue player-specific scripts and styles
+			// This ensures the correct player's assets are loaded when its shortcode is used.
+			$player->enqueue_scripts();
+
+			// Get the generated HTML code for the video player
+			$code = $player->get_player_code( $query_atts );
+		} else { // If it's a gallery shortcode
+			// Existing gallery logic (assuming Gallery class handles its own rendering)
+			static $kgvid_gallery_id = 0;
+			$gallery_query_index     = array(
+				'gallery_orderby',
+				'gallery_order',
+				'gallery_id',
+				'gallery_include',
+				'gallery_exclude',
+				'gallery_thumb',
+				'view_count',
+				'gallery_end',
+				'gallery_pagination',
+				'gallery_per_page',
+				'gallery_title',
+			);
+			$gallery_query_atts      = array();
+			foreach ( $gallery_query_index as $index ) {
+				$gallery_query_atts[ $index ] = $query_atts[ $index ];
 			}
 
-			$post_id = get_the_ID();
-			if ( $post_id == false ) {
-				$post_id = get_queried_object_id();
+			if ( $gallery_query_atts['gallery_orderby'] === 'rand' ) {
+				$gallery_query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
 			}
 
-			$query_atts = $this->atts( $atts );
-
-			if ( $query_atts['gallery'] != 'true' ) { // if this is not a pop-up gallery
-
-				$code = ( new Video_Players\Player( $this->options_manager ) )->single_video_code( $query_atts, $atts, $content, $post_id );
-
-			} else { // if gallery
-
-				static $kgvid_gallery_id = 0;
-				$gallery_query_index     = array(
-					'gallery_orderby',
-					'gallery_order',
-					'gallery_id',
-					'gallery_include',
-					'gallery_exclude',
-					'gallery_thumb',
-					'view_count',
-					'gallery_end',
-					'gallery_pagination',
-					'gallery_per_page',
-					'gallery_title',
-				);
-				$gallery_query_atts      = array();
-				foreach ( $gallery_query_index as $index ) {
-					$gallery_query_atts[ $index ] = $query_atts[ $index ];
-				}
-
-				if ( $gallery_query_atts['gallery_orderby'] == 'rand' ) {
-					$gallery_query_atts['gallery_orderby'] = 'RAND(' . rand() . ')'; // use the same seed on every page load
-				}
-
-				$aligncode = '';
-				if ( $query_atts['align'] == 'left' ) {
-					$aligncode = ' kgvid_textalign_left';
-				}
-				if ( $query_atts['align'] == 'center' ) {
-					$aligncode = ' kgvid_textalign_center';
-				}
-				if ( $query_atts['align'] == 'right' ) {
-					$aligncode = ' kgvid_textalign_right';
-				}
-
-				$code .= '<div class="kgvid_gallerywrapper' . esc_attr( $aligncode ) . '" id="kgvid_gallery_' . esc_attr( $kgvid_gallery_id ) . '" data-query_atts="' . esc_attr( wp_json_encode( $gallery_query_atts ) ) . '">';
-				$code .= ( new Gallery( $this->options_manager ) )->gallery_page( 1, $gallery_query_atts );
-				$code .= '</div>'; // end wrapper div
-
-				++$kgvid_gallery_id;
-
-			} //if gallery
-
-			if ( substr( $this->options['embed_method'], 0, 8 ) === 'Video.js' ) {
-				$this->player->enqueue_scripts();
+			$aligncode = '';
+			if ( $query_atts['align'] === 'left' ) {
+				$aligncode = ' kgvid_textalign_left';
 			}
-		} //if not feed
+			if ( $query_atts['align'] === 'center' ) {
+				$aligncode = ' kgvid_textalign_center';
+			}
+			if ( $query_atts['align'] === 'right' ) {
+				$aligncode = ' kgvid_textalign_right';
+			}
+
+			// Assuming Gallery class is responsible for its own player instantiation if needed
+			$code .= '<div class="kgvid_gallerywrapper' . esc_attr( $aligncode ) . '" id="kgvid_gallery_' . esc_attr( $kgvid_gallery_id ) . '" data-query_atts="' . esc_attr( wp_json_encode( $gallery_query_atts ) ) . '">';
+			// The Gallery class might also need refactoring to use the new Player/Source factories
+			$code .= ( new Gallery( $this->options_manager ) )->gallery_page( 1, $gallery_query_atts );
+			$code .= '</div>';
+
+			++$kgvid_gallery_id;
+		}
 
 		$code = wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
 

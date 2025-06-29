@@ -586,7 +586,7 @@ abstract class Source {
 		if ( ! empty( $this->width ) && ! empty( $this->height ) ) {
 			$this->aspect_ratio = $this->height / $this->width;
 		} else {
-			$this->aspect_ratio = $this->options_manager->height / $this->options_manager->width;
+			$this->aspect_ratio = $this->options['height'] / $this->options['width'];
 		}
 	}
 
@@ -609,11 +609,43 @@ abstract class Source {
 		return $this->duration;
 	}
 
-	protected function get_views(): ?int {
+	public function get_views(): ?int {
 		if ( ! isset( $this->metadata['starts'] ) ) {
 			$this->set_metadata();
 		}
 		return $this->metadata['starts'];
+	}
+
+	/**
+	 * Get the poster image URL for the video.
+	 * @return string
+	 */
+	public function get_poster(): string {
+		return isset( $this->metadata['poster'] ) ? $this->metadata['poster'] : '';
+	}
+
+	/**
+	 * Get the caption for the video.
+	 * @return string
+	 */
+	public function get_caption(): string {
+		return isset( $this->metadata['caption'] ) ? $this->metadata['caption'] : '';
+	}
+
+	/**
+	 * Get the description for the video.
+	 * @return string
+	 */
+	public function get_description(): string {
+		return isset( $this->metadata['description'] ) ? $this->metadata['description'] : '';
+	}
+
+	/**
+	 * Get the text tracks for the video.
+	 * @return array
+	 */
+	public function get_tracks(): array {
+		return isset( $this->metadata['tracks'] ) ? $this->metadata['tracks'] : array();
 	}
 
 	public function is_original(): bool {
