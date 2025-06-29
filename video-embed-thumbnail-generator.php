@@ -58,6 +58,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	if ( ! defined( 'VIDEOPACK_BASENAME' ) ) {
 		define( 'VIDEOPACK_BASENAME', plugin_basename( __FILE__ ) );
 	}
+	if ( ! defined( 'VIDEOPACK_PLUGIN_FILE' ) ) {
+		define( 'VIDEOPACK_PLUGIN_FILE', __FILE__ );
+	}
+	if ( ! defined( 'VIDEOPACK_PLUGIN_DIR' ) ) {
+		define( 'VIDEOPACK_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+	}
 	if ( ! defined( 'VIDEOPACK_VERSION' ) ) {
 		define( 'VIDEOPACK_VERSION', '5.0' );
 	}
