@@ -1,1338 +1,1797 @@
-jQuery( kgvid_document_ready() );
-jQuery( window ).on( "load", kgvid_window_load );
+/**
+ * Videopack Frontend JS.
+ *
+ * @package Video-Embed-Thumbnail-Generator
+ */
 
-function kgvid_document_ready() {
+/* global videojs, mejs, videopack_l10n, gtag, ga, __gaTracker, _gaq */
 
-	jQuery( '.kgvid_videodiv' ).each(
-		function () {
-			// setup individual videos. WordPress Default has its own success callback
+( function( $ ) {
+	'use strict';
 
-			var video_vars = jQuery( this ).data( 'kgvid_video_vars' );
-
-			if ( video_vars.player_type.startsWith( "Video.js" ) ) {
-
-				kgvid_load_videojs( video_vars );
-
-			}
-
-		}
-	);
-
-}
-
-function kgvid_window_load() {
-
-	jQuery( '.kgvid_gallerywrapper' ).each(
-		function () {
-			// setup gallery thumbnails
-
-			var gallery_id = this.id;
-			kgvid_resize_gallery_play_button( gallery_id );
-			jQuery( window ).on(
-				'resize',
-				function () {
-					kgvid_resize_gallery_play_button( gallery_id ) }
-			);
-			setTimeout(
-				function () {
-					kgvid_resize_gallery_play_button( gallery_id ) },
-				200
-			);
-
-		}
-	);
-
-}
-
-function kgvid_mejs_success(mediaElement, domObject) {
-	if ( domObject.nodeName == "VIDEO" ) {
-		var id = jQuery( domObject ).parents( '.kgvid_videodiv' ).data( 'id' );
-		if ( id != undefined ) { // make sure we're using KGVID shortcode
-			kgvid_setup_video( id );
-		}
-	}
-}
-
-function kgvid_convert_to_timecode(time) {
-
-	var minutes = Math.floor( time / 60 );
-	var seconds = Math.round( (time - (minutes * 60)) * 100 ) / 100;
-	if (minutes < 10) {
-		minutes = "0" + minutes;}
-	if (seconds < 10) {
-		seconds = "0" + seconds;}
-	var time_display = minutes + ':' + seconds;
-	return time_display;
-
-}
-
-function kgvid_convert_from_timecode(timecode) {
-
-	var timecode_array = timecode.split( ":" );
-	timecode_array     = timecode_array.reverse();
-	if ( timecode_array[1] ) {
-		timecode_array[1] = timecode_array[1] * 60;
-	}
-	if ( timecode_array[2] ) {
-		timecode_array[2] = timecode_array[2] * 3600;
-	}
-	var thumbtimecode = 0;
-	jQuery.each(
-		timecode_array,
-		function () {
-			thumbtimecode += parseFloat( this );
-		}
-	);
-	return thumbtimecode;
-
-}
-
-function kgvid_preventDefault(e) {
-	e.preventDefault();
-}
-
-function kgvid_SetVideo(id) {
-	// for galleries
-
-	var gallery_id = jQuery( '#kgvid_video_gallery_thumb_' + id ).parent().attr( 'id' );
-
-	var width        = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'width' );
-	var height       = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'height' );
-	var aspect_ratio = Math.round( height / width * 1000 ) / 1000
-	var window_width = window.outerWidth;
-	if ( window.outerWidth == 0 ) {
-		window_width = window.innerWidth;
-	}
-	if ( width > window_width ) {
-		width  = window_width - 60;
-		height = Math.round( width * aspect_ratio );
-	}
-	if ( height > (jQuery( window ).height() - 20) ) {
-		height = jQuery( window ).height() - 20;
-		width  = Math.round( height / aspect_ratio );
-	}
-
-	var frame_height = height;
-	var meta         = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'meta' );
-	if ( meta > 0 ) {
-		frame_height = parseInt( height ) + Math.round( 28 * meta );
-	}
-	var frame_width = parseInt( width ) + 10;
-	frame_height    = parseInt( frame_height ) + 10;
-
-	jQuery( document.body ).append( '<div id="kgvid-videomodal-overlay" class="videomodal-overlay"></div><div id="kgvid-videomodal-container" class="videomodal-container"><button type="button" class="modalCloseImg videomodal-close kgvid_gallery_nav" title="Close"><span class="kgvid-icons kgvid-icon-cross"></span></button><div id="kgvid_popup_video_holder_' + id + '"></div></div>' );
-
-	jQuery( '.videomodal-close, #kgvid-videomodal-overlay' ).on(
-		'click',
-		function () {
-			kgvid_gallery_close();
-		}
-	);
-
-	// build next/previous buttons
-	var is_paginated = jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination span' ).length > 0;
-
-	var nav_code = '';
-	if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).prev( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).length > 0
-		|| (
-			is_paginated
-			&& jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).html() != "1"
-		)
-	) {
-		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_prev kgvid-icons kgvid-icon-left-arrow" title="' + videopack_l10n.previous + '"></button>';
-	}
-	if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).next( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).length > 0
-		|| (
-			is_paginated
-			&& jQuery( '#' + gallery_id + ' .kgvid_gallery_page_number' ).last().html() > jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).html()
-		)
-	) {
-		nav_code += '<button type="button" class="kgvid_gallery_nav kgvid_gallery_next kgvid-icons kgvid-icon-right-arrow" title="' + videopack_l10n.next + '"></button>';
-	}
-
-	jQuery( '#kgvid-videomodal-container' ).prepend( nav_code );
-
-	jQuery( '.kgvid_gallery_next' ).on(
-		'click',
-		function () {
-
-			var next_thumb = jQuery( '#kgvid_video_gallery_thumb_' + id ).next( '.kgvid_video_gallery_thumb' );
-
-			if ( next_thumb.length == 0 && is_paginated ) {
-				var next_page = jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).next();
-				kgvid_switch_gallery_page( next_page[0], 'next' );
-			} else { // not switching pages
-				kgvid_gallery_close();
-				next_thumb.trigger( 'click' );
-			}
-
-		}
-	);
-
-	jQuery( '.kgvid_gallery_prev' ).on(
-		'click',
-		function () {
-
-			var prev_thumb = jQuery( '#kgvid_video_gallery_thumb_' + id ).prev( '.kgvid_video_gallery_thumb' );
-
-			if ( prev_thumb.length == 0 && is_paginated ) {
-				var prev_page = jQuery( '#' + gallery_id + ' .kgvid_gallery_pagination_selected' ).prev();
-				kgvid_switch_gallery_page( prev_page[0], 'prev' );
-			} else { // not switching pages
-				kgvid_gallery_close();
-				prev_thumb.trigger( 'click' );
-			}
-
-		}
-	);
-
-	jQuery( document ).on(
-		'keydown.kgvid',
-		function (e) {
-			switch (e.key) {
-				case 'ArrowLeft':
-					jQuery( '.kgvid_gallery_prev' ).trigger( 'click' );
-				break;
-
-				case 'ArrowRight':
-					jQuery( '.kgvid_gallery_next' ).trigger( 'click' );
-				break;
-
-				case 'ArrowDown':
-				case 'ArrowUp':
-				case 'PageDown':
-				case 'PageUp':
-				case 'End':
-				case 'Home':
-				case ' ':
-					break;
-
-				case 'Escape':
-					kgvid_gallery_close();
-
-				default: return; // exit this handler for other keys
-			}
-			e.preventDefault(); // prevent the default action
-		}
-	);
-
-	window.addEventListener( 'wheel', kgvid_preventDefault, { passive: false } );
-	window.addEventListener( 'touchmove', kgvid_preventDefault, { passive: false } );
-
-	// load the video player embed code
-
-	if ( jQuery( '#kgvid_popup_video_holder_' + id ).length == 1 ) { // make sure the user hasn't moved on to another video
-
-		var popup_code = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'popupcode' );
-		var video_vars = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'kgvid_video_vars' );
-
-		jQuery( '#kgvid_popup_video_holder_' + id ).html( popup_code );
-		jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars', video_vars );
-
-		if ( video_vars.player_type.startsWith( 'Video.js' ) ) {
-			setTimeout(
-				function () {
-					video_vars.autoplay = 'true';
-					kgvid_load_videojs( video_vars );
+	/**
+	 * ============================================================================
+	 * Video.js Quality Selector Plugin
+	 * ============================================================================
+	 */
+	if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.videojs.getPlugin( 'resolutionSelector' ) ) {
+		( function( videojs ) {
+			const methods = {
+				res_label: function( res ) {
+					return ( /^\d+$/.test( res ) ) ? res + 'p' : res;
 				},
-				0
-			);
-		}
-
-		if ( meta > 0 ) {
-			jQuery( '#kgvid-videomodal-container' ).css( 'color','white' ); // show text if there's anything to see
-		}
-
-		if ( video_vars.player_type == "WordPress Default" ) {
-			jQuery( '#kgvid_' + id + '_wrapper video' ).attr( 'width', video_vars.width )
-			.attr( 'height', video_vars.height );
-			jQuery( '#kgvid_' + id + '_wrapper video' ).mediaelementplayer(
-				{
-					success: function (mediaElement, domObject) {
-						kgvid_setup_video( id );
-						mediaElement.play();
-					},
-					features : [
-						'playpause',
-						'progress',
-						'volume',
-						'tracks',
-						'sourcechooser',
-						'fullscreen'
-					],
-					videoWidth : video_vars.width,
-					videoHeight : video_vars.height
-				}
-			);
-		}//end if WordPress Default
-	}//end check to make sure video still needs to load
-}
-
-function kgvid_gallery_close() {
-
-	var video_vars = jQuery( '#kgvid-videomodal-container .kgvid_videodiv' ).data( 'kgvid_video_vars' );
-
-	if ( video_vars !== undefined ) {
-		if ( video_vars.player_type.startsWith( "Video.js" ) ) {
-			eval( 'videojs.players.video_' + video_vars.id ).pause();
-			setTimeout(
-				function () {
-					eval( 'videojs.players.video_' + video_vars.id ).dispose(); },
-				0
-			);
-		}
-	}
-
-	jQuery( window ).off( 'resize', kgvid_resize_video( video_vars.id ) );
-	jQuery( document ).off( 'keydown.kgvid' ); // restore default keyboard actions
-	window.removeEventListener( 'wheel', kgvid_preventDefault );
-	window.removeEventListener( 'touchmove', kgvid_preventDefault );
-	jQuery( '#kgvid-videomodal-overlay, #kgvid-videomodal-container' ).remove();
-}
-
-function kgvid_video_gallery_end_action(id, action) {
-	kgvid_gallery_close();
-	if ( action == "next" ) {
-		jQuery( '#kgvid_video_gallery_thumb_' + id ).next( '#' + jQuery( '#kgvid_video_gallery_thumb_' + id ).parent().attr( 'id' ) + ' .kgvid_video_gallery_thumb' ).trigger( 'click' )
-	}
-}
-
-function kgvid_timeupdate_poster() {
-	jQuery( '#' + this.id() + ' > .vjs-poster' ).fadeOut();
-}
-
-function kgvid_add_hover(id) {
-
-	jQuery( '#video_' + id + '_div' )
-	.on(
-		'mouseenter',
-		function () {
-			jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-		}
-	)
-	.on(
-		'mouseleave',
-		function () {
-			jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
-		}
-	)
-	.on(
-		'focus',
-		function () {
-			jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-		}
-	)
-	.on(
-		'focusout',
-		function () {
-			jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
-		}
-	);
-
-}
-
-function kgvid_load_videojs(video_vars) {
-
-	var videojs_options = {
-		"language": video_vars.locale,
-		"responsive": true,
-		"userActions" : { "hotkeys": true },
-	};
-
-	if ( video_vars.autoplay == "true" ) {
-		videojs_options.autoplay = 'any';
-	}
-
-	if ( video_vars.resize == "true" || video_vars.fullwidth == "true" ) {
-		videojs_options.fluid = true;
-	} else {
-		videojs_options.fluid = false;
-	}
-	if ( videojs_options.fluid == true
-		&& video_vars.width != undefined
-		&& video_vars.width.indexOf( '%' ) === -1
-		&& video_vars.height != undefined
-		&& video_vars.fixed_aspect !== 'false'
-	) {
-		videojs_options.aspectRatio = video_vars.width + ':' + video_vars.height;
-	}
-	if ( video_vars.nativecontrolsfortouch == "true" ) {
-		videojs_options.nativeControlsForTouch = true;
-	}
-	if ( video_vars.playback_rate == "true" ) {
-		videojs_options.playbackRates = [0.5, 1, 1.25, 1.5, 2];
-	}
-
-	if ( 'forward' in video_vars.skip_buttons && 'backward' in video_vars.skip_buttons ) {
-		videojs_options.controlBar = {
-			skipButtons: {
-				forward: Number( video_vars.skip_buttons.forward ),
-				backward: Number( video_vars.skip_buttons.backward ),
-			}
-		}
-	}
-
-	if ( video_vars.enable_resolutions_plugin == "true" ) {
-
-		if ( videojs.VERSION.split( '.' )[0] >= 5 ) {
-			videojs_options.plugins = {
-				"resolutionSelector": {
-					"force_types": ["video/mp4"]
-				}
 			};
-			if ( video_vars.default_res ) {
-				videojs_options.plugins.resolutionSelector.default_res = video_vars.default_res;
-			}
-		} else {
-			console.warn( 'Video Embed & Thumbnail Generator: Video.js version ' + videojs.VERSION + ' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.' );
-		}
-	}
 
-	if ( typeof videojs.getPlayer( 'video_' + video_vars.id ) !== 'undefined' ) {
-		videojs( 'video_' + video_vars.id ).dispose();
-	}
+			const MenuItem = videojs.getComponent( 'MenuItem' );
+			class ResolutionMenuItem extends MenuItem {
+				call_count = 0;
 
-	videojs( 'video_' + video_vars.id, videojs_options ).ready(
-		function () {
-			kgvid_setup_video( video_vars.id );
-		}
-	);
+				constructor( player, options ) {
+					options.label = methods.res_label( options.res );
+					options.selected = ( options.res.toString() === player.getCurrentRes().toString() );
 
-}
+					super( player, options );
 
-function kgvid_setup_video(id) {
+					this.resolution = options.res;
+					this.on( [ 'click', 'tap' ], this.onClick );
 
-	var video_vars = jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars' );
+					player.on( 'changeRes', () => {
+						this.selected( this.resolution === player.getCurrentRes() );
+						this.call_count = 0;
+					} );
+				}
 
-	if ( typeof (jQuery) == 'function' ) {
-		jQuery.fn.fitVids = function () {};
-	}; //disable fitvids
-
-	jQuery( '#video_' + id + '_div' ).prepend( jQuery( '#video_' + id + '_watermark' ) );
-	jQuery( '#video_' + id + '_watermark' ).attr( 'style', '' ); // shows the hidden watermark div
-	jQuery( '#video_' + id + '_div' ).prepend( jQuery( '#video_' + id + '_meta' ) );
-	jQuery( '#video_' + id + '_embed, #click_trap_' + id ).appendTo( '#video_' + id + '_div' );
-	jQuery( '#click_trap_' + id ).on(
-		'click',
-		function () {
-			kgvid_share_icon_click( id ); }
-	);
-	jQuery( '#video_' + id + '_meta' ).attr( 'style', '' ); // shows the hidden meta div
-	if ( video_vars.autoplay == "true" ) {
-		kgvid_video_counter( id, 'play' );
-		jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
-	}
-	if ( video_vars.right_click != "true" ) {
-		jQuery( '#video_' + id + '_div' ).on(
-			'contextmenu',
-			function () {
-				return false;
-			}
-		);
-	}
-	if ( jQuery( '#video_' + id + '_div .kgvid-download-link' ).length
-		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr( 'download' ) != 'undefined'
-		&& typeof jQuery( '#video_' + id + '_div .kgvid-download-link' ).data( 'alt_link' ) != 'undefined'
-	) {
-		jQuery( '#video_' + id + '_div .kgvid-download-link' ).on(
-			'click',
-			function (e) {
-				e.preventDefault();
-				kgvid_check_download_link( id );
-			}
-		);
-	}
-
-	if ( video_vars.player_type.startsWith( 'Video.js' ) ) {
-
-		var player = eval( 'videojs.players["video_' + id + '"]' );
-
-		if ( jQuery( '#video_' + id + '_flash_api' ).parent().is( '.fluid-width-video-wrapper' ) ) { // disables fitVids.js
-			jQuery( '#video_' + id + '_flash_api' ).unwrap();
-		}
-
-		jQuery( '#video_' + id ).append( jQuery( '#video_' + id + '_watermark' ) );
-
-		if ( videojs.VERSION.split( '.' )[0] >= 5 && videojs.browser.TOUCH_ENABLED == true ) {
-
-			if ( video_vars.nativecontrolsfortouch == "true" && videojs.browser.IS_ANDROID ) {
-				jQuery( '.vjs-big-play-button' ).hide();
+				onClick() {
+					if ( this.call_count > 0 ) {
+						return;
+					}
+					this.player().changeRes( this.resolution );
+					this.call_count++;
+				}
 			}
 
-			if ( player.controls() == false && player.muted() == false ) { // mobile browsers allow autoplay only if the player is muted
-				player.controls( true );
+			class ResolutionTitleMenuItem extends MenuItem {
+				constructor( player, options ) {
+					super( player, options );
+					this.off( 'click' );
+				}
 			}
-		}
 
-		player.on(
-			'loadedmetadata',
-			function () {
+			const MenuButton = videojs.getComponent( 'MenuButton' );
+			class ResolutionSelector extends MenuButton {
+				constructor( player, options ) {
+					player.availableRes = options.available_res;
+					super( player, options );
+				}
 
-				if ( videojs.VERSION.split( '.' )[0] >= 5 ) {
+				buildCSSClass() {
+					return 'vjs-res-button ' + super.buildCSSClass();
+				}
 
-					var text_tracks    = player.textTracks();
-					var track_elements = player.options_.tracks;
-					var played         = jQuery( '#video_' + id + '_div' ).data( "played" ) || "not played";
+				createItems() {
+					const player = this.player();
+					const items = [];
 
-					if ( played == "not played" ) { // only turn on the default captions on first load
+					for ( const current_res in player.availableRes ) {
+						if ( 'length' === current_res ) {
+							continue;
+						}
+						items.push( new ResolutionMenuItem( player, { res: current_res, selectable: true } ) );
+					}
 
-						if ( track_elements != null ) {
-							jQuery( text_tracks ).each(
-								function (index, track) {
-									if ( track_elements[index].default == true && track.mode != 'showing' ) {
-										player.textTracks()[index].mode = 'showing'; }
+					items.sort( ( a, b ) => {
+						if ( 'undefined' === typeof a.resolution ) {
+							return -1;
+						} else if ( a.resolution === videopack_l10n.fullres ) {
+							return -1;
+						} else if ( b.resolution === videopack_l10n.fullres ) {
+							return 1;
+						}
+						return parseInt( b.resolution, 10 ) - parseInt( a.resolution, 10 );
+					} );
+
+					items.unshift( new ResolutionTitleMenuItem( player, {
+						el: videojs.dom.createEl( 'li', {
+							className: 'vjs-menu-title vjs-res-menu-title',
+							innerHTML: videopack_l10n.quality,
+						} ),
+					} ) );
+
+					return items;
+				}
+			}
+
+			videojs.registerPlugin( 'resolutionSelector', function( options ) {
+				if ( ! this.el().firstChild.canPlayType ) {
+					return;
+				}
+
+				const player = this;
+				const sources = this.options_.sources;
+				const available_res = { length: 0 };
+
+				for ( let i = sources.length - 1; i >= 0; i-- ) {
+					const source = sources[ i ];
+					if ( ! source[ 'data-res' ] ) {
+						continue;
+					}
+					const current_res = source[ 'data-res' ];
+					if ( 'undefined' === typeof available_res[ current_res ] ) {
+						available_res[ current_res ] = [];
+						available_res.length++;
+					}
+					available_res[ current_res ].push( source );
+
+					if ( current_res === videopack_l10n.fullres ) {
+						player.on( 'loadedmetadata', function() {
+							if ( ! Number.isNaN( player.videoHeight() ) ) {
+								const resMenu = player.controlBar.getChild( 'resolutionSelector' );
+								if ( resMenu ) {
+									const fullResEl = resMenu.$( 'li.vjs-menu-item' ).find( ( el ) => el.textContent.includes( videopack_l10n.fullres ) );
+									if ( fullResEl ) {
+										fullResEl.innerHTML = `${ player.videoHeight() }p`;
+									}
 								}
-							);
-						}
-
-						if ( video_vars.start != '' ) {
-							player.currentTime( kgvid_convert_from_timecode( video_vars.start ) );
-						}
-
-					}
-
-				}
-
-				if ( video_vars.set_volume != "" ) {
-					player.volume( video_vars.set_volume );
-				}
-
-				if ( video_vars.autoplay == "true"
-					&& player.paused()
-				) {
-					var promise = player.play();
-					if ( typeof promise !== 'undefined' ) {
-						promise.then(
-							function () {
-								// Autoplay started!
 							}
-						).catch(
-							function (error) {
-								// Autoplay was prevented.
-							}
-						);
+						} );
 					}
 				}
 
+				if ( available_res.length < 2 ) {
+					return;
+				}
+
+				player.getCurrentRes = function() {
+					return player.currentRes || ( sources[ 0 ] ? sources[ 0 ][ 'data-res' ] : '' ) || '';
+				};
+
+				player.changeRes = function( target_resolution ) {
+					if ( player.getCurrentRes() === target_resolution || ! player.availableRes || ! player.availableRes[ target_resolution ] ) {
+						return;
+					}
+
+					const video = player.el().firstChild;
+					const is_paused = player.paused();
+					const current_time = player.currentTime();
+
+					if ( 'none' === video.preload ) {
+						video.preload = 'metadata';
+					}
+
+					if ( current_time > 0 && ! is_paused ) {
+						player.pause();
+					}
+
+					if ( current_time !== 0 ) {
+						const canvas = document.createElement( 'canvas' );
+						canvas.className = 'videopack_temp_thumb';
+						canvas.width = ( video.videoWidth > video.videoHeight ) ? video.offsetWidth : ( video.videoWidth / video.videoHeight ) * video.offsetHeight;
+						canvas.height = ( video.videoWidth > video.videoHeight ) ? ( video.videoHeight / video.videoWidth ) * video.offsetWidth : video.offsetHeight;
+						const topOffset = Math.round( ( video.offsetHeight - canvas.height ) / 2 );
+						if ( topOffset > 2 ) { canvas.style.top = `${ topOffset }px`; }
+						const leftOffset = Math.round( ( video.offsetWidth - canvas.width ) / 2 );
+						if ( leftOffset > 2 ) { canvas.style.left = `${ leftOffset }px`; }
+						const context = canvas.getContext( '2d' );
+						context.drawImage( video, 0, 0, canvas.width, canvas.height );
+						video.parentNode.appendChild( canvas );
+					}
+
+					player.src( player.availableRes[ target_resolution ] );
+					player.one( 'loadedmetadata', function() {
+						if ( current_time > 0 ) {
+							player.currentTime( current_time );
+						}
+						if ( ! is_paused ) {
+							player.play();
+						}
+					} );
+					player.one( 'seeked', function() {
+						if ( current_time !== 0 ) {
+							canvas.parentNode.removeChild( canvas );
+						}
+					} );
+
+					player.currentRes = target_resolution;
+					player.trigger( 'changeRes' );
+				};
+
+				const resolutionSelector = new ResolutionSelector( player, { available_res } );
+				player.ready( () => {
+					player.getChild( 'controlBar' ).addChild( resolutionSelector, {}, 11 );
+					const default_res = options.default_res;
+					if ( default_res && available_res[ default_res ] ) {
+						player.changeRes( default_res );
+					}
+				} );
+			} );
+		}( window.videojs ) );
+	}
+
+	/**
+	 * ============================================================================
+	 * MediaElement.js Plugins (Speed and Source Chooser)
+	 * ============================================================================
+	 */
+	if ( 'undefined' !== typeof window.mejs ) {
+		/**
+		 * Speed plugin
+		 *
+		 * This feature creates a button to speed media in different levels.
+		 */
+
+		// Translations (English required)
+		mejs.i18n.en['mejs.speed-rate'] = 'Speed Rate';
+
+		// Feature configuration
+		Object.assign(mejs.MepDefaults, {
+			/**
+			 * The speeds media can be accelerated
+			 *
+			 * Supports an array of float values or objects with format
+			 * [{name: 'Slow', value: '0.75'}, {name: 'Normal', value: '1.00'}, ...]
+			 * @type {{String[]|Object[]}}
+			 */
+			speeds: ['2.00', '1.50', '1.25', '1.00', '0.75'],
+			/**
+			 * @type {String}
+			 */
+			defaultSpeed: '1.00',
+			/**
+			 * @type {String}
+			 */
+			speedChar: 'x',
+			/**
+			 * @type {?String}
+			 */
+			speedText: null
+		});
+
+		Object.assign(
+			MediaElementPlayer.prototype,
+			{
+				buildspeed: function buildspeed(player, controls, layers, media) {
+				const
+					t = this,
+					isNative = t.media.rendererName !== null && /(native|html5)/i.test(t.media.rendererName)
+				;
+
+				if (!isNative) {
+					return;
+				}
+
+				const
+					speeds = [],
+					speedTitle = mejs.Utils.isString(t.options.speedText) ? t.options.speedText : mejs.i18n.t('mejs.speed-rate'),
+					getSpeedNameFromValue = (value) => {
+						for (let i = 0, total = speeds.length; i < total; i++) {
+							if (speeds[i].value === value) {
+								return speeds[i].name;
+							}
+						}
+					}
+				;
+
+				let
+					playbackSpeed,
+					defaultInArray = false
+				;
+
+				for (let i = 0, total = t.options.speeds.length; i < total; i++) {
+					const s = t.options.speeds[i];
+
+					if (typeof s === 'string') {
+						speeds.push({
+							name: `${s}${t.options.speedChar}`,
+							value: s
+						});
+
+						if (s === t.options.defaultSpeed) {
+							defaultInArray = true;
+						}
+					}
+					else {
+						speeds.push(s);
+						if (s.value === t.options.defaultSpeed) {
+							defaultInArray = true;
+						}
+					}
+				}
+
+				if (!defaultInArray) {
+					speeds.push({
+						name: t.options.defaultSpeed + t.options.speedChar,
+						value: t.options.defaultSpeed
+					});
+				}
+
+				speeds.sort((a, b) => {
+					return parseFloat(b.value) - parseFloat(a.value);
+				});
+
+				t.cleanspeed(player);
+
+				player.speedButton = document.createElement('div');
+				player.speedButton.className = `${t.options.classPrefix}button ${t.options.classPrefix}speed-button`;
+				player.speedButton.innerHTML = `<button type="button" aria-controls="${t.id}" title="${speedTitle}" ` +
+					`aria-label="${speedTitle}" tabindex="0">${getSpeedNameFromValue(t.options.defaultSpeed)}</button>` +
+					`<div class="${t.options.classPrefix}speed-selector ${t.options.classPrefix}offscreen">` +
+						`<ul class="${t.options.classPrefix}speed-selector-list"></ul>` +
+					`</div>`;
+
+				t.addControlElement(player.speedButton, 'speed');
+
+				for (let i = 0, total = speeds.length; i < total; i++) {
+
+					const inputId = `${t.id}-speed-${speeds[i].value}`;
+
+					player.speedButton.querySelector('ul').innerHTML += `<li class="${t.options.classPrefix}speed-selector-list-item">` +
+						`<input class="${t.options.classPrefix}speed-selector-input" type="radio" name="${t.id}_speed"` +
+							`disabled="disabled" value="${speeds[i].value}" id="${inputId}"  ` +
+							`${(speeds[i].value === t.options.defaultSpeed ? ' checked="checked"' : '')}/>` +
+						`<label for="${inputId}" class="${t.options.classPrefix}speed-selector-label` +
+							`${(speeds[i].value === t.options.defaultSpeed ? ` ${t.options.classPrefix}speed-selected` : '')}">` +
+							`${speeds[i].name}</label>` +
+						`</li>`;
+				}
+
+				playbackSpeed = t.options.defaultSpeed;
+
+				player.speedSelector = player.speedButton.querySelector(`.${t.options.classPrefix}speed-selector`);
+
+				const
+					inEvents = ['mouseenter', 'focusin'],
+					outEvents = ['mouseleave', 'focusout'],
+					// Enable inputs after they have been appended to controls to avoid tab and up/down arrow focus issues
+					radios = player.speedButton.querySelectorAll('input[type="radio"]'),
+					labels = player.speedButton.querySelectorAll(`.${t.options.classPrefix}speed-selector-label`)
+				;
+
+				/**
+				 * Store a reference to the radio buttons to prevent a scope bug in keyboard events
+				 * when multiple MediaElement players are on the same page. Otherwise these keyboard
+				 * events would always control the first speed button instance on the page.
+				 */
+				player.speedRadioButtons = radios;
+
+				// hover or keyboard focus
+				for (let i = 0, total = inEvents.length; i < total; i++) {
+					player.speedButton.addEventListener(inEvents[i], () => {
+						mejs.Utils.removeClass(player.speedSelector, `${t.options.classPrefix}offscreen`);
+						player.speedSelector.style.height = player.speedSelector.querySelector('ul').offsetHeight;
+						player.speedSelector.style.top = `${(-1 * parseFloat(player.speedSelector.offsetHeight))}px`;
+					});
+				}
+
+				for (let i = 0, total = outEvents.length; i < total; i++) {
+					player.speedSelector.addEventListener(outEvents[i], function () {
+						mejs.Utils.addClass(this, `${t.options.classPrefix}offscreen`);
+					});
+				}
+
+				for (let i = 0, total = radios.length; i < total; i++) {
+					const radio = radios[i];
+					radio.disabled = false;
+					radio.addEventListener('click', function() {
+						const
+							self = this,
+							newSpeed = self.value
+						;
+
+						playbackSpeed = newSpeed;
+						media.playbackRate = parseFloat(newSpeed);
+						player.speedButton.querySelector('button').innerHTML = (getSpeedNameFromValue(newSpeed));
+						const selected = player.speedButton.querySelectorAll(`.${t.options.classPrefix}speed-selected`);
+						for (let i = 0, total = selected.length; i < total; i++) {
+							mejs.Utils.removeClass(selected[i], `${t.options.classPrefix}speed-selected`);
+						}
+
+						self.checked = true;
+						const siblings = mejs.Utils.siblings(self, (el) => mejs.Utils.hasClass(el, `${t.options.classPrefix}speed-selector-label`));
+						for (let j = 0, total = siblings.length; j < total; j++) {
+							mejs.Utils.addClass(siblings[j], `${t.options.classPrefix}speed-selected`);
+							mejs.Utils.addClass(siblings[j].parentElement, `${t.options.classPrefix}speed-selected`);
+						}
+					});
+				}
+
+				for (let i = 0, total = labels.length; i < total; i++) {
+					labels[i].addEventListener('click',  function () {
+						const
+							radio = mejs.Utils.siblings(this, (el) => el.tagName === 'INPUT')[0],
+							event = mejs.Utils.createEvent('click', radio)
+						;
+						radio.dispatchEvent(event);
+					});
+				}
+
+				t.options.keyActions.push({
+					/*
+					* Need to listen for both because keyActions dispatches
+					* based on e.which || e.keyCode instead of e.key, so we
+					* get the same value for comma as for less than.
+					*/
+					keys: [60, 188], // "<" & ","
+					action: (player, media, key, event) => {
+						if (event.key != '<')
+							return;
+
+						const _radios = player.speedRadioButtons;
+						for (let i = 0; i < _radios.length - 1; i++) {
+							if (_radios[i].checked) {
+								const nextRadio = _radios[i+1];
+								nextRadio.dispatchEvent(mejs.Utils.createEvent('click', nextRadio));
+								break;
+							}
+						}
+					}
+				}, {
+					keys: [62, 190], // ">" & "."
+					action: (player, media, key, event) => {
+						if (event.key != '>')
+							return;
+
+						const _radios = player.speedRadioButtons;
+						for (let i = 1; i < _radios.length; i++) {
+							if (_radios[i].checked) {
+								const prevRadio = _radios[i-1];
+								prevRadio.dispatchEvent(mejs.Utils.createEvent('click', prevRadio));
+								break;
+							}
+						}
+					}
+				});
+
+				//Allow up/down arrow to change the selected radio without changing the volume.
+				player.speedSelector.addEventListener('keydown', (e) => {
+					e.stopPropagation();
+				});
+
+				media.addEventListener('loadedmetadata', () => {
+					if (playbackSpeed) {
+						media.playbackRate = parseFloat(playbackSpeed);
+					}
+				});
+			},
+			/**
+			 * Feature destructor.
+			 *
+			 * Always has to be prefixed with `clean` and the name that was used in MepDefaults.features list
+			 * @param {MediaElementPlayer} player
+			 */
+			cleanspeed: function cleanspeed(player) {
+				if (player) {
+					if (player.speedButton) {
+						player.speedButton.parentNode.removeChild(player.speedButton);
+					}
+					if (player.speedSelector) {
+						player.speedSelector.parentNode.removeChild(player.speedSelector);
+					}
+				}
 			}
-		);
+		});
 
-		player.on(
-			'play',
-			function kgvid_play_start(){
+		/**
+		 * Source chooser plugin
+		 *
+		 * This feature creates a button to speed media in different levels.
+		 */
 
+		// Translations (English required)
+		mejs.i18n.en['mejs.source-chooser'] = 'Source Chooser';
+
+		// Feature configuration
+		Object.assign(mejs.MepDefaults, {
+			/**
+			 * @type {?String}
+			 */
+			sourcechooserText: null
+		});
+
+		Object.assign(MediaElementPlayer.prototype, {
+
+			/**
+			 * Feature constructor.
+			 *
+			 * Always has to be prefixed with `build` and the name that will be used in MepDefaults.features list
+			 * @param {MediaElementPlayer} player
+			 * @param {HTMLElement} controls
+			 * @param {HTMLElement} layers
+			 * @param {HTMLElement} media
+			 */
+			buildsourcechooser (player, controls, layers, media)  {
+
+				const
+					t = this,
+					sourceTitle = mejs.Utils.isString(t.options.sourcechooserText) ? t.options.sourcechooserText : mejs.i18n.t('mejs.source-chooser'),
+					sources = [],
+					children = t.mediaFiles ? t.mediaFiles : t.node.children
+				;
+
+				// add to list
+				let hoverTimeout;
+
+				for (let i = 0, total = children.length; i < total; i++) {
+					const s = children[i];
+
+					if (t.mediaFiles) {
+						sources.push(s);
+					} else if (s.nodeName === 'SOURCE') {
+						sources.push(s);
+					}
+				}
+
+				if (sources.length <= 1) {
+					return;
+				}
+
+				player.sourcechooserButton = document.createElement('div');
+				player.sourcechooserButton.className = `${t.options.classPrefix}button ${t.options.classPrefix}sourcechooser-button`;
+				player.sourcechooserButton.innerHTML =
+					`<button type="button" role="button" aria-haspopup="true" aria-owns="${t.id}" title="${sourceTitle}" aria-label="${sourceTitle}" tabindex="0"></button>` +
+					`<div class="${t.options.classPrefix}sourcechooser-selector ${t.options.classPrefix}offscreen" role="menu" aria-expanded="false" aria-hidden="true"><ul></ul></div>`;
+
+				t.addControlElement(player.sourcechooserButton, 'sourcechooser');
+
+				for (let i = 0, total = sources.length; i < total; i++) {
+					const src = sources[i];
+					if (src.type !== undefined && typeof media.canPlayType === 'function') {
+						player.addSourceButton(src.src, src.title, src.type, media.src === src.src);
+					}
+				}
+
+				// hover
+				player.sourcechooserButton.addEventListener('mouseover', () => {
+					clearTimeout(hoverTimeout);
+					player.showSourcechooserSelector();
+				});
+				player.sourcechooserButton.addEventListener('mouseout', () => {
+					hoverTimeout = setTimeout(() => {
+						player.hideSourcechooserSelector();
+					}, 0);
+				});
+
+					// keyboard menu activation
+				player.sourcechooserButton.addEventListener('keydown', (e) => {
+
+					if (t.options.keyActions.length) {
+						const keyCode = e.which || e.keyCode || 0;
+
+						switch (keyCode) {
+							case 32: // space
+								if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
+									player.showSourcechooserSelector();
+								}
+								player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
+								break;
+							case 13: // enter
+								player.showSourcechooserSelector();
+								player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
+								break;
+							case 27: // esc
+								player.hideSourcechooserSelector();
+								player.sourcechooserButton.querySelector('button').focus();
+								break;
+							default:
+								return true;
+						}
+
+						e.preventDefault();
+						e.stopPropagation();
+					}
+				});
+
+				// close menu when tabbing away
+				player.sourcechooserButton.addEventListener('focusout', mejs.Utils.debounce(() => {
+					// Safari triggers focusout multiple times
+					// Firefox does NOT support e.relatedTarget to see which element
+					// just lost focus, so wait to find the next focused element
+					setTimeout(() => {
+						const parent = document.activeElement.closest(`.${t.options.classPrefix}sourcechooser-selector`);
+						if (!parent) {
+							// focus is outside the control; close menu
+							player.hideSourcechooserSelector();
+						}
+					}, 0);
+				}, 100));
+
+				const radios = player.sourcechooserButton.querySelectorAll('input[type=radio]');
+
+				for (let i = 0, total = radios.length; i < total; i++) {
+					// handle clicks to the source radio buttons
+					radios[i].addEventListener('click', function() {
+						// set aria states
+						this.setAttribute('aria-selected', true);
+						this.checked = true;
+
+						const otherRadios = this.closest(`.${t.options.classPrefix}sourcechooser-selector`).querySelectorAll('input[type=radio]');
+
+						for (let j = 0, radioTotal = otherRadios.length; j < radioTotal; j++) {
+							if (otherRadios[j] !== this) {
+								otherRadios[j].setAttribute('aria-selected', 'false');
+								otherRadios[j].removeAttribute('checked');
+							}
+						}
+
+						const src = this.value;
+
+						if (media.getSrc() !== src) {
+							let currentTime = media.currentTime;
+
+							const
+								paused = media.paused,
+								canPlayAfterSourceSwitchHandler = () => {
+									if (!paused) {
+										media.setCurrentTime(currentTime);
+										media.play();
+									}
+									media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
+								}
+							;
+
+							media.pause();
+							media.setSrc(src);
+							media.load();
+							media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+						}
+					});
+				}
+
+				// Handle click so that screen readers can toggle the menu
+				player.sourcechooserButton.querySelector('button').addEventListener('click', function() {
+					if (mejs.Utils.hasClass(mejs.Utils.siblings(this, `.${t.options.classPrefix}sourcechooser-selector`), `${t.options.classPrefix}offscreen`)) {
+						player.showSourcechooserSelector();
+						player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
+					} else {
+						player.hideSourcechooserSelector();
+					}
+				});
+
+			},
+
+			/**
+			 *
+			 * @param {String} src
+			 * @param {String} label
+			 * @param {String} type
+			 * @param {Boolean} isCurrent
+			 */
+			addSourceButton (src, label, type, isCurrent)  {
+				const t = this;
+				if (label === '' || label === undefined) {
+					label = src;
+				}
+				type = type.split('/')[1];
+
+				t.sourcechooserButton.querySelector('ul').innerHTML += `<li>` +
+					`<input type="radio" name="${t.id}_sourcechooser" id="${t.id}_sourcechooser_${label}${type}" ` +
+						`role="menuitemradio" value="${src}" ${(isCurrent ? 'checked="checked"' : '')} aria-selected="${isCurrent}"/>` +
+					`<label for="${t.id}_sourcechooser_${label}${type}" aria-hidden="true">${label} (${type})</label>` +
+				`</li>`;
+
+				t.adjustSourcechooserBox();
+			},
+
+			/**
+			 *
+			 */
+			adjustSourcechooserBox ()  {
+				const t = this;
+				// adjust the size of the outer box
+				t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`).style.height =
+					`${parseFloat(t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector ul`).offsetHeight)}px`;
+			},
+
+			/**
+			 *
+			 */
+			hideSourcechooserSelector ()  {
+
+				const t = this;
+
+				if (t.sourcechooserButton === undefined || !t.sourcechooserButton.querySelector('input[type=radio]')) {
+					return;
+				}
+
+				const
+					selector = t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`),
+					radios = selector.querySelectorAll('input[type=radio]')
+				;
+				selector.setAttribute('aria-expanded', 'false');
+				selector.setAttribute('aria-hidden', 'true');
+				mejs.Utils.addClass(selector, `${t.options.classPrefix}offscreen`);
+
+				// make radios not focusable
+				for (let i = 0, total = radios.length; i < total; i++) {
+					radios[i].setAttribute('tabindex', '-1');
+				}
+			},
+
+			/**
+			 *
+			 */
+			showSourcechooserSelector ()  {
+
+				const t = this;
+
+				if (t.sourcechooserButton === undefined || !t.sourcechooserButton.querySelector('input[type=radio]')) {
+					return;
+				}
+
+				const
+					selector = t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`),
+					radios = selector.querySelectorAll('input[type=radio]')
+				;
+				selector.setAttribute('aria-expanded', 'true');
+				selector.setAttribute('aria-hidden', 'false');
+				mejs.Utils.removeClass(selector, `${t.options.classPrefix}offscreen`);
+
+				// make radios not focusable
+				for (let i = 0, total = radios.length; i < total; i++) {
+					radios[i].setAttribute('tabindex', '0');
+				}
+			}
+		});
+	}
+
+	/**
+	 * Main Videopack object.
+	 *
+	 * @since 5.0.0
+	 */
+	const Videopack = {
+
+		/**
+		 * Initialize video players.
+		 *
+		 * @since 5.0.0
+		 */
+		init: function() {
+			$( '.videopack-player' ).each( ( index, element ) => {
+				this.initPlayer( $( element ) );
+			} );
+
+			// Initialize galleries
+			$( '.videopack-gallery-wrapper' ).each( ( index, element ) => {
+				this.initGallery( $( element ) );
+			} );
+
+
+			// Fallback for MediaElement.js players initialized by other plugins/themes.
+			if ( typeof window.mejs !== 'undefined' ) {
+				// This is a bit of a hack to catch MEJS players initialized after our script runs.
+				const originalSuccess = window.mejs.MepDefaults.success;
+				window.mejs.MepDefaults.success = ( mediaElement, domObject, player ) => {
+					originalSuccess( mediaElement, domObject, player );
+					const $playerWrapper = $( domObject ).closest( '.videopack-player' );
+					if ( $playerWrapper.length && ! $playerWrapper.data( 'videopack-initialized' ) ) {
+						this.setupVideo( $playerWrapper );
+					}
+				};
+			}
+		},
+
+		/**
+		 * Initialize a single player.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		initPlayer: function( $playerWrapper ) {
+			let playerId  = $playerWrapper.data( 'id' );
+
+			// Handle gallery player IDs which have a prefix.
+			if ( String( playerId ).startsWith( 'gallery_' ) ) {
+				playerId = `gallery_${ playerId.split( '_' )[ 1 ] }`;
+			}
+			const videoVars = this.player_data && this.player_data[ `videopack_player_${ playerId }` ];
+
+			if ( ! videoVars ) {
+				return;
+			}
+			$playerWrapper.data( 'videopack_video_vars', videoVars );
+
+			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+				this.loadVideoJS( $playerWrapper, videoVars );
+			} else if ( videoVars.player_type === 'WordPress Default' ) {
+				// ME.js is often auto-initialized by WP. We'll set up our hooks after it's ready.
+				// The success callback hook in init() should handle this.
+				// If it's already initialized, we set it up now.
+				if ( $playerWrapper.find( '.mejs-container' ).length ) {
+					this.setupVideo( $playerWrapper );
+				}
+			}
+		},
+
+		/**
+		 * Load and initialize a Video.js player.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {object} videoVars      The video variables.
+		 */
+		loadVideoJS: function( $playerWrapper, videoVars ) {
+			const playerId = $playerWrapper.data( 'id' );
+			const videoElementId = `videopack_video_${ playerId }`;
+			const videoElement = document.getElementById( videoElementId );
+
+			if ( ! videoElement ) {
+				return;
+			}
+
+			const videojsOptions = {
+				language: videoVars.locale,
+				responsive: true,
+				userActions: { hotkeys: true },
+			};
+
+			if ( 'true' === videoVars.autoplay ) {
+				videojsOptions.autoplay = 'any';
+			}
+
+			if ( 'true' === videoVars.resize || 'true' === videoVars.fullwidth ) {
+				videojsOptions.fluid = true;
+			} else {
+				videojsOptions.fluid = false;
+			}
+
+			if ( videojsOptions.fluid && videoVars.width && -1 === videoVars.width.indexOf( '%' ) && videoVars.height && 'false' !== videoVars.fixed_aspect ) {
+				videojsOptions.aspectRatio = `${ videoVars.width }:${ videoVars.height }`;
+			}
+
+			if ( 'true' === videoVars.nativecontrolsfortouch ) {
+				videojsOptions.nativeControlsForTouch = true;
+			}
+
+			if ( 'true' === videoVars.playback_rate ) {
+				videojsOptions.playbackRates = [ 0.5, 1, 1.25, 1.5, 2 ];
+			}
+
+			if ( videoVars.skip_buttons && videoVars.skip_buttons.forward && videoVars.skip_buttons.backward ) {
+				videojsOptions.controlBar = {
+					skipButtons: {
+						forward: Number( videoVars.skip_buttons.forward ),
+						backward: Number( videoVars.skip_buttons.backward ),
+					},
+				};
+			}
+
+			const sources = Array.from( videoElement.querySelectorAll( 'source' ) );
+			const hasResolutions = sources.some( ( s ) => s.dataset.res );
+
+			if ( hasResolutions ) {
+				if ( videojs.VERSION.split( '.' )[ 0 ] >= 5 ) {
+					videojsOptions.plugins = videojsOptions.plugins || {};
+					videojsOptions.plugins.resolutionSelector = {
+						force_types: [ 'video/mp4' ],
+					};
+					const defaultResSource = sources.find( ( s ) => 'true' === s.dataset.default_res );
+					if ( defaultResSource ) {
+						videojsOptions.plugins.resolutionSelector.default_res = defaultResSource.dataset.res;
+					}
+				} else {
+					// eslint-disable-next-line no-console
+					console.warn( 'Videopack: Video.js version ' + videojs.VERSION + ' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.' );
+				}
+			}
+
+			if ( videojs.getPlayer( videoElementId ) ) {
+				videojs.getPlayer( videoElementId ).dispose();
+			}
+
+			videojs( videoElement, videojsOptions ).ready( () => {
+				this.setupVideo( $playerWrapper );
+			} );
+		},
+
+		/**
+		 * Common setup for any player type after initialization.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		setupVideo: function( $playerWrapper ) {
+			if ( $playerWrapper.data( 'videopack-initialized' ) ) {
+				return;
+			}
+
+			const playerId = $playerWrapper.data( 'id' );
+			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+
+			// Disable FitVids.js from conflicting.
+			if ( typeof $.fn.fitVids === 'function' ) {
+				$.fn.fitVids = function() {
+					return this;
+				};
+			}
+
+			// Move watermark and meta into the player.
+			const $watermark = $( `#video_${ playerId }_watermark` );
+			if ( $watermark.length ) {
+				$playerWrapper.prepend( $watermark );
+				$watermark.show();
+			}
+
+			const $meta = $( `#video_${ playerId }_meta` );
+			if ( $meta.length ) {
+				$playerWrapper.prepend( $meta );
+				$meta.show();
+			}
+
+			// Setup share functionality.
+			const $shareIcon = $playerWrapper.find( '.videopack-share-icon' );
+			if ( $shareIcon.length ) {
+				$shareIcon.on( 'click', () => this.toggleShare( $playerWrapper ) );
+				$playerWrapper.find( '.videopack-click-trap' ).on( 'click', () => this.toggleShare( $playerWrapper ) );
+			}
+
+			if ( 'true' !== videoVars.right_click ) {
+				$playerWrapper.on( 'contextmenu', () => false );
+			}
+
+			// Setup "start at" functionality.
+			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
+			if ( $embedWrapper.length ) {
+				$embedWrapper.find( '.videopack-start-at-enable' ).on( 'change', () => this.setStartAt( $playerWrapper ) );
+				$embedWrapper.find( '.videopack-start-at' ).on( 'change', () => this.changeStartAt( $playerWrapper ) );
+			}
+
+			if ( $meta.length ) {
+				this.addHoverHandlers( $playerWrapper );
+			}
+
+			if ( $meta.length ) {
+				$meta.addClass( 'videopack-meta-hover' );
+			}
+
+			const $downloadLink = $playerWrapper.find( '.download-link' );
+			if ( $downloadLink.length && 'undefined' !== typeof $downloadLink.attr( 'download' ) && $downloadLink.data( 'alt_link' ) ) {
+				$downloadLink.on( 'click', ( e ) => {
+					e.preventDefault();
+					this.checkDownloadLink( $downloadLink );
+				} );
+			}
+
+			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+				this.setupVideoJSPlayer( $playerWrapper );
+			} else if ( videoVars.player_type === 'WordPress Default' ) {
+				this.setupMEJSPlayer( $playerWrapper );
+			}
+
+			// Resize logic.
+			if ( 'true' === videoVars.resize || 'automatic' === videoVars.auto_res || window.location.search.includes( 'videopack[enable]=true' ) ) {
+				this.resizeVideo( playerId );
+				let resizeId;
+				$( window ).on( 'resize', () => {
+					clearTimeout( resizeId );
+					resizeId = setTimeout( () => this.resizeVideo( playerId ), 500 );
+				} );
+			}
+
+			$playerWrapper.data( 'videopack-initialized', true );
+		},
+
+		/**
+		 * Setup for a Video.js player.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		setupVideoJSPlayer: function( $playerWrapper ) {
+			const playerId = $playerWrapper.data( 'id' );
+			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+			const player = videojs.getPlayer( `videopack_video_${ playerId }` );
+
+			if ( ! player ) {
+				return;
+			}
+
+			// Move watermark inside video element for proper positioning.
+			const $watermark = $( `#video_${ playerId }_watermark` );
+			if ( $watermark.length ) {
+				player.el().appendChild( $watermark[ 0 ] );
+			}
+
+			// Touch device checks.
+			if ( videojs.browser.TOUCH_ENABLED ) {
+				if ( 'true' === videoVars.nativecontrolsfortouch && videojs.browser.IS_ANDROID ) {
+					player.bigPlayButton.hide();
+				}
+				if ( ! player.controls() && ! player.muted() ) {
+					player.controls( true );
+				}
+			}
+
+			player.on( 'loadedmetadata', () => {
+				const played = $playerWrapper.data( 'played' ) || 'not played';
+
+				const $meta = $playerWrapper.find( '.videopack-meta' );
+				if ( $meta.length ) {
+					$meta.addClass( 'videopack-meta-hover' );
+				}
+
+				if ( 'not played' === played ) {
+					// Set default captions/subtitles.
+					const trackElements = player.options_.tracks;
+					if ( trackElements ) {
+						player.textTracks().tracks_.forEach( ( track, index ) => {
+							if ( trackElements[ index ] && trackElements[ index ].default && 'showing' !== track.mode ) {
+								track.mode = 'showing';
+							}
+						} );
+					}
+
+					if ( videoVars.start ) {
+						player.currentTime( this.convertFromTimecode( videoVars.start ) );
+					}
+				}
+
+				if ( videoVars.set_volume ) {
+					player.volume( videoVars.set_volume );
+				}
+
+				if ( 'true' === videoVars.autoplay && player.paused() ) {
+					const promise = player.play();
+					if ( 'undefined' !== typeof promise ) {
+						promise.catch( () => {
+							// Autoplay was prevented.
+						} );
+					}
+				}
+			} );
+
+			player.on( 'play', () => {
 				player.focus();
 
-				player.off( 'timeupdate', kgvid_timeupdate_poster );
-			if ( video_vars.meta ) {
-				kgvid_add_hover( id );
-				jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
-			}
-			if ( video_vars.autoplay == "true" ) {
-				jQuery( '#video_' + id + ' > .vjs-control-bar' ).removeClass( 'vjs-fade-in' );
-			}
-			if ( video_vars.endofvideooverlay != "" ) {
-				jQuery( '#video_' + id + ' > .vjs-poster' ).hide();
-			}
+				if ( videoVars.endofvideooverlay ) {
+					$( player.posterImage.el() ).hide();
+				}
 
-			if ( video_vars.pauseothervideos == "true"
-					&& videojs.VERSION.split( '.' )[0] >= 5
-				) {
-				jQuery.each(
-					videojs.getPlayers(),
-					function (otherPlayerId, otherPlayer) {
-						if ( player.id() != otherPlayerId
-						&& otherPlayer != null
-						&& ! otherPlayer.paused()
-						&& ! otherPlayer.autoplay() ) {
+				const $meta = $playerWrapper.find( '.videopack-meta' );
+				if ( $meta.length ) {
+					$meta.removeClass( 'videopack-meta-hover' );
+				}
+
+				if ( 'true' === videoVars.pauseothervideos ) {
+					videojs.getPlayers().forEach( ( otherPlayer ) => {
+						if ( player.id() !== otherPlayer.id() && otherPlayer && ! otherPlayer.paused() && ! otherPlayer.autoplay() ) {
 							otherPlayer.pause();
 						}
+					} );
+				}
+
+				this.videoCounter( playerId, 'play' );
+
+				player.on( 'timeupdate.videopack', () => {
+					const percent = Math.round( ( player.currentTime() / player.duration() ) * 100 );
+					if ( ! $playerWrapper.data( '25' ) && percent >= 25 && percent < 50 ) {
+						$playerWrapper.data( '25', true );
+						this.videoCounter( playerId, '25' );
+					} else if ( ! $playerWrapper.data( '50' ) && percent >= 50 && percent < 75 ) {
+						$playerWrapper.data( '50', true );
+						this.videoCounter( playerId, '50' );
+					} else if ( ! $playerWrapper.data( '75' ) && percent >= 75 && percent < 100 ) {
+						$playerWrapper.data( '75', true );
+						this.videoCounter( playerId, '75' );
 					}
-				);
+				} );
+			} );
+
+			player.on( 'pause', () => {
+				const $meta = $playerWrapper.find( '.videopack-meta' );
+				if ( $meta.length ) {
+					$meta.addClass( 'videopack-meta-hover' );
+				}
+				this.videoCounter( playerId, 'pause' );
+			} );
+			player.on( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
+
+			player.on( 'ended', () => {
+				if ( ! $playerWrapper.data( 'end' ) ) {
+					$playerWrapper.data( 'end', true );
+					this.videoCounter( playerId, 'end' );
+				}
+				setTimeout( () => $( player.loadingSpinner.el() ).hide(), 250 );
+
+				if ( videoVars.endofvideooverlay ) {
+					$( player.posterImage.el() ).css( 'background-image', `url(${ videoVars.endofvideooverlay })` ).fadeIn();
+				}
+			} );
+
+			player.on( 'fullscreenchange', () => {
+				this.resizeVideo( playerId );
+			} );
+		},
+
+		/**
+		 * Setup for a MediaElement.js player.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		setupMEJSPlayer: function( $playerWrapper ) {
+			const playerId = $playerWrapper.data( 'id' );
+			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+			const $video = $playerWrapper.find( 'video' );
+			const mejsId = $playerWrapper.find( '.mejs-container' ).attr( 'id' );
+
+			if ( ! $video.length || ! mejsId || ! mejs.players[ mejsId ] ) {
+				return;
 			}
 
-				kgvid_video_counter( id, 'play' );
+			const player = mejs.players[ mejsId ];
 
-				player.on(
-					'timeupdate',
-					function () {
-						var percent_duration = Math.round( player.currentTime() / player.duration() * 100 );
-
-						if ( jQuery( '#video_' + id + '_div' ).data( "25" ) == undefined
-							&& percent_duration >= 25
-							&& percent_duration < 50
-						) {
-							jQuery( '#video_' + id + '_div' ).data( "25", true );
-							kgvid_video_counter( id, '25' );
-						} else if ( jQuery( '#video_' + id + '_div' ).data( "50" ) == undefined
-							&& percent_duration >= 50
-							&& percent_duration < 75
-						) {
-							jQuery( '#video_' + id + '_div' ).data( "50", true );
-							kgvid_video_counter( id, '50' );
-						} else if ( jQuery( '#video_' + id + '_div' ).data( "75" ) == undefined
-							&& percent_duration >= 75 && percent_duration < 100
-						) {
-							jQuery( '#video_' + id + '_div' ).data( "75", true );
-							kgvid_video_counter( id, '75' );
-						}
-					}
-				);
+			// Move watermark.
+			const $watermark = $( `#video_${ playerId }_watermark` );
+			if ( $watermark.length ) {
+				$playerWrapper.find( '.mejs-container' ).append( $watermark );
 			}
-		);
 
-		player.on(
-			'pause',
-			function kgvid_play_pause(){
-				jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-				kgvid_video_counter( id, 'pause' );
+			const $meta = $playerWrapper.find( '.videopack-meta' );
+			if ( $meta.length ) {
+				$meta.addClass( 'videopack-meta-hover' );
 			}
-		);
 
-		player.on(
-			'seeked',
-			function kgvid_seeked(){
-			kgvid_video_counter( id, 'seek' );
-			}
-		);
-
-		player.on(
-			'ended',
-			function kgvid_play_end(){
-			if ( jQuery( '#video_' + id + '_div' ).data( "end" ) == undefined ) {
-				jQuery( '#video_' + id + '_div' ).data( "end", true );
-				kgvid_video_counter( id, 'end' );
-			}
-			setTimeout(
-				function () {
-					jQuery( '#video_' + id + ' > .vjs-loading-spinner' ).hide(); },
-				250
-			);
-			if ( video_vars.endofvideooverlay != "" ) {
-				jQuery( '#video_' + id + ' > .vjs-poster' ).css(
-					{
-						'background-image':'url(' + video_vars.endofvideooverlay + ')'
-					}
-				).fadeIn();
-
-				setTimeout(
-					function () {
-						player.on( 'timeupdate', kgvid_timeupdate_poster ); },
-					500
-				);
-
-			}
-			if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != ""
-				&& jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != null
-			) {
-				kgvid_video_gallery_end_action( id, jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) );
-			}
-			}
-		);
-
-		player.on(
-			'fullscreenchange',
-			function () {
-
-				var
-				fullScreenApi   = {
-					supportsFullScreen: false,
-					isFullScreen: function () {
-						return false; },
-					requestFullScreen: function () {},
-					cancelFullScreen: function () {},
-					fullScreenEventName: '',
-					prefix: ''
-				},
-				browserPrefixes = 'webkit moz o ms khtml'.split( ' ' );
-
-				// check for native support
-				if (typeof document.cancelFullScreen != 'undefined') {
-					fullScreenApi.supportsFullScreen = true;
-				} else {
-					// check for fullscreen support by vendor prefix
-					for (var i = 0, il = browserPrefixes.length; i < il; i++ ) {
-						fullScreenApi.prefix = browserPrefixes[i];
-						if (typeof document[fullScreenApi.prefix + 'CancelFullScreen' ] != 'undefined' ) {
-							fullScreenApi.supportsFullScreen = true;
-							break;
+			const played = $playerWrapper.data( 'played' ) || 'not played';
+			if ( 'not played' === played ) {
+				// Default captions.
+				if ( player.tracks && player.tracks.length > 0 ) {
+					const defaultTrack = $( `#${ mejsId } track[default]` );
+					if ( defaultTrack.length ) {
+						const defaultLang = defaultTrack.attr( 'srclang' ).toLowerCase();
+						const trackToSet = player.tracks.find( ( t ) => t.srclang === defaultLang );
+						if ( trackToSet ) {
+							player.setTrack( trackToSet.trackId );
 						}
 					}
 				}
 
-				if ( player.availableRes != undefined ) {
-					kgvid_resize_video( id );
+				if ( videoVars.start ) {
+					$video[ 0 ].setCurrentTime( this.convertFromTimecode( videoVars.start ) );
 				}
+			}
 
-				if ( fullScreenApi.supportsFullScreen == false ) {
-					if ( jQuery( '#video_' + id ).hasClass( 'vjs-fullscreen' ) ) {
-						jQuery( '#video_' + id + '_meta' ).hide();
-						jQuery( '#video_' + id + '_watermark img' ).css( 'position', 'fixed' );
-					} else {
-						jQuery( '#video_' + id + '_meta' ).show();
-						jQuery( '#video_' + id + '_watermark img' ).css( 'position', 'absolute' );
+			$video.on( 'loadedmetadata', () => {
+				if ( videoVars.set_volume ) {
+					$video[ 0 ].volume = videoVars.set_volume;
+				}
+				if ( 'true' === videoVars.mute ) {
+					$video[ 0 ].setMuted( true );
+				}
+				if ( 'false' === videoVars.pauseothervideos ) {
+					player.options.pauseOtherPlayers = false;
+				}
+			} );
+
+			$video.on( 'play', () => {
+				document.getElementById( mejsId ).focus();
+				this.videoCounter( playerId, 'play' );
+
+				$video.on( 'timeupdate.videopack', () => {
+					const percent = Math.round( ( $video[ 0 ].currentTime / $video[ 0 ].duration ) * 100 );
+					if ( ! $playerWrapper.data( '25' ) && percent >= 25 && percent < 50 ) {
+						$playerWrapper.data( '25', true );
+						this.videoCounter( playerId, '25' );
+					} else if ( ! $playerWrapper.data( '50' ) && percent >= 50 && percent < 75 ) {
+						$playerWrapper.data( '50', true );
+						this.videoCounter( playerId, '50' );
+					} else if ( ! $playerWrapper.data( '75' ) && percent >= 75 && percent < 100 ) {
+						$playerWrapper.data( '75', true );
+						this.videoCounter( playerId, '75' );
 					}
+				} );
+			} );
+
+			$video.on( 'pause', () => {
+				const $meta = $playerWrapper.find( '.videopack-meta' );
+				if ( $meta.length ) {
+					$meta.addClass( 'videopack-meta-hover' );
 				}
+				this.videoCounter( playerId, 'pause' );
+			} );
+			$video.on( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
 
+			$video.on( 'ended', () => {
+				if ( ! $playerWrapper.data( 'end' ) ) {
+					$playerWrapper.data( 'end', true );
+					this.videoCounter( playerId, 'end' );
+				}
+				if ( videoVars.endofvideooverlay ) {
+					$playerWrapper.find( '.mejs-poster' ).css( 'background-image', `url(${ videoVars.endofvideooverlay })` ).fadeIn();
+					$video.one( 'seeking.videopack', () => {
+						if ( 0 !== $video[ 0 ].currentTime ) {
+							$playerWrapper.find( '.mejs-poster' ).fadeOut();
+						}
+					} );
+				}
+			} );
+		},
+
+		/**
+		 * Resize video player.
+		 *
+		 * @since 5.0.0
+		 * @param {number} playerId The player ID.
+		 */
+		resizeVideo: function( playerId ) {
+			const $playerWrapper = $( `.videopack-player[data-id="${ playerId }"]` );
+			if ( ! $playerWrapper.length ) {
+				return;
 			}
-		);
+			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+			if ( ! videoVars ) {
+				return;
+			}
 
-	} //end if Video.js
+			let setWidth = videoVars.width;
+			const setHeight = videoVars.height;
+			const aspectRatio = Math.round( ( setHeight / setWidth ) * 1000 ) / 1000;
+			const $wrapperParent = $playerWrapper.parent();
 
-	if ( video_vars.player_type == "WordPress Default" ) {
+			let parentWidth;
+			if ( $wrapperParent.is( 'body' ) ) { // Embedded video
+				parentWidth = window.innerWidth;
+				setWidth = window.innerWidth;
+			} else {
+				parentWidth = $wrapperParent.width();
+				if ( 'true' === videoVars.fullwidth ) {
+					setWidth = parentWidth;
+				}
+			}
 
-		var player  = jQuery( '#video_' + id + '_div video' );
-		var mejs_id = jQuery( '#video_' + id + '_div .mejs-container' ).attr( 'id' );
-		var played  = jQuery( '#video_' + id + '_div' ).data( "played" ) || "not played";
+			if ( parentWidth < setWidth ) {
+				setWidth = parentWidth;
+			}
 
-		jQuery( '.wp-video' ).removeAttr( 'style' );
-		jQuery( '#video_' + id + '_div .mejs-container' ).append( jQuery( '#video_' + id + '_watermark' ) );
+			if ( setWidth > 0 && setWidth < 30000 ) {
+				$playerWrapper.closest( '.videopack-wrapper' ).width( setWidth );
+				// Automatic resolution switching logic
+				if ( 'automatic' === videoVars.auto_res ) {
+					this.setAutomaticResolution( playerId, setWidth, aspectRatio );
+				}
+			}
+		},
 
-		if ( played == "not played" ) { // only turn on the default captions on first load
+		/**
+		 * Set automatic resolution based on player size.
+		 *
+		 * @since 5.0.0
+		 * @param {number} playerId    The player ID.
+		 * @param {number} currentWidth The current width of the player.
+		 * @param {number} aspectRatio The aspect ratio of the video.
+		 */
+		setAutomaticResolution: function( playerId, currentWidth, aspectRatio ) {
+			// This function requires a resolution chooser plugin to be active for the player.
+			// It is left as a placeholder for brevity as it depends on specific plugin implementations.
+		},
 
-			var mejs_player = eval( 'mejs.players.' + mejs_id );
+		/**
+		 * Send event to Google Analytics.
+		 *
+		 * @since 5.0.0
+		 * @param {string} event The event name.
+		 * @param {string} label The event label.
+		 */
+		sendGoogleAnalytics: function( event, label ) {
+			if ( 'undefined' !== typeof gtag ) {
+				gtag( 'event', event, { event_category: 'Videos', event_label: label } );
+			} else if ( 'undefined' !== typeof ga ) {
+				ga( 'send', 'event', 'Videos', event, label );
+			} else if ( 'undefined' !== typeof __gaTracker ) {
+				__gaTracker( 'send', 'event', 'Videos', event, label );
+			} else if ( 'undefined' !== typeof _gaq ) {
+				_gaq.push( [ '_trackEvent', 'Videos', event, label ] );
+			}
+		},
 
-			jQuery.each(
-				mejs_player.tracks,
-				function (key, item) {
-					if ( jQuery( '#' + mejs_id + ' track[default]' ).length > 0
-					&& item.srclang == jQuery( '#' + mejs_id + ' track[default]' ).attr( 'srclang' ).toLowerCase() ) {
-						mejs_player.setTrack( item.trackId );
-						jQuery( '#' + mejs_id + ' .mejs-captions-selector input[value="en"]' ).prop( 'checked',true );
+		/**
+		 * Count video plays and send data to server.
+		 *
+		 * @since 5.0.0
+		 * @param {number} playerId The player ID.
+		 * @param {string} event    The video event (play, pause, etc.).
+		 */
+		videoCounter: function( playerId, event ) {
+			const $playerWrapper = $( `.videopack-player[data-id="${ playerId }"]` );
+			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+
+			if ( ! videoVars ) {
+				return;
+			}
+
+			let changed = false;
+			const played = $playerWrapper.data( 'played' ) || 'not played';
+
+			if ( 'play' === event ) {
+				if ( 'not played' === played ) { // Play start
+					if ( videoVars.countable ) {
+						changed = true;
 					}
+					$playerWrapper.data( 'played', 'played' );
+					this.sendGoogleAnalytics( videopack_l10n.playstart, videoVars.title );
+				} else { // Resume
+					this.sendGoogleAnalytics( videopack_l10n.resume, videoVars.title );
 				}
-			);
-
-			if ( video_vars.start != '' ) {
-				player[0].setCurrentTime( kgvid_convert_from_timecode( video_vars.start ) );
-			}
-
-		}
-
-		player.on(
-			'loadedmetadata',
-			function () {
-
-				var played      = jQuery( '#video_' + id + '_div' ).data( "played" ) || "not played";
-				var mejs_player = eval( 'mejs.players.' + mejs_id );
-
-				if ( video_vars.set_volume != "" ) {
-					player[0].volume = video_vars.set_volume;
-				}
-				if ( video_vars.mute == "true" ) {
-					player[0].setMuted( true );
-				}
-				if ( video_vars.pauseothervideos == "false" ) {
-					mejs_player.options.pauseOtherPlayers = false;
-				}
-
-				if ( played == "not played" ) { // only fast forward to start time on first play
-
-					if ( video_vars.start != '' ) {
-						player[0].setCurrentTime( kgvid_convert_from_timecode( video_vars.start ) );
-					}
-
-				}
-
-			}
-		);
-
-		player.on(
-			'play',
-			function () {
-
-				document.getElementById( mejs_id ).focus();
-
-				kgvid_add_hover( id );
-				jQuery( '#video_' + id + '_meta' ).removeClass( 'kgvid_video_meta_hover' );
-
-				kgvid_video_counter( id, 'play' );
-
-				player.on(
-					'timeupdate',
-					function () {
-
-						var percent_duration = Math.round( player[0].currentTime / player[0].duration * 100 );
-
-						if ( jQuery( '#video_' + id + '_div' ).data( "25" ) == undefined && percent_duration >= 25 && percent_duration < 50 ) {
-							jQuery( '#video_' + id + '_div' ).data( "25", true );
-							kgvid_video_counter( id, '25' );
-						} else if ( jQuery( '#video_' + id + '_div' ).data( "50" ) == undefined && percent_duration >= 50 && percent_duration < 75 ) {
-							jQuery( '#video_' + id + '_div' ).data( "50", true );
-							kgvid_video_counter( id, '50' );
-						} else if ( jQuery( '#video_' + id + '_div' ).data( "75" ) == undefined && percent_duration >= 75 && percent_duration < 100 ) {
-							jQuery( '#video_' + id + '_div' ).data( "75", true );
-							kgvid_video_counter( id, '75' );
-						}
-
-					}
-				);
-
-			}
-		);
-
-		player.on(
-			'seeked',
-			function () {
-				kgvid_video_counter( id, 'seek' );
-			}
-		);
-
-		player.on(
-			'pause',
-			function () {
-				jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-				kgvid_video_counter( id, 'pause' );
-			}
-		);
-
-		player.on(
-			'ended',
-			function () {
-				if ( jQuery( '#video_' + id + '_div' ).data( "end" ) == undefined ) {
-					jQuery( '#video_' + id + '_div' ).data( "end", true );
-					kgvid_video_counter( id, 'end' );
-				}
-				if ( video_vars.endofvideooverlay != "" ) {
-					jQuery( '#video_' + id + '_div .mejs-poster' ).css(
-						{
-							'background-image':'url(' + video_vars.endofvideooverlay + ')'
-						}
-					).fadeIn();
-
-					player.on(
-						'seeking.kgvid',
-						function () {
-							player = jQuery( '#video_' + id + '_div video' );
-							if ( player[0].currentTime != 0) {
-								jQuery( '#video_' + id + '_div .mejs-poster' ).fadeOut();
-								player.off( 'seeking.kgvid' );
-							}
-						}
-					);
-				}
-				if ( jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != "" && jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) != null ) {
-					kgvid_video_gallery_end_action( id, jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'gallery_end' ) );
-				}
-			}
-		);
-
-	} //end if WordPress Default
-
-	if ( video_vars.resize == "true"
-		|| video_vars.auto_res == "automatic"
-		|| window.location.search.indexOf( "kgvid_video_embed[enable]=true" ) !== -1
-		|| window.location.search.indexOf( "videopack[enable]=true" ) !== -1
-	) {
-		kgvid_resize_video( id );
-		var resizeId;
-		jQuery( window ).on(
-			'resize',
-			function () {
-				clearTimeout( resizeId );
-				resizeId = setTimeout(
-					function () {
-						kgvid_resize_video( id )},
-					500
-				);
-			}
-		);
-	}
-}
-
-function kgvid_resize_video(id) {
-
-	if ( typeof kgvid_resize_video.counter == 'undefined' ) {
-		kgvid_resize_video.counter = 0;
-	}
-
-	var video_vars = jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars' );
-
-	if ( video_vars !== undefined ) {
-
-		var set_width     = video_vars.width;
-		var set_height    = video_vars.height;
-		var aspect_ratio  = Math.round( set_height / set_width * 1000 ) / 1000
-		var reference_div = jQuery( '#kgvid_' + id + '_wrapper' ).parent();
-		var window_width  = jQuery( window ).width();
-		var window_height = jQuery( window ).height();
-
-		if ( reference_div.is( 'body' ) ) { // if the video is embedded
-			parent_width = window.innerWidth;
-			set_width    = window.innerWidth;
-		} else if ( reference_div.attr( 'id' ) == 'kgvid_popup_video_holder_' + id ) { // if it's a pop-up video
-			parent_width = window_width - 40;
-		} else {
-			parent_width = reference_div.width();
-			if ( video_vars['fullwidth'] == 'true' ) {
-				set_width = parent_width;
-			}
-		}
-		if ( parent_width < set_width ) {
-			set_width = parent_width;
-		}
-
-		if ( set_width != 0 && set_width < 30000 ) {
-
-			jQuery( '#kgvid_' + id + '_wrapper' ).width( set_width );
-			var set_height = Math.round( set_width * aspect_ratio );
-
-			if ( reference_div.attr( 'id' ) == 'kgvid_popup_video_holder_' + id && set_height > window_height - 60 ) { // if it's a popup video
-				set_height = window_height - 60;
-				set_width  = Math.round( set_height / aspect_ratio );
-			}
-
-			if ( reference_div.is( 'body' ) && set_height > window.innerHeight ) { // if it's a tall embedded video
-				set_height        = window.innerHeight;
-				var change_aspect = true;
-
-			} //if the video is embedded
-
-			if ( video_vars.player_type.startsWith( 'Video.js' )
-				&& eval( 'videojs.players["video_' + id + '"]' ) != null
-			) {
-
-				var player = eval( 'videojs.players["video_' + id + '"]' );
-				if ( change_aspect ) {
-					player.aspectRatio( Math.floor( set_width ) + ':' + Math.floor( set_height ) );
-				}
-				if ( set_width < 500 ) {
-					var scale = Math.round( 100 * set_width / 500 ) / 100;
-					jQuery( '#kgvid_' + id + '_wrapper .vjs-big-play-button' ).css( '-webkit-transform','scale(' + scale + ')' ).css( '-o-transform','scale(' + scale + ')' ).css( '-ms-transform','scale(' + scale + ')' ).css( 'transform','scale(' + scale + ')' );
-					if ( set_width < 261 ) {
-						jQuery( '#video_' + id + ' > .vjs-control-bar > .vjs-mute-control' ).css( 'display', 'none' );
-						if ( set_width < 221 ) {
-							jQuery( '#video_' + id + ' > .vjs-control-bar > .vjs-volume-control' ).css( 'display', 'none' );
-							if ( set_width < 171 ) {
-								jQuery( '#video_' + id + ' > .vjs-control-bar > .vjs-duration, #video_' + id + ' > .vjs-control-bar > .vjs-time-divider' ).css( 'display', 'none' );
-							}
-						}
-					}
-				} else {
-					jQuery( '#kgvid_' + id + '_wrapper .vjs-big-play-button' ).css( 'transform', '' );
-				}
-			}
-
-			if ( video_vars.player_type == "WordPress Default" && typeof mejs !== 'undefined' ) {
-
-					player = eval( 'mejs.players.' + jQuery( '#kgvid_' + id + '_wrapper div.wp-video-shortcode' ).attr( 'id' ) );
-
-				if ( change_aspect ) {
-					player.options.setDimensions = false;
-					jQuery( '#kgvid_' + id + '_wrapper div.wp-video-shortcode' ).css( 'height', set_height + 'px' );
-				}
-
-			}
-
-			if (
-				( video_vars.player_type.startsWith( 'Video.js' )
-					&& eval( 'videojs.players["video_' + id + '"]' ) != null
-				)
-				|| ( video_vars.player_type == "WordPress Default"
-					&& typeof mejs !== 'undefined'
-				)
-			) {
-				if ( video_vars.auto_res == 'automatic' && player.availableRes !== undefined ) {
-
-					var resolutions = player.availableRes;
-					var resNumbers  = new Array();
-
-					jQuery.each(
-						resolutions,
-						function (key, value) {
-							if ( typeof key !== 'undefined' && ! isNaN( parseInt( key ) ) ) {
-								resNumbers.push( parseInt( key ) );
-							}
-						}
-					);
-					var current_resolution = parseInt( player.getCurrentRes() );
-
-					if ( ! isNaN( current_resolution ) ) {
-						if ( video_vars.pixel_ratio == "true"
-							&& window.devicePixelRatio != undefined
-						) {
-							var pixel_ratio = window.devicePixelRatio;
-							//for retina displays
-						} else {
-							pixel_ratio = 1;
-						}
-
-						if ( jQuery( '#video_' + id ).hasClass( 'vjs-fullscreen' ) || jQuery( '#video_' + id + '_div .mejs-container' ).hasClass( 'mejs-container-fullscreen' ) ) {
-							pixel_height = window_width * aspect_ratio * pixel_ratio;
-						} else {
-							pixel_height = set_width * aspect_ratio * pixel_ratio;
-						}
-
-						var res_options = jQuery.map(
-							resNumbers,
-							function (n) {
-								if ( n >= pixel_height ) {
-									return n;
-								}
-							}
-						);
-						var set_res     = Math.min.apply( Math,res_options );
-
-						if ( set_res != current_resolution ) {
-
-							if ( video_vars.player_type.startsWith( 'Video.js' ) ) {
-
-								if ( player.paused() ) {
-									player.one(
-										'play',
-										function () {
-											player.changeRes( set_res + 'p' );
-											player.play();
-										}
-									);
-								} else {
-									player.changeRes( set_res + 'p' );
-								}
-
-							}
-
-							if ( video_vars.player_type == "WordPress Default" ) {
-
-								if ( player.media.paused ) {
-									if ( player.media.preload == 'none' ) {
-										jQuery( player.media ).one(
-											'canplay',
-											function () {
-												player.changeRes( set_res + 'p' );
-											}
-										);
-									} else {
-										jQuery( player.media ).one(
-											'playing',
-											function () {
-												player.changeRes( set_res + 'p' );
-											}
-										);
-									}
-								} else {
-									jQuery( player.media ).one(
-										'playing',
-										function () {
-											player.changeRes( set_res + 'p' );
-										}
-									);
-								}
-							}
-						}
-					} //automatic
-				}
-			}
-
-			var meta              = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'meta' );
-			var extra_meta_height = Math.round( 20 * meta );
-			jQuery( '#kgvid-videomodal-container' ).width( parseInt( set_width ) + 10 );
-			jQuery( '#kgvid-videomodal-container' ).height( parseInt( set_height ) + 10 + extra_meta_height );
-			jQuery( '.videomodal-wrap' ).css( 'overflow', 'hidden' );
-
-		} else if ( kgvid_resize_video.counter < 3 ) {
-			setTimeout(
-				function () {
-					kgvid_resize_video( id ); },
-				250
-			);
-		} //if it's a wacky result, wait 1/4 second
-	}
-
-	++kgvid_resize_video.counter;
-
-}
-
-function kgvid_resize_gallery_play_button(gallery_id) {
-
-	var video_vars  = jQuery( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).first().data( 'kgvid_video_vars' );
-	var thumb_width = jQuery( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).first().width();
-
-	if ( video_vars.player_type.startsWith( 'Video.js' )
-		|| video_vars.player_type == "WordPress Default"
-	) {
-
-		var max_percent = 0.17;
-
-		if ( video_vars.player_type.startsWith( 'Video.js' ) ) {
-			var button_selector = '.vjs-big-play-button';
-			var translate_x     = '0';
-			var translate_y     = '-30px';
-		}
-
-		if ( video_vars.player_type == "WordPress Default" ) {
-			var button_selector = '.mejs-overlay-button';
-			var translate_x     = '-50%'
-			var translate_y     = '-55%';
-		}
-
-		var play_button_percent = jQuery( '#' + gallery_id + ' ' + button_selector ).width() / thumb_width;
-
-		var unscaled_width = jQuery( '#' + gallery_id + ' ' + button_selector )[0].offsetWidth;
-		var scale_value    = Math.round( thumb_width * max_percent / unscaled_width * 1000 ) / 1000;
-
-		if ( scale_value < 1 ) {
-			var css_text = 'scale(' + scale_value + ') translate(' + translate_x + ', ' + translate_y + ')';
-
-			jQuery( '#' + gallery_id + ' ' + button_selector ).css(
-				{
-					'transform' : css_text,
-					'-webkit-transform' : css_text,
-					'-o-transform' : css_text,
-					'-ms-transform': css_text
-				}
-			);
-		} else {
-			jQuery( '#' + gallery_id + ' ' + button_selector ).removeAttr( 'style' );
-		}
-
-	}
-
-}
-
-function kgvid_send_google_analytics(event, label) {
-
-	if (typeof gtag != "undefined") {
-		gtag(
-			"event",
-			event,
-			{
-				'event_category': "Videos",
-				'event_label': label
-			}
-		);
-	} else if (typeof ga != "undefined") {
-		ga( "send", "event", "Videos", event, label );
-	} else if (typeof __gaTracker != "undefined") {
-		// Yoast renamed ga function
-		__gaTracker( "send", "event", "Videos", event, label );
-	} else if (typeof _gaq != "undefined") {
-		_gaq.push( ["_trackEvent", "Videos", event, label] );
-	}
-
-}
-
-function kgvid_video_counter(id, event) {
-
-	var video_vars = jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars' );
-	if ( ! video_vars ) { // maybe a gallery video
-		var video_vars = jQuery( '#kgvid_video_gallery_thumb_' + id ).data( 'kgvid_video_vars' );
-	}
-
-	if ( video_vars ) {
-		var changed = false;
-		var played  = jQuery( '#video_' + id + '_div' ).data( "played" ) || "not played";
-
-		if ( event == 'play' ) {
-
-			if ( played == "not played" ) { // Play start
-
-				if (video_vars.countable) { // video is in the db
+			} else if ( [ 'seek', 'pause', 'end' ].includes( event ) ) {
+				if ( 'end' === event && videoVars.countable ) {
 					changed = true;
 				}
-
-				jQuery( '#video_' + id + '_div' ).data( "played", "played" );
-				kgvid_send_google_analytics( videopack_l10n.playstart, video_vars.title );
-
-			} else { // Resume
-
-				kgvid_send_google_analytics( videopack_l10n.resume, video_vars.title );
-
+				this.sendGoogleAnalytics( videopack_l10n[ event ], videoVars.title );
+			} else if ( ! isNaN( event ) ) { // Quarter-play
+				if ( videoVars.countable ) {
+					changed = true;
+				}
+				this.sendGoogleAnalytics( `${ event }%`, videoVars.title );
 			}
 
-		}
+			if ( changed && 'false' !== videoVars.count_views ) {
+				const countCondition = videoVars.count_views === 'quarters' ||
+					( videoVars.count_views === 'start_complete' && ( 'play' === event || 'end' === event ) ) ||
+					( videoVars.count_views === 'start' && 'play' === event );
 
-		if ( event == "seek" || event == "pause" || event == "end" ) {
+				if ( countCondition ) {
+					fetch( `${ videopack_l10n.rest_url }videopack/v1/count-play`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify( {
+							post_id: videoVars.attachment_id,
+							video_event: event,
+							show_views: !!$( `.videopack-view-count[data-id="${ playerId }"]` ).length,
+						} ),
+					} )
+						.then( ( response ) => {
+							if ( ! response.ok ) {
+								throw new Error( `HTTP error! status: ${ response.status }` );
+							}
+							return response.json();
+						} )
+						.then( ( data ) => {
+							if ( 'play' === event && data.view_count ) {
+								$( `.videopack-view-count[data-id="${ playerId }"]` ).html( data.view_count );
+							}
+						} )
+						.catch( ( error ) => {
+							console.error( 'Videopack REST API Error:', error );
+						} );
+				}
+			}
+		},
 
-			if ( event == 'end' && video_vars.countable) { // video is in the db
-				changed = true;
+		/**
+		 * Convert time in seconds to timecode string.
+		 *
+		 * @since 5.0.0
+		 * @param {number} time Time in seconds.
+		 * @return {string} Formatted timecode.
+		 */
+		convertToTimecode: function( time ) {
+			const minutes = Math.floor( time / 60 );
+			let seconds = Math.round( ( time - ( minutes * 60 ) ) * 100 ) / 100;
+			let timeDisplay = '';
+
+			timeDisplay += minutes < 10 ? `0${ minutes }` : minutes;
+			timeDisplay += ':';
+			timeDisplay += seconds < 10 ? `0${ seconds }` : seconds;
+
+			return timeDisplay;
+		},
+
+		/**
+		 * Convert timecode string to seconds.
+		 *
+		 * @since 5.0.0
+		 * @param {string} timecode Timecode string.
+		 * @return {number} Time in seconds.
+		 */
+		convertFromTimecode: function( timecode ) {
+			const timecodeArray = timecode.split( ':' ).reverse();
+			let totalSeconds = 0;
+
+			if ( timecodeArray[ 0 ] ) {
+				totalSeconds += parseFloat( timecodeArray[ 0 ] );
+			}
+			if ( timecodeArray[ 1 ] ) {
+				totalSeconds += parseFloat( timecodeArray[ 1 ] ) * 60;
+			}
+			if ( timecodeArray[ 2 ] ) {
+				totalSeconds += parseFloat( timecodeArray[ 2 ] ) * 3600;
 			}
 
-			kgvid_send_google_analytics( videopack_l10n[event], video_vars.title );
+			return totalSeconds;
+		},
 
-		}
+		/**
+		 * Toggle the share/embed section.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		toggleShare: function( $playerWrapper ) {
+			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+			const $shareIcon = $playerWrapper.find( '.videopack-share-icon' );
+			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
+			const $clickTrap = $playerWrapper.find( '.videopack-click-trap' );
+			const $meta = $playerWrapper.find( '.videopack-meta' );
 
-		if ( ! isNaN( event ) ) { // event is a number (quarter-play)
+			const isShareActive = $shareIcon.hasClass( 'vjs-icon-cancel' );
 
-			if (video_vars.countable) { // video is in the db
-				changed = true;
+			if ( isShareActive ) {
+				$shareIcon.removeClass( 'vjs-icon-cancel' ).addClass( 'vjs-icon-share' );
+				$embedWrapper.slideUp();
+				$clickTrap.slideUp();
+				if ( $meta.length ) {
+					this.addHoverHandlers( $playerWrapper );
+				}
+			} else {
+				$shareIcon.removeClass( 'vjs-icon-share' ).addClass( 'vjs-icon-cancel' );
+				$embedWrapper.slideDown();
+				$clickTrap.slideDown();
+				if ( $meta.length ) {
+					this.removeHoverHandlers( $playerWrapper );
+					$meta.addClass( 'videopack-meta-hover' );
+				}
 			}
 
-			kgvid_send_google_analytics( event + "%", video_vars.title );
-
-		}
-
-		if ( changed == true
-			&& video_vars.count_views != 'false'
-			&& (
-				video_vars.count_views == 'quarters'
-				|| ( video_vars.count_views == 'start_complete' && ( event == 'play' || event == 'end' ) )
-				|| ( video_vars.count_views == 'start' && event == 'play' )
-			)
-		) {
-			jQuery.post(
-				videopack_l10n.ajaxurl,
-				{
-					action: 'kgvid_count_play',
-					security: videopack_l10n.ajax_nonce,
-					post_id: video_vars.attachment_id,
-					video_event: event,
-					show_views: jQuery( '#video_' + id + '_viewcount' ).length
-				},
-				function (data) {
-					if ( event == "play" ) {
-						jQuery( '#video_' + id + '_viewcount' ).html( data );
+			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+				const playerId = $playerWrapper.data( 'id' );
+				const player = videojs.getPlayer( `videopack_video_${ playerId }` );
+				if ( player ) {
+					player.pause();
+					const $controls = player.hasStarted() ? $( player.controlBar.el() ) : $( player.bigPlayButton.el() );
+					if ( isShareActive ) {
+						$controls.show();
+					} else {
+						$controls.hide();
 					}
 				}
-			);
-		}
-	} //if there are still video_vars available
-}
-
-function kgvid_check_download_link(id) {
-
-	var url = jQuery( '#video_' + id + '_div .kgvid-download-link' ).attr( 'href' );
-	jQuery.ajax(
-		{
-			type: 'HEAD',
-			url: url,
-			success: function () {
-				let link  = document.createElement( 'a' );
-				link.href = url;
-				link.setAttribute( 'download', '' );
-				link.click();
-			},
-			error: function (xhr) {
-				let link  = document.createElement( 'a' );
-				link.href = jQuery( '#video_' + id + '_div .kgvid-download-link' ).data( 'alt_link' );
-				link.click();
+			} else if ( videoVars.player_type === 'WordPress Default' ) {
+				const $video = $playerWrapper.find( 'video' );
+				if ( $video.length ) {
+					$video[ 0 ].pause();
+				}
+				$playerWrapper.find( '.mejs-overlay-button' ).toggle();
 			}
-		}
-	);
-
-}
-
-function kgvid_switch_gallery_page(obj, post_action) {
-
-	var gallery_id = jQuery( obj ).parents( '.kgvid_gallerywrapper' ).attr( 'id' );
-	var query_atts = jQuery( '#' + gallery_id ).data( 'query_atts' );
-	var page       = jQuery( obj ).html();
-	var last_id    = jQuery( '.kgvid_videodiv, .kgvid_video_gallery_thumb' ).last().data( 'id' ).substr( 6 );
-
-	jQuery( '#' + gallery_id ).fadeTo( "fast", 0.5 );
-
-	jQuery.post(
-		videopack_l10n.ajaxurl,
-		{
-			action: 'kgvid_switch_gallery_page',
-			security: videopack_l10n.ajax_nonce,
-			page: page,
-			query_atts: query_atts,
-			last_video_id: last_id
 		},
-		function (data) {
-			jQuery( '#' + gallery_id ).html( data );
-			jQuery( '#' + gallery_id ).fadeTo( "fast", 1 );
-			if ( post_action == "next" ) {
-				kgvid_gallery_close();
-				jQuery( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).first().trigger( 'click' );
-			}
-			if ( post_action == "prev" ) {
-				kgvid_gallery_close();
-				jQuery( '#' + gallery_id + ' .kgvid_video_gallery_thumb' ).last().trigger( 'click' );
-			}
-			kgvid_resize_gallery_play_button( gallery_id );
+
+		/**
+		 * Check if a download link is valid, otherwise use the alternative.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $downloadLink The download link element.
+		 */
+		checkDownloadLink: function( $downloadLink ) {
+			const url = $downloadLink.attr( 'href' );
+			const altUrl = $downloadLink.data( 'alt_link' );
+
+			$.ajax( {
+				type: 'HEAD',
+				url: url,
+				success: function() {
+					const link = document.createElement( 'a' );
+					link.href = url;
+					link.setAttribute( 'download', '' );
+					document.body.appendChild( link );
+					link.click();
+					document.body.removeChild( link );
+				},
+				error: function() {
+					if ( altUrl ) {
+						window.location.href = altUrl;
+					}
+				},
+			} );
 		},
-		"json"
-	);
 
-}
+		/**
+		 * Set the "start at" time in the embed code from the current video time.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		setStartAt: function( $playerWrapper ) {
+			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
+			if ( $embedWrapper.find( '.videopack-start-at-enable' ).prop( 'checked' ) ) {
+				const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+				let currentTime = 0;
 
-function kgvid_share_icon_click(id) {
+				if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+					const playerId = $playerWrapper.data( 'id' );
+					const player = videojs.getPlayer( `videopack_video_${ playerId }` );
+					if ( player ) {
+						currentTime = player.currentTime();
+					}
+				} else if ( videoVars.player_type === 'WordPress Default' ) {
+					const $video = $playerWrapper.find( 'video' );
+					if ( $video.length ) {
+						currentTime = $video[ 0 ].currentTime;
+					}
+				}
 
-	var player_element;
-	var event;
+				$embedWrapper.find( '.videopack-start-at' ).val( this.convertToTimecode( Math.floor( currentTime ) ) );
+			}
 
-	if ( jQuery( '#kgvid_' + id + '_shareicon' ).hasClass( 'vjs-icon-share' ) ) {
-		event = 'turn on';
-		jQuery( '#kgvid_' + id + '_shareicon' ).removeClass( 'vjs-icon-share' ).addClass( 'vjs-icon-cancel' );
-	} else {
-		event = 'turn off';
-		jQuery( '#kgvid_' + id + '_shareicon' ).removeClass( 'vjs-icon-cancel' ).addClass( 'vjs-icon-share' );
-	}
+			this.changeStartAt( $playerWrapper );
+		},
 
-	var video_vars = jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars' );
+		/**
+		 * Update the embed code with the "start at" time.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		changeStartAt: function( $playerWrapper ) {
+			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
+			const $embedCodeTextarea = $embedWrapper.find( '.videopack-embed-code' );
+			const embedCode = $embedCodeTextarea.val();
 
-	if ( video_vars.player_type.startsWith( 'Video.js' ) ) {
+			const tempDiv = document.createElement( 'div' );
+			tempDiv.innerHTML = embedCode;
+			const iframe = tempDiv.querySelector( 'iframe' );
+			if ( ! iframe ) {
+				return;
+			}
 
-		eval( 'videojs.players["video_' + id + '"]' ).pause();
+			let src = iframe.getAttribute( 'src' );
+			if ( ! src ) {
+				return;
+			}
 
-		if ( jQuery( '#video_' + id ).hasClass( 'vjs-has-started' ) ) {
-			player_element = ' .vjs-control-bar';
-		} else { // hasn't started playing yet
-			player_element = ' .vjs-big-play-button';
-		}
+			src = src.replace( /&?videopack\[start\]=[^&]*/, '' );
+			src = src.replace( /\?&/, '?' ).replace( /\?$/, '' );
 
-		if ( jQuery( '#video_' + id + '_div' + player_element ).attr( 'style' ) == undefined ) {
-			jQuery( '#video_' + id + '_div' + player_element ).hide();
-		} else {
-			jQuery( '#video_' + id + '_div' + player_element ).removeAttr( 'style' );
-		}
-		// end if Video.js player
-	} else if ( video_vars.player_type == "WordPress Default" ) {
+			if ( $embedWrapper.find( '.videopack-start-at-enable' ).prop( 'checked' ) ) {
+				const startTime = $embedWrapper.find( '.videopack-start-at' ).val();
+				if ( startTime ) {
+					const separator = src.includes( '?' ) ? '&' : '?';
+					src += `${ separator }videopack[start]=${ encodeURIComponent( startTime ) }`;
+				}
+			}
 
-		jQuery( '#video_' + id + '_div video' )[0].pause();
-		jQuery( '#video_' + id + '_div .mejs-overlay-button' ).toggle();
+			iframe.setAttribute( 'src', src );
+			$embedCodeTextarea.val( iframe.outerHTML );
+		},
 
-	}//if WordPress Default player
+		/**
+		 * Add hover handlers for meta information.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		addHoverHandlers: function( $playerWrapper ) {
+			const $meta = $playerWrapper.find( '.videopack-meta' );
+			if ( ! $meta.length ) {
+				return;
+			}
+			$playerWrapper
+				.on( 'mouseenter.videopack.hover', () => $meta.addClass( 'videopack-meta-hover' ) )
+				.on( 'mouseleave.videopack.hover', () => $meta.removeClass( 'videopack-meta-hover' ) )
+				.on( 'focusin.videopack.hover', () => $meta.addClass( 'videopack-meta-hover' ) )
+				.on( 'focusout.videopack.hover', () => $meta.removeClass( 'videopack-meta-hover' ) );
+		},
 
-	if ( event == 'turn on' ) {
-		jQuery( '#video_' + id + '_div' ).off( 'mouseenter mouseleave focus focusout' );
-		jQuery( '#video_' + id + '_meta' ).addClass( 'kgvid_video_meta_hover' );
-	} else {
-		kgvid_add_hover( id );
-	}
+		/**
+		 * Remove hover handlers for meta information.
+		 *
+		 * @since 5.0.0
+		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 */
+		removeHoverHandlers: function( $playerWrapper ) {
+			$playerWrapper.off( '.videopack.hover' );
+		},
 
-	jQuery( '#video_' + id + '_embed, #click_trap_' + id ).slideToggle();
+		/**
+		 * ============================================================================
+		 * Gallery Functions
+		 * ============================================================================
+		 */
 
-}
+		/**
+		 * Initialize a single gallery.
+		 * @param {jQuery} $galleryWrapper The gallery wrapper element.
+		 */
+		initGallery: function( $galleryWrapper ) {
+			if ( $galleryWrapper.data( 'videopack-gallery-initialized' ) ) {
+				return;
+			}
 
-function kgvid_set_start_at(id) {
+			const gallerySettings = $galleryWrapper.data( 'gallery-settings' ) || {};
+			$galleryWrapper.data( 'gallery-settings-cache', gallerySettings );
 
-	var video_vars = jQuery( '#video_' + id + '_div' ).data( 'kgvid_video_vars' );
+			// Store initial video data order for navigation.
+			const initialVideoOrder = [];
+			$galleryWrapper.find( '.videopack-gallery-thumbnail' ).each( ( i, thumb ) => {
+				initialVideoOrder.push( String( $( thumb ).data( 'attachment-id' ) ) );
+			} );
+			$galleryWrapper.data( 'current-videos-order', initialVideoOrder );
 
-	if ( jQuery( '#video_' + id + '_embed .kgvid_start_at_enable' ).prop( 'checked' ) ) {
+			// Event Listeners
+			$galleryWrapper.on( 'click', '.videopack-gallery-thumbnail a', ( e ) => this.handleGalleryThumbnailClick( e, $galleryWrapper ) );
+			$galleryWrapper.on( 'click', '.videopack-gallery-pagination a', ( e ) => this.handleGalleryPaginationClick( e, $galleryWrapper ) );
 
-		if ( video_vars.player_type.startsWith( 'Video.js' ) ) {
-			var current_time = eval( 'videojs.players["video_' + id + '"]' ).currentTime();
-		} else if ( video_vars.player_type == "WordPress Default" ) {
-			var current_time = jQuery( '#video_' + id + '_div video' )[0].getCurrentTime();
-		}
+			const $popup = $galleryWrapper.find( '.videopack-gallery-popup' );
+			$popup.on( 'click', '.videopack-gallery-popup-close, .videopack-gallery-popup-overlay', () => this.closeGalleryPopup( $popup ) );
+			$popup.on( 'click', '.videopack-gallery-popup-next', () => this.navigateGalleryPopup( 1, $galleryWrapper ) );
+			$popup.on( 'click', '.videopack-gallery-popup-prev', () => this.navigateGalleryPopup( -1, $galleryWrapper ) );
 
-		jQuery( '#video_' + id + '_embed .kgvid_start_at' ).val( kgvid_convert_to_timecode( Math.floor( current_time ) ) );
+			$galleryWrapper.data( 'videopack-gallery-initialized', true );
+		},
 
-	}
+		handleGalleryThumbnailClick: function( e, $galleryWrapper ) {
+			e.preventDefault();
+			const attachmentId = $( e.currentTarget ).parent( '.videopack-gallery-thumbnail' ).data( 'attachment-id' );
+			const videoData = this.player_data && this.player_data[ `videopack_player_gallery_${ attachmentId }` ];
 
-	kgvid_change_start_at( id );
+			if ( videoData ) {
+				this.openGalleryPopup( videoData, $galleryWrapper );
+			}
+		},
 
-}
+		openGalleryPopup: function( videoData, $galleryWrapper ) {
+			const $popup = $galleryWrapper.find( '.videopack-gallery-popup' );
+			const $playerContainer = $popup.find( '.videopack-gallery-player-container' );
 
-function kgvid_change_start_at(id) {
+			// Clean up any previous player
+			if ( this.currentGalleryPlayer && typeof this.currentGalleryPlayer.dispose === 'function' ) {
+				this.currentGalleryPlayer.dispose();
+			}
+			$playerContainer.empty();
 
-	var embed_code    = jQuery( '#video_' + id + '_embed .kgvid_embedcode' ).val();
-	parsed_embed_code = jQuery.parseHTML( embed_code );
-	var old_src       = jQuery( parsed_embed_code ).attr( 'src' );
+			const playerId = videoData.id; // This is 'videopack_player_gallery_XXX'
+			const attachmentId = videoData.attachment_id;
 
-	if ( old_src.indexOf( '&videopack[start]=' ) !== -1 ) { // start value exists
-		var src_array = old_src.split( '&' );
-		old_src       = src_array[0] + '&' + src_array[1];
-	}
+			// Create player HTML
+			const playerHtml = `
+				<div class="videopack-player" data-id="gallery_${ attachmentId }">
+					<video id="${ playerId }" class="videopack-video video-js vjs-default-skin" controls preload="auto" width="${ videoData.width }" height="${ videoData.height }" poster="${ videoData.poster }">
+						${ videoData.sources.map( ( source ) => `
+							<source src="${ source.src }" type="${ source.type }" ${ source.resolution ? `data-res="${ source.resolution }"` : '' } />
+						` ).join( '' ) }
+					</video>
+				</div>
+			`;
+			$playerContainer.html( playerHtml );
 
-	if ( jQuery( '#video_' + id + '_embed .kgvid_start_at_enable' ).prop( 'checked' ) ) {
-		var new_src = old_src + '&videopack[start]=' + jQuery( '#video_' + id + '_embed .kgvid_start_at' ).val();
-	} else {
-		var new_src = old_src;
-	}
+			// The data is already on window.Videopack.player_data, so initPlayer will find it.
+			this.initPlayer( $playerContainer.find( '.videopack-player' ) );
 
-	jQuery( '#video_' + id + '_embed .kgvid_embedcode' ).val( "<iframe allowfullscreen src='" + new_src + "' frameborder='0' scrolling='no' width='640' height='360'></iframe>" );
+			this.currentGalleryPlayer = videojs.getPlayer( playerId );
+			$galleryWrapper.data( 'current-gallery-attachment-id', attachmentId );
 
-}
+			$popup.fadeIn();
+		},
+
+		closeGalleryPopup: function( $popup ) {
+			if ( this.currentGalleryPlayer && typeof this.currentGalleryPlayer.dispose === 'function' ) {
+				this.currentGalleryPlayer.dispose();
+				this.currentGalleryPlayer = null;
+			}
+			$popup.fadeOut();
+		},
+
+		navigateGalleryPopup: function( direction, $galleryWrapper ) {
+			const currentAttachmentId = $galleryWrapper.data( 'current-gallery-attachment-id' );
+			const videoOrder = $galleryWrapper.data( 'current-videos-order' );
+
+			const currentIndex = videoOrder.indexOf( String( currentAttachmentId ) );
+			let nextIndex = currentIndex + direction;
+
+			if ( nextIndex < 0 ) {
+				nextIndex = videoOrder.length - 1; // Wrap around
+			} else if ( nextIndex >= videoOrder.length ) {
+				nextIndex = 0; // Wrap around
+			}
+
+			const nextAttachmentId = videoOrder[ nextIndex ];
+			const nextVideoData = this.player_data && this.player_data[ `videopack_player_gallery_${ nextAttachmentId }` ];
+
+			if ( nextVideoData ) {
+				this.openGalleryPopup( nextVideoData, $galleryWrapper );
+			}
+		},
+
+		handleGalleryPaginationClick: function( e, $galleryWrapper ) {
+			e.preventDefault();
+			const page = $( e.currentTarget ).data( 'page' );
+			this.loadGalleryPage( page, $galleryWrapper );
+		},
+
+		loadGalleryPage: function( page, $galleryWrapper ) {
+			const gallerySettings = $galleryWrapper.data( 'gallery-settings-cache' );
+			const $grid = $galleryWrapper.find( '.videopack-gallery-grid' );
+			const $pagination = $galleryWrapper.find( '.videopack-gallery-pagination' );
+
+			$grid.css( 'opacity', 0.5 ); // Loading indicator
+
+			const restUrl = new URL( videopack_l10n.rest_url + 'videopack/v1/video_gallery' );
+
+			// Append gallery settings and page to URL params
+			Object.keys( gallerySettings ).forEach( ( key ) => {
+				if ( gallerySettings[ key ] !== null && gallerySettings[ key ] !== false && gallerySettings[ key ] !== '' ) {
+					restUrl.searchParams.append( key, gallerySettings[ key ] );
+				}
+			} );
+			restUrl.searchParams.append( 'page', page );
+
+			fetch( restUrl )
+				.then( ( response ) => response.json() )
+				.then( ( data ) => {
+					if ( data && data.videos ) {
+						// Update caches
+						const newVideoOrder = [];
+						data.videos.forEach( ( video ) => {
+							// Add data to global object for initPlayer
+							window.Videopack.player_data[ video.player_vars.id ] = video.player_vars;
+							newVideoOrder.push( String( video.attachment_id ) );
+						} );
+						$galleryWrapper.data( 'current-videos-order', newVideoOrder );
+
+						// Render new content
+						this.renderGalleryThumbnails( data.videos, $grid, gallerySettings );
+						this.renderGalleryPagination( data.max_num_pages, data.current_page, $pagination );
+					}
+					$grid.css( 'opacity', 1 );
+				} )
+				.catch( ( error ) => {
+					console.error( 'Error loading gallery page:', error );
+					$grid.css( 'opacity', 1 );
+				} );
+		},
+
+		renderGalleryThumbnails: function( videos, $grid, settings ) {
+			$grid.empty();
+			let html = '';
+			videos.forEach( ( video ) => {
+				html += `
+					<div class="videopack-gallery-thumbnail" data-attachment-id="${ video.attachment_id }" style="width: ${ settings.gallery_thumb }px;">
+						<a href="#">
+							<img src="${ video.poster_url }"
+								 ${ video.poster_srcset ? `srcset="${ video.poster_srcset }"` : '' }
+								 alt="${ video.title }">
+							<div class="videopack-gallery-play-button"></div>
+							${ settings.gallery_title === 'true' ? `
+								<div class="videopack-gallery-title-overlay">
+									<span>${ video.title }</span>
+								</div>
+							` : '' }
+						</a>
+					</div>
+				`;
+			} );
+			$grid.html( html );
+		},
+
+		renderGalleryPagination: function( maxPages, currentPage, $pagination ) {
+			$pagination.empty();
+			if ( maxPages <= 1 ) {
+				return;
+			}
+			let html = `
+				<span class="videopack-gallery-pagination-arrow prev" ${ currentPage === 1 ? 'style="visibility:hidden;"' : '' }>
+					<a href="#" data-page="${ currentPage - 1 }">&larr;</a>
+				</span>
+			`;
+			for ( let i = 1; i <= maxPages; i++ ) {
+				if ( i === currentPage ) {
+					html += `<span class="videopack-gallery-pagination-selected">${ i }</span>`;
+				} else {
+					html += `<span class="videopack-gallery-page-number"><a href="#" data-page="${ i }">${ i }</a></span>`;
+				}
+			}
+			html += `
+				<span class="videopack-gallery-pagination-arrow next" ${ currentPage === maxPages ? 'style="visibility:hidden;"' : '' }>
+					<a href="#" data-page="${ currentPage + 1 }">&rarr;</a>
+				</span>
+			`;
+			$pagination.html( html );
+		},
+
+	};
+
+	// Expose the Videopack object to the global scope, merging with any existing properties (like player_data).
+	window.Videopack = Object.assign( window.Videopack || {}, Videopack );
+
+	$( () => {
+		Videopack.init();
+	} );
+}( jQuery ) );
