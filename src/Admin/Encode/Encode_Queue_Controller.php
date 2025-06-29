@@ -467,6 +467,76 @@ class Encode_Queue_Controller {
 	}
 
 	/**
+	 * Retries a failed encoding job.
+	 *
+	 * @param int $job_id The ID of the job to retry.
+	 * @return bool|\WP_Error True on success, WP_Error on failure.
+	 */
+	public function retry_job( int $job_id ) {
+		global $wpdb;
+
+		$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+
+		if ( ! $job ) {
+			return new \WP_Error( 'videopack_job_not_found', __( 'Encoding job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+
+		if ( 'failed' !== $job['status'] ) {
+			return new \WP_Error( 'videopack_job_not_failed', __( 'Only failed jobs can be retried.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+
+		// Permission check
+		$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
+		if ( ! current_user_can( 'edit_others_video_encodes' ) && ! ( current_user_can( 'encode_videos' ) && $is_own_job ) ) {
+			return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to retry this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		$update_result = $wpdb->update(
+			$this->queue_table_name,
+			array(
+				'status'        => 'queued',
+				'error_message' => null,
+				'failed_at'     => null,
+				'pid'           => null,
+				'retry_count'   => (int) $job['retry_count'] + 1,
+			),
+			array( 'id' => $job_id )
+		);
+
+		if ( false === $update_result ) {
+			return new \WP_Error( 'videopack_db_error', __( 'Could not update job status to retry.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+		}
+
+		// Trigger a one-off action to process any 'queued' items immediately.
+		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+
+		return true;
+	}
+
+	/**
+	 * Get a translated, human-readable status string.
+	 *
+	 * @param string $status The status slug.
+	 * @return string The translated status.
+	 */
+	private function get_l10n_status( $status ) {
+		$statuses = array(
+			'queued'              => __( 'Queued', 'video-embed-thumbnail-generator' ),
+			'processing'          => __( 'Processing', 'video-embed-thumbnail-generator' ),
+			'needs_insert'        => __( 'Finalizing', 'video-embed-thumbnail-generator' ),
+			'pending_replacement' => __( 'Pending Replacement', 'video-embed-thumbnail-generator' ),
+			'completed'           => __( 'Completed', 'video-embed-thumbnail-generator' ),
+			'failed'              => __( 'Failed', 'video-embed-thumbnail-generator' ),
+			'canceled'            => __( 'Canceled', 'video-embed-thumbnail-generator' ),
+			'deleted'             => __( 'Deleted', 'video-embed-thumbnail-generator' ),
+		);
+		if ( array_key_exists( $status, $statuses ) ) {
+			return $statuses[ $status ];
+		}
+		return ucfirst( $status );
+	}
+
+	/**
 	 * Get all queue items with details sanitized based on user permissions and context.
 	 * This is used for the main queue view page.
 	 *
@@ -484,12 +554,37 @@ class Encode_Queue_Controller {
 		$current_user_id   = get_current_user_id();
 		$can_edit_others   = current_user_can( 'edit_others_video_encodes' );
 		$can_encode_videos = current_user_can( 'encode_videos' );
+		$all_formats       = $this->options_manager->get_video_formats();
+		$attachment_meta   = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
 		$processed_jobs    = array();
 
 		foreach ( $all_jobs as $job ) {
 			// Determine if the current user can edit this specific job.
 			$is_own_job       = ( (int) $job['user_id'] === $current_user_id );
 			$job['can_edit'] = ( $can_edit_others || ( $can_encode_videos && $is_own_job ) );
+
+			// Add extra data for the React UI.
+			if ( ! empty( $job['attachment_id'] ) ) {
+				$job['video_title'] = get_the_title( $job['attachment_id'] );
+				$poster_id          = get_post_thumbnail_id( $job['attachment_id'] );
+				if ( ! $poster_id ) {
+					$videopack_meta = $attachment_meta->get( $job['attachment_id'] );
+					$poster_id      = $videopack_meta['poster_id'] ?? null;
+				}
+				$job['poster_url'] = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '';
+			} else {
+				$job['video_title'] = basename( $job['input_url'] );
+				$job['poster_url']  = ''; // No poster for external URLs yet.
+			}
+
+			if ( isset( $all_formats[ $job['format_id'] ] ) ) {
+				$job['format_name'] = $all_formats[ $job['format_id'] ]->get_name();
+			} else {
+				$job['format_name'] = $job['format_id'];
+			}
+
+			$job['status_l10n'] = $this->get_l10n_status( $job['status'] );
+
 			$processed_jobs[] = $job;
 		}
 

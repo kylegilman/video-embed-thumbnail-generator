@@ -58,6 +58,9 @@ class REST_Controller extends \WP_REST_Controller {
 				'callback'            => array( $this, 'video_gallery' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
+					'page'             => array(
+						'type' => 'number',
+					),
 					'gallery_orderby'  => array(
 						'type' => 'string',
 					),
@@ -72,6 +75,15 @@ class REST_Controller extends \WP_REST_Controller {
 					),
 					'gallery_include'  => array(
 						'type' => 'string',
+					),
+					'gallery_exclude'  => array(
+						'type' => 'string',
+					),
+					'gallery_title'    => array(
+						'type' => 'string',
+					),
+					'gallery_thumb'    => array(
+						'type' => 'number',
 					),
 				),
 			)
@@ -246,6 +258,63 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/queue/retry/(?P<job_id>\d+)',
+			array(
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => array( $this, 'queue_retry' ),
+				'permission_callback' => function () {
+					return current_user_can( 'encode_videos' );
+				},
+				'args'                => array(
+					'job_id' => array(
+						'type'     => 'integer',
+						'required' => true,
+						'validate_callback' => function ( $param ) {
+							return is_numeric( $param ) && $param > 0;
+						},
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/queue/control',
+			array(
+				'methods'             => \WP_REST_Server::EDITABLE, // Use EDITABLE for state changes
+				'callback'            => array( $this, 'queue_control' ),
+				'permission_callback' => function () {
+					return current_user_can( 'encode_videos' );
+				},
+				'args'                => array(
+					'action' => array(
+						'type'     => 'string',
+						'enum'     => array( 'play', 'pause' ),
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/queue/clear',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE, // Use DELETABLE for clearing/deleting resources
+				'callback'            => array( $this, 'queue_clear' ),
+				'permission_callback' => function () {
+					return current_user_can( 'encode_videos' );
+				},
+				'args'                => array(
+					'type' => array(
+						'type'     => 'string',
+						'enum'     => array( 'completed', 'all' ),
+						'required' => true,
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
 			'/sources',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -353,6 +422,32 @@ class REST_Controller extends \WP_REST_Controller {
 					),
 					'height'   => array(
 						'type' => array( 'string', 'number' ),
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/count-play',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE, // Use CREATABLE for actions that modify data
+				'callback'            => array( $this, 'count_play' ),
+				'permission_callback' => '__return_true', // Public endpoint for view counting
+				'args'                => array(
+					'post_id'     => array(
+						'type'              => 'integer',
+						'required'          => true,
+						'sanitize_callback' => 'absint',
+					),
+					'video_event' => array(
+						'type'              => 'string',
+						'required'          => true,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'show_views'  => array(
+						'type'              => 'boolean',
+						'default'           => false,
+						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
 				),
 			)
@@ -560,33 +655,30 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	public function video_gallery( \WP_REST_Request $request ) {
+		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$gallery      = new \Videopack\Frontend\Gallery( $this->options_manager );
+		$gallery_atts = $shortcode->atts( $request->get_params() );
+		$page         = $request->get_param( 'page' ) ?: 1;
 
-		$response    = array();
-		$shortcode   = new \Videopack\Frontend\Shortcode( $this->options_manager );
-		$query_atts  = $shortcode->atts( $request->get_params() );
-		$gallery     = new \Videopack\Frontend\Gallery( $this->options_manager );
-		$attachments = $gallery->get_gallery_videos( $request->get_param( 'page' ), $query_atts );
+		$attachments = $gallery->get_gallery_videos( $page, $gallery_atts );
+		$videos_data = array();
 
 		if ( $attachments->have_posts() ) {
-
-			$json_posts = array_map(
-				function ( $post ) {
-					$post_data                         = wp_prepare_attachment_for_js( $post );
-					$post_data['image']['id']          = get_post_thumbnail_id( $post );
-					$post_data['image']['srcset']      = wp_get_attachment_image_srcset( $post_data['image']['id'] );
-					$post_data['videopack']['sources'] = $this->video_player->prepare_sources( wp_get_attachment_url( $post->ID ), $post->ID );
-					return $post_data;
-				},
-				$attachments->posts
-			);
-
-			$response = array(
-				'posts'         => $json_posts,
-				'max_num_pages' => $attachments->max_num_pages,
-			);
+			foreach ( $attachments->posts as $attachment ) {
+				$video_data = $gallery->prepare_video_data_for_js( $attachment, $gallery_atts );
+				if ( $video_data ) {
+					$videos_data[] = $video_data;
+				}
+			}
 		}
 
-		return $response;
+		$response = array(
+			'videos'        => $videos_data,
+			'max_num_pages' => (int) $attachments->max_num_pages,
+			'current_page'  => (int) $page,
+		);
+
+		return new \WP_REST_Response( $response, 200 );
 	}
 
 	public function video_sources( \WP_REST_Request $request ) {
@@ -664,6 +756,28 @@ class REST_Controller extends \WP_REST_Controller {
 		return new \WP_REST_Response( $response_data, 200 );
 	}
 
+	/**
+	 * REST callback to retry a failed encoding job.
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function queue_retry( \WP_REST_Request $request ) {
+		$job_id = (int) $request->get_param( 'job_id' );
+		if ( empty( $job_id ) ) {
+			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing job ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$result     = $controller->retry_job( $job_id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return new \WP_REST_Response( array( 'status' => 'success' ), 200 );
+	}
+
 	public function ffmpeg_test( \WP_REST_Request $request ) {
 		$format = $request->get_param( 'format' ); // Already validated by REST route args.
 		$rotate = $request->get_param( 'rotate' ); // Already validated by REST route args.
@@ -690,6 +804,96 @@ class REST_Controller extends \WP_REST_Controller {
 		return array(
 			'srcset'  => wp_get_attachment_image_srcset( $post['id'] ),
 			'sources' => $this->video_player->prepare_sources( $url, $post['id'] ),
+		);
+	}
+
+	/**
+	 * REST callback to count video plays.
+	 *
+	 * This method increments the view count for a video based on its settings
+	 * and the received event. It relies on client-side logic to determine
+	 * when a 'play' event should increment the view count (e.g., first play per session).
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function count_play( \WP_REST_Request $request ) {
+		$post_id = $request->get_param( 'post_id' );
+
+		// Validate post_id: ensure it's a valid attachment ID.
+		if ( ! $post_id || ! is_numeric( $post_id ) || 'attachment' !== get_post_type( $post_id ) ) {
+			return new \WP_Error( 'rest_invalid_post_id', esc_html__( 'Invalid post ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+
+		$video_event = $request->get_param( 'video_event' );
+		$show_views  = $request->get_param( 'show_views' );
+
+		$attachment_meta_manager = new Attachment_Meta( $this->options_manager, $post_id );
+		$updated_meta            = $attachment_meta_manager->increment_video_stat( $video_event );
+
+		$response_data = array(
+			'status' => 'success',
+		);
+
+		// If the client requested the view count, return the 'starts' value.
+		// The JS will only update the display on the 'play' event.
+		if ( $show_views && isset( $updated_meta['starts'] ) ) {
+			$response_data['view_count'] = number_format_i18n( $updated_meta['starts'] );
+		}
+
+		return new \WP_REST_Response( $response_data, 200 );
+	}
+
+	/**
+	 * REST callback to control the encoding queue (play/pause).
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function queue_control( \WP_REST_Request $request ) {
+		$action = $request->get_param( 'action' );
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+
+		if ( 'play' === $action ) {
+			$controller->start_queue();
+		} else {
+			$controller->pause_queue();
+		}
+
+		// Re-fetch options to get the definite state after controller action.
+		$this->options_manager->load_options();
+		$current_options = $this->options_manager->get_options();
+
+		return new \WP_REST_Response(
+			array(
+				'status'      => 'success',
+				// translators: %s is 'play' or 'pause'.
+				'message'     => sprintf( esc_html__( 'Queue set to %s.', 'video-embed-thumbnail-generator' ), $action ),
+				'queue_state' => $current_options['queue_control'],
+			),
+			200
+		);
+	}
+
+	/**
+	 * REST callback to clear encoding queue jobs.
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function queue_clear( \WP_REST_Request $request ) {
+		$type = $request->get_param( 'type' ); // 'completed' or 'all'
+
+		$cleanup = new Cleanup(); // Cleanup class has clear_completed_queue method.
+		$cleanup->clear_completed_queue( $type );
+
+		return new \WP_REST_Response(
+			array(
+				'status' => 'success',
+				// translators: %s is 'completed' or 'all'.
+				'message' => sprintf( esc_html__( 'Queue cleared: %s jobs.', 'video-embed-thumbnail-generator' ), $type ),
+			),
+			200
 		);
 	}
 
