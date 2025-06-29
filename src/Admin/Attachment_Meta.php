@@ -223,6 +223,38 @@ class Attachment_Meta {
 		}
 	}
 
+	/**
+	 * Increments a specific video statistic based on the event.
+	 *
+	 * The client-side JavaScript determines which events to send based on the
+	 * 'count_views' setting. This method simply trusts the event and increments
+	 * the corresponding counter in the attachment's meta.
+	 *
+	 * @param string $video_event The event from the player (e.g., 'play', '25', 'end').
+	 * @return array The updated meta array.
+	 */
+	public function increment_video_stat( string $video_event ): array {
+		$meta = $this->get();
+
+		$key_map = array(
+			'play' => 'starts',
+			'25'   => 'play_25',
+			'50'   => 'play_50',
+			'75'   => 'play_75',
+			'end'  => 'completeviews',
+		);
+
+		if ( isset( $key_map[ $video_event ] ) ) {
+			$key_to_increment = $key_map[ $video_event ];
+			if ( array_key_exists( $key_to_increment, $meta ) ) {
+				$meta[ $key_to_increment ] = (int) $meta[ $key_to_increment ] + 1;
+				$this->save( $meta );
+			}
+		}
+
+		return $meta;
+	}
+
 	public function url_mime_type( $url, $post_id = false ) {
 
 		$mime_info = array(
