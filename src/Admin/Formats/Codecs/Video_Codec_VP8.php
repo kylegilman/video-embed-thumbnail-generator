@@ -5,8 +5,8 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_VP8 extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => esc_html__( 'VP8 WEBM', 'video-embed-thumbnail-generator' ),
-			'label'          => esc_html__( 'VP8', 'video-embed-thumbnail-generator' ),
+			'name'           =>'VP8 WEBM',
+			'label'          => 'VP8',
 			'id'             => 'vp8',
 			'container'      => 'webm',
 			'mime'           => 'video/webm',

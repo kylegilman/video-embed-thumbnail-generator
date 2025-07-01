@@ -5,8 +5,8 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_VP9 extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => esc_html__( 'VP9 WEBM', 'video-embed-thumbnail-generator' ),
-			'label'          => esc_html__( 'VP9', 'video-embed-thumbnail-generator' ),
+			'name'           => 'VP9 WEBM',
+			'label'          => 'VP9',
 			'id'             => 'vp9',
 			'container'      => 'webm',
 			'mime'           => 'video/webm',

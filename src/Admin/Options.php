@@ -506,48 +506,48 @@ class Options {
 			array(
 				'id'             => 'fullres',
 				'height'         => false,
-				'name'           => esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Full Resolution', //esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' ),
 				'label'          => false,
 				'default_encode' => false,
 			),
 			array(
 				'height'         => 2160,
-				'name'           => esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
+				'name'           => '4k UHD (2160p)', //esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 1440,
-				'name'           => esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Quad HD (1440p)', //esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => false,
 			),
 			array(
 				'height'         => 1080,
-				'name'           => esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Full HD (1080p)', //esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 720,
-				'name'           => esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'HD (720p)', //esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 540,
-				'name'           => esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'HD (540p)', //esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => false,
 			),
 			array(
 				'height'         => 480,
-				'name'           => esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'SD (480p)', //esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 360,
-				'name'           => esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Low Definition (360p)', //esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 240,
-				'name'           => esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Ultra Low Definition (240p)', //esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' ),
 				'default_encode' => false,
 			),
 		);
@@ -556,7 +556,7 @@ class Options {
 			$resolution_properties[] = array(
 				'height'         => $this->options['custom_resolution'],
 				/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-				'name'           => sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) ),
+				'name'           => 'Custom', //sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) ),
 				'default_encode' => false,
 			);
 		}

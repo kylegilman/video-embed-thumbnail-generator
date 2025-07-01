@@ -5,8 +5,8 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_H265 extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => esc_html__( 'H.265/HEVC MP4', 'video-embed-thumbnail-generator' ),
-			'label'          => esc_html__( 'H.265', 'video-embed-thumbnail-generator' ),
+			'name'           => 'H.265/HEVC MP4',
+			'label'          => 'H.265',
 			'id'             => 'h265',
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',

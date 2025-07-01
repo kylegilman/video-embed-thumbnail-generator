@@ -5,8 +5,8 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_OGV extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => esc_html__( 'OGV', 'video-embed-thumbnail-generator' ),
-			'label'          => esc_html__( 'OGV', 'video-embed-thumbnail-generator' ),
+			'name'           => 'OGV',
+			'label'          => 'OGV',
 			'id'             => 'ogv',
 			'container'      => 'ogv',
 			'mime'           => 'video/ogg',

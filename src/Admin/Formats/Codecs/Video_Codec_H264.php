@@ -5,8 +5,8 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_H264 extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => esc_html__( 'H.264 MP4', 'video-embed-thumbnail-generator' ),
-			'label'          => esc_html__( 'H.264', 'video-embed-thumbnail-generator' ),
+			'name'           => 'H.264 MP4',
+			'label'          => 'H.264',
 			'id'             => 'h264',
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
