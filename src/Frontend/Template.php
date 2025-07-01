@@ -59,7 +59,7 @@ class Template {
 			&& strpos( $post->post_mime_type, 'video' ) !== false
 		) {
 			$kgvid_video_embed = array(); // no query set
-			$content           = ( new Shortcode() )->generate_attachment_shortcode( $kgvid_video_embed );
+			$content           = ( new Shortcode( $this->options_manager ) )->generate_attachment_shortcode( $kgvid_video_embed );
 			$content          .= '<p>' . $post->post_content . '</p>';
 		}
 		return $content;

@@ -82,12 +82,12 @@ class Screens {
 	public function add_encode_queue_page() {
 		if ( $this->options['ffmpeg_exists'] === true ) { // only add the queue page if FFmpeg is installed
 			add_submenu_page(
-				'tools.php',
-				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
-				esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ),
-				'encode_videos',
-				'videopack_encode_queue',
-				array( $this, 'output_encode_queue_page' )
+				'tools.php', // Parent slug
+				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), // Page title
+				esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), // Menu title
+				'encode_videos', // Capability required
+				'videopack_encode_queue', // Menu slug
+				array( $this, 'output_encode_queue_page' ) // Callback function
 			);
 		}
 	}
@@ -96,7 +96,6 @@ class Screens {
 
 		wp_enqueue_media();
 		wp_enqueue_global_styles();
-		kgvid_encode_videos();
 		echo '<div id="videopack-queue-root"></div>';
 	}
 

@@ -125,14 +125,17 @@ class Shortcode {
 			'pixel_ratio',
 			'nativecontrolsfortouch',
 			'schema',
+			'gallery_thumb',
 		);
 
+		$option_defaults = array();
 		foreach ( $options_atts as $att ) {
 			if ( array_key_exists( $att, $this->options ) ) {
-				$default_atts[ $att ] = $this->options[ $att ];
+				$option_defaults[ $att ] = $this->options[ $att ];
 			}
 		}
 
+		$default_atts = array_merge( $default_atts, $option_defaults );
 		$default_atts = apply_filters( 'videopack_default_shortcode_atts', $default_atts );
 
 		$query_atts = shortcode_atts( $default_atts, $atts, 'videopack' );
@@ -171,6 +174,7 @@ class Shortcode {
 			}
 		}
 
+		// Convert boolean-like attributes to booleans
 		$checkbox_convert = array(
 			'endofvideooverlaysame',
 			'loop',
@@ -197,13 +201,19 @@ class Shortcode {
 			'right_click',
 			'skip_buttons',
 		);
-		foreach ( $checkbox_convert as $query ) {
-			if ( $query_atts[ $query ] == true ) {
-				$query_atts[ $query ] = 'true';
+		foreach ( $checkbox_convert as $key ) {
+			if ( isset( $query_atts[ $key ] ) && is_string( $query_atts[ $key ] ) ) {
+				if ( strtolower( $query_atts[ $key ] ) === 'true' ) {
+					$query_atts[ $key ] = true;
+				} elseif ( strtolower( $query_atts[ $key ] ) === 'false' ) {
+					$query_atts[ $key ] = false;
+				}
 			}
-			if ( $query_atts[ $query ] == false ) {
-				$query_atts[ $query ] = 'false';
-			}
+		}
+
+		// Ensure gallery_thumb is always an integer
+		if ( isset( $query_atts['gallery_thumb'] ) ) {
+			$query_atts['gallery_thumb'] = intval( $query_atts['gallery_thumb'] );
 		}
 
 		if ( $query_atts['auto_res'] == 'true' ) {
@@ -280,17 +290,17 @@ class Shortcode {
 		}
 
 		// Apply GIF mode overrides if enabled.
-		if ( $query_atts['gifmode'] === 'true' ) {
+		if ( $query_atts['gifmode'] === true ) {
 			$gifmode_atts = array(
-				'muted'        => 'true',
-				'autoplay'     => 'true',
-				'loop'         => 'true',
-				'controls'     => 'false',
-				'title'        => 'false',
-				'embeddable'   => 'false',
-				'downloadlink' => 'false',
-				'playsinline'  => 'true',
-				'view_count'   => 'false',
+				'muted'        => true,
+				'autoplay'     => true,
+				'loop'         => true,
+				'controls'     => false,
+				'title'        => false,
+				'embeddable'   => false,
+				'downloadlink' => false,
+				'playsinline'  => true,
+				'view_count'   => false,
 			);
 			$gifmode_atts = apply_filters( 'kgvid_gifmode_atts', $gifmode_atts ); // Consider updating filter name.
 			$query_atts   = array_merge( $query_atts, $gifmode_atts );
@@ -303,13 +313,20 @@ class Shortcode {
 			$query_atts['fullwidth'] = 'true';
 		}
 
+		// Ensure gallery_thumb is always set and is an integer
+		if ( !isset( $query_atts['gallery_thumb'] ) ) {
+			$query_atts['gallery_thumb'] = isset( $this->options['gallery_thumb'] ) ? intval( $this->options['gallery_thumb'] ) : 200;
+		} else {
+			$query_atts['gallery_thumb'] = intval( $query_atts['gallery_thumb'] );
+		}
+
 		return $query_atts;
 	}
 
 	public function do( $atts, $content = '' ) {
 
 		$code       = '';
-		$query_atts = '';
+		$query_atts = $this->atts( $atts ); // FIX: Initialize with atts()
 
 		if ( is_feed() ) {
 			return '';
@@ -360,7 +377,7 @@ class Shortcode {
 		$query_atts = $this->get_final_atts( $atts, $source );
 
 		$code = '';
-		if ( $query_atts['gallery'] !== 'true' ) { // If this is a single video shortcode
+		if ( $query_atts['gallery'] !== true ) { // FIX: Compare to boolean true
 
 			// Determine the player type based on shortcode attribute or global option
 			if ( isset( $query_atts['embed_method'] ) ) {
@@ -427,7 +444,7 @@ class Shortcode {
 
 		$code = wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
 
-		return apply_filters( 'kgvid_shortcode', $code, $query_atts, $content );
+		return apply_filters( 'videopack_shortcode', $code, $query_atts, $content );
 	}
 
 	public function no_texturize( $shortcodes ) {
