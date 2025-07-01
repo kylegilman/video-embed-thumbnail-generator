@@ -119,7 +119,7 @@ const VideoPlayer = ( {
 	}, [ src, id, attachmentRecord ] );
 
 	useEffect( () => {
-		if ( embed_method === 'Video.js v8' ) {
+		if ( embed_method === 'Video.js' ) {
 			setVideoJsOptions( {
 				autoplay,
 				controls,
