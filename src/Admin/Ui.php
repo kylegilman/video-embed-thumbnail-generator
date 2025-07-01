@@ -16,72 +16,41 @@ class Ui {
 	}
 
 	public function block_init() {
-
-		$shortcode       = new \Videopack\Frontend\Shortcode( $this->options_manager );
-		$default_atts    = $shortcode->atts( '' );
-		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
-		$default_atts    = array_merge( $default_atts, $attachment_meta->get_defaults() );
-		$attributes      = array();
-
-		$type_number = array(
-			'id',
-			'numberofthumbs',
-			'width',
-			'height',
-		);
-		foreach ( $default_atts as $att => $value ) {
-			$att_type = 'string';
-			if ( $value === true ) {
-				$value = 'true';
-			}
-			if ( $value === 'true' || $value === 'false' ) {
-				$value    = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
-				$att_type = 'boolean';
-			}
-			if ( in_array( $att, $type_number ) ) {
-				$att_type = 'number';
-				$value    = intval( $value );
-			}
-			$attributes[ $att ] = array(
-				'type'    => $att_type,
-				'default' => $value,
-			);
-		}
-		$attributes['align']['default'] = 'full';
-
-		$extra_attributes = array(
-			'src'        => array(
-				'type' => 'string',
-			),
-			'poster_id'  => array(
-				'type' => 'number',
-			),
-			'videoTitle' => array(
-				'type' => 'string',
-			),
-		);
-		$attributes       = array_merge( $attributes, $extra_attributes );
-
+		// Register the block as a dynamic block. The attributes are defined in
+		// `block.json` and the front-end output is rendered by the PHP callback.
 		register_block_type(
-			__DIR__,
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build',
 			array(
-				'attributes' => $attributes,
+				'render_callback' => array( $this, 'render_videopack_block' ),
 			)
 		);
 	}
 
-	public function enqueue_block_assets() {
-		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options_manager );
-		$player->enqueue_styles();
-		$player->enqueue_scripts();
-		wp_enqueue_script( 'video-quality-selector' );
+	/**
+	 * Server-side rendering callback for the Videopack block.
+	 *
+	 * This function reuses the existing shortcode logic to render the block's
+	 * front-end HTML, ensuring a single source of truth for rendering.
+	 *
+	 * @param array    $attributes The block attributes.
+	 * @param string   $content    The block's inner content.
+	 * @param \WP_Block $block      The block instance.
+	 * @return string The rendered HTML of the block.
+	 */
+	public function render_videopack_block( $attributes, $content, $block ) {
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		return $shortcode_handler->do( $attributes, $content );
+	}
 
+	public function enqueue_block_assets() {
+		// The 'editorScript' defined in block.json handles enqueuing the block's script.
+		// We only need to register the script translations here.
 		wp_set_script_translations( 'videopack/videopack-block', 'video-embed-thumbnail-generator' );
 	}
 
-	public function enqueue_settings( $hook_suffix ) {
+	public function enqueue_page_assets( $hook_suffix ) {
 
-		if ( $hook_suffix === 'settings_page_video_embed_thumbnail_generator_settings' ) {
+		if ( 'settings_page_video_embed_thumbnail_generator_settings' === $hook_suffix ) {
 
 			$script_asset_path = __DIR__ . '/build/settings.asset.php';
 			$settings_js       = 'build/settings.js';
@@ -117,6 +86,43 @@ class Ui {
 				plugins_url( $settings_css, __FILE__ ),
 				array( 'wp-components' ),
 				filemtime( __DIR__ . '/$settings_css' )
+			);
+		}
+
+		if ( 'tools_page_videopack_encode_queue' === $hook_suffix ) {
+			$options           = $this->options_manager->get_options();
+			$script_asset_path = VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/encode-queue.asset.php';
+			$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : array(
+				'dependencies' => array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-data' ),
+				'version'      => VIDEOPACK_VERSION,
+			);
+
+			wp_enqueue_script(
+				'videopack-encode-queue',
+				plugins_url( 'admin-ui/build/encode-queue.js', VIDEOPACK_PLUGIN_FILE ),
+				$script_asset['dependencies'],
+				$script_asset['version'],
+				true
+			);
+			wp_set_script_translations( 'videopack-encode-queue', 'video-embed-thumbnail-generator' );
+
+			wp_enqueue_style(
+				'videopack-encode-queue-styles',
+				plugins_url( 'admin-ui/build/encode-queue.css', VIDEOPACK_PLUGIN_FILE ),
+				array( 'wp-components' ),
+				$script_asset['version']
+			);
+
+			// Pass initial data to the React app.
+			wp_localize_script(
+				'videopack-encode-queue',
+				'videopackEncodeQueueData',
+				array(
+					'restUrl' => rest_url( 'videopack/v1/' ),
+					'nonce' => wp_create_nonce( 'wp_rest' ),
+					'initialQueueState' => $options['queue_control'],
+					'ffmpegExists' => $options['ffmpeg_exists'],
+				)
 			);
 		}
 	}
