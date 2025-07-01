@@ -8,7 +8,7 @@ namespace Videopack;
  * A class definition that includes attributes and functions used across both the
  * public-facing side of the site and the admin area.
  *
- * @link       https://www.kylegilman.net
+ * @link       https://www.videopack.video
  * @since      1.0.0
  *
  * @package    Videopack
@@ -198,7 +198,7 @@ class Videopack {
 		$admin_ui = new Admin\Ui( $this->options_manager );
 		$this->loader->add_action( 'init', $admin_ui, 'block_init' );
 		$this->loader->add_action( 'enqueue_block_assets', $admin_ui, 'enqueue_block_assets' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_settings' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_page_assets' );
 		$this->loader->add_action( 'wp_enqueue_media', $admin_ui, 'enqueue_attachment_details' );
 	}
 
@@ -210,8 +210,8 @@ class Videopack {
 	 * @access   private
 	 */
 	private function define_frontend_hooks() {
-
-		$frontend_player = Frontend\Video_Players\Player_Factory::create( $this->options_manager );
+		$embed_method = $this->options_manager->get_options()['embed_method'];
+		$frontend_player = Frontend\Video_Players\Player_Factory::create( $embed_method, $this->options_manager );
 		$frontend_player->register_hooks();
 
 		$frontend_metadata = new Frontend\Metadata( $this->options_manager );
