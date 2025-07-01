@@ -11,28 +11,56 @@
 
 namespace Videopack\Admin;
 
+/**
+ * Class REST_Controller
+ *
+ * Manages all REST API endpoints for the Videopack plugin.
+ *
+ * @package Videopack\Admin
+ */
 class REST_Controller extends \WP_REST_Controller {
 
 	/**
-	 * Videopack Options manager class instance
+	 * Videopack Options manager class instance.
+	 *
 	 * @var Options $options_manager
 	 */
 	protected $options_manager;
+	/**
+	 * The plugin options array.
+	 *
+	 * @var array $options
+	 */
 	protected $options;
+	/**
+	 * The namespace for the REST API.
+	 *
+	 * @var string $namespace
+	 */
 	protected $namespace;
 
+	/**
+	 * REST_Controller constructor.
+	 *
+	 * @param Options $options_manager The options manager instance.
+	 */
 	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->namespace       = 'videopack/v1';
 	}
 
-
+	/**
+	 * Initializes REST routes.
+	 */
 	public function add_rest_routes() {
 		$this->register_routes();
 		$this->add_data_to_rest_response();
 	}
 
+	/**
+	 * Registers all the REST API routes for the plugin.
+	 */
 	public function register_routes() {
 
 		register_rest_route(
@@ -191,22 +219,22 @@ class REST_Controller extends \WP_REST_Controller {
 							'type'     => 'string',
 							'required' => true,
 						), // The video URL, for context.
-						'total_thumbnails'         => array( // Renamed from numberofthumbs.
+						'total_thumbnails'         => array(
 							'type'     => 'number',
 							'minimum'  => 1,
 							'maximum'  => 100,
 							'default'  => 4,
 							'required' => true,
 						), // Total number of thumbs being generated in this batch.
-						'thumbnail_index'          => array( // Renamed from thumbnumber.
+						'thumbnail_index'          => array(
 							'type'     => 'number',
 							'required' => true,
 						), // The 1-based index of the thumbnail to generate.
-						'attachment_id'            => array( // Renamed from attachmentID.
+						'attachment_id'            => array(
 							'type'     => 'number',
 							'required' => true,
 						), // The ID of the source video attachment.
-						'generate_button'          => array( // This parameter name is fine as it's a UI-specific action, not a data field.
+						'generate_button'          => array(
 							'type'     => 'string',
 							'required' => true,
 						),
@@ -299,7 +327,7 @@ class REST_Controller extends \WP_REST_Controller {
 			$this->namespace,
 			'/queue/clear',
 			array(
-				'methods'             => \WP_REST_Server::DELETABLE, // Use DELETABLE for clearing/deleting resources
+				'methods'             => \WP_REST_Server::DELETABLE,
 				'callback'            => array( $this, 'queue_clear' ),
 				'permission_callback' => function () {
 					return current_user_can( 'encode_videos' );
@@ -454,6 +482,15 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 	}
 
+	/**
+	 * Recursively cleans an array for REST response.
+	 *
+	 * Removes keys containing 'path', converts 'checked' or true to boolean true,
+	 * and sets NaN or infinite float values to null.
+	 *
+	 * @param array $dirty_array The array to clean.
+	 * @return array The cleaned array.
+	 */
 	public function clean_array( $dirty_array ) {
 		foreach ( $dirty_array as $key => $value ) {
 			if ( is_array( $value ) ) {
@@ -473,6 +510,11 @@ class REST_Controller extends \WP_REST_Controller {
 		return $dirty_array;
 	}
 
+	/**
+	 * REST callback to get a safe subset of plugin settings.
+	 *
+	 * @return array The safe plugin settings.
+	 */
 	public function settings() {
 		$all_options  = $this->options;
 		$safe_options = array();
@@ -496,11 +538,21 @@ class REST_Controller extends \WP_REST_Controller {
 		return $safe_options;
 	}
 
+	/**
+	 * REST callback to get the default plugin settings.
+	 *
+	 * @return array The default plugin settings.
+	 */
 	public function defaults() {
 		$defaults = $this->options_manager->get_default();
 		return $defaults;
 	}
 
+	/**
+	 * REST callback to get all editable roles.
+	 *
+	 * @return array An array of WordPress roles.
+	 */
 	public function roles() {
 		if ( ! function_exists( 'get_editable_roles' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/user.php';
@@ -566,6 +618,12 @@ class REST_Controller extends \WP_REST_Controller {
 		return $this->clean_array( $video_formats_data );
 	}
 
+	/**
+	 * REST callback to generate a temporary thumbnail from a video.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|\WP_Error The REST response with the thumbnail URL or an error.
+	 */
 	public function thumb_generate( \WP_REST_Request $request ) {
 
 		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
@@ -584,6 +642,12 @@ class REST_Controller extends \WP_REST_Controller {
 		return new \WP_REST_Response( array( 'real_thumb_url' => $result['url'] ), 200 );
 	}
 
+	/**
+	 * REST callback to save all generated thumbnails for a video.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response The REST response with the results of the save operations.
+	 */
 	public function thumb_save_all( \WP_REST_Request $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumb_urls    = $request->get_param( 'thumb_urls' );
@@ -599,6 +663,12 @@ class REST_Controller extends \WP_REST_Controller {
 		return new \WP_REST_Response( $results, 200 );
 	}
 
+	/**
+	 * REST callback to save a single thumbnail for a video.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return array The response from the save operation.
+	 */
 	public function thumb_save( \WP_REST_Request $request ) {
 
 		$params     = $request->get_params();
@@ -620,6 +690,12 @@ class REST_Controller extends \WP_REST_Controller {
 		return $response;
 	}
 
+	/**
+	 * REST callback to get recent video attachments.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return array An array of attachment IDs.
+	 */
 	public function recent_videos( \WP_REST_Request $request ) {
 
 		$response = array();
@@ -654,6 +730,12 @@ class REST_Controller extends \WP_REST_Controller {
 		return $response;
 	}
 
+	/**
+	 * REST callback to get video gallery data.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response The REST response containing video data and pagination info.
+	 */
 	public function video_gallery( \WP_REST_Request $request ) {
 		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options_manager );
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options_manager );
@@ -681,18 +763,47 @@ class REST_Controller extends \WP_REST_Controller {
 		return new \WP_REST_Response( $response, 200 );
 	}
 
+	/**
+	 * REST callback to get video sources for a player.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return array|\WP_Error An array of source information or an error.
+	 */
 	public function video_sources( \WP_REST_Request $request ) {
 
-		$url = $request->get_param( 'url' );
-		if ( ! $url ) {
-			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video Url.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		$url          = $request->get_param( 'url' );
+		$post_id      = $request->get_param( 'id' );
+		$source_input = $post_id ?: $url;
+
+		if ( ! $source_input ) {
+			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video URL or ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
-		$post_id     = $request->get_param( 'id' );
-		$source_info = $this->video_player->prepare_sources( $url, $post_id );
+
+		// Create the Source object.
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager );
+		if ( ! $source || ! $source->exists() ) {
+			return new \WP_Error( 'rest_source_not_found', esc_html__( 'Video source could not be found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+
+		// Create the Player object using the factory.
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+
+		// Set the source on the player and get the sources array.
+		$player->set_source( $source );
+		$source_info = $player->get_sources();
 
 		return $source_info;
 	}
 
+	/**
+	 * REST callback to get encoding queue information.
+	 *
+	 * If an ID is provided, it returns the formats for that specific job.
+	 * Otherwise, it returns the entire encoding queue.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return array The encoding queue data.
+	 */
 	public function queue_get( \WP_REST_Request $request ) {
 
 		$params = $request->get_params();
@@ -705,6 +816,12 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 	}
 
+	/**
+	 * REST callback to add or update an item in the encoding queue.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return array|\WP_Error The response from the enqueue operation or an error.
+	 */
 	public function queue_edit( \WP_REST_Request $request ) {
 
 		$params = $request->get_params();
@@ -778,6 +895,12 @@ class REST_Controller extends \WP_REST_Controller {
 		return new \WP_REST_Response( array( 'status' => 'success' ), 200 );
 	}
 
+	/**
+	 * REST callback to run a test FFmpeg encode.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return array|\WP_Error The result of the test encode or an error.
+	 */
 	public function ffmpeg_test( \WP_REST_Request $request ) {
 		$format = $request->get_param( 'format' ); // Already validated by REST route args.
 		$rotate = $request->get_param( 'rotate' ); // Already validated by REST route args.
@@ -793,17 +916,44 @@ class REST_Controller extends \WP_REST_Controller {
 		return $result;
 	}
 
+	/**
+	 * REST callback to render a video using the wp_video_shortcode function.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return string The HTML output of the video shortcode.
+	 */
 	public function wp_video( \WP_REST_Request $request ) {
 		$params   = $request->get_params();
 		$response = wp_video_shortcode( $params );
 		return $response;
 	}
 
+	/**
+	 * Prepares additional Videopack data for an attachment in a REST response.
+	 *
+	 * @param array $post The post object as an array.
+	 * @return array The prepared Videopack data.
+	 */
 	public function prepare_data_for_rest_response( $post ) {
-		$url = wp_get_attachment_url( $post['id'] );
+		$post_id = $post['id'];
+
+		// Create the Source object.
+		$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options_manager );
+		if ( ! $source || ! $source->exists() ) {
+			// If source isn't found, return an empty sources array to avoid breaking the REST response.
+			return array(
+				'srcset'  => wp_get_attachment_image_srcset( $post_id ),
+				'sources' => array(),
+			);
+		}
+
+		// Create the Player object using the factory, set the source, and get the sources array.
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+		$player->set_source( $source );
+
 		return array(
-			'srcset'  => wp_get_attachment_image_srcset( $post['id'] ),
-			'sources' => $this->video_player->prepare_sources( $url, $post['id'] ),
+			'srcset'  => wp_get_attachment_image_srcset( $post_id ),
+			'sources' => $player->get_sources(),
 		);
 	}
 
@@ -897,6 +1047,9 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 	}
 
+	/**
+	 * Adds the 'videopack' field to the 'attachment' post type in the REST API.
+	 */
 	public function add_data_to_rest_response() {
 		register_rest_field(
 			'attachment',
@@ -911,6 +1064,16 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 	}
 
+	/**
+	 * Logs detailed information about REST API errors.
+	 *
+	 * This is a debugging helper.
+	 *
+	 * @param \WP_REST_Response|\WP_Error $response The REST response or error object.
+	 * @param array                       $handler  The handler for the request.
+	 * @param \WP_REST_Request            $request  The REST request object.
+	 * @return \WP_REST_Response|\WP_Error The original response or error object.
+	 */
 	public function log_detailed_rest_errors( $response, $handler, $request ) {
 		if ( is_wp_error( $response ) && $response->has_errors() ) {
 			$error_data = $response->get_error_data();
@@ -926,6 +1089,16 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 	//add_action( 'rest_request_after_callbacks', 'log_detailed_rest_errors', 10, 3 );
 
+	/**
+	 * Logs all errors to the debug log.
+	 *
+	 * This is a debugging helper.
+	 *
+	 * @param string $code     Error code.
+	 * @param string $message  Error message.
+	 * @param mixed  $data     Error data.
+	 * @param object $wp_error WP_Error object.
+	 */
 	public function log_all_errors_to_debug_log( $code, $message, $data, $wp_error ) {
 		error_log( $code . ': ' . $message );
 	}
