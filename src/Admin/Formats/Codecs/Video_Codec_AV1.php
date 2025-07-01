@@ -5,8 +5,8 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_AV1 extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => esc_html__( 'AV1 WEBM', 'video-embed-thumbnail-generator' ),
-			'label'          => esc_html__( 'AV1', 'video-embed-thumbnail-generator' ),
+			'name'           => 'AV1 WEBM',
+			'label'          => 'AV1',
 			'id'             => 'av1',
 			'container'      => 'webm',
 			'mime'           => 'video/webm',
