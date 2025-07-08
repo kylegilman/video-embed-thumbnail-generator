@@ -111,7 +111,7 @@ class Options {
 			'watermark_link_to'       => 'home', // Link target for the player watermark ('home', 'parent', 'attachment', 'download', 'false', or custom URL).
 			'watermark_url'           => '', // Custom link target URL for the player watermark (overrides watermark_link_to if set).
 			'overlay_title'           => true, // Overlay video title on the player.
-			'overlay_embedcode'       => false, // Enable embedding code overlay on the player.
+			'embedcode'               => false, // Enable embedding code overlay on the player.
 			'downloadlink'            => false, // Enable a download link/icon for the video.
 			'click_download'          => true, // Enable single-click download methods (if downloadlink is true).
 			'view_count'              => false, // Show view count below video.
@@ -121,6 +121,7 @@ class Options {
 			'align'                   => 'left', // Default alignment for the video player ('left', 'center', 'right').
 			'width'                   => 960, // Default width for the video player in pixels.
 			'height'                  => 540, // Default height for the video player in pixels.
+			'fullwidth'               => true, // Expand video players to the full width of their container.
 			'fixed_aspect'            => 'vertical', // Fixed aspect ratio setting for the video player (true, false, 'vertical').
 			'skin'                    => 'kg-video-js-skin', // Skin class for the Video.js player.
 			'right_click'             => true, // Enable right-click context menu on video player.
@@ -199,11 +200,13 @@ class Options {
 
 	public function load_options() {
 
-		$saved_options         = get_option( 'videopack_options', array() );
+		$saved_options         = get_option( 'videopack_options' ); // will be false if not set
 		$this->default_options = $this->get_default();
 
-		if ( ! $saved_options ) { // this is the first time the plugin has run, or they're reset to defaults
-			$options = $this->init_options( $this->default_options );
+		if ( false === $saved_options ) { // this is the first time the plugin has run, or they're reset to defaults
+			// Set the options to default before initializing to prevent recursion
+			$this->options = $this->default_options;
+			$options       = $this->init_options( $this->default_options );
 		} else {
 			$options = $this->merge_options_with_defaults( (array) $saved_options, $this->default_options );
 		}
@@ -243,15 +246,69 @@ class Options {
 		$old_options     = get_option( 'kgvid_video_embed_options', array() );
 
 		if ( $old_options ) {
+			// Unset obsolete keys
+			unset( $old_options['videojs_version'] );
+			unset( $old_options['twitter_button'] );
+			unset( $old_options['twitter_username'] );
+			unset( $old_options['facebook_button'] );
+			unset( $old_options['sample_format'] );
+			unset( $old_options['sample_rotate'] );
+
+			// Migrate generate_thumbs to total_thumbnails
+			if ( isset( $old_options['generate_thumbs'] ) ) {
+				$old_options['total_thumbnails'] = $old_options['generate_thumbs'];
+				unset( $old_options['generate_thumbs'] );
+			}
+
+			// Migrate js_skin to skin
+			if ( isset( $old_options['js_skin'] ) ) {
+				$old_options['skin'] = $old_options['js_skin'];
+				unset( $old_options['js_skin'] );
+			}
+
+			// Migrate overlay_embedcode to embedcode
+			if ( isset( $old_options['overlay_embedcode'] ) ) {
+				$old_options['embedcode'] = $old_options['overlay_embedcode'];
+				unset( $old_options['overlay_embedcode'] );
+			}
+
+			// Migrate custom_format to encode array
+			if ( isset( $old_options['custom_format']['format'] ) ) {
+				$format = $old_options['custom_format']['format'];
+				$height = $old_options['custom_format']['height'];
+				if ( ! isset( $options_to_init['encode'][ $format ] ) ) {
+					$options_to_init['encode'][ $format ] = array( 'resolutions' => array() );
+				}
+				$options_to_init['encode'][ $format ]['resolutions'][ $height ] = true;
+				unset( $old_options['custom_format'] );
+			}
+
+			// Migrate CRF values
+			if ( isset( $old_options['h264_CRF'] ) ) {
+				$options_to_init['encode']['h264']['crf'] = $old_options['h264_CRF'];
+				unset( $old_options['h264_CRF'] );
+			}
+			if ( isset( $old_options['webm_CRF'] ) ) {
+				$options_to_init['encode']['vp9']['crf'] = $old_options['webm_CRF'];
+				unset( $old_options['webm_CRF'] );
+			}
+			if ( isset( $old_options['ogv_CRF'] ) ) {
+				// OGV is no longer supported, so we just unset it.
+				unset( $old_options['ogv_CRF'] );
+			}
+
+			// Convert boolean-like strings to booleans
+			foreach ( $old_options as $key => &$value ) {
+				if ( $value === 'on' ) {
+					$value = true;
+				} elseif ( $value === 'off' || $value === '' ) {
+					$value = false;
+				}
+			}
+
 			// Merge old options into the new structure, respecting new defaults for missing keys.
 			$options_to_init = $this->merge_options_with_defaults( (array) $old_options, $options_to_init );
 			delete_option( 'kgvid_video_embed_options' );
-		}
-
-		// Migration: If old options had 'generate_thumbs', transfer its value to 'total_thumbnails'
-		if ( isset( $options_to_init['generate_thumbs'] ) && ! isset( $options_to_init['total_thumbnails'] ) ) {
-			$options_to_init['total_thumbnails'] = $options_to_init['generate_thumbs'];
-			unset( $options_to_init['generate_thumbs'] );
 		}
 
 		// Set capabilities based on the potentially merged old options or new defaults.
@@ -411,7 +468,7 @@ class Options {
 	 *   watermark_link_to: string,
 	 *   watermark_url: string,
 	 *   overlay_title: bool,
-	 *   overlay_embedcode: bool,
+	 *   embedcode: bool,
 	 *   downloadlink: bool,
 	 *   click_download: bool,
 	 *   view_count: bool,
@@ -679,7 +736,7 @@ class Options {
 		}
 
 		if ( $input['embeddable'] == false ) {
-			$input['overlay_embedcode'] = false;
+			$input['embedcode'] = false;
 		}
 
 		if ( ! $input['queue_control'] ) { // don't reset queue control when saving settings
