@@ -227,7 +227,7 @@ class Multisite {
 		// Adjust the script/style handles and paths as necessary.
 		wp_enqueue_script(
 			'videopack-network-settings-page',
-			plugins_url( '../videopack-block/build/network-settings.js', __DIR__ ), // Example path
+			plugins_url( '../admin-ui/build/network-settings.js', __DIR__ ), // Example path
 			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element', 'wp-data' ),
 			VIDEOPACK_VERSION,
 			true
@@ -235,7 +235,7 @@ class Multisite {
 
 		wp_enqueue_style(
 			'videopack-network-settings-page-styles',
-			plugins_url( '../videopack-block/build/network-settings.css', __DIR__ ), // Example path
+			plugins_url( '../admin-ui/build/network-settings.css', __DIR__ ), // Example path
 			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);

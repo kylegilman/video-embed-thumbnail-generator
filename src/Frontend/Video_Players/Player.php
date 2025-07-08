@@ -229,7 +229,7 @@ class Player {
 		if ( $this->atts['title'] !== false ) {
 			$meta_bar .= '<span class="videopack-title">' . esc_html( $this->atts['title'] ) . '</span>';
 		}
-		$meta_bar .= '<span class="meta-icons">';
+		$meta_bar .= '<span class="videopack-meta-icons">';
 		if ( $this->has_embed_meta() ) {
 			$meta_bar .= '<button class="vjs-icon-share"></button>';
 		}
