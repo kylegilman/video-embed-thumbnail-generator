@@ -107,7 +107,7 @@ class Player_Video_Js extends Player {
 		return $locale;
 	}
 
-	protected function filter_video_vars( $video_variables, $atts ) {
+	public function filter_video_vars( $video_variables, $atts ) {
 
 		$video_variables['nativecontrolsfortouch'] = $atts['nativecontrolsfortouch'];
 		$video_variables['locale']                 = $this->get_videojs_locale();

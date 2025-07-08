@@ -281,6 +281,17 @@ class Shortcode {
 			$query_atts['view_count'] = $source->get_views();
 		}
 
+		// Determine if the video is countable (i.e., an attachment).
+		$query_atts['countable'] = is_numeric( $source->get_id() );
+
+		// Set the title for statistics, using the attachment title or URL basename as a fallback.
+		if ( empty( $query_atts['stats_title'] ) ) {
+			$query_atts['stats_title'] = $source->get_title();
+			if ( empty( $query_atts['stats_title'] ) ) {
+				$query_atts['stats_title'] = basename( $source->get_url() );
+			}
+		}
+
 		// Set default dimensions from source if not provided in shortcode.
 		if ( empty( $atts['width'] ) && $source->get_width() ) {
 			$query_atts['width'] = $source->get_width();
@@ -314,7 +325,7 @@ class Shortcode {
 		}
 
 		// Ensure gallery_thumb is always set and is an integer
-		if ( !isset( $query_atts['gallery_thumb'] ) ) {
+		if ( ! isset( $query_atts['gallery_thumb'] ) ) {
 			$query_atts['gallery_thumb'] = isset( $this->options['gallery_thumb'] ) ? intval( $this->options['gallery_thumb'] ) : 200;
 		} else {
 			$query_atts['gallery_thumb'] = intval( $query_atts['gallery_thumb'] );
@@ -325,59 +336,62 @@ class Shortcode {
 
 	public function do( $atts, $content = '' ) {
 
-		$code       = '';
-		$query_atts = $this->atts( $atts ); // FIX: Initialize with atts()
+		$query_atts = $this->atts( $atts );
 
 		if ( is_feed() ) {
 			return '';
 		}
 
-		$post_id = get_the_ID();
-		if ( ! $post_id ) {
-			$post_id = get_queried_object_id();
-		}
-
-		// Determine the video source based on shortcode attributes or content
-		$source_input = '';
-		if ( ! empty( $query_atts['id'] ) ) {
-			$source_input = $query_atts['id'];
-		} elseif ( ! empty( $content ) ) {
-			// Workaround for relative video URL
-			if ( substr( $content, 0, 1 ) === '/' ) {
-				$content = get_bloginfo( 'url' ) . $content;
+		if ( isset( $query_atts['gallery'] ) && true === $query_atts['gallery'] ) {
+			if ( isset( $query_atts['gallery_orderby'] ) && 'rand' === $query_atts['gallery_orderby'] ) {
+				$query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
 			}
-			$source_input = trim( $content );
+			$gallery = new Gallery( $this->options_manager );
+			$code    = $gallery->gallery_page( 1, $query_atts );
 		} else {
-			// If no explicit source, try to find the first video attachment of the current post
-			$args              = array(
-				'numberposts'    => 1,
-				'post_mime_type' => 'video',
-				'post_parent'    => $post_id,
-				'post_status'    => null,
-				'post_type'      => 'attachment', //phpcs:ignore
-				'orderby'        => $query_atts['orderby'],
-				'order'          => $query_atts['order'],
-			);
-			$video_attachments = get_posts( $args );
-			if ( $video_attachments ) {
-				$source_input = $video_attachments[0]->ID;
-			} else {
-				return ''; // No video source found, return empty
+			$post_id = get_the_ID();
+			if ( ! $post_id ) {
+				$post_id = get_queried_object_id();
 			}
-		}
 
-		// Create the Source object
-		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager, null, null, $post_id );
+			// Determine the video source based on shortcode attributes or content
+			$source_input = '';
+			if ( ! empty( $query_atts['id'] ) ) {
+				$source_input = $query_atts['id'];
+			} elseif ( ! empty( $content ) ) {
+				// Workaround for relative video URL
+				if ( substr( $content, 0, 1 ) === '/' ) {
+					$content = get_bloginfo( 'url' ) . $content;
+				}
+				$source_input = trim( $content );
+			} else {
+				// If no explicit source, try to find the first video attachment of the current post
+				$args              = array(
+					'numberposts'    => 1,
+					'post_mime_type' => 'video',
+					'post_parent'    => $post_id,
+					'post_status'    => null,
+					'post_type'      => 'attachment', // phpcs:ignore
+					'orderby'        => $query_atts['orderby'],
+					'order'          => $query_atts['order'],
+				);
+				$video_attachments = get_posts( $args );
+				if ( $video_attachments ) {
+					$source_input = $video_attachments[0]->ID;
+				} else {
+					return ''; // No video source found, return empty
+				}
+			}
 
-		if ( ! $source || ! $source->exists() ) {
-			return ''; // Source not found or doesn't exist
-		}
+			// Create the Source object
+			$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager, null, null, $post_id );
 
-		// Get the final, resolved attributes for the video.
-		$query_atts = $this->get_final_atts( $atts, $source );
+			if ( ! $source || ! $source->exists() ) {
+				return ''; // Source not found or doesn't exist
+			}
 
-		$code = '';
-		if ( $query_atts['gallery'] !== true ) { // FIX: Compare to boolean true
+			// Get the final, resolved attributes for the video.
+			$query_atts = $this->get_final_atts( $atts, $source );
 
 			// Determine the player type based on shortcode attribute or global option
 			if ( isset( $query_atts['embed_method'] ) ) {
@@ -397,49 +411,6 @@ class Shortcode {
 
 			// Get the generated HTML code for the video player
 			$code = $player->get_player_code( $query_atts );
-		} else { // If it's a gallery shortcode
-			// Existing gallery logic (assuming Gallery class handles its own rendering)
-			static $kgvid_gallery_id = 0;
-			$gallery_query_index     = array(
-				'gallery_orderby',
-				'gallery_order',
-				'gallery_id',
-				'gallery_include',
-				'gallery_exclude',
-				'gallery_thumb',
-				'view_count',
-				'gallery_end',
-				'gallery_pagination',
-				'gallery_per_page',
-				'gallery_title',
-			);
-			$gallery_query_atts      = array();
-			foreach ( $gallery_query_index as $index ) {
-				$gallery_query_atts[ $index ] = $query_atts[ $index ];
-			}
-
-			if ( $gallery_query_atts['gallery_orderby'] === 'rand' ) {
-				$gallery_query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
-			}
-
-			$aligncode = '';
-			if ( $query_atts['align'] === 'left' ) {
-				$aligncode = ' kgvid_textalign_left';
-			}
-			if ( $query_atts['align'] === 'center' ) {
-				$aligncode = ' kgvid_textalign_center';
-			}
-			if ( $query_atts['align'] === 'right' ) {
-				$aligncode = ' kgvid_textalign_right';
-			}
-
-			// Assuming Gallery class is responsible for its own player instantiation if needed
-			$code .= '<div class="kgvid_gallerywrapper' . esc_attr( $aligncode ) . '" id="kgvid_gallery_' . esc_attr( $kgvid_gallery_id ) . '" data-query_atts="' . esc_attr( wp_json_encode( $gallery_query_atts ) ) . '">';
-			// The Gallery class might also need refactoring to use the new Player/Source factories
-			$code .= ( new Gallery( $this->options_manager ) )->gallery_page( 1, $gallery_query_atts );
-			$code .= '</div>';
-
-			++$kgvid_gallery_id;
 		}
 
 		$code = wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
@@ -462,33 +433,33 @@ class Shortcode {
 		return $qvars;
 	}
 
-	public function generate_attachment_shortcode( $kgvid_video_embed ) {
+	public function generate_attachment_shortcode( $videopack_video_embed ) {
 
 		$post      = get_post();
 		$shortcode = '';
 
-		if ( is_array( $kgvid_video_embed )
-			&& array_key_exists( 'id', $kgvid_video_embed )
+		if ( is_array( $videopack_video_embed )
+			&& array_key_exists( 'id', $videopack_video_embed )
 		) {
-			$post_id = $kgvid_video_embed['id'];
+			$post_id = $videopack_video_embed['id'];
 		} elseif ( $post && property_exists( $post, 'ID' ) ) {
 			$post_id = $post->ID;
 		} else {
 			$post_id = 1;
 		}
 
-		$kgvid_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options_manager ) )->get( $post_id );
+		$videopack_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options_manager ) )->get( $post_id );
 
-		if ( is_array( $kgvid_video_embed )
-			&& array_key_exists( 'sample', $kgvid_video_embed )
+		if ( is_array( $videopack_video_embed )
+			&& array_key_exists( 'sample', $videopack_video_embed )
 		) {
 			$url = plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ );
 		} else {
 			$url = wp_get_attachment_url( $post_id );
 		}
 
-		if ( is_array( $kgvid_video_embed )
-			&& array_key_exists( 'gallery', $kgvid_video_embed )
+		if ( is_array( $videopack_video_embed )
+			&& array_key_exists( 'gallery', $videopack_video_embed )
 		) {
 			$gallery = true;
 		} else {
@@ -496,29 +467,29 @@ class Shortcode {
 		}
 
 		$shortcode = '[videopack';
-		if ( is_array( $kgvid_video_embed )
-			&& array_key_exists( 'enable', $kgvid_video_embed )
-			&& $kgvid_video_embed['enable'] == 'true'
+		if ( is_array( $videopack_video_embed )
+			&& array_key_exists( 'enable', $videopack_video_embed )
+			&& $videopack_video_embed['enable'] == 'true'
 		) {
 			$shortcode .= ' fullwidth="true"';
 		}
-		if ( $kgvid_postmeta['downloadlink'] == true ) {
+		if ( $videopack_postmeta['downloadlink'] == true ) {
 			$shortcode .= ' downloadlink="true"';
 		}
-		if ( is_array( $kgvid_video_embed ) && array_key_exists( 'start', $kgvid_video_embed ) ) {
-			$shortcode .= ' start="' . esc_attr( $kgvid_video_embed['start'] ) . '"';
+		if ( is_array( $videopack_video_embed ) && array_key_exists( 'start', $videopack_video_embed ) ) {
+			$shortcode .= ' start="' . esc_attr( $videopack_video_embed['start'] ) . '"';
 		}
-		if ( is_array( $kgvid_video_embed ) && array_key_exists( 'gallery', $kgvid_video_embed ) ) {
+		if ( is_array( $videopack_video_embed ) && array_key_exists( 'gallery', $videopack_video_embed ) ) {
 			$shortcode .= ' autoplay="true"';
 		}
-		if ( is_array( $kgvid_video_embed ) && array_key_exists( 'sample', $kgvid_video_embed ) ) {
+		if ( is_array( $videopack_video_embed ) && array_key_exists( 'sample', $videopack_video_embed ) ) {
 			if ( $this->options['overlay_title'] == true ) {
 				$shortcode .= ' title="' . esc_attr_x( 'Sample Video', 'example video', 'video-embed-thumbnail-generator' ) . '"';
 			}
-			if ( $this->options['overlay_embedcode'] == true ) {
+			if ( $this->options['embedcode'] == true ) {
 				$shortcode .= ' embedcode="' . esc_attr__( 'Sample Embed Code', 'video-embed-thumbnail-generator' ) . '"';
 			}
-			$shortcode .= ' caption="' . esc_attr__( 'If text is entered in the attachment\'s caption field it is displayed here automatically.', 'video-embed-thumbnail-generator' ) . '"';
+			$shortcode .= ' caption="' . esc_attr__( "If text is entered in the attachment's caption field it is displayed here automatically.", 'video-embed-thumbnail-generator' ) . '"';
 			if ( $this->options['downloadlink'] == true ) {
 				$shortcode .= ' downloadlink="true"';
 			}
