@@ -384,8 +384,8 @@ abstract class Source {
 	}
 
 	protected function set_mime_type(): void {
-		if ( $this->get_codec() ) {
-			$this->mime_type = $this->get_codec()->get_mime_type();
+		if ( $this->codec ) {
+			$this->mime_type = $this->codec->get_mime_type();
 		} else {
 			$this->mime_type = mime_content_type( $this->source );
 		}
@@ -406,13 +406,12 @@ abstract class Source {
 	}
 
 	protected function set_format(): void {
-		$codec      = $this->get_codec();
-		$resolution = $this->get_resolution();
+		$codec = $this->get_codec();
 
-		if ( $codec && $resolution ) {
+		if ( $codec && $this->resolution ) {
 			$formats = $this->options_manager->get_video_formats();
 			foreach ( $formats as $format ) {
-				if ( $format->get_codec() === $codec && $format->get_resolution() === $resolution ) {
+				if ( $format->get_codec() === $codec && $format->get_resolution() === $this->resolution ) {
 					$this->format = $format->get_id();
 					break;
 				}
@@ -437,11 +436,11 @@ abstract class Source {
 
 	protected function get_codec_by_mime_type() {
 
-		if ( $this->get_mime_type() ) {
+		if ( $this->mime_type ) {
 			$codecs         = $this->options_manager->get_video_codecs();
 			$same_mime_type = array();
 			foreach ( $codecs as $codec ) {
-				if ( $codec->get_mime_type() === $this->get_mime_type() ) {
+				if ( $codec->get_mime_type() === $this->mime_type ) {
 					$same_mime_type[] = $codec;
 				}
 			}
@@ -452,7 +451,7 @@ abstract class Source {
 			} elseif ( count( $same_mime_type ) > 1 ) {
 				//multiple available codecs with the same mime type
 				$preferred_codecs = $this->get_preferred_codecs();
-				if ( array_key_exists( $this->get_mime_type(), $preferred_codecs )
+				if ( array_key_exists( $this->mime_type, $preferred_codecs )
 					&& $preferred_codecs[ $this->get_mime_type() ] === $codec->get_id()
 				) {
 					return $codec;
@@ -484,7 +483,7 @@ abstract class Source {
 
 		$codecs = $this->options_manager->get_video_codecs();
 
-		if ( $this->get_format() ) {
+		if ( $this->format ) {
 			$formats = $this->options_manager->get_video_formats();
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$this->codec = $formats[ $this->format ]->get_codec();
@@ -513,7 +512,7 @@ abstract class Source {
 
 	protected function set_resolution(): void {
 
-		if ( $this->get_format() ) {
+		if ( $this->format ) {
 			$formats = $this->options_manager->get_video_formats();
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$this->resolution = $formats[ $this->format ]->get_resolution();

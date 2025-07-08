@@ -13,8 +13,10 @@ class Source_Factory {
 		string $source_type = null
 	) {
 
+		$instance_source = $source;
+
 		if ( ! $source_type ) {
-			list( $source, $source_type ) = self::determine_source_type( $source, $options_manager, $exists );
+			list( $instance_source, $source_type ) = self::determine_source_type( $source, $options_manager );
 		}
 
 		/**
@@ -36,19 +38,19 @@ class Source_Factory {
 
 		switch ( $source_type ) {
 			case 'attachment_local':
-				return new Source_Attachment_Local( $source, $options_manager, $format, $exists, $parent_id );
+				return new Source_Attachment_Local( $instance_source, $options_manager, $format, $exists, $parent_id );
 			case 'file_local':
-				return new Source_File_Local( $source, $options_manager, $format, $exists, $parent_id );
+				return new Source_File_Local( $instance_source, $options_manager, $format, $exists, $parent_id );
 			case 'url':
-				return new Source_Url( $source, $options_manager, $format, $exists, $parent_id );
+				return new Source_Url( $instance_source, $options_manager, $format, $exists, $parent_id );
 			case 'placeholder':
-				return new Source_Placeholder_Local( $source, $options_manager, $format, false, $parent_id );
+				return new Source_Placeholder_Local( $instance_source, $options_manager, $format, false, $parent_id );
 		}
 
 		return null;
 	}
 
-	protected static function determine_source_type( $source, $options_manager ) {
+	protected static function determine_source_type( $source, \Videopack\Admin\Options $options_manager ) {
 
 		if ( is_numeric( $source ) && get_post_type( $source ) === 'attachment' ) {
 			return array( $source, 'attachment_local' );
