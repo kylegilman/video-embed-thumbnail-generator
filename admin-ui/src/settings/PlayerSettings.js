@@ -94,14 +94,13 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		sample_format,
 		ffmpeg_exists,
 		version,
-		videojs_version,
 		template_gentle,
 		hide_thumbnails,
 		video_bitrate_flag,
 		ffmpeg_vpre,
 		ffmpeg_old_rotation,
 		nostdin,
-		overlay_embedcode,
+		embedcode,
 		twitter_button,
 		facebook_button,
 		downloadlink,
@@ -160,8 +159,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 	const embedMethodOptions = [
 		{
-			value: 'Video.js v8',
-			label: 'Video.js v8',
+			value: 'Video.js',
+			label: __('Video.js'),
 		},
 		{
 			value: 'WordPress Default',
@@ -341,9 +340,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									__nextHasNoMarginBottom
 									label={__('Embed code')}
 									onChange={
-										changeHandlerFactory.overlay_embedcode
+										changeHandlerFactory.embedcode
 									}
-									checked={!!overlay_embedcode}
+									checked={!!embedcode}
 									disabled={!embeddable}
 								/>
 							</FlexItem>
@@ -378,7 +377,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				<div>
 					<VideoPlayer
 						attributes={{
-							...settings,
+							settings,
 							src:
 								videopack.settings.url +
 								'/src/images/Adobestock_469037984.mp4',

@@ -1,1 +1,77 @@
-.videopack-thumbnail-generator img{max-width:100%}.videopack-thumbnail-generator .videopack-play-pause{background:none;border:none;color:var(--wp-admin-theme-color);display:inline-block;margin-left:8px;padding:0;vertical-align:text-bottom}.videopack-thumbnail-generator .videopack-thumbvideo-slider{display:inline-block;width:85%}.videopack-thumbnail-generator .videopack-thumbnail-holder.disabled img{opacity:20%;pointer-events:none}.videopack-thumbnail-generator .videopack-thumbnail{position:relative}.videopack-thumbnail-generator .videopack-thumbnail img{border:5px solid transparent;box-sizing:border-box;cursor:pointer;position:relative}.videopack-thumbnail-generator .videopack-thumbnail img:hover{border-color:var(--wp-admin-theme-color)}.videopack-thumbnail-generator .videopack-thumbnail svg.components-spinner{display:none;height:33%;right:50%;margin:-11% -16% 0 0;position:absolute;text-align:center;top:50%;width:33%}.videopack-thumbnail-generator .videopack-thumbnail.saving svg.components-spinner{display:inline-block}.videopack-thumbnail-generator .videopack-placeholder-gallery-button{margin-right:12px}.videopack-thumbnail-generator .videopack-thumb-video-panel{display:none}.videopack-thumbnail-generator .videopack-thumbnail-holder{position:relative}.videopack-thumbnail-generator .videopack-saving-overlay{background-color:hsla(0,0%,100%,.8);font-size:18pt;height:100%;padding-top:50%;position:absolute;text-align:center;width:100%;z-index:20}.videopack-thumbnail-generator .components-panel__body.videopack-thumb-video.is-opened .videopack-thumb-video-panel{display:block}.videopack-thumbnail-generator .components-base-control.videopack-numberofthumbs{display:inline-block;margin:0 0 0 10px;max-width:20%}
+/*!*******************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/Thumbnails/Thumbnails.scss ***!
+  \*******************************************************************************************************************************************************************************************************************************************************/
+.videopack-thumbnail-generator img {
+  max-width: 100%;
+}
+.videopack-thumbnail-generator .videopack-play-pause {
+  color: var(--wp-admin-theme-color);
+  display: inline-block;
+  vertical-align: text-bottom;
+  padding: 0;
+  margin-left: 8px;
+  border: none;
+  background: none;
+}
+.videopack-thumbnail-generator .videopack-thumbvideo-slider {
+  display: inline-block;
+  width: 85%;
+}
+.videopack-thumbnail-generator .videopack-thumbnail-holder.disabled img {
+  opacity: 20%;
+  pointer-events: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail {
+  position: relative;
+}
+.videopack-thumbnail-generator .videopack-thumbnail img {
+  box-sizing: border-box;
+  position: relative;
+  cursor: pointer;
+  border: 5px transparent solid;
+}
+.videopack-thumbnail-generator .videopack-thumbnail img:hover {
+  border-color: var(--wp-admin-theme-color);
+}
+.videopack-thumbnail-generator .videopack-thumbnail svg.components-spinner {
+  position: absolute;
+  margin: 0;
+  text-align: center;
+  width: 33%;
+  height: 33%;
+  right: 50%;
+  margin-right: -16%;
+  top: 50%;
+  margin-top: -11%;
+  display: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail.saving svg.components-spinner {
+  display: inline-block;
+}
+.videopack-thumbnail-generator .videopack-placeholder-gallery-button {
+  margin-right: 12px;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-panel {
+  display: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail-holder {
+  position: relative;
+}
+.videopack-thumbnail-generator .videopack-saving-overlay {
+  position: absolute;
+  z-index: 20;
+  width: 100%;
+  height: 100%;
+  padding-top: 50%;
+  font-size: 18pt;
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+.videopack-thumbnail-generator .components-panel__body.videopack-thumb-video.is-opened .videopack-thumb-video-panel {
+  display: block;
+}
+.videopack-thumbnail-generator .components-base-control.videopack-numberofthumbs {
+  display: inline-block;
+  max-width: 20%;
+  margin: 0 0px 0 10px;
+}

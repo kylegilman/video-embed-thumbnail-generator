@@ -1,1 +1,27 @@
-.videopack-encode-queue .videopack-queue-controls{align-items:center;display:flex;gap:10px;margin-bottom:20px}.videopack-encode-queue .videopack-progress-bar-container{background-color:#e0e0e0;border-radius:4px;height:20px;overflow:hidden;width:100%}.videopack-encode-queue .videopack-progress-bar{background-color:#3582c4;color:#fff;font-size:12px;height:100%;line-height:20px;text-align:center;transition:width .5s ease-in-out}
+/*!**********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/encode-queue.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************/
+.videopack-encode-queue .videopack-queue-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.videopack-encode-queue .videopack-progress-bar-container {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 20px;
+}
+.videopack-encode-queue .videopack-progress-bar {
+  height: 100%;
+  background-color: #3582c4;
+  text-align: center;
+  color: white;
+  line-height: 20px;
+  font-size: 12px;
+  transition: width 0.5s ease-in-out;
+}
+
+/*# sourceMappingURL=encode-queue.css.map*/

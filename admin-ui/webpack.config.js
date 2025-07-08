@@ -1,10 +1,17 @@
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const path = require( 'path' );
 
+// Exclude the default entry from the config, we'll define our own.
+const { entry, ...config } = defaultConfig;
+
 module.exports = {
-	...defaultConfig,
+	...config,
 	entry: {
-		...defaultConfig.entry(),
+		index: path.resolve(
+			process.cwd(),
+			'src',
+			'index.js'
+		),
 		settings: path.resolve(
 			process.cwd(),
 			'src',
@@ -22,5 +29,9 @@ module.exports = {
 			'src',
 			'encode-queue.js'
 		),
+	},
+	optimization: {
+		...config.optimization,
+		minimize: false,
 	},
 };

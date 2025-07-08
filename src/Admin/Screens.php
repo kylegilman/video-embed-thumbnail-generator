@@ -51,25 +51,7 @@ class Screens {
 			'video_embed_thumbnail_generator_settings',
 			array( $this, 'output_settings_page' )
 		);
-		add_action( 'admin_print_scripts-' . $page_hook_suffix, array( $this, 'enqueue_settings_page_assets' ) );
-	}
-
-	public function enqueue_settings_page_assets() {
-
-		wp_enqueue_script(
-			'videopack-settings-page',
-			plugins_url( 'videopack-block/build/settings.js' ),
-			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element' ),
-			VIDEOPACK_VERSION,
-			true
-		);
-
-		wp_enqueue_style(
-			'videopack-settings-page-styles',
-			plugins_url( 'videopack-block/build/settings.css' ),
-			array( 'wp-components' ),
-			VIDEOPACK_VERSION
-		);
+		// The assets for this page are enqueued via the Ui class, which is hooked to `admin_enqueue_scripts`.
 	}
 
 	public function output_settings_page() {

@@ -10,7 +10,7 @@ import {
 	Tooltip,
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
-import { createRoot, useMemo, useState, useEffect } from '@wordpress/element';
+import { createRoot, useMemo, useState, useEffect, useRef } from '@wordpress/element';
 import { videopack } from '../icon';
 import PlayerSettings from './PlayerSettings';
 import GallerySettings from './GallerySettings';
@@ -21,8 +21,8 @@ import './settings.scss';
 
 const VideopackSettingsPage = () => {
 	const [ settings, setSettings ] = useState( {} );
-	const [ isSettingsChanged, setIsSettingsChanged ] = useState( false );
 	const [ ffmpegTest, setFfmpegTest ] = useState( {} );
+	const [ isSettingsChanged, setIsSettingsChanged ] = useState( false );
 	const [ roles, setRoles ] = useState( {} );
 	const defaultTab = window.location.hash.substring( 1 ) || 'player';
 	const [ activeTab, setActiveTab ] = useState( defaultTab );
@@ -111,13 +111,12 @@ const VideopackSettingsPage = () => {
 		if ( isSettingsChanged ) {
 			debouncedSaveSettings( settings );
 		}
-	}, [ debouncedSaveSettings, isSettingsChanged ] );
+	}, [ isSettingsChanged, debouncedSaveSettings ] );
 
 	const changeHandlerFactory = useMemo( () => {
 		if ( ! settings || typeof settings !== 'object' ) {
 			return {};
 		}
-
 		return Object.keys( settings ).reduce( ( acc, setting ) => {
 			acc[ setting ] = ( newValue ) => {
 				setSettings( ( prevSettings ) => ( {

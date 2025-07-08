@@ -215,7 +215,7 @@ const VideoPlayer = ( {
 		playerRef.current = player;
 
 		player.on( 'loadedmetadata', () => {
-			if ( embed_method === 'Video.js v8' ) {
+			if ( embed_method === 'Video.js' ) {
 				onReady( player.el().firstChild );
 			} else {
 				onReady( player );
@@ -241,7 +241,7 @@ const VideoPlayer = ( {
 						attachmentRecord={ attachmentRecord }
 						metaBarVisible={ metaBarVisible }
 					/>
-					{ embed_method === 'Video.js v8' && videoJsOptions && (
+					{ embed_method === 'Video.js' && videoJsOptions && (
 						<VideoJS
 							options={ videoJsOptions }
 							onReady={ handleVideoPlayerReady }
