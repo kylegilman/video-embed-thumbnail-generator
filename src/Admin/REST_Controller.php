@@ -773,8 +773,8 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$url          = $request->get_param( 'url' );
 		$post_id      = $request->get_param( 'id' );
-		$source_input = $post_id ?: $url;
-
+		// Prioritize numeric IDs, otherwise fall back to the URL.
+		$source_input = is_numeric( $post_id ) ? (int) $post_id : $url;
 		if ( ! $source_input ) {
 			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video URL or ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
