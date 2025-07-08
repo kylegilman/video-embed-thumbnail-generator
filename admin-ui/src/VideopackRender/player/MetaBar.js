@@ -5,7 +5,7 @@ const MetaBar = ( { attributes, attachmentRecord, metaBarVisible } ) => {
 	const {
 		src,
 		title,
-		overlay_embedcode,
+		embedcode,
 		embeddable,
 		downloadlink,
 		twitter_button,
@@ -14,7 +14,7 @@ const MetaBar = ( { attributes, attachmentRecord, metaBarVisible } ) => {
 	} = attributes;
 	const metaBarItems = [
 		title,
-		overlay_embedcode,
+		embedcode,
 		downloadlink,
 		twitter_button,
 		facebook_button,
@@ -25,7 +25,7 @@ const MetaBar = ( { attributes, attachmentRecord, metaBarVisible } ) => {
 	const embedItems = () => {
 		if (
 			embeddable &&
-			( overlay_embedcode || twitter_button || facebook_button )
+			( embedcode || twitter_button || facebook_button )
 		) {
 			return true;
 		}
@@ -86,7 +86,7 @@ const MetaBar = ( { attributes, attachmentRecord, metaBarVisible } ) => {
 						shareIsOpen ? ' is-visible' : ''
 					}${ noTitleMeta }` }
 				>
-					{ overlay_embedcode && (
+					{ embedcode && (
 						<>
 							<span className="embedcode-container">
 								<span className="videopack-icons embed"></span>

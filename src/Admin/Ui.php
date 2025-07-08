@@ -51,41 +51,43 @@ class Ui {
 	public function enqueue_page_assets( $hook_suffix ) {
 
 		if ( 'settings_page_video_embed_thumbnail_generator_settings' === $hook_suffix ) {
+			$script_asset_path = plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/settings.asset.php';
 
-			$script_asset_path = __DIR__ . '/build/settings.asset.php';
-			$settings_js       = 'build/settings.js';
-			$script_asset      = require $script_asset_path;
+			if ( ! file_exists( $script_asset_path ) ) {
+				return;
+			}
+
+			$script_asset = require $script_asset_path;
 
 			wp_enqueue_script(
 				'videopack-settings',
-				plugins_url( $settings_js, __FILE__ ),
+				plugins_url( 'admin-ui/build/settings.js', VIDEOPACK_PLUGIN_FILE ),
 				$script_asset['dependencies'],
 				$script_asset['version'],
 				true
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
-			$codecs      = $this->options_manager->get_video_codecs();
-			$codec_array = array();
-			foreach ( $codecs as $codec => $codec_class ) {
-				$codec_array[ $codec ] = $codec_class->get_properties();
-			}
-			$inline_data = 'var videopack = videopack || {};
-			videopack.settings = ' . wp_json_encode(
+			wp_localize_script(
+				'videopack-settings',
+				'videopack',
 				array(
-					'url'         => plugins_url( dirname( VIDEOPACK_BASENAME ) ),
-					'codecs'      => $codec_array,
-					'resolutions' => $this->options_manager->get_video_resolutions(),
+					'settings' => array(
+						'url'         => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
+						'rest_url'    => rest_url( 'videopack/v1/' ),
+						'codecs'      => array_map( fn( $codec_class ) => $codec_class->get_properties(), $this->options_manager->get_video_codecs() ),
+						'resolutions' => $this->options_manager->get_video_resolutions(),
+						'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
+					),
 				)
-			) . ';';
-			wp_add_inline_script( 'videopack-settings', $inline_data );
+			);
 
-			$settings_css = 'build/settings.css';
+			$settings_css = VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/settings.css';
 			wp_enqueue_style(
 				'videopack-settings',
-				plugins_url( $settings_css, __FILE__ ),
+				plugins_url( 'admin-ui/build/settings.css', VIDEOPACK_PLUGIN_FILE ),
 				array( 'wp-components' ),
-				filemtime( __DIR__ . '/$settings_css' )
+				$script_asset['version']
 			);
 		}
 
@@ -109,7 +111,7 @@ class Ui {
 			wp_enqueue_style(
 				'videopack-encode-queue-styles',
 				plugins_url( 'admin-ui/build/encode-queue.css', VIDEOPACK_PLUGIN_FILE ),
-				array( 'wp-components' ),
+				array(),
 				$script_asset['version']
 			);
 
@@ -118,36 +120,46 @@ class Ui {
 				'videopack-encode-queue',
 				'videopackEncodeQueueData',
 				array(
-					'restUrl' => rest_url( 'videopack/v1/' ),
-					'nonce' => wp_create_nonce( 'wp_rest' ),
+					'rest_url'          => rest_url( 'videopack/v1/' ),
+					'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
 					'initialQueueState' => $options['queue_control'],
-					'ffmpegExists' => $options['ffmpeg_exists'],
+					'ffmpegExists'      => $options['ffmpeg_exists'],
 				)
 			);
+		}
+
+		// Also load attachment details script on the attachment edit screen.
+		$screen = get_current_screen();
+		if ( 'attachment' === $screen->id ) {
+			$this->enqueue_attachment_details();
 		}
 	}
 
 	public function enqueue_attachment_details() {
 
-		$script_asset_path     = __DIR__ . '/build/attachment-details.asset.php';
-		$attachment_details_js = 'build/attachment-details.js';
-		$script_asset          = require $script_asset_path;
+		$script_asset_path = plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/attachment-details.asset.php';
+
+		if ( ! file_exists( $script_asset_path ) ) {
+			// Fallback to prevent fatal errors if the build file is missing.
+			return;
+		}
+
+		$script_asset = require $script_asset_path;
 
 		wp_enqueue_script(
 			'videopack-attachment-details',
-			plugins_url( $attachment_details_js, __FILE__ ),
+			plugins_url( 'admin-ui/build/attachment-details.js', VIDEOPACK_PLUGIN_FILE ),
 			$script_asset['dependencies'],
 			$script_asset['version'],
 			true
 		);
-		wp_set_script_translations( 'attachment-details', 'video-embed-thumbnail-generator' );
+		wp_set_script_translations( 'videopack-attachment-details', 'video-embed-thumbnail-generator' );
 
-		$attachment_details_css = 'build/attachment-details.css';
 		wp_enqueue_style(
 			'videopack-attachment-details',
-			plugins_url( $attachment_details_css, __FILE__ ),
-			array( 'wp-components' ),
-			filemtime( __DIR__ . '/$attachment_details_css' )
+			plugins_url( 'admin-ui/build/attachment-details.css', VIDEOPACK_PLUGIN_FILE ),
+			array(),
+			VIDEOPACK_VERSION
 		);
 	}
 }
