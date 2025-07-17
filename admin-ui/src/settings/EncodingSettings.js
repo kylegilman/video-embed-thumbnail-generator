@@ -55,7 +55,8 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		simultaneous_encodes,
 		threads,
 		nice,
-		sample_format,
+		sample_codec,
+		sample_resolution,
 		ffmpeg_exists,
 		auto_encode,
 		auto_encode_gif,
@@ -69,7 +70,8 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 
 	useEffect( () => {
 		apiFetch( {
-			path: '/videopack/v1/users/?capability=edit_others_video_encodes',
+			path: '/wp/v2/users?capability=edit_others_video_encodes',
+			method: 'GET',
 		} )
 			.then( ( response ) => {
 				setUsers( response );
@@ -93,59 +95,62 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		setBitrates( newBitrates );
 	}, [ bitrate_multiplier ] );
 
-	const generateVideoFormatOptions = () => {
-		return videopack.settings.formats.map( ( videoFormat ) => {
-			if (
-				videoFormat.format === 'fullres' ||
-				videoFormat.name.startsWith( 'Custom' )
-			) {
-				return null;
-			}
-			return (
-				<option key={ videoFormat.format } value={ videoFormat.format }>
-					{ videoFormat.name }
-				</option>
+	const EncodeFormatGrid = () => {
+		const { codecs, resolutions } = videopack.settings;
+		const { encode: currentEncode, ffmpeg_exists: ffmpegExists } =
+			settings;
+
+		const handleCheckboxChange = ( codecId, resolutionId, isChecked ) => {
+			const newEncode = JSON.parse(
+				JSON.stringify( currentEncode || {} )
 			);
-		} );
-	};
 
-	const fullresReplaceSelect = () => {
-		const fullresReplaceOptions = generateVideoFormatOptions();
+			if ( ! newEncode[ codecId ] ) {
+				newEncode[ codecId ] = { resolutions: {} };
+			} else if ( ! newEncode[ codecId ].resolutions ) {
+				newEncode[ codecId ].resolutions = {};
+			}
 
-		fullresReplaceOptions.unshift(
-			<option key="fullres" value="fullres">
-				{ __( 'same resolution H.264' ) }
-			</option>
-		);
-
-		fullresReplaceOptions.push(
-			<option key="custom" value="custom">
-				{ __( 'Custom' ) }
-			</option>
-		);
+			newEncode[ codecId ].resolutions[ resolutionId ] = !! isChecked;
+			changeHandlerFactory.encode( newEncode );
+		};
 
 		return (
-			<span>
-				{ __( 'Replace original with ' ) }
-				<select
-					value={ replace_format }
-					onChange={ changeHandlerFactory.replace_format }
-					disabled={ ffmpeg_exists !== true }
-				>
-					{ fullresReplaceOptions }
-				</select>
-			</span>
+			<div className="videopack-encode-grid">
+				{ codecs.map( ( codec ) => (
+					<div key={ codec.id } className="videopack-encode-column">
+						<div className="videopack-encode-grid-header-cell">
+							<strong>{ codec.name }</strong>
+						</div>
+						{ resolutions.map( ( resolution ) => (
+							<div
+								className="videopack-encode-grid-row"
+								key={ resolution.id }
+							>
+								<span className="videopack-encode-grid-label">
+									{ resolution.name }
+								</span>
+								<CheckboxControl
+									__nextHasNoMarginBottom
+									checked={
+										!! currentEncode?.[ codec.id ]
+											?.resolutions?.[ resolution.id ]
+									}
+									onChange={ ( isChecked ) =>
+										handleCheckboxChange(
+											codec.id,
+											resolution.id,
+											isChecked
+										)
+									}
+									disabled={ ffmpegExists !== true }
+								/>
+							</div>
+						) ) }
+					</div>
+				) ) }
+			</div>
 		);
-	};
-
-	const sampleFormatOptions = () => {
-		const sampleFormats = generateVideoFormatOptions();
-		sampleFormats.unshift(
-			<option key="fullres" value="fullres">
-				{ __( 'Replace' ) }
-			</option>
-		);
-		return sampleFormats;
 	};
 
 	const errorEmailOptions = () => {
@@ -160,39 +165,53 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 			},
 		];
 		if ( users ) {
-			Object.entries( users ).forEach( ( [ login, id ] ) => {
+			users.forEach( ( user ) => {
 				authorizedUsers.push( {
-					value: id,
-					label: login,
+					value: user.id,
+					label: user.name,
 				} );
 			} );
 		}
 		return authorizedUsers;
 	};
 
-	const formatCheckboxes = videopack.settings.videoFormats.map(
-		( videoFormat ) => {
-			if (
-				videoFormat.format === 'fullres' ||
-				videoFormat.name.startsWith( 'Custom' )
-			) {
-				return null;
-			}
-			const isChecked = settings.encode?.[ videoFormat.format ] === true;
-			return (
-				<CheckboxControl
-					key={ videoFormat.format }
-					label={ videoFormat.name }
-					checked={ isChecked }
-					onChange={ ( newChecked ) => {
-						// Update settings.encode[format.format] based on newChecked
-						// ... (implement this functionality based on your application's state management)
-					} }
+	const SampleFormatSelects = () => {
+		const { sample_codec, sample_resolution } = settings;
+
+		const codecs = videopack.settings.codecs.map( ( codec ) => ( {
+			value: codec.id,
+			label: codec.name,
+		} ) );
+		const resolutions = videopack.settings.resolutions.map(
+			( resolution ) => ( {
+				value: resolution.id,
+				label: resolution.name,
+			} )
+		);
+
+		return (
+			<Flex>
+				<SelectControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={ __( 'Codec:' ) }
+					value={ sample_codec }
+					options={ codecs }
+					onChange={ changeHandlerFactory.sample_codec }
 					disabled={ ffmpeg_exists !== true }
 				/>
-			);
-		}
-	);
+				<SelectControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={ __( 'Resolution:' ) }
+					value={ sample_resolution }
+					options={ resolutions }
+					onChange={ changeHandlerFactory.sample_resolution }
+					disabled={ ffmpeg_exists !== true }
+				/>
+			</Flex>
+		);
+	};
 
 	const autoThumbLabel = () => {
 		const changeAutoThumbNumberHandler = ( value ) => {
@@ -208,6 +227,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					<>
 						{ __( 'thumbnail from' ) }
 						<RangeControl
+							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							className="videopack-setting-auto-thumb"
 							value={ Number( auto_thumb_position ) }
@@ -403,15 +423,11 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				<Flex direction="column">
 					<FlexItem>
 						<BaseControl
+							__nextHasNoMarginBottom
 							label={ __( 'Default video encode formats:' ) }
-							id="fullresReplace"
+							id="default-video-encode-formats"
 						>
-							<CheckboxControl
-								label={ fullresReplaceSelect() }
-								checked={ settings.encode?.fullres === true }
-								disabled={ ffmpeg_exists !== true }
-							/>
-							{ formatCheckboxes }
+							<EncodeFormatGrid />
 						</BaseControl>
 					</FlexItem>
 					<ToggleControl
@@ -424,6 +440,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						disabled={ ffmpeg_exists !== true }
 					/>
 					<BaseControl
+						__nextHasNoMarginBottom
 						label={ __( 'Do automatically on upload:' ) }
 						id="autoEncode"
 					>
@@ -473,6 +490,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 			</PanelBody>
 			<PanelBody>
 				<BaseControl
+					__nextHasNoMarginBottom
 					label={ __( 'For previously uploaded videos:' ) }
 					id="previouslyUploaded"
 				>
@@ -508,8 +526,12 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						disabled={ ffmpeg_exists !== true }
 					/>
 				</div>
-				<BaseControl label={ __( 'Constant Rate Factors (CRF):' ) }>
+				<BaseControl
+					__nextHasNoMarginBottom
+					label={ __( 'Constant Rate Factors (CRF):' ) }
+				>
 					<RangeControl
+						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={ __( 'H.264' ) }
 						value={ h264_CRF }
@@ -522,6 +544,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						disabled={ ffmpeg_exists !== true }
 					/>
 					<RangeControl
+						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={ __( 'WEBM VP8' ) }
 						value={ webm_CRF }
@@ -534,6 +557,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						disabled={ ffmpeg_exists !== true }
 					/>
 					<RangeControl
+						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={ __( 'OGV (qscale)' ) }
 						value={ ogv_CRF }
@@ -546,8 +570,12 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						disabled={ ffmpeg_exists !== true }
 					/>
 				</BaseControl>
-				<BaseControl label={ __( 'Average bitrates:' ) }>
+				<BaseControl
+					__nextHasNoMarginBottom
+					label={ __( 'Average bitrates:' ) }
+				>
 					<RangeControl
+						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={ __( 'bits per pixel' ) }
 						value={ bitrate_multiplier }
@@ -614,6 +642,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 			</PanelBody>
 			<PanelBody title={ __( 'Execution' ) }>
 				<RangeControl
+					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'Simultaneous encodes:' ) }
 					value={ simultaneous_encodes }
@@ -626,6 +655,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					disabled={ ffmpeg_exists !== true }
 				/>
 				<RangeControl
+					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'Threads:' ) }
 					value={ threads }
@@ -646,16 +676,13 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				/>
 			</PanelBody>
 			<PanelBody title={ __( 'Video Encoding Test' ) }>
-				<SelectControl
+				<BaseControl
 					__nextHasNoMarginBottom
-					__next40pxDefaultSize
 					label={ __( 'Test encode command:' ) }
-					value={ sample_format }
-					onChange={ changeHandlerFactory.sample_format }
-					disabled={ ffmpeg_exists !== true }
+					id="sample-format-selects"
 				>
-					{ sampleFormatOptions() }
-				</SelectControl>
+					<SampleFormatSelects />
+				</BaseControl>
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={ __( 'Test vertical video rotation.' ) }
@@ -664,10 +691,12 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					disabled={ ffmpeg_exists !== true }
 				/>
 				<TextareaControl
+					__nextHasNoMarginBottom
 					disabled={ true }
 					value={ ffmpegTest?.command }
 				/>
 				<TextareaControl
+					__nextHasNoMarginBottom
 					label={ __( 'FFmpeg test output:' ) }
 					rows={ 20 }
 					disabled={ true }

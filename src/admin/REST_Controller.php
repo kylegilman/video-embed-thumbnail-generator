@@ -405,7 +405,7 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/ffmpeg-test/(?P<format>\w+)',
+			'/ffmpeg-test',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'ffmpeg_test' ),
@@ -413,10 +413,13 @@ class REST_Controller extends \WP_REST_Controller {
 					return current_user_can( 'manage_options' );
 				},
 				'args'                => array(
-					'format' => array(
+					'codec'      => array(
 						'type' => 'string',
 					),
-					'rotate' => array(
+					'resolution' => array(
+						'type' => 'string',
+					),
+					'rotate'     => array(
 						'type' => array( 'boolean', 'string' ),
 					),
 				),
@@ -902,8 +905,11 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return array|\WP_Error The result of the test encode or an error.
 	 */
 	public function ffmpeg_test( \WP_REST_Request $request ) {
-		$format = $request->get_param( 'format' ); // Already validated by REST route args.
-		$rotate = $request->get_param( 'rotate' ); // Already validated by REST route args.
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$codec      = $request->get_param( 'codec' );
+		$resolution = $request->get_param( 'resolution' );
+		$format     = $codec . '_' . $resolution;
+		$rotate     = $request->get_param( 'rotate' ); // Already validated by REST route args.
 
 		$tester = new encode\FFmpeg_Tester( $this->options_manager ); // FFmpeg_Tester now handles the check_ffmpeg_exists logic.
 		$result = $tester->run_test_encode( $format, (bool) $rotate );

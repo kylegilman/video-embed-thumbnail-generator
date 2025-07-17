@@ -11,7 +11,7 @@ const GalleryItem = ( {
 
 	const {
 		embed_method,
-		js_skin,
+		skin,
 		gallery_columns,
 		gallery_end,
 		gallery_title,
@@ -64,7 +64,7 @@ const GalleryItem = ( {
 				alt={ videoRecord.title }
 			/>
 			<div
-				className={ `play-button-container ${js_skin}` }
+				className={ `play-button-container ${skin}` }
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
 					<circle className="play-button-circle" cx="250" cy="250" r="230" />

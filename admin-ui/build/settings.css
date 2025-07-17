@@ -473,4 +473,36 @@ button.components-button.videopack-settings-reset.is-primary {
   text-transform: uppercase;
 }
 
+.videopack-encode-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: auto;
+  margin-right: auto;
+}
+.videopack-encode-grid .videopack-encode-column {
+  flex: 0 1 auto;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.videopack-encode-grid .videopack-encode-grid-header-cell {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.videopack-encode-grid .videopack-encode-grid-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+.videopack-encode-grid .videopack-encode-grid-label {
+  text-align: left;
+  margin-right: 10px;
+}
+.videopack-encode-grid .components-base-control.components-checkbox-control {
+  margin-bottom: 0;
+}
+
 /*# sourceMappingURL=settings.css.map*/

@@ -18,7 +18,7 @@ const VideoPlayer = ( {
 		autoplay,
 		controls,
 		id,
-		js_skin,
+		skin,
 		loop,
 		muted,
 		playsinline,
@@ -151,7 +151,6 @@ const VideoPlayer = ( {
 		playback_rate,
 		sources,
 		embed_method,
-		videoJsSources,
 	] );
 
 	const videoSourceElements = () => {
@@ -245,7 +244,7 @@ const VideoPlayer = ( {
 						<VideoJS
 							options={ videoJsOptions }
 							onReady={ handleVideoPlayerReady }
-							skin={ js_skin }
+							skin={ skin }
 						/>
 					) }
 					{ embed_method === 'WordPress Default' && (

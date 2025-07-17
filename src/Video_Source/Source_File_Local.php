@@ -24,6 +24,9 @@ class Source_File_Local extends Source {
 			$this->metadata = $metadata;
 			return;
 		}
+		if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+		}
 		$this->metadata = wp_read_video_metadata( $this->source );
 	}
 

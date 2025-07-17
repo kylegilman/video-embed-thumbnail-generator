@@ -59,8 +59,8 @@ class Encode_Attachment {
 		$this->video_formats      = $options_manager->get_video_formats();
 		$this->queue_log          = array();
 		$this->set_is_attachment();
-		$this->set_encode_formats();
 		$this->set_queue_table_name();
+		$this->set_encode_formats();
 		$this->set_ffmpeg_path();
 	}
 
@@ -429,7 +429,7 @@ class Encode_Attachment {
 		if ( ! is_dir( $uploads_dir ) ) {
 			wp_mkdir_p( $uploads_dir );
 		}
-		$logfile_name = sanitize_file_name( $basename . '_' . $format_id . '_' . wp_generate_password( 8, false ) . '_encode.txt' );
+		$logfile_name = sanitize_file_name( $basename . '_' . wp_generate_password( 4, false ) . '_encode.txt' );
 		$logfile      = $uploads_dir . '/' . $logfile_name;
 
 		array_push(
@@ -557,7 +557,7 @@ class Encode_Attachment {
 		}
 
 		$codec_obj    = $video_format_config->get_codec();
-		$ffmpeg_flags = $codec_obj->get_codec_ffmpeg_flags( $this->options, $dimensions, $this->codecs );
+		$ffmpeg_flags = $codec_obj->get_codec_ffmpeg_flags( $this->options, $dimensions, $this->get_codecs() );
 
 		return $ffmpeg_flags;
 	}

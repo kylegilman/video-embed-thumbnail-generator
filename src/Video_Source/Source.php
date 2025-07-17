@@ -215,8 +215,8 @@ abstract class Source {
 	}
 
 	protected function set_id(): void {
-		$sanitized_url = \Videopack\Common\Validate::sanitize_url( $this->url );
-		$this->id      = $sanitized_url['singleurl_id'];
+		$sanitized_url = new \Videopack\Admin\Sanitize_Url( $this->url );
+		$this->id      = $sanitized_url->singleurl_id;
 	}
 
 	abstract protected function set_url(): void;
@@ -259,7 +259,7 @@ abstract class Source {
 		return $this->local;
 	}
 
-	protected function get_current_post_id(): int {
+	protected function get_current_post_id(): ?int {
 		$post = get_post();
 		if ( is_a( $post, 'WP_Post' ) ) {
 			return $post->ID;
@@ -277,10 +277,10 @@ abstract class Source {
 	}
 
 	protected function set_parent_id(): void {
-		$this->get_current_post_id();
+		$this->parent_id = $this->get_current_post_id();
 	}
 
-	public function get_parent_id(): int {
+	public function get_parent_id(): ?int {
 		if ( ! $this->parent_id ) {
 			$this->set_parent_id();
 		}
@@ -386,8 +386,17 @@ abstract class Source {
 	protected function set_mime_type(): void {
 		if ( $this->codec ) {
 			$this->mime_type = $this->codec->get_mime_type();
+			return;
+		}
+
+		if ( $this->is_local() && $this->exists() ) {
+			$this->mime_type = mime_content_type( $this->get_direct_path() );
 		} else {
-			$this->mime_type = mime_content_type( $this->source );
+			// For remote files, or local files that don't exist (placeholders)
+			$filetype = wp_check_filetype( $this->get_url() );
+			if ( ! empty( $filetype['type'] ) ) {
+				$this->mime_type = $filetype['type'];
+			}
 		}
 	}
 
@@ -395,7 +404,7 @@ abstract class Source {
 		if ( ! $this->mime_type ) {
 			$this->set_mime_type();
 		}
-		return $this->mime_type;
+		return $this->mime_type ?? '';
 	}
 
 	public function get_format(): string {
@@ -416,6 +425,10 @@ abstract class Source {
 					break;
 				}
 			}
+		}
+
+		if ( ! $this->format ) {
+			$this->format = 'original';
 		}
 	}
 
@@ -451,11 +464,16 @@ abstract class Source {
 			} elseif ( count( $same_mime_type ) > 1 ) {
 				//multiple available codecs with the same mime type
 				$preferred_codecs = $this->get_preferred_codecs();
-				if ( array_key_exists( $this->mime_type, $preferred_codecs )
-					&& $preferred_codecs[ $this->get_mime_type() ] === $codec->get_id()
-				) {
-					return $codec;
+				if ( array_key_exists( $this->mime_type, $preferred_codecs ) ) {
+					foreach ( $same_mime_type as $codec_candidate ) {
+						if ( $preferred_codecs[ $this->get_mime_type() ] === $codec_candidate->get_id() ) {
+							return $codec_candidate;
+						}
+					}
 				}
+
+				// Fallback to the first available codec if no preferred one is found or defined.
+				return $same_mime_type[0];
 			}
 		}
 		return false;
@@ -465,12 +483,15 @@ abstract class Source {
 		if ( ! isset( $this->metadata['codec'] ) ) {
 			$this->set_metadata_codec();
 		}
-		return $this->metadata['codec'];
+		return $this->metadata['codec'] ?? '';
 	}
 
 	protected function set_metadata_codec(): void {
 
 		if ( $this->exists() && $this->is_local() ) {
+			if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/media.php';
+			}
 			$video_metadata = wp_read_video_metadata( $this->source );
 		}
 
@@ -782,9 +803,9 @@ abstract class Source {
 
 	protected function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, $post_id ) {
 
-		$sanitized_url = \Videopack\Common\Validate::sanitize_url( $this->url );
+		$sanitized_url = new \Videopack\Admin\Sanitize_Url( $this->url );
 		$potential_url = $this->get_no_extension() . $format->get_suffix();
-		$meta_key      = '_videopack-' . $sanitized_url['singleurl_id'] . '-' . $format->get_id();
+		$meta_key      = '_videopack-' . $sanitized_url->singleurl_id . '-' . $format->get_id();
 
 		$already_checked_url = get_post_meta( $post_id, $meta_key, true );
 		if ( empty( $already_checked_url ) ) {

@@ -312,7 +312,7 @@ class Video_Codec {
 	 * @param array $codecs Associative array of available FFmpeg encoders.
 	 * @return array An array of FFmpeg flags.
 	 */
-	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ) {
+	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ): array {
 
 		$flags   = array();
 		$flags[] = '-acodec';

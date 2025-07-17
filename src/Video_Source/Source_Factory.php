@@ -54,15 +54,35 @@ class Source_Factory {
 
 		if ( is_numeric( $source ) && get_post_type( $source ) === 'attachment' ) {
 			return array( $source, 'attachment_local' );
-		} elseif ( file_exists( $source ) ) {
-			return array( $source, 'file_local' );
-		} elseif ( \Videopack\Common\Validate::filter_validate_url( $source ) ) {
+		}
+
+		if ( \Videopack\Common\Validate::filter_validate_url( $source ) ) {
+			// First, try to resolve it to an attachment ID. This is the most specific case.
 			$attachment_id = ( new \Videopack\Admin\Attachment( $options_manager ) )->url_to_id( $source );
 			if ( $attachment_id ) {
 				return array( $attachment_id, 'attachment_local' );
 			}
+
+			// Next, check if it's a URL pointing to a local file by comparing hosts.
+			// This is more reliable than file_exists() because the file might not exist yet
+			// (e.g., when checking for alternative formats).
+			$site_url_parts = wp_parse_url( site_url() );
+			$url_parts      = wp_parse_url( $source );
+
+			if ( isset( $url_parts['host'] ) && $url_parts['host'] === $site_url_parts['host'] ) {
+				// It's a local URL. Convert to a server path.
+				$path = str_replace( site_url( '/' ), trailingslashit( ABSPATH ), $source );
+				return array( $path, 'file_local' );
+			}
+
+			// If all else fails for a URL, it's a remote URL.
 			return array( $source, 'url' );
 		}
+
+		if ( file_exists( $source ) ) {
+			return array( $source, 'file_local' );
+		}
+
 		return array( $source, 'placeholder' );
 	}
 }

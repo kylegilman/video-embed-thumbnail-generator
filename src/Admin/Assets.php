@@ -102,7 +102,12 @@ class Assets {
 			$this->enqueue_videopack_scripts();
 		}
 		if ( $hook_suffix === 'settings_page_video_embed_thumbnail_generator_settings' ) {
-			//$this->enqueue_videopack_scripts();
+			wp_enqueue_style(
+				'video-js',
+				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css',
+				'',
+				VIDEOPACK_VIDEOJS_VERSION
+			);
 			$js_skins = array(
 				'kg-video-js-skin',
 				'vjs-theme-city',
