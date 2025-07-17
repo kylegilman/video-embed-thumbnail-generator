@@ -472,3 +472,35 @@ button.components-button.videopack-settings-reset.is-primary {
   margin-top: 0;
   text-transform: uppercase;
 }
+
+.videopack-encode-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: auto;
+  margin-left: auto;
+}
+.videopack-encode-grid .videopack-encode-column {
+  flex: 0 1 auto;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.videopack-encode-grid .videopack-encode-grid-header-cell {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.videopack-encode-grid .videopack-encode-grid-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+.videopack-encode-grid .videopack-encode-grid-label {
+  text-align: right;
+  margin-left: 10px;
+}
+.videopack-encode-grid .components-base-control.components-checkbox-control {
+  margin-bottom: 0;
+}

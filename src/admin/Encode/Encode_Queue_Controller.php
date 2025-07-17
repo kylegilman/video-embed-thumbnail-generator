@@ -35,7 +35,7 @@ class Encode_Queue_Controller {
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE {$this->queue_table_name} (
-			id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+			id BIGINT UNSIGNED AUTO_INCREMENT,
 			blog_id BIGINT UNSIGNED NOT NULL DEFAULT 1,
 			attachment_id BIGINT UNSIGNED NULL,
 			input_url VARCHAR(1024) NOT NULL,
@@ -56,12 +56,13 @@ class Encode_Queue_Controller {
 			temp_watermark_path VARCHAR(1024) NULL,
 			retry_count TINYINT UNSIGNED NOT NULL DEFAULT 0,
 			encode_options_hash VARCHAR(32) NULL,
-			INDEX idx_blog_id (blog_id),
-			INDEX idx_attachment_id_blog_id (attachment_id, blog_id),
-			INDEX idx_input_url_blog_id (input_url(191), blog_id),
-			INDEX idx_format_id (format_id),
-			INDEX idx_status_blog_id (status, blog_id),
-			INDEX idx_action_id (action_id)
+			PRIMARY KEY  (id),
+			KEY idx_blog_id (blog_id),
+			KEY idx_attachment_id_blog_id (attachment_id, blog_id),
+			KEY idx_input_url_blog_id (input_url(191), blog_id),
+			KEY idx_format_id (format_id),
+			KEY idx_status_blog_id (status, blog_id),
+			KEY idx_action_id (action_id)
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';

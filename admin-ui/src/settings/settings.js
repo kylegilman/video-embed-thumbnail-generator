@@ -27,11 +27,11 @@ const VideopackSettingsPage = () => {
 	const defaultTab = window.location.hash.substring( 1 ) || 'player';
 	const [ activeTab, setActiveTab ] = useState( defaultTab );
 
-	const testFfmpeg = ( format, rotate ) => {
+	const testFfmpeg = ( codec, resolution, rotate ) => {
 		if ( activeTab === 'encoding' ) {
 			apiFetch( {
 				path:
-					'/videopack/v1/ffmpeg-test/' + format + '?rotate=' + rotate,
+					`/videopack/v1/ffmpeg-test/?codec=${ codec }&resolution=${ resolution }&rotate=${ rotate }`,
 			} )
 				.then( ( response ) => {
 					setFfmpegTest( response );
@@ -46,22 +46,23 @@ const VideopackSettingsPage = () => {
 	const updateSettingsState = ( response ) => {
 		if ( response?.videopack_options ) {
 			setSettings( response.videopack_options );
-			testFfmpeg(
-				response.videopack_options.sample_format,
-				response.videopack_options.sample_rotate
-			);
 		}
 		console.log( response );
 	};
 
 	useEffect( () => {
-		if ( activeTab === 'encoding' ) {
+		if ( activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true ) {
 			setFfmpegTest( {
 				command: __( 'Running test…' ),
 				output: __( 'Running test…' ),
 			} );
+			testFfmpeg(
+				settings.sample_codec,
+				settings.sample_resolution,
+				settings.sample_rotate
+			);
 		}
-	}, [ settings ] );
+	}, [ settings, activeTab ] );
 
 	useEffect( () => {
 		apiFetch( { path: '/wp/v2/settings' } )
@@ -111,7 +112,7 @@ const VideopackSettingsPage = () => {
 		if ( isSettingsChanged ) {
 			debouncedSaveSettings( settings );
 		}
-	}, [ isSettingsChanged, debouncedSaveSettings ] );
+	}, [ isSettingsChanged, debouncedSaveSettings, settings ] );
 
 	const changeHandlerFactory = useMemo( () => {
 		if ( ! settings || typeof settings !== 'object' ) {
@@ -213,6 +214,7 @@ const VideopackSettingsPage = () => {
 		} )
 			.then( ( response ) => {
 				setSettings( response );
+				setIsSettingsChanged( true );
 			} )
 			.catch( ( error ) => {
 				console.log( error );

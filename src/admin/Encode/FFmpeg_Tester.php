@@ -31,9 +31,9 @@ class FFmpeg_Tester {
 	 *               and 'output' (the FFmpeg process output), or an error message if the format is invalid.
 	 */
 	public function run_test_encode( string $format_id, bool $rotate ): array {
-		$sample_video_path = plugin_dir_path( __DIR__ ) . 'images/sample-video-h264.mp4';
+		$sample_video_path = VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4';
 		if ( $rotate === true ) {
-			$sample_video_path = plugin_dir_path( __DIR__ ) . 'images/sample-video-rotated-h264.mp4';
+			$sample_video_path = VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984-rotated.mp4';
 		}
 
 		// Create an Encode_Attachment instance for the sample video.
@@ -115,7 +115,7 @@ class FFmpeg_Tester {
 			$test_image_path     = $uploads['path'] . '/' . $test_image_filename;
 
 			$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
-				plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
+				VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4',
 				$test_image_path,
 				$test_path
 			);
@@ -124,7 +124,7 @@ class FFmpeg_Tester {
 			if ( ! file_exists( $test_image_path ) && substr( $test_path, -6 ) === 'ffmpeg' ) {
 				$test_path = substr( $test_path, 0, -7 ); // Remove '/ffmpeg'
 				$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
-					plugin_dir_path( __DIR__ ) . 'images/Adobestock_469037984.mp4',
+					VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4',
 					$test_image_path,
 					$test_path
 				);

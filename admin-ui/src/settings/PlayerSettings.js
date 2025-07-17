@@ -48,16 +48,15 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		pauseothervideos,
 		volume,
 		preload,
-		js_skin,
+		skin,
 		custom_attributes,
 		embeddable,
 		schema,
-		twitter_username,
 		right_click,
 		click_download,
 		count_views,
 		rewrite_attachment_url,
-		generate_thumbs,
+		total_thumbnails,
 		featured,
 		thumb_parent,
 		capabilities,
@@ -101,8 +100,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		ffmpeg_old_rotation,
 		nostdin,
 		embedcode,
-		twitter_button,
-		facebook_button,
 		downloadlink,
 		view_count,
 		inline,
@@ -115,7 +112,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		gifmode,
 		playback_rate,
 		endofvideooverlaysame,
-		skin,
 		browser_thumbnails,
 		auto_encode,
 		auto_encode_gif,
@@ -346,38 +342,13 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									disabled={!embeddable}
 								/>
 							</FlexItem>
-							<FlexItem>
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={__('Twitter button')}
-									onChange={
-										changeHandlerFactory.twitter_button
-									}
-									checked={!!twitter_button}
-									disabled={!embeddable}
-									help={__(
-										'Add your Twitter username in the Admin tab.'
-									)}
-								/>
-							</FlexItem>
-							<FlexItem>
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={__('Facebook button')}
-									onChange={
-										changeHandlerFactory.facebook_button
-									}
-									checked={!!facebook_button}
-									disabled={!embeddable}
-								/>
-							</FlexItem>
 						</FlexBlock>
 					</Flex>
 				</PanelRow>
 				<div>
 					<VideoPlayer
 						attributes={{
-							settings,
+							...settings,
 							src:
 								videopack.settings.url +
 								'/src/images/Adobestock_469037984.mp4',
@@ -508,8 +479,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__('Skin:')}
-							value={js_skin}
-							onChange={changeHandlerFactory.js_skin}
+							value={skin}
+							onChange={changeHandlerFactory.skin}
 							options={jsSkinOptions}
 						/>
 					</div>

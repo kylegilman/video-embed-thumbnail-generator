@@ -18,7 +18,7 @@ const GallerySettings = ( { settings, changeHandlerFactory } ) => {
 		gallery_per_page,
 		gallery_title,
 		gallery_pagination,
-		js_skin,
+		skin,
 		width,
 		height,
 	} = settings;
@@ -57,7 +57,7 @@ const GallerySettings = ( { settings, changeHandlerFactory } ) => {
 		gallery_title,
 		gallery_pagination,
 		recentVideos,
-		js_skin,
+		skin,
 	] );
 
 	const galleryEndOptions = [

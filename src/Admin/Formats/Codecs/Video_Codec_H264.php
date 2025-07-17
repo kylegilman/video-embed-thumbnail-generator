@@ -30,12 +30,12 @@ class Video_Codec_H264 extends Video_Codec {
 		parent::__construct( $properties );
 	}
 
-	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ) {
+	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ): array {
 		$flags = parent::get_codec_ffmpeg_flags( $plugin_options, $dimensions, $codecs );
 
 		if ( ! empty( $plugin_options['h264_profile'] ) && $plugin_options['h264_profile'] !== 'none' ) {
-			$flags = '-profile:v';
-			$flags = $plugin_options['h264_profile'];
+			$flags[] = '-profile:v';
+			$flags[] = $plugin_options['h264_profile'];
 
 			// yuv420p is generally required for broad compatibility with baseline, main, high profiles.
 			// High422 and High444 support other pixel formats.

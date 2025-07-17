@@ -68,6 +68,24 @@ class Ui {
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
+			// Prepare codec data for localization, making it easier to read and debug.
+			$codec_objects = $this->options_manager->get_video_codecs();
+			$codecs_data   = array();
+			foreach ( $codec_objects as $codec_class ) {
+				$codecs_data[] = $codec_class->get_properties();
+			}
+
+			// Prepare resolution data for localization, converting the array of objects
+			// into a simple associative array for JavaScript.
+			$resolution_objects = $this->options_manager->get_video_resolutions();
+			$resolutions_data   = array();
+			foreach ( $resolution_objects as $resolution ) {
+				$resolutions_data[] = array(
+					'id'   => $resolution->get_id(),
+					'name' => $resolution->get_name(),
+				);
+			}
+
 			wp_localize_script(
 				'videopack-settings',
 				'videopack',
@@ -75,8 +93,8 @@ class Ui {
 					'settings' => array(
 						'url'         => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 						'rest_url'    => rest_url( 'videopack/v1/' ),
-						'codecs'      => array_map( fn( $codec_class ) => $codec_class->get_properties(), $this->options_manager->get_video_codecs() ),
-						'resolutions' => $this->options_manager->get_video_resolutions(),
+						'codecs'      => $codecs_data,
+						'resolutions' => $resolutions_data,
 						'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
 					),
 				)

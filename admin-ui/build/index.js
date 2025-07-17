@@ -73218,7 +73218,7 @@ const GalleryItem = ({
 }) => {
   const {
     embed_method,
-    js_skin,
+    skin,
     gallery_columns,
     gallery_end,
     gallery_title,
@@ -73265,7 +73265,7 @@ const GalleryItem = ({
       srcSet: thumbnailSrcset,
       alt: videoRecord.title
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-      className: `play-button-container ${js_skin}`,
+      className: `play-button-container ${skin}`,
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
         xmlns: "http://www.w3.org/2000/svg",
         viewBox: "0 0 500 500",
@@ -73901,7 +73901,7 @@ const VideoPlayer = ({
     autoplay,
     controls,
     id,
-    js_skin,
+    skin,
     loop,
     muted,
     playsinline,
@@ -74000,7 +74000,7 @@ const VideoPlayer = ({
         }
       });
     }
-  }, [src, autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, sources, embed_method, videoJsSources]);
+  }, [src, autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, sources, embed_method]);
   const videoSourceElements = () => {
     let sourceElements = [];
     if (sources?.sources_data) {
@@ -74072,7 +74072,7 @@ const VideoPlayer = ({
         }), embed_method === 'Video.js' && videoJsOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_VideoJs__WEBPACK_IMPORTED_MODULE_5__["default"], {
           options: videoJsOptions,
           onReady: handleVideoPlayerReady,
-          skin: js_skin
+          skin: skin
         }), embed_method === 'WordPress Default' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(WordPressDefaultPlayer, {
           onReady: handleVideoPlayerReady
         }), embed_method === 'None' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(GenericPlayer, {

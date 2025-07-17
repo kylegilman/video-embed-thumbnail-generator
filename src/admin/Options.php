@@ -539,6 +539,7 @@ class Options {
 		$codecs = array(
 			new Formats\Codecs\Video_Codec_H264(),
 			new Formats\Codecs\Video_Codec_H265(),
+			new Formats\Codecs\Video_Codec_VP8(),
 			new Formats\Codecs\Video_Codec_VP9(),
 			new Formats\Codecs\Video_Codec_AV1(),
 		);
@@ -626,6 +627,12 @@ class Options {
 		usort(
 			$resolutions,
 			function ( $a, $b ) {
+				if ( 'fullres' === $a->get_id() ) {
+					return -1;
+				}
+				if ( 'fullres' === $b->get_id() ) {
+					return 1;
+				}
 				if ( $a->get_height() == $b->get_height() ) {
 					return 0;
 				}
@@ -670,7 +677,7 @@ class Options {
 
 		$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
 		// Use $this->options for current values, not public properties.
-		if ( $input['app_path'] != $this->options['app_path'] ) {
+		if ( $input['app_path'] !== $this->options['app_path'] || ( isset( $input['ffmpeg_exists'] ) && 'notchecked' === $input['ffmpeg_exists'] ) ) {
 			$input = $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
 		} else {
 			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'];

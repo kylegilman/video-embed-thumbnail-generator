@@ -40,7 +40,7 @@ class Attachment_Meta {
 			'encode'            => $this->options['encode'] ?? array(),
 			'rotate'            => null, // Rotation value for video.
 			'autothumb_error'   => null,
-			'total_thumbnails'  => $this->options['generate_thumbs'] ?? 4, // Default number of thumbnails to generate.
+			'total_thumbnails'  => $this->options['total_thumbnails'] ?? 4, // Default number of thumbnails to generate.
 			'randomize'         => false,
 			'forcefirst'        => false,
 			'featured'          => $this->options['featured'] ?? true,

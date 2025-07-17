@@ -105,6 +105,27 @@ class Player {
 		$this->source = $source;
 	}
 
+	/**
+	 * Initializes the video source object from attributes.
+	 * It uses the Source_Factory to create the correct type of Source object.
+	 */
+	protected function init_source_from_atts(): void {
+		$source_identifier = $this->atts['src'] ?? $this->atts['id'] ?? null;
+
+		if ( ! $source_identifier ) {
+			return;
+		}
+
+		$source_object = \Videopack\Video_Source\Source_Factory::create(
+			$source_identifier,
+			$this->options_manager
+		);
+
+		if ( $source_object ) {
+			$this->set_source( $source_object );
+		}
+	}
+
 	public function set_atts( array $atts ): void {
 		$this->atts = $atts;
 	}
@@ -122,9 +143,12 @@ class Player {
 
 	protected function set_sources(): void {
 
+		$sources = array();
+
 		if ( $this->get_source()->is_compatible() ) {
 			$sources[ $this->get_source()->get_format() ] = $this->get_source()->get_video_player_source();
 		}
+
 		if ( $this->get_source()->get_child_sources() ) {
 			foreach ( $this->get_source()->get_child_sources() as $child_source ) {
 				if ( $child_source->exists() && $child_source->is_compatible() ) {
@@ -132,6 +156,8 @@ class Player {
 				}
 			}
 		}
+
+		$this->sources['sources_data'] = array_values( $sources );
 	}
 
 	public function get_main_source_url(): string {
@@ -178,6 +204,13 @@ class Player {
 	public function get_player_code( $atts ): string {
 
 		$this->set_atts( $atts );
+		$this->init_source_from_atts();
+
+		if ( ! $this->get_source() ) {
+			// Return an empty string or an error message if no valid source was found.
+			// This prevents fatal errors if methods are called on a null source object.
+			return '';
+		}
 
 		$video_vars = $this->prepare_video_vars();
 		$script     = sprintf(

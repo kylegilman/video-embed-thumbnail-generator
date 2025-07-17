@@ -14,7 +14,7 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 		poster,
 		endofvideooverlay,
 		thumb_watermark,
-		generate_thumbs,
+		total_thumbnails,
 		featured,
 		thumb_parent,
 		hide_thumbnails,
@@ -40,8 +40,8 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 					__next40pxDefaultSize
 					label={ __( 'Number of thumbnails to generate:' ) }
 					type="number"
-					value={ generate_thumbs }
-					onChange={ changeHandlerFactory.generate_thumbs }
+					value={ total_thumbnails }
+					onChange={ changeHandlerFactory.total_thumbnails }
 				/>
 			</div>
 			{ ffmpeg_exists === true && (
