@@ -14,17 +14,17 @@
 		"packages-update": "wp-scripts packages-update"
 	},
 	"dependencies": {
-		"@wordpress/api-fetch": "^7.25.0",
-		"@wordpress/blocks": "^14.14.0",
-		"@wordpress/core-data": "^7.25.0",
-		"@wordpress/i18n": "^5.25.0",
-		"@wordpress/icons": "^10.25.0",
+		"@wordpress/api-fetch": "^7.26.0",
+		"@wordpress/blocks": "^14.15.0",
+		"@wordpress/core-data": "^7.26.0",
+		"@wordpress/i18n": "^5.26.0",
+		"@wordpress/icons": "^10.26.0",
 		"video.js": "^8.21.1"
 	},
 	"devDependencies": {
-		"@wordpress/base-styles": "^6.1.0",
-		"@wordpress/eslint-plugin": "^22.11.0",
-		"@wordpress/scripts": "^30.18.0",
+		"@wordpress/base-styles": "^6.2.0",
+		"@wordpress/eslint-plugin": "^22.12.0",
+		"@wordpress/scripts": "^30.19.0",
 		"eslint": "^8.55.0"
 	}
 }

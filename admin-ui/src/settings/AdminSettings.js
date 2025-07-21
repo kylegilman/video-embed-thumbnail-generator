@@ -23,7 +23,7 @@ import {
 	Tooltip,
 } from '@wordpress/components';
 
-const AdminSettings = ( { settings, changeHandlerFactory, roles } ) => {
+const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 
 	const {
 		embeddable,
@@ -63,22 +63,20 @@ const AdminSettings = ( { settings, changeHandlerFactory, roles } ) => {
 		},
 	];
 
+	const capitalizeFirstLetter = (string) => {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+
 	const RolesCheckboxes = () => {
 		// Define an onChange event handler
 		const handleCapabilityChange = ( roleName, capability, isChecked ) => {
-
-			const updatedCapabilities = { ...settings.capabilities };
-
-			if ( isChecked ) {
-			if ( ! updatedCapabilities[ capability ] ) {
-				updatedCapabilities[ capability ] = {};
-			}
-			updatedCapabilities[ capability ][ roleName ] = true;
-			} else {
-				if ( updatedCapabilities[ capability ] ) {
-					delete updatedCapabilities[ capability ][ roleName ];
+			const updatedCapabilities = { 
+				...settings.capabilities,
+				[capability]: {
+					...settings.capabilities[capability],
+					[roleName]: isChecked
 				}
-			}
+			};
 
 			changeHandlerFactory.capabilities( updatedCapabilities );
 		};
@@ -95,39 +93,42 @@ const AdminSettings = ( { settings, changeHandlerFactory, roles } ) => {
 				>
 					<FlexItem>
 						<p>{ __('Can make thumbnails') }</p>
-						{ Object.entries(roles).map(([roleKey, roleData]) => (
+						{ Object.entries(settings.capabilities.make_video_thumbnails).map(([roleKey, isEnabled]) => (
 						<CheckboxControl
+							__nextHasNoMarginBottom
 							key={`${roleKey}-make-thumbnails`}
-							label={roleData.name}
-							checked={roleData.capabilities.make_video_thumbnails === true}
+							label={capitalizeFirstLetter(roleKey)}
+							checked={isEnabled}
 							onChange={(isChecked) =>
-								handleCapabilityChange(roleData.name, 'make_video_thumbnails', isChecked)
+								handleCapabilityChange(roleKey, 'make_video_thumbnails', isChecked)
 							}
 						/>
 						))}
 					</FlexItem>
 					<FlexItem>
 						<p>{ __('Can encode videos') }</p>
-						{Object.entries(roles).map(([roleKey, roleData]) => (
+						{Object.entries(settings.capabilities.encode_videos).map(([roleKey, isEnabled]) => (
 						<CheckboxControl
+							__nextHasNoMarginBottom
 							key={`${roleKey}-encode-videos`}
-							label={roleData.name}
-							checked={roleData.capabilities.encode_videos === true}
+							label={capitalizeFirstLetter(roleKey)}
+							checked={isEnabled}
 							onChange={(isChecked) =>
-								handleCapabilityChange(roleData.name, 'encode_videos', isChecked)
+								handleCapabilityChange(roleKey, 'encode_videos', isChecked)
 							}
 						/>
 						))}
 					</FlexItem>
 					<FlexItem>
 						<p>{ __( "Can edit other users' encoded videos" ) }</p>
-						{Object.entries(roles).map(([roleKey, roleData]) => (
+						{Object.entries(settings.capabilities.edit_others_video_encodes).map(([roleKey, isEnabled]) => (
 						<CheckboxControl
+							__nextHasNoMarginBottom
 							key={`${roleKey}-edit-encodes`}
-							label={roleData.name}
-							checked={roleData.capabilities.edit_others_video_encodes === true}
+							label={capitalizeFirstLetter(roleKey)}
+							checked={isEnabled}
 							onChange={(isChecked) =>
-								handleCapabilityChange(roleData.name, 'edit_others_video_encodes', isChecked)
+								handleCapabilityChange(roleKey, 'edit_others_video_encodes', isChecked)
 							}
 						/>
 						))}
@@ -258,13 +259,16 @@ const AdminSettings = ( { settings, changeHandlerFactory, roles } ) => {
 				</FlexItem>
 				<FlexItem>
 					<BaseControl
+						__nextHasNoMarginBottom
 						label={ __( 'When deleting videos, also delete associated:' ) }
 					>
 						<CheckboxControl
+							__nextHasNoMarginBottom
 							label={ __( 'Thumbnails' ) }
 							checked={ delete_thumbnails }
 						/>
 						<CheckboxControl
+							__nextHasNoMarginBottom
 							label={ __( 'Encoded Videos' ) }
 							checked={ delete_encoded }
 						/>
@@ -272,7 +276,7 @@ const AdminSettings = ( { settings, changeHandlerFactory, roles } ) => {
 				</FlexItem>
 			</Flex>
 		</PanelBody>
-		{ roles && <RolesCheckboxes /> }
+		{ settings.capabilities && <RolesCheckboxes /> }
 		</>
 	);
 }

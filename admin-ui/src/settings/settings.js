@@ -23,7 +23,6 @@ const VideopackSettingsPage = () => {
 	const [ settings, setSettings ] = useState( {} );
 	const [ ffmpegTest, setFfmpegTest ] = useState( {} );
 	const [ isSettingsChanged, setIsSettingsChanged ] = useState( false );
-	const [ roles, setRoles ] = useState( {} );
 	const defaultTab = window.location.hash.substring( 1 ) || 'player';
 	const [ activeTab, setActiveTab ] = useState( defaultTab );
 
@@ -68,14 +67,6 @@ const VideopackSettingsPage = () => {
 		apiFetch( { path: '/wp/v2/settings' } )
 			.then( ( response ) => {
 				updateSettingsState( response );
-			} )
-			.catch( ( error ) => {
-				console.log( error );
-			} );
-
-		apiFetch( { path: '/videopack/v1/roles' } )
-			.then( ( response ) => {
-				setRoles( response );
 			} )
 			.catch( ( error ) => {
 				console.log( error );
@@ -199,7 +190,6 @@ const VideopackSettingsPage = () => {
 					<AdminSettings
 						settings={ settings }
 						changeHandlerFactory={ changeHandlerFactory }
-						roles={ roles }
 					/>
 				);
 			}

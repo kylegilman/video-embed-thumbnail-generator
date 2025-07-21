@@ -86,18 +86,16 @@ class Ui {
 				);
 			}
 
-			wp_localize_script(
+			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.settings = ' . wp_json_encode( array(
+				'url'         => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
+				'codecs'      => $codecs_data,
+				'resolutions' => $resolutions_data,
+			) ) . ';';
+
+			wp_add_inline_script(
 				'videopack-settings',
-				'videopack',
-				array(
-					'settings' => array(
-						'url'         => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
-						'rest_url'    => rest_url( 'videopack/v1/' ),
-						'codecs'      => $codecs_data,
-						'resolutions' => $resolutions_data,
-						'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
-					),
-				)
+				$inline_script,
+				'before'
 			);
 
 			$settings_css = VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/settings.css';
@@ -134,16 +132,17 @@ class Ui {
 			);
 
 			// Pass initial data to the React app.
-			wp_localize_script(
+			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.encodeQueueData = ' . wp_json_encode( array(
+				'initialQueueState' => $options['queue_control'],
+				'ffmpegExists'      => $options['ffmpeg_exists'],
+			) ) . ';';
+
+			wp_add_inline_script(
 				'videopack-encode-queue',
-				'videopackEncodeQueueData',
-				array(
-					'rest_url'          => rest_url( 'videopack/v1/' ),
-					'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
-					'initialQueueState' => $options['queue_control'],
-					'ffmpegExists'      => $options['ffmpeg_exists'],
-				)
+				$inline_script,
+				'before'
 			);
+
 		}
 
 		// Also load attachment details script on the attachment edit screen.

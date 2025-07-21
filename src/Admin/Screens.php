@@ -65,7 +65,7 @@ class Screens {
 		if ( $this->options['ffmpeg_exists'] === true ) { // only add the queue page if FFmpeg is installed
 			add_submenu_page(
 				'tools.php', // Parent slug
-				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), // Page title
+				esc_html_x( 'Videopack Encode Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), // Page title
 				esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), // Menu title
 				'encode_videos', // Capability required
 				'videopack_encode_queue', // Menu slug

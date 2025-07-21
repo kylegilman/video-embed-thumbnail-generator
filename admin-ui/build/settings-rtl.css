@@ -403,7 +403,11 @@
   width: 14px;
 }
 
+.videopack-settings .components-flex {
+  align-items: flex-start;
+}
 .videopack-settings .components-base-control.components-toggle-control {
+  margin-top: 10px;
   margin-bottom: 10px;
 }
 
@@ -503,4 +507,22 @@ button.components-button.videopack-settings-reset.is-primary {
 }
 .videopack-encode-grid .components-base-control.components-checkbox-control {
   margin-bottom: 0;
+}
+
+.components-flex.videopack-setting-sample-formats {
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.components-flex.videopack-setting-sample-formats div {
+  margin-left: 5px;
+}
+
+.videopack-control-with-tooltip {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+}
+.videopack-control-with-tooltip .components-base-control {
+  margin-left: 5px;
 }

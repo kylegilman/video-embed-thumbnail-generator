@@ -34,7 +34,7 @@ const EncodeQueue = () => {
 	const [queueData, setQueueData] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isQueuePaused, setIsQueuePaused] = useState(
-		videopackEncodeQueueData.initialQueueState === 'pause'
+		videopack.encodeQueueData.initialQueueState === 'pause'
 	);
 	const [message, setMessage] = useState(null);
 	const [isClearing, setIsClearing] = useState(false);
@@ -45,7 +45,7 @@ const EncodeQueue = () => {
 	const intervalRef = useRef(null);
 	const pollInterval = 5000; // Poll every 5 seconds
 
-	const { restUrl, nonce, ffmpegExists } = videopackEncodeQueueData;
+	const { ffmpegExists } = videopack.encodeQueueData;
 
 	// Use core data to get site language for Intl.ListFormat
 	const siteLanguage = useSelect((select) => select('core').getSite()?.language);
@@ -54,8 +54,7 @@ const EncodeQueue = () => {
 		setIsLoading(true);
 		try {
 			const response = await apiFetch({
-				path: `${restUrl}queue`,
-				headers: { 'X-WP-Nonce': nonce },
+				path: '/videopack/v1/queue',
 			});
 			setQueueData(response);
 			// Check if any job is currently processing to determine if polling should continue
@@ -100,9 +99,8 @@ const EncodeQueue = () => {
 		const action = isQueuePaused ? 'play' : 'pause';
 		try {
 			const response = await apiFetch({
-				path: `${restUrl}queue/control`,
+				path: '/videopack/v1/queue/control',
 				method: 'POST',
-				headers: { 'X-WP-Nonce': nonce },
 				data: { action },
 			});
 			setIsQueuePaused(response.queue_state === 'pause');
@@ -136,9 +134,8 @@ const EncodeQueue = () => {
 		setIsClearing(true);
 		try {
 			const response = await apiFetch({
-				path: `${restUrl}queue/clear`,
+				path: '/videopack/v1/queue/clear',
 				method: 'DELETE',
-				headers: { 'X-WP-Nonce': nonce },
 				data: { type },
 			});
 			setMessage({ type: 'success', text: response.message });
@@ -165,9 +162,8 @@ const EncodeQueue = () => {
 		setDeletingJobId(jobId);
 		try {
 			const response = await apiFetch({
-				path: `${restUrl}queue/${jobId}`,
+				path: `/videopack/v1/queue/${jobId}`,
 				method: 'DELETE',
-				headers: { 'X-WP-Nonce': nonce },
 			});
 			setMessage({ type: 'success', text: sprintf(__('Job %d deleted successfully.', 'video-embed-thumbnail-generator'), jobId) });
 			fetchQueue(); // Refresh queue data
@@ -190,9 +186,8 @@ const EncodeQueue = () => {
 		setRetryingJobId(jobId);
 		try {
 			await apiFetch({
-				path: `${restUrl}queue/retry/${jobId}`,
+				path: `videopack/v1/queue/retry/${jobId}`,
 				method: 'POST',
-				headers: { 'X-WP-Nonce': nonce },
 			});
 			setMessage({ type: 'success', text: sprintf(__('Job %d has been re-queued.', 'video-embed-thumbnail-generator'), jobId) });
 			fetchQueue(); // Refresh queue data

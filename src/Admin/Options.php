@@ -61,6 +61,7 @@ class Options {
 			// FFmpeg & Encoding Settings.
 			'app_path'                => '', // Path to the FFmpeg application.
 			'ffmpeg_exists'           => 'notchecked', // Is FFmpeg installed and working ('notchecked', true, 'notinstalled').
+			'ffmpeg_error'            => '', // User-friendly error message if FFmpeg isn't working.
 			'replace_format'          => 'h264', // Default video codec to replace the original video file if 'fullres' encode is enabled.
 			'custom_resolution'       => false, // Allow custom video resolutions (height in pixels or false).
 			'encode'                  => array(), // List of enabled video encode formats and settings (Populated dynamically).
@@ -174,7 +175,8 @@ class Options {
 		);
 
 		foreach ( $this->default_capabilities as $videopack_capability => $wp_capability ) {
-			$default_options['capabilities'][ $videopack_capability ] = $this->get_roles_with_capability( $wp_capability );
+			$enabled_roles = array_keys( $this->get_roles_with_capability( $wp_capability ) );
+			$default_options['capabilities'][ $videopack_capability ] = $this->get_all_roles_with_capability( $enabled_roles );
 		}
 
 		$video_codecs = $this->get_video_codecs();
@@ -312,16 +314,18 @@ class Options {
 		}
 
 		// Set capabilities based on the potentially merged old options or new defaults.
-		$this->set_capabilities( $options_to_init['capabilities'] ?? $this->default_capabilities );
+		$this->set_capabilities( $options_to_init['capabilities'] );
 
 		if ( $options_to_init['ffmpeg_exists'] === 'notchecked' ) {
 			$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
 			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( $options_to_init['app_path'] );
-			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
+			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_init['ffmpeg_exists'] = true;
 				$options_to_init['app_path']      = $ffmpeg_check['app_path'];
+				$options_to_init['ffmpeg_error']  = '';
 			} else {
 				$options_to_init['ffmpeg_exists'] = 'notinstalled';
+				$options_to_init['ffmpeg_error']  = $ffmpeg_check['ffmpeg_error'];
 			}
 		}
 
@@ -412,11 +416,13 @@ class Options {
 		if ( $options_to_save['ffmpeg_exists'] === 'notchecked' ) {
 			$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
 			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( $options_to_save['app_path'] );
-			if ( true == $ffmpeg_check['ffmpeg_exists'] ) {
+			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_save['ffmpeg_exists'] = true;
 				$options_to_save['app_path']      = $ffmpeg_check['app_path'];
+				$options_to_save['ffmpeg_error']  = '';
 			} else {
 				$options_to_save['ffmpeg_exists'] = 'notinstalled';
+				$options_to_save['ffmpeg_error']  = $ffmpeg_check['ffmpeg_error'];
 			}
 		}
 
@@ -438,6 +444,7 @@ class Options {
 	 *   transient_cache: bool,
 	 *   app_path: string,
 	 *   ffmpeg_exists: string|bool,
+	 *   ffmpeg_error: string,
 	 *   replace_format: string,
 	 *   custom_resolution: int|bool,
 	 *   encode: array<string, array{crf: int, vbr: int, resolutions: array<string|int, bool>}>,
@@ -681,6 +688,7 @@ class Options {
 			$input = $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
 		} else {
 			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'];
+			$input['ffmpeg_error']  = $this->options['ffmpeg_error'];
 		}
 
 		if ( $input['ffmpeg_exists'] === 'notinstalled' ) {
@@ -703,8 +711,10 @@ class Options {
 			$input['gallery_width'] = $this->options['gallery_width'];
 		}
 
-		if ( array_key_exists( 'capabilities', $input ) && is_array( $input['capabilities'] ) && $input['capabilities'] !== $this->options['capabilities'] ) {
-			$this->set_capabilities( $input['capabilities'] );
+		if ( array_key_exists( 'capabilities', $input ) && is_array( $input['capabilities'] ) ) {
+			if ( $input['capabilities'] !== $this->options['capabilities'] ) {
+				$input['capabilities'] = $this->set_capabilities( $input['capabilities'] );
+			}
 		}
 
 		if ( ! array_key_exists( 'transient_cache', $input ) && $this->options['transient_cache'] == true ) {
@@ -758,29 +768,16 @@ class Options {
 	public function validate_ffmpeg_settings( array $input, Encode\FFmpeg_Tester $ffmpeg_tester ) {
 
 		$ffmpeg_info = $ffmpeg_tester->check_ffmpeg_exists( $input['app_path'] );
-		if ( $ffmpeg_info['ffmpeg_exists'] === true ) {
+
+		if ( true === $ffmpeg_info['ffmpeg_exists'] ) {
 			$input['ffmpeg_exists'] = true;
+			$input['ffmpeg_error']  = ''; // Clear any previous error on success.
+		} else {
+			$input['ffmpeg_exists'] = 'notinstalled';
+			$input['ffmpeg_error']  = $ffmpeg_info['ffmpeg_error'];
 		}
+
 		$input['app_path'] = $ffmpeg_info['app_path'];
-
-		if ( $ffmpeg_info['proc_open_enabled'] == false ) {
-			if ( is_admin() ) {
-				add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', esc_html__( 'proc_open is disabled in PHP settings. You can embed existing videos and make thumbnails with compatible browsers, but video encoding will not work. Contact your System Administrator to find out if you can enable proc_open.', 'video-embed-thumbnail-generator' ), 'updated' );
-			}
-			$input['ffmpeg_exists'] = 'notinstalled';
-		} elseif ( $ffmpeg_info['ffmpeg_exists'] === false ) {
-
-			$textarea = '';
-			if ( count( $ffmpeg_info['output'] ) > 2 ) {
-				$textarea = '<br /><textarea rows="3" cols="70" disabled style="resize: none;">' . esc_textarea( implode( "\n", $ffmpeg_info['output'] ) ) . '</textarea>';
-			}
-			/* %s is the path to the application. */
-			if ( is_admin() ) {
-				/* translators: %s is the path to the application. */
-				add_settings_error( 'video_embed_thumbnail_generator_settings', 'ffmpeg-disabled', sprintf( esc_html__( 'FFmpeg is not executing correctly at %s. You can embed existing videos and make thumbnails with compatible browsers, but video encoding is not possible without FFmpeg', 'video-embed-thumbnail-generator' ), esc_html( $input['app_path'] ) ) . '<br /><br />' . esc_html__( 'Error message:', 'video-embed-thumbnail-generator' ) . ' ' . esc_textarea( implode( ' ', array_slice( $ffmpeg_info['output'], -2, 2 ) ) ) . $textarea, 'updated' );
-			}
-			$input['ffmpeg_exists'] = 'notinstalled';
-		}
 
 		return $input;
 	}
@@ -800,69 +797,68 @@ class Options {
 			$role_object = $wp_roles_instance->get_role( $role_slug );
 			// Check if the role object exists and has the capability.
 			if ( $role_object instanceof \WP_Role && $role_object->has_cap( $capability ) ) {
-				$roles_with_capability[] = $role_slug;
+				$roles_with_capability[ $role_slug ] = true;
 			}
 		}
 
 		return $roles_with_capability;
 	}
 
-	public function set_capabilities( array $capabilities ) {
+	protected function get_all_roles_with_capability( $enabled_roles ) {
 
-		$wp_roles = wp_roles();
+		$all_roles         = array();
+		$wp_roles_instance = wp_roles();
 
-		$current_default_options = $this->get_default(); // Get full defaults including from add-ons
+		// Ensure wp_roles() returned a valid WP_Roles object.
+		if ( ! $wp_roles_instance instanceof \WP_Roles ) {
+			return $all_roles;
+		}
 
-		if ( is_object( $wp_roles )
-			&& property_exists( $wp_roles, 'roles' )
-		) {
-			foreach ( $current_default_options['capabilities'] as $default_capability => $default_enabled_roles ) {
-				if ( is_array( $capabilities )
-					&& ! array_key_exists( $default_capability, $capabilities ) // If a core capability is missing from input, assume it's disabled for all roles
-				) {
-					$capabilities[ $default_capability ] = array();
-				}
-			}
+		// Iterate over all registered role names (slugs).
+		foreach ( $wp_roles_instance->get_names() as $role_slug => $role_name ) {
+			$all_roles[ $role_slug ] = in_array($role_slug, $enabled_roles);
+		}
 
-			foreach ( $capabilities as $capability => $enabled_roles ) {
-				foreach ( $wp_roles->roles as $role => $role_info ) { // check all roles
-					if ( is_array( $role_info['capabilities'] )
-						&& ! array_key_exists( $capability, $role_info['capabilities'] ) // If role doesn't have the cap
-						&& is_array( $enabled_roles ) && in_array( $role, $enabled_roles, true ) // And it's in the list of roles that *should* have it
-					) {
-						$wp_roles->add_cap( $role, $capability );
-					}
-					if ( is_array( $role_info['capabilities'] )
-						&& array_key_exists( $capability, $role_info['capabilities'] ) // If role *does* have the cap
-						&& ( ! is_array( $enabled_roles ) || ! in_array( $role, $enabled_roles, true ) ) // And it's *not* in the list of roles that should have it
-					) {
-						$wp_roles->remove_cap( $role, $capability );
-					}
-				}
-			}
-		}//end if
+		return $all_roles;
 	}
 
-	public function videopack_get_capable_users( string $capability ) {
+		public function set_capabilities( array $capabilities ): array {
 
-		$authorized_users = array();
+		$wp_roles              = wp_roles();
+		$plugin_capability_keys = array_keys( $this->default_capabilities );
 
-		// Use $this->options for current capabilities
-		if ( is_array( $this->options['capabilities'] )
-			&& array_key_exists( $capability, $this->options['capabilities'] )
-		) {
-			$users = get_users(
-				array(
-					'role__in' => $this->options['capabilities'][ $capability ],
-				)
-			);
-			if ( $users ) {
-				foreach ( $users as $user ) {
-					$authorized_users[ $user->user_login ] = $user->ID;
+		// First, ensure the capabilities array is clean and only contains role slugs as keys.
+		$clean_capabilities = array();
+		foreach ( $capabilities as $capability => $roles ) {
+			if ( is_array( $roles ) ) {
+				$clean_capabilities[ $capability ] = array_filter(
+					$roles,
+					function ( $key ) {
+						return is_string( $key );
+					},
+					ARRAY_FILTER_USE_KEY
+				);
+			}
+		}
+
+		// Iterate through each role and update its capabilities.
+		foreach ( $wp_roles->roles as $role => $role_info ) {
+			// Iterate over all plugin capabilities
+			foreach ( $plugin_capability_keys as $capability ) {
+				$enabled_roles          = $clean_capabilities[ $capability ] ?? [];
+				$has_capability         = isset( $role_info['capabilities'][ $capability ] ) && $role_info['capabilities'][ $capability ];
+				$should_have_capability = ! empty( $enabled_roles[ $role ] );
+
+				if ( $should_have_capability && ! $has_capability ) {
+					// The role should have the capability but doesn't.
+					$wp_roles->add_cap( $role, $capability );
+				} elseif ( ! $should_have_capability && $has_capability ) {
+					// The role shouldn't have the capability but does.
+					$wp_roles->remove_cap( $role, $capability );
 				}
 			}
 		}
-		return $authorized_users;
+		return $clean_capabilities;
 	}
 
 	public function merge_options_with_defaults( array $options, array $default_options ) {
