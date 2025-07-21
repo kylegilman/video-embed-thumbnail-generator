@@ -98,23 +98,25 @@ class FFmpeg_Tester {
 	 *               - 'ffmpeg_exists': bool|string, true if FFmpeg is found and executable, 'notinstalled' otherwise.
 	 *               - 'output': array, output from the FFmpeg test command.
 	 *               - 'app_path': string, the validated path to FFmpeg.
+	 *               - 'ffmpeg_error': string, a user-friendly error message if FFmpeg is not working.
 	 */
 	public function check_ffmpeg_exists( string $app_path ): array {
-		$proc_open_enabled = false;
+		$proc_open_enabled = function_exists( 'proc_open' );
 		$ffmpeg_exists     = false;
+		$ffmpeg_error      = '';
 		$output            = array();
 		$uploads           = wp_upload_dir();
 		$test_path         = rtrim( (string) $app_path, '/' );
 		$ffmpeg_thumbnails = new \Videopack\Admin\Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
 
-		if ( function_exists( 'proc_open' ) ) {
-			$proc_open_enabled = true;
-
+		if ( ! $proc_open_enabled ) {
+			$ffmpeg_error = __( 'The `proc_open` function is disabled in your PHP configuration. FFmpeg cannot be executed. Please contact your hosting provider or system administrator to enable it.', 'video-embed-thumbnail-generator' );
+		} else {
 			// Use a unique filename for the test to avoid conflicts.
 			$test_image_filename = 'ffmpeg_exists_test_' . uniqid() . '.jpg';
 			$test_image_path     = $uploads['path'] . '/' . $test_image_filename;
 
-			$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
+			$ffmpeg_test_output = $ffmpeg_thumbnails->process_thumb(
 				VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4',
 				$test_image_path,
 				$test_path
@@ -123,20 +125,24 @@ class FFmpeg_Tester {
 			// If the test failed with the initial path, try without the 'ffmpeg' suffix.
 			if ( ! file_exists( $test_image_path ) && substr( $test_path, -6 ) === 'ffmpeg' ) {
 				$test_path = substr( $test_path, 0, -7 ); // Remove '/ffmpeg'
-				$ffmpeg_test = $ffmpeg_thumbnails->process_thumb(
+				$ffmpeg_test_output = $ffmpeg_thumbnails->process_thumb(
 					VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4',
 					$test_image_path,
 					$test_path
 				);
 			}
 
-			if ( file_exists( $test_image_path ) ) {
-				$ffmpeg_exists = true;
+			// Check that the file was created and is not empty.
+			if ( file_exists( $test_image_path ) && filesize( $test_image_path ) > 0 ) {
+				$ffmpeg_exists = true; // Success!
 				wp_delete_file( $test_image_path ); // Clean up the test file.
 				$app_path = $test_path; // Update app_path to the one that worked.
+			} else {
+				/* translators: %s is the path to the application. */
+				$ffmpeg_error = sprintf( __( 'FFmpeg could not be found or is not executable at the path: %s. Please check the path and permissions.', 'video-embed-thumbnail-generator' ), '<code>' . esc_html( $app_path ?: __( '(empty)', 'video-embed-thumbnail-generator' ) ) . '</code>' );
 			}
 
-			$output = explode( "\n", $ffmpeg_test );
+			$output = explode( "\n", $ffmpeg_test_output );
 		}
 
 		return array(
@@ -144,6 +150,7 @@ class FFmpeg_Tester {
 			'ffmpeg_exists'     => $ffmpeg_exists,
 			'output'            => $output,
 			'app_path'          => $app_path, // Return the potentially updated path.
+			'ffmpeg_error'      => $ffmpeg_error,
 		);
 	}
 }

@@ -129,7 +129,6 @@ const GallerySettings = ( { settings, changeHandlerFactory } ) => {
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'When current gallery video finishes:' ) }
-					type="url"
 					value={ gallery_end }
 					onChange={ changeHandlerFactory.gallery_end }
 					options={ galleryEndOptions }

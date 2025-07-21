@@ -61,8 +61,14 @@
 	}
 }
 
-.videopack-settings .components-base-control.components-toggle-control {
-    margin-bottom: 10px;
+.videopack-settings {
+	.components-flex {
+		align-items: flex-start;
+	}
+	.components-base-control.components-toggle-control {
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
 }
 
 .videopack-setting-auto-width .components-base-control {
@@ -165,5 +171,25 @@ button.components-button.videopack-settings-reset.is-primary {
 
 	.components-base-control.components-checkbox-control {
 		margin-bottom: 0;
+	}
+}
+
+.components-flex.videopack-setting-sample-formats {
+    justify-content: flex-start;
+    align-items: flex-end;
+    margin-bottom: 10px;
+
+	div {
+		margin-right: 5px;
+	}
+}
+
+.videopack-control-with-tooltip {
+	margin-top: 10px;
+	display: flex;
+	align-items: flex-start;
+
+	.components-base-control {
+		margin-right: 5px;
 	}
 }

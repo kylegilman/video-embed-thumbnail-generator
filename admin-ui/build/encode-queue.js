@@ -184,7 +184,7 @@ const formatDuration = seconds => {
 const EncodeQueue = () => {
   const [queueData, setQueueData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
   const [isLoading, setIsLoading] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(true);
-  const [isQueuePaused, setIsQueuePaused] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(videopackEncodeQueueData.initialQueueState === 'pause');
+  const [isQueuePaused, setIsQueuePaused] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(videopack.encodeQueueData.initialQueueState === 'pause');
   const [message, setMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null);
   const [isClearing, setIsClearing] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
   const [isTogglingQueue, setIsTogglingQueue] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
@@ -194,10 +194,8 @@ const EncodeQueue = () => {
   const pollInterval = 5000; // Poll every 5 seconds
 
   const {
-    restUrl,
-    nonce,
     ffmpegExists
-  } = videopackEncodeQueueData;
+  } = videopack.encodeQueueData;
 
   // Use core data to get site language for Intl.ListFormat
   const siteLanguage = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_5__.useSelect)(select => select('core').getSite()?.language);
@@ -205,10 +203,7 @@ const EncodeQueue = () => {
     setIsLoading(true);
     try {
       const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
-        path: `${restUrl}queue`,
-        headers: {
-          'X-WP-Nonce': nonce
-        }
+        path: '/videopack/v1/queue'
       });
       setQueueData(response);
       // Check if any job is currently processing to determine if polling should continue
@@ -246,11 +241,8 @@ const EncodeQueue = () => {
     const action = isQueuePaused ? 'play' : 'pause';
     try {
       const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
-        path: `${restUrl}queue/control`,
+        path: '/videopack/v1/queue/control',
         method: 'POST',
-        headers: {
-          'X-WP-Nonce': nonce
-        },
         data: {
           action
         }
@@ -278,11 +270,8 @@ const EncodeQueue = () => {
     setIsClearing(true);
     try {
       const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
-        path: `${restUrl}queue/clear`,
+        path: '/videopack/v1/queue/clear',
         method: 'DELETE',
-        headers: {
-          'X-WP-Nonce': nonce
-        },
         data: {
           type
         }
@@ -309,11 +298,8 @@ const EncodeQueue = () => {
     setDeletingJobId(jobId);
     try {
       const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
-        path: `${restUrl}queue/${jobId}`,
-        method: 'DELETE',
-        headers: {
-          'X-WP-Nonce': nonce
-        }
+        path: `/videopack/v1/queue/${jobId}`,
+        method: 'DELETE'
       });
       setMessage({
         type: 'success',
@@ -334,11 +320,8 @@ const EncodeQueue = () => {
     setRetryingJobId(jobId);
     try {
       await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default()({
-        path: `${restUrl}queue/retry/${jobId}`,
-        method: 'POST',
-        headers: {
-          'X-WP-Nonce': nonce
-        }
+        path: `videopack/v1/queue/retry/${jobId}`,
+        method: 'POST'
       });
       setMessage({
         type: 'success',

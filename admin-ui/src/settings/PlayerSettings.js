@@ -213,19 +213,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		},
 		{
 			value: 'download',
-			label: __('Download video', 'Preload value'),
+			label: __('Download video'),
 		},
 		{
 			value: 'Custom URL',
-			label: __('Custom URL', 'Preload value'),
+			label: __('Custom URL'),
 		},
 		{
 			value: 'None',
-			label: __('None', 'Preload value'),
+			label: __('None'),
 		},
 	];
 
-	const jsSkinOptions = [
+	const skinOptions = [
 		{
 			value: 'kg-video-js-skin',
 			label: __('Videopack'),
@@ -268,15 +268,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			},
 		];
 
-		for (const key in videopack.settings.resolutions) {
-			const format = videopack.settings.resolutions[key];
-			if (format.label !== undefined) {
-				items.push({
-					value: format.label,
-					label: format.label,
-				});
-			}
-		}
+		videopack.settings.resolutions.forEach( ( resolution ) => {
+			items.push( {
+				value: resolution.id,
+				label: resolution.name,
+			} );
+		} );
 
 		return items;
 	};
@@ -368,7 +365,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</PanelRow>
 			</PanelBody>
-			<PanelBody title={__('Default Playback')} initialOpen={true}>
+			<PanelBody
+				title={__('Default Playback')}
+				initialOpen={true}
+				className="videopack-setting-default-playback"
+			>
 				<Flex
 					align-items="flex-start"
 					expanded={false}
@@ -444,10 +445,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							disabled={gifmode}
 							checked={!!playback_rate}
 						/>
-						<div className="videopack-setting-inline">
-							<SelectControl
-								__nextHasNoMarginBottom
-								__next40pxDefaultSize
+						<div className="videopack-control-with-tooltip">
+							<RadioControl
 								label={__('Preload')}
 								value={preload}
 								onChange={changeHandlerFactory.preload}
@@ -481,7 +480,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							label={__('Skin:')}
 							value={skin}
 							onChange={changeHandlerFactory.skin}
-							options={jsSkinOptions}
+							options={skinOptions}
 						/>
 					</div>
 				)}
@@ -530,9 +529,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						onChange={changeHandlerFactory.height}
 					/>
 				</span>
-				<div className="videopack-setting-reduced-width">
+				<div className="videopack-control-with-tooltip">
 					<RadioControl
-						label={__('Constrain to default aspect ratio:')}
+						label={__('Constrain to default aspect ratio')}
 						selected={fixed_aspect}
 						onChange={changeHandlerFactory.fixed_aspect}
 						options={fixedAspectOptions}

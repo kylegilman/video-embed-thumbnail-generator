@@ -27,6 +27,7 @@ import {
 	TabPanel,
 	Tooltip,
 } from '@wordpress/components';
+import { useDebounce } from '@wordpress/compose';
 import { useEffect, useState } from '@wordpress/element';
 
 const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
@@ -58,6 +59,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		sample_codec,
 		sample_resolution,
 		ffmpeg_exists,
+		ffmpeg_error,
 		auto_encode,
 		auto_encode_gif,
 		auto_thumb,
@@ -94,6 +96,31 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		}
 		setBitrates( newBitrates );
 	}, [ bitrate_multiplier ] );
+
+	const TextControlOnBlur = ( { value, onChange, ...props } ) => {
+		const [ innerValue, setInnerValue ] = useState( value );
+
+		useEffect( () => {
+			setInnerValue( value );
+		}, [ value ] );
+
+		const handleOnChange = ( newValue ) => {
+			setInnerValue( newValue );
+		};
+
+		const handleOnBlur = () => {
+			onChange( innerValue );
+		};
+
+		return (
+			<TextControl
+				{ ...props }
+				value={ innerValue }
+				onChange={ handleOnChange }
+				onBlur={ handleOnBlur }
+			/>
+		);
+	};
 
 	const EncodeFormatGrid = () => {
 		const { codecs, resolutions } = videopack.settings;
@@ -190,7 +217,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		);
 
 		return (
-			<Flex>
+			<Flex className={"videopack-setting-sample-formats"}>
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
@@ -207,6 +234,13 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					value={ sample_resolution }
 					options={ resolutions }
 					onChange={ changeHandlerFactory.sample_resolution }
+					disabled={ ffmpeg_exists !== true }
+				/>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Test vertical video rotation.' ) }
+					onChange={ changeHandlerFactory.sample_rotate }
+					checked={ sample_rotate }
 					disabled={ ffmpeg_exists !== true }
 				/>
 			</Flex>
@@ -407,7 +441,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		<>
 			<PanelBody>
 				<PanelRow>
-					<TextControl
+					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={ __( 'Path to FFmpeg folder on server:' ) }
@@ -418,13 +452,22 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						) }
 					/>
 				</PanelRow>
+				{ ffmpeg_exists !== true && ffmpeg_error &&
+					<div className="notice notice-error videopack-ffmpeg-notice">
+						<p
+							dangerouslySetInnerHTML={ { __html: ffmpeg_error } }
+						/>
+					</div>
+				}
 			</PanelBody>
-			<PanelBody>
+			<PanelBody
+				title={ __( 'Default video encode formats' ) }
+				opened={ ffmpeg_exists === true }
+			>
 				<Flex direction="column">
 					<FlexItem>
 						<BaseControl
 							__nextHasNoMarginBottom
-							label={ __( 'Default video encode formats:' ) }
 							id="default-video-encode-formats"
 						>
 							<EncodeFormatGrid />
@@ -433,65 +476,75 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={ __(
-							'Only display default formats on admin pages.'
+							'List only default formats on WordPress admin pages.'
 						) }
 						onChange={ changeHandlerFactory.hide_video_formats }
 						checked={ hide_video_formats }
 						disabled={ ffmpeg_exists !== true }
 					/>
-					<BaseControl
-						__nextHasNoMarginBottom
-						label={ __( 'Do automatically on upload:' ) }
-						id="autoEncode"
-					>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={ __( 'Encode default formats.' ) }
-							onChange={ changeHandlerFactory.auto_encode }
-							checked={ auto_encode }
-							disabled={ ffmpeg_exists !== true }
-						/>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={ __( 'Convert animated GIFs to H.264.' ) }
-							onChange={ changeHandlerFactory.auto_encode_gif }
-							checked={ hide_video_formats }
-							disabled={ ffmpeg_exists !== true }
-						/>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={ autoThumbLabel() }
-							onChange={ changeHandlerFactory.auto_thumb }
-							checked={ auto_thumb }
-							disabled={ ffmpeg_exists !== true }
-						/>
-					</BaseControl>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __(
-							"Automatically publish video's parent post when encoding finishes."
-						) }
-						onChange={ changeHandlerFactory.auto_publish_post }
-						checked={ auto_publish_post }
-						disabled={ ffmpeg_exists !== true }
-					/>
-					<div className="videopack-setting-auto-width">
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={ __( 'Email encoding errors to:' ) }
-							value={ error_email }
-							onChange={ changeHandlerFactory.error_email }
-							options={ errorEmailOptions() }
-							disabled={ ffmpeg_exists !== true }
-						/>
-					</div>
 				</Flex>
 			</PanelBody>
-			<PanelBody>
+			<PanelBody
+				title={ __( 'Do automatically on upload' ) }
+				opened={ ffmpeg_exists === true }
+			>
 				<BaseControl
 					__nextHasNoMarginBottom
-					label={ __( 'For previously uploaded videos:' ) }
+					id="autoEncode"
+				>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Encode default formats.' ) }
+						onChange={ changeHandlerFactory.auto_encode }
+						checked={ auto_encode }
+						disabled={ ffmpeg_exists !== true }
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Convert animated GIFs to H.264.' ) }
+						onChange={ changeHandlerFactory.auto_encode_gif }
+						checked={ hide_video_formats }
+						disabled={ ffmpeg_exists !== true }
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ autoThumbLabel() }
+						onChange={ changeHandlerFactory.auto_thumb }
+						checked={ auto_thumb }
+						disabled={ ffmpeg_exists !== true }
+					/>
+				</BaseControl>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __(
+						"Automatically publish video's parent post when encoding finishes."
+					) }
+					onChange={ changeHandlerFactory.auto_publish_post }
+					checked={ auto_publish_post }
+					disabled={ ffmpeg_exists !== true }
+				/>
+			</PanelBody>
+			<PanelBody
+				title={ __( 'Email encoding errors to' ) }
+				opened={ ffmpeg_exists === true }
+			>
+				<div className="videopack-setting-auto-width">
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						value={ error_email }
+						onChange={ changeHandlerFactory.error_email }
+						options={ errorEmailOptions() }
+						disabled={ ffmpeg_exists !== true }
+					/>
+				</div>
+			</PanelBody>
+			<PanelBody
+				title={ __( 'For previously uploaded videos' ) }
+				opened={ ffmpeg_exists === true }
+			>
+				<BaseControl
+					__nextHasNoMarginBottom
 					id="previouslyUploaded"
 				>
 					<Button
@@ -510,7 +563,10 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					</Button>
 				</BaseControl>
 			</PanelBody>
-			<PanelBody title={ __( 'Video quality' ) }>
+			<PanelBody
+				title={ __( 'Video quality' ) }
+				opened={ ffmpeg_exists === true }
+			>
 				<div className="videopack-setting-radio-group">
 					<RadioControl
 						label={ __( 'Primary rate control:' ) }
@@ -615,7 +671,10 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					/>
 				</div>
 			</PanelBody>
-			<PanelBody title={ __( 'Audio quality' ) }>
+			<PanelBody
+				title={ __( 'Audio' ) }
+				opened={ ffmpeg_exists === true }
+			>
 				<div className="videopack-setting-reduced-width">
 					<SelectControl
 						__nextHasNoMarginBottom
@@ -631,16 +690,19 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 						}
 						disabled={ ffmpeg_exists !== true }
 					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __( 'Always output stereo audio.' ) }
+						onChange={ changeHandlerFactory.audio_channels }
+						checked={ audio_channels }
+						disabled={ ffmpeg_exists !== true }
+					/>
 				</div>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __( 'Always output stereo audio.' ) }
-					onChange={ changeHandlerFactory.audio_channels }
-					checked={ audio_channels }
-					disabled={ ffmpeg_exists !== true }
-				/>
 			</PanelBody>
-			<PanelBody title={ __( 'Execution' ) }>
+			<PanelBody
+				title={ __( 'Execution' ) }
+				opened={ ffmpeg_exists === true }
+			>
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
@@ -669,13 +731,16 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={ __( 'Run nice.' ) }
+					label={ __( 'Run nice' ) }
 					onChange={ changeHandlerFactory.nice }
 					checked={ nice }
 					disabled={ ffmpeg_exists !== true }
 				/>
 			</PanelBody>
-			<PanelBody title={ __( 'Video Encoding Test' ) }>
+			<PanelBody
+				title={ __( 'Video Encoding Test' ) }
+				opened={ ffmpeg_exists === true }
+			>
 				<BaseControl
 					__nextHasNoMarginBottom
 					label={ __( 'Test encode command:' ) }
@@ -683,13 +748,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				>
 					<SampleFormatSelects />
 				</BaseControl>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __( 'Test vertical video rotation.' ) }
-					onChange={ changeHandlerFactory.sample_rotate }
-					checked={ sample_rotate }
-					disabled={ ffmpeg_exists !== true }
-				/>
+
 				<TextareaControl
 					__nextHasNoMarginBottom
 					disabled={ true }

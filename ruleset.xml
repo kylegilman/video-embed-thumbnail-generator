@@ -18,6 +18,7 @@
         <properties>
             <property name="customSanitizingFunctions" type="array">
 				<element value="\Videopack\Common\Sanitize::text_field"/>
+				<element value="\Videopack\Common\Validate::text_field"/>
             </property>
         </properties>
     </rule>

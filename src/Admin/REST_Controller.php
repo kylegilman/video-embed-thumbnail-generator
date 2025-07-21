@@ -137,17 +137,7 @@ class REST_Controller extends \WP_REST_Controller {
 			)
 		);
 
-		register_rest_route(
-			$this->namespace,
-			'/roles',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'roles' ),
-				'permission_callback' => function () {
-					return current_user_can( 'manage_options' ) && current_user_can( 'edit_users' );
-				},
-			)
-		);
+		
 
 		register_rest_route(
 			$this->namespace,
@@ -526,7 +516,6 @@ class REST_Controller extends \WP_REST_Controller {
 		$unsafe_keys = array(
 			'app_path',
 			'error_email',
-			'capabilities',
 			'ffmpeg_watermark',
 			'ffmpeg_thumb_watermark',
 			'htaccess_login',
@@ -551,18 +540,7 @@ class REST_Controller extends \WP_REST_Controller {
 		return $defaults;
 	}
 
-	/**
-	 * REST callback to get all editable roles.
-	 *
-	 * @return array An array of WordPress roles.
-	 */
-	public function roles() {
-		if ( ! function_exists( 'get_editable_roles' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/user.php';
-		}
-		$roles = get_editable_roles();
-		return $roles;
-	}
+	
 
 	/**
 	 * REST callback to get video formats and their encoding status for a specific attachment or URL.
