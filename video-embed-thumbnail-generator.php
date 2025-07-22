@@ -94,7 +94,7 @@ if ( VIDEOPACK_FREEMIUS_ENABLED && file_exists( __DIR__ . '/vendor/freemius/word
 			$init_options = array(
 				'id'             => '7761',
 				'slug'           => 'video-embed-thumbnail-generator',
-				'navigation'     => 'tabs',
+				'navigation'     => 'custom',
 				'type'           => 'plugin',
 				'public_key'     => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
 				'is_premium'     => false,
@@ -128,8 +128,6 @@ if ( VIDEOPACK_FREEMIUS_ENABLED && file_exists( __DIR__ . '/vendor/freemius/word
 	videopack_fs();
 	// Signal that SDK was initiated.
 	do_action( 'videopack_fs_loaded' );
-
-	videopack_fs()->add_action( 'after_uninstall', 'videopack_uninstall_plugin' ); // add uninstall logic
 }
 
 function videopack_fs_loaded() {
@@ -137,6 +135,12 @@ function videopack_fs_loaded() {
 
 	if ( function_exists( 'videopack_fs' ) ) {
 
+		videopack_fs()->add_filter(
+			'hide_account_tabs',
+			function () {
+				return true;
+			}
+		);
 		videopack_fs()->add_action( 'after_uninstall', 'videopack_uninstall_plugin' ); // add uninstall logic
 
 	}

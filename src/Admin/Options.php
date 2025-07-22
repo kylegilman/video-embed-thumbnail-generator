@@ -81,14 +81,12 @@ class Options {
 				'x'      => '0', // Horizontal offset (pixels).
 				'y'      => '0', // Vertical offset (pixels).
 			),
-			'bitrate_multiplier'      => 0.1, // Bitrate multiplier for encoding (used for VBR if applicable).
 			'audio_bitrate'           => 160, // Audio bitrate for encoding in kbps.
 			'audio_channels'          => true, // Always encode stereo audio (if source is stereo or mono).
 			'threads'                 => 1, // Number of threads for video processing with FFmpeg.
 			'nice'                    => true, // Adjust process priority for video encoding (lower priority).
-			'rate_control'            => 'crf', // Rate control method for video encoding ('crf', 'vbr').
-			'h264_profile'            => 'baseline', // H.264 profile for video encoding.
-			'h264_level'              => '3.0', // H.264 level for video encoding.
+			'h264_profile'            => 'main', // H.264 profile for video encoding.
+			'h264_level'              => '4.1', // H.264 level for video encoding.
 			'simultaneous_encodes'    => 1, // Maximum number of simultaneous video encoding processes.
 			'error_email'             => 'nobody', // Email address to receive error notifications ('nobody', 'encoder', or user login).
 			'queue_control'           => 'play', // Control behavior for video encoding queue ('play', 'pause').
@@ -183,7 +181,10 @@ class Options {
 		$resolutions  = $this->get_video_resolutions();
 		foreach ( $video_codecs as $codec ) {
 			$default_options['encode'][ $codec->get_id() ]['crf'] = $codec->get_default_crf();
+			$supported_rate_controls = $codec->get_supported_rate_controls();
+			$default_options['encode'][ $codec->get_id() ]['rate_control'] = $supported_rate_controls[0];
 			$default_options['encode'][ $codec->get_id() ]['vbr'] = $codec->get_default_vbr();
+			$default_options['encode'][ $codec->get_id() ]['enabled'] = $codec->is_default_encode();
 			foreach ( $resolutions as $resolution ) {
 				if ( $codec->is_default_encode() && $resolution->is_default_encode() ) {
 					$default_options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = true;
@@ -285,13 +286,27 @@ class Options {
 				unset( $old_options['custom_format'] );
 			}
 
+			// Migrate global rate_control to per-codec settings
+			if ( isset( $old_options['rate_control'] ) ) {
+				$video_codecs = $this->get_video_codecs();
+				foreach ( $video_codecs as $codec ) {
+					$codec_id = $codec->get_id();
+					if ( in_array( $old_options['rate_control'], $codec->get_supported_rate_controls(), true ) ) {
+						$options_to_init['encode'][ $codec_id ]['rate_control'] = $old_options['rate_control'];
+					}
+				}
+				unset( $old_options['rate_control'] );
+			}
+
+			unset( $old_options['bitrate_multiplier'] );
+
 			// Migrate CRF values
 			if ( isset( $old_options['h264_CRF'] ) ) {
 				$options_to_init['encode']['h264']['crf'] = $old_options['h264_CRF'];
 				unset( $old_options['h264_CRF'] );
 			}
 			if ( isset( $old_options['webm_CRF'] ) ) {
-				$options_to_init['encode']['vp9']['crf'] = $old_options['webm_CRF'];
+				$options_to_init['encode']['vp8']['crf'] = $old_options['webm_CRF'];
 				unset( $old_options['webm_CRF'] );
 			}
 			if ( isset( $old_options['ogv_CRF'] ) ) {
@@ -448,12 +463,10 @@ class Options {
 	 *   replace_format: string,
 	 *   custom_resolution: int|bool,
 	 *   encode: array<string, array{crf: int, vbr: int, resolutions: array<string|int, bool>}>,
-	 *   bitrate_multiplier: float,
 	 *   audio_bitrate: int,
 	 *   audio_channels: bool,
 	 *   threads: int,
 	 *   nice: bool,
-	 *   rate_control: string,
 	 *   h264_profile: string,
 	 *   h264_level: string,
 	 *   simultaneous_encodes: int,
@@ -862,6 +875,13 @@ class Options {
 	}
 
 	public function merge_options_with_defaults( array $options, array $default_options ) {
+
+		// Remove obsolete options not present in the new defaults.
+		foreach ( array_keys( $options ) as $key ) {
+			if ( ! array_key_exists( $key, $default_options ) ) {
+				unset( $options[ $key ] );
+			}
+		}
 
 		foreach ( $default_options as $key => $value ) {
 			// Check if the key exists in $options. If not, set it to the default value

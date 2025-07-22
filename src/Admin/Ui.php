@@ -59,10 +59,30 @@ class Ui {
 
 			$script_asset = require $script_asset_path;
 
+			$fs = function_exists( 'videopack_fs' ) ? videopack_fs() : null;
+			$freemius_enabled = ( null !== $fs ) && ( $fs->is_registered() || $fs->is_pending_activation() );
+			// Manually enqueue Freemius assets so they are available on our React settings page.
+			$freemius_dependencies = array();
+			$freemius_style_dependencies = array();
+			if ( $freemius_enabled ) {
+				// Enqueue Freemius styles using the SDK's helper function.
+				fs_enqueue_local_style( 'fs-common', '/admin/common.css' );
+				fs_enqueue_local_style( 'fs-addons', '/admin/add-ons.css', array( 'fs-common' ) );
+				fs_enqueue_local_style( 'fs-account', '/admin/account.css', array( 'fs-common' ) );
+				fs_enqueue_local_style( 'fs_dialog_boxes', '/admin/dialog-boxes.css' );
+
+				// Enqueue Freemius scripts using the SDK's helper function.
+				fs_enqueue_local_script( 'fs-form', 'jquery.form.js', array( 'jquery' ) );
+
+				// Add Freemius handles to dependency arrays.
+				$freemius_dependencies       = array( 'fs-form' );
+				$freemius_style_dependencies = array( 'fs-addons', 'fs-account', 'fs_dialog_boxes' );
+			}
+
 			wp_enqueue_script(
 				'videopack-settings',
 				plugins_url( 'admin-ui/build/settings.js', VIDEOPACK_PLUGIN_FILE ),
-				$script_asset['dependencies'],
+				array_merge( $script_asset['dependencies'], $freemius_dependencies ),
 				$script_asset['version'],
 				true
 			);
@@ -90,6 +110,7 @@ class Ui {
 				'url'         => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 				'codecs'      => $codecs_data,
 				'resolutions' => $resolutions_data,
+				'freemiusEnabled' => $freemius_enabled,
 			) ) . ';';
 
 			wp_add_inline_script(
@@ -98,11 +119,12 @@ class Ui {
 				'before'
 			);
 
-			$settings_css = VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/settings.css';
+			$settings_css_dependencies = array_merge( array( 'wp-components' ), $freemius_style_dependencies );
+
 			wp_enqueue_style(
 				'videopack-settings',
 				plugins_url( 'admin-ui/build/settings.css', VIDEOPACK_PLUGIN_FILE ),
-				array( 'wp-components' ),
+				$settings_css_dependencies,
 				$script_asset['version']
 			);
 		}

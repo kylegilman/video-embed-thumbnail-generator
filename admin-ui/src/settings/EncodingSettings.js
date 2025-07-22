@@ -44,11 +44,6 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		htaccess_password,
 		ffmpeg_thumb_watermark,
 		ffmpeg_watermark,
-		rate_control,
-		h264_CRF,
-		webm_CRF,
-		ogv_CRF,
-		bitrate_multiplier,
 		h264_profile,
 		h264_level,
 		audio_bitrate,
@@ -82,20 +77,6 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				console.log( error );
 			} );
 	}, [] );
-
-	useEffect( () => {
-		const resolutions = [ 2160, 1080, 720, 480, 360 ];
-		const newBitrates = [];
-		for ( let i = 0; i < resolutions.length; i++ ) {
-			const video_width = Math.round( resolutions[ i ] * 1.7777 );
-			const bitrate = Math.round(
-				( resolutions[ i ] * video_width * 24 * bitrate_multiplier ) /
-					1024
-			);
-			newBitrates.push( `${ resolutions[ i ] }p = ${ bitrate }kbps` );
-		}
-		setBitrates( newBitrates );
-	}, [ bitrate_multiplier ] );
 
 	const TextControlOnBlur = ( { value, onChange, ...props } ) => {
 		const [ innerValue, setInnerValue ] = useState( value );
@@ -142,12 +123,61 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 			changeHandlerFactory.encode( newEncode );
 		};
 
+		const handleCodecEnableChange = ( codecId, isEnabled ) => {
+			const newEncode = JSON.parse(
+				JSON.stringify( currentEncode || {} )
+			);
+			const codecInfo = codecs.find( ( c ) => c.id === codecId );
+
+			if ( ! newEncode[ codecId ] ) {
+				newEncode[ codecId ] = { resolutions: {} };
+			}
+
+			newEncode[ codecId ].enabled = !! isEnabled;
+
+			if ( isEnabled && codecInfo ) {
+				// Set default quality settings when enabling a codec for the first time
+				if ( ! newEncode[ codecId ].rate_control ) {
+					newEncode[ codecId ].rate_control =
+						codecInfo.supported_rate_controls[ 0 ];
+					newEncode[ codecId ].crf =
+						codecInfo.rate_control.crf.default;
+					newEncode[ codecId ].vbr =
+						codecInfo.rate_control.vbr.default;
+				}
+			}
+
+			if ( ! isEnabled ) {
+				if ( ! newEncode[ codecId ].resolutions ) {
+					newEncode[ codecId ].resolutions = {};
+				}
+				resolutions.forEach( ( resolution ) => {
+					newEncode[ codecId ].resolutions[ resolution.id ] = false;
+				} );
+			}
+
+			changeHandlerFactory.encode( newEncode );
+		};
+
 		return (
 			<div className="videopack-encode-grid">
 				{ codecs.map( ( codec ) => (
 					<div key={ codec.id } className="videopack-encode-column">
 						<div className="videopack-encode-grid-header-cell">
-							<strong>{ codec.name }</strong>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={ codec.name }
+								checked={
+									!! currentEncode?.[ codec.id ]?.enabled
+								}
+								onChange={ ( isEnabled ) =>
+									handleCodecEnableChange(
+										codec.id,
+										isEnabled
+									)
+								}
+								disabled={ ffmpegExists !== true }
+							/>
 						</div>
 						{ resolutions.map( ( resolution ) => (
 							<div
@@ -170,12 +200,142 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 											isChecked
 										)
 									}
-									disabled={ ffmpegExists !== true }
+									disabled={
+										ffmpegExists !== true ||
+										! currentEncode?.[ codec.id ]?.enabled
+									}
 								/>
 							</div>
 						) ) }
 					</div>
 				) ) }
+			</div>
+		);
+	};
+
+	const PerCodecQualitySettings = ( { codec } ) => {
+		const [ bitrates, setBitrates ] = useState( [] );
+		const { resolutions } = videopack.settings;
+		const codecEncodeSettings = encode[ codec.id ] || {};
+		const {
+			rate_control: currentRateControl = codec.supported_rate_controls[ 0 ],
+			crf: currentCrf = codec.rate_control.crf.default,
+			vbr: currentVbr = codec.rate_control.vbr.default,
+		} = codecEncodeSettings;
+
+		const handleSettingChange = ( key, value ) => {
+			changeHandlerFactory.encode( {
+				...encode,
+				[ codec.id ]: {
+					...encode[ codec.id ],
+					[ key ]: value,
+				},
+			} );
+		};
+
+		useEffect( () => {
+			const newBitrates = [];
+			const vbrSettings = codec.rate_control.vbr;
+
+			resolutions.forEach( ( res ) => {
+				const bitrate = Math.round(
+					( currentVbr * 0.001 * res.width * res.height ) +
+						vbrSettings.constant
+				);
+				newBitrates.push( `${ res.name } = ${ bitrate }kbps` );
+			} );
+			setBitrates( newBitrates );
+		}, [ currentVbr, codec ] );
+
+		return (
+			<div
+				key={ codec.id }
+				className="videopack-per-codec-quality-settings"
+			>
+				<h4 className="videopack-codec-quality-header">
+					{ codec.name }
+				</h4>
+				{ codec.supported_rate_controls.length > 1 && (
+					<RadioControl
+						label={ __( 'Primary rate control:' ) }
+						selected={ currentRateControl }
+						className={"videopack-component-margin"}
+						onChange={ ( value ) =>
+							handleSettingChange( 'rate_control', value )
+						}
+						options={ [
+							{
+								label: __( 'Constant Rate Factor' ),
+								value: 'crf',
+							},
+							{
+								label: __( 'Average Bitrate' ),
+								value: 'vbr',
+							},
+						] }
+						disabled={ ffmpeg_exists !== true }
+					/>
+				) }
+
+				{ currentRateControl === 'crf' && (
+					<RangeControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __( 'Constant Rate Factor (CRF):' ) }
+						value={ currentCrf }
+						className="videopack-settings-slider"
+						onChange={ ( value ) =>
+							handleSettingChange( 'crf', value )
+						}
+						min={ codec.rate_control.crf.min }
+						max={ codec.rate_control.crf.max }
+						step={ 1 }
+						marks={ generateMarks( codec.id, 'crf' ) }
+						disabled={ ffmpeg_exists !== true }
+					/>
+				) }
+
+				{ currentRateControl === 'vbr' && (
+					<RangeControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __( 'Average Bitrate:' ) }
+						value={ currentVbr }
+						className="videopack-settings-slider"
+						onChange={ ( value ) =>
+							handleSettingChange( 'vbr', value )
+						}
+						min={ 0.01 }
+						max={ 5 }
+						step={ 0.01 }
+						disabled={ ffmpeg_exists !== true }
+						help={ bitrates.map( ( text, index ) => (
+							<span key={ index }>{ text }</span>
+						) ) }
+					/>
+				) }
+				{ codec.id === 'h264' && (
+					<div className="videopack-setting-reduced-width">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={ __( 'H.264 profile' ) }
+							value={ h264_profile }
+							onChange={ changeHandlerFactory.h264_profile }
+							options={ h264ProfileOptions }
+							disabled={ ffmpeg_exists !== true }
+						/>
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={ __( 'H.264 level' ) }
+							value={ h264_level }
+							onChange={ changeHandlerFactory.h264_level }
+							options={ h264LevelOptions }
+							disabled={ ffmpeg_exists !== true }
+						/>
+					</div>
+				) }
 			</div>
 		);
 	};
@@ -313,88 +473,59 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		);
 	};
 
-	const generateMarks = ( slider = false ) => {
-		let existingLabels = {};
-		let step = 1;
-
-		if ( slider === 'h264' ) {
-			existingLabels = {
-				0: '0: lossless',
-				5: '5',
-				10: '10',
-				15: '15',
-				18: '18: visually lossless',
-				23: '23: default',
-				30: '30',
-				35: '35',
-				40: '40',
-				45: '45',
-				51: '51: lowest',
-			};
-		}
-		if ( slider === 'vp8' ) {
-			existingLabels = {
-				4: '4: highest',
-				10: '10: default',
-				15: '15',
-				20: '20',
-				25: '25',
-				30: '30',
-				35: '35',
-				40: '40',
-				45: '45',
-				50: '50',
-				55: '55',
-				60: '60',
-				63: '63: lowest',
-			};
-		}
-		if ( slider === 'ogv' ) {
-			existingLabels = {
-				1: '1: lowest',
-				6: '6: default',
-				10: '10: highest',
-			};
-		}
-		if ( slider === 'bpp' ) {
-			existingLabels = {
-				0.01: '0.01',
-				0.1: '0.1: default',
-				0.15: '0.15',
-				0.2: '0.2',
-				0.25: '0.25',
-				0.3: '0.3',
-			};
-			step = 0.01;
-		}
-		if ( slider === 'simultaneous' ) {
-			existingLabels = {
-				1: '1',
-				10: '10',
-			};
-		}
-		if ( slider === 'threads' ) {
-			existingLabels = {
-				0: 'auto',
-				16: '16',
-			};
-		}
-
-		const values = Object.keys( existingLabels ).map( Number );
-		const min = Math.min( ...values );
-		const max = Math.max( ...values );
-
+	const generateNonCrfMarks = ( type ) => {
 		const marks = [];
-		for ( let value = min; value <= max; value += step ) {
-			marks.push( {
-				value,
-				label: existingLabels[ value ] || undefined,
-			} );
+		switch ( type ) {
+			case 'simultaneous':
+				for ( let i = 1; i <= 10; i++ ) {
+					marks.push( { value: i, label: String( i ) } );
+				}
+				break;
+			case 'threads':
+				marks.push( { value: 0, label: __( 'Auto' ) } );
+				for ( let i = 2; i <= 16; i += 2 ) {
+					marks.push( { value: i, label: String( i ) } );
+				}
+				break;
 		}
 		return marks;
 	};
 
+	const generateMarks = ( codecId, type ) => {
+		const codec = videopack.settings.codecs.find(
+			( c ) => c.id === codecId
+		);
+		if ( ! codec ) {
+			return [];
+		}
+
+		const rateControl = codec.rate_control[ type ];
+		if ( ! rateControl ) {
+			return [];
+		}
+
+		const { min, max, labels = {} } = rateControl;
+		const marks = [];
+
+		for ( let i = min; i <= max; i++ ) {
+			if ( labels && labels[ i ] ) {
+				marks.push( { value: i, label: labels[ i ] } );
+			} else if ( i % 5 === 0 ) {
+				const labelExistsNearby = Object.keys( labels ).some( ( label ) => {
+					const distance = Math.abs( i - label );
+					return distance > 0 && distance < 5;
+				} );
+				if ( ! labelExistsNearby ) {
+					marks.push( { value: i, label: String( i ) } );
+				}
+			}
+		}
+
+		return marks;
+	};
+
 	const h264ProfileOptions = [
+		{ value: 'none', label: __( 'None' ) },
 		{ value: 'baseline', label: 'baseline' },
 		{ value: 'main', label: 'main' },
 		{ value: 'high', label: 'high' },
@@ -404,6 +535,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 	];
 
 	const h264LevelOptions = [
+		{ value: 'none', label: __( 'None' ) },
 		{ value: '1', label: '1' },
 		{ value: '1.1', label: '1.1' },
 		{ value: '1.2', label: '1.2' },
@@ -567,109 +699,12 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				title={ __( 'Video quality' ) }
 				opened={ ffmpeg_exists === true }
 			>
-				<div className="videopack-setting-radio-group">
-					<RadioControl
-						label={ __( 'Primary rate control:' ) }
-						selected={ rate_control }
-						onChange={ changeHandlerFactory.rate_control }
-						options={ [
-							{
-								label: __( 'Constant Rate Factor' ),
-								value: 'crf',
-							},
-							{ label: __( 'Average bitrate' ), value: 'abr' },
-						] }
-						disabled={ ffmpeg_exists !== true }
-					/>
-				</div>
-				<BaseControl
-					__nextHasNoMarginBottom
-					label={ __( 'Constant Rate Factors (CRF):' ) }
-				>
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'H.264' ) }
-						value={ h264_CRF }
-						className="videopack-settings-slider"
-						onChange={ changeHandlerFactory.h264_CRF }
-						min={ 0 }
-						max={ 51 }
-						step={ 1 }
-						marks={ generateMarks( 'h264' ) }
-						disabled={ ffmpeg_exists !== true }
-					/>
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'WEBM VP8' ) }
-						value={ webm_CRF }
-						className="videopack-settings-slider"
-						onChange={ changeHandlerFactory.webm_CRF }
-						min={ 4 }
-						max={ 63 }
-						step={ 1 }
-						marks={ generateMarks( 'vp8' ) }
-						disabled={ ffmpeg_exists !== true }
-					/>
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'OGV (qscale)' ) }
-						value={ ogv_CRF }
-						className="videopack-settings-slider"
-						onChange={ changeHandlerFactory.ogv_CRF }
-						min={ 1 }
-						max={ 10 }
-						step={ 1 }
-						marks={ generateMarks( 'ogv' ) }
-						disabled={ ffmpeg_exists !== true }
-					/>
-				</BaseControl>
-				<BaseControl
-					__nextHasNoMarginBottom
-					label={ __( 'Average bitrates:' ) }
-				>
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'bits per pixel' ) }
-						value={ bitrate_multiplier }
-						className="videopack-settings-slider"
-						onChange={ changeHandlerFactory.bitrate_multiplier }
-						min={ 0.01 }
-						max={ 0.3 }
-						step={ 0.01 }
-						marks={ generateMarks( 'bpp' ) }
-						disabled={ ffmpeg_exists !== true }
-					/>
-					<div className="videopack-setting-bitrate-examples">
-						{ bitrates &&
-							bitrates.map( ( text, index ) => (
-								<span key={ index }>{ text }</span>
-							) ) }
-					</div>
-				</BaseControl>
-				<div className="videopack-setting-reduced-width">
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'H.264 profile' ) }
-						value={ h264_profile }
-						onChange={ changeHandlerFactory.h264_profile }
-						options={ h264ProfileOptions }
-						disabled={ ffmpeg_exists !== true }
-					/>
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'H.264 level' ) }
-						value={ h264_level }
-						onChange={ changeHandlerFactory.h264_level }
-						options={ h264LevelOptions }
-						disabled={ ffmpeg_exists !== true }
-					/>
-				</div>
+				{ videopack.settings.codecs.map(
+					( codec ) =>
+						!! encode?.[ codec.id ]?.enabled && (
+							<PerCodecQualitySettings key={ codec.id } codec={ codec } />
+						)
+				) }
 			</PanelBody>
 			<PanelBody
 				title={ __( 'Audio' ) }
@@ -713,7 +748,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					min={ 1 }
 					max={ 10 }
 					step={ 1 }
-					marks={ generateMarks( 'simultaneous' ) }
+					marks={ generateNonCrfMarks( 'simultaneous' ) }
 					disabled={ ffmpeg_exists !== true }
 				/>
 				<RangeControl
@@ -726,7 +761,7 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 					min={ 0 }
 					max={ 16 }
 					step={ 1 }
-					marks={ generateMarks( 'threads' ) }
+					marks={ generateNonCrfMarks( 'threads' ) }
 					disabled={ ffmpeg_exists !== true }
 				/>
 				<ToggleControl

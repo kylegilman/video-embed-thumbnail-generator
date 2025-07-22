@@ -17,6 +17,7 @@ import GallerySettings from './GallerySettings';
 import ThumbnailSettings from './ThumbnailSettings';
 import EncodingSettings from './EncodingSettings';
 import AdminSettings from './AdminSettings';
+import FreemiusPage from './FreemiusPage';
 import './settings.scss';
 
 const VideopackSettingsPage = () => {
@@ -144,6 +145,21 @@ const VideopackSettingsPage = () => {
 		},
 	];
 
+	if ( window.videopack.settings.freemiusEnabled ) {
+		tabs.push(
+			{
+				name: 'account',
+				title: __( 'Freemius Account' ),
+				className: 'videopack-freemius-tab',
+			},
+			{
+				name: 'add-ons',
+				title: __( 'Add-ons' ),
+				className: 'videopack-freemius-tab',
+			}
+		);
+	}
+
 	const onTabSelect = ( tabName ) => {
 		setActiveTab( tabName );
 		window.history.pushState( null, '', `#${ tabName }` );
@@ -192,6 +208,12 @@ const VideopackSettingsPage = () => {
 						changeHandlerFactory={ changeHandlerFactory }
 					/>
 				);
+			}
+			if ( tab.name === 'account' ) {
+				return <FreemiusPage page="account" />;
+			}
+			if ( tab.name === 'add-ons' ) {
+				return <FreemiusPage page="add-ons" />;
 			}
 		} else {
 			return <Spinner />;
