@@ -118,6 +118,27 @@ class FFmpeg_Thumbnails {
 	}
 
 	/**
+	 * Generates a single thumbnail for a video at a specific timecode.
+	 *
+	 * @param int   $attachment_id The ID of the source video attachment.
+	 * @param float $timecode      The time in seconds to capture the thumbnail from.
+	 * @return array|\WP_Error An array with 'path' and 'url' of the generated temp file on success, or WP_Error on failure.
+	 */
+	public function generate_thumbnail_at_timecode( int $attachment_id, float $timecode ) {
+		$input_path = get_attached_file( $attachment_id );
+		if ( ! $input_path || ! file_exists( $input_path ) ) {
+			return new \WP_Error( 'file_not_found', __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
+		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $attachment_id, $input_path, true, $ffmpeg_path, $this->options_manager );
+		if ( ! $video_metadata->worked ) {
+			return new \WP_Error( 'metadata_failed', __( 'Could not read video metadata.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+		}
+
+		return $this->generate_temp_thumbnail( $input_path, $timecode, $video_metadata );
+	}
+
+	/**
 	 * Generates a single thumbnail image from a video at a specific timecode into a temporary directory.
 	 *
 	 * @param string                               $input_path     The full path to the input video file.
