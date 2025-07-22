@@ -70,6 +70,13 @@ class Video_Codec {
 	protected $rate_control;
 
 	/**
+	 * Supported rate control methods.
+	 *
+	 * @var array
+	 */
+	protected $supported_rate_controls;
+
+	/**
 	 * Default encoding flag.
 	 *
 	 * @var bool
@@ -82,15 +89,15 @@ class Video_Codec {
 	 * @param array $properties Associative array of codec properties and values.
 	 */
 	public function __construct( array $properties ) {
-		$this->name           = $properties['name'] ?? 'Video';
-		$this->label          = $properties['label'] ?? 'Video';
-		$this->id             = $properties['id'] ?? 'h264';
-		$this->container      = $properties['container'] ?? 'mp4';
-		$this->mime_type      = $properties['mime'] ?? 'video/mp4';
-		$this->codecs_att     = $properties['codecs_att'] ?? 'avc1';
-		$this->vcodec         = $properties['vcodec'] ?? 'libx264';
-		$this->acodec         = $properties['acodec'] ?? 'aac';
-		$this->rate_control   = $properties['rate_control'] ?? array(
+		$this->name                    = $properties['name'] ?? 'Video';
+		$this->label                   = $properties['label'] ?? 'Video';
+		$this->id                      = $properties['id'] ?? 'h264';
+		$this->container               = $properties['container'] ?? 'mp4';
+		$this->mime_type               = $properties['mime'] ?? 'video/mp4';
+		$this->codecs_att              = $properties['codecs_att'] ?? 'avc1';
+		$this->vcodec                  = $properties['vcodec'] ?? 'libx264';
+		$this->acodec                  = $properties['acodec'] ?? 'aac';
+		$this->rate_control            = $properties['rate_control'] ?? array(
 			'crf' => array(
 				'min'     => 0,
 				'max'     => 51,
@@ -101,7 +108,8 @@ class Video_Codec {
 				'constant' => 0,
 			),
 		);
-		$this->default_encode = $properties['default_encode'] ?? false;
+		$this->supported_rate_controls = $properties['supported_rate_controls'] ?? array( 'crf', 'vbr' );
+		$this->default_encode          = $properties['default_encode'] ?? false;
 	}
 
 	/**
@@ -111,16 +119,17 @@ class Video_Codec {
 	 */
 	public function get_properties() {
 		return array(
-			'name'           => $this->name,
-			'label'          => $this->label,
-			'id'             => $this->id,
-			'container'      => $this->container,
-			'mime_type'      => $this->mime_type,
-			'codecs_att'     => $this->codecs_att,
-			'vcodec'         => $this->vcodec,
-			'acodec'         => $this->acodec,
-			'rate_control'   => $this->rate_control,
-			'default_encode' => $this->default_encode,
+			'name'                    => $this->name,
+			'label'                   => $this->label,
+			'id'                      => $this->id,
+			'container'               => $this->container,
+			'mime_type'               => $this->mime_type,
+			'codecs_att'              => $this->codecs_att,
+			'vcodec'                  => $this->vcodec,
+			'acodec'                  => $this->acodec,
+			'rate_control'            => $this->rate_control,
+			'supported_rate_controls' => $this->supported_rate_controls,
+			'default_encode'          => $this->default_encode,
 		);
 	}
 
@@ -266,6 +275,15 @@ class Video_Codec {
 	}
 
 	/**
+	 * Get the supported rate controls.
+	 *
+	 * @return array Supported rate controls.
+	 */
+	public function get_supported_rate_controls() {
+		return $this->supported_rate_controls;
+	}
+
+	/**
 	 * Calculates and returns the bitrate based on width and height.
 	 *
 	 * @param float $width  The width of the video.
@@ -274,7 +292,7 @@ class Video_Codec {
 	 */
 	public function get_bitrate( array $dimensions, $rate_control = null ) {
 		return round(
-			( $rate_control ?? $this->rate_control['vbr']['default']
+			( ( $rate_control ?? $this->rate_control['vbr']['default'] )
 			* 0.001
 			* $dimensions['width'] * $dimensions['height'] )
 			+ $this->rate_control['vbr']['constant']
@@ -296,9 +314,10 @@ class Video_Codec {
 	}
 
 	protected function get_ffmpeg_rate_control_flags( array $plugin_options, array $dimensions = null ) {
-		if ( $plugin_options['rate_control'] === 'crf' ) {
+		$rate_control = $plugin_options['encode'][ $this->id ]['rate_control'] ?? $plugin_options['rate_control'];
+		if ( 'crf' === $rate_control ) {
 			return $this->get_ffmpeg_crf_flags( $plugin_options );
-		} elseif ( $plugin_options['rate_control'] === 'vbr' ) {
+		} elseif ( 'vbr' === $rate_control ) {
 			return $this->get_ffmpeg_vbr_flags( $plugin_options, $dimensions );
 		}
 		return array();

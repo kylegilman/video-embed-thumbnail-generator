@@ -137,7 +137,7 @@ class REST_Controller extends \WP_REST_Controller {
 			)
 		);
 
-		
+
 
 		register_rest_route(
 			$this->namespace,
@@ -417,6 +417,24 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/freemius/(?P<page>[\w-]+)',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_freemius_page_html' ),
+				'permission_callback' => function () {
+					return current_user_can( 'manage_options' );
+				},
+				'args'                => array(
+					'page' => array(
+						'type'     => 'string',
+						'required' => true,
+						'enum'     => array( 'account', 'add-ons' ),
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
 			'/wp-video',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -540,7 +558,36 @@ class REST_Controller extends \WP_REST_Controller {
 		return $defaults;
 	}
 
-	
+	/**
+	 * REST callback to get the HTML for a Freemius settings page.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|\WP_Error The REST response with the page HTML or an error.
+	 */
+	public function get_freemius_page_html( \WP_REST_Request $request ) {
+		if ( ! function_exists( 'videopack_fs' ) ) {
+			return new \WP_Error( 'freemius_not_found', 'Freemius SDK not available.', array( 'status' => 500 ) );
+		}
+
+		$page_slug = $request->get_param( 'page' );
+		$freemius  = videopack_fs();
+
+		ob_start();
+
+		switch ( $page_slug ) {
+			case 'account':
+				$freemius->_account_page_render();
+				break;
+			case 'add-ons':
+				$freemius->_addons_page_render();
+				break;
+			default:
+				ob_end_clean();
+				return new \WP_Error( 'invalid_freemius_page', 'Invalid Freemius page requested.', array( 'status' => 404 ) );
+		}
+
+		return new \WP_REST_Response( array( 'html' => ob_get_clean() ), 200 );
+	}
 
 	/**
 	 * REST callback to get video formats and their encoding status for a specific attachment or URL.

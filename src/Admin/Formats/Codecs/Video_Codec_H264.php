@@ -18,6 +18,10 @@ class Video_Codec_H264 extends Video_Codec {
 					'min'     => 0,
 					'max'     => 51,
 					'default' => 23,
+					'labels'  => array(
+						0  => '0: lossless',
+						18 => '18: visually lossless',
+					),
 				),
 				'vbr' => array(
 					'default'  => 1.89,
