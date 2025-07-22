@@ -34,24 +34,6 @@ class Attachment {
 
 			$post_id = attachment_url_to_postid( $search_url );
 
-			if ( ! $post_id && $this->options['ffmpeg_exists'] === true
-				&& $this->video_formats['fullres']['extension'] !== pathinfo( $url, PATHINFO_EXTENSION )
-			) {
-				$search_url = str_replace( pathinfo( $url, PATHINFO_EXTENSION ), $this->video_formats['fullres']['extension'], $url );
-				$post_id    = attachment_url_to_postid( $search_url );
-				if ( $post_id ) {
-					$kgvid_postmeta = $this->attachment_meta->get( $post_id );
-				}
-				if ( ! isset( $kgvid_postmeta )
-					|| ! is_array( $kgvid_postmeta )
-					|| ( is_array( $kgvid_postmeta )
-						&& ! array_key_exists( 'original_replaced', $kgvid_postmeta )
-					)
-				) {
-					$post_id = null;
-				}
-			}
-
 			if ( $this->options['transient_cache'] === true ) {
 				if ( ! $post_id ) {
 					$post_id = 'not found'; // don't save a transient value that could evaluate as false
@@ -189,45 +171,14 @@ class Attachment {
 			|| get_post_meta( $video_id, '_kgflashmediaplayer-format', true )
 		) { // only do this for videos or other child formats
 
-			$video_encode_queue = kgvid_get_encode_queue();
-			$parent_id          = get_post( $video_id )->post_parent;
-			$wp_attached_file   = get_post_meta( $video_id, '_wp_attached_file', true );
-
-			if ( ! empty( $video_encode_queue )
-				&& is_array( $video_encode_queue )
-			) { // remove any encode queue entry related to this attachment
-				foreach ( $video_encode_queue as $video_key => $video_entry ) {
-					if ( $video_entry['attachmentID'] == $video_id ) {
-
-						foreach ( $video_entry['encode_formats'] as $format => $value ) {
-							if ( $value['status'] == 'encoding' ) {
-								kgvid_cancel_encode( $video_key, $format );
-								if ( file_exists( $value['filepath'] ) ) {
-									wp_delete_file( $value['filepath'] );
-								}
-							}
-						}
-
-						unset( $video_encode_queue[ $video_key ] );
-						sort( $video_encode_queue );
-						kgvid_save_encode_queue( $video_encode_queue );
-						break;
-					}//if the video is an original format
-					if ( $video_entry['attachmentID'] == $parent_id
-						|| get_post_meta( $video_id, '_kgflashmediaplayer-externalurl', true ) == $video_entry['movieurl']
-					) {
-						foreach ( $video_entry['encode_formats'] as $format => $value ) {
-							if ( array_key_exists( 'filepath', $value ) ) {
-								if ( strpos( $value['filepath'], $wp_attached_file ) !== false ) {
-									$video_encode_queue[ $video_key ]['encode_formats'][ $format ]['status'] = 'deleted';
-									kgvid_save_encode_queue( $video_encode_queue );
-									break;
-								}//if the format has filepath information
-							}//if the encoded child format is in the database
-						}//loop through formats
-					}//if the video is a child format
-				}
+			$encode_queue      = new Encode\Encode_Queue_Controller( $this->options_manager );
+			$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $video_id );
+			$formats           = $encode_attachment->get_formats();
+			foreach ( $formats as $format ) {
+				$encode_queue->delete_job( $format->get_job_id() );
 			}
+
+			$parent_id = get_post( $video_id )->post_parent;
 
 			$args  = array(
 				'post_parent' => $video_id,
@@ -258,7 +209,7 @@ class Attachment {
 					}
 				}//end loop
 				if ( $this->options['delete_children'] == 'none' ) { // find a child to be the new master video
-					$video_formats = kgvid_video_formats();
+					$video_formats = $this->options_manager->get_video_formats();
 					foreach ( $video_formats as $format => $format_stats ) {
 						if ( array_key_exists( $format, $formats ) ) {
 							$new_master = $formats[ $format ];
@@ -344,7 +295,6 @@ class Attachment {
 
 	public function cron_new_attachment_handler( $post_id, $force = false ) {
 
-		$thumbnails        = new Thumbnails\Thumbnails( $this->options_manager );
 		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
 		$auto_encode       = $this->options['auto_encode'];
 		$auto_thumb        = $this->options['auto_thumb'];
@@ -354,111 +304,81 @@ class Attachment {
 			$auto_thumb  = false;
 		}
 
-		$post        = get_post( $post_id );
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return;
+		}
 		$movieurl    = wp_get_attachment_url( $post_id );
 		$filepath    = get_attached_file( $post_id );
 		$is_animated = false;
-		if ( $post
-			&& $post->post_mime_type == 'image/gif'
-		) {
+		if ( $post->post_mime_type == 'image/gif' ) {
 			$is_animated = $this->is_animated_gif( $filepath );
 		}
 
-		if ( $post
-			&& $post->post_mime_type != 'image/gif'
+		if ( $post->post_mime_type != 'image/gif'
 			&& ( $force == 'thumbs'
 				|| $auto_thumb == true
 			)
 		) {
 
-			$thumb_output   = array();
-			$thumb_id       = array();
+			$thumb_ids      = array();
 			$numberofthumbs = intval( $this->options['auto_thumb_number'] );
 
-			if ( $numberofthumbs == 1 ) {
+			if ( $numberofthumbs === 1 ) {
+				$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
+				$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $post_id, $filepath, true, $ffmpeg_path, $this->options_manager );
 
-				switch ( $this->options['auto_thumb_position'] ) {
-					case 0:
-						$imaginary_numberofthumbs = 1;
-						$iincreaser               = 1;
-						$thumbtimecode            = 'firstframe';
-						$dofirstframe             = true;
-						break;
-					case 25:
-						$imaginary_numberofthumbs = 8;
-						$iincreaser               = 4;
-						$thumbtimecode            = '';
-						$dofirstframe             = false;
-						break;
-					case 50:
-						$imaginary_numberofthumbs = 8;
-						$iincreaser               = 8;
-						$thumbtimecode            = '';
-						$dofirstframe             = false;
-						break;
-					case 75:
-						$imaginary_numberofthumbs = 8;
-						$iincreaser               = 12;
-						$thumbtimecode            = '';
-						$dofirstframe             = false;
-						break;
-				}
-
-				$thumb_output[1] = $ffmpeg_thumbnails->make( $post_id, $movieurl, $imaginary_numberofthumbs, 1, $iincreaser, $thumbtimecode, $dofirstframe, 'generate' );
-				$thumb_key       = 1;
-
-			}//end if just one auto_thumb
-
-			if ( $numberofthumbs > 1 ) {
-
-				$thumb_key = intval( $this->options['auto_thumb_position'] );
-
-				$i          = 1;
-				$increaser  = 0;
-				$iincreaser = 0;
-				while ( $i <= $numberofthumbs ) {
-					$iincreaser         = $i + $increaser;
-					$thumb_output[ $i ] = $ffmpeg_thumbnails->make( $post_id, $movieurl, $numberofthumbs, $i, $iincreaser, '', false, 'generate' );
-					if ( $thumb_output[ $i ]['lastthumbnumber'] == 'break' ) {
-						$thumb_key = $i;
-						break;
+				if ( $video_metadata->worked && $video_metadata->duration ) {
+					$position = intval( $this->options['auto_thumb_position'] );
+					$timecode = 0.1; // Default to 0.1s to avoid black frames
+					if ( $position > 0 ) {
+						$timecode = ( $position / 100 ) * $video_metadata->duration;
 					}
-					++$increaser;
-					++$i;
-				}
-			}//end if more than one auto_thumb
 
-			foreach ( $thumb_output as $key => $output ) {
+					$thumb_data = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( $post_id, $timecode );
 
-				if ( $thumb_output[ $key ]['lastthumbnumber'] != 'break' ) {
-					if ( $numberofthumbs == 1 ) {
-						$index = false;
-					} else {
-						$index = $key;
+					if ( ! is_wp_error( $thumb_data ) ) {
+						$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], false );
+						if ( $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+							$thumb_ids[1] = $thumb_info['thumb_id'];
+						}
 					}
-					$thumb_info       = $thumbnails->save( $post_id, $post->post_title, $thumb_output[ $key ]['thumb_url'], $index );
-					$thumb_id[ $key ] = $thumb_info['thumb_id'];
-					//end if there wasn't an error
-				} else {
-					$kgvid_postmeta                    = $this->attachment_meta->get( $post_id );
-					$kgvid_postmeta['autothumb-error'] = $thumb_output[ $thumb_key ]['embed_display'];
-					$this->attachment_meta->save( $post_id, $kgvid_postmeta );
 				}
-			}//end loop through generated thumbnails to save them in the database
+			} else { // Multiple thumbnails
+				for ( $i = 1; $i <= $numberofthumbs; $i++ ) {
+					$thumb_data = $ffmpeg_thumbnails->generate_single_thumbnail_data( $post_id, $numberofthumbs, $i, false );
 
-			if ( ! empty( $thumb_id[ $thumb_key ] ) ) {
-				$thumb_output[ $thumb_key ]['thumb_url'] = wp_get_attachment_url( $thumb_id[ $thumb_key ] );
-				update_post_meta( $post_id, '_kgflashmediaplayer-poster', $thumb_output[ $thumb_key ]['thumb_url'] );
-				update_post_meta( $post_id, '_kgflashmediaplayer-poster-id', $thumb_id[ $thumb_key ] );
-				set_post_thumbnail( $post_id, $thumb_id[ $thumb_key ] );
-				if ( $this->options['featured'] == true && ! empty( $thumb_id[ $thumb_key ] ) ) {
+					if ( is_wp_error( $thumb_data ) ) {
+						continue;
+					}
+
+					$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], $i );
+
+					if ( $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+						$thumb_ids[ $i ] = $thumb_info['thumb_id'];
+					}
+				}
+			}
+
+			$thumb_key = ( $numberofthumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
+			if ( $thumb_key > $numberofthumbs ) { // Sanity check
+				$thumb_key = $numberofthumbs;
+			}
+			if ( $thumb_key === 0 ) { // Another sanity check
+				$thumb_key = 1;
+			}
+
+			if ( ! empty( $thumb_ids[ $thumb_key ] ) ) {
+				set_post_thumbnail( $post_id, $thumb_ids[ $thumb_key ] );
+
+				if ( $this->options['featured'] == true ) {
 					if ( ! empty( $post->post_parent ) ) {
-						set_post_thumbnail( $post->post_parent, $thumb_id[ $thumb_key ] );
+						set_post_thumbnail( $post->post_parent, $thumb_ids[ $thumb_key ] );
 					} else { // video has no parent post yet
 						wp_schedule_single_event( time() + 60, 'videopack_cron_check_post_parent', array( $post_id ) );
 					}
 				}
-			}//end setting main thumbnail
+			}
 		}//end if auto_thumb is on
 
 		if ( $post
@@ -470,41 +390,25 @@ class Attachment {
 			)
 		) {
 
-			$video_formats       = kgvid_video_formats();
-			$kgvid_postmeta      = $this->attachment_meta->get( $post_id );
-			$extension           = pathinfo( $filepath, PATHINFO_EXTENSION );
-			$something_to_encode = false;
-			$encode_checked      = array();
+			$encode_queue      = new Encode\Encode_Queue_Controller( $this->options_manager );
+			$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $post_id, $movieurl );
+			$available_formats = $encode_attachment->get_available_formats();
+			$formats_to_encode = array();
 
-			if ( substr( basename( $filepath, '.' . $extension ), -10 ) == '-noreplace'
-				|| ( array_key_exists( 'original_replaced', $kgvid_postmeta ) && $kgvid_postmeta['original_replaced'] == $this->options['replace_format'] )
-			) {
-				$this->options['encode']['fullres'] = false; // Modify local copy for this run
-			}
-
-			if ( $post->post_mime_type === 'image/gif' ) {
-				$fullres_only  = array( 'fullres' );
-				$video_formats = array_intersect_key( $video_formats, array_flip( $fullres_only ) );
-			}
-
-			foreach ( $video_formats as $format => $format_stats ) {
-
-				if ( is_array( $this->options['encode'] )
-					&& array_key_exists( $format, $this->options['encode'] )
-					&& $this->options['encode'][ $format ] == true
-				) {
-					$encode_checked[ $format ] = 'true';
-					$something_to_encode       = true;
-				} else {
-					$encode_checked[ $format ] = 'notchecked';
+			foreach ( $available_formats as $format_id => $format_object ) {
+				if ( $format_object->is_enabled() ) {
+					$formats_to_encode[] = $format_id;
 				}
 			}
 
-			if ( $something_to_encode ) {
-
-				kgvid_enqueue_videos( $post_id, $movieurl, $encode_checked, $post->post_parent );
-				kgvid_encode_videos();
-
+			if ( ! empty( $formats_to_encode ) ) {
+				$encode_queue->enqueue_encodes(
+					array(
+						'id'      => $post_id,
+						'url'     => $movieurl,
+						'formats' => $formats_to_encode,
+					)
+				);
 			}
 		}//end if auto_encode
 
