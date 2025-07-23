@@ -48,7 +48,7 @@ const Thumbnails = ( {
 
 	useEffect( () => {
 		if ( ! poster ) {
-			videoRef.current.on('loadedmetadata', () => { handleGenerate( 'generate' ) } );
+			videoRef.current.addEventListener('loadedmetadata', () => { handleGenerate( 'generate' ) } );
 		}
 	}, [videoRef.current] );
 

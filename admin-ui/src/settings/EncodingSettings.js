@@ -29,6 +29,7 @@ import {
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
 import { useEffect, useState } from '@wordpress/element';
+import TextControlOnBlur from './TextControlOnBlur';
 
 const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 	const {
@@ -40,8 +41,6 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		auto_thumb_number,
 		auto_thumb_position,
 		error_email,
-		htaccess_login,
-		htaccess_password,
 		ffmpeg_thumb_watermark,
 		ffmpeg_watermark,
 		h264_profile,
@@ -51,8 +50,6 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 		simultaneous_encodes,
 		threads,
 		nice,
-		sample_codec,
-		sample_resolution,
 		ffmpeg_exists,
 		ffmpeg_error,
 		auto_encode,
@@ -77,31 +74,6 @@ const EncodingSettings = ( { settings, changeHandlerFactory, ffmpegTest } ) => {
 				console.log( error );
 			} );
 	}, [] );
-
-	const TextControlOnBlur = ( { value, onChange, ...props } ) => {
-		const [ innerValue, setInnerValue ] = useState( value );
-
-		useEffect( () => {
-			setInnerValue( value );
-		}, [ value ] );
-
-		const handleOnChange = ( newValue ) => {
-			setInnerValue( newValue );
-		};
-
-		const handleOnBlur = () => {
-			onChange( innerValue );
-		};
-
-		return (
-			<TextControl
-				{ ...props }
-				value={ innerValue }
-				onChange={ handleOnChange }
-				onBlur={ handleOnBlur }
-			/>
-		);
-	};
 
 	const EncodeFormatGrid = () => {
 		const { codecs, resolutions } = videopack.settings;
