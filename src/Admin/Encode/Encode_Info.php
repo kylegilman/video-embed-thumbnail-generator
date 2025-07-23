@@ -53,8 +53,6 @@ class Encode_Info {
 		if ( ! $this->exists ) {
 			$this->set_default_url_and_path();
 		}
-
-		$this->encode_info[ $format ] = apply_filters( 'videopack_encode_info', $encode_info, $movieurl, $this->id, $format );
 	}
 
 	protected function get_attachment_children() {
@@ -146,7 +144,7 @@ class Encode_Info {
 				&& ! $this->sameserver
 				&& $name !== 'html5encodes'
 			) {
-				$this->check_url_exists( $location['url']  );
+				$this->check_url_exists( $location['url'] );
 			}
 		}
 	}
@@ -156,15 +154,15 @@ class Encode_Info {
 		$already_checked_url = get_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), true );
 		if ( empty( $already_checked_url ) ) {
 			if ( $this->get_headers( esc_url_raw( str_replace( ' ', '%20', $url ) ) ) ) {
-				$$this->exists = true;
-				$encode_info['url']    = $url;
-				update_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), $encode_info['url'] );
+				$this->exists = true;
+				$this->url    = $url;
+				update_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), $this->url );
 			} else {
 				update_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), 'not found' );
 			}
 		} elseif ( substr( $already_checked_url, 0, 4 ) == 'http' ) {
-			$encode_info['exists'] = true;
-			$encode_info['url']    = $already_checked_url;
+			$this->exists = true;
+			$this->url    = $already_checked_url;
 		}
 	}
 
@@ -188,13 +186,13 @@ class Encode_Info {
 		$moviefilename = $this->basename . $this->format->get_suffix();
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		if ( get_post_type( $this->id ) == 'attachment'
-			&& get_filesystem_method( array(), $encode_info['path'], true ) === 'direct'
+			&& get_filesystem_method( array(), $this->path, true ) === 'direct'
 		) {
-			$encode_info['url']  = $sanitized_url['noextension'] . $this->format->get_suffix();
-			$encode_info['path'] = $encode_info['path'] . $moviefilename;
+			$this->url  = $this->sanitized_url->noextension . $this->format->get_suffix();
+			$this->path = $this->path . $moviefilename;
 		} else {
-			$encode_info['url']  = $this->uploads['url'] . '/' . $moviefilename;
-			$encode_info['path'] = $this->uploads['path'] . '/' . $moviefilename;
+			$this->url  = $this->uploads['url'] . '/' . $moviefilename;
+			$this->path = $this->uploads['path'] . '/' . $moviefilename;
 		}
 	}
 }
