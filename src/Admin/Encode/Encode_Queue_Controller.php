@@ -113,10 +113,11 @@ class Encode_Queue_Controller {
 
 		$encoder = new Encode_Attachment( $this->options_manager, $attachment_identifier, $input_url );
 		foreach ( $args['formats'] as $format_to_encode ) {
-			$format_id = sanitize_text_field( $format_to_encode );
+			$format_id    = sanitize_text_field( $format_to_encode );
 			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id );
 			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
 		}
+		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
 		return $this->queue_log->get_log();
 	}
 
@@ -235,9 +236,9 @@ class Encode_Queue_Controller {
 					$wpdb->update(
 						$this->queue_table_name,
 						array( // Mark as failed if error during encoding
-							'status' => 'failed',
+							'status'        => 'failed',
 							'error_message' => $encode_format_obj->get_error(),
-							'failed_at' => current_time( 'mysql', true ),
+							'failed_at'     => current_time( 'mysql', true ),
 						),
 						array( 'id' => $job_id )
 					);
@@ -262,44 +263,33 @@ class Encode_Queue_Controller {
 				break;
 
 			case 'needs_insert':
-			case 'pending_replacement': // Treat same as needs_insert for now, insert_attachment handles the logic
-				$encode_format_obj = new Encode_Format( $job['format_id'] );
-				$encode_format_obj->set_path( $job['output_path'] );
-				$encode_format_obj->set_url( $job['output_url'] );
-				$encode_format_obj->set_user_id( $job['user_id'] );
-				// insert_attachment needs the Video_Format config to check get_replaces_original()
-				// and to get other Encode_Format objects for the same attachment (this part is tricky with DB)
+			case 'pending_replacement':
+				$encode_format_obj = Encode_Format::from_array( $job );
+				$inserted          = $encoder->insert_attachment( $encode_format_obj );
 
-				// For insert_attachment to work correctly with the 'pending_replacement' logic,
-				// it needs to query the DB for other jobs related to $job['attachment_id'] or $job['input_url'].
-				// This is a significant change from its current post_meta based approach.
-				// For now, we'll assume a simplified call.
-				$inserted = $encoder->insert_attachment( $encode_format_obj ); // This method needs heavy refactoring for DB.
-
-				if ( $inserted || $encode_format_obj->get_status() === 'complete' ) { // insert_attachment might set status to complete
+				if ( $inserted ) {
 					$wpdb->update(
 						$this->queue_table_name,
-						array( // Mark as completed
-							'status' => 'completed',
-							'completed_at' => current_time( 'mysql', true ),
-						),
+						array( 'status' => 'completed' ),
 						array( 'id' => $job_id )
 					);
 				} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
 					$wpdb->update(
 						$this->queue_table_name,
-						array( 'status' => 'pending_replacement' ), // Mark as pending replacement
+						array( 'status' => 'pending_replacement' ),
 						array( 'id' => $job_id )
 					);
-					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Recheck later
+					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 				} else {
-					$error_msg = $encode_format_obj->get_error() ? $encode_format_obj->get_error() : 'Insert attachment failed.';
+					$error_msg = $encode_format_obj->get_error();
+					if ( ! $error_msg ) {
+						$error_msg = 'Insert attachment failed.';
+					}
 					$wpdb->update(
 						$this->queue_table_name,
-						array( // Mark as failed if insertion failed
-							'status' => 'failed',
+						array(
+							'status'        => 'failed',
 							'error_message' => $error_msg,
-							'failed_at' => current_time( 'mysql', true ),
 						),
 						array( 'id' => $job_id )
 					);
@@ -315,6 +305,7 @@ class Encode_Queue_Controller {
 
 		// After handling a job, try to process the next pending job from the queue.
 		as_schedule_single_action( time() + 10, 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 	}
 
 	/**
@@ -375,11 +366,22 @@ class Encode_Queue_Controller {
 	 */
 	public function get_queue_items( $blog_id = null, $statuses = null ) {
 		global $wpdb;
-
-		if ( null !== $blog_id ) {
-			$all_items = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE blog_id = %d ORDER BY created_at ASC', $this->queue_table_name, $blog_id ), ARRAY_A );
+		if ( $blog_id ) {
+			$cache_key = 'videopack_queue_items_' . $blog_id;
 		} else {
-			$all_items = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY created_at ASC', $this->queue_table_name ), ARRAY_A );
+			$cache_key = 'videopack_queue_items_all';
+		}
+		$cached_items = wp_cache_get( $cache_key, 'videopack' );
+
+		if ( false !== $cached_items ) {
+			$all_items = $cached_items;
+		} else {
+			if ( null !== $blog_id ) {
+				$all_items = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE blog_id = %d ORDER BY created_at ASC', $this->queue_table_name, $blog_id ), ARRAY_A );
+			} else {
+				$all_items = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY created_at ASC', $this->queue_table_name ), ARRAY_A );
+			}
+			wp_cache_set( $cache_key, $all_items, 'videopack', 15 );
 		}
 
 		if ( empty( $all_items ) ) {
@@ -464,6 +466,7 @@ class Encode_Queue_Controller {
 			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
 				restore_current_blog();
 			}
+			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 		}
 	}
 
@@ -510,7 +513,7 @@ class Encode_Queue_Controller {
 
 		// Trigger a one-off action to process any 'queued' items immediately.
 		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
-
+		wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 		return true;
 	}
 

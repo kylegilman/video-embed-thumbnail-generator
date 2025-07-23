@@ -1088,8 +1088,8 @@ class Encode_Attachment {
 
 		// Perform file replacement
 		// Delete the original file first if it's different from the new target name
-		if ( $original_filepath !== $new_filename && $wp_filesystem->exists( $original_filepath ) ) {
-			$wp_filesystem->delete( $original_filepath );
+		if ( $original_filepath !== $new_filename && file_exists( $original_filepath ) ) {
+			wp_delete_file( $original_filepath );
 		}
 
 		// Move the encoded file to the new (or original) location/name
@@ -1245,161 +1245,158 @@ class Encode_Attachment {
 		return $success;
 	}
 
+	private function has_pending_jobs( Encode_Format $encode_format ) {
+		global $wpdb;
+		$current_blog_id = get_current_blog_id();
+		$pending_job_count = 0;
+
+		if ( $this->is_attachment && is_numeric( $this->id ) ) {
+			$pending_job_count = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM %i WHERE attachment_id = %d AND blog_id = %d AND status IN ('encoding', 'queued', 'processing') AND id != %d",
+					$this->queue_table_name,
+					$this->id,
+					$current_blog_id,
+					$encode_format->get_job_id()
+				)
+			);
+		} elseif ( ! empty( $this->url ) ) {
+			$pending_job_count = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM %i WHERE input_url = %s AND blog_id = %d AND status IN ('encoding', 'queued', 'processing') AND id != %d",
+					$this->queue_table_name,
+					$this->url,
+					$current_blog_id,
+					$encode_format->get_job_id()
+				)
+			);
+		}
+
+		return $pending_job_count > 0;
+	}
+
+	private function replace_original_attachment( Encode_Format $encode_format ) {
+		if ( $this->has_pending_jobs( $encode_format ) ) {
+			$encode_format->set_status( 'pending_replacement' );
+			$this->save_format( $encode_format );
+			return false;
+		}
+
+		$result = $this->replace_original( $encode_format );
+
+		if ( true === $result ) {
+			$encode_format->set_status( 'complete' );
+			$this->save_format( $encode_format );
+			return true;
+		} else {
+			$this->save_format( $encode_format );
+			return false;
+		}
+	}
+
+	private function create_new_attachment( Encode_Format $encode_format ) {
+		$path = $encode_format->get_path();
+		$url = $encode_format->get_url();
+		$user_id = $encode_format->get_user_id();
+		$format_id = $encode_format->get_format_id();
+		$video_format_config = $this->video_formats[ $format_id ] ?? null;
+
+		$parent_post_id = 0;
+		if ( $this->is_attachment && is_numeric( $this->id ) ) {
+			$parent_post_id = (int) $this->id;
+		}
+
+		$existing_attachment_id = $this->attachment_manager->url_to_id( $url );
+
+		if ( ! $existing_attachment_id ) {
+			$wp_filetype = wp_check_filetype( basename( $path ) );
+			$title_base  = $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( $this->id );
+			$title       = $title_base . ' ' . $video_format_config->get_name();
+
+			$author_id_from_parent = $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id();
+			$author_id = $user_id ?: $author_id_from_parent;
+			if ( ! $author_id ) {
+				$author_id = get_current_user_id();
+			}
+
+			$attachment_data = array(
+				'guid'           => $url,
+				'post_mime_type' => $wp_filetype['type'],
+				'post_title'     => $title,
+				'post_content'   => '',
+				'post_status'    => 'inherit',
+				'post_author'    => $author_id,
+			);
+
+			$new_attachment_id = wp_insert_attachment( $attachment_data, $path, $parent_post_id );
+
+			if ( ! is_wp_error( $new_attachment_id ) ) {
+				if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/image.php';
+				}
+				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/media.php';
+				}
+				$attach_meta = wp_generate_attachment_metadata( $new_attachment_id, $path );
+				wp_update_attachment_metadata( $new_attachment_id, $attach_meta );
+
+				update_post_meta( $new_attachment_id, '_kgflashmediaplayer-format', $format_id );
+				if ( ! $this->is_attachment && ! empty( $this->url ) ) {
+					update_post_meta( $new_attachment_id, '_kgflashmediaplayer-externalurl', $this->url );
+				}
+
+				$encode_format->set_id( $new_attachment_id );
+				$encode_format->set_status( 'complete' );
+				$this->save_format( $encode_format );
+				return true;
+			} else {
+				$encode_format->set_error( __( 'Failed to insert new attachment: ', 'video-embed-thumbnail-generator' ) . $new_attachment_id->get_error_message() );
+				$this->save_format( $encode_format );
+				return false;
+			}
+		} else {
+			$encode_format->set_id( $existing_attachment_id );
+			$encode_format->set_status( 'complete' );
+			$this->save_format( $encode_format );
+			return true;
+		}
+	}
+
 	public function insert_attachment( Encode_Format $encode_format ) {
 		$format_id           = $encode_format->get_format_id();
 		$path                = $encode_format->get_path();
-		$url                 = $encode_format->get_url();
-		$user_id             = $encode_format->get_user_id(); // This is user who queued, not necessarily post author
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 
 		if ( ! $video_format_config ) {
-			// translators: %s is the video format id (ex. 'mp4_720p').
 			$encode_format->set_error( sprintf( __( 'Video format configuration not found for format: %s', 'video-embed-thumbnail-generator' ), $format_id ) );
-			$this->save_format( $encode_format ); // Save error to DB
+			$this->save_format( $encode_format );
 			return false;
 		}
 
 		if ( ! $path || ! file_exists( $path ) ) {
-			// translators: %1$s is the file path. %2$s is the format ID (ex. 'mp4_720p')
 			$encode_format->set_error( sprintf( __( 'Encoded file not found at path: %1$s for format %2$s', 'video-embed-thumbnail-generator' ), $path, $format_id ) );
 			$this->save_format( $encode_format );
 			return false;
 		}
 
-		// Check if this format is intended to replace the original
 		if ( $video_format_config->get_replaces_original() ) {
-			global $wpdb;
-			$current_blog_id = get_current_blog_id(); // Assumes context is correctly set
-
-			// Check if any other formats for this attachment are still encoding or queued in the DB
-			$pending_job_count = 0;
-			if ( $this->is_attachment && is_numeric( $this->id ) ) {
-				$pending_job_count = (int) $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT COUNT(*) FROM %i WHERE attachment_id = %d AND blog_id = %d AND status IN ('encoding', 'queued', 'processing') AND id != %d",
-						$this->queue_table_name,
-						$this->id,
-						$current_blog_id,
-						$encode_format->get_job_id()
-					)
-				);
-			} elseif ( ! empty( $this->url ) ) {
-				$pending_job_count = (int) $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT COUNT(*) FROM %i WHERE input_url = %s AND blog_id = %d AND status IN ('encoding', 'queued', 'processing') AND id != %d",
-						$this->queue_table_name,
-						$this->url,
-						$current_blog_id,
-						$encode_format->get_job_id()
-					)
-				);
-			}
-
-			if ( $pending_job_count > 0 ) {
-				// Other formats are still pending, defer replacement
-				$encode_format->set_status( 'pending_replacement' );
-				$this->save_format( $encode_format ); // Save status to DB
-				return false; // Indicate that insertion/replacement is not complete
-			} else {
-				// No other formats pending, proceed with replacement
-				$result = $this->replace_original( $encode_format );
-				if ( true === $result ) {
-					$encode_format->set_status( 'complete' );
-					// replace_original updates the $encode_format object with new path/url
-					$this->save_format( $encode_format );
-					return true;
-				} else {
-					// replace_original sets the error on $encode_format and returns false.
-					$this->save_format( $encode_format );
-					return false;
-				}
-			}
-		} elseif ( ! $encode_format->get_id() ) { // If not replacing the original, insert as a new child attachment. Check if Encode_Format already has a WP attachment ID
-
-			$parent_post_id = 0; // Default for non-attachments or if original is not an attachment
-			if ( $this->is_attachment && is_numeric( $this->id ) ) {
-				$parent_post_id = (int) $this->id;
-			}
-
-			$existing_attachment_id = $this->attachment_manager->url_to_id( $url );
-
-			if ( ! $existing_attachment_id ) {
-				$wp_filetype = wp_check_filetype( basename( $path ) );
-				$title_base  = $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( $this->id );
-				$title       = $title_base . ' ' . $video_format_config->get_name();
-
-				// Determine author for the new attachment
-				$author_id_from_parent = $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id();
-				if ( $user_id ) {
-					$author_id = $user_id;
-				} else {
-					$author_id = $author_id_from_parent;
-				}
-				if ( ! $author_id ) {
-					$author_id = get_current_user_id();
-				}
-
-				$attachment_data = array(
-					'guid'           => $url,
-					'post_mime_type' => $wp_filetype['type'],
-					'post_title'     => $title,
-					'post_content'   => '',
-					'post_status'    => 'inherit',
-					'post_author'    => $author_id,
-				);
-
-				$new_attachment_id = wp_insert_attachment( $attachment_data, $path, $parent_post_id );
-
-				if ( ! is_wp_error( $new_attachment_id ) ) {
-					if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
-						require_once ABSPATH . 'wp-admin/includes/image.php';
-					}
-					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
-						require_once ABSPATH . 'wp-admin/includes/media.php';
-					}
-					$attach_meta = wp_generate_attachment_metadata( $new_attachment_id, $path );
-					wp_update_attachment_metadata( $new_attachment_id, $attach_meta );
-
-					update_post_meta( $new_attachment_id, '_kgflashmediaplayer-format', $format_id );
-					if ( ! $this->is_attachment && ! empty( $this->url ) ) { // If original was an external URL
-						update_post_meta( $new_attachment_id, '_kgflashmediaplayer-externalurl', $this->url );
-					}
-
-					$encode_format->set_id( $new_attachment_id ); // Set WP attachment ID on Encode_Format
-					$encode_format->set_status( 'complete' );
-					$this->save_format( $encode_format ); // Save to DB
-					return true;
-				} else {
-					$encode_format->set_error( __( 'Failed to insert new attachment: ', 'video-embed-thumbnail-generator' ) . $new_attachment_id->get_error_message() );
-					$this->save_format( $encode_format );
-					return false;
-				}
-			} else {
-				// Attachment with this URL already exists, mark as complete
-				$encode_format->set_id( $existing_attachment_id );
-				$encode_format->set_status( 'complete' );
-				$this->save_format( $encode_format );
-				return true;
-			}
+			return $this->replace_original_attachment( $encode_format );
+		} elseif ( ! $encode_format->get_id() ) {
+			return $this->create_new_attachment( $encode_format );
 		} elseif ( $encode_format->get_id() && file_exists( $path ) ) {
-			// Already has an attachment ID and file exists, ensure status is complete
 			$encode_format->set_status( 'complete' );
 			$this->save_format( $encode_format );
 			return true;
 		} elseif ( $encode_format->get_id() && ! file_exists( $path ) ) {
-			// Has an attachment ID, but the file is missing. This is an error.
-			// translators: %1$d is the attachment ID. %2$s is the file path.
 			$encode_format->set_error( sprintf( __( 'Encoded file is missing for existing attachment ID %1$d at path: %2$s', 'video-embed-thumbnail-generator' ), $encode_format->get_id(), $path ) );
 			$this->save_format( $encode_format );
 			return false;
 		}
 
-		// Fallback: If reached, it's an unexpected state or unhandled condition.
-		// Avoid overwriting a more specific error if one was already set and not returned from.
 		if ( ! $encode_format->get_error() && 'complete' !== $encode_format->get_status() ) {
 			$encode_format->set_error( __( 'An unexpected error occurred during attachment processing.', 'video-embed-thumbnail-generator' ) );
 		}
-		$this->save_format( $encode_format ); // Ensure any state/error is saved.
+		$this->save_format( $encode_format );
 		return false;
 	}
 }
