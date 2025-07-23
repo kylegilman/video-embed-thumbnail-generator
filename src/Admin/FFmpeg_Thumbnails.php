@@ -1,6 +1,6 @@
 <?php
 
-namespace Videopack\Admin\Thumbnails;
+namespace Videopack\Admin;
 
 class FFmpeg_Thumbnails {
 

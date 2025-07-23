@@ -654,7 +654,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function thumb_generate( \WP_REST_Request $request ) {
 
-		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
 		$result            = $ffmpeg_thumbnails->generate_single_thumbnail_data(
 			$request->get_param( 'attachment_id' ),
 			$request->get_param( 'total_thumbnails' ),
@@ -680,7 +680,7 @@ class REST_Controller extends \WP_REST_Controller {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumb_urls    = $request->get_param( 'thumb_urls' );
 
-		$thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
+		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
 		$post_name  = get_the_title( $attachment_id );
 		$results    = array();
 
@@ -701,7 +701,7 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$params     = $request->get_params();
 		$attachment_id = $params['attachment_id'];
-		$thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
+		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
 
 		if ( is_numeric( $attachment_id ) ) {
 			$post_name = get_the_title( $attachment_id );

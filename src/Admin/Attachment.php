@@ -295,7 +295,7 @@ class Attachment {
 
 	public function cron_new_attachment_handler( $post_id, $force = false ) {
 
-		$ffmpeg_thumbnails = new Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
 		$auto_encode       = $this->options['auto_encode'];
 		$auto_thumb        = $this->options['auto_thumb'];
 
@@ -485,9 +485,6 @@ class Attachment {
 		$url = str_replace( ' ', '', $url ); // in case a url with spaces got through
 		// Get the path or the original size image by slicing the widthxheight off the end and adding the extension back.
 		$search_url = preg_replace( '/-\d+x\d+(\.(?:png|jpg|gif))$/i', '.' . pathinfo( $url, PATHINFO_EXTENSION ), $url );
-		if ( strlen( $search_url ) > 166 ) {
-			$search_url = substr( $search_url, -162 );
-		} //transients can't be more than 172 characters long. Including 'kgvid_' the URL has to be 162 characters or fewer
 
 		return $search_url;
 	}
