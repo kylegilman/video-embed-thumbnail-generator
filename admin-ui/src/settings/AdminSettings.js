@@ -26,6 +26,7 @@ import {
 const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 
 	const {
+		capabilities,
 		embeddable,
 		schema,
 		twitter_button,
@@ -70,10 +71,10 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 	const RolesCheckboxes = () => {
 		// Define an onChange event handler
 		const handleCapabilityChange = ( roleName, capability, isChecked ) => {
-			const updatedCapabilities = { 
-				...settings.capabilities,
+			const updatedCapabilities = {
+				...capabilities,
 				[capability]: {
-					...settings.capabilities[capability],
+					...capabilities[capability],
 					[roleName]: isChecked
 				}
 			};
@@ -93,7 +94,7 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 				>
 					<FlexItem>
 						<p>{ __('Can make thumbnails') }</p>
-						{ Object.entries(settings.capabilities.make_video_thumbnails).map(([roleKey, isEnabled]) => (
+						{ Object.entries(capabilities.make_video_thumbnails).map(([roleKey, isEnabled]) => (
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							key={`${roleKey}-make-thumbnails`}
@@ -107,7 +108,7 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 					</FlexItem>
 					<FlexItem>
 						<p>{ __('Can encode videos') }</p>
-						{Object.entries(settings.capabilities.encode_videos).map(([roleKey, isEnabled]) => (
+						{Object.entries(capabilities.encode_videos).map(([roleKey, isEnabled]) => (
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							key={`${roleKey}-encode-videos`}
@@ -121,7 +122,7 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 					</FlexItem>
 					<FlexItem>
 						<p>{ __( "Can edit other users' encoded videos" ) }</p>
-						{Object.entries(settings.capabilities.edit_others_video_encodes).map(([roleKey, isEnabled]) => (
+						{Object.entries(capabilities.edit_others_video_encodes).map(([roleKey, isEnabled]) => (
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							key={`${roleKey}-edit-encodes`}
@@ -276,7 +277,7 @@ const AdminSettings = ( { settings, changeHandlerFactory } ) => {
 				</FlexItem>
 			</Flex>
 		</PanelBody>
-		{ settings.capabilities && <RolesCheckboxes /> }
+		{ capabilities && <RolesCheckboxes /> }
 		</>
 	);
 }

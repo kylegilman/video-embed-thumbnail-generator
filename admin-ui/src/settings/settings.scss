@@ -41,13 +41,6 @@
 		width: 225px;
 	}
 
-	.components-tooltip {
-		white-space: normal;
-		max-width: 400px;
-		background: var(--wp-admin-theme-color-darker-20);
-		box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
-	}
-
 	.videopack-tooltip svg {
 		margin-left: 5px;
 		margin-bottom: 5px;
@@ -70,6 +63,10 @@
 	.components-base-control.components-toggle-control, .videopack-component-margin {
 		margin-top: 10px;
 		margin-bottom: 10px;
+	}
+
+	.components-base-control.components-checkbox-control {
+		margin-bottom: 3px;
 	}
 
 	.videopack-setting-auto-width .components-base-control {
@@ -201,7 +198,13 @@
 
 }
 
-
+.components-tooltip {
+	color: black;
+	white-space: normal;
+	max-width: 400px;
+	background: var(--wp--preset--color--accent-5);
+	box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
 
 #fs_addons .fs-cards-list {
 	display: inline-block;

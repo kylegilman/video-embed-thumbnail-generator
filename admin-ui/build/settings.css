@@ -380,12 +380,6 @@
 .wrap.videopack-settings .videopack-volume-control {
   width: 225px;
 }
-.wrap.videopack-settings .components-tooltip {
-  white-space: normal;
-  max-width: 400px;
-  background: var(--wp-admin-theme-color-darker-20);
-  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
-}
 .wrap.videopack-settings .videopack-tooltip svg {
   margin-left: 5px;
   margin-bottom: 5px;
@@ -404,6 +398,9 @@
 .wrap.videopack-settings .components-base-control.components-toggle-control, .wrap.videopack-settings .videopack-component-margin {
   margin-top: 10px;
   margin-bottom: 10px;
+}
+.wrap.videopack-settings .components-base-control.components-checkbox-control {
+  margin-bottom: 3px;
 }
 .wrap.videopack-settings .videopack-setting-auto-width .components-base-control {
   display: inline-block;
@@ -507,6 +504,14 @@
 }
 .wrap.videopack-settings .videopack-control-with-tooltip .components-base-control {
   margin-right: 5px;
+}
+
+.components-tooltip {
+  color: black;
+  white-space: normal;
+  max-width: 400px;
+  background: var(--wp--preset--color--accent-5);
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
 }
 
 #fs_addons .fs-cards-list {

@@ -20,13 +20,12 @@ import { help } from '@wordpress/icons';
 import { volumeUp, volumeDown } from '../icon';
 import VideoPlayer from '../VideopackRender/player/VideoPlayer';
 import VideopackTooltip from './VideopackTooltip';
+import TextControlOnBlur from './TextControlOnBlur';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
 		embed_method,
 		overlay_title,
-		poster,
-		endofvideooverlay,
 		watermark,
 		watermark_link_to,
 		watermark_url,
@@ -38,67 +37,13 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		width,
 		height,
 		fixed_aspect,
-		gallery_width,
-		gallery_columns,
-		gallery_end,
-		gallery_per_page,
-		gallery_title,
 		controls,
 		playsinline,
 		pauseothervideos,
 		volume,
 		preload,
 		skin,
-		custom_attributes,
 		embeddable,
-		schema,
-		right_click,
-		click_download,
-		count_views,
-		rewrite_attachment_url,
-		total_thumbnails,
-		featured,
-		thumb_parent,
-		capabilities,
-		delete_thumbnails,
-		delete_encoded,
-		titlecode,
-		template,
-		app_path,
-		video_app,
-		replace_format,
-		encode,
-		custom_format,
-		hide_video_formats,
-		auto_thumb_number,
-		auto_thumb_position,
-		error_email,
-		htaccess_login,
-		htaccess_password,
-		ffmpeg_thumb_watermark,
-		ffmpeg_watermark,
-		rate_control,
-		h264_CRF,
-		webm_CRF,
-		ogv_CRF,
-		bitrate_multiplier,
-		h264_profile,
-		h264_level,
-		audio_bitrate,
-		audio_channels,
-		ffmpeg_auto_rotate,
-		simultaneous_encodes,
-		threads,
-		nice,
-		sample_format,
-		ffmpeg_exists,
-		version,
-		template_gentle,
-		hide_thumbnails,
-		video_bitrate_flag,
-		ffmpeg_vpre,
-		ffmpeg_old_rotation,
-		nostdin,
 		embedcode,
 		downloadlink,
 		view_count,
@@ -576,10 +521,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			</PanelBody>
 			<PanelBody title={__('Watermark Overlay')} initialOpen={true}>
 				<div className="videopack-setting-reduced-width">
-					<TextControl
+					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Watermark overlay:')}
+						label={__('Image URL:')}
 						type="url"
 						value={watermark}
 						onChange={changeHandlerFactory.watermark}

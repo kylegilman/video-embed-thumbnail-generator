@@ -6,6 +6,7 @@ import {
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
+import TextControlOnBlur from './TextControlOnBlur';
 
 const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 	const {
@@ -55,7 +56,7 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 				/>
 			) }
 			<div className="videopack-setting-reduced-width">
-				<TextControl
+				<TextControlOnBlur
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'Default thumbnail:' ) }
@@ -77,7 +78,7 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 				checked={ !! endofvideooverlaysame }
 			/>
 			<div className="videopack-setting-reduced-width">
-				<TextControl
+				<TextControlOnBlur
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'End of video image:' ) }
@@ -94,7 +95,7 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 				</Button>
 			</div>
 			<div className="videopack-setting-reduced-width">
-				<TextControl
+				<TextControlOnBlur
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'Add watermark to generated thumbnails:' ) }

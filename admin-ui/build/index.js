@@ -72348,7 +72348,7 @@ const Thumbnails = ({
   const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
     if (!poster) {
-      videoRef.current.on('loadedmetadata', () => {
+      videoRef.current.addEventListener('loadedmetadata', () => {
         handleGenerate('generate');
       });
     }
