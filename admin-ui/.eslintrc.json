@@ -1,0 +1,7 @@
+{
+	"extends": [ "plugin:@wordpress/eslint-plugin/recommended" ],
+	"rules": {
+		"camelcase": "off",
+		"no-console": "off"
+	}
+}

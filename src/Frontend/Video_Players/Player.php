@@ -51,7 +51,7 @@ class Player {
 
 		wp_register_script(
 			'videopack',
-			plugins_url( '/js/videopack.js', __FILE__ ),
+			plugins_url( '/src/Frontend/js/videopack.js', VIDEOPACK_PLUGIN_FILE ),
 			$this->get_videopack_script_dependencies(),
 			VIDEOPACK_VERSION,
 			true
@@ -82,7 +82,7 @@ class Player {
 	}
 
 	public function enqueue_styles() {
-		wp_enqueue_style( 'videopack_styles', plugins_url( '/css/videopack-styles.css', __FILE__ ), array( 'video-js' ), VIDEOPACK_VERSION );
+		wp_enqueue_style( 'videopack_styles', plugins_url( '/src/Frontend/css/videopack-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 	}
 
 	public function get_videopack_script_dependencies(): array {
@@ -157,7 +157,7 @@ class Player {
 			}
 		}
 
-		$this->sources['sources_data'] = array_values( $sources );
+		$this->sources = array_values( $sources );
 	}
 
 	public function get_main_source_url(): string {

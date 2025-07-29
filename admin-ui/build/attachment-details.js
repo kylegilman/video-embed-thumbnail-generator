@@ -88,6 +88,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+/* global videopack */
+
 
 
 
@@ -99,7 +101,7 @@ const AdditionalFormats = ({
   setAttributes,
   attributes,
   attachmentRecord,
-  options
+  options = {}
 }) => {
   const {
     id,
@@ -111,7 +113,7 @@ const AdditionalFormats = ({
   } = options;
   const [videoFormats, setVideoFormats] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)();
   const [encodeMessage, setEncodeMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)();
-  const [itemToDelete, setItemToDelete] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null); // { type: 'file'/'job', formatId: string, jobId?: int, childId?: int, name?: string }
+  const [itemToDelete, setItemToDelete] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null); // { type: 'file'/'job', formatId: string, jobId?: int, id?: int, name?: string }
   const [deleteInProgress, setDeleteInProgress] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null); // Stores formatId or jobId being deleted
   const [isConfirmOpen, setIsConfirmOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(false);
   const [isLoading, setIsLoading] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(false);
@@ -119,36 +121,6 @@ const AdditionalFormats = ({
   const checkboxTimerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useRef)(null);
   const progressTimerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useRef)(null);
   const queueApiPath = '/videopack/v1/queue';
-  const fetchVideoFormats = () => {
-    if (!id) return; // Don't fetch if there's no ID.
-    _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
-      path: '/videopack/v1/formats/' + id
-    }).then(response => {
-      setVideoFormats(response);
-      // Initialize .checked property if not present
-      if (response && typeof response === 'object') {
-        const initializedFormats = {
-          ...response
-        };
-        Object.keys(initializedFormats).forEach(key => {
-          if (initializedFormats[key] && typeof initializedFormats[key].checked === 'undefined') {
-            initializedFormats[key].checked = false;
-          }
-        });
-        setVideoFormats(initializedFormats);
-      }
-    });
-  };
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
-    fetchVideoFormats();
-  }, [id]); // Fetch formats when the attachment ID changes
-
-  const isEmpty = value => {
-    if (value === false || value === null || Array.isArray(value) && value.length === 0 || typeof value === 'object' && Object.keys(value).length === 0) {
-      return true;
-    }
-    return false;
-  };
   const deepEqual = (obj1, obj2) => {
     if (obj1 === obj2) {
       return true;
@@ -168,15 +140,62 @@ const AdditionalFormats = ({
     }
     return true;
   };
+  const updateVideoFormats = response => {
+    if (response && typeof response === 'object') {
+      const newFormats = {
+        ...response
+      };
+      Object.keys(newFormats).forEach(key => {
+        // When updating, preserve the existing 'checked' state.
+        // This prevents the UI from losing state on a poll refresh.
+        newFormats[key].checked = videoFormats?.[key]?.checked || false;
+      });
+
+      // Only update state if the formats have actually changed.
+      if (!deepEqual(videoFormats, newFormats)) {
+        setVideoFormats(newFormats);
+      }
+    } else if (!deepEqual(videoFormats, response)) {
+      // Fallback for non-object responses
+      setVideoFormats(response);
+    }
+  };
+  const fetchVideoFormats = () => {
+    if (!id) {
+      return;
+    } // Don't fetch if there's no ID.
+    _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
+      path: '/videopack/v1/formats/' + id
+    }).then(updateVideoFormats);
+  };
+  const pollVideoFormats = () => {
+    console.log('update');
+    if (src && id) {
+      _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
+        path: '/videopack/v1/formats/' + id,
+        method: 'GET'
+      }).then(updateVideoFormats).catch(error => console.error('Error polling video formats:', error));
+    }
+  };
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
+    fetchVideoFormats();
+  }, [id]); // Fetch formats when the attachment ID changes
+
+  const isEmpty = value => {
+    if (value === false || value === null || Array.isArray(value) && value.length === 0 || typeof value === 'object' && Object.keys(value).length === 0) {
+      return true;
+    }
+    return false;
+  };
   const siteSettings = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_5__.useSelect)(select => {
     return select('core').getSite();
   }, []);
   const checkIsEncoding = formats => {
-    if (!videoFormats) {
+    if (!formats) {
       return false;
     }
     // Check if any format has status 'processing' or 'encoding'
-    return Object.values(videoFormats).some(format => format.hasOwnProperty('encoding_now') && format.encoding_now);
+    return Object.values(formats).some(format => format.hasOwnProperty('encoding_now') && format.encoding_now);
   };
   const incrementEncodeProgress = () => {
     console.log('progress');
@@ -189,7 +208,7 @@ const AdditionalFormats = ({
           if (percentDone > 100) {
             percentDone = 100;
           }
-          if (percentDone != 0) {
+          if (percentDone !== 0) {
             format.progress.elapsed = format.progress.elapsed + 1;
             if (!isNaN(format.progress.remaining)) {
               if (format.progress.remaining > 0) {
@@ -217,23 +236,10 @@ const AdditionalFormats = ({
       setVideoFormats(updatedVideoFormats);
     }
   };
-  const pollVideoFormats = () => {
-    console.log('update');
-    if (src && id) {
-      _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
-        path: '/videopack/v1/formats/' + id,
-        method: 'GET'
-      }).then(response => {
-        if (!deepEqual(videoFormats, response)) {
-          setVideoFormats(response);
-        }
-      }).catch(error => console.error("Error polling video formats:", error));
-    }
-  };
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
-    // Set initial encoding state based on fetched formats
     setIsEncoding(checkIsEncoding(videoFormats));
-
+  }, [videoFormats]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     // Schedule polling for updates
     checkboxTimerRef.current = setTimeout(pollVideoFormats, 5000);
 
@@ -256,7 +262,7 @@ const AdditionalFormats = ({
         checkboxTimerRef.current = null;
       }
     };
-  }, [videoFormats, isEncoding]); // Depend on videoFormats and isEncoding state
+  }, [isEncoding]); // Depend on isEncoding state
 
   const handleFormatCheckbox = (event, format) => {
     setVideoFormats(prevVideoFormats => {
@@ -277,7 +283,7 @@ const AdditionalFormats = ({
     setIsLoading(true);
 
     // Get list of format IDs that are checked and available
-    const formatsToEncode = Object.entries(videoFormats).filter(([key, value]) => value.checked && value.is_available && value.status !== 'queued' && value.status !== 'processing' && value.status !== 'completed').reduce((acc, [key, value]) => {
+    const formatsToEncode = Object.entries(videoFormats).filter(([key, value]) => value.checked && value.status !== 'queued' && value.status !== 'processing' && value.status !== 'completed').reduce((acc, [key, value]) => {
       acc[key] = true; // Backend expects an object { format_id: true, ... }
       return acc;
     }, {});
@@ -296,8 +302,8 @@ const AdditionalFormats = ({
         const queueList = (() => {
           if (response?.enqueue_data?.encode_list) {
             return new Intl.ListFormat(siteSettings?.language ? siteSettings.language.replace('_', '-') : 'en-US', {
-              style: "long",
-              type: "conjunction"
+              style: 'long',
+              type: 'conjunction'
             }).format(Object.values(response?.enqueue_data?.encode_list));
           }
           return '';
@@ -306,17 +312,14 @@ const AdditionalFormats = ({
           const queuePosition = response?.enqueue_data?.existing_queue_position;
           if (!JSON.stringify(response?.enqueue_data?.encode_list) !== '[]') {
             return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%1$s updated in existing queue entry in position %2$s.'), queueList, queuePosition);
-          } else {
-            return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video is already %1$s in the queue.'), queuePosition);
           }
-        } else {
-          if (response?.enqueue_data?.new_queue_position === 1) {
-            return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Starting...');
-          } else {
-            const queuePosition = response?.enqueue_data?.new_queue_position;
-            return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%1$s added to queue in position %2$s.'), queueList, queuePosition);
-          }
+          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video is already %1$s in the queue.'), queuePosition);
         }
+        if (response?.enqueue_data?.new_queue_position === 1) {
+          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Starting…');
+        }
+        const queuePosition = response?.enqueue_data?.new_queue_position;
+        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%1$s added to queue in position %2$s.'), queueList, queuePosition);
       };
       setEncodeMessage(queueMessage());
       setIsLoading(false);
@@ -331,7 +334,7 @@ const AdditionalFormats = ({
   const formatPickable = format => {
     if (videoFormats && videoFormats[format] && (
     // A format is "pickable" if the file doesn't exist AND it's not already queued/processing/completed
-    !videoFormats[format].exists && videoFormats[format].status === 'not_queued' || videoFormats[format].was_picked) && !videoFormats[format].encoding_now) {
+    !videoFormats[format].exists && videoFormats[format].status === 'not_encoded' || videoFormats[format].was_picked) && !videoFormats[format].encoding_now) {
       return true;
     }
     return false;
@@ -340,14 +343,14 @@ const AdditionalFormats = ({
   // Deletes the actual media file (WP Attachment)
   const handleFileDelete = formatId => {
     const formatData = videoFormats?.[formatId];
-    if (!formatData || !formatData.child_id) {
+    if (!formatData || !formatData.id) {
       setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: Cannot delete file, missing attachment ID.'));
-      console.error('Cannot delete file: Missing child_id for format', formatId);
+      console.error('Cannot delete file: Missing id for format', formatId);
       return;
     }
     setDeleteInProgress(formatId); // Mark this formatId as being deleted
     _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
-      path: `/wp/v2/media/${formatData.child_id}?force=true`,
+      path: `/wp/v2/media/${formatData.id}?force=true`,
       method: 'DELETE'
     }).then(() => {
       setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('File deleted successfully.'));
@@ -385,13 +388,15 @@ const AdditionalFormats = ({
   };
   const openConfirmDialog = (type, formatId) => {
     const formatData = videoFormats?.[formatId];
-    if (!formatData) return;
+    if (!formatData) {
+      return;
+    }
     setItemToDelete({
       type,
       // 'file' or 'job'
       formatId,
       jobId: formatData.job_id,
-      childId: formatData.child_id,
+      id: formatData.id,
       name: formatData.name
     });
     setIsConfirmOpen(true);
@@ -399,7 +404,7 @@ const AdditionalFormats = ({
   const handleConfirm = () => {
     setIsConfirmOpen(false);
     if (itemToDelete) {
-      if (itemToDelete.type === 'file' && itemToDelete.childId) {
+      if (itemToDelete.type === 'file' && itemToDelete.id) {
         handleFileDelete(itemToDelete.formatId);
       } else if (itemToDelete.type === 'job' && itemToDelete.jobId) {
         handleJobDelete(itemToDelete.jobId);
@@ -489,35 +494,21 @@ const AdditionalFormats = ({
   const somethingToEncode = () => {
     if (videoFormats) {
       // Check if any format is checked AND available AND not already in a terminal/pending state
-      return Object.values(videoFormats).some(obj => obj.checked && obj.is_available && obj.status !== 'queued' && obj.status !== 'processing' && obj.status !== 'completed' && obj.status !== 'pending_replacement');
+      return Object.values(videoFormats).some(obj => obj.checked && obj.status !== 'queued' && obj.status !== 'processing' && obj.status !== 'completed' && obj.status !== 'pending_replacement');
     }
     return false;
   };
   const encodeButtonTitle = () => {
     if (somethingToEncode()) {
-      return isLoading ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Loading...') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode selected formats');
-    } else {
-      return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select formats to encode');
+      return isLoading ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Loading…') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode selected formats');
     }
+    return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select formats to encode');
   };
-  const getDisplayFormats = () => {
-    if (!videoFormats) return {};
-    let displayFormats = {
-      ...videoFormats
-    };
-    if (options.hide_video_formats && options.encode) {
-      displayFormats = Object.fromEntries(Object.entries(displayFormats).filter(([key, format]) => options.encode[key] === true || format.status !== 'not_queued'));
-    }
-    if (attachmentRecord?.record?.media_details?.height) {
-      const sourceHeight = attachmentRecord.record.media_details.height;
-      displayFormats = Object.fromEntries(Object.entries(displayFormats).filter(([key, format]) => !format.height || format.height <= sourceHeight || format.replaces_original === true));
-    }
-    return displayFormats;
-  };
-  const displayFormats = getDisplayFormats();
   const isEncodeButtonDisabled = isLoading || !ffmpeg_exists || !somethingToEncode();
   const confirmDialogMessage = () => {
-    if (!itemToDelete) return '';
+    if (!itemToDelete) {
+      return '';
+    }
     if (itemToDelete.type === 'file') {
       return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.'), itemToDelete.name);
     }
@@ -533,64 +524,81 @@ const AdditionalFormats = ({
           children: videoFormats ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
               className: `videopack-formats-list${ffmpeg_exists ? '' : ' no-ffmpeg'}`,
-              children: Object.keys(displayFormats).map(formatId => {
-                const formatData = displayFormats[formatId];
-                if (!formatData) return null; // Should not happen if displayFormats is derived correctly
-
-                const isCheckboxDisabled = !ffmpeg_exists || !formatData.is_available || formatData.status !== 'not_queued';
+              children: videopack.settings.codecs.map(codec => {
+                if (!options.encode[codec.id] || !options.encode[codec.id].enabled) {
+                  return null;
+                }
                 return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                  children: [ffmpeg_exists && formatData.is_available && formatData.status === 'not_queued' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.CheckboxControl, {
-                    __nextHasNoMarginBottom: true,
-                    className: "videopack-format",
-                    label: formatData.name,
-                    checked: formatData.checked,
-                    disabled: isCheckboxDisabled,
-                    onChange: event => handleFormatCheckbox(event, formatId)
-                  }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
-                    className: "videopack-format",
-                    children: formatData.name
-                  }), formatData.status !== 'not_queued' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
-                    className: "videopack-format-status",
-                    children: formatData.status_l10n
-                  }), formatData.exists && formatData.status === 'not_queued' && !formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
-                    variant: "secondary",
-                    onClick: () => onSelectFormat(formatData) // Implement onSelectFormat for linking
-                    ,
-                    className: "videopack-format-button",
-                    size: "small",
-                    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link existing file'),
-                    children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link')
-                  }), formatData.was_picked &&
-                  /*#__PURE__*/
-                  // Show "Replace" if it was manually picked/linked
-                  (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
-                    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace %s'), formatData.name),
-                    onSelect: onSelectFormat // Implement replace logic
-                    ,
-                    allowedTypes: ['video'],
-                    render: ({
-                      open
-                    }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
-                      variant: "secondary",
-                      onClick: open,
-                      className: "videopack-format-button",
-                      size: "small",
-                      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace file'),
-                      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace')
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h4", {
+                    className: "videopack-codec-name",
+                    children: codec.name
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
+                    children: videopack.settings.resolutions.map(resolution => {
+                      const formatId = `${codec.id}_${resolution.id}`;
+                      const formatData = videoFormats[formatId];
+                      if (!formatData) {
+                        return null;
+                      }
+                      if (options.hide_video_formats && !options.encode[codec.id].resolutions[resolution.id] && resolution.id !== 'fullres') {
+                        return null;
+                      }
+                      const isCheckboxDisabled = !ffmpeg_exists || formatData.status !== 'not_encoded';
+                      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
+                        children: [ffmpeg_exists ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.CheckboxControl, {
+                          __nextHasNoMarginBottom: true,
+                          className: "videopack-format",
+                          label: formatData.label,
+                          checked: formatData.checked,
+                          disabled: isCheckboxDisabled,
+                          onChange: event => handleFormatCheckbox(event, formatId)
+                        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                          className: "videopack-format",
+                          children: formatData.label
+                        }), formatData.status !== 'not_encoded' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                          className: "videopack-format-status",
+                          children: formatData.status_l10n
+                        }), formatData.exists && formatData.status === 'not_notencoded' && !formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+                          variant: "secondary",
+                          onClick: () => onSelectFormat(formatData) // Implement onSelectFormat for linking
+                          ,
+                          className: "videopack-format-button",
+                          size: "small",
+                          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link existing file'),
+                          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link')
+                        }), formatData.was_picked &&
+                        /*#__PURE__*/
+                        // Show "Replace" if it was manually picked/linked
+                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
+                          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace %s'), formatData.label),
+                          onSelect: onSelectFormat // Implement replace logic
+                          ,
+                          allowedTypes: ['video'],
+                          render: ({
+                            open
+                          }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+                            variant: "secondary",
+                            onClick: open,
+                            className: "videopack-format-button",
+                            size: "small",
+                            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace file'),
+                            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace')
+                          })
+                        }), formatData.deletable && formatData.id &&
+                        /*#__PURE__*/
+                        // Delete FILE button
+                        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+                          isBusy: deleteInProgress === formatId,
+                          onClick: () => openConfirmDialog('file', formatId),
+                          variant: "link",
+                          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Permanently'),
+                          isDestructive: true
+                        }), (formatData.status === 'processing' || formatData.status === 'failed') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(EncodeProgress, {
+                          format: formatId
+                        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalDivider, {})]
+                      }, formatId);
                     })
-                  }), formatData.deletable && formatData.child_id &&
-                  /*#__PURE__*/
-                  // Delete FILE button
-                  (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
-                    isBusy: deleteInProgress === formatId,
-                    onClick: () => openConfirmDialog('file', formatId),
-                    variant: "link",
-                    text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete File'),
-                    isDestructive: true
-                  }), (formatData.status === 'processing' || formatData.status === 'failed') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(EncodeProgress, {
-                    format: formatId
-                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalDivider, {})]
-                }, formatId);
+                  })]
+                }, codec.id);
               })
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.__experimentalConfirmDialog, {
               isOpen: isConfirmOpen,
@@ -650,6 +658,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Thumbnails_scss__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Thumbnails.scss */ "./src/Thumbnails/Thumbnails.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__);
+/* global videopack */
+
 
 
 
@@ -664,15 +674,15 @@ const Thumbnails = ({
   setAttributes,
   attributes,
   attachmentRecord,
-  options
+  options = {}
 }) => {
   const {
     id,
-    total_thumbnails,
     src,
     poster,
     poster_id
   } = attributes;
+  const total_thumbnails = attributes.total_thumbnails || options.total_thumbnails;
   const thumbVideoPanel = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useRef)();
   const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useRef)();
   const currentThumb = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useRef)();
@@ -684,13 +694,6 @@ const Thumbnails = ({
   const [isSaving, setIsSaving] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)(false);
   const thumbApiPath = '/videopack/v1/thumbs';
   const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
-    if (!poster) {
-      videoRef.current.addEventListener('loadedmetadata', () => {
-        handleGenerate('generate');
-      });
-    }
-  }, [videoRef.current]);
   function onSelectPoster(image) {
     setAttributes({
       poster: image.url,
@@ -836,7 +839,7 @@ const Thumbnails = ({
           const thumbBasename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
           const file = await new Promise(resolve => thumb.canvasObject.toBlob(blob => {
             resolve(new File([blob], `${thumbBasename}_thumb_canvas_${index + 1}.png`, {
-              type: "image/png"
+              type: 'image/png'
             }));
           }, 'image/png'));
           await (0,_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_4__.uploadMedia)({
@@ -943,7 +946,7 @@ const Thumbnails = ({
     try {
       const file = await new Promise(resolve => canvasObject.toBlob(blob => {
         resolve(new File([blob], `${thumbBasename}${filenameSuffix}`, {
-          type: "image/png"
+          type: 'image/png'
         }));
       }, 'image/png'));
       setIsSaving(true);
@@ -1000,13 +1003,13 @@ const Thumbnails = ({
     try {
       const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_6__.addQueryArgs)(thumbApiPath, {
         url: src,
-        total_thumbnails: total_thumbnails,
+        total_thumbnails,
         thumbnail_index: i,
         attachment_id: id,
         generate_button: type
       });
       const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-        path: path
+        path
       });
       return response;
     } catch (error) {
@@ -1076,7 +1079,8 @@ const Thumbnails = ({
       children: [poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("img", {
         className: "videopack-current-thumbnail",
         src: poster,
-        ref: currentThumb
+        ref: currentThumb,
+        alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Current Thumbnail')
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.BaseControl, {
         className: "editor-video-poster-control",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.BaseControl.VisualLabel, {
@@ -1112,7 +1116,7 @@ const Thumbnails = ({
             });
           }
         },
-        className: "videopack-numberofthumbs",
+        className: "videopack-total-thumbnails",
         disabled: isSaving
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
         variant: "secondary",
@@ -1133,7 +1137,8 @@ const Thumbnails = ({
         children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Save All')
       }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
         className: `videopack-thumbnail-holder${isSaving ? ' disabled' : ''}`,
-        children: thumbChoices.map((thumb, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
+        children: thumbChoices.map((thumb, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
+          type: "button",
           className: 'videopack-thumbnail',
           onClick: event => {
             handleSaveThumbnail(event, thumb, index);
@@ -1272,8 +1277,8 @@ const AttachmentDetails = ({
   }, []);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
     const combinedAttributes = {
-      id: id,
-      numberofthumbs: attachmentAttributes?.meta?.['_kgvid-meta']?.numberofthumbs || options?.numberofthumbs,
+      id,
+      total_thumbnails: attachmentAttributes?.meta?.['_videopack-meta']?.total_thumbnails || options?.total_thumbnails,
       src: attachmentAttributes?.url,
       poster: attachmentAttributes?.meta?.['_kgflashmediaplayer-poster'] || attachmentAttributes?.image?.src,
       poster_id: attachmentAttributes?.meta?.['_kgflashmediaplayer-poster-id']
@@ -1295,9 +1300,8 @@ const AttachmentDetails = ({
         options: options
       })]
     });
-  } else {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {});
   }
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {});
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (AttachmentDetails);
 

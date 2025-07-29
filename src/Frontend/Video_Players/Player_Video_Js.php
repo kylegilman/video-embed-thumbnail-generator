@@ -16,7 +16,7 @@ class Player_Video_Js extends Player {
 
 		wp_register_script(
 			'video-js',
-			plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video.min.js',
+			plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/video.min.js',
 			'',
 			VIDEOPACK_VIDEOJS_VERSION,
 			true
@@ -24,17 +24,17 @@ class Player_Video_Js extends Player {
 
 		wp_register_script(
 			'video-quality-selector',
-			plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-quality-selector.js',
+			plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/video-quality-selector.js',
 			array( 'video-js' ),
 			VIDEOPACK_VERSION,
 			true
 		);
 
 		$locale = $this->get_videojs_locale();
-		if ( $locale != 'en' && file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/lang/' . $locale . '.js' ) ) {
+		if ( $locale != 'en' && file_exists( plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . '/video-js/lang/' . $locale . '.js' ) ) {
 			wp_register_script(
 				'videojs-l10n',
-				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/lang/' . $locale . '.js',
+				plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/lang/' . $locale . '.js',
 				array( 'video-js' ),
 				VIDEOPACK_VIDEOJS_VERSION,
 				true
@@ -50,17 +50,17 @@ class Player_Video_Js extends Player {
 
 		wp_enqueue_style(
 			'video-js',
-			plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css',
+			plugins_url( '/video-js/video-js.min.css', VIDEOPACK_PLUGIN_FILE ),
 			'',
 			VIDEOPACK_VIDEOJS_VERSION
 		);
 
 		if ( $this->options['skin'] !== 'default'
-			&& file_exists( plugin_dir_path( dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options['skin'] . '.css' )
+			&& file_exists( plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . '/video-js/skins/' . $this->options['skin'] . '.css' )
 		) {
 			wp_enqueue_style(
 				'video-js-kg-skin',
-				plugins_url( '', dirname( __DIR__ ) ) . '/video-js/skins/' . $this->options['skin'] . '.css',
+				plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/skins/' . $this->options['skin'] . '.css',
 				'',
 				VIDEOPACK_VERSION
 			);

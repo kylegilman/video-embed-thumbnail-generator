@@ -111,7 +111,7 @@ abstract class Source {
 
 	/**
 	 * Video resolution.
-	 * @var \Videopack\Admin\Formats\Video_Resolution $resolution
+	 * @var int $resolution
 	 */
 	protected $resolution;
 
@@ -156,7 +156,7 @@ abstract class Source {
 	 * Array of \Videopack\Admin\Formats\Video_Source objects.
 	 * @var array $child_sources
 	 */
-	protected $child_sources;
+	protected $child_sources = array();
 
 	/**
 	 * Video_Source constructor.
@@ -536,13 +536,16 @@ abstract class Source {
 		if ( $this->format ) {
 			$formats = $this->options_manager->get_video_formats();
 			if ( array_key_exists( $this->format, $formats ) ) {
-				$this->resolution = $formats[ $this->format ]->get_resolution();
+				$resolution_object = $formats[ $this->format ]->get_resolution();
+				if ( $resolution_object ) {
+					$this->resolution = $resolution_object->get_height();
+				}
 			}
 		} elseif ( $this->get_height() ) {
 			$resolutions = $this->options_manager->get_video_resolutions();
 			foreach ( $resolutions as $resolution ) {
 				if ( $resolution->get_height() === $this->get_height() ) {
-					$this->resolution = $resolution;
+					$this->resolution = $resolution->get_height();
 					break;
 				}
 			}
@@ -766,36 +769,38 @@ abstract class Source {
 
 	protected function find_format_in_same_directory( \Videopack\Admin\Formats\Video_Format $format ) {
 
-		$file = $this->get_no_extension() . $format->get_suffix();
-		if ( ! file_exists( $file ) ) {
-			$legacy_file = $this->get_no_extension() . $format->get_legacy_suffix();
-			if ( file_exists( $legacy_file ) ) {
-				$file = $legacy_file;
+		if ( $this->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
+			$file = $this->get_no_extension() . $format->get_suffix();
+			if ( ! file_exists( $file ) ) {
+				$legacy_file = $this->get_no_extension() . $format->get_legacy_suffix();
+				if ( file_exists( $legacy_file ) ) {
+					$file = $legacy_file;
+				}
 			}
-		}
 
-		if ( file_exists( $file ) ) {
+			if ( file_exists( $file ) ) {
 
-			$attachment_manager = new \Videopack\Admin\Attachment( $this->options_manager );
-			$attachment_id      = $attachment_manager->url_to_id( $file );
+				$attachment_manager = new \Videopack\Admin\Attachment( $this->options_manager );
+				$attachment_id      = $attachment_manager->url_to_id( $file );
 
-			if ( $attachment_id ) {
+				if ( $attachment_id ) {
+					$this->set_child_source(
+						$format->get_id(),
+						$attachment_id,
+						true,
+						'attachment_local'
+					);
+					return true;
+				}
+
 				$this->set_child_source(
 					$format->get_id(),
-					$attachment_id,
+					$file,
 					true,
-					'attachment_local'
+					'file_local'
 				);
 				return true;
 			}
-
-			$this->set_child_source(
-				$format->get_id(),
-				$file,
-				true,
-				'file_local'
-			);
-			return true;
 		}
 
 		return false;
@@ -803,34 +808,36 @@ abstract class Source {
 
 	protected function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, $post_id ) {
 
-		$sanitized_url = new \Videopack\Admin\Sanitize_Url( $this->url );
-		$potential_url = $this->get_no_extension() . $format->get_suffix();
-		$meta_key      = '_videopack-' . $sanitized_url->singleurl_id . '-' . $format->get_id();
+		if ( $this->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
+			$sanitized_url = new \Videopack\Admin\Sanitize_Url( $this->url );
+			$potential_url = $this->get_no_extension() . $format->get_suffix();
+			$meta_key      = '_videopack-' . $sanitized_url->singleurl_id . '-' . $format->get_id();
 
-		$already_checked_url = get_post_meta( $post_id, $meta_key, true );
-		if ( empty( $already_checked_url ) ) {
-			if ( $this->url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
-				update_post_meta( $post_id, $meta_key, $potential_url );
+			$already_checked_url = get_post_meta( $post_id, $meta_key, true );
+			if ( empty( $already_checked_url ) ) {
+				if ( $this->url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
+					update_post_meta( $post_id, $meta_key, $potential_url );
+					$this->set_child_source(
+						$format->get_id(),
+						$potential_url,
+						true,
+						$this->get_parent_id(),
+						'url'
+					);
+					return true;
+				} else {
+					update_post_meta( $post_id, $meta_key, 'not found' );
+				}
+			} elseif ( substr( $already_checked_url, 0, 4 ) == 'http' ) { // url already checked
+				// if it smells like a URL...
 				$this->set_child_source(
 					$format->get_id(),
-					$potential_url,
+					$already_checked_url,
 					true,
-					$this->get_parent_id(),
 					'url'
 				);
 				return true;
-			} else {
-				update_post_meta( $post_id, $meta_key, 'not found' );
 			}
-		} elseif ( substr( $already_checked_url, 0, 4 ) == 'http' ) { // url already checked
-			// if it smells like a URL...
-			$this->set_child_source(
-				$format->get_id(),
-				$already_checked_url,
-				true,
-				'url'
-			);
-			return true;
 		}
 		return false;
 	}

@@ -255,8 +255,113 @@ class Encode_Attachment {
 		return $formats_array;
 	}
 
-	// start_next_format() is superseded by Encode_Queue_Controller::handle_job_action()
-	// public function start_next_format() { ... }
+	/**
+	 * Gets all defined video formats and their encoding status for the current attachment/URL.
+	 * This method replaces logic previously in REST_Controller::formats().
+	 *
+	 * @return array An associative array of format data, keyed by format ID.
+	 */
+	public function get_all_formats_with_status() {
+		$video_formats_data  = array();
+		$all_defined_formats = $this->options_manager->get_video_formats( false );
+		$encoded_jobs        = $this->get_formats();
+		$video_metadata      = $this->get_video_metadata();
+		$source_height       = ( $video_metadata && $video_metadata->worked ) ? (int) $video_metadata->actualheight : 0;
+
+		$encoded_jobs_map = array();
+		foreach ( $encoded_jobs as $job_obj ) {
+			$encoded_jobs_map[ $job_obj->get_format_id() ] = $job_obj;
+		}
+
+		foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
+			$encode_info = new Encode_Info( $this->id, $this->url, $this->is_attachment, $video_format_obj );
+			$file_exists = $encode_info->exists;
+			$job_exists  = isset( $encoded_jobs_map[ $format_id ] );
+
+			if ( $this->options['hide_video_formats'] ) {
+				$codec_id      = $video_format_obj->get_codec()->get_id();
+				$resolution_id = $video_format_obj->get_resolution()->get_id();
+				$is_enabled_in_options = false;
+
+				if ( 'fullres' === $resolution_id ) {
+					if ( isset( $this->options['encode'][ $codec_id ], $this->options['encode'][ $codec_id ]['enabled'] ) && $this->options['encode'][ $codec_id ]['enabled'] ) {
+						$is_enabled_in_options = true;
+					}
+				} else {
+					if ( isset( $this->options['encode'][ $codec_id ], $this->options['encode'][ $codec_id ]['resolutions'], $this->options['encode'][ $codec_id ]['resolutions'][ $resolution_id ] ) && $this->options['encode'][ $codec_id ]['resolutions'][ $resolution_id ] ) {
+						$is_enabled_in_options = true;
+					}
+				}
+
+				if ( ! $is_enabled_in_options && ! $file_exists && ! $job_exists ) {
+					continue;
+				}
+			}
+
+			$target_height = $video_format_obj->get_resolution()->get_height();
+			if ( $source_height > 0 && is_numeric( $target_height ) && $target_height >= $source_height ) {
+				if ( ! $file_exists && ! $job_exists ) {
+					continue;
+				}
+			}
+
+			$format_array = $video_format_obj->to_array();
+			$format_array['resolution']['name'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_name() );
+			$format_array['resolution']['label'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_label() );
+			$format_array['status'] = 'not_encoded';
+
+			if ( $file_exists ) {
+				$format_array['status']     = 'encoded';
+				$format_array['url']        = $encode_info->url;
+				$format_array['id']         = $encode_info->id;
+				$format_array['was_picked'] = get_post_meta( $encode_info->id, '_kgflashmediaplayer-pickedformat', true );
+			}
+
+			if ( $job_exists ) {
+				$matching_encode_format = $encoded_jobs_map[ $format_id ];
+				$job_data_array         = $matching_encode_format->to_array();
+				$format_array           = array_merge( $format_array, $job_data_array );
+			}
+
+			$format_array['deletable'] = false;
+			if ( ! $video_format_obj->get_replaces_original() && $this->is_attachment ) {
+				$attachment_post = get_post( $this->id );
+				if ( $attachment_post && ( get_current_user_id() === (int) $attachment_post->post_author || current_user_can( 'edit_others_video_encodes' ) ) ) {
+					$format_array['deletable'] = true;
+				}
+			}
+			$format_array['encoding_now'] = in_array( $format_array['status'], array('processing', 'encoding') );
+			$format_array['status_l10n'] = $this->get_status_l10n($format_array['status']);
+
+
+			$video_formats_data[ $format_id ] = $format_array;
+		}
+
+		return $video_formats_data;
+	}
+
+	private function get_status_l10n( $status ) {
+		switch ( $status ) {
+			case 'not_encoded':
+				return __( 'Not Encoded', 'video-embed-thumbnail-generator' );
+			case 'encoded':
+				return __( 'Encoded', 'video-embed-thumbnail-generator' );
+			case 'queued':
+				return __( 'Queued', 'video-embed-thumbnail-generator' );
+			case 'processing':
+				return __( 'Processing', 'video-embed-thumbnail-generator' );
+			case 'encoding':
+				return __( 'Encoding', 'video-embed-thumbnail-generator' );
+			case 'failed':
+				return __( 'Failed', 'video-embed-thumbnail-generator' );
+			case 'complete':
+				return __( 'Complete', 'video-embed-thumbnail-generator' );
+			case 'deleted':
+				return __( 'Deleted', 'video-embed-thumbnail-generator' );
+			default:
+				return $status;
+		}
+	}
 
 	public function start_encode( Encode_Format $encode_format ) {
 

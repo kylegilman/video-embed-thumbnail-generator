@@ -2,7 +2,9 @@
 
 import { __, _x } from '@wordpress/i18n';
 import {
+	BaseControl,
 	Button,
+	CheckboxControl,
 	Flex,
 	FlexBlock,
 	FlexItem,
@@ -33,6 +35,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		resize,
 		auto_res,
 		pixel_ratio,
+		find_formats,
 		fullwidth,
 		width,
 		height,
@@ -56,6 +59,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		muted,
 		gifmode,
 		playback_rate,
+		encode,
 		endofvideooverlaysame,
 		browser_thumbnails,
 		auto_encode,
@@ -96,6 +100,38 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				embeddable: true,
 			}));
 		}
+	};
+
+	const handleCodecCheckboxChange = (codecId, isEnabled) => {
+		const newEncode = JSON.parse(JSON.stringify(settings.encode || {}));
+		const { codecs, resolutions } = videopack.settings;
+		const codecInfo = codecs.find((c) => c.id === codecId);
+
+		if (!newEncode[codecId]) {
+			newEncode[codecId] = { resolutions: {} };
+		}
+
+		newEncode[codecId].enabled = !!isEnabled;
+
+		if (isEnabled && codecInfo) {
+			// Set default quality settings when enabling a codec for the first time
+			if (!newEncode[codecId].rate_control) {
+				newEncode[codecId].rate_control =
+					codecInfo.supported_rate_controls[0];
+				newEncode[codecId].crf = codecInfo.rate_control.crf.default;
+				newEncode[codecId].vbr = codecInfo.rate_control.vbr.default;
+			}
+		}
+
+		if (!isEnabled) {
+			if (!newEncode[codecId].resolutions) {
+				newEncode[codecId].resolutions = {};
+			}
+			resolutions.forEach((resolution) => {
+				newEncode[codecId].resolutions[resolution.id] = false;
+			});
+		}
+		changeHandlerFactory.encode(newEncode);
 	};
 
 	const embedMethodOptions = [
@@ -213,12 +249,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			},
 		];
 
-		videopack.settings.resolutions.forEach( ( resolution ) => {
-			items.push( {
+		videopack.settings.resolutions.forEach((resolution) => {
+			items.push({
 				value: resolution.id,
 				label: resolution.name,
-			} );
-		} );
+			});
+		});
 
 		return items;
 	};
@@ -277,9 +313,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label={__('Embed code')}
-									onChange={
-										changeHandlerFactory.embedcode
-									}
+									onChange={changeHandlerFactory.embedcode}
 									checked={!!embedcode}
 									disabled={!embeddable}
 								/>
@@ -518,6 +552,45 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					/>
 				</div>
+			</PanelBody>
+			<PanelBody title={__('Formats')}>
+				<div className="videopack-setting-reduced-width">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Automatically search for other codecs and resolutions.'
+						)}
+						onChange={changeHandlerFactory.find_formats}
+						checked={!!find_formats}
+					/>
+					<VideopackTooltip
+						text={__(
+							'If a video named video.mp4 is selected, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.'
+						)}
+					/>
+				</div>
+				<BaseControl
+					label={__('Available Formats:')}
+					id="videopack-find-formats-codecs"
+					className="videopack-setting-checkbox-group"
+				>
+					<div>
+						{videopack.settings.codecs.map((codec) => (
+							<CheckboxControl
+								key={codec.id}
+								__nextHasNoMarginBottom
+								label={codec.name}
+								checked={!!encode?.[codec.id]?.enabled}
+								onChange={(isChecked) =>
+									handleCodecCheckboxChange(
+										codec.id,
+										isChecked
+									)
+								}
+							/>
+						))}
+					</div>
+				</BaseControl>
 			</PanelBody>
 			<PanelBody title={__('Watermark Overlay')} initialOpen={true}>
 				<div className="videopack-setting-reduced-width">

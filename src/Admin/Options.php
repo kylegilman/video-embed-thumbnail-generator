@@ -52,7 +52,7 @@ class Options {
 			'embed_method'            => 'Video.js', // Video player to use.
 			'template'                => false, // Whether to use a custom template for video output.
 			'template_gentle'         => true, // Enable gentle template failover if the custom template is missing.
-			'hide_video_formats'      => true, // Hide child video formats (encoded versions) in the Admin area.
+			'hide_video_formats'      => true, // List only enabled default video formats in the Admin area.
 			'hide_thumbnails'         => false, // Hide generated thumbnails in the Admin area.
 			'delete_children'         => 'encoded videos only', // Criteria for deleting associated media upon video deletion ('none', 'encoded videos only', 'all').
 			'thumb_parent'            => 'video', // Parent post type for video thumbnails ('video', 'post').
@@ -145,6 +145,7 @@ class Options {
 			'endofvideooverlaysame'   => false, // Display the poster image at the end of videos if endofvideooverlay is true.
 			'auto_res'                => 'automatic', // Default video playback resolution ('automatic', 'highest', 'lowest', or specific like '1080p').
 			'pixel_ratio'             => true, // Enable adjustment for high DPI displays (retina) when auto_res is 'automatic'.
+			'find_formats'            => false, // Automatically look for other codecs and resolutions based on the video filename.
 
 			// Gallery Settings.
 			'gallery_width'           => 80, // Width of the gallery thumbnail images in pixels.
@@ -274,6 +275,9 @@ class Options {
 				$old_options['embedcode'] = $old_options['overlay_embedcode'];
 				unset( $old_options['overlay_embedcode'] );
 			}
+
+			// Add find_formats set to true to preserve behavior from the old version
+			$old_options['find_formats'] = true;
 
 			// Migrate custom_format to encode array
 			if ( isset( $old_options['custom_format']['format'] ) ) {
@@ -520,6 +524,7 @@ class Options {
 	 *   endofvideooverlaysame: bool,
 	 *   auto_res: string,
 	 *   pixel_ratio: bool,
+	 *   find_formats: bool,
 	 *   gallery_width: int,
 	 *   gallery_columns: int,
 	 *   gallery_end: string,
@@ -584,48 +589,48 @@ class Options {
 			array(
 				'id'             => 'fullres',
 				'height'         => false,
-				'name'           => 'Full Resolution', //esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' ),
-				'label'          => false,
+				'name'           => 'Full Resolution',
+				'label'          => 'Replace with full resolution',
 				'default_encode' => false,
 			),
 			array(
 				'height'         => 2160,
-				'name'           => '4k UHD (2160p)', //esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' ),
+				'name'           => '4k UHD (2160p)',
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 1440,
-				'name'           => 'Quad HD (1440p)', //esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Quad HD (1440p)',
 				'default_encode' => false,
 			),
 			array(
 				'height'         => 1080,
-				'name'           => 'Full HD (1080p)', //esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Full HD (1080p)',
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 720,
-				'name'           => 'HD (720p)', //esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'HD (720p)',
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 540,
-				'name'           => 'HD (540p)', //esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'HD (540p)',
 				'default_encode' => false,
 			),
 			array(
 				'height'         => 480,
-				'name'           => 'SD (480p)', //esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'SD (480p)',
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 360,
-				'name'           => 'Low Definition (360p)', //esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Low Definition (360p)',
 				'default_encode' => true,
 			),
 			array(
 				'height'         => 240,
-				'name'           => 'Ultra Low Definition (240p)', //esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' ),
+				'name'           => 'Ultra Low Definition (240p)',
 				'default_encode' => false,
 			),
 		);
@@ -633,8 +638,7 @@ class Options {
 		if ( $this->options['custom_resolution'] ?? false ) {
 			$resolution_properties[] = array(
 				'height'         => $this->options['custom_resolution'],
-				/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-				'name'           => 'Custom', //sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) ),
+				'name'           => 'Custom',
 				'default_encode' => false,
 			);
 		}
@@ -667,13 +671,55 @@ class Options {
 		return apply_filters( 'videopack_video_resolutions', $resolutions );
 	}
 
-	public function get_video_formats() {
+	/**
+	 * Returns translated video resolution name.
+	 *
+	 * @param string $name The resolution name.
+	 * @return string
+	 */
+	public function get_resolution_l10n( $name ) {
+		switch ( $name ) {
+			case 'Full Resolution':
+				return esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' );
+			case 'Replace with full resolution':
+				return esc_html__( 'Replace with full resolution', 'video-embed-thumbnail-generator' );
+			case '4k UHD (2160p)':
+				return esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' );
+			case 'Quad HD (1440p)':
+				return esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' );
+			case 'Full HD (1080p)':
+				return esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' );
+			case 'HD (720p)':
+				return esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' );
+			case 'HD (540p)':
+				return esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' );
+			case 'SD (480p)':
+				return esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' );
+			case 'Low Definition (360p)':
+				return esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' );
+			case 'Ultra Low Definition (240p)':
+				return esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' );
+			case 'Custom':
+				if ( $this->options['custom_resolution'] ?? false ) {
+					/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
+					return sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) );
+				}
+				return esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
+			default:
+				return apply_filters( 'videopack_resolution_l10n', $name );
+		}
+	}
+
+	public function get_video_formats( $hide_formats = false ) {
 
 		$video_formats     = array();
 		$video_resolutions = $this->get_video_resolutions();
 		$video_codecs      = $this->get_video_codecs();
 
 		foreach ( $video_codecs as $codec ) {
+			if ( $hide_formats && $this->options['hide_video_formats'] && ! $this->options['encode'][ $codec->get_id() ]['enabled'] ) {
+				continue;
+			}
 			foreach ( $video_resolutions as $resolution ) {
 				if ( is_array( $this->options )
 					&& isset( $this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] )

@@ -42,10 +42,56 @@ class Ui {
 		return $shortcode_handler->do( $attributes, $content );
 	}
 
+	/**
+	 * Prepares and returns the videopack.settings data for JavaScript.
+	 *
+	 * @return array The settings data.
+	 */
+	private function _get_videopack_settings_data() {
+		// Prepare codec data for localization, making it easier to read and debug.
+		$codec_objects = $this->options_manager->get_video_codecs();
+		$codecs_data   = array();
+		foreach ( $codec_objects as $codec_class ) {
+			$codecs_data[] = $codec_class->get_properties();
+		}
+
+		// Prepare resolution data for localization, converting the array of objects
+		// into a simple associative array for JavaScript.
+		$resolution_objects = $this->options_manager->get_video_resolutions();
+		$resolutions_data   = array();
+		foreach ( $resolution_objects as $resolution ) {
+			$resolutions_data[] = array(
+				'id'   => $resolution->get_id(),
+				'name' => $resolution->get_name(),
+			);
+		}
+
+		$options = $this->options_manager->get_options();
+
+		return array(
+			'url'           => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
+			'codecs'        => $codecs_data,
+			'resolutions'   => $resolutions_data,
+			'ffmpeg_exists' => $options['ffmpeg_exists'],
+		);
+	}
+
 	public function enqueue_block_assets() {
 		// The 'editorScript' defined in block.json handles enqueuing the block's script.
 		// We only need to register the script translations here.
-		wp_set_script_translations( 'videopack/videopack-block', 'video-embed-thumbnail-generator' );
+		wp_set_script_translations( 'videopack-videopack-block-editor-script', 'video-embed-thumbnail-generator' );
+
+		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.settings = ' . wp_json_encode( $this->_get_videopack_settings_data() ) . ';';
+
+				wp_add_inline_script(
+			'videopack-videopack-block-editor-script',
+			$inline_script,
+			'before'
+		);
+
+		$options = $this->options_manager->get_options();
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $options['embed_method'], $this->options_manager );
+		$player->enqueue_styles();
 	}
 
 	public function enqueue_page_assets( $hook_suffix ) {
@@ -88,30 +134,10 @@ class Ui {
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
-			// Prepare codec data for localization, making it easier to read and debug.
-			$codec_objects = $this->options_manager->get_video_codecs();
-			$codecs_data   = array();
-			foreach ( $codec_objects as $codec_class ) {
-				$codecs_data[] = $codec_class->get_properties();
-			}
+			$settings_data = $this->_get_videopack_settings_data();
+			$settings_data['freemiusEnabled'] = $freemius_enabled;
 
-			// Prepare resolution data for localization, converting the array of objects
-			// into a simple associative array for JavaScript.
-			$resolution_objects = $this->options_manager->get_video_resolutions();
-			$resolutions_data   = array();
-			foreach ( $resolution_objects as $resolution ) {
-				$resolutions_data[] = array(
-					'id'   => $resolution->get_id(),
-					'name' => $resolution->get_name(),
-				);
-			}
-
-			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.settings = ' . wp_json_encode( array(
-				'url'         => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
-				'codecs'      => $codecs_data,
-				'resolutions' => $resolutions_data,
-				'freemiusEnabled' => $freemius_enabled,
-			) ) . ';';
+			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.settings = ' . wp_json_encode( $settings_data ) . ';';
 
 			wp_add_inline_script(
 				'videopack-settings',
