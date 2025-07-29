@@ -1,65 +1,58 @@
-import { useRef, useEffect, } from '@wordpress/element';
+import { useRef, useEffect } from '@wordpress/element';
 import videojs from 'video.js';
 
-export const VideoJS = ( props ) => {
-
+export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
 	const { options, onReady, skin } = props;
 
-	useEffect( () => {
+	useEffect(() => {
+		// On initial render, wait for sources to be available before initializing.
+		if (!playerRef.current) {
+			if (!options || !options.sources || options.sources.length === 0) {
+				return; // Don't initialize until sources are ready.
+			}
 
-		// Make sure Video.js player is only initialized once
-		if ( ! playerRef.current ) {
-		// The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
-		const videoElement = document.createElement("video-js");
+			const videoElement = videoRef.current;
+			if (!videoElement) {
+				return;
+			}
 
-		videoElement.classList.add( 'video-js' );
-		videoRef.current.appendChild(videoElement);
+			playerRef.current = videojs(videoElement, options, () => {
+				onReady && onReady(playerRef.current);
+			});
 
-		const player = playerRef.current = videojs( videoElement, options, () => {
-			videojs.log( 'player is ready' );
-			onReady && onReady(player);
-		} );
-
-		// You could update an existing player in the `else` block here
-		// on prop change, for example:
+			// On subsequent renders, update the existing player.
 		} else {
 			const player = playerRef.current;
-
-			player.autoplay(options.autoplay);
-			player.muted(options.muted);
-			player.volume(options.volume);
-			player.src(options.sources);
-			player.poster(options.poster);
-			player.loop(options.loop);
-			player.controls(options.controls);
-			player.preload(options.preload);
-			player.src(options.sources);
-			player.playbackRates(options.playbackRates);
+			if (player && !player.isDisposed()) {
+				player.autoplay(options.autoplay);
+				player.muted(options.muted);
+				player.poster(options.poster);
+				// Only update src if sources are valid to prevent the error.
+				if (options.sources && options.sources.length > 0) {
+					player.src(options.sources);
+				}
+			}
 		}
-	}, [options, videoRef]);
+	}, [options, onReady]);
 
-	// Dispose the Video.js player when the functional component unmounts
+	// Dispose the player when the component unmounts
 	useEffect(() => {
 		const player = playerRef.current;
-
 		return () => {
-			if ( player && ! player.isDisposed() ) {
+			if (player && !player.isDisposed()) {
 				player.dispose();
 				playerRef.current = null;
 			}
 		};
-	}, [playerRef] );
+	}, []);
 
 	return (
 		<div data-vjs-player>
-			<div
-				ref={ videoRef }
-				className={ skin === 'default' ? null : skin }
-			/>
+			<video ref={videoRef} className={`video-js ${skin}`} />
 		</div>
 	);
-}
+};
 
 export default VideoJS;

@@ -179,7 +179,7 @@ class Videopack {
 
 		$rest_controller = new Admin\REST_Controller( $this->options_manager );
 		$this->loader->add_action( 'rest_api_init', $rest_controller, 'add_rest_routes' );
-		$this->loader->add_action( 'wp_error_added', $rest_controller, 'log_all_errors_to_debug_log', 10, 4 );
+		$this->loader->add_filter( 'rest_post_dispatch', $rest_controller, 'log_rest_api_errors', 10, 3 );
 
 		$admin_screens = new Admin\Screens( $this->options_manager );
 		$this->loader->add_filter( 'plugin_action_links_' . VIDEOPACK_BASENAME, $admin_screens, 'plugin_action_links' );
@@ -197,7 +197,7 @@ class Videopack {
 		// Admin UI (Block, React Settings, Media Library Enhancements) hooks.
 		$admin_ui = new Admin\Ui( $this->options_manager );
 		$this->loader->add_action( 'init', $admin_ui, 'block_init' );
-		$this->loader->add_action( 'enqueue_block_assets', $admin_ui, 'enqueue_block_assets' );
+		$this->loader->add_action( 'enqueue_block_editor_assets', $admin_ui, 'enqueue_block_assets' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_page_assets' );
 		$this->loader->add_action( 'wp_enqueue_media', $admin_ui, 'enqueue_attachment_details' );
 	}

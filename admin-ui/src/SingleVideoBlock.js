@@ -1,64 +1,89 @@
 import { useEntityRecord } from '@wordpress/core-data';
-import { useEffect } from '@wordpress/element';
-import { __, _x, _n, } from '@wordpress/i18n';
-import { InspectorControls, useBlockProps, } from '@wordpress/block-editor';
+import { useEffect, useMemo } from '@wordpress/element';
+import { __, _x, _n } from '@wordpress/i18n';
+import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import VideoSettings from './VideoSettings';
 import Thumbnails from './Thumbnails/Thumbnails';
 import AdditionalFormats from './AdditionalFormats';
 import VideoPlayer from './VideopackRender/player/VideoPlayer';
 
-const SingleVideoBlock = ( {
-	setAttributes,
-	attributes,
-	options,
-} ) => {
+const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
+	const { caption, id, videoTitle } = attributes;
 
-	const {
-		caption,
-		id,
-	} = attributes;
+	// useEntityRecord should be called unconditionally.
+	const { record: attachmentRecord, hasResolved } = useEntityRecord(
+		'postType',
+		'attachment',
+		id
+	);
 
-	const attachmentRecord = isNaN( id ) ? null : useEntityRecord( 'postType', 'attachment', id);
-	useEffect( () => {
-		if ( attachmentRecord && attachmentRecord.hasResolved ) {
-			setAttributes({ videoTitle: attachmentRecord.record?.title?.raw } );
-			if ( ! caption ) { setAttributes({ caption: attachmentRecord.record?.caption?.raw } ); }
+	useEffect(() => {
+		// Check hasResolved and that the record exists.
+		if (hasResolved && attachmentRecord) {
+			const newAttributes = {};
+			const newTitle = attachmentRecord?.title?.raw;
+			const newCaption = attachmentRecord?.caption?.raw;
+
+			// Only update if the new value is different from the old one.
+			if (newTitle && newTitle !== videoTitle) {
+				newAttributes.videoTitle = newTitle;
+			}
+
+			// Only update the caption if it's currently empty and a new one is available.
+			if (!caption && newCaption) {
+				newAttributes.caption = newCaption;
+			}
+
+			// Only call setAttributes if there are changes to apply.
+			if (Object.keys(newAttributes).length > 0) {
+				setAttributes(newAttributes);
+			}
 		}
-	}, [ attachmentRecord.hasResolved ] );
+	}, [attachmentRecord, caption, videoTitle, setAttributes, hasResolved]);
 
-	const handleVideoPlayerReady = () => {
+	const handleVideoPlayerReady = () => {};
 
-	}
+	const playerAttributes = useMemo(() => {
+		const newPlayerAttributes = { ...(options || {}), ...attributes };
+
+		if (!newPlayerAttributes.embed_method && options) {
+			newPlayerAttributes.embed_method = options.embed_method;
+		}
+
+		if (attachmentRecord?.videopack?.sources) {
+			newPlayerAttributes.sources = attachmentRecord.videopack.sources;
+		}
+		return newPlayerAttributes;
+	}, [options, attributes, attachmentRecord]);
 
 	return (
 		<>
-		<InspectorControls>
-			<Thumbnails
-				setAttributes={ setAttributes }
-				attributes={ attributes }
-				attachmentRecord={ attachmentRecord }
-				options={ options }
-			/>
-			<VideoSettings
-				setAttributes={ setAttributes }
-				attributes={ attributes }
-			/>
-			<AdditionalFormats
-				setAttributes={ setAttributes }
-				attributes={ attributes }
-				attachmentRecord={ attachmentRecord }
-				options={ options }
-			/>
-		</InspectorControls>
-		<div { ...useBlockProps() }>
-			<VideoPlayer
-				attributes={ attributes }
-				onReady={ handleVideoPlayerReady }
-			/>
-		</div>
+			<InspectorControls>
+				<Thumbnails
+					setAttributes={setAttributes}
+					attributes={attributes}
+					attachmentRecord={attachmentRecord}
+					options={options}
+				/>
+				<VideoSettings
+					setAttributes={setAttributes}
+					attributes={attributes}
+				/>
+				<AdditionalFormats
+					setAttributes={setAttributes}
+					attributes={attributes}
+					attachmentRecord={attachmentRecord}
+					options={options}
+				/>
+			</InspectorControls>
+			<div {...useBlockProps()}>
+				<VideoPlayer
+					attributes={playerAttributes}
+					onReady={handleVideoPlayerReady}
+				/>
+			</div>
 		</>
 	);
-
-}
+};
 
 export default SingleVideoBlock;

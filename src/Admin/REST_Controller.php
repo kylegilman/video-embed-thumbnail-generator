@@ -141,7 +141,7 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/formats/(?P<id>\w+)',
+			'/formats/(?P<id>\d+)',
 			array( // This route handles specific attachment IDs.
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'formats' ),
@@ -503,6 +503,14 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return array The cleaned array.
 	 */
 	public function clean_array( $dirty_array ) {
+		static $depth = 0;
+
+		// Add a depth limit to prevent infinite recursion
+		if ($depth > 20) {
+			return '(recursion limit reached)';
+		}
+
+		$depth++;
 		foreach ( $dirty_array as $key => $value ) {
 			if ( is_array( $value ) ) {
 				$dirty_array[ $key ] = $this->clean_array( $value );
@@ -518,6 +526,7 @@ class REST_Controller extends \WP_REST_Controller {
 				$dirty_array[ $key ] = true;
 			}
 		}
+		$depth--;
 		return $dirty_array;
 	}
 
@@ -596,53 +605,31 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return array|\WP_Error Array of format data on success, or WP_Error object on failure.
 	 */
 	public function formats( \WP_REST_Request $request ) {
-		$params              = $request->get_params();
-		$encoder             = null;
-		$video_formats_data  = array();
-		$all_defined_formats = $this->options_manager->get_video_formats(); // These are Video_Format objects.
+		$params             = $request->get_params();
+		$encoder            = null;
+		$video_formats_data = array();
 
+		// Determine if a specific video is being requested by ID or URL.
 		if ( ! empty( $params['id'] ) && get_post_type( $params['id'] ) === 'attachment' ) {
 			$encoder = new encode\Encode_Attachment( $this->options_manager, (int) $params['id'] );
 		} elseif ( ! empty( $params['url'] ) ) {
 			$input_url     = esc_url_raw( $params['url'] );
 			$sanitized_url = new Sanitize_Url( $input_url );
-			// For external URLs, the 'id' parameter in Encode_Attachment constructor is used for internal tracking (like singleurl_id).
 			$encoder = new encode\Encode_Attachment( $this->options_manager, $sanitized_url->singleurl_id, $input_url );
 		}
 
 		if ( $encoder ) {
-			// Specific video requested: get its encoding jobs (Encode_Format objects from the DB).
-			$encoded_jobs = $encoder->get_formats(); // Returns array of Encode_Format objects.
-
-			foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
-				$format_array           = $video_format_obj->to_array();
-				$format_array['status'] = 'not_encoded'; // Default status if no job found.
-
-				// Find if there's an existing job for this format.
-				$matching_encode_format = null;
-				foreach ( $encoded_jobs as $job_obj ) {
-					if ( $job_obj->get_format_id() === $format_id ) {
-						$matching_encode_format = $job_obj;
-						break;
-					}
-				}
-
-				if ( $matching_encode_format ) {
-					// Merge with data from the Encode_Format object (the job).
-					$job_data_array = $matching_encode_format->to_array();
-					$format_array   = array_merge( $format_array, $job_data_array );
-				}
-				$video_formats_data[] = $format_array;
-			}
+			// If a specific video is requested, delegate to Encode_Attachment to get status for all formats.
+			$video_formats_data = $encoder->get_all_formats_with_status();
 		} else {
 			// No specific video: return all defined formats with their default properties.
+			$all_defined_formats = $this->options_manager->get_video_formats( $this->options['hide_video_formats'] );
 			foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
 				$format_array           = $video_format_obj->to_array();
 				$format_array['status'] = 'defined'; // Indicate it's just a definition.
-				$video_formats_data[]   = $format_array;
+				$video_formats_data[ $format_id ] = $format_array;
 			}
 		}
-
 		return $this->clean_array( $video_formats_data );
 	}
 
@@ -1096,41 +1083,41 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Logs detailed information about REST API errors.
+	 * Logs REST API errors with request context.
 	 *
-	 * This is a debugging helper.
+	 * This function is hooked into `rest_post_dispatch` and will log any WP_Error
+	 * responses, providing valuable debugging information including the route,
+	 * method, parameters, and the error details.
 	 *
-	 * @param \WP_REST_Response|\WP_Error $response The REST response or error object.
-	 * @param array                       $handler  The handler for the request.
-	 * @param \WP_REST_Request            $request  The REST request object.
-	 * @return \WP_REST_Response|\WP_Error The original response or error object.
+	 * @param \WP_REST_Response||\WP_Error $result  Result to send to the client.
+	 * @param \WP_REST_Server   $server  Server instance.
+	 * @param \WP_REST_Request  $request Request used to generate the response.
+	 * @return \WP_REST_Response The unchanged result.
 	 */
-	public function log_detailed_rest_errors( $response, $handler, $request ) {
-		if ( is_wp_error( $response ) && $response->has_errors() ) {
-			$error_data = $response->get_error_data();
-			if ( isset( $error_data['status'] ) && $error_data['status'] === 400 && $response->get_error_code() === 'rest_additional_properties_forbidden' ) {
-				error_log( 'REST Request Error:' );
-				error_log( 'Path: ' . $request->get_route() );
-				error_log( 'Method: ' . $request->get_method() );
-				error_log( 'Parameters: ' . json_encode( $request->get_params() ) );
-				error_log( 'Error Message: ' . $response->get_error_message() );
-			}
-		}
-		return $response;
-	}
-	//add_action( 'rest_request_after_callbacks', 'log_detailed_rest_errors', 10, 3 );
+		public function log_rest_api_errors( $result, $server, $request ) {
+		$is_error      = false;
+		$error_details = '';
 
-	/**
-	 * Logs all errors to the debug log.
-	 *
-	 * This is a debugging helper.
-	 *
-	 * @param string $code     Error code.
-	 * @param string $message  Error message.
-	 * @param mixed  $data     Error data.
-	 * @param object $wp_error WP_Error object.
-	 */
-	public function log_all_errors_to_debug_log( $code, $message, $data, $wp_error ) {
-		error_log( $code . ': ' . $message );
+		if ( is_wp_error( $result ) ) {
+			$is_error      = true;
+			$error_details = wp_json_encode( $result->get_error_data() );
+		} elseif ( is_a( $result, 'WP_REST_Response' ) && $result->is_error() ) {
+			$is_error      = true;
+			$error_details = wp_json_encode( $result->get_data() );
+		}
+
+		if ( $is_error ) {
+			error_log(
+				sprintf(
+					'REST API Error: Route: %s, Method: %s, Params: %s, Error: %s',
+					$request->get_route(),
+					$request->get_method(),
+					wp_json_encode( $request->get_params() ),
+					$error_details
+				)
+			);
+		}
+
+		return $result;
 	}
 }

@@ -321,10 +321,10 @@ class Attachment {
 			)
 		) {
 
-			$thumb_ids      = array();
-			$numberofthumbs = intval( $this->options['auto_thumb_number'] );
+			$thumb_ids    = array();
+			$total_thumbs = intval( $this->options['auto_thumb_number'] );
 
-			if ( $numberofthumbs === 1 ) {
+			if ( $total_thumbs === 1 ) {
 				$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
 				$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $post_id, $filepath, true, $ffmpeg_path, $this->options_manager );
 
@@ -345,8 +345,8 @@ class Attachment {
 					}
 				}
 			} else { // Multiple thumbnails
-				for ( $i = 1; $i <= $numberofthumbs; $i++ ) {
-					$thumb_data = $ffmpeg_thumbnails->generate_single_thumbnail_data( $post_id, $numberofthumbs, $i, false );
+				for ( $i = 1; $i <= $total_thumbs; $i++ ) {
+					$thumb_data = $ffmpeg_thumbnails->generate_single_thumbnail_data( $post_id, $total_thumbs, $i, false );
 
 					if ( is_wp_error( $thumb_data ) ) {
 						continue;
@@ -360,9 +360,9 @@ class Attachment {
 				}
 			}
 
-			$thumb_key = ( $numberofthumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
-			if ( $thumb_key > $numberofthumbs ) { // Sanity check
-				$thumb_key = $numberofthumbs;
+			$thumb_key = ( $total_thumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
+			if ( $thumb_key > $total_thumbs ) { // Sanity check
+				$thumb_key = $total_thumbs;
 			}
 			if ( $thumb_key === 0 ) { // Another sanity check
 				$thumb_key = 1;

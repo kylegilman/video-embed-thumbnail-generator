@@ -165,6 +165,9 @@ class Attachment_Meta {
 		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) ) {
 			$video_path = get_attached_file( $this->post_id );
 			if ( $video_path ) {
+				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+					require_once ABSPATH . 'wp-admin/includes/media.php';
+				}
 				$video_info = wp_read_video_metadata( $video_path );
 				if ( $video_info ) {
 					if ( empty( $meta_data['codec'] ) && ! empty( $video_info['codec'] ) ) {

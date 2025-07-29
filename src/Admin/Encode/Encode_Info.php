@@ -13,8 +13,8 @@ class Encode_Info {
 	public $deletable = false;
 	public $width;
 	public $height;
+	public $id;
 
-	protected $id;
 	protected $movieurl;
 	protected $is_attachment = false;
 	protected $format;
@@ -84,6 +84,7 @@ class Encode_Info {
 			$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
 
 			if ( $meta_format == $this->format->get_id()
+				|| $meta_format == $this->format->get_legacy_id()
 				|| (
 					substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix()
 					&& $meta_format == false

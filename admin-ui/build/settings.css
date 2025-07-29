@@ -486,9 +486,6 @@
   text-align: left;
   margin-right: 10px;
 }
-.wrap.videopack-settings .videopack-encode-grid .components-base-control.components-checkbox-control {
-  margin-bottom: 0;
-}
 .wrap.videopack-settings .components-flex.videopack-setting-sample-formats {
   justify-content: flex-start;
   align-items: flex-end;

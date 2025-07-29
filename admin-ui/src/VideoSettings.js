@@ -6,9 +6,7 @@ import {
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
-import {
-	__experimentalGetElementClassName,
-} from '@wordpress/block-editor';
+import { __experimentalGetElementClassName } from '@wordpress/block-editor';
 import {
 	Platform,
 	useMemo,
@@ -20,7 +18,7 @@ import { __, _x } from '@wordpress/i18n';
 
 import { volumeUp, volumeDown } from './icon';
 
-const VideoSettings = ( { setAttributes, attributes } ) => {
+const VideoSettings = ({ setAttributes, attributes }) => {
 	const {
 		autoplay,
 		controls,
@@ -43,272 +41,273 @@ const VideoSettings = ( { setAttributes, attributes } ) => {
 	} = attributes;
 
 	useEffect(() => {
-		setAttributes( {
+		setAttributes({
 			autoplay: gifmode,
 			loop: gifmode,
 			muted: gifmode,
-		 } );
-		if ( gifmode ) {
-			setAttributes( {
+		});
+		if (gifmode) {
+			setAttributes({
 				controls: false,
 				embeddable: false,
 				title: false,
 				view_count: false,
 				playsinline: true,
-			} );
+			});
 		} else {
-			setAttributes( { controls: true } );
+			setAttributes({ controls: true });
 		}
-	}, [gifmode] );
+	}, [gifmode]);
 
 	useEffect(() => {
-		if ( embeddable === false ) {
-			setAttributes( {
+		if (embeddable === false) {
+			setAttributes({
 				downloadlink: false,
 				embedcode: false,
 				twitter_button: false,
-				facebook_button: false
-			} );
+				facebook_button: false,
+			});
 		}
-	}, [embeddable] );
+	}, [embeddable]);
 
 	const autoPlayHelpText = __(
 		'Autoplay may cause usability issues for some users.'
 	);
-	const getAutoplayHelp = Platform.select( {
-		web: useCallback( ( checked ) => {
+	const getAutoplayHelp = Platform.select({
+		web: useCallback((checked) => {
 			return checked ? autoPlayHelpText : null;
-		}, [] ),
+		}, []),
 		native: autoPlayHelpText,
-	} );
+	});
 
-	const toggleFactory = useMemo( () => {
-		const toggleAttribute = ( attribute ) => {
-			return ( newValue ) => {
-				setAttributes( { [ attribute ]: newValue } );
+	const toggleFactory = useMemo(() => {
+		const toggleAttribute = (attribute) => {
+			return (newValue) => {
+				setAttributes({ [attribute]: newValue });
 			};
 		};
 
 		return {
-			autoplay: toggleAttribute( 'autoplay' ),
-			loop: toggleAttribute( 'loop' ),
-			muted: toggleAttribute( 'muted' ),
-			controls: toggleAttribute( 'controls' ),
-			playsinline: toggleAttribute( 'playsinline' ),
-			view_count: toggleAttribute( 'view_count' ),
-			title: toggleAttribute( 'title' ),
-			downloadlink: toggleAttribute( 'downloadlink' ),
-			embeddable: toggleAttribute( 'embeddable' ),
-			embedcode: toggleAttribute( 'embedcode' ),
-			twitter_button: toggleAttribute( 'twitter_button' ),
-			facebook_button: toggleAttribute( 'facebook_button' ),
-			playback_rate: toggleAttribute( 'playback_rate' ),
-			gifmode: toggleAttribute( 'gifmode' ),
+			autoplay: toggleAttribute('autoplay'),
+			loop: toggleAttribute('loop'),
+			muted: toggleAttribute('muted'),
+			controls: toggleAttribute('controls'),
+			playsinline: toggleAttribute('playsinline'),
+			view_count: toggleAttribute('view_count'),
+			title: toggleAttribute('title'),
+			downloadlink: toggleAttribute('downloadlink'),
+			embeddable: toggleAttribute('embeddable'),
+			embedcode: toggleAttribute('embedcode'),
+			twitter_button: toggleAttribute('twitter_button'),
+			facebook_button: toggleAttribute('facebook_button'),
+			playback_rate: toggleAttribute('playback_rate'),
+			gifmode: toggleAttribute('gifmode'),
 		};
-	}, [] );
+	}, []);
 
 	const preloadOptions = [
-		{ value: 'auto', label: __( 'Auto' ) },
-		{ value: 'metadata', label: __( 'Metadata' ) },
-		{ value: 'none', label: _x( 'None', 'Preload value' ) },
+		{ value: 'auto', label: __('Auto') },
+		{ value: 'metadata', label: __('Metadata') },
+		{ value: 'none', label: _x('None', 'Preload value') },
 	];
 
 	const galleryOrderbyOptions = [
-		{ value: 'menu_order', label: __( 'Menu Order' ) },
-		{ value: 'title', label: __( 'Title' ) },
-		{ value: 'post_date', label: __( 'Date' ) },
-		{ value: 'rand', label: __( 'Random' ) },
-		{ value: 'ID', label: __( 'Video ID' ) },
+		{ value: 'menu_order', label: __('Menu Order') },
+		{ value: 'title', label: __('Title') },
+		{ value: 'post_date', label: __('Date') },
+		{ value: 'rand', label: __('Random') },
+		{ value: 'ID', label: __('Video ID') },
 	];
 
 	return (
-	<>
-		<PanelBody
-		title={ __( 'Player Settings' ) }
-		initialOpen={ false }
-		>
-			{ ! gifmode &&
-				<>
+		<>
+			<PanelBody title={__('Player Settings')} initialOpen={false}>
+				{!gifmode && (
+					<>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Autoplay')}
+								onChange={toggleFactory.autoplay}
+								checked={!!autoplay}
+								help={getAutoplayHelp}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Loop')}
+								onChange={toggleFactory.loop}
+								checked={!!loop}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Muted')}
+								onChange={toggleFactory.muted}
+								checked={!!muted}
+							/>
+						</PanelRow>
+						{!muted && (
+							<RangeControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__('Volume')}
+								value={volume}
+								beforeIcon={volumeDown}
+								afterIcon={volumeUp}
+								initialPosition={1}
+								withInputField={false}
+								onChange={(value) =>
+									setAttributes({ volume: value })
+								}
+								min={0}
+								max={1}
+								step={0.05}
+							/>
+						)}
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Playback controls')}
+								onChange={toggleFactory.controls}
+								checked={!!controls}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Play inline')}
+								onChange={toggleFactory.playsinline}
+								checked={!!playsinline}
+								help={__(
+									'Plays inline instead of fullscreen on iPhones.'
+								)}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Variable playback speeds')}
+								onChange={toggleFactory.playback_rate}
+								checked={!!playback_rate}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<SelectControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__('Preload')}
+								value={preload}
+								onChange={(value) =>
+									setAttributes({ preload: value })
+								}
+								options={preloadOptions}
+								hideCancelButton={true}
+							/>
+						</PanelRow>
+					</>
+				)}
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Autoplay' ) }
-						onChange={ toggleFactory.autoplay }
-						checked={ !! autoplay }
-						help={ getAutoplayHelp }
+						label={__('GIF mode')}
+						onChange={toggleFactory.gifmode}
+						checked={!!gifmode}
+						help={__(
+							'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
+						)}
 					/>
 				</PanelRow>
+			</PanelBody>
+			<PanelBody title={__('Sharing')} initialOpen={false}>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Loop' ) }
-						onChange={ toggleFactory.loop }
-						checked={ !! loop }
+						label={__('Allow embedding on other sites')}
+						onChange={toggleFactory.embeddable}
+						checked={!!embeddable}
 					/>
 				</PanelRow>
+				{embeddable && (
+					<>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Download link')}
+								onChange={toggleFactory.downloadlink}
+								checked={!!downloadlink}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Embed code')}
+								onChange={toggleFactory.embedcode}
+								checked={!!embedcode}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Twitter button')}
+								onChange={toggleFactory.twitter_button}
+								checked={!!twitter_button}
+							/>
+						</PanelRow>
+						<PanelRow>
+							<ToggleControl
+								__nextHasNoMarginBottom
+								label={__('Facebook button')}
+								onChange={toggleFactory.facebook_button}
+								checked={!!facebook_button}
+							/>
+						</PanelRow>
+					</>
+				)}
+			</PanelBody>
+			<PanelBody title={__('Metadata')} initialOpen={false}>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Muted' ) }
-						onChange={ toggleFactory.muted }
-						checked={ !! muted }
+						label={__('Overlay title')}
+						onChange={toggleFactory.title}
+						checked={!!title}
 					/>
 				</PanelRow>
-				{ ! muted &&
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'Volume' ) }
-						value={ volume }
-						beforeIcon={ volumeDown }
-						afterIcon={ volumeUp }
-						initialPosition={ 1 }
-						withInputField={ false }
-						onChange={ (value) => setAttributes({ volume: value }) }
-						min={ 0 }
-						max={ 1 }
-						step={ .05 }
-					/>
-				}
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Playback controls' ) }
-						onChange={ toggleFactory.controls }
-						checked={ !! controls }
-					/>
-				</PanelRow>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Play inline' ) }
-						onChange={ toggleFactory.playsinline }
-						checked={ !! playsinline }
-						help={ __( 'Plays inline instead of fullscreen on iPhones.' ) }
-					/>
-				</PanelRow>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Variable playback speeds' ) }
-						onChange={ toggleFactory.playback_rate }
-						checked={ !! playback_rate }
-					/>
-				</PanelRow>
-				<PanelRow>
-					<SelectControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={ __( 'Preload' ) }
-						value={ preload }
-						onChange={ (value) => setAttributes({ preload: value }) }
-						options={ preloadOptions }
-						hideCancelButton={ true }
-					/>
-				</PanelRow>
-				</>
-			}
-			<PanelRow>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __( 'GIF mode' ) }
-					onChange={ toggleFactory.gifmode }
-					checked={ !! gifmode }
-					help={ __( 'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.' ) }
-				/>
-			</PanelRow>
-		</PanelBody>
-		<PanelBody
-			title={ __( 'Sharing' ) }
-			initialOpen={ false }
-		>
-			<PanelRow>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __( 'Allow embedding on other sites' ) }
-					onChange={ toggleFactory.embeddable }
-					checked={ !! embeddable }
-				/>
-			</PanelRow>
-			{ embeddable &&
-				<>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Download link' ) }
-						onChange={ toggleFactory.downloadlink }
-						checked={ !! downloadlink }
-					/>
-				</PanelRow>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Embed code' ) }
-						onChange={ toggleFactory.embedcode }
-						checked={ !! embedcode }
-					/>
-				</PanelRow>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Twitter button' ) }
-						onChange={ toggleFactory.twitter_button }
-						checked={ !! twitter_button }
-					/>
-				</PanelRow>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Facebook button' ) }
-						onChange={ toggleFactory.facebook_button }
-						checked={ !! facebook_button }
-					/>
-				</PanelRow>
-				</>
-			}
-		</PanelBody>
-		<PanelBody
-			title={ __( 'Metadata' ) }
-			initialOpen={ false }
-		>
-			<PanelRow>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __( 'Overlay title' ) }
-					onChange={ toggleFactory.title }
-					checked={ !! title }
-				/>
-			</PanelRow>
-			{ title &&
+				{title && (
+					<PanelRow>
+						<TextControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__('Title')}
+							value={videoTitle}
+							onChange={(value) =>
+								setAttributes({ videoTitle: value })
+							}
+						/>
+					</PanelRow>
+				)}
 				<PanelRow>
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={ __( 'Title' ) }
-						value={ videoTitle }
-						onChange={ (value) => setAttributes( { videoTitle:value } ) }
+						label={__('Caption')}
+						value={caption}
+						onChange={(value) => setAttributes({ caption: value })}
 					/>
 				</PanelRow>
-			}
-			<PanelRow>
-				<TextControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					label={ __( 'Caption' ) }
-					value={ caption }
-					onChange={ (value) => setAttributes( { caption:value } ) }
-				/>
-			</PanelRow>
-			<PanelRow>
+				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'View count' ) }
-						onChange={ toggleFactory.view_count }
-						checked={ !! view_count }
+						label={__('View count')}
+						onChange={toggleFactory.view_count}
+						checked={!!view_count}
 					/>
 				</PanelRow>
-		</PanelBody>
-	</>
+			</PanelBody>
+		</>
 	);
 };
 

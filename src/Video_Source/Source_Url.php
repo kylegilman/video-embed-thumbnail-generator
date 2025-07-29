@@ -45,14 +45,15 @@ class Source_Url extends Source {
 
 		foreach ( $this->video_formats as $format ) {
 
-			$same_directory = $this->find_format_in_same_directory( $format );
-			if ( $same_directory ) {
-				continue;
-			}
-
-			$same_url_directory = $this->find_format_in_same_url_directory( $format, $this->get_parent_id() );
-			if ( $same_url_directory ) {
-				continue;
+			if ( $this->options['find_formats'] ) {
+				$same_directory = $this->find_format_in_same_directory( $format );
+				if ( $same_directory ) {
+					continue;
+				}
+				$same_url_directory = $this->find_format_in_same_url_directory( $format, $this->get_parent_id() );
+				if ( $same_url_directory ) {
+					continue;
+				}
 			}
 
 			$this->create_source_placeholder( $format );

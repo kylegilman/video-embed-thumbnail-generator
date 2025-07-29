@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from '@wordpress/element';
 import { __, _x, _n, } from '@wordpress/i18n';
+import { decodeEntities } from '@wordpress/html-entities';
 
 const GalleryItem = ( {
 	attributes,
@@ -22,33 +23,13 @@ const GalleryItem = ( {
 	const [ thumbnailSrcset, setThumbnailSrcset ] = useState( null );
 
 	useEffect(() => {
-		const getThumbnail = async () => {
-			if ( videoRecord?.image ) {
-				const sourceUrl = videoRecord?.image?.src ?? null;
-				if ( sourceUrl) {
-					setThumbnailUrl( sourceUrl );
-				}
-				const videopackSrcset = videoRecord?.image?.srcset ?? null;
-				if ( videopackSrcset ) {
-					setThumbnailSrcset( videopackSrcset );
-				}
-			} else if (videoRecord?.meta?.['_kgflashmediaplayer-poster'] !== '') {
-				if (videoRecord?.meta?.['_kgflashmediaplayer-poster-id'] !== '') {
-					const posterRecord = await select('core').getEntityRecord('postType', 'attachment', videoRecord.meta['_kgflashmediaplayer-poster-id']);
-					if ( posterRecord?.media_details?.sizes ) {
-						setThumbnailUrl( getBestSize( posterRecord.media_details.sizes ) );
-					}
-					if ( posterRecord?.videopack?.srcset ) {
-						setThumbnailSrcset( posterRecord.videopack?.srcset );
-					}
-				} else {
-					setThumbnailUrl( videoRecord?.meta?.['_kgflashmediaplayer-poster'] );
-				}
-			}
+		if ( videoRecord?.poster_url ) {
+			setThumbnailUrl( videoRecord.poster_url );
 		}
-
-		getThumbnail();
-	}, [attributes, videoRecord] );
+		if ( videoRecord?.poster_srcset ) {
+			setThumbnailSrcset( videoRecord.poster_srcset );
+		}
+	}, [videoRecord] );
 
 	return(
 		<button
@@ -61,7 +42,7 @@ const GalleryItem = ( {
 			<img
 				src={ thumbnailUrl }
 				srcSet={ thumbnailSrcset }
-				alt={ videoRecord.title }
+				alt={ decodeEntities( videoRecord.title ) }
 			/>
 			<div
 				className={ `play-button-container ${skin}` }
@@ -77,7 +58,7 @@ const GalleryItem = ( {
 				>
 					<div className='video-title-background' />
 					<span className='video-title-text'>
-						{ videoRecord.title }
+						{ decodeEntities( videoRecord.title ) }
 					</span>
 				</div>
 			}

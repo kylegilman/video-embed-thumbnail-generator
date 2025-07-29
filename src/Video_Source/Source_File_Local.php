@@ -50,9 +50,11 @@ class Source_File_Local extends Source {
 
 		foreach ( $this->video_formats as $format ) {
 
-			$same_directory = $this->find_format_in_same_directory( $format );
-			if ( $same_directory ) {
-				continue;
+			if ( $this->options['find_formats'] ) {
+				$same_directory = $this->find_format_in_same_directory( $format );
+				if ( $same_directory ) {
+					continue;
+				}
 			}
 
 			$this->create_source_placeholder( $format );

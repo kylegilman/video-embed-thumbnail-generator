@@ -43,7 +43,7 @@ class Source_Attachment_Local extends Source {
 			return;
 		}
 		if ( ! $this->meta_manager ) {
-			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
+			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $this->source );
 		}
 		$this->metadata = $this->meta_manager->get( $this->source );
 	}
@@ -91,9 +91,11 @@ class Source_Attachment_Local extends Source {
 				continue;
 			}
 
-			$same_directory = $this->find_format_in_same_directory( $format );
-			if ( $same_directory ) {
-				continue;
+			if ( $this->options['find_formats'] ) {
+				$same_directory = $this->find_format_in_same_directory( $format );
+				if ( $same_directory ) {
+					continue;
+				}
 			}
 
 			$this->create_source_placeholder( $format );
