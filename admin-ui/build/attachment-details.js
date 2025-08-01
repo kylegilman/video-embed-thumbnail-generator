@@ -288,13 +288,11 @@ const AdditionalFormats = ({
       return acc;
     }, {});
     _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
-      path: queueApiPath + '/' + id,
-      method: 'PUT',
+      path: `${queueApiPath}/${id}`,
+      method: 'POST',
       data: {
         url: src,
-        formats: formatsToEncode,
-        // Send array of format IDs
-        parent_id: attachmentRecord?.record?.post
+        formats: formatsToEncode
       }
     }).then(response => {
       console.log(response);
@@ -326,7 +324,9 @@ const AdditionalFormats = ({
       fetchVideoFormats(); // Re-fetch to update statuses
     }).catch(error => {
       console.error(error);
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error enqueueing: %s'), error.message));
+      // Use the detailed error messages from the server if available
+      const errorMessage = error?.data?.details ? error.data.details.join(', ') : error.message;
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s'), errorMessage));
       setIsLoading(false);
       fetchVideoFormats(); // Re-fetch to ensure UI is consistent
     });
@@ -504,7 +504,7 @@ const AdditionalFormats = ({
     }
     return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select formats to encode');
   };
-  const isEncodeButtonDisabled = isLoading || !ffmpeg_exists || !somethingToEncode();
+  const isEncodeButtonDisabled = isLoading || ffmpeg_exists !== true || !somethingToEncode();
   const confirmDialogMessage = () => {
     if (!itemToDelete) {
       return '';
@@ -523,7 +523,7 @@ const AdditionalFormats = ({
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelRow, {
           children: videoFormats ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("ul", {
-              className: `videopack-formats-list${ffmpeg_exists ? '' : ' no-ffmpeg'}`,
+              className: `videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`,
               children: videopack.settings.codecs.map(codec => {
                 if (!options.encode[codec.id] || !options.encode[codec.id].enabled) {
                   return null;
@@ -539,12 +539,12 @@ const AdditionalFormats = ({
                       if (!formatData) {
                         return null;
                       }
-                      if (options.hide_video_formats && !options.encode[codec.id].resolutions[resolution.id] && resolution.id !== 'fullres') {
+                      if (options.hide_video_formats && !options.encode[codec.id].resolutions[resolution.id] || ffmpeg_exists !== true && resolution.id === 'fullres') {
                         return null;
                       }
-                      const isCheckboxDisabled = !ffmpeg_exists || formatData.status !== 'not_encoded';
+                      const isCheckboxDisabled = ffmpeg_exists !== true || formatData.exists;
                       return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("li", {
-                        children: [ffmpeg_exists ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.CheckboxControl, {
+                        children: [ffmpeg_exists === true ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.CheckboxControl, {
                           __nextHasNoMarginBottom: true,
                           className: "videopack-format",
                           label: formatData.label,
@@ -557,14 +557,14 @@ const AdditionalFormats = ({
                         }), formatData.status !== 'not_encoded' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
                           className: "videopack-format-status",
                           children: formatData.status_l10n
-                        }), formatData.exists && formatData.status === 'not_notencoded' && !formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+                        }), formatData.status === 'not_encoded' && !formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
                           variant: "secondary",
                           onClick: () => onSelectFormat(formatData) // Implement onSelectFormat for linking
                           ,
                           className: "videopack-format-button",
                           size: "small",
-                          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link existing file'),
-                          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Link')
+                          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Pick existing file'),
+                          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Pick')
                         }), formatData.was_picked &&
                         /*#__PURE__*/
                         // Show "Replace" if it was manually picked/linked
@@ -609,7 +609,7 @@ const AdditionalFormats = ({
           }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {})
           })
-        }), ffmpeg_exists && videoFormats && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelRow, {
+        }), ffmpeg_exists === true && videoFormats && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelRow, {
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
             variant: "secondary",
             onClick: handleEnqueue,

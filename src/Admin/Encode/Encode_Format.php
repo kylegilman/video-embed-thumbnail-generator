@@ -21,6 +21,7 @@ class Encode_Format {
 	private $id;
 	private $job_id; // ID from the wp_videopack_encoding_queue table
 	private $temp_watermark_path;
+	private $video_duration; // Total duration of the video in microseconds
 
 	public function __construct( string $format_id ) {
 		$this->format_id = $format_id;
@@ -38,18 +39,33 @@ class Encode_Format {
 
 		$format->set_status( $format->set_or_null( $data, 'status' ) );
 		$format->set_user_id( $format->set_or_null( $data, 'user_id' ) );
-		$format->set_url( $format->set_or_null( $data, 'url' ) );
-		$format->set_path( $format->set_or_null( $data, 'path' ) );
-		$format->set_logfile( $format->set_or_null( $data, 'logfile' ) );
+		$format->set_url( $format->set_or_null( $data, 'output_url' ) );
+		$format->set_path( $format->set_or_null( $data, 'output_path' ) );
+		$format->set_logfile( $format->set_or_null( $data, 'logfile_path' ) );
 		$format->set_pid( $format->set_or_null( $data, 'pid' ) );
-		$format->set_started( $format->set_or_null( $data, 'started' ) );
+
+		$started_at = $format->set_or_null( $data, 'started_at' );
+		if ( $started_at ) {
+			$format->set_started( strtotime( $started_at ) );
+		}
+
 		$format->set_encode_array( $format->set_or_null( $data, 'encode_array' ) );
-		$format->set_error( $format->set_or_null( $data, 'error' ) );
-		$format->set_ended( $format->set_or_null( $data, 'ended' ) );
+
+		$error_message = $format->set_or_null( $data, 'error_message' );
+		if ( ! empty( $error_message ) ) {
+			$format->set_error( $error_message );
+		}
+
+		$completed_at = $format->set_or_null( $data, 'completed_at' );
+		if ( $completed_at ) {
+			$format->set_ended( strtotime( $completed_at ) );
+		}
+
 		$format->set_progress();
 		$format->set_encode_width( $format->set_or_null( $data, 'encode_width' ) );
 		$format->set_encode_height( $format->set_or_null( $data, 'encode_height' ) );
-		$format->set_job_id( $format->set_or_null( $data, 'job_id' ) );
+		$format->set_job_id( $format->set_or_null( $data, 'id' ) ); // Use 'id' from DB as job_id
+		$format->set_id( $format->set_or_null( $data, 'output_attachment_id' ) );
 		$format->set_temp_watermark_path( $format->set_or_null( $data, 'temp_watermark_path' ) );
 
 		return $format;
@@ -65,15 +81,14 @@ class Encode_Format {
 	// Getters
 
 	public function get_progress() {
-		if ( $this->status === 'encoding' ) {
-			if ( $this->logfile
-				&& file_exists( $this->logfile )
-			) {
-				$this->set_progress();
-				return $this->progress;
-			} else {
-				return 'recheck';
-			}
+		if ( $this->status === 'encoding'
+			&& $this->logfile
+			&& file_exists( $this->logfile )
+		) {
+			$this->set_progress();
+			return $this->progress;
+		} else {
+			return 'recheck';
 		}
 	}
 
@@ -142,13 +157,12 @@ class Encode_Format {
 		return $this->temp_watermark_path;
 	}
 
-	// Setters
 	public function set_status( ?string $status ) {
 		$allowed = array(
 			'queued',
 			'encoding',
 			'needs_insert',
-			'complete',
+			'completed',
 			'canceled',
 			'deleted',
 			'pending_replacement',
@@ -163,11 +177,11 @@ class Encode_Format {
 		$this->user_id = $user_id;
 	}
 
-	public function set_path( string $path ) {
+	public function set_path( ?string $path ) {
 		$this->path = $path;
 	}
 
-	public function set_url( string $url ) {
+	public function set_url( ?string $url ) {
 		$this->url = $url;
 	}
 
@@ -196,7 +210,7 @@ class Encode_Format {
 		$this->ended = $ended;
 	}
 
-	public function set_id( int $id ) {
+	public function set_id( ?int $id ) {
 		$this->id = $id;
 	}
 
@@ -259,9 +273,15 @@ class Encode_Format {
 				'drop_frames' => $this->set_or_null( $parsed_data, 'drop_frames' ),
 				'speed'       => $this->set_or_null( $parsed_data, 'speed' ),
 				'progress'    => $this->set_or_null( $parsed_data, 'progress' ),
+				'percent'     => 0, // Initialize percent
 			);
 
-			if ( $this->progress['progress'] === 'end' ) {
+			if ( ! empty( $this->video_duration ) && isset( $this->progress['out_time_us'] ) ) {
+				$out_time_us               = (int) $this->progress['out_time_us'];
+				$this->progress['percent'] = min( 100, round( ( $out_time_us / $this->video_duration ) * 100, 2 ) );
+			}
+
+			if ( isset( $this->progress['progress'] ) && 'end' === $this->progress['progress'] ) {
 				$this->set_needs_insert();
 			} elseif ( time() - filemtime( $this->logfile ) > 60 ) {
 				//it's been more than a minute since encoding progress was recorded
@@ -273,6 +293,10 @@ class Encode_Format {
 	public function set_needs_insert() {
 		$this->set_status( 'needs_insert' );
 		$this->set_ended( filemtime( $this->logfile ) );
+	}
+
+	public function set_video_duration( int $duration ) {
+		$this->video_duration = $duration;
 	}
 
 	public function set_canceled() {

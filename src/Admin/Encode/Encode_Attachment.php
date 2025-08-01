@@ -101,8 +101,6 @@ class Encode_Attachment {
 
 		if ( $results ) {
 			foreach ( $results as $job_data ) {
-				// Add the DB row ID as 'job_id' to the data array for Encode_Format
-				$job_data['job_id']     = $job_data['id'];
 				$this->encode_formats[] = Encode_Format::from_array( $job_data );
 			}
 		}
@@ -274,7 +272,7 @@ class Encode_Attachment {
 		}
 
 		foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
-			$encode_info = new Encode_Info( $this->id, $this->url, $this->is_attachment, $video_format_obj );
+			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options_manager );
 			$file_exists = $encode_info->exists;
 			$job_exists  = isset( $encoded_jobs_map[ $format_id ] );
 
@@ -310,29 +308,51 @@ class Encode_Attachment {
 			$format_array['resolution']['label'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_label() );
 			$format_array['status'] = 'not_encoded';
 
-			if ( $file_exists ) {
-				$format_array['status']     = 'encoded';
-				$format_array['url']        = $encode_info->url;
-				$format_array['id']         = $encode_info->id;
-				$format_array['was_picked'] = get_post_meta( $encode_info->id, '_kgflashmediaplayer-pickedformat', true );
-			}
-
+						// Get data from the job queue first, if it exists.
 			if ( $job_exists ) {
 				$matching_encode_format = $encoded_jobs_map[ $format_id ];
 				$job_data_array         = $matching_encode_format->to_array();
 				$format_array           = array_merge( $format_array, $job_data_array );
 			}
 
+			// Now, check if the file physically exists and update/overwrite with that info.
+			if ( $file_exists ) {
+				// If the job status is a non-terminal one, we can update it to 'encoded'.
+				// Otherwise, we respect the terminal status from the job queue.
+				if ( ! in_array( $format_array['status'], array( 'completed', 'failed', 'canceled', 'deleted', 'processing', 'queued' ), true ) ) {
+					$format_array['status'] = 'encoded';
+				}
+				$format_array['url']        = $encode_info->url;
+				$format_array['id']         = $encode_info->id;
+				$format_array['was_picked'] = get_post_meta( $encode_info->id, '_kgflashmediaplayer-pickedformat', true );
+			}
+			$format_array['exists'] = $file_exists;
+
 			$format_array['deletable'] = false;
-			if ( ! $video_format_obj->get_replaces_original() && $this->is_attachment ) {
+			if ( $file_exists && ! $video_format_obj->get_replaces_original() && $this->is_attachment ) {
 				$attachment_post = get_post( $this->id );
 				if ( $attachment_post && ( get_current_user_id() === (int) $attachment_post->post_author || current_user_can( 'edit_others_video_encodes' ) ) ) {
 					$format_array['deletable'] = true;
 				}
 			}
 			$format_array['encoding_now'] = in_array( $format_array['status'], array('processing', 'encoding') );
-			$format_array['status_l10n'] = $this->get_status_l10n($format_array['status']);
+			if ( 'encoding' === $format_array['status'] ) {
+				if ( $video_metadata && $video_metadata->duration ) {
+					$duration_in_microseconds = (int) round( $video_metadata->duration * 1000000 );
+					$matching_encode_format->set_video_duration( $duration_in_microseconds );
+				}
+				$format_array['progress'] = $matching_encode_format->get_progress();
+			}
+			$format_array['status_l10n'] = $this->get_status_l10n( $format_array['status'] );
 
+			if ( $format_array['encoding_now'] ) {
+				if ( empty( $format_array['url'] ) ) {
+					$format_array['url'] = $encode_info->url;
+				}
+				if ( empty( $format_array['id'] ) ) {
+					$format_array['id'] = $encode_info->id;
+				}
+			}
 
 			$video_formats_data[ $format_id ] = $format_array;
 		}
@@ -500,6 +520,7 @@ class Encode_Attachment {
 
 		// $encode_info is used for basename for logfile.
 		// The Encode_Info class itself might be less relevant if output_path/url are directly from DB job.
+
 		// However, its basename calculation could still be useful.
 		// For now, we assume $encode_format already has its path and URL set from the DB job.
 		$source_for_pathinfo = $encode_format->get_path() ? $encode_format->get_path() : $this->url;
@@ -610,7 +631,7 @@ class Encode_Attachment {
 
 					if ( is_wp_error( $temp_watermark_file ) ) {
 						// Failed to download
-						return $ffmpeg_params;
+						return $watermark_flags;
 					} else {
 						$watermark_path                    = $temp_watermark_file;
 						$this->current_temp_watermark_path = $temp_watermark_file; // Store for Encode_Format
@@ -751,7 +772,7 @@ class Encode_Attachment {
 		}
 
 		// Instantiate Encode_Info to check if the *actual encoded file* already exists
-		$encode_info_obj = new Encode_Info( $this->id, $this->url, $this->is_attachment, $video_format_config );
+		$encode_info_obj = new Encode_Info( $this->id, $this->url, $video_format_config, $this->options_manager );
 		if ( $encode_info_obj->exists ) {
 			return 'already_exists'; // File already exists on disk
 		}
@@ -828,7 +849,7 @@ class Encode_Attachment {
 
 		// 3. Determine output paths/URLs for the new job using Encode_Info.
 		$is_attachment   = is_numeric( $this->id ) && get_post_type( $this->id ) === 'attachment';
-		$encode_info_obj = new Encode_Info( $this->id, $this->url, $is_attachment, $video_format_config );
+		$encode_info_obj = new Encode_Info( $this->id, $this->url, $video_format_config, $this->options_manager );
 
 		// 4. Prepare job data for database insertion.
 		$job_data = array(
@@ -857,7 +878,7 @@ class Encode_Attachment {
 		$job_id = $wpdb->insert_id;
 
 		// 6. Schedule an ActionScheduler task to handle this job.
-		$action_id = as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+		$action_id = \as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 
 		if ( ! $action_id ) {
 			// If scheduling fails, mark job as failed in DB.
@@ -996,8 +1017,11 @@ class Encode_Attachment {
 
 		// Build a list of video codecs we are interested in from $this->video_formats
 		if ( ! empty( $codec_output ) ) {
-			$lines = explode( "\n", $codec_output );
+
+			$lines = preg_split( '/\r\n|\r|\n/', $codec_output );
 			$parsing_codecs = false;
+			$detected_format = null; // Can be 'modern', 'legacy', or null
+
 			foreach ( $lines as $line ) {
 				if ( trim( $line ) === '-------' ) {
 					$parsing_codecs = true;
@@ -1007,24 +1031,49 @@ class Encode_Attachment {
 					continue;
 				}
 
-				// Regex to parse the codec line:
-				// Example line: " DEA.L. libfdk_aac           Fraunhofer FDK AAC (encoders: libfdk_aac )"
-				// Captures:
-				// $matches[1] = D flag or .
-				// $matches[2] = E flag or .
-				// ...
-				// $matches[9] = codec name (e.g., libfdk_aac)
-				if ( preg_match( '/^\s*([D\.])([E\.])([V\.])([A\.])([S\.])([I\.])([L\.])([S\.])\s+([a-zA-Z0-9_\-]+)\s+.*/', $line, $matches ) ) {
-					$is_encoder = ( $matches[2] === 'E' );
-					$codec_name = $matches[9];
-					if ( ! empty( $codec_name ) ) {
-						// We only care if it's an encoder. Store true if it is, false otherwise,
-						// or simply only store true for encoders.
-						// For the purpose of $this->codecs, we only need to know if an encoder is available.
-						if ( $is_encoder ) {
-							$codec_list[ $codec_name ] = true;
-						} elseif ( ! isset( $codec_list[ $codec_name ] ) ) { // If not an encoder, and not already set as true
-							$codec_list[ $codec_name ] = false;
+				$is_encoder = false;
+				$codec_name = null;
+				$matched = false;
+
+				// If format is unknown or modern, try modern regex
+				if ( $detected_format === null || $detected_format === 'modern' ) {
+					if ( preg_match( '/^\s*([D\.])([E\.])([VASDT\.])([I\.])([L\.])([S\.])\s+([a-zA-Z0-9_\-]+)\s+.*/', $line, $matches ) ) {
+						if ( $detected_format === null ) $detected_format = 'modern';
+						$is_encoder = ( $matches[2] === 'E' );
+						$codec_name = $matches[7];
+						$matched = true;
+					}
+				}
+
+				// If not matched yet, and format is unknown or legacy, try legacy regex
+				if ( ! $matched && ( $detected_format === null || $detected_format === 'legacy' ) ) {
+					if ( preg_match( '/^\s*([D\.])([E\.])([V\.])([A\.])([S\.])([I\.])([L\.])([S\.])\s+([a-zA-Z0-9_\-]+)\s+.*/', $line, $matches ) ) {
+						if ( $detected_format === null ) $detected_format = 'legacy';
+						$is_encoder = ( $matches[2] === 'E' );
+						$codec_name = $matches[9];
+						$matched = true;
+					}
+				}
+
+				if ( ! $matched ) {
+					continue; // Skip to next line if no format matched
+				}
+
+				if ( ! empty( $codec_name ) ) {
+					if ( $is_encoder ) {
+						$codec_list[ $codec_name ] = true;
+					} elseif ( ! isset( $codec_list[ $codec_name ] ) ) {
+						$codec_list[ $codec_name ] = false;
+					}
+				}
+
+				// Also parse the detailed (encoders: ...) list, which works for both formats.
+				if ( preg_match( '/\(encoders: ([^\)]+)\)/', $line, $encoder_matches ) ) {
+					$encoder_names = preg_split( '/\s+/', $encoder_matches[1] );
+					foreach ( $encoder_names as $encoder_name ) {
+						$trimmed_name = trim( $encoder_name );
+						if ( ! empty( $trimmed_name ) ) {
+							$codec_list[ $trimmed_name ] = true; // These are explicitly encoders.
 						}
 					}
 				}
@@ -1299,13 +1348,19 @@ class Encode_Attachment {
 		$wp_attachment_id = $encode_format->get_id(); // This is the WP attachment ID for the encoded version
 		if ( $wp_attachment_id && get_post_type( $wp_attachment_id ) === 'attachment' ) {
 			// Ensure this is not the original attachment ID that was replaced
-			$is_original_attachment = ( $this->is_attachment && is_numeric( $this->id ) && (int) $this->id === (int) $wp_attachment_id );
-			if ( ! $is_original_attachment ) {
-				if ( ! wp_delete_attachment( $wp_attachment_id, true ) ) {
-					// translators: %d is the attachment ID.
-					$encode_format->set_error( sprintf( __( 'Failed to delete child attachment ID: %d. Please delete manually.', 'video-embed-thumbnail-generator' ), $wp_attachment_id ) );
-					// Continue to mark the job as deleted, but with an error.
-				}
+			// IMPORTANT: Do NOT delete the original attachment if this job replaced it.
+			// The original attachment's deletion is handled by the main WordPress process.
+			if ( (int) $wp_attachment_id === (int) $this->id ) {
+				// This job's output is the original attachment (it replaced it).
+				// We should not call wp_delete_attachment on the original.
+				// Just clean up files and mark job as deleted.
+			} else {
+				// This is a child attachment created by the encoding process. Delete it.
+								// This is a child attachment created by the encoding process.
+				// The wp_delete_attachment() call for this ID is handled by the main delete_attachment hook,
+				// which triggers Attachment::delete_video_attachment().
+				// We only need to ensure the job is marked as deleted and files are cleaned up.
+				// No need to call wp_delete_attachment() here to avoid recursion.
 			}
 		}
 
@@ -1416,7 +1471,7 @@ class Encode_Attachment {
 		if ( ! $existing_attachment_id ) {
 			$wp_filetype = wp_check_filetype( basename( $path ) );
 			$title_base  = $parent_post_id ? get_the_title( $parent_post_id ) : get_the_title( $this->id );
-			$title       = $title_base . ' ' . $video_format_config->get_name();
+			$title       = $title_base . ' ' . $video_format_config->get_label();
 
 			$author_id_from_parent = $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id();
 			$author_id = $user_id ?: $author_id_from_parent;
@@ -1451,7 +1506,7 @@ class Encode_Attachment {
 				}
 
 				$encode_format->set_id( $new_attachment_id );
-				$encode_format->set_status( 'complete' );
+				$encode_format->set_status( 'completed' );
 				$this->save_format( $encode_format );
 				return true;
 			} else {
@@ -1461,7 +1516,7 @@ class Encode_Attachment {
 			}
 		} else {
 			$encode_format->set_id( $existing_attachment_id );
-			$encode_format->set_status( 'complete' );
+			$encode_format->set_status( 'completed' );
 			$this->save_format( $encode_format );
 			return true;
 		}

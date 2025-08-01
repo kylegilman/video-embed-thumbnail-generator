@@ -10,12 +10,10 @@ class Encode_Queue_Log {
 	protected $options_manager;
 
 	private $log;
-	private $user;
 
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->log             = array();
-		$this->user            = wp_get_current_user();
 	}
 
 	public function add_to_log( $action, $format_id = false ) {
@@ -31,6 +29,7 @@ class Encode_Queue_Log {
 		}
 
 		switch ( $action ) {
+			case 'success': // Keep 'success' as an alias for 'queued' for robustness
 			case 'queued':
 				$log_message = $name . ' ' . __( 'added to queue', 'video-embed-thumbnail-generator' );
 				break;
@@ -41,8 +40,25 @@ class Encode_Queue_Log {
 				$log_message = $name . ' ' . __( 'already exists', 'video-embed-thumbnail-generator' );
 				break;
 			case 'permission':
-				/* translators: %s is user login */
-				$log_message = sprintf( __( 'User %s does not have permission to encode videos', 'video-embed-thumbnail-generator' ), $this->user->user_login );
+				$log_message = __( 'User does not have permission to encode videos', 'video-embed-thumbnail-generator' );
+				break;
+			case 'lowres':
+				$log_message = $name . ' ' . __( 'is lower resolution than the target and was skipped', 'video-embed-thumbnail-generator' );
+				break;
+			case 'vcodec_unavailable':
+				$log_message = $name . ' ' . __( 'requires a video codec that is not available', 'video-embed-thumbnail-generator' );
+				break;
+			case 'acodec_unavailable':
+				$log_message = $name . ' ' . __( 'requires an audio codec that is not available', 'video-embed-thumbnail-generator' );
+				break;
+			case 'error_invalid_format_key':
+				$log_message = $name . ' ' . __( 'is not a valid format', 'video-embed-thumbnail-generator' );
+				break;
+			case 'error_db_insert':
+				$log_message = $name . ' ' . __( 'could not be added to the database', 'video-embed-thumbnail-generator' );
+				break;
+			case 'error_scheduling':
+				$log_message = $name . ' ' . __( 'could not be scheduled', 'video-embed-thumbnail-generator' );
 				break;
 			default:
 				$log_message = __( 'unexpected error', 'video-embed-thumbnail-generator' );

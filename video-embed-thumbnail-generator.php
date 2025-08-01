@@ -75,6 +75,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	}
 
 	require __DIR__ . '/vendor/autoload.php';
+
+	if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php' ) ) {
+		require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
+	}
 }
 
 if ( VIDEOPACK_FREEMIUS_ENABLED && file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {

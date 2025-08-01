@@ -262,12 +262,11 @@ const AdditionalFormats = ({
 			}, {});
 
 		apiFetch({
-			path: queueApiPath + '/' + id,
-			method: 'PUT',
+			path: `${queueApiPath}/${id}`,
+			method: 'POST',
 			data: {
 				url: src,
-				formats: formatsToEncode, // Send array of format IDs
-				parent_id: attachmentRecord?.record?.post,
+				formats: formatsToEncode,
 			},
 		})
 			.then((response) => {
@@ -332,9 +331,11 @@ const AdditionalFormats = ({
 			})
 			.catch((error) => {
 				console.error(error);
-				setEncodeMessage(
-					sprintf(__('Error enqueueing: %s'), error.message)
-				);
+				// Use the detailed error messages from the server if available
+				const errorMessage = error?.data?.details
+					? error.data.details.join(', ')
+					: error.message;
+				setEncodeMessage(sprintf(__('Error: %s'), errorMessage));
 				setIsLoading(false);
 				fetchVideoFormats(); // Re-fetch to ensure UI is consistent
 			});
@@ -575,7 +576,7 @@ const AdditionalFormats = ({
 	};
 
 	const isEncodeButtonDisabled =
-		isLoading || !ffmpeg_exists || !somethingToEncode();
+		isLoading || ffmpeg_exists !== true || !somethingToEncode();
 
 	const confirmDialogMessage = () => {
 		if (!itemToDelete) {
@@ -607,7 +608,7 @@ const AdditionalFormats = ({
 						{videoFormats ? (
 							<>
 								<ul
-									className={`videopack-formats-list${ffmpeg_exists ? '' : ' no-ffmpeg'}`}
+									className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`}
 								>
 									{videopack.settings.codecs.map((codec) => {
 										if (
@@ -635,23 +636,27 @@ const AdditionalFormats = ({
 															}
 
 															if (
-																options.hide_video_formats &&
-																!options.encode[
-																	codec.id
-																].resolutions[
-																	resolution
-																		.id
-																] &&
-																resolution.id !==
-																	'fullres'
+																(options.hide_video_formats &&
+																	!options
+																		.encode[
+																		codec.id
+																	]
+																		.resolutions[
+																		resolution
+																			.id
+																	]) ||
+																(ffmpeg_exists !==
+																	true &&
+																	resolution.id ===
+																		'fullres')
 															) {
 																return null;
 															}
 
 															const isCheckboxDisabled =
-																!ffmpeg_exists ||
-																formatData.status !==
-																	'not_encoded';
+																ffmpeg_exists !==
+																	true ||
+																formatData.exists;
 
 															return (
 																<li
@@ -659,7 +664,8 @@ const AdditionalFormats = ({
 																		formatId
 																	}
 																>
-																	{ffmpeg_exists ? (
+																	{ffmpeg_exists ===
+																	true ? (
 																		<CheckboxControl
 																			__nextHasNoMarginBottom
 																			className="videopack-format"
@@ -696,9 +702,8 @@ const AdditionalFormats = ({
 																			}
 																		</span>
 																	)}
-																	{formatData.exists &&
-																		formatData.status ===
-																			'not_notencoded' &&
+																	{formatData.status ===
+																		'not_encoded' &&
 																		!formatData.was_picked && (
 																			<Button
 																				variant="secondary"
@@ -710,11 +715,11 @@ const AdditionalFormats = ({
 																				className="videopack-format-button"
 																				size="small"
 																				title={__(
-																					'Link existing file'
+																					'Pick existing file'
 																				)}
 																			>
 																				{__(
-																					'Link'
+																					'Pick'
 																				)}
 																			</Button>
 																		)}
@@ -807,7 +812,7 @@ const AdditionalFormats = ({
 							</>
 						)}
 					</PanelRow>
-					{ffmpeg_exists && videoFormats && (
+					{ffmpeg_exists === true && videoFormats && (
 						<PanelRow>
 							<Button
 								variant="secondary"
