@@ -107,7 +107,7 @@ class FFmpeg_Tester {
 		$output            = array();
 		$uploads           = wp_upload_dir();
 		$test_path         = rtrim( (string) $app_path, '/' );
-		$ffmpeg_thumbnails = new \Videopack\Admin\Thumbnails\FFmpeg_Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options_manager );
 
 		if ( ! $proc_open_enabled ) {
 			$ffmpeg_error = __( 'The `proc_open` function is disabled in your PHP configuration. FFmpeg cannot be executed. Please contact your hosting provider or system administrator to enable it.', 'video-embed-thumbnail-generator' );

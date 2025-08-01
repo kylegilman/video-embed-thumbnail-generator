@@ -2,6 +2,11 @@
 
 namespace Videopack\Admin\Encode;
 
+use Videopack\Admin\Sanitize_Url;
+use Videopack\Video_Source\Video_Source_Finder;
+use Videopack\Video_Source\Source_Factory;
+use Videopack\Admin\Formats\Video_Format;
+
 class Encode_Info {
 
 	public $url;
@@ -15,24 +20,29 @@ class Encode_Info {
 	public $height;
 	public $id;
 
-	protected $movieurl;
 	protected $is_attachment = false;
 	protected $format;
 	protected $uploads;
 	protected $sanitized_url;
+	protected $source;
+	protected $options_manager;
 
 	public function __construct(
 		$id,
 		string $input_url,
-		bool $is_attachment,
-		\Videopack\Admin\Formats\Video_Format $format
+		Video_Format $format,
+		\Videopack\Admin\Options $options_manager
 	) {
-		$this->id            = $id;
-		$this->sanitized_url = new \Videopack\Admin\Sanitize_Url( $input_url );
-		$this->movieurl      = $this->sanitized_url->movieurl;
+		$this->id              = $id;
+		$this->format          = $format;
+		$this->url             = $input_url;
+		$this->options_manager = $options_manager;
+
+		$this->source = Source_Factory::create( $this->id, $this->options_manager );
+
+		$this->sanitized_url = new Sanitize_Url( $this->url );
 		$this->basename      = $this->sanitized_url->basename;
-		$this->is_attachment = $is_attachment;
-		$this->format        = $format;
+		$this->is_attachment = $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local;
 		$this->uploads       = wp_upload_dir();
 		$this->path          = $this->uploads['path'] . '/';
 
@@ -41,7 +51,7 @@ class Encode_Info {
 
 	protected function set_encode_info() {
 
-		$children = $this->get_attachment_children();
+		$children = Video_Source_Finder::find_attachment_children( $this->source );
 		if ( $children ) {
 			$this->process_children( $children );
 		}
@@ -55,39 +65,21 @@ class Encode_Info {
 		}
 	}
 
-	protected function get_attachment_children() {
-		if ( $this->is_attachment ) {
-			$args = array(
-				'numberposts' => '-1',
-				'post_parent' => $this->id,
-				'post_type'   => 'attachment',
-			);
-		} else {
-			$args = array(
-				'numberposts' => '-1',
-				'post_type'   => 'attachment',
-				'meta_key'    => '_kgflashmediaplayer-externalurl',
-				'meta_value'  => $this->sanitized_url->movieurl,
-			);
-		}
-
-		$children = get_posts( $args );
-
-		return $children;
-	}
-
 	protected function process_children( array $children ) {
 
 		foreach ( $children as $child ) {
 			$wp_attached_file = get_attached_file( $child->ID );
 			$video_meta       = wp_get_attachment_metadata( $child->ID );
 			$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
+			$legacy_id_exists = $this->format->get_legacy_id() !== false;
 
 			if ( $meta_format == $this->format->get_id()
-				|| $meta_format == $this->format->get_legacy_id()
-				|| (
-					substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix()
-					&& $meta_format == false
+				|| ( $legacy_id_exists && $meta_format == $this->format->get_legacy_id() )
+				|| ( $meta_format == false
+					&& ( substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix()
+						|| ( $legacy_id_exists && substr( $wp_attached_file, -strlen( $this->format->get_legacy_suffix() ) ) === $this->format->get_legacy_suffix()
+						)
+					)
 				)
 			) {
 				$this->url        = wp_get_attachment_url( $child->ID );
@@ -115,11 +107,15 @@ class Encode_Info {
 	}
 
 	protected function check_potential_locations() {
+		$potential_locations = array();
 
-		$potential_locations['same_directory'] = array(
-			'url'  => $this->sanitized_url->noextension . $this->format->get_suffix(),
-			'path' => $this->path . $this->basename . $this->format->get_suffix(),
-		);
+		if ( $this->source instanceof \Videopack\Video_Source\Source_File_Local || $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local ) {
+			$potential_locations['same_directory'] = array(
+				'url'  => $this->sanitized_url->noextension . $this->format->get_suffix(),
+				'path' => $this->source->get_dirname() . '/' . $this->basename . $this->format->get_suffix(),
+			);
+		}
+
 		if ( $this->format->get_legacy_suffix() ) {
 			$potential_locations['html5encodes']              = array(
 				'url'  => $this->uploads['baseurl'] . '/html5encodes/' . $this->basename . $this->format->get_legacy_suffix(),
@@ -141,45 +137,30 @@ class Encode_Info {
 					$this->writable = true;
 				}
 				break;
-			} elseif ( ! empty( $this->id )
-				&& ! $this->sameserver
-				&& $name !== 'html5encodes'
-			) {
+			} elseif ( $this->source instanceof \Videopack\Video_Source\Source_Url ) {
 				$this->check_url_exists( $location['url'] );
 			}
 		}
 	}
 
 	protected function check_url_exists( $url ) {
+		$cache_key = 'videopack_url_exists_' . md5( $url );
+		$exists    = get_transient( $cache_key );
 
-		$already_checked_url = get_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), true );
-		if ( empty( $already_checked_url ) ) {
-			if ( $this->get_headers( esc_url_raw( str_replace( ' ', '%20', $url ) ) ) ) {
-				$this->exists = true;
-				$this->url    = $url;
-				update_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), $this->url );
+		if ( false === $exists ) {
+			if ( $this->source->url_exists( $url ) ) {
+				$exists = 'yes';
+				set_transient( $cache_key, $exists, HOUR_IN_SECONDS );
 			} else {
-				update_post_meta( $this->id, '_kgflashmediaplayer-' . $this->sanitized_url->singleurl_id . '-' . $this->format->get_id(), 'not found' );
+				$exists = 'no';
+				set_transient( $cache_key, $exists, HOUR_IN_SECONDS );
 			}
-		} elseif ( substr( $already_checked_url, 0, 4 ) == 'http' ) {
-			$this->exists = true;
-			$this->url    = $already_checked_url;
 		}
-	}
 
-	protected function get_headers( $url ) {
-
-		$ssl_context_options = array(
-			'ssl' => array(
-				'verify_peer'      => false,
-				'verify_peer_name' => false,
-			),
-		);
-		$ssl_context         = stream_context_create( $ssl_context_options );
-
-		$hdrs = @get_headers( $url, 0, $ssl_context );
-
-		return is_array( $hdrs ) ? preg_match( '/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/', $hdrs[0] ) : false;
+		if ( 'yes' === $exists ) {
+			$this->exists = true;
+			$this->url    = $url;
+		}
 	}
 
 	protected function set_default_url_and_path() {

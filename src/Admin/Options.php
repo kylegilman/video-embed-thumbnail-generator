@@ -881,7 +881,7 @@ class Options {
 		return $all_roles;
 	}
 
-		public function set_capabilities( array $capabilities ): array {
+	public function set_capabilities( array $capabilities ): array {
 
 		$wp_roles              = wp_roles();
 		$plugin_capability_keys = array_keys( $this->default_capabilities );
@@ -912,6 +912,7 @@ class Options {
 					// The role should have the capability but doesn't.
 					$wp_roles->add_cap( $role, $capability );
 				} elseif ( ! $should_have_capability && $has_capability ) {
+					error_log($role . ' should not have ' . $capability);
 					// The role shouldn't have the capability but does.
 					$wp_roles->remove_cap( $role, $capability );
 				}

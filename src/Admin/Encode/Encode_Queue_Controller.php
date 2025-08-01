@@ -38,6 +38,7 @@ class Encode_Queue_Controller {
 			id BIGINT UNSIGNED AUTO_INCREMENT,
 			blog_id BIGINT UNSIGNED NOT NULL DEFAULT 1,
 			attachment_id BIGINT UNSIGNED NULL,
+			output_attachment_id BIGINT UNSIGNED NULL,
 			input_url VARCHAR(1024) NOT NULL,
 			format_id VARCHAR(100) NOT NULL,
 			status ENUM('queued', 'processing', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
@@ -103,7 +104,10 @@ class Encode_Queue_Controller {
 
 		if ( ! $this->required_keys( $args, $required ) || ! is_array( $args['formats'] ) || empty( $args['formats'] ) ) {
 			$this->queue_log->add_to_log( 'error_invalid_args' );
-			return $this->queue_log->get_log();
+			return array(
+				'log'     => $this->queue_log->get_log(),
+				'results' => array(),
+			);
 		}
 
 		$attachment_identifier = sanitize_text_field( $args['id'] );
@@ -112,13 +116,18 @@ class Encode_Queue_Controller {
 		$current_blog_id       = get_current_blog_id();
 
 		$encoder = new Encode_Attachment( $this->options_manager, $attachment_identifier, $input_url );
+		$results = array();
 		foreach ( $args['formats'] as $format_to_encode ) {
 			$format_id    = sanitize_text_field( $format_to_encode );
 			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id );
 			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
+			$results[ $format_id ] = $queue_result;
 		}
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
-		return $this->queue_log->get_log();
+		return [
+			'log'     => $this->queue_log->get_log(),
+			'results' => $results,
+		];
 	}
 
 	protected function required_keys( array $args, array $required ) {
@@ -268,9 +277,13 @@ class Encode_Queue_Controller {
 				$inserted          = $encoder->insert_attachment( $encode_format_obj );
 
 				if ( $inserted ) {
+					$update_data = array( 'status' => 'completed' );
+					if ( $encode_format_obj->get_id() ) {
+						$update_data['output_attachment_id'] = $encode_format_obj->get_id();
+					}
 					$wpdb->update(
 						$this->queue_table_name,
-						array( 'status' => 'completed' ),
+						$update_data,
 						array( 'id' => $job_id )
 					);
 				} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {

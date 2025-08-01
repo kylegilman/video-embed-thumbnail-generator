@@ -200,6 +200,11 @@ class Videopack {
 		$this->loader->add_action( 'enqueue_block_editor_assets', $admin_ui, 'enqueue_block_assets' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_page_assets' );
 		$this->loader->add_action( 'wp_enqueue_media', $admin_ui, 'enqueue_attachment_details' );
+
+		// Action Scheduler hooks for encoding queue.
+		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager );
+		$this->loader->add_action( 'videopack_handle_job', $encode_queue_controller, 'handle_job_action' );
+		$this->loader->add_action( 'videopack_process_pending_jobs', $encode_queue_controller, 'process_pending_jobs_action' );
 	}
 
 	/**

@@ -171,11 +171,27 @@ class Attachment {
 			|| get_post_meta( $video_id, '_kgflashmediaplayer-format', true )
 		) { // only do this for videos or other child formats
 
-			$encode_queue      = new Encode\Encode_Queue_Controller( $this->options_manager );
-			$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $video_id );
-			$formats           = $encode_attachment->get_formats();
-			foreach ( $formats as $format ) {
-				$encode_queue->delete_job( $format->get_job_id() );
+			$encode_queue = new Encode\Encode_Queue_Controller( $this->options_manager );
+
+			// If this is a child attachment, find the corresponding job and delete it.
+			$parent_id = wp_get_post_parent_id( $video_id );
+			if ( $parent_id ) {
+				$format_id = get_post_meta( $video_id, '_kgflashmediaplayer-format', true );
+				if ( $format_id ) {
+					$encoder     = new Encode\Encode_Attachment( $this->options_manager, $parent_id );
+					$encode_format = $encoder->get_encode_format( $format_id );
+					if ( $encode_format && $encode_format->get_job_id() ) {
+						$encode_queue->delete_job( $encode_format->get_job_id() );
+					}
+				}
+			} else { // This is a parent attachment, delete all its jobs.
+				$encoder = new Encode\Encode_Attachment( $this->options_manager, $video_id );
+				$formats = $encoder->get_formats();
+				foreach ( $formats as $format ) {
+					if ( $format->get_job_id() ) {
+						$encode_queue->delete_job( $format->get_job_id() );
+					}
+				}
 			}
 
 			$parent_id = get_post( $video_id )->post_parent;

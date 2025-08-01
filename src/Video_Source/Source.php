@@ -2,6 +2,8 @@
 
 namespace Videopack\Video_Source;
 
+use Videopack\Video_Source\Video_Source_Finder;
+
 /**
  * Class Video_Source
  * Defines the base class for video input types.
@@ -720,126 +722,22 @@ abstract class Source {
 	}
 
 	protected function find_attachment_children(): array {
-		if ( is_numeric( $this->source ) ) {
-			$args = array(
-				'numberposts' => -1,
-				'post_parent' => $this->source,
-				'post_type'   => 'attachment',
-			);
-
-			return get_posts( $args );
-		}
-
-		return array();
-	}
-
-	protected function find_attachment_by_externalurl_meta_key(): array {
-		$args = array(
-			'numberposts' => -1,
-			'post_type'   => 'attachment',
-			'meta_key'    => '_kgflashmediaplayer-externalurl',
-			'meta_value'  => esc_url_raw( rawurldecode( $this->url ) ),
-		);
-
-		return get_posts( $args );
+		return Video_Source_Finder::find_attachment_children( $this );
 	}
 
 	protected function find_format_in_posts( $posts, \Videopack\Admin\Formats\Video_Format $format ): bool {
 
-		if ( $posts ) {
-			foreach ( $posts as $post ) {
-				if ( is_a( $post, 'WP_Post' ) ) {
-					$meta_format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
-					if ( $meta_format === $format->get_id()
-						|| $meta_format === $format->get_legacy_id()
-					) {
-						$this->set_child_source(
-							$format->get_id(),
-							$post->ID,
-							true,
-							'attachment_local'
-						);
-						return true;
-					}
-				}
-			}
-		}
-		return false;
+		return Video_Source_Finder::find_format_in_posts( $posts, $format, $this );
 	}
 
 	protected function find_format_in_same_directory( \Videopack\Admin\Formats\Video_Format $format ) {
 
-		if ( $this->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
-			$file = $this->get_no_extension() . $format->get_suffix();
-			if ( ! file_exists( $file ) ) {
-				$legacy_file = $this->get_no_extension() . $format->get_legacy_suffix();
-				if ( file_exists( $legacy_file ) ) {
-					$file = $legacy_file;
-				}
-			}
-
-			if ( file_exists( $file ) ) {
-
-				$attachment_manager = new \Videopack\Admin\Attachment( $this->options_manager );
-				$attachment_id      = $attachment_manager->url_to_id( $file );
-
-				if ( $attachment_id ) {
-					$this->set_child_source(
-						$format->get_id(),
-						$attachment_id,
-						true,
-						'attachment_local'
-					);
-					return true;
-				}
-
-				$this->set_child_source(
-					$format->get_id(),
-					$file,
-					true,
-					'file_local'
-				);
-				return true;
-			}
-		}
-
-		return false;
+		return Video_Source_Finder::find_format_in_same_directory( $format, $this );
 	}
 
 	protected function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, $post_id ) {
 
-		if ( $this->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
-			$sanitized_url = new \Videopack\Admin\Sanitize_Url( $this->url );
-			$potential_url = $this->get_no_extension() . $format->get_suffix();
-			$meta_key      = '_videopack-' . $sanitized_url->singleurl_id . '-' . $format->get_id();
-
-			$already_checked_url = get_post_meta( $post_id, $meta_key, true );
-			if ( empty( $already_checked_url ) ) {
-				if ( $this->url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
-					update_post_meta( $post_id, $meta_key, $potential_url );
-					$this->set_child_source(
-						$format->get_id(),
-						$potential_url,
-						true,
-						$this->get_parent_id(),
-						'url'
-					);
-					return true;
-				} else {
-					update_post_meta( $post_id, $meta_key, 'not found' );
-				}
-			} elseif ( substr( $already_checked_url, 0, 4 ) == 'http' ) { // url already checked
-				// if it smells like a URL...
-				$this->set_child_source(
-					$format->get_id(),
-					$already_checked_url,
-					true,
-					'url'
-				);
-				return true;
-			}
-		}
-		return false;
+		return Video_Source_Finder::find_format_in_same_url_directory( $format, $this, $post_id );
 	}
 
 	protected function create_source_placeholder( \Videopack\Admin\Formats\Video_Format $format ) {
@@ -850,27 +748,6 @@ abstract class Source {
 			false,
 			'placeholder'
 		);
-	}
-
-	protected function url_exists( $url ) {
-
-		$transient_key = 'videopack_url_exists_' . md5( $url );
-		$exists        = get_transient( $transient_key );
-
-		if ( $exists ) {
-			return true;
-		}
-
-		$response = wp_remote_head( $url, array( 'redirection' => 5 ) );
-
-		if ( is_wp_error( $response ) ) {
-			return false; // In case of error, consider the URL does not exist
-		}
-
-		$response_code = wp_remote_retrieve_response_code( $response );
-		$exists        = ( $response_code >= 200 && $response_code < 300 );
-		set_transient( $transient_key, $exists, DAY_IN_SECONDS );
-		return ( $exists );
 	}
 
 	protected function get_codecs_att(): string {

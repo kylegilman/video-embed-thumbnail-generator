@@ -377,9 +377,6 @@ class REST_Controller extends \WP_REST_Controller {
 						'url'       => array(
 							'type' => 'string',
 						),
-						'id'        => array(
-							'type' => 'number',
-						),
 						'formats'   => array(
 							'type'                 => 'object',
 							'additionalProperties' => array(
@@ -861,6 +858,27 @@ class REST_Controller extends \WP_REST_Controller {
 			'formats' => $formats_to_enqueue,
 		);
 		$response = $controller->enqueue_encodes( $args );
+
+		// Check if any of the results have a 'failed' status
+		$has_failures = false;
+		foreach ( $response['results'] as $result ) {
+			if ( isset( $result['status'] ) && 'failed' === $result['status'] ) {
+				$has_failures = true;
+				break;
+			}
+		}
+
+		if ( $has_failures ) {
+			return new \WP_Error(
+				'enqueue_failed',
+				__( 'One or more formats failed to enqueue.', 'video-embed-thumbnail-generator' ),
+				array(
+					'status'  => 400,
+					'details' => $response['log'], // Send the detailed log back to the client
+				)
+			);
+		}
+
 		return $response;
 	}
 
