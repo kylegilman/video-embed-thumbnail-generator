@@ -15,14 +15,17 @@ import { createRoot, useMemo, useState, useEffect } from '@wordpress/element';
 import { videopack } from '../icon';
 import Thumbnails from '../Thumbnails/Thumbnails';
 import AdditionalFormats from '../AdditionalFormats';
+import './attachment-details.scss';
 
 const AttachmentDetails = ({ attachmentAttributes }) => {
 	const { id } = attachmentAttributes;
 	const [options, setOptions] = useState();
 	const [attributes, setAttributes] = useState();
-	const attachmentRecord = isNaN(id)
-		? null
-		: useEntityRecord('postType', 'attachment', id);
+	const attachmentRecord = useEntityRecord(
+		'postType',
+		'attachment',
+		!isNaN(id) ? id : null
+	);
 
 	useEffect(() => {
 		console.log('Attachment component mounted.');
@@ -49,7 +52,7 @@ const AttachmentDetails = ({ attachmentAttributes }) => {
 				attachmentAttributes?.meta?.['_kgflashmediaplayer-poster-id'],
 		};
 		setAttributes(combinedAttributes);
-	}, [options]);
+	}, [options, attachmentAttributes]);
 
 	if (attributes && attachmentRecord.hasResolved && options) {
 		return (
@@ -57,13 +60,13 @@ const AttachmentDetails = ({ attachmentAttributes }) => {
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachmentRecord={attachmentRecord}
+					attachmentRecord={attachmentRecord.record}
 					options={options}
 				/>
 				<AdditionalFormats
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachmentRecord={attachmentRecord}
+					attachmentRecord={attachmentRecord.record}
 					options={options}
 				/>
 			</div>

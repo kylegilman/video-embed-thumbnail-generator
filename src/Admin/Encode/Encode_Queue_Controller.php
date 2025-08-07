@@ -41,7 +41,7 @@ class Encode_Queue_Controller {
 			output_attachment_id BIGINT UNSIGNED NULL,
 			input_url VARCHAR(1024) NOT NULL,
 			format_id VARCHAR(100) NOT NULL,
-			status ENUM('queued', 'processing', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
+			status ENUM('queued', 'processing', 'encoding', 'needs_insert', 'pending_replacement', 'completed', 'failed', 'canceled', 'deleted') NOT NULL DEFAULT 'queued',
 			output_path VARCHAR(1024) NULL,
 			output_url VARCHAR(1024) NULL,
 			user_id BIGINT UNSIGNED NULL,
@@ -115,19 +115,43 @@ class Encode_Queue_Controller {
 		$user_id               = get_current_user_id();
 		$current_blog_id       = get_current_blog_id();
 
-		$encoder = new Encode_Attachment( $this->options_manager, $attachment_identifier, $input_url );
-		$results = array();
+		$encoder                   = new Encode_Attachment( $this->options_manager, $attachment_identifier, $input_url );
+		$results                   = array();
+		$successfully_queued_names = array();
+		$video_formats_objects     = $this->options_manager->get_video_formats();
+
 		foreach ( $args['formats'] as $format_to_encode ) {
 			$format_id    = sanitize_text_field( $format_to_encode );
 			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id );
 			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
 			$results[ $format_id ] = $queue_result;
+			if ( isset( $queue_result['status'] ) && 'success' === $queue_result['status'] ) {
+				$name = ( is_array( $video_formats_objects ) && isset( $video_formats_objects[ $format_id ] ) )
+					? $video_formats_objects[ $format_id ]->get_name()
+					: $format_id;
+				$successfully_queued_names[] = $name;
+			}
 		}
+		// After enqueuing, immediately trigger the Action Scheduler to process pending jobs.
+		do_action( 'action_scheduler_run_queue' );
+
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
-		return [
-			'log'     => $this->queue_log->get_log(),
-			'results' => $results,
-		];
+		return array(
+			'log'                => $this->queue_log->get_log(),
+			'results'            => $results,
+			'new_queue_position' => $this->get_queue_size(),
+			'encode_list'        => $successfully_queued_names,
+		);
+	}
+
+	/**
+	 * Get the current size of the active queue.
+	 *
+	 * @return integer Number of jobs that are queued or processing.
+	 */
+	public function get_queue_size() {
+		global $wpdb;
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE status IN ('queued', 'processing')", $this->queue_table_name ) );
 	}
 
 	protected function required_keys( array $args, array $required ) {
@@ -195,6 +219,7 @@ class Encode_Queue_Controller {
 				$encode_format_obj = new Encode_Format( $job['format_id'] );
 				$encode_format_obj->set_path( $job['output_path'] );
 				$encode_format_obj->set_url( $job['output_url'] );
+				$encode_format_obj->set_job_id( $job_id );
 
 				$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID
 
@@ -202,6 +227,7 @@ class Encode_Queue_Controller {
 					$wpdb->update(
 						$this->queue_table_name,
 						array( // Store PID and logfile path
+							'status'       => 'encoding',
 							'pid'          => $started_format->get_pid(),
 							'logfile_path' => $started_format->get_logfile(),
 						),
@@ -221,13 +247,11 @@ class Encode_Queue_Controller {
 				}
 				break;
 
+			case 'encoding':
 			case 'processing':
 				// This part also requires Encode_Format to be aware of the DB job or be populated from it.
-				$encode_format_obj = new Encode_Format( $job['format_id'] );
+				$encode_format_obj = Encode_Format::from_array( $job );
 				$encode_format_obj->set_status( 'encoding' ); // Critical for get_progress()
-				$encode_format_obj->set_logfile( $job['logfile_path'] );
-				$encode_format_obj->set_pid( $job['pid'] );
-				$encode_format_obj->set_path( $job['output_path'] ); // Needed for cancel_encoding if it checks path
 
 				$progress_status = $encode_format_obj->get_progress(); // This calls set_progress() which updates status
 
@@ -401,7 +425,7 @@ class Encode_Queue_Controller {
 			return array();
 		}
 
-		$filter_statuses = $statuses ?? array( 'queued', 'processing', 'needs_insert', 'pending_replacement' );
+		$filter_statuses = $statuses ?? array( 'queued', 'processing', 'needs_insert', 'pending_replacement', 'completed' );
 
 		if ( ! empty( $filter_statuses ) ) {
 			$all_items = array_filter(
@@ -540,7 +564,7 @@ class Encode_Queue_Controller {
 		$statuses = array(
 			'queued'              => __( 'Queued', 'video-embed-thumbnail-generator' ),
 			'processing'          => __( 'Processing', 'video-embed-thumbnail-generator' ),
-			'needs_insert'        => __( 'Finalizing', 'video-embed-thumbnail-generator' ),
+			'needs_insert'        => __( 'Finishing', 'video-embed-thumbnail-generator' ),
 			'pending_replacement' => __( 'Pending Replacement', 'video-embed-thumbnail-generator' ),
 			'completed'           => __( 'Completed', 'video-embed-thumbnail-generator' ),
 			'failed'              => __( 'Failed', 'video-embed-thumbnail-generator' ),

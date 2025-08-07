@@ -262,40 +262,36 @@ class Encode_Attachment {
 	public function get_all_formats_with_status() {
 		$video_formats_data  = array();
 		$all_defined_formats = $this->options_manager->get_video_formats( false );
-		$encoded_jobs        = $this->get_formats();
+		$encoded_jobs        = $this->get_formats(); // Gets all jobs from DB for this attachment
 		$video_metadata      = $this->get_video_metadata();
 		$source_height       = ( $video_metadata && $video_metadata->worked ) ? (int) $video_metadata->actualheight : 0;
 
+		// Create a map of job objects by format_id for efficient lookup.
 		$encoded_jobs_map = array();
 		foreach ( $encoded_jobs as $job_obj ) {
 			$encoded_jobs_map[ $job_obj->get_format_id() ] = $job_obj;
 		}
 
 		foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
-			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options_manager );
-			$file_exists = $encode_info->exists;
-			$job_exists  = isset( $encoded_jobs_map[ $format_id ] );
+			$format_array = $video_format_obj->to_array();
+			$job_exists   = isset( $encoded_jobs_map[ $format_id ] );
 
+			// Instantiate Encode_Info to check for the physical file's existence and details.
+			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options_manager );
+			$file_exists = $encode_info->exists && filesize( $encode_info->path ) > 0;
+
+			// Skip formats that are disabled in options, unless a file or job already exists for them.
 			if ( $this->options['hide_video_formats'] ) {
 				$codec_id      = $video_format_obj->get_codec()->get_id();
 				$resolution_id = $video_format_obj->get_resolution()->get_id();
-				$is_enabled_in_options = false;
-
-				if ( 'fullres' === $resolution_id ) {
-					if ( isset( $this->options['encode'][ $codec_id ], $this->options['encode'][ $codec_id ]['enabled'] ) && $this->options['encode'][ $codec_id ]['enabled'] ) {
-						$is_enabled_in_options = true;
-					}
-				} else {
-					if ( isset( $this->options['encode'][ $codec_id ], $this->options['encode'][ $codec_id ]['resolutions'], $this->options['encode'][ $codec_id ]['resolutions'][ $resolution_id ] ) && $this->options['encode'][ $codec_id ]['resolutions'][ $resolution_id ] ) {
-						$is_enabled_in_options = true;
-					}
-				}
+				$is_enabled_in_options = $this->options['encode'][ $codec_id ]['resolutions'][ $resolution_id ] ?? false;
 
 				if ( ! $is_enabled_in_options && ! $file_exists && ! $job_exists ) {
 					continue;
 				}
 			}
 
+			// Skip formats that are higher resolution than the source, unless a file or job already exists.
 			$target_height = $video_format_obj->get_resolution()->get_height();
 			if ( $source_height > 0 && is_numeric( $target_height ) && $target_height >= $source_height ) {
 				if ( ! $file_exists && ! $job_exists ) {
@@ -303,56 +299,51 @@ class Encode_Attachment {
 				}
 			}
 
-			$format_array = $video_format_obj->to_array();
-			$format_array['resolution']['name'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_name() );
-			$format_array['resolution']['label'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_label() );
+			// Start with default status
 			$format_array['status'] = 'not_encoded';
 
-						// Get data from the job queue first, if it exists.
-			if ( $job_exists ) {
-				$matching_encode_format = $encoded_jobs_map[ $format_id ];
-				$job_data_array         = $matching_encode_format->to_array();
-				$format_array           = array_merge( $format_array, $job_data_array );
-			}
-
-			// Now, check if the file physically exists and update/overwrite with that info.
+			// 1. Check for an existing file first. This is a reliable indicator of a completed state.
 			if ( $file_exists ) {
-				// If the job status is a non-terminal one, we can update it to 'encoded'.
-				// Otherwise, we respect the terminal status from the job queue.
-				if ( ! in_array( $format_array['status'], array( 'completed', 'failed', 'canceled', 'deleted', 'processing', 'queued' ), true ) ) {
-					$format_array['status'] = 'encoded';
-				}
+				$format_array['status']     = 'encoded'; // Use 'encoded' as a more descriptive term than 'completed' for a found file.
 				$format_array['url']        = $encode_info->url;
 				$format_array['id']         = $encode_info->id;
 				$format_array['was_picked'] = get_post_meta( $encode_info->id, '_kgflashmediaplayer-pickedformat', true );
 			}
-			$format_array['exists'] = $file_exists;
 
-			$format_array['deletable'] = false;
+			// 2. If a job exists in the database, its status is the source of truth and overrides the file check.
+			if ( $job_exists ) {
+				$matching_encode_format = $encoded_jobs_map[ $format_id ];
+
+				if ( $video_metadata && $video_metadata->duration ) {
+					$duration_in_microseconds = (int) round( $video_metadata->duration * 1000000 );
+					$matching_encode_format->set_video_duration( $duration_in_microseconds );
+				}
+
+				// If the job is currently encoding, get progress.
+				if ( 'encoding' === $matching_encode_format->get_status() ) {
+					$format_array['progress'] = $matching_encode_format->get_progress();
+				}
+
+				$job_data_array         = $matching_encode_format->to_array();
+				$format_array           = array_merge( $format_array, $job_data_array );
+				$format_array['status'] = $matching_encode_format->get_status(); // This is the definitive status.
+			}
+
+			// Final properties based on the determined status.
+			$format_array['exists']       = $file_exists;
+			$format_array['encoding_now'] = in_array( $format_array['status'], array( 'processing', 'encoding' ), true );
+			$format_array['deletable']    = false;
 			if ( $file_exists && ! $video_format_obj->get_replaces_original() && $this->is_attachment ) {
 				$attachment_post = get_post( $this->id );
 				if ( $attachment_post && ( get_current_user_id() === (int) $attachment_post->post_author || current_user_can( 'edit_others_video_encodes' ) ) ) {
 					$format_array['deletable'] = true;
 				}
 			}
-			$format_array['encoding_now'] = in_array( $format_array['status'], array('processing', 'encoding') );
-			if ( 'encoding' === $format_array['status'] ) {
-				if ( $video_metadata && $video_metadata->duration ) {
-					$duration_in_microseconds = (int) round( $video_metadata->duration * 1000000 );
-					$matching_encode_format->set_video_duration( $duration_in_microseconds );
-				}
-				$format_array['progress'] = $matching_encode_format->get_progress();
-			}
-			$format_array['status_l10n'] = $this->get_status_l10n( $format_array['status'] );
 
-			if ( $format_array['encoding_now'] ) {
-				if ( empty( $format_array['url'] ) ) {
-					$format_array['url'] = $encode_info->url;
-				}
-				if ( empty( $format_array['id'] ) ) {
-					$format_array['id'] = $encode_info->id;
-				}
-			}
+			// Add translated strings for UI.
+			$format_array['resolution']['name']  = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_name() );
+			$format_array['resolution']['label'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_label() );
+			$format_array['status_l10n']         = $this->get_status_l10n( $format_array['status'] );
 
 			$video_formats_data[ $format_id ] = $format_array;
 		}
@@ -374,10 +365,12 @@ class Encode_Attachment {
 				return __( 'Encoding', 'video-embed-thumbnail-generator' );
 			case 'failed':
 				return __( 'Failed', 'video-embed-thumbnail-generator' );
-			case 'complete':
-				return __( 'Complete', 'video-embed-thumbnail-generator' );
+			case 'completed':
+				return __( 'Completed', 'video-embed-thumbnail-generator' );
 			case 'deleted':
 				return __( 'Deleted', 'video-embed-thumbnail-generator' );
+			case 'needs_insert':
+				return __( 'Finishing', 'video-embed-thumbnail-generator' );
 			default:
 				return $status;
 		}
@@ -827,7 +820,60 @@ class Encode_Attachment {
 	public function queue_format( string $format_id, int $user_id, int $blog_id ) {
 		global $wpdb;
 
-		// 1. Pre-flight check: Determine if this format can be queued for this video.
+		// Check for an existing job for this video and format.
+		$is_attachment = is_numeric( $this->id ) && get_post_type( $this->id ) === 'attachment';
+		if ( $is_attachment ) {
+			$existing_job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM %i WHERE attachment_id = %d AND format_id = %s AND blog_id = %d", $this->queue_table_name, $this->id, $format_id, $blog_id ) );
+		} else {
+			$existing_job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM %i WHERE input_url = %s AND format_id = %s AND blog_id = %d", $this->queue_table_name, $this->url, $format_id, $blog_id ) );
+		}
+
+		if ( $existing_job ) {
+			// If a job exists but was deleted, canceled, or failed, we can reuse it.
+			if ( in_array( $existing_job->status, array( 'deleted', 'canceled', 'failed' ), true ) ) {
+				$job_id = $existing_job->id;
+				// Reset the job to a queued state.
+				$wpdb->update(
+					$this->queue_table_name,
+					array(
+						'status'                 => 'queued',
+						'user_id'                => $user_id,
+						'pid'                    => null,
+						'logfile_path'           => null,
+						'started_at'             => null,
+						'completed_at'           => null,
+						'failed_at'              => null,
+						'error_message'          => null,
+						'output_attachment_id'   => null,
+						'retry_count'            => (int) $existing_job->retry_count + 1,
+						'updated_at'             => current_time( 'mysql', true ),
+					),
+					array( 'id' => $job_id )
+				);
+
+				// Schedule a new ActionScheduler task.
+				$action_id = \as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+				if ( $action_id ) {
+					$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
+				}
+
+				return array(
+					'status'    => 'success',
+					'job_id'    => $job_id,
+					'action_id' => $action_id,
+					'reason'    => 'requeued',
+				);
+			} else {
+				// Job already exists and is in a non-resumable state (queued, processing, completed).
+				return array(
+					'status' => 'failed',
+					'reason' => 'already_queued',
+				);
+			}
+		}
+
+		// No existing job found, proceed with creating a new one.
+		// 1. Pre-flight check.
 		$can_queue_status = $this->check_if_can_queue( $format_id );
 		if ( 'ok_to_queue' !== $can_queue_status ) {
 			return array(
@@ -839,7 +885,6 @@ class Encode_Attachment {
 		// 2. Get Video_Format configuration object.
 		$all_video_formats   = $this->options_manager->get_video_formats();
 		$video_format_config = $all_video_formats[ $format_id ] ?? null;
-
 		if ( ! $video_format_config ) {
 			return array(
 				'status' => 'failed',
@@ -847,11 +892,10 @@ class Encode_Attachment {
 			);
 		}
 
-		// 3. Determine output paths/URLs for the new job using Encode_Info.
-		$is_attachment   = is_numeric( $this->id ) && get_post_type( $this->id ) === 'attachment';
+		// 3. Determine output paths/URLs.
 		$encode_info_obj = new Encode_Info( $this->id, $this->url, $video_format_config, $this->options_manager );
 
-		// 4. Prepare job data for database insertion.
+		// 4. Prepare job data for insertion.
 		$job_data = array(
 			'blog_id'       => $blog_id,
 			'attachment_id' => $is_attachment ? (int) $this->id : null,
@@ -865,23 +909,19 @@ class Encode_Attachment {
 			'updated_at'    => current_time( 'mysql', true ),
 		);
 
-		// 5. Insert the job into the queue table.
+		// 5. Insert the new job.
 		$inserted = $wpdb->insert( $this->queue_table_name, $job_data );
-
 		if ( ! $inserted ) {
 			return array(
 				'status' => 'failed',
 				'reason' => 'error_db_insert',
 			);
 		}
-
 		$job_id = $wpdb->insert_id;
 
-		// 6. Schedule an ActionScheduler task to handle this job.
+		// 6. Schedule ActionScheduler task.
 		$action_id = \as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-
 		if ( ! $action_id ) {
-			// If scheduling fails, mark job as failed in DB.
 			$wpdb->update(
 				$this->queue_table_name,
 				array(
@@ -896,12 +936,12 @@ class Encode_Attachment {
 			);
 		}
 
-		// 7. Update the job with the ActionScheduler action ID.
+		// 7. Update job with action ID.
 		$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
 
 		return array(
-			'status' => 'success',
-			'job_id' => $job_id,
+			'status'    => 'success',
+			'job_id'    => $job_id,
 			'action_id' => $action_id,
 		);
 	}
@@ -1445,7 +1485,7 @@ class Encode_Attachment {
 		$result = $this->replace_original( $encode_format );
 
 		if ( true === $result ) {
-			$encode_format->set_status( 'complete' );
+			$encode_format->set_status( 'completed' );
 			$this->save_format( $encode_format );
 			return true;
 		} else {
@@ -1544,7 +1584,7 @@ class Encode_Attachment {
 		} elseif ( ! $encode_format->get_id() ) {
 			return $this->create_new_attachment( $encode_format );
 		} elseif ( $encode_format->get_id() && file_exists( $path ) ) {
-			$encode_format->set_status( 'complete' );
+			$encode_format->set_status( 'completed' );
 			$this->save_format( $encode_format );
 			return true;
 		} elseif ( $encode_format->get_id() && ! file_exists( $path ) ) {
@@ -1553,7 +1593,7 @@ class Encode_Attachment {
 			return false;
 		}
 
-		if ( ! $encode_format->get_error() && 'complete' !== $encode_format->get_status() ) {
+		if ( ! $encode_format->get_error() && 'completed' !== $encode_format->get_status() ) {
 			$encode_format->set_error( __( 'An unexpected error occurred during attachment processing.', 'video-embed-thumbnail-generator' ) );
 		}
 		$this->save_format( $encode_format );

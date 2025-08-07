@@ -15,11 +15,12 @@ import {
 } from '@wordpress/components';
 import {
 	MediaUpload,
-	MediaUploadCheck,
 	__experimentalGetElementClassName,
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
+import { store as coreStore } from '@wordpress/core-data';
+import './additional-formats.scss';
 
 const AdditionalFormats = ({
 	setAttributes,
@@ -29,14 +30,13 @@ const AdditionalFormats = ({
 }) => {
 	const { id, src, height } = attributes;
 	const { ffmpeg_exists } = options;
-	const [videoFormats, setVideoFormats] = useState();
+	const [videoFormats, setVideoFormats] = useState({});
 	const [encodeMessage, setEncodeMessage] = useState();
 	const [itemToDelete, setItemToDelete] = useState(null); // { type: 'file'/'job', formatId: string, jobId?: int, id?: int, name?: string }
 	const [deleteInProgress, setDeleteInProgress] = useState(null); // Stores formatId or jobId being deleted
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isEncoding, setIsEncoding] = useState(false);
-	const checkboxTimerRef = useRef(null);
 	const progressTimerRef = useRef(null);
 	const queueApiPath = '/videopack/v1/queue';
 
@@ -71,22 +71,44 @@ const AdditionalFormats = ({
 	};
 
 	const updateVideoFormats = (response) => {
-		if (response && typeof response === 'object') {
-			const newFormats = { ...response };
-			Object.keys(newFormats).forEach((key) => {
-				// When updating, preserve the existing 'checked' state.
-				// This prevents the UI from losing state on a poll refresh.
-				newFormats[key].checked = videoFormats?.[key]?.checked || false;
-			});
+		setVideoFormats((currentVideoFormats) => {
+			if (response && typeof response === 'object') {
+				const newFormats = { ...response };
+				Object.keys(newFormats).forEach((key) => {
+					const newFormat = newFormats[key];
+					const oldFormat = currentVideoFormats?.[key];
 
-			// Only update state if the formats have actually changed.
-			if (!deepEqual(videoFormats, newFormats)) {
-				setVideoFormats(newFormats);
+					// Preserve the existing 'checked' state to prevent UI flicker on poll refresh.
+					newFormat.checked = oldFormat?.checked || false;
+
+					// If the format is encoding, merge progress data carefully.
+					if (newFormat.encoding_now && newFormat.progress) {
+						// If there's old progress data, merge it to prevent flashes of 0%.
+						if (oldFormat?.progress) {
+							newFormat.progress = {
+								...oldFormat.progress,
+								...newFormat.progress,
+							};
+						} else {
+							// If no old progress, ensure we don't start with a negative percent.
+							newFormat.progress.percent =
+								newFormat.progress.percent > 0
+									? newFormat.progress.percent
+									: 0;
+						}
+					}
+				});
+
+				// Only update state if the formats have actually changed.
+				if (!deepEqual(currentVideoFormats, newFormats)) {
+					return newFormats;
+				}
+			} else if (!deepEqual(currentVideoFormats, response)) {
+				// Fallback for non-object responses
+				return response;
 			}
-		} else if (!deepEqual(videoFormats, response)) {
-			// Fallback for non-object responses
-			setVideoFormats(response);
-		}
+			return currentVideoFormats;
+		});
 	};
 
 	const fetchVideoFormats = () => {
@@ -130,91 +152,109 @@ const AdditionalFormats = ({
 		return select('core').getSite();
 	}, []);
 
-	const checkIsEncoding = (formats) => {
+	const shouldPoll = (formats) => {
 		if (!formats) {
 			return false;
 		}
-		// Check if any format has status 'processing' or 'encoding'
+		// Poll only if at least one format is still in a state that requires updates.
 		return Object.values(formats).some(
 			(format) =>
-				format.hasOwnProperty('encoding_now') && format.encoding_now
+				format.status === 'queued' ||
+				format.status === 'encoding' ||
+				format.status === 'processing' ||
+				format.status === 'needs_insert'
 		);
 	};
 
 	const incrementEncodeProgress = () => {
-		console.log('progress');
-		if (isEncoding) {
-			// Use the state variable
-			const updatedVideoFormats = Object.entries(videoFormats).reduce(
-				(updated, [key, format]) => {
-					if (!isEmpty(format.progress)) {
-						const currentSeconds =
-							format.progress.current_seconds +
-							parseInt(format.progress.fps) / 30;
+		setVideoFormats((currentVideoFormats) => {
+			if (!currentVideoFormats || !isEncoding) {
+				return currentVideoFormats;
+			}
 
-						let percentDone = Math.round(
-							(format.progress.current_seconds /
-								parseInt(format.progress.duration)) *
-								100
-						);
-						if (percentDone > 100) {
-							percentDone = 100;
+			const updatedVideoFormats = { ...currentVideoFormats };
+			Object.keys(updatedVideoFormats).forEach((key) => {
+				const format = updatedVideoFormats[key];
+				if (format.encoding_now && format.progress) {
+					const elapsed =
+						new Date().getTime() / 1000 - format.started;
+					let percent = format.progress.percent || 0;
+					let remaining = null;
+
+					// Only calculate remaining time if video_duration is available.
+					if (format.video_duration) {
+						const totalDurationInSeconds =
+							format.video_duration / 1000000;
+						const speedMatch = format.progress.speed
+							? String(format.progress.speed).match(/(\d*\.?\d+)/)
+							: null;
+						const speed = speedMatch
+							? parseFloat(speedMatch[0])
+							: 0;
+
+						// Increment percent based on speed. This function runs every second.
+						if (speed > 0) {
+							const increment =
+								(1 / totalDurationInSeconds) * 100 * speed;
+							percent += increment;
 						}
 
-						if (percentDone !== 0) {
-							format.progress.elapsed =
-								format.progress.elapsed + 1;
-							if (!isNaN(format.progress.remaining)) {
-								if (format.progress.remaining > 0) {
-									format.progress.remaining--;
-								} else {
-									format.progress.remaing = 0;
-								}
-							}
+						// Calculate remaining time based on current percent and speed
+						if (percent > 0 && speed > 0) {
+							const remainingPercent = 100 - percent;
+							remaining =
+								(totalDurationInSeconds *
+									(remainingPercent / 100)) /
+								speed;
+						} else {
+							remaining = totalDurationInSeconds - elapsed;
 						}
-
-						updated[key] = {
-							...format,
-							progress: {
-								...format.progress,
-								current_seconds: currentSeconds,
-								elapsed: format.progress.elapsed,
-								percent_done: percentDone,
-								remaining: format.progress.remaining,
-							},
-						};
-					} else {
-						updated[key] = format;
 					}
-					return updated;
-				},
-				{}
-			);
 
-			setVideoFormats(updatedVideoFormats);
-		}
+					// Clamp values to be within expected ranges.
+					percent = Math.min(100, Math.max(0, percent));
+					remaining =
+						remaining !== null ? Math.max(0, remaining) : null;
+
+					updatedVideoFormats[key] = {
+						...format,
+						progress: {
+							...format.progress,
+							elapsed,
+							remaining,
+							percent,
+						},
+					};
+				}
+			});
+			return updatedVideoFormats;
+		});
 	};
 
 	useEffect(() => {
-		setIsEncoding(checkIsEncoding(videoFormats));
+		setIsEncoding(shouldPoll(videoFormats));
 	}, [videoFormats]);
 
 	useEffect(() => {
-		// Schedule polling for updates
-		checkboxTimerRef.current = setTimeout(pollVideoFormats, 5000);
-
+		let pollTimer = null;
 		// Manage progress timer based on encoding state
-		if (!isEncoding) {
+		if (isEncoding) {
+			// Start polling immediately and then every 5 seconds
+			pollVideoFormats(); // Initial poll
+			pollTimer = setInterval(pollVideoFormats, 5000);
+
+			if (progressTimerRef.current === null) {
+				progressTimerRef.current = setInterval(
+					incrementEncodeProgress,
+					1000
+				);
+			}
+		} else {
+			// Clear all timers if not encoding
 			clearInterval(progressTimerRef.current);
 			progressTimerRef.current = null;
-
-			return;
-		}
-		if (progressTimerRef.current === null) {
-			progressTimerRef.current = setInterval(
-				incrementEncodeProgress,
-				1000
-			);
+			clearInterval(pollTimer);
+			pollTimer = null;
 		}
 
 		return () => {
@@ -222,29 +262,43 @@ const AdditionalFormats = ({
 				clearInterval(progressTimerRef.current);
 				progressTimerRef.current = null;
 			}
-			if (checkboxTimerRef.current !== null) {
-				clearTimeout(checkboxTimerRef.current);
-				checkboxTimerRef.current = null;
+			if (pollTimer !== null) {
+				clearInterval(pollTimer);
+				pollTimer = null;
 			}
 		};
 	}, [isEncoding]); // Depend on isEncoding state
 
-	const handleFormatCheckbox = (event, format) => {
+	const handleFormatCheckbox = (event, formatId) => {
 		setVideoFormats((prevVideoFormats) => {
 			const updatedFormats = { ...prevVideoFormats };
-			if (updatedFormats[format]) {
-				updatedFormats[format].checked = event;
+			if (updatedFormats[formatId]) {
+				updatedFormats[formatId].checked = event;
 			}
 			return updatedFormats;
 		});
 		// Note: Checkbox state is now purely UI. Saving to DB happens on "Encode" button click.
 	};
 
-	const onSelectFormat = (media) => {
-		console.log('select');
+	const getCheckboxCheckedState = (formatData) => {
+		return formatData.checked || formatData.status === 'queued';
+	};
+
+	const getCheckboxDisabledState = (formatData) => {
+		return (
+			formatData.exists ||
+			formatData.status === 'queued' ||
+			formatData.status === 'encoding' ||
+			formatData.status === 'processing' ||
+			formatData.status === 'completed'
+		);
 	};
 
 	const handleEnqueue = () => {
+		if (!window.videopack || !window.videopack.settings) {
+			return <Spinner />;
+		}
+
 		setIsLoading(true);
 
 		// Get list of format IDs that are checked and available
@@ -273,51 +327,29 @@ const AdditionalFormats = ({
 				console.log(response);
 				const queueMessage = () => {
 					const queueList = (() => {
-						if (response?.enqueue_data?.encode_list) {
+						if (
+							response?.encode_list &&
+							Array.isArray(response.encode_list) &&
+							response.encode_list.length > 0
+						) {
 							return new Intl.ListFormat(
 								siteSettings?.language
 									? siteSettings.language.replace('_', '-')
 									: 'en-US',
 								{ style: 'long', type: 'conjunction' }
-							).format(
-								Object.values(
-									response?.enqueue_data?.encode_list
-								)
-							);
+							).format(response.encode_list);
 						}
-
 						return '';
 					})();
 
-					if (response?.enqueue_data?.new_queue_position == false) {
-						const queuePosition =
-							response?.enqueue_data?.existing_queue_position;
-
-						if (
-							!JSON.stringify(
-								response?.enqueue_data?.encode_list
-							) !== '[]'
-						) {
-							return sprintf(
-								__(
-									'%1$s updated in existing queue entry in position %2$s.'
-								),
-								queueList,
-								queuePosition
-							);
+					if (!queueList) {
+						if (response?.log?.length > 0) {
+							return response.log.join(' ');
 						}
-
-						return sprintf(
-							__('Video is already %1$s in the queue.'),
-							queuePosition
-						);
-					}
-					if (response?.enqueue_data?.new_queue_position === 1) {
-						return __('Starting…');
+						return __('No formats were added to the queue.');
 					}
 
-					const queuePosition =
-						response?.enqueue_data?.new_queue_position;
+					const queuePosition = response?.new_queue_position;
 
 					return sprintf(
 						__('%1$s added to queue in position %2$s.'),
@@ -339,6 +371,16 @@ const AdditionalFormats = ({
 				setIsLoading(false);
 				fetchVideoFormats(); // Re-fetch to ensure UI is consistent
 			});
+	};
+
+	const onSelectFormat = (media) => {
+		// This function is for handling media selection, not encoding.
+		// It should update attributes or perform other media-related actions.
+		// For now, it's left as a placeholder as its original intent was unclear
+		// after the encoding logic was moved.
+		console.log('onSelectFormat called with media:', media);
+		// Example: if this was meant to update the main video source
+		// setAttributes({ src: media.url, id: media.id });
 	};
 
 	const formatPickable = (format) => {
@@ -471,14 +513,9 @@ const AdditionalFormats = ({
 	const EncodeProgress = ({ format }) => {
 		const formatData = videoFormats?.[format];
 
-		if (
-			formatData?.status === 'processing' &&
-			!isEmpty(formatData?.progress)
-		) {
-			const percentText = sprintf(
-				__('%d%%'),
-				formatData.progress.percent_done
-			);
+		if (formatData?.encoding_now && !isEmpty(formatData?.progress)) {
+			const percent = Math.round(formatData.progress.percent);
+			const percentText = sprintf('%d%%', percent);
 			const onCancelJob = () => {
 				if (formatData.job_id) {
 					handleJobDelete(formatData.job_id);
@@ -493,8 +530,7 @@ const AdditionalFormats = ({
 							style={{ width: percentText }}
 						>
 							<div className="videopack-meter-text">
-								{formatData.progress.percent_done > 20 &&
-									percentText}
+								{percentText}
 							</div>
 						</div>
 					</div>
@@ -600,20 +636,24 @@ const AdditionalFormats = ({
 		}
 	};
 
+	const canUploadFiles = useSelect(
+		(select) => select(coreStore).canUser('create', 'media', id),
+		[id]
+	);
+
 	return (
 		<>
 			<PanelBody title={__('Additional Formats')}>
-				<MediaUploadCheck>
+				{canUploadFiles && (
 					<PanelRow>
 						{videoFormats ? (
 							<>
 								<ul
-									className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`}
-								>
+									className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`}>
 									{videopack.settings.codecs.map((codec) => {
 										if (
-											!options.encode[codec.id] ||
-											!options.encode[codec.id].enabled
+											options.encode[codec.id]
+												?.enabled !== '1'
 										) {
 											return null;
 										}
@@ -634,30 +674,6 @@ const AdditionalFormats = ({
 															if (!formatData) {
 																return null;
 															}
-
-															if (
-																(options.hide_video_formats &&
-																	!options
-																		.encode[
-																		codec.id
-																	]
-																		.resolutions[
-																		resolution
-																			.id
-																	]) ||
-																(ffmpeg_exists !==
-																	true &&
-																	resolution.id ===
-																		'fullres')
-															) {
-																return null;
-															}
-
-															const isCheckboxDisabled =
-																ffmpeg_exists !==
-																	true ||
-																formatData.exists;
-
 															return (
 																<li
 																	key={
@@ -672,12 +688,12 @@ const AdditionalFormats = ({
 																			label={
 																				formatData.label
 																			}
-																			checked={
-																				formatData.checked
-																			}
-																			disabled={
-																				isCheckboxDisabled
-																			}
+																			checked={getCheckboxCheckedState(
+																				formatData
+																			)}
+																			disabled={getCheckboxDisabledState(
+																				formatData
+																			)}
 																			onChange={(
 																				event
 																			) =>
@@ -778,8 +794,7 @@ const AdditionalFormats = ({
 																				isDestructive
 																			/>
 																		)}
-																	{(formatData.status ===
-																		'processing' ||
+																	{(formatData.encoding_now ||
 																		formatData.status ===
 																			'failed') && (
 																		<EncodeProgress
@@ -812,24 +827,24 @@ const AdditionalFormats = ({
 							</>
 						)}
 					</PanelRow>
-					{ffmpeg_exists === true && videoFormats && (
-						<PanelRow>
-							<Button
-								variant="secondary"
-								onClick={handleEnqueue}
-								title={encodeButtonTitle()}
-								text={__('Encode')}
-								disabled={isEncodeButtonDisabled}
-							></Button>
-							{isLoading && <Spinner />}
-							{encodeMessage && (
-								<span className="videopack-encode-message">
-									{encodeMessage}
-								</span>
-							)}
-						</PanelRow>
-					)}
-				</MediaUploadCheck>
+				)}
+				{ffmpeg_exists === true && videoFormats && canUploadFiles && (
+					<PanelRow>
+						<Button
+							variant="secondary"
+							onClick={handleEnqueue}
+							title={encodeButtonTitle()}
+							text={__('Encode')}
+							disabled={isEncodeButtonDisabled}
+						></Button>
+						{isLoading && <Spinner />}
+						{encodeMessage && (
+							<span className="videopack-encode-message">
+								{encodeMessage}
+							</span>
+						)}
+					</PanelRow>
+				)}
 			</PanelBody>
 		</>
 	);

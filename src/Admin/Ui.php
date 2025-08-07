@@ -47,7 +47,7 @@ class Ui {
 	 *
 	 * @return array The settings data.
 	 */
-	private function _get_videopack_settings_data() {
+	private function get_videopack_settings_data() {
 		// Prepare codec data for localization, making it easier to read and debug.
 		$codec_objects = $this->options_manager->get_video_codecs();
 		$codecs_data   = array();
@@ -76,18 +76,33 @@ class Ui {
 		);
 	}
 
+	/**
+	 * Adds the videopack.settings inline script to a given script handle.
+	 *
+	 * @param string $handle The script handle to attach the inline script to.
+	 * @param array  $extra_data Extra data to merge into the settings object.
+	 */
+	private function _add_settings_inline_script( $handle, $extra_data = array() ) {
+		$settings_data = $this->get_videopack_settings_data();
+		if ( ! empty( $extra_data ) ) {
+			$settings_data = array_merge( $settings_data, $extra_data );
+		}
+
+		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.settings = ' . wp_json_encode( $settings_data ) . ';';
+
+		wp_add_inline_script(
+			$handle,
+			$inline_script,
+			'before'
+		);
+	}
+
 	public function enqueue_block_assets() {
 		// The 'editorScript' defined in block.json handles enqueuing the block's script.
 		// We only need to register the script translations here.
 		wp_set_script_translations( 'videopack-videopack-block-editor-script', 'video-embed-thumbnail-generator' );
 
-		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.settings = ' . wp_json_encode( $this->_get_videopack_settings_data() ) . ';';
-
-				wp_add_inline_script(
-			'videopack-videopack-block-editor-script',
-			$inline_script,
-			'before'
-		);
+		$this->_add_settings_inline_script( 'videopack-videopack-block-editor-script' );
 
 		$options = $this->options_manager->get_options();
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $options['embed_method'], $this->options_manager );
@@ -134,16 +149,7 @@ class Ui {
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
-			$settings_data = $this->_get_videopack_settings_data();
-			$settings_data['freemiusEnabled'] = $freemius_enabled;
-
-			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.settings = ' . wp_json_encode( $settings_data ) . ';';
-
-			wp_add_inline_script(
-				'videopack-settings',
-				$inline_script,
-				'before'
-			);
+			$this->_add_settings_inline_script( 'videopack-settings', array( 'freemiusEnabled' => $freemius_enabled ) );
 
 			$settings_css_dependencies = array_merge( array( 'wp-components' ), $freemius_style_dependencies );
 
@@ -180,10 +186,12 @@ class Ui {
 			);
 
 			// Pass initial data to the React app.
-			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; }' . 'videopack.encodeQueueData = ' . wp_json_encode( array(
-				'initialQueueState' => $options['queue_control'],
-				'ffmpegExists'      => $options['ffmpeg_exists'],
-			) ) . ';';
+			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . wp_json_encode(
+				array(
+					'initialQueueState' => $options['queue_control'],
+					'ffmpegExists'      => $options['ffmpeg_exists'],
+				)
+			) . ';';
 
 			wp_add_inline_script(
 				'videopack-encode-queue',
@@ -191,12 +199,6 @@ class Ui {
 				'before'
 			);
 
-		}
-
-		// Also load attachment details script on the attachment edit screen.
-		$screen = get_current_screen();
-		if ( 'attachment' === $screen->id ) {
-			$this->enqueue_attachment_details();
 		}
 	}
 
@@ -220,10 +222,12 @@ class Ui {
 		);
 		wp_set_script_translations( 'videopack-attachment-details', 'video-embed-thumbnail-generator' );
 
+		$this->_add_settings_inline_script( 'videopack-attachment-details' );
+
 		wp_enqueue_style(
 			'videopack-attachment-details',
 			plugins_url( 'admin-ui/build/attachment-details.css', VIDEOPACK_PLUGIN_FILE ),
-			array(),
+			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);
 	}

@@ -61,7 +61,6 @@ class Encode_Format {
 			$format->set_ended( strtotime( $completed_at ) );
 		}
 
-		$format->set_progress();
 		$format->set_encode_width( $format->set_or_null( $data, 'encode_width' ) );
 		$format->set_encode_height( $format->set_or_null( $data, 'encode_height' ) );
 		$format->set_job_id( $format->set_or_null( $data, 'id' ) ); // Use 'id' from DB as job_id
@@ -160,6 +159,7 @@ class Encode_Format {
 	public function set_status( ?string $status ) {
 		$allowed = array(
 			'queued',
+			'processing',
 			'encoding',
 			'needs_insert',
 			'completed',

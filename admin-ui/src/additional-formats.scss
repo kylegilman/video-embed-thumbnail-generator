@@ -1,0 +1,91 @@
+.videopack-formats-list {
+
+	width: 90%;
+	margin-top: -27px;
+	margin-bottom: 0;
+
+	li {
+		margin-top: 27px;
+	}
+
+	li label {
+		max-width: 95%;
+	}
+
+	button.components-button.is-link.is-destructive {
+		margin-top: 3px;
+	}
+
+	.components-checkbox-control {
+		display: inline-block;
+		margin-bottom: 7px;
+	}
+	.videopack-meter {
+		background-color: var(--wp--preset--color--tertiary);
+		display: inline-block;
+  		width: 70%;
+		margin-right: 10px;
+		border-radius: 4px;
+		height: 19px;
+	}
+
+	.videopack-meter-bar {
+		background: linear-gradient(
+			90deg,
+			var(--wp-admin-theme-color),
+			var(--wp-admin-theme-color-darker-10)
+		);
+		border-radius: inherit;
+		min-width: 1px;
+	}
+
+	.videopack-meter-text {
+		color: white;
+		text-align: right;
+		margin-right: 5px;
+		line-height: 19px;
+		font-size: 10px;
+	}
+
+	span.videopack-format {
+		margin-right: 15px;
+		vertical-align: middle;
+		display: inline-flex;
+	}
+
+	.videopack-format-status {
+		text-transform:capitalize;
+		display: inline-flex;
+		vertical-align: middle;
+		font-size: 11px;
+		margin-right: 11px;
+		font-weight: 300;
+	}
+
+	.videopack-encode-progress {
+		margin-top: 4px;
+	}
+
+	.videopack-encode-progress-small-text {
+		width: 90%;
+		font-size: 10px;
+		display: flex;
+		justify-content: space-between;
+		margin-top: 2px;
+	}
+
+	&.no-ffmpeg {
+		span {
+			margin-right: 8px;
+		}
+		button {
+			height: inherit;
+			font-size: inherit;
+		}
+	}
+}
+
+.videopack-encode-message {
+	margin-left: 8px;
+    font-weight: 300;
+}
