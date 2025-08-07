@@ -26,7 +26,7 @@ import save from './save';
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
-registerBlockType( 'videopack/videopack-block', {
+registerBlockType('videopack/videopack-block', {
 	icon,
 	/**
 	 * @see ./edit.js
@@ -37,4 +37,4 @@ registerBlockType( 'videopack/videopack-block', {
 	 * @see ./save.js
 	 */
 	save,
-} );
+});
