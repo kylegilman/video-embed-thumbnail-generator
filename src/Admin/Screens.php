@@ -87,6 +87,25 @@ class Screens {
 		return $cols;
 	}
 
+	public function add_meta_boxes() {
+		add_meta_box(
+			'videopack-meta-box',
+			__( 'Videopack', 'videopack' ),
+			array( $this, 'render_meta_box' ),
+			'attachment',
+			'normal',
+			'high'
+		);
+		wp_enqueue_global_styles();
+	}
+
+	public function render_meta_box( $post ) {
+		$attachment = new Attachment( $this->options_manager );
+		if ( $attachment->is_video( $post ) ) {
+			echo '<div id="videopack-attachment-details-root"></div>';
+		}
+	}
+
 	public function add_video_stats_column_content( $column_name, $id ) {
 
 		if ( $column_name == 'video_stats' ) {

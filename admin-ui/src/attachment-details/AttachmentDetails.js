@@ -1,30 +1,18 @@
-import { __, _x } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import {
-	Button,
-	Icon,
-	Panel,
-	PanelRow,
-	Spinner,
-	TabPanel,
-	Tooltip,
-} from '@wordpress/components';
-import { useDebounce } from '@wordpress/compose';
+import { Spinner } from '@wordpress/components';
 import { useEntityRecord } from '@wordpress/core-data';
-import { createRoot, useMemo, useState, useEffect } from '@wordpress/element';
-import { videopack } from '../icon';
+import { useState, useEffect } from '@wordpress/element';
 import Thumbnails from '../Thumbnails/Thumbnails';
 import AdditionalFormats from '../AdditionalFormats';
 import './attachment-details.scss';
 
-const AttachmentDetails = ({ attachmentAttributes }) => {
-	const { id } = attachmentAttributes;
+const AttachmentDetails = ({ attachmentId }) => {
 	const [options, setOptions] = useState();
 	const [attributes, setAttributes] = useState();
-	const attachmentRecord = useEntityRecord(
+	const attachment = useEntityRecord(
 		'postType',
 		'attachment',
-		!isNaN(id) ? id : null
+		!isNaN(attachmentId) ? attachmentId : null
 	);
 
 	useEffect(() => {
@@ -39,36 +27,34 @@ const AttachmentDetails = ({ attachmentAttributes }) => {
 	}, []);
 
 	useEffect(() => {
-		const combinedAttributes = {
-			id,
-			total_thumbnails:
-				attachmentAttributes?.meta?.['_videopack-meta']
-					?.total_thumbnails || options?.total_thumbnails,
-			src: attachmentAttributes?.url,
-			poster:
-				attachmentAttributes?.meta?.['_kgflashmediaplayer-poster'] ||
-				attachmentAttributes?.image?.src,
-			poster_id:
-				attachmentAttributes?.meta?.['_kgflashmediaplayer-poster-id'],
-		};
-		setAttributes(combinedAttributes);
-	}, [options, attachmentAttributes]);
+		if (attachment.hasResolved && !attributes) {
+			const combinedAttributes = {
+				id: attachmentId,
+				total_thumbnails:
+					attachment.record?.meta?.['_videopack-meta']?.total_thumbnails ||
+					options?.total_thumbnails,
+				src: attachment.record?.source_url,
+				poster:
+					attachment.record?.meta?.['_kgflashmediaplayer-poster'] ||
+					attachment.record?.media_details?.sizes?.full?.source_url ||
+					attachment.record?.image?.src,
+				poster_id:
+					attachment.record?.meta?.['_kgflashmediaplayer-poster-id'],
+			};
+			setAttributes(combinedAttributes);
+		}
+	}, [options, attachment, attributes]);
 
-	if (attributes && attachmentRecord.hasResolved && options) {
+	if (attributes && attachment.hasResolved && options) {
 		return (
 			<div className="videopack-attachment-details">
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachmentRecord={attachmentRecord.record}
+					attachment={attachment}
 					options={options}
 				/>
-				<AdditionalFormats
-					setAttributes={setAttributes}
-					attributes={attributes}
-					attachmentRecord={attachmentRecord.record}
-					options={options}
-				/>
+				<AdditionalFormats attributes={attributes} options={options} />
 			</div>
 		);
 	}

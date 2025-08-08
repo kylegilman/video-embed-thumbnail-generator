@@ -148,6 +148,7 @@ class Videopack {
 
 		$attachment_meta = new Admin\Attachment_Meta( $this->options_manager );
 		$this->loader->add_action( 'init', $attachment_meta, 'register' );
+		$this->loader->add_filter( 'rest_prepare_attachment', $attachment_meta, 'filter_rest_response_meta', 10, 3 );
 
 		$plugin_attachment = new Admin\Attachment( $this->options_manager );
 		$this->loader->add_action( 'delete_attachment', $plugin_attachment, 'delete_video_attachment' );
@@ -193,6 +194,7 @@ class Videopack {
 		$this->loader->add_action( 'wp_redirect', $admin_screens, 'upload_page_change_thumbnail_parent' );
 		$this->loader->add_action( 'admin_head-post.php', $admin_screens, 'add_contextual_help_tab' );
 		$this->loader->add_action( 'admin_head-post-new.php', $admin_screens, 'add_contextual_help_tab' );
+		$this->loader->add_action( 'add_meta_boxes', $admin_screens, 'add_meta_boxes' );
 
 		// Admin UI (Block, React Settings, Media Library Enhancements) hooks.
 		$admin_ui = new Admin\Ui( $this->options_manager );

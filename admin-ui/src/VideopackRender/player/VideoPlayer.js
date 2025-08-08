@@ -6,7 +6,7 @@ import BelowVideo from './BelowVideo';
 
 import './VideoPlayer.scss';
 
-const VideoPlayer = ({ attributes, onReady }) => {
+const VideoPlayer = ({ attributes, onReady, attachment }) => {
 	const {
 		embed_method,
 		autoplay,
@@ -67,7 +67,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				playsinline,
 				volume,
 				playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
-				sources: sources.map(s => ({ src: s.src, type: s.type })),
+				sources: sources.map((s) => ({ src: s.src, type: s.type })),
 				userActions: { click: false },
 			});
 		}
@@ -142,6 +142,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			<div className="videopack-player">
 				<MetaBar
 					attributes={attributes}
+					attachment={attachment}
 					metaBarVisible={metaBarVisible}
 				/>
 				{embed_method === 'Video.js' && videoJsOptions && (
@@ -158,9 +159,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					<GenericPlayer onReady={handleVideoPlayerReady} />
 				)}
 			</div>
-			<BelowVideo
-				attributes={attributes}
-			/>
+			<BelowVideo attributes={attributes} attachment={attachment} />
 		</div>
 	);
 };

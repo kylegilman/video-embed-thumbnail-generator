@@ -2,9 +2,29 @@
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/Thumbnails/Thumbnails.scss ***!
   \*******************************************************************************************************************************************************************************************************************************************************/
 .videopack-thumbnail-generator img {
-  max-width: 100%;
+  max-width: 300px;
 }
-.videopack-thumbnail-generator .videopack-play-pause {
+.videopack-thumbnail-generator .spinner-container {
+  position: relative;
+}
+.videopack-thumbnail-generator .spinner-container svg.components-spinner {
+  position: absolute;
+  margin: 0;
+  text-align: center;
+  width: 33%;
+  height: 33%;
+  left: 50%;
+  margin-left: -16%;
+  top: 50%;
+  margin-top: -11%;
+  display: none;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-play-pause {
   color: var(--wp-admin-theme-color);
   display: inline-block;
   vertical-align: text-bottom;
@@ -13,7 +33,7 @@
   border: none;
   background: none;
 }
-.videopack-thumbnail-generator .videopack-thumbvideo-slider {
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-thumbvideo-slider {
   display: inline-block;
   width: 85%;
 }
@@ -22,7 +42,6 @@
   pointer-events: none;
 }
 .videopack-thumbnail-generator .videopack-thumbnail {
-  position: relative;
   border: 5px transparent solid;
   padding: 0;
   background: none;
@@ -35,26 +54,20 @@
   box-sizing: border-box;
   position: relative;
 }
-.videopack-thumbnail-generator .videopack-thumbnail svg.components-spinner {
-  position: absolute;
-  margin: 0;
-  text-align: center;
-  width: 33%;
-  height: 33%;
-  left: 50%;
-  margin-left: -16%;
-  top: 50%;
-  margin-top: -11%;
-  display: none;
-}
-.videopack-thumbnail-generator .videopack-thumbnail.saving svg.components-spinner {
-  display: inline-block;
-}
 .videopack-thumbnail-generator .videopack-placeholder-gallery-button {
   margin-left: 12px;
 }
 .videopack-thumbnail-generator .videopack-thumb-video-panel {
   display: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail.saving,
+.videopack-thumbnail-generator .videopack-thumb-video-panel.saving {
+  opacity: 20%;
+  pointer-events: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail.saving svg.components-spinner,
+.videopack-thumbnail-generator .videopack-thumb-video-panel.saving svg.components-spinner {
+  display: inline-block;
 }
 .videopack-thumbnail-generator .videopack-thumbnail-holder {
   position: relative;
@@ -76,6 +89,11 @@
   display: inline-block;
   max-width: 20%;
   margin: 0 10px 0 0px;
+}
+.videopack-thumbnail-generator button.components-button.videopack-use-this-frame.is-secondary {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .editor-video-poster-control .components-base-control__label {
@@ -120,12 +138,12 @@ picture.vjs-poster {
   margin-bottom: 7px;
 }
 .videopack-formats-list .videopack-meter {
-  background-color: var(--wp--preset--color--tertiary);
+  background-color: var(--wp--preset--color--accent-5);
   display: inline-block;
   width: 70%;
   margin-right: 10px;
   border-radius: 4px;
-  height: 19px;
+  height: 22px;
 }
 .videopack-formats-list .videopack-meter-bar {
   background: linear-gradient(90deg, var(--wp-admin-theme-color), var(--wp-admin-theme-color-darker-10));
@@ -156,7 +174,7 @@ picture.vjs-poster {
   margin-top: 4px;
 }
 .videopack-formats-list .videopack-encode-progress-small-text {
-  width: 90%;
+  width: 70%;
   font-size: 10px;
   display: flex;
   justify-content: space-between;

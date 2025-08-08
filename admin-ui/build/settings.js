@@ -71481,6 +71481,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__);
+/* global videopack */
+
 
 
 
@@ -71500,7 +71502,7 @@ const GalleryItem = ({
     gallery_title,
     aspect_ratio
   } = attributes;
-  const [thumbnailUrl, setThumbnailUrl] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(videopack.settings.url + '/images/nothumbnail.jpg');
+  const [thumbnailUrl, setThumbnailUrl] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(videopack.settings.url + '/src/images/nothumbnail.jpg');
   const [thumbnailSrcset, setThumbnailSrcset] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     if (videoRecord?.poster_url) {
@@ -71801,7 +71803,7 @@ const VideoGallery = ({
           children: openVideoAttributes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_player_VideoPlayer__WEBPACK_IMPORTED_MODULE_6__["default"], {
             attributes: openVideoAttributes,
             onReady: handleVideoPlayerReady,
-            attachmentRecord: openVideo
+            attachment: openVideo
           }, openVideoAttributes?.src)
         })]
       })
@@ -71844,16 +71846,16 @@ __webpack_require__.r(__webpack_exports__);
 
 const BelowVideo = ({
   attributes,
-  attachmentRecord
+  attachment
 }) => {
   const {
     view_count,
     caption
   } = attributes;
   let viewStarts = 0;
-  if (attachmentRecord && attachmentRecord.hasResolved && (view_count || caption)) {
-    if (attachmentRecord.record?.meta?.['_kgvid-meta']?.starts) {
-      viewStarts = Number(attachmentRecord.record?.meta?.['_kgvid-meta']?.starts);
+  if (attachment && attachment.hasResolved && (view_count || caption)) {
+    if (attachment.record?.meta?.['_kgvid-meta']?.starts) {
+      viewStarts = Number(attachment.record?.meta?.['_kgvid-meta']?.starts);
     }
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.Fragment, {
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
@@ -71896,7 +71898,7 @@ __webpack_require__.r(__webpack_exports__);
 
 const MetaBar = ({
   attributes,
-  attachmentRecord,
+  attachment,
   metaBarVisible
 }) => {
   const {
@@ -71919,8 +71921,8 @@ const MetaBar = ({
     return false;
   };
   const embedLink = () => {
-    if (attachmentRecord.hasResolved) {
-      return String(attachmentRecord?.record?.link + 'embed');
+    if (attachment.hasResolved) {
+      return String(attachment?.record?.link + 'embed');
     }
     return '';
   };
@@ -71928,8 +71930,8 @@ const MetaBar = ({
     return twitter_button || facebook_button ? true : false;
   };
   const twitterLink = () => {
-    if (attachmentRecord.hasResolved) {
-      return String('https://twitter.com/share?text=' + attachmentRecord.record.title.rendered + '&url=');
+    if (attachment.hasResolved) {
+      return String('https://twitter.com/share?text=' + attachment.record.title.rendered + '&url=');
     }
     return '';
   };
@@ -71938,7 +71940,7 @@ const MetaBar = ({
     return false;
   };
   const facebookLink = () => {
-    if (attachmentRecord.hasResolved) {
+    if (attachment.hasResolved) {
       return String('https://www.facebook.com/sharer/sharer.php?u=');
     }
     return '';
@@ -72139,7 +72141,8 @@ __webpack_require__.r(__webpack_exports__);
 
 const VideoPlayer = ({
   attributes,
-  onReady
+  onReady,
+  attachment
 }) => {
   const {
     embed_method,
@@ -72255,6 +72258,7 @@ const VideoPlayer = ({
       className: "videopack-player",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_MetaBar__WEBPACK_IMPORTED_MODULE_2__["default"], {
         attributes: attributes,
+        attachment: attachment,
         metaBarVisible: metaBarVisible
       }), embed_method === 'Video.js' && videoJsOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_VideoJs__WEBPACK_IMPORTED_MODULE_3__["default"], {
         options: videoJsOptions,
@@ -72266,7 +72270,8 @@ const VideoPlayer = ({
         onReady: handleVideoPlayerReady
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_BelowVideo__WEBPACK_IMPORTED_MODULE_4__["default"], {
-      attributes: attributes
+      attributes: attributes,
+      attachment: attachment
     })]
   });
 };
@@ -73842,7 +73847,8 @@ const PlayerSettings = ({
             videoTitle: 'Sample Video',
             title: overlay_title
           },
-          onReady: handleVideoPlayerReady
+          onReady: handleVideoPlayerReady,
+          attachment: attachment
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, {
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {

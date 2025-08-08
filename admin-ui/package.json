@@ -19,6 +19,7 @@
 		"@wordpress/core-data": "^7.27.0",
 		"@wordpress/i18n": "^6.0.0",
 		"@wordpress/icons": "^10.27.0",
+		"@wordpress/media-utils": "^5.28.0",
 		"video.js": "^8.21.1"
 	},
 	"devDependencies": {

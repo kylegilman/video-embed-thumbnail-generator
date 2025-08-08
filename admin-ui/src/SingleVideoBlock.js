@@ -1,6 +1,5 @@
 import { useEntityRecord } from '@wordpress/core-data';
 import { useEffect, useMemo } from '@wordpress/element';
-import { __, _x, _n } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import VideoSettings from './VideoSettings';
 import Thumbnails from './Thumbnails/Thumbnails';
@@ -11,18 +10,14 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 	const { caption, id, videoTitle } = attributes;
 
 	// useEntityRecord should be called unconditionally.
-	const { record: attachmentRecord, hasResolved } = useEntityRecord(
-		'postType',
-		'attachment',
-		id
-	);
+	const attachment = useEntityRecord('postType', 'attachment', id);
 
 	useEffect(() => {
 		// Check hasResolved and that the record exists.
-		if (hasResolved && attachmentRecord) {
+		if (attachment.hasResolved && attachment.record) {
 			const newAttributes = {};
-			const newTitle = attachmentRecord?.title?.raw;
-			const newCaption = attachmentRecord?.caption?.raw;
+			const newTitle = attachment.record?.title?.raw;
+			const newCaption = attachment.record?.caption?.raw;
 
 			// Only update if the new value is different from the old one.
 			if (newTitle && newTitle !== videoTitle) {
@@ -39,7 +34,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				setAttributes(newAttributes);
 			}
 		}
-	}, [attachmentRecord, caption, videoTitle, setAttributes, hasResolved]);
+	}, [attachment, caption, videoTitle, setAttributes]);
 
 	const handleVideoPlayerReady = () => {};
 
@@ -50,11 +45,11 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 			newPlayerAttributes.embed_method = options.embed_method;
 		}
 
-		if (attachmentRecord?.videopack?.sources) {
-			newPlayerAttributes.sources = attachmentRecord.videopack.sources;
+		if (attachment.record?.videopack?.sources) {
+			newPlayerAttributes.sources = attachment.record.videopack.sources;
 		}
 		return newPlayerAttributes;
-	}, [options, attributes, attachmentRecord]);
+	}, [options, attributes, attachment]);
 
 	return (
 		<>
@@ -62,7 +57,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachmentRecord={attachmentRecord}
+					attachment={attachment}
 					options={options}
 				/>
 				<VideoSettings
@@ -72,7 +67,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				<AdditionalFormats
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachmentRecord={attachmentRecord}
+					attachment={attachment}
 					options={options}
 				/>
 			</InspectorControls>
@@ -80,6 +75,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				<VideoPlayer
 					attributes={playerAttributes}
 					onReady={handleVideoPlayerReady}
+					attachment={attachment}
 				/>
 			</div>
 		</>

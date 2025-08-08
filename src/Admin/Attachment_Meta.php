@@ -312,6 +312,36 @@ class Attachment_Meta {
 		return $mime_info;
 	}
 
+	public function filter_rest_response_meta( $response, $post, $request ) {
+		$data = $response->get_data();
+
+		if ( ! isset( $data['meta'] ) ) {
+			return $response;
+		}
+
+		$meta_keys_to_check = array(
+			'_kgflashmediaplayer-poster',
+			'_kgflashmediaplayer-poster-id',
+			'_kgflashmediaplayer-format',
+			'_kgflashmediaplayer-pickedformat',
+			'_kgflashmediaplayer-video-id',
+			'_kgflashmediaplayer-externalurl',
+		);
+
+		foreach ( $meta_keys_to_check as $key ) {
+			if ( isset( $data['meta'][ $key ] ) ) {
+				$db_value = get_post_meta( $post->ID, $key, true );
+				if ( empty( $db_value ) ) {
+					unset( $data['meta'][ $key ] );
+				}
+			}
+		}
+
+		$response->set_data( $data );
+
+		return $response;
+	}
+
 	public function register() {
 
 		$kgflashmedia_fields = array(
@@ -328,12 +358,13 @@ class Attachment_Meta {
 				'attachment',
 				'_kgflashmediaplayer-' . $field_name,
 				array(
-					'type'          => $type,
-					'single'        => true,
-					'show_in_rest'  => true,
-					'auth_callback' => function () {
+					'type'              => $type,
+					'single'            => true,
+					'show_in_rest'      => true,
+					'auth_callback'     => function () {
 						return current_user_can( 'edit_posts' );
 					},
+					'sanitize_callback' => array( $this, 'sanitize_meta_value' ),
 				)
 			);
 		}
@@ -344,12 +375,7 @@ class Attachment_Meta {
 				'type'          => 'object',
 				'description'   => 'Videopack postmeta',
 				'single'        => true,
-				'show_in_rest'  => array(
-					'schema' => array(
-						'type'       => 'object',
-						'properties' => $this->schema(),
-					),
-				),
+				'show_in_rest'  => false,
 				'auth_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
@@ -620,6 +646,10 @@ class Attachment_Meta {
 		$final_schema = array_intersect_key( $full_schema_definitions, array_flip( $default_keys ) );
 
 		// Ensure all default keys have at least a basic schema if not defined in full_schema_definitions
+
+		foreach ( $final_schema as $key => $value ) {
+			$final_schema[ $key ]['sanitize_callback'] = array( $this, 'sanitize_meta_value' );
+		}
 
 		return apply_filters( 'videopack_post_meta_schema', $final_schema );
 	}

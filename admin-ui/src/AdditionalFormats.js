@@ -1,34 +1,24 @@
 /* global videopack */
 
-import { __, _x, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
 	CheckboxControl,
-	Dashicon,
-	Icon,
 	PanelBody,
 	PanelRow,
 	Spinner,
 	__experimentalDivider as Divider,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import {
-	MediaUpload,
-	__experimentalGetElementClassName,
-} from '@wordpress/block-editor';
+import { MediaUpload } from '@wordpress/media-utils';
 import { useRef, useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import './additional-formats.scss';
 
-const AdditionalFormats = ({
-	setAttributes,
-	attributes,
-	attachmentRecord,
-	options = {},
-}) => {
-	const { id, src, height } = attributes;
+const AdditionalFormats = ({ attributes, options = {} }) => {
+	const { id, src } = attributes;
 	const { ffmpeg_exists } = options;
 	const [videoFormats, setVideoFormats] = useState({});
 	const [encodeMessage, setEncodeMessage] = useState();
@@ -352,6 +342,7 @@ const AdditionalFormats = ({
 					const queuePosition = response?.new_queue_position;
 
 					return sprintf(
+						/* translators: %1$s is a list of video formats. %2$s is a number */
 						__('%1$s added to queue in position %2$s.'),
 						queueList,
 						queuePosition
@@ -367,20 +358,48 @@ const AdditionalFormats = ({
 				const errorMessage = error?.data?.details
 					? error.data.details.join(', ')
 					: error.message;
+				/* translators: %s is an error message */
 				setEncodeMessage(sprintf(__('Error: %s'), errorMessage));
 				setIsLoading(false);
 				fetchVideoFormats(); // Re-fetch to ensure UI is consistent
 			});
 	};
 
-	const onSelectFormat = (media) => {
-		// This function is for handling media selection, not encoding.
-		// It should update attributes or perform other media-related actions.
-		// For now, it's left as a placeholder as its original intent was unclear
-		// after the encoding logic was moved.
-		console.log('onSelectFormat called with media:', media);
-		// Example: if this was meant to update the main video source
-		// setAttributes({ src: media.url, id: media.id });
+	const onSelectFormat = (formatId) => (media) => {
+		if (!media || !media.id || !formatId) {
+			return;
+		}
+
+		setIsLoading(true);
+
+		const data = {
+			meta: {
+				'_kgflashmediaplayer-format': formatId,
+				'_kgflashmediaplayer-parent': id,
+			},
+		};
+
+		apiFetch({
+			path: `/wp/v2/media/${media.id}`,
+			method: 'POST',
+			data,
+		})
+			.then(() => {
+				setEncodeMessage(__('Video format assigned successfully.'));
+				setIsLoading(false);
+				fetchVideoFormats(); // Refresh the list
+			})
+			.catch((error) => {
+				console.error('Error assigning video format:', error);
+				setEncodeMessage(
+					sprintf(
+						/* translators: %s is an error message */
+						__('Error: %s'),
+						error.message
+					)
+				);
+				setIsLoading(false);
+			});
 	};
 
 	const formatPickable = (format) => {
@@ -423,6 +442,7 @@ const AdditionalFormats = ({
 			.catch((error) => {
 				console.error('File delete failed:', error);
 				setEncodeMessage(
+					/* translators: %s is an error message */
 					sprintf(__('Error deleting file: %s'), error.message)
 				);
 				fetchVideoFormats(); // Re-fetch to get the latest status
@@ -451,6 +471,7 @@ const AdditionalFormats = ({
 			.catch((error) => {
 				console.error('Job delete failed:', error);
 				setEncodeMessage(
+					/* translators: %s is an error message */
 					sprintf(__('Error deleting job: %s'), error.message)
 				);
 				fetchVideoFormats(); // Re-fetch to get the latest status
@@ -572,7 +593,10 @@ const AdditionalFormats = ({
 		) {
 			return (
 				<div className="videopack-encode-error">
-					{sprintf(__('Error: %s'), formatData.error_message)}
+					{
+						/* translators: %s is an error message */
+						sprintf(__('Error: %s'), formatData.error_message)
+					}
 					{formatData.job_id && ( // Allow deleting failed jobs
 						<Button
 							onClick={() => openConfirmDialog('job', format)}
@@ -620,6 +644,7 @@ const AdditionalFormats = ({
 		}
 		if (itemToDelete.type === 'file') {
 			return sprintf(
+				/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
 				__(
 					'You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.'
 				),
@@ -628,6 +653,7 @@ const AdditionalFormats = ({
 		}
 		if (itemToDelete.type === 'job') {
 			return sprintf(
+				/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
 				__(
 					'You are about to permanently delete the encoding job for the %s video. This will also delete the encoded video file if it exists (if created by this job and not yet a separate attachment). This action cannot be undone.'
 				),
@@ -649,7 +675,8 @@ const AdditionalFormats = ({
 						{videoFormats ? (
 							<>
 								<ul
-									className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`}>
+									className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`}
+								>
 									{videopack.settings.codecs.map((codec) => {
 										if (
 											options.encode[codec.id]
@@ -721,35 +748,46 @@ const AdditionalFormats = ({
 																	{formatData.status ===
 																		'not_encoded' &&
 																		!formatData.was_picked && (
-																			<Button
-																				variant="secondary"
-																				onClick={() =>
-																					onSelectFormat(
-																						formatData
-																					)
-																				} // Implement onSelectFormat for linking
-																				className="videopack-format-button"
-																				size="small"
+																			<MediaUpload
 																				title={__(
 																					'Pick existing file'
 																				)}
-																			>
-																				{__(
-																					'Pick'
+																				onSelect={onSelectFormat(
+																					formatId
 																				)}
-																			</Button>
+																				allowedTypes={[
+																					'video',
+																				]}
+																				render={({
+																					open,
+																				}) => (
+																					<Button
+																						variant="secondary"
+																						onClick={
+																							open
+																						}
+																						className="videopack-format-button"
+																						size="small"
+																					>
+																						{__(
+																							'Pick'
+																						)}
+																					</Button>
+																				)}
+																			/>
 																		)}
 																	{formatData.was_picked && ( // Show "Replace" if it was manually picked/linked
 																		<MediaUpload
 																			title={sprintf(
+																				/* translators: %s is the label of a video resolution (eg: 720p ) */
 																				__(
 																					'Replace %s'
 																				),
 																				formatData.label
 																			)}
-																			onSelect={
-																				onSelectFormat
-																			} // Implement replace logic
+																			onSelect={onSelectFormat(
+																				formatId
+																			)} // Implement replace logic
 																			allowedTypes={[
 																				'video',
 																			]}

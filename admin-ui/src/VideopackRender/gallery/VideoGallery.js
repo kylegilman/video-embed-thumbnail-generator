@@ -302,7 +302,7 @@ const VideoGallery = ({ attributes }) => {
 									key={openVideoAttributes?.src}
 									attributes={openVideoAttributes}
 									onReady={handleVideoPlayerReady}
-									attachmentRecord={openVideo}
+									attachment={openVideo}
 								/>
 							)}
 						</div>
