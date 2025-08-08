@@ -1,6 +1,20 @@
 import { createRoot } from '@wordpress/element';
 import AttachmentDetails from './AttachmentDetails';
 
+// render on edit media screen
+const editMediaContainer = document.getElementById(
+	'videopack-attachment-details-root'
+);
+
+if (editMediaContainer) {
+	const urlParams = new URLSearchParams(window.location.search);
+	const postId = urlParams.get('post');
+
+	// Create a new React root and render the component.
+	const videopackReactRoot = createRoot(editMediaContainer);
+	videopackReactRoot.render(<AttachmentDetails attachmentId={postId} />);
+}
+
 // Ensure wp.media is loaded.
 if (
 	typeof wp === 'undefined' ||
@@ -71,9 +85,7 @@ if (
 				// Create a new React root and render the component.
 				this.videopackReactRoot = createRoot(reactRootDiv);
 				this.videopackReactRoot.render(
-					<AttachmentDetails
-						attachmentAttributes={this.model.attributes}
-					/>
+					<AttachmentDetails attachmentId={this.model.attributes.id} />
 				);
 				console.log('Videopack: React component mounted successfully.');
 			} else {

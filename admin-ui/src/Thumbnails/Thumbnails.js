@@ -1,4 +1,4 @@
-/* global videopack */
+/* global Image */
 
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -11,14 +11,10 @@ import {
 	Spinner,
 	TextControl,
 } from '@wordpress/components';
-import {
-	MediaUpload,
-	MediaUploadCheck,
-	__experimentalGetElementClassName,
-} from '@wordpress/block-editor';
+import { MediaUpload } from '@wordpress/block-editor';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { uploadMedia } from '@wordpress/media-utils';
-import { __, _x } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { addQueryArgs, getFilename } from '@wordpress/url';
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import './Thumbnails.scss';
@@ -26,7 +22,7 @@ import './Thumbnails.scss';
 const Thumbnails = ({
 	setAttributes,
 	attributes,
-	attachmentRecord,
+	attachment,
 	options = {},
 }) => {
 	const { id, src, poster, poster_id } = attributes;
@@ -44,6 +40,22 @@ const Thumbnails = ({
 	const thumbApiPath = '/videopack/v1/thumbs';
 
 	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
+
+	useEffect(() => {
+		if (window.mejs && window.mejs.players && poster) {
+			// Find the MediaElement.js player within the media modal
+			const mejsContainer = document.querySelector(
+				'.media-modal .mejs-container, .wp_attachment_holder .mejs-container'
+			);
+			if (mejsContainer) {
+				const mejsId = mejsContainer.id;
+				if (mejsId && window.mejs.players[mejsId]) {
+					const player = window.mejs.players[mejsId];
+					player.setPoster(poster);
+				}
+			}
+		}
+	}, [poster]);
 
 	function onSelectPoster(image) {
 		setAttributes({ poster: image.url, poster_id: Number(image.id) });
@@ -221,8 +233,10 @@ const Thumbnails = ({
 							resolve(
 								new File(
 									[blob],
-									`${thumbBasename}_thumb_canvas_${index + 1}.png`,
-									{ type: 'image/png' }
+									`${thumbBasename}${filenameSuffix}`,
+									{
+										type: 'image/png',
+									}
 								)
 							);
 						}, 'image/png')
@@ -377,39 +391,64 @@ const Thumbnails = ({
 			);
 
 			setIsSaving(true);
-			// uploadMedia returns a promise that resolves with the media object.
-			const media = await uploadMedia({
-				filesList: [file],
-				allowedTypes: ['image/png'],
-				title: `${thumbBasename}${titleSuffix}`,
+
+			// Wrap uploadMedia in a new Promise to ensure we wait for the upload to complete.
+			const media = await new Promise((resolve, reject) => {
+				uploadMedia({
+					filesList: [file],
+					allowedTypes: ['image/png'],
+					title: `${thumbBasename}${titleSuffix}`,
+					onFileChange: (mediaData) => {
+						if (mediaData[0].id) {
+							resolve(mediaData[0]);
+						}
+					},
+					onError: (error) => reject(error),
+				});
 			});
-			setPosterData(media.url, media.id);
+
+			if (media) {
+				if (
+					wp.media &&
+					wp.media.featuredImage &&
+					wp.media.featuredImage.set
+				) {
+					wp.media.featuredImage.set(media.id);
+				}
+				setPosterData(media.url, media.id);
+			} else {
+				// Handle case where upload succeeds but returns no media data
+				throw new Error(__('Media upload failed to return data.'));
+			}
 			setIsSaving(false);
 		} catch (error) {
 			console.error(__('Upload error:'), error);
+			setIsSaving(false);
 			// createErrorNotice( error, { type: 'snackbar' } ); // Assuming createErrorNotice is available if needed
 		}
 	};
 
-	const setPosterData = (new_poster, new_poster_id) => {
-		setAttributes({ poster: new_poster, poster_id: new_poster_id });
-		setThumbChoices([]);
-		attachmentRecord
-			?.edit({
+	const setPosterData = async (new_poster, new_poster_id) => {
+		try {
+			const metaData = {};
+			if (new_poster) {
+				// Only include if new_poster has a value
+				metaData['_kgflashmediaplayer-poster'] = new_poster;
+				metaData['_kgflashmediaplayer-poster-id'] =
+					Number(new_poster_id);
+			}
+
+			await attachment?.edit({
 				featured_media: new_poster_id ? Number(new_poster_id) : null,
-				meta: {
-					'_kgflashmediaplayer-poster': new_poster,
-					'_kgflashmediaplayer-poster-id': Number(new_poster_id),
-				},
-			})
-			.then((response) => {
-				attachmentRecord.save().then((response) => {
-					console.log(attachmentRecord);
-				});
-			})
-			.catch((error) => {
-				console.error(error);
+				meta: metaData,
 			});
+			await attachment?.save();
+
+			setAttributes({ poster: new_poster, poster_id: new_poster_id });
+			setThumbChoices([]);
+		} catch (error) {
+			console.error('Error updating attachment:', error);
+		}
 	};
 
 	const setImgAsPoster = async (thumb_url, index) => {
@@ -525,7 +564,6 @@ const Thumbnails = ({
 					<img
 						className="videopack-current-thumbnail"
 						src={poster}
-						ref={currentThumb}
 						alt={__('Current Thumbnail')}
 					/>
 				)}
@@ -597,7 +635,7 @@ const Thumbnails = ({
 						{thumbChoices.map((thumb, index) => (
 							<button
 								type="button"
-								className={'videopack-thumbnail'}
+								className={'videopack-thumbnail spinner-container'}
 								key={index}
 								onClick={(event) => {
 									handleSaveThumbnail(event, thumb, index);
@@ -608,7 +646,7 @@ const Thumbnails = ({
 									alt={`Thumbnail ${index + 1}`}
 									title={__('Save and set thumbnail')}
 								/>
-								<Spinner />
+								{isSaving && <Spinner />}
 							</button>
 						))}
 					</div>
@@ -633,10 +671,12 @@ const Thumbnails = ({
 						</button>
 					</h2>
 					<div
-						className="videopack-thumb-video-panel"
-						tabIndex={0}
-						ref={thumbVideoPanel}
-					>
+							className={`videopack-thumb-video-panel spinner-container${
+								isSaving ? ' saving' : ''
+							}`}
+							tabIndex={0}
+							ref={thumbVideoPanel}
+						>
 						<video
 							src={src}
 							ref={videoRef}
@@ -644,38 +684,42 @@ const Thumbnails = ({
 							preload="metadata"
 							onClick={togglePlayback}
 						/>
-						<Button
-							className="videopack-play-pause"
-							onClick={togglePlayback}
-						>
-							<Dashicon
-								icon={
-									isPlaying
-										? 'controls-pause'
-										: 'controls-play'
-								}
-							/>
-						</Button>
-						{!isNaN(videoRef.current?.duration) && (
-							<RangeControl
-								__nextHasNoMarginBottom
-								min={0}
-								max={videoRef.current.duration}
-								step="any"
-								initialPosition={0}
-								value={videoRef.current.currentTime}
-								onChange={handleSliderChange}
-								className="videopack-thumbvideo-slider"
-								type="slider"
-							/>
-						)}
+						<div className="videopack-thumb-video-controls">
+							<Button
+								className="videopack-play-pause"
+								onClick={togglePlayback}
+							>
+								<Dashicon
+									icon={
+										isPlaying
+											? 'controls-pause'
+											: 'controls-play'
+									}
+								/>
+							</Button>
+							{!isNaN(videoRef.current?.duration) && (
+								<RangeControl
+									__nextHasNoMarginBottom
+									min={0}
+									max={videoRef.current.duration}
+									step="any"
+									initialPosition={0}
+									value={videoRef.current.currentTime}
+									onChange={handleSliderChange}
+									className="videopack-thumbvideo-slider"
+									type="slider"
+								/>
+							)}
+						</div>
 						<Button
 							variant="secondary"
 							onClick={handleUseThisFrame}
+							className="videopack-use-this-frame"
 							disabled={isSaving}
 						>
 							{__('Use this frame')}
 						</Button>
+						{isSaving && <Spinner />}
 					</div>
 				</div>
 			</PanelBody>

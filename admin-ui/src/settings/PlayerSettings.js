@@ -333,6 +333,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							title: overlay_title,
 						}}
 						onReady={handleVideoPlayerReady}
+						attachment={attachment}
 					/>
 				</div>
 				<PanelRow>

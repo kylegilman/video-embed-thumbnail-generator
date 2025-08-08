@@ -299,18 +299,23 @@ class Encode_Attachment {
 				}
 			}
 
-			// Start with default status
+			// Start with default status and was_picked state
 			$format_array['status'] = 'not_encoded';
+			$format_array['was_picked'] = false;
 
 			// 1. Check for an existing file first. This is a reliable indicator of a completed state.
-			if ( $file_exists ) {
+			if ( $file_exists && $encode_info->id ) {
 				$format_array['status']     = 'encoded'; // Use 'encoded' as a more descriptive term than 'completed' for a found file.
 				$format_array['url']        = $encode_info->url;
 				$format_array['id']         = $encode_info->id;
-				$format_array['was_picked'] = get_post_meta( $encode_info->id, '_kgflashmediaplayer-pickedformat', true );
+				
+				$parent_id = get_post_meta( $encode_info->id, '_kgflashmediaplayer-parent', true );
+				if ( ! empty( $parent_id ) && (int) $parent_id === (int) $this->id ) {
+					$format_array['was_picked'] = true;
+				}
 			}
 
-			// 2. If a job exists in the database, its status is the source of truth and overrides the file check.
+			// 2. If a job exists in the database, its status is the source of truth and may override the file check.
 			if ( $job_exists ) {
 				$matching_encode_format = $encoded_jobs_map[ $format_id ];
 
@@ -325,7 +330,12 @@ class Encode_Attachment {
 				}
 
 				$job_data_array         = $matching_encode_format->to_array();
-				$format_array           = array_merge( $format_array, $job_data_array );
+				
+				// Preserve the was_picked value determined from file meta
+				$was_picked_value = $format_array['was_picked'];
+				$format_array     = array_merge( $format_array, $job_data_array );
+				$format_array['was_picked'] = $was_picked_value;
+
 				$format_array['status'] = $matching_encode_format->get_status(); // This is the definitive status.
 			}
 

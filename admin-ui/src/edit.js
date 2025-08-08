@@ -223,7 +223,7 @@ export default function Edit({
 					multiple={true}
 				/>
 			</BlockControls>
-			{src && (
+			{src && !gallery && (
 				<SingleVideoBlock
 					setAttributes={setAttributes}
 					attributes={attributes}
