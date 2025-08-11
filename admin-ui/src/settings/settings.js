@@ -10,7 +10,13 @@ import {
 	Tooltip,
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
-import { createRoot, useMemo, useState, useEffect, useRef } from '@wordpress/element';
+import {
+	createRoot,
+	useMemo,
+	useState,
+	useEffect,
+	useRef,
+} from '@wordpress/element';
 import { videopack } from '../icon';
 import PlayerSettings from './PlayerSettings';
 import GallerySettings from './GallerySettings';
@@ -21,198 +27,202 @@ import FreemiusPage from './FreemiusPage';
 import './settings.scss';
 
 const VideopackSettingsPage = () => {
-	const [ settings, setSettings ] = useState( {} );
-	const [ ffmpegTest, setFfmpegTest ] = useState( {} );
-	const [ isSettingsChanged, setIsSettingsChanged ] = useState( false );
-	const defaultTab = window.location.hash.substring( 1 ) || 'player';
-	const [ activeTab, setActiveTab ] = useState( defaultTab );
+	const [settings, setSettings] = useState({});
+	const [ffmpegTest, setFfmpegTest] = useState({});
+	const [isSettingsChanged, setIsSettingsChanged] = useState(false);
+	const defaultTab = window.location.hash.substring(1) || 'player';
+	const [activeTab, setActiveTab] = useState(defaultTab);
 
-	const testFfmpeg = ( codec, resolution, rotate ) => {
-		if ( activeTab === 'encoding' ) {
-			apiFetch( {
-				path:
-					`/videopack/v1/ffmpeg-test/?codec=${ codec }&resolution=${ resolution }&rotate=${ rotate }`,
-			} )
-				.then( ( response ) => {
-					setFfmpegTest( response );
-					console.log( response );
-				} )
-				.catch( ( error ) => {
-					console.log( error );
-				} );
+	const testFfmpeg = (codec, resolution, rotate) => {
+		if (activeTab === 'encoding') {
+			apiFetch({
+				path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`,
+			})
+				.then((response) => {
+					setFfmpegTest(response);
+					console.log(response);
+				})
+				.catch((error) => {
+					console.log(error);
+				});
 		}
 	};
 
-	const updateSettingsState = ( response ) => {
-		if ( response?.videopack_options ) {
-			setSettings( response.videopack_options );
+	const updateSettingsState = (response) => {
+		if (response?.videopack_options) {
+			setSettings(response.videopack_options);
 		}
-		console.log( response );
+		console.log(response);
 	};
 
-	useEffect( () => {
-		if ( activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true ) {
-			setFfmpegTest( {
-				command: __( 'Running test…' ),
-				output: __( 'Running test…' ),
-			} );
+	useEffect(() => {
+		if (
+			activeTab === 'encoding' &&
+			settings.sample_codec &&
+			settings.sample_resolution &&
+			settings.ffmpeg_exists === true
+		) {
+			setFfmpegTest({
+				command: __('Running test…'),
+				output: __('Running test…'),
+			});
 			testFfmpeg(
 				settings.sample_codec,
 				settings.sample_resolution,
 				settings.sample_rotate
 			);
 		}
-	}, [ settings, activeTab ] );
+	}, [settings, activeTab]);
 
-	useEffect( () => {
-		apiFetch( { path: '/wp/v2/settings' } )
-			.then( ( response ) => {
-				updateSettingsState( response );
-			} )
-			.catch( ( error ) => {
-				console.log( error );
-			} );
+	useEffect(() => {
+		apiFetch({ path: '/wp/v2/settings' })
+			.then((response) => {
+				updateSettingsState(response);
+			})
+			.catch((error) => {
+				console.log(error);
+			});
 
 		const handlePopState = () => {
-			setActiveTab( window.location.hash.substring( 1 ) );
+			setActiveTab(window.location.hash.substring(1));
 		};
-		window.addEventListener( 'popstate', handlePopState );
+		window.addEventListener('popstate', handlePopState);
 		return () => {
-			window.removeEventListener( 'popstate', handlePopState );
+			window.removeEventListener('popstate', handlePopState);
 		};
-	}, [] );
+	}, []);
 
-	const debouncedSaveSettings = useDebounce( ( newSettings ) => {
-		apiFetch( {
+	const debouncedSaveSettings = useDebounce((newSettings) => {
+		apiFetch({
 			path: '/wp/v2/settings',
 			method: 'POST',
 			data: {
 				videopack_options: newSettings,
 			},
-		} )
-			.then( ( response ) => {
-				updateSettingsState( response );
-				setIsSettingsChanged( false );
-				console.log( 'Settings updated successfully:', response );
-			} )
-			.catch( ( error ) => {
-				console.error( 'Error updating settings:', error );
-			} );
-	}, 1000 );
+		})
+			.then((response) => {
+				updateSettingsState(response);
+				setIsSettingsChanged(false);
+				console.log('Settings updated successfully:', response);
+			})
+			.catch((error) => {
+				console.error('Error updating settings:', error);
+			});
+	}, 1000);
 
-	useEffect( () => {
-		if ( isSettingsChanged ) {
-			debouncedSaveSettings( settings );
+	useEffect(() => {
+		if (isSettingsChanged) {
+			debouncedSaveSettings(settings);
 		}
-	}, [ isSettingsChanged, debouncedSaveSettings, settings ] );
+	}, [isSettingsChanged, debouncedSaveSettings, settings]);
 
-	const changeHandlerFactory = useMemo( () => {
-		if ( ! settings || typeof settings !== 'object' ) {
+	const changeHandlerFactory = useMemo(() => {
+		if (!settings || typeof settings !== 'object') {
 			return {};
 		}
-		return Object.keys( settings ).reduce( ( acc, setting ) => {
-			acc[ setting ] = ( newValue ) => {
-				setSettings( ( prevSettings ) => ( {
+		return Object.keys(settings).reduce((acc, setting) => {
+			acc[setting] = (newValue) => {
+				setSettings((prevSettings) => ({
 					...prevSettings, // Spread existing properties of the settings state
-					[ setting ]: newValue, // Update the specific property that changed
-				} ) );
-				setIsSettingsChanged( true );
+					[setting]: newValue, // Update the specific property that changed
+				}));
+				setIsSettingsChanged(true);
 			};
 			return acc;
-		}, {} );
-	}, [ settings ] );
+		}, {});
+	}, [settings]);
 
 	const tabs = [
 		{
 			name: 'player',
-			title: __( 'Video Player' ),
+			title: __('Video Player'),
 		},
 		{
 			name: 'thumbnails',
-			title: __( 'Thumbnails' ),
+			title: __('Thumbnails'),
 		},
 		{
 			name: 'gallery',
-			title: __( 'Video Gallery' ),
+			title: __('Video Gallery'),
 		},
 		{
 			name: 'encoding',
-			title: __( 'Encoding' ),
+			title: __('Encoding'),
 		},
 		{
 			name: 'admin',
-			title: __( 'Admin' ),
+			title: __('Admin'),
 		},
 	];
 
-	if ( window.videopack.settings.freemiusEnabled ) {
+	if (window.videopack.settings.freemiusEnabled) {
 		tabs.push(
 			{
 				name: 'account',
-				title: __( 'Freemius Account' ),
+				title: __('Freemius Account'),
 				className: 'videopack-freemius-tab',
 			},
 			{
 				name: 'add-ons',
-				title: __( 'Add-ons' ),
+				title: __('Add-ons'),
 				className: 'videopack-freemius-tab',
 			}
 		);
 	}
 
-	const onTabSelect = ( tabName ) => {
-		setActiveTab( tabName );
-		window.history.pushState( null, '', `#${ tabName }` );
+	const onTabSelect = (tabName) => {
+		setActiveTab(tabName);
+		window.history.pushState(null, '', `#${tabName}`);
 	};
 
-	const renderTab = ( tab ) => {
-		if ( settings && settings.hasOwnProperty( 'embed_method' ) ) {
-			if ( tab.name === 'player' ) {
+	const renderTab = (tab) => {
+		if (settings && settings.hasOwnProperty('embed_method')) {
+			if (tab.name === 'player') {
 				return (
 					<PlayerSettings
-						settings={ settings }
-						setSettings={ setSettings }
-						changeHandlerFactory={ changeHandlerFactory }
+						settings={settings}
+						setSettings={setSettings}
+						changeHandlerFactory={changeHandlerFactory}
 					/>
 				);
 			}
-			if ( tab.name === 'thumbnails' ) {
+			if (tab.name === 'thumbnails') {
 				return (
 					<ThumbnailSettings
-						settings={ settings }
-						changeHandlerFactory={ changeHandlerFactory }
+						settings={settings}
+						changeHandlerFactory={changeHandlerFactory}
 					/>
 				);
 			}
-			if ( tab.name === 'gallery' ) {
+			if (tab.name === 'gallery') {
 				return (
 					<GallerySettings
-						settings={ settings }
-						changeHandlerFactory={ changeHandlerFactory }
+						settings={settings}
+						changeHandlerFactory={changeHandlerFactory}
 					/>
 				);
 			}
-			if ( tab.name === 'encoding' ) {
+			if (tab.name === 'encoding') {
 				return (
 					<EncodingSettings
-						settings={ settings }
-						changeHandlerFactory={ changeHandlerFactory }
-						ffmpegTest={ ffmpegTest }
+						settings={settings}
+						changeHandlerFactory={changeHandlerFactory}
+						ffmpegTest={ffmpegTest}
 					/>
 				);
 			}
-			if ( tab.name === 'admin' ) {
+			if (tab.name === 'admin') {
 				return (
 					<AdminSettings
-						settings={ settings }
-						changeHandlerFactory={ changeHandlerFactory }
+						settings={settings}
+						changeHandlerFactory={changeHandlerFactory}
 					/>
 				);
 			}
-			if ( tab.name === 'account' ) {
+			if (tab.name === 'account') {
 				return <FreemiusPage page="account" />;
 			}
-			if ( tab.name === 'add-ons' ) {
+			if (tab.name === 'add-ons') {
 				return <FreemiusPage page="add-ons" />;
 			}
 		} else {
@@ -221,16 +231,16 @@ const VideopackSettingsPage = () => {
 	};
 
 	const resetSettings = () => {
-		apiFetch( {
+		apiFetch({
 			path: '/videopack/v1/defaults',
-		} )
-			.then( ( response ) => {
-				setSettings( response );
-				setIsSettingsChanged( true );
-			} )
-			.catch( ( error ) => {
-				console.log( error );
-			} );
+		})
+			.then((response) => {
+				setSettings(response);
+				setIsSettingsChanged(true);
+			})
+			.catch((error) => {
+				console.log(error);
+			});
 	};
 
 	return (
@@ -238,28 +248,28 @@ const VideopackSettingsPage = () => {
 			<h1>
 				<Icon
 					className="videopack-settings-icon"
-					icon={ videopack }
-					size={ 40 }
+					icon={videopack}
+					size={40}
 				/>
-				{ __( 'Videopack Settings' ) }
+				{__('Videopack Settings')}
 			</h1>
 			<Panel>
 				<TabPanel
-					tabs={ tabs }
-					initialTabName={ activeTab }
-					onSelect={ onTabSelect }
+					tabs={tabs}
+					initialTabName={activeTab}
+					onSelect={onTabSelect}
 				>
-					{ ( tab ) => {
-						return renderTab( tab );
-					} }
+					{(tab) => {
+						return renderTab(tab);
+					}}
 				</TabPanel>
 				<PanelRow>
 					<Button
 						variant="primary"
-						onClick={ resetSettings }
-						className={ 'videopack-settings-reset' }
+						onClick={resetSettings}
+						className={'videopack-settings-reset'}
 					>
-						{ __( 'Reset Settings' ) }
+						{__('Reset Settings')}
 					</Button>
 				</PanelRow>
 			</Panel>
@@ -267,6 +277,6 @@ const VideopackSettingsPage = () => {
 	);
 };
 
-const el = document.getElementById( 'videopack-settings-root' );
-const root = createRoot( el );
-root.render( <VideopackSettingsPage /> );
+const el = document.getElementById('videopack-settings-root');
+const root = createRoot(el);
+root.render(<VideopackSettingsPage />);

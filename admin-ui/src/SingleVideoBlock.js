@@ -7,7 +7,7 @@ import AdditionalFormats from './AdditionalFormats';
 import VideoPlayer from './VideopackRender/player/VideoPlayer';
 
 const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
-	const { caption, id, videoTitle } = attributes;
+	const { caption, id, videoTitle, embedlink } = attributes;
 
 	// useEntityRecord should be called unconditionally.
 	const attachment = useEntityRecord('postType', 'attachment', id);
@@ -18,6 +18,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 			const newAttributes = {};
 			const newTitle = attachment.record?.title?.raw;
 			const newCaption = attachment.record?.caption?.raw;
+			const newEmbedlink = attachment?.record?.link + 'embed';
 
 			// Only update if the new value is different from the old one.
 			if (newTitle && newTitle !== videoTitle) {
@@ -27,6 +28,10 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 			// Only update the caption if it's currently empty and a new one is available.
 			if (!caption && newCaption) {
 				newAttributes.caption = newCaption;
+			}
+
+			if (!embedlink && newEmbedlink) {
+				newAttributes.embedlink = newEmbedlink;
 			}
 
 			// Only call setAttributes if there are changes to apply.
@@ -75,7 +80,6 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				<VideoPlayer
 					attributes={playerAttributes}
 					onReady={handleVideoPlayerReady}
-					attachment={attachment}
 				/>
 			</div>
 		</>

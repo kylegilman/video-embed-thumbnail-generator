@@ -96,7 +96,7 @@ class Screens {
 			'normal',
 			'high'
 		);
-		wp_enqueue_global_styles();
+		//wp_enqueue_global_styles();
 	}
 
 	public function render_meta_box( $post ) {

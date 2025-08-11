@@ -66,7 +66,14 @@ class Gallery {
 		if ( ! empty( $query_atts['gallery_include'] ) ) {
 			$include_arr = wp_parse_id_list( $query_atts['gallery_include'] );
 			if ( ! empty( $include_arr ) ) {
-				$args['post__in'] = $include_arr;
+				if ( $query_atts['gallery_per_page'] > 0 && count( $include_arr ) > $query_atts['gallery_per_page'] ) {
+					$total_pages      = ceil( count( $include_arr ) / $query_atts['gallery_per_page'] );
+					$offset           = ( $page_number - 1 ) * $query_atts['gallery_per_page'];
+					$args['post__in'] = array_slice( $include_arr, $offset, $query_atts['gallery_per_page'] );
+				} else {
+					$args['post__in'] = $include_arr;
+				}
+				unset( $args['paged'] );
 				if ( $args['orderby'] == 'menu_order ID' ) {
 					$args['orderby'] = 'post__in'; // sort by order of IDs in the gallery_include parameter
 				}
@@ -75,6 +82,10 @@ class Gallery {
 		}
 
 		$attachments = new \WP_Query( $args );
+
+		if ( ! empty( $include_arr ) && isset( $total_pages ) ) {
+			$attachments->max_num_pages = $total_pages;
+		}
 
 		if ( $attachments->have_posts() ) {
 			return $attachments;
@@ -154,7 +165,7 @@ class Gallery {
 		<div class="videopack-gallery-wrapper" data-gallery-settings="<?php echo esc_attr( wp_json_encode( $query_atts ) ); ?>">
 			<div class="videopack-gallery-grid">
 				<?php foreach ( $videos_data as $video ) : ?>
-					<div class="videopack-gallery-thumbnail" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>" style="width: <?php echo esc_attr( $query_atts['gallery_thumb'] ); ?>px;">
+					<div class="videopack-gallery-thumbnail" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>">
 						<a href="#">
 							<img src="<?php echo esc_url( $video['poster_url'] ); ?>"
 								<?php

@@ -325,15 +325,24 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<VideoPlayer
 						attributes={{
 							...settings,
-							src:
-								videopack.settings.url +
-								'/src/images/Adobestock_469037984.mp4',
+							sources: [
+								{
+									src:
+										videopack.settings.url +
+										'/src/images/Adobestock_469037984.mp4',
+									type: 'video/mp4',
+								},
+							],
 							id: 'sample-video',
 							videoTitle: 'Sample Video',
 							title: overlay_title,
+							starts: 23,
+							embedlink: 'https://www.website.com/embed/',
+							caption: __(
+								"If text is entered in the attachment's caption field it is displayed here automatically."
+							),
 						}}
 						onReady={handleVideoPlayerReady}
-						attachment={attachment}
 					/>
 				</div>
 				<PanelRow>

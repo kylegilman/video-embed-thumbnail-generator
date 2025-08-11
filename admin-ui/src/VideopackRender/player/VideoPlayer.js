@@ -4,9 +4,7 @@ import MetaBar from './MetaBar';
 import VideoJS from './VideoJs';
 import BelowVideo from './BelowVideo';
 
-import './VideoPlayer.scss';
-
-const VideoPlayer = ({ attributes, onReady, attachment }) => {
+const VideoPlayer = ({ attributes, onReady }) => {
 	const {
 		embed_method,
 		autoplay,
@@ -142,7 +140,6 @@ const VideoPlayer = ({ attributes, onReady, attachment }) => {
 			<div className="videopack-player">
 				<MetaBar
 					attributes={attributes}
-					attachment={attachment}
 					metaBarVisible={metaBarVisible}
 				/>
 				{embed_method === 'Video.js' && videoJsOptions && (
@@ -159,7 +156,7 @@ const VideoPlayer = ({ attributes, onReady, attachment }) => {
 					<GenericPlayer onReady={handleVideoPlayerReady} />
 				)}
 			</div>
-			<BelowVideo attributes={attributes} attachment={attachment} />
+			<BelowVideo attributes={attributes} />
 		</div>
 	);
 };

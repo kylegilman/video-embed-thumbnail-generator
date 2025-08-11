@@ -40,6 +40,7 @@ class Player {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->player_id       = $options_manager->increment_video_player_id();
+		$this->register_hooks();
 	}
 
 	public function register_hooks() {
@@ -82,7 +83,7 @@ class Player {
 	}
 
 	public function enqueue_styles() {
-		wp_enqueue_style( 'videopack_styles', plugins_url( '/src/Frontend/css/videopack-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
+		wp_enqueue_style( 'videopack_styles', plugins_url( '/admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 	}
 
 	public function get_videopack_script_dependencies(): array {

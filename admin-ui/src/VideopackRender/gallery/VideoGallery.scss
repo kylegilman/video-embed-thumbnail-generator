@@ -1,140 +1,192 @@
+/* Gallery container */
 .videopack-gallery-wrapper {
-	display: grid;
 	max-width: 100%;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 15px;
+	margin: 0 auto;
+
+	&[style] {
+		grid-template-columns: repeat(var(--gallery-columns), 1fr);
+	}
 
 	.gallery-thumbnail {
 		position: relative;
-		max-width: 100%;
-		vertical-align: bottom;
-		display:inline-block;
+		padding: 0;
 		cursor: pointer;
 		overflow: hidden;
 		border: none;
 		border-radius: 2%;
-
-		&::before {
-			content: "";
-			display: block;
-			padding-top: 56.25%;
-		}
+		box-sizing: border-box;
+		background: none;
 
 		img {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			padding: 0px;
-			margin: 0px;
-			object-fit: cover;
+		width: 100%;
+		height: auto;
+		display: block;
+		object-fit: cover;
 		}
 
 		.mejs-overlay-button {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform-origin: 0 0;
-			border: none;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform-origin: 0 0;
+		border: none;
 		}
 
 		.play-button-container {
-			width: 100%;
-			height: 100%;
-			display: flex;
-			justify-content: center;
-			align-items: center;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
-			&.kg-video-js-skin svg {
-				position: absolute;
-				max-width: 90px;
-				width: 25%;
-				top: 50%;
-				left: 50%;
-				transform: translate(-50%, -64%);
+		&.kg-video-js-skin svg {
+			position: absolute;
+			max-width: 90px;
+			width: 25%;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -64%);
 
-				.play-button-circle {
-					fill-opacity: 0.75;
-					fill: #282828;
-					stroke: #FFF;
-					stroke-width: 20;
-					stroke-miterlimit: 10;
-				}
-
-				.play-button-triangle {
-					fill:#FFFF;
-				}
+			.play-button-circle {
+			fill-opacity: 0.75;
+			fill: #282828;
+			stroke: #fff;
+			stroke-width: 20;
+			stroke-miterlimit: 10;
 			}
+
+			.play-button-triangle {
+			fill: #ffff;
+			}
+		}
 		}
 
 		.video-title {
+		position: absolute;
+		bottom: 10px;
+		left: 0;
+		width: 100%;
+		padding-left: 4px;
+		padding-right: 4px;
+		padding-bottom: 8px;
+		overflow: hidden;
+		text-align: center;
+
+		.video-title-text {
+			position: relative;
+			color: var(--wp--preset--color--tertiary, white);
+			font-size: 14px;
+			line-height: 1.5em;
+			z-index: 4;
+		}
+
+		.video-title-background::before {
+			content: "";
 			position: absolute;
-			bottom: 10px;
+			top: 0;
+			right: 0;
+			bottom: 0;
 			left: 0;
-			width: 100%;
-			padding: 4px;
-			overflow: hidden;
-			text-align:center;
-
-			.video-title-text {
-				position: relative;
-				color:var(--wp--preset--color--tertiary, white);
-				letter-spacing: 0.05em;
-				font-size: 14px;
-				line-height: 1.5em;
-				z-index: 4;
-			}
-
-			.video-title-background::before {
-				content: "";
-				position: absolute;
-				top: 0;
-				right: 0;
-				bottom: 0;
-				left: 0;
-				background-color: var(--wp--preset--color--primary, black);
-				opacity: 0.4;
-				z-index: 2;
-			}
+			background-color: var(--wp--preset--color--primary, black);
+			opacity: 0.4;
+			z-index: 2;
+		}
 		}
 
 		&:hover {
-			.video-title-background::before {
-				opacity: 0.8;
-			}
-			.video-title-text {
-				color: var(--wp--preset--color--base, white);
-			}
-			.play-button-container svg .play-button-circle {
-					fill-opacity: .4;
-			}
+		.video-title-background::before {
+			opacity: 0.8;
+		}
+		.video-title-text {
+			color: var(--wp--preset--color--base, white);
+		}
+		.play-button-container svg .play-button-circle {
+			fill-opacity: 0.4;
+		}
 		}
 	}
 }
 
-.videopack-modal-overlay {
+/* Gallery pagination */
+.videopack-gallery-pagination {
+	margin-top: 3px;
+	margin-bottom: 3px;
+
+		.videopack-pagination-arrow {
+			background: none;
+			border: none;
+
+			&.videopack-hidden {
+				visibility: hidden;
+			}
+		}
+
+		button {
+			&.videopack-page-number {
+				display: inline-flex;
+				width: 1.75em;
+				height: 1.75em;
+				margin: 2px;
+				background-color: white;
+				color: var(--wp--preset--color--primary, black);
+				border-radius: 50%;
+				font-size: 1.1em;
+				border: none;
+				text-decoration: none;
+				align-items: center;
+				justify-content: center;
+
+				&.current-page,
+				&:hover {
+					background-color: var(--wp--preset--color--primary, #555);
+					color: var(--wp--preset--color--white, white);
+
+					span {
+						cursor: default;
+					}
+				}
+			}
+			span {
+				cursor: pointer;
+			}
+		}
+
+		.videopack-pagination-separator, .videopack-pagination-arrow {
+		    font-size: 2em;
+			font-weight: 100;
+			vertical-align: middle;
+			display: inline-block;
+			margin: 0 0 6px 0;
+			padding: 0;
+		}
+	}
+
+	.videopack-modal-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
 	display: flex;
-    justify-content: center;
-    align-items: center;
-	background: rgba(0,0,0,0.7);
+	justify-content: center;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.7);
 	width: 100vw;
 	height: 100vh;
 	z-index: 10000;
-}
+	}
 
-.videopack-modal-container {
-	position:relative;
-	color:black;
-	background-color:#000;
-    max-height: 90vh;
+	.videopack-modal-container {
+	position: relative;
+	color: black;
+	background-color: #000;
+	max-height: 90vh;
 	z-index: 10002;
 
 	.videopack-wrapper {
-		margin:0;
-		padding:5px;
+		margin: 0;
+		padding: 5px;
 	}
 
 	.modal-navigation {
@@ -147,61 +199,34 @@
 		border: none;
 
 		&.modal-close {
-			right: -10px;
-			top: -30px;
+		right: -10px;
+		top: -30px;
 		}
 
 		&.modal-previous {
-			right: 59px;
+		right: 59px;
 		}
 
 		&.modal-next {
-			right: 25px;
+		right: 25px;
 		}
 	}
 
 	.wp-video {
 		margin-bottom: 0;
 	}
-
 }
 
-.videopack-gallery-pagination {
+.videopack-icons {
+	&.cross {
+		background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Ecross%3C/title%3E %3Cpath d='M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z'%3E%3C/path%3E %3C/svg%3E");
+	}
 
-	margin-top: 3px;
-	margin-bottom: 3px;
+	&.left-arrow {
+		background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Earrow-left%3C/title%3E %3Cpath d='M1 16l15 15v-9h16v-12h-16v-9z'%3E%3C/path%3E %3C/svg%3E ");
+	}
 
-	button {
-		cursor: pointer;
-		display: inline-flex;
-		width: 1.5em;
-		height: 1.5em;
-		margin: 2px;
-		background-color: white;
-		color: var(--wp--preset--color--primary, black);
-		border-radius: 50%;
-		font-size: .9em;
-		border: 1px solid var(--wp--preset--color--primary, black);
-		text-decoration: none;
-		align-items: center;
-		justify-content: center;
-
-		&.videopack-pagination-current, &:hover {
-			cursor: default;
-			background-color: var(--wp--preset--color--primary, #555);
-			color: var(--wp--preset--color--white, white);
-		}
-
-		&.videopack-hidden {
-			visibility: hidden;
-		}
-
-		span {
-			transform: translateY(-1px);
-		}
-
-		&.videopack-pagination-arrow span {
-			transform: translateY(-2px);
-		}
+	&.right-arrow {
+		background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Earrow-right%3C/title%3E %3Cpath d='M31 16l-15-15v9h-16v12h16v9z'%3E%3C/path%3E %3C/svg%3E ");
 	}
 }

@@ -217,9 +217,6 @@ class Videopack {
 	 * @access   private
 	 */
 	private function define_frontend_hooks() {
-		$embed_method    = $this->options_manager->get_options()['embed_method'];
-		$frontend_player = Frontend\Video_Players\Player_Factory::create( $embed_method, $this->options_manager );
-		$frontend_player->register_hooks();
 
 		$frontend_metadata = new Frontend\Metadata( $this->options_manager );
 		$this->loader->add_action( 'wp_head', $frontend_metadata, 'print_scripts' );
