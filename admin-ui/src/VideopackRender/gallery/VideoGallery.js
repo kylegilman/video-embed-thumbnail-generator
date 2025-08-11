@@ -1,14 +1,9 @@
 import apiFetch from '@wordpress/api-fetch';
-import { useEntityRecords } from '@wordpress/core-data';
-import { useRef, useEffect, useState } from '@wordpress/element';
-import { __, _x, _n } from '@wordpress/i18n';
+import { useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import GalleryItem from './GalleryItem';
 import VideoPlayer from '../player/VideoPlayer';
-
-import './VideoGallery.scss';
-import '../player/VideoPlayer.scss';
-import { gallery, video } from '@wordpress/icons';
 
 const VideoGallery = ({ attributes }) => {
 	const {
@@ -21,8 +16,6 @@ const VideoGallery = ({ attributes }) => {
 		gallery_include,
 		gallery_exclude,
 		gallery_end,
-		gallery_title,
-		gallery_width,
 	} = attributes;
 
 	const [galleryVideos, setGalleryVideos] = useState(null);
@@ -33,7 +26,6 @@ const VideoGallery = ({ attributes }) => {
 	const [openVideoAttributes, setOpenVideoAttributes] = useState(attributes);
 	const [currentVideoPlayer, setCurrentVideoPlayer] = useState(null);
 	const [isPlayerReady, setIsPlayerReady] = useState(true);
-	const [galleryWindowWidth, setGalleryWindowWidth] = useState(gallery_width);
 
 	useEffect(() => {
 		if (gallery_orderby === 'menu_order') {
@@ -124,36 +116,9 @@ const VideoGallery = ({ attributes }) => {
 		};
 	}, [openVideo]);
 
-	useEffect(() => {
-		if (currentVideoPlayer) {
-			handleWindowResize();
-			window.addEventListener('resize', handleWindowResize);
-		}
-
-		return () => {
-			window.removeEventListener('resize', handleWindowResize);
-		};
-	}, [currentVideoPlayer]);
-
 	const closeVideo = () => {
 		setOpenVideo(null);
 		setCurrentVideoIndex(null);
-	};
-
-	const handleWindowResize = () => {
-		if (currentVideoPlayer) {
-			const aspectRatio =
-				currentVideoPlayer.videoWidth / currentVideoPlayer.videoHeight;
-			aspectRatio > 1
-				? setGalleryWindowWidth(gallery_width)
-				: setGalleryWindowWidth(
-						Math.round(
-							((window.innerHeight * 0.85 * aspectRatio) /
-								window.innerWidth) *
-								100
-						)
-					);
-		}
 	};
 
 	const handleNavigationArrowClick = (videoIndex) => {
@@ -197,11 +162,9 @@ const VideoGallery = ({ attributes }) => {
 		return (
 			<div className="videopack-gallery-pagination">
 				<button
-					className={
-						galleryPage > 1
-							? 'videopack-pagination-arrow'
-							: 'videopack-hidden'
-					}
+					className={`videopack-pagination-arrow${
+						galleryPage > 1 ? '' : ' videopack-hidden'
+					}`}
 					onClick={() => {
 						setGalleryPage(galleryPage - 1);
 					}}
@@ -209,24 +172,24 @@ const VideoGallery = ({ attributes }) => {
 					<span>{'<'}</span>
 				</button>
 				{buttons.map((pageNumber) => (
-					<button
-						key={pageNumber}
-						onClick={() => setGalleryPage(pageNumber)}
-						className={
-							pageNumber === galleryPage
-								? ' videopack-pagination-current'
-								: ''
-						}
-					>
-						<span>{pageNumber}</span>
-					</button>
+					<>
+						<button
+							key={pageNumber}
+							onClick={() => setGalleryPage(pageNumber)}
+							className={`videopack-page-number${pageNumber === galleryPage ? ' current-page' : ''}`}
+							disabled={pageNumber === galleryPage}
+						>
+							<span>{pageNumber}</span>
+						</button>
+						<span className="videopack-pagination-separator">
+							{pageNumber === totalPages ? '' : '|'}
+						</span>
+					</>
 				))}
 				<button
-					className={
-						galleryPage < totalPages
-							? 'videopack-pagination-arrow'
-							: 'videopack-hidden'
-					}
+					className={`videopack-pagination-arrow${
+						galleryPage < totalPages ? '' : ' videopack-hidden'
+					}`}
 					onClick={() => {
 						setGalleryPage(galleryPage + 1);
 					}}
@@ -241,9 +204,11 @@ const VideoGallery = ({ attributes }) => {
 		<>
 			<div
 				className="videopack-gallery-wrapper"
-				style={{
-					gridTemplateColumns: `repeat(${gallery_columns}, 1fr)`,
-				}}
+				style={
+					gallery_columns > 0
+						? { '--gallery-columns': gallery_columns }
+						: {}
+				}
 			>
 				{galleryVideos &&
 					galleryVideos.map((videoRecord, index) => (
@@ -262,7 +227,6 @@ const VideoGallery = ({ attributes }) => {
 				<div className="videopack-modal-overlay" onClick={closeVideo}>
 					<div
 						className="videopack-modal-container"
-						style={{ width: `${galleryWindowWidth}vw` }}
 						onClick={handleVideoClick}
 					>
 						<button
@@ -302,7 +266,6 @@ const VideoGallery = ({ attributes }) => {
 									key={openVideoAttributes?.src}
 									attributes={openVideoAttributes}
 									onReady={handleVideoPlayerReady}
-									attachment={openVideo}
 								/>
 							)}
 						</div>

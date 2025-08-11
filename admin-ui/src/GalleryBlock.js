@@ -4,35 +4,55 @@ import {
 	ToggleControl,
 	PanelBody,
 } from '@wordpress/components';
-import { useRef, useEffect, useMemo, useState } from '@wordpress/element';
-import { __, _x, _n } from '@wordpress/i18n';
+import { useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import VideoGallery from './VideopackRender/gallery/VideoGallery';
 
-const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
+const GalleryBlock = ({
+	attributes,
+	setAttributes,
+	videoChildren,
+	options,
+}) => {
+	useEffect(() => {
+		if (options) {
+			const newAttributes = {};
+			const settingsToSync = [
+				'gallery_columns',
+				'gallery_title',
+				'gallery_pagination',
+				'gallery_per_page',
+				'gallery_end',
+				'skin',
+			];
+
+			settingsToSync.forEach((setting) => {
+				if (
+					attributes[setting] === undefined &&
+					options[setting] !== undefined
+				) {
+					newAttributes[setting] = options[setting];
+				}
+			});
+
+			if (Object.keys(newAttributes).length > 0) {
+				setAttributes(newAttributes);
+			}
+		}
+	}, [options]);
+
 	const {
-		gallery_pagination,
-		gallery_per_page,
-		gallery_columns,
 		gallery_orderby,
 		gallery_order,
 		gallery_include,
 		gallery_exclude,
 		gallery_end,
+		gallery_pagination,
+		gallery_per_page,
 		gallery_title,
+		gallery_columns,
 	} = attributes;
-
-	const toggleFactory = useMemo(() => {
-		const toggleAttribute = (attribute) => {
-			return (newValue) => {
-				setAttributes({ [attribute]: newValue });
-			};
-		};
-
-		return {
-			gallery_title: toggleAttribute('gallery_title'),
-		};
-	}, []);
 
 	const galleryOrderbyOptions = [
 		{ value: 'menu_order', label: __('Menu Order') },
@@ -41,6 +61,17 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 		{ value: 'rand', label: __('Random') },
 		{ value: 'ID', label: __('Video ID') },
 	];
+
+	const attributeChangeFactory = (attributeName, isNumeric = false) => {
+		return (newValue) => {
+			let valueToSet = newValue;
+			if (isNumeric) {
+				const parsedValue = parseInt(newValue, 10);
+				valueToSet = isNaN(parsedValue) ? undefined : parsedValue;
+			}
+			setAttributes({ [attributeName]: valueToSet });
+		};
+	};
 
 	return (
 		<>
@@ -51,18 +82,21 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 						__next40pxDefaultSize
 						label={__('Include these videos in the gallery')}
 						value={gallery_include}
-						onChange={(value) =>
-							setAttributes({ gallery_include: value })
-						}
+						onChange={attributeChangeFactory('gallery_include')}
+					/>
+					<TextControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__('Exclude these videos from the gallery')}
+						value={gallery_exclude}
+						onChange={attributeChangeFactory('gallery_exclude')}
 					/>
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Sort by')}
 						value={gallery_orderby}
-						onChange={(value) =>
-							setAttributes({ gallery_orderby: value })
-						}
+						onChange={attributeChangeFactory('gallery_orderby')}
 						options={galleryOrderbyOptions}
 						hideCancelButton={true}
 					/>
@@ -71,9 +105,7 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 						__next40pxDefaultSize
 						label={__('Sort order')}
 						value={gallery_order}
-						onChange={(value) =>
-							setAttributes({ gallery_order: value })
-						}
+						onChange={attributeChangeFactory('gallery_order')}
 						options={[
 							{ label: __('Ascending'), value: 'ASC' },
 							{ label: __('Descending'), value: 'DESC' },
@@ -83,23 +115,31 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 						__nextHasNoMarginBottom
 						label={__('Paginate video gallery')}
 						checked={!!gallery_pagination}
-						onChange={(value) =>
-							setAttributes({ gallery_pagination: value })
-						}
+						onChange={attributeChangeFactory('gallery_pagination')}
 					/>
 					{gallery_pagination && (
 						<TextControl
 							label={__('Number of videos per page')}
 							value={gallery_per_page}
-							onChange={(value) =>
-								setAttributes({ gallery_per_page: value })
-							}
+							onChange={attributeChangeFactory(
+								'gallery_per_page',
+								true
+							)}
 						/>
 					)}
+					<TextControl
+						label={__('Columns')}
+						type="number"
+						value={gallery_columns}
+						onChange={attributeChangeFactory(
+							'gallery_columns',
+							true
+						)}
+					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('Show video title overlay on thumbnails')}
-						onChange={toggleFactory.gallery_title}
+						onChange={attributeChangeFactory('gallery_title')}
 						checked={!!gallery_title}
 					/>
 					<SelectControl
@@ -107,9 +147,7 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 						__next40pxDefaultSize
 						label={__('When gallery video finishes')}
 						value={gallery_end}
-						onChange={(value) =>
-							setAttributes({ gallery_end: value })
-						}
+						onChange={attributeChangeFactory('gallery_end')}
 						options={[
 							{
 								label: __('Stop, but leave popup window open'),

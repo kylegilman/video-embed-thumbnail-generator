@@ -1,7 +1,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
-const MetaBar = ({ attributes, attachment, metaBarVisible }) => {
+const MetaBar = ({ attributes, metaBarVisible }) => {
 	const {
 		src,
 		title,
@@ -23,46 +23,15 @@ const MetaBar = ({ attributes, attachment, metaBarVisible }) => {
 	const [shareIsOpen, setShareIsOpen] = useState(false);
 
 	const embedItems = () => {
-		if (embeddable && (embedcode || twitter_button || facebook_button)) {
+		if (embeddable && embedcode) {
 			return true;
 		}
 		return false;
 	};
 
 	const embedLink = () => {
-		if (attachment.hasResolved) {
-			return String(attachment?.record?.link + 'embed');
-		}
-		return '';
-	};
-
-	const socialIcons = () => {
-		return twitter_button || facebook_button ? true : false;
-	};
-
-	const twitterLink = () => {
-		if (attachment.hasResolved) {
-			return String(
-				'https://twitter.com/share?text=' +
-					attachment.record.title.rendered +
-					'&url='
-			);
-		}
-		return '';
-	};
-
-	const openShareLink = (event) => {
-		window.open(
-			event.target.href,
-			'',
-			'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=260,width=600'
-		);
-		return false;
-	};
-
-	const facebookLink = () => {
-		if (attachment.hasResolved) {
-			return String('https://www.facebook.com/sharer/sharer.php?u=');
+		if (attributes?.embedlink) {
+			return String(attributes?.embedlink);
 		}
 		return '';
 	};
@@ -81,7 +50,7 @@ const MetaBar = ({ attributes, attachment, metaBarVisible }) => {
 						shareIsOpen ? ' is-visible' : ''
 					}${noTitleMeta}`}
 				>
-					{embedcode && (
+					{embedItems() && (
 						<>
 							<span className="embedcode-container">
 								<span className="videopack-icons embed"></span>
@@ -99,32 +68,6 @@ const MetaBar = ({ attributes, attachment, metaBarVisible }) => {
 								</span>
 							</span>
 						</>
-					)}
-					{socialIcons && (
-						<div className="social-icons">
-							{twitter_button && (
-								<>
-									<a
-										title={__('Share on Twitter')}
-										href={twitterLink()}
-										onClick={openShareLink}
-									>
-										<span className="vjs-icon-twitter"></span>
-									</a>
-								</>
-							)}
-							{facebook_button && (
-								<>
-									<a
-										title={__('Share on Facebook')}
-										href={facebookLink()}
-										onClick={openShareLink}
-									>
-										<span className="vjs-icon-facebook"></span>
-									</a>
-								</>
-							)}
-						</div>
 					)}
 				</div>
 			</>

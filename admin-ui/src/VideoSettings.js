@@ -111,14 +111,6 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 		{ value: 'none', label: _x('None', 'Preload value') },
 	];
 
-	const galleryOrderbyOptions = [
-		{ value: 'menu_order', label: __('Menu Order') },
-		{ value: 'title', label: __('Title') },
-		{ value: 'post_date', label: __('Date') },
-		{ value: 'rand', label: __('Random') },
-		{ value: 'ID', label: __('Video ID') },
-	];
-
 	return (
 		<>
 			<PanelBody title={__('Player Settings')} initialOpen={false}>

@@ -148,11 +148,10 @@ class Options {
 			'find_formats'            => false, // Automatically look for other codecs and resolutions based on the video filename.
 
 			// Gallery Settings.
-			'gallery_width'           => 80, // Width of the gallery thumbnail images in pixels.
 			'gallery_columns'         => 4, // Number of columns in video galleries.
 			'gallery_end'             => '', // Custom content to display at the end of video galleries ('close', 'next', or custom HTML).
 			'gallery_pagination'      => false, // Enable pagination for video galleries.
-			'gallery_per_page'        => false, // Number of videos per page in galleries (false for no pagination, or integer).
+			'gallery_per_page'        => 6, // Number of videos per page in galleries (false for no pagination, or integer).
 			'gallery_title'           => true, // Display titles on video gallery thumbnails.
 
 			// Integration & Advanced.
@@ -525,11 +524,10 @@ class Options {
 	 *   auto_res: string,
 	 *   pixel_ratio: bool,
 	 *   find_formats: bool,
-	 *   gallery_width: int,
 	 *   gallery_columns: int,
 	 *   gallery_end: string,
 	 *   gallery_pagination: bool,
-	 *   gallery_per_page: int|bool,
+	 *   gallery_per_page: int,
 	 *   gallery_title: bool,
 	 *   capabilities: array<string, array<string>>,
 	 *   open_graph: bool,
@@ -764,10 +762,6 @@ class Options {
 		if ( empty( $input['height'] ) ) {
 			add_settings_error( 'video_embed_thumbnail_generator_settings', 'height-zero', esc_html__( 'You must enter a value for the maximum video height.', 'video-embed-thumbnail-generator' ) );
 			$input['height'] = $this->options['height'];
-		}
-		if ( empty( $input['gallery_width'] ) ) {
-			add_settings_error( 'video_embed_thumbnail_generator_settings', 'gallery-width-zero', esc_html__( 'You must enter a value for the maximum gallery video width.', 'video-embed-thumbnail-generator' ) );
-			$input['gallery_width'] = $this->options['gallery_width'];
 		}
 
 		if ( array_key_exists( 'capabilities', $input ) && is_array( $input['capabilities'] ) ) {

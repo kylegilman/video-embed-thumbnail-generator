@@ -133,6 +133,15 @@
     },
     "gallery_id": {
       "type": "number"
+    },
+    "gallery_pagination": {
+      "type": "boolean"
+    },
+    "gallery_per_page": {
+      "type": "number"
+    },
+    "gallery_title": {
+      "type": "boolean"
     }
   }
 }

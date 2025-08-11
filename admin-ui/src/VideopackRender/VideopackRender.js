@@ -1,30 +1,17 @@
-import VideoPlayer from "./player/VideoPlayer";
-import VideoGallery from "./gallery/VideoGallery";
-import { handle } from "@wordpress/icons";
+import VideoPlayer from './player/VideoPlayer';
+import VideoGallery from './gallery/VideoGallery';
 
-const VideopackRender = ( { attributes } ) => {
-
+const VideopackRender = ({ attributes }) => {
 	const { gallery } = attributes;
 
-	const handleVideoPlayerReady = () => {
+	const handleVideoPlayerReady = () => {};
 
+	if (gallery) {
+		return <VideoGallery attributes={attributes} />;
 	}
-
-	if ( gallery ) {
-		return(
-			<VideoGallery
-				attributes={ attributes }
-			/>
-		);
-	} else {
-		return(
-			<VideoPlayer
-				attributes={ attributes }
-				onReady={ handleVideoPlayerReady }
-			/>
-		);
-	}
-
-}
+	return (
+		<VideoPlayer attributes={attributes} onReady={handleVideoPlayerReady} />
+	);
+};
 
 export default VideopackRender;

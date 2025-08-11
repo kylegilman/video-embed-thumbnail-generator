@@ -752,7 +752,7 @@ class REST_Controller extends \WP_REST_Controller {
 		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options_manager );
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options_manager );
 		$gallery_atts = $shortcode->atts( $request->get_params() );
-		$page         = $request->get_param( 'page' ) ?: 1;
+		$page         = $request->get_param( 'page_number' ) ?: 1;
 
 		$attachments = $gallery->get_gallery_videos( $page, $gallery_atts );
 		$videos_data = array();

@@ -180,9 +180,6 @@ class Metadata {
 		// Adjust dimensions for gallery or max width
 		if ( $gallery ) {
 			$width = ! empty( $actualwidth ) ? $actualwidth : $width;
-			if ( $width > $this->options['gallery_width'] ) {
-				$width = $this->options['gallery_width'];
-			}
 		} elseif ( (int) $width > (int) $this->options['width'] ) {
 			$width = $this->options['width'];
 		}

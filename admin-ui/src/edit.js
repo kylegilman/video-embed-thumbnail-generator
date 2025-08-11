@@ -1,5 +1,3 @@
-/* global videopack */
-
 /**
  * React hook that is used to mark the block wrapper element.
  * It provides all the necessary props like the class name.
@@ -8,26 +6,20 @@
  */
 
 import { getBlobByURL, isBlobURL } from '@wordpress/blob';
-import { Button, Disabled, Placeholder } from '@wordpress/components';
+import { Button, Placeholder } from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
 	MediaPlaceholder,
-	MediaUpload,
-	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
 	store as blockEditorStore,
-	__experimentalGetElementClassName,
 } from '@wordpress/block-editor';
 
-import { useRef, useEffect, useState } from '@wordpress/element';
-import { __, _x } from '@wordpress/i18n';
-import { useInstanceId } from '@wordpress/compose';
+import { useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { store as editorStore } from '@wordpress/editor';
 import { store as noticesStore } from '@wordpress/notices';
-import ServerSideRender from '@wordpress/server-side-render';
 import apiFetch from '@wordpress/api-fetch';
 
 import { videopack as icon } from './icon';
@@ -53,11 +45,7 @@ import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = ['video'];
 
-export default function Edit({
-	attributes,
-	setAttributes,
-	context: { postId },
-}) {
+export default function Edit({ attributes, setAttributes }) {
 	const { gallery, id, src } = attributes;
 	const [options, setOptions] = useState();
 	const blockProps = useBlockProps();
@@ -67,12 +55,18 @@ export default function Edit({
 		[]
 	);
 
+	const { postId } = useSelect(
+		(select) => ({
+			postId: select('core/editor').getCurrentPostId(),
+		}),
+		[]
+	);
+
 	useEffect(() => {
 		apiFetch({
 			path: '/videopack/v1/settings',
 			method: 'GET',
 		}).then((response) => {
-			console.log(response);
 			setOptions(response);
 		});
 
@@ -156,7 +150,7 @@ export default function Edit({
 		setAttributes({
 			gallery: true,
 			id: 0,
-			postId,
+			gallery_id: postId,
 		});
 	}
 
@@ -177,8 +171,9 @@ export default function Edit({
 			>
 				{content}
 				<Button
+					__next40pxDefaultSize
 					className="videopack-placeholder-gallery-button"
-					variant="tertiary"
+					variant="secondary"
 					label={__(
 						'Insert a gallery of all videos uploaded to this post'
 					)}
@@ -234,6 +229,7 @@ export default function Edit({
 				<GalleryBlock
 					setAttributes={setAttributes}
 					attributes={attributes}
+					options={options}
 				/>
 			)}
 		</>

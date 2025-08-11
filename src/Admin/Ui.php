@@ -82,7 +82,7 @@ class Ui {
 	 * @param string $handle The script handle to attach the inline script to.
 	 * @param array  $extra_data Extra data to merge into the settings object.
 	 */
-	private function _add_settings_inline_script( $handle, $extra_data = array() ) {
+	private function add_settings_inline_script( $handle, $extra_data = array() ) {
 		$settings_data = $this->get_videopack_settings_data();
 		if ( ! empty( $extra_data ) ) {
 			$settings_data = array_merge( $settings_data, $extra_data );
@@ -97,16 +97,19 @@ class Ui {
 		);
 	}
 
+	private function enqueue_player_assets() {
+		$options = $this->options_manager->get_options();
+		$player  = \Videopack\Frontend\Video_Players\Player_Factory::create( $options['embed_method'], $this->options_manager );
+		$player->enqueue_styles();
+	}
+
 	public function enqueue_block_assets() {
 		// The 'editorScript' defined in block.json handles enqueuing the block's script.
 		// We only need to register the script translations here.
 		wp_set_script_translations( 'videopack-videopack-block-editor-script', 'video-embed-thumbnail-generator' );
 
-		$this->_add_settings_inline_script( 'videopack-videopack-block-editor-script' );
-
-		$options = $this->options_manager->get_options();
-		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $options['embed_method'], $this->options_manager );
-		$player->enqueue_styles();
+		$this->add_settings_inline_script( 'videopack-videopack-block-editor-script' );
+		$this->enqueue_player_assets();
 	}
 
 	public function enqueue_page_assets( $hook_suffix ) {
@@ -149,7 +152,8 @@ class Ui {
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
-			$this->_add_settings_inline_script( 'videopack-settings', array( 'freemiusEnabled' => $freemius_enabled ) );
+			$this->enqueue_player_assets();
+			$this->add_settings_inline_script( 'videopack-settings', array( 'freemiusEnabled' => $freemius_enabled ) );
 
 			$settings_css_dependencies = array_merge( array( 'wp-components' ), $freemius_style_dependencies );
 
@@ -222,7 +226,7 @@ class Ui {
 		);
 		wp_set_script_translations( 'videopack-attachment-details', 'video-embed-thumbnail-generator' );
 
-		$this->_add_settings_inline_script( 'videopack-attachment-details' );
+		$this->add_settings_inline_script( 'videopack-attachment-details' );
 
 		wp_enqueue_style(
 			'videopack-attachment-details',

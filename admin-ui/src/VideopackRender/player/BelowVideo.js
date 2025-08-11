@@ -1,19 +1,17 @@
 import { _n, sprintf } from '@wordpress/i18n';
 
-const BelowVideo = ({ attributes, attachment }) => {
+const BelowVideo = ({ attributes }) => {
 	const { view_count, caption } = attributes;
 
 	let viewStarts = 0;
-	if (attachment && attachment.hasResolved && (view_count || caption)) {
-		if (attachment.record?.meta?.['_kgvid-meta']?.starts) {
-			viewStarts = Number(
-				attachment.record?.meta?.['_kgvid-meta']?.starts
-			);
+	if ((attributes?.starts && view_count) || caption) {
+		if (attributes?.starts) {
+			viewStarts = Number(attributes?.starts);
 		}
 		return (
 			<>
 				<div className="videopack-below-video">
-					{view_count && (
+					{view_count && viewStarts > 0 && (
 						<div className="viewcount">
 							{sprintf(
 								_n('%d view', '%d views', viewStarts),
