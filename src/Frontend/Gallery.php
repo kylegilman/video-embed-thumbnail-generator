@@ -74,7 +74,7 @@ class Gallery {
 					$args['post__in'] = $include_arr;
 				}
 				unset( $args['paged'] );
-				if ( $args['orderby'] == 'menu_order ID' ) {
+				if ( $args['orderby'] == 'menu_order ID' || $args['orderby'] == 'include' ) {
 					$args['orderby'] = 'post__in'; // sort by order of IDs in the gallery_include parameter
 				}
 				unset( $args['post_parent'] );

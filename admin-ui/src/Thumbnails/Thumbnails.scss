@@ -1,6 +1,7 @@
 .videopack-thumbnail-generator {
-	img {
-		max-width: 300px;
+
+	button.is-secondary {
+		font-size:12px;
 	}
 
 	.spinner-container {
@@ -57,6 +58,9 @@
 		}
 
 		img {
+			display: block;
+			width: 300px;
+			max-width: 100%;
 			box-sizing: border-box;
 			position: relative;
 		}

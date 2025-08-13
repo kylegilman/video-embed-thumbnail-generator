@@ -2,10 +2,24 @@ import apiFetch from '@wordpress/api-fetch';
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import {
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from '@dnd-kit/core';
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	rectSortingStrategy,
+} from '@dnd-kit/sortable';
 import GalleryItem from './GalleryItem';
 import VideoPlayer from '../player/VideoPlayer';
 
-const VideoGallery = ({ attributes }) => {
+const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 	const {
 		gallery_id,
 		gallery_pagination,
@@ -18,7 +32,7 @@ const VideoGallery = ({ attributes }) => {
 		gallery_end,
 	} = attributes;
 
-	const [galleryVideos, setGalleryVideos] = useState(null);
+	const [galleryVideos, setGalleryVideos] = useState([]);
 	const [totalPages, setTotalPages] = useState(1);
 	const [galleryPage, setGalleryPage] = useState(1);
 	const [openVideo, setOpenVideo] = useState(null);
@@ -26,16 +40,53 @@ const VideoGallery = ({ attributes }) => {
 	const [openVideoAttributes, setOpenVideoAttributes] = useState(attributes);
 	const [currentVideoPlayer, setCurrentVideoPlayer] = useState(null);
 	const [isPlayerReady, setIsPlayerReady] = useState(true);
+	const [isHovering, setIsHovering] = useState(false);
+	const [galleryVersion, setGalleryVersion] = useState(0);
+
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	);
+
+	function handleDragEnd(event) {
+		const { active, over } = event;
+
+		if (active && over && active.id !== over.id) {
+			setGalleryVideos((items) => {
+				const oldIndex = items.findIndex(
+					(item) => item.attachment_id === active.id
+				);
+				const newIndex = items.findIndex(
+					(item) => item.attachment_id === over.id
+				);
+				const newItems = arrayMove(items, oldIndex, newIndex);
+
+				const newGalleryInclude = newItems
+					.map((video) => video.attachment_id)
+					.join(',');
+				setAttributes({
+					gallery_include: newGalleryInclude,
+					gallery_orderby: 'include',
+				});
+
+				return newItems;
+			});
+		}
+	}
 
 	useEffect(() => {
-		if (gallery_orderby === 'menu_order') {
-			gallery_orderby = 'menu_order ID';
-		} else if (gallery_orderby === 'rand') {
-			gallery_orderby = 'RAND(' + Math.round(Math.random() * 10000) + ')';
+		let new_gallery_orderby = gallery_orderby;
+		if (new_gallery_orderby === 'menu_order') {
+			new_gallery_orderby = 'menu_order ID';
+		} else if (new_gallery_orderby === 'rand') {
+			new_gallery_orderby =
+				'RAND(' + Math.round(Math.random() * 10000) + ')';
 		}
 
 		const args = {
-			gallery_orderby,
+			gallery_orderby: new_gallery_orderby,
 			gallery_order,
 			gallery_per_page:
 				gallery_pagination !== true || isNaN(gallery_per_page)
@@ -44,6 +95,7 @@ const VideoGallery = ({ attributes }) => {
 			page_number: galleryPage,
 			gallery_id,
 			gallery_include,
+			gallery_exclude,
 		};
 
 		apiFetch({
@@ -66,6 +118,7 @@ const VideoGallery = ({ attributes }) => {
 		gallery_include,
 		gallery_exclude,
 		galleryPage,
+		galleryVersion,
 	]);
 
 	useEffect(() => {
@@ -76,10 +129,10 @@ const VideoGallery = ({ attributes }) => {
 	}, [gallery_pagination]);
 
 	useEffect(() => {
-		if (currentVideoIndex !== null) {
+		if (currentVideoIndex !== null && galleryVideos.length > 0) {
 			setOpenVideo(galleryVideos[currentVideoIndex]);
 		}
-	}, [galleryVideos]);
+	}, [galleryVideos, currentVideoIndex]);
 
 	useEffect(() => {
 		const handleNavigationKeyPress = (e) => {
@@ -114,7 +167,7 @@ const VideoGallery = ({ attributes }) => {
 		return () => {
 			document.removeEventListener('keydown', handleNavigationKeyPress);
 		};
-	}, [openVideo]);
+	}, [openVideo, currentVideoIndex, galleryVideos, attributes]);
 
 	const closeVideo = () => {
 		setOpenVideo(null);
@@ -156,6 +209,89 @@ const VideoGallery = ({ attributes }) => {
 		});
 	};
 
+	const handleEditItem = (oldAttachmentId, newAttachment) => {
+		if (oldAttachmentId === newAttachment.id) {
+			setGalleryVersion((v) => v + 1);
+			return;
+		}
+
+		let includeIds = [];
+		if (gallery_include) {
+			includeIds = gallery_include.split(',');
+		} else {
+			includeIds = galleryVideos.map((video) =>
+				video.attachment_id.toString()
+			);
+		}
+
+		const newGalleryInclude = includeIds
+			.map((id) =>
+				parseInt(id.trim(), 10) === oldAttachmentId
+					? newAttachment.id.toString()
+					: id
+			)
+			.join(',');
+
+		setAttributes({
+			gallery_include: newGalleryInclude,
+			gallery_orderby: 'include',
+		});
+	};
+
+	const handleRemoveItem = (attachmentIdToRemove) => {
+		// Update gallery_exclude
+		const currentExclude = gallery_exclude
+			? gallery_exclude.split(',').map((id) => parseInt(id.trim(), 10))
+			: [];
+		if (!currentExclude.includes(attachmentIdToRemove)) {
+			currentExclude.push(attachmentIdToRemove);
+		}
+		const newGalleryExclude = currentExclude.join(',');
+
+		// Update gallery_include
+		const currentInclude = gallery_include
+			? gallery_include.split(',').map((id) => parseInt(id.trim(), 10))
+			: [];
+		const newGalleryInclude = currentInclude
+			.filter((id) => id !== attachmentIdToRemove)
+			.join(',');
+
+		setAttributes({
+			gallery_exclude: newGalleryExclude,
+			gallery_include: newGalleryInclude,
+		});
+	};
+
+	const openMediaModalForNewVideos = () => {
+		const frame = window.wp.media({
+			title: __('Add Videos to Gallery'),
+			button: {
+				text: __('Add to Gallery'),
+			},
+			multiple: 'add',
+			library: {
+				type: 'video',
+			},
+		});
+
+		frame.on('select', () => {
+			const selection = frame.state().get('selection');
+			const newAttachmentIds = selection.map(
+				(attachment) => attachment.id
+			);
+			const currentInclude = gallery_include
+				? gallery_include.split(',')
+				: [];
+			const newGalleryInclude = [
+				...currentInclude,
+				...newAttachmentIds,
+			].join(',');
+			setAttributes({ gallery_include: newGalleryInclude });
+		});
+
+		frame.open();
+	};
+
 	const GalleryPagination = () => {
 		const buttons = Array.from({ length: totalPages }, (_, i) => i + 1);
 
@@ -172,11 +308,14 @@ const VideoGallery = ({ attributes }) => {
 					<span>{'<'}</span>
 				</button>
 				{buttons.map((pageNumber) => (
-					<>
+					<div key={pageNumber} className="videopack-page-number-div">
 						<button
-							key={pageNumber}
 							onClick={() => setGalleryPage(pageNumber)}
-							className={`videopack-page-number${pageNumber === galleryPage ? ' current-page' : ''}`}
+							className={`videopack-page-number${
+								pageNumber === galleryPage
+									? ' current-page'
+									: ''
+							}`}
 							disabled={pageNumber === galleryPage}
 						>
 							<span>{pageNumber}</span>
@@ -184,7 +323,7 @@ const VideoGallery = ({ attributes }) => {
 						<span className="videopack-pagination-separator">
 							{pageNumber === totalPages ? '' : '|'}
 						</span>
-					</>
+					</div>
 				))}
 				<button
 					className={`videopack-pagination-arrow${
@@ -201,27 +340,48 @@ const VideoGallery = ({ attributes }) => {
 	};
 
 	return (
-		<>
-			<div
-				className="videopack-gallery-wrapper"
-				style={
-					gallery_columns > 0
-						? { '--gallery-columns': gallery_columns }
-						: {}
-				}
+		<div
+			className="videopack-gallery-wrapper"
+			style={
+				gallery_columns > 0
+					? { '--gallery-columns': gallery_columns }
+					: {}
+			}
+			onMouseEnter={() => setIsHovering(true)}
+			onMouseLeave={() => setIsHovering(false)}
+		>
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCenter}
+				onDragEnd={handleDragEnd}
 			>
-				{galleryVideos &&
-					galleryVideos.map((videoRecord, index) => (
-						<GalleryItem
-							key={videoRecord.attachment_id}
-							attributes={attributes}
-							videoRecord={videoRecord}
-							setOpenVideo={setOpenVideo}
-							videoIndex={index}
-							setCurrentVideoIndex={setCurrentVideoIndex}
-						/>
-					))}
-			</div>
+				<SortableContext
+					items={galleryVideos.map((video) => video.attachment_id)}
+					strategy={rectSortingStrategy}
+				>
+					<div className="videopack-gallery-items">
+						{galleryVideos &&
+							galleryVideos.map((videoRecord, index) => (
+								<GalleryItem
+									key={videoRecord.attachment_id}
+									attributes={attributes}
+									videoRecord={videoRecord}
+									setOpenVideo={setOpenVideo}
+									videoIndex={index}
+									setCurrentVideoIndex={setCurrentVideoIndex}
+									isEditing={isEditing}
+									onRemove={handleRemoveItem}
+									onEdit={handleEditItem}
+									isLastItem={
+										index === galleryVideos.length - 1
+									}
+									onAddVideo={openMediaModalForNewVideos}
+									isHoveringGallery={isHovering}
+								/>
+							))}
+					</div>
+				</SortableContext>
+			</DndContext>
 			{totalPages > 1 && <GalleryPagination />}
 			{openVideo && (
 				<div className="videopack-modal-overlay" onClick={closeVideo}>
@@ -272,7 +432,7 @@ const VideoGallery = ({ attributes }) => {
 					</div>
 				</div>
 			)}
-		</>
+		</div>
 	);
 };
 

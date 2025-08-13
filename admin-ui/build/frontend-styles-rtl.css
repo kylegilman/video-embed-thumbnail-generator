@@ -497,17 +497,21 @@
 /* Gallery container */
 .videopack-gallery-wrapper {
   max-width: 100%;
+}
+.videopack-gallery-wrapper .videopack-gallery-items {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
   margin: 0 auto;
 }
-.videopack-gallery-wrapper[style] {
+.videopack-gallery-wrapper .videopack-gallery-items[style] {
   grid-template-columns: repeat(var(--gallery-columns), 1fr);
 }
 .videopack-gallery-wrapper .gallery-thumbnail {
   position: relative;
   padding: 0;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0; /* Important for padding-top trick */
   cursor: pointer;
   overflow: hidden;
   border: none;
@@ -516,8 +520,11 @@
   background: none;
 }
 .videopack-gallery-wrapper .gallery-thumbnail img {
+  position: absolute; /* Position image to fill the padded space */
+  top: 0;
+  right: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
   -o-object-fit: cover;
      object-fit: cover;
@@ -555,6 +562,7 @@
   fill: white;
 }
 .videopack-gallery-wrapper .gallery-thumbnail .video-title {
+  box-sizing: border-box;
   position: absolute;
   bottom: 10px;
   right: 0;
@@ -564,6 +572,7 @@
   padding-bottom: 8px;
   overflow: hidden;
   text-align: center;
+  line-height: 18px;
 }
 .videopack-gallery-wrapper .gallery-thumbnail .video-title .video-title-text {
   position: relative;
@@ -604,6 +613,9 @@
 }
 .videopack-gallery-pagination .videopack-pagination-arrow.videopack-hidden {
   visibility: hidden;
+}
+.videopack-gallery-pagination .videopack-page-number-div {
+  display: inline;
 }
 .videopack-gallery-pagination button.videopack-page-number {
   display: inline-flex;
@@ -693,4 +705,81 @@
 }
 .videopack-icons.right-arrow {
   background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27 fill=%27white%27%3E %3Ctitle%3Earrow-right%3C/title%3E %3Cpath d=%27M31 16l-15-15v9h-16v12h16v9z%27%3E%3C/path%3E %3C/svg%3E");
+}
+
+.videopack-gallery-item {
+  position: relative;
+}
+.videopack-gallery-item .gallery-item-clickable-area {
+  cursor: pointer;
+}
+.videopack-gallery-item.is-dragging {
+  opacity: 0.5;
+  border: 2px dashed #ccc;
+}
+.videopack-gallery-item .gallery-item-remove, .videopack-gallery-item .gallery-item-edit, .videopack-gallery-item .gallery-item-drag-handle, .videopack-gallery-item .gallery-add-button {
+  position: absolute;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 10;
+  transition: background-color 0.2s ease-in-out;
+  border: none;
+  padding: 0;
+}
+.videopack-gallery-item .gallery-item-remove, .videopack-gallery-item .gallery-item-edit, .videopack-gallery-item .gallery-item-drag-handle {
+  top: 5px;
+  display: none; /* Hidden by default */
+}
+.videopack-gallery-item .gallery-add-button {
+  bottom: 5px;
+  left: 5px;
+}
+.videopack-gallery-item .gallery-add-button .dashicons {
+  font-size: 20px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.videopack-gallery-item .gallery-add-button:hover {
+  background-color: rgba(0, 124, 255, 0.8);
+}
+.videopack-gallery-item .gallery-item-remove {
+  left: 5px;
+}
+.videopack-gallery-item .gallery-item-remove:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+.videopack-gallery-item .gallery-item-edit {
+  left: 35px;
+}
+.videopack-gallery-item .gallery-item-edit .dashicons {
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.videopack-gallery-item .gallery-item-edit:hover {
+  background-color: rgba(0, 124, 255, 0.8);
+}
+.videopack-gallery-item .gallery-item-drag-handle {
+  right: 5px;
+  cursor: move;
+}
+.videopack-gallery-item .gallery-item-drag-handle .dashicons {
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.videopack-gallery-item .gallery-item-drag-handle:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+.videopack-gallery-item:hover .gallery-item-remove, .videopack-gallery-item:hover .gallery-item-edit, .videopack-gallery-item:hover .gallery-item-drag-handle {
+  display: flex; /* Show on hover of the parent item */
 }
