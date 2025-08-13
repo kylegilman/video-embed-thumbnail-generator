@@ -11,9 +11,8 @@ import {
 	Spinner,
 	TextControl,
 } from '@wordpress/components';
-import { MediaUpload } from '@wordpress/block-editor';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
-import { uploadMedia } from '@wordpress/media-utils';
+import { MediaUpload, uploadMedia } from '@wordpress/media-utils';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs, getFilename } from '@wordpress/url';
 import { chevronUp, chevronDown } from '@wordpress/icons';
@@ -444,6 +443,22 @@ const Thumbnails = ({
 			});
 			await attachment?.save();
 
+			// Refresh the media library grid to show the updated thumbnail.
+			if (wp.media && wp.media.frame) {
+				if (
+					wp.media.frame.content.get() &&
+					wp.media.frame.content.get().collection
+				) {
+					const collection = wp.media.frame.content.get().collection;
+					collection.props.set({ ignore: new Date().getTime() });
+				} else if (wp.media.frame.library) {
+					// Fallback for different states of the media modal.
+					wp.media.frame.library.props.set({
+						ignore: new Date().getTime(),
+					});
+				}
+			}
+
 			setAttributes({ poster: new_poster, poster_id: new_poster_id });
 			setThumbChoices([]);
 		} catch (error) {
@@ -635,7 +650,9 @@ const Thumbnails = ({
 						{thumbChoices.map((thumb, index) => (
 							<button
 								type="button"
-								className={'videopack-thumbnail spinner-container'}
+								className={
+									'videopack-thumbnail spinner-container'
+								}
 								key={index}
 								onClick={(event) => {
 									handleSaveThumbnail(event, thumb, index);
@@ -671,12 +688,12 @@ const Thumbnails = ({
 						</button>
 					</h2>
 					<div
-							className={`videopack-thumb-video-panel spinner-container${
-								isSaving ? ' saving' : ''
-							}`}
-							tabIndex={0}
-							ref={thumbVideoPanel}
-						>
+						className={`videopack-thumb-video-panel spinner-container${
+							isSaving ? ' saving' : ''
+						}`}
+						tabIndex={0}
+						ref={thumbVideoPanel}
+					>
 						<video
 							src={src}
 							ref={videoRef}

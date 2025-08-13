@@ -54,13 +54,17 @@ const GalleryBlock = ({
 		gallery_columns,
 	} = attributes;
 
-	const galleryOrderbyOptions = [
+	const baseGalleryOrderbyOptions = [
 		{ value: 'menu_order', label: __('Menu Order') },
 		{ value: 'title', label: __('Title') },
 		{ value: 'post_date', label: __('Date') },
 		{ value: 'rand', label: __('Random') },
 		{ value: 'ID', label: __('Video ID') },
 	];
+
+	const filteredGalleryOrderbyOptions = gallery_include
+		? [...baseGalleryOrderbyOptions, { value: 'include', label: __('Manually Sorted') }]
+		: baseGalleryOrderbyOptions;
 
 	const attributeChangeFactory = (attributeName, isNumeric = false) => {
 		return (newValue) => {
@@ -77,27 +81,27 @@ const GalleryBlock = ({
 		<>
 			<InspectorControls>
 				<PanelBody title={__('Gallery Settings')}>
-					<TextControl
+					{/* <TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Include these videos in the gallery')}
-						value={gallery_include}
+						value={gallery_include ?? ''}
 						onChange={attributeChangeFactory('gallery_include')}
 					/>
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Exclude these videos from the gallery')}
-						value={gallery_exclude}
+						value={gallery_exclude ?? ''}
 						onChange={attributeChangeFactory('gallery_exclude')}
-					/>
+					/> */}
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Sort by')}
 						value={gallery_orderby}
 						onChange={attributeChangeFactory('gallery_orderby')}
-						options={galleryOrderbyOptions}
+						options={filteredGalleryOrderbyOptions}
 						hideCancelButton={true}
 					/>
 					<SelectControl
@@ -120,6 +124,7 @@ const GalleryBlock = ({
 					{gallery_pagination && (
 						<TextControl
 							label={__('Number of videos per page')}
+							type="number"
 							value={gallery_per_page}
 							onChange={attributeChangeFactory(
 								'gallery_per_page',
@@ -162,10 +167,12 @@ const GalleryBlock = ({
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div {...useBlockProps()}>
+			<div {...useBlockProps()} onDragStart={(e) => e.stopPropagation()}>
 				<VideoGallery
 					attributes={attributes}
 					videoChildren={videoChildren}
+					setAttributes={setAttributes}
+					isEditing={true}
 				/>
 			</div>
 		</>

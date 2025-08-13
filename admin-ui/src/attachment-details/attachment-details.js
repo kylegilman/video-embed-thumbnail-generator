@@ -69,10 +69,16 @@ if (
 
 				// Find the .settings section in the attachment details sidebar.
 				// Note: We use this.$el to scope the find to this view's element.
-				const settingsSection = this.$el.find('.settings');
+				let settingsSection = this.$el.find('.settings');
+				if (settingsSection.length === 0) {
+					if (this.$el.hasClass('attachment-details')) {
+						settingsSection = this.$el;
+					}
+				}
+
 				if (settingsSection.length === 0) {
 					console.error(
-						'Videopack: Could not find the .settings section in the attachment details sidebar.'
+						'Videopack: Could not find the .settings or .attachment-details section in the attachment details sidebar.'
 					);
 					return;
 				}
@@ -85,7 +91,9 @@ if (
 				// Create a new React root and render the component.
 				this.videopackReactRoot = createRoot(reactRootDiv);
 				this.videopackReactRoot.render(
-					<AttachmentDetails attachmentId={this.model.attributes.id} />
+					<AttachmentDetails
+						attachmentId={this.model.attributes.id}
+					/>
 				);
 				console.log('Videopack: React component mounted successfully.');
 			} else {
