@@ -1,5 +1,5 @@
 import apiFetch from '@wordpress/api-fetch';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import {
@@ -134,6 +134,31 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 		}
 	}, [galleryVideos, currentVideoIndex]);
 
+	const closeVideo = useCallback(() => {
+		setOpenVideo(null);
+		setCurrentVideoIndex(null);
+	}, []);
+
+	const handleNavigationArrowClick = useCallback(
+		(videoIndex) => {
+			if (isPlayerReady) {
+				setIsPlayerReady(false);
+			}
+
+			if (videoIndex > galleryVideos.length - 1 && totalPages > 1) {
+				setGalleryPage(galleryPage + 1);
+				setCurrentVideoIndex(0);
+			} else if (videoIndex < 0 && galleryPage > 1) {
+				setGalleryPage(galleryPage - 1);
+				setCurrentVideoIndex(galleryVideos.length - 1);
+			} else {
+				setOpenVideo(galleryVideos[videoIndex]);
+				setCurrentVideoIndex(videoIndex);
+			}
+		},
+		[isPlayerReady, galleryVideos, totalPages, galleryPage]
+	);
+
 	useEffect(() => {
 		const handleNavigationKeyPress = (e) => {
 			if (e.key === 'Escape') {
@@ -167,47 +192,35 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 		return () => {
 			document.removeEventListener('keydown', handleNavigationKeyPress);
 		};
-	}, [openVideo, currentVideoIndex, galleryVideos, attributes]);
-
-	const closeVideo = () => {
-		setOpenVideo(null);
-		setCurrentVideoIndex(null);
-	};
-
-	const handleNavigationArrowClick = (videoIndex) => {
-		if (isPlayerReady) {
-			setIsPlayerReady(false);
-		}
-
-		if (videoIndex > galleryVideos.length - 1 && totalPages > 1) {
-			setGalleryPage(galleryPage + 1);
-			setCurrentVideoIndex(0);
-		} else if (videoIndex < 0 && galleryPage > 1) {
-			setGalleryPage(galleryPage - 1);
-			setCurrentVideoIndex(galleryVideos.length - 1);
-		} else {
-			setOpenVideo(galleryVideos[videoIndex]);
-			setCurrentVideoIndex(videoIndex);
-		}
-	};
+	}, [
+		openVideo,
+		currentVideoIndex,
+		galleryVideos,
+		attributes,
+		closeVideo,
+		handleNavigationArrowClick,
+	]);
 
 	const handleVideoClick = (event) => {
 		event.stopPropagation();
 	};
 
-	const handleVideoPlayerReady = (player) => {
-		setCurrentVideoPlayer(player);
-		setIsPlayerReady(true);
+	const handleVideoPlayerReady = useCallback(
+		(player) => {
+			setCurrentVideoPlayer(player);
+			setIsPlayerReady(true);
 
-		player.addEventListener('ended', () => {
-			if (gallery_end === 'next') {
-				handleNavigationArrowClick(currentVideoIndex + 1);
-			}
-			if (gallery_end === 'close') {
-				closeVideo();
-			}
-		});
-	};
+			player.addEventListener('ended', () => {
+				if (gallery_end === 'next') {
+					handleNavigationArrowClick(currentVideoIndex + 1);
+				}
+				if (gallery_end === 'close') {
+					closeVideo();
+				}
+			});
+		},
+		[gallery_end, currentVideoIndex, handleNavigationArrowClick, closeVideo]
+	);
 
 	const handleEditItem = (oldAttachmentId, newAttachment) => {
 		if (oldAttachmentId === newAttachment.id) {
@@ -347,8 +360,8 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 					? { '--gallery-columns': gallery_columns }
 					: {}
 			}
-			onMouseEnter={() => setIsHovering(true)}
-			onMouseLeave={() => setIsHovering(false)}
+			onMouseEnter={() => !openVideo && setIsHovering(true)}
+			onMouseLeave={() => !openVideo && setIsHovering(false)}
 		>
 			<DndContext
 				sensors={sensors}
@@ -359,7 +372,14 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 					items={galleryVideos.map((video) => video.attachment_id)}
 					strategy={rectSortingStrategy}
 				>
-					<div className="videopack-gallery-items">
+					<div
+						className="videopack-gallery-items"
+						style={
+							gallery_columns > 0
+								? { '--gallery-columns': gallery_columns }
+								: {}
+						}
+					>
 						{galleryVideos &&
 							galleryVideos.map((videoRecord, index) => (
 								<GalleryItem

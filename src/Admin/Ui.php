@@ -73,6 +73,7 @@ class Ui {
 			'codecs'        => $codecs_data,
 			'resolutions'   => $resolutions_data,
 			'ffmpeg_exists' => $options['ffmpeg_exists'],
+			'browser_thumbnails' => $options['browser_thumbnails'],
 		);
 	}
 

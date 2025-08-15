@@ -628,7 +628,7 @@ const AdditionalFormats = ({
                         className: "videopack-format-status",
                         children: formatData.status_l10n
                       }), formatData.status === 'not_encoded' && !formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.MediaUpload, {
-                        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Pick existing file'),
+                        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose existing file'),
                         onSelect: onSelectFormat(formatId),
                         allowedTypes: ['video'],
                         render: ({
@@ -638,7 +638,7 @@ const AdditionalFormats = ({
                           onClick: open,
                           className: "videopack-format-button",
                           size: "small",
-                          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Pick')
+                          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select')
                         })
                       }), formatData.was_picked &&
                       /*#__PURE__*/
@@ -781,12 +781,14 @@ const Thumbnails = ({
   }, [poster]);
   function onSelectPoster(image) {
     setAttributes({
+      ...attributes,
       poster: image.url,
       poster_id: Number(image.id)
     });
   }
   function onRemovePoster() {
     setAttributes({
+      ...attributes,
       poster: undefined
     });
 
@@ -795,7 +797,10 @@ const Thumbnails = ({
   }
   const handleGenerate = async (type = 'generate') => {
     setIsSaving(true);
-    if (options?.ffmpeg_exists && !options?.browser_thumbnails) {
+    const ffmpegExists = window.videopack.settings.ffmpeg_exists;
+    const browserThumbnailsEnabled = window.videopack.settings.browser_thumbnails;
+    if (!browserThumbnailsEnabled && ffmpegExists) {
+      // Browser thumbnails explicitly disabled, use FFmpeg directly
       const newThumbImages = [];
       for (let i = 1; i <= Number(total_thumbnails); i++) {
         const response = await generateThumb(i, type);
@@ -806,13 +811,16 @@ const Thumbnails = ({
         newThumbImages.push(thumb);
         setThumbChoices([...newThumbImages]); // Update incrementally
       }
+      setIsSaving(false);
     } else {
+      // Attempt browser-based generation
       generateThumbCanvases(type);
     }
   };
   const generateThumbCanvases = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(async type => {
     const thumbsInt = Number(total_thumbnails);
     const newThumbCanvases = [];
+    const ffmpegExists = window.videopack.settings.ffmpeg_exists;
     const timePoints = [...Array(thumbsInt)].map((_, i) => {
       let movieoffset = (i + 1) / (thumbsInt + 1) * videoRef.current.duration;
       if (type === 'random') {
@@ -821,36 +829,56 @@ const Thumbnails = ({
       }
       return movieoffset;
     });
-    const timeupdateListener = () => {
+    const processNextThumbnail = async index => {
+      if (index >= thumbsInt) {
+        videoRef.current.removeEventListener('timeupdate', timeupdateListener);
+        setIsSaving(false);
+        return;
+      }
+      videoRef.current.currentTime = timePoints[index];
+    };
+    const timeupdateListener = async () => {
       let thumb;
-      drawCanvasThumb() // This now returns a Promise resolving to a canvas object
-      .then(canvas => {
-        try {
-          thumb = {
-            src: canvas.toDataURL(),
-            type: 'canvas',
-            canvasObject: canvas // Store the canvas object for later upload
-          };
-        } catch (error) {
-          console.error(error);
-          videoRef.current.removeEventListener('timeupdate', timeupdateListener);
-          setIsSaving(false);
-          return;
-        }
+      try {
+        const canvas = await drawCanvasThumb();
+        thumb = {
+          src: canvas.toDataURL(),
+          type: 'canvas',
+          canvasObject: canvas
+        };
         newThumbCanvases.push(thumb);
         setThumbChoices([...newThumbCanvases]);
-        if (newThumbCanvases.length === thumbsInt) {
+        processNextThumbnail(newThumbCanvases.length);
+      } catch (error) {
+        console.error('Error generating canvas thumbnail:', error);
+        if (ffmpegExists) {
+          console.warn('Falling back to FFmpeg for thumbnail generation.');
+          try {
+            const response = await generateThumb(newThumbCanvases.length + 1, type);
+            thumb = {
+              src: response.real_thumb_url,
+              type: 'ffmpeg'
+            };
+            newThumbCanvases.push(thumb);
+            setThumbChoices([...newThumbCanvases]);
+            processNextThumbnail(newThumbCanvases.length);
+          } catch (ffmpegError) {
+            console.error('FFmpeg fallback also failed:', ffmpegError);
+            // Display a user-friendly error message if both methods fail
+            // For now, just log and stop
+            videoRef.current.removeEventListener('timeupdate', timeupdateListener);
+            setIsSaving(false);
+          }
+        } else {
+          console.error('Browser thumbnail generation failed and FFmpeg is not available.');
+          // Display a user-friendly error message
           videoRef.current.removeEventListener('timeupdate', timeupdateListener);
           setIsSaving(false);
-        } else {
-          videoRef.current.currentTime = timePoints[newThumbCanvases.length];
         }
-      }).catch(error => {
-        console.error('Error processing canvas:', error);
-      });
+      }
     };
     videoRef.current.addEventListener('timeupdate', timeupdateListener);
-    videoRef.current.currentTime = timePoints[0];
+    processNextThumbnail(0); // Start the process
   });
 
   // function to toggle video playback
@@ -903,13 +931,13 @@ const Thumbnails = ({
       return canvas;
     }
   };
-  const handleSaveThumbnail = (event, thumb, index) => {
+  const handleSaveThumbnail = (event, thumb) => {
     event.currentTarget.classList.add('saving');
     setIsSaving(true);
     if (thumb.type === 'ffmpeg') {
-      setImgAsPoster(thumb.src); // Pass the canvas object directly
+      setImgAsPoster(thumb.src);
     } else {
-      setCanvasAsPoster(thumb.canvasObject, index); // Pass the canvas object directly
+      setCanvasAsPoster(thumb.canvasObject);
     }
   };
   const handleSaveAllThumbnails = async () => {
@@ -917,28 +945,35 @@ const Thumbnails = ({
     const firstThumbType = thumbChoices[0]?.type; // Assuming all generated thumbs are of the same type
 
     if (firstThumbType === 'canvas') {
-      // For canvas thumbnails, upload each one individually using uploadMedia
-      for (const [index, thumb] of thumbChoices.entries()) {
-        try {
-          const videoFilename = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_5__.getFilename)(src);
-          const thumbBasename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
-          const file = await new Promise(resolve => thumb.canvasObject.toBlob(blob => {
-            resolve(new File([blob], `${thumbBasename}${filenameSuffix}`, {
-              type: 'image/png'
-            }));
-          }, 'image/png'));
-          await (0,_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.uploadMedia)({
-            // No need to store response, just upload
-            filesList: [file],
-            allowedTypes: ['image/png'],
-            title: `${thumbBasename} ${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('thumbnail')} ${index + 1}`
-          });
-        } catch (error) {
-          console.error(`Error uploading canvas thumbnail ${index + 1}:`, error);
-          // Optionally, show a notice for individual failures.
-        }
+      const postName = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_5__.getFilename)(src);
+      const uploadPromises = thumbChoices.map(thumb => {
+        return new Promise((resolve, reject) => {
+          thumb.canvasObject.toBlob(async blob => {
+            try {
+              const formData = new FormData();
+              formData.append('file', blob, 'thumbnail.jpg');
+              formData.append('attachment_id', id);
+              formData.append('post_name', postName);
+
+              // Don't need the response for "save all"
+              await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+                path: `${thumbApiPath}/upload`,
+                method: 'POST',
+                body: formData
+              });
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          }, 'image/jpeg');
+        });
+      });
+      try {
+        await Promise.all(uploadPromises);
+      } catch (error) {
+        console.error('Error saving all canvas thumbnails:', error);
       }
-      setThumbChoices([]); // Clear choices after saving
+      setThumbChoices([]);
     } else if (firstThumbType === 'ffmpeg') {
       // For FFmpeg thumbnails, send their temporary URLs to the server to be saved
       const thumbUrls = thumbChoices.map(thumb => thumb.src);
@@ -1023,47 +1058,25 @@ const Thumbnails = ({
       }
     });
   }
-  const setCanvasAsPoster = async (canvasObject, thumbnailIndex = null) => {
-    const videoFilename = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_5__.getFilename)(src);
-    const thumbBasename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
-    const filenameSuffix = thumbnailIndex !== null ? `_thumb_canvas_${thumbnailIndex + 1}.png` : '_thumb_canvas.png';
-    const titleSuffix = thumbnailIndex !== null ? ` ${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('thumbnail')} ${thumbnailIndex + 1}` : ` ${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('thumbnail')}`;
+  const setCanvasAsPoster = async canvasObject => {
+    setIsSaving(true);
     try {
-      const file = await new Promise(resolve => canvasObject.toBlob(blob => {
-        resolve(new File([blob], `${thumbBasename}${filenameSuffix}`, {
-          type: 'image/png'
-        }));
-      }, 'image/png'));
-      setIsSaving(true);
-
-      // Wrap uploadMedia in a new Promise to ensure we wait for the upload to complete.
-      const media = await new Promise((resolve, reject) => {
-        (0,_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_3__.uploadMedia)({
-          filesList: [file],
-          allowedTypes: ['image/png'],
-          title: `${thumbBasename}${titleSuffix}`,
-          onFileChange: mediaData => {
-            if (mediaData[0].id) {
-              resolve(mediaData[0]);
-            }
-          },
-          onError: error => reject(error)
-        });
+      const blob = await new Promise(resolve => canvasObject.toBlob(resolve, 'image/jpeg'));
+      const formData = new FormData();
+      formData.append('file', blob, 'thumbnail.jpg');
+      formData.append('attachment_id', id);
+      const postName = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_5__.getFilename)(src);
+      formData.append('post_name', postName);
+      const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+        path: `${thumbApiPath}/upload`,
+        method: 'POST',
+        body: formData
       });
-      if (media) {
-        if (wp.media && wp.media.featuredImage && wp.media.featuredImage.set) {
-          wp.media.featuredImage.set(media.id);
-        }
-        setPosterData(media.url, media.id);
-      } else {
-        // Handle case where upload succeeds but returns no media data
-        throw new Error((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Media upload failed to return data.'));
-      }
-      setIsSaving(false);
+      setPosterData(response.thumb_url, response.thumb_id);
     } catch (error) {
-      console.error((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Upload error:'), error);
+      console.error('Error uploading thumbnail:', error);
+    } finally {
       setIsSaving(false);
-      // createErrorNotice( error, { type: 'snackbar' } ); // Assuming createErrorNotice is available if needed
     }
   };
   const setPosterData = async (new_poster, new_poster_id) => {
@@ -1073,6 +1086,10 @@ const Thumbnails = ({
         // Only include if new_poster has a value
         metaData['_kgflashmediaplayer-poster'] = new_poster;
         metaData['_kgflashmediaplayer-poster-id'] = Number(new_poster_id);
+        metaData['_videopack-meta'] = {
+          ...attachment?.meta?.['_videopack-meta'],
+          poster: new_poster
+        };
       }
       await attachment?.edit({
         featured_media: new_poster_id ? Number(new_poster_id) : null,
@@ -1095,23 +1112,25 @@ const Thumbnails = ({
         }
       }
       setAttributes({
+        ...attributes,
         poster: new_poster,
         poster_id: new_poster_id
       });
       setThumbChoices([]);
+      setIsSaving(false);
     } catch (error) {
       console.error('Error updating attachment:', error);
+      setIsSaving(false);
     }
   };
-  const setImgAsPoster = async (thumb_url, index) => {
+  const setImgAsPoster = async thumb_url => {
     try {
       const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
         path: thumbApiPath,
         method: 'PUT',
         data: {
           attachment_id: id,
-          thumburl: thumb_url,
-          thumbnail_index: index
+          thumburl: thumb_url
         }
       });
       setPosterData(response.thumb_url, response.thumb_id);
@@ -1227,10 +1246,12 @@ const Thumbnails = ({
         onChange: value => {
           if (!value) {
             setAttributes({
+              ...attributes,
               total_thumbnails: ''
             });
           } else {
             setAttributes({
+              ...attributes,
               total_thumbnails: Number(value)
             });
           }
@@ -1392,14 +1413,15 @@ const AttachmentDetails = ({
   const [attributes, setAttributes] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useState)();
   const attachment = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_2__.useEntityRecord)('postType', 'attachment', !isNaN(attachmentId) ? attachmentId : null);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
-    console.log('Attachment component mounted.');
+    console.log('Attributes has changed:', attributes);
+  }, [attributes]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
     _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/settings',
       method: 'GET'
     }).then(response => {
       setOptions(response);
     });
-    return () => console.log('Component unmounted!');
   }, []);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useEffect)(() => {
     if (attachment.hasResolved && !attributes) {
@@ -1412,7 +1434,7 @@ const AttachmentDetails = ({
       };
       setAttributes(combinedAttributes);
     }
-  }, [options, attachment, attributes]);
+  }, [options, attachment, attributes, attachmentId]);
   if (attributes && attachment.hasResolved && options) {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
       className: "videopack-attachment-details",

@@ -175,6 +175,10 @@ class Video_Format {
 	 *
 	 * @return array An associative array representation of the object.
 	 */
+	public function is_enabled() {
+		return $this->enabled;
+	}
+
 	public function to_array() {
 		$codec      = $this->get_codec();
 		$resolution = $this->get_resolution();

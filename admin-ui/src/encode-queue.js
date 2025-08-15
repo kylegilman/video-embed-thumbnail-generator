@@ -1,17 +1,13 @@
+/* global videopack */
+
 import './encode-queue.scss';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { createRoot, useState, useEffect, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	PanelBody,
 	Button,
 	Spinner,
-	Table,
-	TableHead,
-	TableBody,
-	TableRow,
-	TableHeader,
-	TableCell,
 	Dashicon,
 	Notice,
 	__experimentalDivider as Divider,
@@ -48,7 +44,9 @@ const EncodeQueue = () => {
 	const { ffmpegExists } = videopack.encodeQueueData;
 
 	// Use core data to get site language for Intl.ListFormat
-	const siteLanguage = useSelect((select) => select('core').getSite()?.language);
+	const siteLanguage = useSelect(
+		(select) => select('core').getSite()?.language
+	);
 
 	const fetchQueue = async () => {
 		setIsLoading(true);
@@ -72,7 +70,8 @@ const EncodeQueue = () => {
 			setMessage({
 				type: 'error',
 				text: sprintf(
-					__('Failed to load queue: %s', 'video-embed-thumbnail-generator'),
+					/* translators: %s is an error message */
+					__('Failed to load queue: %s'),
 					error.message || error.code
 				),
 			});
@@ -111,7 +110,8 @@ const EncodeQueue = () => {
 			setMessage({
 				type: 'error',
 				text: sprintf(
-					__('Failed to toggle queue: %s', 'video-embed-thumbnail-generator'),
+					/* translators: %s is an error message */
+					__('Failed to toggle queue: %s'),
 					error.message || error.code
 				),
 			});
@@ -124,8 +124,8 @@ const EncodeQueue = () => {
 		if (
 			!confirm(
 				type === 'all'
-					? __('Are you sure you want to clear all jobs?', 'video-embed-thumbnail-generator')
-					: __('Are you sure you want to clear completed jobs?', 'video-embed-thumbnail-generator')
+					? __('Are you sure you want to clear all jobs?')
+					: __('Are you sure you want to clear completed jobs?')
 			)
 		) {
 			return;
@@ -145,7 +145,8 @@ const EncodeQueue = () => {
 			setMessage({
 				type: 'error',
 				text: sprintf(
-					__('Failed to clear queue: %s', 'video-embed-thumbnail-generator'),
+					/* translators: %s is an error message */
+					__('Failed to clear queue: %s'),
 					error.message || error.code
 				),
 			});
@@ -155,7 +156,7 @@ const EncodeQueue = () => {
 	};
 
 	const handleDeleteJob = async (jobId) => {
-		if (!confirm(__('Are you sure you want to delete this job?', 'video-embed-thumbnail-generator'))) {
+		if (!confirm(__('Are you sure you want to delete this job?'))) {
 			return;
 		}
 
@@ -165,14 +166,19 @@ const EncodeQueue = () => {
 				path: `/videopack/v1/queue/${jobId}`,
 				method: 'DELETE',
 			});
-			setMessage({ type: 'success', text: sprintf(__('Job %d deleted successfully.', 'video-embed-thumbnail-generator'), jobId) });
+			setMessage({
+				type: 'success',
+				/* translators: %d is a job number */
+				text: sprintf(__('Job %d deleted successfully.'), jobId),
+			});
 			fetchQueue(); // Refresh queue data
 		} catch (error) {
 			console.error('Error deleting job:', error);
 			setMessage({
 				type: 'error',
 				text: sprintf(
-					__('Failed to delete job %d: %s', 'video-embed-thumbnail-generator'),
+					/* translators: %1$d is a job number, %2$s is an error message */
+					__('Failed to delete job %1$d: %2$s'),
 					jobId,
 					error.message || error.code
 				),
@@ -189,14 +195,19 @@ const EncodeQueue = () => {
 				path: `videopack/v1/queue/retry/${jobId}`,
 				method: 'POST',
 			});
-			setMessage({ type: 'success', text: sprintf(__('Job %d has been re-queued.', 'video-embed-thumbnail-generator'), jobId) });
+			setMessage({
+				type: 'success',
+				/* translators: %d is a job number */
+				text: sprintf(__('Job %d has been re-queued.'), jobId),
+			});
 			fetchQueue(); // Refresh queue data
 		} catch (error) {
 			console.error('Error retrying job:', error);
 			setMessage({
 				type: 'error',
 				text: sprintf(
-					__('Failed to retry job %d: %s', 'video-embed-thumbnail-generator'),
+					/* translators: %1$d is a job number, %2$s is an error message */
+					__('Failed to retry job %1$d: %2$s'),
 					jobId,
 					error.message || error.code
 				),
@@ -223,9 +234,20 @@ const EncodeQueue = () => {
 						</div>
 					</div>
 					<small>
-						{sprintf(__('Elapsed: %s', 'video-embed-thumbnail-generator'), elapsed)} |{' '}
-						{sprintf(__('Remaining: %s', 'video-embed-thumbnail-generator'), remaining)} |{' '}
-						{sprintf(__('FPS: %s', 'video-embed-thumbnail-generator'), fps)}
+						{
+							/* translators: %s is an amount of time in ##:## format */
+							sprintf(__('Elapsed: %s'), elapsed)
+						}{' '}
+						|{' '}
+						{
+							/* translators: %s is an amount of time in ##:## format */
+							sprintf(__('Remaining: %s'), remaining)
+						}{' '}
+						|{' '}
+						{
+							/* translators: %s is a number of frames per second */
+							sprintf(__('FPS: %s'), fps)
+						}
 					</small>
 				</div>
 			);
@@ -235,7 +257,7 @@ const EncodeQueue = () => {
 
 	return (
 		<div className="wrap videopack-encode-queue">
-			<h1>{__('Videopack Encode Queue', 'video-embed-thumbnail-generator')}</h1>
+			<h1>{__('Videopack Encode Queue')}</h1>
 
 			{message && (
 				<Notice status={message.type} onRemove={() => setMessage(null)}>
@@ -252,7 +274,7 @@ const EncodeQueue = () => {
 						disabled={isLoading || isTogglingQueue || !ffmpegExists}
 					>
 						<Dashicon icon={isQueuePaused ? 'play' : 'pause'} />
-						{isQueuePaused ? __('Play Queue', 'video-embed-thumbnail-generator') : __('Pause Queue', 'video-embed-thumbnail-generator')}
+						{isQueuePaused ? __('Play Queue') : __('Pause Queue')}
 					</Button>
 					<Button
 						variant="secondary"
@@ -260,7 +282,7 @@ const EncodeQueue = () => {
 						isBusy={isClearing}
 						disabled={isLoading || isClearing || !ffmpegExists}
 					>
-						{__('Clear Completed', 'video-embed-thumbnail-generator')}
+						{__('Clear Completed')}
 					</Button>
 					<Button
 						variant="tertiary"
@@ -269,84 +291,110 @@ const EncodeQueue = () => {
 						isBusy={isClearing}
 						disabled={isLoading || isClearing || !ffmpegExists}
 					>
-						{__('Clear All', 'video-embed-thumbnail-generator')}
+						{__('Clear All')}
 					</Button>
 					{isLoading && <Spinner />}
 				</div>
 				{!ffmpegExists && (
 					<Notice status="warning" isDismissible={false}>
-						{__('FFmpeg is not detected or configured. Encoding functions are disabled.', 'video-embed-thumbnail-generator')}
+						{__(
+							'FFmpeg is not detected or configured. Encoding functions are disabled.'
+						)}
 					</Notice>
 				)}
 				<Divider />
-				{isLoading && queueData.length === 0 ? (
-					<p>{__('Loading queue...', 'video-embed-thumbnail-generator')}</p>
-				) : queueData.length === 0 ? (
-					<p>{__('The encode queue is empty.', 'video-embed-thumbnail-generator')}</p>
-				) : (
-					<Table className="videopack-queue-table">
-						<TableHead>
-							<TableRow>
-								<TableHeader>{__('ID', 'video-embed-thumbnail-generator')}</TableHeader>
-								<TableHeader>{__('Thumbnail', 'video-embed-thumbnail-generator')}</TableHeader>
-								<TableHeader>{__('Video Title', 'video-embed-thumbnail-generator')}</TableHeader>
-								<TableHeader>{__('Format', 'video-embed-thumbnail-generator')}</TableHeader>
-								<TableHeader>{__('Status', 'video-embed-thumbnail-generator')}</TableHeader>
-								<TableHeader>{__('Actions', 'video-embed-thumbnail-generator')}</TableHeader>
-							</TableRow>
-						</TableHead>
-						<TableBody>
+				{isLoading && <p>{__('Loading queue…')}</p>}
+				{!isLoading && queueData.length === 0 && (
+					<p>{__('The encode queue is empty.')}</p>
+				)}
+				{!isLoading && queueData.length > 0 && (
+					<table className="videopack-queue-table">
+						<thead>
+							<tr>
+								<th>{__('ID')}</th>
+								<th>{__('Thumbnail')}</th>
+								<th>{__('Video Title')}</th>
+								<th>{__('Format')}</th>
+								<th>{__('Status')}</th>
+								<th>{__('Actions')}</th>
+							</tr>
+						</thead>
+						<tbody>
 							{queueData.map((job) => (
-								<TableRow key={job.job_id}>
-									<TableCell>{job.job_id}</TableCell>
-									<TableCell>
+								<tr key={job.job_id}>
+									<td>{job.job_id}</td>
+									<td>
 										{job.poster_url && (
 											<img
 												src={job.poster_url}
 												alt={job.video_title}
-												style={{ maxWidth: '80px', height: 'auto' }}
+												style={{
+													maxWidth: '80px',
+													height: 'auto',
+												}}
 											/>
 										)}
-									</TableCell>
-									<TableCell>{job.video_title}</TableCell>
-									<TableCell>{job.format_name}</TableCell>
-									<TableCell>{getStatusDisplay(job)}</TableCell>
-									<TableCell>
-										{job.status !== 'processing' && job.status !== 'queued' && job.status !== 'pending_replacement' && (
+									</td>
+									<td>{job.video_title}</td>
+									<td>{job.format_name}</td>
+									<td>{getStatusDisplay(job)}</td>
+									<td>
+										{job.status !== 'processing' &&
+											job.status !== 'queued' &&
+											job.status !==
+												'pending_replacement' && (
+												<Button
+													size="small"
+													isDestructive
+													onClick={() =>
+														handleDeleteJob(
+															job.job_id
+														)
+													}
+													isBusy={
+														deletingJobId ===
+														job.job_id
+													}
+												>
+													{__('Delete')}
+												</Button>
+											)}
+										{(job.status === 'processing' ||
+											job.status === 'queued' ||
+											job.status ===
+												'pending_replacement') && (
 											<Button
 												size="small"
 												isDestructive
-												onClick={() => handleDeleteJob(job.job_id)}
-												isBusy={deletingJobId === job.job_id}
+												onClick={() =>
+													handleDeleteJob(job.job_id)
+												}
+												isBusy={
+													deletingJobId === job.job_id
+												}
 											>
-												{__('Delete', 'video-embed-thumbnail-generator')}
-											</Button>
-										)}
-										{(job.status === 'processing' || job.status === 'queued' || job.status === 'pending_replacement') && (
-											<Button
-												size="small"
-												isDestructive
-												onClick={() => handleDeleteJob(job.job_id)}
-												isBusy={deletingJobId === job.job_id}
-											>
-												{__('Cancel', 'video-embed-thumbnail-generator')}
+												{__('Cancel')}
 											</Button>
 										)}
 										{job.status === 'failed' && (
 											<Button
 												size="small"
 												variant="secondary"
-												onClick={() => handleRetryJob(job.job_id)}
-												isBusy={ retryingJobId === job.job_id }
+												onClick={() =>
+													handleRetryJob(job.job_id)
+												}
+												isBusy={
+													retryingJobId === job.job_id
+												}
 											>
-												{__('Retry', 'video-embed-thumbnail-generator')}
+												{__('Retry')}
 											</Button>
 										)}
-									</TableCell>
-								</TableRow>
+									</td>
+								</tr>
 							))}
-						</TableBody>
-					</Table>
+						</tbody>
+					</table>
 				)}
 			</PanelBody>
 		</div>
@@ -357,15 +405,7 @@ const EncodeQueue = () => {
 document.addEventListener('DOMContentLoaded', function () {
 	const rootElement = document.getElementById('videopack-queue-root');
 	if (rootElement) {
-		// Use createRoot for React 18+
-		if (typeof ReactDOM !== 'undefined' && ReactDOM.createRoot) {
-			const root = ReactDOM.createRoot(rootElement);
-			root.render(<EncodeQueue />);
-		} else if (typeof ReactDOM !== 'undefined' && ReactDOM.render) {
-			// Fallback for older React versions
-			ReactDOM.render(<EncodeQueue />, rootElement);
-		} else {
-			console.error('ReactDOM is not available. Cannot render React component.');
-		}
+		const root = createRoot(rootElement);
+		root.render(<EncodeQueue />);
 	}
 });

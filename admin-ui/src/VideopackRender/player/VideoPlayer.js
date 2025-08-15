@@ -126,6 +126,9 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			} else {
 				onReady(player);
 			}
+			if (autoplay) {
+				setMetaBarVisible(false);
+			}
 		});
 		player.on('waiting', () => console.log('player is waiting'));
 		player.on('dispose', () => console.log('player will dispose'));
@@ -140,7 +143,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			<div className="videopack-player">
 				<MetaBar
 					attributes={attributes}
-					metaBarVisible={metaBarVisible}
+					
 				/>
 				{embed_method === 'Video.js' && videoJsOptions && (
 					<VideoJS
