@@ -78,9 +78,7 @@ const MetaBar = ({ attributes, metaBarVisible }) => {
 		return (
 			<>
 				<div
-					className={`videopack-meta-bar${
-						metaBarVisible ? ' is-visible' : ''
-					}${noTitleMeta}`}
+					className={`videopack-meta-bar${noTitleMeta}`}
 				>
 					<span className={'meta-icons'}>
 						{embedItems() && (

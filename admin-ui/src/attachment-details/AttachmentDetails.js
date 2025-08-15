@@ -15,15 +15,17 @@ const AttachmentDetails = ({ attachmentId }) => {
 		!isNaN(attachmentId) ? attachmentId : null
 	);
 
+useEffect(() => {
+    console.log('Attributes has changed:', attributes);
+  }, [attributes]);
+
 	useEffect(() => {
-		console.log('Attachment component mounted.');
 		apiFetch({
 			path: '/videopack/v1/settings',
 			method: 'GET',
 		}).then((response) => {
 			setOptions(response);
 		});
-		return () => console.log('Component unmounted!');
 	}, []);
 
 	useEffect(() => {
@@ -31,8 +33,8 @@ const AttachmentDetails = ({ attachmentId }) => {
 			const combinedAttributes = {
 				id: attachmentId,
 				total_thumbnails:
-					attachment.record?.meta?.['_videopack-meta']?.total_thumbnails ||
-					options?.total_thumbnails,
+					attachment.record?.meta?.['_videopack-meta']
+						?.total_thumbnails || options?.total_thumbnails,
 				src: attachment.record?.source_url,
 				poster:
 					attachment.record?.meta?.['_kgflashmediaplayer-poster'] ||
@@ -43,7 +45,7 @@ const AttachmentDetails = ({ attachmentId }) => {
 			};
 			setAttributes(combinedAttributes);
 		}
-	}, [options, attachment, attributes]);
+	}, [options, attachment, attributes, attachmentId]);
 
 	if (attributes && attachment.hasResolved && options) {
 		return (

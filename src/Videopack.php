@@ -153,7 +153,7 @@ class Videopack {
 		$plugin_attachment = new Admin\Attachment( $this->options_manager );
 		$this->loader->add_action( 'delete_attachment', $plugin_attachment, 'delete_video_attachment' );
 		$this->loader->add_action( 'add_attachment', $plugin_attachment, 'add_attachment_handler' );
-		$this->loader->add_action( 'videopack_cron_new_attachment', $plugin_attachment, 'cron_new_attachment_handler', 10, 2 );
+		$this->loader->add_action( 'videopack_process_new_attachment', $plugin_attachment, 'process_new_attachment_action', 10, 1 );
 		$this->loader->add_action( 'videopack_cron_check_post_parent', $plugin_attachment, 'cron_check_post_parent_handler' );
 		$this->loader->add_action( 'edit_attachment', $plugin_attachment, 'validate_attachment_updated' );
 		$this->loader->add_filter( 'mime_types', $plugin_attachment, 'add_mime_types' );

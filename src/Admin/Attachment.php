@@ -274,71 +274,28 @@ class Attachment {
 	}
 
 	public function add_attachment_handler( $post_id ) {
-
-		if ( $this->options['auto_encode'] == true || $this->options['auto_thumb'] == true ) {
-			$this->schedule_attachment_processing( $post_id );
-
-		}
-	}
-
-	public function schedule_attachment_processing( $post_id, $force = false, $x = 1 ) {
-
-		$post     = get_post( $post_id );
-		$is_video = $this->is_video( $post );
-
-		if ( $is_video ) {
-
-			$time_offset = ( $x * 3 );
-
-			$already_scheduled = wp_get_scheduled_event( 'videopack_cron_new_attachment', array( $post_id, $force ) );
-
-			if ( $already_scheduled === false ) {
-				wp_schedule_single_event( time() + $time_offset, 'videopack_cron_new_attachment', array( $post_id, $force ) );
-			}
-
-			if ( $force === false ) {
-				$transient = get_transient( 'videopack_new_attachment_transient' ); // error checking to avoid race conditions when using Add From Server
-				if ( is_array( $transient ) ) {
-					$transient[] = $post_id;
-				} else {
-					$transient = array( $post_id );
-				}
-				$transient = array_unique( $transient );
-				set_transient( 'videopack_new_attachment_transient', $transient, DAY_IN_SECONDS );
+		if ( $this->options['auto_encode'] || $this->options['auto_thumb'] ) {
+			$post = get_post( $post_id );
+			if ( $this->is_video( $post ) ) {
+				as_schedule_single_action( time() + 10, 'videopack_process_new_attachment', array( 'post_id' => $post_id ), 'videopack-attachments' );
+				// After scheduling, immediately trigger the Action Scheduler to process pending jobs.
+				do_action( 'action_scheduler_run_queue' );
 			}
 		}
 	}
 
-	public function cron_new_attachment_handler( $post_id, $force = false ) {
-
-		$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
-		$auto_encode       = $this->options['auto_encode'];
-		$auto_thumb        = $this->options['auto_thumb'];
-
-		if ( $force != false ) {
-			$auto_encode = false;
-			$auto_thumb  = false;
-		}
-
+	public function process_new_attachment_action( $post_id ) {
 		$post = get_post( $post_id );
 		if ( ! $post ) {
 			return;
 		}
-		$movieurl    = wp_get_attachment_url( $post_id );
-		$filepath    = get_attached_file( $post_id );
-		$is_animated = false;
-		if ( $post->post_mime_type == 'image/gif' ) {
-			$is_animated = $this->is_animated_gif( $filepath );
-		}
 
-		if ( $post->post_mime_type != 'image/gif'
-			&& ( $force == 'thumbs'
-				|| $auto_thumb == true
-			)
-		) {
-
-			$thumb_ids    = array();
-			$total_thumbs = intval( $this->options['auto_thumb_number'] );
+		// Thumbnail generation
+		if ( $this->options['auto_thumb'] && $this->is_video( $post ) && $post->post_mime_type != 'image/gif' ) {
+			$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
+			$filepath          = get_attached_file( $post_id );
+			$thumb_ids         = array();
+			$total_thumbs      = intval( $this->options['auto_thumb_number'] );
 
 			if ( $total_thumbs === 1 ) {
 				$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
@@ -355,7 +312,7 @@ class Attachment {
 
 					if ( ! is_wp_error( $thumb_data ) ) {
 						$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], false );
-						if ( $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+						if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
 							$thumb_ids[1] = $thumb_info['thumb_id'];
 						}
 					}
@@ -370,66 +327,59 @@ class Attachment {
 
 					$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], $i );
 
-					if ( $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+					if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
 						$thumb_ids[ $i ] = $thumb_info['thumb_id'];
 					}
 				}
 			}
 
-			$thumb_key = ( $total_thumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
-			if ( $thumb_key > $total_thumbs ) { // Sanity check
-				$thumb_key = $total_thumbs;
-			}
-			if ( $thumb_key === 0 ) { // Another sanity check
-				$thumb_key = 1;
-			}
-
-			if ( ! empty( $thumb_ids[ $thumb_key ] ) ) {
-				set_post_thumbnail( $post_id, $thumb_ids[ $thumb_key ] );
-
-				if ( $this->options['featured'] == true ) {
-					if ( ! empty( $post->post_parent ) ) {
+			if ( ! empty( $thumb_ids ) ) {
+				$thumb_key = ( $total_thumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
+				if ( $thumb_key > $total_thumbs || $thumb_key <= 0 ) { // Sanity check
+					$thumb_key = 1;
+				}
+				if ( array_key_exists( $thumb_key, $thumb_ids ) ) {
+					set_post_thumbnail( $post_id, $thumb_ids[ $thumb_key ] );
+					if ( $this->options['featured'] && ! empty( $post->post_parent ) ) {
 						set_post_thumbnail( $post->post_parent, $thumb_ids[ $thumb_key ] );
-					} else { // video has no parent post yet
-						wp_schedule_single_event( time() + 60, 'videopack_cron_check_post_parent', array( $post_id ) );
 					}
 				}
 			}
-		}//end if auto_thumb is on
+		}
 
-		if ( $post
-			&& ( $force == 'encode'
-				|| $auto_encode == true
-			)
-			&& ( ! $is_animated
-				|| $this->options['auto_encode_gif'] == true
-			)
-		) {
+		// Encoding
+		if ( $this->options['auto_encode'] ) {
+			$is_animated = ( $post->post_mime_type == 'image/gif' ) ? $this->is_animated_gif( get_attached_file( $post_id ) ) : false;
+			if ( ( ! $is_animated || $this->options['auto_encode_gif'] ) && $this->is_video( $post ) ) {
+				$encode_queue      = new Encode\Encode_Queue_Controller( $this->options_manager );
+				$movieurl          = wp_get_attachment_url( $post_id );
+				$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $post_id, $movieurl );
+				
+				$all_formats = $this->options_manager->get_video_formats();
+				$formats_to_encode = array();
 
-			$encode_queue      = new Encode\Encode_Queue_Controller( $this->options_manager );
-			$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $post_id, $movieurl );
-			$available_formats = $encode_attachment->get_available_formats();
-			$formats_to_encode = array();
+				foreach ( $all_formats as $format_id => $format_object ) {
+					if ( $format_object->is_enabled() ) {
+						$can_queue_status = $encode_attachment->check_if_can_queue( $format_id );
+						if ( 'ok_to_queue' === $can_queue_status ) {
+							$formats_to_encode[] = $format_id;
+						}
+					}
+				}
 
-			foreach ( $available_formats as $format_id => $format_object ) {
-				if ( $format_object->is_enabled() ) {
-					$formats_to_encode[] = $format_id;
+				if ( ! empty( $formats_to_encode ) ) {
+					$encode_queue->enqueue_encodes(
+						array(
+							'id'      => $post_id,
+							'url'     => $movieurl,
+							'formats' => $formats_to_encode,
+						)
+					);
 				}
 			}
-
-			if ( ! empty( $formats_to_encode ) ) {
-				$encode_queue->enqueue_encodes(
-					array(
-						'id'      => $post_id,
-						'url'     => $movieurl,
-						'formats' => $formats_to_encode,
-					)
-				);
-			}
-		}//end if auto_encode
-
-		do_action( 'videopack_cron_new_attachment', $post_id );
+		}
 	}
+
 
 	public function cron_check_post_parent_handler( $post_id ) {
 

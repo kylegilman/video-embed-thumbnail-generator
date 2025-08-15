@@ -10,7 +10,7 @@ import TextControlOnBlur from './TextControlOnBlur';
 
 const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const {
-		browser_thumbs,
+		browser_thumbnails,
 		ffmpeg_exists,
 		poster,
 		endofvideooverlay,
@@ -51,8 +51,9 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					label={__(
 						"When possible, use the browser's built-in video capabilities to make thumbnails instead of FFmpeg."
 					)}
-					value={browser_thumbs}
-					onChange={changeHandlerFactory.browser_thumbs}
+					value={browser_thumbnails}
+					checked={!!browser_thumbnails}
+					onChange={changeHandlerFactory.browser_thumbnails}
 				/>
 			)}
 			<div className="videopack-setting-reduced-width">

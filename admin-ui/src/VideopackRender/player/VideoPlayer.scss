@@ -517,53 +517,52 @@
 		background-color: rgba(40, 40, 40, 0.95);
 		visibility: hidden;
 		opacity: 0;
-		transition: visibility 1s linear, opacity 1s linear;
-
-		&.is-visible,
-		& .is-visible {
-		opacity: 1;
-		visibility: visible;
-		}
+		transition: visibility 0.3s linear, opacity 0.3s linear;
 
 		&.no-title {
-		background: none;
+			background: none;
 
-		.meta-icons span {
-			font-size: 19pt;
-			text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
-		}
+			.meta-icons span {
+				font-size: 19pt;
+				text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
+			}
 		}
 
 		.title {
-		font-size: 10pt;
-		padding-left: 4px;
-		line-height: 20pt;
+			font-size: 10pt;
+			padding-left: 4px;
+			line-height: 20pt;
 		}
 
 		.meta-icons {
-		position: relative;
-		float: right;
-		margin: 3px 0px 3px 0px;
+			position: relative;
+			float: right;
+			margin: 3px 0px 3px 0px;
 
-		a {
-			text-decoration: none;
-			border: none;
-			box-shadow: none;
+			a {
+				text-decoration: none;
+				border: none;
+				box-shadow: none;
+			}
+			span {
+				cursor: pointer;
+				color: white;
+				margin-right: 5px;
+				vertical-align: middle;
+				font-size: 13pt;
+			}
+			button {
+				background: none;
+				border: none;
+				color: white;
+				vertical-align: middle;
+			}
 		}
-		span {
-			cursor: pointer;
-			color: white;
-			margin-right: 5px;
-			vertical-align: middle;
-			font-size: 13pt;
-		}
-		button {
-			background: none;
-			border: none;
-			color: white;
-			vertical-align: middle;
-		}
-		}
+	}
+
+	&:hover .videopack-meta-bar {
+		opacity: 1;
+		visibility: visible;
 	}
 }
 

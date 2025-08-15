@@ -750,7 +750,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 																		!formatData.was_picked && (
 																			<MediaUpload
 																				title={__(
-																					'Pick existing file'
+																					'Choose existing file'
 																				)}
 																				onSelect={onSelectFormat(
 																					formatId
@@ -770,7 +770,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 																						size="small"
 																					>
 																						{__(
-																							'Pick'
+																							'Select'
 																						)}
 																					</Button>
 																				)}

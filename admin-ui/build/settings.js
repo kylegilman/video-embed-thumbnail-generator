@@ -77046,6 +77046,25 @@ const VideoGallery = ({
       setOpenVideo(galleryVideos[currentVideoIndex]);
     }
   }, [galleryVideos, currentVideoIndex]);
+  const closeVideo = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(() => {
+    setOpenVideo(null);
+    setCurrentVideoIndex(null);
+  }, []);
+  const handleNavigationArrowClick = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(videoIndex => {
+    if (isPlayerReady) {
+      setIsPlayerReady(false);
+    }
+    if (videoIndex > galleryVideos.length - 1 && totalPages > 1) {
+      setGalleryPage(galleryPage + 1);
+      setCurrentVideoIndex(0);
+    } else if (videoIndex < 0 && galleryPage > 1) {
+      setGalleryPage(galleryPage - 1);
+      setCurrentVideoIndex(galleryVideos.length - 1);
+    } else {
+      setOpenVideo(galleryVideos[videoIndex]);
+      setCurrentVideoIndex(videoIndex);
+    }
+  }, [isPlayerReady, galleryVideos, totalPages, galleryPage]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     const handleNavigationKeyPress = e => {
       if (e.key === 'Escape') {
@@ -77072,30 +77091,11 @@ const VideoGallery = ({
     return () => {
       document.removeEventListener('keydown', handleNavigationKeyPress);
     };
-  }, [openVideo, currentVideoIndex, galleryVideos, attributes]);
-  const closeVideo = () => {
-    setOpenVideo(null);
-    setCurrentVideoIndex(null);
-  };
-  const handleNavigationArrowClick = videoIndex => {
-    if (isPlayerReady) {
-      setIsPlayerReady(false);
-    }
-    if (videoIndex > galleryVideos.length - 1 && totalPages > 1) {
-      setGalleryPage(galleryPage + 1);
-      setCurrentVideoIndex(0);
-    } else if (videoIndex < 0 && galleryPage > 1) {
-      setGalleryPage(galleryPage - 1);
-      setCurrentVideoIndex(galleryVideos.length - 1);
-    } else {
-      setOpenVideo(galleryVideos[videoIndex]);
-      setCurrentVideoIndex(videoIndex);
-    }
-  };
+  }, [openVideo, currentVideoIndex, galleryVideos, attributes, closeVideo, handleNavigationArrowClick]);
   const handleVideoClick = event => {
     event.stopPropagation();
   };
-  const handleVideoPlayerReady = player => {
+  const handleVideoPlayerReady = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(player => {
     setCurrentVideoPlayer(player);
     setIsPlayerReady(true);
     player.addEventListener('ended', () => {
@@ -77106,7 +77106,7 @@ const VideoGallery = ({
         closeVideo();
       }
     });
-  };
+  }, [gallery_end, currentVideoIndex, handleNavigationArrowClick, closeVideo]);
   const handleEditItem = (oldAttachmentId, newAttachment) => {
     if (oldAttachmentId === newAttachment.id) {
       setGalleryVersion(v => v + 1);
@@ -77205,8 +77205,8 @@ const VideoGallery = ({
     style: gallery_columns > 0 ? {
       '--gallery-columns': gallery_columns
     } : {},
-    onMouseEnter: () => setIsHovering(true),
-    onMouseLeave: () => setIsHovering(false),
+    onMouseEnter: () => !openVideo && setIsHovering(true),
+    onMouseLeave: () => !openVideo && setIsHovering(false),
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_4__.DndContext, {
       sensors: sensors,
       collisionDetection: _dnd_kit_core__WEBPACK_IMPORTED_MODULE_4__.closestCenter,
@@ -77216,6 +77216,9 @@ const VideoGallery = ({
         strategy: _dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_5__.rectSortingStrategy,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
           className: "videopack-gallery-items",
+          style: gallery_columns > 0 ? {
+            '--gallery-columns': gallery_columns
+          } : {},
           children: galleryVideos && galleryVideos.map((videoRecord, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_GalleryItem__WEBPACK_IMPORTED_MODULE_6__["default"], {
             attributes: attributes,
             videoRecord: videoRecord,
@@ -77403,7 +77406,7 @@ const MetaBar = ({
   if (metaBarItems.includes(true)) {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
-        className: `videopack-meta-bar${metaBarVisible ? ' is-visible' : ''}${noTitleMeta}`,
+        className: `videopack-meta-bar${noTitleMeta}`,
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
           className: 'meta-icons',
           children: [embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -77644,6 +77647,9 @@ const VideoPlayer = ({
       } else {
         onReady(player);
       }
+      if (autoplay) {
+        setMetaBarVisible(false);
+      }
     });
     player.on('waiting', () => console.log('player is waiting'));
     player.on('dispose', () => console.log('player will dispose'));
@@ -77656,8 +77662,7 @@ const VideoPlayer = ({
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
       className: "videopack-player",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_MetaBar__WEBPACK_IMPORTED_MODULE_2__["default"], {
-        attributes: attributes,
-        metaBarVisible: metaBarVisible
+        attributes: attributes
       }), embed_method === 'Video.js' && videoJsOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_VideoJs__WEBPACK_IMPORTED_MODULE_3__["default"], {
         options: videoJsOptions,
         onReady: handleVideoPlayerReady,
@@ -79548,7 +79553,7 @@ const ThumbnailSettings = ({
   changeHandlerFactory
 }) => {
   const {
-    browser_thumbs,
+    browser_thumbnails,
     ffmpeg_exists,
     poster,
     endofvideooverlay,
@@ -79580,8 +79585,9 @@ const ThumbnailSettings = ({
     }), ffmpeg_exists === true && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
       __nextHasNoMarginBottom: true,
       label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("When possible, use the browser's built-in video capabilities to make thumbnails instead of FFmpeg."),
-      value: browser_thumbs,
-      onChange: changeHandlerFactory.browser_thumbs
+      value: browser_thumbnails,
+      checked: !!browser_thumbnails,
+      onChange: changeHandlerFactory.browser_thumbnails
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
       className: "videopack-setting-reduced-width",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_TextControlOnBlur__WEBPACK_IMPORTED_MODULE_2__["default"], {

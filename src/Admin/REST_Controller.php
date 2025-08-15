@@ -194,7 +194,7 @@ class REST_Controller extends \WP_REST_Controller {
 						),
 						'thumbnail_index' => array(
 							'type'     => 'number',
-							'required' => true,
+							'required' => false,
 						),
 					),
 				),
@@ -228,6 +228,27 @@ class REST_Controller extends \WP_REST_Controller {
 							'type'     => 'string',
 							'required' => true,
 						),
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/thumbs/upload',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'thumb_upload_save' ),
+				'permission_callback' => function () {
+					return current_user_can( 'make_video_thumbnails' );
+				},
+				'args'                => array(
+					'attachment_id' => array(
+						'type'     => 'number',
+						'required' => true,
+					),
+					'post_name'     => array(
+						'type'     => 'string',
+						'required' => true,
 					),
 				),
 			)
@@ -351,6 +372,18 @@ class REST_Controller extends \WP_REST_Controller {
 				),
 			)
 		);
+		register_rest_route(
+			$this->namespace,
+			'/queue',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'queue_get' ),
+				'permission_callback' => function () {
+					return ( $this->options['ffmpeg_exists'] === true );
+				},
+			)
+		);
+
 		register_rest_route(
 			$this->namespace,
 			'/queue/(?P<id>\w+)',
@@ -665,7 +698,15 @@ class REST_Controller extends \WP_REST_Controller {
 		$thumb_urls    = $request->get_param( 'thumb_urls' );
 
 		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
-		$post_name  = get_the_title( $attachment_id );
+		$post_name  = '';
+		$attachment_url = wp_get_attachment_url( $attachment_id );
+		if ( $attachment_url ) {
+			$post_name = basename( $attachment_url );
+			$post_name = pathinfo( $post_name, PATHINFO_FILENAME );
+		}
+		if ( empty( $post_name ) ) {
+			$post_name  = html_entity_decode( get_the_title( $attachment_id ), ENT_QUOTES, 'UTF-8' );
+		}
 		$results    = array();
 
 		foreach ( $thumb_urls as $index => $url ) {
@@ -676,6 +717,31 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * REST callback to save a thumbnail from a direct file upload.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|\WP_Error The response.
+	 */
+	public function thumb_upload_save( $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$post_name     = $request->get_param( 'post_name' );
+		$files         = $request->get_file_params();
+
+		if ( empty( $files['file'] ) ) {
+			return new \WP_Error( 'missing_file', 'No file was uploaded.', array( 'status' => 400 ) );
+		}
+
+		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
+		$response   = $thumbnails->save_from_blob( $attachment_id, $post_name, $files['file'] );
+
+		if ( ! $response['thumb_id'] ) {
+			return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
+		}
+
+		return new \WP_REST_Response( $response, 200 );
+	}
+
+	/**
 	 * REST callback to save a single thumbnail for a video.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
@@ -683,20 +749,31 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function thumb_save( \WP_REST_Request $request ) {
 
-		$params     = $request->get_params();
+		$params        = $request->get_params();
 		$attachment_id = $params['attachment_id'];
-		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
+		$thumbnails    = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
 
 		if ( is_numeric( $attachment_id ) ) {
-			$post_name = get_the_title( $attachment_id );
+			$post_name      = '';
+			$attachment_url = wp_get_attachment_url( $attachment_id );
+			if ( $attachment_url ) {
+				$post_name = basename( $attachment_url );
+				$post_name = pathinfo( $post_name, PATHINFO_FILENAME );
+			}
+			if ( empty( $post_name ) ) {
+				$post_name = html_entity_decode( get_the_title( $attachment_id ), ENT_QUOTES, 'UTF-8' );
+			}
 		} else {
 			$post_name = str_replace( 'singleurl_', '', $attachment_id );
 		}
+
+		$thumbnail_index = isset( $params['thumbnail_index'] ) ? intval( $params['thumbnail_index'] ) : false;
+
 		$response = $thumbnails->save(
 			$attachment_id,
 			$post_name,
 			$params['thumburl'],
-			intval( $params['thumbnail_index'] ) + 1
+			$thumbnail_index
 		);
 
 		return $response;
