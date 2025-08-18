@@ -6,153 +6,58 @@ import {
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
-import { __experimentalGetElementClassName } from '@wordpress/block-editor';
-import {
-	Platform,
-	useMemo,
-	useCallback,
-	useState,
-	useEffect,
-} from '@wordpress/element';
-import { __, _x } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 import { volumeUp, volumeDown } from './icon';
+import useVideoSettings from './hooks/useVideoSettings';
 
-const VideoSettings = ({ setAttributes, attributes }) => {
-	const {
-		autoplay,
-		controls,
-		loop,
-		muted,
-		volume,
-		gifmode,
-		playsinline,
-		preload,
-		view_count,
-		title,
-		videoTitle,
-		downloadlink,
-		twitter_button,
-		facebook_button,
-		embedcode,
-		embeddable,
-		playback_rate,
-		caption,
-	} = attributes;
-
-	useEffect(() => {
-		setAttributes({
-			autoplay: gifmode,
-			loop: gifmode,
-			muted: gifmode,
-		});
-		if (gifmode) {
-			setAttributes({
-				controls: false,
-				embeddable: false,
-				title: false,
-				view_count: false,
-				playsinline: true,
-			});
-		} else {
-			setAttributes({ controls: true });
-		}
-	}, [gifmode]);
-
-	useEffect(() => {
-		if (embeddable === false) {
-			setAttributes({
-				downloadlink: false,
-				embedcode: false,
-				twitter_button: false,
-				facebook_button: false,
-			});
-		}
-	}, [embeddable]);
-
-	const autoPlayHelpText = __(
-		'Autoplay may cause usability issues for some users.'
+const VideoSettings = ({ attributes, setAttributes }) => {
+	const { handleSettingChange, preloadOptions } = useVideoSettings(
+		attributes,
+		setAttributes
 	);
-	const getAutoplayHelp = Platform.select({
-		web: useCallback((checked) => {
-			return checked ? autoPlayHelpText : null;
-		}, []),
-		native: autoPlayHelpText,
-	});
-
-	const toggleFactory = useMemo(() => {
-		const toggleAttribute = (attribute) => {
-			return (newValue) => {
-				setAttributes({ [attribute]: newValue });
-			};
-		};
-
-		return {
-			autoplay: toggleAttribute('autoplay'),
-			loop: toggleAttribute('loop'),
-			muted: toggleAttribute('muted'),
-			controls: toggleAttribute('controls'),
-			playsinline: toggleAttribute('playsinline'),
-			view_count: toggleAttribute('view_count'),
-			title: toggleAttribute('title'),
-			downloadlink: toggleAttribute('downloadlink'),
-			embeddable: toggleAttribute('embeddable'),
-			embedcode: toggleAttribute('embedcode'),
-			twitter_button: toggleAttribute('twitter_button'),
-			facebook_button: toggleAttribute('facebook_button'),
-			playback_rate: toggleAttribute('playback_rate'),
-			gifmode: toggleAttribute('gifmode'),
-		};
-	}, []);
-
-	const preloadOptions = [
-		{ value: 'auto', label: __('Auto') },
-		{ value: 'metadata', label: __('Metadata') },
-		{ value: 'none', label: _x('None', 'Preload value') },
-	];
 
 	return (
 		<>
 			<PanelBody title={__('Player Settings')} initialOpen={false}>
-				{!gifmode && (
+				{!attributes.gifmode && (
 					<>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Autoplay')}
-								onChange={toggleFactory.autoplay}
-								checked={!!autoplay}
-								help={getAutoplayHelp}
+								onChange={(value) => handleSettingChange('autoplay', value)}
+								checked={!!attributes.autoplay}
 							/>
 						</PanelRow>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Loop')}
-								onChange={toggleFactory.loop}
-								checked={!!loop}
+								onChange={(value) => handleSettingChange('loop', value)}
+								checked={!!attributes.loop}
 							/>
 						</PanelRow>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Muted')}
-								onChange={toggleFactory.muted}
-								checked={!!muted}
+								onChange={(value) => handleSettingChange('muted', value)}
+								checked={!!attributes.muted}
 							/>
 						</PanelRow>
-						{!muted && (
+						{!attributes.muted && (
 							<RangeControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__('Volume')}
-								value={volume}
+								value={attributes.volume}
 								beforeIcon={volumeDown}
 								afterIcon={volumeUp}
 								initialPosition={1}
 								withInputField={false}
 								onChange={(value) =>
-									setAttributes({ volume: value })
+									handleSettingChange('volume', value)
 								}
 								min={0}
 								max={1}
@@ -163,16 +68,16 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Playback controls')}
-								onChange={toggleFactory.controls}
-								checked={!!controls}
+								onChange={(value) => handleSettingChange('controls', value)}
+								checked={!!attributes.controls}
 							/>
 						</PanelRow>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Play inline')}
-								onChange={toggleFactory.playsinline}
-								checked={!!playsinline}
+								onChange={(value) => handleSettingChange('playsinline', value)}
+								checked={!!attributes.playsinline}
 								help={__(
 									'Plays inline instead of fullscreen on iPhones.'
 								)}
@@ -182,8 +87,10 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Variable playback speeds')}
-								onChange={toggleFactory.playback_rate}
-								checked={!!playback_rate}
+								onChange={(value) =>
+									handleSettingChange('playback_rate', value)
+								}
+								checked={!!attributes.playback_rate}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -191,9 +98,9 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__('Preload')}
-								value={preload}
+								value={attributes.preload}
 								onChange={(value) =>
-									setAttributes({ preload: value })
+									handleSettingChange('preload', value)
 								}
 								options={preloadOptions}
 								hideCancelButton={true}
@@ -205,8 +112,8 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('GIF mode')}
-						onChange={toggleFactory.gifmode}
-						checked={!!gifmode}
+						onChange={(value) => handleSettingChange('gifmode', value)}
+						checked={!!attributes.gifmode}
 						help={__(
 							'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
 						)}
@@ -218,42 +125,50 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('Allow embedding on other sites')}
-						onChange={toggleFactory.embeddable}
-						checked={!!embeddable}
+						onChange={(value) => handleSettingChange('embeddable', value)}
+						checked={!!attributes.embeddable}
 					/>
 				</PanelRow>
-				{embeddable && (
+				{attributes.embeddable && (
 					<>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Download link')}
-								onChange={toggleFactory.downloadlink}
-								checked={!!downloadlink}
+								onChange={(value) =>
+									handleSettingChange('downloadlink', value)
+								}
+								checked={!!attributes.downloadlink}
 							/>
 						</PanelRow>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Embed code')}
-								onChange={toggleFactory.embedcode}
-								checked={!!embedcode}
+								onChange={(value) =>
+									handleSettingChange('embedcode', value)
+								}
+								checked={!!attributes.embedcode}
 							/>
 						</PanelRow>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Twitter button')}
-								onChange={toggleFactory.twitter_button}
-								checked={!!twitter_button}
+								onChange={(value) =>
+									handleSettingChange('twitter_button', value)
+								}
+								checked={!!attributes.twitter_button}
 							/>
 						</PanelRow>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Facebook button')}
-								onChange={toggleFactory.facebook_button}
-								checked={!!facebook_button}
+								onChange={(value) =>
+									handleSettingChange('facebook_button', value)
+								}
+								checked={!!attributes.facebook_button}
 							/>
 						</PanelRow>
 					</>
@@ -264,19 +179,19 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('Overlay title')}
-						onChange={toggleFactory.title}
-						checked={!!title}
+						onChange={(value) => handleSettingChange('title', value)}
+						checked={!!attributes.title}
 					/>
 				</PanelRow>
-				{title && (
+				{attributes.title && (
 					<PanelRow>
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__('Title')}
-							value={videoTitle}
+							value={attributes.videoTitle}
 							onChange={(value) =>
-								setAttributes({ videoTitle: value })
+								handleSettingChange('videoTitle', value)
 							}
 						/>
 					</PanelRow>
@@ -286,16 +201,16 @@ const VideoSettings = ({ setAttributes, attributes }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Caption')}
-						value={caption}
-						onChange={(value) => setAttributes({ caption: value })}
+						value={attributes.caption}
+						onChange={(value) => handleSettingChange('caption', value)}
 					/>
 				</PanelRow>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('View count')}
-						onChange={toggleFactory.view_count}
-						checked={!!view_count}
+						onChange={(value) => handleSettingChange('view_count', value)}
+						checked={!!attributes.view_count}
 					/>
 				</PanelRow>
 			</PanelBody>

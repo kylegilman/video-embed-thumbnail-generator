@@ -1,9 +1,9 @@
-import apiFetch from '@wordpress/api-fetch';
 import { Spinner } from '@wordpress/components';
 import { useEntityRecord } from '@wordpress/core-data';
 import { useState, useEffect } from '@wordpress/element';
 import Thumbnails from '../Thumbnails/Thumbnails';
-import AdditionalFormats from '../AdditionalFormats';
+import AdditionalFormats from '../AdditionalFormats/AdditionalFormats.js';
+import { getSettings } from '../utils.js';
 import './attachment-details.scss';
 
 const AttachmentDetails = ({ attachmentId }) => {
@@ -15,15 +15,8 @@ const AttachmentDetails = ({ attachmentId }) => {
 		!isNaN(attachmentId) ? attachmentId : null
 	);
 
-useEffect(() => {
-    console.log('Attributes has changed:', attributes);
-  }, [attributes]);
-
 	useEffect(() => {
-		apiFetch({
-			path: '/videopack/v1/settings',
-			method: 'GET',
-		}).then((response) => {
+		getSettings().then((response) => {
 			setOptions(response);
 		});
 	}, []);

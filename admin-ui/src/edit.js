@@ -20,8 +20,8 @@ import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
-import apiFetch from '@wordpress/api-fetch';
 
+import { getSettings } from './utils';
 import { videopack as icon } from './icon';
 import SingleVideoBlock from './SingleVideoBlock';
 import GalleryBlock from './GalleryBlock';
@@ -63,10 +63,7 @@ export default function Edit({ attributes, setAttributes }) {
 	);
 
 	useEffect(() => {
-		apiFetch({
-			path: '/videopack/v1/settings',
-			method: 'GET',
-		}).then((response) => {
+		getSettings().then((response) => {
 			setOptions(response);
 		});
 

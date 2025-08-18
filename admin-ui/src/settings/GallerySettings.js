@@ -1,4 +1,4 @@
-import apiFetch from '@wordpress/api-fetch';
+import { getRecentVideos } from '../utils';
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import {
@@ -28,10 +28,7 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 	//const aspectRatio = ( width && height ) ? width / height : 1.77777;
 
 	useEffect(() => {
-		apiFetch({
-			path: '/videopack/v1/recent_videos?posts=' + '12',
-			method: 'GET',
-		})
+		getRecentVideos('12')
 			.then((response) => {
 				setRecentVideos(response);
 				console.log(response);
