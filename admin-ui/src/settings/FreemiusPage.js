@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
+import { getFreemiusPage } from '../utils';
 import { Spinner } from '@wordpress/components';
 
 /**
@@ -8,54 +8,60 @@ import { Spinner } from '@wordpress/components';
  *
  * @param {Object} props      Component props.
  * @param {string} props.page The Freemius page slug ('account' or 'add-ons').
- * @returns {JSX.Element} The rendered component.
+ * @return {JSX.Element} The rendered component.
  */
-const FreemiusPage = ( { page } ) => {
-	const [ content, setContent ] = useState( '' );
-	const [ isLoading, setIsLoading ] = useState( true );
-	const containerRef = useRef( null );
+const FreemiusPage = ({ page }) => {
+	const [content, setContent] = useState('');
+	const [isLoading, setIsLoading] = useState(true);
+	const containerRef = useRef(null);
 
-	useEffect( () => {
-		setIsLoading( true );
-		apiFetch( { path: `/videopack/v1/freemius/${ page }` } )
-			.then( ( response ) => {
-				setContent( response.html );
-				setIsLoading( false );
-			} )
-			.catch( ( error ) => {
+	useEffect(() => {
+		setIsLoading(true);
+		getFreemiusPage(page)
+			.then((response) => {
+				setContent(response.html);
+				setIsLoading(false);
+			})
+			.catch((error) => {
 				// eslint-disable-next-line no-console
-				console.error( `Error fetching Freemius page '${ page }':`, error );
+				console.error(`Error fetching Freemius page '${page}':`, error);
 				setContent(
-					`<div class="notice notice-error"><p>Error loading page: ${ error.message }</p></div>`
+					`<div class="notice notice-error"><p>Error loading page: ${error.message}</p></div>`
 				);
-				setIsLoading( false );
-			} );
-	}, [ page ] );
+				setIsLoading(false);
+			});
+	}, [page]);
 
 	// Effect to execute scripts after the HTML content is rendered.
-	useEffect( () => {
-		if ( ! content || ! containerRef.current ) {
+	useEffect(() => {
+		if (!content || !containerRef.current) {
 			return;
 		}
 
 		const container = containerRef.current;
-		const scripts = Array.from( container.querySelectorAll( 'script' ) );
+		const scripts = Array.from(container.querySelectorAll('script'));
 
-		scripts.forEach( ( oldScript ) => {
-			const newScript = document.createElement( 'script' );
-			for ( const attr of oldScript.attributes ) {
-				newScript.setAttribute( attr.name, attr.value );
+		scripts.forEach((oldScript) => {
+			const newScript = document.createElement('script');
+			for (const attr of oldScript.attributes) {
+				newScript.setAttribute(attr.name, attr.value);
 			}
 			newScript.text = oldScript.text;
-			oldScript.parentNode.replaceChild( newScript, oldScript );
-		} );
-	}, [ content ] );
+			oldScript.parentNode.replaceChild(newScript, oldScript);
+		});
+	}, [content]);
 
-	if ( isLoading ) {
+	if (isLoading) {
 		return <Spinner />;
 	}
 
-	return <div className="freemius-page-container" ref={ containerRef } dangerouslySetInnerHTML={ { __html: content } } />;
+	return (
+		<div
+			className="freemius-page-container"
+			ref={containerRef}
+			dangerouslySetInnerHTML={{ __html: content }}
+		/>
+	);
 };
 
 export default FreemiusPage;

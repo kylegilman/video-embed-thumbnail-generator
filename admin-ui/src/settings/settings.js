@@ -1,5 +1,5 @@
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
+import { testFFmpegCommand } from '../utils';
 import {
 	Button,
 	Icon,
@@ -35,9 +35,7 @@ const VideopackSettingsPage = () => {
 
 	const testFfmpeg = (codec, resolution, rotate) => {
 		if (activeTab === 'encoding') {
-			apiFetch({
-				path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`,
-			})
+			testFFmpegCommand(codec, resolution, rotate)
 				.then((response) => {
 					setFfmpegTest(response);
 					console.log(response);
@@ -75,7 +73,7 @@ const VideopackSettingsPage = () => {
 	}, [settings, activeTab]);
 
 	useEffect(() => {
-		apiFetch({ path: '/wp/v2/settings' })
+		getWPSettings()
 			.then((response) => {
 				updateSettingsState(response);
 			})
@@ -93,13 +91,7 @@ const VideopackSettingsPage = () => {
 	}, []);
 
 	const debouncedSaveSettings = useDebounce((newSettings) => {
-		apiFetch({
-			path: '/wp/v2/settings',
-			method: 'POST',
-			data: {
-				videopack_options: newSettings,
-			},
-		})
+		saveWPSettings(newSettings)
 			.then((response) => {
 				updateSettingsState(response);
 				setIsSettingsChanged(false);
@@ -231,9 +223,7 @@ const VideopackSettingsPage = () => {
 	};
 
 	const resetSettings = () => {
-		apiFetch({
-			path: '/videopack/v1/defaults',
-		})
+		resetVideopackSettings()
 			.then((response) => {
 				setSettings(response);
 				setIsSettingsChanged(true);

@@ -3,7 +3,7 @@ import { useEffect, useMemo } from '@wordpress/element';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import VideoSettings from './VideoSettings';
 import Thumbnails from './Thumbnails/Thumbnails';
-import AdditionalFormats from './AdditionalFormats';
+import AdditionalFormats from './AdditionalFormats/AdditionalFormats.js';
 import VideoPlayer from './VideopackRender/player/VideoPlayer';
 
 const SingleVideoBlock = ({ setAttributes, attributes, options }) => {

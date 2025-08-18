@@ -1,4 +1,4 @@
-import apiFetch from '@wordpress/api-fetch';
+import { getVideoGallery } from '../../utils';
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
@@ -98,10 +98,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 			gallery_exclude,
 		};
 
-		apiFetch({
-			path: addQueryArgs('/videopack/v1/video_gallery', args),
-			method: 'GET',
-		})
+		getVideoGallery(args)
 			.then((response) => {
 				setTotalPages(response.max_num_pages);
 				setGalleryVideos(response.videos);

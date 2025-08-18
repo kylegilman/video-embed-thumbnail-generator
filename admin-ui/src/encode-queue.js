@@ -2,29 +2,83 @@
 
 import './encode-queue.scss';
 import { __, sprintf } from '@wordpress/i18n';
-import { createRoot, useState, useEffect, useRef } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
+import { createRoot, useState, useEffect, memo } from '@wordpress/element';
 import {
 	PanelBody,
 	Button,
 	Spinner,
-	Dashicon,
+	Icon,
 	Notice,
+	__experimentalConfirmDialog as ConfirmDialog,
 	__experimentalDivider as Divider,
 } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
+import EncodeProgress from './AdditionalFormats/EncodeProgress';
+import {
+	getQueue,
+	toggleQueue,
+	clearQueue,
+	deleteJob,
+	removeJob,
+} from './utils';
 
-// Helper to format duration from seconds to HH:MM:SS
-const formatDuration = (seconds) => {
-	if (isNaN(seconds) || seconds < 0) {
-		return '--:--';
+const JobRow = memo(
+	({ job, index, isMultisite, openConfirmDialog, deletingJobId }) => {
+		return (
+			<tr key={job.id}>
+				<td>{index + 1}</td>
+				{isMultisite && <td>{job.blog_name}</td>}
+				<td>{job.user_name || __('N/A')}</td>
+				<td>
+					{job.poster_url ? (
+						<img
+							src={job.poster_url}
+							alt={job.video_title}
+							className="videopack-queue-attachment-poster"
+						/>
+					) : (
+						<Icon icon="format-video" />
+					)}
+				</td>
+				<td>
+					{job.attachment_link ? (
+						<a href={job.attachment_link}>{job.video_title}</a>
+					) : (
+						job.video_title
+					)}
+				</td>
+				<td>{job.format_name}</td>
+				<td>
+					<div>{job.status_l10n}</div>
+					<EncodeProgress
+						formatData={{
+							...job,
+							encoding_now: job.status === 'encoding',
+							job_id: job.id,
+						}}
+						onCancelJob={() =>
+							openConfirmDialog('delete', { jobId: job.id })
+						}
+						deleteInProgress={deletingJobId}
+					/>
+				</td>
+				<td>
+					{job.status !== 'encoding' && (
+						<Button
+							variant="tertiary"
+							isDestructive
+							onClick={() =>
+								openConfirmDialog('remove', { jobId: job.id })
+							}
+							isBusy={deletingJobId === job.id}
+						>
+							{__('Clear')}
+						</Button>
+					)}
+				</td>
+			</tr>
+		);
 	}
-	const h = Math.floor(seconds / 3600);
-	const m = Math.floor((seconds % 3600) / 60);
-	const s = Math.floor(seconds % 60);
-	const pad = (num) => num.toString().padStart(2, '0');
-	return (h > 0 ? `${h}:` : '') + `${pad(m)}:${pad(s)}`;
-};
+);
 
 const EncodeQueue = () => {
 	const [queueData, setQueueData] = useState([]);
@@ -35,36 +89,19 @@ const EncodeQueue = () => {
 	const [message, setMessage] = useState(null);
 	const [isClearing, setIsClearing] = useState(false);
 	const [isTogglingQueue, setIsTogglingQueue] = useState(false);
+	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobId: ? }
 	const [deletingJobId, setDeletingJobId] = useState(null);
-	const [retryingJobId, setRetryingJobId] = useState(null);
-
-	const intervalRef = useRef(null);
-	const pollInterval = 5000; // Poll every 5 seconds
-
-	const { ffmpegExists } = videopack.encodeQueueData;
-
-	// Use core data to get site language for Intl.ListFormat
-	const siteLanguage = useSelect(
-		(select) => select('core').getSite()?.language
-	);
 
 	const fetchQueue = async () => {
-		setIsLoading(true);
 		try {
-			const response = await apiFetch({
-				path: '/videopack/v1/queue',
+			const newData = await getQueue();
+			setQueueData((prevData) => {
+				if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
+					return newData;
+				}
+				return prevData;
 			});
-			setQueueData(response);
-			// Check if any job is currently processing to determine if polling should continue
-			const anyProcessing = response.some(
-				(job) => job.status === 'processing'
-			);
-			if (anyProcessing && !intervalRef.current) {
-				intervalRef.current = setInterval(fetchQueue, pollInterval);
-			} else if (!anyProcessing && intervalRef.current) {
-				clearInterval(intervalRef.current);
-				intervalRef.current = null;
-			}
 		} catch (error) {
 			console.error('Error fetching queue:', error);
 			setMessage({
@@ -75,10 +112,6 @@ const EncodeQueue = () => {
 					error.message || error.code
 				),
 			});
-			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
-				intervalRef.current = null;
-			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -86,22 +119,15 @@ const EncodeQueue = () => {
 
 	useEffect(() => {
 		fetchQueue();
-		return () => {
-			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
-			}
-		};
+		const interval = setInterval(fetchQueue, 15000); // Poll every 15 seconds
+		return () => clearInterval(interval);
 	}, []);
 
 	const handleToggleQueue = async () => {
 		setIsTogglingQueue(true);
 		const action = isQueuePaused ? 'play' : 'pause';
 		try {
-			const response = await apiFetch({
-				path: '/videopack/v1/queue/control',
-				method: 'POST',
-				data: { action },
-			});
+			const response = await toggleQueue(action);
 			setIsQueuePaused(response.queue_state === 'pause');
 			setMessage({ type: 'success', text: response.message });
 			fetchQueue(); // Refresh queue data after state change
@@ -120,24 +146,31 @@ const EncodeQueue = () => {
 		}
 	};
 
-	const handleClearQueue = async (type) => {
-		if (
-			!confirm(
-				type === 'all'
-					? __('Are you sure you want to clear all jobs?')
-					: __('Are you sure you want to clear completed jobs?')
-			)
-		) {
+	const openConfirmDialog = (action, details) => {
+		setItemToActOn({ action, ...details });
+		setIsConfirmOpen(true);
+	};
+
+	const handleConfirm = () => {
+		if (!itemToActOn) {
 			return;
 		}
 
+		if (itemToActOn.action === 'clear') {
+			handleClearQueue(itemToActOn.type);
+		} else if (itemToActOn.action === 'delete') {
+			handleDeleteJob(itemToActOn.jobId);
+		} else if (itemToActOn.action === 'remove') {
+			handleRemoveJob(itemToActOn.jobId);
+		}
+		setIsConfirmOpen(false);
+		setItemToActOn(null);
+	};
+
+	const handleClearQueue = async (type) => {
 		setIsClearing(true);
 		try {
-			const response = await apiFetch({
-				path: '/videopack/v1/queue/clear',
-				method: 'DELETE',
-				data: { type },
-			});
+			const response = await clearQueue(type);
 			setMessage({ type: 'success', text: response.message });
 			fetchQueue(); // Refresh queue data
 		} catch (error) {
@@ -156,104 +189,43 @@ const EncodeQueue = () => {
 	};
 
 	const handleDeleteJob = async (jobId) => {
-		if (!confirm(__('Are you sure you want to delete this job?'))) {
-			return;
-		}
-
 		setDeletingJobId(jobId);
 		try {
-			const response = await apiFetch({
-				path: `/videopack/v1/queue/${jobId}`,
-				method: 'DELETE',
-			});
-			setMessage({
-				type: 'success',
-				/* translators: %d is a job number */
-				text: sprintf(__('Job %d deleted successfully.'), jobId),
-			});
-			fetchQueue(); // Refresh queue data
+			await deleteJob(jobId);
+			setMessage({ type: 'success', text: __('Job deleted.') });
+			fetchQueue();
 		} catch (error) {
 			console.error('Error deleting job:', error);
 			setMessage({
 				type: 'error',
-				text: sprintf(
-					/* translators: %1$d is a job number, %2$s is an error message */
-					__('Failed to delete job %1$d: %2$s'),
-					jobId,
-					error.message || error.code
-				),
+				text: sprintf(__('Error deleting job: %s'), error.message),
 			});
 		} finally {
 			setDeletingJobId(null);
 		}
 	};
 
-	const handleRetryJob = async (jobId) => {
-		setRetryingJobId(jobId);
+	const handleRemoveJob = async (jobId) => {
+		setDeletingJobId(jobId);
 		try {
-			await apiFetch({
-				path: `videopack/v1/queue/retry/${jobId}`,
-				method: 'POST',
-			});
+			await removeJob(jobId);
 			setMessage({
 				type: 'success',
-				/* translators: %d is a job number */
-				text: sprintf(__('Job %d has been re-queued.'), jobId),
+				text: __('Job removed from queue.'),
 			});
-			fetchQueue(); // Refresh queue data
+			fetchQueue();
 		} catch (error) {
-			console.error('Error retrying job:', error);
+			console.error('Error removing job:', error);
 			setMessage({
 				type: 'error',
-				text: sprintf(
-					/* translators: %1$d is a job number, %2$s is an error message */
-					__('Failed to retry job %1$d: %2$s'),
-					jobId,
-					error.message || error.code
-				),
+				text: sprintf(__('Error removing job: %s'), error.message),
 			});
 		} finally {
-			setRetryingJobId(null);
+			setDeletingJobId(null);
 		}
 	};
 
-	const getStatusDisplay = (job) => {
-		if (job.status === 'processing' && job.progress) {
-			const percent = job.progress.percent_done || 0;
-			const elapsed = formatDuration(job.progress.elapsed);
-			const remaining = formatDuration(job.progress.remaining);
-			const fps = job.progress.fps || 0;
-			return (
-				<div>
-					<div className="videopack-progress-bar-container">
-						<div
-							className="videopack-progress-bar"
-							style={{ width: `${percent}%` }}
-						>
-							{percent > 5 && `${percent}%`}
-						</div>
-					</div>
-					<small>
-						{
-							/* translators: %s is an amount of time in ##:## format */
-							sprintf(__('Elapsed: %s'), elapsed)
-						}{' '}
-						|{' '}
-						{
-							/* translators: %s is an amount of time in ##:## format */
-							sprintf(__('Remaining: %s'), remaining)
-						}{' '}
-						|{' '}
-						{
-							/* translators: %s is a number of frames per second */
-							sprintf(__('FPS: %s'), fps)
-						}
-					</small>
-				</div>
-			);
-		}
-		return job.status_l10n || job.status;
-	};
+	const isMultisite = videopack.isMultisite;
 
 	return (
 		<div className="wrap videopack-encode-queue">
@@ -265,137 +237,92 @@ const EncodeQueue = () => {
 				</Notice>
 			)}
 
+			<ConfirmDialog
+				isOpen={isConfirmOpen}
+				onConfirm={handleConfirm}
+				onCancel={() => setIsConfirmOpen(false)}
+			>
+				{itemToActOn?.action === 'clear'
+					? sprintf(
+							__('Are you sure you want to clear %s jobs?'),
+							itemToActOn.type
+						)
+					: __('Are you sure you want to remove this job?')}
+			</ConfirmDialog>
+
 			<PanelBody>
 				<div className="videopack-queue-controls">
 					<Button
 						variant="primary"
 						onClick={handleToggleQueue}
 						isBusy={isTogglingQueue}
-						disabled={isLoading || isTogglingQueue || !ffmpegExists}
 					>
-						<Dashicon icon={isQueuePaused ? 'play' : 'pause'} />
+						<Icon icon={isQueuePaused ? 'controls-play' : 'controls-pause'} />
 						{isQueuePaused ? __('Play Queue') : __('Pause Queue')}
 					</Button>
 					<Button
 						variant="secondary"
-						onClick={() => handleClearQueue('completed')}
+						onClick={() =>
+							openConfirmDialog('clear', { type: 'completed' })
+						}
 						isBusy={isClearing}
-						disabled={isLoading || isClearing || !ffmpegExists}
 					>
 						{__('Clear Completed')}
 					</Button>
 					<Button
 						variant="tertiary"
 						isDestructive
-						onClick={() => handleClearQueue('all')}
+						onClick={() =>
+							openConfirmDialog('clear', { type: 'all' })
+						}
 						isBusy={isClearing}
-						disabled={isLoading || isClearing || !ffmpegExists}
 					>
 						{__('Clear All')}
 					</Button>
 					{isLoading && <Spinner />}
 				</div>
-				{!ffmpegExists && (
-					<Notice status="warning" isDismissible={false}>
-						{__(
-							'FFmpeg is not detected or configured. Encoding functions are disabled.'
-						)}
-					</Notice>
-				)}
 				<Divider />
-				{isLoading && <p>{__('Loading queue…')}</p>}
-				{!isLoading && queueData.length === 0 && (
-					<p>{__('The encode queue is empty.')}</p>
-				)}
-				{!isLoading && queueData.length > 0 && (
-					<table className="videopack-queue-table">
-						<thead>
+				<table className="wp-list-table widefat fixed striped table-view-list videopack-queue-table">
+					<thead>
+						<tr>
+							<th>{__('Order')}</th>
+							{isMultisite && <th>{__('Site')}</th>}
+							<th>{__('User')}</th>
+							<th>{__('Thumbnail')}</th>
+							<th>{__('File')}</th>
+							<th>{__('Format')}</th>
+							<th>{__('Status')}</th>
+							<th>{__('Actions')}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{isLoading && (
 							<tr>
-								<th>{__('ID')}</th>
-								<th>{__('Thumbnail')}</th>
-								<th>{__('Video Title')}</th>
-								<th>{__('Format')}</th>
-								<th>{__('Status')}</th>
-								<th>{__('Actions')}</th>
+								<td colSpan={isMultisite ? 8 : 7}>
+									{__('Loading queue…')}
+								</td>
 							</tr>
-						</thead>
-						<tbody>
-							{queueData.map((job) => (
-								<tr key={job.job_id}>
-									<td>{job.job_id}</td>
-									<td>
-										{job.poster_url && (
-											<img
-												src={job.poster_url}
-												alt={job.video_title}
-												style={{
-													maxWidth: '80px',
-													height: 'auto',
-												}}
-											/>
-										)}
-									</td>
-									<td>{job.video_title}</td>
-									<td>{job.format_name}</td>
-									<td>{getStatusDisplay(job)}</td>
-									<td>
-										{job.status !== 'processing' &&
-											job.status !== 'queued' &&
-											job.status !==
-												'pending_replacement' && (
-												<Button
-													size="small"
-													isDestructive
-													onClick={() =>
-														handleDeleteJob(
-															job.job_id
-														)
-													}
-													isBusy={
-														deletingJobId ===
-														job.job_id
-													}
-												>
-													{__('Delete')}
-												</Button>
-											)}
-										{(job.status === 'processing' ||
-											job.status === 'queued' ||
-											job.status ===
-												'pending_replacement') && (
-											<Button
-												size="small"
-												isDestructive
-												onClick={() =>
-													handleDeleteJob(job.job_id)
-												}
-												isBusy={
-													deletingJobId === job.job_id
-												}
-											>
-												{__('Cancel')}
-											</Button>
-										)}
-										{job.status === 'failed' && (
-											<Button
-												size="small"
-												variant="secondary"
-												onClick={() =>
-													handleRetryJob(job.job_id)
-												}
-												isBusy={
-													retryingJobId === job.job_id
-												}
-											>
-												{__('Retry')}
-											</Button>
-										)}
-									</td>
-								</tr>
+						)}
+						{!isLoading && queueData.length === 0 && (
+							<tr>
+								<td colSpan={isMultisite ? 8 : 7}>
+									{__('The encode queue is empty.')}
+								</td>
+							</tr>
+						)}
+						{!isLoading &&
+							queueData.map((job, index) => (
+								<JobRow
+									key={job.id}
+									job={job}
+									index={index}
+									isMultisite={isMultisite}
+									openConfirmDialog={openConfirmDialog}
+									deletingJobId={deletingJobId}
+								/>
 							))}
-						</tbody>
-					</table>
-				)}
+					</tbody>
+				</table>
 			</PanelBody>
 		</div>
 	);

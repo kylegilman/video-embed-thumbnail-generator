@@ -5,3 +5,4 @@ video-embed-thumbnail-generator.zip
 .vscode/
 .VSCodeCounter/
 admin-ui/node_modules/
+.aiexclude

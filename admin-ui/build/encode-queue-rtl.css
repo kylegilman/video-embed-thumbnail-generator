@@ -7,19 +7,6 @@
   margin-bottom: 20px;
   align-items: center;
 }
-.videopack-encode-queue .videopack-progress-bar-container {
-  width: 100%;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  height: 20px;
-}
-.videopack-encode-queue .videopack-progress-bar {
-  height: 100%;
-  background-color: #3582c4;
-  text-align: center;
-  color: white;
-  line-height: 20px;
-  font-size: 12px;
-  transition: width 0.5s ease-in-out;
+.videopack-encode-queue .videopack-queue-attachment-poster {
+  max-width: 75px;
 }

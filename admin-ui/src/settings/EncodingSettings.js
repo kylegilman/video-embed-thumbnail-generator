@@ -1,7 +1,7 @@
 /* global videopack */
 
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
+import { getUsersWithCapability } from '../utils';
 import {
 	BaseControl,
 	Button,
@@ -63,10 +63,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const [bitrates, setBitrates] = useState(null);
 
 	useEffect(() => {
-		apiFetch({
-			path: '/wp/v2/users?capability=edit_others_video_encodes',
-			method: 'GET',
-		})
+		getUsersWithCapability('edit_others_video_encodes')
 			.then((response) => {
 				setUsers(response);
 			})

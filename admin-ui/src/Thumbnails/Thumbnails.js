@@ -1,6 +1,5 @@
 /* global Image */
 
-import apiFetch from '@wordpress/api-fetch';
 import {
 	BaseControl,
 	Button,
@@ -14,7 +13,14 @@ import {
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs, getFilename } from '@wordpress/url';
+import { getFilename } from '@wordpress/url';
+import {
+	uploadThumbnail,
+	saveAllThumbnails,
+	setPosterImage,
+	generateThumbnail,
+} from '../utils';
+
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import './Thumbnails.scss';
 
@@ -36,7 +42,6 @@ const Thumbnails = ({
 	const [currentTime, setCurrentTime] = useState(false);
 	const [thumbChoices, setThumbChoices] = useState([]);
 	const [isSaving, setIsSaving] = useState(false);
-	const thumbApiPath = '/videopack/v1/thumbs';
 
 	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
 
@@ -273,11 +278,7 @@ const Thumbnails = ({
 							formData.append('post_name', postName);
 
 							// Don't need the response for "save all"
-							await apiFetch({
-								path: `${thumbApiPath}/upload`,
-								method: 'POST',
-								body: formData,
-							});
+							await uploadThumbnail(formData);
 							resolve();
 						} catch (error) {
 							reject(error);
@@ -296,14 +297,7 @@ const Thumbnails = ({
 			// For FFmpeg thumbnails, send their temporary URLs to the server to be saved
 			const thumbUrls = thumbChoices.map((thumb) => thumb.src);
 			try {
-				await apiFetch({
-					path: `${thumbApiPath}/save_all`,
-					method: 'POST',
-					data: {
-						attachment_id: id,
-						thumb_urls: thumbUrls,
-					},
-				});
+				await saveAllThumbnails(id, thumbUrls);
 				setThumbChoices([]); // Clear choices after saving
 			} catch (error) {
 				console.error('Error saving all FFmpeg thumbnails:', error);
@@ -413,11 +407,7 @@ const Thumbnails = ({
 			const postName = getFilename(src);
 			formData.append('post_name', postName);
 
-			const response = await apiFetch({
-				path: `${thumbApiPath}/upload`,
-				method: 'POST',
-				body: formData,
-			});
+			const response = await uploadThumbnail(formData);
 
 			setPosterData(response.thumb_url, response.thumb_id);
 		} catch (error) {
@@ -478,14 +468,7 @@ const Thumbnails = ({
 
 	const setImgAsPoster = async (thumb_url) => {
 		try {
-			const response = await apiFetch({
-				path: thumbApiPath,
-				method: 'PUT',
-				data: {
-					attachment_id: id,
-					thumburl: thumb_url,
-				},
-			});
+			const response = await setPosterImage(id, thumb_url);
 			setPosterData(response.thumb_url, response.thumb_id);
 		} catch (error) {
 			console.error(error);
@@ -494,15 +477,13 @@ const Thumbnails = ({
 
 	const generateThumb = async (i, type) => {
 		try {
-			const path = addQueryArgs(thumbApiPath, {
-				url: src,
+			const response = await generateThumbnail(
+				src,
 				total_thumbnails,
-				thumbnail_index: i,
-				attachment_id: id,
-				generate_button: type,
-			});
-
-			const response = await apiFetch({ path });
+				i,
+				id,
+				type
+			);
 
 			return response;
 		} catch (error) {
