@@ -503,7 +503,137 @@ class Encode_Queue_Controller {
 			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
 				restore_current_blog();
 			}
+							wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+		}
+	}
+
+	/**
+	 * Removes a specific encoding job from the queue without deleting the video file.
+	 *
+	 * @param int $job_id The ID of the job to remove.
+	 * @return bool|\WP_Error True on success, WP_Error on failure.
+	 */
+	public function remove_job( int $job_id ) {
+		global $wpdb;
+
+		$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+
+		if ( ! $job ) {
+			return new \WP_Error( 'videopack_job_not_found', __( 'Encoding job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+
+		// Permission check: Only allow users who can encode videos to remove jobs.
+		// Also, if it's not their own job, they need 'edit_others_video_encodes' capability.
+		$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
+		if ( ! current_user_can( 'encode_videos' ) || ( ! $is_own_job && ! current_user_can( 'edit_others_video_encodes' ) ) ) {
+			return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to remove this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
+		}
+
+		$original_blog_id = false;
+		if ( is_multisite() ) {
+			$original_blog_id = get_current_blog_id();
+			if ( (int) $job['blog_id'] !== $original_blog_id ) {
+				switch_to_blog( (int) $job['blog_id'] );
+			}
+		}
+
+		try {
+			$delete_result = $wpdb->delete(
+				$this->queue_table_name,
+				array( 'id' => $job_id ),
+				array( '%d' )
+			);
+
+			if ( false === $delete_result ) {
+				return new \WP_Error( 'videopack_db_error', __( 'Could not remove job from database.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+			}
+
+			// Also cancel any pending ActionScheduler actions for this job.
+			as_unschedule_action( 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+
+			return true;
+
+		} finally {
+			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
+				restore_current_blog();
+			}
 			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+		}
+	}
+
+	public function clear_completed_queue( $type, $scope = 'site' ) {
+		$user_ID         = get_current_user_id();
+		$current_blog_id = get_current_blog_id();
+
+		// Get all queue items. We'll filter them based on type and scope.
+		// For 'all' type, we might need to get all statuses to ensure we can cancel 'encoding' ones.
+		// For 'completed' type, we primarily care about 'completed' status.
+		$all_queue_items = $this->get_queue_items(
+			( $scope === 'network' && is_network_admin() ) ? null : $current_blog_id,
+			( $type === 'all' ) ? null : array( 'completed', 'failed', 'canceled' ) // Get all terminal states for 'completed' type, or all for 'all'
+		);
+
+		if ( empty( $all_queue_items ) || ! is_array( $all_queue_items ) ) {
+			return;
+		}
+
+		foreach ( $all_queue_items as $job ) {
+			$job_id      = $job['id'];
+			$job_status  = $job['status'];
+			$job_blog_id = (int) $job['blog_id'];
+			$job_user_id = (int) $job['user_id'];
+
+			$should_delete = false;
+
+			if ( $type === 'all' ) {
+				// If clearing 'all', we attempt to delete all jobs that the user has permission to delete.
+				$can_delete_job = (
+					( ! is_multisite() || $job_blog_id === $current_blog_id ) ||
+					( is_multisite() && is_network_admin() && $scope === 'network' )
+				) && (
+					current_user_can( 'edit_others_video_encodes' ) ||
+					( current_user_can( 'encode_videos' ) && $job_user_id === $user_ID )
+				);
+
+				if ( $can_delete_job ) {
+					$should_delete = true;
+				}
+			} elseif ( $type === 'completed' ) {
+				// For 'completed' type, we delete jobs that are in a completed/failed/canceled state,
+				// and are not subject to the 'scheduled' retention logic.
+				if ( in_array( $job_status, array( 'completed', 'failed', 'canceled' ), true ) ) {
+					$keep_for_scheduled = false;
+					if ( $type === 'scheduled' ) { // This 'scheduled' type seems to be an internal cleanup.
+						$completed_at = strtotime( $job['completed_at'] ?? $job['updated_at'] );
+						if ( $completed_at && ( time() - $completed_at < WEEK_IN_SECONDS ) ) {
+							$keep_for_scheduled = true;
+						}
+					}
+
+					// If the job is from another blog in multisite and current user can't manage network, keep it.
+					if ( is_multisite() && $job_blog_id !== $current_blog_id && ! current_user_can( 'manage_network' ) ) {
+						$keep_for_scheduled = true;
+					}
+
+					if ( ! $keep_for_scheduled ) {
+						$should_delete = true;
+					}
+				}
+			}
+
+			if ( $should_delete ) {
+				// Use remove_job to clear from DB without deleting video files, as per the original intent of 'clear_completed_queue'
+				// which was to clear the queue, not necessarily delete the output files.
+				// The 'all' type in the original code did delete files for 'encoding' jobs,
+				// but for 'completed' it just removed from queue.
+				// Given the new structure, 'delete_job' deletes files, 'remove_job' just removes from DB.
+				// I'll use 'remove_job' for 'completed' and 'delete_job' for 'all' if it's an 'encoding' job.
+				if ( $type === 'all' && $job_status === 'encoding' ) {
+					$this->delete_job( $job_id );
+				} else {
+					$this->remove_job( $job_id );
+				}
+			}
 		}
 	}
 
@@ -601,21 +731,39 @@ class Encode_Queue_Controller {
 
 		foreach ( $all_jobs as $job ) {
 			// Determine if the current user can edit this specific job.
-			$is_own_job       = ( (int) $job['user_id'] === $current_user_id );
+			$is_own_job      = ( (int) $job['user_id'] === $current_user_id );
 			$job['can_edit'] = ( $can_edit_others || ( $can_encode_videos && $is_own_job ) );
 
 			// Add extra data for the React UI.
+			if ( ! empty( $job['user_id'] ) ) {
+				$user_data = get_userdata( $job['user_id'] );
+				if ( $user_data ) {
+					$job['user_name'] = $user_data->display_name;
+				}
+			}
+
 			if ( ! empty( $job['attachment_id'] ) ) {
-				$job['video_title'] = get_the_title( $job['attachment_id'] );
+				$job['video_title'] = html_entity_decode( get_the_title( $job['attachment_id'] ), ENT_QUOTES, 'UTF-8' );
 				$poster_id          = get_post_thumbnail_id( $job['attachment_id'] );
 				if ( ! $poster_id ) {
 					$videopack_meta = $attachment_meta->get( $job['attachment_id'] );
 					$poster_id      = $videopack_meta['poster_id'] ?? null;
 				}
 				$job['poster_url'] = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '';
+				$job['file_name'] = basename( get_attached_file( $job['attachment_id'] ) );
+				$job['attachment_link'] = get_edit_post_link( $job['attachment_id'] );
 			} else {
 				$job['video_title'] = basename( $job['input_url'] );
 				$job['poster_url']  = ''; // No poster for external URLs yet.
+				$job['file_name'] = basename( $job['input_url'] );
+				$job['attachment_link'] = '';
+			}
+
+			if ( is_multisite() && ! empty( $job['blog_id'] ) ) {
+				$blog_details = get_blog_details( $job['blog_id'] );
+				if ( $blog_details ) {
+					$job['blog_name'] = $blog_details->blogname;
+				}
 			}
 
 			if ( isset( $all_formats[ $job['format_id'] ] ) ) {

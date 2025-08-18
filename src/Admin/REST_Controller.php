@@ -280,6 +280,23 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/queue/remove/(?P<job_id>\d+)',
+			array(
+				'methods'             => \WP_REST_Server::DELETABLE,
+				'callback'            => array( $this, 'queue_remove' ),
+				'permission_callback' => function () {
+					return is_user_logged_in();
+				},
+				'args'                => array(
+					'job_id' => array(
+						'type' => 'integer',
+						'required' => true,
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
 			'/queue/(?P<job_id>\d+)',
 			array(
 				'methods'             => \WP_REST_Server::DELETABLE,
@@ -697,17 +714,17 @@ class REST_Controller extends \WP_REST_Controller {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumb_urls    = $request->get_param( 'thumb_urls' );
 
-		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
-		$post_name  = '';
+		$thumbnails     = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
+		$post_name      = '';
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 		if ( $attachment_url ) {
 			$post_name = basename( $attachment_url );
 			$post_name = pathinfo( $post_name, PATHINFO_FILENAME );
 		}
 		if ( empty( $post_name ) ) {
-			$post_name  = html_entity_decode( get_the_title( $attachment_id ), ENT_QUOTES, 'UTF-8' );
+			$post_name = html_entity_decode( get_the_title( $attachment_id ), ENT_QUOTES, 'UTF-8' );
 		}
-		$results    = array();
+		$results = array();
 
 		foreach ( $thumb_urls as $index => $url ) {
 			$results[] = $thumbnails->save( $attachment_id, $post_name, $url, $index + 1 );
@@ -984,6 +1001,28 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * REST callback to remove an encoding queue job without deleting the video file.
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function queue_remove( \WP_REST_Request $request ) {
+		$job_id = (int) $request->get_param( 'job_id' );
+		if ( empty( $job_id ) ) {
+			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing job ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+
+		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$result     = $controller->remove_job( $job_id ); // Assuming a new method remove_job
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return new \WP_REST_Response( array( 'status' => 'success', 'message' => __( 'Job removed from queue.' ) ), 200 );
+	}
+
+	/**
 	 * REST callback to retry a failed encoding job.
 	 *
 	 * @param \WP_REST_Request $request Full details about the request.
@@ -1147,8 +1186,8 @@ class REST_Controller extends \WP_REST_Controller {
 	public function queue_clear( \WP_REST_Request $request ) {
 		$type = $request->get_param( 'type' ); // 'completed' or 'all'
 
-		$cleanup = new Cleanup(); // Cleanup class has clear_completed_queue method.
-		$cleanup->clear_completed_queue( $type );
+		$encode_queue_controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$encode_queue_controller->clear_completed_queue( $type );
 
 		return new \WP_REST_Response(
 			array(
