@@ -1,45 +1,52 @@
-import { useEntityRecord } from '@wordpress/core-data';
-import { useEffect, useMemo } from '@wordpress/element';
+import { useMemo, useEffect } from '@wordpress/element';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import { Button, Placeholder } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { videopack as videopackIcon } from './icon';
 import VideoSettings from './VideoSettings';
 import Thumbnails from './Thumbnails/Thumbnails';
 import AdditionalFormats from './AdditionalFormats/AdditionalFormats.js';
 import VideoPlayer from './VideopackRender/player/VideoPlayer';
+import { useVideoData } from './hooks/useVideoData';
 
 const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
-	const { caption, id, videoTitle, embedlink } = attributes;
+	const { id, src, isExternal } = attributes;
 
-	// useEntityRecord should be called unconditionally.
-	const attachment = useEntityRecord('postType', 'attachment', id);
+	const { poster, total_thumbnails, attachment, isLoading, error } =
+		useVideoData(id, src, isExternal);
 
 	useEffect(() => {
-		// Check hasResolved and that the record exists.
-		if (attachment.hasResolved && attachment.record) {
-			const newAttributes = {};
-			const newTitle = attachment.record?.title?.raw;
-			const newCaption = attachment.record?.caption?.raw;
-			const newEmbedlink = attachment?.record?.link + 'embed';
-
-			// Only update if the new value is different from the old one.
-			if (newTitle && newTitle !== videoTitle) {
-				newAttributes.videoTitle = newTitle;
+		const newAttributes = {};
+		if (poster !== attributes.poster) {
+			newAttributes.poster = poster;
+		}
+		if (total_thumbnails !== attributes.total_thumbnails) {
+			newAttributes.total_thumbnails = total_thumbnails;
+		}
+		if (attachment) {
+			if (
+				attachment.title?.raw &&
+				attachment.title.rendered !== attributes.videoTitle
+			) {
+				newAttributes.videoTitle = attachment.title.raw;
 			}
-
-			// Only update the caption if it's currently empty and a new one is available.
-			if (!caption && newCaption) {
-				newAttributes.caption = newCaption;
+			if (
+				attachment.caption?.raw &&
+				attachment.caption.raw !== attributes.caption
+			) {
+				newAttributes.caption = attachment.caption.raw;
 			}
-
-			if (!embedlink && newEmbedlink) {
-				newAttributes.embedlink = newEmbedlink;
-			}
-
-			// Only call setAttributes if there are changes to apply.
-			if (Object.keys(newAttributes).length > 0) {
-				setAttributes(newAttributes);
+			if (
+				attachment.embedlink &&
+				attachment.embedlink !== attributes.embedlink
+			) {
+				newAttributes.embedlink = attachment.embedlink;
 			}
 		}
-	}, [attachment, caption, videoTitle, setAttributes]);
+		if (Object.keys(newAttributes).length > 0) {
+			setAttributes(newAttributes);
+		}
+	}, [poster, total_thumbnails, attachment, attributes, setAttributes]);
 
 	const handleVideoPlayerReady = () => {};
 
@@ -50,11 +57,49 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 			newPlayerAttributes.embed_method = options.embed_method;
 		}
 
-		if (attachment.record?.videopack?.sources) {
-			newPlayerAttributes.sources = attachment.record.videopack.sources;
+		if (attachment?.sources) {
+			newPlayerAttributes.sources = attachment.sources;
+		} else if (src) {
+			newPlayerAttributes.sources = [{ src, type: 'video/mp4' }];
 		}
 		return newPlayerAttributes;
-	}, [options, attributes, attachment]);
+	}, [options, attributes, attachment, src]);
+
+	const blockProps = useBlockProps();
+
+	if (!options || isLoading) {
+		return (
+			<div {...blockProps}>
+				<Placeholder
+					className="block-editor-media-placeholder"
+					icon={videopackIcon}
+					label={__('Videopack')}
+					instructions={__('Loading…')}
+				/>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div {...blockProps}>
+				<Placeholder
+					className="block-editor-media-placeholder"
+					icon={videopackIcon}
+					label={__('Videopack')}
+					instructions={sprintf(__('Error: %s'), error)}
+				>
+					<Button
+						__next40pxDefaultSize
+						variant="secondary"
+						onClick={() => setAttributes({ id: 0, src: '' })}
+					>
+						{__('Reset Block')}
+					</Button>
+				</Placeholder>
+			</div>
+		);
+	}
 
 	return (
 		<>
@@ -62,21 +107,21 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachment={attachment}
+					videoData={{ poster, total_thumbnails, attachment }}
 					options={options}
 				/>
 				<VideoSettings
 					setAttributes={setAttributes}
-					attributes={attributes}
+					attributes={{...options, ...attributes}}
 				/>
 				<AdditionalFormats
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachment={attachment}
+					videoData={{ poster, total_thumbnails, attachment }}
 					options={options}
 				/>
 			</InspectorControls>
-			<div {...useBlockProps()}>
+			<div {...blockProps}>
 				<VideoPlayer
 					attributes={playerAttributes}
 					onReady={handleVideoPlayerReady}

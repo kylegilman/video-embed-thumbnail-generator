@@ -110,17 +110,12 @@
 				const sources = this.options_.sources;
 				const available_res = { length: 0 };
 
-				for ( let i = sources.length - 1; i >= 0; i-- ) {
+								for ( let i = sources.length - 1; i >= 0; i-- ) {
 					const source = sources[ i ];
-					if ( ! source[ 'data-res' ] ) {
+					const current_res = source.resolution || source[ 'data-res' ];
+					if ( ! current_res ) {
 						continue;
 					}
-					const current_res = source[ 'data-res' ];
-					if ( 'undefined' === typeof available_res[ current_res ] ) {
-						available_res[ current_res ] = [];
-						available_res.length++;
-					}
-					available_res[ current_res ].push( source );
 
 					if ( current_res === videopack_l10n.fullres ) {
 						player.on( 'loadedmetadata', function() {
@@ -142,7 +137,7 @@
 				}
 
 				player.getCurrentRes = function() {
-					return player.currentRes || ( sources[ 0 ] ? sources[ 0 ][ 'data-res' ] : '' ) || '';
+					return player.currentRes || ( sources[ 0 ] ? ( sources[ 0 ].resolution || sources[ 0 ][ 'data-res' ] ) : '' ) || '';
 				};
 
 				player.changeRes = function( target_resolution ) {
@@ -738,7 +733,7 @@
 	 *
 	 * @since 5.0.0
 	 */
-	const Videopack = {
+	const videopack_obj = {
 
 		/**
 		 * Initialize video players.
@@ -1721,7 +1716,7 @@
 						const newVideoOrder = [];
 						data.videos.forEach( ( video ) => {
 							// Add data to global object for initPlayer
-							window.Videopack.player_data[ video.player_vars.id ] = video.player_vars;
+							window.videopack.player_data[ video.player_vars.id ] = video.player_vars;
 							newVideoOrder.push( String( video.attachment_id ) );
 						} );
 						$galleryWrapper.data( 'current-videos-order', newVideoOrder );
@@ -1788,10 +1783,10 @@
 
 	};
 
-	// Expose the Videopack object to the global scope, merging with any existing properties (like player_data).
-	window.Videopack = Object.assign( window.Videopack || {}, Videopack );
+	// Expose the videopack object to the global scope, merging with any existing properties (like player_data).
+	window.videopack = Object.assign( window.videopack || {}, videopack_obj );
 
 	$( () => {
-		Videopack.init();
+		window.videopack.init();
 	} );
 }( jQuery ) );

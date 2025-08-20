@@ -568,14 +568,14 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Automatically search for other codecs and resolutions.'
+							'Automatically search for other formats of original file.'
 						)}
 						onChange={changeHandlerFactory.find_formats}
 						checked={!!find_formats}
 					/>
 					<VideopackTooltip
 						text={__(
-							'If a video named video.mp4 is selected, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.'
+							'Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.'
 						)}
 					/>
 				</div>

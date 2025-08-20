@@ -790,16 +790,18 @@ __webpack_require__.r(__webpack_exports__);
 const Thumbnails = ({
   setAttributes,
   attributes,
-  attachment,
+  videoData,
+  // Changed from attachment
   options = {}
 }) => {
   const {
     id,
     src,
     poster,
-    poster_id
+    poster_id,
+    isExternal
   } = attributes;
-  const total_thumbnails = attributes.total_thumbnails || options.total_thumbnails;
+  const total_thumbnails = attributes.total_thumbnails || videoData?.total_thumbnails || options.total_thumbnails;
   const thumbVideoPanel = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const currentThumb = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();

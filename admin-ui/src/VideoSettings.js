@@ -12,6 +12,7 @@ import { volumeUp, volumeDown } from './icon';
 import useVideoSettings from './hooks/useVideoSettings';
 
 const VideoSettings = ({ attributes, setAttributes }) => {
+	console.log('VideoSettings props:', attributes);
 	const { handleSettingChange, preloadOptions } = useVideoSettings(
 		attributes,
 		setAttributes
@@ -26,7 +27,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Autoplay')}
-								onChange={(value) => handleSettingChange('autoplay', value)}
+								onChange={(value) =>
+									handleSettingChange('autoplay', value)
+								}
 								checked={!!attributes.autoplay}
 							/>
 						</PanelRow>
@@ -34,7 +37,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Loop')}
-								onChange={(value) => handleSettingChange('loop', value)}
+								onChange={(value) =>
+									handleSettingChange('loop', value)
+								}
 								checked={!!attributes.loop}
 							/>
 						</PanelRow>
@@ -42,7 +47,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Muted')}
-								onChange={(value) => handleSettingChange('muted', value)}
+								onChange={(value) =>
+									handleSettingChange('muted', value)
+								}
 								checked={!!attributes.muted}
 							/>
 						</PanelRow>
@@ -68,7 +75,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Playback controls')}
-								onChange={(value) => handleSettingChange('controls', value)}
+								onChange={(value) =>
+									handleSettingChange('controls', value)
+								}
 								checked={!!attributes.controls}
 							/>
 						</PanelRow>
@@ -76,7 +85,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__('Play inline')}
-								onChange={(value) => handleSettingChange('playsinline', value)}
+								onChange={(value) =>
+									handleSettingChange('playsinline', value)
+								}
 								checked={!!attributes.playsinline}
 								help={__(
 									'Plays inline instead of fullscreen on iPhones.'
@@ -112,7 +123,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('GIF mode')}
-						onChange={(value) => handleSettingChange('gifmode', value)}
+						onChange={(value) =>
+							handleSettingChange('gifmode', value)
+						}
 						checked={!!attributes.gifmode}
 						help={__(
 							'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
@@ -125,7 +138,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('Allow embedding on other sites')}
-						onChange={(value) => handleSettingChange('embeddable', value)}
+						onChange={(value) =>
+							handleSettingChange('embeddable', value)
+						}
 						checked={!!attributes.embeddable}
 					/>
 				</PanelRow>
@@ -166,7 +181,10 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								__nextHasNoMarginBottom
 								label={__('Facebook button')}
 								onChange={(value) =>
-									handleSettingChange('facebook_button', value)
+									handleSettingChange(
+										'facebook_button',
+										value
+									)
 								}
 								checked={!!attributes.facebook_button}
 							/>
@@ -179,7 +197,9 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('Overlay title')}
-						onChange={(value) => handleSettingChange('title', value)}
+						onChange={(value) =>
+							handleSettingChange('title', value)
+						}
 						checked={!!attributes.title}
 					/>
 				</PanelRow>
@@ -202,14 +222,18 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 						__next40pxDefaultSize
 						label={__('Caption')}
 						value={attributes.caption}
-						onChange={(value) => handleSettingChange('caption', value)}
+						onChange={(value) =>
+							handleSettingChange('caption', value)
+						}
 					/>
 				</PanelRow>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__('View count')}
-						onChange={(value) => handleSettingChange('view_count', value)}
+						onChange={(value) =>
+							handleSettingChange('view_count', value)
+						}
 						checked={!!attributes.view_count}
 					/>
 				</PanelRow>
