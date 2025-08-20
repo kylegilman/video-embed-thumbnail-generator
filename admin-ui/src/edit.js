@@ -22,11 +22,26 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 
 import { getSettings } from './utils';
-import { videopack as videopackIcon } from './icon';
+import { videopack as icon } from './icon';
 import SingleVideoBlock from './SingleVideoBlock';
 import GalleryBlock from './GalleryBlock';
 
+/**
+ * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
+ * Those files can contain any CSS code that gets applied to the editor.
+ *
+ * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
+ */
 import './editor.scss';
+
+/**
+ * The edit function describes the structure of your block in the context of the
+ * editor. This represents what the editor will render when the block is used.
+ *
+ * @see https://developer.wordpress.org/block-editor/developers/block-api/block-edit-save/#edit
+ *
+ * @return {WPElement} Element to render.
+ */
 
 const ALLOWED_MEDIA_TYPES = ['video'];
 
@@ -65,42 +80,66 @@ export default function Edit({ attributes, setAttributes }) {
 		}
 	}, []);
 
+	function setAttributesFromMedia(media) {
+		setAttributes({
+			src: media[0].url,
+			id: media[0].id,
+			poster: media[0].meta?.['_videopack-meta']?.poster,
+			total_thumbnails:
+				media[0].meta?.['_videopack-meta']?.total_thumbnails,
+			gallery: false,
+		});
+	}
+
+	const videoChildren = useSelect(
+		(select) => {
+			const attachments = select('core').getEntityRecords(
+				'postType',
+				'attachment',
+				{ parent: postId, media_type: 'video' }
+			);
+			return attachments;
+		},
+		[postId]
+	);
+
+	useEffect(() => {
+		if (!src && !gallery && videoChildren) {
+			setAttributesFromMedia(videoChildren);
+		}
+	}, [src, gallery, videoChildren]);
+
 	function onSelectVideo(media) {
-		if (!media || !media.length) {
+		if (!media || !media.some((item) => item.hasOwnProperty('url'))) {
+			// In this case there was an error
+			// previous attributes should be removed
+			// because they may be temporary blob urls.
 			setAttributes({
 				src: undefined,
 				id: undefined,
+				poster: undefined,
 				gallery: undefined,
-				isExternal: undefined,
 			});
 			return;
 		}
 
+		// Sets the block's attribute and updates the edit component from the
+		// selected media.
 		if (media.length === 1) {
-			setAttributes({
-				src: media[0].url,
-				id: media[0].id,
-				isExternal: false,
-				gallery: false,
-			});
-		} else {
+			setAttributesFromMedia(media);
+			console.log(media[0]);
+		} else if (media.length > 1) {
 			const includeIds = media.map((item) => item.id).join(',');
 			setAttributes({
 				gallery: true,
 				gallery_include: includeIds,
-				isExternal: false,
 			});
 		}
 	}
 
 	function onSelectURL(newSrc) {
 		if (newSrc !== src) {
-			setAttributes({
-				src: newSrc,
-				id: 0,
-				isExternal: true,
-				gallery: false,
-			});
+			setAttributes({ src: newSrc, id: false });
 		}
 	}
 
@@ -121,7 +160,7 @@ export default function Edit({ attributes, setAttributes }) {
 			<Placeholder
 				className="block-editor-media-placeholder"
 				withIllustration={true}
-				icon={videopackIcon}
+				icon={icon}
 				label={__('Videopack')}
 				instructions={__(
 					'Upload a video file, pick one from your media library, or add one with a URL.'
@@ -148,7 +187,7 @@ export default function Edit({ attributes, setAttributes }) {
 		return (
 			<div {...blockProps}>
 				<MediaPlaceholder
-					icon={<BlockIcon icon={videopackIcon} />}
+					icon={<BlockIcon icon={icon} />}
 					onSelect={onSelectVideo}
 					onSelectURL={onSelectURL}
 					accept="video/*"
