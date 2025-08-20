@@ -1,25 +1,25 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
-const MetaBar = ({ attributes }) => {
+const MetaBar = ({ attributes, metaBarVisible }) => {
 	const {
 		src,
+		title,
 		embedcode,
 		embeddable,
 		downloadlink,
 		twitter_button,
 		facebook_button,
 		videoTitle,
-		overlay_title,
 	} = attributes;
 	const metaBarItems = [
-		overlay_title,
+		title,
 		embedcode,
 		downloadlink,
 		twitter_button,
 		facebook_button,
 	];
-	const noTitleMeta = overlay_title ? '' : ' no-title';
+	const noTitleMeta = title ? '' : ' no-title';
 	const [shareIsOpen, setShareIsOpen] = useState(false);
 
 	const embedItems = () => {
@@ -77,7 +77,9 @@ const MetaBar = ({ attributes }) => {
 	if (metaBarItems.includes(true)) {
 		return (
 			<>
-				<div className={`videopack-meta-bar${noTitleMeta}`}>
+				<div
+					className={`videopack-meta-bar${noTitleMeta}`}
+				>
 					<span className={'meta-icons'}>
 						{embedItems() && (
 							<button
@@ -103,7 +105,7 @@ const MetaBar = ({ attributes }) => {
 							</a>
 						)}
 					</span>
-					{overlay_title && <span className="title">{videoTitle}</span>}
+					{title && <span className="title">{videoTitle}</span>}
 				</div>
 				{embedItems() && <EmbedElements />}
 			</>
