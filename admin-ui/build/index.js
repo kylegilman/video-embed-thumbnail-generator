@@ -77728,8 +77728,8 @@ const SingleVideoBlock = ({
     if (!newPlayerAttributes.embed_method && options) {
       newPlayerAttributes.embed_method = options.embed_method;
     }
-    if (attachment?.sources) {
-      newPlayerAttributes.sources = attachment.sources;
+    if (attachment?.videopack?.sources) {
+      newPlayerAttributes.sources = attachment.videopack.sources;
     } else if (src) {
       newPlayerAttributes.sources = [{
         src,
@@ -77770,6 +77770,7 @@ const SingleVideoBlock = ({
       })
     });
   }
+  console.log(attributes);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.InspectorControls, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_Thumbnails_Thumbnails__WEBPACK_IMPORTED_MODULE_6__["default"], {
@@ -79746,13 +79747,10 @@ const useVideoData = (id, src, isExternal) => {
         isResolving: false
       };
     }
-    const {
-      getMedia,
-      isResolving
-    } = select('core');
+    const coreSelector = select('core');
     return {
-      attachment: getMedia(id),
-      isResolving: isResolving('getMedia', [id])
+      attachment: coreSelector.getMedia(id),
+      isResolving: coreSelector.isResolving('getMedia', [id])
     };
   }, [id, isExternal]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
@@ -79774,9 +79772,10 @@ const useVideoData = (id, src, isExternal) => {
       return;
     }
     if (attachment) {
+      console.log(attachment);
       setVideoData({
-        poster: attachment.poster || attachment.media_details?.poster,
-        total_thumbnails: attachment.meta?.total_thumbnails,
+        poster: attachment?.meta?.['_videopack-meta']?.poster,
+        total_thumbnails: attachment?.meta?.['_videopack-meta']?.total_thumbnails,
         attachment,
         error: null,
         isLoading: false

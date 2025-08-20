@@ -16,10 +16,10 @@ export const useVideoData = (id, src, isExternal) => {
 			if (!id || isExternal) {
 				return { attachment: null, isResolving: false };
 			}
-			const { getMedia, isResolving } = select('core');
+			const coreSelector = select('core');
 			return {
-				attachment: getMedia(id),
-				isResolving: isResolving('getMedia', [id]),
+				attachment: coreSelector.getMedia(id),
+				isResolving: coreSelector.isResolving('getMedia', [id]),
 			};
 		},
 		[id, isExternal]
@@ -43,9 +43,11 @@ export const useVideoData = (id, src, isExternal) => {
 		}
 
 		if (attachment) {
+			console.log(attachment);
 			setVideoData({
-				poster: attachment.poster || attachment.media_details?.poster,
-				total_thumbnails: attachment.meta?.total_thumbnails,
+				poster: attachment?.meta?.['_videopack-meta']?.poster,
+				total_thumbnails:
+					attachment?.meta?.['_videopack-meta']?.total_thumbnails,
 				attachment,
 				error: null,
 				isLoading: false,
