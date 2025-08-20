@@ -57,8 +57,8 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 			newPlayerAttributes.embed_method = options.embed_method;
 		}
 
-		if (attachment?.sources) {
-			newPlayerAttributes.sources = attachment.sources;
+		if (attachment?.videopack?.sources) {
+			newPlayerAttributes.sources = attachment.videopack.sources;
 		} else if (src) {
 			newPlayerAttributes.sources = [{ src, type: 'video/mp4' }];
 		}
@@ -100,7 +100,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 			</div>
 		);
 	}
-
+console.log(attributes);
 	return (
 		<>
 			<InspectorControls>
@@ -112,7 +112,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				/>
 				<VideoSettings
 					setAttributes={setAttributes}
-					attributes={{...options, ...attributes}}
+					attributes={{ ...options, ...attributes }}
 				/>
 				<AdditionalFormats
 					setAttributes={setAttributes}
