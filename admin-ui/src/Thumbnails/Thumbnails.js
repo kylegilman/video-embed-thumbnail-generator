@@ -27,12 +27,12 @@ import './Thumbnails.scss';
 const Thumbnails = ({
 	setAttributes,
 	attributes,
-	attachment,
+	videoData, // Changed from attachment
 	options = {},
 }) => {
-	const { id, src, poster, poster_id } = attributes;
+	const { id, src, poster, poster_id, isExternal } = attributes;
 	const total_thumbnails =
-		attributes.total_thumbnails || options.total_thumbnails;
+		attributes.total_thumbnails || videoData?.total_thumbnails || options.total_thumbnails;
 	const thumbVideoPanel = useRef();
 	const videoRef = useRef();
 	const currentThumb = useRef();

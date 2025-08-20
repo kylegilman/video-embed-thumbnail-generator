@@ -69,10 +69,10 @@ class Ui {
 		$options = $this->options_manager->get_options();
 
 		return array(
-			'url'           => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
-			'codecs'        => $codecs_data,
-			'resolutions'   => $resolutions_data,
-			'ffmpeg_exists' => $options['ffmpeg_exists'],
+			'url'                => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
+			'codecs'             => $codecs_data,
+			'resolutions'        => $resolutions_data,
+			'ffmpeg_exists'      => $options['ffmpeg_exists'],
 			'browser_thumbnails' => $options['browser_thumbnails'],
 		);
 	}
@@ -105,6 +105,13 @@ class Ui {
 	}
 
 	public function enqueue_block_assets() {
+		/* wp_enqueue_script(
+			'videopack-frontend',
+			plugins_url( 'src/Frontend/js/videopack.js', VIDEOPACK_PLUGIN_FILE ),
+			array(),
+			VIDEOPACK_VERSION,
+			true
+		); */
 		// The 'editorScript' defined in block.json handles enqueuing the block's script.
 		// We only need to register the script translations here.
 		wp_set_script_translations( 'videopack-videopack-block-editor-script', 'video-embed-thumbnail-generator' );
@@ -124,7 +131,7 @@ class Ui {
 
 			$script_asset = require $script_asset_path;
 
-			$fs = function_exists( 'videopack_fs' ) ? videopack_fs() : null;
+			$fs               = function_exists( 'videopack_fs' ) ? videopack_fs() : null;
 			$freemius_enabled = ( null !== $fs ) && ( $fs->is_registered() || $fs->is_pending_activation() );
 			// Manually enqueue Freemius assets so they are available on our React settings page.
 			$freemius_dependencies = array();

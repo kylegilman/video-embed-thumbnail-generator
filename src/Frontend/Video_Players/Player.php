@@ -51,7 +51,7 @@ class Player {
 	public function register_scripts() {
 
 		wp_register_script(
-			'videopack',
+			'videopack-frontend',
 			plugins_url( '/src/Frontend/js/videopack.js', VIDEOPACK_PLUGIN_FILE ),
 			$this->get_videopack_script_dependencies(),
 			VIDEOPACK_VERSION,
@@ -59,7 +59,7 @@ class Player {
 		);
 
 		wp_localize_script(
-			'videopack',
+			'videopack-frontend',
 			'videopack_l10n',
 			array(
 				'rest_url'   => rest_url(),

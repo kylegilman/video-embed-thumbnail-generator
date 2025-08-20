@@ -734,10 +734,84 @@ class Options {
 		return $video_formats;
 	}
 
+	private function sanitize_options_recursively( $input, $schema_properties = array() ) {
+		if ( ! is_array( $input ) ) {
+			// For non-array values, sanitize as a string.
+			return sanitize_text_field( $input );
+		}
+
+		$sanitized_input = array();
+
+		foreach ( $input as $key => $value ) {
+			if ( ! isset( $schema_properties[ $key ] ) ) {
+				// This option is not in the schema.
+				if ( is_array( $value ) ) {
+					// If it's an array, recurse into it without a schema.
+					$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value );
+				} else {
+					// Otherwise, sanitize it as a text field.
+					$sanitized_input[ $key ] = sanitize_text_field( $value );
+				}
+				continue;
+			}
+
+			$property_schema = $schema_properties[ $key ];
+			$type            = is_array( $property_schema['type'] ) ? $property_schema['type'][0] : $property_schema['type'];
+
+			switch ( $type ) {
+				case 'object':
+					if ( is_array( $value ) ) {
+						$sub_properties = $property_schema['properties'] ?? array();
+						$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value, $sub_properties );
+					} else {
+						// Value is not an array, but schema expects an object. Sanitize as text.
+						$sanitized_input[ $key ] = sanitize_text_field( $value );
+					}
+					break;
+				case 'boolean':
+					$sanitized_input[ $key ] = rest_sanitize_boolean( $value );
+					break;
+				case 'number':
+					if ( is_numeric( $value ) ) {
+						if ( strpos( (string) $value, '.' ) === false ) {
+							$sanitized_input[ $key ] = intval( $value );
+						} else {
+							$sanitized_input[ $key ] = floatval( $value );
+						}
+					} else {
+						$sanitized_input[ $key ] = 0;
+					}
+					break;
+				case 'string':
+					// The value could be an array from the form, so we can't just cast to string.
+					if ( is_string( $value ) ) {
+						$sanitized_input[ $key ] = sanitize_text_field( $value );
+					} elseif ( is_numeric( $value ) || is_bool( $value ) ) {
+						$sanitized_input[ $key ] = sanitize_text_field( (string) $value );
+					} else {
+						// It's some other type like an array that should be a string.
+						// We'll sanitize it as a text field, which will result in 'Array'.
+						// This is not ideal, but it's safe.
+						$sanitized_input[ $key ] = sanitize_text_field( $value );
+					}
+					break;
+				default:
+					// Fallback for unknown types.
+					if ( is_array( $value ) ) {
+						$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value );
+					} else {
+						$sanitized_input[ $key ] = sanitize_text_field( $value );
+					}
+			}
+		}
+
+		return $sanitized_input;
+	}
+
 	public function validate_options( $input ) {
 		// validate & sanitize input from settings API
-
-		$input = \Videopack\Common\Validate::text_field( $input ); // recursively sanitizes all the settings
+		$schema = $this->settings_schema( $this->get_default() );
+		$input  = $this->sanitize_options_recursively( $input, $schema );
 
 		$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
 		// Use $this->options for current values, not public properties.
