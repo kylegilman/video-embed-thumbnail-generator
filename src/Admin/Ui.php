@@ -16,10 +16,15 @@ class Ui {
 	}
 
 	public function block_init() {
-		// Register the block as a dynamic block. The attributes are defined in
-		// `block.json` and the front-end output is rendered by the PHP callback.
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build',
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video',
+			array(
+				'render_callback' => array( $this, 'render_videopack_block' ),
+			)
+		);
+
+		register_block_type(
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery',
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
 			)
@@ -105,18 +110,9 @@ class Ui {
 	}
 
 	public function enqueue_block_assets() {
-		/* wp_enqueue_script(
-			'videopack-frontend',
-			plugins_url( 'src/Frontend/js/videopack.js', VIDEOPACK_PLUGIN_FILE ),
-			array(),
-			VIDEOPACK_VERSION,
-			true
-		); */
-		// The 'editorScript' defined in block.json handles enqueuing the block's script.
-		// We only need to register the script translations here.
-		wp_set_script_translations( 'videopack-videopack-block-editor-script', 'video-embed-thumbnail-generator' );
+		$this->add_settings_inline_script( 'videopack-videopack-video-editor-script' );
+		$this->add_settings_inline_script( 'videopack-videopack-gallery-editor-script' );
 
-		$this->add_settings_inline_script( 'videopack-videopack-block-editor-script' );
 		$this->enqueue_player_assets();
 	}
 
