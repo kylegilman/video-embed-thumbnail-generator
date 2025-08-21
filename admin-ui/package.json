@@ -1,10 +1,10 @@
 {
-	"name": "videopack-block",
+	"name": "videopack-admin",
 	"version": "0.2.0",
-	"description": "Block for Videopack.",
+	"description": "Videopack plugin admin and blocks.",
 	"author": "kylegilman",
 	"license": "GPL-2.0-or-later",
-	"main": "build/index.js",
+	"main": "build/videopack-video.js",
 	"scripts": {
 		"build": "wp-scripts build",
 		"format": "wp-scripts format",

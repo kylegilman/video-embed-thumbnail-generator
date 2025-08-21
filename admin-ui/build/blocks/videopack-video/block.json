@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 2,
+  "name": "videopack/videopack-video",
+  "title": "Videopack Video",
+  "category": "media",
+  "icon": "format-video",
+  "description": "Embed a single video with Videopack features.",
+  "supports": {
+    "html": false,
+    "align": [
+      "left",
+      "right",
+      "center",
+      "wide",
+      "full"
+    ]
+  },
+  "attributes": {
+    "src": {
+      "type": "string",
+      "source": "attribute",
+      "selector": "video",
+      "attribute": "src"
+    },
+    "id": {
+      "type": "number"
+    },
+    "poster": {
+      "type": "string",
+      "source": "attribute",
+      "selector": "video",
+      "attribute": "poster"
+    },
+    "total_thumbnails": {
+      "type": "number"
+    },
+    "caption": {
+      "type": "string",
+      "source": "html",
+      "selector": "figcaption"
+    },
+    "videoTitle": {
+      "type": "string"
+    },
+    "embedlink": {
+      "type": "string"
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:../../videopack-video.js",
+  "editorStyle": "file:../../videopack-video.css",
+  "style": "file:./style-index.css"
+}

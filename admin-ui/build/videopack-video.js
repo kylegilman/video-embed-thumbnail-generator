@@ -8104,8 +8104,22 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
+;// external ["wp","blocks"]
+const external_wp_blocks_namespaceObject = window["wp"]["blocks"];
+;// external ["wp","blob"]
+const external_wp_blob_namespaceObject = window["wp"]["blob"];
+;// external ["wp","components"]
+const external_wp_components_namespaceObject = window["wp"]["components"];
+;// external ["wp","blockEditor"]
+const external_wp_blockEditor_namespaceObject = window["wp"]["blockEditor"];
+;// external ["wp","element"]
+const external_wp_element_namespaceObject = window["wp"]["element"];
 ;// external ["wp","i18n"]
 const external_wp_i18n_namespaceObject = window["wp"]["i18n"];
+;// external ["wp","data"]
+const external_wp_data_namespaceObject = window["wp"]["data"];
+;// external ["wp","notices"]
+const external_wp_notices_namespaceObject = window["wp"]["notices"];
 ;// external ["wp","apiFetch"]
 const external_wp_apiFetch_namespaceObject = window["wp"]["apiFetch"];
 var external_wp_apiFetch_default = /*#__PURE__*/__webpack_require__.n(external_wp_apiFetch_namespaceObject);
@@ -8116,7 +8130,7 @@ const external_wp_url_namespaceObject = window["wp"]["url"];
 
 const getSettings = async () => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: '/videopack/v1/settings',
       method: 'GET'
     });
@@ -8166,7 +8180,7 @@ const clearQueue = async type => {
 };
 const deleteJob = async jobId => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: `/videopack/v1/queue/${jobId}`,
       method: 'DELETE'
     });
@@ -8188,7 +8202,7 @@ const removeJob = async jobId => {
 };
 const getVideoFormats = async attachmentId => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: `/videopack/v1/formats/${attachmentId}`
     });
   } catch (error) {
@@ -8198,7 +8212,7 @@ const getVideoFormats = async attachmentId => {
 };
 const enqueueJob = async (attachmentId, src, formats) => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: `/videopack/v1/queue/${attachmentId}`,
       method: 'POST',
       data: {
@@ -8213,7 +8227,7 @@ const enqueueJob = async (attachmentId, src, formats) => {
 };
 const assignFormat = async (mediaId, formatId, parentId) => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: `/wp/v2/media/${mediaId}`,
       method: 'POST',
       data: {
@@ -8230,7 +8244,7 @@ const assignFormat = async (mediaId, formatId, parentId) => {
 };
 const deleteFile = async attachmentId => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: `/wp/v2/media/${attachmentId}?force=true`,
       method: 'DELETE'
     });
@@ -8241,7 +8255,7 @@ const deleteFile = async attachmentId => {
 };
 const uploadThumbnail = async formData => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: '/videopack/v1/thumbs/upload',
       method: 'POST',
       body: formData
@@ -8253,7 +8267,7 @@ const uploadThumbnail = async formData => {
 };
 const saveAllThumbnails = async (attachment_id, thumb_urls) => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: '/videopack/v1/thumbs/save_all',
       method: 'POST',
       data: {
@@ -8268,8 +8282,8 @@ const saveAllThumbnails = async (attachment_id, thumb_urls) => {
 };
 const getVideoGallery = async args => {
   try {
-    return await external_wp_apiFetch_default()({
-      path: (0,external_wp_url_namespaceObject.addQueryArgs)('/videopack/v1/video_gallery', args),
+    return await apiFetch({
+      path: addQueryArgs('/videopack/v1/video_gallery', args),
       method: 'GET'
     });
   } catch (error) {
@@ -8279,7 +8293,7 @@ const getVideoGallery = async args => {
 };
 const getUsersWithCapability = async capability => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: `/wp/v2/users?capability=${capability}`,
       method: 'GET'
     });
@@ -8290,7 +8304,7 @@ const getUsersWithCapability = async capability => {
 };
 const getFreemiusPage = async page => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: `/videopack/v1/freemius/${page}`
     });
   } catch (error) {
@@ -8300,7 +8314,7 @@ const getFreemiusPage = async page => {
 };
 const getRecentVideos = async posts => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: `/videopack/v1/recent_videos?posts=${posts}`,
       method: 'GET'
     });
@@ -8311,7 +8325,7 @@ const getRecentVideos = async posts => {
 };
 const testFFmpegCommand = async (codec, resolution, rotate) => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`
     });
   } catch (error) {
@@ -8321,7 +8335,7 @@ const testFFmpegCommand = async (codec, resolution, rotate) => {
 };
 const getWPSettings = async () => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: '/wp/v2/settings'
     });
   } catch (error) {
@@ -8331,7 +8345,7 @@ const getWPSettings = async () => {
 };
 const saveWPSettings = async newSettings => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: '/wp/v2/settings',
       method: 'POST',
       data: {
@@ -8345,7 +8359,7 @@ const saveWPSettings = async newSettings => {
 };
 const resetVideopackSettings = async () => {
   try {
-    return await external_wp_apiFetch_default()({
+    return await apiFetch({
       path: '/videopack/v1/defaults'
     });
   } catch (error) {
@@ -8355,7 +8369,7 @@ const resetVideopackSettings = async () => {
 };
 const setPosterImage = async (attachment_id, thumb_url) => {
   try {
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path: '/videopack/v1/thumbs',
       method: 'PUT',
       data: {
@@ -8370,14 +8384,14 @@ const setPosterImage = async (attachment_id, thumb_url) => {
 };
 const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button) => {
   try {
-    const path = addQueryArgs('/videopack/v1/thumbs', {
+    const path = (0,external_wp_url_namespaceObject.addQueryArgs)('/videopack/v1/thumbs', {
       url,
       total_thumbnails,
       thumbnail_index,
       attachment_id,
       generate_button
     });
-    return await apiFetch({
+    return await external_wp_apiFetch_default()({
       path
     });
   } catch (error) {
@@ -8385,12 +8399,6 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     throw error;
   }
 };
-;// external ["wp","components"]
-const external_wp_components_namespaceObject = window["wp"]["components"];
-;// external ["wp","compose"]
-const external_wp_compose_namespaceObject = window["wp"]["compose"];
-;// external ["wp","element"]
-const external_wp_element_namespaceObject = window["wp"]["element"];
 ;// external "ReactJSXRuntime"
 const external_ReactJSXRuntime_namespaceObject = window["ReactJSXRuntime"];
 ;// ./src/assets/icon.js
@@ -8469,23 +8477,1434 @@ const insertImage = /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx
   })
 });
 
+;// external ["wp","coreData"]
+const external_wp_coreData_namespaceObject = window["wp"]["coreData"];
+;// ./src/hooks/useVideoSettings.js
+
+const useVideoSettings = (attributes, setAttributes) => {
+  const handleSettingChange = (key, value) => {
+    setAttributes({
+      [key]: value
+    });
+  };
+  const preloadOptions = [{
+    value: 'auto',
+    label: (0,external_wp_i18n_namespaceObject.__)('Auto')
+  }, {
+    value: 'metadata',
+    label: (0,external_wp_i18n_namespaceObject.__)('Metadata')
+  }, {
+    value: 'none',
+    label: (0,external_wp_i18n_namespaceObject._x)('None', 'Preload value')
+  }];
+  return {
+    handleSettingChange,
+    preloadOptions
+  };
+};
+/* harmony default export */ const hooks_useVideoSettings = (useVideoSettings);
+;// ./src/blocks/videopack-video/VideoSettings.js
+
+
+
+
+
+const VideoSettings = ({
+  attributes,
+  setAttributes
+}) => {
+  const {
+    handleSettingChange,
+    preloadOptions
+  } = hooks_useVideoSettings(attributes, setAttributes);
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
+      title: (0,external_wp_i18n_namespaceObject.__)('Player Settings'),
+      initialOpen: false,
+      children: [!attributes.gifmode && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Autoplay'),
+            onChange: value => handleSettingChange('autoplay', value),
+            checked: !!attributes.autoplay
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Loop'),
+            onChange: value => handleSettingChange('loop', value),
+            checked: !!attributes.loop
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Muted'),
+            onChange: value => handleSettingChange('muted', value),
+            checked: !!attributes.muted
+          })
+        }), !attributes.muted && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
+          __nextHasNoMarginBottom: true,
+          __next40pxDefaultSize: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('Volume'),
+          value: attributes.volume,
+          beforeIcon: volumeDown,
+          afterIcon: volumeUp,
+          initialPosition: 1,
+          withInputField: false,
+          onChange: value => handleSettingChange('volume', value),
+          min: 0,
+          max: 1,
+          step: 0.05
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Playback controls'),
+            onChange: value => handleSettingChange('controls', value),
+            checked: !!attributes.controls
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Play inline'),
+            onChange: value => handleSettingChange('playsinline', value),
+            checked: !!attributes.playsinline,
+            help: (0,external_wp_i18n_namespaceObject.__)('Plays inline instead of fullscreen on iPhones.')
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Variable playback speeds'),
+            onChange: value => handleSettingChange('playback_rate', value),
+            checked: !!attributes.playback_rate
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
+            __nextHasNoMarginBottom: true,
+            __next40pxDefaultSize: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Preload'),
+            value: attributes.preload,
+            onChange: value => handleSettingChange('preload', value),
+            options: preloadOptions,
+            hideCancelButton: true
+          })
+        })]
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          __nextHasNoMarginBottom: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('GIF mode'),
+          onChange: value => handleSettingChange('gifmode', value),
+          checked: !!attributes.gifmode,
+          help: (0,external_wp_i18n_namespaceObject.__)('Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.')
+        })
+      })]
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
+      title: (0,external_wp_i18n_namespaceObject.__)('Sharing'),
+      initialOpen: false,
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          __nextHasNoMarginBottom: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('Allow embedding on other sites'),
+          onChange: value => handleSettingChange('embeddable', value),
+          checked: !!attributes.embeddable
+        })
+      }), attributes.embeddable && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Download link'),
+            onChange: value => handleSettingChange('downloadlink', value),
+            checked: !!attributes.downloadlink
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Embed code'),
+            onChange: value => handleSettingChange('embedcode', value),
+            checked: !!attributes.embedcode
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Twitter button'),
+            onChange: value => handleSettingChange('twitter_button', value),
+            checked: !!attributes.twitter_button
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+            __nextHasNoMarginBottom: true,
+            label: (0,external_wp_i18n_namespaceObject.__)('Facebook button'),
+            onChange: value => handleSettingChange('facebook_button', value),
+            checked: !!attributes.facebook_button
+          })
+        })]
+      })]
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
+      title: (0,external_wp_i18n_namespaceObject.__)('Metadata'),
+      initialOpen: false,
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          __nextHasNoMarginBottom: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('Overlay title'),
+          onChange: value => handleSettingChange('title', value),
+          checked: !!attributes.title
+        })
+      }), attributes.title && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
+          __nextHasNoMarginBottom: true,
+          __next40pxDefaultSize: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('Title'),
+          value: attributes.videoTitle,
+          onChange: value => handleSettingChange('videoTitle', value)
+        })
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
+          __nextHasNoMarginBottom: true,
+          __next40pxDefaultSize: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('Caption'),
+          value: attributes.caption,
+          onChange: value => handleSettingChange('caption', value)
+        })
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
+          __nextHasNoMarginBottom: true,
+          label: (0,external_wp_i18n_namespaceObject.__)('View count'),
+          onChange: value => handleSettingChange('view_count', value),
+          checked: !!attributes.view_count
+        })
+      })]
+    })]
+  });
+};
+/* harmony default export */ const videopack_video_VideoSettings = (VideoSettings);
+;// external ["wp","mediaUtils"]
+const external_wp_mediaUtils_namespaceObject = window["wp"]["mediaUtils"];
 ;// external ["wp","primitives"]
 const external_wp_primitives_namespaceObject = window["wp"]["primitives"];
-;// ./node_modules/@wordpress/icons/build-module/library/help.js
+;// ./node_modules/@wordpress/icons/build-module/library/chevron-up.js
 /**
  * WordPress dependencies
  */
 
 
-const help = /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, {
-  xmlns: "http://www.w3.org/2000/svg",
+const chevronUp = /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, {
   viewBox: "0 0 24 24",
+  xmlns: "http://www.w3.org/2000/svg",
   children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, {
-    d: "M12 4a8 8 0 1 1 .001 16.001A8 8 0 0 1 12 4Zm0 1.5a6.5 6.5 0 1 0-.001 13.001A6.5 6.5 0 0 0 12 5.5Zm.75 11h-1.5V15h1.5v1.5Zm-.445-9.234a3 3 0 0 1 .445 5.89V14h-1.5v-1.25c0-.57.452-.958.917-1.01A1.5 1.5 0 0 0 12 8.75a1.5 1.5 0 0 0-1.5 1.5H9a3 3 0 0 1 3.305-2.984Z"
+    d: "M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
   })
 });
-/* harmony default export */ const library_help = (help);
-//# sourceMappingURL=help.js.map
+/* harmony default export */ const chevron_up = (chevronUp);
+//# sourceMappingURL=chevron-up.js.map
+;// ./node_modules/@wordpress/icons/build-module/library/chevron-down.js
+/**
+ * WordPress dependencies
+ */
+
+
+const chevronDown = /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.SVG, {
+  viewBox: "0 0 24 24",
+  xmlns: "http://www.w3.org/2000/svg",
+  children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_primitives_namespaceObject.Path, {
+    d: "M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+  })
+});
+/* harmony default export */ const chevron_down = (chevronDown);
+//# sourceMappingURL=chevron-down.js.map
+;// ./src/components/Thumbnails/Thumbnails.js
+/* global Image */
+
+
+
+
+
+
+
+
+
+
+const Thumbnails = ({
+  setAttributes,
+  attributes,
+  videoData,
+  // Changed from attachment
+  options = {}
+}) => {
+  const {
+    id,
+    src,
+    poster,
+    poster_id,
+    isExternal
+  } = attributes;
+  const total_thumbnails = attributes.total_thumbnails || videoData?.total_thumbnails || options.total_thumbnails;
+  const thumbVideoPanel = (0,external_wp_element_namespaceObject.useRef)();
+  const videoRef = (0,external_wp_element_namespaceObject.useRef)();
+  const currentThumb = (0,external_wp_element_namespaceObject.useRef)();
+  const posterImageButton = (0,external_wp_element_namespaceObject.useRef)();
+  const [isPlaying, setIsPlaying] = (0,external_wp_element_namespaceObject.useState)(false);
+  const [isOpened, setIsOpened] = (0,external_wp_element_namespaceObject.useState)(false);
+  const [currentTime, setCurrentTime] = (0,external_wp_element_namespaceObject.useState)(false);
+  const [thumbChoices, setThumbChoices] = (0,external_wp_element_namespaceObject.useState)([]);
+  const [isSaving, setIsSaving] = (0,external_wp_element_namespaceObject.useState)(false);
+  const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    if (window.mejs && window.mejs.players && poster) {
+      // Find the MediaElement.js player within the media modal
+      const mejsContainer = document.querySelector('.media-modal .mejs-container, .wp_attachment_holder .mejs-container');
+      if (mejsContainer) {
+        const mejsId = mejsContainer.id;
+        if (mejsId && window.mejs.players[mejsId]) {
+          const player = window.mejs.players[mejsId];
+          player.setPoster(poster);
+        }
+      }
+    }
+  }, [poster]);
+  function onSelectPoster(image) {
+    setAttributes({
+      ...attributes,
+      poster: image.url,
+      poster_id: Number(image.id)
+    });
+  }
+  function onRemovePoster() {
+    setAttributes({
+      ...attributes,
+      poster: undefined
+    });
+
+    // Move focus back to the Media Upload button.
+    posterImageButton.current.focus();
+  }
+  const handleGenerate = async (type = 'generate') => {
+    setIsSaving(true);
+    const ffmpegExists = window.videopack.settings.ffmpeg_exists;
+    const browserThumbnailsEnabled = window.videopack.settings.browser_thumbnails;
+    if (!browserThumbnailsEnabled && ffmpegExists) {
+      // Browser thumbnails explicitly disabled, use FFmpeg directly
+      const newThumbImages = [];
+      for (let i = 1; i <= Number(total_thumbnails); i++) {
+        const response = await generateThumb(i, type);
+        const thumb = {
+          src: response.real_thumb_url,
+          type: 'ffmpeg'
+        };
+        newThumbImages.push(thumb);
+        setThumbChoices([...newThumbImages]); // Update incrementally
+      }
+      setIsSaving(false);
+    } else {
+      // Attempt browser-based generation
+      generateThumbCanvases(type);
+    }
+  };
+  const generateThumbCanvases = (0,external_wp_element_namespaceObject.useCallback)(async type => {
+    const thumbsInt = Number(total_thumbnails);
+    const newThumbCanvases = [];
+    const ffmpegExists = window.videopack.settings.ffmpeg_exists;
+    const timePoints = [...Array(thumbsInt)].map((_, i) => {
+      let movieoffset = (i + 1) / (thumbsInt + 1) * videoRef.current.duration;
+      if (type === 'random') {
+        const randomOffset = Math.floor(Math.random() * (videoRef.current.duration / thumbsInt));
+        movieoffset = Math.max(movieoffset - randomOffset, 0);
+      }
+      return movieoffset;
+    });
+    const processNextThumbnail = async index => {
+      if (index >= thumbsInt) {
+        videoRef.current.removeEventListener('timeupdate', timeupdateListener);
+        setIsSaving(false);
+        return;
+      }
+      videoRef.current.currentTime = timePoints[index];
+    };
+    const timeupdateListener = async () => {
+      let thumb;
+      try {
+        const canvas = await drawCanvasThumb();
+        thumb = {
+          src: canvas.toDataURL(),
+          type: 'canvas',
+          canvasObject: canvas
+        };
+        newThumbCanvases.push(thumb);
+        setThumbChoices([...newThumbCanvases]);
+        processNextThumbnail(newThumbCanvases.length);
+      } catch (error) {
+        console.error('Error generating canvas thumbnail:', error);
+        if (ffmpegExists) {
+          console.warn('Falling back to FFmpeg for thumbnail generation.');
+          try {
+            const response = await generateThumb(newThumbCanvases.length + 1, type);
+            thumb = {
+              src: response.real_thumb_url,
+              type: 'ffmpeg'
+            };
+            newThumbCanvases.push(thumb);
+            setThumbChoices([...newThumbCanvases]);
+            processNextThumbnail(newThumbCanvases.length);
+          } catch (ffmpegError) {
+            console.error('FFmpeg fallback also failed:', ffmpegError);
+            // Display a user-friendly error message if both methods fail
+            // For now, just log and stop
+            videoRef.current.removeEventListener('timeupdate', timeupdateListener);
+            setIsSaving(false);
+          }
+        } else {
+          console.error('Browser thumbnail generation failed and FFmpeg is not available.');
+          // Display a user-friendly error message
+          videoRef.current.removeEventListener('timeupdate', timeupdateListener);
+          setIsSaving(false);
+        }
+      }
+    };
+    videoRef.current.addEventListener('timeupdate', timeupdateListener);
+    processNextThumbnail(0); // Start the process
+  });
+
+  // function to toggle video playback
+  const togglePlayback = () => {
+    if (videoRef.current?.paused) {
+      videoRef.current.play();
+      setIsPlaying(true);
+    } else {
+      videoRef.current?.pause();
+      setIsPlaying(false);
+    }
+  };
+  const pauseVideo = () => {
+    videoRef.current.pause();
+    setIsPlaying(false);
+  };
+  const playVideo = () => {
+    videoRef.current.play();
+    setIsPlaying(true);
+  };
+
+  // function to handle slider changes
+  const handleSliderChange = value => {
+    videoRef.current.currentTime = value;
+    setCurrentTime(value);
+  };
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    const handleTimeUpdate = () => {
+      setCurrentTime(videoRef.current.currentTime); // update currentTime state variable
+    };
+    videoRef.current?.addEventListener('timeupdate', handleTimeUpdate);
+    return () => {
+      videoRef.current?.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, []);
+  const drawCanvasThumb = async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    if (options?.ffmpeg_thumb_watermark?.url) {
+      try {
+        const watermarkCanvas = drawWatermarkOnCanvas(canvas);
+        return watermarkCanvas;
+      } catch (error) {
+        console.error('Error drawing watermark:', error);
+      }
+    } else {
+      return canvas;
+    }
+  };
+  const handleSaveThumbnail = (event, thumb) => {
+    event.currentTarget.classList.add('saving');
+    setIsSaving(true);
+    if (thumb.type === 'ffmpeg') {
+      setImgAsPoster(thumb.src);
+    } else {
+      setCanvasAsPoster(thumb.canvasObject);
+    }
+  };
+  const handleSaveAllThumbnails = async () => {
+    setIsSaving(true); // Show spinner for the whole operation
+    const firstThumbType = thumbChoices[0]?.type; // Assuming all generated thumbs are of the same type
+
+    if (firstThumbType === 'canvas') {
+      const postName = (0,external_wp_url_namespaceObject.getFilename)(src);
+      const uploadPromises = thumbChoices.map(thumb => {
+        return new Promise((resolve, reject) => {
+          thumb.canvasObject.toBlob(async blob => {
+            try {
+              const formData = new FormData();
+              formData.append('file', blob, 'thumbnail.jpg');
+              formData.append('attachment_id', id);
+              formData.append('post_name', postName);
+
+              // Don't need the response for "save all"
+              await uploadThumbnail(formData);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          }, 'image/jpeg');
+        });
+      });
+      try {
+        await Promise.all(uploadPromises);
+      } catch (error) {
+        console.error('Error saving all canvas thumbnails:', error);
+      }
+      setThumbChoices([]);
+    } else if (firstThumbType === 'ffmpeg') {
+      // For FFmpeg thumbnails, send their temporary URLs to the server to be saved
+      const thumbUrls = thumbChoices.map(thumb => thumb.src);
+      try {
+        await saveAllThumbnails(id, thumbUrls);
+        setThumbChoices([]); // Clear choices after saving
+      } catch (error) {
+        console.error('Error saving all FFmpeg thumbnails:', error);
+      }
+    }
+    setIsSaving(false); // Hide spinner after all operations complete
+  };
+  function drawWatermarkOnCanvas(canvas) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!options?.ffmpeg_thumb_watermark?.url) {
+          reject(new Error('No thumbnail watermark set'));
+        }
+        const ctx = canvas.getContext('2d');
+        const watermarkImage = new Image();
+        const {
+          url,
+          scale,
+          align,
+          x,
+          valign,
+          y
+        } = options.ffmpeg_thumb_watermark;
+        watermarkImage.crossOrigin = 'Anonymous';
+        watermarkImage.src = url;
+        watermarkImage.onload = () => {
+          const canvasWidth = canvas.width;
+          const canvasHeight = canvas.height;
+          const watermarkWidth = canvasWidth * scale / 100;
+          const watermarkHeight = canvasHeight * scale / 100;
+          const horizontalOffset = canvasWidth * x / 100;
+          const verticalOffset = canvasHeight * y / 100;
+          let xPos, yPos;
+          switch (align) {
+            case 'left':
+              xPos = horizontalOffset;
+              break;
+            case 'center':
+              xPos = (canvasWidth - watermarkWidth) / 2 + horizontalOffset;
+              break;
+            case 'right':
+              xPos = canvasWidth - watermarkWidth - horizontalOffset;
+              break;
+            default:
+              reject(new Error((0,external_wp_i18n_namespaceObject.__)('Invalid horizontal alignment provided')));
+              return;
+          }
+          switch (valign) {
+            case 'top':
+              yPos = verticalOffset;
+              break;
+            case 'center':
+              yPos = (canvasHeight - watermarkHeight) / 2 + verticalOffset;
+              break;
+            case 'bottom':
+              yPos = canvasHeight - watermarkHeight - verticalOffset;
+              break;
+            default:
+              reject(new Error((0,external_wp_i18n_namespaceObject.__)('Invalid vertical alignment provided')));
+              return;
+          }
+          ctx.drawImage(watermarkImage, xPos, yPos, watermarkWidth, watermarkHeight);
+          resolve(canvas);
+        };
+        watermarkImage.onerror = () => {
+          reject(new Error((0,external_wp_i18n_namespaceObject.__)('Failed to load watermark image')));
+        };
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  const setCanvasAsPoster = async canvasObject => {
+    setIsSaving(true);
+    try {
+      const blob = await new Promise(resolve => canvasObject.toBlob(resolve, 'image/jpeg'));
+      const formData = new FormData();
+      formData.append('file', blob, 'thumbnail.jpg');
+      formData.append('attachment_id', id);
+      const postName = (0,external_wp_url_namespaceObject.getFilename)(src);
+      formData.append('post_name', postName);
+      const response = await uploadThumbnail(formData);
+      setPosterData(response.thumb_url, response.thumb_id);
+    } catch (error) {
+      console.error('Error uploading thumbnail:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  const setPosterData = async (new_poster, new_poster_id) => {
+    try {
+      const metaData = {};
+      if (new_poster) {
+        // Only include if new_poster has a value
+        metaData['_kgflashmediaplayer-poster'] = new_poster;
+        metaData['_kgflashmediaplayer-poster-id'] = Number(new_poster_id);
+        metaData['_videopack-meta'] = {
+          ...attachment?.meta?.['_videopack-meta'],
+          poster: new_poster
+        };
+      }
+      await attachment?.edit({
+        featured_media: new_poster_id ? Number(new_poster_id) : null,
+        meta: metaData
+      });
+      await attachment?.save();
+
+      // Refresh the media library grid to show the updated thumbnail.
+      if (wp.media && wp.media.frame) {
+        if (wp.media.frame.content.get() && wp.media.frame.content.get().collection) {
+          const collection = wp.media.frame.content.get().collection;
+          collection.props.set({
+            ignore: new Date().getTime()
+          });
+        } else if (wp.media.frame.library) {
+          // Fallback for different states of the media modal.
+          wp.media.frame.library.props.set({
+            ignore: new Date().getTime()
+          });
+        }
+      }
+      setAttributes({
+        ...attributes,
+        poster: new_poster,
+        poster_id: new_poster_id
+      });
+      setThumbChoices([]);
+      setIsSaving(false);
+    } catch (error) {
+      console.error('Error updating attachment:', error);
+      setIsSaving(false);
+    }
+  };
+  const setImgAsPoster = async thumb_url => {
+    try {
+      const response = await setPosterImage(id, thumb_url);
+      setPosterData(response.thumb_url, response.thumb_id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const generateThumb = async (i, type) => {
+    try {
+      const response = await generateThumbnail(src, total_thumbnails, i, id, type);
+      return response;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const handleVideoKeyboardControl = event => {
+    event.stopImmediatePropagation();
+    switch (event.code) {
+      case 'Space':
+        // spacebar
+        togglePlayback();
+        break;
+      case 'ArrowLeft':
+        // left
+        pauseVideo();
+        videoRef.current.currentTime = videoRef.current.currentTime - 0.042;
+        break;
+      case 'ArrowRight':
+        // right
+        pauseVideo();
+        videoRef.current.currentTime = videoRef.current.currentTime + 0.042;
+        break;
+      case 'KeyJ':
+        //j
+        if (isPlaying) {
+          videoRef.current.playbackRate = Math.max(0, videoRef.current.playbackRate - 1);
+        }
+        break;
+      case 'KeyK':
+        // k
+        pauseVideo();
+        break;
+      case 'KeyL':
+        //l
+        if (isPlaying) {
+          videoRef.current.playbackRate = videoRef.current.playbackRate + 1;
+        }
+        playVideo();
+        break;
+      default:
+        return;
+      // exit this handler for other keys
+    }
+    event.preventDefault(); // prevent the default action (scroll / move caret)
+  };
+  const handleUseThisFrame = async () => {
+    setIsSaving(true);
+    const canvas = await drawCanvasThumb(); // Await the canvas object (no index for single frame)
+    setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
+  };
+  const handleToggleVideoPlayer = event => {
+    event.preventDefault();
+    const next = !isOpened;
+    setIsOpened(next);
+    if (next && thumbVideoPanel.current) {
+      thumbVideoPanel.current.focus();
+      thumbVideoPanel.current.addEventListener('keydown', handleVideoKeyboardControl);
+    } else {
+      thumbVideoPanel.current.addEventListener('keydown', handleVideoKeyboardControl);
+    }
+  };
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+    className: "videopack-thumbnail-generator",
+    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
+      title: (0,external_wp_i18n_namespaceObject.__)('Thumbnails'),
+      children: [poster && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("img", {
+        className: "videopack-current-thumbnail",
+        src: poster,
+        alt: (0,external_wp_i18n_namespaceObject.__)('Current Thumbnail')
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.BaseControl, {
+        className: "editor-video-poster-control",
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.BaseControl.VisualLabel, {
+          children: (0,external_wp_i18n_namespaceObject.__)('Video Thumbnail')
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_mediaUtils_namespaceObject.MediaUpload, {
+          title: (0,external_wp_i18n_namespaceObject.__)('Select video thumbnail'),
+          onSelect: onSelectPoster,
+          allowedTypes: VIDEO_POSTER_ALLOWED_MEDIA_TYPES,
+          render: ({
+            open
+          }) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+            variant: "secondary",
+            onClick: open,
+            ref: posterImageButton,
+            children: !poster ? (0,external_wp_i18n_namespaceObject.__)('Select') : (0,external_wp_i18n_namespaceObject.__)('Replace')
+          })
+        }), !!poster && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+          onClick: onRemovePoster,
+          variant: "tertiary",
+          children: (0,external_wp_i18n_namespaceObject.__)('Remove')
+        })]
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl // This is the UI control for total_thumbnails.
+      , {
+        value: total_thumbnails,
+        onChange: value => {
+          if (!value) {
+            setAttributes({
+              ...attributes,
+              total_thumbnails: ''
+            });
+          } else {
+            setAttributes({
+              ...attributes,
+              total_thumbnails: Number(value)
+            });
+          }
+        },
+        className: "videopack-total-thumbnails",
+        disabled: isSaving
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        variant: "secondary",
+        onClick: () => handleGenerate('generate'),
+        className: "videopack-generate",
+        disabled: isSaving,
+        children: (0,external_wp_i18n_namespaceObject.__)('Generate')
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        variant: "secondary",
+        onClick: () => handleGenerate('random'),
+        className: "videopack-generate",
+        disabled: isSaving,
+        children: (0,external_wp_i18n_namespaceObject.__)('Random')
+      }), thumbChoices.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        variant: "primary",
+        onClick: handleSaveAllThumbnails,
+        disabled: isSaving,
+        children: (0,external_wp_i18n_namespaceObject.__)('Save All')
+      }), thumbChoices.length > 0 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+        className: `videopack-thumbnail-holder${isSaving ? ' disabled' : ''}`,
+        children: thumbChoices.map((thumb, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("button", {
+          type: "button",
+          className: 'videopack-thumbnail spinner-container',
+          onClick: event => {
+            handleSaveThumbnail(event, thumb, index);
+          },
+          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("img", {
+            src: thumb.src,
+            alt: `Thumbnail ${index + 1}`,
+            title: (0,external_wp_i18n_namespaceObject.__)('Save and set thumbnail')
+          }), isSaving && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})]
+        }, index))
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+        className: `components-panel__body videopack-thumb-video ${isOpened ? 'is-opened' : ''}`,
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("h2", {
+          className: "components-panel__body-title",
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("button", {
+            className: "components-button components-panel__body-toggle",
+            type: "button",
+            onClick: handleToggleVideoPlayer,
+            "aria-expanded": isOpened,
+            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+              "aria-hidden": "true",
+              children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
+                className: "components-panel__arrow",
+                icon: isOpened ? chevron_up : chevron_down
+              })
+            }), (0,external_wp_i18n_namespaceObject.__)('Choose From Video')]
+          })
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+          className: `videopack-thumb-video-panel spinner-container${isSaving ? ' saving' : ''}`,
+          tabIndex: 0,
+          ref: thumbVideoPanel,
+          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("video", {
+            src: src,
+            ref: videoRef,
+            muted: true,
+            preload: "metadata",
+            onClick: togglePlayback
+          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+            className: "videopack-thumb-video-controls",
+            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+              className: "videopack-play-pause",
+              onClick: togglePlayback,
+              children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Dashicon, {
+                icon: isPlaying ? 'controls-pause' : 'controls-play'
+              })
+            }), !isNaN(videoRef.current?.duration) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
+              __nextHasNoMarginBottom: true,
+              min: 0,
+              max: videoRef.current.duration,
+              step: "any",
+              initialPosition: 0,
+              value: videoRef.current.currentTime,
+              onChange: handleSliderChange,
+              className: "videopack-thumbvideo-slider",
+              type: "slider"
+            })]
+          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+            variant: "secondary",
+            onClick: handleUseThisFrame,
+            className: "videopack-use-this-frame",
+            disabled: isSaving,
+            children: (0,external_wp_i18n_namespaceObject.__)('Use this frame')
+          }), isSaving && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})]
+        })]
+      })]
+    })
+  });
+};
+/* harmony default export */ const Thumbnails_Thumbnails = (Thumbnails);
+;// ./src/components/AdditionalFormats/EncodeProgress.js
+
+
+
+const EncodeProgress = ({
+  formatData,
+  onCancelJob,
+  deleteInProgress
+}) => {
+  const convertToTimecode = time => {
+    if (time === null || time === undefined || isNaN(time)) {
+      return '--:--';
+    }
+    const padZero = num => Math.floor(num).toString().padStart(2, '0');
+    const h = Math.floor(time / 3600);
+    const m = Math.floor(time % 3600 / 60);
+    const s = Math.floor(time % 60);
+    const hh = h > 0 ? padZero(h) + ':' : '';
+    const mm = padZero(m);
+    const ss = padZero(s);
+    return hh + mm + ':' + ss;
+  };
+  if (formatData?.encoding_now && formatData?.progress) {
+    const percent = Math.round(formatData.progress.percent);
+    const percentText = (0,external_wp_i18n_namespaceObject.sprintf)('%d%%', percent);
+    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+      className: "videopack-encode-progress",
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+        className: "videopack-meter",
+        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+          className: "videopack-meter-bar",
+          style: {
+            width: percentText
+          },
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+            className: "videopack-meter-text",
+            children: percentText
+          })
+        })
+      }), formatData.job_id && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        onClick: onCancelJob,
+        variant: "secondary",
+        isDestructive: true,
+        size: "small",
+        isBusy: deleteInProgress === formatData.job_id,
+        children: (0,external_wp_i18n_namespaceObject.__)('Cancel')
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+        className: "videopack-encode-progress-small-text",
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+          children: (0,external_wp_i18n_namespaceObject.__)('Elapsed:') + ' ' + convertToTimecode(formatData.progress.elapsed)
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+          children: (0,external_wp_i18n_namespaceObject.__)('Remaining:') + ' ' + convertToTimecode(formatData.progress.remaining)
+        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+          children: (0,external_wp_i18n_namespaceObject.__)('fps:') + ' ' + formatData.progress.fps
+        })]
+      })]
+    });
+  }
+  if (formatData?.status === 'failed' && formatData?.error_message) {
+    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
+      className: "videopack-encode-error",
+      children: [(0,external_wp_i18n_namespaceObject.sprintf)((0,external_wp_i18n_namespaceObject.__)('Error: %s'), formatData.error_message), formatData.job_id && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        onClick: () => onCancelJob(formatData.job_id),
+        variant: "link",
+        text: (0,external_wp_i18n_namespaceObject.__)('Delete Job'),
+        isDestructive: true,
+        isBusy: deleteInProgress === formatData.job_id
+      })]
+    });
+  }
+  return null;
+};
+/* harmony default export */ const AdditionalFormats_EncodeProgress = (EncodeProgress);
+;// ./src/components/AdditionalFormats/EncodeFormatStatus.js
+
+
+
+
+
+const EncodeFormatStatus = ({
+  formatId,
+  formatData,
+  ffmpegExists,
+  onCheckboxChange,
+  onSelectFormat,
+  onDeleteFile,
+  onCancelJob,
+  deleteInProgress
+}) => {
+  if (!formatData) {
+    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {});
+  }
+  const getCheckboxCheckedState = data => {
+    return data.checked || data.status === 'queued';
+  };
+  const getCheckboxDisabledState = data => {
+    return data.exists || data.status === 'queued' || data.status === 'encoding' || data.status === 'processing' || data.status === 'completed';
+  };
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("li", {
+    children: [ffmpegExists ? /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
+      __nextHasNoMarginBottom: true,
+      className: "videopack-format",
+      label: formatData.label,
+      checked: getCheckboxCheckedState(formatData),
+      disabled: getCheckboxDisabledState(formatData),
+      onChange: event => onCheckboxChange(event, formatId)
+    }) : /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+      className: "videopack-format",
+      children: formatData.label
+    }), formatData.status !== 'not_encoded' && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+      className: "videopack-format-status",
+      children: formatData.status_l10n
+    }), formatData.status === 'not_encoded' && !formatData.was_picked && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_mediaUtils_namespaceObject.MediaUpload, {
+      title: (0,external_wp_i18n_namespaceObject.__)('Choose existing file'),
+      onSelect: onSelectFormat(formatId),
+      allowedTypes: ['video'],
+      render: ({
+        open
+      }) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        variant: "secondary",
+        onClick: open,
+        className: "videopack-format-button",
+        size: "small",
+        children: (0,external_wp_i18n_namespaceObject.__)('Select')
+      })
+    }), formatData.was_picked && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_mediaUtils_namespaceObject.MediaUpload, {
+      title: (0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %s is the label of a video resolution (eg: 720p ) */
+      (0,external_wp_i18n_namespaceObject.__)('Replace %s'), formatData.label),
+      onSelect: onSelectFormat(formatId),
+      allowedTypes: ['video'],
+      render: ({
+        open
+      }) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+        variant: "secondary",
+        onClick: open,
+        className: "videopack-format-button",
+        size: "small",
+        title: (0,external_wp_i18n_namespaceObject.__)('Replace file'),
+        children: (0,external_wp_i18n_namespaceObject.__)('Replace')
+      })
+    }), formatData.deletable && formatData.id && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+      isBusy: deleteInProgress === formatId,
+      onClick: onDeleteFile,
+      variant: "link",
+      text: (0,external_wp_i18n_namespaceObject.__)('Delete Permanently'),
+      isDestructive: true
+    }), (formatData.encoding_now || formatData.status === 'failed') && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(AdditionalFormats_EncodeProgress, {
+      formatData: formatData,
+      onCancelJob: onCancelJob,
+      deleteInProgress: deleteInProgress
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.__experimentalDivider, {})]
+  }, formatId);
+};
+/* harmony default export */ const AdditionalFormats_EncodeFormatStatus = (EncodeFormatStatus);
+;// ./src/components/AdditionalFormats/AdditionalFormats.js
+/* global videopack */
+
+
+
+
+
+
+
+
+
+
+
+const AdditionalFormats = ({
+  attributes,
+  options = {}
+}) => {
+  const {
+    id,
+    src
+  } = attributes;
+  const {
+    ffmpeg_exists
+  } = options;
+  const [videoFormats, setVideoFormats] = (0,external_wp_element_namespaceObject.useState)({});
+  const [encodeMessage, setEncodeMessage] = (0,external_wp_element_namespaceObject.useState)();
+  const [itemToDelete, setItemToDelete] = (0,external_wp_element_namespaceObject.useState)(null); // { type: 'file'/'job', formatId: string, jobId?: int, id?: int, name?: string }
+  const [deleteInProgress, setDeleteInProgress] = (0,external_wp_element_namespaceObject.useState)(null); // Stores formatId or jobId being deleted
+  const [isConfirmOpen, setIsConfirmOpen] = (0,external_wp_element_namespaceObject.useState)(false);
+  const [isLoading, setIsLoading] = (0,external_wp_element_namespaceObject.useState)(false);
+  const [isEncoding, setIsEncoding] = (0,external_wp_element_namespaceObject.useState)(false);
+  const progressTimerRef = (0,external_wp_element_namespaceObject.useRef)(null);
+  const updateVideoFormats = response => {
+    setVideoFormats(currentVideoFormats => {
+      if (response && typeof response === 'object') {
+        const newFormats = {
+          ...response
+        };
+        Object.keys(newFormats).forEach(key => {
+          const newFormat = newFormats[key];
+          const oldFormat = currentVideoFormats?.[key];
+
+          // Preserve the existing 'checked' state to prevent UI flicker on poll refresh.
+          newFormat.checked = oldFormat?.checked || false;
+
+          // If the format is encoding, merge progress data carefully.
+          if (newFormat.encoding_now && newFormat.progress) {
+            // If there's old progress data, merge it to prevent flashes of 0%.
+            if (oldFormat?.progress) {
+              newFormat.progress = {
+                ...oldFormat.progress,
+                ...newFormat.progress
+              };
+            } else {
+              // If no old progress, ensure we don't start with a negative percent.
+              newFormat.progress.percent = newFormat.progress.percent > 0 ? newFormat.progress.percent : 0;
+            }
+          }
+        });
+
+        // Only update state if the formats have actually changed.
+        if (JSON.stringify(currentVideoFormats) !== JSON.stringify(newFormats)) {
+          return newFormats;
+        }
+      } else if (JSON.stringify(currentVideoFormats) !== JSON.stringify(response)) {
+        // Fallback for non-object responses
+        return response;
+      }
+      return currentVideoFormats;
+    });
+  };
+  const fetchVideoFormats = async () => {
+    if (!id) {
+      return;
+    } // Don't fetch if there's no ID.
+    try {
+      const formats = await getVideoFormats(id);
+      updateVideoFormats(formats);
+    } catch (error) {
+      console.error('Error fetching video formats:', error);
+    }
+  };
+  const pollVideoFormats = async () => {
+    console.log('update');
+    if (src && id) {
+      try {
+        const formats = await getVideoFormats(id);
+        updateVideoFormats(formats);
+      } catch (error) {
+        console.error('Error polling video formats:', error);
+      }
+    }
+  };
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    fetchVideoFormats();
+  }, [id]); // Fetch formats when the attachment ID changes
+
+  const isEmpty = value => {
+    if (value === false || value === null || Array.isArray(value) && value.length === 0 || typeof value === 'object' && Object.keys(value).length === 0) {
+      return true;
+    }
+    return false;
+  };
+  const siteSettings = (0,external_wp_data_namespaceObject.useSelect)(select => {
+    return select('core').getSite();
+  }, []);
+  const shouldPoll = formats => {
+    if (!formats) {
+      return false;
+    }
+    // Poll only if at least one format is still in a state that requires updates.
+    return Object.values(formats).some(format => format.status === 'queued' || format.status === 'encoding' || format.status === 'processing' || format.status === 'needs_insert');
+  };
+  const incrementEncodeProgress = () => {
+    setVideoFormats(currentVideoFormats => {
+      if (!currentVideoFormats || !isEncoding) {
+        return currentVideoFormats;
+      }
+      const updatedVideoFormats = {
+        ...currentVideoFormats
+      };
+      Object.keys(updatedVideoFormats).forEach(key => {
+        const format = updatedVideoFormats[key];
+        if (format.encoding_now && format.progress) {
+          const elapsed = new Date().getTime() / 1000 - format.started;
+          let percent = format.progress.percent || 0;
+          let remaining = null;
+
+          // Only calculate remaining time if video_duration is available.
+          if (format.video_duration) {
+            const totalDurationInSeconds = format.video_duration / 1000000;
+            const speedMatch = format.progress.speed ? String(format.progress.speed).match(/(\d*\.?\d+)/) : null;
+            const speed = speedMatch ? parseFloat(speedMatch[0]) : 0;
+
+            // Increment percent based on speed. This function runs every second.
+            if (speed > 0) {
+              const increment = 1 / totalDurationInSeconds * 100 * speed;
+              percent += increment;
+            }
+
+            // Calculate remaining time based on current percent and speed
+            if (percent > 0 && speed > 0) {
+              const remainingPercent = 100 - percent;
+              remaining = totalDurationInSeconds * (remainingPercent / 100) / speed;
+            } else {
+              remaining = totalDurationInSeconds - elapsed;
+            }
+          }
+
+          // Clamp values to be within expected ranges.
+          percent = Math.min(100, Math.max(0, percent));
+          remaining = remaining !== null ? Math.max(0, remaining) : null;
+          updatedVideoFormats[key] = {
+            ...format,
+            progress: {
+              ...format.progress,
+              elapsed,
+              remaining,
+              percent
+            }
+          };
+        }
+      });
+      return updatedVideoFormats;
+    });
+  };
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    setIsEncoding(shouldPoll(videoFormats));
+  }, [videoFormats]);
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    let pollTimer = null;
+    // Manage progress timer based on encoding state
+    if (isEncoding) {
+      // Start polling immediately and then every 5 seconds
+      pollVideoFormats(); // Initial poll
+      pollTimer = setInterval(pollVideoFormats, 5000);
+      if (progressTimerRef.current === null) {
+        progressTimerRef.current = setInterval(incrementEncodeProgress, 1000);
+      }
+    } else {
+      // Clear all timers if not encoding
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+    return () => {
+      if (progressTimerRef.current !== null) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+      if (pollTimer !== null) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    };
+  }, [isEncoding]); // Depend on isEncoding state
+
+  const handleFormatCheckbox = (event, formatId) => {
+    setVideoFormats(prevVideoFormats => {
+      const updatedFormats = {
+        ...prevVideoFormats
+      };
+      if (updatedFormats[formatId]) {
+        updatedFormats[formatId].checked = event;
+      }
+      return updatedFormats;
+    });
+    // Note: Checkbox state is now purely UI. Saving to DB happens on "Encode" button click.
+  };
+  const getCheckboxCheckedState = formatData => {
+    return formatData.checked || formatData.status === 'queued';
+  };
+  const getCheckboxDisabledState = formatData => {
+    return formatData.exists || formatData.status === 'queued' || formatData.status === 'encoding' || formatData.status === 'processing' || formatData.status === 'completed';
+  };
+  const handleEnqueue = async () => {
+    if (!window.videopack || !window.videopack.settings) {
+      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {});
+    }
+    setIsLoading(true);
+
+    // Get list of format IDs that are checked and available
+    const formatsToEncode = Object.entries(videoFormats).filter(([key, value]) => value.checked && value.status !== 'queued' && value.status !== 'processing' && value.status !== 'completed').reduce((acc, [key, value]) => {
+      acc[key] = true; // Backend expects an object { format_id: true, ... }
+      return acc;
+    }, {});
+    try {
+      const response = await enqueueJob(id, src, formatsToEncode);
+      console.log(response);
+      const queueMessage = () => {
+        const queueList = (() => {
+          if (response?.encode_list && Array.isArray(response.encode_list) && response.encode_list.length > 0) {
+            return new Intl.ListFormat(siteSettings?.language ? siteSettings.language.replace('_', '-') : 'en-US', {
+              style: 'long',
+              type: 'conjunction'
+            }).format(response.encode_list);
+          }
+          return '';
+        })();
+        if (!queueList) {
+          if (response?.log?.length > 0) {
+            return response.log.join(' ');
+          }
+          return (0,external_wp_i18n_namespaceObject.__)('No formats were added to the queue.');
+        }
+        const queuePosition = response?.new_queue_position;
+        return (0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %1$s is a list of video formats. %2$s is a number */
+        (0,external_wp_i18n_namespaceObject.__)('%1$s added to queue in position %2$s.'), queueList, queuePosition);
+      };
+      setEncodeMessage(queueMessage());
+      fetchVideoFormats(); // Re-fetch to update statuses
+    } catch (error) {
+      console.error(error);
+      // Use the detailed error messages from the server if available
+      const errorMessage = error?.data?.details ? error.data.details.join(', ') : error.message;
+      /* translators: %s is an error message */
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.sprintf)((0,external_wp_i18n_namespaceObject.__)('Error: %s'), errorMessage));
+      fetchVideoFormats(); // Re-fetch to ensure UI is consistent
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const onSelectFormat = formatId => async media => {
+    if (!media || !media.id || !formatId) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await assignFormat(media.id, formatId, id);
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.__)('Video format assigned successfully.'));
+      fetchVideoFormats(); // Refresh the list
+    } catch (error) {
+      console.error('Error assigning video format:', error);
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %s is an error message */
+      (0,external_wp_i18n_namespaceObject.__)('Error: %s'), error.message));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const formatPickable = format => {
+    if (videoFormats && videoFormats[format] && (
+    // A format is "pickable" if the file doesn't exist AND it's not already queued/processing/completed
+    !videoFormats[format].exists && videoFormats[format].status === 'not_encoded' || videoFormats[format].was_picked) && !videoFormats[format].encoding_now) {
+      return true;
+    }
+    return false;
+  };
+
+  // Deletes the actual media file (WP Attachment)
+  const handleFileDelete = async formatId => {
+    const formatData = videoFormats?.[formatId];
+    if (!formatData || !formatData.id) {
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.__)('Error: Cannot delete file, missing attachment ID.'));
+      console.error('Cannot delete file: Missing id for format', formatId);
+      return;
+    }
+    setDeleteInProgress(formatId); // Mark this formatId as being deleted
+    try {
+      await deleteFile(formatData.id);
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.__)('File deleted successfully.'));
+      fetchVideoFormats(); // Re-fetch to get the latest status from backend
+    } catch (error) {
+      console.error('File delete failed:', error);
+      setEncodeMessage(/* translators: %s is an error message */
+      (0,external_wp_i18n_namespaceObject.sprintf)((0,external_wp_i18n_namespaceObject.__)('Error deleting file: %s'), error.message));
+      fetchVideoFormats(); // Re-fetch to get the latest status
+    } finally {
+      setDeleteInProgress(null);
+    }
+  };
+
+  // Deletes/Cancels a queue job
+  const handleJobDelete = async jobId => {
+    if (!jobId) {
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.__)('Error: Cannot delete job, missing job ID.'));
+      console.error('Cannot delete job: Missing job ID');
+      return;
+    }
+    setDeleteInProgress(jobId); // Mark this jobId as being deleted
+    try {
+      await deleteJob(jobId);
+      setEncodeMessage((0,external_wp_i18n_namespaceObject.__)('Job cancelled/deleted successfully.'));
+      fetchVideoFormats(); // Re-fetch to get the latest status
+    } catch (error) {
+      console.error('Job delete failed:', error);
+      setEncodeMessage(/* translators: %s is an error message */
+      (0,external_wp_i18n_namespaceObject.sprintf)((0,external_wp_i18n_namespaceObject.__)('Error deleting job: %s'), error.message));
+      fetchVideoFormats(); // Re-fetch to get the latest status
+    } finally {
+      setDeleteInProgress(null);
+    }
+  };
+  const openConfirmDialog = (type, formatId) => {
+    const formatData = videoFormats?.[formatId];
+    if (!formatData) {
+      return;
+    }
+    setItemToDelete({
+      type,
+      // 'file' or 'job'
+      formatId,
+      jobId: formatData.job_id,
+      id: formatData.id,
+      name: formatData.name
+    });
+    setIsConfirmOpen(true);
+  };
+  const handleConfirm = () => {
+    setIsConfirmOpen(false);
+    if (itemToDelete) {
+      if (itemToDelete.type === 'file' && itemToDelete.id) {
+        handleFileDelete(itemToDelete.formatId);
+      } else if (itemToDelete.type === 'job' && itemToDelete.jobId) {
+        handleJobDelete(itemToDelete.jobId);
+      }
+    }
+    setItemToDelete(null);
+  };
+  const handleCancel = () => {
+    setItemToDelete(null);
+    setIsConfirmOpen(false);
+  };
+  const somethingToEncode = () => {
+    if (videoFormats) {
+      // Check if any format is checked AND available AND not already in a terminal/pending state
+      return Object.values(videoFormats).some(obj => obj.checked && obj.status !== 'queued' && obj.status !== 'processing' && obj.status !== 'completed' && obj.status !== 'pending_replacement');
+    }
+    return false;
+  };
+  const encodeButtonTitle = () => {
+    if (somethingToEncode()) {
+      return isLoading ? (0,external_wp_i18n_namespaceObject.__)('Loading…') : (0,external_wp_i18n_namespaceObject.__)('Encode selected formats');
+    }
+    return (0,external_wp_i18n_namespaceObject.__)('Select formats to encode');
+  };
+  const isEncodeButtonDisabled = isLoading || ffmpeg_exists !== true || !somethingToEncode();
+  const confirmDialogMessage = () => {
+    if (!itemToDelete) {
+      return '';
+    }
+    if (itemToDelete.type === 'file') {
+      return (0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
+      (0,external_wp_i18n_namespaceObject.__)('You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.'), itemToDelete.name);
+    }
+    if (itemToDelete.type === 'job') {
+      return (0,external_wp_i18n_namespaceObject.sprintf)(/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
+      (0,external_wp_i18n_namespaceObject.__)('You are about to permanently delete the encoding job for the %s video. This will also delete the encoded video file if it exists (if created by this job and not yet a separate attachment). This action cannot be undone.'), itemToDelete.name);
+    }
+  };
+  const canUploadFiles = (0,external_wp_data_namespaceObject.useSelect)(select => select(external_wp_coreData_namespaceObject.store).canUser('create', 'media', id), [id]);
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
+      title: (0,external_wp_i18n_namespaceObject.__)('Additional Formats'),
+      children: [canUploadFiles && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
+        children: videoFormats ? /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("ul", {
+            className: `videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`,
+            children: videopack.settings.codecs.map(codec => {
+              if (options.encode[codec.id]?.enabled !== '1') {
+                return null;
+              }
+              return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("li", {
+                children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("h4", {
+                  className: "videopack-codec-name",
+                  children: codec.name
+                }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("ul", {
+                  children: videopack.settings.resolutions.map(resolution => {
+                    const formatId = `${codec.id}_${resolution.id}`;
+                    const formatData = videoFormats[formatId];
+                    if (!formatData) {
+                      return null;
+                    }
+                    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(AdditionalFormats_EncodeFormatStatus, {
+                      formatId: formatId,
+                      formatData: formatData,
+                      ffmpegExists: ffmpeg_exists,
+                      onCheckboxChange: handleFormatCheckbox,
+                      onSelectFormat: onSelectFormat,
+                      onDeleteFile: () => openConfirmDialog('file', formatId),
+                      onCancelJob: () => openConfirmDialog('job', formatId),
+                      deleteInProgress: deleteInProgress
+                    }, formatId);
+                  })
+                })]
+              }, codec.id);
+            })
+          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.__experimentalConfirmDialog, {
+            isOpen: isConfirmOpen,
+            onConfirm: handleConfirm,
+            onCancel: handleCancel,
+            children: confirmDialogMessage()
+          })]
+        }) : /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {})
+        })
+      }), ffmpeg_exists === true && videoFormats && canUploadFiles && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelRow, {
+        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
+          variant: "secondary",
+          onClick: handleEnqueue,
+          title: encodeButtonTitle(),
+          text: (0,external_wp_i18n_namespaceObject.__)('Encode'),
+          disabled: isEncodeButtonDisabled
+        }), isLoading && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {}), encodeMessage && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
+          className: "videopack-encode-message",
+          children: encodeMessage
+        })]
+      })]
+    })
+  });
+};
+/* harmony default export */ const AdditionalFormats_AdditionalFormats = (AdditionalFormats);
 ;// ./src/components/VideoPlayer/MetaBar.js
 
 
@@ -71833,7599 +73252,267 @@ const VideoPlayer = ({
   });
 };
 /* harmony default export */ const VideoPlayer_VideoPlayer = (VideoPlayer);
-;// ./src/features/settings/components/VideopackTooltip.js
+;// ./src/blocks/videopack-video/SingleVideoBlock.js
 
 
 
-const VideopackTooltip = ({
-  text
-}) => {
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Tooltip, {
-    text: text,
-    className: "videopack-tooltip",
-    children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-      className: "videopack-tooltip",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
-        icon: library_help
-      })
-    })
-  });
-};
-/* harmony default export */ const components_VideopackTooltip = (VideopackTooltip);
-;// ./src/features/settings/components/TextControlOnBlur.js
 
 
 
-const TextControlOnBlur = ({
-  value,
-  onChange,
-  ...props
-}) => {
-  const [innerValue, setInnerValue] = (0,external_wp_element_namespaceObject.useState)(value);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    setInnerValue(value);
-  }, [value]);
-  const handleOnChange = newValue => {
-    setInnerValue(newValue);
-  };
-  const handleOnBlur = () => {
-    onChange(innerValue);
-  };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-    ...props,
-    value: innerValue,
-    onChange: handleOnChange,
-    onBlur: handleOnBlur
-  });
-};
-/* harmony default export */ const components_TextControlOnBlur = (TextControlOnBlur);
-;// ./src/features/settings/components/PlayerSettings.js
-/* global videopack */
 
 
-
-
-
-
-
-
-
-const PlayerSettings = ({
-  settings,
-  setSettings,
-  changeHandlerFactory
-}) => {
-  const {
-    embed_method,
-    overlay_title,
-    watermark,
-    watermark_link_to,
-    watermark_url,
-    align,
-    resize,
-    auto_res,
-    pixel_ratio,
-    find_formats,
-    fullwidth,
-    width,
-    height,
-    fixed_aspect,
-    controls,
-    playsinline,
-    pauseothervideos,
-    volume,
-    preload,
-    skin,
-    embeddable,
-    embedcode,
-    downloadlink,
-    view_count,
-    inline,
-    minimum_width,
-    gallery_pagination,
-    nativecontrolsfortouch,
-    autoplay,
-    loop,
-    muted,
-    gifmode,
-    playback_rate,
-    encode,
-    endofvideooverlaysame,
-    browser_thumbnails,
-    auto_encode,
-    auto_encode_gif,
-    auto_thumb,
-    open_graph,
-    twitter_card,
-    oembed_provider,
-    sample_rotate,
-    alwaysloadscripts,
-    replace_video_shortcode,
-    auto_publish_post,
-    transient_cache,
-    queue_control
-  } = settings;
-  const changeGifmode = value => {
-    setSettings(prevSettings => ({
-      ...prevSettings,
-      gifmode: value,
-      autoplay: value,
-      loop: value,
-      muted: value
-    }));
-    if (value) {
-      setSettings(prevSettings => ({
-        ...prevSettings,
-        controls: false,
-        embeddable: false,
-        overlay_title: false,
-        view_count: false,
-        playsinline: true
-      }));
-    } else {
-      setSettings(prevSettings => ({
-        ...prevSettings,
-        controls: true,
-        embeddable: true
-      }));
-    }
-  };
-  const handleCodecCheckboxChange = (codecId, isEnabled) => {
-    const newEncode = JSON.parse(JSON.stringify(settings.encode || {}));
-    const {
-      codecs,
-      resolutions
-    } = videopack.settings;
-    const codecInfo = codecs.find(c => c.id === codecId);
-    if (!newEncode[codecId]) {
-      newEncode[codecId] = {
-        resolutions: {}
-      };
-    }
-    newEncode[codecId].enabled = !!isEnabled;
-    if (isEnabled && codecInfo) {
-      // Set default quality settings when enabling a codec for the first time
-      if (!newEncode[codecId].rate_control) {
-        newEncode[codecId].rate_control = codecInfo.supported_rate_controls[0];
-        newEncode[codecId].crf = codecInfo.rate_control.crf.default;
-        newEncode[codecId].vbr = codecInfo.rate_control.vbr.default;
-      }
-    }
-    if (!isEnabled) {
-      if (!newEncode[codecId].resolutions) {
-        newEncode[codecId].resolutions = {};
-      }
-      resolutions.forEach(resolution => {
-        newEncode[codecId].resolutions[resolution.id] = false;
-      });
-    }
-    changeHandlerFactory.encode(newEncode);
-  };
-  const embedMethodOptions = [{
-    value: 'Video.js',
-    label: (0,external_wp_i18n_namespaceObject.__)('Video.js')
-  }, {
-    value: 'WordPress Default',
-    label: (0,external_wp_i18n_namespaceObject.__)('WordPress Default')
-  }, {
-    value: 'None',
-    label: (0,external_wp_i18n_namespaceObject.__)('None')
-  }];
-  const preloadOptions = [{
-    value: 'auto',
-    label: (0,external_wp_i18n_namespaceObject.__)('Auto')
-  }, {
-    value: 'metadata',
-    label: (0,external_wp_i18n_namespaceObject.__)('Metadata')
-  }, {
-    value: 'none',
-    label: (0,external_wp_i18n_namespaceObject._x)('None', 'Preload value')
-  }];
-  const fixedAspectOptions = [{
-    value: 'false',
-    label: (0,external_wp_i18n_namespaceObject.__)('None')
-  }, {
-    value: 'true',
-    label: (0,external_wp_i18n_namespaceObject.__)('All')
-  }, {
-    value: 'vertical',
-    label: (0,external_wp_i18n_namespaceObject.__)('Vertical Videos')
-  }];
-  const watermarkLinkOptions = [{
-    value: 'home',
-    label: (0,external_wp_i18n_namespaceObject.__)('Home page')
-  }, {
-    value: 'parent',
-    label: (0,external_wp_i18n_namespaceObject.__)('Parent post')
-  }, {
-    value: 'attachment',
-    label: (0,external_wp_i18n_namespaceObject.__)('Video attachment page')
-  }, {
-    value: 'download',
-    label: (0,external_wp_i18n_namespaceObject.__)('Download video')
-  }, {
-    value: 'Custom URL',
-    label: (0,external_wp_i18n_namespaceObject.__)('Custom URL')
-  }, {
-    value: 'None',
-    label: (0,external_wp_i18n_namespaceObject.__)('None')
-  }];
-  const skinOptions = [{
-    value: 'kg-video-js-skin',
-    label: (0,external_wp_i18n_namespaceObject.__)('Videopack')
-  }, {
-    value: 'default',
-    label: (0,external_wp_i18n_namespaceObject.__)('Video.js default')
-  }, {
-    value: 'vjs-theme-city',
-    label: (0,external_wp_i18n_namespaceObject.__)('City')
-  }, {
-    value: 'vjs-theme-fantasy',
-    label: (0,external_wp_i18n_namespaceObject.__)('Fantasy')
-  }, {
-    value: 'vjs-theme-forest',
-    label: (0,external_wp_i18n_namespaceObject.__)('Forest')
-  }, {
-    value: 'vjs-theme-sea',
-    label: (0,external_wp_i18n_namespaceObject.__)('Sea')
-  }];
-  const autoResOptions = () => {
-    const items = [{
-      value: 'automatic',
-      label: (0,external_wp_i18n_namespaceObject.__)('Automatic')
-    }, {
-      value: 'highest',
-      label: (0,external_wp_i18n_namespaceObject.__)('Highest')
-    }, {
-      value: 'lowest',
-      label: (0,external_wp_i18n_namespaceObject.__)('Lowest')
-    }];
-    videopack.settings.resolutions.forEach(resolution => {
-      items.push({
-        value: resolution.id,
-        label: resolution.name
-      });
-    });
-    return items;
-  };
-  const onSelectMedia = media => {
-    console.log(media);
-  };
-  const handleVideoPlayerReady = () => {};
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Video player:'),
-          value: embed_method,
-          onChange: changeHandlerFactory.embed_method,
-          options: embedMethodOptions
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Tooltip, {
-          text: (0,external_wp_i18n_namespaceObject.__)('Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.'),
-          className: "videopack-tooltip",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-            className: "videopack-tooltip",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
-              icon: library_help
-            })
-          })
-        })]
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Flex, {
-          className: "videopack-flex-bottom",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexBlock, {
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-              __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_namespaceObject.__)('Overlay title'),
-              onChange: changeHandlerFactory.overlay_title,
-              checked: !!overlay_title
-            })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexBlock, {
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-              __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_namespaceObject.__)('Download link'),
-              onChange: changeHandlerFactory.downloadlink,
-              checked: !!downloadlink
-            })
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexBlock, {
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexItem, {
-              children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-                __nextHasNoMarginBottom: true,
-                label: (0,external_wp_i18n_namespaceObject.__)('Embed code'),
-                onChange: changeHandlerFactory.embedcode,
-                checked: !!embedcode,
-                disabled: !embeddable
-              })
-            })
-          })]
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoPlayer_VideoPlayer, {
-          attributes: {
-            ...settings,
-            sources: [{
-              src: videopack.settings.url + '/src/images/Adobestock_469037984.mp4',
-              type: 'video/mp4'
-            }],
-            id: 'sample-video',
-            videoTitle: 'Sample Video',
-            title: overlay_title,
-            starts: 23,
-            embedlink: 'https://www.website.com/embed/',
-            caption: (0,external_wp_i18n_namespaceObject.__)("If text is entered in the attachment's caption field it is displayed here automatically.")
-          },
-          onReady: handleVideoPlayerReady
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('View count'),
-          onChange: changeHandlerFactory.view_count,
-          checked: !!view_count
-        })
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Default Playback'),
-      initialOpen: true,
-      className: "videopack-setting-default-playback",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Flex, {
-        "align-items": "flex-start",
-        expanded: false,
-        gap: 20,
-        justify: "flex-start",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Autoplay'),
-            onChange: changeHandlerFactory.autoplay,
-            checked: !!autoplay,
-            disabled: gifmode,
-            help: (0,external_wp_i18n_namespaceObject.__)('Most browsers will only autoplay if the video starts muted.')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Loop'),
-            onChange: changeHandlerFactory.loop,
-            checked: !!loop,
-            disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Muted'),
-            onChange: changeHandlerFactory.muted,
-            checked: !!muted,
-            disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
-            __next40pxDefaultSize: true,
-            __nextHasNoMarginBottom: true,
-            className: "videopack-volume-control",
-            label: (0,external_wp_i18n_namespaceObject.__)('Volume'),
-            value: volume,
-            beforeIcon: volumeDown,
-            afterIcon: volumeUp,
-            initialPosition: 1,
-            withInputField: false,
-            onChange: changeHandlerFactory.volume,
-            min: 0,
-            max: 1,
-            step: 0.05,
-            disabled: muted || gifmode
-          })]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Controls'),
-            onChange: changeHandlerFactory.controls,
-            checked: !!controls,
-            disabled: gifmode
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Play inline'),
-            onChange: changeHandlerFactory.playsinline,
-            checked: !!playsinline,
-            disabled: gifmode,
-            help: (0,external_wp_i18n_namespaceObject.__)('Plays inline instead of fullscreen on iPhones.')
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Variable speeds'),
-            onChange: changeHandlerFactory.playback_rate,
-            disabled: gifmode,
-            checked: !!playback_rate
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-            className: "videopack-control-with-tooltip",
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RadioControl, {
-              label: (0,external_wp_i18n_namespaceObject.__)('Preload'),
-              value: preload,
-              onChange: changeHandlerFactory.preload,
-              options: preloadOptions,
-              disabled: gifmode
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_VideopackTooltip, {
-              text: (0,external_wp_i18n_namespaceObject.__)('Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.')
-            })]
-          })]
-        })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('GIF mode'),
-        onChange: value => {
-          changeGifmode(value);
-        },
-        checked: !!gifmode,
-        help: (0,external_wp_i18n_namespaceObject.__)('Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.')
-      }), embed_method.startsWith('Video.js') && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        className: "videopack-setting-reduced-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Skin:'),
-          value: skin,
-          onChange: changeHandlerFactory.skin,
-          options: skinOptions
-        })
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Dimensions'),
-      initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Flex, {
-        direction: "column",
-        expanded: false,
-        align: "flex-start",
-        justify: "flex-start",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Shrink player to fit container'),
-            onChange: changeHandlerFactory.resize,
-            checked: !!resize
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Expand player to full width of container'),
-            onChange: changeHandlerFactory.fullwidth,
-            checked: !!fullwidth
-          })]
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-        className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Width:'),
-          type: "number",
-          value: width,
-          onChange: changeHandlerFactory.width
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-        className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Height:'),
-          type: "number",
-          value: height,
-          onChange: changeHandlerFactory.height
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-control-with-tooltip",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RadioControl, {
-          label: (0,external_wp_i18n_namespaceObject.__)('Constrain to default aspect ratio'),
-          selected: fixed_aspect,
-          onChange: changeHandlerFactory.fixed_aspect,
-          options: fixedAspectOptions,
-          className: "videopack-setting-radio-group"
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_VideopackTooltip, {
-          text: (0,external_wp_i18n_namespaceObject.__)('When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.')
-        })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Default resolution:'),
-          value: auto_res,
-          onChange: changeHandlerFactory.auto_res,
-          options: autoResOptions()
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_VideopackTooltip, {
-          text: (0,external_wp_i18n_namespaceObject.__)('If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.')
-        })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Use device pixel ratio for resolution calculation.'),
-          onChange: changeHandlerFactory.pixel_ratio,
-          checked: !!pixel_ratio
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_VideopackTooltip, {
-          text: (0,external_wp_i18n_namespaceObject.__)('Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.')
-        })]
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Formats'),
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Automatically search for other formats of original file.'),
-          onChange: changeHandlerFactory.find_formats,
-          checked: !!find_formats
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_VideopackTooltip, {
-          text: (0,external_wp_i18n_namespaceObject.__)('Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.')
-        })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.BaseControl, {
-        label: (0,external_wp_i18n_namespaceObject.__)('Available Formats:'),
-        id: "videopack-find-formats-codecs",
-        className: "videopack-setting-checkbox-group",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-          children: videopack.settings.codecs.map(codec => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-            __nextHasNoMarginBottom: true,
-            label: codec.name,
-            checked: !!encode?.[codec.id]?.enabled,
-            onChange: isChecked => handleCodecCheckboxChange(codec.id, isChecked)
-          }, codec.id))
-        })
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Watermark Overlay'),
-      initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_TextControlOnBlur, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Image URL:'),
-          type: "url",
-          value: watermark,
-          onChange: changeHandlerFactory.watermark
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-          className: "videopack-library-button",
-          variant: "secondary",
-          children: (0,external_wp_i18n_namespaceObject.__)('Choose from library')
-        })]
-      }), watermark && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Link to:'),
-          value: watermark_link_to,
-          onChange: changeHandlerFactory.watermark_link_to,
-          options: watermarkLinkOptions
-        }), watermark_link_to === 'custom' && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('URL:'),
-          type: "url",
-          value: watermark_url,
-          onChange: changeHandlerFactory.watermark_url
-        })]
-      })]
-    })]
-  });
-};
-/* harmony default export */ const components_PlayerSettings = (PlayerSettings);
-;// external "React"
-const external_React_namespaceObject = window["React"];
-var external_React_default = /*#__PURE__*/__webpack_require__.n(external_React_namespaceObject);
-;// external "ReactDOM"
-const external_ReactDOM_namespaceObject = window["ReactDOM"];
-;// ./node_modules/@dnd-kit/utilities/dist/utilities.esm.js
-
-
-function useCombinedRefs() {
-  for (var _len = arguments.length, refs = new Array(_len), _key = 0; _key < _len; _key++) {
-    refs[_key] = arguments[_key];
-  }
-
-  return (0,external_React_namespaceObject.useMemo)(() => node => {
-    refs.forEach(ref => ref(node));
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  refs);
-}
-
-// https://github.com/facebook/react/blob/master/packages/shared/ExecutionEnvironment.js
-const canUseDOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
-
-function isWindow(element) {
-  const elementString = Object.prototype.toString.call(element);
-  return elementString === '[object Window]' || // In Electron context the Window object serializes to [object global]
-  elementString === '[object global]';
-}
-
-function isNode(node) {
-  return 'nodeType' in node;
-}
-
-function utilities_esm_getWindow(target) {
-  var _target$ownerDocument, _target$ownerDocument2;
-
-  if (!target) {
-    return window;
-  }
-
-  if (isWindow(target)) {
-    return target;
-  }
-
-  if (!isNode(target)) {
-    return window;
-  }
-
-  return (_target$ownerDocument = (_target$ownerDocument2 = target.ownerDocument) == null ? void 0 : _target$ownerDocument2.defaultView) != null ? _target$ownerDocument : window;
-}
-
-function isDocument(node) {
-  const {
-    Document
-  } = utilities_esm_getWindow(node);
-  return node instanceof Document;
-}
-
-function isHTMLElement(node) {
-  if (isWindow(node)) {
-    return false;
-  }
-
-  return node instanceof utilities_esm_getWindow(node).HTMLElement;
-}
-
-function isSVGElement(node) {
-  return node instanceof utilities_esm_getWindow(node).SVGElement;
-}
-
-function getOwnerDocument(target) {
-  if (!target) {
-    return document;
-  }
-
-  if (isWindow(target)) {
-    return target.document;
-  }
-
-  if (!isNode(target)) {
-    return document;
-  }
-
-  if (isDocument(target)) {
-    return target;
-  }
-
-  if (isHTMLElement(target) || isSVGElement(target)) {
-    return target.ownerDocument;
-  }
-
-  return document;
-}
-
-/**
- * A hook that resolves to useEffect on the server and useLayoutEffect on the client
- * @param callback {function} Callback function that is invoked when the dependencies of the hook change
- */
-
-const utilities_esm_useIsomorphicLayoutEffect = canUseDOM ? external_React_namespaceObject.useLayoutEffect : external_React_namespaceObject.useEffect;
-
-function utilities_esm_useEvent(handler) {
-  const handlerRef = (0,external_React_namespaceObject.useRef)(handler);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    handlerRef.current = handler;
-  });
-  return (0,external_React_namespaceObject.useCallback)(function () {
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return handlerRef.current == null ? void 0 : handlerRef.current(...args);
-  }, []);
-}
-
-function useInterval() {
-  const intervalRef = (0,external_React_namespaceObject.useRef)(null);
-  const set = (0,external_React_namespaceObject.useCallback)((listener, duration) => {
-    intervalRef.current = setInterval(listener, duration);
-  }, []);
-  const clear = (0,external_React_namespaceObject.useCallback)(() => {
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
-  return [set, clear];
-}
-
-function useLatestValue(value, dependencies) {
-  if (dependencies === void 0) {
-    dependencies = [value];
-  }
-
-  const valueRef = (0,external_React_namespaceObject.useRef)(value);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    if (valueRef.current !== value) {
-      valueRef.current = value;
-    }
-  }, dependencies);
-  return valueRef;
-}
-
-function useLazyMemo(callback, dependencies) {
-  const valueRef = (0,external_React_namespaceObject.useRef)();
-  return (0,external_React_namespaceObject.useMemo)(() => {
-    const newValue = callback(valueRef.current);
-    valueRef.current = newValue;
-    return newValue;
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [...dependencies]);
-}
-
-function useNodeRef(onChange) {
-  const onChangeHandler = utilities_esm_useEvent(onChange);
-  const node = (0,external_React_namespaceObject.useRef)(null);
-  const setNodeRef = (0,external_React_namespaceObject.useCallback)(element => {
-    if (element !== node.current) {
-      onChangeHandler == null ? void 0 : onChangeHandler(element, node.current);
-    }
-
-    node.current = element;
-  }, //eslint-disable-next-line
-  []);
-  return [node, setNodeRef];
-}
-
-function utilities_esm_usePrevious(value) {
-  const ref = (0,external_React_namespaceObject.useRef)();
-  (0,external_React_namespaceObject.useEffect)(() => {
-    ref.current = value;
-  }, [value]);
-  return ref.current;
-}
-
-let ids = {};
-function useUniqueId(prefix, value) {
-  return (0,external_React_namespaceObject.useMemo)(() => {
-    if (value) {
-      return value;
-    }
-
-    const id = ids[prefix] == null ? 0 : ids[prefix] + 1;
-    ids[prefix] = id;
-    return prefix + "-" + id;
-  }, [prefix, value]);
-}
-
-function createAdjustmentFn(modifier) {
-  return function (object) {
-    for (var _len = arguments.length, adjustments = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      adjustments[_key - 1] = arguments[_key];
-    }
-
-    return adjustments.reduce((accumulator, adjustment) => {
-      const entries = Object.entries(adjustment);
-
-      for (const [key, valueAdjustment] of entries) {
-        const value = accumulator[key];
-
-        if (value != null) {
-          accumulator[key] = value + modifier * valueAdjustment;
-        }
-      }
-
-      return accumulator;
-    }, { ...object
-    });
-  };
-}
-
-const add = /*#__PURE__*/createAdjustmentFn(1);
-const subtract = /*#__PURE__*/createAdjustmentFn(-1);
-
-function hasViewportRelativeCoordinates(event) {
-  return 'clientX' in event && 'clientY' in event;
-}
-
-function utilities_esm_isKeyboardEvent(event) {
-  if (!event) {
-    return false;
-  }
-
-  const {
-    KeyboardEvent
-  } = utilities_esm_getWindow(event.target);
-  return KeyboardEvent && event instanceof KeyboardEvent;
-}
-
-function isTouchEvent(event) {
-  if (!event) {
-    return false;
-  }
-
-  const {
-    TouchEvent
-  } = utilities_esm_getWindow(event.target);
-  return TouchEvent && event instanceof TouchEvent;
-}
-
-/**
- * Returns the normalized x and y coordinates for mouse and touch events.
- */
-
-function utilities_esm_getEventCoordinates(event) {
-  if (isTouchEvent(event)) {
-    if (event.touches && event.touches.length) {
-      const {
-        clientX: x,
-        clientY: y
-      } = event.touches[0];
-      return {
-        x,
-        y
-      };
-    } else if (event.changedTouches && event.changedTouches.length) {
-      const {
-        clientX: x,
-        clientY: y
-      } = event.changedTouches[0];
-      return {
-        x,
-        y
-      };
-    }
-  }
-
-  if (hasViewportRelativeCoordinates(event)) {
-    return {
-      x: event.clientX,
-      y: event.clientY
-    };
-  }
-
-  return null;
-}
-
-const utilities_esm_CSS = /*#__PURE__*/Object.freeze({
-  Translate: {
-    toString(transform) {
-      if (!transform) {
-        return;
-      }
-
-      const {
-        x,
-        y
-      } = transform;
-      return "translate3d(" + (x ? Math.round(x) : 0) + "px, " + (y ? Math.round(y) : 0) + "px, 0)";
-    }
-
-  },
-  Scale: {
-    toString(transform) {
-      if (!transform) {
-        return;
-      }
-
-      const {
-        scaleX,
-        scaleY
-      } = transform;
-      return "scaleX(" + scaleX + ") scaleY(" + scaleY + ")";
-    }
-
-  },
-  Transform: {
-    toString(transform) {
-      if (!transform) {
-        return;
-      }
-
-      return [utilities_esm_CSS.Translate.toString(transform), utilities_esm_CSS.Scale.toString(transform)].join(' ');
-    }
-
-  },
-  Transition: {
-    toString(_ref) {
-      let {
-        property,
-        duration,
-        easing
-      } = _ref;
-      return property + " " + duration + "ms " + easing;
-    }
-
-  }
-});
-
-const SELECTOR = 'a,frame,iframe,input:not([type=hidden]):not(:disabled),select:not(:disabled),textarea:not(:disabled),button:not(:disabled),*[tabindex]';
-function findFirstFocusableNode(element) {
-  if (element.matches(SELECTOR)) {
-    return element;
-  }
-
-  return element.querySelector(SELECTOR);
-}
-
-
-//# sourceMappingURL=utilities.esm.js.map
-
-;// ./node_modules/@dnd-kit/accessibility/dist/accessibility.esm.js
-
-
-const hiddenStyles = {
-  display: 'none'
-};
-function HiddenText(_ref) {
-  let {
-    id,
-    value
-  } = _ref;
-  return external_React_default().createElement("div", {
-    id: id,
-    style: hiddenStyles
-  }, value);
-}
-
-function LiveRegion(_ref) {
-  let {
-    id,
-    announcement,
-    ariaLiveType = "assertive"
-  } = _ref;
-  // Hide element visually but keep it readable by screen readers
-  const visuallyHidden = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: 1,
-    height: 1,
-    margin: -1,
-    border: 0,
-    padding: 0,
-    overflow: 'hidden',
-    clip: 'rect(0 0 0 0)',
-    clipPath: 'inset(100%)',
-    whiteSpace: 'nowrap'
-  };
-  return external_React_default().createElement("div", {
-    id: id,
-    style: visuallyHidden,
-    role: "status",
-    "aria-live": ariaLiveType,
-    "aria-atomic": true
-  }, announcement);
-}
-
-function useAnnouncement() {
-  const [announcement, setAnnouncement] = (0,external_React_namespaceObject.useState)('');
-  const announce = (0,external_React_namespaceObject.useCallback)(value => {
-    if (value != null) {
-      setAnnouncement(value);
-    }
-  }, []);
-  return {
-    announce,
-    announcement
-  };
-}
-
-
-//# sourceMappingURL=accessibility.esm.js.map
-
-;// ./node_modules/@dnd-kit/core/dist/core.esm.js
-
-
-
-
-
-const DndMonitorContext = /*#__PURE__*/(0,external_React_namespaceObject.createContext)(null);
-
-function useDndMonitor(listener) {
-  const registerListener = (0,external_React_namespaceObject.useContext)(DndMonitorContext);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (!registerListener) {
-      throw new Error('useDndMonitor must be used within a children of <DndContext>');
-    }
-
-    const unsubscribe = registerListener(listener);
-    return unsubscribe;
-  }, [listener, registerListener]);
-}
-
-function useDndMonitorProvider() {
-  const [listeners] = (0,external_React_namespaceObject.useState)(() => new Set());
-  const registerListener = (0,external_React_namespaceObject.useCallback)(listener => {
-    listeners.add(listener);
-    return () => listeners.delete(listener);
-  }, [listeners]);
-  const dispatch = (0,external_React_namespaceObject.useCallback)(_ref => {
-    let {
-      type,
-      event
-    } = _ref;
-    listeners.forEach(listener => {
-      var _listener$type;
-
-      return (_listener$type = listener[type]) == null ? void 0 : _listener$type.call(listener, event);
-    });
-  }, [listeners]);
-  return [dispatch, registerListener];
-}
-
-const defaultScreenReaderInstructions = {
-  draggable: "\n    To pick up a draggable item, press the space bar.\n    While dragging, use the arrow keys to move the item.\n    Press space again to drop the item in its new position, or press escape to cancel.\n  "
-};
-const defaultAnnouncements = {
-  onDragStart(_ref) {
-    let {
-      active
-    } = _ref;
-    return "Picked up draggable item " + active.id + ".";
-  },
-
-  onDragOver(_ref2) {
-    let {
-      active,
-      over
-    } = _ref2;
-
-    if (over) {
-      return "Draggable item " + active.id + " was moved over droppable area " + over.id + ".";
-    }
-
-    return "Draggable item " + active.id + " is no longer over a droppable area.";
-  },
-
-  onDragEnd(_ref3) {
-    let {
-      active,
-      over
-    } = _ref3;
-
-    if (over) {
-      return "Draggable item " + active.id + " was dropped over droppable area " + over.id;
-    }
-
-    return "Draggable item " + active.id + " was dropped.";
-  },
-
-  onDragCancel(_ref4) {
-    let {
-      active
-    } = _ref4;
-    return "Dragging was cancelled. Draggable item " + active.id + " was dropped.";
-  }
-
-};
-
-function Accessibility(_ref) {
-  let {
-    announcements = defaultAnnouncements,
-    container,
-    hiddenTextDescribedById,
-    screenReaderInstructions = defaultScreenReaderInstructions
-  } = _ref;
-  const {
-    announce,
-    announcement
-  } = useAnnouncement();
-  const liveRegionId = useUniqueId("DndLiveRegion");
-  const [mounted, setMounted] = (0,external_React_namespaceObject.useState)(false);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    setMounted(true);
-  }, []);
-  useDndMonitor((0,external_React_namespaceObject.useMemo)(() => ({
-    onDragStart(_ref2) {
-      let {
-        active
-      } = _ref2;
-      announce(announcements.onDragStart({
-        active
-      }));
-    },
-
-    onDragMove(_ref3) {
-      let {
-        active,
-        over
-      } = _ref3;
-
-      if (announcements.onDragMove) {
-        announce(announcements.onDragMove({
-          active,
-          over
-        }));
-      }
-    },
-
-    onDragOver(_ref4) {
-      let {
-        active,
-        over
-      } = _ref4;
-      announce(announcements.onDragOver({
-        active,
-        over
-      }));
-    },
-
-    onDragEnd(_ref5) {
-      let {
-        active,
-        over
-      } = _ref5;
-      announce(announcements.onDragEnd({
-        active,
-        over
-      }));
-    },
-
-    onDragCancel(_ref6) {
-      let {
-        active,
-        over
-      } = _ref6;
-      announce(announcements.onDragCancel({
-        active,
-        over
-      }));
-    }
-
-  }), [announce, announcements]));
-
-  if (!mounted) {
-    return null;
-  }
-
-  const markup = external_React_default().createElement((external_React_default()).Fragment, null, external_React_default().createElement(HiddenText, {
-    id: hiddenTextDescribedById,
-    value: screenReaderInstructions.draggable
-  }), external_React_default().createElement(LiveRegion, {
-    id: liveRegionId,
-    announcement: announcement
-  }));
-  return container ? (0,external_ReactDOM_namespaceObject.createPortal)(markup, container) : markup;
-}
-
-var Action;
-
-(function (Action) {
-  Action["DragStart"] = "dragStart";
-  Action["DragMove"] = "dragMove";
-  Action["DragEnd"] = "dragEnd";
-  Action["DragCancel"] = "dragCancel";
-  Action["DragOver"] = "dragOver";
-  Action["RegisterDroppable"] = "registerDroppable";
-  Action["SetDroppableDisabled"] = "setDroppableDisabled";
-  Action["UnregisterDroppable"] = "unregisterDroppable";
-})(Action || (Action = {}));
-
-function core_esm_noop() {}
-
-function useSensor(sensor, options) {
-  return (0,external_React_namespaceObject.useMemo)(() => ({
-    sensor,
-    options: options != null ? options : {}
-  }), // eslint-disable-next-line react-hooks/exhaustive-deps
-  [sensor, options]);
-}
-
-function useSensors() {
-  for (var _len = arguments.length, sensors = new Array(_len), _key = 0; _key < _len; _key++) {
-    sensors[_key] = arguments[_key];
-  }
-
-  return (0,external_React_namespaceObject.useMemo)(() => [...sensors].filter(sensor => sensor != null), // eslint-disable-next-line react-hooks/exhaustive-deps
-  [...sensors]);
-}
-
-const defaultCoordinates = /*#__PURE__*/Object.freeze({
-  x: 0,
-  y: 0
-});
-
-/**
- * Returns the distance between two points
- */
-function distanceBetween(p1, p2) {
-  return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-}
-
-function getRelativeTransformOrigin(event, rect) {
-  const eventCoordinates = getEventCoordinates(event);
-
-  if (!eventCoordinates) {
-    return '0 0';
-  }
-
-  const transformOrigin = {
-    x: (eventCoordinates.x - rect.left) / rect.width * 100,
-    y: (eventCoordinates.y - rect.top) / rect.height * 100
-  };
-  return transformOrigin.x + "% " + transformOrigin.y + "%";
-}
-
-/**
- * Sort collisions from smallest to greatest value
- */
-function sortCollisionsAsc(_ref, _ref2) {
-  let {
-    data: {
-      value: a
-    }
-  } = _ref;
-  let {
-    data: {
-      value: b
-    }
-  } = _ref2;
-  return a - b;
-}
-/**
- * Sort collisions from greatest to smallest value
- */
-
-function sortCollisionsDesc(_ref3, _ref4) {
-  let {
-    data: {
-      value: a
-    }
-  } = _ref3;
-  let {
-    data: {
-      value: b
-    }
-  } = _ref4;
-  return b - a;
-}
-/**
- * Returns the coordinates of the corners of a given rectangle:
- * [TopLeft {x, y}, TopRight {x, y}, BottomLeft {x, y}, BottomRight {x, y}]
- */
-
-function cornersOfRectangle(_ref5) {
-  let {
-    left,
-    top,
-    height,
-    width
-  } = _ref5;
-  return [{
-    x: left,
-    y: top
-  }, {
-    x: left + width,
-    y: top
-  }, {
-    x: left,
-    y: top + height
-  }, {
-    x: left + width,
-    y: top + height
-  }];
-}
-function getFirstCollision(collisions, property) {
-  if (!collisions || collisions.length === 0) {
-    return null;
-  }
-
-  const [firstCollision] = collisions;
-  return property ? firstCollision[property] : firstCollision;
-}
-
-/**
- * Returns the coordinates of the center of a given ClientRect
- */
-
-function centerOfRectangle(rect, left, top) {
-  if (left === void 0) {
-    left = rect.left;
-  }
-
-  if (top === void 0) {
-    top = rect.top;
-  }
-
-  return {
-    x: left + rect.width * 0.5,
-    y: top + rect.height * 0.5
-  };
-}
-/**
- * Returns the closest rectangles from an array of rectangles to the center of a given
- * rectangle.
- */
-
-
-const closestCenter = _ref => {
-  let {
-    collisionRect,
-    droppableRects,
-    droppableContainers
-  } = _ref;
-  const centerRect = centerOfRectangle(collisionRect, collisionRect.left, collisionRect.top);
-  const collisions = [];
-
-  for (const droppableContainer of droppableContainers) {
-    const {
-      id
-    } = droppableContainer;
-    const rect = droppableRects.get(id);
-
-    if (rect) {
-      const distBetween = distanceBetween(centerOfRectangle(rect), centerRect);
-      collisions.push({
-        id,
-        data: {
-          droppableContainer,
-          value: distBetween
-        }
-      });
-    }
-  }
-
-  return collisions.sort(sortCollisionsAsc);
-};
-
-/**
- * Returns the closest rectangles from an array of rectangles to the corners of
- * another rectangle.
- */
-
-const closestCorners = _ref => {
-  let {
-    collisionRect,
-    droppableRects,
-    droppableContainers
-  } = _ref;
-  const corners = cornersOfRectangle(collisionRect);
-  const collisions = [];
-
-  for (const droppableContainer of droppableContainers) {
-    const {
-      id
-    } = droppableContainer;
-    const rect = droppableRects.get(id);
-
-    if (rect) {
-      const rectCorners = cornersOfRectangle(rect);
-      const distances = corners.reduce((accumulator, corner, index) => {
-        return accumulator + distanceBetween(rectCorners[index], corner);
-      }, 0);
-      const effectiveDistance = Number((distances / 4).toFixed(4));
-      collisions.push({
-        id,
-        data: {
-          droppableContainer,
-          value: effectiveDistance
-        }
-      });
-    }
-  }
-
-  return collisions.sort(sortCollisionsAsc);
-};
-
-/**
- * Returns the intersecting rectangle area between two rectangles
- */
-
-function getIntersectionRatio(entry, target) {
-  const top = Math.max(target.top, entry.top);
-  const left = Math.max(target.left, entry.left);
-  const right = Math.min(target.left + target.width, entry.left + entry.width);
-  const bottom = Math.min(target.top + target.height, entry.top + entry.height);
-  const width = right - left;
-  const height = bottom - top;
-
-  if (left < right && top < bottom) {
-    const targetArea = target.width * target.height;
-    const entryArea = entry.width * entry.height;
-    const intersectionArea = width * height;
-    const intersectionRatio = intersectionArea / (targetArea + entryArea - intersectionArea);
-    return Number(intersectionRatio.toFixed(4));
-  } // Rectangles do not overlap, or overlap has an area of zero (edge/corner overlap)
-
-
-  return 0;
-}
-/**
- * Returns the rectangles that has the greatest intersection area with a given
- * rectangle in an array of rectangles.
- */
-
-const rectIntersection = _ref => {
-  let {
-    collisionRect,
-    droppableRects,
-    droppableContainers
-  } = _ref;
-  const collisions = [];
-
-  for (const droppableContainer of droppableContainers) {
-    const {
-      id
-    } = droppableContainer;
-    const rect = droppableRects.get(id);
-
-    if (rect) {
-      const intersectionRatio = getIntersectionRatio(rect, collisionRect);
-
-      if (intersectionRatio > 0) {
-        collisions.push({
-          id,
-          data: {
-            droppableContainer,
-            value: intersectionRatio
-          }
-        });
-      }
-    }
-  }
-
-  return collisions.sort(sortCollisionsDesc);
-};
-
-/**
- * Check if a given point is contained within a bounding rectangle
- */
-
-function isPointWithinRect(point, rect) {
-  const {
-    top,
-    left,
-    bottom,
-    right
-  } = rect;
-  return top <= point.y && point.y <= bottom && left <= point.x && point.x <= right;
-}
-/**
- * Returns the rectangles that the pointer is hovering over
- */
-
-
-const pointerWithin = _ref => {
-  let {
-    droppableContainers,
-    droppableRects,
-    pointerCoordinates
-  } = _ref;
-
-  if (!pointerCoordinates) {
-    return [];
-  }
-
-  const collisions = [];
-
-  for (const droppableContainer of droppableContainers) {
-    const {
-      id
-    } = droppableContainer;
-    const rect = droppableRects.get(id);
-
-    if (rect && isPointWithinRect(pointerCoordinates, rect)) {
-      /* There may be more than a single rectangle intersecting
-       * with the pointer coordinates. In order to sort the
-       * colliding rectangles, we measure the distance between
-       * the pointer and the corners of the intersecting rectangle
-       */
-      const corners = cornersOfRectangle(rect);
-      const distances = corners.reduce((accumulator, corner) => {
-        return accumulator + distanceBetween(pointerCoordinates, corner);
-      }, 0);
-      const effectiveDistance = Number((distances / 4).toFixed(4));
-      collisions.push({
-        id,
-        data: {
-          droppableContainer,
-          value: effectiveDistance
-        }
-      });
-    }
-  }
-
-  return collisions.sort(sortCollisionsAsc);
-};
-
-function adjustScale(transform, rect1, rect2) {
-  return { ...transform,
-    scaleX: rect1 && rect2 ? rect1.width / rect2.width : 1,
-    scaleY: rect1 && rect2 ? rect1.height / rect2.height : 1
-  };
-}
-
-function getRectDelta(rect1, rect2) {
-  return rect1 && rect2 ? {
-    x: rect1.left - rect2.left,
-    y: rect1.top - rect2.top
-  } : defaultCoordinates;
-}
-
-function createRectAdjustmentFn(modifier) {
-  return function adjustClientRect(rect) {
-    for (var _len = arguments.length, adjustments = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      adjustments[_key - 1] = arguments[_key];
-    }
-
-    return adjustments.reduce((acc, adjustment) => ({ ...acc,
-      top: acc.top + modifier * adjustment.y,
-      bottom: acc.bottom + modifier * adjustment.y,
-      left: acc.left + modifier * adjustment.x,
-      right: acc.right + modifier * adjustment.x
-    }), { ...rect
-    });
-  };
-}
-const getAdjustedRect = /*#__PURE__*/createRectAdjustmentFn(1);
-
-function parseTransform(transform) {
-  if (transform.startsWith('matrix3d(')) {
-    const transformArray = transform.slice(9, -1).split(/, /);
-    return {
-      x: +transformArray[12],
-      y: +transformArray[13],
-      scaleX: +transformArray[0],
-      scaleY: +transformArray[5]
-    };
-  } else if (transform.startsWith('matrix(')) {
-    const transformArray = transform.slice(7, -1).split(/, /);
-    return {
-      x: +transformArray[4],
-      y: +transformArray[5],
-      scaleX: +transformArray[0],
-      scaleY: +transformArray[3]
-    };
-  }
-
-  return null;
-}
-
-function inverseTransform(rect, transform, transformOrigin) {
-  const parsedTransform = parseTransform(transform);
-
-  if (!parsedTransform) {
-    return rect;
-  }
-
-  const {
-    scaleX,
-    scaleY,
-    x: translateX,
-    y: translateY
-  } = parsedTransform;
-  const x = rect.left - translateX - (1 - scaleX) * parseFloat(transformOrigin);
-  const y = rect.top - translateY - (1 - scaleY) * parseFloat(transformOrigin.slice(transformOrigin.indexOf(' ') + 1));
-  const w = scaleX ? rect.width / scaleX : rect.width;
-  const h = scaleY ? rect.height / scaleY : rect.height;
-  return {
-    width: w,
-    height: h,
-    top: y,
-    right: x + w,
-    bottom: y + h,
-    left: x
-  };
-}
-
-const core_esm_defaultOptions = {
-  ignoreTransform: false
-};
-/**
- * Returns the bounding client rect of an element relative to the viewport.
- */
-
-function getClientRect(element, options) {
-  if (options === void 0) {
-    options = core_esm_defaultOptions;
-  }
-
-  let rect = element.getBoundingClientRect();
-
-  if (options.ignoreTransform) {
-    const {
-      transform,
-      transformOrigin
-    } = utilities_esm_getWindow(element).getComputedStyle(element);
-
-    if (transform) {
-      rect = inverseTransform(rect, transform, transformOrigin);
-    }
-  }
-
-  const {
-    top,
-    left,
-    width,
-    height,
-    bottom,
-    right
-  } = rect;
-  return {
-    top,
-    left,
-    width,
-    height,
-    bottom,
-    right
-  };
-}
-/**
- * Returns the bounding client rect of an element relative to the viewport.
- *
- * @remarks
- * The ClientRect returned by this method does not take into account transforms
- * applied to the element it measures.
- *
- */
-
-function getTransformAgnosticClientRect(element) {
-  return getClientRect(element, {
-    ignoreTransform: true
-  });
-}
-
-function getWindowClientRect(element) {
-  const width = element.innerWidth;
-  const height = element.innerHeight;
-  return {
-    top: 0,
-    left: 0,
-    right: width,
-    bottom: height,
-    width,
-    height
-  };
-}
-
-function isFixed(node, computedStyle) {
-  if (computedStyle === void 0) {
-    computedStyle = utilities_esm_getWindow(node).getComputedStyle(node);
-  }
-
-  return computedStyle.position === 'fixed';
-}
-
-function isScrollable(element, computedStyle) {
-  if (computedStyle === void 0) {
-    computedStyle = utilities_esm_getWindow(element).getComputedStyle(element);
-  }
-
-  const overflowRegex = /(auto|scroll|overlay)/;
-  const properties = ['overflow', 'overflowX', 'overflowY'];
-  return properties.some(property => {
-    const value = computedStyle[property];
-    return typeof value === 'string' ? overflowRegex.test(value) : false;
-  });
-}
-
-function getScrollableAncestors(element, limit) {
-  const scrollParents = [];
-
-  function findScrollableAncestors(node) {
-    if (limit != null && scrollParents.length >= limit) {
-      return scrollParents;
-    }
-
-    if (!node) {
-      return scrollParents;
-    }
-
-    if (isDocument(node) && node.scrollingElement != null && !scrollParents.includes(node.scrollingElement)) {
-      scrollParents.push(node.scrollingElement);
-      return scrollParents;
-    }
-
-    if (!isHTMLElement(node) || isSVGElement(node)) {
-      return scrollParents;
-    }
-
-    if (scrollParents.includes(node)) {
-      return scrollParents;
-    }
-
-    const computedStyle = utilities_esm_getWindow(element).getComputedStyle(node);
-
-    if (node !== element) {
-      if (isScrollable(node, computedStyle)) {
-        scrollParents.push(node);
-      }
-    }
-
-    if (isFixed(node, computedStyle)) {
-      return scrollParents;
-    }
-
-    return findScrollableAncestors(node.parentNode);
-  }
-
-  if (!element) {
-    return scrollParents;
-  }
-
-  return findScrollableAncestors(element);
-}
-function getFirstScrollableAncestor(node) {
-  const [firstScrollableAncestor] = getScrollableAncestors(node, 1);
-  return firstScrollableAncestor != null ? firstScrollableAncestor : null;
-}
-
-function getScrollableElement(element) {
-  if (!canUseDOM || !element) {
-    return null;
-  }
-
-  if (isWindow(element)) {
-    return element;
-  }
-
-  if (!isNode(element)) {
-    return null;
-  }
-
-  if (isDocument(element) || element === getOwnerDocument(element).scrollingElement) {
-    return window;
-  }
-
-  if (isHTMLElement(element)) {
-    return element;
-  }
-
-  return null;
-}
-
-function getScrollXCoordinate(element) {
-  if (isWindow(element)) {
-    return element.scrollX;
-  }
-
-  return element.scrollLeft;
-}
-function getScrollYCoordinate(element) {
-  if (isWindow(element)) {
-    return element.scrollY;
-  }
-
-  return element.scrollTop;
-}
-function getScrollCoordinates(element) {
-  return {
-    x: getScrollXCoordinate(element),
-    y: getScrollYCoordinate(element)
-  };
-}
-
-var Direction;
-
-(function (Direction) {
-  Direction[Direction["Forward"] = 1] = "Forward";
-  Direction[Direction["Backward"] = -1] = "Backward";
-})(Direction || (Direction = {}));
-
-function isDocumentScrollingElement(element) {
-  if (!canUseDOM || !element) {
-    return false;
-  }
-
-  return element === document.scrollingElement;
-}
-
-function getScrollPosition(scrollingContainer) {
-  const minScroll = {
-    x: 0,
-    y: 0
-  };
-  const dimensions = isDocumentScrollingElement(scrollingContainer) ? {
-    height: window.innerHeight,
-    width: window.innerWidth
-  } : {
-    height: scrollingContainer.clientHeight,
-    width: scrollingContainer.clientWidth
-  };
-  const maxScroll = {
-    x: scrollingContainer.scrollWidth - dimensions.width,
-    y: scrollingContainer.scrollHeight - dimensions.height
-  };
-  const isTop = scrollingContainer.scrollTop <= minScroll.y;
-  const isLeft = scrollingContainer.scrollLeft <= minScroll.x;
-  const isBottom = scrollingContainer.scrollTop >= maxScroll.y;
-  const isRight = scrollingContainer.scrollLeft >= maxScroll.x;
-  return {
-    isTop,
-    isLeft,
-    isBottom,
-    isRight,
-    maxScroll,
-    minScroll
-  };
-}
-
-const defaultThreshold = {
-  x: 0.2,
-  y: 0.2
-};
-function getScrollDirectionAndSpeed(scrollContainer, scrollContainerRect, _ref, acceleration, thresholdPercentage) {
-  let {
-    top,
-    left,
-    right,
-    bottom
-  } = _ref;
-
-  if (acceleration === void 0) {
-    acceleration = 10;
-  }
-
-  if (thresholdPercentage === void 0) {
-    thresholdPercentage = defaultThreshold;
-  }
-
-  const {
-    isTop,
-    isBottom,
-    isLeft,
-    isRight
-  } = getScrollPosition(scrollContainer);
-  const direction = {
-    x: 0,
-    y: 0
-  };
-  const speed = {
-    x: 0,
-    y: 0
-  };
-  const threshold = {
-    height: scrollContainerRect.height * thresholdPercentage.y,
-    width: scrollContainerRect.width * thresholdPercentage.x
-  };
-
-  if (!isTop && top <= scrollContainerRect.top + threshold.height) {
-    // Scroll Up
-    direction.y = Direction.Backward;
-    speed.y = acceleration * Math.abs((scrollContainerRect.top + threshold.height - top) / threshold.height);
-  } else if (!isBottom && bottom >= scrollContainerRect.bottom - threshold.height) {
-    // Scroll Down
-    direction.y = Direction.Forward;
-    speed.y = acceleration * Math.abs((scrollContainerRect.bottom - threshold.height - bottom) / threshold.height);
-  }
-
-  if (!isRight && right >= scrollContainerRect.right - threshold.width) {
-    // Scroll Right
-    direction.x = Direction.Forward;
-    speed.x = acceleration * Math.abs((scrollContainerRect.right - threshold.width - right) / threshold.width);
-  } else if (!isLeft && left <= scrollContainerRect.left + threshold.width) {
-    // Scroll Left
-    direction.x = Direction.Backward;
-    speed.x = acceleration * Math.abs((scrollContainerRect.left + threshold.width - left) / threshold.width);
-  }
-
-  return {
-    direction,
-    speed
-  };
-}
-
-function getScrollElementRect(element) {
-  if (element === document.scrollingElement) {
-    const {
-      innerWidth,
-      innerHeight
-    } = window;
-    return {
-      top: 0,
-      left: 0,
-      right: innerWidth,
-      bottom: innerHeight,
-      width: innerWidth,
-      height: innerHeight
-    };
-  }
-
-  const {
-    top,
-    left,
-    right,
-    bottom
-  } = element.getBoundingClientRect();
-  return {
-    top,
-    left,
-    right,
-    bottom,
-    width: element.clientWidth,
-    height: element.clientHeight
-  };
-}
-
-function getScrollOffsets(scrollableAncestors) {
-  return scrollableAncestors.reduce((acc, node) => {
-    return add(acc, getScrollCoordinates(node));
-  }, defaultCoordinates);
-}
-function getScrollXOffset(scrollableAncestors) {
-  return scrollableAncestors.reduce((acc, node) => {
-    return acc + getScrollXCoordinate(node);
-  }, 0);
-}
-function getScrollYOffset(scrollableAncestors) {
-  return scrollableAncestors.reduce((acc, node) => {
-    return acc + getScrollYCoordinate(node);
-  }, 0);
-}
-
-function scrollIntoViewIfNeeded(element, measure) {
-  if (measure === void 0) {
-    measure = getClientRect;
-  }
-
-  if (!element) {
-    return;
-  }
-
-  const {
-    top,
-    left,
-    bottom,
-    right
-  } = measure(element);
-  const firstScrollableAncestor = getFirstScrollableAncestor(element);
-
-  if (!firstScrollableAncestor) {
-    return;
-  }
-
-  if (bottom <= 0 || right <= 0 || top >= window.innerHeight || left >= window.innerWidth) {
-    element.scrollIntoView({
-      block: 'center',
-      inline: 'center'
-    });
-  }
-}
-
-const properties = [['x', ['left', 'right'], getScrollXOffset], ['y', ['top', 'bottom'], getScrollYOffset]];
-class Rect {
-  constructor(rect, element) {
-    this.rect = void 0;
-    this.width = void 0;
-    this.height = void 0;
-    this.top = void 0;
-    this.bottom = void 0;
-    this.right = void 0;
-    this.left = void 0;
-    const scrollableAncestors = getScrollableAncestors(element);
-    const scrollOffsets = getScrollOffsets(scrollableAncestors);
-    this.rect = { ...rect
-    };
-    this.width = rect.width;
-    this.height = rect.height;
-
-    for (const [axis, keys, getScrollOffset] of properties) {
-      for (const key of keys) {
-        Object.defineProperty(this, key, {
-          get: () => {
-            const currentOffsets = getScrollOffset(scrollableAncestors);
-            const scrollOffsetsDeltla = scrollOffsets[axis] - currentOffsets;
-            return this.rect[key] + scrollOffsetsDeltla;
-          },
-          enumerable: true
-        });
-      }
-    }
-
-    Object.defineProperty(this, 'rect', {
-      enumerable: false
-    });
-  }
-
-}
-
-class Listeners {
-  constructor(target) {
-    this.target = void 0;
-    this.listeners = [];
-
-    this.removeAll = () => {
-      this.listeners.forEach(listener => {
-        var _this$target;
-
-        return (_this$target = this.target) == null ? void 0 : _this$target.removeEventListener(...listener);
-      });
-    };
-
-    this.target = target;
-  }
-
-  add(eventName, handler, options) {
-    var _this$target2;
-
-    (_this$target2 = this.target) == null ? void 0 : _this$target2.addEventListener(eventName, handler, options);
-    this.listeners.push([eventName, handler, options]);
-  }
-
-}
-
-function getEventListenerTarget(target) {
-  // If the `event.target` element is removed from the document events will still be targeted
-  // at it, and hence won't always bubble up to the window or document anymore.
-  // If there is any risk of an element being removed while it is being dragged,
-  // the best practice is to attach the event listeners directly to the target.
-  // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
-  const {
-    EventTarget
-  } = utilities_esm_getWindow(target);
-  return target instanceof EventTarget ? target : getOwnerDocument(target);
-}
-
-function hasExceededDistance(delta, measurement) {
-  const dx = Math.abs(delta.x);
-  const dy = Math.abs(delta.y);
-
-  if (typeof measurement === 'number') {
-    return Math.sqrt(dx ** 2 + dy ** 2) > measurement;
-  }
-
-  if ('x' in measurement && 'y' in measurement) {
-    return dx > measurement.x && dy > measurement.y;
-  }
-
-  if ('x' in measurement) {
-    return dx > measurement.x;
-  }
-
-  if ('y' in measurement) {
-    return dy > measurement.y;
-  }
-
-  return false;
-}
-
-var EventName;
-
-(function (EventName) {
-  EventName["Click"] = "click";
-  EventName["DragStart"] = "dragstart";
-  EventName["Keydown"] = "keydown";
-  EventName["ContextMenu"] = "contextmenu";
-  EventName["Resize"] = "resize";
-  EventName["SelectionChange"] = "selectionchange";
-  EventName["VisibilityChange"] = "visibilitychange";
-})(EventName || (EventName = {}));
-
-function preventDefault(event) {
-  event.preventDefault();
-}
-function stopPropagation(event) {
-  event.stopPropagation();
-}
-
-var KeyboardCode;
-
-(function (KeyboardCode) {
-  KeyboardCode["Space"] = "Space";
-  KeyboardCode["Down"] = "ArrowDown";
-  KeyboardCode["Right"] = "ArrowRight";
-  KeyboardCode["Left"] = "ArrowLeft";
-  KeyboardCode["Up"] = "ArrowUp";
-  KeyboardCode["Esc"] = "Escape";
-  KeyboardCode["Enter"] = "Enter";
-  KeyboardCode["Tab"] = "Tab";
-})(KeyboardCode || (KeyboardCode = {}));
-
-const defaultKeyboardCodes = {
-  start: [KeyboardCode.Space, KeyboardCode.Enter],
-  cancel: [KeyboardCode.Esc],
-  end: [KeyboardCode.Space, KeyboardCode.Enter, KeyboardCode.Tab]
-};
-const defaultKeyboardCoordinateGetter = (event, _ref) => {
-  let {
-    currentCoordinates
-  } = _ref;
-
-  switch (event.code) {
-    case KeyboardCode.Right:
-      return { ...currentCoordinates,
-        x: currentCoordinates.x + 25
-      };
-
-    case KeyboardCode.Left:
-      return { ...currentCoordinates,
-        x: currentCoordinates.x - 25
-      };
-
-    case KeyboardCode.Down:
-      return { ...currentCoordinates,
-        y: currentCoordinates.y + 25
-      };
-
-    case KeyboardCode.Up:
-      return { ...currentCoordinates,
-        y: currentCoordinates.y - 25
-      };
-  }
-
-  return undefined;
-};
-
-class KeyboardSensor {
-  constructor(props) {
-    this.props = void 0;
-    this.autoScrollEnabled = false;
-    this.referenceCoordinates = void 0;
-    this.listeners = void 0;
-    this.windowListeners = void 0;
-    this.props = props;
-    const {
-      event: {
-        target
-      }
-    } = props;
-    this.props = props;
-    this.listeners = new Listeners(getOwnerDocument(target));
-    this.windowListeners = new Listeners(utilities_esm_getWindow(target));
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleCancel = this.handleCancel.bind(this);
-    this.attach();
-  }
-
-  attach() {
-    this.handleStart();
-    this.windowListeners.add(EventName.Resize, this.handleCancel);
-    this.windowListeners.add(EventName.VisibilityChange, this.handleCancel);
-    setTimeout(() => this.listeners.add(EventName.Keydown, this.handleKeyDown));
-  }
-
-  handleStart() {
-    const {
-      activeNode,
-      onStart
-    } = this.props;
-    const node = activeNode.node.current;
-
-    if (node) {
-      scrollIntoViewIfNeeded(node);
-    }
-
-    onStart(defaultCoordinates);
-  }
-
-  handleKeyDown(event) {
-    if (utilities_esm_isKeyboardEvent(event)) {
-      const {
-        active,
-        context,
-        options
-      } = this.props;
-      const {
-        keyboardCodes = defaultKeyboardCodes,
-        coordinateGetter = defaultKeyboardCoordinateGetter,
-        scrollBehavior = 'smooth'
-      } = options;
-      const {
-        code
-      } = event;
-
-      if (keyboardCodes.end.includes(code)) {
-        this.handleEnd(event);
-        return;
-      }
-
-      if (keyboardCodes.cancel.includes(code)) {
-        this.handleCancel(event);
-        return;
-      }
-
-      const {
-        collisionRect
-      } = context.current;
-      const currentCoordinates = collisionRect ? {
-        x: collisionRect.left,
-        y: collisionRect.top
-      } : defaultCoordinates;
-
-      if (!this.referenceCoordinates) {
-        this.referenceCoordinates = currentCoordinates;
-      }
-
-      const newCoordinates = coordinateGetter(event, {
-        active,
-        context: context.current,
-        currentCoordinates
-      });
-
-      if (newCoordinates) {
-        const coordinatesDelta = subtract(newCoordinates, currentCoordinates);
-        const scrollDelta = {
-          x: 0,
-          y: 0
-        };
-        const {
-          scrollableAncestors
-        } = context.current;
-
-        for (const scrollContainer of scrollableAncestors) {
-          const direction = event.code;
-          const {
-            isTop,
-            isRight,
-            isLeft,
-            isBottom,
-            maxScroll,
-            minScroll
-          } = getScrollPosition(scrollContainer);
-          const scrollElementRect = getScrollElementRect(scrollContainer);
-          const clampedCoordinates = {
-            x: Math.min(direction === KeyboardCode.Right ? scrollElementRect.right - scrollElementRect.width / 2 : scrollElementRect.right, Math.max(direction === KeyboardCode.Right ? scrollElementRect.left : scrollElementRect.left + scrollElementRect.width / 2, newCoordinates.x)),
-            y: Math.min(direction === KeyboardCode.Down ? scrollElementRect.bottom - scrollElementRect.height / 2 : scrollElementRect.bottom, Math.max(direction === KeyboardCode.Down ? scrollElementRect.top : scrollElementRect.top + scrollElementRect.height / 2, newCoordinates.y))
-          };
-          const canScrollX = direction === KeyboardCode.Right && !isRight || direction === KeyboardCode.Left && !isLeft;
-          const canScrollY = direction === KeyboardCode.Down && !isBottom || direction === KeyboardCode.Up && !isTop;
-
-          if (canScrollX && clampedCoordinates.x !== newCoordinates.x) {
-            const newScrollCoordinates = scrollContainer.scrollLeft + coordinatesDelta.x;
-            const canScrollToNewCoordinates = direction === KeyboardCode.Right && newScrollCoordinates <= maxScroll.x || direction === KeyboardCode.Left && newScrollCoordinates >= minScroll.x;
-
-            if (canScrollToNewCoordinates && !coordinatesDelta.y) {
-              // We don't need to update coordinates, the scroll adjustment alone will trigger
-              // logic to auto-detect the new container we are over
-              scrollContainer.scrollTo({
-                left: newScrollCoordinates,
-                behavior: scrollBehavior
-              });
-              return;
-            }
-
-            if (canScrollToNewCoordinates) {
-              scrollDelta.x = scrollContainer.scrollLeft - newScrollCoordinates;
-            } else {
-              scrollDelta.x = direction === KeyboardCode.Right ? scrollContainer.scrollLeft - maxScroll.x : scrollContainer.scrollLeft - minScroll.x;
-            }
-
-            if (scrollDelta.x) {
-              scrollContainer.scrollBy({
-                left: -scrollDelta.x,
-                behavior: scrollBehavior
-              });
-            }
-
-            break;
-          } else if (canScrollY && clampedCoordinates.y !== newCoordinates.y) {
-            const newScrollCoordinates = scrollContainer.scrollTop + coordinatesDelta.y;
-            const canScrollToNewCoordinates = direction === KeyboardCode.Down && newScrollCoordinates <= maxScroll.y || direction === KeyboardCode.Up && newScrollCoordinates >= minScroll.y;
-
-            if (canScrollToNewCoordinates && !coordinatesDelta.x) {
-              // We don't need to update coordinates, the scroll adjustment alone will trigger
-              // logic to auto-detect the new container we are over
-              scrollContainer.scrollTo({
-                top: newScrollCoordinates,
-                behavior: scrollBehavior
-              });
-              return;
-            }
-
-            if (canScrollToNewCoordinates) {
-              scrollDelta.y = scrollContainer.scrollTop - newScrollCoordinates;
-            } else {
-              scrollDelta.y = direction === KeyboardCode.Down ? scrollContainer.scrollTop - maxScroll.y : scrollContainer.scrollTop - minScroll.y;
-            }
-
-            if (scrollDelta.y) {
-              scrollContainer.scrollBy({
-                top: -scrollDelta.y,
-                behavior: scrollBehavior
-              });
-            }
-
-            break;
-          }
-        }
-
-        this.handleMove(event, add(subtract(newCoordinates, this.referenceCoordinates), scrollDelta));
-      }
-    }
-  }
-
-  handleMove(event, coordinates) {
-    const {
-      onMove
-    } = this.props;
-    event.preventDefault();
-    onMove(coordinates);
-  }
-
-  handleEnd(event) {
-    const {
-      onEnd
-    } = this.props;
-    event.preventDefault();
-    this.detach();
-    onEnd();
-  }
-
-  handleCancel(event) {
-    const {
-      onCancel
-    } = this.props;
-    event.preventDefault();
-    this.detach();
-    onCancel();
-  }
-
-  detach() {
-    this.listeners.removeAll();
-    this.windowListeners.removeAll();
-  }
-
-}
-KeyboardSensor.activators = [{
-  eventName: 'onKeyDown',
-  handler: (event, _ref, _ref2) => {
-    let {
-      keyboardCodes = defaultKeyboardCodes,
-      onActivation
-    } = _ref;
-    let {
-      active
-    } = _ref2;
-    const {
-      code
-    } = event.nativeEvent;
-
-    if (keyboardCodes.start.includes(code)) {
-      const activator = active.activatorNode.current;
-
-      if (activator && event.target !== activator) {
-        return false;
-      }
-
-      event.preventDefault();
-      onActivation == null ? void 0 : onActivation({
-        event: event.nativeEvent
-      });
-      return true;
-    }
-
-    return false;
-  }
-}];
-
-function isDistanceConstraint(constraint) {
-  return Boolean(constraint && 'distance' in constraint);
-}
-
-function isDelayConstraint(constraint) {
-  return Boolean(constraint && 'delay' in constraint);
-}
-
-class AbstractPointerSensor {
-  constructor(props, events, listenerTarget) {
-    var _getEventCoordinates;
-
-    if (listenerTarget === void 0) {
-      listenerTarget = getEventListenerTarget(props.event.target);
-    }
-
-    this.props = void 0;
-    this.events = void 0;
-    this.autoScrollEnabled = true;
-    this.document = void 0;
-    this.activated = false;
-    this.initialCoordinates = void 0;
-    this.timeoutId = null;
-    this.listeners = void 0;
-    this.documentListeners = void 0;
-    this.windowListeners = void 0;
-    this.props = props;
-    this.events = events;
-    const {
-      event
-    } = props;
-    const {
-      target
-    } = event;
-    this.props = props;
-    this.events = events;
-    this.document = getOwnerDocument(target);
-    this.documentListeners = new Listeners(this.document);
-    this.listeners = new Listeners(listenerTarget);
-    this.windowListeners = new Listeners(utilities_esm_getWindow(target));
-    this.initialCoordinates = (_getEventCoordinates = utilities_esm_getEventCoordinates(event)) != null ? _getEventCoordinates : defaultCoordinates;
-    this.handleStart = this.handleStart.bind(this);
-    this.handleMove = this.handleMove.bind(this);
-    this.handleEnd = this.handleEnd.bind(this);
-    this.handleCancel = this.handleCancel.bind(this);
-    this.handleKeydown = this.handleKeydown.bind(this);
-    this.removeTextSelection = this.removeTextSelection.bind(this);
-    this.attach();
-  }
-
-  attach() {
-    const {
-      events,
-      props: {
-        options: {
-          activationConstraint,
-          bypassActivationConstraint
-        }
-      }
-    } = this;
-    this.listeners.add(events.move.name, this.handleMove, {
-      passive: false
-    });
-    this.listeners.add(events.end.name, this.handleEnd);
-
-    if (events.cancel) {
-      this.listeners.add(events.cancel.name, this.handleCancel);
-    }
-
-    this.windowListeners.add(EventName.Resize, this.handleCancel);
-    this.windowListeners.add(EventName.DragStart, preventDefault);
-    this.windowListeners.add(EventName.VisibilityChange, this.handleCancel);
-    this.windowListeners.add(EventName.ContextMenu, preventDefault);
-    this.documentListeners.add(EventName.Keydown, this.handleKeydown);
-
-    if (activationConstraint) {
-      if (bypassActivationConstraint != null && bypassActivationConstraint({
-        event: this.props.event,
-        activeNode: this.props.activeNode,
-        options: this.props.options
-      })) {
-        return this.handleStart();
-      }
-
-      if (isDelayConstraint(activationConstraint)) {
-        this.timeoutId = setTimeout(this.handleStart, activationConstraint.delay);
-        this.handlePending(activationConstraint);
-        return;
-      }
-
-      if (isDistanceConstraint(activationConstraint)) {
-        this.handlePending(activationConstraint);
-        return;
-      }
-    }
-
-    this.handleStart();
-  }
-
-  detach() {
-    this.listeners.removeAll();
-    this.windowListeners.removeAll(); // Wait until the next event loop before removing document listeners
-    // This is necessary because we listen for `click` and `selection` events on the document
-
-    setTimeout(this.documentListeners.removeAll, 50);
-
-    if (this.timeoutId !== null) {
-      clearTimeout(this.timeoutId);
-      this.timeoutId = null;
-    }
-  }
-
-  handlePending(constraint, offset) {
-    const {
-      active,
-      onPending
-    } = this.props;
-    onPending(active, constraint, this.initialCoordinates, offset);
-  }
-
-  handleStart() {
-    const {
-      initialCoordinates
-    } = this;
-    const {
-      onStart
-    } = this.props;
-
-    if (initialCoordinates) {
-      this.activated = true; // Stop propagation of click events once activation constraints are met
-
-      this.documentListeners.add(EventName.Click, stopPropagation, {
-        capture: true
-      }); // Remove any text selection from the document
-
-      this.removeTextSelection(); // Prevent further text selection while dragging
-
-      this.documentListeners.add(EventName.SelectionChange, this.removeTextSelection);
-      onStart(initialCoordinates);
-    }
-  }
-
-  handleMove(event) {
-    var _getEventCoordinates2;
-
-    const {
-      activated,
-      initialCoordinates,
-      props
-    } = this;
-    const {
-      onMove,
-      options: {
-        activationConstraint
-      }
-    } = props;
-
-    if (!initialCoordinates) {
-      return;
-    }
-
-    const coordinates = (_getEventCoordinates2 = utilities_esm_getEventCoordinates(event)) != null ? _getEventCoordinates2 : defaultCoordinates;
-    const delta = subtract(initialCoordinates, coordinates); // Constraint validation
-
-    if (!activated && activationConstraint) {
-      if (isDistanceConstraint(activationConstraint)) {
-        if (activationConstraint.tolerance != null && hasExceededDistance(delta, activationConstraint.tolerance)) {
-          return this.handleCancel();
-        }
-
-        if (hasExceededDistance(delta, activationConstraint.distance)) {
-          return this.handleStart();
-        }
-      }
-
-      if (isDelayConstraint(activationConstraint)) {
-        if (hasExceededDistance(delta, activationConstraint.tolerance)) {
-          return this.handleCancel();
-        }
-      }
-
-      this.handlePending(activationConstraint, delta);
-      return;
-    }
-
-    if (event.cancelable) {
-      event.preventDefault();
-    }
-
-    onMove(coordinates);
-  }
-
-  handleEnd() {
-    const {
-      onAbort,
-      onEnd
-    } = this.props;
-    this.detach();
-
-    if (!this.activated) {
-      onAbort(this.props.active);
-    }
-
-    onEnd();
-  }
-
-  handleCancel() {
-    const {
-      onAbort,
-      onCancel
-    } = this.props;
-    this.detach();
-
-    if (!this.activated) {
-      onAbort(this.props.active);
-    }
-
-    onCancel();
-  }
-
-  handleKeydown(event) {
-    if (event.code === KeyboardCode.Esc) {
-      this.handleCancel();
-    }
-  }
-
-  removeTextSelection() {
-    var _this$document$getSel;
-
-    (_this$document$getSel = this.document.getSelection()) == null ? void 0 : _this$document$getSel.removeAllRanges();
-  }
-
-}
-
-const events = {
-  cancel: {
-    name: 'pointercancel'
-  },
-  move: {
-    name: 'pointermove'
-  },
-  end: {
-    name: 'pointerup'
-  }
-};
-class PointerSensor extends AbstractPointerSensor {
-  constructor(props) {
-    const {
-      event
-    } = props; // Pointer events stop firing if the target is unmounted while dragging
-    // Therefore we attach listeners to the owner document instead
-
-    const listenerTarget = getOwnerDocument(event.target);
-    super(props, events, listenerTarget);
-  }
-
-}
-PointerSensor.activators = [{
-  eventName: 'onPointerDown',
-  handler: (_ref, _ref2) => {
-    let {
-      nativeEvent: event
-    } = _ref;
-    let {
-      onActivation
-    } = _ref2;
-
-    if (!event.isPrimary || event.button !== 0) {
-      return false;
-    }
-
-    onActivation == null ? void 0 : onActivation({
-      event
-    });
-    return true;
-  }
-}];
-
-const events$1 = {
-  move: {
-    name: 'mousemove'
-  },
-  end: {
-    name: 'mouseup'
-  }
-};
-var MouseButton;
-
-(function (MouseButton) {
-  MouseButton[MouseButton["RightClick"] = 2] = "RightClick";
-})(MouseButton || (MouseButton = {}));
-
-class MouseSensor extends AbstractPointerSensor {
-  constructor(props) {
-    super(props, events$1, getOwnerDocument(props.event.target));
-  }
-
-}
-MouseSensor.activators = [{
-  eventName: 'onMouseDown',
-  handler: (_ref, _ref2) => {
-    let {
-      nativeEvent: event
-    } = _ref;
-    let {
-      onActivation
-    } = _ref2;
-
-    if (event.button === MouseButton.RightClick) {
-      return false;
-    }
-
-    onActivation == null ? void 0 : onActivation({
-      event
-    });
-    return true;
-  }
-}];
-
-const events$2 = {
-  cancel: {
-    name: 'touchcancel'
-  },
-  move: {
-    name: 'touchmove'
-  },
-  end: {
-    name: 'touchend'
-  }
-};
-class TouchSensor extends AbstractPointerSensor {
-  constructor(props) {
-    super(props, events$2);
-  }
-
-  static setup() {
-    // Adding a non-capture and non-passive `touchmove` listener in order
-    // to force `event.preventDefault()` calls to work in dynamically added
-    // touchmove event handlers. This is required for iOS Safari.
-    window.addEventListener(events$2.move.name, noop, {
-      capture: false,
-      passive: false
-    });
-    return function teardown() {
-      window.removeEventListener(events$2.move.name, noop);
-    }; // We create a new handler because the teardown function of another sensor
-    // could remove our event listener if we use a referentially equal listener.
-
-    function noop() {}
-  }
-
-}
-TouchSensor.activators = [{
-  eventName: 'onTouchStart',
-  handler: (_ref, _ref2) => {
-    let {
-      nativeEvent: event
-    } = _ref;
-    let {
-      onActivation
-    } = _ref2;
-    const {
-      touches
-    } = event;
-
-    if (touches.length > 1) {
-      return false;
-    }
-
-    onActivation == null ? void 0 : onActivation({
-      event
-    });
-    return true;
-  }
-}];
-
-var AutoScrollActivator;
-
-(function (AutoScrollActivator) {
-  AutoScrollActivator[AutoScrollActivator["Pointer"] = 0] = "Pointer";
-  AutoScrollActivator[AutoScrollActivator["DraggableRect"] = 1] = "DraggableRect";
-})(AutoScrollActivator || (AutoScrollActivator = {}));
-
-var TraversalOrder;
-
-(function (TraversalOrder) {
-  TraversalOrder[TraversalOrder["TreeOrder"] = 0] = "TreeOrder";
-  TraversalOrder[TraversalOrder["ReversedTreeOrder"] = 1] = "ReversedTreeOrder";
-})(TraversalOrder || (TraversalOrder = {}));
-
-function useAutoScroller(_ref) {
-  let {
-    acceleration,
-    activator = AutoScrollActivator.Pointer,
-    canScroll,
-    draggingRect,
-    enabled,
-    interval = 5,
-    order = TraversalOrder.TreeOrder,
-    pointerCoordinates,
-    scrollableAncestors,
-    scrollableAncestorRects,
-    delta,
-    threshold
-  } = _ref;
-  const scrollIntent = useScrollIntent({
-    delta,
-    disabled: !enabled
-  });
-  const [setAutoScrollInterval, clearAutoScrollInterval] = useInterval();
-  const scrollSpeed = (0,external_React_namespaceObject.useRef)({
-    x: 0,
-    y: 0
-  });
-  const scrollDirection = (0,external_React_namespaceObject.useRef)({
-    x: 0,
-    y: 0
-  });
-  const rect = (0,external_React_namespaceObject.useMemo)(() => {
-    switch (activator) {
-      case AutoScrollActivator.Pointer:
-        return pointerCoordinates ? {
-          top: pointerCoordinates.y,
-          bottom: pointerCoordinates.y,
-          left: pointerCoordinates.x,
-          right: pointerCoordinates.x
-        } : null;
-
-      case AutoScrollActivator.DraggableRect:
-        return draggingRect;
-    }
-  }, [activator, draggingRect, pointerCoordinates]);
-  const scrollContainerRef = (0,external_React_namespaceObject.useRef)(null);
-  const autoScroll = (0,external_React_namespaceObject.useCallback)(() => {
-    const scrollContainer = scrollContainerRef.current;
-
-    if (!scrollContainer) {
-      return;
-    }
-
-    const scrollLeft = scrollSpeed.current.x * scrollDirection.current.x;
-    const scrollTop = scrollSpeed.current.y * scrollDirection.current.y;
-    scrollContainer.scrollBy(scrollLeft, scrollTop);
-  }, []);
-  const sortedScrollableAncestors = (0,external_React_namespaceObject.useMemo)(() => order === TraversalOrder.TreeOrder ? [...scrollableAncestors].reverse() : scrollableAncestors, [order, scrollableAncestors]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (!enabled || !scrollableAncestors.length || !rect) {
-      clearAutoScrollInterval();
-      return;
-    }
-
-    for (const scrollContainer of sortedScrollableAncestors) {
-      if ((canScroll == null ? void 0 : canScroll(scrollContainer)) === false) {
-        continue;
-      }
-
-      const index = scrollableAncestors.indexOf(scrollContainer);
-      const scrollContainerRect = scrollableAncestorRects[index];
-
-      if (!scrollContainerRect) {
-        continue;
-      }
-
-      const {
-        direction,
-        speed
-      } = getScrollDirectionAndSpeed(scrollContainer, scrollContainerRect, rect, acceleration, threshold);
-
-      for (const axis of ['x', 'y']) {
-        if (!scrollIntent[axis][direction[axis]]) {
-          speed[axis] = 0;
-          direction[axis] = 0;
-        }
-      }
-
-      if (speed.x > 0 || speed.y > 0) {
-        clearAutoScrollInterval();
-        scrollContainerRef.current = scrollContainer;
-        setAutoScrollInterval(autoScroll, interval);
-        scrollSpeed.current = speed;
-        scrollDirection.current = direction;
-        return;
-      }
-    }
-
-    scrollSpeed.current = {
-      x: 0,
-      y: 0
-    };
-    scrollDirection.current = {
-      x: 0,
-      y: 0
-    };
-    clearAutoScrollInterval();
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [acceleration, autoScroll, canScroll, clearAutoScrollInterval, enabled, interval, // eslint-disable-next-line react-hooks/exhaustive-deps
-  JSON.stringify(rect), // eslint-disable-next-line react-hooks/exhaustive-deps
-  JSON.stringify(scrollIntent), setAutoScrollInterval, scrollableAncestors, sortedScrollableAncestors, scrollableAncestorRects, // eslint-disable-next-line react-hooks/exhaustive-deps
-  JSON.stringify(threshold)]);
-}
-const defaultScrollIntent = {
-  x: {
-    [Direction.Backward]: false,
-    [Direction.Forward]: false
-  },
-  y: {
-    [Direction.Backward]: false,
-    [Direction.Forward]: false
-  }
-};
-
-function useScrollIntent(_ref2) {
-  let {
-    delta,
-    disabled
-  } = _ref2;
-  const previousDelta = utilities_esm_usePrevious(delta);
-  return useLazyMemo(previousIntent => {
-    if (disabled || !previousDelta || !previousIntent) {
-      // Reset scroll intent tracking when auto-scrolling is disabled
-      return defaultScrollIntent;
-    }
-
-    const direction = {
-      x: Math.sign(delta.x - previousDelta.x),
-      y: Math.sign(delta.y - previousDelta.y)
-    }; // Keep track of the user intent to scroll in each direction for both axis
-
-    return {
-      x: {
-        [Direction.Backward]: previousIntent.x[Direction.Backward] || direction.x === -1,
-        [Direction.Forward]: previousIntent.x[Direction.Forward] || direction.x === 1
-      },
-      y: {
-        [Direction.Backward]: previousIntent.y[Direction.Backward] || direction.y === -1,
-        [Direction.Forward]: previousIntent.y[Direction.Forward] || direction.y === 1
-      }
-    };
-  }, [disabled, delta, previousDelta]);
-}
-
-function useCachedNode(draggableNodes, id) {
-  const draggableNode = id != null ? draggableNodes.get(id) : undefined;
-  const node = draggableNode ? draggableNode.node.current : null;
-  return useLazyMemo(cachedNode => {
-    var _ref;
-
-    if (id == null) {
-      return null;
-    } // In some cases, the draggable node can unmount while dragging
-    // This is the case for virtualized lists. In those situations,
-    // we fall back to the last known value for that node.
-
-
-    return (_ref = node != null ? node : cachedNode) != null ? _ref : null;
-  }, [node, id]);
-}
-
-function useCombineActivators(sensors, getSyntheticHandler) {
-  return (0,external_React_namespaceObject.useMemo)(() => sensors.reduce((accumulator, sensor) => {
-    const {
-      sensor: Sensor
-    } = sensor;
-    const sensorActivators = Sensor.activators.map(activator => ({
-      eventName: activator.eventName,
-      handler: getSyntheticHandler(activator.handler, sensor)
-    }));
-    return [...accumulator, ...sensorActivators];
-  }, []), [sensors, getSyntheticHandler]);
-}
-
-var MeasuringStrategy;
-
-(function (MeasuringStrategy) {
-  MeasuringStrategy[MeasuringStrategy["Always"] = 0] = "Always";
-  MeasuringStrategy[MeasuringStrategy["BeforeDragging"] = 1] = "BeforeDragging";
-  MeasuringStrategy[MeasuringStrategy["WhileDragging"] = 2] = "WhileDragging";
-})(MeasuringStrategy || (MeasuringStrategy = {}));
-
-var MeasuringFrequency;
-
-(function (MeasuringFrequency) {
-  MeasuringFrequency["Optimized"] = "optimized";
-})(MeasuringFrequency || (MeasuringFrequency = {}));
-
-const defaultValue = /*#__PURE__*/new Map();
-function useDroppableMeasuring(containers, _ref) {
-  let {
-    dragging,
-    dependencies,
-    config
-  } = _ref;
-  const [queue, setQueue] = (0,external_React_namespaceObject.useState)(null);
-  const {
-    frequency,
-    measure,
-    strategy
-  } = config;
-  const containersRef = (0,external_React_namespaceObject.useRef)(containers);
-  const disabled = isDisabled();
-  const disabledRef = useLatestValue(disabled);
-  const measureDroppableContainers = (0,external_React_namespaceObject.useCallback)(function (ids) {
-    if (ids === void 0) {
-      ids = [];
-    }
-
-    if (disabledRef.current) {
-      return;
-    }
-
-    setQueue(value => {
-      if (value === null) {
-        return ids;
-      }
-
-      return value.concat(ids.filter(id => !value.includes(id)));
-    });
-  }, [disabledRef]);
-  const timeoutId = (0,external_React_namespaceObject.useRef)(null);
-  const droppableRects = useLazyMemo(previousValue => {
-    if (disabled && !dragging) {
-      return defaultValue;
-    }
-
-    if (!previousValue || previousValue === defaultValue || containersRef.current !== containers || queue != null) {
-      const map = new Map();
-
-      for (let container of containers) {
-        if (!container) {
-          continue;
-        }
-
-        if (queue && queue.length > 0 && !queue.includes(container.id) && container.rect.current) {
-          // This container does not need to be re-measured
-          map.set(container.id, container.rect.current);
-          continue;
-        }
-
-        const node = container.node.current;
-        const rect = node ? new Rect(measure(node), node) : null;
-        container.rect.current = rect;
-
-        if (rect) {
-          map.set(container.id, rect);
-        }
-      }
-
-      return map;
-    }
-
-    return previousValue;
-  }, [containers, queue, dragging, disabled, measure]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    containersRef.current = containers;
-  }, [containers]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (disabled) {
-      return;
-    }
-
-    measureDroppableContainers();
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [dragging, disabled]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (queue && queue.length > 0) {
-      setQueue(null);
-    }
-  }, //eslint-disable-next-line react-hooks/exhaustive-deps
-  [JSON.stringify(queue)]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (disabled || typeof frequency !== 'number' || timeoutId.current !== null) {
-      return;
-    }
-
-    timeoutId.current = setTimeout(() => {
-      measureDroppableContainers();
-      timeoutId.current = null;
-    }, frequency);
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [frequency, disabled, measureDroppableContainers, ...dependencies]);
-  return {
-    droppableRects,
-    measureDroppableContainers,
-    measuringScheduled: queue != null
-  };
-
-  function isDisabled() {
-    switch (strategy) {
-      case MeasuringStrategy.Always:
-        return false;
-
-      case MeasuringStrategy.BeforeDragging:
-        return dragging;
-
-      default:
-        return !dragging;
-    }
-  }
-}
-
-function useInitialValue(value, computeFn) {
-  return useLazyMemo(previousValue => {
-    if (!value) {
-      return null;
-    }
-
-    if (previousValue) {
-      return previousValue;
-    }
-
-    return typeof computeFn === 'function' ? computeFn(value) : value;
-  }, [computeFn, value]);
-}
-
-function useInitialRect(node, measure) {
-  return useInitialValue(node, measure);
-}
-
-/**
- * Returns a new MutationObserver instance.
- * If `MutationObserver` is undefined in the execution environment, returns `undefined`.
- */
-
-function useMutationObserver(_ref) {
-  let {
-    callback,
-    disabled
-  } = _ref;
-  const handleMutations = utilities_esm_useEvent(callback);
-  const mutationObserver = (0,external_React_namespaceObject.useMemo)(() => {
-    if (disabled || typeof window === 'undefined' || typeof window.MutationObserver === 'undefined') {
-      return undefined;
-    }
-
-    const {
-      MutationObserver
-    } = window;
-    return new MutationObserver(handleMutations);
-  }, [handleMutations, disabled]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    return () => mutationObserver == null ? void 0 : mutationObserver.disconnect();
-  }, [mutationObserver]);
-  return mutationObserver;
-}
-
-/**
- * Returns a new ResizeObserver instance bound to the `onResize` callback.
- * If `ResizeObserver` is undefined in the execution environment, returns `undefined`.
- */
-
-function useResizeObserver(_ref) {
-  let {
-    callback,
-    disabled
-  } = _ref;
-  const handleResize = utilities_esm_useEvent(callback);
-  const resizeObserver = (0,external_React_namespaceObject.useMemo)(() => {
-    if (disabled || typeof window === 'undefined' || typeof window.ResizeObserver === 'undefined') {
-      return undefined;
-    }
-
-    const {
-      ResizeObserver
-    } = window;
-    return new ResizeObserver(handleResize);
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [disabled]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    return () => resizeObserver == null ? void 0 : resizeObserver.disconnect();
-  }, [resizeObserver]);
-  return resizeObserver;
-}
-
-function defaultMeasure(element) {
-  return new Rect(getClientRect(element), element);
-}
-
-function useRect(element, measure, fallbackRect) {
-  if (measure === void 0) {
-    measure = defaultMeasure;
-  }
-
-  const [rect, setRect] = (0,external_React_namespaceObject.useState)(null);
-
-  function measureRect() {
-    setRect(currentRect => {
-      if (!element) {
-        return null;
-      }
-
-      if (element.isConnected === false) {
-        var _ref;
-
-        // Fall back to last rect we measured if the element is
-        // no longer connected to the DOM.
-        return (_ref = currentRect != null ? currentRect : fallbackRect) != null ? _ref : null;
-      }
-
-      const newRect = measure(element);
-
-      if (JSON.stringify(currentRect) === JSON.stringify(newRect)) {
-        return currentRect;
-      }
-
-      return newRect;
-    });
-  }
-
-  const mutationObserver = useMutationObserver({
-    callback(records) {
-      if (!element) {
-        return;
-      }
-
-      for (const record of records) {
-        const {
-          type,
-          target
-        } = record;
-
-        if (type === 'childList' && target instanceof HTMLElement && target.contains(element)) {
-          measureRect();
-          break;
-        }
-      }
-    }
-
-  });
-  const resizeObserver = useResizeObserver({
-    callback: measureRect
-  });
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    measureRect();
-
-    if (element) {
-      resizeObserver == null ? void 0 : resizeObserver.observe(element);
-      mutationObserver == null ? void 0 : mutationObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    } else {
-      resizeObserver == null ? void 0 : resizeObserver.disconnect();
-      mutationObserver == null ? void 0 : mutationObserver.disconnect();
-    }
-  }, [element]);
-  return rect;
-}
-
-function useRectDelta(rect) {
-  const initialRect = useInitialValue(rect);
-  return getRectDelta(rect, initialRect);
-}
-
-const defaultValue$1 = [];
-function useScrollableAncestors(node) {
-  const previousNode = (0,external_React_namespaceObject.useRef)(node);
-  const ancestors = useLazyMemo(previousValue => {
-    if (!node) {
-      return defaultValue$1;
-    }
-
-    if (previousValue && previousValue !== defaultValue$1 && node && previousNode.current && node.parentNode === previousNode.current.parentNode) {
-      return previousValue;
-    }
-
-    return getScrollableAncestors(node);
-  }, [node]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    previousNode.current = node;
-  }, [node]);
-  return ancestors;
-}
-
-function useScrollOffsets(elements) {
-  const [scrollCoordinates, setScrollCoordinates] = (0,external_React_namespaceObject.useState)(null);
-  const prevElements = (0,external_React_namespaceObject.useRef)(elements); // To-do: Throttle the handleScroll callback
-
-  const handleScroll = (0,external_React_namespaceObject.useCallback)(event => {
-    const scrollingElement = getScrollableElement(event.target);
-
-    if (!scrollingElement) {
-      return;
-    }
-
-    setScrollCoordinates(scrollCoordinates => {
-      if (!scrollCoordinates) {
-        return null;
-      }
-
-      scrollCoordinates.set(scrollingElement, getScrollCoordinates(scrollingElement));
-      return new Map(scrollCoordinates);
-    });
-  }, []);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    const previousElements = prevElements.current;
-
-    if (elements !== previousElements) {
-      cleanup(previousElements);
-      const entries = elements.map(element => {
-        const scrollableElement = getScrollableElement(element);
-
-        if (scrollableElement) {
-          scrollableElement.addEventListener('scroll', handleScroll, {
-            passive: true
-          });
-          return [scrollableElement, getScrollCoordinates(scrollableElement)];
-        }
-
-        return null;
-      }).filter(entry => entry != null);
-      setScrollCoordinates(entries.length ? new Map(entries) : null);
-      prevElements.current = elements;
-    }
-
-    return () => {
-      cleanup(elements);
-      cleanup(previousElements);
-    };
-
-    function cleanup(elements) {
-      elements.forEach(element => {
-        const scrollableElement = getScrollableElement(element);
-        scrollableElement == null ? void 0 : scrollableElement.removeEventListener('scroll', handleScroll);
-      });
-    }
-  }, [handleScroll, elements]);
-  return (0,external_React_namespaceObject.useMemo)(() => {
-    if (elements.length) {
-      return scrollCoordinates ? Array.from(scrollCoordinates.values()).reduce((acc, coordinates) => add(acc, coordinates), defaultCoordinates) : getScrollOffsets(elements);
-    }
-
-    return defaultCoordinates;
-  }, [elements, scrollCoordinates]);
-}
-
-function useScrollOffsetsDelta(scrollOffsets, dependencies) {
-  if (dependencies === void 0) {
-    dependencies = [];
-  }
-
-  const initialScrollOffsets = (0,external_React_namespaceObject.useRef)(null);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    initialScrollOffsets.current = null;
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  dependencies);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    const hasScrollOffsets = scrollOffsets !== defaultCoordinates;
-
-    if (hasScrollOffsets && !initialScrollOffsets.current) {
-      initialScrollOffsets.current = scrollOffsets;
-    }
-
-    if (!hasScrollOffsets && initialScrollOffsets.current) {
-      initialScrollOffsets.current = null;
-    }
-  }, [scrollOffsets]);
-  return initialScrollOffsets.current ? subtract(scrollOffsets, initialScrollOffsets.current) : defaultCoordinates;
-}
-
-function useSensorSetup(sensors) {
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (!canUseDOM) {
-      return;
-    }
-
-    const teardownFns = sensors.map(_ref => {
-      let {
-        sensor
-      } = _ref;
-      return sensor.setup == null ? void 0 : sensor.setup();
-    });
-    return () => {
-      for (const teardown of teardownFns) {
-        teardown == null ? void 0 : teardown();
-      }
-    };
-  }, // TO-DO: Sensors length could theoretically change which would not be a valid dependency
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  sensors.map(_ref2 => {
-    let {
-      sensor
-    } = _ref2;
-    return sensor;
-  }));
-}
-
-function useSyntheticListeners(listeners, id) {
-  return (0,external_React_namespaceObject.useMemo)(() => {
-    return listeners.reduce((acc, _ref) => {
-      let {
-        eventName,
-        handler
-      } = _ref;
-
-      acc[eventName] = event => {
-        handler(event, id);
-      };
-
-      return acc;
-    }, {});
-  }, [listeners, id]);
-}
-
-function useWindowRect(element) {
-  return (0,external_React_namespaceObject.useMemo)(() => element ? getWindowClientRect(element) : null, [element]);
-}
-
-const defaultValue$2 = [];
-function useRects(elements, measure) {
-  if (measure === void 0) {
-    measure = getClientRect;
-  }
-
-  const [firstElement] = elements;
-  const windowRect = useWindowRect(firstElement ? utilities_esm_getWindow(firstElement) : null);
-  const [rects, setRects] = (0,external_React_namespaceObject.useState)(defaultValue$2);
-
-  function measureRects() {
-    setRects(() => {
-      if (!elements.length) {
-        return defaultValue$2;
-      }
-
-      return elements.map(element => isDocumentScrollingElement(element) ? windowRect : new Rect(measure(element), element));
-    });
-  }
-
-  const resizeObserver = useResizeObserver({
-    callback: measureRects
-  });
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    resizeObserver == null ? void 0 : resizeObserver.disconnect();
-    measureRects();
-    elements.forEach(element => resizeObserver == null ? void 0 : resizeObserver.observe(element));
-  }, [elements]);
-  return rects;
-}
-
-function getMeasurableNode(node) {
-  if (!node) {
-    return null;
-  }
-
-  if (node.children.length > 1) {
-    return node;
-  }
-
-  const firstChild = node.children[0];
-  return isHTMLElement(firstChild) ? firstChild : node;
-}
-
-function useDragOverlayMeasuring(_ref) {
-  let {
-    measure
-  } = _ref;
-  const [rect, setRect] = (0,external_React_namespaceObject.useState)(null);
-  const handleResize = (0,external_React_namespaceObject.useCallback)(entries => {
-    for (const {
-      target
-    } of entries) {
-      if (isHTMLElement(target)) {
-        setRect(rect => {
-          const newRect = measure(target);
-          return rect ? { ...rect,
-            width: newRect.width,
-            height: newRect.height
-          } : newRect;
-        });
-        break;
-      }
-    }
-  }, [measure]);
-  const resizeObserver = useResizeObserver({
-    callback: handleResize
-  });
-  const handleNodeChange = (0,external_React_namespaceObject.useCallback)(element => {
-    const node = getMeasurableNode(element);
-    resizeObserver == null ? void 0 : resizeObserver.disconnect();
-
-    if (node) {
-      resizeObserver == null ? void 0 : resizeObserver.observe(node);
-    }
-
-    setRect(node ? measure(node) : null);
-  }, [measure, resizeObserver]);
-  const [nodeRef, setRef] = useNodeRef(handleNodeChange);
-  return (0,external_React_namespaceObject.useMemo)(() => ({
-    nodeRef,
-    rect,
-    setRef
-  }), [rect, nodeRef, setRef]);
-}
-
-const defaultSensors = [{
-  sensor: PointerSensor,
-  options: {}
-}, {
-  sensor: KeyboardSensor,
-  options: {}
-}];
-const defaultData = {
-  current: {}
-};
-const defaultMeasuringConfiguration = {
-  draggable: {
-    measure: getTransformAgnosticClientRect
-  },
-  droppable: {
-    measure: getTransformAgnosticClientRect,
-    strategy: MeasuringStrategy.WhileDragging,
-    frequency: MeasuringFrequency.Optimized
-  },
-  dragOverlay: {
-    measure: getClientRect
-  }
-};
-
-class DroppableContainersMap extends Map {
-  get(id) {
-    var _super$get;
-
-    return id != null ? (_super$get = super.get(id)) != null ? _super$get : undefined : undefined;
-  }
-
-  toArray() {
-    return Array.from(this.values());
-  }
-
-  getEnabled() {
-    return this.toArray().filter(_ref => {
-      let {
-        disabled
-      } = _ref;
-      return !disabled;
-    });
-  }
-
-  getNodeFor(id) {
-    var _this$get$node$curren, _this$get;
-
-    return (_this$get$node$curren = (_this$get = this.get(id)) == null ? void 0 : _this$get.node.current) != null ? _this$get$node$curren : undefined;
-  }
-
-}
-
-const defaultPublicContext = {
-  activatorEvent: null,
-  active: null,
-  activeNode: null,
-  activeNodeRect: null,
-  collisions: null,
-  containerNodeRect: null,
-  draggableNodes: /*#__PURE__*/new Map(),
-  droppableRects: /*#__PURE__*/new Map(),
-  droppableContainers: /*#__PURE__*/new DroppableContainersMap(),
-  over: null,
-  dragOverlay: {
-    nodeRef: {
-      current: null
-    },
-    rect: null,
-    setRef: core_esm_noop
-  },
-  scrollableAncestors: [],
-  scrollableAncestorRects: [],
-  measuringConfiguration: defaultMeasuringConfiguration,
-  measureDroppableContainers: core_esm_noop,
-  windowRect: null,
-  measuringScheduled: false
-};
-const defaultInternalContext = {
-  activatorEvent: null,
-  activators: [],
-  active: null,
-  activeNodeRect: null,
-  ariaDescribedById: {
-    draggable: ''
-  },
-  dispatch: core_esm_noop,
-  draggableNodes: /*#__PURE__*/new Map(),
-  over: null,
-  measureDroppableContainers: core_esm_noop
-};
-const InternalContext = /*#__PURE__*/(0,external_React_namespaceObject.createContext)(defaultInternalContext);
-const PublicContext = /*#__PURE__*/(0,external_React_namespaceObject.createContext)(defaultPublicContext);
-
-function getInitialState() {
-  return {
-    draggable: {
-      active: null,
-      initialCoordinates: {
-        x: 0,
-        y: 0
-      },
-      nodes: new Map(),
-      translate: {
-        x: 0,
-        y: 0
-      }
-    },
-    droppable: {
-      containers: new DroppableContainersMap()
-    }
-  };
-}
-function reducer(state, action) {
-  switch (action.type) {
-    case Action.DragStart:
-      return { ...state,
-        draggable: { ...state.draggable,
-          initialCoordinates: action.initialCoordinates,
-          active: action.active
-        }
-      };
-
-    case Action.DragMove:
-      if (state.draggable.active == null) {
-        return state;
-      }
-
-      return { ...state,
-        draggable: { ...state.draggable,
-          translate: {
-            x: action.coordinates.x - state.draggable.initialCoordinates.x,
-            y: action.coordinates.y - state.draggable.initialCoordinates.y
-          }
-        }
-      };
-
-    case Action.DragEnd:
-    case Action.DragCancel:
-      return { ...state,
-        draggable: { ...state.draggable,
-          active: null,
-          initialCoordinates: {
-            x: 0,
-            y: 0
-          },
-          translate: {
-            x: 0,
-            y: 0
-          }
-        }
-      };
-
-    case Action.RegisterDroppable:
-      {
-        const {
-          element
-        } = action;
-        const {
-          id
-        } = element;
-        const containers = new DroppableContainersMap(state.droppable.containers);
-        containers.set(id, element);
-        return { ...state,
-          droppable: { ...state.droppable,
-            containers
-          }
-        };
-      }
-
-    case Action.SetDroppableDisabled:
-      {
-        const {
-          id,
-          key,
-          disabled
-        } = action;
-        const element = state.droppable.containers.get(id);
-
-        if (!element || key !== element.key) {
-          return state;
-        }
-
-        const containers = new DroppableContainersMap(state.droppable.containers);
-        containers.set(id, { ...element,
-          disabled
-        });
-        return { ...state,
-          droppable: { ...state.droppable,
-            containers
-          }
-        };
-      }
-
-    case Action.UnregisterDroppable:
-      {
-        const {
-          id,
-          key
-        } = action;
-        const element = state.droppable.containers.get(id);
-
-        if (!element || key !== element.key) {
-          return state;
-        }
-
-        const containers = new DroppableContainersMap(state.droppable.containers);
-        containers.delete(id);
-        return { ...state,
-          droppable: { ...state.droppable,
-            containers
-          }
-        };
-      }
-
-    default:
-      {
-        return state;
-      }
-  }
-}
-
-function RestoreFocus(_ref) {
-  let {
-    disabled
-  } = _ref;
-  const {
-    active,
-    activatorEvent,
-    draggableNodes
-  } = (0,external_React_namespaceObject.useContext)(InternalContext);
-  const previousActivatorEvent = utilities_esm_usePrevious(activatorEvent);
-  const previousActiveId = utilities_esm_usePrevious(active == null ? void 0 : active.id); // Restore keyboard focus on the activator node
-
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (disabled) {
-      return;
-    }
-
-    if (!activatorEvent && previousActivatorEvent && previousActiveId != null) {
-      if (!utilities_esm_isKeyboardEvent(previousActivatorEvent)) {
-        return;
-      }
-
-      if (document.activeElement === previousActivatorEvent.target) {
-        // No need to restore focus
-        return;
-      }
-
-      const draggableNode = draggableNodes.get(previousActiveId);
-
-      if (!draggableNode) {
-        return;
-      }
-
-      const {
-        activatorNode,
-        node
-      } = draggableNode;
-
-      if (!activatorNode.current && !node.current) {
-        return;
-      }
-
-      requestAnimationFrame(() => {
-        for (const element of [activatorNode.current, node.current]) {
-          if (!element) {
-            continue;
-          }
-
-          const focusableNode = findFirstFocusableNode(element);
-
-          if (focusableNode) {
-            focusableNode.focus();
-            break;
-          }
-        }
-      });
-    }
-  }, [activatorEvent, disabled, draggableNodes, previousActiveId, previousActivatorEvent]);
-  return null;
-}
-
-function applyModifiers(modifiers, _ref) {
-  let {
-    transform,
-    ...args
-  } = _ref;
-  return modifiers != null && modifiers.length ? modifiers.reduce((accumulator, modifier) => {
-    return modifier({
-      transform: accumulator,
-      ...args
-    });
-  }, transform) : transform;
-}
-
-function useMeasuringConfiguration(config) {
-  return (0,external_React_namespaceObject.useMemo)(() => ({
-    draggable: { ...defaultMeasuringConfiguration.draggable,
-      ...(config == null ? void 0 : config.draggable)
-    },
-    droppable: { ...defaultMeasuringConfiguration.droppable,
-      ...(config == null ? void 0 : config.droppable)
-    },
-    dragOverlay: { ...defaultMeasuringConfiguration.dragOverlay,
-      ...(config == null ? void 0 : config.dragOverlay)
-    }
-  }), // eslint-disable-next-line react-hooks/exhaustive-deps
-  [config == null ? void 0 : config.draggable, config == null ? void 0 : config.droppable, config == null ? void 0 : config.dragOverlay]);
-}
-
-function useLayoutShiftScrollCompensation(_ref) {
-  let {
-    activeNode,
-    measure,
-    initialRect,
-    config = true
-  } = _ref;
-  const initialized = (0,external_React_namespaceObject.useRef)(false);
-  const {
-    x,
-    y
-  } = typeof config === 'boolean' ? {
-    x: config,
-    y: config
-  } : config;
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    const disabled = !x && !y;
-
-    if (disabled || !activeNode) {
-      initialized.current = false;
-      return;
-    }
-
-    if (initialized.current || !initialRect) {
-      // Return early if layout shift scroll compensation was already attempted
-      // or if there is no initialRect to compare to.
-      return;
-    } // Get the most up to date node ref for the active draggable
-
-
-    const node = activeNode == null ? void 0 : activeNode.node.current;
-
-    if (!node || node.isConnected === false) {
-      // Return early if there is no attached node ref or if the node is
-      // disconnected from the document.
-      return;
-    }
-
-    const rect = measure(node);
-    const rectDelta = getRectDelta(rect, initialRect);
-
-    if (!x) {
-      rectDelta.x = 0;
-    }
-
-    if (!y) {
-      rectDelta.y = 0;
-    } // Only perform layout shift scroll compensation once
-
-
-    initialized.current = true;
-
-    if (Math.abs(rectDelta.x) > 0 || Math.abs(rectDelta.y) > 0) {
-      const firstScrollableAncestor = getFirstScrollableAncestor(node);
-
-      if (firstScrollableAncestor) {
-        firstScrollableAncestor.scrollBy({
-          top: rectDelta.y,
-          left: rectDelta.x
-        });
-      }
-    }
-  }, [activeNode, x, y, initialRect, measure]);
-}
-
-const ActiveDraggableContext = /*#__PURE__*/(0,external_React_namespaceObject.createContext)({ ...defaultCoordinates,
-  scaleX: 1,
-  scaleY: 1
-});
-var Status;
-
-(function (Status) {
-  Status[Status["Uninitialized"] = 0] = "Uninitialized";
-  Status[Status["Initializing"] = 1] = "Initializing";
-  Status[Status["Initialized"] = 2] = "Initialized";
-})(Status || (Status = {}));
-
-const DndContext = /*#__PURE__*/(0,external_React_namespaceObject.memo)(function DndContext(_ref) {
-  var _sensorContext$curren, _dragOverlay$nodeRef$, _dragOverlay$rect, _over$rect;
-
-  let {
-    id,
-    accessibility,
-    autoScroll = true,
-    children,
-    sensors = defaultSensors,
-    collisionDetection = rectIntersection,
-    measuring,
-    modifiers,
-    ...props
-  } = _ref;
-  const store = (0,external_React_namespaceObject.useReducer)(reducer, undefined, getInitialState);
-  const [state, dispatch] = store;
-  const [dispatchMonitorEvent, registerMonitorListener] = useDndMonitorProvider();
-  const [status, setStatus] = (0,external_React_namespaceObject.useState)(Status.Uninitialized);
-  const isInitialized = status === Status.Initialized;
-  const {
-    draggable: {
-      active: activeId,
-      nodes: draggableNodes,
-      translate
-    },
-    droppable: {
-      containers: droppableContainers
-    }
-  } = state;
-  const node = activeId != null ? draggableNodes.get(activeId) : null;
-  const activeRects = (0,external_React_namespaceObject.useRef)({
-    initial: null,
-    translated: null
-  });
-  const active = (0,external_React_namespaceObject.useMemo)(() => {
-    var _node$data;
-
-    return activeId != null ? {
-      id: activeId,
-      // It's possible for the active node to unmount while dragging
-      data: (_node$data = node == null ? void 0 : node.data) != null ? _node$data : defaultData,
-      rect: activeRects
-    } : null;
-  }, [activeId, node]);
-  const activeRef = (0,external_React_namespaceObject.useRef)(null);
-  const [activeSensor, setActiveSensor] = (0,external_React_namespaceObject.useState)(null);
-  const [activatorEvent, setActivatorEvent] = (0,external_React_namespaceObject.useState)(null);
-  const latestProps = useLatestValue(props, Object.values(props));
-  const draggableDescribedById = useUniqueId("DndDescribedBy", id);
-  const enabledDroppableContainers = (0,external_React_namespaceObject.useMemo)(() => droppableContainers.getEnabled(), [droppableContainers]);
-  const measuringConfiguration = useMeasuringConfiguration(measuring);
-  const {
-    droppableRects,
-    measureDroppableContainers,
-    measuringScheduled
-  } = useDroppableMeasuring(enabledDroppableContainers, {
-    dragging: isInitialized,
-    dependencies: [translate.x, translate.y],
-    config: measuringConfiguration.droppable
-  });
-  const activeNode = useCachedNode(draggableNodes, activeId);
-  const activationCoordinates = (0,external_React_namespaceObject.useMemo)(() => activatorEvent ? utilities_esm_getEventCoordinates(activatorEvent) : null, [activatorEvent]);
-  const autoScrollOptions = getAutoScrollerOptions();
-  const initialActiveNodeRect = useInitialRect(activeNode, measuringConfiguration.draggable.measure);
-  useLayoutShiftScrollCompensation({
-    activeNode: activeId != null ? draggableNodes.get(activeId) : null,
-    config: autoScrollOptions.layoutShiftCompensation,
-    initialRect: initialActiveNodeRect,
-    measure: measuringConfiguration.draggable.measure
-  });
-  const activeNodeRect = useRect(activeNode, measuringConfiguration.draggable.measure, initialActiveNodeRect);
-  const containerNodeRect = useRect(activeNode ? activeNode.parentElement : null);
-  const sensorContext = (0,external_React_namespaceObject.useRef)({
-    activatorEvent: null,
-    active: null,
-    activeNode,
-    collisionRect: null,
-    collisions: null,
-    droppableRects,
-    draggableNodes,
-    draggingNode: null,
-    draggingNodeRect: null,
-    droppableContainers,
-    over: null,
-    scrollableAncestors: [],
-    scrollAdjustedTranslate: null
-  });
-  const overNode = droppableContainers.getNodeFor((_sensorContext$curren = sensorContext.current.over) == null ? void 0 : _sensorContext$curren.id);
-  const dragOverlay = useDragOverlayMeasuring({
-    measure: measuringConfiguration.dragOverlay.measure
-  }); // Use the rect of the drag overlay if it is mounted
-
-  const draggingNode = (_dragOverlay$nodeRef$ = dragOverlay.nodeRef.current) != null ? _dragOverlay$nodeRef$ : activeNode;
-  const draggingNodeRect = isInitialized ? (_dragOverlay$rect = dragOverlay.rect) != null ? _dragOverlay$rect : activeNodeRect : null;
-  const usesDragOverlay = Boolean(dragOverlay.nodeRef.current && dragOverlay.rect); // The delta between the previous and new position of the draggable node
-  // is only relevant when there is no drag overlay
-
-  const nodeRectDelta = useRectDelta(usesDragOverlay ? null : activeNodeRect); // Get the window rect of the dragging node
-
-  const windowRect = useWindowRect(draggingNode ? utilities_esm_getWindow(draggingNode) : null); // Get scrollable ancestors of the dragging node
-
-  const scrollableAncestors = useScrollableAncestors(isInitialized ? overNode != null ? overNode : activeNode : null);
-  const scrollableAncestorRects = useRects(scrollableAncestors); // Apply modifiers
-
-  const modifiedTranslate = applyModifiers(modifiers, {
-    transform: {
-      x: translate.x - nodeRectDelta.x,
-      y: translate.y - nodeRectDelta.y,
-      scaleX: 1,
-      scaleY: 1
-    },
-    activatorEvent,
-    active,
-    activeNodeRect,
-    containerNodeRect,
-    draggingNodeRect,
-    over: sensorContext.current.over,
-    overlayNodeRect: dragOverlay.rect,
-    scrollableAncestors,
-    scrollableAncestorRects,
-    windowRect
-  });
-  const pointerCoordinates = activationCoordinates ? add(activationCoordinates, translate) : null;
-  const scrollOffsets = useScrollOffsets(scrollableAncestors); // Represents the scroll delta since dragging was initiated
-
-  const scrollAdjustment = useScrollOffsetsDelta(scrollOffsets); // Represents the scroll delta since the last time the active node rect was measured
-
-  const activeNodeScrollDelta = useScrollOffsetsDelta(scrollOffsets, [activeNodeRect]);
-  const scrollAdjustedTranslate = add(modifiedTranslate, scrollAdjustment);
-  const collisionRect = draggingNodeRect ? getAdjustedRect(draggingNodeRect, modifiedTranslate) : null;
-  const collisions = active && collisionRect ? collisionDetection({
-    active,
-    collisionRect,
-    droppableRects,
-    droppableContainers: enabledDroppableContainers,
-    pointerCoordinates
-  }) : null;
-  const overId = getFirstCollision(collisions, 'id');
-  const [over, setOver] = (0,external_React_namespaceObject.useState)(null); // When there is no drag overlay used, we need to account for the
-  // window scroll delta
-
-  const appliedTranslate = usesDragOverlay ? modifiedTranslate : add(modifiedTranslate, activeNodeScrollDelta);
-  const transform = adjustScale(appliedTranslate, (_over$rect = over == null ? void 0 : over.rect) != null ? _over$rect : null, activeNodeRect);
-  const activeSensorRef = (0,external_React_namespaceObject.useRef)(null);
-  const instantiateSensor = (0,external_React_namespaceObject.useCallback)((event, _ref2) => {
-    let {
-      sensor: Sensor,
-      options
-    } = _ref2;
-
-    if (activeRef.current == null) {
-      return;
-    }
-
-    const activeNode = draggableNodes.get(activeRef.current);
-
-    if (!activeNode) {
-      return;
-    }
-
-    const activatorEvent = event.nativeEvent;
-    const sensorInstance = new Sensor({
-      active: activeRef.current,
-      activeNode,
-      event: activatorEvent,
-      options,
-      // Sensors need to be instantiated with refs for arguments that change over time
-      // otherwise they are frozen in time with the stale arguments
-      context: sensorContext,
-
-      onAbort(id) {
-        const draggableNode = draggableNodes.get(id);
-
-        if (!draggableNode) {
-          return;
-        }
-
-        const {
-          onDragAbort
-        } = latestProps.current;
-        const event = {
-          id
-        };
-        onDragAbort == null ? void 0 : onDragAbort(event);
-        dispatchMonitorEvent({
-          type: 'onDragAbort',
-          event
-        });
-      },
-
-      onPending(id, constraint, initialCoordinates, offset) {
-        const draggableNode = draggableNodes.get(id);
-
-        if (!draggableNode) {
-          return;
-        }
-
-        const {
-          onDragPending
-        } = latestProps.current;
-        const event = {
-          id,
-          constraint,
-          initialCoordinates,
-          offset
-        };
-        onDragPending == null ? void 0 : onDragPending(event);
-        dispatchMonitorEvent({
-          type: 'onDragPending',
-          event
-        });
-      },
-
-      onStart(initialCoordinates) {
-        const id = activeRef.current;
-
-        if (id == null) {
-          return;
-        }
-
-        const draggableNode = draggableNodes.get(id);
-
-        if (!draggableNode) {
-          return;
-        }
-
-        const {
-          onDragStart
-        } = latestProps.current;
-        const event = {
-          activatorEvent,
-          active: {
-            id,
-            data: draggableNode.data,
-            rect: activeRects
-          }
-        };
-        (0,external_ReactDOM_namespaceObject.unstable_batchedUpdates)(() => {
-          onDragStart == null ? void 0 : onDragStart(event);
-          setStatus(Status.Initializing);
-          dispatch({
-            type: Action.DragStart,
-            initialCoordinates,
-            active: id
-          });
-          dispatchMonitorEvent({
-            type: 'onDragStart',
-            event
-          });
-          setActiveSensor(activeSensorRef.current);
-          setActivatorEvent(activatorEvent);
-        });
-      },
-
-      onMove(coordinates) {
-        dispatch({
-          type: Action.DragMove,
-          coordinates
-        });
-      },
-
-      onEnd: createHandler(Action.DragEnd),
-      onCancel: createHandler(Action.DragCancel)
-    });
-    activeSensorRef.current = sensorInstance;
-
-    function createHandler(type) {
-      return async function handler() {
-        const {
-          active,
-          collisions,
-          over,
-          scrollAdjustedTranslate
-        } = sensorContext.current;
-        let event = null;
-
-        if (active && scrollAdjustedTranslate) {
-          const {
-            cancelDrop
-          } = latestProps.current;
-          event = {
-            activatorEvent,
-            active: active,
-            collisions,
-            delta: scrollAdjustedTranslate,
-            over
-          };
-
-          if (type === Action.DragEnd && typeof cancelDrop === 'function') {
-            const shouldCancel = await Promise.resolve(cancelDrop(event));
-
-            if (shouldCancel) {
-              type = Action.DragCancel;
-            }
-          }
-        }
-
-        activeRef.current = null;
-        (0,external_ReactDOM_namespaceObject.unstable_batchedUpdates)(() => {
-          dispatch({
-            type
-          });
-          setStatus(Status.Uninitialized);
-          setOver(null);
-          setActiveSensor(null);
-          setActivatorEvent(null);
-          activeSensorRef.current = null;
-          const eventName = type === Action.DragEnd ? 'onDragEnd' : 'onDragCancel';
-
-          if (event) {
-            const handler = latestProps.current[eventName];
-            handler == null ? void 0 : handler(event);
-            dispatchMonitorEvent({
-              type: eventName,
-              event
-            });
-          }
-        });
-      };
-    }
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [draggableNodes]);
-  const bindActivatorToSensorInstantiator = (0,external_React_namespaceObject.useCallback)((handler, sensor) => {
-    return (event, active) => {
-      const nativeEvent = event.nativeEvent;
-      const activeDraggableNode = draggableNodes.get(active);
-
-      if ( // Another sensor is already instantiating
-      activeRef.current !== null || // No active draggable
-      !activeDraggableNode || // Event has already been captured
-      nativeEvent.dndKit || nativeEvent.defaultPrevented) {
-        return;
-      }
-
-      const activationContext = {
-        active: activeDraggableNode
-      };
-      const shouldActivate = handler(event, sensor.options, activationContext);
-
-      if (shouldActivate === true) {
-        nativeEvent.dndKit = {
-          capturedBy: sensor.sensor
-        };
-        activeRef.current = active;
-        instantiateSensor(event, sensor);
-      }
-    };
-  }, [draggableNodes, instantiateSensor]);
-  const activators = useCombineActivators(sensors, bindActivatorToSensorInstantiator);
-  useSensorSetup(sensors);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    if (activeNodeRect && status === Status.Initializing) {
-      setStatus(Status.Initialized);
-    }
-  }, [activeNodeRect, status]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    const {
-      onDragMove
-    } = latestProps.current;
-    const {
-      active,
-      activatorEvent,
-      collisions,
-      over
-    } = sensorContext.current;
-
-    if (!active || !activatorEvent) {
-      return;
-    }
-
-    const event = {
-      active,
-      activatorEvent,
-      collisions,
-      delta: {
-        x: scrollAdjustedTranslate.x,
-        y: scrollAdjustedTranslate.y
-      },
-      over
-    };
-    (0,external_ReactDOM_namespaceObject.unstable_batchedUpdates)(() => {
-      onDragMove == null ? void 0 : onDragMove(event);
-      dispatchMonitorEvent({
-        type: 'onDragMove',
-        event
-      });
-    });
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [scrollAdjustedTranslate.x, scrollAdjustedTranslate.y]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    const {
-      active,
-      activatorEvent,
-      collisions,
-      droppableContainers,
-      scrollAdjustedTranslate
-    } = sensorContext.current;
-
-    if (!active || activeRef.current == null || !activatorEvent || !scrollAdjustedTranslate) {
-      return;
-    }
-
-    const {
-      onDragOver
-    } = latestProps.current;
-    const overContainer = droppableContainers.get(overId);
-    const over = overContainer && overContainer.rect.current ? {
-      id: overContainer.id,
-      rect: overContainer.rect.current,
-      data: overContainer.data,
-      disabled: overContainer.disabled
-    } : null;
-    const event = {
-      active,
-      activatorEvent,
-      collisions,
-      delta: {
-        x: scrollAdjustedTranslate.x,
-        y: scrollAdjustedTranslate.y
-      },
-      over
-    };
-    (0,external_ReactDOM_namespaceObject.unstable_batchedUpdates)(() => {
-      setOver(over);
-      onDragOver == null ? void 0 : onDragOver(event);
-      dispatchMonitorEvent({
-        type: 'onDragOver',
-        event
-      });
-    });
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [overId]);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    sensorContext.current = {
-      activatorEvent,
-      active,
-      activeNode,
-      collisionRect,
-      collisions,
-      droppableRects,
-      draggableNodes,
-      draggingNode,
-      draggingNodeRect,
-      droppableContainers,
-      over,
-      scrollableAncestors,
-      scrollAdjustedTranslate
-    };
-    activeRects.current = {
-      initial: draggingNodeRect,
-      translated: collisionRect
-    };
-  }, [active, activeNode, collisions, collisionRect, draggableNodes, draggingNode, draggingNodeRect, droppableRects, droppableContainers, over, scrollableAncestors, scrollAdjustedTranslate]);
-  useAutoScroller({ ...autoScrollOptions,
-    delta: translate,
-    draggingRect: collisionRect,
-    pointerCoordinates,
-    scrollableAncestors,
-    scrollableAncestorRects
-  });
-  const publicContext = (0,external_React_namespaceObject.useMemo)(() => {
-    const context = {
-      active,
-      activeNode,
-      activeNodeRect,
-      activatorEvent,
-      collisions,
-      containerNodeRect,
-      dragOverlay,
-      draggableNodes,
-      droppableContainers,
-      droppableRects,
-      over,
-      measureDroppableContainers,
-      scrollableAncestors,
-      scrollableAncestorRects,
-      measuringConfiguration,
-      measuringScheduled,
-      windowRect
-    };
-    return context;
-  }, [active, activeNode, activeNodeRect, activatorEvent, collisions, containerNodeRect, dragOverlay, draggableNodes, droppableContainers, droppableRects, over, measureDroppableContainers, scrollableAncestors, scrollableAncestorRects, measuringConfiguration, measuringScheduled, windowRect]);
-  const internalContext = (0,external_React_namespaceObject.useMemo)(() => {
-    const context = {
-      activatorEvent,
-      activators,
-      active,
-      activeNodeRect,
-      ariaDescribedById: {
-        draggable: draggableDescribedById
-      },
-      dispatch,
-      draggableNodes,
-      over,
-      measureDroppableContainers
-    };
-    return context;
-  }, [activatorEvent, activators, active, activeNodeRect, dispatch, draggableDescribedById, draggableNodes, over, measureDroppableContainers]);
-  return external_React_default().createElement(DndMonitorContext.Provider, {
-    value: registerMonitorListener
-  }, external_React_default().createElement(InternalContext.Provider, {
-    value: internalContext
-  }, external_React_default().createElement(PublicContext.Provider, {
-    value: publicContext
-  }, external_React_default().createElement(ActiveDraggableContext.Provider, {
-    value: transform
-  }, children)), external_React_default().createElement(RestoreFocus, {
-    disabled: (accessibility == null ? void 0 : accessibility.restoreFocus) === false
-  })), external_React_default().createElement(Accessibility, { ...accessibility,
-    hiddenTextDescribedById: draggableDescribedById
-  }));
-
-  function getAutoScrollerOptions() {
-    const activeSensorDisablesAutoscroll = (activeSensor == null ? void 0 : activeSensor.autoScrollEnabled) === false;
-    const autoScrollGloballyDisabled = typeof autoScroll === 'object' ? autoScroll.enabled === false : autoScroll === false;
-    const enabled = isInitialized && !activeSensorDisablesAutoscroll && !autoScrollGloballyDisabled;
-
-    if (typeof autoScroll === 'object') {
-      return { ...autoScroll,
-        enabled
-      };
-    }
-
-    return {
-      enabled
-    };
-  }
-});
-
-const NullContext = /*#__PURE__*/(0,external_React_namespaceObject.createContext)(null);
-const defaultRole = 'button';
-const ID_PREFIX = 'Draggable';
-function useDraggable(_ref) {
-  let {
-    id,
-    data,
-    disabled = false,
-    attributes
-  } = _ref;
-  const key = useUniqueId(ID_PREFIX);
-  const {
-    activators,
-    activatorEvent,
-    active,
-    activeNodeRect,
-    ariaDescribedById,
-    draggableNodes,
-    over
-  } = (0,external_React_namespaceObject.useContext)(InternalContext);
-  const {
-    role = defaultRole,
-    roleDescription = 'draggable',
-    tabIndex = 0
-  } = attributes != null ? attributes : {};
-  const isDragging = (active == null ? void 0 : active.id) === id;
-  const transform = (0,external_React_namespaceObject.useContext)(isDragging ? ActiveDraggableContext : NullContext);
-  const [node, setNodeRef] = useNodeRef();
-  const [activatorNode, setActivatorNodeRef] = useNodeRef();
-  const listeners = useSyntheticListeners(activators, id);
-  const dataRef = useLatestValue(data);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    draggableNodes.set(id, {
-      id,
-      key,
-      node,
-      activatorNode,
-      data: dataRef
-    });
-    return () => {
-      const node = draggableNodes.get(id);
-
-      if (node && node.key === key) {
-        draggableNodes.delete(id);
-      }
-    };
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [draggableNodes, id]);
-  const memoizedAttributes = (0,external_React_namespaceObject.useMemo)(() => ({
-    role,
-    tabIndex,
-    'aria-disabled': disabled,
-    'aria-pressed': isDragging && role === defaultRole ? true : undefined,
-    'aria-roledescription': roleDescription,
-    'aria-describedby': ariaDescribedById.draggable
-  }), [disabled, role, tabIndex, isDragging, roleDescription, ariaDescribedById.draggable]);
-  return {
-    active,
-    activatorEvent,
-    activeNodeRect,
-    attributes: memoizedAttributes,
-    isDragging,
-    listeners: disabled ? undefined : listeners,
-    node,
-    over,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform
-  };
-}
-
-function useDndContext() {
-  return (0,external_React_namespaceObject.useContext)(PublicContext);
-}
-
-const ID_PREFIX$1 = 'Droppable';
-const defaultResizeObserverConfig = {
-  timeout: 25
-};
-function useDroppable(_ref) {
-  let {
-    data,
-    disabled = false,
-    id,
-    resizeObserverConfig
-  } = _ref;
-  const key = useUniqueId(ID_PREFIX$1);
-  const {
-    active,
-    dispatch,
-    over,
-    measureDroppableContainers
-  } = (0,external_React_namespaceObject.useContext)(InternalContext);
-  const previous = (0,external_React_namespaceObject.useRef)({
-    disabled
-  });
-  const resizeObserverConnected = (0,external_React_namespaceObject.useRef)(false);
-  const rect = (0,external_React_namespaceObject.useRef)(null);
-  const callbackId = (0,external_React_namespaceObject.useRef)(null);
-  const {
-    disabled: resizeObserverDisabled,
-    updateMeasurementsFor,
-    timeout: resizeObserverTimeout
-  } = { ...defaultResizeObserverConfig,
-    ...resizeObserverConfig
-  };
-  const ids = useLatestValue(updateMeasurementsFor != null ? updateMeasurementsFor : id);
-  const handleResize = (0,external_React_namespaceObject.useCallback)(() => {
-    if (!resizeObserverConnected.current) {
-      // ResizeObserver invokes the `handleResize` callback as soon as `observe` is called,
-      // assuming the element is rendered and displayed.
-      resizeObserverConnected.current = true;
-      return;
-    }
-
-    if (callbackId.current != null) {
-      clearTimeout(callbackId.current);
-    }
-
-    callbackId.current = setTimeout(() => {
-      measureDroppableContainers(Array.isArray(ids.current) ? ids.current : [ids.current]);
-      callbackId.current = null;
-    }, resizeObserverTimeout);
-  }, //eslint-disable-next-line react-hooks/exhaustive-deps
-  [resizeObserverTimeout]);
-  const resizeObserver = useResizeObserver({
-    callback: handleResize,
-    disabled: resizeObserverDisabled || !active
-  });
-  const handleNodeChange = (0,external_React_namespaceObject.useCallback)((newElement, previousElement) => {
-    if (!resizeObserver) {
-      return;
-    }
-
-    if (previousElement) {
-      resizeObserver.unobserve(previousElement);
-      resizeObserverConnected.current = false;
-    }
-
-    if (newElement) {
-      resizeObserver.observe(newElement);
-    }
-  }, [resizeObserver]);
-  const [nodeRef, setNodeRef] = useNodeRef(handleNodeChange);
-  const dataRef = useLatestValue(data);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (!resizeObserver || !nodeRef.current) {
-      return;
-    }
-
-    resizeObserver.disconnect();
-    resizeObserverConnected.current = false;
-    resizeObserver.observe(nodeRef.current);
-  }, [nodeRef, resizeObserver]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    dispatch({
-      type: Action.RegisterDroppable,
-      element: {
-        id,
-        key,
-        disabled,
-        node: nodeRef,
-        rect,
-        data: dataRef
-      }
-    });
-    return () => dispatch({
-      type: Action.UnregisterDroppable,
-      key,
-      id
-    });
-  }, // eslint-disable-next-line react-hooks/exhaustive-deps
-  [id]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (disabled !== previous.current.disabled) {
-      dispatch({
-        type: Action.SetDroppableDisabled,
-        id,
-        key,
-        disabled
-      });
-      previous.current.disabled = disabled;
-    }
-  }, [id, key, disabled, dispatch]);
-  return {
-    active,
-    rect,
-    isOver: (over == null ? void 0 : over.id) === id,
-    node: nodeRef,
-    over,
-    setNodeRef
-  };
-}
-
-function AnimationManager(_ref) {
-  let {
-    animation,
-    children
-  } = _ref;
-  const [clonedChildren, setClonedChildren] = useState(null);
-  const [element, setElement] = useState(null);
-  const previousChildren = usePrevious(children);
-
-  if (!children && !clonedChildren && previousChildren) {
-    setClonedChildren(previousChildren);
-  }
-
-  useIsomorphicLayoutEffect(() => {
-    if (!element) {
-      return;
-    }
-
-    const key = clonedChildren == null ? void 0 : clonedChildren.key;
-    const id = clonedChildren == null ? void 0 : clonedChildren.props.id;
-
-    if (key == null || id == null) {
-      setClonedChildren(null);
-      return;
-    }
-
-    Promise.resolve(animation(id, element)).then(() => {
-      setClonedChildren(null);
-    });
-  }, [animation, clonedChildren, element]);
-  return React.createElement(React.Fragment, null, children, clonedChildren ? cloneElement(clonedChildren, {
-    ref: setElement
-  }) : null);
-}
-
-const defaultTransform = {
-  x: 0,
-  y: 0,
-  scaleX: 1,
-  scaleY: 1
-};
-function NullifiedContextProvider(_ref) {
-  let {
-    children
-  } = _ref;
-  return React.createElement(InternalContext.Provider, {
-    value: defaultInternalContext
-  }, React.createElement(ActiveDraggableContext.Provider, {
-    value: defaultTransform
-  }, children));
-}
-
-const baseStyles = {
-  position: 'fixed',
-  touchAction: 'none'
-};
-
-const defaultTransition = activatorEvent => {
-  const isKeyboardActivator = isKeyboardEvent(activatorEvent);
-  return isKeyboardActivator ? 'transform 250ms ease' : undefined;
-};
-
-const PositionedOverlay = /*#__PURE__*/(/* unused pure expression or super */ null && (forwardRef((_ref, ref) => {
-  let {
-    as,
-    activatorEvent,
-    adjustScale,
-    children,
-    className,
-    rect,
-    style,
-    transform,
-    transition = defaultTransition
-  } = _ref;
-
-  if (!rect) {
-    return null;
-  }
-
-  const scaleAdjustedTransform = adjustScale ? transform : { ...transform,
-    scaleX: 1,
-    scaleY: 1
-  };
-  const styles = { ...baseStyles,
-    width: rect.width,
-    height: rect.height,
-    top: rect.top,
-    left: rect.left,
-    transform: CSS.Transform.toString(scaleAdjustedTransform),
-    transformOrigin: adjustScale && activatorEvent ? getRelativeTransformOrigin(activatorEvent, rect) : undefined,
-    transition: typeof transition === 'function' ? transition(activatorEvent) : transition,
-    ...style
-  };
-  return React.createElement(as, {
-    className,
-    style: styles,
-    ref
-  }, children);
-})));
-
-const defaultDropAnimationSideEffects = options => _ref => {
-  let {
-    active,
-    dragOverlay
-  } = _ref;
-  const originalStyles = {};
-  const {
-    styles,
-    className
-  } = options;
-
-  if (styles != null && styles.active) {
-    for (const [key, value] of Object.entries(styles.active)) {
-      if (value === undefined) {
-        continue;
-      }
-
-      originalStyles[key] = active.node.style.getPropertyValue(key);
-      active.node.style.setProperty(key, value);
-    }
-  }
-
-  if (styles != null && styles.dragOverlay) {
-    for (const [key, value] of Object.entries(styles.dragOverlay)) {
-      if (value === undefined) {
-        continue;
-      }
-
-      dragOverlay.node.style.setProperty(key, value);
-    }
-  }
-
-  if (className != null && className.active) {
-    active.node.classList.add(className.active);
-  }
-
-  if (className != null && className.dragOverlay) {
-    dragOverlay.node.classList.add(className.dragOverlay);
-  }
-
-  return function cleanup() {
-    for (const [key, value] of Object.entries(originalStyles)) {
-      active.node.style.setProperty(key, value);
-    }
-
-    if (className != null && className.active) {
-      active.node.classList.remove(className.active);
-    }
-  };
-};
-
-const defaultKeyframeResolver = _ref2 => {
-  let {
-    transform: {
-      initial,
-      final
-    }
-  } = _ref2;
-  return [{
-    transform: utilities_esm_CSS.Transform.toString(initial)
-  }, {
-    transform: utilities_esm_CSS.Transform.toString(final)
-  }];
-};
-
-const defaultDropAnimationConfiguration = {
-  duration: 250,
-  easing: 'ease',
-  keyframes: defaultKeyframeResolver,
-  sideEffects: /*#__PURE__*/defaultDropAnimationSideEffects({
-    styles: {
-      active: {
-        opacity: '0'
-      }
-    }
-  })
-};
-function useDropAnimation(_ref3) {
-  let {
-    config,
-    draggableNodes,
-    droppableContainers,
-    measuringConfiguration
-  } = _ref3;
-  return useEvent((id, node) => {
-    if (config === null) {
-      return;
-    }
-
-    const activeDraggable = draggableNodes.get(id);
-
-    if (!activeDraggable) {
-      return;
-    }
-
-    const activeNode = activeDraggable.node.current;
-
-    if (!activeNode) {
-      return;
-    }
-
-    const measurableNode = getMeasurableNode(node);
-
-    if (!measurableNode) {
-      return;
-    }
-
-    const {
-      transform
-    } = getWindow(node).getComputedStyle(node);
-    const parsedTransform = parseTransform(transform);
-
-    if (!parsedTransform) {
-      return;
-    }
-
-    const animation = typeof config === 'function' ? config : createDefaultDropAnimation(config);
-    scrollIntoViewIfNeeded(activeNode, measuringConfiguration.draggable.measure);
-    return animation({
-      active: {
-        id,
-        data: activeDraggable.data,
-        node: activeNode,
-        rect: measuringConfiguration.draggable.measure(activeNode)
-      },
-      draggableNodes,
-      dragOverlay: {
-        node,
-        rect: measuringConfiguration.dragOverlay.measure(measurableNode)
-      },
-      droppableContainers,
-      measuringConfiguration,
-      transform: parsedTransform
-    });
-  });
-}
-
-function createDefaultDropAnimation(options) {
-  const {
-    duration,
-    easing,
-    sideEffects,
-    keyframes
-  } = { ...defaultDropAnimationConfiguration,
-    ...options
-  };
-  return _ref4 => {
-    let {
-      active,
-      dragOverlay,
-      transform,
-      ...rest
-    } = _ref4;
-
-    if (!duration) {
-      // Do not animate if animation duration is zero.
-      return;
-    }
-
-    const delta = {
-      x: dragOverlay.rect.left - active.rect.left,
-      y: dragOverlay.rect.top - active.rect.top
-    };
-    const scale = {
-      scaleX: transform.scaleX !== 1 ? active.rect.width * transform.scaleX / dragOverlay.rect.width : 1,
-      scaleY: transform.scaleY !== 1 ? active.rect.height * transform.scaleY / dragOverlay.rect.height : 1
-    };
-    const finalTransform = {
-      x: transform.x - delta.x,
-      y: transform.y - delta.y,
-      ...scale
-    };
-    const animationKeyframes = keyframes({ ...rest,
-      active,
-      dragOverlay,
-      transform: {
-        initial: transform,
-        final: finalTransform
-      }
-    });
-    const [firstKeyframe] = animationKeyframes;
-    const lastKeyframe = animationKeyframes[animationKeyframes.length - 1];
-
-    if (JSON.stringify(firstKeyframe) === JSON.stringify(lastKeyframe)) {
-      // The start and end keyframes are the same, infer that there is no animation needed.
-      return;
-    }
-
-    const cleanup = sideEffects == null ? void 0 : sideEffects({
-      active,
-      dragOverlay,
-      ...rest
-    });
-    const animation = dragOverlay.node.animate(animationKeyframes, {
-      duration,
-      easing,
-      fill: 'forwards'
-    });
-    return new Promise(resolve => {
-      animation.onfinish = () => {
-        cleanup == null ? void 0 : cleanup();
-        resolve();
-      };
-    });
-  };
-}
-
-let key = 0;
-function useKey(id) {
-  return useMemo(() => {
-    if (id == null) {
-      return;
-    }
-
-    key++;
-    return key;
-  }, [id]);
-}
-
-const DragOverlay = /*#__PURE__*/(/* unused pure expression or super */ null && (React.memo(_ref => {
-  let {
-    adjustScale = false,
-    children,
-    dropAnimation: dropAnimationConfig,
-    style,
-    transition,
-    modifiers,
-    wrapperElement = 'div',
-    className,
-    zIndex = 999
-  } = _ref;
-  const {
-    activatorEvent,
-    active,
-    activeNodeRect,
-    containerNodeRect,
-    draggableNodes,
-    droppableContainers,
-    dragOverlay,
-    over,
-    measuringConfiguration,
-    scrollableAncestors,
-    scrollableAncestorRects,
-    windowRect
-  } = useDndContext();
-  const transform = useContext(ActiveDraggableContext);
-  const key = useKey(active == null ? void 0 : active.id);
-  const modifiedTransform = applyModifiers(modifiers, {
-    activatorEvent,
-    active,
-    activeNodeRect,
-    containerNodeRect,
-    draggingNodeRect: dragOverlay.rect,
-    over,
-    overlayNodeRect: dragOverlay.rect,
-    scrollableAncestors,
-    scrollableAncestorRects,
-    transform,
-    windowRect
-  });
-  const initialRect = useInitialValue(activeNodeRect);
-  const dropAnimation = useDropAnimation({
-    config: dropAnimationConfig,
-    draggableNodes,
-    droppableContainers,
-    measuringConfiguration
-  }); // We need to wait for the active node to be measured before connecting the drag overlay ref
-  // otherwise collisions can be computed against a mispositioned drag overlay
-
-  const ref = initialRect ? dragOverlay.setRef : undefined;
-  return React.createElement(NullifiedContextProvider, null, React.createElement(AnimationManager, {
-    animation: dropAnimation
-  }, active && key ? React.createElement(PositionedOverlay, {
-    key: key,
-    id: active.id,
-    ref: ref,
-    as: wrapperElement,
-    activatorEvent: activatorEvent,
-    adjustScale: adjustScale,
-    className: className,
-    transition: transition,
-    rect: initialRect,
-    style: {
-      zIndex,
-      ...style
-    },
-    transform: modifiedTransform
-  }, children) : null));
-})));
-
-
-//# sourceMappingURL=core.esm.js.map
-
-;// ./node_modules/@dnd-kit/sortable/dist/sortable.esm.js
-
-
-
-
-/**
- * Move an array item to a different position. Returns a new array with the item moved to the new position.
- */
-function arrayMove(array, from, to) {
-  const newArray = array.slice();
-  newArray.splice(to < 0 ? newArray.length + to : to, 0, newArray.splice(from, 1)[0]);
-  return newArray;
-}
-
-/**
- * Swap an array item to a different position. Returns a new array with the item swapped to the new position.
- */
-function arraySwap(array, from, to) {
-  const newArray = array.slice();
-  newArray[from] = array[to];
-  newArray[to] = array[from];
-  return newArray;
-}
-
-function getSortedRects(items, rects) {
-  return items.reduce((accumulator, id, index) => {
-    const rect = rects.get(id);
-
-    if (rect) {
-      accumulator[index] = rect;
-    }
-
-    return accumulator;
-  }, Array(items.length));
-}
-
-function isValidIndex(index) {
-  return index !== null && index >= 0;
-}
-
-function itemsEqual(a, b) {
-  if (a === b) {
-    return true;
-  }
-
-  if (a.length !== b.length) {
-    return false;
-  }
-
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function normalizeDisabled(disabled) {
-  if (typeof disabled === 'boolean') {
-    return {
-      draggable: disabled,
-      droppable: disabled
-    };
-  }
-
-  return disabled;
-}
-
-// To-do: We should be calculating scale transformation
-const defaultScale = {
-  scaleX: 1,
-  scaleY: 1
-};
-const horizontalListSortingStrategy = _ref => {
-  var _rects$activeIndex;
-
-  let {
-    rects,
-    activeNodeRect: fallbackActiveRect,
-    activeIndex,
-    overIndex,
-    index
-  } = _ref;
-  const activeNodeRect = (_rects$activeIndex = rects[activeIndex]) != null ? _rects$activeIndex : fallbackActiveRect;
-
-  if (!activeNodeRect) {
-    return null;
-  }
-
-  const itemGap = getItemGap(rects, index, activeIndex);
-
-  if (index === activeIndex) {
-    const newIndexRect = rects[overIndex];
-
-    if (!newIndexRect) {
-      return null;
-    }
-
-    return {
-      x: activeIndex < overIndex ? newIndexRect.left + newIndexRect.width - (activeNodeRect.left + activeNodeRect.width) : newIndexRect.left - activeNodeRect.left,
-      y: 0,
-      ...defaultScale
-    };
-  }
-
-  if (index > activeIndex && index <= overIndex) {
-    return {
-      x: -activeNodeRect.width - itemGap,
-      y: 0,
-      ...defaultScale
-    };
-  }
-
-  if (index < activeIndex && index >= overIndex) {
-    return {
-      x: activeNodeRect.width + itemGap,
-      y: 0,
-      ...defaultScale
-    };
-  }
-
-  return {
-    x: 0,
-    y: 0,
-    ...defaultScale
-  };
-};
-
-function getItemGap(rects, index, activeIndex) {
-  const currentRect = rects[index];
-  const previousRect = rects[index - 1];
-  const nextRect = rects[index + 1];
-
-  if (!currentRect || !previousRect && !nextRect) {
-    return 0;
-  }
-
-  if (activeIndex < index) {
-    return previousRect ? currentRect.left - (previousRect.left + previousRect.width) : nextRect.left - (currentRect.left + currentRect.width);
-  }
-
-  return nextRect ? nextRect.left - (currentRect.left + currentRect.width) : currentRect.left - (previousRect.left + previousRect.width);
-}
-
-const rectSortingStrategy = _ref => {
-  let {
-    rects,
-    activeIndex,
-    overIndex,
-    index
-  } = _ref;
-  const newRects = arrayMove(rects, overIndex, activeIndex);
-  const oldRect = rects[index];
-  const newRect = newRects[index];
-
-  if (!newRect || !oldRect) {
-    return null;
-  }
-
-  return {
-    x: newRect.left - oldRect.left,
-    y: newRect.top - oldRect.top,
-    scaleX: newRect.width / oldRect.width,
-    scaleY: newRect.height / oldRect.height
-  };
-};
-
-const rectSwappingStrategy = _ref => {
-  let {
-    activeIndex,
-    index,
-    rects,
-    overIndex
-  } = _ref;
-  let oldRect;
-  let newRect;
-
-  if (index === activeIndex) {
-    oldRect = rects[index];
-    newRect = rects[overIndex];
-  }
-
-  if (index === overIndex) {
-    oldRect = rects[index];
-    newRect = rects[activeIndex];
-  }
-
-  if (!newRect || !oldRect) {
-    return null;
-  }
-
-  return {
-    x: newRect.left - oldRect.left,
-    y: newRect.top - oldRect.top,
-    scaleX: newRect.width / oldRect.width,
-    scaleY: newRect.height / oldRect.height
-  };
-};
-
-// To-do: We should be calculating scale transformation
-const defaultScale$1 = {
-  scaleX: 1,
-  scaleY: 1
-};
-const verticalListSortingStrategy = _ref => {
-  var _rects$activeIndex;
-
-  let {
-    activeIndex,
-    activeNodeRect: fallbackActiveRect,
-    index,
-    rects,
-    overIndex
-  } = _ref;
-  const activeNodeRect = (_rects$activeIndex = rects[activeIndex]) != null ? _rects$activeIndex : fallbackActiveRect;
-
-  if (!activeNodeRect) {
-    return null;
-  }
-
-  if (index === activeIndex) {
-    const overIndexRect = rects[overIndex];
-
-    if (!overIndexRect) {
-      return null;
-    }
-
-    return {
-      x: 0,
-      y: activeIndex < overIndex ? overIndexRect.top + overIndexRect.height - (activeNodeRect.top + activeNodeRect.height) : overIndexRect.top - activeNodeRect.top,
-      ...defaultScale$1
-    };
-  }
-
-  const itemGap = getItemGap$1(rects, index, activeIndex);
-
-  if (index > activeIndex && index <= overIndex) {
-    return {
-      x: 0,
-      y: -activeNodeRect.height - itemGap,
-      ...defaultScale$1
-    };
-  }
-
-  if (index < activeIndex && index >= overIndex) {
-    return {
-      x: 0,
-      y: activeNodeRect.height + itemGap,
-      ...defaultScale$1
-    };
-  }
-
-  return {
-    x: 0,
-    y: 0,
-    ...defaultScale$1
-  };
-};
-
-function getItemGap$1(clientRects, index, activeIndex) {
-  const currentRect = clientRects[index];
-  const previousRect = clientRects[index - 1];
-  const nextRect = clientRects[index + 1];
-
-  if (!currentRect) {
-    return 0;
-  }
-
-  if (activeIndex < index) {
-    return previousRect ? currentRect.top - (previousRect.top + previousRect.height) : nextRect ? nextRect.top - (currentRect.top + currentRect.height) : 0;
-  }
-
-  return nextRect ? nextRect.top - (currentRect.top + currentRect.height) : previousRect ? currentRect.top - (previousRect.top + previousRect.height) : 0;
-}
-
-const sortable_esm_ID_PREFIX = 'Sortable';
-const Context = /*#__PURE__*/external_React_default().createContext({
-  activeIndex: -1,
-  containerId: sortable_esm_ID_PREFIX,
-  disableTransforms: false,
-  items: [],
-  overIndex: -1,
-  useDragOverlay: false,
-  sortedRects: [],
-  strategy: rectSortingStrategy,
-  disabled: {
-    draggable: false,
-    droppable: false
-  }
-});
-function SortableContext(_ref) {
-  let {
-    children,
-    id,
-    items: userDefinedItems,
-    strategy = rectSortingStrategy,
-    disabled: disabledProp = false
-  } = _ref;
-  const {
-    active,
-    dragOverlay,
-    droppableRects,
-    over,
-    measureDroppableContainers
-  } = useDndContext();
-  const containerId = useUniqueId(sortable_esm_ID_PREFIX, id);
-  const useDragOverlay = Boolean(dragOverlay.rect !== null);
-  const items = (0,external_React_namespaceObject.useMemo)(() => userDefinedItems.map(item => typeof item === 'object' && 'id' in item ? item.id : item), [userDefinedItems]);
-  const isDragging = active != null;
-  const activeIndex = active ? items.indexOf(active.id) : -1;
-  const overIndex = over ? items.indexOf(over.id) : -1;
-  const previousItemsRef = (0,external_React_namespaceObject.useRef)(items);
-  const itemsHaveChanged = !itemsEqual(items, previousItemsRef.current);
-  const disableTransforms = overIndex !== -1 && activeIndex === -1 || itemsHaveChanged;
-  const disabled = normalizeDisabled(disabledProp);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    if (itemsHaveChanged && isDragging) {
-      measureDroppableContainers(items);
-    }
-  }, [itemsHaveChanged, items, isDragging, measureDroppableContainers]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    previousItemsRef.current = items;
-  }, [items]);
-  const contextValue = (0,external_React_namespaceObject.useMemo)(() => ({
-    activeIndex,
-    containerId,
-    disabled,
-    disableTransforms,
-    items,
-    overIndex,
-    useDragOverlay,
-    sortedRects: getSortedRects(items, droppableRects),
-    strategy
-  }), // eslint-disable-next-line react-hooks/exhaustive-deps
-  [activeIndex, containerId, disabled.draggable, disabled.droppable, disableTransforms, items, overIndex, droppableRects, useDragOverlay, strategy]);
-  return external_React_default().createElement(Context.Provider, {
-    value: contextValue
-  }, children);
-}
-
-const defaultNewIndexGetter = _ref => {
-  let {
-    id,
-    items,
-    activeIndex,
-    overIndex
-  } = _ref;
-  return arrayMove(items, activeIndex, overIndex).indexOf(id);
-};
-const defaultAnimateLayoutChanges = _ref2 => {
-  let {
-    containerId,
-    isSorting,
-    wasDragging,
-    index,
-    items,
-    newIndex,
-    previousItems,
-    previousContainerId,
-    transition
-  } = _ref2;
-
-  if (!transition || !wasDragging) {
-    return false;
-  }
-
-  if (previousItems !== items && index === newIndex) {
-    return false;
-  }
-
-  if (isSorting) {
-    return true;
-  }
-
-  return newIndex !== index && containerId === previousContainerId;
-};
-const sortable_esm_defaultTransition = {
-  duration: 200,
-  easing: 'ease'
-};
-const transitionProperty = 'transform';
-const disabledTransition = /*#__PURE__*/utilities_esm_CSS.Transition.toString({
-  property: transitionProperty,
-  duration: 0,
-  easing: 'linear'
-});
-const defaultAttributes = {
-  roleDescription: 'sortable'
-};
-
-/*
- * When the index of an item changes while sorting,
- * we need to temporarily disable the transforms
- */
-
-function useDerivedTransform(_ref) {
-  let {
-    disabled,
-    index,
-    node,
-    rect
-  } = _ref;
-  const [derivedTransform, setDerivedtransform] = (0,external_React_namespaceObject.useState)(null);
-  const previousIndex = (0,external_React_namespaceObject.useRef)(index);
-  utilities_esm_useIsomorphicLayoutEffect(() => {
-    if (!disabled && index !== previousIndex.current && node.current) {
-      const initial = rect.current;
-
-      if (initial) {
-        const current = getClientRect(node.current, {
-          ignoreTransform: true
-        });
-        const delta = {
-          x: initial.left - current.left,
-          y: initial.top - current.top,
-          scaleX: initial.width / current.width,
-          scaleY: initial.height / current.height
-        };
-
-        if (delta.x || delta.y) {
-          setDerivedtransform(delta);
-        }
-      }
-    }
-
-    if (index !== previousIndex.current) {
-      previousIndex.current = index;
-    }
-  }, [disabled, index, node, rect]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (derivedTransform) {
-      setDerivedtransform(null);
-    }
-  }, [derivedTransform]);
-  return derivedTransform;
-}
-
-function useSortable(_ref) {
-  let {
-    animateLayoutChanges = defaultAnimateLayoutChanges,
-    attributes: userDefinedAttributes,
-    disabled: localDisabled,
-    data: customData,
-    getNewIndex = defaultNewIndexGetter,
-    id,
-    strategy: localStrategy,
-    resizeObserverConfig,
-    transition = sortable_esm_defaultTransition
-  } = _ref;
-  const {
-    items,
-    containerId,
-    activeIndex,
-    disabled: globalDisabled,
-    disableTransforms,
-    sortedRects,
-    overIndex,
-    useDragOverlay,
-    strategy: globalStrategy
-  } = (0,external_React_namespaceObject.useContext)(Context);
-  const disabled = normalizeLocalDisabled(localDisabled, globalDisabled);
-  const index = items.indexOf(id);
-  const data = (0,external_React_namespaceObject.useMemo)(() => ({
-    sortable: {
-      containerId,
-      index,
-      items
-    },
-    ...customData
-  }), [containerId, customData, index, items]);
-  const itemsAfterCurrentSortable = (0,external_React_namespaceObject.useMemo)(() => items.slice(items.indexOf(id)), [items, id]);
-  const {
-    rect,
-    node,
-    isOver,
-    setNodeRef: setDroppableNodeRef
-  } = useDroppable({
-    id,
-    data,
-    disabled: disabled.droppable,
-    resizeObserverConfig: {
-      updateMeasurementsFor: itemsAfterCurrentSortable,
-      ...resizeObserverConfig
-    }
-  });
-  const {
-    active,
-    activatorEvent,
-    activeNodeRect,
-    attributes,
-    setNodeRef: setDraggableNodeRef,
-    listeners,
-    isDragging,
-    over,
-    setActivatorNodeRef,
-    transform
-  } = useDraggable({
-    id,
-    data,
-    attributes: { ...defaultAttributes,
-      ...userDefinedAttributes
-    },
-    disabled: disabled.draggable
-  });
-  const setNodeRef = useCombinedRefs(setDroppableNodeRef, setDraggableNodeRef);
-  const isSorting = Boolean(active);
-  const displaceItem = isSorting && !disableTransforms && isValidIndex(activeIndex) && isValidIndex(overIndex);
-  const shouldDisplaceDragSource = !useDragOverlay && isDragging;
-  const dragSourceDisplacement = shouldDisplaceDragSource && displaceItem ? transform : null;
-  const strategy = localStrategy != null ? localStrategy : globalStrategy;
-  const finalTransform = displaceItem ? dragSourceDisplacement != null ? dragSourceDisplacement : strategy({
-    rects: sortedRects,
-    activeNodeRect,
-    activeIndex,
-    overIndex,
-    index
-  }) : null;
-  const newIndex = isValidIndex(activeIndex) && isValidIndex(overIndex) ? getNewIndex({
-    id,
-    items,
-    activeIndex,
-    overIndex
-  }) : index;
-  const activeId = active == null ? void 0 : active.id;
-  const previous = (0,external_React_namespaceObject.useRef)({
-    activeId,
-    items,
-    newIndex,
-    containerId
-  });
-  const itemsHaveChanged = items !== previous.current.items;
-  const shouldAnimateLayoutChanges = animateLayoutChanges({
-    active,
-    containerId,
-    isDragging,
-    isSorting,
-    id,
-    index,
-    items,
-    newIndex: previous.current.newIndex,
-    previousItems: previous.current.items,
-    previousContainerId: previous.current.containerId,
-    transition,
-    wasDragging: previous.current.activeId != null
-  });
-  const derivedTransform = useDerivedTransform({
-    disabled: !shouldAnimateLayoutChanges,
-    index,
-    node,
-    rect
-  });
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (isSorting && previous.current.newIndex !== newIndex) {
-      previous.current.newIndex = newIndex;
-    }
-
-    if (containerId !== previous.current.containerId) {
-      previous.current.containerId = containerId;
-    }
-
-    if (items !== previous.current.items) {
-      previous.current.items = items;
-    }
-  }, [isSorting, newIndex, containerId, items]);
-  (0,external_React_namespaceObject.useEffect)(() => {
-    if (activeId === previous.current.activeId) {
-      return;
-    }
-
-    if (activeId != null && previous.current.activeId == null) {
-      previous.current.activeId = activeId;
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      previous.current.activeId = activeId;
-    }, 50);
-    return () => clearTimeout(timeoutId);
-  }, [activeId]);
-  return {
-    active,
-    activeIndex,
-    attributes,
-    data,
-    rect,
-    index,
-    newIndex,
-    items,
-    isOver,
-    isSorting,
-    isDragging,
-    listeners,
-    node,
-    overIndex,
-    over,
-    setNodeRef,
-    setActivatorNodeRef,
-    setDroppableNodeRef,
-    setDraggableNodeRef,
-    transform: derivedTransform != null ? derivedTransform : finalTransform,
-    transition: getTransition()
-  };
-
-  function getTransition() {
-    if ( // Temporarily disable transitions for a single frame to set up derived transforms
-    derivedTransform || // Or to prevent items jumping to back to their "new" position when items change
-    itemsHaveChanged && previous.current.newIndex === index) {
-      return disabledTransition;
-    }
-
-    if (shouldDisplaceDragSource && !utilities_esm_isKeyboardEvent(activatorEvent) || !transition) {
-      return undefined;
-    }
-
-    if (isSorting || shouldAnimateLayoutChanges) {
-      return utilities_esm_CSS.Transition.toString({ ...transition,
-        property: transitionProperty
-      });
-    }
-
-    return undefined;
-  }
-}
-
-function normalizeLocalDisabled(localDisabled, globalDisabled) {
-  var _localDisabled$dragga, _localDisabled$droppa;
-
-  if (typeof localDisabled === 'boolean') {
-    return {
-      draggable: localDisabled,
-      // Backwards compatibility
-      droppable: false
-    };
-  }
-
-  return {
-    draggable: (_localDisabled$dragga = localDisabled == null ? void 0 : localDisabled.draggable) != null ? _localDisabled$dragga : globalDisabled.draggable,
-    droppable: (_localDisabled$droppa = localDisabled == null ? void 0 : localDisabled.droppable) != null ? _localDisabled$droppa : globalDisabled.droppable
-  };
-}
-
-function hasSortableData(entry) {
-  if (!entry) {
-    return false;
-  }
-
-  const data = entry.data.current;
-
-  if (data && 'sortable' in data && typeof data.sortable === 'object' && 'containerId' in data.sortable && 'items' in data.sortable && 'index' in data.sortable) {
-    return true;
-  }
-
-  return false;
-}
-
-const directions = [KeyboardCode.Down, KeyboardCode.Right, KeyboardCode.Up, KeyboardCode.Left];
-const sortableKeyboardCoordinates = (event, _ref) => {
-  let {
-    context: {
-      active,
-      collisionRect,
-      droppableRects,
-      droppableContainers,
-      over,
-      scrollableAncestors
-    }
-  } = _ref;
-
-  if (directions.includes(event.code)) {
-    event.preventDefault();
-
-    if (!active || !collisionRect) {
-      return;
-    }
-
-    const filteredContainers = [];
-    droppableContainers.getEnabled().forEach(entry => {
-      if (!entry || entry != null && entry.disabled) {
-        return;
-      }
-
-      const rect = droppableRects.get(entry.id);
-
-      if (!rect) {
-        return;
-      }
-
-      switch (event.code) {
-        case KeyboardCode.Down:
-          if (collisionRect.top < rect.top) {
-            filteredContainers.push(entry);
-          }
-
-          break;
-
-        case KeyboardCode.Up:
-          if (collisionRect.top > rect.top) {
-            filteredContainers.push(entry);
-          }
-
-          break;
-
-        case KeyboardCode.Left:
-          if (collisionRect.left > rect.left) {
-            filteredContainers.push(entry);
-          }
-
-          break;
-
-        case KeyboardCode.Right:
-          if (collisionRect.left < rect.left) {
-            filteredContainers.push(entry);
-          }
-
-          break;
-      }
-    });
-    const collisions = closestCorners({
-      active,
-      collisionRect: collisionRect,
-      droppableRects,
-      droppableContainers: filteredContainers,
-      pointerCoordinates: null
-    });
-    let closestId = getFirstCollision(collisions, 'id');
-
-    if (closestId === (over == null ? void 0 : over.id) && collisions.length > 1) {
-      closestId = collisions[1].id;
-    }
-
-    if (closestId != null) {
-      const activeDroppable = droppableContainers.get(active.id);
-      const newDroppable = droppableContainers.get(closestId);
-      const newRect = newDroppable ? droppableRects.get(newDroppable.id) : null;
-      const newNode = newDroppable == null ? void 0 : newDroppable.node.current;
-
-      if (newNode && newRect && activeDroppable && newDroppable) {
-        const newScrollAncestors = getScrollableAncestors(newNode);
-        const hasDifferentScrollAncestors = newScrollAncestors.some((element, index) => scrollableAncestors[index] !== element);
-        const hasSameContainer = isSameContainer(activeDroppable, newDroppable);
-        const isAfterActive = isAfter(activeDroppable, newDroppable);
-        const offset = hasDifferentScrollAncestors || !hasSameContainer ? {
-          x: 0,
-          y: 0
-        } : {
-          x: isAfterActive ? collisionRect.width - newRect.width : 0,
-          y: isAfterActive ? collisionRect.height - newRect.height : 0
-        };
-        const rectCoordinates = {
-          x: newRect.left,
-          y: newRect.top
-        };
-        const newCoordinates = offset.x && offset.y ? rectCoordinates : subtract(rectCoordinates, offset);
-        return newCoordinates;
-      }
-    }
-  }
-
-  return undefined;
-};
-
-function isSameContainer(a, b) {
-  if (!hasSortableData(a) || !hasSortableData(b)) {
-    return false;
-  }
-
-  return a.data.current.sortable.containerId === b.data.current.sortable.containerId;
-}
-
-function isAfter(a, b) {
-  if (!hasSortableData(a) || !hasSortableData(b)) {
-    return false;
-  }
-
-  if (!isSameContainer(a, b)) {
-    return false;
-  }
-
-  return a.data.current.sortable.index < b.data.current.sortable.index;
-}
-
-
-//# sourceMappingURL=sortable.esm.js.map
-
-;// external ["wp","htmlEntities"]
-const external_wp_htmlEntities_namespaceObject = window["wp"]["htmlEntities"];
-;// ./src/components/VideoGallery/GalleryItem.js
-/* global videopack */
-
-
-
-
-
-
-
-const GalleryItem = ({
-  attributes,
-  videoRecord,
-  setOpenVideo,
-  videoIndex,
-  setCurrentVideoIndex,
-  isEditing,
-  onRemove,
-  onEdit,
-  isLastItem,
-  onAddVideo,
-  isHoveringGallery
-}) => {
-  const {
-    skin,
-    gallery_title
-  } = attributes;
-  const {
-    attributes: sortableAttributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition
-  } = useSortable({
-    id: videoRecord.attachment_id,
-    disabled: !isEditing
-  });
-  const style = {
-    transform: utilities_esm_CSS.Transform.toString(transform),
-    transition
-  };
-  const [thumbnailUrl, setThumbnailUrl] = (0,external_wp_element_namespaceObject.useState)(videopack.settings.url + '/src/images/nothumbnail.jpg');
-  const [thumbnailSrcset, setThumbnailSrcset] = (0,external_wp_element_namespaceObject.useState)(null);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (videoRecord?.poster_url) {
-      setThumbnailUrl(videoRecord.poster_url);
-    }
-    if (videoRecord?.poster_srcset) {
-      setThumbnailSrcset(videoRecord.poster_srcset);
-    }
-  }, [videoRecord]);
-  const openMediaModal = () => {
-    const frame = window.wp.media({
-      title: (0,external_wp_i18n_namespaceObject.__)('Edit Video'),
-      button: {
-        text: (0,external_wp_i18n_namespaceObject.__)('Update')
-      },
-      multiple: false,
-      library: {
-        type: 'video'
-      }
-    });
-    frame.on('open', () => {
-      const selection = frame.state().get('selection');
-      if (videoRecord.attachment_id) {
-        const attachment = window.wp.media.attachment(videoRecord.attachment_id);
-        attachment.fetch().done(() => {
-          selection.add(attachment);
-        });
-      }
-    });
-    frame.on('select', () => {
-      const newAttachment = frame.state().get('selection').first().toJSON();
-      onEdit(videoRecord.attachment_id, newAttachment);
-    });
-    frame.open();
-  };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-    ref: setNodeRef,
-    style: style,
-    ...sortableAttributes,
-    className: "gallery-thumbnail videopack-gallery-item",
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "gallery-item-clickable-area",
-      onClick: () => {
-        if (!isEditing) {
-          setOpenVideo(videoRecord);
-          setCurrentVideoIndex(videoIndex);
-        }
-      },
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("img", {
-        src: thumbnailUrl,
-        srcSet: thumbnailSrcset,
-        alt: (0,external_wp_htmlEntities_namespaceObject.decodeEntities)(videoRecord.title)
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        className: `play-button-container ${skin}`,
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("svg", {
-          xmlns: "http://www.w3.org/2000/svg",
-          viewBox: "0 0 500 500",
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("circle", {
-            className: "play-button-circle",
-            cx: "250",
-            cy: "250",
-            r: "230"
-          }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("polygon", {
-            className: "play-button-triangle",
-            points: "374.68,250 188,142 188,358"
-          })]
-        })
-      }), gallery_title && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "video-title",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-          className: "video-title-background"
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          className: "video-title-text",
-          children: (0,external_wp_htmlEntities_namespaceObject.decodeEntities)(videoRecord.title)
-        })]
-      })]
-    }), isEditing && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-        className: "gallery-item-drag-handle",
-        ...listeners,
-        title: (0,external_wp_i18n_namespaceObject.__)('Drag to reorder'),
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          className: "dashicons dashicons-move"
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-        className: "gallery-item-edit",
-        onClick: e => {
-          e.stopPropagation();
-          openMediaModal();
-        },
-        title: (0,external_wp_i18n_namespaceObject.__)('Edit'),
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          className: "dashicons dashicons-edit"
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        className: "gallery-item-remove",
-        onClick: e => {
-          e.stopPropagation();
-          onRemove(videoRecord.attachment_id);
-        },
-        title: (0,external_wp_i18n_namespaceObject.__)('Remove'),
-        children: "X"
-      })]
-    }), isEditing && isLastItem && isHoveringGallery && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-      className: "gallery-add-button",
-      onClick: onAddVideo,
-      title: (0,external_wp_i18n_namespaceObject.__)('Add video'),
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-        className: "dashicons dashicons-plus-alt"
-      })
-    })]
-  });
-};
-/* harmony default export */ const VideoGallery_GalleryItem = (GalleryItem);
-;// ./src/components/VideoGallery/VideoGallery.js
-
-
-
-
-
-
-
-
-
-const VideoGallery = ({
-  attributes,
+const SingleVideoBlock = ({
   setAttributes,
-  isEditing
+  attributes,
+  options
 }) => {
   const {
-    gallery_id,
-    gallery_pagination,
-    gallery_per_page,
-    gallery_columns,
-    gallery_orderby,
-    gallery_order,
-    gallery_include,
-    gallery_exclude,
-    gallery_end
+    caption,
+    id,
+    videoTitle,
+    embedlink,
+    poster
   } = attributes;
-  const [galleryVideos, setGalleryVideos] = (0,external_wp_element_namespaceObject.useState)([]);
-  const [totalPages, setTotalPages] = (0,external_wp_element_namespaceObject.useState)(1);
-  const [galleryPage, setGalleryPage] = (0,external_wp_element_namespaceObject.useState)(1);
-  const [openVideo, setOpenVideo] = (0,external_wp_element_namespaceObject.useState)(null);
-  const [currentVideoIndex, setCurrentVideoIndex] = (0,external_wp_element_namespaceObject.useState)(null);
-  const [openVideoAttributes, setOpenVideoAttributes] = (0,external_wp_element_namespaceObject.useState)(attributes);
-  const [currentVideoPlayer, setCurrentVideoPlayer] = (0,external_wp_element_namespaceObject.useState)(null);
-  const [isPlayerReady, setIsPlayerReady] = (0,external_wp_element_namespaceObject.useState)(true);
-  const [isHovering, setIsHovering] = (0,external_wp_element_namespaceObject.useState)(false);
-  const [galleryVersion, setGalleryVersion] = (0,external_wp_element_namespaceObject.useState)(0);
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, {
-    coordinateGetter: sortableKeyboardCoordinates
-  }));
-  function handleDragEnd(event) {
-    const {
-      active,
-      over
-    } = event;
-    if (active && over && active.id !== over.id) {
-      setGalleryVideos(items => {
-        const oldIndex = items.findIndex(item => item.attachment_id === active.id);
-        const newIndex = items.findIndex(item => item.attachment_id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        const newGalleryInclude = newItems.map(video => video.attachment_id).join(',');
-        setAttributes({
-          gallery_include: newGalleryInclude,
-          gallery_orderby: 'include'
-        });
-        return newItems;
-      });
-    }
-  }
+  const attachment = (0,external_wp_coreData_namespaceObject.useEntityRecord)('postType', 'attachment', id);
   (0,external_wp_element_namespaceObject.useEffect)(() => {
-    let new_gallery_orderby = gallery_orderby;
-    if (new_gallery_orderby === 'menu_order') {
-      new_gallery_orderby = 'menu_order ID';
-    } else if (new_gallery_orderby === 'rand') {
-      new_gallery_orderby = 'RAND(' + Math.round(Math.random() * 10000) + ')';
-    }
-    const args = {
-      gallery_orderby: new_gallery_orderby,
-      gallery_order,
-      gallery_per_page: gallery_pagination !== true || isNaN(gallery_per_page) ? -1 : gallery_per_page,
-      page_number: galleryPage,
-      gallery_id,
-      gallery_include,
-      gallery_exclude
-    };
-    getVideoGallery(args).then(response => {
-      setTotalPages(response.max_num_pages);
-      setGalleryVideos(response.videos);
-    }).catch(error => {
-      console.error('Error fetching videos:', error);
-    });
-  }, [gallery_id, gallery_pagination, gallery_per_page, gallery_orderby, gallery_order, gallery_include, gallery_exclude, galleryPage, galleryVersion]);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (!gallery_pagination) {
-      setTotalPages(1);
-      setGalleryPage(1);
-    }
-  }, [gallery_pagination]);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (currentVideoIndex !== null && galleryVideos.length > 0) {
-      setOpenVideo(galleryVideos[currentVideoIndex]);
-    }
-  }, [galleryVideos, currentVideoIndex]);
-  const closeVideo = (0,external_wp_element_namespaceObject.useCallback)(() => {
-    setOpenVideo(null);
-    setCurrentVideoIndex(null);
-  }, []);
-  const handleNavigationArrowClick = (0,external_wp_element_namespaceObject.useCallback)(videoIndex => {
-    if (isPlayerReady) {
-      setIsPlayerReady(false);
-    }
-    if (videoIndex > galleryVideos.length - 1 && totalPages > 1) {
-      setGalleryPage(galleryPage + 1);
-      setCurrentVideoIndex(0);
-    } else if (videoIndex < 0 && galleryPage > 1) {
-      setGalleryPage(galleryPage - 1);
-      setCurrentVideoIndex(galleryVideos.length - 1);
-    } else {
-      setOpenVideo(galleryVideos[videoIndex]);
-      setCurrentVideoIndex(videoIndex);
-    }
-  }, [isPlayerReady, galleryVideos, totalPages, galleryPage]);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    const handleNavigationKeyPress = e => {
-      if (e.key === 'Escape') {
-        closeVideo();
-      }
-      if (e.key === 'ArrowRight' && currentVideoIndex < galleryVideos.length - 1) {
-        handleNavigationArrowClick(currentVideoIndex + 1);
-      }
-      if (e.key === 'ArrowLeft' && currentVideoIndex > 0) {
-        handleNavigationArrowClick(currentVideoIndex - 1);
-      }
-    };
-    if (openVideo) {
-      setOpenVideoAttributes({
-        ...attributes,
-        ...openVideo?.player_vars,
-        autoplay: true
-      });
-      document.addEventListener('keydown', handleNavigationKeyPress);
-    } else {
-      setOpenVideoAttributes(attributes);
-      document.removeEventListener('keydown', handleNavigationKeyPress);
-    }
-    return () => {
-      document.removeEventListener('keydown', handleNavigationKeyPress);
-    };
-  }, [openVideo, currentVideoIndex, galleryVideos, attributes, closeVideo, handleNavigationArrowClick]);
-  const handleVideoClick = event => {
-    event.stopPropagation();
-  };
-  const handleVideoPlayerReady = (0,external_wp_element_namespaceObject.useCallback)(player => {
-    setCurrentVideoPlayer(player);
-    setIsPlayerReady(true);
-    player.addEventListener('ended', () => {
-      if (gallery_end === 'next') {
-        handleNavigationArrowClick(currentVideoIndex + 1);
-      }
-      if (gallery_end === 'close') {
-        closeVideo();
-      }
-    });
-  }, [gallery_end, currentVideoIndex, handleNavigationArrowClick, closeVideo]);
-  const handleEditItem = (oldAttachmentId, newAttachment) => {
-    if (oldAttachmentId === newAttachment.id) {
-      setGalleryVersion(v => v + 1);
-      return;
-    }
-    let includeIds = [];
-    if (gallery_include) {
-      includeIds = gallery_include.split(',');
-    } else {
-      includeIds = galleryVideos.map(video => video.attachment_id.toString());
-    }
-    const newGalleryInclude = includeIds.map(id => parseInt(id.trim(), 10) === oldAttachmentId ? newAttachment.id.toString() : id).join(',');
-    setAttributes({
-      gallery_include: newGalleryInclude,
-      gallery_orderby: 'include'
-    });
-  };
-  const handleRemoveItem = attachmentIdToRemove => {
-    // Update gallery_exclude
-    const currentExclude = gallery_exclude ? gallery_exclude.split(',').map(id => parseInt(id.trim(), 10)) : [];
-    if (!currentExclude.includes(attachmentIdToRemove)) {
-      currentExclude.push(attachmentIdToRemove);
-    }
-    const newGalleryExclude = currentExclude.join(',');
+    // Check hasResolved and that the record exists.
+    if (attachment.hasResolved && attachment.record) {
+      const newAttributes = {};
+      const newTitle = attachment.record?.title?.raw;
+      const newCaption = attachment.record?.caption?.raw;
+      const newEmbedlink = attachment?.record?.link + 'embed';
+      const newPoster = attachment.record?.meta?.['_videopack-meta']?.poster;
 
-    // Update gallery_include
-    const currentInclude = gallery_include ? gallery_include.split(',').map(id => parseInt(id.trim(), 10)) : [];
-    const newGalleryInclude = currentInclude.filter(id => id !== attachmentIdToRemove).join(',');
-    setAttributes({
-      gallery_exclude: newGalleryExclude,
-      gallery_include: newGalleryInclude
-    });
-  };
-  const openMediaModalForNewVideos = () => {
-    const frame = window.wp.media({
-      title: (0,external_wp_i18n_namespaceObject.__)('Add Videos to Gallery'),
-      button: {
-        text: (0,external_wp_i18n_namespaceObject.__)('Add to Gallery')
-      },
-      multiple: 'add',
-      library: {
-        type: 'video'
+      // Only update if the new value is different from the old one.
+      if (newTitle && newTitle !== videoTitle) {
+        newAttributes.videoTitle = newTitle;
       }
+
+      // Only update the caption if it's currently empty and a new one is available.
+      if (!caption && newCaption) {
+        newAttributes.caption = newCaption;
+      }
+      if (!embedlink && newEmbedlink) {
+        newAttributes.embedlink = newEmbedlink;
+      }
+      if (!poster && newPoster) {
+        newAttributes.poster = newPoster;
+      }
+
+      // Only call setAttributes if there are changes to apply.
+      if (Object.keys(newAttributes).length > 0) {
+        setAttributes(newAttributes);
+      }
+    }
+    console.log(attachment);
+  }, [attachment, caption, videoTitle, setAttributes]);
+  const handleVideoPlayerReady = () => {};
+  const playerAttributes = (0,external_wp_element_namespaceObject.useMemo)(() => {
+    const newPlayerAttributes = {
+      ...(options || {}),
+      ...attributes
+    };
+    if (!newPlayerAttributes.embed_method && options) {
+      newPlayerAttributes.embed_method = options.embed_method;
+    }
+    if (attachment.record?.videopack?.sources) {
+      newPlayerAttributes.sources = attachment.record.videopack.sources;
+    }
+    return newPlayerAttributes;
+  }, [options, attributes, attachment]);
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_blockEditor_namespaceObject.InspectorControls, {
+      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(Thumbnails_Thumbnails, {
+        setAttributes: setAttributes,
+        attributes: attributes,
+        attachment: attachment,
+        options: options
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(videopack_video_VideoSettings, {
+        setAttributes: setAttributes,
+        attributes: attributes
+      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(AdditionalFormats_AdditionalFormats, {
+        setAttributes: setAttributes,
+        attributes: attributes,
+        attachment: attachment,
+        options: options
+      })]
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+      ...(0,external_wp_blockEditor_namespaceObject.useBlockProps)(),
+      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoPlayer_VideoPlayer, {
+        attributes: playerAttributes,
+        onReady: handleVideoPlayerReady
+      })
+    })]
+  });
+};
+/* harmony default export */ const videopack_video_SingleVideoBlock = (SingleVideoBlock);
+;// ./src/blocks/videopack-video/edit.js
+
+
+
+
+
+
+
+
+
+
+
+const ALLOWED_MEDIA_TYPES = ['video'];
+function Edit({
+  attributes,
+  setAttributes
+}) {
+  const {
+    id,
+    src
+  } = attributes;
+  const [options, setOptions] = (0,external_wp_element_namespaceObject.useState)();
+  const blockProps = (0,external_wp_blockEditor_namespaceObject.useBlockProps)();
+  const {
+    createErrorNotice
+  } = (0,external_wp_data_namespaceObject.useDispatch)(external_wp_notices_namespaceObject.store);
+  const mediaUpload = (0,external_wp_data_namespaceObject.useSelect)(select => select(external_wp_blockEditor_namespaceObject.store).getSettings().mediaUpload, []);
+  const {
+    postId
+  } = (0,external_wp_data_namespaceObject.useSelect)(select => ({
+    postId: select('core/editor').getCurrentPostId()
+  }), []);
+  (0,external_wp_element_namespaceObject.useEffect)(() => {
+    getSettings().then(response => {
+      setOptions(response);
     });
-    frame.on('select', () => {
-      const selection = frame.state().get('selection');
-      const newAttachmentIds = selection.map(attachment => attachment.id);
-      const currentInclude = gallery_include ? gallery_include.split(',') : [];
-      const newGalleryInclude = [...currentInclude, ...newAttachmentIds].join(',');
+    if (!id && (0,external_wp_blob_namespaceObject.isBlobURL)(src)) {
+      const file = (0,external_wp_blob_namespaceObject.getBlobByURL)(src);
+      if (file) {
+        mediaUpload({
+          filesList: [file],
+          onFileChange: ([media]) => onSelectVideo(media),
+          onError: onUploadError,
+          allowedTypes: ALLOWED_MEDIA_TYPES
+        });
+      }
+    }
+  }, []);
+  function setAttributesFromMedia(media) {
+    setAttributes({
+      src: media[0].url,
+      id: media[0].id,
+      poster: media[0].meta?.['_videopack-meta']?.poster,
+      total_thumbnails: media[0].meta?.['_videopack-meta']?.total_thumbnails
+    });
+  }
+  function onSelectVideo(media) {
+    const mediaArray = Array.isArray(media) ? media : [media];
+    if (!mediaArray || !mediaArray.some(item => item.hasOwnProperty('url'))) {
       setAttributes({
-        gallery_include: newGalleryInclude
+        src: undefined,
+        id: undefined,
+        poster: undefined
       });
-    });
-    frame.open();
-  };
-  const GalleryPagination = () => {
-    const buttons = Array.from({
-      length: totalPages
-    }, (_, i) => i + 1);
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-gallery-pagination",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-        className: `videopack-pagination-arrow${galleryPage > 1 ? '' : ' videopack-hidden'}`,
-        onClick: () => {
-          setGalleryPage(galleryPage - 1);
-        },
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          children: '<'
-        })
-      }), buttons.map(pageNumber => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-page-number-div",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-          onClick: () => setGalleryPage(pageNumber),
-          className: `videopack-page-number${pageNumber === galleryPage ? ' current-page' : ''}`,
-          disabled: pageNumber === galleryPage,
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-            children: pageNumber
-          })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          className: "videopack-pagination-separator",
-          children: pageNumber === totalPages ? '' : '|'
-        })]
-      }, pageNumber)), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-        className: `videopack-pagination-arrow${galleryPage < totalPages ? '' : ' videopack-hidden'}`,
-        onClick: () => {
-          setGalleryPage(galleryPage + 1);
-        },
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          children: '>'
-        })
-      })]
-    });
-  };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-    className: "videopack-gallery-wrapper",
-    style: gallery_columns > 0 ? {
-      '--gallery-columns': gallery_columns
-    } : {},
-    onMouseEnter: () => !openVideo && setIsHovering(true),
-    onMouseLeave: () => !openVideo && setIsHovering(false),
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(DndContext, {
-      sensors: sensors,
-      collisionDetection: closestCenter,
-      onDragEnd: handleDragEnd,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(SortableContext, {
-        items: galleryVideos.map(video => video.attachment_id),
-        strategy: rectSortingStrategy,
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-          className: "videopack-gallery-items",
-          style: gallery_columns > 0 ? {
-            '--gallery-columns': gallery_columns
-          } : {},
-          children: galleryVideos && galleryVideos.map((videoRecord, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoGallery_GalleryItem, {
-            attributes: attributes,
-            videoRecord: videoRecord,
-            setOpenVideo: setOpenVideo,
-            videoIndex: index,
-            setCurrentVideoIndex: setCurrentVideoIndex,
-            isEditing: isEditing,
-            onRemove: handleRemoveItem,
-            onEdit: handleEditItem,
-            isLastItem: index === galleryVideos.length - 1,
-            onAddVideo: openMediaModalForNewVideos,
-            isHoveringGallery: isHovering
-          }, videoRecord.attachment_id))
-        })
-      })
-    }), totalPages > 1 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(GalleryPagination, {}), openVideo && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: "videopack-modal-overlay",
-      onClick: closeVideo,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-modal-container",
-        onClick: handleVideoClick,
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-          type: "button",
-          className: "modal-navigation modal-close videopack-icons cross",
-          title: (0,external_wp_i18n_namespaceObject.__)('Close'),
-          onClick: closeVideo
-        }), (currentVideoIndex < galleryVideos.length - 1 || totalPages > galleryPage) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-          type: "button",
-          className: "modal-navigation modal-next videopack-icons right-arrow",
-          title: (0,external_wp_i18n_namespaceObject.__)('Next'),
-          onClick: () => {
-            handleNavigationArrowClick(currentVideoIndex + 1);
-          }
-        }), (currentVideoIndex > 0 || galleryPage > 1) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("button", {
-          type: "button",
-          className: "modal-navigation modal-previous videopack-icons left-arrow",
-          title: (0,external_wp_i18n_namespaceObject.__)('Previous'),
-          onClick: () => {
-            handleNavigationArrowClick(currentVideoIndex - 1);
-          }
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-          className: "modal-content",
-          children: openVideoAttributes && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoPlayer_VideoPlayer, {
-            attributes: openVideoAttributes,
-            onReady: handleVideoPlayerReady
-          }, openVideoAttributes?.src)
-        })]
-      })
-    })]
-  });
-};
-/* harmony default export */ const VideoGallery_VideoGallery = (VideoGallery);
-;// ./src/features/settings/components/GallerySettings.js
-
-
-
-
-
-
-const GallerySettings = ({
-  settings,
-  changeHandlerFactory
-}) => {
-  const {
-    embed_method,
-    gallery_columns,
-    gallery_end,
-    gallery_per_page,
-    gallery_title,
-    gallery_pagination,
-    skin,
-    width,
-    height
-  } = settings;
-  const [galleryAttributes, setGalleryAttributes] = (0,external_wp_element_namespaceObject.useState)(null);
-  const [recentVideos, setRecentVideos] = (0,external_wp_element_namespaceObject.useState)(null);
-
-  //const aspectRatio = ( width && height ) ? width / height : 1.77777;
-
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    getRecentVideos('12').then(response => {
-      setRecentVideos(response);
-      console.log(response);
-    }).catch(error => {
-      console.error('Error fetching videos:', error);
-    });
-  }, []);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (recentVideos && Array.isArray(recentVideos)) {
-      setGalleryAttributes({
-        ...settings,
-        gallery_include: recentVideos.join(',')
-      });
-    }
-  }, [gallery_columns, gallery_end, gallery_per_page, gallery_title, gallery_pagination, recentVideos, skin]);
-  const galleryEndOptions = [{
-    value: '',
-    label: (0,external_wp_i18n_namespaceObject.__)('Stop and leave popup window open')
-  }, {
-    value: 'next',
-    label: (0,external_wp_i18n_namespaceObject.__)('Autoplay next video')
-  }, {
-    value: 'close',
-    label: (0,external_wp_i18n_namespaceObject.__)('Close popup window')
-  }];
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-    children: [galleryAttributes && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideoGallery_VideoGallery, {
-      attributes: galleryAttributes
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: "videopack-setting-reduced-width",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Videos per row:'),
-        type: "number",
-        value: gallery_columns,
-        onChange: changeHandlerFactory.gallery_columns
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,external_wp_i18n_namespaceObject.__)('Overlay video title on thumbnails.'),
-      onChange: changeHandlerFactory.gallery_title,
-      checked: !!gallery_title
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,external_wp_i18n_namespaceObject.__)('Paginate video galleries'),
-      onChange: changeHandlerFactory.gallery_pagination,
-      checked: !!gallery_pagination
-    }), gallery_pagination && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: "videopack-setting-auto-width",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Videos per page'),
-        type: "number",
-        value: gallery_per_page,
-        onChange: changeHandlerFactory.gallery_per_page
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: "videopack-setting-auto-width",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('When current gallery video finishes:'),
-        value: gallery_end,
-        onChange: changeHandlerFactory.gallery_end,
-        options: galleryEndOptions
-      })
-    })]
-  });
-};
-/* harmony default export */ const components_GallerySettings = (GallerySettings);
-;// ./src/features/settings/components/ThumbnailSettings.js
-
-
-
-
-const ThumbnailSettings = ({
-  settings,
-  changeHandlerFactory
-}) => {
-  const {
-    browser_thumbnails,
-    ffmpeg_exists,
-    poster,
-    endofvideooverlay,
-    thumb_watermark,
-    total_thumbnails,
-    featured,
-    thumb_parent,
-    hide_thumbnails,
-    endofvideooverlaysame
-  } = settings;
-  const thumbParentOptions = [{
-    value: 'post',
-    label: (0,external_wp_i18n_namespaceObject.__)('Post')
-  }, {
-    value: 'video',
-    label: (0,external_wp_i18n_namespaceObject.__)('Video')
-  }];
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: "videopack-setting-auto-width",
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Number of thumbnails to generate:'),
-        type: "number",
-        value: total_thumbnails,
-        onChange: changeHandlerFactory.total_thumbnails
-      })
-    }), ffmpeg_exists === true && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,external_wp_i18n_namespaceObject.__)("When possible, use the browser's built-in video capabilities to make thumbnails instead of FFmpeg."),
-      value: browser_thumbnails,
-      checked: !!browser_thumbnails,
-      onChange: changeHandlerFactory.browser_thumbnails
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-setting-reduced-width",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_TextControlOnBlur, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Default thumbnail:'),
-        type: "url",
-        value: poster,
-        onChange: changeHandlerFactory.poster
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-        className: "videopack-library-button",
-        variant: "secondary",
-        children: (0,external_wp_i18n_namespaceObject.__)('Choose from library')
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,external_wp_i18n_namespaceObject.__)('Display thumbnail image again when video ends.'),
-      onChange: changeHandlerFactory.endofvideooverlaysame,
-      checked: !!endofvideooverlaysame
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-setting-reduced-width",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_TextControlOnBlur, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('End of video image:'),
-        type: "url",
-        value: endofvideooverlay,
-        onChange: changeHandlerFactory.endofvideooverlay,
-        disabled: endofvideooverlaysame
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-        className: "videopack-library-button",
-        variant: "secondary",
-        children: (0,external_wp_i18n_namespaceObject.__)('Choose from library')
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-setting-reduced-width",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_TextControlOnBlur, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Add watermark to generated thumbnails:'),
-        type: "url",
-        value: thumb_watermark?.url,
-        onChange: changeHandlerFactory.thumb_watermark
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-        className: "videopack-library-button",
-        variant: "secondary",
-        children: (0,external_wp_i18n_namespaceObject.__)('Choose from library')
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,external_wp_i18n_namespaceObject.__)('Hide generated thumnbails from the Media Library.'),
-      onChange: changeHandlerFactory.hide_thumbnails,
-      checked: !!hide_thumbnails
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-setting-extra-margin",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Set generated thumbnails as featured images.'),
-        onChange: changeHandlerFactory.featured,
-        checked: !!featured
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-        variant: "secondary",
-        children: (0,external_wp_i18n_namespaceObject.__)('Set all as featured')
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-setting-extra-margin",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RadioControl, {
-        label: (0,external_wp_i18n_namespaceObject.__)('Attach thumbnails to:'),
-        selected: thumb_parent,
-        options: thumbParentOptions,
-        onChange: changeHandlerFactory.thumb_parent,
-        className: "videopack-setting-radio-group"
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-        variant: "secondary",
-        children: (0,external_wp_i18n_namespaceObject.__)('Set all parents')
-      })]
-    })]
-  });
-};
-/* harmony default export */ const components_ThumbnailSettings = (ThumbnailSettings);
-;// ./src/features/settings/components/EncodingSettings.js
-/* global videopack */
-
-
-
-
-
-
-
-
-const EncodingSettings = ({
-  settings,
-  changeHandlerFactory,
-  ffmpegTest
-}) => {
-  const {
-    app_path,
-    replace_format,
-    encode,
-    custom_format,
-    hide_video_formats,
-    auto_thumb_number,
-    auto_thumb_position,
-    error_email,
-    ffmpeg_thumb_watermark,
-    ffmpeg_watermark,
-    h264_profile,
-    h264_level,
-    audio_bitrate,
-    audio_channels,
-    simultaneous_encodes,
-    threads,
-    nice,
-    ffmpeg_exists,
-    ffmpeg_error,
-    auto_encode,
-    auto_encode_gif,
-    auto_thumb,
-    sample_rotate,
-    auto_publish_post
-  } = settings;
-  const [users, setUsers] = (0,external_wp_element_namespaceObject.useState)(null);
-  const [bitrates, setBitrates] = (0,external_wp_element_namespaceObject.useState)(null);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    getUsersWithCapability('edit_others_video_encodes').then(response => {
-      setUsers(response);
-    }).catch(error => {
-      console.log(error);
-    });
-  }, []);
-  const EncodeFormatGrid = () => {
-    const {
-      codecs,
-      resolutions
-    } = videopack.settings;
-    const {
-      encode: currentEncode,
-      ffmpeg_exists: ffmpegExists
-    } = settings;
-    const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
-      const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
-      if (!newEncode[codecId]) {
-        newEncode[codecId] = {
-          resolutions: {}
-        };
-      } else if (!newEncode[codecId].resolutions) {
-        newEncode[codecId].resolutions = {};
-      }
-      newEncode[codecId].resolutions[resolutionId] = !!isChecked;
-      changeHandlerFactory.encode(newEncode);
-    };
-    const handleCodecEnableChange = (codecId, isEnabled) => {
-      const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
-      const codecInfo = codecs.find(c => c.id === codecId);
-      if (!newEncode[codecId]) {
-        newEncode[codecId] = {
-          resolutions: {}
-        };
-      }
-      newEncode[codecId].enabled = !!isEnabled;
-      if (isEnabled && codecInfo) {
-        // Set default quality settings when enabling a codec for the first time
-        if (!newEncode[codecId].rate_control) {
-          newEncode[codecId].rate_control = codecInfo.supported_rate_controls[0];
-          newEncode[codecId].crf = codecInfo.rate_control.crf.default;
-          newEncode[codecId].vbr = codecInfo.rate_control.vbr.default;
-        }
-      }
-      if (!isEnabled) {
-        if (!newEncode[codecId].resolutions) {
-          newEncode[codecId].resolutions = {};
-        }
-        resolutions.forEach(resolution => {
-          newEncode[codecId].resolutions[resolution.id] = false;
-        });
-      }
-      changeHandlerFactory.encode(newEncode);
-    };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-      className: "videopack-encode-grid",
-      children: codecs.map(codec => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-encode-column",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-          className: "videopack-encode-grid-header-cell",
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: codec.name,
-            checked: !!currentEncode?.[codec.id]?.enabled,
-            onChange: isEnabled => handleCodecEnableChange(codec.id, isEnabled),
-            disabled: ffmpegExists !== true
-          })
-        }), resolutions.map(resolution => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-          __nextHasNoMarginBottom: true,
-          label: resolution.name,
-          checked: !!currentEncode?.[codec.id]?.resolutions?.[resolution.id],
-          onChange: isChecked => handleCheckboxChange(codec.id, resolution.id, isChecked),
-          disabled: ffmpegExists !== true || !currentEncode?.[codec.id]?.enabled
-        }, resolution.id))]
-      }, codec.id))
-    });
-  };
-  const PerCodecQualitySettings = ({
-    codec
-  }) => {
-    const [bitrates, setBitrates] = (0,external_wp_element_namespaceObject.useState)([]);
-    const {
-      resolutions
-    } = videopack.settings;
-    const codecEncodeSettings = encode[codec.id] || {};
-    const {
-      rate_control: currentRateControl = codec.supported_rate_controls[0],
-      crf: currentCrf = codec.rate_control.crf.default,
-      vbr: currentVbr = codec.rate_control.vbr.default
-    } = codecEncodeSettings;
-    const handleSettingChange = (key, value) => {
-      changeHandlerFactory.encode({
-        ...encode,
-        [codec.id]: {
-          ...encode[codec.id],
-          [key]: value
-        }
-      });
-    };
-    (0,external_wp_element_namespaceObject.useEffect)(() => {
-      const newBitrates = [];
-      const vbrSettings = codec.rate_control.vbr;
-      resolutions.forEach(res => {
-        const bitrate = Math.round(currentVbr * 0.001 * res.width * res.height + vbrSettings.constant);
-        newBitrates.push(`${res.name} = ${bitrate}kbps`);
-      });
-      setBitrates(newBitrates);
-    }, [currentVbr, codec]);
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-      className: "videopack-per-codec-quality-settings",
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("h4", {
-        className: "videopack-codec-quality-header",
-        children: codec.name
-      }), codec.supported_rate_controls.length > 1 && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RadioControl, {
-        label: (0,external_wp_i18n_namespaceObject.__)('Primary rate control:'),
-        selected: currentRateControl,
-        className: 'videopack-component-margin',
-        onChange: value => handleSettingChange('rate_control', value),
-        options: [{
-          label: (0,external_wp_i18n_namespaceObject.__)('Constant Rate Factor'),
-          value: 'crf'
-        }, {
-          label: (0,external_wp_i18n_namespaceObject.__)('Average Bitrate'),
-          value: 'vbr'
-        }],
-        disabled: ffmpeg_exists !== true
-      }), currentRateControl === 'crf' && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Constant Rate Factor (CRF):'),
-        value: currentCrf,
-        className: "videopack-settings-slider",
-        onChange: value => handleSettingChange('crf', value),
-        min: codec.rate_control.crf.min,
-        max: codec.rate_control.crf.max,
-        step: 1,
-        marks: generateMarks(codec.id, 'crf'),
-        disabled: ffmpeg_exists !== true
-      }), currentRateControl === 'vbr' && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Average Bitrate:'),
-        value: currentVbr,
-        className: "videopack-settings-slider",
-        onChange: value => handleSettingChange('vbr', value),
-        min: 0.01,
-        max: 5,
-        step: 0.01,
-        disabled: ffmpeg_exists !== true,
-        help: bitrates.map((text, index) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("span", {
-          children: text
-        }, index))
-      }), codec.id === 'h264' && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('H.264 profile'),
-          value: h264_profile,
-          onChange: changeHandlerFactory.h264_profile,
-          options: h264ProfileOptions,
-          disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('H.264 level'),
-          value: h264_level,
-          onChange: changeHandlerFactory.h264_level,
-          options: h264LevelOptions,
-          disabled: ffmpeg_exists !== true
-        })]
-      })]
-    }, codec.id);
-  };
-  const errorEmailOptions = () => {
-    const authorizedUsers = [{
-      value: 'nobody',
-      label: (0,external_wp_i18n_namespaceObject.__)('Nobody')
-    }, {
-      value: 'encoder',
-      label: (0,external_wp_i18n_namespaceObject.__)('User who initiated encoding')
-    }];
-    if (users) {
-      users.forEach(user => {
-        authorizedUsers.push({
-          value: user.id,
-          label: user.name
-        });
-      });
-    }
-    return authorizedUsers;
-  };
-  const SampleFormatSelects = () => {
-    const {
-      sample_codec,
-      sample_resolution
-    } = settings;
-    const codecs = videopack.settings.codecs.map(codec => ({
-      value: codec.id,
-      label: codec.name
-    }));
-    const resolutions = videopack.settings.resolutions.map(resolution => ({
-      value: resolution.id,
-      label: resolution.name
-    }));
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Flex, {
-      className: 'videopack-setting-sample-formats',
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Codec:'),
-        value: sample_codec,
-        options: codecs,
-        onChange: changeHandlerFactory.sample_codec,
-        disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Resolution:'),
-        value: sample_resolution,
-        options: resolutions,
-        onChange: changeHandlerFactory.sample_resolution,
-        disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Test vertical video rotation.'),
-        onChange: changeHandlerFactory.sample_rotate,
-        checked: sample_rotate,
-        disabled: ffmpeg_exists !== true
-      })]
-    });
-  };
-  const autoThumbLabel = () => {
-    const changeAutoThumbNumberHandler = value => {
-      changeHandlerFactory.auto_thumb_number(value);
-      changeHandlerFactory.auto_thumb_position(String(value) === '1' ? '50' : '1');
-    };
-    const autoThumbPositionLabel = () => {
-      if (String(auto_thumb_number) === '1') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
-          children: [(0,external_wp_i18n_namespaceObject.__)('thumbnail from'), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
-            __nextHasNoMarginBottom: true,
-            __next40pxDefaultSize: true,
-            className: "videopack-setting-auto-thumb",
-            value: Number(auto_thumb_position),
-            onChange: changeHandlerFactory.auto_thumb_position,
-            min: 0,
-            max: 100,
-            step: 1,
-            disabled: ffmpeg_exists !== true
-          }), (0,external_wp_i18n_namespaceObject.__)('% through the video')]
-        });
-      }
-      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
-        children: [(0,external_wp_i18n_namespaceObject.__)('thumbnails and set #'), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          className: "videopack-setting-auto-thumb",
-          type: "number",
-          value: auto_thumb_position,
-          onChange: changeHandlerFactory.auto_thumb_position,
-          disabled: ffmpeg_exists !== true
-        }), (0,external_wp_i18n_namespaceObject.__)('as the featured image.')]
-      });
-    };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("span", {
-      children: [(0,external_wp_i18n_namespaceObject.__)('Generate'), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        className: "videopack-setting-auto-thumb",
-        type: "number",
-        min: "1",
-        max: "99",
-        value: auto_thumb_number,
-        onChange: changeAutoThumbNumberHandler,
-        disabled: ffmpeg_exists !== true
-      }), autoThumbPositionLabel()]
-    });
-  };
-  const generateNonCrfMarks = type => {
-    const marks = [];
-    switch (type) {
-      case 'simultaneous':
-        for (let i = 1; i <= 10; i++) {
-          marks.push({
-            value: i,
-            label: String(i)
-          });
-        }
-        break;
-      case 'threads':
-        marks.push({
-          value: 0,
-          label: (0,external_wp_i18n_namespaceObject.__)('Auto')
-        });
-        for (let i = 2; i <= 16; i += 2) {
-          marks.push({
-            value: i,
-            label: String(i)
-          });
-        }
-        break;
-    }
-    return marks;
-  };
-  const generateMarks = (codecId, type) => {
-    const codec = videopack.settings.codecs.find(c => c.id === codecId);
-    if (!codec) {
-      return [];
-    }
-    const rateControl = codec.rate_control[type];
-    if (!rateControl) {
-      return [];
-    }
-    const {
-      min,
-      max,
-      labels = {}
-    } = rateControl;
-    const marks = [];
-    for (let i = min; i <= max; i++) {
-      if (labels && labels[i]) {
-        marks.push({
-          value: i,
-          label: labels[i]
-        });
-      } else if (i % 5 === 0) {
-        const labelExistsNearby = Object.keys(labels).some(label => {
-          const distance = Math.abs(i - label);
-          return distance > 0 && distance < 5;
-        });
-        if (!labelExistsNearby) {
-          marks.push({
-            value: i,
-            label: String(i)
-          });
-        }
-      }
-    }
-    return marks;
-  };
-  const h264ProfileOptions = [{
-    value: 'none',
-    label: (0,external_wp_i18n_namespaceObject.__)('None')
-  }, {
-    value: 'baseline',
-    label: 'baseline'
-  }, {
-    value: 'main',
-    label: 'main'
-  }, {
-    value: 'high',
-    label: 'high'
-  }, {
-    value: 'high10',
-    label: 'high10'
-  }, {
-    value: 'high422',
-    label: 'high422'
-  }, {
-    value: 'high444',
-    label: 'high444'
-  }];
-  const h264LevelOptions = [{
-    value: 'none',
-    label: (0,external_wp_i18n_namespaceObject.__)('None')
-  }, {
-    value: '1',
-    label: '1'
-  }, {
-    value: '1.1',
-    label: '1.1'
-  }, {
-    value: '1.2',
-    label: '1.2'
-  }, {
-    value: '1.3',
-    label: '1.3'
-  }, {
-    value: '2',
-    label: '2'
-  }, {
-    value: '2.1',
-    label: '2.1'
-  }, {
-    value: '2.2',
-    label: '2.2'
-  }, {
-    value: '3',
-    label: '3'
-  }, {
-    value: '3.1',
-    label: '3.1'
-  }, {
-    value: '3.2',
-    label: '3.2'
-  }, {
-    value: '4',
-    label: '4'
-  }, {
-    value: '4.1',
-    label: '4.1'
-  }, {
-    value: '4.2',
-    label: '4.2'
-  }, {
-    value: '5',
-    label: '5'
-  }, {
-    value: '5.1',
-    label: '5.1'
-  }, {
-    value: '5.2',
-    label: '5.2'
-  }, {
-    value: '6',
-    label: '6'
-  }, {
-    value: '6.1',
-    label: '6.1'
-  }, {
-    value: '6.2',
-    label: '6.2'
-  }];
-  const audioBitrateOptions = [{
-    value: '32',
-    label: '32'
-  }, {
-    value: '64',
-    label: '64'
-  }, {
-    value: '96',
-    label: '96'
-  }, {
-    value: '128',
-    label: '128'
-  }, {
-    value: '160',
-    label: '160'
-  }, {
-    value: '192',
-    label: '192'
-  }, {
-    value: '224',
-    label: '224'
-  }, {
-    value: '256',
-    label: '256'
-  }, {
-    value: '320',
-    label: '320'
-  }];
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_TextControlOnBlur, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Path to FFmpeg folder on server:'),
-          value: app_path,
-          onChange: changeHandlerFactory.app_path,
-          help: (0,external_wp_i18n_namespaceObject.__)('Leave blank if FFmpeg is in your system path.')
-        })
-      }), ffmpeg_exists !== true && ffmpeg_error && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        className: "notice notice-error videopack-ffmpeg-notice",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-          dangerouslySetInnerHTML: {
-            __html: ffmpeg_error
-          }
-        })
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Default video encode formats'),
-      opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Flex, {
-        direction: "column",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexItem, {
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.BaseControl, {
-            __nextHasNoMarginBottom: true,
-            id: "default-video-encode-formats",
-            children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(EncodeFormatGrid, {})
-          })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('List only default formats on WordPress admin pages.'),
-          onChange: changeHandlerFactory.hide_video_formats,
-          checked: hide_video_formats,
-          disabled: ffmpeg_exists !== true
-        })]
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Do automatically on upload'),
-      opened: ffmpeg_exists === true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.BaseControl, {
-        __nextHasNoMarginBottom: true,
-        id: "autoEncode",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Encode default formats.'),
-          onChange: changeHandlerFactory.auto_encode,
-          checked: auto_encode,
-          disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Convert animated GIFs to H.264.'),
-          onChange: changeHandlerFactory.auto_encode_gif,
-          checked: hide_video_formats,
-          disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: autoThumbLabel(),
-          onChange: changeHandlerFactory.auto_thumb,
-          checked: auto_thumb,
-          disabled: ffmpeg_exists !== true
-        })]
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)("Automatically publish video's parent post when encoding finishes."),
-        onChange: changeHandlerFactory.auto_publish_post,
-        checked: auto_publish_post,
-        disabled: ffmpeg_exists !== true
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Email encoding errors to'),
-      opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          value: error_email,
-          onChange: changeHandlerFactory.error_email,
-          options: errorEmailOptions(),
-          disabled: ffmpeg_exists !== true
-        })
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('For previously uploaded videos'),
-      opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.BaseControl, {
-        __nextHasNoMarginBottom: true,
-        id: "previouslyUploaded",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-          className: "videopack-library-button no-vertical-align",
-          variant: "secondary",
-          disabled: ffmpeg_exists !== true,
-          children: (0,external_wp_i18n_namespaceObject.__)('Generate thumbnails')
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-          className: "videopack-library-button no-vertical-align",
-          variant: "secondary",
-          disabled: ffmpeg_exists !== true,
-          children: (0,external_wp_i18n_namespaceObject.__)('Encode videos')
-        })]
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Video quality'),
-      opened: ffmpeg_exists === true,
-      children: videopack.settings.codecs.map(codec => !!encode?.[codec.id]?.enabled && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(PerCodecQualitySettings, {
-        codec: codec
-      }, codec.id))
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Audio'),
-      opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-        className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.SelectControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Audio bitrate:'),
-          value: audio_bitrate,
-          onChange: changeHandlerFactory.audio_bitrate,
-          options: audioBitrateOptions,
-          suffix: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.__experimentalInputControlSuffixWrapper, {
-            children: "kbps"
-          }),
-          disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-          __nextHasNoMarginBottom: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Always output stereo audio.'),
-          onChange: changeHandlerFactory.audio_channels,
-          checked: audio_channels,
-          disabled: ffmpeg_exists !== true
-        })]
-      })
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Execution'),
-      opened: ffmpeg_exists === true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Simultaneous encodes:'),
-        value: simultaneous_encodes,
-        className: "videopack-settings-slider",
-        onChange: changeHandlerFactory.simultaneous_encodes,
-        min: 1,
-        max: 10,
-        step: 1,
-        marks: generateNonCrfMarks('simultaneous'),
-        disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RangeControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Threads:'),
-        value: threads,
-        className: "videopack-settings-slider",
-        onChange: changeHandlerFactory.threads,
-        min: 0,
-        max: 16,
-        step: 1,
-        marks: generateNonCrfMarks('threads'),
-        disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Run nice'),
-        onChange: changeHandlerFactory.nice,
-        checked: nice,
-        disabled: ffmpeg_exists !== true
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Video Encoding Test'),
-      opened: ffmpeg_exists === true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.BaseControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Test encode command:'),
-        id: "sample-format-selects",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(SampleFormatSelects, {})
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextareaControl, {
-        __nextHasNoMarginBottom: true,
-        disabled: true,
-        value: ffmpegTest?.command
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextareaControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('FFmpeg test output:'),
-        rows: 20,
-        disabled: true,
-        value: ffmpegTest?.output
-      })]
-    })]
-  });
-};
-/* harmony default export */ const components_EncodingSettings = (EncodingSettings);
-;// ./src/features/settings/components/AdminSettings.js
-
-
-
-const AdminSettings = ({
-  settings,
-  changeHandlerFactory
-}) => {
-  const {
-    capabilities,
-    embeddable,
-    schema,
-    twitter_button,
-    twitter_username,
-    right_click,
-    delete_thumbnails,
-    delete_encoded,
-    template,
-    open_graph,
-    twitter_card,
-    oembed_provider,
-    count_views,
-    alwaysloadscripts,
-    replace_video_shortcode,
-    transient_cache,
-    rewrite_attachment_url
-  } = settings;
-  const countViewsOptions = [{
-    value: 'quarters',
-    label: (0,external_wp_i18n_namespaceObject.__)('Quarters')
-  }, {
-    value: 'start_complete',
-    label: (0,external_wp_i18n_namespaceObject.__)('Start and complete')
-  }, {
-    value: 'start',
-    label: (0,external_wp_i18n_namespaceObject.__)('Start only')
-  }, {
-    value: 'false',
-    label: (0,external_wp_i18n_namespaceObject.__)('None')
-  }];
-  const capitalizeFirstLetter = string => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-  const RolesCheckboxes = () => {
-    // Define an onChange event handler
-    const handleCapabilityChange = (roleName, capability, isChecked) => {
-      const updatedCapabilities = {
-        ...capabilities,
-        [capability]: {
-          ...capabilities[capability],
-          [roleName]: isChecked
-        }
-      };
-      changeHandlerFactory.capabilities(updatedCapabilities);
-    };
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('User capabilities:'),
-      initialOpen: true,
-      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Flex, {
-        direction: "row",
-        gap: 20,
-        className: "videopack-setting-capabilities",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-            children: (0,external_wp_i18n_namespaceObject.__)('Can make thumbnails')
-          }), Object.entries(capabilities.make_video_thumbnails).map(([roleKey, isEnabled]) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-            __nextHasNoMarginBottom: true,
-            label: capitalizeFirstLetter(roleKey),
-            checked: isEnabled,
-            onChange: isChecked => handleCapabilityChange(roleKey, 'make_video_thumbnails', isChecked)
-          }, `${roleKey}-make-thumbnails`))]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-            children: (0,external_wp_i18n_namespaceObject.__)('Can encode videos')
-          }), Object.entries(capabilities.encode_videos).map(([roleKey, isEnabled]) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-            __nextHasNoMarginBottom: true,
-            label: capitalizeFirstLetter(roleKey),
-            checked: isEnabled,
-            onChange: isChecked => handleCapabilityChange(roleKey, 'encode_videos', isChecked)
-          }, `${roleKey}-encode-videos`))]
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.FlexItem, {
-          children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("p", {
-            children: (0,external_wp_i18n_namespaceObject.__)("Can edit other users' encoded videos")
-          }), Object.entries(capabilities.edit_others_video_encodes).map(([roleKey, isEnabled]) => /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-            __nextHasNoMarginBottom: true,
-            label: capitalizeFirstLetter(roleKey),
-            checked: isEnabled,
-            onChange: isChecked => handleCapabilityChange(roleKey, 'edit_others_video_encodes', isChecked)
-          }, `${roleKey}-edit-encodes`))]
-        })]
-      })
-    });
-  };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Sharing'),
-      initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Allow users to embed your videos on other sites.'),
-        onChange: changeHandlerFactory.embeddable,
-        checked: !!embeddable
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Generate Facebook Open Graph video tags.'),
-        onChange: changeHandlerFactory.open_graph,
-        checked: !!open_graph,
-        disabled: !embeddable
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Generate Schema.org metadata for search engines.'),
-        onChange: changeHandlerFactory.schema,
-        checked: !!schema
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Enable Twitter Cards.'),
-        onChange: changeHandlerFactory.twitter_card,
-        checked: !!twitter_card,
-        disabled: !embeddable
-      }), (twitter_card || twitter_button) && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-        className: "videopack-setting-reduced-width",
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TextControl, {
-          __nextHasNoMarginBottom: true,
-          __next40pxDefaultSize: true,
-          label: (0,external_wp_i18n_namespaceObject.__)('Twitter username:'),
-          value: twitter_username,
-          onChange: changeHandlerFactory.twitter_username
-        })
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Allow right-clicking on videos.'),
-        onChange: changeHandlerFactory.right_click,
-        checked: !!right_click
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Allow single-click download links.'),
-        onChange: changeHandlerFactory.right_click,
-        checked: !!right_click
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Change oEmbed to video instead of WordPress default photo/excerpt.'),
-        onChange: changeHandlerFactory.oembed_provider,
-        checked: !!oembed_provider
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: "Performance",
-      initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Always load plugin-related JavaScripts.'),
-        onChange: changeHandlerFactory.alwaysloadscripts,
-        checked: !!alwaysloadscripts
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Use URL cache.'),
-        onChange: changeHandlerFactory.transient_cache,
-        checked: !!transient_cache
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-        className: "videopack-clear-button",
-        variant: "secondary",
-        children: (0,external_wp_i18n_namespaceObject.__)('Clear URL cache')
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.RadioControl, {
-        className: "videopack-setting-radio-group",
-        label: (0,external_wp_i18n_namespaceObject.__)('Record views in the WordPress database:'),
-        selected: count_views,
-        options: countViewsOptions,
-        onChange: changeHandlerFactory.count_views
-      })]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.PanelBody, {
-      title: (0,external_wp_i18n_namespaceObject.__)('Misc'),
-      initialOpen: true,
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Override any existing "[video]" shortcodes.'),
-        onChange: changeHandlerFactory.replace_video_shortcode,
-        checked: !!replace_video_shortcode
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-        __nextHasNoMarginBottom: true,
-        label: (0,external_wp_i18n_namespaceObject.__)('Allow video attachment URL rewriting.'),
-        onChange: changeHandlerFactory.rewrite_attachment_url,
-        checked: !!rewrite_attachment_url
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Flex, {
-        direction: "column",
-        children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexItem, {
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.ToggleControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('Change attachment page design to match plugin settings.'),
-            onChange: changeHandlerFactory.template,
-            checked: !!template
-          })
-        }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.FlexItem, {
-          children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.BaseControl, {
-            __nextHasNoMarginBottom: true,
-            label: (0,external_wp_i18n_namespaceObject.__)('When deleting videos, also delete associated:'),
-            children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-              __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_namespaceObject.__)('Thumbnails'),
-              checked: delete_thumbnails
-            }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.CheckboxControl, {
-              __nextHasNoMarginBottom: true,
-              label: (0,external_wp_i18n_namespaceObject.__)('Encoded Videos'),
-              checked: delete_encoded
-            })]
-          })
-        })]
-      })]
-    }), capabilities && /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(RolesCheckboxes, {})]
-  });
-};
-/* harmony default export */ const components_AdminSettings = (AdminSettings);
-;// ./src/features/settings/components/FreemiusPage.js
-
-
-
-
-/**
- * A component to render Freemius pages fetched via the REST API.
- * It handles dangerously setting the HTML and executing any inline scripts.
- *
- * @param {Object} props      Component props.
- * @param {string} props.page The Freemius page slug ('account' or 'add-ons').
- * @return {JSX.Element} The rendered component.
- */
-
-const FreemiusPage = ({
-  page
-}) => {
-  const [content, setContent] = (0,external_wp_element_namespaceObject.useState)('');
-  const [isLoading, setIsLoading] = (0,external_wp_element_namespaceObject.useState)(true);
-  const containerRef = (0,external_wp_element_namespaceObject.useRef)(null);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    setIsLoading(true);
-    getFreemiusPage(page).then(response => {
-      setContent(response.html);
-      setIsLoading(false);
-    }).catch(error => {
-      // eslint-disable-next-line no-console
-      console.error(`Error fetching Freemius page '${page}':`, error);
-      setContent(`<div class="notice notice-error"><p>Error loading page: ${error.message}</p></div>`);
-      setIsLoading(false);
-    });
-  }, [page]);
-
-  // Effect to execute scripts after the HTML content is rendered.
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (!content || !containerRef.current) {
       return;
     }
-    const container = containerRef.current;
-    const scripts = Array.from(container.querySelectorAll('script'));
-    scripts.forEach(oldScript => {
-      const newScript = document.createElement('script');
-      for (const attr of oldScript.attributes) {
-        newScript.setAttribute(attr.name, attr.value);
-      }
-      newScript.text = oldScript.text;
-      oldScript.parentNode.replaceChild(newScript, oldScript);
-    });
-  }, [content]);
-  if (isLoading) {
-    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {});
-  }
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
-    className: "freemius-page-container",
-    ref: containerRef,
-    dangerouslySetInnerHTML: {
-      __html: content
+    if (mediaArray.length === 1) {
+      setAttributesFromMedia(mediaArray);
     }
-  });
-};
-/* harmony default export */ const components_FreemiusPage = (FreemiusPage);
-;// ./src/features/settings/settings.js
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const VideopackSettingsPage = () => {
-  const [settings, setSettings] = (0,external_wp_element_namespaceObject.useState)({});
-  const [ffmpegTest, setFfmpegTest] = (0,external_wp_element_namespaceObject.useState)({});
-  const [isSettingsChanged, setIsSettingsChanged] = (0,external_wp_element_namespaceObject.useState)(false);
-  const defaultTab = window.location.hash.substring(1) || 'player';
-  const [activeTab, setActiveTab] = (0,external_wp_element_namespaceObject.useState)(defaultTab);
-  const testFfmpeg = (codec, resolution, rotate) => {
-    if (activeTab === 'encoding') {
-      testFFmpegCommand(codec, resolution, rotate).then(response => {
-        setFfmpegTest(response);
-        console.log(response);
-      }).catch(error => {
-        console.log(error);
+  }
+  function onSelectURL(newSrc) {
+    if (newSrc !== src) {
+      setAttributes({
+        src: newSrc,
+        id: false
       });
     }
-  };
-  const updateSettingsState = response => {
-    if (response?.videopack_options) {
-      setSettings(response.videopack_options);
-    }
-    console.log(response);
-  };
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true) {
-      setFfmpegTest({
-        command: (0,external_wp_i18n_namespaceObject.__)('Running test…'),
-        output: (0,external_wp_i18n_namespaceObject.__)('Running test…')
-      });
-      testFfmpeg(settings.sample_codec, settings.sample_resolution, settings.sample_rotate);
-    }
-  }, [settings, activeTab]);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    getWPSettings().then(response => {
-      updateSettingsState(response);
-    }).catch(error => {
-      console.log(error);
-    });
-    const handlePopState = () => {
-      setActiveTab(window.location.hash.substring(1));
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
-  const debouncedSaveSettings = (0,external_wp_compose_namespaceObject.useDebounce)(newSettings => {
-    saveWPSettings(newSettings).then(response => {
-      updateSettingsState(response);
-      setIsSettingsChanged(false);
-      console.log('Settings updated successfully:', response);
-    }).catch(error => {
-      console.error('Error updating settings:', error);
-    });
-  }, 1000);
-  (0,external_wp_element_namespaceObject.useEffect)(() => {
-    if (isSettingsChanged) {
-      debouncedSaveSettings(settings);
-    }
-  }, [isSettingsChanged, debouncedSaveSettings, settings]);
-  const changeHandlerFactory = (0,external_wp_element_namespaceObject.useMemo)(() => {
-    if (!settings || typeof settings !== 'object') {
-      return {};
-    }
-    return Object.keys(settings).reduce((acc, setting) => {
-      acc[setting] = newValue => {
-        setSettings(prevSettings => ({
-          ...prevSettings,
-          // Spread existing properties of the settings state
-          [setting]: newValue // Update the specific property that changed
-        }));
-        setIsSettingsChanged(true);
-      };
-      return acc;
-    }, {});
-  }, [settings]);
-  const tabs = [{
-    name: 'player',
-    title: (0,external_wp_i18n_namespaceObject.__)('Video Player')
-  }, {
-    name: 'thumbnails',
-    title: (0,external_wp_i18n_namespaceObject.__)('Thumbnails')
-  }, {
-    name: 'gallery',
-    title: (0,external_wp_i18n_namespaceObject.__)('Video Gallery')
-  }, {
-    name: 'encoding',
-    title: (0,external_wp_i18n_namespaceObject.__)('Encoding')
-  }, {
-    name: 'admin',
-    title: (0,external_wp_i18n_namespaceObject.__)('Admin')
-  }];
-  if (window.videopack.settings.freemiusEnabled) {
-    tabs.push({
-      name: 'account',
-      title: (0,external_wp_i18n_namespaceObject.__)('Freemius Account'),
-      className: 'videopack-freemius-tab'
-    }, {
-      name: 'add-ons',
-      title: (0,external_wp_i18n_namespaceObject.__)('Add-ons'),
-      className: 'videopack-freemius-tab'
+  }
+  function onUploadError(message) {
+    createErrorNotice(message, {
+      type: 'snackbar'
     });
   }
-  const onTabSelect = tabName => {
-    setActiveTab(tabName);
-    window.history.pushState(null, '', `#${tabName}`);
-  };
-  const renderTab = tab => {
-    if (settings && settings.hasOwnProperty('embed_method')) {
-      if (tab.name === 'player') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_PlayerSettings, {
-          settings: settings,
-          setSettings: setSettings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'thumbnails') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_ThumbnailSettings, {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'gallery') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_GallerySettings, {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'encoding') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_EncodingSettings, {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory,
-          ffmpegTest: ffmpegTest
-        });
-      }
-      if (tab.name === 'admin') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_AdminSettings, {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'account') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_FreemiusPage, {
-          page: "account"
-        });
-      }
-      if (tab.name === 'add-ons') {
-        return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(components_FreemiusPage, {
-          page: "add-ons"
-        });
-      }
-    } else {
-      return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Spinner, {});
-    }
-  };
-  const resetSettings = () => {
-    resetVideopackSettings().then(response => {
-      setSettings(response);
-      setIsSettingsChanged(true);
-    }).catch(error => {
-      console.log(error);
+  const placeholder = content => {
+    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Placeholder, {
+      className: "block-editor-media-placeholder",
+      withIllustration: true,
+      icon: icon_videopack,
+      label: (0,external_wp_i18n_namespaceObject.__)('Videopack Video'),
+      instructions: (0,external_wp_i18n_namespaceObject.__)('Upload a video file, pick one from your media library, or add one with a URL.'),
+      children: content
     });
   };
-  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("div", {
-    className: "wrap videopack-settings",
-    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)("h1", {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Icon, {
-        className: "videopack-settings-icon",
-        icon: icon_videopack,
-        size: 40
-      }), (0,external_wp_i18n_namespaceObject.__)('Videopack Settings')]
-    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_wp_components_namespaceObject.Panel, {
-      children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.TabPanel, {
-        tabs: tabs,
-        initialTabName: activeTab,
-        onSelect: onTabSelect,
-        children: tab => {
-          return renderTab(tab);
-        }
-      }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.PanelRow, {
-        children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_components_namespaceObject.Button, {
-          variant: "primary",
-          onClick: resetSettings,
-          className: 'videopack-settings-reset',
-          children: (0,external_wp_i18n_namespaceObject.__)('Reset Settings')
-        })
-      })]
+  if (!src && !id) {
+    return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)("div", {
+      ...blockProps,
+      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.MediaPlaceholder, {
+        icon: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.BlockIcon, {
+          icon: icon_videopack
+        }),
+        onSelect: onSelectVideo,
+        onSelectURL: onSelectURL,
+        accept: "video/*",
+        allowedTypes: ALLOWED_MEDIA_TYPES,
+        value: attributes,
+        onError: onUploadError,
+        placeholder: placeholder
+      })
+    });
+  }
+  return /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsxs)(external_ReactJSXRuntime_namespaceObject.Fragment, {
+    children: [/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.BlockControls, {
+      group: "other",
+      children: /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(external_wp_blockEditor_namespaceObject.MediaReplaceFlow, {
+        mediaId: id,
+        mediaURL: src,
+        allowedTypes: ALLOWED_MEDIA_TYPES,
+        accept: "video/*",
+        onSelect: onSelectVideo,
+        onSelectURL: onSelectURL,
+        onError: onUploadError
+      })
+    }), /*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(videopack_video_SingleVideoBlock, {
+      setAttributes: setAttributes,
+      attributes: attributes,
+      options: options
     })]
   });
-};
-const el = document.getElementById('videopack-settings-root');
-const root = (0,external_wp_element_namespaceObject.createRoot)(el);
-root.render(/*#__PURE__*/(0,external_ReactJSXRuntime_namespaceObject.jsx)(VideopackSettingsPage, {}));
+}
+;// ./src/blocks/videopack-video/save.js
+/**
+ * The save function defines the way in which the different attributes should
+ * be combined into the final markup, which is then serialized by the block
+ * editor into `post_content`.
+ *
+ * @see https://developer.wordpress.org/block-editor/developers/block-api/block-edit-save/#save
+ *
+ * @param {Object} props          The properties passed to the component.
+ * @param {Object} props.attributes The block attributes.
+ * @return {WPElement} Element to render.
+ */
+function save_save({
+  attributes
+}) {
+  // Returning null because this is a dynamic block.
+  // The view is rendered on the server via a render_callback in PHP.
+  return null;
+}
+;// ./src/blocks/videopack-video/block.json
+const block_namespaceObject = /*#__PURE__*/JSON.parse('{"UU":"videopack/videopack-video"}');
+;// ./src/blocks/videopack-video/index.js
+
+
+
+
+
+(0,external_wp_blocks_namespaceObject.registerBlockType)(block_namespaceObject.UU, {
+  icon: icon_videopack,
+  /**
+   * @see ./edit.js
+   */
+  edit: Edit,
+  /**
+   * @see ./save.js
+   */
+  save: save_save
+});
 })();
 
 /******/ })()
