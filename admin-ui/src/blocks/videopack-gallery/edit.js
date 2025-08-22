@@ -1,4 +1,3 @@
-import { getBlobByURL, isBlobURL } from '@wordpress/blob';
 import { Button, Placeholder } from '@wordpress/components';
 import {
 	BlockControls,
@@ -18,9 +17,8 @@ import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
 import GalleryBlock from './GalleryBlock';
 
-const ALLOWED_MEDIA_TYPES = ['video'];
-
-export default function Edit({ attributes, setAttributes }) {
+export default function edit({ attributes, setAttributes }) {
+	const ALLOWED_MEDIA_TYPES = ['video'];
 	const { gallery, gallery_include, gallery_id } = attributes;
 	const [options, setOptions] = useState();
 	const blockProps = useBlockProps();

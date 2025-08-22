@@ -7,56 +7,47 @@ import AdditionalFormats from '../../components/AdditionalFormats/AdditionalForm
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 
 const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
-	const { caption, id, videoTitle, embedlink, poster } = attributes;
+	const { id } = attributes;
 
-	const attachment = useEntityRecord('postType', 'attachment', id);
+	const { record: attachment, hasResolved } = useEntityRecord(
+		'postType',
+		'attachment',
+		id
+	);
 
 	useEffect(() => {
-		// Check hasResolved and that the record exists.
-		if (attachment.hasResolved && attachment.record) {
-			const newAttributes = {};
-			const newTitle = attachment.record?.title?.raw;
-			const newCaption = attachment.record?.caption?.raw;
-			const newEmbedlink = attachment?.record?.link + 'embed';
-			const newPoster = attachment.record?.meta?.['_videopack-meta']?.poster;
+		if (hasResolved && attachment) {
+			const newAttributes = {
+				videoTitle: attachment.title?.raw,
+				caption: attachment.caption?.raw,
+				embedlink: attachment.link + 'embed',
+				poster: attachment.meta?.['_videopack-meta']?.poster,
+			};
 
-			// Only update if the new value is different from the old one.
-			if (newTitle && newTitle !== videoTitle) {
-				newAttributes.videoTitle = newTitle;
-			}
+			const updatedAttributes = Object.keys(newAttributes).reduce(
+				(acc, key) => {
+					if (
+						newAttributes[key] &&
+						newAttributes[key] !== attributes[key]
+					) {
+						acc[key] = newAttributes[key];
+					}
+					return acc;
+				},
+				{}
+			);
 
-			// Only update the caption if it's currently empty and a new one is available.
-			if (!caption && newCaption) {
-				newAttributes.caption = newCaption;
-			}
-
-			if (!embedlink && newEmbedlink) {
-				newAttributes.embedlink = newEmbedlink;
-			}
-
-			if (!poster && newPoster) {
-				newAttributes.poster = newPoster;
-			}
-
-			// Only call setAttributes if there are changes to apply.
-			if (Object.keys(newAttributes).length > 0) {
-				setAttributes(newAttributes);
+			if (Object.keys(updatedAttributes).length > 0) {
+				setAttributes(updatedAttributes);
 			}
 		}
-		console.log(attachment);
-	}, [attachment, caption, videoTitle, setAttributes]);
-
-	const handleVideoPlayerReady = () => {};
+	}, [attachment, hasResolved, setAttributes, attributes]);
 
 	const playerAttributes = useMemo(() => {
-		const newPlayerAttributes = { ...(options || {}), ...attributes };
+		const newPlayerAttributes = { ...options, ...attributes };
 
-		if (!newPlayerAttributes.embed_method && options) {
-			newPlayerAttributes.embed_method = options.embed_method;
-		}
-
-		if (attachment.record?.videopack?.sources) {
-			newPlayerAttributes.sources = attachment.record.videopack.sources;
+		if (attachment?.videopack?.sources) {
+			newPlayerAttributes.sources = attachment.videopack.sources;
 		}
 		return newPlayerAttributes;
 	}, [options, attributes, attachment]);
@@ -74,18 +65,10 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 					setAttributes={setAttributes}
 					attributes={attributes}
 				/>
-				<AdditionalFormats
-					setAttributes={setAttributes}
-					attributes={attributes}
-					attachment={attachment}
-					options={options}
-				/>
+				<AdditionalFormats attributes={attributes} options={options} />
 			</InspectorControls>
 			<div {...useBlockProps()}>
-				<VideoPlayer
-					attributes={playerAttributes}
-					onReady={handleVideoPlayerReady}
-				/>
+				<VideoPlayer attributes={playerAttributes} />
 			</div>
 		</>
 	);

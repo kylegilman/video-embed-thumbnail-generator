@@ -1,1 +1,171 @@
-#wpwrap{font-size:small}.wrap.videopack-settings{margin:10px auto;max-width:65rem}.wrap.videopack-settings .videopack-settings-icon{margin-left:10px;vertical-align:text-bottom}.wrap.videopack-settings .components-flex.videopack-flex-bottom{align-items:flex-end}.wrap.videopack-settings .components-flex.videopack-player-settings{align-items:flex-start;flex-direction:column}.wrap.videopack-settings .videopack-flex-left{align-items:flex-end;justify-content:flex-start}.wrap.videopack-settings .videopack-library-button{margin-bottom:5px;margin-right:20px;vertical-align:text-bottom}.wrap.videopack-settings .videopack-library-button.no-vertical-align{vertical-align:unset}.wrap.videopack-settings .videopack-volume-control{width:225px}.wrap.videopack-settings .videopack-tooltip svg{margin-bottom:5px;margin-right:5px}.wrap.videopack-settings .videopack-settings-slider.components-range-control{margin-bottom:46px}.wrap.videopack-settings .videopack-settings-slider .components-range-control__mark-label{margin-top:20px;white-space:normal;width:14px}.wrap.videopack-settings .components-flex{align-items:flex-start}.wrap.videopack-settings .components-base-control.components-toggle-control,.wrap.videopack-settings .videopack-component-margin{margin-bottom:10px;margin-top:10px}.wrap.videopack-settings .components-base-control.components-checkbox-control{margin-bottom:3px}.wrap.videopack-settings .videopack-setting-auto-width .components-base-control{display:inline-block;vertical-align:text-bottom}.wrap.videopack-settings .videopack-setting-reduced-width .components-base-control{display:inline-block;margin-left:10px;vertical-align:text-bottom;width:30rem}.wrap.videopack-settings span.videopack-setting-auto-width{margin-left:20px}.wrap.videopack-settings .videopack-monospace .components-text-control__input{font-family:monospace}.wrap.videopack-settings button.components-button.videopack-settings-reset.is-primary{margin:0 10px 10px}.wrap.videopack-settings .videopack-setting-radio-group{margin-bottom:20px}.wrap.videopack-settings .videopack-setting-extra-margin{margin-top:25px}.wrap.videopack-settings .components-base-control.videopack-setting-auto-thumb{display:inline-block}.wrap.videopack-settings .components-base-control.videopack-setting-auto-thumb .components-text-control__input{margin:0 7px;max-width:4rem}.wrap.videopack-settings .components-base-control.components-range-control.videopack-setting-auto-thumb{margin:0 10px;vertical-align:middle;width:20rem}.wrap.videopack-settings .videopack-setting-bitrate-examples{color:#789;display:flex;justify-content:space-evenly;margin-bottom:30px;margin-top:-36px}.wrap.videopack-settings .videopack-clear-button{margin-bottom:20px}.wrap.videopack-settings .videopack-setting-capabilities p{font-size:11px;font-weight:500;margin-top:0;text-transform:uppercase}.wrap.videopack-settings .videopack-encode-grid{display:flex;flex-wrap:wrap;margin-right:auto;margin-left:auto}.wrap.videopack-settings .videopack-encode-grid .videopack-encode-column{border:1px solid #ccc;border-radius:4px;flex:0 1 auto;margin:.5rem;padding:.5rem}.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell{font-weight:600;margin-bottom:.5rem;text-align:center}.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell .components-base-control{display:inline-block}.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-row{align-items:center;display:flex;justify-content:space-between;padding:.25rem 0}.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-label{margin-left:10px;text-align:right}.wrap.videopack-settings .components-flex.videopack-setting-sample-formats{align-items:flex-end;justify-content:flex-start;margin-bottom:10px}.wrap.videopack-settings .components-flex.videopack-setting-sample-formats div{margin-left:5px}.wrap.videopack-settings .videopack-control-with-tooltip{align-items:flex-start;display:flex;margin-top:10px}.wrap.videopack-settings .videopack-control-with-tooltip .components-base-control{margin-left:5px}.components-tooltip{background:var(--wp--preset--color--accent-5);box-shadow:-2px 2px 2px 1px rgba(0,0,0,.2);color:#000;max-width:400px;white-space:normal}#fs_addons .fs-cards-list{display:inline-block}
+/*!************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/settings/settings.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************/
+#wpwrap {
+  font-size: small;
+}
+
+.wrap.videopack-settings {
+  max-width: 65rem;
+  margin: 10px auto;
+}
+.wrap.videopack-settings .videopack-settings-icon {
+  vertical-align: text-bottom;
+  margin-left: 10px;
+}
+.wrap.videopack-settings .components-flex.videopack-flex-bottom {
+  align-items: flex-end;
+}
+.wrap.videopack-settings .components-flex.videopack-player-settings {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.wrap.videopack-settings .videopack-flex-left {
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+.wrap.videopack-settings .videopack-library-button {
+  margin-right: 20px;
+  margin-bottom: 5px;
+  vertical-align: text-bottom;
+}
+.wrap.videopack-settings .videopack-library-button.no-vertical-align {
+  vertical-align: unset;
+}
+.wrap.videopack-settings .videopack-volume-control {
+  width: 225px;
+}
+.wrap.videopack-settings .videopack-tooltip svg {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+.wrap.videopack-settings .videopack-settings-slider.components-range-control {
+  margin-bottom: 46px;
+}
+.wrap.videopack-settings .videopack-settings-slider .components-range-control__mark-label {
+  margin-top: 20px;
+  white-space: normal;
+  width: 14px;
+}
+.wrap.videopack-settings .components-flex {
+  align-items: flex-start;
+}
+.wrap.videopack-settings .components-base-control.components-toggle-control, .wrap.videopack-settings .videopack-component-margin {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.wrap.videopack-settings .components-base-control.components-checkbox-control {
+  margin-bottom: 3px;
+}
+.wrap.videopack-settings .videopack-setting-auto-width .components-base-control {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+.wrap.videopack-settings .videopack-setting-reduced-width .components-base-control {
+  width: 30rem;
+  display: inline-block;
+  vertical-align: text-bottom;
+  margin-left: 10px;
+}
+.wrap.videopack-settings span.videopack-setting-auto-width {
+  margin-left: 20px;
+}
+.wrap.videopack-settings .videopack-monospace .components-text-control__input {
+  font-family: monospace;
+}
+.wrap.videopack-settings button.components-button.videopack-settings-reset.is-primary {
+  margin: 0px 10px 10px 10px;
+}
+.wrap.videopack-settings .videopack-setting-radio-group {
+  margin-bottom: 20px;
+}
+.wrap.videopack-settings .videopack-setting-extra-margin {
+  margin-top: 25px;
+}
+.wrap.videopack-settings .components-base-control.videopack-setting-auto-thumb {
+  display: inline-block;
+}
+.wrap.videopack-settings .components-base-control.videopack-setting-auto-thumb .components-text-control__input {
+  max-width: 4rem;
+  margin: 0 7px;
+}
+.wrap.videopack-settings .components-base-control.components-range-control.videopack-setting-auto-thumb {
+  width: 20rem;
+  vertical-align: middle;
+  margin: 0px 10px;
+}
+.wrap.videopack-settings .videopack-setting-bitrate-examples {
+  margin-top: -36px;
+  margin-bottom: 30px;
+  color: lightslategray;
+  display: flex;
+  justify-content: space-evenly;
+}
+.wrap.videopack-settings .videopack-clear-button {
+  margin-bottom: 20px;
+}
+.wrap.videopack-settings .videopack-setting-capabilities p {
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 0;
+  text-transform: uppercase;
+}
+.wrap.videopack-settings .videopack-encode-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: auto;
+  margin-left: auto;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-column {
+  flex: 0 1 auto;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell .components-base-control {
+  display: inline-block;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-label {
+  text-align: right;
+  margin-left: 10px;
+}
+.wrap.videopack-settings .components-flex.videopack-setting-sample-formats {
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.wrap.videopack-settings .components-flex.videopack-setting-sample-formats div {
+  margin-left: 5px;
+}
+.wrap.videopack-settings .videopack-control-with-tooltip {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+}
+.wrap.videopack-settings .videopack-control-with-tooltip .components-base-control {
+  margin-left: 5px;
+}
+
+.components-tooltip {
+  color: black;
+  white-space: normal;
+  max-width: 400px;
+  background: var(--wp--preset--color--accent-5);
+  box-shadow: -2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+#fs_addons .fs-cards-list {
+  display: inline-block;
+}

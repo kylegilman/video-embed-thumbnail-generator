@@ -1,16 +1,13 @@
-/* global videopack */
+/* global videopack_config */
 
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
-	CheckboxControl,
 	PanelBody,
 	PanelRow,
 	Spinner,
-	__experimentalDivider as Divider,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import { MediaUpload } from '@wordpress/media-utils';
 import { useRef, useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
@@ -66,10 +63,15 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 				});
 
 				// Only update state if the formats have actually changed.
-				if (JSON.stringify(currentVideoFormats) !== JSON.stringify(newFormats)) {
+				if (
+					JSON.stringify(currentVideoFormats) !==
+					JSON.stringify(newFormats)
+				) {
 					return newFormats;
 				}
-			} else if (JSON.stringify(currentVideoFormats) !== JSON.stringify(response)) {
+			} else if (
+				JSON.stringify(currentVideoFormats) !== JSON.stringify(response)
+			) {
 				// Fallback for non-object responses
 				return response;
 			}
@@ -90,7 +92,6 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	};
 
 	const pollVideoFormats = async () => {
-		console.log('update');
 		if (src && id) {
 			try {
 				const formats = await getVideoFormats(id);
@@ -104,19 +105,6 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	useEffect(() => {
 		fetchVideoFormats();
 	}, [id]); // Fetch formats when the attachment ID changes
-
-	const isEmpty = (value) => {
-		if (
-			value === false ||
-			value === null ||
-			(Array.isArray(value) && value.length === 0) ||
-			(typeof value === 'object' && Object.keys(value).length === 0)
-		) {
-			return true;
-		}
-
-		return false;
-	};
 
 	const siteSettings = useSelect((select) => {
 		return select('core').getSite();
@@ -250,22 +238,8 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		// Note: Checkbox state is now purely UI. Saving to DB happens on "Encode" button click.
 	};
 
-	const getCheckboxCheckedState = (formatData) => {
-		return formatData.checked || formatData.status === 'queued';
-	};
-
-	const getCheckboxDisabledState = (formatData) => {
-		return (
-			formatData.exists ||
-			formatData.status === 'queued' ||
-			formatData.status === 'encoding' ||
-			formatData.status === 'processing' ||
-			formatData.status === 'completed'
-		);
-	};
-
 	const handleEnqueue = async () => {
-		if (!window.videopack || !window.videopack.settings) {
+		if (!videopack_config) {
 			return <Spinner />;
 		}
 
@@ -287,7 +261,6 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 
 		try {
 			const response = await enqueueJob(id, src, formatsToEncode);
-			console.log(response);
 			const queueMessage = () => {
 				const queueList = (() => {
 					if (
@@ -337,7 +310,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		}
 	};
 
-		const onSelectFormat = (formatId) => async (media) => {
+	const onSelectFormat = (formatId) => async (media) => {
 		if (!media || !media.id || !formatId) {
 			return;
 		}
@@ -360,21 +333,6 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		} finally {
 			setIsLoading(false);
 		}
-	};
-
-	const formatPickable = (format) => {
-		if (
-			videoFormats &&
-			videoFormats[format] &&
-			// A format is "pickable" if the file doesn't exist AND it's not already queued/processing/completed
-			((!videoFormats[format].exists &&
-				videoFormats[format].status === 'not_encoded') ||
-				videoFormats[format].was_picked) &&
-			!videoFormats[format].encoding_now
-		) {
-			return true;
-		}
-		return false;
 	};
 
 	// Deletes the actual media file (WP Attachment)
@@ -519,95 +477,109 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		[id]
 	);
 
+	const groupedFormats = Object.values(videoFormats).reduce((acc, format) => {
+		if (!format.codec || !format.codec.id) {
+			return acc;
+		}
+		const codecId = format.codec.id;
+		if (!acc[codecId]) {
+			acc[codecId] = {
+				name: format.codec.name,
+				formats: [],
+			};
+		}
+		acc[codecId].formats.push(format);
+		// sort formats by height
+		acc[codecId].formats.sort(
+			(a, b) => a.resolution.height - b.resolution.height
+		);
+		return acc;
+	}, {});
+console.log(options);
 	return (
 		<>
 			<PanelBody title={__('Additional Formats')}>
-				{canUploadFiles && (
-					<PanelRow>
-						{videoFormats ? (
-							<>
-								<ul
-									className={`videopack-formats-list${
-										ffmpeg_exists === true ? '' : ' no-ffmpeg'
-									}`}
-								>
-									{videopack.settings.codecs.map((codec) => {
-										if (
-											options.encode[codec.id]
-												?.enabled !== '1'
-										) {
-											return null;
-										}
-										return (
-											<li key={codec.id}>
-												<h4 className="videopack-codec-name">
-													{codec.name}
-												</h4>
-												<ul>
-													{videopack.settings.resolutions.map(
-														(resolution) => {
-															const formatId = `${codec.id}_${resolution.id}`;
-															const formatData =
-																videoFormats[
+				<PanelRow>
+					{videoFormats ? (
+						<>
+							<ul
+								className={`videopack-formats-list${
+									ffmpeg_exists === true ? '' : ' no-ffmpeg'
+								}`}
+							>
+								{Object.keys(groupedFormats).map((codecId) => {
+									const codecGroup = groupedFormats[codecId];
+									if (
+										options.encode[codecId]?.enabled !== true
+									) {
+										return null;
+									}
+									return (
+										<li key={codecId}>
+											<h4 className="videopack-codec-name">
+												{codecGroup.name}
+											</h4>
+											<ul>
+												{codecGroup.formats.map(
+													(formatData) => {
+														const formatId =
+															formatData.id;
+														return (
+															<EncodeFormatStatus
+																key={formatId}
+																formatId={
 																	formatId
-																];
-
-															if (!formatData) {
-																return null;
-															}
-															return (
-																<EncodeFormatStatus
-																	key={formatId}
-																	formatId={formatId}
-																	formatData={formatData}
-																	ffmpegExists={
-																		ffmpeg_exists
-																	}
-																	onCheckboxChange={
-																		handleFormatCheckbox
-																	}
-																	onSelectFormat={
-																		onSelectFormat
-																	}
-																	onDeleteFile={() =>
-																		openConfirmDialog(
-																			'file',
-																			formatId
-																		)
-																	}
-																	onCancelJob={() =>
-																		openConfirmDialog(
-																			'job',
-																			formatId
-																		)
-																	}
-																	deleteInProgress={
-																		deleteInProgress
-																	}
-																/>
-															);
-														}
-													)}
-												</ul>
-											</li>
-										);
-									})}
-								</ul>
-								<ConfirmDialog
-									isOpen={isConfirmOpen}
-									onConfirm={handleConfirm}
-									onCancel={handleCancel}
-								>
-									{confirmDialogMessage()}
-								</ConfirmDialog>
-							</>
-						) : (
-							<>
-								<Spinner />
-							</>
-						)}
-					</PanelRow>
-				)}
+																}
+																formatData={
+																	formatData
+																}
+																ffmpegExists={
+																	ffmpeg_exists
+																}
+																onCheckboxChange={
+																	handleFormatCheckbox
+																}
+																onSelectFormat={
+																	onSelectFormat
+																}
+																onDeleteFile={() =>
+																	openConfirmDialog(
+																		'file',
+																		formatId
+																	)
+																}
+																onCancelJob={() =>
+																	openConfirmDialog(
+																		'job',
+																		formatId
+																	)
+																}
+																deleteInProgress={
+																	deleteInProgress
+																}
+															/>
+														);
+													}
+												)}
+											</ul>
+										</li>
+									);
+								})}
+							</ul>
+							<ConfirmDialog
+								isOpen={isConfirmOpen}
+								onConfirm={handleConfirm}
+								onCancel={handleCancel}
+							>
+								{confirmDialogMessage()}
+							</ConfirmDialog>
+						</>
+					) : (
+						<>
+							<Spinner />
+						</>
+					)}
+				</PanelRow>
 				{ffmpeg_exists === true && videoFormats && canUploadFiles && (
 					<PanelRow>
 						<Button

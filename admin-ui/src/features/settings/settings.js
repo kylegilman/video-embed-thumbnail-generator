@@ -1,3 +1,5 @@
+/* global videopack_config */
+
 import { __ } from '@wordpress/i18n';
 import {
 	getWPSettings,
@@ -152,7 +154,7 @@ const VideopackSettingsPage = () => {
 		},
 	];
 
-	if (window.videopack.settings.freemiusEnabled) {
+	if (videopack_config.freemiusEnabled) {
 		tabs.push(
 			{
 				name: 'account',

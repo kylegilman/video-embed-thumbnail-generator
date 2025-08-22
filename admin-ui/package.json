@@ -17,18 +17,17 @@
 		"@dnd-kit/core": "^6.3.1",
 		"@dnd-kit/sortable": "^10.0.0",
 		"@dnd-kit/utilities": "^3.2.2",
-		"@wordpress/api-fetch": "^7.27.0",
-		"@wordpress/blocks": "^15.0.0",
-		"@wordpress/core-data": "^7.27.0",
-		"@wordpress/i18n": "^6.0.0",
-		"@wordpress/icons": "^10.27.0",
-		"@wordpress/media-utils": "^5.28.0",
-		"video.js": "^8.21.1"
+		"@wordpress/api-fetch": "^7.29.0",
+		"@wordpress/blocks": "^15.2.0",
+		"@wordpress/core-data": "^7.29.0",
+		"@wordpress/i18n": "^6.2.0",
+		"@wordpress/icons": "^10.29.0",
+		"@wordpress/media-utils": "^5.29.0"
 	},
 	"devDependencies": {
-		"@wordpress/base-styles": "^6.3.0",
-		"@wordpress/eslint-plugin": "^22.13.0",
-		"@wordpress/scripts": "^30.20.0",
+		"@wordpress/base-styles": "^6.5.0",
+		"@wordpress/eslint-plugin": "^22.15.0",
+		"@wordpress/scripts": "^30.22.0",
 		"eslint": "^8.55.0"
 	}
 }

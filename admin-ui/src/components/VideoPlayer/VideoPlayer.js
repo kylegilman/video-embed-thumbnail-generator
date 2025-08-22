@@ -137,24 +137,18 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	if (!renderReady) {
 		return null; // Or a loading spinner
 	}
-	
+
 	return (
 		<div className="videopack-wrapper">
 			<div className="videopack-player">
 				<MetaBar attributes={attributes} />
 				{embed_method === 'Video.js' && videoJsOptions && (
-					<VideoJS
-						options={videoJsOptions}
-						onReady={handleVideoPlayerReady}
-						skin={skin}
-					/>
+					<VideoJS options={videoJsOptions} skin={skin} />
 				)}
 				{embed_method === 'WordPress Default' && (
-					<WordPressDefaultPlayer onReady={handleVideoPlayerReady} />
+					<WordPressDefaultPlayer />
 				)}
-				{embed_method === 'None' && (
-					<GenericPlayer onReady={handleVideoPlayerReady} />
-				)}
+				{embed_method === 'None' && <GenericPlayer />}
 			</div>
 			<BelowVideo attributes={attributes} />
 		</div>

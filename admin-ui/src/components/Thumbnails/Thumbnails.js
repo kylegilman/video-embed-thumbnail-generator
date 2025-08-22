@@ -1,4 +1,4 @@
-/* global Image */
+/* global Image, videopack_config */
 
 import {
 	BaseControl,
@@ -32,7 +32,9 @@ const Thumbnails = ({
 }) => {
 	const { id, src, poster, poster_id, isExternal } = attributes;
 	const total_thumbnails =
-		attributes.total_thumbnails || videoData?.total_thumbnails || options.total_thumbnails;
+		attributes.total_thumbnails ||
+		videoData?.total_thumbnails ||
+		options.total_thumbnails;
 	const thumbVideoPanel = useRef();
 	const videoRef = useRef();
 	const currentThumb = useRef();
@@ -78,9 +80,8 @@ const Thumbnails = ({
 
 	const handleGenerate = async (type = 'generate') => {
 		setIsSaving(true);
-		const ffmpegExists = window.videopack.settings.ffmpeg_exists;
-		const browserThumbnailsEnabled =
-			window.videopack.settings.browser_thumbnails;
+		const ffmpegExists = videopack_config.ffmpeg_exists;
+		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
 
 		if (!browserThumbnailsEnabled && ffmpegExists) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
@@ -104,7 +105,7 @@ const Thumbnails = ({
 	const generateThumbCanvases = useCallback(async (type) => {
 		const thumbsInt = Number(total_thumbnails);
 		const newThumbCanvases = [];
-		const ffmpegExists = window.videopack.settings.ffmpeg_exists;
+		const ffmpegExists = videopack_config.ffmpeg_exists;
 
 		const timePoints = [...Array(thumbsInt)].map((_, i) => {
 			let movieoffset =

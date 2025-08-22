@@ -1,4 +1,4 @@
-/* global videopack */
+/* global videopack_config */
 
 import { __, _x } from '@wordpress/i18n';
 import {
@@ -104,7 +104,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 	const handleCodecCheckboxChange = (codecId, isEnabled) => {
 		const newEncode = JSON.parse(JSON.stringify(settings.encode || {}));
-		const { codecs, resolutions } = videopack.settings;
+		const { codecs, resolutions } = videopack_config;
 		const codecInfo = codecs.find((c) => c.id === codecId);
 
 		if (!newEncode[codecId]) {
@@ -249,7 +249,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			},
 		];
 
-		videopack.settings.resolutions.forEach((resolution) => {
+		videopack_config.resolutions.forEach((resolution) => {
 			items.push({
 				value: resolution.id,
 				label: resolution.name,
@@ -328,7 +328,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							sources: [
 								{
 									src:
-										videopack.settings.url +
+										videopack_config.url +
 										'/src/images/Adobestock_469037984.mp4',
 									type: 'video/mp4',
 								},
@@ -585,7 +585,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					className="videopack-setting-checkbox-group"
 				>
 					<div>
-						{videopack.settings.codecs.map((codec) => (
+						{videopack_config.codecs.map((codec) => (
 							<CheckboxControl
 								key={codec.id}
 								__nextHasNoMarginBottom
