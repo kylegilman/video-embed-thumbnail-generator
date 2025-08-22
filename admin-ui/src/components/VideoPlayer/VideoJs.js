@@ -1,10 +1,11 @@
-import { useRef, useEffect } from '@wordpress/element';
 import videojs from 'video.js';
+
+import { useRef, useEffect } from '@wordpress/element';
 
 export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
-	const { options, onReady, skin } = props;
+	const { options, skin } = props;
 
 	useEffect(() => {
 		// On initial render, wait for sources to be available before initializing.
@@ -19,7 +20,7 @@ export const VideoJS = (props) => {
 			}
 
 			playerRef.current = videojs(videoElement, options, () => {
-				onReady && onReady(playerRef.current);
+				console.log('initializing Video.js');
 			});
 
 			// On subsequent renders, update the existing player.
@@ -35,7 +36,7 @@ export const VideoJS = (props) => {
 				}
 			}
 		}
-	}, [options, onReady]);
+	}, [options]);
 
 	// Dispose the player when the component unmounts
 	useEffect(() => {

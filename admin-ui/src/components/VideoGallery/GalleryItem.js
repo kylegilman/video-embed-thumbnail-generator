@@ -1,4 +1,4 @@
-/* global videopack */
+/* global videopack_config */
 
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -35,7 +35,7 @@ const GalleryItem = ({
 	};
 
 	const [thumbnailUrl, setThumbnailUrl] = useState(
-		videopack.settings.url + '/src/images/nothumbnail.jpg'
+		videopack_config.url + '/src/images/nothumbnail.jpg'
 	);
 	const [thumbnailSrcset, setThumbnailSrcset] = useState(null);
 

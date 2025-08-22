@@ -15,20 +15,65 @@ class Ui {
 		$this->options_manager = $options_manager;
 	}
 
+	public function register_scripts() {
+		wp_register_script(
+			'video-js',
+			plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/video.min.js',
+			'',
+			VIDEOPACK_VIDEOJS_VERSION,
+			false
+		);
+
+		wp_register_script(
+			'video-quality-selector',
+			plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/video-quality-selector.js',
+			array( 'video-js' ),
+			VIDEOPACK_VERSION,
+			true
+		);
+
+		$locale = $this->get_videojs_locale();
+		if ( $locale != 'en' && file_exists( plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . '/video-js/lang/' . $locale . '.js' ) ) {
+			wp_register_script(
+				'videojs-l10n',
+				plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/lang/' . $locale . '.js',
+				array( 'video-js' ),
+				VIDEOPACK_VIDEOJS_VERSION,
+				true
+			);
+		}
+
+		wp_register_style(
+			'video-js',
+			plugins_url( '/video-js/video-js.min.css', VIDEOPACK_PLUGIN_FILE ),
+			'',
+			VIDEOPACK_VIDEOJS_VERSION
+		);
+
+		$options = $this->options_manager->get_options();
+		if ( $options['skin'] !== 'default'
+			&& file_exists( plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . '/video-js/skins/' . $options['skin'] . '.css' )
+		) {
+			wp_register_style(
+				'video-js-skin',
+				plugins_url( '', VIDEOPACK_PLUGIN_FILE ) . '/video-js/skins/' . $options['skin'] . '.css',
+				'',
+				VIDEOPACK_VERSION
+			);
+		}
+	}
+
 	public function block_init() {
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video',
-			array(
-				'render_callback' => array( $this, 'render_videopack_block' ),
-			)
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video'
 		);
 
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery',
-			array(
-				'render_callback' => array( $this, 'render_videopack_block' ),
-			)
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery'
 		);
+
+		$this->localize_block_settings( 'videopack-videopack-video-editor-script' );
+		$this->localize_block_settings( 'videopack-videopack-gallery-editor-script' );
 	}
 
 	/**
@@ -47,12 +92,33 @@ class Ui {
 		return $shortcode_handler->do( $attributes, $content );
 	}
 
+	private function get_videojs_locale() {
+
+		$locale = get_locale();
+
+		$locale_conversions = array( // all Video.js language codes are two-character except these
+			'pt-BR' => 'pt_BR',
+			'pt-PT' => 'pt_PT',
+			'zh-CN' => 'zh_CN',
+			'zh-TW' => 'zh_TW',
+		);
+
+		$matching_locale = array_search( $locale, $locale_conversions );
+		if ( $matching_locale !== false ) {
+			$locale = $matching_locale;
+		} else {
+			$locale = substr( $locale, 0, 2 );
+		}
+
+		return $locale;
+	}
+
 	/**
-	 * Prepares and returns the videopack.settings data for JavaScript.
+	 * Prepares and returns the videopack_config data for JavaScript.
 	 *
 	 * @return array The settings data.
 	 */
-	private function get_videopack_settings_data() {
+	private function get_videopack_config_data() {
 		// Prepare codec data for localization, making it easier to read and debug.
 		$codec_objects = $this->options_manager->get_video_codecs();
 		$codecs_data   = array();
@@ -83,37 +149,18 @@ class Ui {
 	}
 
 	/**
-	 * Adds the videopack.settings inline script to a given script handle.
+	 * Adds the videopack_config inline script to a given script handle.
 	 *
 	 * @param string $handle The script handle to attach the inline script to.
 	 * @param array  $extra_data Extra data to merge into the settings object.
 	 */
-	private function add_settings_inline_script( $handle, $extra_data = array() ) {
-		$settings_data = $this->get_videopack_settings_data();
+	private function localize_block_settings( $handle, $extra_data = array() ) {
+		$settings_data = $this->get_videopack_config_data();
 		if ( ! empty( $extra_data ) ) {
 			$settings_data = array_merge( $settings_data, $extra_data );
 		}
 
-		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.settings = ' . wp_json_encode( $settings_data ) . ';';
-
-		wp_add_inline_script(
-			$handle,
-			$inline_script,
-			'before'
-		);
-	}
-
-	private function enqueue_player_assets() {
-		$options = $this->options_manager->get_options();
-		$player  = \Videopack\Frontend\Video_Players\Player_Factory::create( $options['embed_method'], $this->options_manager );
-		$player->enqueue_styles();
-	}
-
-	public function enqueue_block_assets() {
-		$this->add_settings_inline_script( 'videopack-videopack-video-editor-script' );
-		$this->add_settings_inline_script( 'videopack-videopack-gallery-editor-script' );
-
-		$this->enqueue_player_assets();
+		wp_localize_script( $handle, 'videopack_config', $settings_data );
 	}
 
 	public function enqueue_page_assets( $hook_suffix ) {
@@ -156,8 +203,7 @@ class Ui {
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
-			$this->enqueue_player_assets();
-			$this->add_settings_inline_script( 'videopack-settings', array( 'freemiusEnabled' => $freemius_enabled ) );
+			$this->localize_block_settings( 'videopack-settings', array( 'freemiusEnabled' => $freemius_enabled ) );
 
 			$settings_css_dependencies = array_merge( array( 'wp-components' ), $freemius_style_dependencies );
 
@@ -230,7 +276,7 @@ class Ui {
 		);
 		wp_set_script_translations( 'videopack-attachment-details', 'video-embed-thumbnail-generator' );
 
-		$this->add_settings_inline_script( 'videopack-attachment-details' );
+		$this->localize_block_settings( 'videopack-attachment-details' );
 
 		wp_enqueue_style(
 			'videopack-attachment-details',

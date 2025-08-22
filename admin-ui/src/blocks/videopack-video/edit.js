@@ -20,7 +20,7 @@ import SingleVideoBlock from './SingleVideoBlock';
 
 const ALLOWED_MEDIA_TYPES = ['video'];
 
-export default function Edit({ attributes, setAttributes }) {
+export default function edit({ attributes, setAttributes }) {
 	const { id, src } = attributes;
 	const [options, setOptions] = useState();
 	const blockProps = useBlockProps();
@@ -56,13 +56,27 @@ export default function Edit({ attributes, setAttributes }) {
 	}, []);
 
 	function setAttributesFromMedia(media) {
-		setAttributes({
+		const media_attributes = {
 			src: media[0].url,
 			id: media[0].id,
 			poster: media[0].meta?.['_videopack-meta']?.poster,
 			total_thumbnails:
 				media[0].meta?.['_videopack-meta']?.total_thumbnails,
-		});
+			videoTitle: media[0].title,
+			caption: media[0].caption,
+		};
+
+		const updatedAttributes = Object.keys(media_attributes).reduce(
+			(acc, key) => {
+				if (media_attributes[key]) {
+					acc[key] = media_attributes[key];
+				}
+				return acc;
+			},
+			{}
+		);
+
+		setAttributes(updatedAttributes);
 	}
 
 	function onSelectVideo(media) {

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
-	"apiVersion": 2,
+	"apiVersion": 3,
 	"name": "videopack/videopack-gallery",
 	"title": "Videopack Video Gallery",
 	"category": "media",
@@ -45,7 +45,7 @@
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": "file:../../videopack-gallery.js",
-	"editorStyle": "file:../../videopack-gallery.css",
-	"style": "file:./style-index.css"
+	"editorScript": [ "video-js", "file:../../videopack-gallery.js" ],
+	"style": ["video-js", "video-js-skin", "file:../../videopack-gallery.css"],
+	"viewScript": ["file:../../videopack-gallery.js", "video-js"]
 }

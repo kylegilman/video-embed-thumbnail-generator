@@ -52,4 +52,8 @@ module.exports = {
 		...config.optimization,
 		minimize: false,
 	},
+	externals: {
+		'video.js': 'videojs',
+		videopack: 'videopack',
+	},
 };

@@ -41,6 +41,7 @@ class Player {
 		$this->options         = $options_manager->get_options();
 		$this->player_id       = $options_manager->increment_video_player_id();
 		$this->register_hooks();
+		$this->register_scripts();
 	}
 
 	public function register_hooks() {

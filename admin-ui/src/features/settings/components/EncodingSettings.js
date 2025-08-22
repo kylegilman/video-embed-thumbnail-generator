@@ -1,4 +1,4 @@
-/* global videopack */
+/* global videopack_config */
 
 import { __ } from '@wordpress/i18n';
 import { getUsersWithCapability } from '../../../utils/utils';
@@ -73,7 +73,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	}, []);
 
 	const EncodeFormatGrid = () => {
-		const { codecs, resolutions } = videopack.settings;
+		const { codecs, resolutions } = videopack_config;
 		const { encode: currentEncode, ffmpeg_exists: ffmpegExists } = settings;
 
 		const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
@@ -167,7 +167,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 
 	const PerCodecQualitySettings = ({ codec }) => {
 		const [bitrates, setBitrates] = useState([]);
-		const { resolutions } = videopack.settings;
+		const { resolutions } = videopack_config;
 		const codecEncodeSettings = encode[codec.id] || {};
 		const {
 			rate_control: currentRateControl = codec.supported_rate_controls[0],
@@ -311,16 +311,14 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const SampleFormatSelects = () => {
 		const { sample_codec, sample_resolution } = settings;
 
-		const codecs = videopack.settings.codecs.map((codec) => ({
+		const codecs = videopack_config.codecs.map((codec) => ({
 			value: codec.id,
 			label: codec.name,
 		}));
-		const resolutions = videopack.settings.resolutions.map(
-			(resolution) => ({
-				value: resolution.id,
-				label: resolution.name,
-			})
-		);
+		const resolutions = videopack_config.resolutions.map((resolution) => ({
+			value: resolution.id,
+			label: resolution.name,
+		}));
 
 		return (
 			<Flex className={'videopack-setting-sample-formats'}>
@@ -436,7 +434,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	};
 
 	const generateMarks = (codecId, type) => {
-		const codec = videopack.settings.codecs.find((c) => c.id === codecId);
+		const codec = videopack_config.codecs.find((c) => c.id === codecId);
 		if (!codec) {
 			return [];
 		}
@@ -633,7 +631,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				title={__('Video quality')}
 				opened={ffmpeg_exists === true}
 			>
-				{videopack.settings.codecs.map(
+				{videopack_config.codecs.map(
 					(codec) =>
 						!!encode?.[codec.id]?.enabled && (
 							<PerCodecQualitySettings
