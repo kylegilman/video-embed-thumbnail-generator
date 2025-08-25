@@ -83,6 +83,10 @@ class Player {
 		}
 	}
 
+	public function filter_block_metadata( $metadata ) {
+		return $metadata;
+	}
+
 	public function enqueue_styles() {
 		wp_enqueue_style( 'videopack_styles', plugins_url( '/admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 	}
@@ -92,8 +96,12 @@ class Player {
 	}
 
 	public function enqueue_scripts(): void {
-		do_action( 'videopack_enqueue_player_scripts' );
-		wp_enqueue_script( 'videopack' );
+		$this->enqueue_player_scripts();
+		wp_enqueue_script( 'videopack-frontend' );
+	}
+
+	public function enqueue_player_scripts(): void {
+		// This method is intended to be overridden by child classes.
 	}
 
 	public function get_source(): ?\Videopack\Video_Source\Source {
@@ -222,7 +230,7 @@ class Player {
 		);
 
 		// The 'videopack' script is already registered, so we can add our instance-specific data to it.
-		wp_add_inline_script( 'videopack', $script );
+		wp_add_inline_script( 'videopack-frontend', $script );
 
 		$player_code = $this->get_wrapper_start_html();
 
