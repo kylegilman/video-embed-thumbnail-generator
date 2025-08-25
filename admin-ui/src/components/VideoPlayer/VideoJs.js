@@ -1,11 +1,11 @@
-import videojs from 'video.js';
+/* global videojs */
 
 import { useRef, useEffect } from '@wordpress/element';
 
 export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
-	const { options, skin } = props;
+	const { options, skin, onPlay, onPause } = props;
 
 	useEffect(() => {
 		// On initial render, wait for sources to be available before initializing.
@@ -20,7 +20,8 @@ export const VideoJS = (props) => {
 			}
 
 			playerRef.current = videojs(videoElement, options, () => {
-				console.log('initializing Video.js');
+				playerRef.current.on('play', onPlay);
+				playerRef.current.on('pause', onPause);
 			});
 
 			// On subsequent renders, update the existing player.
@@ -43,6 +44,8 @@ export const VideoJS = (props) => {
 		const player = playerRef.current;
 		return () => {
 			if (player && !player.isDisposed()) {
+				player.off('play', onPlay);
+				player.off('pause', onPause);
 				player.dispose();
 				playerRef.current = null;
 			}
@@ -51,7 +54,7 @@ export const VideoJS = (props) => {
 
 	return (
 		<div data-vjs-player>
-			<div ref={videoRef} className={`video-js ${skin}`} />
+			<video ref={videoRef} className={`video-js ${skin}`} />
 		</div>
 	);
 };

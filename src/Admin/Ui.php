@@ -143,6 +143,11 @@ class Ui {
 				$freemius_style_dependencies = array( 'fs-addons', 'fs-account', 'fs_dialog_boxes' );
 			}
 
+			// Always enqueue player
+			$video_js_player = new \Videopack\Frontend\Video_Players\Player_Video_Js( $this->options_manager );
+			$video_js_player->enqueue_player_scripts();
+			$video_js_player->enqueue_styles();
+
 			wp_enqueue_script(
 				'videopack-settings',
 				plugins_url( 'admin-ui/build/settings.js', VIDEOPACK_PLUGIN_FILE ),

@@ -1,5 +1,7 @@
-import { useRef, useEffect, useState, useCallback } from '@wordpress/element';
-import { __, _x, _n, sprintf } from '@wordpress/i18n';
+/* global MediaElementPlayer */
+
+import { useRef, useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import MetaBar from './MetaBar';
 import VideoJS from './VideoJs';
 import BelowVideo from './BelowVideo';
@@ -35,10 +37,28 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	} = attributes;
 
 	const playerRef = useRef(null);
+	const wrapperRef = useRef(null);
 	const [videoJsOptions, setVideoJsOptions] = useState(null);
-	const [metaBarVisible, setMetaBarVisible] = useState(true);
 
 	const renderReady = sources && sources.length > 0 && sources[0].src;
+
+	useEffect(() => {
+		if (wrapperRef.current) {
+			wrapperRef.current.classList.add('meta-bar-visible');
+		}
+	}, []);
+
+	const handlePlay = () => {
+		if (wrapperRef.current) {
+			wrapperRef.current.classList.remove('meta-bar-visible');
+		}
+	};
+
+	const handlePause = () => {
+		if (wrapperRef.current) {
+			wrapperRef.current.classList.add('meta-bar-visible');
+		}
+	};
 
 	useEffect(() => {
 		if (embed_method === 'WordPress Default' && playerRef.current) {
@@ -127,7 +147,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				onReady(player);
 			}
 			if (autoplay) {
-				setMetaBarVisible(false);
+				handlePlay();
 			}
 		});
 		player.on('waiting', () => console.log('player is waiting'));
@@ -139,11 +159,16 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	}
 
 	return (
-		<div className="videopack-wrapper">
+		<div className="videopack-wrapper" ref={wrapperRef}>
 			<div className="videopack-player">
 				<MetaBar attributes={attributes} />
 				{embed_method === 'Video.js' && videoJsOptions && (
-					<VideoJS options={videoJsOptions} skin={skin} />
+					<VideoJS
+						options={videoJsOptions}
+						skin={skin}
+						onPlay={handlePlay}
+						onPause={handlePause}
+					/>
 				)}
 				{embed_method === 'WordPress Default' && (
 					<WordPressDefaultPlayer />

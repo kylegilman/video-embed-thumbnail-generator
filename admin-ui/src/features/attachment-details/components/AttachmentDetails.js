@@ -45,7 +45,7 @@ const AttachmentDetails = ({ attachmentId }) => {
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachment={attachment}
+					videoData={attachment.record}
 					options={options}
 				/>
 				<AdditionalFormats attributes={attributes} options={options} />

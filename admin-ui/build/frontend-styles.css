@@ -468,7 +468,7 @@
   color: white;
   vertical-align: middle;
 }
-.videopack-wrapper:hover .videopack-meta-bar {
+.videopack-wrapper.meta-bar-visible .videopack-meta-bar, .videopack-wrapper:hover .videopack-meta-bar {
   opacity: 1;
   visibility: visible;
 }
