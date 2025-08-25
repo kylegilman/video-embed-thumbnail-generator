@@ -48,21 +48,10 @@
     }
   },
   "textdomain": "video-embed-thumbnail-generator",
-  "editorScript": [
-    "video-js",
+  "script": [
     "file:../../videopack-video.js"
   ],
   "style": [
-    "video-js",
-    "video-js-skin",
     "file:../../videopack-video.css"
-  ],
-  "viewScript": [
-    "file:../../videopack-video.js",
-    "video-js"
-  ],
-  "viewStyle": [
-    "video-js",
-    "video-js-skin"
   ]
 }

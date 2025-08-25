@@ -45,7 +45,6 @@
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": [ "video-js", "file:../../videopack-gallery.js" ],
-	"style": ["video-js", "video-js-skin", "file:../../videopack-gallery.css"],
-	"viewScript": ["file:../../videopack-gallery.js", "video-js"]
+	"script": [ "file:../../videopack-gallery.js" ],
+	"style": ["file:../../videopack-gallery.css"]
 }

@@ -51,7 +51,7 @@ export const VideoJS = (props) => {
 
 	return (
 		<div data-vjs-player>
-			<video ref={videoRef} className={`video-js ${skin}`} />
+			<div ref={videoRef} className={`video-js ${skin}`} />
 		</div>
 	);
 };

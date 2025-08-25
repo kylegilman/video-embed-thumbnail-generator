@@ -22,7 +22,8 @@
 		"@wordpress/core-data": "^7.29.0",
 		"@wordpress/i18n": "^6.2.0",
 		"@wordpress/icons": "^10.29.0",
-		"@wordpress/media-utils": "^5.29.0"
+		"@wordpress/media-utils": "^5.29.0",
+		"video.js": "^8.23.4"
 	},
 	"devDependencies": {
 		"@wordpress/base-styles": "^6.5.0",
