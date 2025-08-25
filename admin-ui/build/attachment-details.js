@@ -469,10 +469,9 @@ const AdditionalFormats = ({
     }
     acc[codecId].formats.push(format);
     // sort formats by height
-    acc[codecId].formats.sort((a, b) => a.resolution.height - b.resolution.height);
+    acc[codecId].formats.sort((a, b) => b.resolution.height - a.resolution.height);
     return acc;
   }, {});
-  console.log(options);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.Fragment, {
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Additional Formats'),
@@ -1107,15 +1106,15 @@ const Thumbnails = ({
         metaData['_kgflashmediaplayer-poster'] = new_poster;
         metaData['_kgflashmediaplayer-poster-id'] = Number(new_poster_id);
         metaData['_videopack-meta'] = {
-          ...attachment?.meta?.['_videopack-meta'],
+          ...videoData?.meta?.['_videopack-meta'],
           poster: new_poster
         };
       }
-      await attachment?.edit({
+      await videoData?.edit({
         featured_media: new_poster_id ? Number(new_poster_id) : null,
         meta: metaData
       });
-      await attachment?.save();
+      await videoData?.save();
 
       // Refresh the media library grid to show the updated thumbnail.
       if (wp.media && wp.media.frame) {
@@ -1436,7 +1435,7 @@ const AttachmentDetails = ({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
         setAttributes: setAttributes,
         attributes: attributes,
-        attachment: attachment,
+        videoData: attachment.record,
         options: options
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_AdditionalFormats_AdditionalFormats_js__WEBPACK_IMPORTED_MODULE_4__["default"], {
         attributes: attributes,

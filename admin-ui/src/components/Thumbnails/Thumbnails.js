@@ -427,16 +427,16 @@ const Thumbnails = ({
 				metaData['_kgflashmediaplayer-poster-id'] =
 					Number(new_poster_id);
 				metaData['_videopack-meta'] = {
-					...attachment?.meta?.['_videopack-meta'],
+					...videoData?.meta?.['_videopack-meta'],
 					poster: new_poster,
 				};
 			}
 
-			await attachment?.edit({
+			await videoData?.edit({
 				featured_media: new_poster_id ? Number(new_poster_id) : null,
 				meta: metaData,
 			});
-			await attachment?.save();
+			await videoData?.save();
 
 			// Refresh the media library grid to show the updated thumbnail.
 			if (wp.media && wp.media.frame) {

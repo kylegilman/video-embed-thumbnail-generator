@@ -18,6 +18,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 	useEffect(() => {
 		if (hasResolved && attachment) {
 			const newAttributes = {
+				src: attachment.source_url,
 				videoTitle: attachment.title?.raw,
 				caption: attachment.caption?.raw,
 				embedlink: attachment.link + 'embed',
@@ -58,7 +59,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					attachment={attachment}
+					videoData={attachment}
 					options={options}
 				/>
 				<VideoSettings

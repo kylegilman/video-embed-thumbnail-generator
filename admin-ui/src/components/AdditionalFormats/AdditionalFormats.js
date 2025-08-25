@@ -491,11 +491,11 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		acc[codecId].formats.push(format);
 		// sort formats by height
 		acc[codecId].formats.sort(
-			(a, b) => a.resolution.height - b.resolution.height
+			(a, b) => b.resolution.height - a.resolution.height
 		);
 		return acc;
 	}, {});
-console.log(options);
+
 	return (
 		<>
 			<PanelBody title={__('Additional Formats')}>
