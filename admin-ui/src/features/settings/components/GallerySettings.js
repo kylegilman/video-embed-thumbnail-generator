@@ -31,7 +31,6 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 		getRecentVideos('12')
 			.then((response) => {
 				setRecentVideos(response);
-				console.log(response);
 			})
 			.catch((error) => {
 				console.error('Error fetching videos:', error);

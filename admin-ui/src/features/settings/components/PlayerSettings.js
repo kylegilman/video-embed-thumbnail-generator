@@ -259,10 +259,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		return items;
 	};
 
-	const onSelectMedia = (media) => {
-		console.log(media);
-	};
-
 	const handleVideoPlayerReady = () => {};
 
 	return (

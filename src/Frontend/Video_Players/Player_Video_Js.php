@@ -28,7 +28,7 @@ class Player_Video_Js extends Player {
 		foreach ( $js_skins as $skin ) {
 			wp_register_style( $skin, plugins_url( 'video-js/skins/' . $skin . '.css', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION );
 		}
-		wp_register_script( 'video-quality-selector', plugins_url( 'video-js/video-quality-selector.js', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION, true );
+		//wp_register_script( 'video-quality-selector', plugins_url( 'video-js/video-quality-selector.js', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION, true );
 	}
 
 	public function filter_block_metadata( $metadata ) {
@@ -51,7 +51,7 @@ class Player_Video_Js extends Player {
 			wp_enqueue_style( $this->options['skin'] );
 		}
 
-		wp_enqueue_script( 'video-quality-selector' );
+		//wp_enqueue_script( 'video-quality-selector' );
 
 		if ( wp_script_is( 'videojs-l10n', 'registered' ) ) {
 			wp_enqueue_script( 'videojs-l10n' );

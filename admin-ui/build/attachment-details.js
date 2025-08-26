@@ -490,7 +490,7 @@ const AdditionalFormats = ({
                   children: codecGroup.name
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("ul", {
                   children: codecGroup.formats.map(formatData => {
-                    const formatId = formatData.id;
+                    const formatId = formatData.format_id;
                     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_EncodeFormatStatus__WEBPACK_IMPORTED_MODULE_6__["default"], {
                       formatId: formatId,
                       formatData: formatData,
@@ -1963,7 +1963,6 @@ if (editMediaContainer) {
 if (typeof wp === 'undefined' || !wp.media || !wp.media.view || !wp.media.view.Attachment.Details) {
   console.error('Videopack: wp.media.view.Attachment.Details is not available.');
 } else {
-  console.log('Videopack: Extending wp.media.view.Attachment.Details.');
   const originalAttachmentDetails = wp.media.view.Attachment.Details;
   const extendedAttachmentDetails = originalAttachmentDetails.extend({
     // A reference to the React root instance.
@@ -1975,11 +1974,8 @@ if (typeof wp === 'undefined' || !wp.media || !wp.media.view || !wp.media.view.A
       this.on('ready', this.renderVideopackComponent, this);
     },
     renderVideopackComponent() {
-      console.log('Videopack: Attachment details ready. Rendering React component.');
-
       // Unmount any existing React component before re-rendering.
       if (this.videopackReactRoot) {
-        console.log('Videopack: Unmounting existing React component.');
         this.videopackReactRoot.unmount();
         this.videopackReactRoot = null;
       }
@@ -1988,8 +1984,6 @@ if (typeof wp === 'undefined' || !wp.media || !wp.media.view || !wp.media.view.A
       const isVideo = this.model.attributes.type === 'video';
       const isAnimatedGif = this.model.attributes.subtype === 'gif' && this.model.attributes.meta?.['_kgvid-meta']?.animated;
       if (isVideo || isAnimatedGif) {
-        console.log('Videopack: Video or animated GIF detected. Mounting React component.');
-
         // Find the .settings section in the attachment details sidebar.
         // Note: We use this.$el to scope the find to this view's element.
         let settingsSection = this.$el.find('.settings');
@@ -2013,16 +2007,12 @@ if (typeof wp === 'undefined' || !wp.media || !wp.media.view || !wp.media.view.A
         this.videopackReactRoot.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_components_AttachmentDetails__WEBPACK_IMPORTED_MODULE_1__["default"], {
           attachmentId: this.model.attributes.id
         }));
-        console.log('Videopack: React component mounted successfully.');
-      } else {
-        console.log('Videopack: Attachment is not a video, skipping React component.');
       }
     },
     // We also need to override remove to clean up our React root.
     remove() {
       // Unmount the React component when the view is removed.
       if (this.videopackReactRoot) {
-        console.log('Videopack: Unmounting React component on view removal.');
         this.videopackReactRoot.unmount();
         this.videopackReactRoot = null;
       }

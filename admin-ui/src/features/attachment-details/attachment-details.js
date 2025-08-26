@@ -27,7 +27,6 @@ if (
 		'Videopack: wp.media.view.Attachment.Details is not available.'
 	);
 } else {
-	console.log('Videopack: Extending wp.media.view.Attachment.Details.');
 
 	const originalAttachmentDetails = wp.media.view.Attachment.Details;
 
@@ -46,13 +45,8 @@ if (
 		},
 
 		renderVideopackComponent() {
-			console.log(
-				'Videopack: Attachment details ready. Rendering React component.'
-			);
-
 			// Unmount any existing React component before re-rendering.
 			if (this.videopackReactRoot) {
-				console.log('Videopack: Unmounting existing React component.');
 				this.videopackReactRoot.unmount();
 				this.videopackReactRoot = null;
 			}
@@ -64,10 +58,6 @@ if (
 				this.model.attributes.meta?.['_kgvid-meta']?.animated;
 
 			if (isVideo || isAnimatedGif) {
-				console.log(
-					'Videopack: Video or animated GIF detected. Mounting React component.'
-				);
-
 				// Find the .settings section in the attachment details sidebar.
 				// Note: We use this.$el to scope the find to this view's element.
 				let settingsSection = this.$el.find('.settings');
@@ -96,11 +86,6 @@ if (
 						attachmentId={this.model.attributes.id}
 					/>
 				);
-				console.log('Videopack: React component mounted successfully.');
-			} else {
-				console.log(
-					'Videopack: Attachment is not a video, skipping React component.'
-				);
 			}
 		},
 
@@ -108,9 +93,6 @@ if (
 		remove() {
 			// Unmount the React component when the view is removed.
 			if (this.videopackReactRoot) {
-				console.log(
-					'Videopack: Unmounting React component on view removal.'
-				);
 				this.videopackReactRoot.unmount();
 				this.videopackReactRoot = null;
 			}

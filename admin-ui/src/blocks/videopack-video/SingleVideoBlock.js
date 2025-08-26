@@ -21,7 +21,7 @@ const SingleVideoBlock = ({ setAttributes, attributes, options }) => {
 				src: attachment.source_url,
 				videoTitle: attachment.title?.raw,
 				caption: attachment.caption?.raw,
-				embedlink: attachment.link + 'embed',
+				embedlink: attachment.link + '/embed',
 				poster: attachment.meta?.['_videopack-meta']?.poster,
 			};
 

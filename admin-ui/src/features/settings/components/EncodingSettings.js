@@ -68,7 +68,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				setUsers(response);
 			})
 			.catch((error) => {
-				console.log(error);
+				console.error(error);
 			});
 	}, []);
 

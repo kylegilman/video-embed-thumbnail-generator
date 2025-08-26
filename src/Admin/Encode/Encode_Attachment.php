@@ -274,6 +274,8 @@ class Encode_Attachment {
 
 		foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
 			$format_array = $video_format_obj->to_array();
+			$format_array['format_id'] = $format_array['id'];
+			$format_array['id'] = null;
 			$job_exists   = isset( $encoded_jobs_map[ $format_id ] );
 
 			// Instantiate Encode_Info to check for the physical file's existence and details.
@@ -861,17 +863,14 @@ class Encode_Attachment {
 					array( 'id' => $job_id )
 				);
 
-				// Schedule a new ActionScheduler task.
-				$action_id = \as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-				if ( $action_id ) {
-					$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
-				}
+				// The queue processor will pick this up. No need to schedule an action here.
+				// Clear the old action_id
+				$wpdb->update( $this->queue_table_name, array( 'action_id' => null ), array( 'id' => $job_id ) );
 
 				return array(
-					'status'    => 'success',
-					'job_id'    => $job_id,
-					'action_id' => $action_id,
-					'reason'    => 'requeued',
+					'status' => 'success',
+					'job_id' => $job_id,
+					'reason' => 'requeued',
 				);
 			} else {
 				// Job already exists and is in a non-resumable state (queued, processing, completed).
@@ -929,30 +928,10 @@ class Encode_Attachment {
 		}
 		$job_id = $wpdb->insert_id;
 
-		// 6. Schedule ActionScheduler task.
-		$action_id = \as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-		if ( ! $action_id ) {
-			$wpdb->update(
-				$this->queue_table_name,
-				array(
-					'status'        => 'failed',
-					'error_message' => 'Failed to schedule ActionScheduler task.',
-				),
-				array( 'id' => $job_id )
-			);
-			return array(
-				'status' => 'failed',
-				'reason' => 'error_scheduling',
-			);
-		}
-
-		// 7. Update job with action ID.
-		$wpdb->update( $this->queue_table_name, array( 'action_id' => $action_id ), array( 'id' => $job_id ) );
-
+		// 6. The queue processor will pick this up. No need to schedule an action here.
 		return array(
-			'status'    => 'success',
-			'job_id'    => $job_id,
-			'action_id' => $action_id,
+			'status' => 'success',
+			'job_id' => $job_id,
 		);
 	}
 

@@ -206,7 +206,7 @@ const SingleVideoBlock = ({
         src: attachment.source_url,
         videoTitle: attachment.title?.raw,
         caption: attachment.caption?.raw,
-        embedlink: attachment.link + 'embed',
+        embedlink: attachment.link + '/embed',
         poster: attachment.meta?.['_videopack-meta']?.poster
       };
       const updatedAttributes = Object.keys(newAttributes).reduce((acc, key) => {
@@ -1086,7 +1086,7 @@ const AdditionalFormats = ({
                   children: codecGroup.name
                 }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("ul", {
                   children: codecGroup.formats.map(formatData => {
-                    const formatId = formatData.id;
+                    const formatId = formatData.format_id;
                     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_EncodeFormatStatus__WEBPACK_IMPORTED_MODULE_6__["default"], {
                       formatId: formatId,
                       formatData: formatData,

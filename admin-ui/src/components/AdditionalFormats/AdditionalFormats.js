@@ -523,7 +523,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 												{codecGroup.formats.map(
 													(formatData) => {
 														const formatId =
-															formatData.id;
+															formatData.format_id;
 														return (
 															<EncodeFormatStatus
 																key={formatId}

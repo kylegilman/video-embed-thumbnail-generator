@@ -25,11 +25,17 @@ class Ui {
 		add_filter( 'block_type_metadata', array( $this, 'conditionally_add_assets_to_block_metadata' ) );
 
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video'
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video',
+			array(
+				'render_callback' => array( $this, 'render_videopack_block' ),
+			)
 		);
 
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery'
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery',
+			array(
+				'render_callback' => array( $this, 'render_videopack_block' ),
+			)
 		);
 
 		$this->localize_block_settings( 'videopack-videopack-video-editor-script' );
