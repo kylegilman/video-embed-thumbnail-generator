@@ -6647,7 +6647,7 @@ const EncodingSettings = ({
     (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getUsersWithCapability)('edit_others_video_encodes').then(response => {
       setUsers(response);
     }).catch(error => {
-      console.log(error);
+      console.error(error);
     });
   }, []);
   const EncodeFormatGrid = () => {
@@ -7417,7 +7417,6 @@ const GallerySettings = ({
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     (0,_utils_utils__WEBPACK_IMPORTED_MODULE_0__.getRecentVideos)('12').then(response => {
       setRecentVideos(response);
-      console.log(response);
     }).catch(error => {
       console.error('Error fetching videos:', error);
     });
@@ -7718,9 +7717,6 @@ const PlayerSettings = ({
       });
     });
     return items;
-  };
-  const onSelectMedia = media => {
-    console.log(media);
   };
   const handleVideoPlayerReady = () => {};
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
@@ -8817,9 +8813,8 @@ const VideopackSettingsPage = () => {
     if (activeTab === 'encoding') {
       (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.testFFmpegCommand)(codec, resolution, rotate).then(response => {
         setFfmpegTest(response);
-        console.log(response);
       }).catch(error => {
-        console.log(error);
+        console.error(error);
       });
     }
   };
@@ -8827,7 +8822,6 @@ const VideopackSettingsPage = () => {
     if (response?.videopack_options) {
       setSettings(response.videopack_options);
     }
-    console.log(response);
   };
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     if (activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true) {
@@ -8842,7 +8836,7 @@ const VideopackSettingsPage = () => {
     (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getWPSettings)().then(response => {
       updateSettingsState(response);
     }).catch(error => {
-      console.log(error);
+      console.error(error);
     });
     const handlePopState = () => {
       setActiveTab(window.location.hash.substring(1));
@@ -8856,7 +8850,6 @@ const VideopackSettingsPage = () => {
     (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.saveWPSettings)(newSettings).then(response => {
       updateSettingsState(response);
       setIsSettingsChanged(false);
-      console.log('Settings updated successfully:', response);
     }).catch(error => {
       console.error('Error updating settings:', error);
     });
@@ -8966,7 +8959,7 @@ const VideopackSettingsPage = () => {
       setSettings(response);
       setIsSettingsChanged(true);
     }).catch(error => {
-      console.log(error);
+      console.error(error);
     });
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)("div", {

@@ -45,10 +45,9 @@ const VideopackSettingsPage = () => {
 			testFFmpegCommand(codec, resolution, rotate)
 				.then((response) => {
 					setFfmpegTest(response);
-					console.log(response);
 				})
 				.catch((error) => {
-					console.log(error);
+					console.error(error);
 				});
 		}
 	};
@@ -57,7 +56,6 @@ const VideopackSettingsPage = () => {
 		if (response?.videopack_options) {
 			setSettings(response.videopack_options);
 		}
-		console.log(response);
 	};
 
 	useEffect(() => {
@@ -85,7 +83,7 @@ const VideopackSettingsPage = () => {
 				updateSettingsState(response);
 			})
 			.catch((error) => {
-				console.log(error);
+				console.error(error);
 			});
 
 		const handlePopState = () => {
@@ -102,7 +100,6 @@ const VideopackSettingsPage = () => {
 			.then((response) => {
 				updateSettingsState(response);
 				setIsSettingsChanged(false);
-				console.log('Settings updated successfully:', response);
 			})
 			.catch((error) => {
 				console.error('Error updating settings:', error);
@@ -236,7 +233,7 @@ const VideopackSettingsPage = () => {
 				setIsSettingsChanged(true);
 			})
 			.catch((error) => {
-				console.log(error);
+				console.error(error);
 			});
 	};
 

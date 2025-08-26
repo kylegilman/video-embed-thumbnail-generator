@@ -132,7 +132,8 @@ class Encode_Queue_Controller {
 				$successfully_queued_names[] = $name;
 			}
 		}
-		// After enqueuing, immediately trigger the Action Scheduler to process pending jobs.
+		// After enqueuing, trigger the queue processor to check for jobs.
+		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
 		do_action( 'action_scheduler_run_queue' );
 
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
@@ -195,26 +196,30 @@ class Encode_Queue_Controller {
 
 		switch ( $job['status'] ) {
 			case 'queued':
+				// The gatekeeper (process_pending_jobs_action) should prevent this from running if paused, but as a safeguard:
 				if ( $this->options['queue_control'] !== 'play' ) {
 					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if paused
 					return;
 				}
 
-				$processing_count = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE status = %s', $this->queue_table_name, 'processing' ) );
-				if ( $processing_count >= (int) ( $this->options['simultaneous_encodes'] ?? 1 ) ) {
-					as_schedule_single_action( time() + 120, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if limit reached
-					return;
-				}
-
-				// Update job to 'processing'
-				$wpdb->update(
+				// The queue processor has already checked for capacity. We can proceed.
+				// Update job to 'processing'. The `where` clause ensures we only grab it if it's still 'queued'.
+				$updated_rows = $wpdb->update(
 					$this->queue_table_name,
-					array( // Update status to processing
+					array(
 						'status'     => 'processing',
 						'started_at' => current_time( 'mysql', true ),
 					),
-					array( 'id' => $job_id )
+					array(
+						'id'     => $job_id,
+						'status' => 'queued',
+					)
 				);
+
+				if ( 0 === $updated_rows ) {
+					// This job was already picked up by another process. We can stop.
+					return;
+				}
 
 				$encode_format_obj = new Encode_Format( $job['format_id'] );
 				$encode_format_obj->set_path( $job['output_path'] );
@@ -233,7 +238,7 @@ class Encode_Queue_Controller {
 						),
 						array( 'id' => $job_id )
 					);
-					as_schedule_single_action( time() + 60, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					as_schedule_single_action( time() + 5, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 				} else {
 					$wpdb->update(
 						$this->queue_table_name,
@@ -249,7 +254,6 @@ class Encode_Queue_Controller {
 
 			case 'encoding':
 			case 'processing':
-				// This part also requires Encode_Format to be aware of the DB job or be populated from it.
 				$encode_format_obj = Encode_Format::from_array( $job );
 				$encode_format_obj->set_status( 'encoding' ); // Critical for get_progress()
 
@@ -264,7 +268,41 @@ class Encode_Queue_Controller {
 						),
 						array( 'id' => $job_id )
 					);
-					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Process insertion immediately
+
+					// Instead of rescheduling, just handle the insertion now.
+					$inserted = $encoder->insert_attachment( $encode_format_obj );
+
+					if ( $inserted ) {
+						$update_data = array( 'status' => 'completed' );
+						if ( $encode_format_obj->get_id() ) {
+							$update_data['output_attachment_id'] = $encode_format_obj->get_id();
+						}
+						$wpdb->update(
+							$this->queue_table_name,
+							$update_data,
+							array( 'id' => $job_id )
+						);
+					} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
+						$wpdb->update(
+							$this->queue_table_name,
+							array( 'status' => 'pending_replacement' ),
+							array( 'id' => $job_id )
+						);
+						as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					} else {
+						$error_msg = $encode_format_obj->get_error();
+						if ( ! $error_msg ) {
+							$error_msg = 'Insert attachment failed.';
+						}
+						$wpdb->update(
+							$this->queue_table_name,
+							array(
+								'status'        => 'failed',
+								'error_message' => $error_msg,
+							),
+							array( 'id' => $job_id )
+						);
+					}
 				} elseif ( $encode_format_obj->get_status() === 'error' ) {
 					$wpdb->update(
 						$this->queue_table_name,
@@ -277,7 +315,7 @@ class Encode_Queue_Controller {
 					);
 				} elseif ( $progress_status === 'recheck' || $encode_format_obj->get_status() === 'encoding' ) {
 					// If logfile not found yet, or still encoding, recheck.
-					as_schedule_single_action( time() + 60, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					as_schedule_single_action( time() + 5, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 				}
 
 				// Cleanup temporary watermark if job is now in a terminal state
@@ -341,7 +379,8 @@ class Encode_Queue_Controller {
 		}
 
 		// After handling a job, try to process the next pending job from the queue.
-		as_schedule_single_action( time() + 10, 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		do_action( 'action_scheduler_run_queue' );
 		wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 	}
 
@@ -354,7 +393,7 @@ class Encode_Queue_Controller {
 			return; // Queue is paused
 		}
 
-		$processing_count = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE status = %s', $this->queue_table_name, 'processing' ) );
+		$processing_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE status IN ('processing', 'encoding')", $this->queue_table_name ) );
 		if ( $processing_count >= (int) ( $this->options['simultaneous_encodes'] ?? 1 ) ) {
 			return; // Max concurrent jobs reached
 		}

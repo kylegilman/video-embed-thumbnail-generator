@@ -224,7 +224,7 @@ class Player {
 
 		$video_vars = $this->prepare_video_vars();
 		$script     = sprintf(
-			'window.Videopack = window.Videopack || {}; window.Videopack.player_data = window.Videopack.player_data || {}; window.Videopack.player_data["videopack_player_%1$s"] = %2$s;',
+			'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["videopack_player_%1$s"] = %2$s;',
 			$this->get_id(),
 			wp_json_encode( $video_vars )
 		);
@@ -276,7 +276,7 @@ class Player {
 		if ( $this->has_embed_meta() ) {
 			$meta_bar .= '<button class="vjs-icon-share"></button>';
 		}
-		$meta_bar .= '<a class="download-link" href="' . $this->source->get_download_url() . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"></a>';
+		$meta_bar .= '<a class="download-link" href="' . $this->source->get_download_url() . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"></a></span></div>';
 
 		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
 	}
@@ -379,7 +379,7 @@ class Player {
 			}
 			$source_elements .= '"';
 			$source_elements .= $this->get_source_atts( $source );
-			$source_elements .= ' />';
+			$source_elements .= ' >';
 		}
 
 		return apply_filters( 'videopack_video_player_sources', $source_elements, $this->atts );
@@ -407,7 +407,7 @@ class Player {
 				foreach ( $track_attributes as $key => $value ) {
 					$track_elements .= esc_attr( $key ) . '="' . esc_attr( $value ) . '" ';
 				}
-				$track_elements .= '/>';
+				$track_elements .= '>';
 			}
 		}
 
