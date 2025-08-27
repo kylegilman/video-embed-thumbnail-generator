@@ -1,11 +1,12 @@
 /* global MediaElementPlayer */
 
 import { useRef, useEffect, useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 import MetaBar from './MetaBar';
 import VideoJS from './VideoJs';
 import BelowVideo from './BelowVideo';
+import './VideoPlayer.scss';
 
+// Make sure to pass isSelected from the block's edit component.
 const VideoPlayer = ({ attributes, onReady }) => {
 	const {
 		embed_method,
@@ -31,8 +32,6 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		right_click,
 		playback_rate,
 		fullwidth,
-		view_count,
-		caption,
 		sources = [],
 	} = attributes;
 
@@ -41,12 +40,6 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const [videoJsOptions, setVideoJsOptions] = useState(null);
 
 	const renderReady = sources && sources.length > 0 && sources[0].src;
-
-	useEffect(() => {
-		if (wrapperRef.current) {
-			wrapperRef.current.classList.add('meta-bar-visible');
-		}
-	}, []);
 
 	const handlePlay = () => {
 		if (wrapperRef.current) {
@@ -159,7 +152,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	}
 
 	return (
-		<div className="videopack-wrapper" ref={wrapperRef}>
+		<div className="videopack-wrapper meta-bar-visible" ref={wrapperRef}>
 			<div className="videopack-player">
 				<MetaBar attributes={attributes} />
 				{embed_method === 'Video.js' && videoJsOptions && (

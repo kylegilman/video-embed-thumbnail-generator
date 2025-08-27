@@ -17,10 +17,11 @@ import { store as noticesStore } from '@wordpress/notices';
 import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
 import SingleVideoBlock from './SingleVideoBlock';
+import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = ['video'];
 
-export default function edit({ attributes, setAttributes }) {
+const Edit = ({ attributes, setAttributes, isSelected }) => {
 	const { id, src } = attributes;
 	const [options, setOptions] = useState();
 	const blockProps = useBlockProps();
@@ -39,6 +40,7 @@ export default function edit({ attributes, setAttributes }) {
 
 	useEffect(() => {
 		getSettings().then((response) => {
+			console.log(response);
 			setOptions(response);
 		});
 
@@ -62,7 +64,7 @@ export default function edit({ attributes, setAttributes }) {
 			poster: media[0].meta?.['_videopack-meta']?.poster,
 			total_thumbnails:
 				media[0].meta?.['_videopack-meta']?.total_thumbnails,
-			videoTitle: media[0].title,
+			title: media[0].title,
 			caption: media[0].caption,
 		};
 
@@ -159,7 +161,10 @@ export default function edit({ attributes, setAttributes }) {
 				setAttributes={setAttributes}
 				attributes={attributes}
 				options={options}
+				isSelected={isSelected}
 			/>
 		</>
 	);
-}
+};
+
+export default Edit;

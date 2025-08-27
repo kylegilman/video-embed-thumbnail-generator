@@ -34,14 +34,17 @@
 			"source": "html",
 			"selector": "figcaption"
 		},
-		"videoTitle": {
+		"title": {
 			"type": "string"
+		},
+		"overlay_title": {
+			"type": "boolean"
 		},
 		"embedlink": {
 			"type": "string"
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
-	"script": [ "file:../../videopack-video.js" ],
+	"editorScript": [ "file:../../videopack-video.js" ],
 	"style": [ "file:../../videopack-video.css" ]
 }
