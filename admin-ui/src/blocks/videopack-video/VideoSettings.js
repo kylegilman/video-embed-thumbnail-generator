@@ -11,16 +11,18 @@ import { __ } from '@wordpress/i18n';
 import { volumeUp, volumeDown } from '../../assets/icon';
 import useVideoSettings from '../../hooks/useVideoSettings';
 
-const VideoSettings = ({ attributes, setAttributes }) => {
+const VideoSettings = ({ attributes, setAttributes, options }) => {
 	const { handleSettingChange, preloadOptions } = useVideoSettings(
 		attributes,
 		setAttributes
 	);
 
+	const displayAttributes = { ...options, ...attributes };
+
 	return (
 		<>
 			<PanelBody title={__('Player Settings')} initialOpen={false}>
-				{!attributes.gifmode && (
+				{!displayAttributes.gifmode && (
 					<>
 						<PanelRow>
 							<ToggleControl
@@ -29,7 +31,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('autoplay', value)
 								}
-								checked={!!attributes.autoplay}
+								checked={!!displayAttributes.autoplay}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -39,7 +41,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('loop', value)
 								}
-								checked={!!attributes.loop}
+								checked={!!displayAttributes.loop}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -49,15 +51,15 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('muted', value)
 								}
-								checked={!!attributes.muted}
+								checked={!!displayAttributes.muted}
 							/>
 						</PanelRow>
-						{!attributes.muted && (
+						{!displayAttributes.muted && (
 							<RangeControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__('Volume')}
-								value={attributes.volume}
+								value={displayAttributes.volume}
 								beforeIcon={volumeDown}
 								afterIcon={volumeUp}
 								initialPosition={1}
@@ -77,7 +79,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('controls', value)
 								}
-								checked={!!attributes.controls}
+								checked={!!displayAttributes.controls}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -87,7 +89,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('playsinline', value)
 								}
-								checked={!!attributes.playsinline}
+								checked={!!displayAttributes.playsinline}
 								help={__(
 									'Plays inline instead of fullscreen on iPhones.'
 								)}
@@ -100,7 +102,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('playback_rate', value)
 								}
-								checked={!!attributes.playback_rate}
+								checked={!!displayAttributes.playback_rate}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -108,7 +110,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__('Preload')}
-								value={attributes.preload}
+								value={displayAttributes.preload}
 								onChange={(value) =>
 									handleSettingChange('preload', value)
 								}
@@ -125,7 +127,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 						onChange={(value) =>
 							handleSettingChange('gifmode', value)
 						}
-						checked={!!attributes.gifmode}
+						checked={!!displayAttributes.gifmode}
 						help={__(
 							'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
 						)}
@@ -140,10 +142,10 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 						onChange={(value) =>
 							handleSettingChange('embeddable', value)
 						}
-						checked={!!attributes.embeddable}
+						checked={!!displayAttributes.embeddable}
 					/>
 				</PanelRow>
-				{attributes.embeddable && (
+				{displayAttributes.embeddable && (
 					<>
 						<PanelRow>
 							<ToggleControl
@@ -152,7 +154,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('downloadlink', value)
 								}
-								checked={!!attributes.downloadlink}
+								checked={!!displayAttributes.downloadlink}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -162,30 +164,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 								onChange={(value) =>
 									handleSettingChange('embedcode', value)
 								}
-								checked={!!attributes.embedcode}
-							/>
-						</PanelRow>
-						<PanelRow>
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label={__('Twitter button')}
-								onChange={(value) =>
-									handleSettingChange('twitter_button', value)
-								}
-								checked={!!attributes.twitter_button}
-							/>
-						</PanelRow>
-						<PanelRow>
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label={__('Facebook button')}
-								onChange={(value) =>
-									handleSettingChange(
-										'facebook_button',
-										value
-									)
-								}
-								checked={!!attributes.facebook_button}
+								checked={!!displayAttributes.embedcode}
 							/>
 						</PanelRow>
 					</>
@@ -197,20 +176,20 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 						__nextHasNoMarginBottom
 						label={__('Overlay title')}
 						onChange={(value) =>
-							handleSettingChange('title', value)
+							handleSettingChange('overlay_title', value)
 						}
-						checked={!!attributes.title}
+						checked={!!displayAttributes.overlay_title}
 					/>
 				</PanelRow>
-				{attributes.title && (
+				{displayAttributes.overlay_title && (
 					<PanelRow>
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__('Title')}
-							value={attributes.videoTitle}
+							value={displayAttributes.title}
 							onChange={(value) =>
-								handleSettingChange('videoTitle', value)
+								handleSettingChange('title', value)
 							}
 						/>
 					</PanelRow>
@@ -220,7 +199,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Caption')}
-						value={attributes.caption}
+						value={displayAttributes.caption}
 						onChange={(value) =>
 							handleSettingChange('caption', value)
 						}
@@ -233,7 +212,7 @@ const VideoSettings = ({ attributes, setAttributes }) => {
 						onChange={(value) =>
 							handleSettingChange('view_count', value)
 						}
-						checked={!!attributes.view_count}
+						checked={!!displayAttributes.view_count}
 					/>
 				</PanelRow>
 			</PanelBody>

@@ -51,7 +51,7 @@
     }
   },
   "textdomain": "video-embed-thumbnail-generator",
-  "script": [
+  "editorScript": [
     "file:../../videopack-gallery.js"
   ],
   "style": [

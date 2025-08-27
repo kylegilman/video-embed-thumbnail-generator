@@ -1,3 +1,496 @@
+/*!********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoPlayer/VideoPlayer.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************************************/
+/* Main container for the video player */
+.videopack-wrapper {
+  margin: 1em 0;
+  position: relative;
+  max-width: 100%;
+  /* Text alignment */
+  /* Video container */
+  /* Watermark styles */
+  /* Ensure controls are above the watermark */
+  /* Below video section for caption and view count */
+  /* video-quality-selector Video.js plugin styles */
+  /* Don't show hover effects on title */
+  /* Needed to keep text visible in video.js 4.9 */
+  /* fix iPhone play button */
+  /* change default styling of captions menu to match other plugins */
+  /* mejs-sourcechooser plugin styles */
+  /* mep-feature-sourcechooser backwards compatible plugin styles */
+  /* mejs-sourcechooser new plugin styles */
+  /* mejs-speed styles */
+}
+.videopack-wrapper.videopack-wrapper-auto-left {
+  margin-left: auto;
+}
+.videopack-wrapper.videopack-wrapper-auto-right {
+  margin-right: auto;
+}
+.videopack-wrapper.videopack-wrapper-inline {
+  display: inline-block;
+}
+.videopack-wrapper.videopack-wrapper-inline-left {
+  float: left;
+  margin: 1em 1em 0 0;
+}
+.videopack-wrapper.videopack-wrapper-inline-right {
+  float: right;
+  margin: 1em 0 0 1em;
+}
+.videopack-wrapper.videopack-text-align-left {
+  text-align: left;
+}
+.videopack-wrapper.videopack-text-align-right {
+  text-align: right;
+}
+.videopack-wrapper.videopack-text-align-center {
+  text-align: center;
+}
+.videopack-wrapper .videopack-player {
+  position: relative;
+}
+.videopack-wrapper .videopack-watermark img {
+  display: block;
+  position: absolute;
+  bottom: 7%;
+  right: 5%;
+  z-index: 1;
+  margin: 0;
+  max-width: 10%;
+  box-shadow: none;
+}
+.videopack-wrapper .videopack-watermark a {
+  display: block;
+  position: inherit !important; /* Maintain link behavior */
+}
+.videopack-wrapper .vjs-control-bar,
+.videopack-wrapper .mejs-controls,
+.videopack-wrapper video::-webkit-media-controls-panel {
+  z-index: 2;
+}
+.videopack-wrapper .videopack-title {
+  font-size: 10pt;
+  padding-left: 4px;
+  line-height: 20pt;
+}
+.videopack-wrapper .videopack-meta-icons {
+  position: relative;
+  float: right;
+  margin: 3px 0;
+}
+.videopack-wrapper .videopack-meta-icons a {
+  text-decoration: none;
+  border: none;
+  box-shadow: none !important;
+}
+.videopack-wrapper .videopack-meta-icons span {
+  cursor: pointer;
+  color: white;
+  margin-right: 5px;
+  vertical-align: middle;
+  font-size: 13pt;
+}
+.videopack-wrapper .no-title .videopack-meta-icons span {
+  font-size: 19pt;
+  text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
+}
+.videopack-wrapper .videopack-below-video {
+  margin: 2px 6px 0px 4px;
+  min-height: 20px;
+  clear: both;
+  overflow: hidden;
+}
+.videopack-wrapper .videopack-below-video .viewcount {
+  float: right;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+.videopack-wrapper .videopack-below-video .caption {
+  font-size: 85%;
+  line-height: 150%;
+  font-style: italic;
+}
+.videopack-wrapper button.vjs-res-button.vjs7-res-button {
+  padding: 4px 0 0 0;
+  font-size: 1.5em;
+}
+.videopack-wrapper .vjs-res-button span.vjs-control-text {
+  display: none;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item {
+  text-transform: none;
+}
+.videopack-wrapper .vjs-res-button:before {
+  font-family: VideoJs;
+  content: "\f114"; /* Gear icon */
+}
+.videopack-wrapper .vjs-loading-spinner {
+  z-index: 1;
+}
+.videopack-wrapper ul li.vjs-menu-title.vjs-res-menu-title:hover {
+  cursor: default;
+  background-color: transparent;
+  color: #ccc;
+  box-shadow: none;
+}
+.videopack-wrapper .vjs-res-button .vjs-control-text {
+  width: auto;
+  height: auto;
+  clip: auto;
+}
+.videopack-wrapper .mejs-overlay-button {
+  z-index: 2;
+}
+.videopack-wrapper .wp-video-shortcode {
+  max-height: 100%;
+}
+.videopack-wrapper video::-webkit-media-controls-start-playback-button {
+  display: none;
+}
+.videopack-wrapper .video-js.vjs-controls-enabled .vjs-big-play-button {
+  display: none;
+}
+.videopack-wrapper .video-js.vjs-controls-enabled.vjs-paused .vjs-big-play-button {
+  display: block;
+}
+.videopack-wrapper .mejs-captions-selector-label label,
+.videopack-wrapper .mejs-captions-selected {
+  background: rgba(255, 255, 255, 0.4);
+}
+.videopack-wrapper .mejs-captions-selector-list-item {
+  padding: 0px;
+}
+.videopack-wrapper .mejs-captions-selector-label {
+  padding: 5px;
+  margin: 0px;
+  color: #fff;
+  width: 100%;
+}
+.videopack-wrapper .mejs-controls div.mejs-sourcechooser-button button {
+  background: none;
+  font-family: VideoJS;
+  color: white;
+  font-size: 11pt;
+  line-height: 0pt;
+}
+.videopack-wrapper .mejs-controls .mejs-sourcechooser-button button:before {
+  content: "\f114";
+}
+.videopack-wrapper.videopack-compat-mep .mejs-container .mejs-controls div.mejs-menu-arrow {
+  display: none;
+  position: absolute;
+  bottom: -7px;
+  left: -8px;
+  width: 0em;
+  height: 0em;
+  margin-bottom: 3em;
+  border-left: 2em solid transparent;
+  border-right: 2em solid transparent;
+  border-top: 1.55em solid #000000;
+  border-top-color: rgba(40, 40, 40, 0.5);
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector {
+  visibility: inherit;
+  bottom: 17px;
+  right: -28px;
+  width: auto;
+  height: auto;
+  padding: 9px 0 0 0;
+  text-align: center;
+  box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector span {
+  color: white;
+  padding: 0px 10px 5px 10px;
+  display: block;
+  white-space: nowrap;
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li {
+  margin: 3px 0 3px 0;
+  padding: 2px 10px 5px 10px;
+  cursor: pointer;
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li.mejs-sourcechooser-selected {
+  background: rgba(20, 20, 20, 0.8);
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li:hover {
+  color: #111;
+  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.75);
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li input {
+  display: none;
+}
+.videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li label {
+  width: auto;
+}
+.videopack-wrapper .mejs__sourcechooser-button .mejs__sourcechooser-selector,
+.videopack-wrapper .mejs-sourcechooser-button .mejs-sourcechooser-selector {
+  background: rgba(50, 50, 50, 0.7);
+  border: solid 1px transparent;
+  border-radius: 0;
+  bottom: 40px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+}
+.videopack-wrapper .mejs__sourcechooser-selector ul,
+.videopack-wrapper .mejs-sourcechooser-selector ul {
+  display: block;
+  list-style-type: none !important;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.videopack-wrapper .mejs__sourcechooser-selector li,
+.videopack-wrapper .mejs-sourcechooser-selector li {
+  color: #fff;
+  display: block;
+  list-style-type: none !important;
+  margin: 0;
+  overflow: hidden;
+  padding: 5px 10px 5px 0px;
+}
+.videopack-wrapper .mejs-sourcechooser-selector li.sourcechooser-selected {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.videopack-wrapper .mejs__sourcechooser-selector li:hover,
+.videopack-wrapper .mejs-sourcechooser-selector li:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+.videopack-wrapper .mejs__sourcechooser-selector input,
+.videopack-wrapper .mejs-sourcechooser-selector input {
+  display: none;
+}
+.videopack-wrapper .mejs__sourcechooser-selector label,
+.videopack-wrapper .mejs-sourcechooser-selector label {
+  color: #fff;
+  display: inline-block;
+  float: left;
+  font-size: 10px;
+  line-height: 15px;
+  padding: 4px 5px 0;
+  cursor: pointer;
+}
+.videopack-wrapper .mejs__speed-button,
+.videopack-wrapper .mejs-speed-button {
+  position: relative;
+}
+.videopack-wrapper .mejs__speed-button > button,
+.videopack-wrapper .mejs-speed-button > button {
+  background: transparent;
+  color: #fff;
+  font-size: 11px;
+  line-height: normal;
+  margin: 11px 0 0;
+  width: 36px;
+}
+.videopack-wrapper .mejs__speed-selector,
+.videopack-wrapper .mejs-speed-selector {
+  background: rgba(50, 50, 50, 0.7);
+  border: solid 1px transparent;
+  border-radius: 0;
+  left: -10px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  top: -100px;
+  visibility: hidden;
+  width: 60px;
+}
+.videopack-wrapper .mejs__speed-selector,
+.videopack-wrapper .mejs-speed-selector {
+  visibility: visible;
+}
+.videopack-wrapper .mejs__speed-selector-list,
+.videopack-wrapper .mejs-speed-selector-list {
+  display: block;
+  list-style-type: none !important;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.videopack-wrapper .mejs__speed-selector-list-item,
+.videopack-wrapper .mejs-speed-selector-list-item {
+  color: #fff;
+  display: block;
+  list-style-type: none !important;
+  margin: 0 0 6px;
+  overflow: hidden;
+  padding: 0 10px;
+}
+.videopack-wrapper .mejs__speed-selector-list-item:hover,
+.videopack-wrapper .mejs-speed-selector-list-item:hover {
+  background-color: rgb(200, 200, 200) !important;
+  background-color: rgba(255, 255, 255, 0.4) !important;
+}
+.videopack-wrapper .mejs__speed-selector-input,
+.videopack-wrapper .mejs-speed-selector-input {
+  clear: both;
+  float: left;
+  left: -1000px;
+  margin: 3px 3px 0 5px;
+  position: absolute;
+}
+.videopack-wrapper .mejs__speed-selector-label,
+.videopack-wrapper .mejs-speed-selector-label {
+  color: white;
+  cursor: pointer;
+  float: left;
+  font-size: 10px;
+  line-height: 14px;
+  margin-left: 5px;
+  padding: 4px 0 0;
+  width: 60px;
+}
+.videopack-wrapper li.mejs-speed-selected {
+  background: rgba(255, 255, 255, 0.4);
+}
+.videopack-wrapper .mejs__speed-selector,
+.videopack-wrapper .mejs-speed-selector {
+  visibility: hidden;
+}
+.videopack-wrapper .mejs__speed-button:hover .mejs__speed-selector,
+.videopack-wrapper .mejs-speed-button:hover .mejs-speed-selector {
+  visibility: visible;
+}
+.videopack-wrapper .share-container {
+  display: none;
+  text-align: center;
+  color: white;
+  top: 0;
+  padding-top: 46px;
+  padding-bottom: 9%;
+  width: 100%;
+  z-index: 102;
+  position: absolute;
+  background: linear-gradient(to bottom, rgb(20, 20, 20) 0%, rgba(20, 20, 20, 0.5) 60%, rgba(20, 20, 20, 0) 100%);
+}
+.videopack-wrapper .share-container.no-title {
+  padding-top: 32px;
+}
+.videopack-wrapper .share-container.is-visible,
+.videopack-wrapper .share-container .is-visible {
+  display: block;
+}
+.videopack-wrapper .share-container input[type=text].embedcode {
+  width: 30%;
+}
+.videopack-wrapper .share-container .social-icons {
+  margin-top: 16px;
+  font-size: 19pt;
+}
+.videopack-wrapper .share-container .social-icons a {
+  text-decoration: none;
+  border: none;
+  box-shadow: none;
+}
+.videopack-wrapper .share-container .social-icons span {
+  font-size: 13pt;
+  line-height: 29pt;
+  text-decoration: none;
+  margin: 0;
+  padding: 0;
+}
+.videopack-wrapper .share-container .social-icons .vjs-icon-twitter {
+  color: #55acee;
+  font-size: 32pt;
+}
+.videopack-wrapper .share-container .social-icons .vjs-icon-facebook {
+  color: #3b5998;
+  font-size: 32pt;
+}
+.videopack-wrapper .click-trap {
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: none;
+  position: absolute;
+  top: 0;
+  z-index: 102;
+}
+.videopack-wrapper .click-trap.is-visible,
+.videopack-wrapper .click-trap .is-visible {
+  display: block;
+}
+.videopack-wrapper .videopack-meta-bar {
+  line-height: normal;
+  color: white;
+  display: block;
+  position: absolute;
+  top: 0px;
+  z-index: 103;
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 3px;
+  width: 100%;
+  overflow: hidden;
+  background-color: rgba(40, 40, 40, 0.95);
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.3s linear, opacity 0.3s linear;
+}
+.videopack-wrapper .videopack-meta-bar.no-title {
+  background: none;
+}
+.videopack-wrapper .videopack-meta-bar.no-title .meta-icons span {
+  font-size: 19pt;
+  text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
+}
+.videopack-wrapper .videopack-meta-bar .title {
+  font-size: 10pt;
+  padding-left: 4px;
+  line-height: 20pt;
+}
+.videopack-wrapper .videopack-meta-bar .meta-icons {
+  position: relative;
+  float: right;
+  margin: 3px 0px 3px 0px;
+}
+.videopack-wrapper .videopack-meta-bar .meta-icons a {
+  text-decoration: none;
+  border: none;
+  box-shadow: none;
+}
+.videopack-wrapper .videopack-meta-bar .meta-icons span {
+  cursor: pointer;
+  color: white;
+  margin-right: 5px;
+  vertical-align: middle;
+  font-size: 13pt;
+}
+.videopack-wrapper .videopack-meta-bar .meta-icons button {
+  background: none;
+  border: none;
+  color: white;
+  vertical-align: middle;
+}
+.videopack-wrapper.meta-bar-visible .videopack-meta-bar, .videopack-wrapper:hover .videopack-meta-bar {
+  opacity: 1;
+  visibility: visible;
+}
+
+.videopack-icons {
+  display: inline-block;
+  line-height: 1;
+  text-decoration: inherit;
+  text-transform: none;
+  width: 20px;
+  height: 20px;
+  vertical-align: text-top;
+  text-align: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.videopack-icons.embed {
+  background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 preserveAspectRatio=%27none%27 fill=%27white%27%3E %3Ctitle%3Eembed%3C/title%3E %3Cpath d=%27M18 23l3 3 10-10-10-10-3 3 7 7z%27%3E%3C/path%3E %3Cpath d=%27M14 9l-3-3-10 10 10 10 3-3-7-7z%27%3E%3C/path%3E %3C/svg%3E");
+}
+.videopack-icons.download {
+  background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 fill=%27white%27%3E %3Ctitle%3Efile_download%3C/title%3E %3Cpath d=%27M5.016 18h13.969v2.016h-13.969v-2.016zM18.984 9l-6.984 6.984-6.984-6.984h3.984v-6h6v6h3.984z%27%3E%3C/path%3E %3C/svg%3E");
+}
 /*!************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/settings/settings.scss ***!
   \************************************************************************************************************************************************************************************************************************************************************/
