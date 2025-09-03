@@ -119,16 +119,6 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/settings',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'settings' ),
-				'permission_callback' => '__return_true',
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/defaults',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -575,33 +565,6 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 		$depth--;
 		return $dirty_array;
-	}
-
-	/**
-	 * REST callback to get a safe subset of plugin settings.
-	 *
-	 * @return array The safe plugin settings.
-	 */
-	public function settings() {
-		$all_options  = $this->options;
-		$safe_options = array();
-
-		// Define keys that should not be exposed via this REST endpoint.
-		$unsafe_keys = array(
-			'app_path',
-			'error_email',
-			'ffmpeg_watermark',
-			'ffmpeg_thumb_watermark',
-			'htaccess_login',
-			'htaccess_password',
-		);
-
-		foreach ( $all_options as $key => $value ) {
-			if ( ! in_array( $key, $unsafe_keys, true ) ) {
-				$safe_options[ $key ] = $value;
-			}
-		}
-		return $safe_options;
 	}
 
 	/**

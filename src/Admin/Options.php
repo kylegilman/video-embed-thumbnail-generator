@@ -350,6 +350,33 @@ class Options {
 		return $options_to_init;
 	}
 
+	public function filter_options_for_rest() {
+		$all_options = $this->get_options();
+
+		if ( current_user_can( 'manage_options' ) ) {
+			return $all_options;
+		}
+
+		// Define keys that should not be exposed via this REST endpoint for non-admins.
+		$unsafe_keys = array(
+			'app_path',
+			'error_email',
+			'ffmpeg_watermark',
+			'ffmpeg_thumb_watermark',
+			'htaccess_login',
+			'htaccess_password',
+		);
+
+		$safe_options = $all_options;
+		foreach ( $unsafe_keys as $key ) {
+			if ( isset( $safe_options[ $key ] ) ) {
+				unset( $safe_options[ $key ] );
+			}
+		}
+
+		return $safe_options;
+	}
+
 	public function register_videopack_options() {
 
 		register_setting(
@@ -359,10 +386,11 @@ class Options {
 				'type'              => 'object',
 				'sanitize_callback' => array( $this, 'validate_options' ),
 				'show_in_rest'      => array(
-					'schema' => array(
+					'schema'       => array(
 						'type'       => 'object',
 						'properties' => $this->settings_schema( $this->get_default() ), // Schema based on all defaults.
 					),
+					'get_callback' => array( $this, 'filter_options_for_rest' ),
 				),
 			)
 		);

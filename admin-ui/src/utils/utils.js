@@ -1,17 +1,7 @@
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 
-export const getSettings = async () => {
-	try {
-		return await apiFetch({
-			path: '/videopack/v1/settings',
-			method: 'GET',
-		});
-	} catch (error) {
-		console.error('Error fetching settings:', error);
-		throw error;
-	}
-};
+
 
 export const getQueue = async () => {
 	try {
@@ -219,24 +209,28 @@ export const testFFmpegCommand = async (codec, resolution, rotate) => {
 	}
 };
 
-export const getWPSettings = async () => {
+
+
+export const getSettings = async () => {
 	try {
-		return await apiFetch({ path: '/wp/v2/settings' });
+		const allSettings = await apiFetch({ path: '/wp/v2/settings' });
+		return allSettings.videopack_options || {};
 	} catch (error) {
-		console.error('Error fetching WP settings:', error);
+		console.error('Error fetching settings:', error);
 		throw error;
 	}
 };
 
 export const saveWPSettings = async (newSettings) => {
 	try {
-		return await apiFetch({
+		const response = await apiFetch({
 			path: '/wp/v2/settings',
 			method: 'POST',
 			data: {
 				videopack_options: newSettings,
 			},
 		});
+		return response.videopack_options || {};
 	} catch (error) {
 		console.error('Error saving WP settings:', error);
 		throw error;
