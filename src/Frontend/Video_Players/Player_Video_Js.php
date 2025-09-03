@@ -16,6 +16,20 @@ class Player_Video_Js extends Player {
 		parent::register_scripts();
 
 		wp_register_script( 'video-js', plugins_url( 'video-js/video.min.js', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION, true );
+		wp_register_script( 'video-js-quality-selector', plugins_url( 'video-js/video-quality-selector.js', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION, true );
+
+		$locale         = $this->get_videojs_locale();
+		$translations   = array(
+			'Quality' => esc_html_x( 'Quality', 'text above list of video resolutions', 'video-embed-thumbnail-generator' ),
+			'Full'    => esc_html_x( 'Full', 'Full resolution', 'video-embed-thumbnail-generator' ),
+		);
+		$inline_script  = sprintf(
+			'videojs.addLanguage(\'%s\', %s);',
+			$locale,
+			wp_json_encode( $translations )
+		);
+		wp_add_inline_script( 'video-js-quality-selector', $inline_script );
+
 		wp_register_style( 'video-js', plugins_url( 'video-js/video-js.min.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION );
 
 		$js_skins = array(
@@ -33,6 +47,7 @@ class Player_Video_Js extends Player {
 	public function filter_block_metadata( $metadata ) {
 		// Add script dependencies.
 		$metadata['script'][] = 'video-js';
+		$metadata['script'][] = 'video-js-quality-selector';
 
 		// Add style dependencies.
 		$metadata['style'][] = 'video-js';
@@ -44,6 +59,7 @@ class Player_Video_Js extends Player {
 
 	public function enqueue_player_scripts(): void {
 		wp_enqueue_script( 'video-js' );
+		wp_enqueue_script( 'video-js-quality-selector' );
 		wp_enqueue_style( 'video-js' );
 
 		if ( ! empty( $this->options['skin'] ) ) {

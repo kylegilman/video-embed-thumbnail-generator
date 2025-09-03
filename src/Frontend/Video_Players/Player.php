@@ -36,12 +36,16 @@ class Player {
 	 */
 	protected $sources;
 
+	/**
+	 * @var bool $script_localized
+	 */
+	private static $script_localized = false;
+
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->player_id       = $options_manager->increment_video_player_id();
 		$this->register_hooks();
-		$this->register_scripts();
 	}
 
 	public function register_hooks() {
@@ -59,24 +63,25 @@ class Player {
 			true
 		);
 
-		wp_localize_script(
-			'videopack-frontend',
-			'videopack_l10n',
-			array(
-				'rest_url'   => rest_url(),
-				'ajaxurl'    => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
-				'ajax_nonce' => wp_create_nonce( 'videopack_frontend_nonce' ),
-				'playstart'  => esc_html_x( 'Play Start', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
-				'pause'      => esc_html_x( 'Pause', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
-				'resume'     => esc_html_x( 'Resume', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
-				'seek'       => esc_html_x( 'Seek', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
-				'end'        => esc_html_x( 'Complete View', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
-				'next'       => esc_html_x( 'Next', 'button text to play next video', 'video-embed-thumbnail-generator' ),
-				'previous'   => esc_html_x( 'Previous', 'button text to play previous video', 'video-embed-thumbnail-generator' ),
-				'quality'    => esc_html_x( 'Quality', 'text above list of video resolutions', 'video-embed-thumbnail-generator' ),
-				'fullres'    => esc_html_x( 'Full', 'Full resolution', 'video-embed-thumbnail-generator' ),
-			)
-		);
+		if ( ! self::$script_localized ) {
+			wp_localize_script(
+				'videopack-frontend',
+				'videopack_l10n',
+				array(
+					'rest_url'   => rest_url(),
+					'ajaxurl'    => admin_url( 'admin-ajax.php', is_ssl() ? 'admin' : 'http' ),
+					'ajax_nonce' => wp_create_nonce( 'videopack_frontend_nonce' ),
+					'playstart'  => esc_html_x( 'Play Start', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
+					'pause'      => esc_html_x( 'Pause', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
+					'resume'     => esc_html_x( 'Resume', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
+					'seek'       => esc_html_x( 'Seek', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
+					'end'        => esc_html_x( 'Complete View', 'noun for Google Analytics event', 'video-embed-thumbnail-generator' ),
+					'next'       => esc_html_x( 'Next', 'button text to play next video', 'video-embed-thumbnail-generator' ),
+					'previous'   => esc_html_x( 'Previous', 'button text to play previous video', 'video-embed-thumbnail-generator' ),
+				)
+			);
+			self::$script_localized = true;
+		}
 
 		if ( $this->options['alwaysloadscripts'] == true ) {
 			$this->enqueue_scripts();
@@ -268,7 +273,7 @@ class Player {
 
 	protected function get_meta_bar_code(): string {
 
-		$meta_bar = '<div class="videopack-meta-bar is-visible">';
+		$meta_bar = '<div class="videopack-meta-bar">';
 		if ( $this->atts['title'] !== false ) {
 			$meta_bar .= '<span class="videopack-title">' . esc_html( $this->atts['title'] ) . '</span>';
 		}
@@ -296,7 +301,9 @@ class Player {
 			$alignclass = ' videopack-wrapper-auto-left';
 		}
 
-		$html  = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . '">';
+		$meta_bar_class = $this->has_meta_bar() ? ' meta-bar-visible' : '';
+
+		$html  = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '">';
 		$html .= '<div class="videopack-player" data-id="' . esc_attr( $this->get_id() ) . '">';
 		$html .= $this->get_schema_markup();
 		return $html;
@@ -427,14 +434,15 @@ class Player {
 	protected function get_below_video_code(): string {
 		$below_video = '<div class="videopack-below-video">';
 		if ( $this->atts['view_count'] ) {
-			$source = $this->get_source();
-			if ( $source ) {
-				$view_count = $source->get_views();
+			$source     = $this->get_source();
+			$view_count = $source ? $source->get_views() : '';
+			if ( ! empty( $view_count ) ) {
+				/* translators: %s is the number of times a video has been played */
+				$below_video .= '<span class="viewcount">' . esc_html( sprintf( _n( '%s view', '%s views', intval( $view_count ), 'video-embed-thumbnail-generator' ), number_format( $view_count ) ) ) . '</span>';
 			}
-			$below_video .= '<span class="videopack-view-count">' . esc_html( $this->get_source()->get_views() ) . '</span>';
 		}
 		if ( ! empty( $this->atts['caption'] ) ) {
-			$below_video .= '<p class="videopack-caption">' . esc_html( $this->atts['caption'] ) . '</p>';
+			$below_video .= '<p class="caption">' . esc_html( $this->atts['caption'] ) . '</p>';
 		}
 		$below_video .= '</div>';
 		return $below_video;
@@ -476,7 +484,7 @@ class Player {
 			return '';
 		}
 
-		$html = '<div style="display:none;" id="video_' . esc_attr( $this->get_id() ) . '_watermark" class="videopack-watermark">';
+		$html = '<div id="video_' . esc_attr( $this->get_id() ) . '_watermark" class="videopack-watermark">';
 
 		$link_to = $this->atts['watermark_link_to'] ?? 'false';
 		$url     = $this->atts['watermark_url'] ?? '';

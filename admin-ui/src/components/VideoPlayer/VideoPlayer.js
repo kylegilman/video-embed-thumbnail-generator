@@ -62,11 +62,11 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				}
 			};
 		}
-	}, [embed_method, playerRef.current]);
+	}, [embed_method]);
 
 	useEffect(() => {
 		if (embed_method === 'Video.js') {
-			setVideoJsOptions({
+			const options = {
 				autoplay,
 				controls,
 				fluid: true,
@@ -78,9 +78,30 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				playsinline,
 				volume,
 				playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
-				sources: sources.map((s) => ({ src: s.src, type: s.type })),
+				sources: sources.map((s) => ({
+					src: s.src,
+					type: s.type,
+					resolution: s.resolution,
+				})),
 				userActions: { click: false },
-			});
+			};
+
+			const hasResolutions = sources.some((s) => s.resolution);
+
+			if (hasResolutions) {
+				options.plugins = {
+					...options.plugins,
+					resolutionSelector: {
+						force_types: ['video/mp4'],
+					},
+				};
+				const defaultResSource = sources.find((s) => s.default);
+				if (defaultResSource) {
+					options.plugins.resolutionSelector.default_res = defaultResSource.resolution;
+				}
+			}
+
+			setVideoJsOptions(options);
 		}
 	}, [
 		autoplay,
