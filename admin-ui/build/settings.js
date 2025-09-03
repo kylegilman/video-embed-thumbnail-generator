@@ -6252,10 +6252,10 @@ const VideoPlayer = ({
         }
       };
     }
-  }, [embed_method, playerRef.current]);
+  }, [embed_method]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     if (embed_method === 'Video.js') {
-      setVideoJsOptions({
+      const options = {
         autoplay,
         controls,
         fluid: true,
@@ -6269,12 +6269,27 @@ const VideoPlayer = ({
         playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
         sources: sources.map(s => ({
           src: s.src,
-          type: s.type
+          type: s.type,
+          resolution: s.resolution
         })),
         userActions: {
           click: false
         }
-      });
+      };
+      const hasResolutions = sources.some(s => s.resolution);
+      if (hasResolutions) {
+        options.plugins = {
+          ...options.plugins,
+          resolutionSelector: {
+            force_types: ['video/mp4']
+          }
+        };
+        const defaultResSource = sources.find(s => s.default);
+        if (defaultResSource) {
+          options.plugins.resolutionSelector.default_res = defaultResSource.resolution;
+        }
+      }
+      setVideoJsOptions(options);
     }
   }, [autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, JSON.stringify(sources), embed_method]);
   const videoSourceElements = () => {
@@ -8298,7 +8313,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
-/* harmony export */   getWPSettings: () => (/* binding */ getWPSettings),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
 /* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
@@ -8314,17 +8328,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
 
 
-const getSettings = async () => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/settings',
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching settings:', error);
-    throw error;
-  }
-};
 const getQueue = async () => {
   try {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -8519,25 +8522,27 @@ const testFFmpegCommand = async (codec, resolution, rotate) => {
     throw error;
   }
 };
-const getWPSettings = async () => {
+const getSettings = async () => {
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const allSettings = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings'
     });
+    return allSettings.videopack_options || {};
   } catch (error) {
-    console.error('Error fetching WP settings:', error);
+    console.error('Error fetching settings:', error);
     throw error;
   }
 };
 const saveWPSettings = async newSettings => {
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings',
       method: 'POST',
       data: {
         videopack_options: newSettings
       }
     });
+    return response.videopack_options || {};
   } catch (error) {
     console.error('Error saving WP settings:', error);
     throw error;
@@ -8823,11 +8828,6 @@ const VideopackSettingsPage = () => {
       });
     }
   };
-  const updateSettingsState = response => {
-    if (response?.videopack_options) {
-      setSettings(response.videopack_options);
-    }
-  };
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     if (activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true) {
       setFfmpegTest({
@@ -8838,8 +8838,8 @@ const VideopackSettingsPage = () => {
     }
   }, [settings, activeTab]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
-    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getWPSettings)().then(response => {
-      updateSettingsState(response);
+    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getSettings)().then(response => {
+      setSettings(response);
     }).catch(error => {
       console.error(error);
     });
@@ -8853,7 +8853,7 @@ const VideopackSettingsPage = () => {
   }, []);
   const debouncedSaveSettings = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_3__.useDebounce)(newSettings => {
     (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.saveWPSettings)(newSettings).then(response => {
-      updateSettingsState(response);
+      setSettings(response);
       setIsSettingsChanged(false);
     }).catch(error => {
       console.error('Error updating settings:', error);

@@ -126,7 +126,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
-/* harmony export */   getWPSettings: () => (/* binding */ getWPSettings),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
 /* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
@@ -142,17 +141,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
 
 
-const getSettings = async () => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/settings',
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching settings:', error);
-    throw error;
-  }
-};
 const getQueue = async () => {
   try {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -347,25 +335,27 @@ const testFFmpegCommand = async (codec, resolution, rotate) => {
     throw error;
   }
 };
-const getWPSettings = async () => {
+const getSettings = async () => {
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const allSettings = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings'
     });
+    return allSettings.videopack_options || {};
   } catch (error) {
-    console.error('Error fetching WP settings:', error);
+    console.error('Error fetching settings:', error);
     throw error;
   }
 };
 const saveWPSettings = async newSettings => {
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings',
       method: 'POST',
       data: {
         videopack_options: newSettings
       }
     });
+    return response.videopack_options || {};
   } catch (error) {
     console.error('Error saving WP settings:', error);
     throw error;

@@ -2,7 +2,7 @@
 
 import { __ } from '@wordpress/i18n';
 import {
-	getWPSettings,
+	getSettings,
 	saveWPSettings,
 	resetVideopackSettings,
 	testFFmpegCommand,
@@ -14,16 +14,9 @@ import {
 	PanelRow,
 	Spinner,
 	TabPanel,
-	Tooltip,
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
-import {
-	createRoot,
-	useMemo,
-	useState,
-	useEffect,
-	useRef,
-} from '@wordpress/element';
+import { createRoot, useMemo, useState, useEffect } from '@wordpress/element';
 import { videopack } from '../../assets/icon';
 import PlayerSettings from './components/PlayerSettings';
 import GallerySettings from './components/GallerySettings';
@@ -52,12 +45,6 @@ const VideopackSettingsPage = () => {
 		}
 	};
 
-	const updateSettingsState = (response) => {
-		if (response?.videopack_options) {
-			setSettings(response.videopack_options);
-		}
-	};
-
 	useEffect(() => {
 		if (
 			activeTab === 'encoding' &&
@@ -78,9 +65,9 @@ const VideopackSettingsPage = () => {
 	}, [settings, activeTab]);
 
 	useEffect(() => {
-		getWPSettings()
+		getSettings()
 			.then((response) => {
-				updateSettingsState(response);
+				setSettings(response);
 			})
 			.catch((error) => {
 				console.error(error);
@@ -98,7 +85,7 @@ const VideopackSettingsPage = () => {
 	const debouncedSaveSettings = useDebounce((newSettings) => {
 		saveWPSettings(newSettings)
 			.then((response) => {
-				updateSettingsState(response);
+				setSettings(response);
 				setIsSettingsChanged(false);
 			})
 			.catch((error) => {

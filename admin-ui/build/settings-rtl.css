@@ -13,7 +13,6 @@
   /* Below video section for caption and view count */
   /* video-quality-selector Video.js plugin styles */
   /* Don't show hover effects on title */
-  /* Needed to keep text visible in video.js 4.9 */
   /* fix iPhone play button */
   /* change default styling of captions menu to match other plugins */
   /* mejs-sourcechooser plugin styles */
@@ -111,9 +110,9 @@
   line-height: 150%;
   font-style: italic;
 }
-.videopack-wrapper button.vjs-res-button.vjs7-res-button {
-  padding: 4px 0 0 0;
-  font-size: 1.5em;
+.videopack-wrapper .vjs-res-button :before {
+  font-family: VideoJs;
+  content: "\f114"; /* Gear icon */
 }
 .videopack-wrapper .vjs-res-button span.vjs-control-text {
   display: none;
@@ -121,10 +120,6 @@
 .videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item,
 .videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item {
   text-transform: none;
-}
-.videopack-wrapper .vjs-res-button:before {
-  font-family: VideoJs;
-  content: "\f114"; /* Gear icon */
 }
 .videopack-wrapper .vjs-loading-spinner {
   z-index: 1;
@@ -135,10 +130,15 @@
   color: #ccc;
   box-shadow: none;
 }
-.videopack-wrapper .vjs-res-button .vjs-control-text {
-  width: auto;
-  height: auto;
-  clip: auto;
+.videopack-wrapper .videopack_temp_thumb {
+  z-index: 5;
+  position: absolute;
+  top: 0;
+  right: 0;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
 }
 .videopack-wrapper .mejs-overlay-button {
   z-index: 2;

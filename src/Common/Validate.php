@@ -20,10 +20,13 @@ class Validate {
 				'onclick'   => true,
 			),
 			'span'   => array(
-				'id'      => true,
-				'class'   => true,
-				'onclick' => true,
-				'style'   => true,
+				'id'        => true,
+				'class'     => true,
+				'onclick'   => true,
+				'style'     => true,
+				'itemprop'  => true,
+				'itemscope' => true,
+				'itemtype'  => true,
 			),
 			'meta'   => array(
 				'itemprop' => true,
