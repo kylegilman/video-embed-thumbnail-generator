@@ -563,11 +563,15 @@ abstract class Source {
 
 	protected function set_dimensions(): void {
 
-		if ( $this->metadata['width'] ) {
+		if ( ! empty( $this->metadata['actualwidth'] ) ) {
+			$this->width = $this->metadata['actualwidth'];
+		} elseif ( ! empty( $this->metadata['width'] ) ) {
 			$this->width = $this->metadata['width'];
 		}
 
-		if ( $this->metadata['height'] ) {
+		if ( ! empty( $this->metadata['actualheight'] ) ) {
+			$this->height = $this->metadata['actualheight'];
+		} elseif ( ! empty( $this->metadata['height'] ) ) {
 			$this->height = $this->metadata['height'];
 		}
 	}
@@ -674,7 +678,7 @@ abstract class Source {
 	}
 
 	public function is_original(): bool {
-		return $this->format === 'original';
+		return $this->get_format() === 'original';
 	}
 
 	public function get_video_formats(): array {

@@ -60,6 +60,9 @@ const SingleVideoBlock = ({
 		if (attachment?.videopack?.sources) {
 			newPlayerAttributes.sources = attachment.videopack.sources;
 		}
+		if (attachment?.videopack?.source_groups) {
+			newPlayerAttributes.source_groups = attachment.videopack.source_groups;
+		}
 		return newPlayerAttributes;
 	}, [options, attributes, attachment]);
 

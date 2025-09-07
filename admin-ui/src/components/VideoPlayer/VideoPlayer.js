@@ -1,6 +1,6 @@
 /* global MediaElementPlayer */
 
-import { useRef, useEffect, useState } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import MetaBar from './MetaBar';
 import VideoJS from './VideoJs';
 import BelowVideo from './BelowVideo';
@@ -33,13 +33,21 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		playback_rate,
 		fullwidth,
 		sources = [],
+		source_groups = {},
 	} = attributes;
 
 	const playerRef = useRef(null);
 	const wrapperRef = useRef(null);
 	const [videoJsOptions, setVideoJsOptions] = useState(null);
 
-	const renderReady = sources && sources.length > 0 && sources[0].src;
+	const allSources = useMemo(() => {
+		if (Object.keys(source_groups).length > 0) {
+			return Object.values(source_groups).flatMap(group => group.sources);
+		}
+		return sources;
+	}, [sources, source_groups]);
+
+	const renderReady = allSources && allSources.length > 0 && allSources[0].src;
 
 	const handlePlay = () => {
 		if (wrapperRef.current) {
@@ -78,7 +86,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				playsinline,
 				volume,
 				playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
-				sources: sources.map((s) => ({
+				sources: allSources.map((s) => ({
 					src: s.src,
 					type: s.type,
 					resolution: s.resolution,
@@ -86,16 +94,17 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				userActions: { click: false },
 			};
 
-			const hasResolutions = sources.some((s) => s.resolution);
+			const hasResolutions = allSources.some((s) => s.resolution);
 
 			if (hasResolutions) {
 				options.plugins = {
 					...options.plugins,
 					resolutionSelector: {
 						force_types: ['video/mp4'],
+						source_groups: source_groups,
 					},
 				};
-				const defaultResSource = sources.find((s) => s.default);
+				const defaultResSource = allSources.find((s) => s.default);
 				if (defaultResSource) {
 					options.plugins.resolutionSelector.default_res = defaultResSource.resolution;
 				}
@@ -113,12 +122,13 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		playsinline,
 		volume,
 		playback_rate,
-		JSON.stringify(sources),
+		JSON.stringify(allSources),
+		JSON.stringify(source_groups),
 		embed_method,
 	]);
 
 	const videoSourceElements = () => {
-		return sources.map((source, index) => (
+		return allSources.map((source, index) => (
 			<source key={index} src={source.src} type={source.type} />
 		));
 	};

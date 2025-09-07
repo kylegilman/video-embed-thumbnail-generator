@@ -233,6 +233,9 @@ const SingleVideoBlock = ({
     if (attachment?.videopack?.sources) {
       newPlayerAttributes.sources = attachment.videopack.sources;
     }
+    if (attachment?.videopack?.source_groups) {
+      newPlayerAttributes.source_groups = attachment.videopack.source_groups;
+    }
     return newPlayerAttributes;
   }, [options, attributes, attachment]);
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
@@ -2277,12 +2280,19 @@ const VideoPlayer = ({
     right_click,
     playback_rate,
     fullwidth,
-    sources = []
+    sources = [],
+    source_groups = {}
   } = attributes;
   const playerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   const wrapperRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   const [videoJsOptions, setVideoJsOptions] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
-  const renderReady = sources && sources.length > 0 && sources[0].src;
+  const allSources = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    if (Object.keys(source_groups).length > 0) {
+      return Object.values(source_groups).flatMap(group => group.sources);
+    }
+    return sources;
+  }, [sources, source_groups]);
+  const renderReady = allSources && allSources.length > 0 && allSources[0].src;
   const handlePlay = () => {
     if (wrapperRef.current) {
       wrapperRef.current.classList.remove('meta-bar-visible');
@@ -2317,7 +2327,7 @@ const VideoPlayer = ({
         playsinline,
         volume,
         playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
-        sources: sources.map(s => ({
+        sources: allSources.map(s => ({
           src: s.src,
           type: s.type,
           resolution: s.resolution
@@ -2326,24 +2336,25 @@ const VideoPlayer = ({
           click: false
         }
       };
-      const hasResolutions = sources.some(s => s.resolution);
+      const hasResolutions = allSources.some(s => s.resolution);
       if (hasResolutions) {
         options.plugins = {
           ...options.plugins,
           resolutionSelector: {
-            force_types: ['video/mp4']
+            force_types: ['video/mp4'],
+            source_groups: source_groups
           }
         };
-        const defaultResSource = sources.find(s => s.default);
+        const defaultResSource = allSources.find(s => s.default);
         if (defaultResSource) {
           options.plugins.resolutionSelector.default_res = defaultResSource.resolution;
         }
       }
       setVideoJsOptions(options);
     }
-  }, [autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, JSON.stringify(sources), embed_method]);
+  }, [autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, JSON.stringify(allSources), JSON.stringify(source_groups), embed_method]);
   const videoSourceElements = () => {
-    return sources.map((source, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("source", {
+    return allSources.map((source, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("source", {
       src: source.src,
       type: source.type
     }, index));

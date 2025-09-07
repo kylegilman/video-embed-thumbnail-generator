@@ -17,9 +17,12 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 		videojs.addLanguage( 'en', {
 			'Quality': 'Quality',
 			'Full': 'Full',
+			'Codecs': 'Codecs',
 		} );
 
 		const MenuItem = videojs.getComponent( 'MenuItem' );
+		const Menu = videojs.getComponent( 'Menu' );
+
 		class ResolutionMenuItem extends MenuItem {
 			call_count = 0;
 
@@ -58,6 +61,7 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 		class ResolutionSelector extends MenuButton {
 			constructor( player, options ) {
 				player.availableRes = options.available_res;
+				player.source_groups = options.source_groups;
 				super( player, options );
 			}
 
@@ -68,31 +72,66 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 			createItems() {
 				const player = this.player();
 				const items = [];
+				const source_groups = player.source_groups;
 
-				for ( const current_res in player.availableRes ) {
-					if ( 'length' === current_res ) {
-						continue;
+				if (source_groups && Object.keys(source_groups).length > 1) {
+					// Create a menu with codecs
+					for (const groupId in source_groups) {
+						const group = source_groups[groupId];
+						const resolutionItems = [];
+						for (const source of group.sources) {
+							const resolution = source.resolution || source['data-res'];
+							if (resolution) {
+								resolutionItems.push(new ResolutionMenuItem(player, { res: resolution, selectable: true }));
+							}
+						}
+
+						if (resolutionItems.length > 0) {
+							const subMenu = new Menu(player, {
+								items: resolutionItems
+							});
+							const menuItem = new MenuItem(player, {
+								label: group.label,
+								selectable: true,
+							});
+							menuItem.addChild(subMenu);
+							items.push(menuItem);
+						}
 					}
-					items.push( new ResolutionMenuItem( player, { res: current_res, selectable: true } ) );
+					items.unshift( new ResolutionTitleMenuItem( player, {
+						el: videojs.dom.createEl( 'li', {
+							className: 'vjs-menu-title vjs-res-menu-title',
+							innerHTML: player.localize('Codecs'),
+						} ),
+					} ) );
+
+				} else {
+					// Original behavior: create a menu with resolutions
+					for ( const current_res in player.availableRes ) {
+						if ( 'length' === current_res ) {
+							continue;
+						}
+						items.push( new ResolutionMenuItem( player, { res: current_res, selectable: true } ) );
+					}
+
+					items.sort( ( a, b ) => {
+						if ( 'undefined' === typeof a.resolution ) {
+							return -1;
+						} else if ( a.resolution === player.localize('Full') ) {
+							return -1;
+						} else if ( b.resolution === player.localize('Full') ) {
+							return 1;
+						}
+						return parseInt( b.resolution, 10 ) - parseInt( a.resolution, 10 );
+					} );
+
+					items.unshift( new ResolutionTitleMenuItem( player, {
+						el: videojs.dom.createEl( 'li', {
+							className: 'vjs-menu-title vjs-res-menu-title',
+							innerHTML: player.localize('Quality'),
+						} ),
+					} ) );
 				}
-
-				items.sort( ( a, b ) => {
-					if ( 'undefined' === typeof a.resolution ) {
-						return -1;
-					} else if ( a.resolution === player.localize('Full') ) {
-						return -1;
-					} else if ( b.resolution === player.localize('Full') ) {
-						return 1;
-					}
-					return parseInt( b.resolution, 10 ) - parseInt( a.resolution, 10 );
-				} );
-
-				items.unshift( new ResolutionTitleMenuItem( player, {
-					el: videojs.dom.createEl( 'li', {
-						className: 'vjs-menu-title vjs-res-menu-title',
-						innerHTML: player.localize('Quality'),
-					} ),
-				} ) );
 
 				return items;
 			}
@@ -106,9 +145,14 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 			const player = this;
 			const sources = this.options_.sources;
 			const available_res = { length: 0 };
+			const source_groups = options.source_groups || {};
 
-							for ( let i = sources.length - 1; i >= 0; i-- ) {
-				const source = sources[ i ];
+			const all_sources = Object.values(source_groups).flatMap(group => group.sources);
+
+			const sources_for_res_map = all_sources.length > 0 ? all_sources : sources;
+
+			for ( let i = sources_for_res_map.length - 1; i >= 0; i-- ) {
+				const source = sources_for_res_map[ i ];
 				const current_res = source.resolution || source[ 'data-res' ];
 				if ( ! current_res ) {
 					continue;
@@ -134,7 +178,7 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 				}
 			}
 
-			if ( available_res.length < 2 ) {
+			if ( available_res.length < 2 && Object.keys(source_groups).length < 2) {
 				return;
 			}
 
@@ -193,7 +237,7 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 				player.trigger( 'changeRes' );
 			};
 
-			const resolutionSelector = new ResolutionSelector( player, { available_res } );
+			const resolutionSelector = new ResolutionSelector( player, { available_res, source_groups } );
 			player.ready( () => {
 				player.getChild( 'controlBar' ).addChild( resolutionSelector, {}, 11 );
 				const default_res = options.default_res;

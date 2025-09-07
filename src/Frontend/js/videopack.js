@@ -6,7 +6,7 @@
 
 /* global videojs, mejs, videopack_l10n, gtag, ga, __gaTracker, _gaq */
 
-( function( $ ) {
+( function() {
 	'use strict';
 
 	/**
@@ -409,7 +409,7 @@
 
 						for (let j = 0, radioTotal = otherRadios.length; j < radioTotal; j++) {
 							if (otherRadios[j] !== this) {
-								otherRadios[j].setAttribute('aria-selected', 'false');
+								otherRadios[j].setAttribute('aria-selected', false);
 								otherRadios[j].removeAttribute('checked');
 							}
 						}
@@ -498,8 +498,8 @@
 					selector = t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`),
 					radios = selector.querySelectorAll('input[type=radio]')
 				;
-				selector.setAttribute('aria-expanded', 'false');
-				selector.setAttribute('aria-hidden', 'true');
+				selector.setAttribute('aria-expanded', false);
+				selector.setAttribute('aria-hidden', true);
 				mejs.Utils.addClass(selector, `${t.options.classPrefix}offscreen`);
 
 				// make radios not focusable
@@ -523,8 +523,8 @@
 					selector = t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`),
 					radios = selector.querySelectorAll('input[type=radio]')
 				;
-				selector.setAttribute('aria-expanded', 'true');
-				selector.setAttribute('aria-hidden', 'false');
+				selector.setAttribute('aria-expanded', true);
+				selector.setAttribute('aria-hidden', false);
 				mejs.Utils.removeClass(selector, `${t.options.classPrefix}offscreen`);
 
 				// make radios not focusable
@@ -548,13 +548,13 @@
 		 * @since 5.0.0
 		 */
 		init: function() {
-			$( '.videopack-player' ).each( ( index, element ) => {
-				this.initPlayer( $( element ) );
+			document.querySelectorAll( '.videopack-player' ).forEach( ( element ) => {
+				this.initPlayer( element );
 			} );
 
 			// Initialize galleries
-			$( '.videopack-gallery-wrapper' ).each( ( index, element ) => {
-				this.initGallery( $( element ) );
+			document.querySelectorAll( '.videopack-gallery-wrapper' ).forEach( ( element ) => {
+				this.initGallery( element );
 			} );
 
 
@@ -564,9 +564,9 @@
 				const originalSuccess = window.mejs.MepDefaults.success;
 				window.mejs.MepDefaults.success = ( mediaElement, domObject, player ) => {
 					originalSuccess( mediaElement, domObject, player );
-					const $playerWrapper = $( domObject ).closest( '.videopack-player' );
-					if ( $playerWrapper.length && ! $playerWrapper.data( 'videopack-initialized' ) ) {
-						this.setupVideo( $playerWrapper );
+					const playerWrapper = domObject.closest( '.videopack-player' );
+					if ( playerWrapper && ! playerWrapper.dataset.videopackInitialized ) {
+						this.setupVideo( playerWrapper, this.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ] );
 					}
 				};
 			}
@@ -576,10 +576,10 @@
 		 * Initialize a single player.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		initPlayer: function( $playerWrapper ) {
-			let playerId  = $playerWrapper.data( 'id' );
+		initPlayer: function( playerWrapper ) {
+			let playerId  = playerWrapper.dataset.id;
 
 			// Handle gallery player IDs which have a prefix.
 			if ( String( playerId ).startsWith( 'gallery_' ) ) {
@@ -590,16 +590,15 @@
 			if ( ! videoVars ) {
 				return;
 			}
-			$playerWrapper.data( 'videopack_video_vars', videoVars );
 
 			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-				this.loadVideoJS( $playerWrapper, videoVars );
+				this.loadVideoJS( playerWrapper, videoVars );
 			} else if ( videoVars.player_type === 'WordPress Default' ) {
 				// ME.js is often auto-initialized by WP. We'll set up our hooks after it's ready.
 				// The success callback hook in init() should handle this.
 				// If it's already initialized, we set it up now.
-				if ( $playerWrapper.find( '.mejs-container' ).length ) {
-					this.setupVideo( $playerWrapper );
+				if ( playerWrapper.querySelector( '.mejs-container' ) ) {
+					this.setupVideo( playerWrapper, videoVars );
 				}
 			}
 		},
@@ -608,11 +607,11 @@
 		 * Load and initialize a Video.js player.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 * @param {object} videoVars      The video variables.
 		 */
-		loadVideoJS: function( $playerWrapper, videoVars ) {
-			const playerId = $playerWrapper.data( 'id' );
+		loadVideoJS: function( playerWrapper, videoVars ) {
+			const playerId = playerWrapper.dataset.id;
 			const videoElementId = `videopack_video_${ playerId }`;
 			const videoElement = document.getElementById( videoElementId );
 
@@ -626,25 +625,25 @@
 				userActions: { hotkeys: true },
 			};
 
-			if ( 'true' === videoVars.autoplay ) {
+			if ( true === videoVars.autoplay ) {
 				videojsOptions.autoplay = 'any';
 			}
 
-			if ( 'true' === videoVars.resize || 'true' === videoVars.fullwidth ) {
+			if ( true === videoVars.resize || true === videoVars.fullwidth ) {
 				videojsOptions.fluid = true;
 			} else {
 				videojsOptions.fluid = false;
 			}
 
-			if ( videojsOptions.fluid && videoVars.width && -1 === videoVars.width.indexOf( '%' ) && videoVars.height && 'false' !== videoVars.fixed_aspect ) {
+			if ( videojsOptions.fluid && videoVars.width && ( typeof videoVars.width !== 'string' || -1 === videoVars.width.indexOf( '%' ) ) && videoVars.height && videoVars.fixed_aspect ) {
 				videojsOptions.aspectRatio = `${ videoVars.width }:${ videoVars.height }`;
 			}
 
-			if ( 'true' === videoVars.nativecontrolsfortouch ) {
+			if ( true === videoVars.nativecontrolsfortouch ) {
 				videojsOptions.nativeControlsForTouch = true;
 			}
 
-			if ( 'true' === videoVars.playback_rate ) {
+			if ( true === videoVars.playback_rate ) {
 				videojsOptions.playbackRates = [ 0.5, 1, 1.25, 1.5, 2 ];
 			}
 
@@ -659,14 +658,16 @@
 
 			const sources = Array.from( videoElement.querySelectorAll( 'source' ) );
 			const hasResolutions = sources.some( ( s ) => s.dataset.res );
+			const source_groups = videoVars.source_groups || {};
 
-			if ( hasResolutions ) {
+			if ( hasResolutions || ( source_groups && Object.keys(source_groups).length > 1 ) ) {
 				if ( videojs.VERSION.split( '.' )[ 0 ] >= 5 ) {
 					videojsOptions.plugins = videojsOptions.plugins || {};
 					videojsOptions.plugins.resolutionSelector = {
 						force_types: [ 'video/mp4' ],
+						source_groups: source_groups,
 					};
-					const defaultResSource = sources.find( ( s ) => 'true' === s.dataset.default_res );
+					const defaultResSource = sources.find( ( s ) => true === s.dataset.default_res );
 					if ( defaultResSource ) {
 						videojsOptions.plugins.resolutionSelector.default_res = defaultResSource.dataset.res;
 					}
@@ -681,7 +682,7 @@
 			}
 
 			videojs( videoElement, videojsOptions ).ready( () => {
-				this.setupVideo( $playerWrapper );
+				this.setupVideo( playerWrapper, videoVars );
 			} );
 		},
 
@@ -689,98 +690,104 @@
 		 * Common setup for any player type after initialization.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
+		 * @param {object} videoVars The video variables.
 		 */
-		setupVideo: function( $playerWrapper ) {
-			if ( $playerWrapper.data( 'videopack-initialized' ) ) {
+		setupVideo: function( playerWrapper, videoVars ) {
+			if ( playerWrapper.dataset.videopackInitialized ) {
 				return;
 			}
 
-			const playerId = $playerWrapper.data( 'id' );
-			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
-
-			// Disable FitVids.js from conflicting.
-			if ( typeof $.fn.fitVids === 'function' ) {
-				$.fn.fitVids = function() {
-					return this;
-				};
-			}
+			const playerId = playerWrapper.dataset.id;
 
 			// Move watermark and meta into the player.
-			const $watermark = $( `#video_${ playerId }_watermark` );
-			if ( $watermark.length ) {
-				$playerWrapper.prepend( $watermark );
-				$watermark.show();
+			const watermark = document.getElementById( `video_${ playerId }_watermark` );
+			if ( watermark ) {
+				playerWrapper.prepend( watermark );
+				watermark.style.display = 'block';
 			}
 
-			const $meta = $( `#video_${ playerId }_meta` );
-			if ( $meta.length ) {
-				$playerWrapper.prepend( $meta );
-				$meta.show();
+			const meta = document.getElementById( `video_${ playerId }_meta` );
+			if ( meta ) {
+				playerWrapper.prepend( meta );
+				meta.style.display = 'block';
 			}
 
 			// Setup share functionality.
-			const $shareIcon = $playerWrapper.find( '.videopack-share-icon' );
-			if ( $shareIcon.length ) {
-				$shareIcon.on( 'click', () => this.toggleShare( $playerWrapper ) );
-				$playerWrapper.find( '.videopack-click-trap' ).on( 'click', () => this.toggleShare( $playerWrapper ) );
+			const shareIcon = playerWrapper.querySelector( '.videopack-share-icon' );
+			if ( shareIcon ) {
+				shareIcon.addEventListener( 'click', () => this.toggleShare( playerWrapper ) );
+				playerWrapper.querySelector( '.videopack-click-trap' ).addEventListener( 'click', () => this.toggleShare( playerWrapper ) );
 			}
 
-			if ( 'true' !== videoVars.right_click ) {
-				$playerWrapper.on( 'contextmenu', () => false );
+			if ( true !== videoVars.right_click ) {
+				playerWrapper.addEventListener( 'contextmenu', (e) => e.preventDefault() );
 			}
 
 			// Setup "start at" functionality.
-			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
-			if ( $embedWrapper.length ) {
-				$embedWrapper.find( '.videopack-start-at-enable' ).on( 'change', () => this.setStartAt( $playerWrapper ) );
-				$embedWrapper.find( '.videopack-start-at' ).on( 'change', () => this.changeStartAt( $playerWrapper ) );
+			const embedWrapper = playerWrapper.querySelector( '.videopack-embed-wrapper' );
+			if ( embedWrapper ) {
+				embedWrapper.querySelector( '.videopack-start-at-enable' ).addEventListener( 'change', () => this.setStartAt( playerWrapper ) );
+				embedWrapper.querySelector( '.videopack-start-at' ).addEventListener( 'change', () => this.changeStartAt( playerWrapper ) );
 			}
 
-			if ( $meta.length ) {
-				this.addHoverHandlers( $playerWrapper );
-			}
-
-			if ( $meta.length ) {
-				$meta.addClass( 'videopack-meta-hover' );
-			}
-
-			const $downloadLink = $playerWrapper.find( '.download-link' );
-			if ( $downloadLink.length && 'undefined' !== typeof $downloadLink.attr( 'download' ) && $downloadLink.data( 'alt_link' ) ) {
-				$downloadLink.on( 'click', ( e ) => {
+			const downloadLink = playerWrapper.querySelector( '.download-link' );
+			if ( downloadLink && downloadLink.hasAttribute( 'download' ) && downloadLink.dataset.alt_link ) {
+				downloadLink.addEventListener( 'click', ( e ) => {
 					e.preventDefault();
-					this.checkDownloadLink( $downloadLink );
+					this.checkDownloadLink( downloadLink );
 				} );
 			}
 
 			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-				this.setupVideoJSPlayer( $playerWrapper );
+				this.setupVideoJSPlayer( playerWrapper, videoVars );
 			} else if ( videoVars.player_type === 'WordPress Default' ) {
-				this.setupMEJSPlayer( $playerWrapper );
+				this.setupMEJSPlayer( playerWrapper, videoVars );
 			}
 
 			// Resize logic.
-			if ( 'true' === videoVars.resize || 'automatic' === videoVars.auto_res || window.location.search.includes( 'videopack[enable]=true' ) ) {
+			if ( true === videoVars.resize || 'automatic' === videoVars.auto_res || window.location.search.includes( 'videopack[enable]=true' ) ) {
 				this.resizeVideo( playerId );
+
+				const target = playerWrapper.parentElement;
+
+				if ( ! target ) {
+					return;
+				}
+
 				let resizeId;
-				$( window ).on( 'resize', () => {
+				const debouncedResize = () => {
 					clearTimeout( resizeId );
-					resizeId = setTimeout( () => this.resizeVideo( playerId ), 500 );
-				} );
+					resizeId = setTimeout( () => this.resizeVideo( playerId ), 200 );
+				};
+
+				const resizeObserver = new ResizeObserver( debouncedResize );
+				resizeObserver.observe( target );
+
+				// Cleanup observer on player disposal.
+				if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+					const player = videojs.getPlayer( 'videopack_video_' + playerId );
+					if ( player ) {
+						player.on( 'dispose', () => {
+							resizeObserver.disconnect();
+						} );
+					}
+				}
+				// Note: MediaElement.js cleanup is not added to avoid complexity without a clear dispose event.
 			}
 
-			$playerWrapper.data( 'videopack-initialized', true );
+			playerWrapper.dataset.videopackInitialized = true;
 		},
 
 		/**
 		 * Setup for a Video.js player.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
+		 * @param {object} videoVars The video variables.
 		 */
-		setupVideoJSPlayer: function( $playerWrapper ) {
-			const playerId = $playerWrapper.data( 'id' );
-			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+		setupVideoJSPlayer: function( playerWrapper, videoVars ) {
+			const playerId = playerWrapper.dataset.id;
 			const player = videojs.getPlayer( `videopack_video_${ playerId }` );
 
 			if ( ! player ) {
@@ -788,14 +795,14 @@
 			}
 
 			// Move watermark inside video element for proper positioning.
-			const $watermark = $( `#video_${ playerId }_watermark` );
-			if ( $watermark.length ) {
-				player.el().appendChild( $watermark[ 0 ] );
+			const watermark = document.getElementById( `video_${ playerId }_watermark` );
+			if ( watermark ) {
+				player.el().appendChild( watermark );
 			}
 
 			// Touch device checks.
 			if ( videojs.browser.TOUCH_ENABLED ) {
-				if ( 'true' === videoVars.nativecontrolsfortouch && videojs.browser.IS_ANDROID ) {
+				if ( true === videoVars.nativecontrolsfortouch && videojs.browser.IS_ANDROID ) {
 					player.bigPlayButton.hide();
 				}
 				if ( ! player.controls() && ! player.muted() ) {
@@ -804,12 +811,7 @@
 			}
 
 			player.on( 'loadedmetadata', () => {
-				const played = $playerWrapper.data( 'played' ) || 'not played';
-
-				const $meta = $playerWrapper.find( '.videopack-meta' );
-				if ( $meta.length ) {
-					$meta.addClass( 'videopack-meta-hover' );
-				}
+				const played = playerWrapper.dataset.played || 'not played';
 
 				if ( 'not played' === played ) {
 					// Set default captions/subtitles.
@@ -831,7 +833,7 @@
 					player.volume( videoVars.set_volume );
 				}
 
-				if ( 'true' === videoVars.autoplay && player.paused() ) {
+				if ( true === videoVars.autoplay && player.paused() ) {
 					const promise = player.play();
 					if ( 'undefined' !== typeof promise ) {
 						promise.catch( () => {
@@ -845,57 +847,63 @@
 				player.focus();
 
 				if ( videoVars.endofvideooverlay ) {
-					$( player.posterImage.el() ).hide();
+					player.posterImage.el().style.display = 'none';
 				}
 
-				const $meta = $playerWrapper.find( '.videopack-meta' );
-				if ( $meta.length ) {
-					$meta.removeClass( 'videopack-meta-hover' );
-				}
+				playerWrapper.parentElement.classList.remove( 'meta-bar-visible' );
 
-				if ( 'true' === videoVars.pauseothervideos ) {
-					videojs.getPlayers().forEach( ( otherPlayer ) => {
-						if ( player.id() !== otherPlayer.id() && otherPlayer && ! otherPlayer.paused() && ! otherPlayer.autoplay() ) {
-							otherPlayer.pause();
+				if ( true === videoVars.pauseothervideos ) {
+					const players = videojs.getPlayers();
+					for ( const otherPlayerId in players ) {
+						if ( players.hasOwnProperty( otherPlayerId ) ) {
+							const otherPlayer = players[ otherPlayerId ];
+							if ( player.id() !== otherPlayer.id() && otherPlayer && ! otherPlayer.paused() && ! otherPlayer.autoplay() ) {
+								otherPlayer.pause();
+							}
 						}
-					} );
+					}
 				}
 
 				this.videoCounter( playerId, 'play' );
 
-				player.on( 'timeupdate.videopack', () => {
+				player.on( 'timeupdate', () => {
 					const percent = Math.round( ( player.currentTime() / player.duration() ) * 100 );
-					if ( ! $playerWrapper.data( '25' ) && percent >= 25 && percent < 50 ) {
-						$playerWrapper.data( '25', true );
+					if ( ! playerWrapper.dataset['25'] && percent >= 25 && percent < 50 ) {
+						playerWrapper.dataset['25'] = true;
 						this.videoCounter( playerId, '25' );
-					} else if ( ! $playerWrapper.data( '50' ) && percent >= 50 && percent < 75 ) {
-						$playerWrapper.data( '50', true );
+					} else if ( ! playerWrapper.dataset['50'] && percent >= 50 && percent < 75 ) {
+						playerWrapper.dataset['50'] = true;
 						this.videoCounter( playerId, '50' );
-					} else if ( ! $playerWrapper.data( '75' ) && percent >= 75 && percent < 100 ) {
-						$playerWrapper.data( '75', true );
+					} else if ( ! playerWrapper.dataset['75'] && percent >= 75 && percent < 100 ) {
+						playerWrapper.dataset['75'] = true;
 						this.videoCounter( playerId, '75' );
 					}
 				} );
 			} );
 
 			player.on( 'pause', () => {
-				const $meta = $playerWrapper.find( '.videopack-meta' );
-				if ( $meta.length ) {
-					$meta.addClass( 'videopack-meta-hover' );
-				}
+				playerWrapper.parentElement.classList.add( 'meta-bar-visible' );
 				this.videoCounter( playerId, 'pause' );
 			} );
 			player.on( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
 
 			player.on( 'ended', () => {
-				if ( ! $playerWrapper.data( 'end' ) ) {
-					$playerWrapper.data( 'end', true );
+				if ( ! playerWrapper.dataset.end ) {
+					playerWrapper.dataset.end = true;
 					this.videoCounter( playerId, 'end' );
 				}
-				setTimeout( () => $( player.loadingSpinner.el() ).hide(), 250 );
+				setTimeout( () => {
+					if ( player.loadingSpinner && player.loadingSpinner.el() ) {
+						player.loadingSpinner.el().style.display = 'none';
+					}
+				}, 250 );
 
 				if ( videoVars.endofvideooverlay ) {
-					$( player.posterImage.el() ).css( 'background-image', `url(${ videoVars.endofvideooverlay })` ).fadeIn();
+					const posterImage = player.posterImage.el();
+					if ( posterImage ) {
+						posterImage.style.backgroundImage = `url(${ videoVars.endofvideooverlay })`;
+						posterImage.style.display = 'block';
+					}
 				}
 			} );
 
@@ -908,38 +916,33 @@
 		 * Setup for a MediaElement.js player.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
+		 * @param {object} videoVars The video variables.
 		 */
-		setupMEJSPlayer: function( $playerWrapper ) {
-			const playerId = $playerWrapper.data( 'id' );
-			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
-			const $video = $playerWrapper.find( 'video' );
-			const mejsId = $playerWrapper.find( '.mejs-container' ).attr( 'id' );
+		setupMEJSPlayer: function( playerWrapper, videoVars ) {
+			const playerId = playerWrapper.dataset.id;
+			const video = playerWrapper.querySelector( 'video' );
+			const mejsId = playerWrapper.querySelector( '.mejs-container' ).id;
 
-			if ( ! $video.length || ! mejsId || ! mejs.players[ mejsId ] ) {
+			if ( ! video || ! mejsId || ! mejs.players[ mejsId ] ) {
 				return;
 			}
 
 			const player = mejs.players[ mejsId ];
 
 			// Move watermark.
-			const $watermark = $( `#video_${ playerId }_watermark` );
-			if ( $watermark.length ) {
-				$playerWrapper.find( '.mejs-container' ).append( $watermark );
+			const watermark = document.getElementById( `video_${ playerId }_watermark` );
+			if ( watermark ) {
+				playerWrapper.querySelector( '.mejs-container' ).append( watermark );
 			}
 
-			const $meta = $playerWrapper.find( '.videopack-meta' );
-			if ( $meta.length ) {
-				$meta.addClass( 'videopack-meta-hover' );
-			}
-
-			const played = $playerWrapper.data( 'played' ) || 'not played';
+			const played = playerWrapper.dataset.played || 'not played';
 			if ( 'not played' === played ) {
 				// Default captions.
 				if ( player.tracks && player.tracks.length > 0 ) {
-					const defaultTrack = $( `#${ mejsId } track[default]` );
-					if ( defaultTrack.length ) {
-						const defaultLang = defaultTrack.attr( 'srclang' ).toLowerCase();
+					const defaultTrack = document.querySelector( `#${ mejsId } track[default]` );
+					if ( defaultTrack ) {
+						const defaultLang = defaultTrack.getAttribute( 'srclang' ).toLowerCase();
 						const trackToSet = player.tracks.find( ( t ) => t.srclang === defaultLang );
 						if ( trackToSet ) {
 							player.setTrack( trackToSet.trackId );
@@ -948,62 +951,66 @@
 				}
 
 				if ( videoVars.start ) {
-					$video[ 0 ].setCurrentTime( this.convertFromTimecode( videoVars.start ) );
+					video.setCurrentTime( this.convertFromTimecode( videoVars.start ) );
 				}
 			}
 
-			$video.on( 'loadedmetadata', () => {
+			video.addEventListener( 'loadedmetadata', () => {
 				if ( videoVars.set_volume ) {
-					$video[ 0 ].volume = videoVars.set_volume;
+					video.volume = videoVars.set_volume;
 				}
-				if ( 'true' === videoVars.mute ) {
-					$video[ 0 ].setMuted( true );
+				if ( true === videoVars.mute ) {
+					video.setMuted( true );
 				}
-				if ( 'false' === videoVars.pauseothervideos ) {
+				if ( false === videoVars.pauseothervideos ) {
 					player.options.pauseOtherPlayers = false;
 				}
 			} );
 
-			$video.on( 'play', () => {
+			video.addEventListener( 'play', () => {
 				document.getElementById( mejsId ).focus();
+				playerWrapper.parentElement.classList.remove( 'meta-bar-visible' );
 				this.videoCounter( playerId, 'play' );
 
-				$video.on( 'timeupdate.videopack', () => {
-					const percent = Math.round( ( $video[ 0 ].currentTime / $video[ 0 ].duration ) * 100 );
-					if ( ! $playerWrapper.data( '25' ) && percent >= 25 && percent < 50 ) {
-						$playerWrapper.data( '25', true );
+				video.addEventListener( 'timeupdate', () => {
+					const percent = Math.round( ( video.currentTime / video.duration ) * 100 );
+					if ( ! playerWrapper.dataset['25'] && percent >= 25 && percent < 50 ) {
+						playerWrapper.dataset['25'] = true;
 						this.videoCounter( playerId, '25' );
-					} else if ( ! $playerWrapper.data( '50' ) && percent >= 50 && percent < 75 ) {
-						$playerWrapper.data( '50', true );
+					} else if ( ! playerWrapper.dataset['50'] && percent >= 50 && percent < 75 ) {
+						playerWrapper.dataset['50'] = true;
 						this.videoCounter( playerId, '50' );
-					} else if ( ! $playerWrapper.data( '75' ) && percent >= 75 && percent < 100 ) {
-						$playerWrapper.data( '75', true );
+					} else if ( ! playerWrapper.dataset['75'] && percent >= 75 && percent < 100 ) {
+						playerWrapper.dataset['75'] = true;
 						this.videoCounter( playerId, '75' );
 					}
 				} );
 			} );
 
-			$video.on( 'pause', () => {
-				const $meta = $playerWrapper.find( '.videopack-meta' );
-				if ( $meta.length ) {
-					$meta.addClass( 'videopack-meta-hover' );
-				}
+			video.addEventListener( 'pause', () => {
+				playerWrapper.parentElement.classList.add( 'meta-bar-visible' );
 				this.videoCounter( playerId, 'pause' );
 			} );
-			$video.on( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
+			video.addEventListener( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
 
-			$video.on( 'ended', () => {
-				if ( ! $playerWrapper.data( 'end' ) ) {
-					$playerWrapper.data( 'end', true );
+			video.addEventListener( 'ended', () => {
+				if ( ! playerWrapper.dataset.end ) {
+					playerWrapper.dataset.end = true;
 					this.videoCounter( playerId, 'end' );
 				}
 				if ( videoVars.endofvideooverlay ) {
-					$playerWrapper.find( '.mejs-poster' ).css( 'background-image', `url(${ videoVars.endofvideooverlay })` ).fadeIn();
-					$video.one( 'seeking.videopack', () => {
-						if ( 0 !== $video[ 0 ].currentTime ) {
-							$playerWrapper.find( '.mejs-poster' ).fadeOut();
+					const poster = playerWrapper.querySelector( '.mejs-poster' );
+					if ( poster ) {
+						poster.style.backgroundImage = `url(${ videoVars.endofvideooverlay })`;
+						poster.style.display = 'block';
+					}
+					video.addEventListener( 'seeking', () => {
+						if ( 0 !== video.currentTime ) {
+							if ( poster ) {
+								poster.style.display = 'none';
+							}
 						}
-					} );
+					}, { once: true } );
 				}
 			} );
 		},
@@ -1015,11 +1022,11 @@
 		 * @param {number} playerId The player ID.
 		 */
 		resizeVideo: function( playerId ) {
-			const $playerWrapper = $( `.videopack-player[data-id="${ playerId }"]` );
-			if ( ! $playerWrapper.length ) {
+			const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
+			if ( ! playerWrapper ) {
 				return;
 			}
-			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+			const videoVars = this.player_data[ `videopack_player_${ playerId }` ];
 			if ( ! videoVars ) {
 				return;
 			}
@@ -1027,15 +1034,15 @@
 			let setWidth = videoVars.width;
 			const setHeight = videoVars.height;
 			const aspectRatio = Math.round( ( setHeight / setWidth ) * 1000 ) / 1000;
-			const $wrapperParent = $playerWrapper.parent();
+			const wrapperParent = playerWrapper.parentElement;
 
 			let parentWidth;
-			if ( $wrapperParent.is( 'body' ) ) { // Embedded video
+			if ( wrapperParent.tagName === 'BODY' ) { // Embedded video
 				parentWidth = window.innerWidth;
 				setWidth = window.innerWidth;
 			} else {
-				parentWidth = $wrapperParent.width();
-				if ( 'true' === videoVars.fullwidth ) {
+				parentWidth = wrapperParent.offsetWidth;
+				if ( true === videoVars.fullwidth ) {
 					setWidth = parentWidth;
 				}
 			}
@@ -1045,7 +1052,6 @@
 			}
 
 			if ( setWidth > 0 && setWidth < 30000 ) {
-				$playerWrapper.closest( '.videopack-wrapper' ).width( setWidth );
 				// Automatic resolution switching logic
 				if ( 'automatic' === videoVars.auto_res ) {
 					this.setAutomaticResolution( playerId, setWidth, aspectRatio );
@@ -1093,22 +1099,25 @@
 		 * @param {string} event    The video event (play, pause, etc.).
 		 */
 		videoCounter: function( playerId, event ) {
-			const $playerWrapper = $( `.videopack-player[data-id="${ playerId }"]` );
-			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+			const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
+			const videoVars = this.player_data[ `videopack_player_${ playerId }` ];
 
 			if ( ! videoVars ) {
 				return;
 			}
 
+			const viewCountWrapper = playerWrapper.closest( '.videopack-wrapper' );
+			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector( '.viewcount' ) : null;
+
 			let changed = false;
-			const played = $playerWrapper.data( 'played' ) || 'not played';
+			const played = playerWrapper.dataset.played || 'not played';
 
 			if ( 'play' === event ) {
 				if ( 'not played' === played ) { // Play start
 					if ( videoVars.countable ) {
 						changed = true;
 					}
-					$playerWrapper.data( 'played', 'played' );
+					playerWrapper.dataset.played = 'played';
 					this.sendGoogleAnalytics( videopack_l10n.playstart, videoVars.title );
 				} else { // Resume
 					this.sendGoogleAnalytics( videopack_l10n.resume, videoVars.title );
@@ -1125,7 +1134,7 @@
 				this.sendGoogleAnalytics( `${ event }%`, videoVars.title );
 			}
 
-			if ( changed && 'false' !== videoVars.count_views ) {
+			if ( changed && false !== videoVars.count_views ) {
 				const countCondition = videoVars.count_views === 'quarters' ||
 					( videoVars.count_views === 'start_complete' && ( 'play' === event || 'end' === event ) ) ||
 					( videoVars.count_views === 'start' && 'play' === event );
@@ -1139,7 +1148,7 @@
 						body: JSON.stringify( {
 							post_id: videoVars.attachment_id,
 							video_event: event,
-							show_views: !!$( `.videopack-view-count[data-id="${ playerId }"]` ).length,
+							show_views: !!viewCountElement,
 						} ),
 					} )
 						.then( ( response ) => {
@@ -1149,8 +1158,8 @@
 							return response.json();
 						} )
 						.then( ( data ) => {
-							if ( 'play' === event && data.view_count ) {
-								$( `.videopack-view-count[data-id="${ playerId }"]` ).html( data.view_count );
+							if ( 'play' === event && data.view_count && viewCountElement ) {
+								viewCountElement.innerHTML = data.view_count;
 							}
 						} )
 						.catch( ( error ) => {
@@ -1207,52 +1216,49 @@
 		 * Toggle the share/embed section.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		toggleShare: function( $playerWrapper ) {
-			const videoVars = $playerWrapper.data( 'videopack_video_vars' );
-			const $shareIcon = $playerWrapper.find( '.videopack-share-icon' );
-			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
-			const $clickTrap = $playerWrapper.find( '.videopack-click-trap' );
-			const $meta = $playerWrapper.find( '.videopack-meta' );
+		toggleShare: function( playerWrapper ) {
+			const videoVars = this.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ];
+			const shareIcon = playerWrapper.querySelector( '.videopack-share-icon' );
+			const embedWrapper = playerWrapper.querySelector( '.videopack-embed-wrapper' );
+			const clickTrap = playerWrapper.querySelector( '.videopack-click-trap' );
 
-			const isShareActive = $shareIcon.hasClass( 'vjs-icon-cancel' );
+			const isShareActive = shareIcon.classList.contains( 'vjs-icon-cancel' );
 
 			if ( isShareActive ) {
-				$shareIcon.removeClass( 'vjs-icon-cancel' ).addClass( 'vjs-icon-share' );
-				$embedWrapper.slideUp();
-				$clickTrap.slideUp();
-				if ( $meta.length ) {
-					this.addHoverHandlers( $playerWrapper );
-				}
+				shareIcon.classList.remove( 'vjs-icon-cancel' );
+				shareIcon.classList.add( 'vjs-icon-share' );
+				embedWrapper.style.display = 'none';
+				clickTrap.style.display = 'none';
 			} else {
-				$shareIcon.removeClass( 'vjs-icon-share' ).addClass( 'vjs-icon-cancel' );
-				$embedWrapper.slideDown();
-				$clickTrap.slideDown();
-				if ( $meta.length ) {
-					this.removeHoverHandlers( $playerWrapper );
-					$meta.addClass( 'videopack-meta-hover' );
-				}
+				shareIcon.classList.remove( 'vjs-icon-share' );
+				shareIcon.classList.add( 'vjs-icon-cancel' );
+				embedWrapper.style.display = 'block';
+				clickTrap.style.display = 'block';
 			}
 
 			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-				const playerId = $playerWrapper.data( 'id' );
+				const playerId = playerWrapper.dataset.id;
 				const player = videojs.getPlayer( `videopack_video_${ playerId }` );
 				if ( player ) {
 					player.pause();
-					const $controls = player.hasStarted() ? $( player.controlBar.el() ) : $( player.bigPlayButton.el() );
+					const controls = player.hasStarted() ? player.controlBar.el() : player.bigPlayButton.el();
 					if ( isShareActive ) {
-						$controls.show();
+						controls.style.display = '';
 					} else {
-						$controls.hide();
+						controls.style.display = 'none';
 					}
 				}
 			} else if ( videoVars.player_type === 'WordPress Default' ) {
-				const $video = $playerWrapper.find( 'video' );
-				if ( $video.length ) {
-					$video[ 0 ].pause();
+				const video = playerWrapper.querySelector( 'video' );
+				if ( video ) {
+					video.pause();
 				}
-				$playerWrapper.find( '.mejs-overlay-button' ).toggle();
+				const overlayButton = playerWrapper.querySelector( '.mejs-overlay-button' );
+				if ( overlayButton ) {
+					overlayButton.style.display = overlayButton.style.display === 'none' ? '' : 'none';
+				}
 			}
 		},
 
@@ -1260,72 +1266,74 @@
 		 * Check if a download link is valid, otherwise use the alternative.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $downloadLink The download link element.
+		 * @param {HTMLAnchorElement} downloadLink The download link element.
 		 */
-		checkDownloadLink: function( $downloadLink ) {
-			const url = $downloadLink.attr( 'href' );
-			const altUrl = $downloadLink.data( 'alt_link' );
+		checkDownloadLink: async function( downloadLink ) {
+			const url = downloadLink.href;
+			const altUrl = downloadLink.dataset.alt_link;
 
-			$.ajax( {
-				type: 'HEAD',
-				url: url,
-				success: function() {
-					const link = document.createElement( 'a' );
-					link.href = url;
-					link.setAttribute( 'download', '' );
-					document.body.appendChild( link );
-					link.click();
-					document.body.removeChild( link );
-				},
-				error: function() {
-					if ( altUrl ) {
-						window.location.href = altUrl;
-					}
-				},
-			} );
+			try {
+				const response = await fetch( url, { method: 'HEAD' } );
+				if ( ! response.ok ) {
+					throw new Error( 'Response not OK' );
+				}
+				const link = document.createElement( 'a' );
+				link.href = url;
+				link.setAttribute( 'download', '' );
+				document.body.appendChild( link );
+				link.click();
+				document.body.removeChild( link );
+			} catch ( error ) {
+				if ( altUrl ) {
+					window.location.href = altUrl;
+				} else {
+					// Optional: handle case where direct download fails and there's no altUrl
+					console.error( 'Download failed and no alternative link available.' );
+				}
+			}
 		},
 
 		/**
 		 * Set the "start at" time in the embed code from the current video time.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		setStartAt: function( $playerWrapper ) {
-			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
-			if ( $embedWrapper.find( '.videopack-start-at-enable' ).prop( 'checked' ) ) {
-				const videoVars = $playerWrapper.data( 'videopack_video_vars' );
+		setStartAt: function( playerWrapper ) {
+			const embedWrapper = playerWrapper.querySelector( '.videopack-embed-wrapper' );
+			if ( embedWrapper.querySelector( '.videopack-start-at-enable' ).checked ) {
+				const videoVars = this.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ];
 				let currentTime = 0;
 
 				if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-					const playerId = $playerWrapper.data( 'id' );
+					const playerId = playerWrapper.dataset.id;
 					const player = videojs.getPlayer( `videopack_video_${ playerId }` );
 					if ( player ) {
 						currentTime = player.currentTime();
 					}
 				} else if ( videoVars.player_type === 'WordPress Default' ) {
-					const $video = $playerWrapper.find( 'video' );
-					if ( $video.length ) {
-						currentTime = $video[ 0 ].currentTime;
+					const video = playerWrapper.querySelector( 'video' );
+					if ( video ) {
+						currentTime = video.currentTime;
 					}
 				}
 
-				$embedWrapper.find( '.videopack-start-at' ).val( this.convertToTimecode( Math.floor( currentTime ) ) );
+				embedWrapper.querySelector( '.videopack-start-at' ).value = this.convertToTimecode( Math.floor( currentTime ) );
 			}
 
-			this.changeStartAt( $playerWrapper );
+			this.changeStartAt( playerWrapper );
 		},
 
 		/**
 		 * Update the embed code with the "start at" time.
 		 *
 		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		changeStartAt: function( $playerWrapper ) {
-			const $embedWrapper = $playerWrapper.find( '.videopack-embed-wrapper' );
-			const $embedCodeTextarea = $embedWrapper.find( '.videopack-embed-code' );
-			const embedCode = $embedCodeTextarea.val();
+		changeStartAt: function( playerWrapper ) {
+			const embedWrapper = playerWrapper.querySelector( '.videopack-embed-wrapper' );
+			const embedCodeTextarea = embedWrapper.querySelector( '.videopack-embed-code' );
+			const embedCode = embedCodeTextarea.value;
 
 			const tempDiv = document.createElement( 'div' );
 			tempDiv.innerHTML = embedCode;
@@ -1342,8 +1350,8 @@
 			src = src.replace( /&?videopack\[start\]=[^&]*/, '' );
 			src = src.replace( /\?&/, '?' ).replace( /\?$/, '' );
 
-			if ( $embedWrapper.find( '.videopack-start-at-enable' ).prop( 'checked' ) ) {
-				const startTime = $embedWrapper.find( '.videopack-start-at' ).val();
+			if ( embedWrapper.querySelector( '.videopack-start-at-enable' ).checked ) {
+				const startTime = embedWrapper.querySelector( '.videopack-start-at' ).value;
 				if ( startTime ) {
 					const separator = src.includes( '?' ) ? '&' : '?';
 					src += `${ separator }videopack[start]=${ encodeURIComponent( startTime ) }`;
@@ -1351,35 +1359,7 @@
 			}
 
 			iframe.setAttribute( 'src', src );
-			$embedCodeTextarea.val( iframe.outerHTML );
-		},
-
-		/**
-		 * Add hover handlers for meta information.
-		 *
-		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
-		 */
-		addHoverHandlers: function( $playerWrapper ) {
-			const $meta = $playerWrapper.find( '.videopack-meta' );
-			if ( ! $meta.length ) {
-				return;
-			}
-			$playerWrapper
-				.on( 'mouseenter.videopack.hover', () => $meta.addClass( 'videopack-meta-hover' ) )
-				.on( 'mouseleave.videopack.hover', () => $meta.removeClass( 'videopack-meta-hover' ) )
-				.on( 'focusin.videopack.hover', () => $meta.addClass( 'videopack-meta-hover' ) )
-				.on( 'focusout.videopack.hover', () => $meta.removeClass( 'videopack-meta-hover' ) );
-		},
-
-		/**
-		 * Remove hover handlers for meta information.
-		 *
-		 * @since 5.0.0
-		 * @param {jQuery} $playerWrapper The player wrapper element.
-		 */
-		removeHoverHandlers: function( $playerWrapper ) {
-			$playerWrapper.off( '.videopack.hover' );
+			embedCodeTextarea.value = iframe.outerHTML;
 		},
 
 		/**
@@ -1390,54 +1370,71 @@
 
 		/**
 		 * Initialize a single gallery.
-		 * @param {jQuery} $galleryWrapper The gallery wrapper element.
+		 * @param {HTMLElement} galleryWrapper The gallery wrapper element.
 		 */
-		initGallery: function( $galleryWrapper ) {
-			if ( $galleryWrapper.data( 'videopack-gallery-initialized' ) ) {
+		initGallery: function( galleryWrapper ) {
+			if ( galleryWrapper.dataset.videopackGalleryInitialized ) {
 				return;
 			}
 
-			const gallerySettings = $galleryWrapper.data( 'gallery-settings' ) || {};
-			$galleryWrapper.data( 'gallery-settings-cache', gallerySettings );
+			const gallerySettings = JSON.parse( galleryWrapper.dataset.gallerySettings || '{}' );
+			// A better approach than setting data on the element would be a WeakMap, but for now this is fine.
+			galleryWrapper.dataset.gallerySettingsCache = JSON.stringify( gallerySettings );
 
 			// Store initial video data order for navigation.
 			const initialVideoOrder = [];
-			$galleryWrapper.find( '.videopack-gallery-thumbnail' ).each( ( i, thumb ) => {
-				initialVideoOrder.push( String( $( thumb ).data( 'attachment-id' ) ) );
+			galleryWrapper.querySelectorAll( '.videopack-gallery-thumbnail' ).forEach( ( thumb ) => {
+				initialVideoOrder.push( String( thumb.dataset.attachmentId ) );
 			} );
-			$galleryWrapper.data( 'current-videos-order', initialVideoOrder );
+			// See above note about WeakMap.
+			galleryWrapper.dataset.currentVideosOrder = JSON.stringify( initialVideoOrder );
 
 			// Event Listeners
-			$galleryWrapper.on( 'click', '.videopack-gallery-thumbnail a', ( e ) => this.handleGalleryThumbnailClick( e, $galleryWrapper ) );
-			$galleryWrapper.on( 'click', '.videopack-gallery-pagination a', ( e ) => this.handleGalleryPaginationClick( e, $galleryWrapper ) );
+			galleryWrapper.addEventListener( 'click', ( e ) => {
+				const thumbLink = e.target.closest( '.videopack-gallery-thumbnail a' );
+				if ( thumbLink ) {
+					this.handleGalleryThumbnailClick( e, galleryWrapper );
+				}
 
-			const $popup = $galleryWrapper.find( '.videopack-gallery-popup' );
-			$popup.on( 'click', '.videopack-gallery-popup-close, .videopack-gallery-popup-overlay', () => this.closeGalleryPopup( $popup ) );
-			$popup.on( 'click', '.videopack-gallery-popup-next', () => this.navigateGalleryPopup( 1, $galleryWrapper ) );
-			$popup.on( 'click', '.videopack-gallery-popup-prev', () => this.navigateGalleryPopup( -1, $galleryWrapper ) );
+				const pageLink = e.target.closest( '.videopack-gallery-pagination a' );
+				if ( pageLink ) {
+					this.handleGalleryPaginationClick( e, galleryWrapper );
+				}
+			} );
 
-			$galleryWrapper.data( 'videopack-gallery-initialized', true );
+			const popup = galleryWrapper.querySelector( '.videopack-gallery-popup' );
+			popup.addEventListener( 'click', (e) => {
+				if ( e.target.matches( '.videopack-gallery-popup-close, .videopack-gallery-popup-overlay' ) ) {
+					this.closeGalleryPopup( popup );
+				} else if ( e.target.matches( '.videopack-gallery-popup-next' ) ) {
+					this.navigateGalleryPopup( 1, galleryWrapper );
+				} else if ( e.target.matches( '.videopack-gallery-popup-prev' ) ) {
+					this.navigateGalleryPopup( -1, galleryWrapper );
+				}
+			} );
+
+			galleryWrapper.dataset.videopackGalleryInitialized = true;
 		},
 
-		handleGalleryThumbnailClick: function( e, $galleryWrapper ) {
+		handleGalleryThumbnailClick: function( e, galleryWrapper ) {
 			e.preventDefault();
-			const attachmentId = $( e.currentTarget ).parent( '.videopack-gallery-thumbnail' ).data( 'attachment-id' );
+			const attachmentId = e.target.closest( '.videopack-gallery-thumbnail' ).dataset.attachmentId;
 			const videoData = this.player_data && this.player_data[ `videopack_player_gallery_${ attachmentId }` ];
 
 			if ( videoData ) {
-				this.openGalleryPopup( videoData, $galleryWrapper );
+				this.openGalleryPopup( videoData, galleryWrapper );
 			}
 		},
 
-		openGalleryPopup: function( videoData, $galleryWrapper ) {
-			const $popup = $galleryWrapper.find( '.videopack-gallery-popup' );
-			const $playerContainer = $popup.find( '.videopack-gallery-player-container' );
+		openGalleryPopup: function( videoData, galleryWrapper ) {
+			const popup = galleryWrapper.querySelector( '.videopack-gallery-popup' );
+			const playerContainer = popup.querySelector( '.videopack-gallery-player-container' );
 
 			// Clean up any previous player
 			if ( this.currentGalleryPlayer && typeof this.currentGalleryPlayer.dispose === 'function' ) {
 				this.currentGalleryPlayer.dispose();
 			}
-			$playerContainer.empty();
+			playerContainer.innerHTML = '';
 
 			const playerId = videoData.id; // This is 'videopack_player_gallery_XXX'
 			const attachmentId = videoData.attachment_id;
@@ -1452,28 +1449,28 @@
 					</video>
 				</div>
 			`;
-			$playerContainer.html( playerHtml );
+			playerContainer.innerHTML = playerHtml;
 
 			// The data is already on window.Videopack.player_data, so initPlayer will find it.
-			this.initPlayer( $playerContainer.find( '.videopack-player' ) );
+			this.initPlayer( playerContainer.querySelector( '.videopack-player' ) );
 
 			this.currentGalleryPlayer = videojs.getPlayer( playerId );
-			$galleryWrapper.data( 'current-gallery-attachment-id', attachmentId );
+			galleryWrapper.dataset.currentGalleryAttachmentId = attachmentId;
 
-			$popup.fadeIn();
+			popup.style.display = 'block';
 		},
 
-		closeGalleryPopup: function( $popup ) {
+		closeGalleryPopup: function( popup ) {
 			if ( this.currentGalleryPlayer && typeof this.currentGalleryPlayer.dispose === 'function' ) {
 				this.currentGalleryPlayer.dispose();
 				this.currentGalleryPlayer = null;
 			}
-			$popup.fadeOut();
+			popup.style.display = 'none';
 		},
 
-		navigateGalleryPopup: function( direction, $galleryWrapper ) {
-			const currentAttachmentId = $galleryWrapper.data( 'current-gallery-attachment-id' );
-			const videoOrder = $galleryWrapper.data( 'current-videos-order' );
+		navigateGalleryPopup: function( direction, galleryWrapper ) {
+			const currentAttachmentId = galleryWrapper.dataset.currentGalleryAttachmentId;
+			const videoOrder = JSON.parse( galleryWrapper.dataset.currentVideosOrder );
 
 			const currentIndex = videoOrder.indexOf( String( currentAttachmentId ) );
 			let nextIndex = currentIndex + direction;
@@ -1488,22 +1485,22 @@
 			const nextVideoData = this.player_data && this.player_data[ `videopack_player_gallery_${ nextAttachmentId }` ];
 
 			if ( nextVideoData ) {
-				this.openGalleryPopup( nextVideoData, $galleryWrapper );
+				this.openGalleryPopup( nextVideoData, galleryWrapper );
 			}
 		},
 
-		handleGalleryPaginationClick: function( e, $galleryWrapper ) {
+		handleGalleryPaginationClick: function( e, galleryWrapper ) {
 			e.preventDefault();
-			const page = $( e.currentTarget ).data( 'page' );
-			this.loadGalleryPage( page, $galleryWrapper );
+			const page = e.target.closest( 'a' ).dataset.page;
+			this.loadGalleryPage( page, galleryWrapper );
 		},
 
-		loadGalleryPage: function( page, $galleryWrapper ) {
-			const gallerySettings = $galleryWrapper.data( 'gallery-settings-cache' );
-			const $grid = $galleryWrapper.find( '.videopack-gallery-grid' );
-			const $pagination = $galleryWrapper.find( '.videopack-gallery-pagination' );
+		loadGalleryPage: function( page, galleryWrapper ) {
+			const gallerySettings = JSON.parse( galleryWrapper.dataset.gallerySettingsCache );
+			const grid = galleryWrapper.querySelector( '.videopack-gallery-grid' );
+			const pagination = galleryWrapper.querySelector( '.videopack-gallery-pagination' );
 
-			$grid.css( 'opacity', 0.5 ); // Loading indicator
+			grid.style.opacity = 0.5; // Loading indicator
 
 			const restUrl = new URL( videopack_l10n.rest_url + 'videopack/v1/video_gallery' );
 
@@ -1526,22 +1523,22 @@
 							window.videopack.player_data[ video.player_vars.id ] = video.player_vars;
 							newVideoOrder.push( String( video.attachment_id ) );
 						} );
-						$galleryWrapper.data( 'current-videos-order', newVideoOrder );
+						galleryWrapper.dataset.currentVideosOrder = JSON.stringify( newVideoOrder );
 
 						// Render new content
-						this.renderGalleryThumbnails( data.videos, $grid, gallerySettings );
-						this.renderGalleryPagination( data.max_num_pages, data.current_page, $pagination );
+						this.renderGalleryThumbnails( data.videos, grid, gallerySettings );
+						this.renderGalleryPagination( data.max_num_pages, data.current_page, pagination );
 					}
-					$grid.css( 'opacity', 1 );
+					grid.style.opacity = 1;
 				} )
 				.catch( ( error ) => {
 					console.error( 'Error loading gallery page:', error );
-					$grid.css( 'opacity', 1 );
+					grid.style.opacity = 1;
 				} );
 		},
 
-		renderGalleryThumbnails: function( videos, $grid, settings ) {
-			$grid.empty();
+		renderGalleryThumbnails: function( videos, grid, settings ) {
+			grid.innerHTML = '';
 			let html = '';
 			videos.forEach( ( video ) => {
 				html += `
@@ -1551,7 +1548,7 @@
 								 ${ video.poster_srcset ? `srcset="${ video.poster_srcset }"` : '' }
 								 alt="${ video.title }">
 							<div class="videopack-gallery-play-button"></div>
-							${ settings.gallery_title === 'true' ? `
+							${ settings.gallery_title === true ? `
 								<div class="videopack-gallery-title-overlay">
 									<span>${ video.title }</span>
 								</div>
@@ -1560,11 +1557,11 @@
 					</div>
 				`;
 			} );
-			$grid.html( html );
+			grid.innerHTML = html;
 		},
 
-		renderGalleryPagination: function( maxPages, currentPage, $pagination ) {
-			$pagination.empty();
+		renderGalleryPagination: function( maxPages, currentPage, pagination ) {
+			pagination.innerHTML = '';
 			if ( maxPages <= 1 ) {
 				return;
 			}
@@ -1585,7 +1582,7 @@
 					<a href="#" data-page="${ currentPage + 1 }">&rarr;</a>
 				</span>
 			`;
-			$pagination.html( html );
+			pagination.innerHTML = html;
 		},
 
 	};
@@ -1593,7 +1590,5 @@
 	// Expose the videopack object to the global scope, merging with any existing properties (like player_data).
 	window.videopack = Object.assign( window.videopack || {}, videopack_obj );
 
-	$( () => {
-		window.videopack.init();
-	} );
-}( jQuery ) );
+	document.addEventListener( 'DOMContentLoaded', () => window.videopack.init() );
+}() );

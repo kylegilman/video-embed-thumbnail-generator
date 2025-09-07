@@ -12,7 +12,6 @@ class Source_Attachment_Local extends Source {
 		$format = null,
 		$exists = false
 	) {
-
 		if ( $this->validate_source( $attachment_id ) ) {
 			parent::__construct( $attachment_id, 'attachment_local', $options_manager, $format, $exists );
 			$this->set_metadata();
