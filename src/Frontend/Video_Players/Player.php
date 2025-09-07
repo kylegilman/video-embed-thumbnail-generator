@@ -157,30 +157,66 @@ class Player {
 	}
 
 	protected function set_sources(): void {
+		$grouped_sources = array();
 
-		$sources = array();
-
-		if ( $this->get_source()->is_compatible() ) {
-			$sources[ $this->get_source()->get_format() ] = $this->get_source()->get_video_player_source();
+		// Process the main source
+		$main_source = $this->get_source();
+		if ( $main_source && $main_source->exists() && $main_source->is_compatible() ) {
+			$codec = $main_source->get_codec();
+			if ( $codec ) {
+				$codec_id = $codec->get_id();
+				if ( ! isset( $grouped_sources[ $codec_id ] ) ) {
+					$grouped_sources[ $codec_id ] = array(
+						'label'   => $codec->get_label(),
+						'sources' => array(),
+					);
+				}
+				$grouped_sources[ $codec_id ]['sources'][] = $main_source->get_video_player_source();
+			}
 		}
 
-		if ( $this->get_source()->get_child_sources() ) {
-			foreach ( $this->get_source()->get_child_sources() as $child_source ) {
-				if ( $child_source->exists() && $child_source->is_compatible() ) {
-					$sources[ $child_source->get_format() ] = $child_source->get_video_player_source();
+		// Process child sources
+		$child_sources = $main_source ? $main_source->get_child_sources() : array();
+		foreach ( $child_sources as $child_source ) {
+			if ( $child_source && $child_source->exists() && $child_source->is_compatible() ) {
+				$codec = $child_source->get_codec();
+				if ( $codec ) {
+					$codec_id = $codec->get_id();
+					if ( ! isset( $grouped_sources[ $codec_id ] ) ) {
+						$grouped_sources[ $codec_id ] = array(
+							'label'   => $codec->get_label(),
+							'sources' => array(),
+						);
+					}
+					$grouped_sources[ $codec_id ]['sources'][] = $child_source->get_video_player_source();
 				}
 			}
 		}
 
-		$this->sources = array_values( $sources );
+		$this->sources = $grouped_sources;
+	}
+
+	public function get_flat_sources(): array {
+		$flat_sources  = array();
+		$codec_sources = $this->get_sources();
+
+		if ( is_array( $codec_sources ) ) {
+			foreach ( $codec_sources as $codec_data ) {
+				if ( isset( $codec_data['sources'] ) && is_array( $codec_data['sources'] ) ) {
+					$flat_sources = array_merge( $flat_sources, $codec_data['sources'] );
+				}
+			}
+		}
+		return $flat_sources;
 	}
 
 	public function get_main_source_url(): string {
 		if ( ! $this->sources && $this->get_source() ) {
 			$this->set_sources();
 		}
-		if ( isset( $this->sources[0]['src'] ) ) {
-			return $this->sources[0]['src'];
+		$flat_sources = $this->get_flat_sources();
+		if ( isset( $flat_sources[0]['src'] ) ) {
+			return $flat_sources[0]['src'];
 		}
 		return '';
 	}
@@ -211,6 +247,7 @@ class Player {
 			'right_click'       => $this->atts['right_click'],
 			'playback_rate'     => $this->atts['playback_rate'],
 			'title'             => $this->atts['stats_title'],
+			'source_groups'     => $this->get_sources(),
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
@@ -281,14 +318,21 @@ class Player {
 		if ( $this->has_embed_meta() ) {
 			$meta_bar .= '<button class="vjs-icon-share"></button>';
 		}
-		$meta_bar .= '<a class="download-link" href="' . $this->source->get_download_url() . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"></a></span></div>';
+				$download_attributes = 'class="download-link" href="' . esc_attr( $this->source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
+
+		if ( ! empty( $this->options['click_download'] ) && $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local && $this->source->exists() ) {
+			$alt_link             = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[download]=true' );
+			$download_attributes .= ' data-alt_link="' . esc_attr( $alt_link ) . '"';
+		}
+
+		$meta_bar .= '<a ' . $download_attributes . '></a></span></div>';
 
 		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
 	}
 
 	protected function get_wrapper_start_html(): string {
 		$alignclass = '';
-		if ( $this->atts['inline'] ) {
+		/* if ( $this->atts['inline'] ) {
 			$alignclass .= ' videopack-wrapper-inline';
 			if ( in_array( $this->atts['align'], array( 'left', 'right' ), true ) ) {
 				$alignclass .= ' videopack-wrapper-inline-' . $this->atts['align'];
@@ -299,7 +343,7 @@ class Player {
 			$alignclass = ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
 		} elseif ( 'right' === $this->atts['align'] ) {
 			$alignclass = ' videopack-wrapper-auto-left';
-		}
+		} */
 
 		$meta_bar_class = $this->has_meta_bar() ? ' meta-bar-visible' : '';
 
@@ -379,7 +423,7 @@ class Player {
 	protected function get_source_elements(): string {
 		$source_elements = '';
 
-		foreach ( $this->get_sources() as $source ) {
+		foreach ( $this->get_flat_sources() as $source ) {
 			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
 			if ( ! empty( $source['codecs'] ) ) {
 				$source_elements .= '; codecs=' . $source['codecs'];
@@ -438,7 +482,7 @@ class Player {
 			$view_count = $source ? $source->get_views() : '';
 			if ( ! empty( $view_count ) ) {
 				/* translators: %s is the number of times a video has been played */
-				$below_video .= '<span class="viewcount">' . esc_html( sprintf( _n( '%s view', '%s views', intval( $view_count ), 'video-embed-thumbnail-generator' ), number_format( $view_count ) ) ) . '</span>';
+				$below_video .= '<span class="viewcount">' . esc_html( \Videopack\Common\I18n::format_view_count( $view_count ) ) . '</span>';
 			}
 		}
 		if ( ! empty( $this->atts['caption'] ) ) {

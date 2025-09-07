@@ -28,4 +28,17 @@ class I18n {
 			VIDEOPACK_PLUGIN_DIR . '/languages/'
 		);
 	}
+
+	/**
+	 * Format the view count with internationalization.
+	 *
+	 * @param int $view_count The number of views.
+	 * @return string The formatted view count.
+	 */
+	public static function format_view_count( $view_count ) {
+		return sprintf(
+			_n( '%s view', '%s views', intval( $view_count ), 'video-embed-thumbnail-generator' ),
+			number_format_i18n( intval( $view_count ) )
+		);
+	}
 }

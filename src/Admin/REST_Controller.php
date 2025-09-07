@@ -127,8 +127,6 @@ class REST_Controller extends \WP_REST_Controller {
 			)
 		);
 
-
-
 		register_rest_route(
 			$this->namespace,
 			'/formats/(?P<id>\d+)',
@@ -279,7 +277,7 @@ class REST_Controller extends \WP_REST_Controller {
 				},
 				'args'                => array(
 					'job_id' => array(
-						'type' => 'integer',
+						'type'     => 'integer',
 						'required' => true,
 					),
 				),
@@ -296,7 +294,7 @@ class REST_Controller extends \WP_REST_Controller {
 				},
 				'args'                => array(
 					'job_id' => array(
-						'type' => 'integer',
+						'type'     => 'integer',
 						'required' => true,
 					),
 				),
@@ -313,8 +311,8 @@ class REST_Controller extends \WP_REST_Controller {
 				},
 				'args'                => array(
 					'job_id' => array(
-						'type'     => 'integer',
-						'required' => true,
+						'type'              => 'integer',
+						'required'          => true,
 						'validate_callback' => function ( $param ) {
 							return is_numeric( $param ) && $param > 0;
 						},
@@ -1059,6 +1057,7 @@ class REST_Controller extends \WP_REST_Controller {
 			return array(
 				'srcset'  => wp_get_attachment_image_srcset( $post_id ),
 				'sources' => array(),
+				'source_groups' => new \stdClass(),
 			);
 		}
 
@@ -1068,7 +1067,8 @@ class REST_Controller extends \WP_REST_Controller {
 
 		return array(
 			'srcset'  => wp_get_attachment_image_srcset( $post_id ),
-			'sources' => $player->get_sources(),
+			'sources' => $player->get_flat_sources(),
+			'source_groups' => $player->get_sources(),
 		);
 	}
 
@@ -1103,7 +1103,7 @@ class REST_Controller extends \WP_REST_Controller {
 		// If the client requested the view count, return the 'starts' value.
 		// The JS will only update the display on the 'play' event.
 		if ( $show_views && isset( $updated_meta['starts'] ) ) {
-			$response_data['view_count'] = number_format_i18n( $updated_meta['starts'] );
+			$response_data['view_count'] = \Videopack\Common\I18n::format_view_count( $updated_meta['starts'] );
 		}
 
 		return new \WP_REST_Response( $response_data, 200 );

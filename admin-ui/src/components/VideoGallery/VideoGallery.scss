@@ -187,6 +187,14 @@
 		width: 100vw;
 		height: 100vh;
 		z-index: 10000;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.3s, visibility 0.3s;
+
+		&.is-visible {
+			opacity: 1;
+			visibility: visible;
+		}
 
 		.videopack-modal-container {
 			position: relative;

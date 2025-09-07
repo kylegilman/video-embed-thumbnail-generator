@@ -128,4 +128,82 @@ class Video_Source_Finder {
 		}
 		return false;
 	}
+
+	public static function get_source_from_posts( $posts, \Videopack\Admin\Formats\Video_Format $format, \Videopack\Admin\Options $options_manager, $parent_id ): ?Source {
+		if ( $posts ) {
+			foreach ( $posts as $post ) {
+				if ( is_a( $post, 'WP_Post' ) ) {
+					$meta_format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
+					if ( $meta_format === $format->get_id() || $meta_format === $format->get_legacy_id() ) {
+						return Source_Factory::create(
+							$post->ID,
+							$options_manager,
+							$format->get_id(),
+							true,
+							$parent_id,
+							'attachment_local'
+						);
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public static function get_source_from_same_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
+		if ( $source_obj->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
+			$file = $source_obj->get_no_extension() . $format->get_suffix();
+			if ( ! file_exists( $file ) ) {
+				$legacy_file = $source_obj->get_no_extension() . $format->get_legacy_suffix();
+				if ( file_exists( $legacy_file ) ) {
+					$file = $legacy_file;
+				}
+			}
+
+			if ( file_exists( $file ) ) {
+				$attachment_manager = new \Videopack\Admin\Attachment( $source_obj->options_manager );
+				$attachment_id      = $attachment_manager->url_to_id( $file );
+
+				if ( $attachment_id ) {
+					return Source_Factory::create(
+						$attachment_id,
+						$source_obj->options_manager,
+						$format->get_id(),
+						true,
+						$source_obj->get_parent_id(),
+						'attachment_local'
+					);
+				}
+
+				return Source_Factory::create(
+					$file,
+					$source_obj->options_manager,
+					$format->get_id(),
+					true,
+					$source_obj->get_parent_id(),
+					'file_local'
+				);
+			}
+		}
+		return null;
+	}
+
+	public static function get_source_from_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ) : ?Source {
+
+		if ( ! empty( $source_obj->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
+			$potential_url = $source_obj->get_no_extension() . $format->get_suffix();
+
+			if ( self::url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
+				return Source_Factory::create(
+					$potential_url,
+					$source_obj->options_manager,
+					$format->get_id(),
+					true,
+					$source_obj->get_parent_id(),
+					'url'
+				);
+			}
+		}
+		return null;
+	}
 }
