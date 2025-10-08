@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "freemius/wordpress-sdk",
-            "version": "2.12.1",
+            "version": "2.12.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Freemius/wordpress-sdk.git",
-                "reference": "fedeba08eb3e62af5f84bd6d602f98636467cffc"
+                "reference": "241fbfc91151f85d8ebeb75343caf29bda1d3208"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/fedeba08eb3e62af5f84bd6d602f98636467cffc",
-                "reference": "fedeba08eb3e62af5f84bd6d602f98636467cffc",
+                "url": "https://api.github.com/repos/Freemius/wordpress-sdk/zipball/241fbfc91151f85d8ebeb75343caf29bda1d3208",
+                "reference": "241fbfc91151f85d8ebeb75343caf29bda1d3208",
                 "shasum": ""
             },
             "require": {
@@ -55,13 +55,13 @@
             ],
             "support": {
                 "issues": "https://github.com/Freemius/wordpress-sdk/issues",
-                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.12.1"
+                "source": "https://github.com/Freemius/wordpress-sdk/tree/2.12.2"
             },
-            "time": "2025-07-06T13:27:13+00:00"
+            "time": "2025-09-15T14:36:55+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.32.0",
+            "version": "v1.33.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
@@ -121,7 +121,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.32.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.33.0"
             },
             "funding": [
                 {
@@ -130,6 +130,10 @@
                 },
                 {
                     "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
                     "type": "github"
                 },
                 {
