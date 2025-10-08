@@ -279,7 +279,7 @@ function kgvid_video_embed_enqueue_styles() {
 
 		wp_register_script( 'mejs-speed', plugins_url( '/js/mejs-speed.js', __FILE__ ), array( 'mediaelement' ), VIDEOPACK_VERSION, true );
 
-		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/v8/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
+		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', $options['videojs_version'] ); // gives access to video-js icons for resolution gear selector and social logos
 
 	}
 
