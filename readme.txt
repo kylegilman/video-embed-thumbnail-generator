@@ -105,10 +105,11 @@ Enter the username & password in the Videopack settings page, "FFMPEG Settings" 
 
 == Changelog ==
 
-= 4.10.5 - October 8, 2025 =
+= 4.10.5 - January 24, 2026 =
 * Fixed bug that caused 404 errors when WordPress Default Player is selected.
 * Fixed bug that incorrectly formatted thumbnails when set to display when video ends.
 * Fixed bug that prevented disabling "Show Download Link" on the settings page.
+* Fixed bug that triggered _load_textdomain_just_in_time too early.
 * Updated dependencies Video.js, Freemius SDK, and Symfony/Process.
 
 = 4.10.4 - July 11, 2025 =
