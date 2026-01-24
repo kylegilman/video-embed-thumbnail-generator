@@ -232,8 +232,8 @@ function kgvid_videopack_fs_loaded() {
 
 		videopack_fs()->override_i18n(
 			array(
-				'yee-haw' => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
-				'woot'    => esc_html__( 'Great', 'video-embed-thumbnail-generator' ),
+				'yee-haw' => 'Great',
+				'woot'    => 'Great',
 			)
 		);
 	}
