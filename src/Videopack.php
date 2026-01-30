@@ -232,7 +232,7 @@ class Videopack {
 		$this->loader->add_filter( 'oembed_response_data', $frontend_template, 'change_oembed_data', 11, 4 );
 		$this->loader->add_filter( 'embed_template', $frontend_template, 'change_embed_template' );
 		$this->loader->add_filter( 'the_content', $frontend_template, 'filter_video_attachment_content' );
-		$this->loader->add_action( 'redirect_canonical', $frontend_template, 'redirect_canonical_attachment' );
+		$this->loader->add_action( 'redirect_canonical', $frontend_template, 'redirect_canonical_attachment', 10, 2 );
 		$this->loader->add_action( 'template_redirect', $frontend_template, 'attachment' );
 	}
 

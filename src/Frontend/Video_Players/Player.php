@@ -93,7 +93,9 @@ class Player {
 	}
 
 	public function enqueue_styles() {
-		wp_enqueue_style( 'videopack_styles', plugins_url( '/admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
+		if ( ! has_block( 'videopack/videopack-video' ) ) {
+			wp_enqueue_style( 'videopack_styles', plugins_url( '/admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
+		}
 	}
 
 	public function get_videopack_script_dependencies(): array {

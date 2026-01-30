@@ -38,7 +38,7 @@ const EncodeFormatStatus = ({
 
 	return (
 		<li key={formatId}>
-			{ffmpegExists ? (
+			{ffmpegExists === true ? (
 				<CheckboxControl
 					__nextHasNoMarginBottom
 					className="videopack-format"

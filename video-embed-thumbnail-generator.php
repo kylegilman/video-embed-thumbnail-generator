@@ -4,7 +4,7 @@
  *
  * @package           Videopack
  * @author            Kyle Gilman
- * @copyright         2023 Kyle Gilman
+ * @copyright         2026 Kyle Gilman
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin

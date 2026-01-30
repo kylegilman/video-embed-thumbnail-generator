@@ -75,7 +75,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Playback controls')}
+								label={__('Controls')}
 								onChange={(value) =>
 									handleSettingChange('controls', value)
 								}

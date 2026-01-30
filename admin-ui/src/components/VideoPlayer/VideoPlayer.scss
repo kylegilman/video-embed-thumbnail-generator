@@ -2,7 +2,6 @@
 .videopack-wrapper {
 	margin: 1em 0;
 	position: relative;
-	max-width: 100%;
 
 	&.videopack-wrapper-auto-left {
 		margin-left: auto;
@@ -504,7 +503,7 @@
 	}
 
 	.videopack-meta-bar {
-		line-height: normal;
+		line-height: 15pt;
 		color: white;
 		display: block;
 		position: absolute;

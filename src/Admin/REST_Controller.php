@@ -623,7 +623,7 @@ class REST_Controller extends \WP_REST_Controller {
 		} elseif ( ! empty( $params['url'] ) ) {
 			$input_url     = esc_url_raw( $params['url'] );
 			$sanitized_url = new Sanitize_Url( $input_url );
-			$encoder = new encode\Encode_Attachment( $this->options_manager, $sanitized_url->singleurl_id, $input_url );
+			$encoder       = new encode\Encode_Attachment( $this->options_manager, $sanitized_url->singleurl_id, $input_url );
 		}
 
 		if ( $encoder ) {
@@ -633,8 +633,8 @@ class REST_Controller extends \WP_REST_Controller {
 			// No specific video: return all defined formats with their default properties.
 			$all_defined_formats = $this->options_manager->get_video_formats( $this->options['hide_video_formats'] );
 			foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
-				$format_array           = $video_format_obj->to_array();
-				$format_array['status'] = 'defined'; // Indicate it's just a definition.
+				$format_array                     = $video_format_obj->to_array();
+				$format_array['status']           = 'defined'; // Indicate it's just a definition.
 				$video_formats_data[ $format_id ] = $format_array;
 			}
 		}
