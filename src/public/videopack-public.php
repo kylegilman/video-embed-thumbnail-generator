@@ -301,7 +301,7 @@ function kgvid_get_first_embedded_video( $post ) {
 
 	$first_embedded_video_meta = get_post_meta( $post->ID, '_kgvid_first_embedded_video', true );
 
-	if ( ! empty( $first_embedded_video_meta ) ) {
+	if ( ! empty( $first_embedded_video_meta ) && is_array( $first_embedded_video_meta ) ) {
 
 		if ( is_array( $first_embedded_video_meta['atts'] ) ) {
 			$dataattributes = array_map( 'kgvid_build_paired_attributes', array_values( $first_embedded_video_meta['atts'] ), array_keys( $first_embedded_video_meta['atts'] ) );
