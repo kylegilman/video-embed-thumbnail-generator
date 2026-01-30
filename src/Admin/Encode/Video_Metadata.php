@@ -120,6 +120,16 @@ class Video_Metadata {
 			}
 		} else {
 			$this->worked = false;
+			if ( $this->is_attachment ) {
+				$wp_meta = wp_get_attachment_metadata( $this->id );
+				if ( is_array( $wp_meta ) && ! empty( $wp_meta['width'] ) && ! empty( $wp_meta['height'] ) ) {
+					$this->actualwidth  = $wp_meta['width'];
+					$this->actualheight = $wp_meta['height'];
+					if ( ! empty( $wp_meta['length'] ) ) {
+						$this->duration = $wp_meta['length'];
+					}
+				}
+			}
 		}
 
 		if ( $this->is_attachment ) {

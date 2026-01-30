@@ -3,6 +3,12 @@
 	"rules": {
 		"camelcase": "off",
 		"no-console": "off",
-		"@wordpress/no-unsafe-wp-apis": "off"
+		"@wordpress/no-unsafe-wp-apis": "off",
+		"import/no-extraneous-dependencies": [
+			"error",
+			{
+				"devDependencies": false
+			}
+		]
 	}
 }

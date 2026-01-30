@@ -109,7 +109,7 @@ class Encode_Attachment {
 	protected function set_queue_table_name() {
 		global $wpdb;
 		if ( is_multisite() ) {
-			$main_site_id = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
+			$main_site_id           = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
 			$this->queue_table_name = $wpdb->get_blog_prefix( $main_site_id ) . 'videopack_encoding_queue';
 		} else {
 			$this->queue_table_name = $wpdb->prefix . 'videopack_encoding_queue';
@@ -255,7 +255,6 @@ class Encode_Attachment {
 
 	/**
 	 * Gets all defined video formats and their encoding status for the current attachment/URL.
-	 * This method replaces logic previously in REST_Controller::formats().
 	 *
 	 * @return array An associative array of format data, keyed by format ID.
 	 */
@@ -264,7 +263,7 @@ class Encode_Attachment {
 		$all_defined_formats = $this->options_manager->get_video_formats( false );
 		$encoded_jobs        = $this->get_formats(); // Gets all jobs from DB for this attachment
 		$video_metadata      = $this->get_video_metadata();
-		$source_height       = ( $video_metadata && $video_metadata->worked ) ? (int) $video_metadata->actualheight : 0;
+		$source_height       = ( $video_metadata && $video_metadata->actualheight ) ? (int) $video_metadata->actualheight : 0;
 
 		// Create a map of job objects by format_id for efficient lookup.
 		$encoded_jobs_map = array();
@@ -273,10 +272,10 @@ class Encode_Attachment {
 		}
 
 		foreach ( $all_defined_formats as $format_id => $video_format_obj ) {
-			$format_array = $video_format_obj->to_array();
+			$format_array              = $video_format_obj->to_array();
 			$format_array['format_id'] = $format_array['id'];
-			$format_array['id'] = null;
-			$job_exists   = isset( $encoded_jobs_map[ $format_id ] );
+			$format_array['id']        = null;
+			$job_exists                = isset( $encoded_jobs_map[ $format_id ] );
 
 			// Instantiate Encode_Info to check for the physical file's existence and details.
 			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options_manager );
@@ -284,8 +283,8 @@ class Encode_Attachment {
 
 			// Skip formats that are disabled in options, unless a file or job already exists for them.
 			if ( $this->options['hide_video_formats'] ) {
-				$codec_id      = $video_format_obj->get_codec()->get_id();
-				$resolution_id = $video_format_obj->get_resolution()->get_id();
+				$codec_id              = $video_format_obj->get_codec()->get_id();
+				$resolution_id         = $video_format_obj->get_resolution()->get_id();
 				$is_enabled_in_options = $this->options['encode'][ $codec_id ]['resolutions'][ $resolution_id ] ?? false;
 
 				if ( ! $is_enabled_in_options && ! $file_exists && ! $job_exists ) {
@@ -302,15 +301,15 @@ class Encode_Attachment {
 			}
 
 			// Start with default status and was_picked state
-			$format_array['status'] = 'not_encoded';
+			$format_array['status']     = 'not_encoded';
 			$format_array['was_picked'] = false;
 
 			// 1. Check for an existing file first. This is a reliable indicator of a completed state.
 			if ( $file_exists && $encode_info->id ) {
-				$format_array['status']     = 'encoded'; // Use 'encoded' as a more descriptive term than 'completed' for a found file.
-				$format_array['url']        = $encode_info->url;
-				$format_array['id']         = $encode_info->id;
-				
+				$format_array['status'] = 'encoded'; // Use 'encoded' as a more descriptive term than 'completed' for a found file.
+				$format_array['url']    = $encode_info->url;
+				$format_array['id']     = $encode_info->id;
+
 				$parent_id = get_post_meta( $encode_info->id, '_kgflashmediaplayer-parent', true );
 				if ( ! empty( $parent_id ) && (int) $parent_id === (int) $this->id ) {
 					$format_array['was_picked'] = true;
@@ -332,7 +331,7 @@ class Encode_Attachment {
 				}
 
 				$job_data_array         = $matching_encode_format->to_array();
-				
+
 				// Preserve the was_picked value determined from file meta
 				$was_picked_value = $format_array['was_picked'];
 				$format_array     = array_merge( $format_array, $job_data_array );

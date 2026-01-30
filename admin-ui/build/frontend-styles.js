@@ -2,29 +2,29 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/components/VideoGallery/VideoGallery.scss":
+/***/ "./src/components/VideoGallery/VideoGallery.scss"
 /*!*******************************************************!*\
   !*** ./src/components/VideoGallery/VideoGallery.scss ***!
   \*******************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
 
-/***/ }),
+/***/ },
 
-/***/ "./src/components/VideoPlayer/VideoPlayer.scss":
+/***/ "./src/components/VideoPlayer/VideoPlayer.scss"
 /*!*****************************************************!*\
   !*** ./src/components/VideoPlayer/VideoPlayer.scss ***!
   \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 // extracted by mini-css-extract-plugin
 
 
-/***/ })
+/***/ }
 
 /******/ 	});
 /************************************************************************/
@@ -37,6 +37,12 @@ __webpack_require__.r(__webpack_exports__);
 /******/ 		var cachedModule = __webpack_module_cache__[moduleId];
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Check if module exists (development only)
+/******/ 		if (__webpack_modules__[moduleId] === undefined) {
+/******/ 			var e = new Error("Cannot find module '" + moduleId + "'");
+/******/ 			e.code = 'MODULE_NOT_FOUND';
+/******/ 			throw e;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {

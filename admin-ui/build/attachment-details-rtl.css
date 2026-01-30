@@ -98,24 +98,20 @@
   margin-right: auto;
   margin-left: auto;
 }
-
 .editor-video-poster-control .components-base-control__label {
   display: block;
 }
 .editor-video-poster-control .components-button {
   margin-left: 10px;
 }
-
 picture.vjs-poster {
   pointer-events: none;
 }
-
 .videopack-current-thumbnail {
   max-width: 100%;
   height: auto;
   margin-bottom: 1em;
 }
-
 .videopack-generate {
   margin-left: 10px;
 }
@@ -190,7 +186,6 @@ picture.vjs-poster {
   height: inherit;
   font-size: inherit;
 }
-
 .videopack-encode-message {
   margin-right: 8px;
   font-weight: 300;
