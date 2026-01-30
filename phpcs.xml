@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<ruleset name="Videopack" namespace="Videopack">
+
+	<description>Custom Videopack Coding Standards</description>
+
+	<exclude-pattern type="relative">^/video-js/*</exclude-pattern>
+
+	<rule ref="PHPCompatibility" />
+	<config name="testVersion" value="7.2-"/>
+
+	<rule ref="WordPress"/>
+    <config name="minimum_wp_version" value="6.2"/>
+
+	<rule ref="WordPress-Core">
+		<exclude name="WordPress.Files.FileName" />
+	</rule>
+
+	<rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <properties>
+            <property name="customSanitizingFunctions" type="array">
+				<element value="\Videopack\Common\Sanitize::text_field"/>
+				<element value="\Videopack\Common\Validate::text_field"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress-Extra">
+         <exclude name="WordPress.PHP.YodaConditions.NotYoda" />
+         <exclude name="WordPress.PHP.StrictInArray" />
+         <!-- <exclude name="WordPress.WP.l18n.MissingTranslatorsComment" /> -->
+    </rule>
+
+    <rule ref="WordPress.WP.Capabilities">
+        <properties>
+            <property name="custom_capabilities" type="array">
+                <element value="make_video_thumbnails" />
+                <element value="encode_videos" />
+                <element value="edit_others_video_encodes" />
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="Squiz.Commenting">
+        <!-- <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar" />
+        <exclude name="Squiz.Commenting.FunctionComment"/>
+        <exclude name="Squiz.Commenting.PostStatementComment"/> -->
+        <exclude name="Squiz.Commenting" />
+    </rule>
+
+    <rule ref="Generic.Commenting">
+        <!-- <exclude name="Generic.Commenting.DocComment" /> -->
+        <exclude name="Generic.Commenting" />
+    </rule>
+
+    <rule ref="Universal.Operators.StrictComparisons">
+		<exclude name="Universal.Operators.StrictComparisons" />
+	</rule>
+
+</ruleset>
