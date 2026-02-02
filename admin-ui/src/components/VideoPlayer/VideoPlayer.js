@@ -22,7 +22,6 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		src,
 		width,
 		height,
-		count_views,
 		start,
 		pauseothervideos,
 		volume,
@@ -42,7 +41,9 @@ const VideoPlayer = ({ attributes, onReady }) => {
 
 	const allSources = useMemo(() => {
 		if (Object.keys(source_groups).length > 0) {
-			return Object.values(source_groups).flatMap(group => group.sources);
+			return Object.values(source_groups).flatMap(
+				(group) => group.sources
+			);
 		}
 		return sources;
 	}, [sources, source_groups]);
@@ -101,7 +102,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					...options.plugins,
 					resolutionSelector: {
 						force_types: ['video/mp4'],
-						source_groups: source_groups,
+						source_groups,
 					},
 				};
 				const defaultResSource = allSources.find((s) => s.default);

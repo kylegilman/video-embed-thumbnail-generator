@@ -52,7 +52,7 @@ const SingleVideoBlock = ({
 				setAttributes(updatedAttributes);
 			}
 		}
-	}, [attachment, hasResolved, setAttributes, attributes]);
+	}, [attachment, hasResolved, setAttributes]);
 
 	const playerAttributes = useMemo(() => {
 		const newPlayerAttributes = { ...options, ...attributes };

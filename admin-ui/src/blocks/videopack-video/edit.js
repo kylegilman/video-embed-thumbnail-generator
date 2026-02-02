@@ -38,9 +38,24 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 		[]
 	);
 
+	const { attachment } = useSelect(
+		(select) => ({
+			attachment:
+				id && typeof id === 'number'
+					? select('core').getMedia(id)
+					: undefined,
+		}),
+		[id]
+	);
+
+	useEffect(() => {
+		if (attachment) {
+			setAttributesFromMedia(attachment);
+		}
+	}, [attachment]);
+
 	useEffect(() => {
 		getSettings().then((response) => {
-			console.log(response);
 			setOptions(response);
 		});
 
@@ -49,7 +64,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 			if (file) {
 				mediaUpload({
 					filesList: [file],
-					onFileChange: ([media]) => onSelectVideo(media),
+					onFileChange: ([videoFile]) => onSelectVideo(videoFile),
 					onError: onUploadError,
 					allowedTypes: ALLOWED_MEDIA_TYPES,
 				});
@@ -57,15 +72,17 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 		}
 	}, []);
 
-	function setAttributesFromMedia(media) {
+	function setAttributesFromMedia(attachmentObject) {
+		console.log(attachmentObject);
 		const media_attributes = {
-			src: media[0].url,
-			id: media[0].id,
-			poster: media[0].meta?.['_videopack-meta']?.poster,
+			src: attachmentObject.url,
+			id: attachmentObject.id,
+			poster: attachmentObject.meta?.['_videopack-meta']?.poster,
 			total_thumbnails:
-				media[0].meta?.['_videopack-meta']?.total_thumbnails,
-			title: media[0].title,
-			caption: media[0].caption,
+				attachmentObject.meta?.['_videopack-meta']?.total_thumbnails,
+			title: attachmentObject.title?.rendered,
+			caption: attachmentObject.caption?.raw,
+			starts: attachmentObject.meta?.['_videopack-meta']?.starts,
 		};
 
 		const updatedAttributes = Object.keys(media_attributes).reduce(
@@ -81,12 +98,12 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 		setAttributes(updatedAttributes);
 	}
 
-	function onSelectVideo(media) {
-		const mediaArray = Array.isArray(media) ? media : [media];
+	function onSelectVideo(video) {
+		const videoArray = Array.isArray(video) ? video : [video];
 
 		if (
-			!mediaArray ||
-			!mediaArray.some((item) => item.hasOwnProperty('url'))
+			!videoArray ||
+			!videoArray.some((item) => item.hasOwnProperty('url'))
 		) {
 			setAttributes({
 				src: undefined,
@@ -96,8 +113,8 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 			return;
 		}
 
-		if (mediaArray.length === 1) {
-			setAttributesFromMedia(mediaArray);
+		if (videoArray.length === 1) {
+			setAttributesFromMedia(videoArray[0]);
 		}
 	}
 

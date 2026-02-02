@@ -1,3 +1,16 @@
+.wp-block-videopack-videopack-video {
+
+	width: var(--wp--style--global--content-size);
+
+	&.alignfull, &.alignwide {
+		width: auto;
+	}
+
+	.videopack-wrapper {
+		margin: 0;
+	}
+}
+
 /* Main container for the video player */
 .videopack-wrapper {
 	margin: 1em 0;

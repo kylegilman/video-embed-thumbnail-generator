@@ -8,40 +8,16 @@
 	"description": "Embed a single video with Videopack features.",
 	"supports": {
 		"html": false,
-		"align": [ "left", "right", "center", "wide", "full" ]
-	},
-	"attributes": {
-		"src": {
-			"type": "string",
-			"source": "attribute",
-			"selector": "video",
-			"attribute": "src"
+		"align": true,
+		"dimensions": {
+			"aspectRatio": true,
+			"height": true,
+			"minHeight": true,
+			"width": true
 		},
-		"id": {
-			"type": "number"
-		},
-		"poster": {
-			"type": "string",
-			"source": "attribute",
-			"selector": "video",
-			"attribute": "poster"
-		},
-		"total_thumbnails": {
-			"type": "number"
-		},
-		"caption": {
-			"type": "string",
-			"source": "html",
-			"selector": "figcaption"
-		},
-		"title": {
-			"type": "string"
-		},
-		"overlay_title": {
-			"type": "boolean"
-		},
-		"embedlink": {
-			"type": "string"
+		"spacing": {
+			"margin" : true,
+			"padding" : true
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",

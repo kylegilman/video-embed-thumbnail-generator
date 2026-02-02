@@ -1,6 +1,6 @@
 /* global videopack_config */
 
-import { __, _x } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 import {
 	BaseControl,
 	Button,
@@ -230,6 +230,45 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		{
 			value: 'vjs-theme-sea',
 			label: __('Sea'),
+		},
+	];
+
+	const alignOptions = [
+		{
+			value: '',
+			label: videopack_config.contentSize
+				? sprintf(
+						/* translators: %s: Content size in pixels. */
+						__("None (use theme's default width: %s)"),
+						videopack_config.contentSize
+					)
+				: __("None (use theme's default width)"),
+		},
+		{
+			value: 'wide',
+			label: videopack_config.wideSize
+				? sprintf(
+						/* translators: %s: Wide size in pixels. */
+						__("Wide (use theme's wide width: %s)"),
+						videopack_config.wideSize
+					)
+				: __("Wide (use theme's wide width)"),
+		},
+		{
+			value: 'full',
+			label: __('Full width'),
+		},
+		{
+			value: 'left',
+			label: __('Left'),
+		},
+		{
+			value: 'center',
+			label: __('Center'),
+		},
+		{
+			value: 'right',
+			label: __('Right'),
 		},
 	];
 
@@ -494,6 +533,16 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						/>
 					</FlexItem>
 				</Flex>
+				<div className="videopack-setting-reduced-width">
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__('Alignment / Width:')}
+						value={align}
+						onChange={changeHandlerFactory.align}
+						options={alignOptions}
+					/>
+				</div>
 				<span className="videopack-setting-auto-width">
 					<TextControl
 						__nextHasNoMarginBottom

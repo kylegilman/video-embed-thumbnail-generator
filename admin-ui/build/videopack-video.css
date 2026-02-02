@@ -193,6 +193,15 @@ picture.vjs-poster {
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoPlayer/VideoPlayer.scss ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
+.wp-block-videopack-videopack-video {
+  width: var(--wp--style--global--content-size);
+}
+.wp-block-videopack-videopack-video.alignfull, .wp-block-videopack-videopack-video.alignwide {
+  width: auto;
+}
+.wp-block-videopack-videopack-video .videopack-wrapper {
+  margin: 0;
+}
 /* Main container for the video player */
 .videopack-wrapper {
   margin: 1em 0;
@@ -761,9 +770,6 @@ picture.vjs-poster {
  */
 .wp-block-create-block-videopack-block {
   border: 1px dotted #f00;
-}
-.wp-block-videopack-videopack-video {
-  width: 100%;
 }
 .wp-block-videopack-videopack-video.is-selected .components-placeholder {
   color: #1e1e1e;

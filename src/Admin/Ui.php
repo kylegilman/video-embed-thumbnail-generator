@@ -24,10 +24,14 @@ class Ui {
 
 		add_filter( 'block_type_metadata', array( $this, 'conditionally_add_assets_to_block_metadata' ) );
 
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$block_attributes  = $shortcode_handler->get_block_attributes();
+
 		register_block_type(
 			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video',
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
+				'attributes'      => $block_attributes,
 			)
 		);
 
@@ -65,7 +69,7 @@ class Ui {
 	 */
 	public function render_videopack_block( $attributes, $content, $block ) {
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
-		return $shortcode_handler->do( $attributes, $content );
+		return '<div ' . get_block_wrapper_attributes() . ' >' . $shortcode_handler->do( $attributes, $content ) . '</div>';
 	}
 
 	/**
@@ -92,7 +96,8 @@ class Ui {
 			);
 		}
 
-		$options = $this->options_manager->get_options();
+		$options         = $this->options_manager->get_options();
+		$global_settings = wp_get_global_settings();
 
 		return array(
 			'url'                => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
@@ -100,6 +105,8 @@ class Ui {
 			'resolutions'        => $resolutions_data,
 			'ffmpeg_exists'      => $options['ffmpeg_exists'],
 			'browser_thumbnails' => $options['browser_thumbnails'],
+			'contentSize'        => isset( $global_settings['layout']['contentSize'] ) ? $global_settings['layout']['contentSize'] : false,
+			'wideSize'           => isset( $global_settings['layout']['wideSize'] ) ? $global_settings['layout']['wideSize'] : false,
 		);
 	}
 

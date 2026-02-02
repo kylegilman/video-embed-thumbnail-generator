@@ -117,7 +117,7 @@ class Options {
 			'count_views'             => 'start_complete', // Level of view count tracking ('start_complete', 'quarters', 'start', 'none').
 			'embeddable'              => true, // Allow videos to be embedded on other sites.
 			'inline'                  => true, // Allow content on the left and right side of videos (CSS float).
-			'align'                   => 'left', // Default alignment for the video player ('left', 'center', 'right').
+			'align'                   => '', // Default alignment for the video player ('', 'wide', 'full', 'left', 'center', 'right').
 			'width'                   => 960, // Default width for the video player in pixels.
 			'height'                  => 540, // Default height for the video player in pixels.
 			'fullwidth'               => true, // Expand video players to the full width of their container.
