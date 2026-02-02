@@ -6208,7 +6208,6 @@ const VideoPlayer = ({
     src,
     width,
     height,
-    count_views,
     start,
     pauseothervideos,
     volume,
@@ -6280,7 +6279,7 @@ const VideoPlayer = ({
           ...options.plugins,
           resolutionSelector: {
             force_types: ['video/mp4'],
-            source_groups: source_groups
+            source_groups
           }
         };
         const defaultResSource = allSources.find(s => s.default);
@@ -7718,6 +7717,27 @@ const PlayerSettings = ({
     value: 'vjs-theme-sea',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Sea')
   }];
+  const alignOptions = [{
+    value: '',
+    label: videopack_config.contentSize ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s: Content size in pixels. */
+    (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("None (use theme's default width: %s)"), videopack_config.contentSize) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("None (use theme's default width)")
+  }, {
+    value: 'wide',
+    label: videopack_config.wideSize ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s: Wide size in pixels. */
+    (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Wide (use theme's wide width: %s)"), videopack_config.wideSize) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Wide (use theme's wide width)")
+  }, {
+    value: 'full',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Full width')
+  }, {
+    value: 'left',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Left')
+  }, {
+    value: 'center',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Center')
+  }, {
+    value: 'right',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Right')
+  }];
   const autoResOptions = () => {
     const items = [{
       value: 'automatic',
@@ -7932,6 +7952,16 @@ const PlayerSettings = ({
             onChange: changeHandlerFactory.fullwidth,
             checked: !!fullwidth
           })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+        className: "videopack-setting-reduced-width",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
+          __nextHasNoMarginBottom: true,
+          __next40pxDefaultSize: true,
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Alignment / Width:'),
+          value: align,
+          onChange: changeHandlerFactory.align,
+          options: alignOptions
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
         className: "videopack-setting-auto-width",

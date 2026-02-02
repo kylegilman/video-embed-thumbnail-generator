@@ -7,6 +7,7 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useEffect, useState } from '@wordpress/element';
 
 import { volumeUp, volumeDown } from '../../assets/icon';
 import useVideoSettings from '../../hooks/useVideoSettings';
@@ -17,7 +18,13 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 		setAttributes
 	);
 
-	const displayAttributes = { ...options, ...attributes };
+	const [displayAttributes, setDisplayAttributes] = useState({});
+
+	useEffect(() => {
+		if (options) {
+			setDisplayAttributes({ ...options, ...attributes });
+		}
+	}, [options, attributes]);
 
 	return (
 		<>
@@ -187,7 +194,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__('Title')}
-							value={displayAttributes.title}
+							value={displayAttributes.title || ''}
 							onChange={(value) =>
 								handleSettingChange('title', value)
 							}
@@ -199,7 +206,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__('Caption')}
-						value={displayAttributes.caption}
+						value={displayAttributes.caption || ''}
 						onChange={(value) =>
 							handleSettingChange('caption', value)
 						}

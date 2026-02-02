@@ -23,13 +23,168 @@ class Shortcode {
 		add_shortcode( 'KGVID', array( $this, 'do' ) );
 	}
 
-	public function atts( $atts ) {
-
+	private function get_attribute_definitions() {
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
 		} else {
 			$post_id = 1;
 		}
+
+		return array(
+			'default_atts'     => array(
+				'id'              => null,
+				'orderby'         => 'menu_order ID',
+				'order'           => 'ASC',
+				'videos'          => -1,
+				'start'           => '',
+				'gallery'         => 'false',
+				'gallery_orderby' => 'menu_order ID',
+				'gallery_order'   => 'ASC',
+				'gallery_exclude' => '',
+				'gallery_include' => '',
+				'gallery_id'      => $post_id,
+				'caption'         => '',
+				'description'     => '',
+				'track_kind'      => 'subtitles',
+				'track_srclang'   => substr( get_bloginfo( 'language' ), 0, 2 ),
+				'track_src'       => '',
+				'track_label'     => get_bloginfo( 'language' ),
+				'track_default'   => '',
+			),
+			'options_atts'     => array(
+				'width',
+				'height',
+				'fullwidth',
+				'fixed_aspect',
+				'align',
+				'controls',
+				'poster',
+				'watermark',
+				'watermark_link_to',
+				'watermark_url',
+				'endofvideooverlay',
+				'endofvideooverlaysame',
+				'loop',
+				'autoplay',
+				'gifmode',
+				'pauseothervideos',
+				'playsinline',
+				'skin',
+				'gallery_pagination',
+				'gallery_per_page',
+				'gallery_columns',
+				'gallery_end',
+				'gallery_title',
+				'volume',
+				'muted',
+				'preload',
+				'playback_rate',
+				'skip_buttons',
+				'title',
+				'embedcode',
+				'embeddable',
+				'view_count',
+				'count_views',
+				'inline',
+				'downloadlink',
+				'right_click',
+				'resize',
+				'auto_res',
+				'pixel_ratio',
+				'nativecontrolsfortouch',
+				'schema',
+				'gallery_thumb',
+			),
+			'checkbox_convert' => array(
+				'endofvideooverlaysame',
+				'loop',
+				'playsinline',
+				'autoplay',
+				'controls',
+				'pauseothervideos',
+				'title',
+				'embedcode',
+				'embeddable',
+				'view_count',
+				'inline',
+				'resize',
+				'downloadlink',
+				'muted',
+				'playback_rate',
+				'fullwidth',
+				'gallery_pagination',
+				'gallery_title',
+				'nativecontrolsfortouch',
+				'pixel_ratio',
+				'schema',
+				'gifmode',
+				'right_click',
+				'skip_buttons',
+			),
+		);
+	}
+
+	public function get_block_attributes() {
+		$definitions = $this->get_attribute_definitions();
+		$default_atts = $definitions['default_atts'];
+		$options_atts = $definitions['options_atts'];
+		$checkbox_convert = $definitions['checkbox_convert'];
+
+		$attributes = array();
+
+		// Add 'src' as a special case attribute for the block editor.
+		$attributes['src'] = array(
+			'type' => 'string',
+			'default' => '',
+		);
+
+		foreach ( $default_atts as $key => $value ) {
+			$type = 'string';
+			if ( is_bool( $value ) ) {
+				$type = 'boolean';
+			} elseif ( is_numeric( $value ) ) {
+				$type = 'number';
+			}
+			$attributes[ $key ] = array(
+				'type' => $type,
+				'default' => $value,
+			);
+		}
+
+		foreach ( $options_atts as $att ) {
+			if ( array_key_exists( $att, $this->options ) ) {
+				$attributes[ $att ] = array(
+					'type' => is_bool( $this->options[ $att ] ) ? 'boolean' : ( is_numeric( $this->options[ $att ] ) ? 'number' : 'string' ),
+					'default' => $this->options[ $att ],
+				);
+			} else {
+				$attributes[ $att ] = array(
+					'type' => 'string',
+				);
+			}
+		}
+
+		foreach ( $checkbox_convert as $key ) {
+			if ( isset( $attributes[ $key ] ) ) {
+				$attributes[ $key ]['type'] = 'boolean';
+			} else {
+				$attributes[ $key ] = array(
+					'type' => 'boolean',
+				);
+			}
+		}
+
+		$attributes['id']['type'] = array( 'number', 'string' );
+
+		return apply_filters( 'videopack_block_attributes', $attributes );
+	}
+
+	public function atts( $atts ) {
+
+		$definitions = $this->get_attribute_definitions();
+		$default_atts = $definitions['default_atts'];
+		$options_atts = $definitions['options_atts'];
+		$checkbox_convert = $definitions['checkbox_convert'];
 
 		$deprecated_atts = array(
 			'controlbar'    => 'controls',
@@ -61,72 +216,6 @@ class Shortcode {
 				}
 			}
 		}
-
-		$default_atts = array(
-			'id'              => '',
-			'orderby'         => 'menu_order ID',
-			'order'           => 'ASC',
-			'videos'          => -1,
-			'start'           => '',
-			'gallery'         => 'false',
-			'gallery_orderby' => 'menu_order ID',
-			'gallery_order'   => 'ASC',
-			'gallery_exclude' => '',
-			'gallery_include' => '',
-			'gallery_id'      => $post_id,
-			'caption'         => '',
-			'description'     => '',
-			'track_kind'      => 'subtitles',
-			'track_srclang'   => substr( get_bloginfo( 'language' ), 0, 2 ),
-			'track_src'       => '',
-			'track_label'     => get_bloginfo( 'language' ),
-			'track_default'   => '',
-		);
-
-		$options_atts = array(
-			'width',
-			'height',
-			'fullwidth',
-			'fixed_aspect',
-			'align',
-			'controls',
-			'poster',
-			'watermark',
-			'watermark_link_to',
-			'watermark_url',
-			'endofvideooverlay',
-			'endofvideooverlaysame',
-			'loop',
-			'autoplay',
-			'gifmode',
-			'pauseothervideos',
-			'playsinline',
-			'skin',
-			'gallery_pagination',
-			'gallery_per_page',
-			'gallery_columns',
-			'gallery_end',
-			'gallery_title',
-			'volume',
-			'muted',
-			'preload',
-			'playback_rate',
-			'skip_buttons',
-			'title',
-			'embedcode',
-			'embeddable',
-			'view_count',
-			'count_views',
-			'inline',
-			'downloadlink',
-			'right_click',
-			'resize',
-			'auto_res',
-			'pixel_ratio',
-			'nativecontrolsfortouch',
-			'schema',
-			'gallery_thumb',
-		);
 
 		$option_defaults = array();
 		foreach ( $options_atts as $att ) {
@@ -175,32 +264,6 @@ class Shortcode {
 		}
 
 		// Convert boolean-like attributes to booleans
-		$checkbox_convert = array(
-			'endofvideooverlaysame',
-			'loop',
-			'playsinline',
-			'autoplay',
-			'controls',
-			'pauseothervideos',
-			'title',
-			'embedcode',
-			'embeddable',
-			'view_count',
-			'inline',
-			'resize',
-			'downloadlink',
-			'muted',
-			'playback_rate',
-			'fullwidth',
-			'gallery_pagination',
-			'gallery_title',
-			'nativecontrolsfortouch',
-			'pixel_ratio',
-			'schema',
-			'gifmode',
-			'right_click',
-			'skip_buttons',
-		);
 		foreach ( $checkbox_convert as $key ) {
 			if ( isset( $query_atts[ $key ] ) && is_string( $query_atts[ $key ] ) ) {
 				if ( strtolower( $query_atts[ $key ] ) === 'true' ) {
@@ -277,9 +340,9 @@ class Shortcode {
 			// Otherwise, get all tracks from the source's metadata.
 			$query_atts['tracks'] = $source->get_tracks();
 		}
-		if ( empty( $query_atts['view_count'] ) ) {
+		/* if ( empty( $query_atts['view_count'] ) ) {
 			$query_atts['view_count'] = $source->get_views();
-		}
+		}*/
 
 		// Determine if the video is countable (i.e., an attachment).
 		$query_atts['countable'] = is_numeric( $source->get_id() );

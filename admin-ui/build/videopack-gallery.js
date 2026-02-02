@@ -6573,7 +6573,6 @@ const VideoPlayer = ({
     src,
     width,
     height,
-    count_views,
     start,
     pauseothervideos,
     volume,
@@ -6645,7 +6644,7 @@ const VideoPlayer = ({
           ...options.plugins,
           resolutionSelector: {
             force_types: ['video/mp4'],
-            source_groups: source_groups
+            source_groups
           }
         };
         const defaultResSource = allSources.find(s => s.default);
