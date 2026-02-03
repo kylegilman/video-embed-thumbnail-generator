@@ -39,6 +39,14 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 									handleSettingChange('autoplay', value)
 								}
 								checked={!!displayAttributes.autoplay}
+								help={
+									displayAttributes.autoplay &&
+									!displayAttributes.muted
+										? __(
+												'Autoplay is disabled while editing unless muted.'
+											)
+										: null
+								}
 							/>
 						</PanelRow>
 						<PanelRow>
@@ -87,19 +95,6 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 									handleSettingChange('controls', value)
 								}
 								checked={!!displayAttributes.controls}
-							/>
-						</PanelRow>
-						<PanelRow>
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label={__('Play inline')}
-								onChange={(value) =>
-									handleSettingChange('playsinline', value)
-								}
-								checked={!!displayAttributes.playsinline}
-								help={__(
-									'Plays inline instead of fullscreen on iPhones.'
-								)}
 							/>
 						</PanelRow>
 						<PanelRow>
