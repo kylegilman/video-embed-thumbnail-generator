@@ -183,10 +183,11 @@ const SingleVideoBlock = ({
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     setShowOverlay(!isSelected);
   }, [isSelected]);
+  const videoData = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_0__.useEntityRecord)('postType', 'attachment', id);
   const {
     record: attachment,
     hasResolved
-  } = (0,_wordpress_core_data__WEBPACK_IMPORTED_MODULE_0__.useEntityRecord)('postType', 'attachment', id);
+  } = videoData;
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     if (hasResolved && attachment) {
       const newAttributes = {
@@ -225,7 +226,7 @@ const SingleVideoBlock = ({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_4__["default"], {
         setAttributes: setAttributes,
         attributes: attributes,
-        videoData: attachment,
+        videoData: videoData,
         options: options
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_VideoSettings_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
         setAttributes: setAttributes,
@@ -1406,7 +1407,7 @@ const Thumbnails = ({
     poster_id,
     isExternal
   } = attributes;
-  const total_thumbnails = attributes.total_thumbnails || videoData?.total_thumbnails || options.total_thumbnails;
+  const total_thumbnails = attributes.total_thumbnails || videoData?.record?.total_thumbnails || options.total_thumbnails;
   const thumbVideoPanel = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const currentThumb = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
@@ -1723,7 +1724,7 @@ const Thumbnails = ({
         metaData['_kgflashmediaplayer-poster'] = new_poster;
         metaData['_kgflashmediaplayer-poster-id'] = Number(new_poster_id);
         metaData['_videopack-meta'] = {
-          ...videoData?.meta?.['_videopack-meta'],
+          ...videoData?.record?.meta?.['_videopack-meta'],
           poster: new_poster
         };
       }
@@ -2444,12 +2445,42 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
+/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_compose__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
 
 const useVideoSettings = (attributes, setAttributes) => {
+  const {
+    id
+  } = attributes;
+  const updateAttachmentCallback = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useCallback)((key, value) => {
+    if (id) {
+      _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
+        path: `/wp/v2/media/${id}`,
+        method: 'POST',
+        data: {
+          [key]: value
+        }
+      }).catch(() => {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to update attachment ${id}`);
+      });
+    }
+  }, [id]);
+  const updateAttachment = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_2__.useDebounce)(updateAttachmentCallback, 1000);
   const handleSettingChange = (key, value) => {
     setAttributes({
       [key]: value
     });
+    if (id && ('title' === key || 'caption' === key)) {
+      updateAttachment(key, value);
+    }
   };
   const preloadOptions = [{
     value: 'auto',
@@ -2818,6 +2849,16 @@ module.exports = window["wp"]["blocks"];
 (module) {
 
 module.exports = window["wp"]["components"];
+
+/***/ },
+
+/***/ "@wordpress/compose"
+/*!*********************************!*\
+  !*** external ["wp","compose"] ***!
+  \*********************************/
+(module) {
+
+module.exports = window["wp"]["compose"];
 
 /***/ },
 
