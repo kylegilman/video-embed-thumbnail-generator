@@ -1,10 +1,21 @@
 import { __, _x } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDebounce } from '@wordpress/compose';
-import { useCallback } from '@wordpress/element';
+import { useCallback, useEffect } from '@wordpress/element';
 
 const useVideoSettings = (attributes, setAttributes) => {
-	const { id } = attributes;
+	const { id, gifmode } = attributes;
+
+	useEffect(() => {
+		if (gifmode) {
+			setAttributes({
+				autoplay: true,
+				loop: true,
+				muted: true,
+				controls: false,
+			});
+		}
+	}, [gifmode]);
 
 	const updateAttachmentCallback = useCallback(
 		(key, value) => {

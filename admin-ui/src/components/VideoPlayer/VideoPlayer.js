@@ -35,6 +35,10 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		source_groups = {},
 	} = attributes;
 
+	const actualAutoplay = useMemo(() => {
+		return autoplay && muted;
+	}, [autoplay, muted]);
+
 	const playerRef = useRef(null);
 	const wrapperRef = useRef(null);
 	const [videoJsOptions, setVideoJsOptions] = useState(null);
@@ -76,7 +80,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	useEffect(() => {
 		if (embed_method === 'Video.js') {
 			const options = {
-				autoplay,
+				autoplay: actualAutoplay,
 				controls,
 				fluid: true,
 				responsive: true,
@@ -92,7 +96,6 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					type: s.type,
 					resolution: s.resolution,
 				})),
-				userActions: { click: false },
 			};
 
 			const hasResolutions = allSources.some((s) => s.resolution);
@@ -138,7 +141,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		<video
 			poster={poster}
 			loop={loop}
-			autoPlay={autoplay}
+			autoPlay={actualAutoplay}
 			preload={preload}
 			controls={controls}
 			muted={muted}
@@ -171,7 +174,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			} else {
 				onReady(player);
 			}
-			if (autoplay) {
+			if (actualAutoplay) {
 				handlePlay();
 			}
 		});

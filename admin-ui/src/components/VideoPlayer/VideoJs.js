@@ -29,9 +29,17 @@ export const VideoJS = (props) => {
 			const player = playerRef.current;
 			if (player && !player.isDisposed()) {
 				player.autoplay(options.autoplay);
+				player.loop(options.loop);
 				player.muted(options.muted);
+				player.volume(options.volume);
 				player.poster(options.poster);
-				// Only update src if sources are valid to prevent the error.
+				player.controls(options.controls);
+				player.playbackRates(
+					options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []
+				);
+				player.preload(options.preload);
+
+				// Only update src if sources are valid to prevent error.
 				if (options.sources && options.sources.length > 0) {
 					player.src(options.sources);
 				}

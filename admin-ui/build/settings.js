@@ -6128,9 +6128,15 @@ const VideoJS = props => {
       const player = playerRef.current;
       if (player && !player.isDisposed()) {
         player.autoplay(options.autoplay);
+        player.loop(options.loop);
         player.muted(options.muted);
+        player.volume(options.volume);
         player.poster(options.poster);
-        // Only update src if sources are valid to prevent the error.
+        player.controls(options.controls);
+        player.playbackRates(options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []);
+        player.preload(options.preload);
+
+        // Only update src if sources are valid to prevent error.
         if (options.sources && options.sources.length > 0) {
           player.src(options.sources);
         }
@@ -6220,6 +6226,9 @@ const VideoPlayer = ({
     sources = [],
     source_groups = {}
   } = attributes;
+  const actualAutoplay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
+    return autoplay && muted;
+  }, [autoplay, muted]);
   const playerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   const wrapperRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   const [videoJsOptions, setVideoJsOptions] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
@@ -6253,7 +6262,7 @@ const VideoPlayer = ({
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     if (embed_method === 'Video.js') {
       const options = {
-        autoplay,
+        autoplay: actualAutoplay,
         controls,
         fluid: true,
         responsive: true,
@@ -6268,10 +6277,7 @@ const VideoPlayer = ({
           src: s.src,
           type: s.type,
           resolution: s.resolution
-        })),
-        userActions: {
-          click: false
-        }
+        }))
       };
       const hasResolutions = allSources.some(s => s.resolution);
       if (hasResolutions) {
@@ -6299,7 +6305,7 @@ const VideoPlayer = ({
   const GenericPlayer = () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("video", {
     poster: poster,
     loop: loop,
-    autoPlay: autoplay,
+    autoPlay: actualAutoplay,
     preload: preload,
     controls: controls,
     muted: muted,
@@ -6325,7 +6331,7 @@ const VideoPlayer = ({
       } else {
         onReady(player);
       }
-      if (autoplay) {
+      if (actualAutoplay) {
         handlePlay();
       }
     });
