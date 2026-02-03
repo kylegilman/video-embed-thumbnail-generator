@@ -19,11 +19,8 @@ const SingleVideoBlock = ({
 		setShowOverlay(!isSelected);
 	}, [isSelected]);
 
-	const { record: attachment, hasResolved } = useEntityRecord(
-		'postType',
-		'attachment',
-		id
-	);
+	const videoData = useEntityRecord('postType', 'attachment', id);
+	const { record: attachment, hasResolved } = videoData;
 
 	useEffect(() => {
 		if (hasResolved && attachment) {
@@ -61,7 +58,8 @@ const SingleVideoBlock = ({
 			newPlayerAttributes.sources = attachment.videopack.sources;
 		}
 		if (attachment?.videopack?.source_groups) {
-			newPlayerAttributes.source_groups = attachment.videopack.source_groups;
+			newPlayerAttributes.source_groups =
+				attachment.videopack.source_groups;
 		}
 		return newPlayerAttributes;
 	}, [options, attributes, attachment]);
@@ -72,7 +70,7 @@ const SingleVideoBlock = ({
 				<Thumbnails
 					setAttributes={setAttributes}
 					attributes={attributes}
-					videoData={attachment}
+					videoData={videoData}
 					options={options}
 				/>
 				<VideoSettings

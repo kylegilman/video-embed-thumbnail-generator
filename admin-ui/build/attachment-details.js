@@ -771,7 +771,7 @@ const Thumbnails = ({
     poster_id,
     isExternal
   } = attributes;
-  const total_thumbnails = attributes.total_thumbnails || videoData?.total_thumbnails || options.total_thumbnails;
+  const total_thumbnails = attributes.total_thumbnails || videoData?.record?.total_thumbnails || options.total_thumbnails;
   const thumbVideoPanel = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const currentThumb = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
@@ -1088,7 +1088,7 @@ const Thumbnails = ({
         metaData['_kgflashmediaplayer-poster'] = new_poster;
         metaData['_kgflashmediaplayer-poster-id'] = Number(new_poster_id);
         metaData['_videopack-meta'] = {
-          ...videoData?.meta?.['_videopack-meta'],
+          ...videoData?.record?.meta?.['_videopack-meta'],
           poster: new_poster
         };
       }
@@ -1417,7 +1417,7 @@ const AttachmentDetails = ({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_Thumbnails_Thumbnails_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
         setAttributes: setAttributes,
         attributes: attributes,
-        videoData: attachment.record,
+        videoData: attachment,
         options: options
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_AdditionalFormats_AdditionalFormats_js__WEBPACK_IMPORTED_MODULE_4__["default"], {
         attributes: attributes,

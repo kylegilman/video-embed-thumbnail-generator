@@ -33,7 +33,7 @@ const Thumbnails = ({
 	const { id, src, poster, poster_id, isExternal } = attributes;
 	const total_thumbnails =
 		attributes.total_thumbnails ||
-		videoData?.total_thumbnails ||
+		videoData?.record?.total_thumbnails ||
 		options.total_thumbnails;
 	const thumbVideoPanel = useRef();
 	const videoRef = useRef();
@@ -427,7 +427,7 @@ const Thumbnails = ({
 				metaData['_kgflashmediaplayer-poster-id'] =
 					Number(new_poster_id);
 				metaData['_videopack-meta'] = {
-					...videoData?.meta?.['_videopack-meta'],
+					...videoData?.record?.meta?.['_videopack-meta'],
 					poster: new_poster,
 				};
 			}
