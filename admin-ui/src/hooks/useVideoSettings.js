@@ -1,8 +1,35 @@
 import { __, _x } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
+import { useDebounce } from '@wordpress/compose';
+import { useCallback } from '@wordpress/element';
 
 const useVideoSettings = (attributes, setAttributes) => {
+	const { id } = attributes;
+
+	const updateAttachmentCallback = useCallback(
+		(key, value) => {
+			if (id) {
+				apiFetch({
+					path: `/wp/v2/media/${id}`,
+					method: 'POST',
+					data: { [key]: value },
+				}).catch(() => {
+					// eslint-disable-next-line no-console
+					console.error(`Failed to update attachment ${id}`);
+				});
+			}
+		},
+		[id]
+	);
+
+	const updateAttachment = useDebounce(updateAttachmentCallback, 1000);
+
 	const handleSettingChange = (key, value) => {
 		setAttributes({ [key]: value });
+
+		if (id && ('title' === key || 'caption' === key)) {
+			updateAttachment(key, value);
+		}
 	};
 
 	const preloadOptions = [
