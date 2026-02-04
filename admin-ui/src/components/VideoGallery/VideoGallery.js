@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import GalleryItem from './GalleryItem';
 import VideoPlayer from '../VideoPlayer/VideoPlayer';
+import './VideoGallery.scss';
 
 const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 	const {
@@ -401,7 +402,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 			</DndContext>
 			{totalPages > 1 && <GalleryPagination />}
 			{openVideo && (
-				<div className="videopack-modal-overlay" onClick={closeVideo}>
+				<div className="videopack-modal-overlay is-visible" onClick={closeVideo}>
 					<div
 						className="videopack-modal-container"
 						onClick={handleVideoClick}

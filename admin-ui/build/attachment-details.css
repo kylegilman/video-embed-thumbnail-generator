@@ -129,6 +129,11 @@ picture.vjs-poster {
 .videopack-formats-list li label {
   max-width: 95%;
 }
+.videopack-formats-list hr {
+  border-bottom: 1px solid #f0f0f0;
+  border-top: none;
+  margin: 0.7em 0;
+}
 .videopack-formats-list button.components-button.is-link.is-destructive {
   margin-top: 3px;
 }

@@ -73,7 +73,6 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	}, []);
 
 	function setAttributesFromMedia(attachmentObject) {
-		console.log(attachmentObject);
 		const media_attributes = {
 			src: attachmentObject.url,
 			id: attachmentObject.id,

@@ -5599,8 +5599,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @dnd-kit/sortable */ "./node_modules/@dnd-kit/sortable/dist/sortable.esm.js");
 /* harmony import */ var _GalleryItem__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./GalleryItem */ "./src/components/VideoGallery/GalleryItem.js");
 /* harmony import */ var _VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../VideoPlayer/VideoPlayer */ "./src/components/VideoPlayer/VideoPlayer.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _VideoGallery_scss__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./VideoGallery.scss */ "./src/components/VideoGallery/VideoGallery.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
+
 
 
 
@@ -5812,60 +5814,60 @@ const VideoGallery = ({
     const buttons = Array.from({
       length: totalPages
     }, (_, i) => i + 1);
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
       className: "videopack-gallery-pagination",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
         className: `videopack-pagination-arrow${galleryPage > 1 ? '' : ' videopack-hidden'}`,
         onClick: () => {
           setGalleryPage(galleryPage - 1);
         },
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
           children: '<'
         })
-      }), buttons.map(pageNumber => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+      }), buttons.map(pageNumber => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
         className: "videopack-page-number-div",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           onClick: () => setGalleryPage(pageNumber),
           className: `videopack-page-number${pageNumber === galleryPage ? ' current-page' : ''}`,
           disabled: pageNumber === galleryPage,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
             children: pageNumber
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
           className: "videopack-pagination-separator",
           children: pageNumber === totalPages ? '' : '|'
         })]
-      }, pageNumber)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+      }, pageNumber)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
         className: `videopack-pagination-arrow${galleryPage < totalPages ? '' : ' videopack-hidden'}`,
         onClick: () => {
           setGalleryPage(galleryPage + 1);
         },
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
           children: '>'
         })
       })]
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
     className: "videopack-gallery-wrapper",
     style: gallery_columns > 0 ? {
       '--gallery-columns': gallery_columns
     } : {},
     onMouseEnter: () => !openVideo && setIsHovering(true),
     onMouseLeave: () => !openVideo && setIsHovering(false),
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_4__.DndContext, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_4__.DndContext, {
       sensors: sensors,
       collisionDetection: _dnd_kit_core__WEBPACK_IMPORTED_MODULE_4__.closestCenter,
       onDragEnd: handleDragEnd,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_5__.SortableContext, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_5__.SortableContext, {
         items: galleryVideos.map(video => video.attachment_id),
         strategy: _dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_5__.rectSortingStrategy,
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
           className: "videopack-gallery-items",
           style: gallery_columns > 0 ? {
             '--gallery-columns': gallery_columns
           } : {},
-          children: galleryVideos && galleryVideos.map((videoRecord, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_GalleryItem__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          children: galleryVideos && galleryVideos.map((videoRecord, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_GalleryItem__WEBPACK_IMPORTED_MODULE_6__["default"], {
             attributes: attributes,
             videoRecord: videoRecord,
             setOpenVideo: setOpenVideo,
@@ -5880,34 +5882,34 @@ const VideoGallery = ({
           }, videoRecord.attachment_id))
         })
       })
-    }), totalPages > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(GalleryPagination, {}), openVideo && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
-      className: "videopack-modal-overlay",
+    }), totalPages > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(GalleryPagination, {}), openVideo && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+      className: "videopack-modal-overlay is-visible",
       onClick: closeVideo,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
         className: "videopack-modal-container",
         onClick: handleVideoClick,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           type: "button",
           className: "modal-navigation modal-close videopack-icons cross",
           title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Close'),
           onClick: closeVideo
-        }), (currentVideoIndex < galleryVideos.length - 1 || totalPages > galleryPage) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+        }), (currentVideoIndex < galleryVideos.length - 1 || totalPages > galleryPage) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           type: "button",
           className: "modal-navigation modal-next videopack-icons right-arrow",
           title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Next'),
           onClick: () => {
             handleNavigationArrowClick(currentVideoIndex + 1);
           }
-        }), (currentVideoIndex > 0 || galleryPage > 1) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("button", {
+        }), (currentVideoIndex > 0 || galleryPage > 1) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           type: "button",
           className: "modal-navigation modal-previous videopack-icons left-arrow",
           title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Previous'),
           onClick: () => {
             handleNavigationArrowClick(currentVideoIndex - 1);
           }
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
           className: "modal-content",
-          children: openVideoAttributes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_7__["default"], {
+          children: openVideoAttributes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_7__["default"], {
             attributes: openVideoAttributes,
             onReady: handleVideoPlayerReady
           }, openVideoAttributes?.src)
@@ -5917,6 +5919,18 @@ const VideoGallery = ({
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (VideoGallery);
+
+/***/ },
+
+/***/ "./src/components/VideoGallery/VideoGallery.scss"
+/*!*******************************************************!*\
+  !*** ./src/components/VideoGallery/VideoGallery.scss ***!
+  \*******************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
 
 /***/ },
 

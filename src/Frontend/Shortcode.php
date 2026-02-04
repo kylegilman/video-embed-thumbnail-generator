@@ -340,9 +340,9 @@ class Shortcode {
 			// Otherwise, get all tracks from the source's metadata.
 			$query_atts['tracks'] = $source->get_tracks();
 		}
-		/* if ( empty( $query_atts['view_count'] ) ) {
+		if ( empty( $query_atts['view_count'] ) ) {
 			$query_atts['view_count'] = $source->get_views();
-		}*/
+		}
 
 		// Determine if the video is countable (i.e., an attachment).
 		$query_atts['countable'] = is_numeric( $source->get_id() );
@@ -409,6 +409,9 @@ class Shortcode {
 			if ( isset( $query_atts['gallery_orderby'] ) && 'rand' === $query_atts['gallery_orderby'] ) {
 				$query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
 			}
+			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+			$player->enqueue_scripts();
+
 			$gallery = new Gallery( $this->options_manager );
 			$code    = $gallery->gallery_page( 1, $query_atts );
 		} else {

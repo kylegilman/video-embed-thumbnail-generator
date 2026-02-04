@@ -536,7 +536,6 @@ const Edit = ({
     }
   }, []);
   function setAttributesFromMedia(attachmentObject) {
-    console.log(attachmentObject);
     const media_attributes = {
       src: attachmentObject.url,
       id: attachmentObject.id,
@@ -661,7 +660,7 @@ __webpack_require__.r(__webpack_exports__);
  *
  * @see https://developer.wordpress.org/block-editor/developers/block-api/block-edit-save/#save
  *
- * @param {Object} props          The properties passed to the component.
+ * @param {Object} props            The properties passed to the component.
  * @param {Object} props.attributes The block attributes.
  * @return {WPElement} Element to render.
  */

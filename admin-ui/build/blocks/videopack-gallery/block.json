@@ -17,6 +17,10 @@
     ]
   },
   "attributes": {
+    "gallery": {
+      "type": "boolean",
+      "default": true
+    },
     "gallery_orderby": {
       "type": "string",
       "default": "menu_order"
@@ -26,10 +30,12 @@
       "default": "ASC"
     },
     "gallery_include": {
-      "type": "string"
+      "type": "string",
+      "default": ""
     },
     "gallery_exclude": {
-      "type": "string"
+      "type": "string",
+      "default": ""
     },
     "gallery_end": {
       "type": "string",
@@ -40,14 +46,16 @@
       "default": false
     },
     "gallery_per_page": {
-      "type": "number"
+      "type": "number",
+      "default": 6
     },
     "gallery_title": {
       "type": "boolean",
       "default": false
     },
     "gallery_columns": {
-      "type": "number"
+      "type": "number",
+      "default": 3
     }
   },
   "textdomain": "video-embed-thumbnail-generator",

@@ -123,7 +123,7 @@ class Gallery {
 
 		$player_vars               = $player->prepare_video_vars();
 		$player_vars['id']         = 'videopack_player_gallery_' . $attachment->ID; // Ensure a unique ID for the player instance.
-		$player_vars['sources']    = $player->get_sources();
+		$player_vars['sources']    = $player->get_flat_sources();
 		$player_vars['poster']     = $final_atts['poster'];
 		$player_vars['attachment'] = $attachment->ID;
 
@@ -132,10 +132,15 @@ class Gallery {
 			$poster_id = get_post_thumbnail_id( $attachment->ID );
 		}
 
+		$poster_url = $final_atts['poster'];
+		if ( empty( $poster_url ) ) {
+			$poster_url = plugins_url( 'src/images/nothumbnail.jpg', VIDEOPACK_PLUGIN_FILE );
+		}
+
 		return array(
 			'attachment_id' => $attachment->ID,
 			'title'         => get_the_title( $attachment ),
-			'poster_url'    => $final_atts['poster'],
+			'poster_url'    => $poster_url,
 			'poster_srcset' => $poster_id ? wp_get_attachment_image_srcset( $poster_id, 'medium_large' ) : '',
 			'player_vars'   => $player_vars,
 		);
@@ -152,21 +157,30 @@ class Gallery {
 					$videos_data[] = $video_data;
 					// Add player vars to the inline script data for the initial page load.
 					$script = sprintf(
-						'window.Videopack = window.Videopack || {}; window.Videopack.player_data = window.Videopack.player_data || {}; window.Videopack.player_data["%1$s"] = %2$s;',
+						'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["%1$s"] = %2$s;',
 						$video_data['player_vars']['id'],
 						wp_json_encode( $video_data['player_vars'] )
 					);
-					wp_add_inline_script( 'videopack', $script );
+					wp_add_inline_script( 'videopack-frontend', $script );
 				}
 			}
 		}
 		ob_start();
 		?>
-		<div class="videopack-gallery-wrapper" data-gallery-settings="<?php echo esc_attr( wp_json_encode( $query_atts ) ); ?>">
-			<div class="videopack-gallery-grid">
+		<div class="videopack-gallery-wrapper"
+			data-gallery-settings="<?php echo esc_attr( wp_json_encode( $query_atts ) ); ?>"
+			<?php if ( ! empty( $query_atts['gallery_columns'] ) && $query_atts['gallery_columns'] > 0 ) : ?>
+				style="--gallery-columns: <?php echo esc_attr( $query_atts['gallery_columns'] ); ?>"
+			<?php endif; ?>
+		>
+			<div class="videopack-gallery-items"
+				<?php if ( ! empty( $query_atts['gallery_columns'] ) && $query_atts['gallery_columns'] > 0 ) : ?>
+					style="--gallery-columns: <?php echo esc_attr( $query_atts['gallery_columns'] ); ?>"
+				<?php endif; ?>
+			>
 				<?php foreach ( $videos_data as $video ) : ?>
-					<div class="videopack-gallery-thumbnail" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>">
-						<a href="#">
+					<div class="gallery-thumbnail videopack-gallery-item" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>">
+						<div class="gallery-item-clickable-area">
 							<img src="<?php echo esc_url( $video['poster_url'] ); ?>"
 								<?php
 								if ( ! empty( $video['poster_srcset'] ) ) {
@@ -174,31 +188,38 @@ class Gallery {
 								}
 								?>
 								alt="<?php echo esc_attr( $video['title'] ); ?>">
-							<div class="videopack-gallery-play-button"></div>
-							<?php if ( 'true' === $query_atts['gallery_title'] ) : ?>
-								<div class="videopack-gallery-title-overlay">
-									<span><?php echo esc_html( $video['title'] ); ?></span>
+							<div class="play-button-container <?php echo esc_attr( $query_atts['skin'] ?? 'kg-video-js-skin' ); ?>">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+									<circle class="play-button-circle" cx="250" cy="250" r="230"/>
+									<polygon class="play-button-triangle" points="374.68,250 188,142 188,358"/>
+								</svg>
+							</div>
+							<?php if ( ! empty( $query_atts['gallery_title'] ) ) : ?>
+								<div class="video-title">
+									<div class="video-title-background"></div>
+									<span class="video-title-text"><?php echo esc_html( $video['title'] ); ?></span>
 								</div>
 							<?php endif; ?>
-						</a>
+						</div>
 					</div>
 				<?php endforeach; ?>
 			</div>
 
-			<div class="videopack-gallery-pagination">
-				<?php echo $this->render_pagination_html( $attachments->max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</div>
+			<?php if ( $attachments->max_num_pages > 1 ) : ?>
+				<div class="videopack-gallery-pagination">
+					<?php echo $this->render_pagination_html( $attachments->max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+			<?php endif; ?>
 
 			<!-- Gallery Popup Modal -->
-			<div class="videopack-gallery-popup" style="display: none;">
-				<div class="videopack-gallery-popup-overlay"></div>
-				<div class="videopack-gallery-popup-content">
-					<button class="videopack-gallery-popup-close">&times;</button>
-					<div class="videopack-gallery-player-container">
+			<div class="videopack-modal-overlay" style="display: none;">
+				<div class="videopack-modal-container">
+					<button type="button" class="modal-navigation modal-close videopack-icons cross" title="<?php esc_attr_e( 'Close', 'video-embed-thumbnail-generator' ); ?>"></button>
+					<button type="button" class="modal-navigation modal-next videopack-icons right-arrow" title="<?php esc_attr_e( 'Next', 'video-embed-thumbnail-generator' ); ?>"></button>
+					<button type="button" class="modal-navigation modal-previous videopack-icons left-arrow" title="<?php esc_attr_e( 'Previous', 'video-embed-thumbnail-generator' ); ?>"></button>
+					<div class="modal-content">
 						<!-- Player will be inserted here by JS -->
 					</div>
-					<button class="videopack-gallery-popup-prev">&larr;</button>
-					<button class="videopack-gallery-popup-next">&rarr;</button>
 				</div>
 			</div>
 		</div>
@@ -212,21 +233,32 @@ class Gallery {
 		}
 		ob_start();
 		?>
-		<span class="videopack-gallery-pagination-arrow prev" <?php echo ( 1 === $current_page ) ? 'style="visibility:hidden;"' : ''; ?>>
-			<a href="#" data-page="<?php echo esc_attr( $current_page - 1 ); ?>">&larr;</a>
-		</span>
+		<button
+			class="videopack-pagination-arrow<?php echo ( $current_page > 1 ) ? '' : ' videopack-hidden'; ?>"
+			data-page="<?php echo esc_attr( $current_page - 1 ); ?>"
+		>
+			<span>&lt;</span>
+		</button>
 		<?php for ( $i = 1; $i <= $max_pages; $i++ ) : ?>
-			<?php if ( $i === $current_page ) : ?>
-				<span class="videopack-gallery-pagination-selected"><?php echo esc_html( $i ); ?></span>
-			<?php else : ?>
-				<span class="videopack-gallery-page-number">
-					<a href="#" data-page="<?php echo esc_attr( $i ); ?>"><?php echo esc_html( $i ); ?></a>
+			<div class="videopack-page-number-div">
+				<button
+					data-page="<?php echo esc_attr( $i ); ?>"
+					class="videopack-page-number<?php echo ( $i === $current_page ) ? ' current-page' : ''; ?>"
+					<?php disabled( $i, $current_page ); ?>
+				>
+					<span><?php echo esc_html( $i ); ?></span>
+				</button>
+				<span class="videopack-pagination-separator">
+					<?php echo ( $i === $max_pages ) ? '' : '|'; ?>
 				</span>
-			<?php endif; ?>
+			</div>
 		<?php endfor; ?>
-		<span class="videopack-gallery-pagination-arrow next" <?php echo ( $current_page === $max_pages ) ? 'style="visibility:hidden;"' : ''; ?>>
-			<a href="#" data-page="<?php echo esc_attr( $current_page + 1 ); ?>">&rarr;</a>
-		</span>
+		<button
+			class="videopack-pagination-arrow<?php echo ( $current_page < $max_pages ) ? '' : ' videopack-hidden'; ?>"
+			data-page="<?php echo esc_attr( $current_page + 1 ); ?>"
+		>
+			<span>&gt;</span>
+		</button>
 		<?php
 		return ob_get_clean();
 	}

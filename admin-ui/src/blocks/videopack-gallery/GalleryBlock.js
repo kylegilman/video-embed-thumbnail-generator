@@ -4,44 +4,11 @@ import {
 	ToggleControl,
 	PanelBody,
 } from '@wordpress/components';
-import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import VideoGallery from '../../components/VideoGallery/VideoGallery';
 
-const GalleryBlock = ({
-	attributes,
-	setAttributes,
-	videoChildren,
-	options,
-}) => {
-	useEffect(() => {
-		if (options) {
-			const newAttributes = {};
-			const settingsToSync = [
-				'gallery_columns',
-				'gallery_title',
-				'gallery_pagination',
-				'gallery_per_page',
-				'gallery_end',
-				'skin',
-			];
-
-			settingsToSync.forEach((setting) => {
-				if (
-					attributes[setting] === undefined &&
-					options[setting] !== undefined
-				) {
-					newAttributes[setting] = options[setting];
-				}
-			});
-
-			if (Object.keys(newAttributes).length > 0) {
-				setAttributes(newAttributes);
-			}
-		}
-	}, [options]);
-
+const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 	const {
 		gallery_orderby,
 		gallery_order,
