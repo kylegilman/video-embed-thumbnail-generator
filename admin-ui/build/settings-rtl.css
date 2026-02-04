@@ -528,6 +528,302 @@
 .videopack-icons.download {
   background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 fill=%27white%27%3E %3Ctitle%3Efile_download%3C/title%3E %3Cpath d=%27M5.016 18h13.969v2.016h-13.969v-2.016zM18.984 9l-6.984 6.984-6.984-6.984h3.984v-6h6v6h3.984z%27%3E%3C/path%3E %3C/svg%3E");
 }
+/*!**********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoGallery/VideoGallery.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************/
+/* Gallery container */
+.videopack-gallery-wrapper {
+  max-width: 100%;
+}
+.videopack-gallery-wrapper .videopack-gallery-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 0 auto;
+}
+.videopack-gallery-wrapper .videopack-gallery-items[style] {
+  grid-template-columns: repeat(var(--gallery-columns), 1fr);
+}
+.videopack-gallery-wrapper .gallery-thumbnail {
+  position: relative;
+  padding: 0;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0; /* Important for padding-top trick */
+  cursor: pointer;
+  overflow: hidden;
+  border: none;
+  border-radius: 2%;
+  box-sizing: border-box;
+  background: none;
+}
+.videopack-gallery-wrapper .gallery-thumbnail img {
+  position: absolute; /* Position image to fill the padded space */
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .mejs-overlay-button {
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  transform-origin: 100% 0;
+  border: none;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .play-button-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .play-button-container.kg-video-js-skin svg {
+  position: absolute;
+  max-width: 90px;
+  width: 25%;
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -64%);
+}
+.videopack-gallery-wrapper .gallery-thumbnail .play-button-container.kg-video-js-skin svg .play-button-circle {
+  fill-opacity: 0.75;
+  fill: #282828;
+  stroke: #fff;
+  stroke-width: 20;
+  stroke-miterlimit: 10;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .play-button-container.kg-video-js-skin svg .play-button-triangle {
+  fill: white;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .video-title {
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 10px;
+  right: 0;
+  width: 100%;
+  padding: 4px 4px 4px 4px;
+  overflow: hidden;
+  text-align: center;
+  line-height: 18px;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .video-title .video-title-text {
+  position: relative;
+  color: var(--wp--preset--color--tertiary, white);
+  font-size: 14px;
+  line-height: 1.5em;
+  z-index: 4;
+}
+.videopack-gallery-wrapper .gallery-thumbnail .video-title .video-title-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: var(--wp--preset--color--primary, black);
+  opacity: 0.4;
+  z-index: 2;
+}
+.videopack-gallery-wrapper .gallery-thumbnail:hover .video-title-background::before {
+  opacity: 0.8;
+}
+.videopack-gallery-wrapper .gallery-thumbnail:hover .video-title-text {
+  color: var(--wp--preset--color--base, white);
+}
+.videopack-gallery-wrapper .gallery-thumbnail:hover .play-button-container svg .play-button-circle {
+  fill-opacity: 0.4;
+}
+.videopack-gallery-wrapper {
+  /* Gallery pagination */
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow {
+  background: none;
+  border: none;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow.videopack-hidden {
+  visibility: hidden;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-page-number-div {
+  display: inline;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number {
+  display: inline-flex;
+  width: 1.75em;
+  height: 1.75em;
+  margin: 2px;
+  background-color: white;
+  color: var(--wp--preset--color--primary, black);
+  border-radius: 50%;
+  font-size: 1.1em;
+  border: none;
+  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number.current-page, .videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number:hover {
+  background-color: var(--wp--preset--color--primary, #555);
+  color: var(--wp--preset--color--white, white);
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number.current-page span, .videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number:hover span {
+  cursor: default;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination button span {
+  cursor: pointer;
+}
+.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-separator, .videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow {
+  font-size: 2em;
+  font-weight: 100;
+  vertical-align: middle;
+  display: inline-block;
+  margin: 0 0 6px 0;
+  padding: 0;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container {
+  position: relative;
+  color: black;
+  background-color: #000;
+  width: 80vw;
+  max-height: 90vh;
+  z-index: 10002;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container .videopack-wrapper {
+  margin: 0;
+  padding: 5px;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container .modal-navigation {
+  cursor: pointer;
+  z-index: 10003;
+  position: absolute;
+  text-decoration: none;
+  top: -26px;
+  background-color: transparent;
+  border: none;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container .modal-navigation.modal-close {
+  left: -10px;
+  top: -26px;
+  height: 17px;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container .modal-navigation.modal-previous {
+  left: 59px;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container .modal-navigation.modal-next {
+  left: 25px;
+}
+.videopack-gallery-wrapper .videopack-modal-overlay .videopack-modal-container .wp-video {
+  margin-bottom: 0;
+}
+.videopack-gallery-wrapper .videopack-icons.cross {
+  background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27 fill=%27white%27%3E %3Ctitle%3Ecross%3C/title%3E %3Cpath d=%27M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z%27%3E%3C/path%3E %3C/svg%3E");
+}
+.videopack-gallery-wrapper .videopack-icons.left-arrow {
+  background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27 fill=%27white%27%3E %3Ctitle%3Earrow-left%3C/title%3E %3Cpath d=%27M1 16l15 15v-9h16v-12h-16v-9z%27%3E%3C/path%3E %3C/svg%3E");
+}
+.videopack-gallery-wrapper .videopack-icons.right-arrow {
+  background-image: url("data:image/svg+xml,%3Csvg version=%271.1%27 xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27 fill=%27white%27%3E %3Ctitle%3Earrow-right%3C/title%3E %3Cpath d=%27M31 16l-15-15v9h-16v12h16v9z%27%3E%3C/path%3E %3C/svg%3E");
+}
+.videopack-gallery-wrapper .videopack-gallery-item {
+  position: relative;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-clickable-area {
+  cursor: pointer;
+}
+.videopack-gallery-wrapper .videopack-gallery-item.is-dragging {
+  opacity: 0.5;
+  border: 2px dashed #ccc;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle, .videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
+  position: absolute;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 10;
+  transition: background-color 0.2s ease-in-out;
+  border: none;
+  padding: 0;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle {
+  top: 5px;
+  display: none; /* Hidden by default */
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
+  bottom: 5px;
+  left: 5px;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button .dashicons {
+  font-size: 20px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button:hover {
+  background-color: rgba(0, 124, 255, 0.8);
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove {
+  left: 5px;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit {
+  left: 35px;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit .dashicons {
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit:hover {
+  background-color: rgba(0, 124, 255, 0.8);
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle {
+  right: 5px;
+  cursor: move;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle .dashicons {
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+.videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-drag-handle {
+  display: flex; /* Show on hover of the parent item */
+}
 /*!************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/settings/settings.scss ***!
   \************************************************************************************************************************************************************************************************************************************************************/

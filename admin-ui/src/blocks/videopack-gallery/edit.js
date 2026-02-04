@@ -16,17 +16,14 @@ import { store as noticesStore } from '@wordpress/notices';
 import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
 import GalleryBlock from './GalleryBlock';
+import './editor.scss';
 
-export default function edit({ attributes, setAttributes }) {
+export default function Edit({ attributes, setAttributes }) {
 	const ALLOWED_MEDIA_TYPES = ['video'];
-	const { gallery, gallery_include, gallery_id } = attributes;
+	const { gallery_include, gallery_id } = attributes;
 	const [options, setOptions] = useState();
 	const blockProps = useBlockProps();
 	const { createErrorNotice } = useDispatch(noticesStore);
-	const mediaUpload = useSelect(
-		(select) => select(blockEditorStore).getSettings().mediaUpload,
-		[]
-	);
 
 	const { postId } = useSelect(
 		(select) => ({
@@ -55,12 +52,40 @@ export default function edit({ attributes, setAttributes }) {
 		if (!gallery_id && !gallery_include && videoChildren) {
 			const includeIds = videoChildren.map((item) => item.id).join(',');
 			setAttributes({
-				gallery: true,
 				gallery_include: includeIds,
 				gallery_id: postId,
 			});
 		}
-	}, [gallery_id, gallery_include, videoChildren]);
+	}, [videoChildren]);
+
+	useEffect(() => {
+		if (options) {
+			const newAttributes = {};
+			const settingsToSync = [
+				'gallery_columns',
+				'gallery_order',
+				'gallery_orderby',
+				'gallery_pagination',
+				'gallery_per_page',
+				'gallery_title',
+				'gallery_end',
+				'skin',
+			];
+
+			settingsToSync.forEach((setting) => {
+				if (
+					attributes[setting] === undefined &&
+					options[setting] !== undefined
+				) {
+					newAttributes[setting] = options[setting];
+				}
+			});
+
+			if (Object.keys(newAttributes).length > 0) {
+				setAttributes(newAttributes);
+			}
+		}
+	}, [options]);
 
 	function setAttributesFromMedia(media) {
 		const includeIds = media.map((item) => item.id).join(',');
@@ -78,7 +103,6 @@ export default function edit({ attributes, setAttributes }) {
 			!mediaArray.some((item) => item.hasOwnProperty('url'))
 		) {
 			setAttributes({
-				gallery: undefined,
 				gallery_include: undefined,
 				gallery_id: undefined,
 			});
@@ -86,17 +110,6 @@ export default function edit({ attributes, setAttributes }) {
 		}
 
 		setAttributesFromMedia(mediaArray);
-	}
-
-	function onSelectURL(newSrc) {
-		// This block is for galleries, so URL selection is less relevant.
-		// However, keeping it for consistency if needed in the future.
-		if (newSrc) {
-			createErrorNotice(
-				__('URL selection is not supported for galleries.'),
-				{ type: 'snackbar' }
-			);
-		}
 	}
 
 	function onInsertGallery() {
@@ -117,9 +130,7 @@ export default function edit({ attributes, setAttributes }) {
 				withIllustration={true}
 				icon={icon}
 				label={__('Videopack Video Gallery')}
-				instructions={__(
-					'Select multiple video files from your media library to create a gallery.'
-				)}
+				instructions={__('Select video files to create a gallery.')}
 			>
 				{content}
 				<Button
@@ -132,19 +143,18 @@ export default function edit({ attributes, setAttributes }) {
 					showTooltip
 					onClick={onInsertGallery}
 				>
-					{__('Video Gallery')}
+					{__("This post's videos")}
 				</Button>
 			</Placeholder>
 		);
 	};
 
-	if (!gallery) {
+	if (!gallery_id && !gallery_include) {
 		return (
 			<div {...blockProps}>
 				<MediaPlaceholder
 					icon={<BlockIcon icon={icon} />}
 					onSelect={onSelectVideo}
-					onSelectURL={onSelectURL}
 					accept="video/*"
 					allowedTypes={ALLOWED_MEDIA_TYPES}
 					value={attributes}
@@ -165,7 +175,6 @@ export default function edit({ attributes, setAttributes }) {
 					allowedTypes={ALLOWED_MEDIA_TYPES}
 					accept="video/*"
 					onSelect={onSelectVideo}
-					onSelectURL={onSelectURL}
 					onError={onUploadError}
 					multiple={true}
 				/>

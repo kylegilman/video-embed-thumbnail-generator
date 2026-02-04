@@ -91,6 +91,20 @@ class Validate {
 				'name'     => true,
 				'type'     => true,
 			),
+			'svg'    => array(
+				'xmlns'  => true,
+				'viewbox' => true,
+			),
+			'circle'    => array(
+				'class'  => true,
+				'cx'     => true,
+				'cy'     => true,
+				'r'      => true,
+			),
+			'polygon'   => array(
+				'class'  => true,
+				'points' => true,
+			),
 		);
 
 		if ( $scope === 'admin' ) {
