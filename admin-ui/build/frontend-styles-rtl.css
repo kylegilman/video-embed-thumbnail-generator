@@ -658,10 +658,10 @@
   width: 1.75em;
   height: 1.75em;
   margin: 2px;
-  background-color: white;
+  background-color: transparent;
   color: var(--wp--preset--color--primary, black);
   border-radius: 50%;
-  font-size: 1.1em;
+  font-size: 0.75em;
   border: none;
   text-decoration: none;
   align-items: center;
@@ -678,11 +678,11 @@
   cursor: pointer;
 }
 .videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-separator, .videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow {
-  font-size: 2em;
+  font-size: 0.8em;
   font-weight: 100;
   vertical-align: middle;
   display: inline-block;
-  margin: 0 0 6px 0;
+  margin: 0;
   padding: 0;
 }
 .videopack-gallery-wrapper .videopack-modal-overlay {
@@ -801,9 +801,10 @@
 .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit {
   left: 35px;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit .dashicons {
-  font-size: 18px;
-  line-height: 1;
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
   vertical-align: middle;
 }
 .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit:hover {

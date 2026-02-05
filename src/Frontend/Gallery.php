@@ -237,7 +237,7 @@ class Gallery {
 			class="videopack-pagination-arrow<?php echo ( $current_page > 1 ) ? '' : ' videopack-hidden'; ?>"
 			data-page="<?php echo esc_attr( $current_page - 1 ); ?>"
 		>
-			<span>&lt;</span>
+			<span>&laquo;</span>
 		</button>
 		<?php for ( $i = 1; $i <= $max_pages; $i++ ) : ?>
 			<div class="videopack-page-number-div">
@@ -249,7 +249,7 @@ class Gallery {
 					<span><?php echo esc_html( $i ); ?></span>
 				</button>
 				<span class="videopack-pagination-separator">
-					<?php echo ( $i === $max_pages ) ? '' : '|'; ?>
+					<?php echo ( $i === (int) $max_pages ) ? '' : '|'; ?>
 				</span>
 			</div>
 		<?php endfor; ?>
@@ -257,7 +257,7 @@ class Gallery {
 			class="videopack-pagination-arrow<?php echo ( $current_page < $max_pages ) ? '' : ' videopack-hidden'; ?>"
 			data-page="<?php echo esc_attr( $current_page + 1 ); ?>"
 		>
-			<span>&gt;</span>
+			<span>&raquo;</span>
 		</button>
 		<?php
 		return ob_get_clean();

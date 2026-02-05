@@ -142,10 +142,10 @@
 				width: 1.75em;
 				height: 1.75em;
 				margin: 2px;
-				background-color: white;
+				background-color: transparent;
 				color: var(--wp--preset--color--primary, black);
 				border-radius: 50%;
-				font-size: 1.1em;
+				font-size: .75em;
 				border: none;
 				text-decoration: none;
 				align-items: center;
@@ -167,11 +167,11 @@
 		}
 
 		.videopack-pagination-separator, .videopack-pagination-arrow {
-			font-size: 2em;
+			font-size: .8em;
 			font-weight: 100;
 			vertical-align: middle;
 			display: inline-block;
-			margin: 0 0 6px 0;
+			margin: 0;
 			padding: 0;
 		}
 	}
@@ -313,9 +313,10 @@
 
 		.gallery-item-edit {
 			right: 35px;
-			.dashicons {
-				font-size: 18px;
-				line-height: 1;
+			svg {
+				width: 18px;
+				height: 18px;
+				fill: white;
 				vertical-align: middle;
 			}
 
