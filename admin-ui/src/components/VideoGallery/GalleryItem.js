@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { Icon } from '@wordpress/components';
+import { pencil } from '@wordpress/icons';
 import { decodeEntities } from '@wordpress/html-entities';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -148,7 +150,7 @@ const GalleryItem = ({
 						}}
 						title={__('Edit')}
 					>
-						<span className="dashicons dashicons-edit" />
+						<Icon icon={pencil} />
 					</button>
 					<div
 						className="gallery-item-remove"

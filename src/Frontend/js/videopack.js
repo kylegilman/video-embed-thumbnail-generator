@@ -1715,7 +1715,7 @@
 					class="videopack-pagination-arrow${ currentPage > 1 ? '' : ' videopack-hidden' }"
 					data-page="${ currentPage - 1 }"
 				>
-					<span>&lt;</span>
+					<span>&laquo;</span>
 				</button>
 			`;
 			for ( let i = 1; i <= maxPages; i++ ) {
@@ -1739,7 +1739,7 @@
 					class="videopack-pagination-arrow${ currentPage < maxPages ? '' : ' videopack-hidden' }"
 					data-page="${ currentPage + 1 }"
 				>
-					<span>&gt;</span>
+					<span>&raquo;</span>
 				</button>
 			`;
 			pagination.innerHTML = html;

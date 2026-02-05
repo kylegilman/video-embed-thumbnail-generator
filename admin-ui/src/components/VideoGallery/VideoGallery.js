@@ -316,7 +316,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 						setGalleryPage(galleryPage - 1);
 					}}
 				>
-					<span>{'<'}</span>
+					<span>{'«'}</span>
 				</button>
 				{buttons.map((pageNumber) => (
 					<div key={pageNumber} className="videopack-page-number-div">
@@ -344,7 +344,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 						setGalleryPage(galleryPage + 1);
 					}}
 				>
-					<span>{'>'}</span>
+					<span>{'»'}</span>
 				</button>
 			</div>
 		);
