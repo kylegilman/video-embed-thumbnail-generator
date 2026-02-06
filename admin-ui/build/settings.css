@@ -930,6 +930,11 @@
   margin-top: 25px;
 }
 
+.wrap.videopack-settings .videopack-vertical-center .components-form-toggle {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 .wrap.videopack-settings .components-base-control.videopack-setting-auto-thumb {
   display: inline-block;
 }
@@ -962,6 +967,14 @@
   font-weight: 500;
   margin-top: 0;
   text-transform: uppercase;
+}
+
+.wrap.videopack-settings .videopack-settings-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .wrap.videopack-settings .videopack-encode-grid {

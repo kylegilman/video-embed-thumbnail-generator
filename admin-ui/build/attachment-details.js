@@ -738,9 +738,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/url */ "@wordpress/url");
-/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var _utils_video_capture__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils/video-capture */ "./src/utils/video-capture.js");
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-down.mjs");
 /* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-up.mjs");
 /* harmony import */ var _Thumbnails_scss__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Thumbnails.scss */ "./src/components/Thumbnails/Thumbnails.scss");
@@ -774,7 +773,6 @@ const Thumbnails = ({
   const total_thumbnails = attributes.total_thumbnails || videoData?.record?.total_thumbnails || options.total_thumbnails;
   const thumbVideoPanel = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const videoRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
-  const currentThumb = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const posterImageButton = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)();
   const [isPlaying, setIsPlaying] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
   const [isOpened, setIsOpened] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
@@ -837,38 +835,23 @@ const Thumbnails = ({
     const thumbsInt = Number(total_thumbnails);
     const newThumbCanvases = [];
     const ffmpegExists = videopack_config.ffmpeg_exists;
-    const timePoints = [...Array(thumbsInt)].map((_, i) => {
-      let movieoffset = (i + 1) / (thumbsInt + 1) * videoRef.current.duration;
-      if (type === 'random') {
-        const randomOffset = Math.floor(Math.random() * (videoRef.current.duration / thumbsInt));
-        movieoffset = Math.max(movieoffset - randomOffset, 0);
-      }
-      return movieoffset;
+    const timePoints = (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.calculateTimecodes)(videoRef.current.duration, thumbsInt, {
+      random: type === 'random'
     });
-    const processNextThumbnail = async index => {
-      if (index >= thumbsInt) {
-        videoRef.current.removeEventListener('timeupdate', timeupdateListener);
-        setIsSaving(false);
-        return;
-      }
-      videoRef.current.currentTime = timePoints[index];
-    };
-    const timeupdateListener = async () => {
+    for (const time of timePoints) {
       let thumb;
       try {
-        const canvas = await drawCanvasThumb();
+        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, time, options?.ffmpeg_thumb_watermark);
         thumb = {
           src: canvas.toDataURL(),
           type: 'canvas',
           canvasObject: canvas
         };
         newThumbCanvases.push(thumb);
-        setThumbChoices([...newThumbCanvases]);
-        processNextThumbnail(newThumbCanvases.length);
+        setThumbChoices([...newThumbCanvases]); // Update incrementally
       } catch (error) {
         console.error('Error generating canvas thumbnail:', error);
         if (ffmpegExists) {
-          console.warn('Falling back to FFmpeg for thumbnail generation.');
           try {
             const response = await generateThumb(newThumbCanvases.length + 1, type);
             thumb = {
@@ -877,24 +860,11 @@ const Thumbnails = ({
             };
             newThumbCanvases.push(thumb);
             setThumbChoices([...newThumbCanvases]);
-            processNextThumbnail(newThumbCanvases.length);
-          } catch (ffmpegError) {
-            console.error('FFmpeg fallback also failed:', ffmpegError);
-            // Display a user-friendly error message if both methods fail
-            // For now, just log and stop
-            videoRef.current.removeEventListener('timeupdate', timeupdateListener);
-            setIsSaving(false);
-          }
-        } else {
-          console.error('Browser thumbnail generation failed and FFmpeg is not available.');
-          // Display a user-friendly error message
-          videoRef.current.removeEventListener('timeupdate', timeupdateListener);
-          setIsSaving(false);
+          } catch (ffmpegError) {}
         }
       }
-    };
-    videoRef.current.addEventListener('timeupdate', timeupdateListener);
-    processNextThumbnail(0); // Start the process
+    }
+    setIsSaving(false);
   });
 
   // function to toggle video playback
@@ -930,23 +900,6 @@ const Thumbnails = ({
       videoRef.current?.removeEventListener('timeupdate', handleTimeUpdate);
     };
   }, []);
-  const drawCanvasThumb = async () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    if (options?.ffmpeg_thumb_watermark?.url) {
-      try {
-        const watermarkCanvas = drawWatermarkOnCanvas(canvas);
-        return watermarkCanvas;
-      } catch (error) {
-        console.error('Error drawing watermark:', error);
-      }
-    } else {
-      return canvas;
-    }
-  };
   const handleSaveThumbnail = (event, thumb) => {
     event.currentTarget.classList.add('saving');
     setIsSaving(true);
@@ -961,24 +914,8 @@ const Thumbnails = ({
     const firstThumbType = thumbChoices[0]?.type; // Assuming all generated thumbs are of the same type
 
     if (firstThumbType === 'canvas') {
-      const postName = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_4__.getFilename)(src);
       const uploadPromises = thumbChoices.map(thumb => {
-        return new Promise((resolve, reject) => {
-          thumb.canvasObject.toBlob(async blob => {
-            try {
-              const formData = new FormData();
-              formData.append('file', blob, 'thumbnail.jpg');
-              formData.append('attachment_id', id);
-              formData.append('post_name', postName);
-
-              // Don't need the response for "save all"
-              await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.uploadThumbnail)(formData);
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          }, 'image/jpeg');
-        });
+        return (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.createThumbnailFromCanvas)(thumb.canvasObject, id, src);
       });
       try {
         await Promise.all(uploadPromises);
@@ -990,7 +927,7 @@ const Thumbnails = ({
       // For FFmpeg thumbnails, send their temporary URLs to the server to be saved
       const thumbUrls = thumbChoices.map(thumb => thumb.src);
       try {
-        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.saveAllThumbnails)(id, thumbUrls);
+        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.saveAllThumbnails)(id, thumbUrls);
         setThumbChoices([]); // Clear choices after saving
       } catch (error) {
         console.error('Error saving all FFmpeg thumbnails:', error);
@@ -998,81 +935,10 @@ const Thumbnails = ({
     }
     setIsSaving(false); // Hide spinner after all operations complete
   };
-  function drawWatermarkOnCanvas(canvas) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        if (!options?.ffmpeg_thumb_watermark?.url) {
-          reject(new Error('No thumbnail watermark set'));
-        }
-        const ctx = canvas.getContext('2d');
-        const watermarkImage = new Image();
-        const {
-          url,
-          scale,
-          align,
-          x,
-          valign,
-          y
-        } = options.ffmpeg_thumb_watermark;
-        watermarkImage.crossOrigin = 'Anonymous';
-        watermarkImage.src = url;
-        watermarkImage.onload = () => {
-          const canvasWidth = canvas.width;
-          const canvasHeight = canvas.height;
-          const watermarkWidth = canvasWidth * scale / 100;
-          const watermarkHeight = canvasHeight * scale / 100;
-          const horizontalOffset = canvasWidth * x / 100;
-          const verticalOffset = canvasHeight * y / 100;
-          let xPos, yPos;
-          switch (align) {
-            case 'left':
-              xPos = horizontalOffset;
-              break;
-            case 'center':
-              xPos = (canvasWidth - watermarkWidth) / 2 + horizontalOffset;
-              break;
-            case 'right':
-              xPos = canvasWidth - watermarkWidth - horizontalOffset;
-              break;
-            default:
-              reject(new Error((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Invalid horizontal alignment provided')));
-              return;
-          }
-          switch (valign) {
-            case 'top':
-              yPos = verticalOffset;
-              break;
-            case 'center':
-              yPos = (canvasHeight - watermarkHeight) / 2 + verticalOffset;
-              break;
-            case 'bottom':
-              yPos = canvasHeight - watermarkHeight - verticalOffset;
-              break;
-            default:
-              reject(new Error((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Invalid vertical alignment provided')));
-              return;
-          }
-          ctx.drawImage(watermarkImage, xPos, yPos, watermarkWidth, watermarkHeight);
-          resolve(canvas);
-        };
-        watermarkImage.onerror = () => {
-          reject(new Error((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Failed to load watermark image')));
-        };
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
   const setCanvasAsPoster = async canvasObject => {
     setIsSaving(true);
     try {
-      const blob = await new Promise(resolve => canvasObject.toBlob(resolve, 'image/jpeg'));
-      const formData = new FormData();
-      formData.append('file', blob, 'thumbnail.jpg');
-      formData.append('attachment_id', id);
-      const postName = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_4__.getFilename)(src);
-      formData.append('post_name', postName);
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.uploadThumbnail)(formData);
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.createThumbnailFromCanvas)(canvasObject, id, src);
       setPosterData(response.thumb_url, response.thumb_id);
     } catch (error) {
       console.error('Error uploading thumbnail:', error);
@@ -1126,7 +992,7 @@ const Thumbnails = ({
   };
   const setImgAsPoster = async thumb_url => {
     try {
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.setPosterImage)(id, thumb_url);
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.setPosterImage)(id, thumb_url);
       setPosterData(response.thumb_url, response.thumb_id);
     } catch (error) {
       console.error(error);
@@ -1134,7 +1000,7 @@ const Thumbnails = ({
   };
   const generateThumb = async (i, type) => {
     try {
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.generateThumbnail)(src, total_thumbnails, i, id, type);
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.generateThumbnail)(src, total_thumbnails, i, id, type);
       return response;
     } catch (error) {
       console.error(error);
@@ -1182,7 +1048,7 @@ const Thumbnails = ({
   };
   const handleUseThisFrame = async () => {
     setIsSaving(true);
-    const canvas = await drawCanvasThumb(); // Await the canvas object (no index for single frame)
+    const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, videoRef.current.currentTime, options?.ffmpeg_thumb_watermark);
     setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
   };
   const handleToggleVideoPlayer = event => {
@@ -1441,14 +1307,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
 /* harmony export */   clearQueue: () => (/* binding */ clearQueue),
+/* harmony export */   createThumbnailFromCanvas: () => (/* binding */ createThumbnailFromCanvas),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteJob: () => (/* binding */ deleteJob),
 /* harmony export */   enqueueJob: () => (/* binding */ enqueueJob),
 /* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
+/* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   getRecentVideos: () => (/* binding */ getRecentVideos),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
+/* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
@@ -1457,6 +1326,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
 /* harmony export */   setPosterImage: () => (/* binding */ setPosterImage),
+/* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   testFFmpegCommand: () => (/* binding */ testFFmpegCommand),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
 /* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
@@ -1580,6 +1450,35 @@ const deleteFile = async attachmentId => {
     console.error('Error deleting file:', error);
     throw error;
   }
+};
+
+/**
+ * Converts a canvas to a blob and uploads it as a thumbnail.
+ *
+ * @param {HTMLCanvasElement} canvas       The canvas element to upload.
+ * @param {number}            attachmentId The ID of the video attachment.
+ * @param {string}            videoSrc     The URL of the video (used for filename).
+ * @return {Promise<Object>} The response from the upload endpoint.
+ */
+const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(async blob => {
+      if (!blob) {
+        reject(new Error('Canvas is empty'));
+        return;
+      }
+      try {
+        const formData = new FormData();
+        formData.append('file', blob, 'thumbnail.jpg');
+        formData.append('attachment_id', attachmentId);
+        formData.append('post_name', (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.getFilename)(videoSrc));
+        const response = await uploadThumbnail(formData);
+        resolve(response);
+      } catch (error) {
+        reject(error);
+      }
+    }, 'image/jpeg');
+  });
 };
 const uploadThumbnail = async formData => {
   try {
@@ -1728,6 +1627,270 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     console.error('Error generating thumbnail:', error);
     throw error;
   }
+};
+const startBatchProcess = async (type, additionalData = {}) => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/batch/process',
+      method: 'POST',
+      data: {
+        type,
+        ...additionalData
+      }
+    });
+  } catch (error) {
+    console.error(`Error starting ${type} batch processing:`, error);
+    throw error;
+  }
+};
+const getBatchProgress = async type => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/batch/progress?type=${type}`,
+      method: 'GET'
+    });
+  } catch (error) {
+    console.error(`Error fetching ${type} batch progress:`, error);
+    throw error;
+  }
+};
+const getThumbnailCandidates = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/thumbs/candidates',
+      method: 'GET'
+    });
+  } catch (error) {
+    console.error('Error fetching thumbnail candidates:', error);
+    throw error;
+  }
+};
+
+/***/ },
+
+/***/ "./src/utils/video-capture.js"
+/*!************************************!*\
+  !*** ./src/utils/video-capture.js ***!
+  \************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   calculateTimecodes: () => (/* binding */ calculateTimecodes),
+/* harmony export */   captureVideoFrame: () => (/* binding */ captureVideoFrame),
+/* harmony export */   drawWatermark: () => (/* binding */ drawWatermark),
+/* harmony export */   getVideoMetadata: () => (/* binding */ getVideoMetadata)
+/* harmony export */ });
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
+
+
+/**
+ * Captures a frame from a video element or URL.
+ *
+ * @param {HTMLVideoElement|string} source           Video element or URL.
+ * @param {number}                  time             Time in seconds to capture.
+ * @param {Object}                  watermarkOptions Watermark settings.
+ * @return {Promise<HTMLCanvasElement>} The canvas with the captured frame.
+ */
+const captureVideoFrame = (source, time, watermarkOptions = null) => {
+  return new Promise((resolve, reject) => {
+    let video;
+    let isTempVideo = false;
+    if (typeof source === 'string') {
+      video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.src = source;
+      video.muted = true;
+      video.preload = 'metadata';
+      isTempVideo = true;
+    } else {
+      video = source;
+    }
+    const onSeeked = async () => {
+      // Clean up listeners if we added them
+      if (isTempVideo) {
+        video.removeEventListener('seeked', onSeeked);
+        video.removeEventListener('error', onError);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      if (watermarkOptions && watermarkOptions.url) {
+        try {
+          await drawWatermark(canvas, watermarkOptions);
+        } catch (e) {
+          console.error('Watermark failed', e);
+        }
+      }
+      resolve(canvas);
+      if (isTempVideo) {
+        video.src = '';
+        video.load();
+      }
+    };
+    const onError = e => {
+      if (isTempVideo) {
+        video.removeEventListener('seeked', onSeeked);
+        video.removeEventListener('error', onError);
+      }
+      reject(e);
+    };
+    const onLoadedMetadata = () => {
+      let seekTime = time;
+      if (video.duration < seekTime) {
+        seekTime = video.duration / 2;
+      }
+      video.currentTime = seekTime;
+    };
+    if (isTempVideo) {
+      video.addEventListener('seeked', onSeeked);
+      video.addEventListener('error', onError);
+      video.addEventListener('loadedmetadata', onLoadedMetadata);
+      // Trigger load
+      video.load();
+    } else {
+      // For existing video element, just seek
+      const oneShotSeek = async () => {
+        video.removeEventListener('seeked', oneShotSeek);
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (watermarkOptions && watermarkOptions.url) {
+          try {
+            await drawWatermark(canvas, watermarkOptions);
+          } catch (e) {
+            console.error('Watermark failed', e);
+          }
+        }
+        resolve(canvas);
+      };
+      video.addEventListener('seeked', oneShotSeek);
+      video.currentTime = time;
+    }
+  });
+};
+
+/**
+ * Draws a watermark on the provided canvas.
+ *
+ * @param {HTMLCanvasElement} canvas  The canvas to draw on.
+ * @param {Object}            options Watermark options (url, scale, align, x, valign, y).
+ * @return {Promise<HTMLCanvasElement>}
+ */
+const drawWatermark = (canvas, options) => {
+  return new Promise((resolve, reject) => {
+    const {
+      url,
+      scale,
+      align,
+      x,
+      valign,
+      y
+    } = options;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = url;
+    img.onload = () => {
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const watermarkWidth = canvasWidth * scale / 100;
+      const watermarkHeight = canvasHeight * scale / 100;
+      const horizontalOffset = canvasWidth * x / 100;
+      const verticalOffset = canvasHeight * y / 100;
+      let xPos, yPos;
+      switch (align) {
+        case 'left':
+          xPos = horizontalOffset;
+          break;
+        case 'center':
+          xPos = (canvasWidth - watermarkWidth) / 2 + horizontalOffset;
+          break;
+        case 'right':
+          xPos = canvasWidth - watermarkWidth - horizontalOffset;
+          break;
+        default:
+          xPos = horizontalOffset;
+      }
+      switch (valign) {
+        case 'top':
+          yPos = verticalOffset;
+          break;
+        case 'center':
+          yPos = (canvasHeight - watermarkHeight) / 2 + verticalOffset;
+          break;
+        case 'bottom':
+          yPos = canvasHeight - watermarkHeight - verticalOffset;
+          break;
+        default:
+          yPos = verticalOffset;
+      }
+      ctx.drawImage(img, xPos, yPos, watermarkWidth, watermarkHeight);
+      resolve(canvas);
+    };
+    img.onerror = () => reject(new Error((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Failed to load watermark image', 'video-embed-thumbnail-generator')));
+  });
+};
+
+/**
+ * Loads video metadata from a source.
+ *
+ * @param {string} source Video URL.
+ * @return {Promise<HTMLVideoElement>} The video element with loaded metadata.
+ */
+const getVideoMetadata = source => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.crossOrigin = 'anonymous';
+    video.src = source;
+    video.muted = true;
+    const timeout = setTimeout(() => {
+      reject(new Error('Video load timeout'));
+    }, 30000);
+    video.onloadedmetadata = () => {
+      clearTimeout(timeout);
+      resolve(video);
+    };
+    video.onerror = e => {
+      clearTimeout(timeout);
+      reject(e);
+    };
+  });
+};
+
+/**
+ * Calculates timecodes for thumbnail generation.
+ *
+ * @param {number} duration Total video duration.
+ * @param {number} count    Number of thumbnails.
+ * @param {Object} options  Options { position: number (0-100), random: boolean }.
+ * @return {number[]} Array of timecodes.
+ */
+const calculateTimecodes = (duration, count, options = {}) => {
+  const timecodes = [];
+  const {
+    position = 50,
+    random = false
+  } = options;
+  if (count === 1 && !random) {
+    timecodes.push(duration * (position / 100));
+  } else {
+    for (let i = 0; i < count; i++) {
+      let time = (i + 1) / (count + 1) * duration;
+      if (random) {
+        const randomOffset = Math.floor(Math.random() * (duration / count));
+        time = Math.max(time - randomOffset, 0);
+      }
+      timecodes.push(time);
+    }
+  }
+  return timecodes;
 };
 
 /***/ },
@@ -1917,8 +2080,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_AttachmentDetails__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/AttachmentDetails */ "./src/features/attachment-details/components/AttachmentDetails.js");
 /* harmony import */ var _attachment_details_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./attachment-details.scss */ "./src/features/attachment-details/attachment-details.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _utils_video_capture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../utils/video-capture */ "./src/utils/video-capture.js");
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+
+
+
 
 
 
@@ -1932,7 +2102,7 @@ if (editMediaContainer) {
 
   // Create a new React root and render the component.
   const videopackReactRoot = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createRoot)(editMediaContainer);
-  videopackReactRoot.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_components_AttachmentDetails__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  videopackReactRoot.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_AttachmentDetails__WEBPACK_IMPORTED_MODULE_1__["default"], {
     attachmentId: postId
   }));
 }
@@ -1982,7 +2152,7 @@ if (typeof wp === 'undefined' || !wp.media || !wp.media.view || !wp.media.view.A
 
         // Create a new React root and render the component.
         this.videopackReactRoot = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createRoot)(reactRootDiv);
-        this.videopackReactRoot.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_components_AttachmentDetails__WEBPACK_IMPORTED_MODULE_1__["default"], {
+        this.videopackReactRoot.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_AttachmentDetails__WEBPACK_IMPORTED_MODULE_1__["default"], {
           attachmentId: this.model.attributes.id
         }));
       }
@@ -2002,6 +2172,174 @@ if (typeof wp === 'undefined' || !wp.media || !wp.media.view || !wp.media.view.A
 
   // Replace the original view with our extended one.
   wp.media.view.Attachment.Details = extendedAttachmentDetails;
+}
+
+// --- Auto-Generation Logic ---
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof wp === 'undefined' || !wp.media) {
+    return;
+  }
+  const config = window.videopack_config || {};
+
+  // 1. Handle new uploads (hook into wp.media)
+  // Only run if auto_thumb is enabled and FFmpeg is NOT handling it.
+  if (config.auto_thumb && config.ffmpeg_exists !== true) {
+    const {
+      media
+    } = wp;
+    if (media.model && media.model.Attachments && media.model.Attachments.prototype.add) {
+      const originalAdd = media.model.Attachments.prototype.add;
+      media.model.Attachments.prototype.add = function (models, options) {
+        const added = originalAdd.apply(this, arguments);
+        if (!added) {
+          return added;
+        }
+        const newModels = Array.isArray(added) ? added : [added];
+        newModels.forEach(model => {
+          // Check if it's a video and currently uploading.
+          if (model && typeof model.get === 'function' && model.get('type') === 'video' && model.get('uploading') === true) {
+            const onUploadComplete = () => {
+              if (model.get('uploading') === false) {
+                model.off('change:uploading', onUploadComplete);
+                // Small delay to ensure processing is done and URL is valid.
+                setTimeout(() => processVideoItem(model.get('id'), model.get('url'), config, model), 500);
+              }
+            };
+            model.on('change:uploading', onUploadComplete);
+          }
+        });
+        return added;
+      };
+    }
+  }
+
+  // 2. Handle pending attachments (flagged from backend)
+  if (config.pending_attachments && config.pending_attachments.length > 0) {
+    processPendingAttachments(config.pending_attachments, config);
+  }
+});
+
+/**
+ * Processes a list of pending attachments.
+ *
+ * @param {Array}  attachments List of attachment objects {id, url}.
+ * @param {Object} config      Plugin configuration.
+ */
+async function processPendingAttachments(attachments, config) {
+  const total = attachments.length;
+  let count = 0;
+  const notice = showNotice((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.sprintf)(/* translators: %d: number of videos */
+  (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Generating thumbnails for %d videos…', 'video-embed-thumbnail-generator'), total));
+  for (const att of attachments) {
+    try {
+      await processVideoItem(att.id, att.url, config);
+      count++;
+      notice.textContent = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.sprintf)(/* translators: 1: current count, 2: total count */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Generating thumbnails: %1$d / %2$d', 'video-embed-thumbnail-generator'), count, total);
+    } catch (e) {
+      console.error('Videopack: Failed to process pending video', att.id, e);
+    }
+  }
+  notice.textContent = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_5__.__)('Thumbnail generation complete.', 'video-embed-thumbnail-generator');
+  setTimeout(() => {
+    if (notice.parentNode) {
+      notice.parentNode.removeChild(notice);
+    }
+  }, 3000);
+}
+
+/**
+ * Generates thumbnails for a video.
+ *
+ * @param {number}                    id     The attachment ID.
+ * @param {string}                    src    The video URL.
+ * @param {Object}                    config The plugin configuration.
+ * @param {wp.media.model.Attachment} model  Optional. The attachment model to update.
+ */
+async function processVideoItem(id, src, config, model = null) {
+  const totalThumbnails = Number(config.auto_thumb_number) || 1;
+  const position = Number(config.auto_thumb_position) || 50;
+  const watermarkOptions = config.ffmpeg_thumb_watermark;
+  try {
+    const video = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_3__.getVideoMetadata)(src);
+    const duration = video.duration;
+    if (!duration) {
+      throw new Error('Invalid duration');
+    }
+    const timecodes = (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_3__.calculateTimecodes)(duration, totalThumbnails, {
+      position
+    });
+    const generatedThumbs = [];
+    for (const time of timecodes) {
+      try {
+        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_3__.captureVideoFrame)(video, time, watermarkOptions);
+        const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.createThumbnailFromCanvas)(canvas, id, src);
+        if (response && response.thumb_url) {
+          generatedThumbs.push(response);
+        }
+      } catch (e) {
+        console.error('Videopack: Auto-thumbnail generation failed', e);
+      }
+    }
+    if (generatedThumbs.length > 0) {
+      // Determine which thumbnail should be the poster
+      let posterIndex = 0;
+      if (totalThumbnails > 1) {
+        posterIndex = position - 1;
+        if (posterIndex < 0) {
+          posterIndex = 0;
+        }
+        if (posterIndex >= totalThumbnails) {
+          posterIndex = totalThumbnails - 1;
+        }
+      }
+
+      // The server automatically sets the last uploaded thumbnail as the featured image.
+      // If the desired poster is NOT the last one, we must explicitly set it.
+      if (posterIndex >= generatedThumbs.length) {
+        posterIndex = generatedThumbs.length - 1;
+      }
+      if (posterIndex !== generatedThumbs.length - 1) {
+        const posterThumb = generatedThumbs[posterIndex];
+        try {
+          await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_4__.setPosterImage)(id, posterThumb.thumb_url);
+        } catch (e) {
+          console.error('Videopack: Failed to set poster', e);
+        }
+      }
+
+      // Update the model to reflect changes
+      if (model) {
+        await model.fetch();
+      }
+    }
+
+    // Cleanup
+    video.src = '';
+    video.load();
+  } catch (e) {
+    console.error('Videopack: Video processing failed', e);
+  }
+}
+
+/**
+ * Displays a fixed notification.
+ *
+ * @param {string} message The message to display.
+ * @return {HTMLElement} The notice element.
+ */
+function showNotice(message) {
+  let notice = document.getElementById('videopack-auto-gen-notice');
+  if (!notice) {
+    notice = document.createElement('div');
+    notice.id = 'videopack-auto-gen-notice';
+    notice.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #fff; border-left: 4px solid #00a32a; box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); padding: 10px 20px; z-index: 99999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; font-size: 13px;';
+    document.body.appendChild(notice);
+  }
+  notice.textContent = message;
+  notice.style.display = 'block';
+  return notice;
 }
 })();
 

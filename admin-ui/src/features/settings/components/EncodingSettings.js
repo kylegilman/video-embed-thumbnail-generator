@@ -1,7 +1,12 @@
 /* global videopack_config */
 
-import { __ } from '@wordpress/i18n';
-import { getUsersWithCapability } from '../../../utils/utils';
+import { __, sprintf } from '@wordpress/i18n';
+import {
+	getUsersWithCapability,
+	startBatchProcess,
+	getBatchProgress,
+} from '../../../utils/utils';
+import useBatchProcess from '../../../hooks/useBatchProcess';
 import {
 	BaseControl,
 	Button,
@@ -10,6 +15,7 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
+	__experimentalConfirmDialog as ConfirmDialog,
 	Icon,
 	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	MediaUpload,
@@ -38,8 +44,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		encode,
 		custom_format,
 		hide_video_formats,
-		auto_thumb_number,
-		auto_thumb_position,
 		error_email,
 		ffmpeg_thumb_watermark,
 		ffmpeg_watermark,
@@ -54,13 +58,26 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		ffmpeg_error,
 		auto_encode,
 		auto_encode_gif,
-		auto_thumb,
 		sample_rotate,
 		auto_publish_post,
 	} = settings;
 
 	const [users, setUsers] = useState(null);
 	const [bitrates, setBitrates] = useState(null);
+
+	const encodingBatch = useBatchProcess();
+
+	const handleEncodeAllVideos = () => {
+		encodingBatch.confirmAndRun(
+			__(
+				"Are you sure you want to add all videos to the encoding queue? This will check every video in your library and add it to the queue if it hasn't been encoded yet.",
+				'video-embed-thumbnail-generator'
+			),
+			() => startBatchProcess('encoding'),
+			() => getBatchProgress('encoding'),
+			__('No videos found to process.', 'video-embed-thumbnail-generator')
+		);
+	};
 
 	useEffect(() => {
 		getUsersWithCapability('edit_others_video_encodes')
@@ -351,70 +368,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		);
 	};
 
-	const autoThumbLabel = () => {
-		const changeAutoThumbNumberHandler = (value) => {
-			changeHandlerFactory.auto_thumb_number(value);
-			changeHandlerFactory.auto_thumb_position(
-				String(value) === '1' ? '50' : '1'
-			);
-		};
-
-		const autoThumbPositionLabel = () => {
-			if (String(auto_thumb_number) === '1') {
-				return (
-					<>
-						{__('thumbnail from')}
-						<RangeControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							className="videopack-setting-auto-thumb"
-							value={Number(auto_thumb_position)}
-							onChange={changeHandlerFactory.auto_thumb_position}
-							min={0}
-							max={100}
-							step={1}
-							disabled={ffmpeg_exists !== true}
-						/>
-						{__('% through the video')}
-					</>
-				);
-			}
-			return (
-				<>
-					{__('thumbnails and set #')}
-					<TextControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						className="videopack-setting-auto-thumb"
-						type="number"
-						value={auto_thumb_position}
-						onChange={changeHandlerFactory.auto_thumb_position}
-						disabled={ffmpeg_exists !== true}
-					/>
-					{__('as the featured image.')}
-				</>
-			);
-		};
-
-		return (
-			<span>
-				{__('Generate')}
-				<TextControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					className="videopack-setting-auto-thumb"
-					type="number"
-					min="1"
-					max="99"
-					value={auto_thumb_number}
-					onChange={changeAutoThumbNumberHandler}
-					disabled={ffmpeg_exists !== true}
-				/>
-				{autoThumbPositionLabel()}
-			</span>
-		);
-	};
-
 	const generateNonCrfMarks = (type) => {
 		const marks = [];
 		switch (type) {
@@ -573,13 +526,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						checked={hide_video_formats}
 						disabled={ffmpeg_exists !== true}
 					/>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={autoThumbLabel()}
-						onChange={changeHandlerFactory.auto_thumb}
-						checked={auto_thumb}
-						disabled={ffmpeg_exists !== true}
-					/>
 				</BaseControl>
 				<ToggleControl
 					__nextHasNoMarginBottom
@@ -614,16 +560,20 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<Button
 						className="videopack-library-button no-vertical-align"
 						variant="secondary"
-						disabled={ffmpeg_exists !== true}
+						disabled={ffmpeg_exists !== true || encodingBatch.isProcessing}
+						onClick={handleEncodeAllVideos}
 					>
-						{__('Generate thumbnails')}
-					</Button>
-					<Button
-						className="videopack-library-button no-vertical-align"
-						variant="secondary"
-						disabled={ffmpeg_exists !== true}
-					>
-						{__('Encode videos')}
+						{encodingBatch.isProcessing
+							? sprintf(
+									/* translators: 1: current count, 2: total count */
+									__(
+										'Processing %1$d / %2$d',
+										'video-embed-thumbnail-generator'
+									),
+									encodingBatch.progress.current,
+									encodingBatch.progress.total
+							  )
+							: __('Encode videos')}
 					</Button>
 				</BaseControl>
 			</PanelBody>
@@ -726,6 +676,25 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					value={ffmpegTest?.output}
 				/>
 			</PanelBody>
+			{encodingBatch.confirmDialog.isOpen && (
+				<ConfirmDialog
+					isOpen={true}
+					onConfirm={() => {
+						if (encodingBatch.confirmDialog.onConfirm) {
+							encodingBatch.confirmDialog.onConfirm();
+						}
+						encodingBatch.closeConfirmDialog();
+					}}
+					onCancel={encodingBatch.closeConfirmDialog}
+					confirmButtonText={
+						encodingBatch.confirmDialog.isAlert
+							? __('OK', 'video-embed-thumbnail-generator')
+							: __('OK', 'video-embed-thumbnail-generator')
+					}
+				>
+					{encodingBatch.confirmDialog.message}
+				</ConfirmDialog>
+			)}
 		</>
 	);
 };

@@ -526,6 +526,49 @@ class REST_Controller extends \WP_REST_Controller {
 				),
 			)
 		);
+		register_rest_route(
+			$this->namespace,
+			'/batch/process',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'batch_process' ),
+				'permission_callback' => array( $this, 'batch_permissions' ),
+				'args'                => array(
+					'type' => array(
+						'required' => true,
+						'type'     => 'string',
+						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding' ),
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/batch/progress',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'batch_progress' ),
+				'permission_callback' => array( $this, 'batch_permissions' ),
+				'args'                => array(
+					'type' => array(
+						'required' => true,
+						'type'     => 'string',
+						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding' ),
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/thumbs/candidates',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_thumbnail_candidates' ),
+				'permission_callback' => function () {
+					return current_user_can( 'make_video_thumbnails' );
+				},
+			)
+		);
 	}
 
 	/**
@@ -541,7 +584,7 @@ class REST_Controller extends \WP_REST_Controller {
 		static $depth = 0;
 
 		// Add a depth limit to prevent infinite recursion
-		if ($depth > 20) {
+		if ( $depth > 20 ) {
 			return '(recursion limit reached)';
 		}
 
@@ -980,7 +1023,13 @@ class REST_Controller extends \WP_REST_Controller {
 			return $result;
 		}
 
-		return new \WP_REST_Response( array( 'status' => 'success', 'message' => __( 'Job removed from queue.' ) ), 200 );
+		return new \WP_REST_Response(
+			array(
+				'status'  => 'success',
+				'message' => __( 'Job removed from queue.' ),
+			),
+			200
+		);
 	}
 
 	/**
@@ -1163,6 +1212,112 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Permission callback for batch operations.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return bool True if allowed, false otherwise.
+	 */
+	public function batch_permissions( $request ) {
+		$type = $request->get_param( 'type' );
+		switch ( $type ) {
+			case 'featured':
+			case 'parents':
+				return current_user_can( 'manage_options' );
+			case 'thumbs':
+				return current_user_can( 'make_video_thumbnails' );
+			case 'encoding':
+				return current_user_can( 'encode_videos' );
+		}
+		return false;
+	}
+
+	/**
+	 * REST callback to start a batch process.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|\WP_Error The response.
+	 */
+	public function batch_process( $request ) {
+		if ( ! function_exists( 'as_enqueue_async_action' ) ) {
+			return new \WP_Error( 'as_missing', __( 'Action Scheduler is not available.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+		}
+
+		$type   = $request->get_param( 'type' );
+		$groups = array(
+			'featured' => 'videopack-featured-images',
+			'parents'  => 'videopack-parent-switching',
+			'thumbs'   => 'videopack-generate-thumbnails',
+			'encoding' => 'videopack-batch-enqueue',
+		);
+
+		// Clear any existing actions in this group to prevent duplicates/confusion.
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( '', array(), $groups[ $type ] );
+		}
+
+		$attachment = new Attachment( $this->options_manager );
+		$result     = array();
+
+		switch ( $type ) {
+			case 'featured':
+				$result = $attachment->process_batch_featured();
+				break;
+			case 'parents':
+				$target_parent = $request->get_param( 'target_parent' );
+				$result        = $attachment->process_batch_parents( $target_parent );
+				break;
+			case 'thumbs':
+				$result = $attachment->process_batch_thumbs();
+				break;
+			case 'encoding':
+				$result = $attachment->process_batch_encoding();
+				break;
+		}
+
+		if ( empty( $result ) ) {
+			return new \WP_Error( 'invalid_type', __( 'Invalid batch type.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		}
+
+		return new \WP_REST_Response( $result, 200 );
+	}
+
+	/**
+	 * REST callback to get a list of videos that need thumbnails generated.
+	 *
+	 * @return \WP_REST_Response The list of candidates.
+	 */
+	public function get_thumbnail_candidates() {
+		$attachment = new Attachment( $this->options_manager );
+		$results    = $attachment->get_thumbnail_candidates();
+		return new \WP_REST_Response( $results, 200 );
+	}
+
+	/**
+	 * REST callback to get the progress of a batch process.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 *
+	 * @return \WP_REST_Response|\WP_Error The progress data.
+	 */
+	public function batch_progress( $request ) {
+		$type   = $request->get_param( 'type' );
+		$groups = array(
+			'featured' => 'videopack-featured-images',
+			'parents'  => 'videopack-parent-switching',
+			'thumbs'   => 'videopack-generate-thumbnails',
+			'encoding' => 'videopack-batch-enqueue',
+		);
+
+		$counts = $this->get_action_scheduler_progress( $groups[ $type ] );
+
+		if ( is_wp_error( $counts ) ) {
+			return $counts;
+		}
+
+		return new \WP_REST_Response( $counts, 200 );
+	}
+
+	/**
 	 * Adds the 'videopack' field to the 'attachment' post type in the REST API.
 	 */
 	public function add_data_to_rest_response() {
@@ -1216,5 +1371,39 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Helper to get progress for a specific Action Scheduler group.
+	 *
+	 * @param string $group The Action Scheduler group.
+	 * @return array|\WP_Error The progress counts or error.
+	 */
+	private function get_action_scheduler_progress( $group ) {
+		if ( ! class_exists( 'ActionScheduler_Store' ) ) {
+			return new \WP_Error( 'as_missing', __( 'Action Scheduler is not available.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
+		}
+
+		$store    = \ActionScheduler_Store::instance();
+		$statuses = array(
+			'pending'     => \ActionScheduler_Store::STATUS_PENDING,
+			'in-progress' => \ActionScheduler_Store::STATUS_RUNNING,
+			'complete'    => \ActionScheduler_Store::STATUS_COMPLETE,
+			'failed'      => \ActionScheduler_Store::STATUS_FAILED,
+		);
+		$counts   = array();
+
+		foreach ( $statuses as $key => $status ) {
+			$actions        = $store->query_actions(
+				array(
+					'group'    => $group,
+					'status'   => $status,
+					'per_page' => -1,
+				)
+			);
+			$counts[ $key ] = count( $actions );
+		}
+
+		return $counts;
 	}
 }
