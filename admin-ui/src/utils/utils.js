@@ -1,5 +1,5 @@
 import apiFetch from '@wordpress/api-fetch';
-import { addQueryArgs } from '@wordpress/url';
+import { addQueryArgs, getFilename } from '@wordpress/url';
 
 
 
@@ -120,6 +120,36 @@ export const deleteFile = async (attachmentId) => {
 		console.error('Error deleting file:', error);
 		throw error;
 	}
+};
+
+/**
+ * Converts a canvas to a blob and uploads it as a thumbnail.
+ *
+ * @param {HTMLCanvasElement} canvas       The canvas element to upload.
+ * @param {number}            attachmentId The ID of the video attachment.
+ * @param {string}            videoSrc     The URL of the video (used for filename).
+ * @return {Promise<Object>} The response from the upload endpoint.
+ */
+export const createThumbnailFromCanvas = ( canvas, attachmentId, videoSrc ) => {
+	return new Promise( ( resolve, reject ) => {
+		canvas.toBlob( async ( blob ) => {
+			if ( ! blob ) {
+				reject( new Error( 'Canvas is empty' ) );
+				return;
+			}
+			try {
+				const formData = new FormData();
+				formData.append( 'file', blob, 'thumbnail.jpg' );
+				formData.append( 'attachment_id', attachmentId );
+				formData.append( 'post_name', getFilename( videoSrc ) );
+
+				const response = await uploadThumbnail( formData );
+				resolve( response );
+			} catch ( error ) {
+				reject( error );
+			}
+		}, 'image/jpeg' );
+	} );
 };
 
 export const uploadThumbnail = async (formData) => {
@@ -283,6 +313,43 @@ export const generateThumbnail = async (
 		return await apiFetch({ path });
 	} catch (error) {
 		console.error('Error generating thumbnail:', error);
+		throw error;
+	}
+};
+
+export const startBatchProcess = async (type, additionalData = {}) => {
+	try {
+		return await apiFetch({
+			path: '/videopack/v1/batch/process',
+			method: 'POST',
+			data: { type, ...additionalData },
+		});
+	} catch (error) {
+		console.error(`Error starting ${type} batch processing:`, error);
+		throw error;
+	}
+};
+
+export const getBatchProgress = async (type) => {
+	try {
+		return await apiFetch({
+			path: `/videopack/v1/batch/progress?type=${type}`,
+			method: 'GET',
+		});
+	} catch (error) {
+		console.error(`Error fetching ${type} batch progress:`, error);
+		throw error;
+	}
+};
+
+export const getThumbnailCandidates = async () => {
+	try {
+		return await apiFetch({
+			path: '/videopack/v1/thumbs/candidates',
+			method: 'GET',
+		});
+	} catch (error) {
+		console.error('Error fetching thumbnail candidates:', error);
 		throw error;
 	}
 };

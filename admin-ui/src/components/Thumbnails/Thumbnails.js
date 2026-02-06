@@ -13,13 +13,16 @@ import {
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
 import { __ } from '@wordpress/i18n';
-import { getFilename } from '@wordpress/url';
 import {
-	uploadThumbnail,
 	saveAllThumbnails,
 	setPosterImage,
 	generateThumbnail,
+	createThumbnailFromCanvas,
 } from '../../utils/utils';
+import {
+	captureVideoFrame,
+	calculateTimecodes,
+} from '../../utils/video-capture';
 
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import './Thumbnails.scss';
@@ -37,7 +40,6 @@ const Thumbnails = ({
 		options.total_thumbnails;
 	const thumbVideoPanel = useRef();
 	const videoRef = useRef();
-	const currentThumb = useRef();
 	const posterImageButton = useRef();
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isOpened, setIsOpened] = useState(false);
@@ -107,49 +109,30 @@ const Thumbnails = ({
 		const newThumbCanvases = [];
 		const ffmpegExists = videopack_config.ffmpeg_exists;
 
-		const timePoints = [...Array(thumbsInt)].map((_, i) => {
-			let movieoffset =
-				((i + 1) / (thumbsInt + 1)) * videoRef.current.duration;
-			if (type === 'random') {
-				const randomOffset = Math.floor(
-					Math.random() * (videoRef.current.duration / thumbsInt)
-				);
-				movieoffset = Math.max(movieoffset - randomOffset, 0);
-			}
-			return movieoffset;
-		});
+		const timePoints = calculateTimecodes(
+			videoRef.current.duration,
+			thumbsInt,
+			{ random: type === 'random' }
+		);
 
-		const processNextThumbnail = async (index) => {
-			if (index >= thumbsInt) {
-				videoRef.current.removeEventListener(
-					'timeupdate',
-					timeupdateListener
-				);
-				setIsSaving(false);
-				return;
-			}
-
-			videoRef.current.currentTime = timePoints[index];
-		};
-
-		const timeupdateListener = async () => {
+		for (const time of timePoints) {
 			let thumb;
 			try {
-				const canvas = await drawCanvasThumb();
+				const canvas = await captureVideoFrame(
+					videoRef.current,
+					time,
+					options?.ffmpeg_thumb_watermark
+				);
 				thumb = {
 					src: canvas.toDataURL(),
 					type: 'canvas',
 					canvasObject: canvas,
 				};
 				newThumbCanvases.push(thumb);
-				setThumbChoices([...newThumbCanvases]);
-				processNextThumbnail(newThumbCanvases.length);
+				setThumbChoices([...newThumbCanvases]); // Update incrementally
 			} catch (error) {
 				console.error('Error generating canvas thumbnail:', error);
 				if (ffmpegExists) {
-					console.warn(
-						'Falling back to FFmpeg for thumbnail generation.'
-					);
 					try {
 						const response = await generateThumb(
 							newThumbCanvases.length + 1,
@@ -157,40 +140,15 @@ const Thumbnails = ({
 						);
 						thumb = {
 							src: response.real_thumb_url,
-							type: 'ffmpeg',
+							type: 'ffmpeg'
 						};
 						newThumbCanvases.push(thumb);
 						setThumbChoices([...newThumbCanvases]);
-						processNextThumbnail(newThumbCanvases.length);
-					} catch (ffmpegError) {
-						console.error(
-							'FFmpeg fallback also failed:',
-							ffmpegError
-						);
-						// Display a user-friendly error message if both methods fail
-						// For now, just log and stop
-						videoRef.current.removeEventListener(
-							'timeupdate',
-							timeupdateListener
-						);
-						setIsSaving(false);
-					}
-				} else {
-					console.error(
-						'Browser thumbnail generation failed and FFmpeg is not available.'
-					);
-					// Display a user-friendly error message
-					videoRef.current.removeEventListener(
-						'timeupdate',
-						timeupdateListener
-					);
-					setIsSaving(false);
+					} catch (ffmpegError) {}
 				}
 			}
-		};
-
-		videoRef.current.addEventListener('timeupdate', timeupdateListener);
-		processNextThumbnail(0); // Start the process
+		}
+		setIsSaving(false);
 	});
 
 	// function to toggle video playback
@@ -234,25 +192,6 @@ const Thumbnails = ({
 		};
 	}, []);
 
-	const drawCanvasThumb = async () => {
-		const canvas = document.createElement('canvas');
-		canvas.width = videoRef.current.videoWidth;
-		canvas.height = videoRef.current.videoHeight;
-		const ctx = canvas.getContext('2d');
-		ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-
-		if (options?.ffmpeg_thumb_watermark?.url) {
-			try {
-				const watermarkCanvas = drawWatermarkOnCanvas(canvas);
-				return watermarkCanvas;
-			} catch (error) {
-				console.error('Error drawing watermark:', error);
-			}
-		} else {
-			return canvas;
-		}
-	};
-
 	const handleSaveThumbnail = (event, thumb) => {
 		event.currentTarget.classList.add('saving');
 		setIsSaving(true);
@@ -268,24 +207,8 @@ const Thumbnails = ({
 		const firstThumbType = thumbChoices[0]?.type; // Assuming all generated thumbs are of the same type
 
 		if (firstThumbType === 'canvas') {
-			const postName = getFilename(src);
 			const uploadPromises = thumbChoices.map((thumb) => {
-				return new Promise((resolve, reject) => {
-					thumb.canvasObject.toBlob(async (blob) => {
-						try {
-							const formData = new FormData();
-							formData.append('file', blob, 'thumbnail.jpg');
-							formData.append('attachment_id', id);
-							formData.append('post_name', postName);
-
-							// Don't need the response for "save all"
-							await uploadThumbnail(formData);
-							resolve();
-						} catch (error) {
-							reject(error);
-						}
-					}, 'image/jpeg');
-				});
+				return createThumbnailFromCanvas(thumb.canvasObject, id, src);
 			});
 
 			try {
@@ -307,108 +230,14 @@ const Thumbnails = ({
 		setIsSaving(false); // Hide spinner after all operations complete
 	};
 
-	function drawWatermarkOnCanvas(canvas) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				if (!options?.ffmpeg_thumb_watermark?.url) {
-					reject(new Error('No thumbnail watermark set'));
-				}
-				const ctx = canvas.getContext('2d');
-				const watermarkImage = new Image();
-				const { url, scale, align, x, valign, y } =
-					options.ffmpeg_thumb_watermark;
-
-				watermarkImage.crossOrigin = 'Anonymous';
-				watermarkImage.src = url;
-
-				watermarkImage.onload = () => {
-					const canvasWidth = canvas.width;
-					const canvasHeight = canvas.height;
-					const watermarkWidth = (canvasWidth * scale) / 100;
-					const watermarkHeight = (canvasHeight * scale) / 100;
-
-					const horizontalOffset = (canvasWidth * x) / 100;
-					const verticalOffset = (canvasHeight * y) / 100;
-
-					let xPos, yPos;
-
-					switch (align) {
-						case 'left':
-							xPos = horizontalOffset;
-							break;
-						case 'center':
-							xPos =
-								(canvasWidth - watermarkWidth) / 2 +
-								horizontalOffset;
-							break;
-						case 'right':
-							xPos =
-								canvasWidth - watermarkWidth - horizontalOffset;
-							break;
-						default:
-							reject(
-								new Error(
-									__('Invalid horizontal alignment provided')
-								)
-							);
-							return;
-					}
-
-					switch (valign) {
-						case 'top':
-							yPos = verticalOffset;
-							break;
-						case 'center':
-							yPos =
-								(canvasHeight - watermarkHeight) / 2 +
-								verticalOffset;
-							break;
-						case 'bottom':
-							yPos =
-								canvasHeight - watermarkHeight - verticalOffset;
-							break;
-						default:
-							reject(
-								new Error(
-									__('Invalid vertical alignment provided')
-								)
-							);
-							return;
-					}
-
-					ctx.drawImage(
-						watermarkImage,
-						xPos,
-						yPos,
-						watermarkWidth,
-						watermarkHeight
-					);
-					resolve(canvas);
-				};
-
-				watermarkImage.onerror = () => {
-					reject(new Error(__('Failed to load watermark image')));
-				};
-			} catch (error) {
-				reject(error);
-			}
-		});
-	}
-
 	const setCanvasAsPoster = async (canvasObject) => {
 		setIsSaving(true);
 		try {
-			const blob = await new Promise((resolve) =>
-				canvasObject.toBlob(resolve, 'image/jpeg')
+			const response = await createThumbnailFromCanvas(
+				canvasObject,
+				id,
+				src
 			);
-
-			const formData = new FormData();
-			formData.append('file', blob, 'thumbnail.jpg');
-			formData.append('attachment_id', id);
-			const postName = getFilename(src);
-			formData.append('post_name', postName);
-
-			const response = await uploadThumbnail(formData);
 
 			setPosterData(response.thumb_url, response.thumb_id);
 		} catch (error) {
@@ -541,7 +370,11 @@ const Thumbnails = ({
 
 	const handleUseThisFrame = async () => {
 		setIsSaving(true);
-		const canvas = await drawCanvasThumb(); // Await the canvas object (no index for single frame)
+		const canvas = await captureVideoFrame(
+			videoRef.current,
+			videoRef.current.currentTime,
+			options?.ffmpeg_thumb_watermark
+		);
 		setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
 	};
 

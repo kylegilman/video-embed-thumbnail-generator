@@ -101,6 +101,11 @@
 		margin-top: 25px;
 	}
 
+	.videopack-vertical-center .components-form-toggle {
+		margin-top: auto;
+    	margin-bottom: auto;
+	}
+
 	.components-base-control.videopack-setting-auto-thumb {
 		display: inline-block;
 	}
@@ -133,6 +138,14 @@
 		font-weight: 500;
 		margin-top: 0;
 		text-transform: uppercase;
+	}
+
+	.videopack-settings-label {
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+		text-transform: uppercase;
+		font-size: 11px;
+		font-weight: 500;
+		line-height: 1.4;
 	}
 
 	.videopack-encode-grid {

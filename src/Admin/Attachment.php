@@ -277,7 +277,7 @@ class Attachment {
 		if ( $this->options['auto_encode'] || $this->options['auto_thumb'] ) {
 			$post = get_post( $post_id );
 			if ( $this->is_video( $post ) ) {
-				as_schedule_single_action( time() + 10, 'videopack_process_new_attachment', array( 'post_id' => $post_id ), 'videopack-attachments' );
+				as_schedule_single_action( time(), 'videopack_process_new_attachment', array( 'post_id' => $post_id ), 'videopack-attachments' );
 				// After scheduling, immediately trigger the Action Scheduler to process pending jobs.
 				do_action( 'action_scheduler_run_queue' );
 			}
@@ -290,71 +290,27 @@ class Attachment {
 			return;
 		}
 
-		// Thumbnail generation
-		if ( $this->options['auto_thumb'] && $this->is_video( $post ) && $post->post_mime_type != 'image/gif' ) {
-			$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
-			$filepath          = get_attached_file( $post_id );
-			$thumb_ids         = array();
-			$total_thumbs      = intval( $this->options['auto_thumb_number'] );
-
-			if ( $total_thumbs === 1 ) {
-				$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-				$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $post_id, $filepath, true, $ffmpeg_path, $this->options_manager );
-
-				if ( $video_metadata->worked && $video_metadata->duration ) {
-					$position = intval( $this->options['auto_thumb_position'] );
-					$timecode = 0.1; // Default to 0.1s to avoid black frames
-					if ( $position > 0 ) {
-						$timecode = ( $position / 100 ) * $video_metadata->duration;
-					}
-
-					$thumb_data = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( $post_id, $timecode );
-
-					if ( ! is_wp_error( $thumb_data ) ) {
-						$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], false );
-						if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
-							$thumb_ids[1] = $thumb_info['thumb_id'];
-						}
-					}
-				}
-			} else { // Multiple thumbnails
-				for ( $i = 1; $i <= $total_thumbs; $i++ ) {
-					$thumb_data = $ffmpeg_thumbnails->generate_single_thumbnail_data( $post_id, $total_thumbs, $i, false );
-
-					if ( is_wp_error( $thumb_data ) ) {
-						continue;
-					}
-
-					$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], $i );
-
-					if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
-						$thumb_ids[ $i ] = $thumb_info['thumb_id'];
-					}
-				}
-			}
-
-			if ( ! empty( $thumb_ids ) ) {
-				$thumb_key = ( $total_thumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
-				if ( $thumb_key > $total_thumbs || $thumb_key <= 0 ) { // Sanity check
-					$thumb_key = 1;
-				}
-				if ( array_key_exists( $thumb_key, $thumb_ids ) ) {
-					set_post_thumbnail( $post_id, $thumb_ids[ $thumb_key ] );
-					if ( $this->options['featured'] && ! empty( $post->post_parent ) ) {
-						set_post_thumbnail( $post->post_parent, $thumb_ids[ $thumb_key ] );
-					}
+		// Thumbnail generation logic
+		if ( $this->options['auto_thumb'] && $this->is_video( $post ) && $post->post_mime_type !== 'image/gif' ) {
+			// If a thumbnail already exists, the frontend script probably succeeded.
+			if ( ! has_post_thumbnail( $post_id ) ) {
+				if ( $this->options['ffmpeg_exists'] === true ) {
+					$this->generate_thumbnails_with_ffmpeg( $post_id );
+				} elseif ( $this->options['browser_thumbnails'] === true ) {
+					// FFmpeg is not available. Flag for deferred browser-based generation.
+					update_post_meta( $post_id, '_videopack_needs_browser_thumb', true );
 				}
 			}
 		}
 
 		// Encoding
 		if ( $this->options['auto_encode'] ) {
-			$is_animated = ( $post->post_mime_type == 'image/gif' ) ? $this->is_animated_gif( get_attached_file( $post_id ) ) : false;
+			$is_animated = ( 'image/gif' === $post->post_mime_type ) ? $this->is_animated_gif( get_attached_file( $post_id ) ) : false;
 			if ( ( ! $is_animated || $this->options['auto_encode_gif'] ) && $this->is_video( $post ) ) {
 				$encode_queue      = new Encode\Encode_Queue_Controller( $this->options_manager );
 				$movieurl          = wp_get_attachment_url( $post_id );
 				$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $post_id, $movieurl );
-				
+
 				$all_formats = $this->options_manager->get_video_formats();
 				$formats_to_encode = array();
 
@@ -380,6 +336,19 @@ class Attachment {
 		}
 	}
 
+	/**
+	 * Clears the 'needs browser thumb' flag when a thumbnail is set.
+	 *
+	 * @param int    $meta_id    ID of the meta data entry.
+	 * @param int    $object_id  ID of the object the meta is attached to.
+	 * @param string $meta_key   Meta key.
+	 * @param mixed  $meta_value Meta value.
+	 */
+	public function clear_browser_thumb_flag( $meta_id, $object_id, $meta_key, $meta_value ) {
+		if ( '_thumbnail_id' === $meta_key ) {
+			delete_post_meta( $object_id, '_videopack_needs_browser_thumb' );
+		}
+	}
 
 	public function cron_check_post_parent_handler( $post_id ) {
 
@@ -476,5 +445,386 @@ class Attachment {
 		}
 
 		return $metadata;
+	}
+
+	/**
+	 * Action Scheduler callback to set the featured image.
+	 *
+	 * @param int $parent_id The ID of the parent post.
+	 * @param int $poster_id The ID of the attachment to set as featured.
+	 */
+	public function execute_featured_image_action( $parent_id, $poster_id ) {
+		set_post_thumbnail( $parent_id, $poster_id );
+	}
+
+	/**
+	 * Action Scheduler callback to switch the parent of a thumbnail.
+	 *
+	 * @param int    $thumbnail_id The ID of the thumbnail attachment.
+	 * @param string $target_type  The target type ('post' or 'video').
+	 * @param int    $target_id    The ID of the new parent.
+	 * @param int    $video_id     The ID of the video attachment (used when switching to post).
+	 */
+	public function execute_switch_parent_action( $thumbnail_id, $target_type, $target_id, $video_id = 0 ) {
+		if ( 'post' === $target_type ) {
+			wp_update_post(
+				array(
+					'ID'          => $thumbnail_id,
+					'post_parent' => $target_id,
+				)
+			);
+			if ( $video_id ) {
+				update_post_meta( $thumbnail_id, '_kgflashmediaplayer-video-id', $video_id );
+			}
+		} elseif ( 'video' === $target_type ) {
+			wp_update_post(
+				array(
+					'ID'          => $thumbnail_id,
+					'post_parent' => $target_id,
+				)
+			);
+		}
+	}
+
+	/**
+	 * Action Scheduler callback to enqueue a video for encoding.
+	 *
+	 * @param int $post_id The ID of the video attachment.
+	 */
+	public function execute_batch_enqueue_action( $post_id ) {
+		$options           = $this->options_manager->get_options();
+		$formats_to_encode = array();
+
+		if ( ! empty( $options['encode'] ) ) {
+			foreach ( $options['encode'] as $format_id => $settings ) {
+				if ( ! empty( $settings['enabled'] ) && $settings['enabled'] ) {
+					$formats_to_encode[] = $format_id;
+				}
+			}
+		}
+
+		if ( empty( $formats_to_encode ) ) {
+			return;
+		}
+
+		$url = wp_get_attachment_url( $post_id );
+		if ( ! $url ) {
+			return;
+		}
+
+		$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $post_id, $url );
+		$valid_formats     = array();
+
+		foreach ( $formats_to_encode as $format_id ) {
+			$can_queue_status = $encode_attachment->check_if_can_queue( $format_id );
+			if ( 'ok_to_queue' === $can_queue_status ) {
+				$valid_formats[] = $format_id;
+			}
+		}
+
+		if ( ! empty( $valid_formats ) ) {
+			$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+			$controller->enqueue_encodes(
+				array(
+					'id'      => $post_id,
+					'url'     => $url,
+					'formats' => $valid_formats,
+				)
+			);
+		}
+	}
+
+	/**
+	 * Generates thumbnails for a video using FFmpeg.
+	 *
+	 * @param int $post_id The ID of the video attachment.
+	 */
+	public function generate_thumbnails_with_ffmpeg( $post_id ) {
+		if ( $this->options['ffmpeg_exists'] !== true ) {
+			return;
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return;
+		}
+
+		$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
+		$filepath          = get_attached_file( $post_id );
+		$thumb_ids         = array();
+		$total_thumbs      = intval( $this->options['auto_thumb_number'] );
+
+		if ( $total_thumbs === 1 ) {
+			$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
+			$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $post_id, $filepath, true, $ffmpeg_path, $this->options_manager );
+
+			if ( $video_metadata->worked && $video_metadata->duration ) {
+				$position = intval( $this->options['auto_thumb_position'] );
+				$timecode = 0.1; // Default to 0.1s to avoid black frames
+				if ( $position > 0 ) {
+					$timecode = ( $position / 100 ) * $video_metadata->duration;
+				}
+
+				$thumb_data = $ffmpeg_thumbnails->generate_thumbnail_at_timecode( $post_id, $timecode );
+
+				if ( ! is_wp_error( $thumb_data ) ) {
+					$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], false );
+					if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+						$thumb_ids[1] = $thumb_info['thumb_id'];
+					}
+				}
+			}
+		} else {
+			for ( $i = 1; $i <= $total_thumbs; $i++ ) {
+				$thumb_data = $ffmpeg_thumbnails->generate_single_thumbnail_data( $post_id, $total_thumbs, $i, false );
+
+				if ( is_wp_error( $thumb_data ) ) {
+					continue;
+				}
+
+				$thumb_info = $ffmpeg_thumbnails->save( $post_id, $post->post_title, $thumb_data['url'], $i );
+
+				if ( isset( $thumb_info['thumb_id'] ) && $thumb_info['thumb_id'] && ! is_wp_error( $thumb_info['thumb_id'] ) ) {
+					$thumb_ids[ $i ] = $thumb_info['thumb_id'];
+				}
+			}
+		}
+
+		if ( ! empty( $thumb_ids ) ) {
+			$thumb_key = ( $total_thumbs > 1 ) ? intval( $this->options['auto_thumb_position'] ) : 1;
+			if ( $thumb_key > $total_thumbs || $thumb_key <= 0 ) {
+				$thumb_key = 1;
+			}
+			if ( array_key_exists( $thumb_key, $thumb_ids ) ) {
+				set_post_thumbnail( $post_id, $thumb_ids[ $thumb_key ] );
+				if ( $this->options['featured'] && ! empty( $post->post_parent ) ) {
+					set_post_thumbnail( $post->post_parent, $thumb_ids[ $thumb_key ] );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Helper to process featured images batch.
+	 *
+	 * @return array Array containing the total count of scheduled actions.
+	 */
+	public function process_batch_featured() {
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'meta_query'     => array(
+				array(
+					'key'     => '_kgflashmediaplayer-poster-id',
+					'compare' => 'EXISTS',
+				),
+			),
+			'fields'         => 'ids',
+		);
+
+		$attachments = get_posts( $args );
+		$count       = 0;
+
+		foreach ( $attachments as $att_id ) {
+			$poster_id = get_post_meta( $att_id, '_kgflashmediaplayer-poster-id', true );
+			$parent_id = wp_get_post_parent_id( $att_id );
+
+			if ( $parent_id && $poster_id ) {
+				as_enqueue_async_action(
+					'videopack_set_featured_image',
+					array( $parent_id, (int) $poster_id ),
+					'videopack-featured-images'
+				);
+				$count++;
+			}
+		}
+
+		return array( 'total' => $count );
+	}
+
+	/**
+	 * Helper to process parent switching batch.
+	 *
+	 * @param string $target_parent The target parent type ('post' or 'video').
+	 * @return array Array containing the total count of scheduled actions.
+	 */
+	public function process_batch_parents( $target_parent ) {
+		$count = 0;
+
+		if ( 'post' === $target_parent ) {
+			// Find all video attachments.
+			$videos = get_posts(
+				array(
+					'post_type'      => 'attachment',
+					'post_mime_type' => 'video',
+					'post_status'    => 'any',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+				)
+			);
+
+			foreach ( $videos as $video_id ) {
+				$parent_id = wp_get_post_parent_id( $video_id );
+				if ( $parent_id ) {
+					// Find image children of this video.
+					$thumbnails = get_posts(
+						array(
+							'post_parent'    => $video_id,
+							'post_type'      => 'attachment',
+							'post_mime_type' => 'image',
+							'post_status'    => 'any',
+							'posts_per_page' => -1,
+							'fields'         => 'ids',
+						)
+					);
+
+					foreach ( $thumbnails as $thumb_id ) {
+						as_enqueue_async_action(
+							'videopack_switch_thumbnail_parent',
+							array( $thumb_id, 'post', $parent_id, $video_id ),
+							'videopack-parent-switching'
+						);
+						$count++;
+					}
+				}
+			}
+		} elseif ( 'video' === $target_parent ) {
+			// Find thumbnails that have the video ID stored in meta.
+			$thumbnails = get_posts(
+				array(
+					'post_type'      => 'attachment',
+					'post_mime_type' => 'image',
+					'post_status'    => 'any',
+					'meta_key'       => '_kgflashmediaplayer-video-id',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+				)
+			);
+
+			foreach ( $thumbnails as $thumb_id ) {
+				$video_id = get_post_meta( $thumb_id, '_kgflashmediaplayer-video-id', true );
+				if ( $video_id ) {
+					as_enqueue_async_action(
+						'videopack_switch_thumbnail_parent',
+						array( $thumb_id, 'video', (int) $video_id, 0 ),
+						'videopack-parent-switching'
+					);
+					$count++;
+				}
+			}
+		}
+
+		return array( 'total' => $count );
+	}
+
+	/**
+	 * Helper to get arguments for finding videos without thumbnails.
+	 *
+	 * @return array WP_Query arguments.
+	 */
+	private function get_thumbnail_candidate_args() {
+		return array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'video',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array(
+					'relation' => 'OR',
+					array(
+						'key'     => '_kgflashmediaplayer-poster',
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'   => '_kgflashmediaplayer-poster',
+						'value' => '',
+					),
+				),
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
+	}
+
+	/**
+	 * Helper to get a list of videos that need thumbnails generated.
+	 *
+	 * @return array The list of candidates.
+	 */
+	public function get_thumbnail_candidates() {
+		$args    = $this->get_thumbnail_candidate_args();
+		$videos  = get_posts( $args );
+		$results = array();
+
+		foreach ( $videos as $video_id ) {
+			$results[] = array(
+				'id'  => $video_id,
+				'url' => wp_get_attachment_url( $video_id ),
+			);
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Helper to process thumbnail generation batch.
+	 *
+	 * @return array Array containing the total count of scheduled actions.
+	 */
+	public function process_batch_thumbs() {
+		$args   = $this->get_thumbnail_candidate_args();
+		$videos = get_posts( $args );
+		$count  = 0;
+
+		foreach ( $videos as $video_id ) {
+			as_enqueue_async_action(
+				'videopack_generate_thumbnail',
+				array( $video_id ),
+				'videopack-generate-thumbnails'
+			);
+			$count++;
+		}
+
+		return array( 'total' => $count );
+	}
+
+	/**
+	 * Helper to process encoding batch.
+	 *
+	 * @return array Array containing the total count of scheduled actions.
+	 */
+	public function process_batch_encoding() {
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'video',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
+
+		$videos = get_posts( $args );
+		$count  = 0;
+
+		foreach ( $videos as $video_id ) {
+			as_enqueue_async_action(
+				'videopack_batch_enqueue_video',
+				array( $video_id ),
+				'videopack-batch-enqueue'
+			);
+			$count++;
+		}
+
+		return array( 'total' => $count );
 	}
 }

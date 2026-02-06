@@ -141,8 +141,8 @@ class Options {
 			'skip_buttons'            => false, // Enable skip forward/backward buttons in the player.
 			'skip_forward'            => 10, // Time to skip forward in seconds.
 			'skip_backward'           => 10, // Time to skip backward in seconds.
-			'endofvideooverlay'       => false, // Show an image overlay at the end of videos.
-			'endofvideooverlaysame'   => false, // Display the poster image at the end of videos if endofvideooverlay is true.
+			'endofvideooverlay'       => '', // Show an image overlay at the end of videos.
+			'endofvideooverlaysame'   => false, // Display the poster image at the end of videos.
 			'auto_res'                => 'automatic', // Default video playback resolution ('automatic', 'highest', 'lowest', or specific like '1080p').
 			'pixel_ratio'             => true, // Enable adjustment for high DPI displays (retina) when auto_res is 'automatic'.
 			'find_formats'            => false, // Automatically look for other codecs and resolutions based on the video filename.
@@ -547,7 +547,7 @@ class Options {
 	 *   skip_buttons: bool,
 	 *   skip_forward: int,
 	 *   skip_backward: int,
-	 *   endofvideooverlay: bool,
+	 *   endofvideooverlay: string,
 	 *   endofvideooverlaysame: bool,
 	 *   auto_res: string,
 	 *   pixel_ratio: bool,
@@ -854,7 +854,6 @@ class Options {
 			$input['browser_thumbnails'] = true; // in case a user had FFmpeg installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
 			$input['auto_encode']        = false;
 			$input['auto_encode_gif']    = false;
-			$input['auto_thumb']         = false;
 		}
 
 		if ( empty( $input['width'] ) ) {

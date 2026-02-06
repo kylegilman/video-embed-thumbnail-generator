@@ -158,6 +158,12 @@ class Videopack {
 		$this->loader->add_action( 'edit_attachment', $plugin_attachment, 'validate_attachment_updated' );
 		$this->loader->add_filter( 'mime_types', $plugin_attachment, 'add_mime_types' );
 		$this->loader->add_action( 'wp_read_video_metadata', $plugin_attachment, 'add_extra_video_metadata', 10, 4 );
+		$this->loader->add_action( 'updated_post_meta', $plugin_attachment, 'clear_browser_thumb_flag', 10, 4 );
+		$this->loader->add_action( 'added_post_meta', $plugin_attachment, 'clear_browser_thumb_flag', 10, 4 );
+		$this->loader->add_action( 'videopack_set_featured_image', $plugin_attachment, 'execute_featured_image_action', 10, 2 );
+		$this->loader->add_action( 'videopack_switch_thumbnail_parent', $plugin_attachment, 'execute_switch_parent_action', 10, 4 );
+		$this->loader->add_action( 'videopack_generate_thumbnail', $plugin_attachment, 'generate_thumbnails_with_ffmpeg', 10, 1 );
+		$this->loader->add_action( 'videopack_batch_enqueue_video', $plugin_attachment, 'execute_batch_enqueue_action', 10, 1 );
 
 		$plugin_cleanup = new Admin\Cleanup();
 		$this->loader->add_action( 'videopack_cleanup_generated_logfiles', $plugin_cleanup, 'cleanup_generated_logfiles_handler' );

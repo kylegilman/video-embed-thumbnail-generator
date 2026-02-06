@@ -105,6 +105,10 @@ class Ui {
 			'resolutions'        => $resolutions_data,
 			'ffmpeg_exists'      => $options['ffmpeg_exists'],
 			'browser_thumbnails' => $options['browser_thumbnails'],
+			'auto_thumb'         => $options['auto_thumb'],
+			'auto_thumb_number'  => $options['auto_thumb_number'],
+			'auto_thumb_position'=> $options['auto_thumb_position'],
+			'ffmpeg_thumb_watermark' => $options['ffmpeg_thumb_watermark'],
 			'contentSize'        => isset( $global_settings['layout']['contentSize'] ) ? $global_settings['layout']['contentSize'] : false,
 			'wideSize'           => isset( $global_settings['layout']['wideSize'] ) ? $global_settings['layout']['wideSize'] : false,
 		);
@@ -237,7 +241,7 @@ class Ui {
 		wp_enqueue_script(
 			'videopack-attachment-details',
 			plugins_url( 'admin-ui/build/attachment-details.js', VIDEOPACK_PLUGIN_FILE ),
-			$script_asset['dependencies'],
+			array_merge( $script_asset['dependencies'], array( 'wp-api-fetch', 'wp-url' ) ),
 			$script_asset['version'],
 			true
 		);
@@ -245,11 +249,53 @@ class Ui {
 
 		$this->localize_block_settings( 'videopack-attachment-details' );
 
+		$pending_attachments = $this->get_pending_browser_thumbnails();
+		$this->localize_block_settings( 'videopack-attachment-details', array( 'pending_attachments' => $pending_attachments ) );
+
 		wp_enqueue_style(
 			'videopack-attachment-details',
 			plugins_url( 'admin-ui/build/attachment-details.css', VIDEOPACK_PLUGIN_FILE ),
 			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);
+	}
+
+	/**
+	 * Retrieves a list of attachments that need browser-based thumbnail generation.
+	 *
+	 * @return array List of attachments with 'id' and 'url'.
+	 */
+	private function get_pending_browser_thumbnails() {
+		$options = $this->options_manager->get_options();
+
+		// Only proceed if browser thumbnails are enabled and user has capability.
+		if ( empty( $options['browser_thumbnails'] ) || ! current_user_can( 'make_video_thumbnails' ) ) {
+			return array();
+		}
+
+		$query = new \WP_Query( array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'posts_per_page' => 20, // Limit to avoid performance issues.
+			'meta_query'     => array(
+				array(
+					'key'   => '_videopack_needs_browser_thumb',
+					'value' => '1',
+				),
+			),
+			'fields'         => 'ids',
+		) );
+
+		$attachments = array();
+		foreach ( $query->posts as $post_id ) {
+			$url = wp_get_attachment_url( $post_id );
+			if ( $url ) {
+				$attachments[] = array(
+					'id'  => $post_id,
+					'url' => $url,
+				);
+			}
+		}
+		return $attachments;
 	}
 }

@@ -6786,14 +6786,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
 /* harmony export */   clearQueue: () => (/* binding */ clearQueue),
+/* harmony export */   createThumbnailFromCanvas: () => (/* binding */ createThumbnailFromCanvas),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteJob: () => (/* binding */ deleteJob),
 /* harmony export */   enqueueJob: () => (/* binding */ enqueueJob),
 /* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
+/* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   getRecentVideos: () => (/* binding */ getRecentVideos),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
+/* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
@@ -6802,6 +6805,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
 /* harmony export */   setPosterImage: () => (/* binding */ setPosterImage),
+/* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   testFFmpegCommand: () => (/* binding */ testFFmpegCommand),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
 /* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
@@ -6925,6 +6929,35 @@ const deleteFile = async attachmentId => {
     console.error('Error deleting file:', error);
     throw error;
   }
+};
+
+/**
+ * Converts a canvas to a blob and uploads it as a thumbnail.
+ *
+ * @param {HTMLCanvasElement} canvas       The canvas element to upload.
+ * @param {number}            attachmentId The ID of the video attachment.
+ * @param {string}            videoSrc     The URL of the video (used for filename).
+ * @return {Promise<Object>} The response from the upload endpoint.
+ */
+const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(async blob => {
+      if (!blob) {
+        reject(new Error('Canvas is empty'));
+        return;
+      }
+      try {
+        const formData = new FormData();
+        formData.append('file', blob, 'thumbnail.jpg');
+        formData.append('attachment_id', attachmentId);
+        formData.append('post_name', (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.getFilename)(videoSrc));
+        const response = await uploadThumbnail(formData);
+        resolve(response);
+      } catch (error) {
+        reject(error);
+      }
+    }, 'image/jpeg');
+  });
 };
 const uploadThumbnail = async formData => {
   try {
@@ -7071,6 +7104,43 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     });
   } catch (error) {
     console.error('Error generating thumbnail:', error);
+    throw error;
+  }
+};
+const startBatchProcess = async (type, additionalData = {}) => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/batch/process',
+      method: 'POST',
+      data: {
+        type,
+        ...additionalData
+      }
+    });
+  } catch (error) {
+    console.error(`Error starting ${type} batch processing:`, error);
+    throw error;
+  }
+};
+const getBatchProgress = async type => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/batch/progress?type=${type}`,
+      method: 'GET'
+    });
+  } catch (error) {
+    console.error(`Error fetching ${type} batch progress:`, error);
+    throw error;
+  }
+};
+const getThumbnailCandidates = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/thumbs/candidates',
+      method: 'GET'
+    });
+  } catch (error) {
+    console.error('Error fetching thumbnail candidates:', error);
     throw error;
   }
 };
