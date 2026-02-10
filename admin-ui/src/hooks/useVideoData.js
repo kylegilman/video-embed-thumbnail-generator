@@ -36,7 +36,7 @@ export const useVideoData = (id, src, isExternal) => {
 				poster: undefined,
 				total_thumbnails: undefined,
 				attachment: null,
-				error: __('Could not find the video attachment.'),
+				error: __( 'Could not find the video attachment.', 'video-embed-thumbnail-generator' ),
 				isLoading: false,
 			});
 			return;

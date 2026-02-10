@@ -47,19 +47,19 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 	const countViewsOptions = [
 		{
 			value: 'quarters',
-			label: __('Quarters'),
+			label: __( 'Quarters', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'start_complete',
-			label: __('Start and complete'),
+			label: __( 'Start and complete', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'start',
-			label: __('Start only'),
+			label: __( 'Start only', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'false',
-			label: __('None'),
+			label: __( 'None', 'video-embed-thumbnail-generator' ),
 		},
 	];
 
@@ -82,14 +82,14 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		};
 
 		return (
-			<PanelBody title={__('User capabilities:')} initialOpen={true}>
+			<PanelBody title={__( 'User capabilities:', 'video-embed-thumbnail-generator' )} initialOpen={true}>
 				<Flex
 					direction="row"
 					gap={20}
 					className="videopack-setting-capabilities"
 				>
 					<FlexItem>
-						<p>{__('Can make thumbnails')}</p>
+						<p>{__( 'Can make thumbnails', 'video-embed-thumbnail-generator' )}</p>
 						{Object.entries(capabilities.make_video_thumbnails).map(
 							([roleKey, isEnabled]) => (
 								<CheckboxControl
@@ -109,7 +109,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 						)}
 					</FlexItem>
 					<FlexItem>
-						<p>{__('Can encode videos')}</p>
+						<p>{__( 'Can encode videos', 'video-embed-thumbnail-generator' )}</p>
 						{Object.entries(capabilities.encode_videos).map(
 							([roleKey, isEnabled]) => (
 								<CheckboxControl
@@ -129,7 +129,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 						)}
 					</FlexItem>
 					<FlexItem>
-						<p>{__("Can edit other users' encoded videos")}</p>
+						<p>{__( "Can edit other users' encoded videos", 'video-embed-thumbnail-generator' )}</p>
 						{Object.entries(
 							capabilities.edit_others_video_encodes
 						).map(([roleKey, isEnabled]) => (
@@ -155,7 +155,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 
 	return (
 		<>
-			<PanelBody title={__('Sharing')} initialOpen={true}>
+			<PanelBody title={__( 'Sharing', 'video-embed-thumbnail-generator' )} initialOpen={true}>
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
@@ -166,7 +166,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Generate Facebook Open Graph video tags.')}
+					label={__( 'Generate Facebook Open Graph video tags.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.open_graph}
 					checked={!!open_graph}
 					disabled={!embeddable}
@@ -181,7 +181,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Enable Twitter Cards.')}
+					label={__( 'Enable Twitter Cards.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.twitter_card}
 					checked={!!twitter_card}
 					disabled={!embeddable}
@@ -191,7 +191,7 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__('Twitter username:')}
+							label={__( 'Twitter username:', 'video-embed-thumbnail-generator' )}
 							value={twitter_username}
 							onChange={changeHandlerFactory.twitter_username}
 						/>
@@ -199,13 +199,13 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 				)}
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Allow right-clicking on videos.')}
+					label={__( 'Allow right-clicking on videos.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.right_click}
 					checked={!!right_click}
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Allow single-click download links.')}
+					label={__( 'Allow single-click download links.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.right_click}
 					checked={!!right_click}
 				/>
@@ -221,37 +221,37 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 			<PanelBody title="Performance" initialOpen={true}>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Always load plugin-related JavaScripts.')}
+					label={__( 'Always load plugin-related JavaScripts.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.alwaysloadscripts}
 					checked={!!alwaysloadscripts}
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Use URL cache.')}
+					label={__( 'Use URL cache.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.transient_cache}
 					checked={!!transient_cache}
 				/>
 				<Button className="videopack-clear-button" variant="secondary">
-					{__('Clear URL cache')}
+					{__( 'Clear URL cache', 'video-embed-thumbnail-generator' )}
 				</Button>
 				<RadioControl
 					className="videopack-setting-radio-group"
-					label={__('Record views in the WordPress database:')}
+					label={__( 'Record views in the WordPress database:', 'video-embed-thumbnail-generator' )}
 					selected={count_views}
 					options={countViewsOptions}
 					onChange={changeHandlerFactory.count_views}
 				/>
 			</PanelBody>
-			<PanelBody title={__('Misc')} initialOpen={true}>
+			<PanelBody title={__( 'Misc', 'video-embed-thumbnail-generator' )} initialOpen={true}>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Override any existing "[video]" shortcodes.')}
+					label={__( 'Override any existing "[video]" shortcodes.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.replace_video_shortcode}
 					checked={!!replace_video_shortcode}
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Allow video attachment URL rewriting.')}
+					label={__( 'Allow video attachment URL rewriting.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.rewrite_attachment_url}
 					checked={!!rewrite_attachment_url}
 				/>
@@ -275,12 +275,12 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 						>
 							<CheckboxControl
 								__nextHasNoMarginBottom
-								label={__('Thumbnails')}
+								label={__( 'Thumbnails', 'video-embed-thumbnail-generator' )}
 								checked={delete_thumbnails}
 							/>
 							<CheckboxControl
 								__nextHasNoMarginBottom
-								label={__('Encoded Videos')}
+								label={__( 'Encoded Videos', 'video-embed-thumbnail-generator' )}
 								checked={delete_encoded}
 							/>
 						</BaseControl>

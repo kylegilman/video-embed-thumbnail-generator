@@ -62,15 +62,15 @@ const EncodeProgress = ({
         isDestructive: true,
         size: "small",
         isBusy: deleteInProgress === formatData.job_id,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator')
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "videopack-encode-progress-small-text",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Elapsed:') + ' ' + convertToTimecode(formatData.progress.elapsed)
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Elapsed:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(formatData.progress.elapsed)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remaining:') + ' ' + convertToTimecode(formatData.progress.remaining)
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(formatData.progress.remaining)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('fps:') + ' ' + formatData.progress.fps
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + formatData.progress.fps
         })]
       })]
     });
@@ -78,10 +78,10 @@ const EncodeProgress = ({
   if (formatData?.status === 'failed' && formatData?.error_message) {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "videopack-encode-error",
-      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s'), formatData.error_message), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s', 'video-embed-thumbnail-generator'), formatData.error_message), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
         onClick: () => onCancelJob(formatData.job_id),
         variant: "link",
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Job'),
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Job', 'video-embed-thumbnail-generator'),
         isDestructive: true,
         isBusy: deleteInProgress === formatData.job_id
       })]
@@ -650,7 +650,7 @@ const JobRow = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.memo)(({
     }), isMultisite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
       children: job.blog_name
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
-      children: job.user_name || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('N/A')
+      children: job.user_name || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('N/A', 'video-embed-thumbnail-generator')
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
       children: job.poster_url ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("img", {
         src: job.poster_url,
@@ -688,7 +688,7 @@ const JobRow = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.memo)(({
           jobId: job.id
         }),
         isBusy: deletingJobId === job.id,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear', 'video-embed-thumbnail-generator')
       })
     })]
   }, job.id);
@@ -717,7 +717,7 @@ const EncodeQueue = () => {
       setMessage({
         type: 'error',
         text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to load queue: %s'), error.message || error.code)
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to load queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
       });
     } finally {
       setIsLoading(false);
@@ -744,7 +744,7 @@ const EncodeQueue = () => {
       setMessage({
         type: 'error',
         text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to toggle queue: %s'), error.message || error.code)
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to toggle queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
       });
     } finally {
       setIsTogglingQueue(false);
@@ -785,7 +785,7 @@ const EncodeQueue = () => {
       setMessage({
         type: 'error',
         text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to clear queue: %s'), error.message || error.code)
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to clear queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
       });
     } finally {
       setIsClearing(false);
@@ -797,14 +797,14 @@ const EncodeQueue = () => {
       await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.deleteJob)(jobId);
       setMessage({
         type: 'success',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job deleted.')
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job deleted.', 'video-embed-thumbnail-generator')
       });
       fetchQueue();
     } catch (error) {
       console.error('Error deleting job:', error);
       setMessage({
         type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error deleting job: %s'), error.message)
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error deleting job: %s', 'video-embed-thumbnail-generator'), error.message)
       });
     } finally {
       setDeletingJobId(null);
@@ -816,14 +816,14 @@ const EncodeQueue = () => {
       await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.removeJob)(jobId);
       setMessage({
         type: 'success',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job removed from queue.')
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job removed from queue.', 'video-embed-thumbnail-generator')
       });
       fetchQueue();
     } catch (error) {
       console.error('Error removing job:', error);
       setMessage({
         type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error removing job: %s'), error.message)
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error removing job: %s', 'video-embed-thumbnail-generator'), error.message)
       });
     } finally {
       setDeletingJobId(null);
@@ -833,7 +833,7 @@ const EncodeQueue = () => {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
     className: "wrap videopack-encode-queue",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h1", {
-      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Encode Queue')
+      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Encode Queue', 'video-embed-thumbnail-generator')
     }), message && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Notice, {
       status: message.type,
       onRemove: () => setMessage(null),
@@ -842,7 +842,7 @@ const EncodeQueue = () => {
       isOpen: isConfirmOpen,
       onConfirm: handleConfirm,
       onCancel: () => setIsConfirmOpen(false),
-      children: itemToActOn?.action === 'clear' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to clear %s jobs?'), itemToActOn.type) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job?')
+      children: itemToActOn?.action === 'clear' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to clear %s jobs?', 'video-embed-thumbnail-generator'), itemToActOn.type) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job?', 'video-embed-thumbnail-generator')
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
         className: "videopack-queue-controls",
@@ -852,14 +852,14 @@ const EncodeQueue = () => {
           isBusy: isTogglingQueue,
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
             icon: isQueuePaused ? 'controls-play' : 'controls-pause'
-          }), isQueuePaused ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Queue') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pause Queue')]
+          }), isQueuePaused ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Queue', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pause Queue', 'video-embed-thumbnail-generator')]
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
           variant: "secondary",
           onClick: () => openConfirmDialog('clear', {
             type: 'completed'
           }),
           isBusy: isClearing,
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear Completed')
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear Completed', 'video-embed-thumbnail-generator')
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
           variant: "tertiary",
           isDestructive: true,
@@ -867,40 +867,40 @@ const EncodeQueue = () => {
             type: 'all'
           }),
           isBusy: isClearing,
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear All')
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear All', 'video-embed-thumbnail-generator')
         }), isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {})]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalDivider, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("table", {
         className: "wp-list-table widefat fixed striped table-view-list videopack-queue-table",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("thead", {
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tr", {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Order')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Order', 'video-embed-thumbnail-generator')
             }), isMultisite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Site')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Site', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('User')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('User', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Thumbnail')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Thumbnail', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('File')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('File', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Format')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Format', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Status')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Status', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Actions')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Actions', 'video-embed-thumbnail-generator')
             })]
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tbody", {
           children: [isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("tr", {
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
               colSpan: isMultisite ? 8 : 7,
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Loading queue…')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Loading queue…', 'video-embed-thumbnail-generator')
             })
           }), !isLoading && queueData.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("tr", {
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
               colSpan: isMultisite ? 8 : 7,
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('The encode queue is empty.')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('The encode queue is empty.', 'video-embed-thumbnail-generator')
             })
           }), !isLoading && queueData.map((job, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(JobRow, {
             job: job,

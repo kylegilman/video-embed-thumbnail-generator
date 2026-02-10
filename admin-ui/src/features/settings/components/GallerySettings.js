@@ -57,15 +57,15 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 	const galleryEndOptions = [
 		{
 			value: '',
-			label: __('Stop and leave popup window open'),
+			label: __( 'Stop and leave popup window open', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'next',
-			label: __('Autoplay next video'),
+			label: __( 'Autoplay next video', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			value: 'close',
-			label: __('Close popup window'),
+			label: __( 'Close popup window', 'video-embed-thumbnail-generator' ),
 		},
 	];
 
@@ -78,7 +78,7 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Videos per row:')}
+					label={__( 'Videos per row:', 'video-embed-thumbnail-generator' )}
 					type="number"
 					value={gallery_columns}
 					onChange={changeHandlerFactory.gallery_columns}
@@ -86,13 +86,13 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 			</div>
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={__('Overlay video title on thumbnails.')}
+				label={__( 'Overlay video title on thumbnails.', 'video-embed-thumbnail-generator' )}
 				onChange={changeHandlerFactory.gallery_title}
 				checked={!!gallery_title}
 			/>
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={__('Paginate video galleries')}
+				label={__( 'Paginate video galleries', 'video-embed-thumbnail-generator' )}
 				onChange={changeHandlerFactory.gallery_pagination}
 				checked={!!gallery_pagination}
 			/>
@@ -101,7 +101,7 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Videos per page')}
+						label={__( 'Videos per page', 'video-embed-thumbnail-generator' )}
 						type="number"
 						value={gallery_per_page}
 						onChange={changeHandlerFactory.gallery_per_page}
@@ -112,7 +112,7 @@ const GallerySettings = ({ settings, changeHandlerFactory }) => {
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('When current gallery video finishes:')}
+					label={__( 'When current gallery video finishes:', 'video-embed-thumbnail-generator' )}
 					value={gallery_end}
 					onChange={changeHandlerFactory.gallery_end}
 					options={galleryEndOptions}

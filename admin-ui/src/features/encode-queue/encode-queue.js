@@ -27,7 +27,7 @@ const JobRow = memo(
 			<tr key={job.id}>
 				<td>{index + 1}</td>
 				{isMultisite && <td>{job.blog_name}</td>}
-				<td>{job.user_name || __('N/A')}</td>
+				<td>{job.user_name || __( 'N/A', 'video-embed-thumbnail-generator' )}</td>
 				<td>
 					{job.poster_url ? (
 						<img
@@ -71,7 +71,7 @@ const JobRow = memo(
 							}
 							isBusy={deletingJobId === job.id}
 						>
-							{__('Clear')}
+							{__( 'Clear', 'video-embed-thumbnail-generator' )}
 						</Button>
 					)}
 				</td>
@@ -108,7 +108,7 @@ const EncodeQueue = () => {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
-					__('Failed to load queue: %s'),
+					__( 'Failed to load queue: %s', 'video-embed-thumbnail-generator' ),
 					error.message || error.code
 				),
 			});
@@ -137,7 +137,7 @@ const EncodeQueue = () => {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
-					__('Failed to toggle queue: %s'),
+					__( 'Failed to toggle queue: %s', 'video-embed-thumbnail-generator' ),
 					error.message || error.code
 				),
 			});
@@ -179,7 +179,7 @@ const EncodeQueue = () => {
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
-					__('Failed to clear queue: %s'),
+					__( 'Failed to clear queue: %s', 'video-embed-thumbnail-generator' ),
 					error.message || error.code
 				),
 			});
@@ -192,13 +192,13 @@ const EncodeQueue = () => {
 		setDeletingJobId(jobId);
 		try {
 			await deleteJob(jobId);
-			setMessage({ type: 'success', text: __('Job deleted.') });
+			setMessage({ type: 'success', text: __( 'Job deleted.', 'video-embed-thumbnail-generator' ) });
 			fetchQueue();
 		} catch (error) {
 			console.error('Error deleting job:', error);
 			setMessage({
 				type: 'error',
-				text: sprintf(__('Error deleting job: %s'), error.message),
+				text: sprintf(__( 'Error deleting job: %s', 'video-embed-thumbnail-generator' ), error.message),
 			});
 		} finally {
 			setDeletingJobId(null);
@@ -211,14 +211,14 @@ const EncodeQueue = () => {
 			await removeJob(jobId);
 			setMessage({
 				type: 'success',
-				text: __('Job removed from queue.'),
+				text: __( 'Job removed from queue.', 'video-embed-thumbnail-generator' ),
 			});
 			fetchQueue();
 		} catch (error) {
 			console.error('Error removing job:', error);
 			setMessage({
 				type: 'error',
-				text: sprintf(__('Error removing job: %s'), error.message),
+				text: sprintf(__( 'Error removing job: %s', 'video-embed-thumbnail-generator' ), error.message),
 			});
 		} finally {
 			setDeletingJobId(null);
@@ -229,7 +229,7 @@ const EncodeQueue = () => {
 
 	return (
 		<div className="wrap videopack-encode-queue">
-			<h1>{__('Videopack Encode Queue')}</h1>
+			<h1>{__( 'Videopack Encode Queue', 'video-embed-thumbnail-generator' )}</h1>
 
 			{message && (
 				<Notice status={message.type} onRemove={() => setMessage(null)}>
@@ -244,10 +244,10 @@ const EncodeQueue = () => {
 			>
 				{itemToActOn?.action === 'clear'
 					? sprintf(
-							__('Are you sure you want to clear %s jobs?'),
+							__( 'Are you sure you want to clear %s jobs?', 'video-embed-thumbnail-generator' ),
 							itemToActOn.type
 						)
-					: __('Are you sure you want to remove this job?')}
+					: __( 'Are you sure you want to remove this job?', 'video-embed-thumbnail-generator' )}
 			</ConfirmDialog>
 
 			<PanelBody>
@@ -258,7 +258,7 @@ const EncodeQueue = () => {
 						isBusy={isTogglingQueue}
 					>
 						<Icon icon={isQueuePaused ? 'controls-play' : 'controls-pause'} />
-						{isQueuePaused ? __('Play Queue') : __('Pause Queue')}
+						{isQueuePaused ? __( 'Play Queue', 'video-embed-thumbnail-generator' ) : __( 'Pause Queue', 'video-embed-thumbnail-generator' )}
 					</Button>
 					<Button
 						variant="secondary"
@@ -267,7 +267,7 @@ const EncodeQueue = () => {
 						}
 						isBusy={isClearing}
 					>
-						{__('Clear Completed')}
+						{__( 'Clear Completed', 'video-embed-thumbnail-generator' )}
 					</Button>
 					<Button
 						variant="tertiary"
@@ -277,7 +277,7 @@ const EncodeQueue = () => {
 						}
 						isBusy={isClearing}
 					>
-						{__('Clear All')}
+						{__( 'Clear All', 'video-embed-thumbnail-generator' )}
 					</Button>
 					{isLoading && <Spinner />}
 				</div>
@@ -285,28 +285,28 @@ const EncodeQueue = () => {
 				<table className="wp-list-table widefat fixed striped table-view-list videopack-queue-table">
 					<thead>
 						<tr>
-							<th>{__('Order')}</th>
-							{isMultisite && <th>{__('Site')}</th>}
-							<th>{__('User')}</th>
-							<th>{__('Thumbnail')}</th>
-							<th>{__('File')}</th>
-							<th>{__('Format')}</th>
-							<th>{__('Status')}</th>
-							<th>{__('Actions')}</th>
+							<th>{__( 'Order', 'video-embed-thumbnail-generator' )}</th>
+							{isMultisite && <th>{__( 'Site', 'video-embed-thumbnail-generator' )}</th>}
+							<th>{__( 'User', 'video-embed-thumbnail-generator' )}</th>
+							<th>{__( 'Thumbnail', 'video-embed-thumbnail-generator' )}</th>
+							<th>{__( 'File', 'video-embed-thumbnail-generator' )}</th>
+							<th>{__( 'Format', 'video-embed-thumbnail-generator' )}</th>
+							<th>{__( 'Status', 'video-embed-thumbnail-generator' )}</th>
+							<th>{__( 'Actions', 'video-embed-thumbnail-generator' )}</th>
 						</tr>
 					</thead>
 					<tbody>
 						{isLoading && (
 							<tr>
 								<td colSpan={isMultisite ? 8 : 7}>
-									{__('Loading queue…')}
+									{__( 'Loading queue…', 'video-embed-thumbnail-generator' )}
 								</td>
 							</tr>
 						)}
 						{!isLoading && queueData.length === 0 && (
 							<tr>
 								<td colSpan={isMultisite ? 8 : 7}>
-									{__('The encode queue is empty.')}
+									{__( 'The encode queue is empty.', 'video-embed-thumbnail-generator' )}
 								</td>
 							</tr>
 						)}

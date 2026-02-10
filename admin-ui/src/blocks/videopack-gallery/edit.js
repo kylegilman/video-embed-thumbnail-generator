@@ -129,8 +129,8 @@ export default function Edit({ attributes, setAttributes }) {
 				className="block-editor-media-placeholder"
 				withIllustration={true}
 				icon={icon}
-				label={__('Videopack Video Gallery')}
-				instructions={__('Select video files to create a gallery.')}
+				label={__( 'Videopack Video Gallery', 'video-embed-thumbnail-generator' )}
+				instructions={__( 'Select video files to create a gallery.', 'video-embed-thumbnail-generator' )}
 			>
 				{content}
 				<Button
@@ -143,7 +143,7 @@ export default function Edit({ attributes, setAttributes }) {
 					showTooltip
 					onClick={onInsertGallery}
 				>
-					{__("This post's videos")}
+					{__( "This post's videos", 'video-embed-thumbnail-generator' )}
 				</Button>
 			</Placeholder>
 		);

@@ -28,13 +28,13 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 
 	return (
 		<>
-			<PanelBody title={__('Player Settings')} initialOpen={false}>
+			<PanelBody title={__( 'Player Settings', 'video-embed-thumbnail-generator' )} initialOpen={false}>
 				{!displayAttributes.gifmode && (
 					<>
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Autoplay')}
+								label={__( 'Autoplay', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('autoplay', value)
 								}
@@ -52,7 +52,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Loop')}
+								label={__( 'Loop', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('loop', value)
 								}
@@ -62,7 +62,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Muted')}
+								label={__( 'Muted', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('muted', value)
 								}
@@ -73,7 +73,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 							<RangeControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={__('Volume')}
+								label={__( 'Volume', 'video-embed-thumbnail-generator' )}
 								value={displayAttributes.volume}
 								beforeIcon={volumeDown}
 								afterIcon={volumeUp}
@@ -90,7 +90,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Controls')}
+								label={__( 'Controls', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('controls', value)
 								}
@@ -100,7 +100,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Variable playback speeds')}
+								label={__( 'Variable playback speeds', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('playback_rate', value)
 								}
@@ -111,7 +111,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 							<SelectControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={__('Preload')}
+								label={__( 'Preload', 'video-embed-thumbnail-generator' )}
 								value={displayAttributes.preload}
 								onChange={(value) =>
 									handleSettingChange('preload', value)
@@ -125,7 +125,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('GIF mode')}
+						label={__( 'GIF mode', 'video-embed-thumbnail-generator' )}
 						onChange={(value) =>
 							handleSettingChange('gifmode', value)
 						}
@@ -136,11 +136,11 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 					/>
 				</PanelRow>
 			</PanelBody>
-			<PanelBody title={__('Sharing')} initialOpen={false}>
+			<PanelBody title={__( 'Sharing', 'video-embed-thumbnail-generator' )} initialOpen={false}>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Allow embedding on other sites')}
+						label={__( 'Allow embedding on other sites', 'video-embed-thumbnail-generator' )}
 						onChange={(value) =>
 							handleSettingChange('embeddable', value)
 						}
@@ -152,7 +152,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Download link')}
+								label={__( 'Download link', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('downloadlink', value)
 								}
@@ -162,7 +162,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<PanelRow>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__('Embed code')}
+								label={__( 'Embed code', 'video-embed-thumbnail-generator' )}
 								onChange={(value) =>
 									handleSettingChange('embedcode', value)
 								}
@@ -172,11 +172,11 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 					</>
 				)}
 			</PanelBody>
-			<PanelBody title={__('Metadata')} initialOpen={false}>
+			<PanelBody title={__( 'Metadata', 'video-embed-thumbnail-generator' )} initialOpen={false}>
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Overlay title')}
+						label={__( 'Overlay title', 'video-embed-thumbnail-generator' )}
 						onChange={(value) =>
 							handleSettingChange('overlay_title', value)
 						}
@@ -188,7 +188,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 						<TextControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__('Title')}
+							label={__( 'Title', 'video-embed-thumbnail-generator' )}
 							value={displayAttributes.title || ''}
 							onChange={(value) =>
 								handleSettingChange('title', value)
@@ -200,7 +200,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Caption')}
+						label={__( 'Caption', 'video-embed-thumbnail-generator' )}
 						value={displayAttributes.caption || ''}
 						onChange={(value) =>
 							handleSettingChange('caption', value)
@@ -210,7 +210,7 @@ const VideoSettings = ({ attributes, setAttributes, options }) => {
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('View count')}
+						label={__( 'View count', 'video-embed-thumbnail-generator' )}
 						onChange={(value) =>
 							handleSettingChange('view_count', value)
 						}

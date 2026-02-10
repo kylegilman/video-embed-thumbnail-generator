@@ -133,7 +133,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				className="block-editor-media-placeholder"
 				withIllustration={true}
 				icon={icon}
-				label={__('Videopack Video')}
+				label={__( 'Videopack Video', 'video-embed-thumbnail-generator' )}
 				instructions={__(
 					'Upload a video file, pick one from your media library, or add one with a URL.'
 				)}

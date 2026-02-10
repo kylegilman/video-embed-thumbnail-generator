@@ -52,9 +52,9 @@ const GalleryItem = ({
 
 	const openMediaModal = () => {
 		const frame = window.wp.media({
-			title: __('Edit Video'),
+			title: __( 'Edit Video', 'video-embed-thumbnail-generator' ),
 			button: {
-				text: __('Update'),
+				text: __( 'Update', 'video-embed-thumbnail-generator' ),
 			},
 			multiple: false,
 			library: {
@@ -138,7 +138,7 @@ const GalleryItem = ({
 					<button
 						className="gallery-item-drag-handle"
 						{...listeners}
-						title={__('Drag to reorder')}
+						title={__( 'Drag to reorder', 'video-embed-thumbnail-generator' )}
 					>
 						<span className="dashicons dashicons-move" />
 					</button>
@@ -148,7 +148,7 @@ const GalleryItem = ({
 							e.stopPropagation();
 							openMediaModal();
 						}}
-						title={__('Edit')}
+						title={__( 'Edit', 'video-embed-thumbnail-generator' )}
 					>
 						<Icon icon={pencil} />
 					</button>
@@ -158,7 +158,7 @@ const GalleryItem = ({
 							e.stopPropagation();
 							onRemove(videoRecord.attachment_id);
 						}}
-						title={__('Remove')}
+						title={__( 'Remove', 'video-embed-thumbnail-generator' )}
 					>
 						X
 					</div>
@@ -168,7 +168,7 @@ const GalleryItem = ({
 				<button
 					className="gallery-add-button"
 					onClick={onAddVideo}
-					title={__('Add video')}
+					title={__( 'Add video', 'video-embed-thumbnail-generator' )}
 				>
 					<span className="dashicons dashicons-plus-alt" />
 				</button>
