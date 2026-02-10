@@ -275,9 +275,9 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 
 	const openMediaModalForNewVideos = () => {
 		const frame = window.wp.media({
-			title: __('Add Videos to Gallery'),
+			title: __( 'Add Videos to Gallery', 'video-embed-thumbnail-generator' ),
 			button: {
-				text: __('Add to Gallery'),
+				text: __( 'Add to Gallery', 'video-embed-thumbnail-generator' ),
 			},
 			multiple: 'add',
 			library: {
@@ -410,7 +410,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 						<button
 							type="button"
 							className="modal-navigation modal-close videopack-icons cross"
-							title={__('Close')}
+							title={__( 'Close', 'video-embed-thumbnail-generator' )}
 							onClick={closeVideo}
 						/>
 						{(currentVideoIndex < galleryVideos.length - 1 ||
@@ -418,7 +418,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 							<button
 								type="button"
 								className="modal-navigation modal-next videopack-icons right-arrow"
-								title={__('Next')}
+								title={__( 'Next', 'video-embed-thumbnail-generator' )}
 								onClick={() => {
 									handleNavigationArrowClick(
 										currentVideoIndex + 1
@@ -430,7 +430,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 							<button
 								type="button"
 								className="modal-navigation modal-previous videopack-icons left-arrow"
-								title={__('Previous')}
+								title={__( 'Previous', 'video-embed-thumbnail-generator' )}
 								onClick={() => {
 									handleNavigationArrowClick(
 										currentVideoIndex - 1

@@ -5443,23 +5443,23 @@ const GalleryBlock = ({
   } = attributes;
   const baseGalleryOrderbyOptions = [{
     value: 'menu_order',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Menu Order')
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Menu Order', 'video-embed-thumbnail-generator')
   }, {
     value: 'title',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Title')
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Title', 'video-embed-thumbnail-generator')
   }, {
     value: 'post_date',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Date')
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Date', 'video-embed-thumbnail-generator')
   }, {
     value: 'rand',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Random')
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Random', 'video-embed-thumbnail-generator')
   }, {
     value: 'ID',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Video ID')
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Video ID', 'video-embed-thumbnail-generator')
   }];
   const filteredGalleryOrderbyOptions = gallery_include ? [...baseGalleryOrderbyOptions, {
     value: 'include',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Manually Sorted')
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Manually Sorted', 'video-embed-thumbnail-generator')
   }] : baseGalleryOrderbyOptions;
   const attributeChangeFactory = (attributeName, isNumeric = false) => {
     return newValue => {
@@ -5476,11 +5476,11 @@ const GalleryBlock = ({
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.InspectorControls, {
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Gallery Settings'),
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Gallery Settings', 'video-embed-thumbnail-generator'),
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Sort by'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Sort by', 'video-embed-thumbnail-generator'),
           value: gallery_orderby,
           onChange: attributeChangeFactory('gallery_orderby'),
           options: filteredGalleryOrderbyOptions,
@@ -5488,50 +5488,50 @@ const GalleryBlock = ({
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Sort order'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Sort order', 'video-embed-thumbnail-generator'),
           value: gallery_order,
           onChange: attributeChangeFactory('gallery_order'),
           options: [{
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Ascending'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Ascending', 'video-embed-thumbnail-generator'),
             value: 'ASC'
           }, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Descending'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Descending', 'video-embed-thumbnail-generator'),
             value: 'DESC'
           }]
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Paginate video gallery'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Paginate video gallery', 'video-embed-thumbnail-generator'),
           checked: !!gallery_pagination,
           onChange: attributeChangeFactory('gallery_pagination')
         }), gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.TextControl, {
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Number of videos per page'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Number of videos per page', 'video-embed-thumbnail-generator'),
           type: "number",
           value: gallery_per_page,
           onChange: attributeChangeFactory('gallery_per_page', true)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.TextControl, {
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Columns'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Columns', 'video-embed-thumbnail-generator'),
           type: "number",
           value: gallery_columns,
           onChange: attributeChangeFactory('gallery_columns', true)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Show video title overlay on thumbnails'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Show video title overlay on thumbnails', 'video-embed-thumbnail-generator'),
           onChange: attributeChangeFactory('gallery_title'),
           checked: !!gallery_title
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('When gallery video finishes'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('When gallery video finishes', 'video-embed-thumbnail-generator'),
           value: gallery_end,
           onChange: attributeChangeFactory('gallery_end'),
           options: [{
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Stop, but leave popup window open'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Stop, but leave popup window open', 'video-embed-thumbnail-generator'),
             value: ''
           }, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Autoplay next video in the gallery'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Autoplay next video in the gallery', 'video-embed-thumbnail-generator'),
             value: 'next'
           }, {
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Close popup window'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Close popup window', 'video-embed-thumbnail-generator'),
             value: 'close'
           }]
         })]
@@ -5687,8 +5687,8 @@ function Edit({
       className: "block-editor-media-placeholder",
       withIllustration: true,
       icon: _assets_icon__WEBPACK_IMPORTED_MODULE_7__.videopack,
-      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Videopack Video Gallery'),
-      instructions: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Select video files to create a gallery.'),
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Videopack Video Gallery', 'video-embed-thumbnail-generator'),
+      instructions: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Select video files to create a gallery.', 'video-embed-thumbnail-generator'),
       children: [content, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         __next40pxDefaultSize: true,
         className: "videopack-placeholder-gallery-button",
@@ -5696,7 +5696,7 @@ function Edit({
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Insert a gallery of all videos uploaded to this post'),
         showTooltip: true,
         onClick: onInsertGallery,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("This post's videos")
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("This post's videos", 'video-embed-thumbnail-generator')
       })]
     });
   };
@@ -5859,9 +5859,9 @@ const GalleryItem = ({
   }, [videoRecord]);
   const openMediaModal = () => {
     const frame = window.wp.media({
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Edit Video'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Edit Video', 'video-embed-thumbnail-generator'),
       button: {
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Update')
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Update', 'video-embed-thumbnail-generator')
       },
       multiple: false,
       library: {
@@ -5928,7 +5928,7 @@ const GalleryItem = ({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
         className: "gallery-item-drag-handle",
         ...listeners,
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Drag to reorder'),
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Drag to reorder', 'video-embed-thumbnail-generator'),
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
           className: "dashicons dashicons-move"
         })
@@ -5938,7 +5938,7 @@ const GalleryItem = ({
           e.stopPropagation();
           openMediaModal();
         },
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Edit'),
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Edit', 'video-embed-thumbnail-generator'),
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Icon, {
           icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__["default"]
         })
@@ -5948,13 +5948,13 @@ const GalleryItem = ({
           e.stopPropagation();
           onRemove(videoRecord.attachment_id);
         },
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Remove'),
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Remove', 'video-embed-thumbnail-generator'),
         children: "X"
       })]
     }), isEditing && isLastItem && isHoveringGallery && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
       className: "gallery-add-button",
       onClick: onAddVideo,
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Add video'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Add video', 'video-embed-thumbnail-generator'),
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
         className: "dashicons dashicons-plus-alt"
       })
@@ -6177,9 +6177,9 @@ const VideoGallery = ({
   };
   const openMediaModalForNewVideos = () => {
     const frame = window.wp.media({
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Add Videos to Gallery'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Add Videos to Gallery', 'video-embed-thumbnail-generator'),
       button: {
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Add to Gallery')
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Add to Gallery', 'video-embed-thumbnail-generator')
       },
       multiple: 'add',
       library: {
@@ -6278,19 +6278,19 @@ const VideoGallery = ({
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           type: "button",
           className: "modal-navigation modal-close videopack-icons cross",
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Close'),
+          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Close', 'video-embed-thumbnail-generator'),
           onClick: closeVideo
         }), (currentVideoIndex < galleryVideos.length - 1 || totalPages > galleryPage) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           type: "button",
           className: "modal-navigation modal-next videopack-icons right-arrow",
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Next'),
+          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Next', 'video-embed-thumbnail-generator'),
           onClick: () => {
             handleNavigationArrowClick(currentVideoIndex + 1);
           }
         }), (currentVideoIndex > 0 || galleryPage > 1) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
           type: "button",
           className: "modal-navigation modal-previous videopack-icons left-arrow",
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Previous'),
+          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Previous', 'video-embed-thumbnail-generator'),
           onClick: () => {
             handleNavigationArrowClick(currentVideoIndex - 1);
           }
@@ -6354,7 +6354,8 @@ const BelowVideo = ({
         className: "videopack-below-video",
         children: [view_count && viewStarts > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
           className: "viewcount",
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)('%d view', '%d views', viewStarts), viewStarts)
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %d is number of views */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)('%d view', '%d views', viewStarts, 'video-embed-thumbnail-generator'), viewStarts)
         }), caption && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
           className: "caption",
           children: caption
@@ -6430,7 +6431,7 @@ const MetaBar = ({
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               className: "videopack-icons embed"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Embed:')
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Embed:', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
                 className: "embedcode",
@@ -6463,7 +6464,7 @@ const MetaBar = ({
             className: "download-link",
             href: src,
             download: true,
-            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Click to download'),
+            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Click to download', 'video-embed-thumbnail-generator'),
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               className: "videopack-icons download"
             })

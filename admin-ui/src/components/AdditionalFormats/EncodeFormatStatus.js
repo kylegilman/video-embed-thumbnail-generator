@@ -59,7 +59,7 @@ const EncodeFormatStatus = ({
 
 			{formatData.status === 'not_encoded' && !formatData.was_picked && (
 				<MediaUpload
-					title={__('Choose existing file')}
+					title={__( 'Choose existing file', 'video-embed-thumbnail-generator' )}
 					onSelect={onSelectFormat(formatId)}
 					allowedTypes={['video']}
 					render={({ open }) => (
@@ -69,7 +69,7 @@ const EncodeFormatStatus = ({
 							className="videopack-format-button"
 							size="small"
 						>
-							{__('Select')}
+							{__( 'Select', 'video-embed-thumbnail-generator' )}
 						</Button>
 					)}
 				/>
@@ -79,7 +79,7 @@ const EncodeFormatStatus = ({
 				<MediaUpload
 					title={sprintf(
 						/* translators: %s is the label of a video resolution (eg: 720p ) */
-						__('Replace %s'),
+						__( 'Replace %s', 'video-embed-thumbnail-generator' ),
 						formatData.label
 					)}
 					onSelect={onSelectFormat(formatId)}
@@ -90,9 +90,9 @@ const EncodeFormatStatus = ({
 							onClick={open}
 							className="videopack-format-button"
 							size="small"
-							title={__('Replace file')}
+							title={__( 'Replace file', 'video-embed-thumbnail-generator' )}
 						>
-							{__('Replace')}
+							{__( 'Replace', 'video-embed-thumbnail-generator' )}
 						</Button>
 					)}
 				/>
@@ -103,7 +103,7 @@ const EncodeFormatStatus = ({
 					isBusy={deleteInProgress === formatId}
 					onClick={onDeleteFile}
 					variant="link"
-					text={__('Delete Permanently')}
+					text={__( 'Delete Permanently', 'video-embed-thumbnail-generator' )}
 					isDestructive
 				/>
 			)}

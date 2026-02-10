@@ -224,7 +224,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<h4 className="videopack-codec-quality-header">{codec.name}</h4>
 				{codec.supported_rate_controls.length > 1 && (
 					<RadioControl
-						label={__('Primary rate control:')}
+						label={__( 'Primary rate control:', 'video-embed-thumbnail-generator' )}
 						selected={currentRateControl}
 						className={'videopack-component-margin'}
 						onChange={(value) =>
@@ -232,11 +232,11 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						}
 						options={[
 							{
-								label: __('Constant Rate Factor'),
+								label: __( 'Constant Rate Factor', 'video-embed-thumbnail-generator' ),
 								value: 'crf',
 							},
 							{
-								label: __('Average Bitrate'),
+								label: __( 'Average Bitrate', 'video-embed-thumbnail-generator' ),
 								value: 'vbr',
 							},
 						]}
@@ -248,7 +248,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Constant Rate Factor (CRF):')}
+						label={__( 'Constant Rate Factor (CRF):', 'video-embed-thumbnail-generator' )}
 						value={currentCrf}
 						className="videopack-settings-slider"
 						onChange={(value) => handleSettingChange('crf', value)}
@@ -264,7 +264,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Average Bitrate:')}
+						label={__( 'Average Bitrate:', 'video-embed-thumbnail-generator' )}
 						value={currentVbr}
 						className="videopack-settings-slider"
 						onChange={(value) => handleSettingChange('vbr', value)}
@@ -282,7 +282,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__('H.264 profile')}
+							label={__( 'H.264 profile', 'video-embed-thumbnail-generator' )}
 							value={h264_profile}
 							onChange={changeHandlerFactory.h264_profile}
 							options={h264ProfileOptions}
@@ -291,7 +291,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__('H.264 level')}
+							label={__( 'H.264 level', 'video-embed-thumbnail-generator' )}
 							value={h264_level}
 							onChange={changeHandlerFactory.h264_level}
 							options={h264LevelOptions}
@@ -307,11 +307,11 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		const authorizedUsers = [
 			{
 				value: 'nobody',
-				label: __('Nobody'),
+				label: __( 'Nobody', 'video-embed-thumbnail-generator' ),
 			},
 			{
 				value: 'encoder',
-				label: __('User who initiated encoding'),
+				label: __( 'User who initiated encoding', 'video-embed-thumbnail-generator' ),
 			},
 		];
 		if (users) {
@@ -342,7 +342,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Codec:')}
+					label={__( 'Codec:', 'video-embed-thumbnail-generator' )}
 					value={sample_codec}
 					options={codecs}
 					onChange={changeHandlerFactory.sample_codec}
@@ -351,7 +351,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Resolution:')}
+					label={__( 'Resolution:', 'video-embed-thumbnail-generator' )}
 					value={sample_resolution}
 					options={resolutions}
 					onChange={changeHandlerFactory.sample_resolution}
@@ -359,7 +359,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Test vertical video rotation.')}
+					label={__( 'Test vertical video rotation.', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.sample_rotate}
 					checked={sample_rotate}
 					disabled={ffmpeg_exists !== true}
@@ -377,7 +377,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				}
 				break;
 			case 'threads':
-				marks.push({ value: 0, label: __('Auto') });
+				marks.push({ value: 0, label: __( 'Auto', 'video-embed-thumbnail-generator' ) });
 				for (let i = 2; i <= 16; i += 2) {
 					marks.push({ value: i, label: String(i) });
 				}
@@ -418,7 +418,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	};
 
 	const h264ProfileOptions = [
-		{ value: 'none', label: __('None') },
+		{ value: 'none', label: __( 'None', 'video-embed-thumbnail-generator' ) },
 		{ value: 'baseline', label: 'baseline' },
 		{ value: 'main', label: 'main' },
 		{ value: 'high', label: 'high' },
@@ -428,7 +428,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	];
 
 	const h264LevelOptions = [
-		{ value: 'none', label: __('None') },
+		{ value: 'none', label: __( 'None', 'video-embed-thumbnail-generator' ) },
 		{ value: '1', label: '1' },
 		{ value: '1.1', label: '1.1' },
 		{ value: '1.2', label: '1.2' },
@@ -469,7 +469,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Path to FFmpeg folder on server:')}
+						label={__( 'Path to FFmpeg folder on server:', 'video-embed-thumbnail-generator' )}
 						value={app_path}
 						onChange={changeHandlerFactory.app_path}
 						help={__(
@@ -484,7 +484,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				)}
 			</PanelBody>
 			<PanelBody
-				title={__('Default video encode formats')}
+				title={__( 'Default video encode formats', 'video-embed-thumbnail-generator' )}
 				opened={ffmpeg_exists === true}
 			>
 				<Flex direction="column">
@@ -508,20 +508,20 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				</Flex>
 			</PanelBody>
 			<PanelBody
-				title={__('Do automatically on upload')}
+				title={__( 'Do automatically on upload', 'video-embed-thumbnail-generator' )}
 				opened={ffmpeg_exists === true}
 			>
 				<BaseControl __nextHasNoMarginBottom id="autoEncode">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Encode default formats.')}
+						label={__( 'Encode default formats.', 'video-embed-thumbnail-generator' )}
 						onChange={changeHandlerFactory.auto_encode}
 						checked={auto_encode}
 						disabled={ffmpeg_exists !== true}
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Convert animated GIFs to H.264.')}
+						label={__( 'Convert animated GIFs to H.264.', 'video-embed-thumbnail-generator' )}
 						onChange={changeHandlerFactory.auto_encode_gif}
 						checked={hide_video_formats}
 						disabled={ffmpeg_exists !== true}
@@ -538,7 +538,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				/>
 			</PanelBody>
 			<PanelBody
-				title={__('Email encoding errors to')}
+				title={__( 'Email encoding errors to', 'video-embed-thumbnail-generator' )}
 				opened={ffmpeg_exists === true}
 			>
 				<div className="videopack-setting-auto-width">
@@ -553,7 +553,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				</div>
 			</PanelBody>
 			<PanelBody
-				title={__('For previously uploaded videos')}
+				title={__( 'For previously uploaded videos', 'video-embed-thumbnail-generator' )}
 				opened={ffmpeg_exists === true}
 			>
 				<BaseControl __nextHasNoMarginBottom id="previouslyUploaded">
@@ -573,12 +573,12 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 									encodingBatch.progress.current,
 									encodingBatch.progress.total
 							  )
-							: __('Encode videos')}
+							: __( 'Encode videos', 'video-embed-thumbnail-generator' )}
 					</Button>
 				</BaseControl>
 			</PanelBody>
 			<PanelBody
-				title={__('Video quality')}
+				title={__( 'Video quality', 'video-embed-thumbnail-generator' )}
 				opened={ffmpeg_exists === true}
 			>
 				{videopack_config.codecs.map(
@@ -591,12 +591,12 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						)
 				)}
 			</PanelBody>
-			<PanelBody title={__('Audio')} opened={ffmpeg_exists === true}>
+			<PanelBody title={__( 'Audio', 'video-embed-thumbnail-generator' )} opened={ffmpeg_exists === true}>
 				<div className="videopack-setting-reduced-width">
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Audio bitrate:')}
+						label={__( 'Audio bitrate:', 'video-embed-thumbnail-generator' )}
 						value={audio_bitrate}
 						onChange={changeHandlerFactory.audio_bitrate}
 						options={audioBitrateOptions}
@@ -609,18 +609,18 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Always output stereo audio.')}
+						label={__( 'Always output stereo audio.', 'video-embed-thumbnail-generator' )}
 						onChange={changeHandlerFactory.audio_channels}
 						checked={audio_channels}
 						disabled={ffmpeg_exists !== true}
 					/>
 				</div>
 			</PanelBody>
-			<PanelBody title={__('Execution')} opened={ffmpeg_exists === true}>
+			<PanelBody title={__( 'Execution', 'video-embed-thumbnail-generator' )} opened={ffmpeg_exists === true}>
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Simultaneous encodes:')}
+					label={__( 'Simultaneous encodes:', 'video-embed-thumbnail-generator' )}
 					value={simultaneous_encodes}
 					className="videopack-settings-slider"
 					onChange={changeHandlerFactory.simultaneous_encodes}
@@ -633,7 +633,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Threads:')}
+					label={__( 'Threads:', 'video-embed-thumbnail-generator' )}
 					value={threads}
 					className="videopack-settings-slider"
 					onChange={changeHandlerFactory.threads}
@@ -645,19 +645,19 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Run nice')}
+					label={__( 'Run nice', 'video-embed-thumbnail-generator' )}
 					onChange={changeHandlerFactory.nice}
 					checked={nice}
 					disabled={ffmpeg_exists !== true}
 				/>
 			</PanelBody>
 			<PanelBody
-				title={__('Video Encoding Test')}
+				title={__( 'Video Encoding Test', 'video-embed-thumbnail-generator' )}
 				opened={ffmpeg_exists === true}
 			>
 				<BaseControl
 					__nextHasNoMarginBottom
-					label={__('Test encode command:')}
+					label={__( 'Test encode command:', 'video-embed-thumbnail-generator' )}
 					id="sample-format-selects"
 				>
 					<SampleFormatSelects />
@@ -670,7 +670,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				/>
 				<TextareaControl
 					__nextHasNoMarginBottom
-					label={__('FFmpeg test output:')}
+					label={__( 'FFmpeg test output:', 'video-embed-thumbnail-generator' )}
 					rows={20}
 					disabled={true}
 					value={ffmpegTest?.output}

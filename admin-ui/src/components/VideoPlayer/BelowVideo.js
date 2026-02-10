@@ -14,7 +14,13 @@ const BelowVideo = ({ attributes }) => {
 					{view_count && viewStarts > 0 && (
 						<div className="viewcount">
 							{sprintf(
-								_n('%d view', '%d views', viewStarts),
+								/* translators: %d is number of views */
+								_n(
+									'%d view',
+									'%d views',
+									viewStarts,
+									'video-embed-thumbnail-generator'
+								),
 								viewStarts
 							)}
 						</div>

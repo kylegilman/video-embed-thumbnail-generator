@@ -54,7 +54,7 @@ const MetaBar = ({ attributes }) => {
 						<>
 							<span className="embedcode-container">
 								<span className="videopack-icons embed"></span>
-								<span>{__('Embed:')}</span>
+								<span>{__( 'Embed:', 'video-embed-thumbnail-generator' )}</span>
 								<span>
 									<input
 										className="embedcode"
@@ -97,7 +97,7 @@ const MetaBar = ({ attributes }) => {
 								className="download-link"
 								href={src}
 								download={true}
-								title={__('Click to download')}
+								title={__( 'Click to download', 'video-embed-thumbnail-generator' )}
 							>
 								<span className="videopack-icons download"></span>
 							</a>

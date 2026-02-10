@@ -398,20 +398,20 @@ const Thumbnails = ({
 
 	return (
 		<div className="videopack-thumbnail-generator">
-			<PanelBody title={__('Thumbnails')}>
+			<PanelBody title={__( 'Thumbnails', 'video-embed-thumbnail-generator' )}>
 				{poster && (
 					<img
 						className="videopack-current-thumbnail"
 						src={poster}
-						alt={__('Current Thumbnail')}
+						alt={__( 'Current Thumbnail', 'video-embed-thumbnail-generator' )}
 					/>
 				)}
 				<BaseControl className="editor-video-poster-control">
 					<BaseControl.VisualLabel>
-						{__('Video Thumbnail')}
+						{__( 'Video Thumbnail', 'video-embed-thumbnail-generator' )}
 					</BaseControl.VisualLabel>
 					<MediaUpload
-						title={__('Select video thumbnail')}
+						title={__( 'Select video thumbnail', 'video-embed-thumbnail-generator' )}
 						onSelect={onSelectPoster}
 						allowedTypes={VIDEO_POSTER_ALLOWED_MEDIA_TYPES}
 						render={({ open }) => (
@@ -420,13 +420,13 @@ const Thumbnails = ({
 								onClick={open}
 								ref={posterImageButton}
 							>
-								{!poster ? __('Select') : __('Replace')}
+								{!poster ? __( 'Select', 'video-embed-thumbnail-generator' ) : __( 'Replace', 'video-embed-thumbnail-generator' )}
 							</Button>
 						)}
 					/>
 					{!!poster && (
 						<Button onClick={onRemovePoster} variant="tertiary">
-							{__('Remove')}
+							{__( 'Remove', 'video-embed-thumbnail-generator' )}
 						</Button>
 					)}
 				</BaseControl>
@@ -454,7 +454,7 @@ const Thumbnails = ({
 					className="videopack-generate"
 					disabled={isSaving}
 				>
-					{__('Generate')}
+					{__( 'Generate', 'video-embed-thumbnail-generator' )}
 				</Button>
 				<Button
 					variant="secondary"
@@ -462,7 +462,7 @@ const Thumbnails = ({
 					className="videopack-generate"
 					disabled={isSaving}
 				>
-					{__('Random')}
+					{__( 'Random', 'video-embed-thumbnail-generator' )}
 				</Button>
 				{thumbChoices.length > 0 && (
 					<Button
@@ -470,7 +470,7 @@ const Thumbnails = ({
 						onClick={handleSaveAllThumbnails}
 						disabled={isSaving}
 					>
-						{__('Save All')}
+						{__( 'Save All', 'video-embed-thumbnail-generator' )}
 					</Button>
 				)}
 				{thumbChoices.length > 0 && (
@@ -491,7 +491,7 @@ const Thumbnails = ({
 								<img
 									src={thumb.src}
 									alt={`Thumbnail ${index + 1}`}
-									title={__('Save and set thumbnail')}
+									title={__( 'Save and set thumbnail', 'video-embed-thumbnail-generator' )}
 								/>
 								{isSaving && <Spinner />}
 							</button>
@@ -514,7 +514,7 @@ const Thumbnails = ({
 									icon={isOpened ? chevronUp : chevronDown}
 								/>
 							</span>
-							{__('Choose From Video')}
+							{__( 'Choose From Video', 'video-embed-thumbnail-generator' )}
 						</button>
 					</h2>
 					<div
@@ -564,7 +564,7 @@ const Thumbnails = ({
 							className="videopack-use-this-frame"
 							disabled={isSaving}
 						>
-							{__('Use this frame')}
+							{__( 'Use this frame', 'video-embed-thumbnail-generator' )}
 						</Button>
 						{isSaving && <Spinner />}
 					</div>

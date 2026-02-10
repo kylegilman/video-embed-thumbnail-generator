@@ -53,8 +53,8 @@ const VideopackSettingsPage = () => {
 			settings.ffmpeg_exists === true
 		) {
 			setFfmpegTest({
-				command: __('Running test…'),
-				output: __('Running test…'),
+				command: __( 'Running test…', 'video-embed-thumbnail-generator' ),
+				output: __( 'Running test…', 'video-embed-thumbnail-generator' ),
 			});
 			testFfmpeg(
 				settings.sample_codec,
@@ -118,23 +118,23 @@ const VideopackSettingsPage = () => {
 	const tabs = [
 		{
 			name: 'player',
-			title: __('Video Player'),
+			title: __( 'Video Player', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			name: 'thumbnails',
-			title: __('Thumbnails'),
+			title: __( 'Thumbnails', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			name: 'gallery',
-			title: __('Video Gallery'),
+			title: __( 'Video Gallery', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			name: 'encoding',
-			title: __('Encoding'),
+			title: __( 'Encoding', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			name: 'admin',
-			title: __('Admin'),
+			title: __( 'Admin', 'video-embed-thumbnail-generator' ),
 		},
 	];
 
@@ -142,12 +142,12 @@ const VideopackSettingsPage = () => {
 		tabs.push(
 			{
 				name: 'account',
-				title: __('Freemius Account'),
+				title: __( 'Freemius Account', 'video-embed-thumbnail-generator' ),
 				className: 'videopack-freemius-tab',
 			},
 			{
 				name: 'add-ons',
-				title: __('Add-ons'),
+				title: __( 'Add-ons', 'video-embed-thumbnail-generator' ),
 				className: 'videopack-freemius-tab',
 			}
 		);
@@ -232,7 +232,7 @@ const VideopackSettingsPage = () => {
 					icon={videopack}
 					size={40}
 				/>
-				{__('Videopack Settings')}
+				{__( 'Videopack Settings', 'video-embed-thumbnail-generator' )}
 			</h1>
 			<Panel>
 				<TabPanel
@@ -250,7 +250,7 @@ const VideopackSettingsPage = () => {
 						onClick={resetSettings}
 						className={'videopack-settings-reset'}
 					>
-						{__('Reset Settings')}
+						{__( 'Reset Settings', 'video-embed-thumbnail-generator' )}
 					</Button>
 				</PanelRow>
 			</Panel>

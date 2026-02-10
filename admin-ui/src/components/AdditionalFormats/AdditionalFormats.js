@@ -282,14 +282,14 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 					if (response?.log?.length > 0) {
 						return response.log.join(' ');
 					}
-					return __('No formats were added to the queue.');
+					return __( 'No formats were added to the queue.', 'video-embed-thumbnail-generator' );
 				}
 
 				const queuePosition = response?.new_queue_position;
 
 				return sprintf(
 					/* translators: %1$s is a list of video formats. %2$s is a number */
-					__('%1$s added to queue in position %2$s.'),
+					__( '%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator' ),
 					queueList,
 					queuePosition
 				);
@@ -303,7 +303,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 				? error.data.details.join(', ')
 				: error.message;
 			/* translators: %s is an error message */
-			setEncodeMessage(sprintf(__('Error: %s'), errorMessage));
+			setEncodeMessage(sprintf(__( 'Error: %s', 'video-embed-thumbnail-generator' ), errorMessage));
 			fetchVideoFormats(); // Re-fetch to ensure UI is consistent
 		} finally {
 			setIsLoading(false);
@@ -319,14 +319,14 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 
 		try {
 			await assignFormat(media.id, formatId, id);
-			setEncodeMessage(__('Video format assigned successfully.'));
+			setEncodeMessage(__( 'Video format assigned successfully.', 'video-embed-thumbnail-generator' ));
 			fetchVideoFormats(); // Refresh the list
 		} catch (error) {
 			console.error('Error assigning video format:', error);
 			setEncodeMessage(
 				sprintf(
 					/* translators: %s is an error message */
-					__('Error: %s'),
+					__( 'Error: %s', 'video-embed-thumbnail-generator' ),
 					error.message
 				)
 			);
@@ -340,7 +340,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		const formatData = videoFormats?.[formatId];
 		if (!formatData || !formatData.id) {
 			setEncodeMessage(
-				__('Error: Cannot delete file, missing attachment ID.')
+				__( 'Error: Cannot delete file, missing attachment ID.', 'video-embed-thumbnail-generator' )
 			);
 			console.error(
 				'Cannot delete file: Missing id for format',
@@ -351,13 +351,13 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		setDeleteInProgress(formatId); // Mark this formatId as being deleted
 		try {
 			await deleteFile(formatData.id);
-			setEncodeMessage(__('File deleted successfully.'));
+			setEncodeMessage(__( 'File deleted successfully.', 'video-embed-thumbnail-generator' ));
 			fetchVideoFormats(); // Re-fetch to get the latest status from backend
 		} catch (error) {
 			console.error('File delete failed:', error);
 			setEncodeMessage(
 				/* translators: %s is an error message */
-				sprintf(__('Error deleting file: %s'), error.message)
+				sprintf(__( 'Error deleting file: %s', 'video-embed-thumbnail-generator' ), error.message)
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
 		} finally {
@@ -368,20 +368,20 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	// Deletes/Cancels a queue job
 	const handleJobDelete = async (jobId) => {
 		if (!jobId) {
-			setEncodeMessage(__('Error: Cannot delete job, missing job ID.'));
+			setEncodeMessage(__( 'Error: Cannot delete job, missing job ID.', 'video-embed-thumbnail-generator' ));
 			console.error('Cannot delete job: Missing job ID');
 			return;
 		}
 		setDeleteInProgress(jobId); // Mark this jobId as being deleted
 		try {
 			await deleteJob(jobId);
-			setEncodeMessage(__('Job cancelled/deleted successfully.'));
+			setEncodeMessage(__( 'Job cancelled/deleted successfully.', 'video-embed-thumbnail-generator' ));
 			fetchVideoFormats(); // Re-fetch to get the latest status
 		} catch (error) {
 			console.error('Job delete failed:', error);
 			setEncodeMessage(
 				/* translators: %s is an error message */
-				sprintf(__('Error deleting job: %s'), error.message)
+				sprintf(__( 'Error deleting job: %s', 'video-embed-thumbnail-generator' ), error.message)
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
 		} finally {
@@ -439,10 +439,10 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 
 	const encodeButtonTitle = () => {
 		if (somethingToEncode()) {
-			return isLoading ? __('Loading…') : __('Encode selected formats');
+			return isLoading ? __( 'Loading…', 'video-embed-thumbnail-generator' ) : __( 'Encode selected formats', 'video-embed-thumbnail-generator' );
 		}
 
-		return __('Select formats to encode');
+		return __( 'Select formats to encode', 'video-embed-thumbnail-generator' );
 	};
 
 	const isEncodeButtonDisabled =
@@ -498,7 +498,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 
 	return (
 		<>
-			<PanelBody title={__('Additional Formats')}>
+			<PanelBody title={__( 'Additional Formats', 'video-embed-thumbnail-generator' )}>
 				<PanelRow>
 					{videoFormats ? (
 						<>
@@ -586,7 +586,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 							variant="secondary"
 							onClick={handleEnqueue}
 							title={encodeButtonTitle()}
-							text={__('Encode')}
+							text={__( 'Encode', 'video-embed-thumbnail-generator' )}
 							disabled={isEncodeButtonDisabled}
 						></Button>
 						{isLoading && <Spinner />}

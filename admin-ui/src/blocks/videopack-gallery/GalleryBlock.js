@@ -22,17 +22,17 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 	} = attributes;
 
 	const baseGalleryOrderbyOptions = [
-		{ value: 'menu_order', label: __('Menu Order') },
-		{ value: 'title', label: __('Title') },
-		{ value: 'post_date', label: __('Date') },
-		{ value: 'rand', label: __('Random') },
-		{ value: 'ID', label: __('Video ID') },
+		{ value: 'menu_order', label: __( 'Menu Order', 'video-embed-thumbnail-generator' ) },
+		{ value: 'title', label: __( 'Title', 'video-embed-thumbnail-generator' ) },
+		{ value: 'post_date', label: __( 'Date', 'video-embed-thumbnail-generator' ) },
+		{ value: 'rand', label: __( 'Random', 'video-embed-thumbnail-generator' ) },
+		{ value: 'ID', label: __( 'Video ID', 'video-embed-thumbnail-generator' ) },
 	];
 
 	const filteredGalleryOrderbyOptions = gallery_include
 		? [
 				...baseGalleryOrderbyOptions,
-				{ value: 'include', label: __('Manually Sorted') },
+				{ value: 'include', label: __( 'Manually Sorted', 'video-embed-thumbnail-generator' ) },
 			]
 		: baseGalleryOrderbyOptions;
 
@@ -50,25 +50,25 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={__('Gallery Settings')}>
+				<PanelBody title={__( 'Gallery Settings', 'video-embed-thumbnail-generator' )}>
 					{/* <TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Include these videos in the gallery')}
+						label={__( 'Include these videos in the gallery', 'video-embed-thumbnail-generator' )}
 						value={gallery_include ?? ''}
 						onChange={attributeChangeFactory('gallery_include')}
 					/>
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Exclude these videos from the gallery')}
+						label={__( 'Exclude these videos from the gallery', 'video-embed-thumbnail-generator' )}
 						value={gallery_exclude ?? ''}
 						onChange={attributeChangeFactory('gallery_exclude')}
 					/> */}
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Sort by')}
+						label={__( 'Sort by', 'video-embed-thumbnail-generator' )}
 						value={gallery_orderby}
 						onChange={attributeChangeFactory('gallery_orderby')}
 						options={filteredGalleryOrderbyOptions}
@@ -77,23 +77,23 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Sort order')}
+						label={__( 'Sort order', 'video-embed-thumbnail-generator' )}
 						value={gallery_order}
 						onChange={attributeChangeFactory('gallery_order')}
 						options={[
-							{ label: __('Ascending'), value: 'ASC' },
-							{ label: __('Descending'), value: 'DESC' },
+							{ label: __( 'Ascending', 'video-embed-thumbnail-generator' ), value: 'ASC' },
+							{ label: __( 'Descending', 'video-embed-thumbnail-generator' ), value: 'DESC' },
 						]}
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Paginate video gallery')}
+						label={__( 'Paginate video gallery', 'video-embed-thumbnail-generator' )}
 						checked={!!gallery_pagination}
 						onChange={attributeChangeFactory('gallery_pagination')}
 					/>
 					{gallery_pagination && (
 						<TextControl
-							label={__('Number of videos per page')}
+							label={__( 'Number of videos per page', 'video-embed-thumbnail-generator' )}
 							type="number"
 							value={gallery_per_page}
 							onChange={attributeChangeFactory(
@@ -103,7 +103,7 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 						/>
 					)}
 					<TextControl
-						label={__('Columns')}
+						label={__( 'Columns', 'video-embed-thumbnail-generator' )}
 						type="number"
 						value={gallery_columns}
 						onChange={attributeChangeFactory(
@@ -113,26 +113,26 @@ const GalleryBlock = ({ attributes, setAttributes, videoChildren }) => {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('Show video title overlay on thumbnails')}
+						label={__( 'Show video title overlay on thumbnails', 'video-embed-thumbnail-generator' )}
 						onChange={attributeChangeFactory('gallery_title')}
 						checked={!!gallery_title}
 					/>
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('When gallery video finishes')}
+						label={__( 'When gallery video finishes', 'video-embed-thumbnail-generator' )}
 						value={gallery_end}
 						onChange={attributeChangeFactory('gallery_end')}
 						options={[
 							{
-								label: __('Stop, but leave popup window open'),
+								label: __( 'Stop, but leave popup window open', 'video-embed-thumbnail-generator' ),
 								value: '',
 							},
 							{
-								label: __('Autoplay next video in the gallery'),
+								label: __( 'Autoplay next video in the gallery', 'video-embed-thumbnail-generator' ),
 								value: 'next',
 							},
-							{ label: __('Close popup window'), value: 'close' },
+							{ label: __( 'Close popup window', 'video-embed-thumbnail-generator' ), value: 'close' },
 						]}
 					/>
 				</PanelBody>

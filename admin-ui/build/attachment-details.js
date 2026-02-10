@@ -299,11 +299,11 @@ const AdditionalFormats = ({
           if (response?.log?.length > 0) {
             return response.log.join(' ');
           }
-          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No formats were added to the queue.');
+          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No formats were added to the queue.', 'video-embed-thumbnail-generator');
         }
         const queuePosition = response?.new_queue_position;
         return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %1$s is a list of video formats. %2$s is a number */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%1$s added to queue in position %2$s.'), queueList, queuePosition);
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%1$s added to queue in position %2$s.', 'video-embed-thumbnail-generator'), queueList, queuePosition);
       };
       setEncodeMessage(queueMessage());
       fetchVideoFormats(); // Re-fetch to update statuses
@@ -312,7 +312,7 @@ const AdditionalFormats = ({
       // Use the detailed error messages from the server if available
       const errorMessage = error?.data?.details ? error.data.details.join(', ') : error.message;
       /* translators: %s is an error message */
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s'), errorMessage));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s', 'video-embed-thumbnail-generator'), errorMessage));
       fetchVideoFormats(); // Re-fetch to ensure UI is consistent
     } finally {
       setIsLoading(false);
@@ -325,12 +325,12 @@ const AdditionalFormats = ({
     setIsLoading(true);
     try {
       await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_7__.assignFormat)(media.id, formatId, id);
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video format assigned successfully.'));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video format assigned successfully.', 'video-embed-thumbnail-generator'));
       fetchVideoFormats(); // Refresh the list
     } catch (error) {
       console.error('Error assigning video format:', error);
       setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is an error message */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s'), error.message));
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s', 'video-embed-thumbnail-generator'), error.message));
     } finally {
       setIsLoading(false);
     }
@@ -340,19 +340,19 @@ const AdditionalFormats = ({
   const handleFileDelete = async formatId => {
     const formatData = videoFormats?.[formatId];
     if (!formatData || !formatData.id) {
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: Cannot delete file, missing attachment ID.'));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: Cannot delete file, missing attachment ID.', 'video-embed-thumbnail-generator'));
       console.error('Cannot delete file: Missing id for format', formatId);
       return;
     }
     setDeleteInProgress(formatId); // Mark this formatId as being deleted
     try {
       await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_7__.deleteFile)(formatData.id);
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('File deleted successfully.'));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('File deleted successfully.', 'video-embed-thumbnail-generator'));
       fetchVideoFormats(); // Re-fetch to get the latest status from backend
     } catch (error) {
       console.error('File delete failed:', error);
       setEncodeMessage(/* translators: %s is an error message */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting file: %s'), error.message));
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting file: %s', 'video-embed-thumbnail-generator'), error.message));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } finally {
       setDeleteInProgress(null);
@@ -362,19 +362,19 @@ const AdditionalFormats = ({
   // Deletes/Cancels a queue job
   const handleJobDelete = async jobId => {
     if (!jobId) {
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: Cannot delete job, missing job ID.'));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: Cannot delete job, missing job ID.', 'video-embed-thumbnail-generator'));
       console.error('Cannot delete job: Missing job ID');
       return;
     }
     setDeleteInProgress(jobId); // Mark this jobId as being deleted
     try {
       await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_7__.deleteJob)(jobId);
-      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Job cancelled/deleted successfully.'));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Job cancelled/deleted successfully.', 'video-embed-thumbnail-generator'));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } catch (error) {
       console.error('Job delete failed:', error);
       setEncodeMessage(/* translators: %s is an error message */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting job: %s'), error.message));
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting job: %s', 'video-embed-thumbnail-generator'), error.message));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } finally {
       setDeleteInProgress(null);
@@ -419,9 +419,9 @@ const AdditionalFormats = ({
   };
   const encodeButtonTitle = () => {
     if (somethingToEncode()) {
-      return isLoading ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Loading…') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode selected formats');
+      return isLoading ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Loading…', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode selected formats', 'video-embed-thumbnail-generator');
     }
-    return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select formats to encode');
+    return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select formats to encode', 'video-embed-thumbnail-generator');
   };
   const isEncodeButtonDisabled = isLoading || ffmpeg_exists !== true || !somethingToEncode();
   const confirmDialogMessage = () => {
@@ -456,7 +456,7 @@ const AdditionalFormats = ({
   }, {});
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.Fragment, {
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Additional Formats'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Additional Formats', 'video-embed-thumbnail-generator'),
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelRow, {
         children: videoFormats ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.Fragment, {
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("ul", {
@@ -501,7 +501,7 @@ const AdditionalFormats = ({
           variant: "secondary",
           onClick: handleEnqueue,
           title: encodeButtonTitle(),
-          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode'),
+          text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode', 'video-embed-thumbnail-generator'),
           disabled: isEncodeButtonDisabled
         }), isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}), encodeMessage && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)("span", {
           className: "videopack-encode-message",
@@ -573,7 +573,7 @@ const EncodeFormatStatus = ({
       className: "videopack-format-status",
       children: formatData.status_l10n
     }), formatData.status === 'not_encoded' && !formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__.MediaUpload, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose existing file'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose existing file', 'video-embed-thumbnail-generator'),
       onSelect: onSelectFormat(formatId),
       allowedTypes: ['video'],
       render: ({
@@ -583,11 +583,11 @@ const EncodeFormatStatus = ({
         onClick: open,
         className: "videopack-format-button",
         size: "small",
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select', 'video-embed-thumbnail-generator')
       })
     }), formatData.was_picked && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__.MediaUpload, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is the label of a video resolution (eg: 720p ) */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace %s'), formatData.label),
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace %s', 'video-embed-thumbnail-generator'), formatData.label),
       onSelect: onSelectFormat(formatId),
       allowedTypes: ['video'],
       render: ({
@@ -597,14 +597,14 @@ const EncodeFormatStatus = ({
         onClick: open,
         className: "videopack-format-button",
         size: "small",
-        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace file'),
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace')
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace file', 'video-embed-thumbnail-generator'),
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace', 'video-embed-thumbnail-generator')
       })
     }), formatData.deletable && formatData.id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
       isBusy: deleteInProgress === formatId,
       onClick: onDeleteFile,
       variant: "link",
-      text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Permanently'),
+      text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Permanently', 'video-embed-thumbnail-generator'),
       isDestructive: true
     }), (formatData.encoding_now || formatData.status === 'failed') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_EncodeProgress__WEBPACK_IMPORTED_MODULE_3__["default"], {
       formatData: formatData,
@@ -677,15 +677,15 @@ const EncodeProgress = ({
         isDestructive: true,
         size: "small",
         isBusy: deleteInProgress === formatData.job_id,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator')
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: "videopack-encode-progress-small-text",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Elapsed:') + ' ' + convertToTimecode(formatData.progress.elapsed)
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Elapsed:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(formatData.progress.elapsed)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remaining:') + ' ' + convertToTimecode(formatData.progress.remaining)
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(formatData.progress.remaining)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('fps:') + ' ' + formatData.progress.fps
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + formatData.progress.fps
         })]
       })]
     });
@@ -693,10 +693,10 @@ const EncodeProgress = ({
   if (formatData?.status === 'failed' && formatData?.error_message) {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
       className: "videopack-encode-error",
-      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s'), formatData.error_message), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s', 'video-embed-thumbnail-generator'), formatData.error_message), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
         onClick: () => onCancelJob(formatData.job_id),
         variant: "link",
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Job'),
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Job', 'video-embed-thumbnail-generator'),
         isDestructive: true,
         isBusy: deleteInProgress === formatData.job_id
       })]
@@ -1065,17 +1065,17 @@ const Thumbnails = ({
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
     className: "videopack-thumbnail-generator",
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Thumbnails'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Thumbnails', 'video-embed-thumbnail-generator'),
       children: [poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("img", {
         className: "videopack-current-thumbnail",
         src: poster,
-        alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Current Thumbnail')
+        alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Current Thumbnail', 'video-embed-thumbnail-generator')
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl, {
         className: "editor-video-poster-control",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl.VisualLabel, {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Video Thumbnail')
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Video Thumbnail', 'video-embed-thumbnail-generator')
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_media_utils__WEBPACK_IMPORTED_MODULE_2__.MediaUpload, {
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Select video thumbnail'),
+          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Select video thumbnail', 'video-embed-thumbnail-generator'),
           onSelect: onSelectPoster,
           allowedTypes: VIDEO_POSTER_ALLOWED_MEDIA_TYPES,
           render: ({
@@ -1084,12 +1084,12 @@ const Thumbnails = ({
             variant: "secondary",
             onClick: open,
             ref: posterImageButton,
-            children: !poster ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Select') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Replace')
+            children: !poster ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Select', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Replace', 'video-embed-thumbnail-generator')
           })
         }), !!poster && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
           onClick: onRemovePoster,
           variant: "tertiary",
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Remove')
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Remove', 'video-embed-thumbnail-generator')
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.TextControl // This is the UI control for total_thumbnails.
       , {
@@ -1114,18 +1114,18 @@ const Thumbnails = ({
         onClick: () => handleGenerate('generate'),
         className: "videopack-generate",
         disabled: isSaving,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Generate')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Generate', 'video-embed-thumbnail-generator')
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         variant: "secondary",
         onClick: () => handleGenerate('random'),
         className: "videopack-generate",
         disabled: isSaving,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Random')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Random', 'video-embed-thumbnail-generator')
       }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
         variant: "primary",
         onClick: handleSaveAllThumbnails,
         disabled: isSaving,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Save All')
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Save All', 'video-embed-thumbnail-generator')
       }), thumbChoices.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
         className: `videopack-thumbnail-holder${isSaving ? ' disabled' : ''}`,
         children: thumbChoices.map((thumb, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
@@ -1137,7 +1137,7 @@ const Thumbnails = ({
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("img", {
             src: thumb.src,
             alt: `Thumbnail ${index + 1}`,
-            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Save and set thumbnail')
+            title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Save and set thumbnail', 'video-embed-thumbnail-generator')
           }), isSaving && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Spinner, {})]
         }, index))
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
@@ -1155,7 +1155,7 @@ const Thumbnails = ({
                 className: "components-panel__arrow",
                 icon: isOpened ? _wordpress_icons__WEBPACK_IMPORTED_MODULE_7__["default"] : _wordpress_icons__WEBPACK_IMPORTED_MODULE_6__["default"]
               })
-            }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Choose From Video')]
+            }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Choose From Video', 'video-embed-thumbnail-generator')]
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
           className: `videopack-thumb-video-panel spinner-container${isSaving ? ' saving' : ''}`,
@@ -1191,7 +1191,7 @@ const Thumbnails = ({
             onClick: handleUseThisFrame,
             className: "videopack-use-this-frame",
             disabled: isSaving,
-            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Use this frame')
+            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)('Use this frame', 'video-embed-thumbnail-generator')
           }), isSaving && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Spinner, {})]
         })]
       })]
