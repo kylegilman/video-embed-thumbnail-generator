@@ -31,7 +31,8 @@ class Source_File_Local extends Source {
 	}
 
 	protected function set_url(): void {
-		$this->url = str_replace( ABSPATH, site_url( '/' ), $this->source );
+		$url = str_replace( ABSPATH, site_url( '/' ), $this->source );
+		$this->url = str_replace( ' ', '%20', $url );
 	}
 
 	protected function set_exists(): void {

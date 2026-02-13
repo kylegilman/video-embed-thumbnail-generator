@@ -6,27 +6,47 @@ export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
 	const { options, skin, onPlay, onPause } = props;
+	const previousSkinRef = useRef(skin);
 
 	useEffect(() => {
+		let initTimer;
+
 		// On initial render, wait for sources to be available before initializing.
 		if (!playerRef.current) {
-			if (!options || !options.sources || options.sources.length === 0) {
-				return; // Don't initialize until sources are ready.
-			}
+			// Wrap initialization in a timeout to handle React Strict Mode double-mounts.
+			// This ensures we don't init a player if the component is immediately unmounted.
+			initTimer = setTimeout(() => {
+				if (
+					!options ||
+					!options.sources ||
+					options.sources.length === 0
+				) {
+					return; // Don't initialize until sources are ready.
+				}
 
-			const videoElement = videoRef.current;
-			if (!videoElement) {
-				return;
-			}
+				if (!videoRef.current) {
+					return;
+				}
 
-			playerRef.current = videojs(videoElement, options, () => {
-				playerRef.current.on('play', onPlay);
-				playerRef.current.on('pause', onPause);
-			});
+				// Ensure the container is empty before creating a new player.
+				while (videoRef.current.firstChild) {
+					videoRef.current.removeChild(videoRef.current.firstChild);
+				}
 
-			// On subsequent renders, update the existing player.
+				const videoElement = document.createElement('video');
+				videoElement.className = `video-js ${skin || ''} vjs-big-play-centered`;
+				videoElement.setAttribute('playsinline', '');
+
+				videoRef.current.appendChild(videoElement);
+
+				playerRef.current = videojs(videoElement, options, function () {
+					this.on('play', onPlay);
+					this.on('pause', onPause);
+				});
+			}, 0);
 		} else {
 			const player = playerRef.current;
+
 			if (player && !player.isDisposed()) {
 				player.autoplay(options.autoplay);
 				player.loop(options.loop);
@@ -39,31 +59,50 @@ export const VideoJS = (props) => {
 				);
 				player.preload(options.preload);
 
-				// Only update src if sources are valid to prevent error.
+				if (previousSkinRef.current !== skin) {
+					if (previousSkinRef.current) {
+						player.removeClass(previousSkinRef.current);
+					}
+					if (skin) {
+						player.addClass(skin);
+					}
+					previousSkinRef.current = skin;
+				}
+
+				// Only update src if it has actually changed to prevent reloading
 				if (options.sources && options.sources.length > 0) {
-					player.src(options.sources);
+					const currentSrc = player.currentSrc();
+					const newSrc = options.sources[0].src;
+					if (currentSrc !== newSrc) {
+						player.src(options.sources);
+					}
 				}
 			}
 		}
-	}, [options]);
+
+		return () => {
+			clearTimeout(initTimer);
+		};
+	}, [options, skin, onPlay, onPause]);
 
 	// Dispose the player when the component unmounts
 	useEffect(() => {
-		const player = playerRef.current;
 		return () => {
-			if (player && !player.isDisposed()) {
-				player.off('play', onPlay);
-				player.off('pause', onPause);
-				player.dispose();
+			if (playerRef.current && !playerRef.current.isDisposed()) {
+				playerRef.current.off('play', onPlay);
+				playerRef.current.off('pause', onPause);
+				playerRef.current.dispose();
 				playerRef.current = null;
 			}
 		};
 	}, []);
 
 	return (
-		<div data-vjs-player>
-			<video ref={videoRef} className={`video-js ${skin}`} />
-		</div>
+		<div
+			data-vjs-player
+			ref={videoRef}
+			style={{ width: '100%', height: '100%' }}
+		/>
 	);
 };
 

@@ -11,8 +11,9 @@ const SingleVideoBlock = ({
 	attributes,
 	options,
 	isSelected,
+	externalSourceGroups,
 }) => {
-	const { id } = attributes;
+	const { id, src } = attributes;
 	const [showOverlay, setShowOverlay] = useState(!isSelected);
 
 	useEffect(() => {
@@ -23,7 +24,7 @@ const SingleVideoBlock = ({
 	const { record: attachment, hasResolved } = videoData;
 
 	useEffect(() => {
-		if (hasResolved && attachment) {
+		if (id && hasResolved && attachment) {
 			const newAttributes = {
 				src: attachment.source_url,
 				title: attachment.title?.raw,
@@ -34,35 +35,38 @@ const SingleVideoBlock = ({
 
 			const updatedAttributes = Object.keys(newAttributes).reduce(
 				(acc, key) => {
+					// Only update if the new value is defined and different from the current attribute.
 					if (
-						newAttributes[key] &&
+						newAttributes[key] !== undefined &&
 						newAttributes[key] !== attributes[key]
 					) {
 						acc[key] = newAttributes[key];
 					}
 					return acc;
 				},
-				{}
+				{},
 			);
 
 			if (Object.keys(updatedAttributes).length > 0) {
 				setAttributes(updatedAttributes);
 			}
 		}
-	}, [attachment, hasResolved, setAttributes]);
+	}, [id, attachment, hasResolved, setAttributes, attributes]);
 
 	const playerAttributes = useMemo(() => {
 		const newPlayerAttributes = { ...options, ...attributes };
 
-		if (attachment?.videopack?.sources) {
-			newPlayerAttributes.sources = attachment.videopack.sources;
-		}
-		if (attachment?.videopack?.source_groups) {
+		if (attachment) {
+			newPlayerAttributes.sources = attachment.videopack?.sources;
 			newPlayerAttributes.source_groups =
-				attachment.videopack.source_groups;
+				attachment.videopack?.source_groups;
+		} else if (!id && src) {
+			newPlayerAttributes.source_groups = externalSourceGroups || {};
+			if (!externalSourceGroups || Object.keys(externalSourceGroups).length === 0)
+				newPlayerAttributes.sources = [{ src }];
 		}
 		return newPlayerAttributes;
-	}, [options, attributes, attachment]);
+	}, [options, attributes, attachment, externalSourceGroups, id, src]);
 
 	return (
 		<>

@@ -72,7 +72,7 @@ class Source_Factory {
 			if ( isset( $url_parts['host'] ) && $url_parts['host'] === $site_url_parts['host'] ) {
 				// It's a local URL. Convert to a server path.
 				$path = str_replace( site_url( '/' ), trailingslashit( ABSPATH ), $source );
-				return array( $path, 'file_local' );
+				return array( urldecode( $path ), 'file_local' );
 			}
 
 			// If all else fails for a URL, it's a remote URL.
