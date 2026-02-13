@@ -56,6 +56,14 @@ class Gallery {
 			),
 		);
 
+		if ( ! empty( $query_atts['gallery_source'] ) ) {
+			if ( 'category' === $query_atts['gallery_source'] && ! empty( $query_atts['gallery_category'] ) ) {
+				$args['cat'] = $query_atts['gallery_category'];
+			} elseif ( 'tag' === $query_atts['gallery_source'] && ! empty( $query_atts['gallery_tag'] ) ) {
+				$args['tag_id'] = $query_atts['gallery_tag'];
+			}
+		}
+
 		if ( ! empty( $query_atts['gallery_exclude'] ) ) {
 			$exclude_arr = wp_parse_id_list( $query_atts['gallery_exclude'] );
 			if ( ! empty( $exclude_arr ) ) {
@@ -126,6 +134,8 @@ class Gallery {
 		$player_vars['sources']    = $player->get_flat_sources();
 		$player_vars['poster']     = $final_atts['poster'];
 		$player_vars['attachment'] = $attachment->ID;
+		$player_vars['starts']     = $final_atts['starts'];
+		$player_vars['view_count'] = $final_atts['view_count'];
 
 		$poster_id = get_post_meta( $attachment->ID, '_kgflashmediaplayer-poster-id', true );
 		if ( ! $poster_id ) {

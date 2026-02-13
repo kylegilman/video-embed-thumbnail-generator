@@ -13,11 +13,11 @@ module.exports = {
 			'blocks',
 			'videopack-video'
 		),
-		'videopack-gallery': path.resolve(
+		'videopack-collection': path.resolve(
 			process.cwd(),
 			'src',
 			'blocks',
-			'videopack-gallery'
+			'videopack-collection'
 		),
 		settings: path.resolve(
 			process.cwd(),

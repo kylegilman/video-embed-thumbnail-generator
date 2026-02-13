@@ -2,6 +2,7 @@ import { getVideoGallery } from '../../utils/utils';
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import { Placeholder, Spinner, Icon } from '@wordpress/components';
 import {
 	DndContext,
 	closestCenter,
@@ -20,7 +21,13 @@ import GalleryItem from './GalleryItem';
 import VideoPlayer from '../VideoPlayer/VideoPlayer';
 import './VideoGallery.scss';
 
-const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
+const VideoGallery = ({
+	attributes,
+	setAttributes,
+	isEditing,
+	onRemoveItem,
+	onEditItem,
+}) => {
 	const {
 		gallery_id,
 		gallery_pagination,
@@ -31,6 +38,9 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 		gallery_include,
 		gallery_exclude,
 		gallery_end,
+		gallery_source,
+		gallery_category,
+		gallery_tag,
 	} = attributes;
 
 	const [galleryVideos, setGalleryVideos] = useState([]);
@@ -43,6 +53,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 	const [isPlayerReady, setIsPlayerReady] = useState(true);
 	const [isHovering, setIsHovering] = useState(false);
 	const [galleryVersion, setGalleryVersion] = useState(0);
+	const [isLoading, setIsLoading] = useState(true);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor),
@@ -97,15 +108,27 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 			gallery_id,
 			gallery_include,
 			gallery_exclude,
+			gallery_source,
+			gallery_category,
+			gallery_tag,
 		};
 
+		setIsLoading(true);
 		getVideoGallery(args)
 			.then((response) => {
 				setTotalPages(response.max_num_pages);
 				setGalleryVideos(response.videos);
 			})
 			.catch((error) => {
-				console.error('Error fetching videos:', error);
+				if (error.status === 404 || (error.data && error.data.status === 404)) {
+					setTotalPages(0);
+					setGalleryVideos([]);
+				} else {
+					console.error('Error fetching videos:', error);
+				}
+			})
+			.finally(() => {
+				setIsLoading(false);
 			});
 	}, [
 		gallery_id,
@@ -115,6 +138,9 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 		gallery_order,
 		gallery_include,
 		gallery_exclude,
+		gallery_source,
+		gallery_category,
+		gallery_tag,
 		galleryPage,
 		galleryVersion,
 	]);
@@ -226,51 +252,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 			return;
 		}
 
-		let includeIds = [];
-		if (gallery_include) {
-			includeIds = gallery_include.split(',');
-		} else {
-			includeIds = galleryVideos.map((video) =>
-				video.attachment_id.toString()
-			);
-		}
-
-		const newGalleryInclude = includeIds
-			.map((id) =>
-				parseInt(id.trim(), 10) === oldAttachmentId
-					? newAttachment.id.toString()
-					: id
-			)
-			.join(',');
-
-		setAttributes({
-			gallery_include: newGalleryInclude,
-			gallery_orderby: 'include',
-		});
-	};
-
-	const handleRemoveItem = (attachmentIdToRemove) => {
-		// Update gallery_exclude
-		const currentExclude = gallery_exclude
-			? gallery_exclude.split(',').map((id) => parseInt(id.trim(), 10))
-			: [];
-		if (!currentExclude.includes(attachmentIdToRemove)) {
-			currentExclude.push(attachmentIdToRemove);
-		}
-		const newGalleryExclude = currentExclude.join(',');
-
-		// Update gallery_include
-		const currentInclude = gallery_include
-			? gallery_include.split(',').map((id) => parseInt(id.trim(), 10))
-			: [];
-		const newGalleryInclude = currentInclude
-			.filter((id) => id !== attachmentIdToRemove)
-			.join(',');
-
-		setAttributes({
-			gallery_exclude: newGalleryExclude,
-			gallery_include: newGalleryInclude,
-		});
+		onEditItem(oldAttachmentId, newAttachment, galleryVideos);
 	};
 
 	const openMediaModalForNewVideos = () => {
@@ -378,7 +360,11 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 								: {}
 						}
 					>
-						{galleryVideos &&
+						{isLoading ? (
+							<div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '20px' }}>
+								<Spinner />
+							</div>
+						) : galleryVideos && galleryVideos.length > 0 ? (
 							galleryVideos.map((videoRecord, index) => (
 								<GalleryItem
 									key={videoRecord.attachment_id}
@@ -388,7 +374,7 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 									videoIndex={index}
 									setCurrentVideoIndex={setCurrentVideoIndex}
 									isEditing={isEditing}
-									onRemove={handleRemoveItem}
+									onRemove={onRemoveItem}
 									onEdit={handleEditItem}
 									isLastItem={
 										index === galleryVideos.length - 1
@@ -396,7 +382,18 @@ const VideoGallery = ({ attributes, setAttributes, isEditing }) => {
 									onAddVideo={openMediaModalForNewVideos}
 									isHoveringGallery={isHovering}
 								/>
-							))}
+							))
+						) : (
+							isEditing && (
+								<div style={{ gridColumn: '1 / -1' }}>
+									<Placeholder
+										icon="format-video"
+										label={__( 'No videos found', 'video-embed-thumbnail-generator' )}
+										instructions={__( 'Try adjusting your query settings.', 'video-embed-thumbnail-generator' )}
+									/>
+								</div>
+							)
+						)}
 					</div>
 				</SortableContext>
 			</DndContext>

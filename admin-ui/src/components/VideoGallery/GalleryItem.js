@@ -3,7 +3,7 @@
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
-import { pencil } from '@wordpress/icons';
+import { pencil, close, dragHandle } from '@wordpress/icons';
 import { decodeEntities } from '@wordpress/html-entities';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -136,13 +136,13 @@ const GalleryItem = ({
 			{isEditing && (
 				<>
 					<button
-						className="gallery-item-drag-handle"
+						className="videopack-drag-handle"
 						{...listeners}
 						title={__( 'Drag to reorder', 'video-embed-thumbnail-generator' )}
 					>
-						<span className="dashicons dashicons-move" />
+						<Icon icon={dragHandle} />
 					</button>
-					<button
+					<div
 						className="gallery-item-edit"
 						onClick={(e) => {
 							e.stopPropagation();
@@ -150,8 +150,10 @@ const GalleryItem = ({
 						}}
 						title={__( 'Edit', 'video-embed-thumbnail-generator' )}
 					>
-						<Icon icon={pencil} />
-					</button>
+						<button type="button" className="videopack-edit-item">
+							<Icon icon={pencil} />
+						</button>
+					</div>
 					<div
 						className="gallery-item-remove"
 						onClick={(e) => {
@@ -160,7 +162,9 @@ const GalleryItem = ({
 						}}
 						title={__( 'Remove', 'video-embed-thumbnail-generator' )}
 					>
-						X
+						<button type="button" className="videopack-remove-item">
+							<Icon icon={close} />
+						</button>
 					</div>
 				</>
 			)}
