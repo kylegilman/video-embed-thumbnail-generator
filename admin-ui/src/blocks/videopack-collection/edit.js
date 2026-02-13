@@ -15,31 +15,32 @@ import { store as noticesStore } from '@wordpress/notices';
 
 import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
-import GalleryBlock from './GalleryBlock';
+import CollectionBlock from './CollectionBlock';
 import './editor.scss';
 
-export default function Edit({ attributes, setAttributes }) {
+export default function Edit({ attributes, setAttributes, context, isSelected }) {
 	const ALLOWED_MEDIA_TYPES = ['video'];
 	const { gallery_include, gallery_id } = attributes;
 	const [options, setOptions] = useState();
 	const blockProps = useBlockProps();
 	const { createErrorNotice } = useDispatch(noticesStore);
 
-	const { postId } = useSelect(
+	const { editorPostId } = useSelect(
 		(select) => ({
-			postId: select('core/editor').getCurrentPostId(),
+			editorPostId: select('core/editor')?.getCurrentPostId(),
 		}),
 		[]
 	);
 
+	const postId = context.postId || editorPostId;
+
 	const videoChildren = useSelect(
 		(select) => {
-			const attachments = select('core').getEntityRecords(
-				'postType',
-				'attachment',
-				{ parent: postId, media_type: 'video' }
-			);
-			return attachments;
+			if ( ! postId ) return null;
+			return select('core').getEntityRecords('postType', 'attachment', {
+				parent: postId,
+				media_type: 'video',
+			});
 		},
 		[postId]
 	);
@@ -48,14 +49,6 @@ export default function Edit({ attributes, setAttributes }) {
 		getSettings().then((response) => {
 			setOptions(response);
 		});
-
-		if (!gallery_id && !gallery_include && videoChildren) {
-			const includeIds = videoChildren.map((item) => item.id).join(',');
-			setAttributes({
-				gallery_include: includeIds,
-				gallery_id: postId,
-			});
-		}
 	}, [videoChildren]);
 
 	useEffect(() => {
@@ -112,10 +105,9 @@ export default function Edit({ attributes, setAttributes }) {
 		setAttributesFromMedia(mediaArray);
 	}
 
-	function onInsertGallery() {
+	function onInsertCollection() {
 		setAttributes({
 			gallery: true,
-			gallery_id: postId,
 		});
 	}
 
@@ -129,8 +121,8 @@ export default function Edit({ attributes, setAttributes }) {
 				className="block-editor-media-placeholder"
 				withIllustration={true}
 				icon={icon}
-				label={__( 'Videopack Video Gallery', 'video-embed-thumbnail-generator' )}
-				instructions={__( 'Select video files to create a gallery.', 'video-embed-thumbnail-generator' )}
+				label={__( 'Videopack Video Collection', 'video-embed-thumbnail-generator' )}
+				instructions={__( 'Select video files to create a collection.', 'video-embed-thumbnail-generator' )}
 			>
 				{content}
 				<Button
@@ -138,10 +130,10 @@ export default function Edit({ attributes, setAttributes }) {
 					className="videopack-placeholder-gallery-button"
 					variant="secondary"
 					label={__(
-						'Insert a gallery of all videos uploaded to this post'
+						'Insert a collection of all videos uploaded to this post'
 					)}
 					showTooltip
-					onClick={onInsertGallery}
+					onClick={onInsertCollection}
 				>
 					{__( "This post's videos", 'video-embed-thumbnail-generator' )}
 				</Button>
@@ -149,7 +141,7 @@ export default function Edit({ attributes, setAttributes }) {
 		);
 	};
 
-	if (!gallery_id && !gallery_include) {
+	if (!gallery_id && !gallery_include && !postId) {
 		return (
 			<div {...blockProps}>
 				<MediaPlaceholder
@@ -180,11 +172,13 @@ export default function Edit({ attributes, setAttributes }) {
 				/>
 			</BlockControls>
 
-			<GalleryBlock
+			<CollectionBlock
 				setAttributes={setAttributes}
 				attributes={attributes}
 				options={options}
 				videoChildren={videoChildren}
+				previewPostId={postId}
+				isSelected={isSelected}
 			/>
 		</>
 	);

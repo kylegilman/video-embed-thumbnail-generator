@@ -38,6 +38,10 @@ class Shortcode {
 				'videos'          => -1,
 				'start'           => '',
 				'gallery'         => 'false',
+				'gallery_source'  => 'current',
+				'gallery_category'=> '',
+				'gallery_tag'     => '',
+				'layout'          => 'gallery',
 				'gallery_orderby' => 'menu_order ID',
 				'gallery_order'   => 'ASC',
 				'gallery_exclude' => '',
@@ -80,7 +84,7 @@ class Shortcode {
 				'preload',
 				'playback_rate',
 				'skip_buttons',
-				'title',
+				'overlay_title',
 				'embedcode',
 				'embeddable',
 				'view_count',
@@ -102,7 +106,7 @@ class Shortcode {
 				'autoplay',
 				'controls',
 				'pauseothervideos',
-				'title',
+				'overlay_title',
 				'embedcode',
 				'embeddable',
 				'view_count',
@@ -120,6 +124,7 @@ class Shortcode {
 				'gifmode',
 				'right_click',
 				'skip_buttons',
+				'gallery',
 			),
 		);
 	}
@@ -134,6 +139,10 @@ class Shortcode {
 
 		// Add 'src' as a special case attribute for the block editor.
 		$attributes['src'] = array(
+			'type' => 'string',
+			'default' => '',
+		);
+		$attributes['title'] = array(
 			'type' => 'string',
 			'default' => '',
 		);
@@ -265,11 +274,13 @@ class Shortcode {
 
 		// Convert boolean-like attributes to booleans
 		foreach ( $checkbox_convert as $key ) {
-			if ( isset( $query_atts[ $key ] ) && is_string( $query_atts[ $key ] ) ) {
-				if ( strtolower( $query_atts[ $key ] ) === 'true' ) {
+			if ( isset( $query_atts[ $key ] ) ) {
+				if ( $query_atts[ $key ] === 'true' || $query_atts[ $key ] === true || $query_atts[ $key ] === '1' || $query_atts[ $key ] === 1 ) {
 					$query_atts[ $key ] = true;
-				} elseif ( strtolower( $query_atts[ $key ] ) === 'false' ) {
+				} elseif ( $query_atts[ $key ] === 'false' || $query_atts[ $key ] === false || $query_atts[ $key ] === '0' || $query_atts[ $key ] === 0 ) {
 					$query_atts[ $key ] = false;
+				} elseif ( is_string( $query_atts[ $key ] ) && strtolower( $query_atts[ $key ] ) === 'true' ) {
+					$query_atts[ $key ] = true;
 				}
 			}
 		}
@@ -340,9 +351,8 @@ class Shortcode {
 			// Otherwise, get all tracks from the source's metadata.
 			$query_atts['tracks'] = $source->get_tracks();
 		}
-		if ( empty( $query_atts['view_count'] ) ) {
-			$query_atts['view_count'] = $source->get_views();
-		}
+
+		$query_atts['starts'] = $source->get_views();
 
 		// Determine if the video is countable (i.e., an attachment).
 		$query_atts['countable'] = is_numeric( $source->get_id() );
@@ -401,6 +411,15 @@ class Shortcode {
 
 		$query_atts = $this->atts( $atts );
 
+		// Handle gallery_source logic to ensure correct gallery_id
+		if ( isset( $query_atts['gallery_source'] ) ) {
+			if ( 'current' === $query_atts['gallery_source'] && empty( $query_atts['gallery_id'] ) ) {
+				$query_atts['gallery_id'] = get_the_ID();
+			} elseif ( in_array( $query_atts['gallery_source'], array( 'category', 'tag' ) ) && empty( $query_atts['gallery_id'] ) ) {
+				$query_atts['gallery_id'] = '';
+			}
+		}
+
 		if ( is_feed() ) {
 			return '';
 		}
@@ -409,11 +428,66 @@ class Shortcode {
 			if ( isset( $query_atts['gallery_orderby'] ) && 'rand' === $query_atts['gallery_orderby'] ) {
 				$query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
 			}
-			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
-			$player->enqueue_scripts();
 
-			$gallery = new Gallery( $this->options_manager );
-			$code    = $gallery->gallery_page( 1, $query_atts );
+			if ( isset( $query_atts['layout'] ) && 'list' === $query_atts['layout'] ) {
+				$gallery = new Gallery( $this->options_manager );
+				$page    = 1;
+				if ( get_query_var( 'paged' ) ) {
+					$page = get_query_var( 'paged' );
+				} elseif ( get_query_var( 'page' ) ) {
+					$page = get_query_var( 'page' );
+				}
+
+				$attachments = $gallery->get_gallery_videos( $page, $query_atts );
+				$code        = '<div class="videopack-video-list">';
+
+				if ( $attachments->have_posts() ) {
+					foreach ( $attachments->posts as $post ) {
+						$source = \Videopack\Video_Source\Source_Factory::create( $post->ID, $this->options_manager );
+						if ( $source && $source->exists() ) {
+							$video_atts             = $query_atts;
+							$video_atts['id']       = $post->ID;
+							$video_atts['autoplay'] = false;
+
+							$final_atts = $this->get_final_atts( $video_atts, $source );
+
+							if ( isset( $final_atts['embed_method'] ) ) {
+								$player_type = $final_atts['embed_method'];
+							} else {
+								$player_type = $this->options['embed_method'];
+							}
+							$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options_manager );
+							$player->set_source( $source );
+							$player->set_atts( $final_atts );
+							$player->enqueue_scripts();
+
+							$code .= '<div class="videopack-list-item">';
+							$code .= $player->get_player_code( $final_atts );
+							$code .= '</div>';
+						}
+					}
+				}
+				$code .= '</div>';
+
+				if ( isset( $query_atts['gallery_pagination'] ) && true === $query_atts['gallery_pagination'] ) {
+					$big        = 999999999; // need an unlikely integer
+					$pagination = paginate_links( array(
+						'base'    => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+						'format'  => '?paged=%#%',
+						'current' => max( 1, $page ),
+						'total'   => $attachments->max_num_pages,
+					) );
+					if ( $pagination ) {
+						$code .= '<div class="videopack-gallery-pagination">' . $pagination . '</div>';
+					}
+				}
+			} else {
+				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+				$player->enqueue_scripts();
+
+				$gallery = new Gallery( $this->options_manager );
+				$code    = $gallery->gallery_page( 1, $query_atts );
+			}
 		} else {
 			$post_id = get_the_ID();
 			if ( ! $post_id ) {

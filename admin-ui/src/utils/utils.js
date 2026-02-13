@@ -1,8 +1,6 @@
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs, getFilename } from '@wordpress/url';
 
-
-
 export const getQueue = async () => {
 	try {
 		const response = await apiFetch({

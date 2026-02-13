@@ -1,0 +1,30 @@
+.videopack-video-list-wrapper {
+	.videopack-loading-container {
+		display: flex;
+		justify-content: center;
+		padding: 20px;
+	}
+
+	.videopack-list-item {
+		margin-bottom: 20px;
+		position: relative;
+
+		.videopack-block-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 10;
+		}
+
+		.videopack-list-item-controls {
+			position: absolute;
+			top: 5px;
+			right: 5px;
+			z-index: 200;
+			display: flex;
+			gap: 5px;
+		}
+	}
+}

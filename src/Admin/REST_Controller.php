@@ -113,6 +113,15 @@ class REST_Controller extends \WP_REST_Controller {
 					'gallery_thumb'    => array(
 						'type' => 'number',
 					),
+					'gallery_source'   => array(
+						'type' => 'string',
+					),
+					'gallery_category' => array(
+						'type' => 'string',
+					),
+					'gallery_tag'      => array(
+						'type' => 'string',
+					),
 				),
 			)
 		);
@@ -851,6 +860,11 @@ class REST_Controller extends \WP_REST_Controller {
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options_manager );
 		$gallery_atts = $shortcode->atts( $request->get_params() );
 		$page         = $request->get_param( 'page_number' ) ?: 1;
+
+		// If filtering by category or tag and no specific gallery_id (post parent) was requested, clear the default ID.
+		if ( in_array( $gallery_atts['gallery_source'], array( 'category', 'tag' ) ) && ! $request->get_param( 'gallery_id' ) ) {
+			$gallery_atts['gallery_id'] = '';
+		}
 
 		$attachments = $gallery->get_gallery_videos( $page, $gallery_atts );
 		$videos_data = array();

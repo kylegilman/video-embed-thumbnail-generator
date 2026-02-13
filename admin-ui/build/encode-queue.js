@@ -93,18 +93,6 @@ const EncodeProgress = ({
 
 /***/ },
 
-/***/ "./src/features/encode-queue/encode-queue.scss"
-/*!*****************************************************!*\
-  !*** ./src/features/encode-queue/encode-queue.scss ***!
-  \*****************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ },
-
 /***/ "./src/utils/utils.js"
 /*!****************************!*\
   !*** ./src/utils/utils.js ***!
@@ -476,6 +464,28 @@ const getThumbnailCandidates = async () => {
 
 /***/ },
 
+/***/ "./src/features/encode-queue/encode-queue.scss"
+/*!*****************************************************!*\
+  !*** ./src/features/encode-queue/encode-queue.scss ***!
+  \*****************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ },
+
+/***/ "react/jsx-runtime"
+/*!**********************************!*\
+  !*** external "ReactJSXRuntime" ***!
+  \**********************************/
+(module) {
+
+module.exports = window["ReactJSXRuntime"];
+
+/***/ },
+
 /***/ "@wordpress/api-fetch"
 /*!**********************************!*\
   !*** external ["wp","apiFetch"] ***!
@@ -523,16 +533,6 @@ module.exports = window["wp"]["i18n"];
 (module) {
 
 module.exports = window["wp"]["url"];
-
-/***/ },
-
-/***/ "react/jsx-runtime"
-/*!**********************************!*\
-  !*** external "ReactJSXRuntime" ***!
-  \**********************************/
-(module) {
-
-module.exports = window["ReactJSXRuntime"];
 
 /***/ }
 

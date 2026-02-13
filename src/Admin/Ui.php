@@ -36,7 +36,7 @@ class Ui {
 		);
 
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery',
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-collection',
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
 			)

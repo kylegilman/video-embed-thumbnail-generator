@@ -636,55 +636,6 @@
 .videopack-gallery-wrapper .gallery-thumbnail:hover .play-button-container svg .play-button-circle {
   fill-opacity: 0.4;
 }
-.videopack-gallery-wrapper {
-  /* Gallery pagination */
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination {
-  margin-top: 3px;
-  margin-bottom: 3px;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow {
-  background: none;
-  border: none;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow.videopack-hidden {
-  visibility: hidden;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-page-number-div {
-  display: inline;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number {
-  display: inline-flex;
-  width: 1.75em;
-  height: 1.75em;
-  margin: 2px;
-  background-color: transparent;
-  color: var(--wp--preset--color--primary, black);
-  border-radius: 50%;
-  font-size: 0.75em;
-  border: none;
-  text-decoration: none;
-  align-items: center;
-  justify-content: center;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number.current-page, .videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number:hover {
-  background-color: var(--wp--preset--color--primary, #555);
-  color: var(--wp--preset--color--white, white);
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number.current-page span, .videopack-gallery-wrapper .videopack-gallery-pagination button.videopack-page-number:hover span {
-  cursor: default;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination button span {
-  cursor: pointer;
-}
-.videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-separator, .videopack-gallery-wrapper .videopack-gallery-pagination .videopack-pagination-arrow {
-  font-size: 0.8em;
-  font-weight: 100;
-  vertical-align: middle;
-  display: inline-block;
-  margin: 0;
-  padding: 0;
-}
 .videopack-gallery-wrapper .videopack-modal-overlay {
   position: fixed;
   top: 0;
@@ -758,25 +709,10 @@
   opacity: 0.5;
   border: 2px dashed #ccc;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle, .videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle, .videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
   position: absolute;
-  cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 16px;
-  font-weight: bold;
-  z-index: 10;
-  transition: background-color 0.2s ease-in-out;
-  border: none;
-  padding: 0;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle {
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle {
   top: 5px;
   display: none; /* Hidden by default */
 }
@@ -789,45 +725,97 @@
   line-height: 1;
   vertical-align: middle;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button:hover {
-  background-color: rgba(0, 124, 255, 0.8);
-}
 .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove {
   right: 5px;
-}
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove:hover {
-  background-color: rgba(255, 0, 0, 0.8);
 }
 .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit {
   right: 35px;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit svg {
-  width: 18px;
-  height: 18px;
-  fill: white;
-  vertical-align: middle;
-}
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit:hover {
-  background-color: rgba(0, 124, 255, 0.8);
-}
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle {
+.videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle {
   left: 5px;
   cursor: move;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle .dashicons {
-  font-size: 18px;
-  line-height: 1;
-  vertical-align: middle;
-}
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-drag-handle:hover {
-  background-color: rgba(0, 0, 0, 0.9);
-}
-.videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-drag-handle {
+.videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item:hover .videopack-drag-handle {
   display: flex; /* Show on hover of the parent item */
 }
-/*!*****************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/videopack-gallery/editor.scss ***!
-  \*****************************************************************************************************************************************************************************************************************************************************************/
+/* Gallery pagination */
+.videopack-gallery-pagination {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+.videopack-gallery-pagination .videopack-pagination-arrow {
+  background: none;
+  border: none;
+}
+.videopack-gallery-pagination .videopack-pagination-arrow.videopack-hidden {
+  visibility: hidden;
+}
+.videopack-gallery-pagination .videopack-page-number-div {
+  display: inline;
+}
+.videopack-gallery-pagination button.videopack-page-number {
+  display: inline-flex;
+  width: 1.75em;
+  height: 1.75em;
+  margin: 2px;
+  background-color: transparent;
+  color: var(--wp--preset--color--primary, black);
+  border-radius: 50%;
+  font-size: 0.75em;
+  border: none;
+  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+}
+.videopack-gallery-pagination button.videopack-page-number.current-page, .videopack-gallery-pagination button.videopack-page-number:hover {
+  background-color: var(--wp--preset--color--primary, #555);
+  color: var(--wp--preset--color--white, white);
+}
+.videopack-gallery-pagination button.videopack-page-number.current-page span, .videopack-gallery-pagination button.videopack-page-number:hover span {
+  cursor: default;
+}
+.videopack-gallery-pagination button span {
+  cursor: pointer;
+}
+.videopack-gallery-pagination .videopack-pagination-separator, .videopack-gallery-pagination .videopack-pagination-arrow {
+  font-size: 0.8em;
+  font-weight: 100;
+  vertical-align: middle;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoList/VideoList.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************/
+.videopack-video-list-wrapper .videopack-loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+.videopack-video-list-wrapper .videopack-list-item {
+  margin-bottom: 20px;
+  position: relative;
+}
+.videopack-video-list-wrapper .videopack-list-item .videopack-block-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.videopack-video-list-wrapper .videopack-list-item .videopack-list-item-controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 200;
+  display: flex;
+  gap: 5px;
+}
+/*!********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/videopack-collection/editor.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************************************/
 /**
  * Colors
  */
@@ -894,5 +882,131 @@
 .wp-block-videopack-videopack-gallery .components-button {
   transition: none;
 }
+.videopack-sort-control-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.videopack-sort-control-wrapper .components-base-control {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-sort-control-wrapper .components-button.has-icon {
+  margin-bottom: 4px;
+}
+.videopack-excluded-videos {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+.videopack-excluded-videos p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.videopack-excluded-videos .videopack-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.videopack-excluded-videos .videopack-excluded-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail {
+  width: 60px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
+  width: 16px;
+  height: 16px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title {
+  flex-grow: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item {
+  min-width: 24px;
+  padding: 0;
+  color: #666;
+  background: transparent;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover {
+  color: #d00;
+  background: #e0e0e0;
+}
+.videopack-video-list-wrapper .videopack-remove-item,
+.videopack-video-list-wrapper .videopack-edit-item,
+.videopack-video-list-wrapper .videopack-drag-handle,
+.videopack-video-list-wrapper .gallery-add-button,
+.videopack-gallery-wrapper .videopack-remove-item,
+.videopack-gallery-wrapper .videopack-edit-item,
+.videopack-gallery-wrapper .videopack-drag-handle,
+.videopack-gallery-wrapper .gallery-add-button {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 10;
+  transition: background-color 0.2s ease-in-out;
+  border: none;
+  padding: 0;
+}
+.videopack-video-list-wrapper .videopack-remove-item svg,
+.videopack-video-list-wrapper .videopack-edit-item svg,
+.videopack-video-list-wrapper .videopack-drag-handle svg,
+.videopack-video-list-wrapper .gallery-add-button svg,
+.videopack-gallery-wrapper .videopack-remove-item svg,
+.videopack-gallery-wrapper .videopack-edit-item svg,
+.videopack-gallery-wrapper .videopack-drag-handle svg,
+.videopack-gallery-wrapper .gallery-add-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.videopack-video-list-wrapper .videopack-remove-item:hover,
+.videopack-gallery-wrapper .videopack-remove-item:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
+}
+.videopack-video-list-wrapper .videopack-edit-item:hover,
+.videopack-video-list-wrapper .gallery-add-button:hover,
+.videopack-video-list-wrapper .videopack-drag-handle:hover,
+.videopack-gallery-wrapper .videopack-edit-item:hover,
+.videopack-gallery-wrapper .gallery-add-button:hover,
+.videopack-gallery-wrapper .videopack-drag-handle:hover {
+  background-color: rgba(0, 124, 255, 0.8);
+  color: white;
+}
+.videopack-video-list-wrapper .videopack-drag-handle,
+.videopack-gallery-wrapper .videopack-drag-handle {
+  cursor: move;
+}
 
-/*# sourceMappingURL=videopack-gallery.css.map*/
+/*# sourceMappingURL=videopack-collection.css.map*/
