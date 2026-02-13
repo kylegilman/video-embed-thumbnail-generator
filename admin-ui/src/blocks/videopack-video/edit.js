@@ -13,6 +13,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
+import apiFetch from '@wordpress/api-fetch';
 
 import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
@@ -24,6 +25,7 @@ const ALLOWED_MEDIA_TYPES = ['video'];
 const Edit = ({ attributes, setAttributes, isSelected }) => {
 	const { id, src } = attributes;
 	const [options, setOptions] = useState();
+	const [externalSourceGroups, setExternalSourceGroups] = useState(null);
 	const blockProps = useBlockProps();
 	const { createErrorNotice } = useDispatch(noticesStore);
 	const mediaUpload = useSelect(
@@ -72,6 +74,24 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 		}
 	}, []);
 
+	useEffect(() => {
+		if (!id && src) {
+			setExternalSourceGroups(null);
+			apiFetch({
+				path: `/videopack/v1/sources?url=${encodeURIComponent(src)}`,
+			})
+				.then((data) => {
+					setExternalSourceGroups(data);
+				})
+				.catch((error) => {
+					console.error('Error fetching video sources:', error);
+					setExternalSourceGroups({});
+				});
+		} else {
+			setExternalSourceGroups(null);
+		}
+	}, [id, src]);
+
 	function setAttributesFromMedia(attachmentObject) {
 		const media_attributes = {
 			src: attachmentObject.url,
@@ -119,7 +139,26 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 
 	function onSelectURL(newSrc) {
 		if (newSrc !== src) {
-			setAttributes({ src: newSrc, id: false });
+			let filename = newSrc.split('?')[0].split('#')[0];
+			filename = filename.split('/').pop();
+			if (filename.includes('.')) {
+				filename = filename.substring(0, filename.lastIndexOf('.'));
+			}
+			try {
+				filename = decodeURIComponent(filename);
+			} catch (e) {
+				// Ignore decoding errors
+			}
+
+			setAttributes({
+				src: newSrc,
+				id: undefined,
+				title: filename,
+				caption: '',
+				poster: '',
+				starts: undefined,
+				embedlink: '',
+			});
 		}
 	}
 
@@ -178,6 +217,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				attributes={attributes}
 				options={options}
 				isSelected={isSelected}
+				externalSourceGroups={externalSourceGroups}
 			/>
 		</>
 	);

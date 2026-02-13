@@ -1,6 +1,7 @@
 /* global MediaElementPlayer */
 
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
+import { decodeEntities } from '@wordpress/html-entities';
 import MetaBar from './MetaBar';
 import VideoJS from './VideoJs';
 import BelowVideo from './BelowVideo';
@@ -8,11 +9,20 @@ import './VideoPlayer.scss';
 
 // Make sure to pass isSelected from the block's edit component.
 const VideoPlayer = ({ attributes, onReady }) => {
+	const decodedAttributes = useMemo(
+		() => ({
+			...attributes,
+			title: attributes.title
+				? decodeEntities(attributes.title)
+				: attributes.title,
+		}),
+		[attributes]
+	);
+
 	const {
-		embed_method,
+		embed_method = 'Video.js',
 		autoplay,
 		controls,
-		id,
 		skin,
 		loop,
 		muted,
@@ -33,7 +43,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		fullwidth,
 		sources = [],
 		source_groups = {},
-	} = attributes;
+	} = decodedAttributes;
 
 	const actualAutoplay = useMemo(() => {
 		return autoplay && muted;
@@ -110,7 +120,8 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				};
 				const defaultResSource = allSources.find((s) => s.default);
 				if (defaultResSource) {
-					options.plugins.resolutionSelector.default_res = defaultResSource.resolution;
+					options.plugins.resolutionSelector.default_res =
+						defaultResSource.resolution;
 				}
 			}
 
@@ -189,7 +200,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	return (
 		<div className="videopack-wrapper meta-bar-visible" ref={wrapperRef}>
 			<div className="videopack-player">
-				<MetaBar attributes={attributes} />
+				<MetaBar attributes={decodedAttributes} />
 				{embed_method === 'Video.js' && videoJsOptions && (
 					<VideoJS
 						options={videoJsOptions}
@@ -203,7 +214,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				)}
 				{embed_method === 'None' && <GenericPlayer />}
 			</div>
-			<BelowVideo attributes={attributes} />
+			<BelowVideo attributes={decodedAttributes} />
 		</div>
 	);
 };
