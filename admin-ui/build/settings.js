@@ -6638,6 +6638,7 @@ const AdminSettings = ({
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.BaseControl, {
             __nextHasNoMarginBottom: true,
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('When deleting videos, also delete associated:'),
+            id: 'videopack-delete-options',
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.CheckboxControl, {
               __nextHasNoMarginBottom: true,
               label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Thumbnails', 'video-embed-thumbnail-generator'),
@@ -6673,15 +6674,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _hooks_useBatchProcess__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../hooks/useBatchProcess */ "./src/hooks/useBatchProcess.js");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
-/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_compose__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _TextControlOnBlur__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./TextControlOnBlur */ "./src/features/settings/components/TextControlOnBlur.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _TextControlOnBlur__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./TextControlOnBlur */ "./src/features/settings/components/TextControlOnBlur.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
 /* global videopack_config */
-
 
 
 
@@ -6718,13 +6716,12 @@ const EncodingSettings = ({
     sample_rotate,
     auto_publish_post
   } = settings;
-  const [users, setUsers] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(null);
-  const [bitrates, setBitrates] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(null);
+  const [users, setUsers] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null);
   const encodingBatch = (0,_hooks_useBatchProcess__WEBPACK_IMPORTED_MODULE_2__["default"])();
   const handleEncodeAllVideos = () => {
     encodingBatch.confirmAndRun((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Are you sure you want to add all videos to the encoding queue? This will check every video in your library and add it to the queue if it hasn't been encoded yet.", 'video-embed-thumbnail-generator'), () => (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.startBatchProcess)('encoding'), () => (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getBatchProgress)('encoding'), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No videos found to process.', 'video-embed-thumbnail-generator'));
   };
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
     (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getUsersWithCapability)('edit_others_video_encodes').then(response => {
       setUsers(response);
     }).catch(error => {
@@ -6779,20 +6776,20 @@ const EncodingSettings = ({
       }
       changeHandlerFactory.encode(newEncode);
     };
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
       className: "videopack-encode-grid",
-      children: codecs.map(codec => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: codecs.map(codec => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
         className: "videopack-encode-column",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
           className: "videopack-encode-grid-header-cell",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
             __nextHasNoMarginBottom: true,
             label: codec.name,
             checked: !!currentEncode?.[codec.id]?.enabled,
             onChange: isEnabled => handleCodecEnableChange(codec.id, isEnabled),
             disabled: ffmpegExists !== true
           })
-        }), resolutions.map(resolution => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CheckboxControl, {
+        }), resolutions.map(resolution => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.CheckboxControl, {
           __nextHasNoMarginBottom: true,
           label: resolution.name,
           checked: !!currentEncode?.[codec.id]?.resolutions?.[resolution.id],
@@ -6805,7 +6802,7 @@ const EncodingSettings = ({
   const PerCodecQualitySettings = ({
     codec
   }) => {
-    const [bitrates, setBitrates] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)([]);
+    const [bitrates, setBitrates] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)([]);
     const {
       resolutions
     } = videopack_config;
@@ -6824,7 +6821,7 @@ const EncodingSettings = ({
         }
       });
     };
-    (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
+    (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
       const newBitrates = [];
       const vbrSettings = codec.rate_control.vbr;
       resolutions.forEach(res => {
@@ -6833,12 +6830,12 @@ const EncodingSettings = ({
       });
       setBitrates(newBitrates);
     }, [currentVbr, codec]);
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
       className: "videopack-per-codec-quality-settings",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h4", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h4", {
         className: "videopack-codec-quality-header",
         children: codec.name
-      }), codec.supported_rate_controls.length > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RadioControl, {
+      }), codec.supported_rate_controls.length > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RadioControl, {
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Primary rate control:', 'video-embed-thumbnail-generator'),
         selected: currentRateControl,
         className: 'videopack-component-margin',
@@ -6851,7 +6848,7 @@ const EncodingSettings = ({
           value: 'vbr'
         }],
         disabled: ffmpeg_exists !== true
-      }), currentRateControl === 'crf' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
+      }), currentRateControl === 'crf' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Constant Rate Factor (CRF):', 'video-embed-thumbnail-generator'),
@@ -6863,7 +6860,7 @@ const EncodingSettings = ({
         step: 1,
         marks: generateMarks(codec.id, 'crf'),
         disabled: ffmpeg_exists !== true
-      }), currentRateControl === 'vbr' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
+      }), currentRateControl === 'vbr' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Average Bitrate:', 'video-embed-thumbnail-generator'),
@@ -6874,12 +6871,12 @@ const EncodingSettings = ({
         max: 5,
         step: 0.01,
         disabled: ffmpeg_exists !== true,
-        help: bitrates.map((text, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+        help: bitrates.map((text, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
           children: text
         }, index))
-      }), codec.id === 'h264' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      }), codec.id === 'h264' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
         className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('H.264 profile', 'video-embed-thumbnail-generator'),
@@ -6887,7 +6884,7 @@ const EncodingSettings = ({
           onChange: changeHandlerFactory.h264_profile,
           options: h264ProfileOptions,
           disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('H.264 level', 'video-embed-thumbnail-generator'),
@@ -6930,9 +6927,9 @@ const EncodingSettings = ({
       value: resolution.id,
       label: resolution.name
     }));
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Flex, {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Flex, {
       className: 'videopack-setting-sample-formats',
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Codec:', 'video-embed-thumbnail-generator'),
@@ -6940,7 +6937,7 @@ const EncodingSettings = ({
         options: codecs,
         onChange: changeHandlerFactory.sample_codec,
         disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Resolution:', 'video-embed-thumbnail-generator'),
@@ -6948,7 +6945,7 @@ const EncodingSettings = ({
         options: resolutions,
         onChange: changeHandlerFactory.sample_resolution,
         disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
         __nextHasNoMarginBottom: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Test vertical video rotation.', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.sample_rotate,
@@ -7130,10 +7127,10 @@ const EncodingSettings = ({
     value: '320',
     label: '320'
   }];
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelRow, {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_TextControlOnBlur__WEBPACK_IMPORTED_MODULE_6__["default"], {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelRow, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_TextControlOnBlur__WEBPACK_IMPORTED_MODULE_5__["default"], {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Path to FFmpeg folder on server:', 'video-embed-thumbnail-generator'),
@@ -7141,26 +7138,26 @@ const EncodingSettings = ({
           onChange: changeHandlerFactory.app_path,
           help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Leave blank if FFmpeg is in your system path.')
         })
-      }), ffmpeg_exists !== true && ffmpeg_error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+      }), ffmpeg_exists !== true && ffmpeg_error && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         className: "notice notice-error videopack-ffmpeg-notice",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
           dangerouslySetInnerHTML: {
             __html: ffmpeg_error
           }
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Default video encode formats', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Flex, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Flex, {
         direction: "column",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.FlexItem, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.FlexItem, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
             __nextHasNoMarginBottom: true,
             id: "default-video-encode-formats",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(EncodeFormatGrid, {})
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(EncodeFormatGrid, {})
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('List only default formats on WordPress admin pages.'),
           onChange: changeHandlerFactory.hide_video_formats,
@@ -7168,38 +7165,53 @@ const EncodingSettings = ({
           disabled: ffmpeg_exists !== true
         })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('For previously uploaded videos', 'video-embed-thumbnail-generator'),
+      opened: ffmpeg_exists === true,
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
+        __nextHasNoMarginBottom: true,
+        id: "previouslyUploaded",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+          __next40pxDefaultSize: true,
+          variant: "secondary",
+          disabled: ffmpeg_exists !== true || encodingBatch.isProcessing,
+          onClick: handleEncodeAllVideos,
+          children: encodingBatch.isProcessing ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: 1: current count, 2: total count */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), encodingBatch.progress.current, encodingBatch.progress.total) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode all default formats', 'video-embed-thumbnail-generator')
+        })
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Do automatically on upload', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
         __nextHasNoMarginBottom: true,
         id: "autoEncode",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode default formats.', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.auto_encode,
           checked: auto_encode,
           disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Convert animated GIFs to H.264.', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.auto_encode_gif,
-          checked: hide_video_formats,
+          checked: auto_encode_gif,
           disabled: ffmpeg_exists !== true
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
         __nextHasNoMarginBottom: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Automatically publish video's parent post when encoding finishes."),
         onChange: changeHandlerFactory.auto_publish_post,
         checked: auto_publish_post,
         disabled: ffmpeg_exists !== true
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Email encoding errors to', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
         className: "videopack-setting-auto-width",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           value: error_email,
@@ -7208,44 +7220,29 @@ const EncodingSettings = ({
           disabled: ffmpeg_exists !== true
         })
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('For previously uploaded videos', 'video-embed-thumbnail-generator'),
-      opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
-        __nextHasNoMarginBottom: true,
-        id: "previouslyUploaded",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-          className: "videopack-library-button no-vertical-align",
-          variant: "secondary",
-          disabled: ffmpeg_exists !== true || encodingBatch.isProcessing,
-          onClick: handleEncodeAllVideos,
-          children: encodingBatch.isProcessing ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: 1: current count, 2: total count */
-          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), encodingBatch.progress.current, encodingBatch.progress.total) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encode videos', 'video-embed-thumbnail-generator')
-        })
-      })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video quality', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: videopack_config.codecs.map(codec => !!encode?.[codec.id]?.enabled && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(PerCodecQualitySettings, {
+      children: videopack_config.codecs.map(codec => !!encode?.[codec.id]?.enabled && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(PerCodecQualitySettings, {
         codec: codec
       }, codec.id))
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Audio', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
         className: "videopack-setting-reduced-width",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Audio bitrate:', 'video-embed-thumbnail-generator'),
           value: audio_bitrate,
           onChange: changeHandlerFactory.audio_bitrate,
           options: audioBitrateOptions,
-          suffix: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalInputControlSuffixWrapper, {
+          suffix: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalInputControlSuffixWrapper, {
             children: "kbps"
           }),
           disabled: ffmpeg_exists !== true
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Always output stereo audio.', 'video-embed-thumbnail-generator'),
           onChange: changeHandlerFactory.audio_channels,
@@ -7253,10 +7250,10 @@ const EncodingSettings = ({
           disabled: ffmpeg_exists !== true
         })]
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Execution', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Simultaneous encodes:', 'video-embed-thumbnail-generator'),
@@ -7268,7 +7265,7 @@ const EncodingSettings = ({
         step: 1,
         marks: generateNonCrfMarks('simultaneous'),
         disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RangeControl, {
         __nextHasNoMarginBottom: true,
         __next40pxDefaultSize: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Threads:', 'video-embed-thumbnail-generator'),
@@ -7280,33 +7277,33 @@ const EncodingSettings = ({
         step: 1,
         marks: generateNonCrfMarks('threads'),
         disabled: ffmpeg_exists !== true
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
         __nextHasNoMarginBottom: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Run nice', 'video-embed-thumbnail-generator'),
         onChange: changeHandlerFactory.nice,
         checked: nice,
         disabled: ffmpeg_exists !== true
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Encoding Test', 'video-embed-thumbnail-generator'),
       opened: ffmpeg_exists === true,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.BaseControl, {
         __nextHasNoMarginBottom: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Test encode command:', 'video-embed-thumbnail-generator'),
         id: "sample-format-selects",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(SampleFormatSelects, {})
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextareaControl, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(SampleFormatSelects, {})
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextareaControl, {
         __nextHasNoMarginBottom: true,
         disabled: true,
         value: ffmpegTest?.command
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextareaControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextareaControl, {
         __nextHasNoMarginBottom: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('FFmpeg test output:', 'video-embed-thumbnail-generator'),
         rows: 20,
         disabled: true,
         value: ffmpegTest?.output
       })]
-    }), encodingBatch.confirmDialog.isOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalConfirmDialog, {
+    }), encodingBatch.confirmDialog.isOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalConfirmDialog, {
       isOpen: true,
       onConfirm: () => {
         if (encodingBatch.confirmDialog.onConfirm) {
@@ -7401,127 +7398,6 @@ const FreemiusPage = ({
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (FreemiusPage);
-
-/***/ },
-
-/***/ "./src/features/settings/components/GallerySettings.js"
-/*!*************************************************************!*\
-  !*** ./src/features/settings/components/GallerySettings.js ***!
-  \*************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../utils/utils */ "./src/utils/utils.js");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _components_VideoGallery_VideoGallery__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../components/VideoGallery/VideoGallery */ "./src/components/VideoGallery/VideoGallery.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__);
-
-
-
-
-
-
-const GallerySettings = ({
-  settings,
-  changeHandlerFactory
-}) => {
-  const {
-    embed_method,
-    gallery_columns,
-    gallery_end,
-    gallery_per_page,
-    gallery_title,
-    gallery_pagination,
-    skin,
-    width,
-    height
-  } = settings;
-  const [galleryAttributes, setGalleryAttributes] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-  const [recentVideos, setRecentVideos] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
-
-  //const aspectRatio = ( width && height ) ? width / height : 1.77777;
-
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_0__.getRecentVideos)('12').then(response => {
-      setRecentVideos(response);
-    }).catch(error => {
-      console.error('Error fetching videos:', error);
-    });
-  }, []);
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    if (recentVideos && Array.isArray(recentVideos)) {
-      setGalleryAttributes({
-        ...settings,
-        gallery_include: recentVideos.join(',')
-      });
-    }
-  }, [gallery_columns, gallery_end, gallery_per_page, gallery_title, gallery_pagination, recentVideos, skin]);
-  const galleryEndOptions = [{
-    value: '',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Stop and leave popup window open', 'video-embed-thumbnail-generator')
-  }, {
-    value: 'next',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Autoplay next video', 'video-embed-thumbnail-generator')
-  }, {
-    value: 'close',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Close popup window', 'video-embed-thumbnail-generator')
-  }];
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-    children: [galleryAttributes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_components_VideoGallery_VideoGallery__WEBPACK_IMPORTED_MODULE_4__["default"], {
-      attributes: galleryAttributes
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-      className: "videopack-setting-reduced-width",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Videos per row:', 'video-embed-thumbnail-generator'),
-        type: "number",
-        value: gallery_columns,
-        onChange: changeHandlerFactory.gallery_columns
-      })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Overlay video title on thumbnails.', 'video-embed-thumbnail-generator'),
-      onChange: changeHandlerFactory.gallery_title,
-      checked: !!gallery_title
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
-      __nextHasNoMarginBottom: true,
-      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Paginate video galleries', 'video-embed-thumbnail-generator'),
-      onChange: changeHandlerFactory.gallery_pagination,
-      checked: !!gallery_pagination
-    }), gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-      className: "videopack-setting-auto-width",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Videos per page', 'video-embed-thumbnail-generator'),
-        type: "number",
-        value: gallery_per_page,
-        onChange: changeHandlerFactory.gallery_per_page
-      })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
-      className: "videopack-setting-auto-width",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
-        __nextHasNoMarginBottom: true,
-        __next40pxDefaultSize: true,
-        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('When current gallery video finishes:', 'video-embed-thumbnail-generator'),
-        value: gallery_end,
-        onChange: changeHandlerFactory.gallery_end,
-        options: galleryEndOptions
-      })
-    })]
-  });
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (GallerySettings);
 
 /***/ },
 
@@ -8073,6 +7949,7 @@ const PlayerSettings = ({
           value: watermark,
           onChange: changeHandlerFactory.watermark
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          __next40pxDefaultSize: true,
           className: "videopack-library-button",
           variant: "secondary",
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose from library', 'video-embed-thumbnail-generator')
@@ -8366,6 +8243,7 @@ const ThumbnailSettings = ({
           value: poster,
           onChange: changeHandlerFactory.poster
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          __next40pxDefaultSize: true,
           className: "videopack-library-button",
           variant: "secondary",
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose from library', 'video-embed-thumbnail-generator')
@@ -8386,6 +8264,7 @@ const ThumbnailSettings = ({
           onChange: changeHandlerFactory.endofvideooverlay,
           disabled: endofvideooverlaysame
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          __next40pxDefaultSize: true,
           className: "videopack-library-button",
           variant: "secondary",
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose from library', 'video-embed-thumbnail-generator')
@@ -8400,6 +8279,7 @@ const ThumbnailSettings = ({
           value: thumb_watermark?.url,
           onChange: changeHandlerFactory.thumb_watermark
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          __next40pxDefaultSize: true,
           className: "videopack-library-button",
           variant: "secondary",
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose from library', 'video-embed-thumbnail-generator')
@@ -8417,6 +8297,7 @@ const ThumbnailSettings = ({
           onChange: changeHandlerFactory.featured,
           checked: !!featured
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          __next40pxDefaultSize: true,
           variant: "secondary",
           onClick: handleSetAllFeatured,
           disabled: featuredBatch.isProcessing,
@@ -8432,6 +8313,7 @@ const ThumbnailSettings = ({
           onChange: changeHandlerFactory.thumb_parent,
           className: "videopack-setting-radio-group"
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+          __next40pxDefaultSize: true,
           variant: "secondary",
           onClick: handleSetAllParents,
           disabled: parentsBatch.isProcessing,
@@ -8439,11 +8321,11 @@ const ThumbnailSettings = ({
           (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), parentsBatch.progress.current, parentsBatch.progress.total) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Set all parents', 'video-embed-thumbnail-generator')
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-        className: "videopack-library-button no-vertical-align",
+        __next40pxDefaultSize: true,
         variant: "secondary",
         onClick: handleGenerateAllThumbnails,
         disabled: generationBatch.isProcessing,
-        children: generationBatch.isProcessing ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: 1: current count, 2: total count */
+        children: generationBatch.isProcessing ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %1$d: current count, %2$d: total count */
         (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Processing %1$d / %2$d', 'video-embed-thumbnail-generator'), generationBatch.progress.current, generationBatch.progress.total) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Generate thumbnails for all videos', 'video-embed-thumbnail-generator')
       })]
     }), featuredBatch.confirmDialog.isOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalConfirmDialog, {
@@ -8483,6 +8365,185 @@ const ThumbnailSettings = ({
   });
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ThumbnailSettings);
+
+/***/ },
+
+/***/ "./src/features/settings/components/VideoCollectionSettings.js"
+/*!*********************************************************************!*\
+  !*** ./src/features/settings/components/VideoCollectionSettings.js ***!
+  \*********************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _assets_icon__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../assets/icon */ "./src/assets/icon.js");
+/* harmony import */ var _components_VideoGallery_VideoGallery__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../components/VideoGallery/VideoGallery */ "./src/components/VideoGallery/VideoGallery.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+
+
+
+
+
+
+
+const VideoCollectionSettings = ({
+  settings,
+  changeHandlerFactory
+}) => {
+  const {
+    embed_method,
+    layout,
+    gallery_columns,
+    gallery_end,
+    gallery_per_page,
+    gallery_title,
+    gallery_pagination,
+    skin,
+    gallery_orderby,
+    gallery_order
+  } = settings;
+  const [galleryAttributes, setGalleryAttributes] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const [recentVideos, setRecentVideos] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_0__.getRecentVideos)('12').then(response => {
+      setRecentVideos(response);
+    }).catch(error => {
+      console.error('Error fetching videos:', error);
+    });
+  }, []);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (recentVideos && Array.isArray(recentVideos)) {
+      setGalleryAttributes({
+        ...settings,
+        gallery_include: recentVideos.join(',')
+      });
+    }
+  }, [gallery_columns, gallery_end, gallery_per_page, gallery_title, gallery_pagination, gallery_orderby, gallery_order, recentVideos, skin]);
+  const galleryEndOptions = [{
+    value: '',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Stop and leave popup window open', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'next',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Autoplay next video', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'close',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Close popup window', 'video-embed-thumbnail-generator')
+  }];
+  const baseGalleryOrderbyOptions = [{
+    value: 'menu_order',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Default', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'title',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Title', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'post_date',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Date', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'rand',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Random', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'ID',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Video ID', 'video-embed-thumbnail-generator')
+  }];
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.RadioControl, {
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Default Collection Layout', 'video-embed-thumbnail-generator'),
+      selected: layout,
+      options: [{
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Pop-up gallery', 'video-embed-thumbnail-generator'),
+        value: 'gallery'
+      }, {
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Multiple Video Players', 'video-embed-thumbnail-generator'),
+        value: 'list'
+      }],
+      onChange: changeHandlerFactory.layout
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+      className: "videopack-setting-auto-width",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
+        __nextHasNoMarginBottom: true,
+        __next40pxDefaultSize: true,
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Columns:', 'video-embed-thumbnail-generator'),
+        type: "number",
+        value: gallery_columns,
+        onChange: changeHandlerFactory.gallery_columns
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+      __nextHasNoMarginBottom: true,
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Overlay video title on thumbnails.', 'video-embed-thumbnail-generator'),
+      onChange: changeHandlerFactory.gallery_title,
+      checked: !!gallery_title
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.ToggleControl, {
+      __nextHasNoMarginBottom: true,
+      label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Paginate video collections.', 'video-embed-thumbnail-generator'),
+      onChange: changeHandlerFactory.gallery_pagination,
+      checked: !!gallery_pagination
+    }), gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+      className: "videopack-setting-auto-width",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TextControl, {
+        __nextHasNoMarginBottom: true,
+        __next40pxDefaultSize: true,
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Videos per page', 'video-embed-thumbnail-generator'),
+        type: "number",
+        value: gallery_per_page,
+        onChange: changeHandlerFactory.gallery_per_page
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+      className: "videopack-sort-settings",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Flex, {
+        align: "flex-end",
+        className: "videopack-sort-controls",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.FlexItem, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Sort by', 'video-embed-thumbnail-generator'),
+            value: gallery_orderby,
+            onChange: changeHandlerFactory.gallery_orderby,
+            options: baseGalleryOrderbyOptions,
+            __nextHasNoMarginBottom: true,
+            __next40pxDefaultSize: true
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.FlexItem, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+            icon: gallery_order === 'ASC' ? _assets_icon__WEBPACK_IMPORTED_MODULE_4__.sortAscending : _assets_icon__WEBPACK_IMPORTED_MODULE_4__.sortDescending,
+            label: gallery_order === 'ASC' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Ascending', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Descending', 'video-embed-thumbnail-generator'),
+            onClick: () => changeHandlerFactory.gallery_order(gallery_order === 'ASC' ? 'DESC' : 'ASC'),
+            showTooltip: true,
+            variant: "secondary",
+            __next40pxDefaultSize: true
+          })
+        })]
+      })
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+      className: "videopack-setting-auto-width",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+        __nextHasNoMarginBottom: true,
+        __next40pxDefaultSize: true,
+        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('When current gallery video finishes:', 'video-embed-thumbnail-generator'),
+        value: gallery_end,
+        onChange: changeHandlerFactory.gallery_end,
+        options: galleryEndOptions
+      })
+    }), galleryAttributes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+      className: "videopack-sample-gallery",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+        className: "videopack-settings-label",
+        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)('Sample Gallery:', 'video-embed-thumbnail-generator')
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_VideoGallery_VideoGallery__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        attributes: galleryAttributes
+      })]
+    })]
+  });
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (VideoCollectionSettings);
 
 /***/ },
 
@@ -9567,7 +9628,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _assets_icon__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../assets/icon */ "./src/assets/icon.js");
 /* harmony import */ var _components_PlayerSettings__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/PlayerSettings */ "./src/features/settings/components/PlayerSettings.js");
-/* harmony import */ var _components_GallerySettings__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/GallerySettings */ "./src/features/settings/components/GallerySettings.js");
+/* harmony import */ var _components_VideoCollectionSettings__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/VideoCollectionSettings */ "./src/features/settings/components/VideoCollectionSettings.js");
 /* harmony import */ var _components_ThumbnailSettings__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/ThumbnailSettings */ "./src/features/settings/components/ThumbnailSettings.js");
 /* harmony import */ var _components_EncodingSettings__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/EncodingSettings */ "./src/features/settings/components/EncodingSettings.js");
 /* harmony import */ var _components_AdminSettings__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/AdminSettings */ "./src/features/settings/components/AdminSettings.js");
@@ -9666,7 +9727,7 @@ const VideopackSettingsPage = () => {
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Thumbnails', 'video-embed-thumbnail-generator')
   }, {
     name: 'gallery',
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Gallery', 'video-embed-thumbnail-generator')
+    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Collections', 'video-embed-thumbnail-generator')
   }, {
     name: 'encoding',
     title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encoding', 'video-embed-thumbnail-generator')
@@ -9705,7 +9766,7 @@ const VideopackSettingsPage = () => {
         });
       }
       if (tab.name === 'gallery') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_GallerySettings__WEBPACK_IMPORTED_MODULE_7__["default"], {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_VideoCollectionSettings__WEBPACK_IMPORTED_MODULE_7__["default"], {
           settings: settings,
           changeHandlerFactory: changeHandlerFactory
         });

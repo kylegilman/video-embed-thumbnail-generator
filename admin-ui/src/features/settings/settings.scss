@@ -6,6 +6,10 @@
 	max-width: 65rem;
 	margin: 10px auto;
 
+	.components-radio-control {
+		margin-bottom: 20px;
+	}
+
 	.videopack-settings-icon {
 		vertical-align: text-bottom;
 		margin-right: 10px;
@@ -29,7 +33,6 @@
 
 	.videopack-library-button {
 		margin-left: 20px;
-		margin-bottom: 5px;
 		vertical-align: text-bottom;
 
 		&.no-vertical-align {
@@ -183,6 +186,31 @@
 			text-align: left;
 			margin-right: 10px;
 		}
+	}
+
+	.videopack-sort-settings {
+		margin-bottom: 20px;
+
+		.videopack-sort-controls {
+			display: inline-flex;
+			justify-content: flex-start;
+			align-items: flex-end;
+		}
+
+		.components-base-control {
+			width: 15rem;
+			margin-right: 10px;
+			margin-bottom: 0;
+		}
+
+		button.components-button.is-secondary.has-icon {
+    		box-shadow: none;
+    		border: 1px solid #8c8f94;
+		}
+	}
+
+	.videopack-sample-gallery {
+		margin-top: 20px;
 	}
 
 	.components-flex.videopack-setting-sample-formats {

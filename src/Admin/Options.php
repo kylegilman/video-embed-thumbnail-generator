@@ -148,6 +148,9 @@ class Options {
 			'find_formats'            => false, // Automatically look for other codecs and resolutions based on the video filename.
 
 			// Gallery Settings.
+			'layout'                  => 'gallery', // Default layout ('gallery', 'list').
+			'gallery_orderby'         => 'menu_order', // Default sort order.
+			'gallery_order'           => 'ASC', // Default sort direction.
 			'gallery_columns'         => 4, // Number of columns in video galleries.
 			'gallery_end'             => '', // Custom content to display at the end of video galleries ('close', 'next', or custom HTML).
 			'gallery_pagination'      => false, // Enable pagination for video galleries.

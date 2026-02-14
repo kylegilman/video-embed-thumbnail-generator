@@ -71,11 +71,11 @@
     },
     "gallery_title": {
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "gallery_columns": {
       "type": "number",
-      "default": 3
+      "default": 4
     }
   },
   "usesContext": [

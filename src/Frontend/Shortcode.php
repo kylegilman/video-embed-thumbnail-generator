@@ -98,6 +98,9 @@ class Shortcode {
 				'nativecontrolsfortouch',
 				'schema',
 				'gallery_thumb',
+				'layout',
+				'gallery_orderby',
+				'gallery_order',
 			),
 			'checkbox_convert' => array(
 				'endofvideooverlaysame',
@@ -298,6 +301,9 @@ class Shortcode {
 		}
 		if ( $query_atts['orderby'] == 'menu_order' ) {
 			$query_atts['orderby'] = 'menu_order ID';
+		}
+		if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
+			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
 		if ( $query_atts['track_default'] == 'true' ) {
 			$query_atts['track_default'] = 'default';

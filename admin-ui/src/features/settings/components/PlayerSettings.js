@@ -137,26 +137,26 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const embedMethodOptions = [
 		{
 			value: 'Video.js',
-			label: __( 'Video.js', 'video-embed-thumbnail-generator' ),
+			label: __('Video.js', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'WordPress Default',
-			label: __( 'WordPress Default', 'video-embed-thumbnail-generator' ),
+			label: __('WordPress Default', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'None',
-			label: __( 'None', 'video-embed-thumbnail-generator' ),
+			label: __('None', 'video-embed-thumbnail-generator'),
 		},
 	];
 
 	const preloadOptions = [
 		{
 			value: 'auto',
-			label: __( 'Auto', 'video-embed-thumbnail-generator' ),
+			label: __('Auto', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'metadata',
-			label: __( 'Metadata', 'video-embed-thumbnail-generator' ),
+			label: __('Metadata', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'none',
@@ -167,69 +167,72 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const fixedAspectOptions = [
 		{
 			value: 'false',
-			label: __( 'None', 'video-embed-thumbnail-generator' ),
+			label: __('None', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'true',
-			label: __( 'All', 'video-embed-thumbnail-generator' ),
+			label: __('All', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'vertical',
-			label: __( 'Vertical Videos', 'video-embed-thumbnail-generator' ),
+			label: __('Vertical Videos', 'video-embed-thumbnail-generator'),
 		},
 	];
 
 	const watermarkLinkOptions = [
 		{
 			value: 'home',
-			label: __( 'Home page', 'video-embed-thumbnail-generator' ),
+			label: __('Home page', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'parent',
-			label: __( 'Parent post', 'video-embed-thumbnail-generator' ),
+			label: __('Parent post', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'attachment',
-			label: __( 'Video attachment page', 'video-embed-thumbnail-generator' ),
+			label: __(
+				'Video attachment page',
+				'video-embed-thumbnail-generator'
+			),
 		},
 		{
 			value: 'download',
-			label: __( 'Download video', 'video-embed-thumbnail-generator' ),
+			label: __('Download video', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'Custom URL',
-			label: __( 'Custom URL', 'video-embed-thumbnail-generator' ),
+			label: __('Custom URL', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'None',
-			label: __( 'None', 'video-embed-thumbnail-generator' ),
+			label: __('None', 'video-embed-thumbnail-generator'),
 		},
 	];
 
 	const skinOptions = [
 		{
 			value: 'kg-video-js-skin',
-			label: __( 'Videopack', 'video-embed-thumbnail-generator' ),
+			label: __('Videopack', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'default',
-			label: __( 'Video.js default', 'video-embed-thumbnail-generator' ),
+			label: __('Video.js default', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'vjs-theme-city',
-			label: __( 'City', 'video-embed-thumbnail-generator' ),
+			label: __('City', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'vjs-theme-fantasy',
-			label: __( 'Fantasy', 'video-embed-thumbnail-generator' ),
+			label: __('Fantasy', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'vjs-theme-forest',
-			label: __( 'Forest', 'video-embed-thumbnail-generator' ),
+			label: __('Forest', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'vjs-theme-sea',
-			label: __( 'Sea', 'video-embed-thumbnail-generator' ),
+			label: __('Sea', 'video-embed-thumbnail-generator'),
 		},
 	];
 
@@ -239,36 +242,48 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			label: videopack_config.contentSize
 				? sprintf(
 						/* translators: %s: Content size in pixels. */
-						__( "None (use theme's default width: %s)", 'video-embed-thumbnail-generator' ),
+						__(
+							"None (use theme's default width: %s)",
+							'video-embed-thumbnail-generator'
+						),
 						videopack_config.contentSize
 					)
-				: __( "None (use theme's default width)", 'video-embed-thumbnail-generator' ),
+				: __(
+						"None (use theme's default width)",
+						'video-embed-thumbnail-generator'
+					),
 		},
 		{
 			value: 'wide',
 			label: videopack_config.wideSize
 				? sprintf(
 						/* translators: %s: Wide size in pixels. */
-						__( "Wide (use theme's wide width: %s)", 'video-embed-thumbnail-generator' ),
+						__(
+							"Wide (use theme's wide width: %s)",
+							'video-embed-thumbnail-generator'
+						),
 						videopack_config.wideSize
 					)
-				: __( "Wide (use theme's wide width)", 'video-embed-thumbnail-generator' ),
+				: __(
+						"Wide (use theme's wide width)",
+						'video-embed-thumbnail-generator'
+					),
 		},
 		{
 			value: 'full',
-			label: __( 'Full width', 'video-embed-thumbnail-generator' ),
+			label: __('Full width', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'left',
-			label: __( 'Left', 'video-embed-thumbnail-generator' ),
+			label: __('Left', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'center',
-			label: __( 'Center', 'video-embed-thumbnail-generator' ),
+			label: __('Center', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'right',
-			label: __( 'Right', 'video-embed-thumbnail-generator' ),
+			label: __('Right', 'video-embed-thumbnail-generator'),
 		},
 	];
 
@@ -276,15 +291,15 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		const items = [
 			{
 				value: 'automatic',
-				label: __( 'Automatic', 'video-embed-thumbnail-generator' ),
+				label: __('Automatic', 'video-embed-thumbnail-generator'),
 			},
 			{
 				value: 'highest',
-				label: __( 'Highest', 'video-embed-thumbnail-generator' ),
+				label: __('Highest', 'video-embed-thumbnail-generator'),
 			},
 			{
 				value: 'lowest',
-				label: __( 'Lowest', 'video-embed-thumbnail-generator' ),
+				label: __('Lowest', 'video-embed-thumbnail-generator'),
 			},
 		];
 
@@ -307,7 +322,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Video player:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Video player:',
+							'video-embed-thumbnail-generator'
+						)}
 						value={embed_method}
 						onChange={changeHandlerFactory.embed_method}
 						options={embedMethodOptions}
@@ -330,7 +348,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						<FlexBlock>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__( 'Overlay title', 'video-embed-thumbnail-generator' )}
+								label={__(
+									'Overlay title',
+									'video-embed-thumbnail-generator'
+								)}
 								onChange={changeHandlerFactory.overlay_title}
 								checked={!!overlay_title}
 							/>
@@ -338,7 +359,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						<FlexBlock>
 							<ToggleControl
 								__nextHasNoMarginBottom
-								label={__( 'Download link', 'video-embed-thumbnail-generator' )}
+								label={__(
+									'Download link',
+									'video-embed-thumbnail-generator'
+								)}
 								onChange={changeHandlerFactory.downloadlink}
 								checked={!!downloadlink}
 							/>
@@ -347,7 +371,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							<FlexItem>
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={__( 'Embed code', 'video-embed-thumbnail-generator' )}
+									label={__(
+										'Embed code',
+										'video-embed-thumbnail-generator'
+									)}
 									onChange={changeHandlerFactory.embedcode}
 									checked={!!embedcode}
 									disabled={!embeddable}
@@ -383,14 +410,20 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				<PanelRow>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__( 'View count', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'View count',
+							'video-embed-thumbnail-generator'
+						)}
 						onChange={changeHandlerFactory.view_count}
 						checked={!!view_count}
 					/>
 				</PanelRow>
 			</PanelBody>
 			<PanelBody
-				title={__( 'Default Playback', 'video-embed-thumbnail-generator' )}
+				title={__(
+					'Default Playback',
+					'video-embed-thumbnail-generator'
+				)}
 				initialOpen={true}
 				className="videopack-setting-default-playback"
 			>
@@ -403,7 +436,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<FlexItem>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Autoplay', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Autoplay',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.autoplay}
 							checked={!!autoplay}
 							disabled={gifmode}
@@ -413,14 +449,20 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Loop', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Loop',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.loop}
 							checked={!!loop}
 							disabled={gifmode}
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Muted', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Muted',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.muted}
 							checked={!!muted}
 							disabled={gifmode}
@@ -429,7 +471,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
 							className="videopack-volume-control"
-							label={__( 'Volume', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Volume',
+								'video-embed-thumbnail-generator'
+							)}
 							value={volume}
 							beforeIcon={volumeDown}
 							afterIcon={volumeUp}
@@ -445,7 +490,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<FlexItem>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Controls', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Controls',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.controls}
 							checked={!!controls}
 							disabled={gifmode}
@@ -453,7 +501,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Play inline', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Play inline',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.playsinline}
 							checked={!!playsinline}
 							disabled={gifmode}
@@ -464,14 +515,20 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Variable speeds', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Variable speeds',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.playback_rate}
 							disabled={gifmode}
 							checked={!!playback_rate}
 						/>
 						<div className="videopack-control-with-tooltip">
 							<RadioControl
-								label={__( 'Preload', 'video-embed-thumbnail-generator' )}
+								label={__(
+									'Preload',
+									'video-embed-thumbnail-generator'
+								)}
 								value={preload}
 								onChange={changeHandlerFactory.preload}
 								options={preloadOptions}
@@ -487,7 +544,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				</Flex>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__( 'GIF mode', 'video-embed-thumbnail-generator' )}
+					label={__('GIF mode', 'video-embed-thumbnail-generator')}
 					onChange={(value) => {
 						changeGifmode(value);
 					}}
@@ -501,7 +558,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__( 'Skin:', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Skin:',
+								'video-embed-thumbnail-generator'
+							)}
 							value={skin}
 							onChange={changeHandlerFactory.skin}
 							options={skinOptions}
@@ -509,7 +569,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</div>
 				)}
 			</PanelBody>
-			<PanelBody title={__( 'Dimensions', 'video-embed-thumbnail-generator' )} initialOpen={true}>
+			<PanelBody
+				title={__('Dimensions', 'video-embed-thumbnail-generator')}
+				initialOpen={true}
+			>
 				<Flex
 					direction="column"
 					expanded={false}
@@ -519,7 +582,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<FlexItem>
 						<ToggleControl
 							__nextHasNoMarginBottom
-							label={__( 'Shrink player to fit container', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Shrink player to fit container',
+								'video-embed-thumbnail-generator'
+							)}
 							onChange={changeHandlerFactory.resize}
 							checked={!!resize}
 						/>
@@ -537,7 +603,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Alignment / Width:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Alignment / Width:',
+							'video-embed-thumbnail-generator'
+						)}
 						value={align}
 						onChange={changeHandlerFactory.align}
 						options={alignOptions}
@@ -547,7 +616,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Width:', 'video-embed-thumbnail-generator' )}
+						label={__('Width:', 'video-embed-thumbnail-generator')}
 						type="number"
 						value={width}
 						onChange={changeHandlerFactory.width}
@@ -557,7 +626,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Height:', 'video-embed-thumbnail-generator' )}
+						label={__('Height:', 'video-embed-thumbnail-generator')}
 						type="number"
 						value={height}
 						onChange={changeHandlerFactory.height}
@@ -565,7 +634,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				</span>
 				<div className="videopack-control-with-tooltip">
 					<RadioControl
-						label={__( 'Constrain to default aspect ratio', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Constrain to default aspect ratio',
+							'video-embed-thumbnail-generator'
+						)}
 						selected={fixed_aspect}
 						onChange={changeHandlerFactory.fixed_aspect}
 						options={fixedAspectOptions}
@@ -581,7 +653,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Default resolution:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Default resolution:',
+							'video-embed-thumbnail-generator'
+						)}
 						value={auto_res}
 						onChange={changeHandlerFactory.auto_res}
 						options={autoResOptions()}
@@ -608,7 +683,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
-			<PanelBody title={__( 'Formats', 'video-embed-thumbnail-generator' )}>
+			<PanelBody title={__('Formats', 'video-embed-thumbnail-generator')}>
 				<div className="videopack-setting-reduced-width">
 					<ToggleControl
 						__nextHasNoMarginBottom
@@ -625,7 +700,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 				<BaseControl
-					label={__( 'Available Formats:', 'video-embed-thumbnail-generator' )}
+					label={__(
+						'Available Formats:',
+						'video-embed-thumbnail-generator'
+					)}
 					id="videopack-find-formats-codecs"
 					className="videopack-setting-checkbox-group"
 				>
@@ -647,21 +725,34 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					</div>
 				</BaseControl>
 			</PanelBody>
-			<PanelBody title={__( 'Watermark Overlay', 'video-embed-thumbnail-generator' )} initialOpen={true}>
+			<PanelBody
+				title={__(
+					'Watermark Overlay',
+					'video-embed-thumbnail-generator'
+				)}
+				initialOpen={true}
+			>
 				<div className="videopack-setting-reduced-width">
 					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Image URL:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Image URL:',
+							'video-embed-thumbnail-generator'
+						)}
 						type="url"
 						value={watermark}
 						onChange={changeHandlerFactory.watermark}
 					/>
 					<Button
+						__next40pxDefaultSize
 						className="videopack-library-button"
 						variant="secondary"
 					>
-						{__( 'Choose from library', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Choose from library',
+							'video-embed-thumbnail-generator'
+						)}
 					</Button>
 				</div>
 				{watermark && (
@@ -669,7 +760,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						<SelectControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							label={__( 'Link to:', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'Link to:',
+								'video-embed-thumbnail-generator'
+							)}
 							value={watermark_link_to}
 							onChange={changeHandlerFactory.watermark_link_to}
 							options={watermarkLinkOptions}
@@ -678,7 +772,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							<TextControl
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
-								label={__( 'URL:', 'video-embed-thumbnail-generator' )}
+								label={__(
+									'URL:',
+									'video-embed-thumbnail-generator'
+								)}
 								type="url"
 								value={watermark_url}
 								onChange={changeHandlerFactory.watermark_url}
