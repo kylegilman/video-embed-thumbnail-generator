@@ -11,11 +11,12 @@ import {
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
-import { useState, useMemo } from '@wordpress/element';
+import { useEffect, useState, useMemo } from '@wordpress/element';
 import { useDebounce } from '@wordpress/compose';
 import { close } from '@wordpress/icons';
 import { decodeEntities } from '@wordpress/html-entities';
 import { sortAscending, sortDescending } from '../../assets/icon';
+import { getSettings } from '../../utils/utils';
 import VideoGallery from '../../components/VideoGallery/VideoGallery';
 import VideoList from '../../components/VideoList/VideoList';
 
@@ -43,6 +44,43 @@ const CollectionBlock = ({
 		gallery_category,
 		gallery_tag,
 	} = attributes;
+
+	const [fetchedOptions, setFetchedOptions] = useState(null);
+	const effectiveOptions = options || fetchedOptions;
+
+	useEffect(() => {
+		if (!options) {
+			getSettings().then((settings) => {
+				setFetchedOptions(settings);
+			});
+		}
+	}, [options]);
+
+	useEffect(() => {
+		if (effectiveOptions) {
+			const blockDefaults = {
+				layout: 'gallery',
+				gallery_orderby: 'menu_order',
+				gallery_order: 'ASC',
+				gallery_pagination: false,
+				gallery_per_page: 6,
+				gallery_title: true,
+				gallery_columns: 4,
+				gallery_end: '',
+			};
+
+			const newAttributes = {};
+			Object.keys(blockDefaults).forEach((key) => {
+				if (attributes[key] === blockDefaults[key] && effectiveOptions[key] !== undefined && effectiveOptions[key] !== attributes[key]) {
+					newAttributes[key] = effectiveOptions[key];
+				}
+			});
+
+			if (Object.keys(newAttributes).length > 0) {
+				setAttributes(newAttributes);
+			}
+		}
+	}, [effectiveOptions]);
 
 	// Use the previewPostId (from context) if no specific gallery_id is saved.
 	// This allows the block to be dynamic in the Site Editor.
@@ -171,7 +209,7 @@ const CollectionBlock = ({
 	const baseGalleryOrderbyOptions = [
 		{
 			value: 'menu_order',
-			label: __('Menu Order', 'video-embed-thumbnail-generator'),
+			label: __('Default', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'title',
@@ -508,7 +546,7 @@ const CollectionBlock = ({
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__(
-									'Show video title overlay on thumbnails',
+									'Overlay video title on thumbnails',
 									'video-embed-thumbnail-generator'
 								)}
 								onChange={attributeChangeFactory(
@@ -528,14 +566,14 @@ const CollectionBlock = ({
 								options={[
 									{
 										label: __(
-											'Stop, but leave popup window open',
+											'Stop and leave popup window open',
 											'video-embed-thumbnail-generator'
 										),
 										value: '',
 									},
 									{
 										label: __(
-											'Autoplay next video in the gallery',
+											'Autoplay next video',
 											'video-embed-thumbnail-generator'
 										),
 										value: 'next',

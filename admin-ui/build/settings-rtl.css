@@ -797,6 +797,10 @@
   margin: 10px auto;
 }
 
+.wrap.videopack-settings .components-radio-control {
+  margin-bottom: 20px;
+}
+
 .wrap.videopack-settings .videopack-settings-icon {
   vertical-align: text-bottom;
   margin-left: 10px;
@@ -818,7 +822,6 @@
 
 .wrap.videopack-settings .videopack-library-button {
   margin-right: 20px;
-  margin-bottom: 5px;
   vertical-align: text-bottom;
 }
 
@@ -972,6 +975,31 @@
 .wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-label {
   text-align: right;
   margin-left: 10px;
+}
+
+.wrap.videopack-settings .videopack-sort-settings {
+  margin-bottom: 20px;
+}
+
+.wrap.videopack-settings .videopack-sort-settings .videopack-sort-controls {
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.wrap.videopack-settings .videopack-sort-settings .components-base-control {
+  width: 15rem;
+  margin-left: 10px;
+  margin-bottom: 0;
+}
+
+.wrap.videopack-settings .videopack-sort-settings button.components-button.is-secondary.has-icon {
+  box-shadow: none;
+  border: 1px solid #8c8f94;
+}
+
+.wrap.videopack-settings .videopack-sample-gallery {
+  margin-top: 20px;
 }
 
 .wrap.videopack-settings .components-flex.videopack-setting-sample-formats {

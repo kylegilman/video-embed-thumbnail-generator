@@ -70,8 +70,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 
 		parentsBatch.confirmAndRun(
 			confirmMessage,
-			() =>
-				startBatchProcess('parents', { target_parent: thumb_parent }),
+			() => startBatchProcess('parents', { target_parent: thumb_parent }),
 			() => getBatchProgress('parents'),
 			__(
 				'No thumbnails found to process.',
@@ -154,7 +153,10 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 				generationBatch.runPolling(
 					() => startBatchProcess('thumbs'),
 					() => getBatchProgress('thumbs'),
-					__('No videos found to process.', 'video-embed-thumbnail-generator')
+					__(
+						'No videos found to process.',
+						'video-embed-thumbnail-generator'
+					)
 				);
 			}
 		} catch (error) {
@@ -184,11 +186,11 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const thumbParentOptions = [
 		{
 			value: 'post',
-			label: __( 'Post', 'video-embed-thumbnail-generator' ),
+			label: __('Post', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'video',
-			label: __( 'Video', 'video-embed-thumbnail-generator' ),
+			label: __('Video', 'video-embed-thumbnail-generator'),
 		},
 	];
 
@@ -204,7 +206,10 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 			if (String(auto_thumb_number) === '1') {
 				return (
 					<>
-						{__( 'thumbnail from', 'video-embed-thumbnail-generator' )}
+						{__(
+							'thumbnail from',
+							'video-embed-thumbnail-generator'
+						)}
 						<RangeControl
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
@@ -215,13 +220,19 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							max={100}
 							step={1}
 						/>
-						{__( '% through the video', 'video-embed-thumbnail-generator' )}
+						{__(
+							'% through the video',
+							'video-embed-thumbnail-generator'
+						)}
 					</>
 				);
 			}
 			return (
 				<>
-					{__( 'thumbnails and set #', 'video-embed-thumbnail-generator' )}
+					{__(
+						'thumbnails and set #',
+						'video-embed-thumbnail-generator'
+					)}
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
@@ -230,14 +241,17 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 						value={auto_thumb_position}
 						onChange={changeHandlerFactory.auto_thumb_position}
 					/>
-					{__( 'as the featured image.', 'video-embed-thumbnail-generator' )}
+					{__(
+						'as the featured image.',
+						'video-embed-thumbnail-generator'
+					)}
 				</>
 			);
 		};
 
 		return (
 			<span>
-				{__( 'Generate', 'video-embed-thumbnail-generator' )}
+				{__('Generate', 'video-embed-thumbnail-generator')}
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
@@ -260,7 +274,10 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Number of thumbnails to generate manually:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Number of thumbnails to generate manually:',
+							'video-embed-thumbnail-generator'
+						)}
 						type="number"
 						value={total_thumbnails}
 						onChange={changeHandlerFactory.total_thumbnails}
@@ -268,7 +285,10 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 				</div>
 				<div className="videopack-setting-extra-margin">
 					<span className="videopack-settings-label">
-						{__( 'Auto-generate thumbnails on upload:', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Auto-generate thumbnails on upload:',
+							'video-embed-thumbnail-generator'
+						)}
 					</span>
 					<ToggleControl
 						className="videopack-vertical-center"
@@ -293,21 +313,31 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Default thumbnail:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Default thumbnail:',
+							'video-embed-thumbnail-generator'
+						)}
 						type="url"
 						value={poster}
 						onChange={changeHandlerFactory.poster}
 					/>
 					<Button
+						__next40pxDefaultSize
 						className="videopack-library-button"
 						variant="secondary"
 					>
-						{__( 'Choose from library', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Choose from library',
+							'video-embed-thumbnail-generator'
+						)}
 					</Button>
 				</div>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__( 'Display thumbnail image again when video ends.', 'video-embed-thumbnail-generator' )}
+					label={__(
+						'Display thumbnail image again when video ends.',
+						'video-embed-thumbnail-generator'
+					)}
 					onChange={changeHandlerFactory.endofvideooverlaysame}
 					checked={!!endofvideooverlaysame}
 				/>
@@ -315,33 +345,47 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'End of video image:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'End of video image:',
+							'video-embed-thumbnail-generator'
+						)}
 						type="url"
 						value={endofvideooverlay}
 						onChange={changeHandlerFactory.endofvideooverlay}
 						disabled={endofvideooverlaysame}
 					/>
 					<Button
+						__next40pxDefaultSize
 						className="videopack-library-button"
 						variant="secondary"
 					>
-						{__( 'Choose from library', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Choose from library',
+							'video-embed-thumbnail-generator'
+						)}
 					</Button>
 				</div>
 				<div className="videopack-setting-reduced-width">
 					<TextControlOnBlur
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__( 'Add watermark to generated thumbnails:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Add watermark to generated thumbnails:',
+							'video-embed-thumbnail-generator'
+						)}
 						type="url"
 						value={thumb_watermark?.url}
 						onChange={changeHandlerFactory.thumb_watermark}
 					/>
 					<Button
+						__next40pxDefaultSize
 						className="videopack-library-button"
 						variant="secondary"
 					>
-						{__( 'Choose from library', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Choose from library',
+							'video-embed-thumbnail-generator'
+						)}
 					</Button>
 				</div>
 				<ToggleControl
@@ -362,6 +406,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 						checked={!!featured}
 					/>
 					<Button
+						__next40pxDefaultSize
 						variant="secondary"
 						onClick={handleSetAllFeatured}
 						disabled={featuredBatch.isProcessing}
@@ -376,18 +421,25 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 									featuredBatch.progress.current,
 									featuredBatch.progress.total
 								)
-							: __( 'Set all as featured', 'video-embed-thumbnail-generator' )}
+							: __(
+									'Set all as featured',
+									'video-embed-thumbnail-generator'
+								)}
 					</Button>
 				</div>
 				<div className="videopack-setting-extra-margin">
 					<RadioControl
-						label={__( 'Attach thumbnails to:', 'video-embed-thumbnail-generator' )}
+						label={__(
+							'Attach thumbnails to:',
+							'video-embed-thumbnail-generator'
+						)}
 						selected={thumb_parent}
 						options={thumbParentOptions}
 						onChange={changeHandlerFactory.thumb_parent}
 						className="videopack-setting-radio-group"
 					/>
 					<Button
+						__next40pxDefaultSize
 						variant="secondary"
 						onClick={handleSetAllParents}
 						disabled={parentsBatch.isProcessing}
@@ -402,18 +454,21 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 									parentsBatch.progress.current,
 									parentsBatch.progress.total
 								)
-							: __( 'Set all parents', 'video-embed-thumbnail-generator' )}
+							: __(
+									'Set all parents',
+									'video-embed-thumbnail-generator'
+								)}
 					</Button>
 				</div>
 				<Button
-					className="videopack-library-button no-vertical-align"
+					__next40pxDefaultSize
 					variant="secondary"
 					onClick={handleGenerateAllThumbnails}
 					disabled={generationBatch.isProcessing}
 				>
 					{generationBatch.isProcessing
 						? sprintf(
-								/* translators: 1: current count, 2: total count */
+								/* translators: %1$d: current count, %2$d: total count */
 								__(
 									'Processing %1$d / %2$d',
 									'video-embed-thumbnail-generator'
@@ -421,7 +476,10 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 								generationBatch.progress.current,
 								generationBatch.progress.total
 							)
-						: __( 'Generate thumbnails for all videos', 'video-embed-thumbnail-generator' )}
+						: __(
+								'Generate thumbnails for all videos',
+								'video-embed-thumbnail-generator'
+							)}
 				</Button>
 			</PanelBody>
 			{featuredBatch.confirmDialog.isOpen && (

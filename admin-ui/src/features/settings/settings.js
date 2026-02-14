@@ -19,7 +19,7 @@ import { useDebounce } from '@wordpress/compose';
 import { createRoot, useMemo, useState, useEffect } from '@wordpress/element';
 import { videopack } from '../../assets/icon';
 import PlayerSettings from './components/PlayerSettings';
-import GallerySettings from './components/GallerySettings';
+import VideoCollectionSettings from './components/VideoCollectionSettings';
 import ThumbnailSettings from './components/ThumbnailSettings';
 import EncodingSettings from './components/EncodingSettings';
 import AdminSettings from './components/AdminSettings';
@@ -126,7 +126,7 @@ const VideopackSettingsPage = () => {
 		},
 		{
 			name: 'gallery',
-			title: __( 'Video Gallery', 'video-embed-thumbnail-generator' ),
+			title: __( 'Video Collections', 'video-embed-thumbnail-generator' ),
 		},
 		{
 			name: 'encoding',
@@ -179,7 +179,7 @@ const VideopackSettingsPage = () => {
 			}
 			if (tab.name === 'gallery') {
 				return (
-					<GallerySettings
+					<VideoCollectionSettings
 						settings={settings}
 						changeHandlerFactory={changeHandlerFactory}
 					/>
