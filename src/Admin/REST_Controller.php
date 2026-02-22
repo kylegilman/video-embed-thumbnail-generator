@@ -755,6 +755,9 @@ class REST_Controller extends \WP_REST_Controller {
 	public function thumb_upload_save( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$post_name     = $request->get_param( 'post_name' );
+		if ( ! empty( $post_name ) ) {
+			$post_name = pathinfo( $post_name, PATHINFO_FILENAME );
+		}
 		$files         = $request->get_file_params();
 
 		if ( empty( $files['file'] ) ) {
