@@ -3,12 +3,10 @@
 import { __, _x, sprintf } from '@wordpress/i18n';
 import {
 	BaseControl,
-	Button,
 	CheckboxControl,
 	Flex,
 	FlexBlock,
 	FlexItem,
-	Icon,
 	PanelBody,
 	PanelRow,
 	RadioControl,
@@ -16,13 +14,11 @@ import {
 	SelectControl,
 	TextControl,
 	ToggleControl,
-	Tooltip,
 } from '@wordpress/components';
-import { help } from '@wordpress/icons';
 import { volumeUp, volumeDown } from '../../../assets/icon';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
 import VideopackTooltip from './VideopackTooltip';
-import TextControlOnBlur from './TextControlOnBlur';
+import ChooseFromLibrary from './ChooseFromLibrary';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -52,28 +48,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		view_count,
 		inline,
 		minimum_width,
-		gallery_pagination,
-		nativecontrolsfortouch,
 		autoplay,
 		loop,
 		muted,
 		gifmode,
 		playback_rate,
 		encode,
-		endofvideooverlaysame,
-		browser_thumbnails,
-		auto_encode,
-		auto_encode_gif,
-		auto_thumb,
-		open_graph,
-		twitter_card,
-		oembed_provider,
-		sample_rotate,
-		alwaysloadscripts,
-		replace_video_shortcode,
-		auto_publish_post,
-		transient_cache,
-		queue_control,
 	} = settings;
 
 	const changeGifmode = (value) => {
@@ -330,94 +310,103 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						onChange={changeHandlerFactory.embed_method}
 						options={embedMethodOptions}
 					/>
-					<Tooltip
+					<VideopackTooltip
 						text={__(
 							'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.'
 						)}
-						className="videopack-tooltip"
-					>
-						<span className="videopack-tooltip">
-							<Icon icon={help} />
-						</span>
-					</Tooltip>
+					/>
 				</div>
 			</PanelBody>
 			<PanelBody>
-				<PanelRow>
-					<Flex className="videopack-flex-bottom">
-						<FlexBlock>
+				<div className={'videopack-sample-video-player'}>
+					<div
+						className={`wp-block-videopack-videopack-video${
+							align ? ` align${align}` : ''
+						}`}
+					>
+						<PanelRow>
+							<Flex className="videopack-flex-bottom">
+								<FlexBlock>
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={__(
+											'Overlay title',
+											'video-embed-thumbnail-generator'
+										)}
+										onChange={
+											changeHandlerFactory.overlay_title
+										}
+										checked={!!overlay_title}
+									/>
+								</FlexBlock>
+								<FlexBlock>
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={__(
+											'Download link',
+											'video-embed-thumbnail-generator'
+										)}
+										onChange={
+											changeHandlerFactory.downloadlink
+										}
+										checked={!!downloadlink}
+									/>
+								</FlexBlock>
+								<FlexBlock>
+									<FlexItem>
+										<ToggleControl
+											__nextHasNoMarginBottom
+											label={__(
+												'Embed code',
+												'video-embed-thumbnail-generator'
+											)}
+											onChange={
+												changeHandlerFactory.embedcode
+											}
+											checked={!!embedcode}
+											disabled={!embeddable}
+										/>
+									</FlexItem>
+								</FlexBlock>
+							</Flex>
+						</PanelRow>
+
+						<VideoPlayer
+							attributes={{
+								...settings,
+								sources: [
+									{
+										src:
+											videopack_config.url +
+											'/src/images/Adobestock_469037984.mp4',
+										type: 'video/mp4',
+									},
+								],
+								id: 'sample-video',
+								title: 'Sample Video',
+								overlay_title,
+								starts: 23,
+								embedlink: 'https://www.website.com/embed/',
+								caption: __(
+									"If text is entered in the attachment's caption field it is displayed here automatically."
+								),
+							}}
+							onReady={handleVideoPlayerReady}
+						/>
+
+						<PanelRow className="videopack-flex-right">
 							<ToggleControl
 								__nextHasNoMarginBottom
 								label={__(
-									'Overlay title',
+									'View count',
 									'video-embed-thumbnail-generator'
 								)}
-								onChange={changeHandlerFactory.overlay_title}
-								checked={!!overlay_title}
+								onChange={changeHandlerFactory.view_count}
+								checked={!!view_count}
 							/>
-						</FlexBlock>
-						<FlexBlock>
-							<ToggleControl
-								__nextHasNoMarginBottom
-								label={__(
-									'Download link',
-									'video-embed-thumbnail-generator'
-								)}
-								onChange={changeHandlerFactory.downloadlink}
-								checked={!!downloadlink}
-							/>
-						</FlexBlock>
-						<FlexBlock>
-							<FlexItem>
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={__(
-										'Embed code',
-										'video-embed-thumbnail-generator'
-									)}
-									onChange={changeHandlerFactory.embedcode}
-									checked={!!embedcode}
-									disabled={!embeddable}
-								/>
-							</FlexItem>
-						</FlexBlock>
-					</Flex>
-				</PanelRow>
-				<div>
-					<VideoPlayer
-						attributes={{
-							...settings,
-							sources: [
-								{
-									src:
-										videopack_config.url +
-										'/src/images/Adobestock_469037984.mp4',
-									type: 'video/mp4',
-								},
-							],
-							id: 'sample-video',
-							videoTitle: 'Sample Video',
-							title: overlay_title,
-							starts: 23,
-							embedlink: 'https://www.website.com/embed/',
-							caption: __(
-								"If text is entered in the attachment's caption field it is displayed here automatically."
-							),
-						}}
-						onReady={handleVideoPlayerReady}
-					/>
+						</PanelRow>
+					</div>
 				</div>
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__(
-							'View count',
-							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.view_count}
-						checked={!!view_count}
-					/>
-				</PanelRow>
 			</PanelBody>
 			<PanelBody
 				title={__(
@@ -529,7 +518,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									'Preload',
 									'video-embed-thumbnail-generator'
 								)}
-								value={preload}
+								selected={preload}
 								onChange={changeHandlerFactory.preload}
 								options={preloadOptions}
 								disabled={gifmode}
@@ -732,29 +721,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				)}
 				initialOpen={true}
 			>
-				<div className="videopack-setting-reduced-width">
-					<TextControlOnBlur
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Image URL:',
-							'video-embed-thumbnail-generator'
-						)}
-						type="url"
-						value={watermark}
-						onChange={changeHandlerFactory.watermark}
-					/>
-					<Button
-						__next40pxDefaultSize
-						className="videopack-library-button"
-						variant="secondary"
-					>
-						{__(
-							'Choose from library',
-							'video-embed-thumbnail-generator'
-						)}
-					</Button>
-				</div>
+				<ChooseFromLibrary
+					label={__('Image URL:', 'video-embed-thumbnail-generator')}
+					type="url"
+					value={watermark}
+					onChange={changeHandlerFactory.watermark}
+				/>
 				{watermark && (
 					<div className="videopack-setting-reduced-width">
 						<SelectControl

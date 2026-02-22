@@ -3,8 +3,6 @@
 }
 
 .wrap.videopack-settings {
-	max-width: 65rem;
-	margin: 10px auto;
 
 	.components-radio-control {
 		margin-bottom: 20px;
@@ -29,6 +27,10 @@
 	.videopack-flex-left {
 		justify-content: flex-start;
 		align-items: flex-end;
+	}
+
+	.videopack-flex-right {
+    	justify-content: flex-end;
 	}
 
 	.videopack-library-button {
@@ -136,11 +138,21 @@
 		margin-bottom: 20px;
 	}
 
-	.videopack-setting-capabilities p {
-		font-size: 11px;
-		font-weight: 500;
-		margin-top: 0;
-		text-transform: uppercase;
+	.videopack-sample-video-player {
+		width: 100%;
+		display: inline-block;
+	}
+
+	.videopack-setting-capabilities {
+
+		justify-content: flex-start;
+
+		p {
+			font-size: 11px;
+			font-weight: 500;
+			margin-top: 0;
+			text-transform: uppercase;
+		}
 	}
 
 	.videopack-settings-label {

@@ -2,8 +2,17 @@
 
 	width: var(--wp--style--global--content-size);
 
-	&.alignfull, &.alignwide {
+	&.alignwide {
+		width: var(--wp--style--global--wide-size);
+	}
+
+	&.alignfull {
 		width: auto;
+	}
+
+	&.aligncenter {
+		margin-left: auto;
+    	margin-right: auto;
 	}
 
 	.videopack-wrapper {
