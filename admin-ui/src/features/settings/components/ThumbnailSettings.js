@@ -21,7 +21,7 @@ import {
 	captureVideoFrame,
 } from '../../../utils/video-capture';
 import useBatchProcess from '../../../hooks/useBatchProcess';
-import TextControlOnBlur from './TextControlOnBlur';
+import ChooseFromLibrary from './ChooseFromLibrary';
 
 const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const {
@@ -309,29 +309,15 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 						onChange={changeHandlerFactory.browser_thumbnails}
 					/>
 				)}
-				<div className="videopack-setting-reduced-width">
-					<TextControlOnBlur
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Default thumbnail:',
-							'video-embed-thumbnail-generator'
-						)}
-						type="url"
-						value={poster}
-						onChange={changeHandlerFactory.poster}
-					/>
-					<Button
-						__next40pxDefaultSize
-						className="videopack-library-button"
-						variant="secondary"
-					>
-						{__(
-							'Choose from library',
-							'video-embed-thumbnail-generator'
-						)}
-					</Button>
-				</div>
+				<ChooseFromLibrary
+					label={__(
+						'Default thumbnail:',
+						'video-embed-thumbnail-generator'
+					)}
+					type="url"
+					value={poster}
+					onChange={changeHandlerFactory.poster}
+				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
@@ -341,53 +327,32 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					onChange={changeHandlerFactory.endofvideooverlaysame}
 					checked={!!endofvideooverlaysame}
 				/>
-				<div className="videopack-setting-reduced-width">
-					<TextControlOnBlur
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'End of video image:',
-							'video-embed-thumbnail-generator'
-						)}
-						type="url"
-						value={endofvideooverlay}
-						onChange={changeHandlerFactory.endofvideooverlay}
-						disabled={endofvideooverlaysame}
-					/>
-					<Button
-						__next40pxDefaultSize
-						className="videopack-library-button"
-						variant="secondary"
-					>
-						{__(
-							'Choose from library',
-							'video-embed-thumbnail-generator'
-						)}
-					</Button>
-				</div>
-				<div className="videopack-setting-reduced-width">
-					<TextControlOnBlur
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Add watermark to generated thumbnails:',
-							'video-embed-thumbnail-generator'
-						)}
-						type="url"
-						value={thumb_watermark?.url}
-						onChange={changeHandlerFactory.thumb_watermark}
-					/>
-					<Button
-						__next40pxDefaultSize
-						className="videopack-library-button"
-						variant="secondary"
-					>
-						{__(
-							'Choose from library',
-							'video-embed-thumbnail-generator'
-						)}
-					</Button>
-				</div>
+				<ChooseFromLibrary
+					label={__(
+						'End of video image:',
+						'video-embed-thumbnail-generator'
+					)}
+					type="url"
+					value={endofvideooverlay}
+					onChange={changeHandlerFactory.endofvideooverlay}
+					disabled={endofvideooverlaysame}
+				/>
+				<ChooseFromLibrary
+					label={__(
+						'Add watermark to generated thumbnails:',
+						'video-embed-thumbnail-generator'
+					)}
+					type="url"
+					value={thumb_watermark?.url}
+					onChange={(url) =>
+						changeHandlerFactory.thumb_watermark(
+							typeof thumb_watermark === 'object' &&
+								thumb_watermark !== null
+								? { ...thumb_watermark, url }
+								: { url }
+						)
+					}
+				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(

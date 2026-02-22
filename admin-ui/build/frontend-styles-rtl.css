@@ -4,8 +4,15 @@
 .wp-block-videopack-videopack-video {
   width: var(--wp--style--global--content-size);
 }
-.wp-block-videopack-videopack-video.alignfull, .wp-block-videopack-videopack-video.alignwide {
+.wp-block-videopack-videopack-video.alignwide {
+  width: var(--wp--style--global--wide-size);
+}
+.wp-block-videopack-videopack-video.alignfull {
   width: auto;
+}
+.wp-block-videopack-videopack-video.aligncenter {
+  margin-right: auto;
+  margin-left: auto;
 }
 .wp-block-videopack-videopack-video .videopack-wrapper {
   margin: 0;

@@ -4,8 +4,15 @@
 .wp-block-videopack-videopack-video {
   width: var(--wp--style--global--content-size);
 }
-.wp-block-videopack-videopack-video.alignfull, .wp-block-videopack-videopack-video.alignwide {
+.wp-block-videopack-videopack-video.alignwide {
+  width: var(--wp--style--global--wide-size);
+}
+.wp-block-videopack-videopack-video.alignfull {
   width: auto;
+}
+.wp-block-videopack-videopack-video.aligncenter {
+  margin-right: auto;
+  margin-left: auto;
 }
 .wp-block-videopack-videopack-video .videopack-wrapper {
   margin: 0;
@@ -792,11 +799,6 @@
   font-size: small;
 }
 
-.wrap.videopack-settings {
-  max-width: 65rem;
-  margin: 10px auto;
-}
-
 .wrap.videopack-settings .components-radio-control {
   margin-bottom: 20px;
 }
@@ -818,6 +820,10 @@
 .wrap.videopack-settings .videopack-flex-left {
   justify-content: flex-start;
   align-items: flex-end;
+}
+
+.wrap.videopack-settings .videopack-flex-right {
+  justify-content: flex-end;
 }
 
 .wrap.videopack-settings .videopack-library-button {
@@ -923,6 +929,15 @@
 
 .wrap.videopack-settings .videopack-clear-button {
   margin-bottom: 20px;
+}
+
+.wrap.videopack-settings .videopack-sample-video-player {
+  width: 100%;
+  display: inline-block;
+}
+
+.wrap.videopack-settings .videopack-setting-capabilities {
+  justify-content: flex-start;
 }
 
 .wrap.videopack-settings .videopack-setting-capabilities p {
