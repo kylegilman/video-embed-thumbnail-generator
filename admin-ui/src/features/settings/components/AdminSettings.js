@@ -3,24 +3,11 @@ import {
 	BaseControl,
 	Button,
 	CheckboxControl,
-	ExternalLink,
 	Flex,
-	FlexBlock,
 	FlexItem,
-	Icon,
-	MediaUpload,
-	MediaUploadCheck,
-	Panel,
 	PanelBody,
-	PanelRow,
 	RadioControl,
-	RangeControl,
-	SelectControl,
-	TextControl,
 	ToggleControl,
-	Spinner,
-	TabPanel,
-	Tooltip,
 } from '@wordpress/components';
 
 const AdminSettings = ({ settings, changeHandlerFactory }) => {
@@ -28,14 +15,11 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		capabilities,
 		embeddable,
 		schema,
-		twitter_button,
-		twitter_username,
 		right_click,
 		delete_thumbnails,
 		delete_encoded,
 		template,
 		open_graph,
-		twitter_card,
 		oembed_provider,
 		count_views,
 		alwaysloadscripts,
@@ -206,30 +190,6 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					onChange={changeHandlerFactory.schema}
 					checked={!!schema}
 				/>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__(
-						'Enable Twitter Cards.',
-						'video-embed-thumbnail-generator'
-					)}
-					onChange={changeHandlerFactory.twitter_card}
-					checked={!!twitter_card}
-					disabled={!embeddable}
-				/>
-				{(twitter_card || twitter_button) && (
-					<div className="videopack-setting-reduced-width">
-						<TextControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'Twitter username:',
-								'video-embed-thumbnail-generator'
-							)}
-							value={twitter_username}
-							onChange={changeHandlerFactory.twitter_username}
-						/>
-					</div>
-				)}
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
