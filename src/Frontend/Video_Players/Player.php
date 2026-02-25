@@ -294,8 +294,8 @@ class Player {
 	protected function has_meta_bar(): bool {
 		return apply_filters(
 			'videopack_video_player_has_meta_bar',
-			$this->atts['title'] !== false
-			|| $this->atts['embedcode'] !== false
+			$this->atts['overlay_title']
+			|| ( $this->atts['embeddable'] && $this->atts['embedcode'] !== false )
 			|| $this->atts['downloadlink'] === true,
 			$this->atts
 		);
@@ -312,22 +312,49 @@ class Player {
 
 	protected function get_meta_bar_code(): string {
 
-		$meta_bar = '<div class="videopack-meta-bar">';
-		if ( $this->atts['title'] !== false ) {
-			$meta_bar .= '<span class="videopack-title">' . esc_html( $this->atts['title'] ) . '</span>';
-		}
-		$meta_bar .= '<span class="videopack-meta-icons">';
-		if ( $this->has_embed_meta() ) {
-			$meta_bar .= '<button class="vjs-icon-share"></button>';
-		}
-				$download_attributes = 'class="download-link" href="' . esc_attr( $this->source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
+		$has_embed      = $this->has_embed_meta();
+		$no_title_class = $this->atts['overlay_title'] ? '' : ' no-title';
 
-		if ( ! empty( $this->options['click_download'] ) && $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local && $this->source->exists() ) {
-			$alt_link             = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[download]=true' );
-			$download_attributes .= ' data-alt_link="' . esc_attr( $alt_link ) . '"';
+		$meta_bar = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
+		$meta_bar .= '<span class="meta-icons">';
+
+		if ( $has_embed ) {
+			$meta_bar .= '<button type="button" class="videopack-icons share"></button>';
 		}
 
-		$meta_bar .= '<a ' . $download_attributes . '></a></span></div>';
+		if ( $this->atts['downloadlink'] ) {
+			$download_attributes = 'class="download-link" href="' . esc_attr( $this->source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
+
+			if ( ! empty( $this->options['click_download'] ) && $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local && $this->source->exists() ) {
+				$alt_link             = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[download]=true' );
+				$download_attributes .= ' data-alt_link="' . esc_attr( $alt_link ) . '"';
+			}
+
+			$meta_bar .= '<a ' . $download_attributes . '><span class="videopack-icons download"></span></a>';
+		}
+		$meta_bar .= '</span>';
+
+		if ( $this->atts['overlay_title'] ) {
+			$meta_bar .= '<span class="title">' . esc_html( $this->atts['title'] ) . '</span>';
+		}
+		$meta_bar .= '</div>';
+
+		if ( $has_embed ) {
+			$meta_bar .= '<button class="click-trap"></button>';
+			$meta_bar .= '<div class="share-container' . esc_attr( $no_title_class ) . '">';
+
+			$embed_url = '';
+			if ( is_numeric( $this->source->get_id() ) ) {
+				$embed_url = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[enable]=true' );
+			} else {
+				$embed_url = $this->source->get_url();
+			}
+
+			$embed_code = '<iframe src="' . esc_url( $embed_url ) . '" width="' . esc_attr( $this->atts['width'] ) . '" height="' . esc_attr( $this->atts['height'] ) . '" frameborder="0" allowfullscreen></iframe>';
+
+			$meta_bar .= '<span class="embedcode-container"><span class="videopack-icons embed"></span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="embedcode" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
+			$meta_bar .= '</div>';
+		}
 
 		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
 	}

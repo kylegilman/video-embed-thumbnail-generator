@@ -54,7 +54,8 @@ class Options {
 			'template_gentle'         => true, // Enable gentle template failover if the custom template is missing.
 			'hide_video_formats'      => true, // List only enabled default video formats in the Admin area.
 			'hide_thumbnails'         => false, // Hide generated thumbnails in the Admin area.
-			'delete_children'         => 'encoded videos only', // Criteria for deleting associated media upon video deletion ('none', 'encoded videos only', 'all').
+			'delete_child_thumbnails' => false, // Delete associated thumbnails upon video deletion.
+			'delete_child_encoded'    => true, // Delete associated encoded videos upon video deletion.
 			'thumb_parent'            => 'video', // Parent post type for video thumbnails ('video', 'post').
 			'transient_cache'         => false, // Enable transient caching for URL to Attachment ID lookups.
 
@@ -120,6 +121,7 @@ class Options {
 			'align'                   => '', // Default alignment for the video player ('', 'wide', 'full', 'left', 'center', 'right').
 			'width'                   => 960, // Default width for the video player in pixels.
 			'height'                  => 540, // Default height for the video player in pixels.
+			'legacy_dimensions'       => false, // Use legacy fixed dimensions.
 			'fullwidth'               => true, // Expand video players to the full width of their container.
 			'fixed_aspect'            => 'vertical', // Fixed aspect ratio setting for the video player (true, false, 'vertical').
 			'skin'                    => 'kg-video-js-skin', // Skin class for the Video.js player.
@@ -150,6 +152,7 @@ class Options {
 			// Gallery Settings.
 			'layout'                  => 'gallery', // Default layout ('gallery', 'list').
 			'gallery_orderby'         => 'menu_order', // Default sort order.
+			'collection_video_limit'  => -1, // Maximum number of videos in a collection when pagination is disabled. -1 for no limit.
 			'gallery_order'           => 'ASC', // Default sort direction.
 			'gallery_columns'         => 4, // Number of columns in video galleries.
 			'gallery_end'             => '', // Custom content to display at the end of video galleries ('close', 'next', or custom HTML).
@@ -320,6 +323,23 @@ class Options {
 				unset( $old_options['ogv_CRF'] );
 			}
 
+			// Migrate delete_children
+			if ( isset( $old_options['delete_children'] ) ) {
+				if ( 'all' === $old_options['delete_children'] ) {
+					$options_to_init['delete_child_thumbnails'] = true;
+					$options_to_init['delete_child_encoded']    = true;
+				} elseif ( 'encoded videos only' === $old_options['delete_children'] ) {
+					$options_to_init['delete_child_thumbnails'] = false;
+					$options_to_init['delete_child_encoded']    = true;
+				} else {
+					$options_to_init['delete_child_thumbnails'] = false;
+					$options_to_init['delete_child_encoded']    = false;
+				}
+				unset( $old_options['delete_children'] );
+			}
+
+			$options_to_init['legacy_dimensions'] = true;
+
 			// Convert boolean-like strings to booleans
 			foreach ( $old_options as $key => &$value ) {
 				if ( $value === 'on' ) {
@@ -488,7 +508,8 @@ class Options {
 	 *   template_gentle: bool,
 	 *   hide_video_formats: bool,
 	 *   hide_thumbnails: bool,
-	 *   delete_children: string,
+	 *   delete_child_thumbnails: bool,
+	 *   delete_child_encoded: bool,
 	 *   thumb_parent: string,
 	 *   transient_cache: bool,
 	 *   app_path: string,
@@ -532,6 +553,7 @@ class Options {
 	 *   align: string,
 	 *   width: int,
 	 *   height: int,
+	 *   legacy_dimensions: bool,
 	 *   fixed_aspect: string|bool,
 	 *   skin: string,
 	 *   right_click: bool,
@@ -555,6 +577,7 @@ class Options {
 	 *   auto_res: string,
 	 *   pixel_ratio: bool,
 	 *   find_formats: bool,
+	 *   collection_video_limit: int,
 	 *   gallery_columns: int,
 	 *   gallery_end: string,
 	 *   gallery_pagination: bool,
@@ -911,6 +934,10 @@ class Options {
 
 		if ( $input['embeddable'] == false ) {
 			$input['embedcode'] = false;
+		}
+
+		if ( isset( $input['collection_video_limit'] ) && intval( $input['collection_video_limit'] ) === 0 ) {
+			$input['collection_video_limit'] = -1;
 		}
 
 		if ( ! $input['queue_control'] ) { // don't reset queue control when saving settings

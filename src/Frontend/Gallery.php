@@ -25,12 +25,9 @@ class Gallery {
 		if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
-		if ( (
-			$query_atts['gallery_pagination'] != true
-				&& empty( $query_atts['gallery_per_page'] )
-			)
-			|| $query_atts['gallery_per_page'] == 'false'
-		) {
+		if ( $query_atts['gallery_pagination'] != true ) {
+			$query_atts['gallery_per_page'] = $query_atts['videos'];
+		} elseif ( $query_atts['gallery_per_page'] == 'false' ) {
 			$query_atts['gallery_per_page'] = -1;
 		}
 
@@ -55,6 +52,10 @@ class Gallery {
 				),
 			),
 		);
+
+		if ( empty( $query_atts['gallery_id'] ) ) {
+			unset( $args['post_parent'] );
+		}
 
 		if ( ! empty( $query_atts['gallery_source'] ) ) {
 			if ( 'category' === $query_atts['gallery_source'] && ! empty( $query_atts['gallery_category'] ) ) {
@@ -157,6 +158,7 @@ class Gallery {
 	}
 
 	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
+		$query_atts['embed_method'] = $this->options['embed_method'];
 		$attachments = $this->get_gallery_videos( $page_number, $query_atts );
 		$videos_data = array();
 
@@ -189,7 +191,7 @@ class Gallery {
 				<?php endif; ?>
 			>
 				<?php foreach ( $videos_data as $video ) : ?>
-					<div class="gallery-thumbnail videopack-gallery-item" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>">
+					<div class="gallery-thumbnail videopack-gallery-item <?php echo esc_attr( $query_atts['skin'] ?? '' ); ?>" data-attachment-id="<?php echo esc_attr( $video['attachment_id'] ); ?>">
 						<div class="gallery-item-clickable-area">
 							<img src="<?php echo esc_url( $video['poster_url'] ); ?>"
 								<?php
@@ -198,12 +200,18 @@ class Gallery {
 								}
 								?>
 								alt="<?php echo esc_attr( $video['title'] ); ?>">
-							<div class="play-button-container <?php echo esc_attr( $query_atts['skin'] ?? 'kg-video-js-skin' ); ?>">
-								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-									<circle class="play-button-circle" cx="250" cy="250" r="230"/>
-									<polygon class="play-button-triangle" points="374.68,250 188,142 188,358"/>
-								</svg>
-							</div>
+							<?php if ( 'WordPress Default' === $this->options['embed_method'] ) : ?>
+								<div class="mejs-overlay mejs-layer mejs-overlay-play">
+									<div class="mejs-overlay-button" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Play', 'video-embed-thumbnail-generator' ); ?>" aria-pressed="false"></div>
+								</div>
+							<?php else : ?>
+								<div class="play-button-container video-js <?php echo esc_attr( $query_atts['skin'] ?? 'kg-video-js-skin' ); ?> vjs-big-play-centered vjs-paused vjs-controls-enabled">
+									<button class="vjs-big-play-button" type="button" title="<?php esc_attr_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?>" aria-disabled="false">
+										<span class="vjs-icon-placeholder" aria-hidden="true"></span>
+										<span class="vjs-control-text" aria-live="polite"><?php esc_html_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?></span>
+									</button>
+								</div>
+							<?php endif; ?>
 							<?php if ( ! empty( $query_atts['gallery_title'] ) ) : ?>
 								<div class="video-title">
 									<div class="video-title-background"></div>

@@ -1235,7 +1235,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
-/* harmony export */   getRecentVideos: () => (/* binding */ getRecentVideos),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
 /* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
@@ -1456,17 +1455,6 @@ const getFreemiusPage = async page => {
     });
   } catch (error) {
     console.error(`Error fetching Freemius page '${page}':`, error);
-    throw error;
-  }
-};
-const getRecentVideos = async posts => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/recent_videos?posts=${posts}`,
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching recent videos:', error);
     throw error;
   }
 };

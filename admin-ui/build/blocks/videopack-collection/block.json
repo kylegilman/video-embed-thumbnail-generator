@@ -76,6 +76,13 @@
     "gallery_columns": {
       "type": "number",
       "default": 4
+    },
+    "collection_video_limit": {
+      "type": [
+        "number",
+        "string"
+      ],
+      "default": -1
     }
   },
   "usesContext": [

@@ -1,6 +1,6 @@
-/* global videopack_config */
+/* global videopack_config, ResizeObserver */
 
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 import { pencil, close, dragHandle } from '@wordpress/icons';
@@ -22,6 +22,8 @@ const GalleryItem = ({
 	isHoveringGallery,
 }) => {
 	const { skin, gallery_title } = attributes;
+	const embed_method =
+		attributes.embed_method || videopack_config.embed_method;
 
 	const {
 		attributes: sortableAttributes,
@@ -41,6 +43,40 @@ const GalleryItem = ({
 	);
 	const [thumbnailSrcset, setThumbnailSrcset] = useState(null);
 
+	const buttonContainerRef = useRef(null);
+	const mejsButtonRef = useRef(null);
+
+	useEffect(() => {
+		if (
+			embed_method !== 'WordPress Default' ||
+			!buttonContainerRef.current
+		) {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			if (!mejsButtonRef.current) {
+				return;
+			}
+
+			for (const entry of entries) {
+				const containerWidth = entry.contentRect.width;
+				const desiredButtonWidth = containerWidth * 0.25;
+				const initialButtonWidth = 80; // Default ME.js button width
+				const finalButtonWidth = Math.min(desiredButtonWidth, 90);
+				const scale = finalButtonWidth / initialButtonWidth;
+
+				mejsButtonRef.current.style.transform = `translate(-50%, -50%) scale(${scale})`;
+			}
+		});
+
+		resizeObserver.observe(buttonContainerRef.current);
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	}, [embed_method]);
+
 	useEffect(() => {
 		if (videoRecord?.poster_url) {
 			setThumbnailUrl(videoRecord.poster_url);
@@ -52,9 +88,9 @@ const GalleryItem = ({
 
 	const openMediaModal = () => {
 		const frame = window.wp.media({
-			title: __( 'Edit Video', 'video-embed-thumbnail-generator' ),
+			title: __('Edit Video', 'video-embed-thumbnail-generator'),
 			button: {
-				text: __( 'Update', 'video-embed-thumbnail-generator' ),
+				text: __('Update', 'video-embed-thumbnail-generator'),
 			},
 			multiple: false,
 			library: {
@@ -91,10 +127,11 @@ const GalleryItem = ({
 			ref={setNodeRef}
 			style={style}
 			{...sortableAttributes}
-			className="gallery-thumbnail videopack-gallery-item"
+			className={`gallery-thumbnail videopack-gallery-item ${skin || ''}`}
 		>
 			<div
 				className="gallery-item-clickable-area"
+				ref={buttonContainerRef}
 				onClick={() => {
 					if (!isEditing) {
 						setOpenVideo(videoRecord);
@@ -107,23 +144,49 @@ const GalleryItem = ({
 					srcSet={thumbnailSrcset}
 					alt={decodeEntities(videoRecord.title)}
 				/>
-				<div className={`play-button-container ${skin}`}>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 500 500"
+				{'WordPress Default' === embed_method ? (
+					<div className="mejs-overlay mejs-layer mejs-overlay-play">
+						<div
+							ref={mejsButtonRef}
+							className="mejs-overlay-button"
+							role="button"
+							tabIndex="0"
+							aria-label={__(
+								'Play',
+								'video-embed-thumbnail-generator'
+							)}
+							aria-pressed="false"
+						></div>
+					</div>
+				) : (
+					<div
+						className={`play-button-container video-js ${skin} vjs-big-play-centered vjs-paused vjs-controls-enabled`}
 					>
-						<circle
-							className="play-button-circle"
-							cx="250"
-							cy="250"
-							r="230"
-						/>
-						<polygon
-							className="play-button-triangle"
-							points="374.68,250 188,142 188,358"
-						/>
-					</svg>
-				</div>
+						<button
+							className="vjs-big-play-button"
+							type="button"
+							title={__(
+								'Play Video',
+								'video-embed-thumbnail-generator'
+							)}
+							aria-disabled="false"
+						>
+							<span
+								className="vjs-icon-placeholder"
+								aria-hidden="true"
+							/>
+							<span
+								className="vjs-control-text"
+								aria-live="polite"
+							>
+								{__(
+									'Play Video',
+									'video-embed-thumbnail-generator'
+								)}
+							</span>
+						</button>
+					</div>
+				)}
 				{gallery_title && (
 					<div className="video-title">
 						<div className="video-title-background" />
@@ -138,7 +201,10 @@ const GalleryItem = ({
 					<button
 						className="videopack-drag-handle"
 						{...listeners}
-						title={__( 'Drag to reorder', 'video-embed-thumbnail-generator' )}
+						title={__(
+							'Drag to reorder',
+							'video-embed-thumbnail-generator'
+						)}
 					>
 						<Icon icon={dragHandle} />
 					</button>
@@ -148,7 +214,7 @@ const GalleryItem = ({
 							e.stopPropagation();
 							openMediaModal();
 						}}
-						title={__( 'Edit', 'video-embed-thumbnail-generator' )}
+						title={__('Edit', 'video-embed-thumbnail-generator')}
 					>
 						<button type="button" className="videopack-edit-item">
 							<Icon icon={pencil} />
@@ -160,7 +226,7 @@ const GalleryItem = ({
 							e.stopPropagation();
 							onRemove(videoRecord.attachment_id);
 						}}
-						title={__( 'Remove', 'video-embed-thumbnail-generator' )}
+						title={__('Remove', 'video-embed-thumbnail-generator')}
 					>
 						<button type="button" className="videopack-remove-item">
 							<Icon icon={close} />
@@ -172,7 +238,7 @@ const GalleryItem = ({
 				<button
 					className="gallery-add-button"
 					onClick={onAddVideo}
-					title={__( 'Add video', 'video-embed-thumbnail-generator' )}
+					title={__('Add video', 'video-embed-thumbnail-generator')}
 				>
 					<span className="dashicons dashicons-plus-alt" />
 				</button>

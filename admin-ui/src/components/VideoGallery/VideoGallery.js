@@ -1,8 +1,7 @@
 import { getVideoGallery } from '../../utils/utils';
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
-import { Placeholder, Spinner, Icon } from '@wordpress/components';
+import { Placeholder, Spinner } from '@wordpress/components';
 import {
 	DndContext,
 	closestCenter,
@@ -41,6 +40,8 @@ const VideoGallery = ({
 		gallery_source,
 		gallery_category,
 		gallery_tag,
+		videos,
+		collection_video_limit,
 	} = attributes;
 
 	const [galleryVideos, setGalleryVideos] = useState([]);
@@ -111,6 +112,8 @@ const VideoGallery = ({
 			gallery_source,
 			gallery_category,
 			gallery_tag,
+			gallery_pagination,
+			videos: videos !== undefined ? videos : collection_video_limit,
 		};
 
 		setIsLoading(true);
@@ -120,7 +123,10 @@ const VideoGallery = ({
 				setGalleryVideos(response.videos);
 			})
 			.catch((error) => {
-				if (error.status === 404 || (error.data && error.data.status === 404)) {
+				if (
+					error.status === 404 ||
+					(error.data && error.data.status === 404)
+				) {
 					setTotalPages(0);
 					setGalleryVideos([]);
 				} else {
@@ -141,6 +147,8 @@ const VideoGallery = ({
 		gallery_source,
 		gallery_category,
 		gallery_tag,
+		videos,
+		collection_video_limit,
 		galleryPage,
 		galleryVersion,
 	]);
@@ -257,9 +265,12 @@ const VideoGallery = ({
 
 	const openMediaModalForNewVideos = () => {
 		const frame = window.wp.media({
-			title: __( 'Add Videos to Gallery', 'video-embed-thumbnail-generator' ),
+			title: __(
+				'Add Videos to Gallery',
+				'video-embed-thumbnail-generator'
+			),
 			button: {
-				text: __( 'Add to Gallery', 'video-embed-thumbnail-generator' ),
+				text: __('Add to Gallery', 'video-embed-thumbnail-generator'),
 			},
 			multiple: 'add',
 			library: {
@@ -332,6 +343,62 @@ const VideoGallery = ({
 		);
 	};
 
+	const renderGalleryContent = () => {
+		if (isLoading) {
+			return (
+				<div
+					style={{
+						gridColumn: '1 / -1',
+						display: 'flex',
+						justifyContent: 'center',
+						padding: '20px',
+					}}
+				>
+					<Spinner />
+				</div>
+			);
+		}
+
+		if (galleryVideos && galleryVideos.length > 0) {
+			return galleryVideos.map((videoRecord, index) => (
+				<GalleryItem
+					key={videoRecord.attachment_id}
+					attributes={attributes}
+					videoRecord={videoRecord}
+					setOpenVideo={setOpenVideo}
+					videoIndex={index}
+					setCurrentVideoIndex={setCurrentVideoIndex}
+					isEditing={isEditing}
+					onRemove={onRemoveItem}
+					onEdit={handleEditItem}
+					isLastItem={index === galleryVideos.length - 1}
+					onAddVideo={openMediaModalForNewVideos}
+					isHoveringGallery={isHovering}
+				/>
+			));
+		}
+
+		if (isEditing) {
+			return (
+				<div style={{ gridColumn: '1 / -1' }}>
+					<Placeholder
+						icon="format-video"
+						label={__(
+							'No videos found',
+							'video-embed-thumbnail-generator'
+						)}
+						instructions={__(
+							'Try adjusting your query settings.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+			);
+		}
+
+		return null;
+	};
+
 	return (
 		<div
 			className="videopack-gallery-wrapper"
@@ -359,47 +426,15 @@ const VideoGallery = ({
 								? { '--gallery-columns': gallery_columns }
 								: {}
 						}
-					>
-						{isLoading ? (
-							<div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '20px' }}>
-								<Spinner />
-							</div>
-						) : galleryVideos && galleryVideos.length > 0 ? (
-							galleryVideos.map((videoRecord, index) => (
-								<GalleryItem
-									key={videoRecord.attachment_id}
-									attributes={attributes}
-									videoRecord={videoRecord}
-									setOpenVideo={setOpenVideo}
-									videoIndex={index}
-									setCurrentVideoIndex={setCurrentVideoIndex}
-									isEditing={isEditing}
-									onRemove={onRemoveItem}
-									onEdit={handleEditItem}
-									isLastItem={
-										index === galleryVideos.length - 1
-									}
-									onAddVideo={openMediaModalForNewVideos}
-									isHoveringGallery={isHovering}
-								/>
-							))
-						) : (
-							isEditing && (
-								<div style={{ gridColumn: '1 / -1' }}>
-									<Placeholder
-										icon="format-video"
-										label={__( 'No videos found', 'video-embed-thumbnail-generator' )}
-										instructions={__( 'Try adjusting your query settings.', 'video-embed-thumbnail-generator' )}
-									/>
-								</div>
-							)
-						)}
-					</div>
+					>{renderGalleryContent()}</div>
 				</SortableContext>
 			</DndContext>
 			{totalPages > 1 && <GalleryPagination />}
 			{openVideo && (
-				<div className="videopack-modal-overlay is-visible" onClick={closeVideo}>
+				<div
+					className="videopack-modal-overlay is-visible"
+					onClick={closeVideo}
+				>
 					<div
 						className="videopack-modal-container"
 						onClick={handleVideoClick}
@@ -407,7 +442,10 @@ const VideoGallery = ({
 						<button
 							type="button"
 							className="modal-navigation modal-close videopack-icons cross"
-							title={__( 'Close', 'video-embed-thumbnail-generator' )}
+							title={__(
+								'Close',
+								'video-embed-thumbnail-generator'
+							)}
 							onClick={closeVideo}
 						/>
 						{(currentVideoIndex < galleryVideos.length - 1 ||
@@ -415,7 +453,10 @@ const VideoGallery = ({
 							<button
 								type="button"
 								className="modal-navigation modal-next videopack-icons right-arrow"
-								title={__( 'Next', 'video-embed-thumbnail-generator' )}
+								title={__(
+									'Next',
+									'video-embed-thumbnail-generator'
+								)}
 								onClick={() => {
 									handleNavigationArrowClick(
 										currentVideoIndex + 1
@@ -427,7 +468,10 @@ const VideoGallery = ({
 							<button
 								type="button"
 								className="modal-navigation modal-previous videopack-icons left-arrow"
-								title={__( 'Previous', 'video-embed-thumbnail-generator' )}
+								title={__(
+									'Previous',
+									'video-embed-thumbnail-generator'
+								)}
 								onClick={() => {
 									handleNavigationArrowClick(
 										currentVideoIndex - 1

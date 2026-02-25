@@ -18,7 +18,12 @@ import { videopack as icon } from '../../assets/icon';
 import CollectionBlock from './CollectionBlock';
 import './editor.scss';
 
-export default function Edit({ attributes, setAttributes, context, isSelected }) {
+export default function Edit({
+	attributes,
+	setAttributes,
+	context,
+	isSelected,
+}) {
 	const ALLOWED_MEDIA_TYPES = ['video'];
 	const { gallery_include, gallery_id } = attributes;
 	const [options, setOptions] = useState();
@@ -36,7 +41,9 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 
 	const videoChildren = useSelect(
 		(select) => {
-			if ( ! postId ) return null;
+			if (!postId) {
+				return null;
+			}
 			return select('core').getEntityRecords('postType', 'attachment', {
 				parent: postId,
 				media_type: 'video',
@@ -121,8 +128,14 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 				className="block-editor-media-placeholder"
 				withIllustration={true}
 				icon={icon}
-				label={__( 'Videopack Video Collection', 'video-embed-thumbnail-generator' )}
-				instructions={__( 'Select video files to create a collection.', 'video-embed-thumbnail-generator' )}
+				label={__(
+					'Videopack Video Collection',
+					'video-embed-thumbnail-generator'
+				)}
+				instructions={__(
+					'Select video files to create a collection.',
+					'video-embed-thumbnail-generator'
+				)}
 			>
 				{content}
 				<Button
@@ -135,7 +148,10 @@ export default function Edit({ attributes, setAttributes, context, isSelected })
 					showTooltip
 					onClick={onInsertCollection}
 				>
-					{__( "This post's videos", 'video-embed-thumbnail-generator' )}
+					{__(
+						"This post's videos",
+						'video-embed-thumbnail-generator'
+					)}
 				</Button>
 			</Placeholder>
 		);

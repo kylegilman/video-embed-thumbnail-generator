@@ -54,7 +54,12 @@ const MetaBar = ({ attributes }) => {
 						<>
 							<span className="embedcode-container">
 								<span className="videopack-icons embed"></span>
-								<span>{__( 'Embed:', 'video-embed-thumbnail-generator' )}</span>
+								<span>
+									{__(
+										'Embed:',
+										'video-embed-thumbnail-generator'
+									)}
+								</span>
 								<span>
 									<input
 										className="embedcode"
@@ -84,8 +89,8 @@ const MetaBar = ({ attributes }) => {
 								type={'button'}
 								className={
 									shareIsOpen
-										? 'vjs-icon-cancel'
-										: 'vjs-icon-share'
+										? 'videopack-icons close'
+										: 'videopack-icons share'
 								}
 								onClick={() => {
 									setShareIsOpen(!shareIsOpen);
@@ -97,7 +102,10 @@ const MetaBar = ({ attributes }) => {
 								className="download-link"
 								href={src}
 								download={true}
-								title={__( 'Click to download', 'video-embed-thumbnail-generator' )}
+								title={__(
+									'Click to download',
+									'video-embed-thumbnail-generator'
+								)}
 							>
 								<span className="videopack-icons download"></span>
 							</a>

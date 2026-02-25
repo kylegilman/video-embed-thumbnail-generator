@@ -19,6 +19,7 @@ import { sortAscending, sortDescending } from '../../assets/icon';
 import { getSettings } from '../../utils/utils';
 import VideoGallery from '../../components/VideoGallery/VideoGallery';
 import VideoList from '../../components/VideoList/VideoList';
+import TextControlOnBlur from '../../features/settings/components/TextControlOnBlur';
 
 const CollectionBlock = ({
 	attributes,
@@ -43,6 +44,7 @@ const CollectionBlock = ({
 		gallery_source,
 		gallery_category,
 		gallery_tag,
+		collection_video_limit,
 	} = attributes;
 
 	const [fetchedOptions, setFetchedOptions] = useState(null);
@@ -71,7 +73,11 @@ const CollectionBlock = ({
 
 			const newAttributes = {};
 			Object.keys(blockDefaults).forEach((key) => {
-				if (attributes[key] === blockDefaults[key] && effectiveOptions[key] !== undefined && effectiveOptions[key] !== attributes[key]) {
+				if (
+					attributes[key] === blockDefaults[key] &&
+					effectiveOptions[key] !== undefined &&
+					effectiveOptions[key] !== attributes[key]
+				) {
 					newAttributes[key] = effectiveOptions[key];
 				}
 			});
@@ -119,7 +125,8 @@ const CollectionBlock = ({
 
 	const { searchResults, currentPost, isResolving } = useSelect(
 		(select) => {
-			const { getEntityRecords, getPostTypes, isResolving } = select('core');
+			const { getEntityRecords, getPostTypes, isResolving } =
+				select('core');
 			const results = [];
 			let resolving = false;
 
@@ -147,7 +154,11 @@ const CollectionBlock = ({
 						results.push(...records);
 					}
 					if (
-						isResolving('getEntityRecords', ['postType', type, query])
+						isResolving('getEntityRecords', [
+							'postType',
+							type,
+							query,
+						])
 					) {
 						resolving = true;
 					}
@@ -160,7 +171,11 @@ const CollectionBlock = ({
 						results.push(...records);
 					}
 					if (
-						isResolving('getEntityRecords', ['postType', type, query])
+						isResolving('getEntityRecords', [
+							'postType',
+							type,
+							query,
+						])
 					) {
 						resolving = true;
 					}
@@ -494,15 +509,39 @@ const CollectionBlock = ({
 					/>
 					<div className="videopack-sort-control-wrapper">
 						<SelectControl
-							label={__('Sort by', 'video-embed-thumbnail-generator')}
+							label={__(
+								'Sort by',
+								'video-embed-thumbnail-generator'
+							)}
 							value={gallery_orderby}
 							onChange={attributeChangeFactory('gallery_orderby')}
 							options={filteredGalleryOrderbyOptions}
 						/>
 						<Button
-							icon={gallery_order === 'ASC' ? sortAscending : sortDescending}
-							label={gallery_order === 'ASC' ? __('Ascending', 'video-embed-thumbnail-generator') : __('Descending', 'video-embed-thumbnail-generator')}
-							onClick={() => setAttributes({ gallery_order: gallery_order === 'ASC' ? 'DESC' : 'ASC' })}
+							icon={
+								gallery_order === 'ASC'
+									? sortAscending
+									: sortDescending
+							}
+							label={
+								gallery_order === 'ASC'
+									? __(
+											'Ascending',
+											'video-embed-thumbnail-generator'
+										)
+									: __(
+											'Descending',
+											'video-embed-thumbnail-generator'
+										)
+							}
+							onClick={() =>
+								setAttributes({
+									gallery_order:
+										gallery_order === 'ASC'
+											? 'DESC'
+											: 'ASC',
+								})
+							}
 							showTooltip
 						/>
 					</div>
@@ -527,6 +566,37 @@ const CollectionBlock = ({
 								'gallery_per_page',
 								true
 							)}
+						/>
+					)}
+					{!gallery_pagination && (
+						<TextControlOnBlur
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'Video Limit:',
+								'video-embed-thumbnail-generator'
+							)}
+							type="text"
+							value={
+								Number(collection_video_limit) === -1
+									? __(
+											'No limit',
+											'video-embed-thumbnail-generator'
+										)
+									: collection_video_limit
+							}
+							onChange={(value) => {
+								const intValue = parseInt(value, 10);
+								if (isNaN(intValue) || intValue <= 0) {
+									setAttributes({
+										collection_video_limit: -1,
+									});
+								} else {
+									setAttributes({
+										collection_video_limit: intValue,
+									});
+								}
+							}}
 						/>
 					)}
 					{layout !== 'list' && (
@@ -604,17 +674,26 @@ const CollectionBlock = ({
 										className="videopack-excluded-item"
 									>
 										<div className="videopack-excluded-thumbnail">
-											{video.meta?.['_videopack-meta']?.poster ? (
+											{video.meta?.['_videopack-meta']
+												?.poster ? (
 												<img
-													src={video.meta['_videopack-meta'].poster}
-													alt={decodeEntities(video.title.rendered)}
+													src={
+														video.meta[
+															'_videopack-meta'
+														].poster
+													}
+													alt={decodeEntities(
+														video.title.rendered
+													)}
 												/>
 											) : (
 												<Icon icon="format-video" />
 											)}
 										</div>
 										<span className="videopack-excluded-title">
-											{decodeEntities(video.title.rendered)}
+											{decodeEntities(
+												video.title.rendered
+											)}
 										</span>
 										<Button
 											icon={close}

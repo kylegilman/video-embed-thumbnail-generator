@@ -35,6 +35,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		fullwidth,
 		width,
 		height,
+		legacy_dimensions,
 		fixed_aspect,
 		controls,
 		playsinline,
@@ -562,32 +563,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				title={__('Dimensions', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
 			>
-				<Flex
-					direction="column"
-					expanded={false}
-					align="flex-start"
-					justify="flex-start"
-				>
-					<FlexItem>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={__(
-								'Shrink player to fit container',
-								'video-embed-thumbnail-generator'
-							)}
-							onChange={changeHandlerFactory.resize}
-							checked={!!resize}
-						/>
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={__(
-								'Expand player to full width of container'
-							)}
-							onChange={changeHandlerFactory.fullwidth}
-							checked={!!fullwidth}
-						/>
-					</FlexItem>
-				</Flex>
 				<div className="videopack-setting-reduced-width">
 					<SelectControl
 						__nextHasNoMarginBottom
@@ -601,26 +576,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						options={alignOptions}
 					/>
 				</div>
-				<span className="videopack-setting-auto-width">
-					<TextControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__('Width:', 'video-embed-thumbnail-generator')}
-						type="number"
-						value={width}
-						onChange={changeHandlerFactory.width}
-					/>
-				</span>
-				<span className="videopack-setting-auto-width">
-					<TextControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__('Height:', 'video-embed-thumbnail-generator')}
-						type="number"
-						value={height}
-						onChange={changeHandlerFactory.height}
-					/>
-				</span>
 				<div className="videopack-control-with-tooltip">
 					<RadioControl
 						label={__(
@@ -638,6 +593,71 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					/>
 				</div>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Use legacy dimension settings.',
+						'video-embed-thumbnail-generator'
+					)}
+					onChange={changeHandlerFactory.legacy_dimensions}
+					checked={!!legacy_dimensions}
+				/>
+				{legacy_dimensions && (
+					<>
+						<span className="videopack-setting-auto-width">
+							<TextControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__(
+									'Width:',
+									'video-embed-thumbnail-generator'
+								)}
+								type="number"
+								value={width}
+								onChange={changeHandlerFactory.width}
+							/>
+						</span>
+						<span className="videopack-setting-auto-width">
+							<TextControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__(
+									'Height:',
+									'video-embed-thumbnail-generator'
+								)}
+								type="number"
+								value={height}
+								onChange={changeHandlerFactory.height}
+							/>
+						</span>
+						<Flex
+							direction="column"
+							expanded={false}
+							align="flex-start"
+							justify="flex-start"
+						>
+							<FlexItem>
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={__(
+										'Shrink player to fit container',
+										'video-embed-thumbnail-generator'
+									)}
+									onChange={changeHandlerFactory.resize}
+									checked={!!resize}
+								/>
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={__(
+										'Expand player to full width of container'
+									)}
+									onChange={changeHandlerFactory.fullwidth}
+									checked={!!fullwidth}
+								/>
+							</FlexItem>
+						</Flex>
+					</>
+				)}
 				<div className="videopack-setting-reduced-width">
 					<SelectControl
 						__nextHasNoMarginBottom
@@ -652,7 +672,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							'If multiple H.264 resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.'
+							'If multiple resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.'
 						)}
 					/>
 				</div>

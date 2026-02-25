@@ -24,6 +24,7 @@
 		border-radius: 2%;
 		box-sizing: border-box;
 		background: none;
+		container-type: inline-size;
 
 		img {
 		position: absolute; /* Position image to fill the padded space */
@@ -35,20 +36,41 @@
 		object-fit: cover;
 		}
 
+		.mejs-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+
 		.mejs-overlay-button {
 		position: absolute;
 		top: 50%;
 		left: 50%;
-		transform-origin: 0 0;
-		border: none;
+		width: 80px;
+		height: 80px;
+		/* Let JS handle the transform for scaling, overriding default margin-based centering */
+		margin: 0;
+		transform: translate(-50%, -50%);
+		background-size: auto;
 		}
 
 		.play-button-container {
+			position: absolute;
+			top: 0;
+			left: 0;
 			width: 100%;
 			height: 100%;
-			display: flex;
-			justify-content: center;
-			align-items: center;
+			background-color: transparent;
+
+			.vjs-big-play-button {
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				margin: 0;
+				font-size: clamp(8px, 8cqi, 30px);
+			}
 
 			&.kg-video-js-skin svg {
 				position: absolute;
@@ -114,6 +136,23 @@
 			.play-button-container svg .play-button-circle {
 				fill-opacity: 0.4;
 			}
+		}
+
+		/* Skin-specific title background styles */
+		&.default .video-title-background::before {
+			background-color: #2b333f;
+		}
+		&.vjs-theme-city .video-title-background::before {
+			background-color: var(--vjs-theme-city--primary);
+		}
+		&.vjs-theme-fantasy .video-title-background::before {
+			background-color: var(--vjs-theme-fantasy--primary);
+		}
+		&.vjs-theme-forest .video-title-background::before {
+			background-color: var(--vjs-theme-forest--primary);
+		}
+		&.vjs-theme-sea .video-title-background::before {
+			background-color: rgba(65, 118, 188);
 		}
 	}
 

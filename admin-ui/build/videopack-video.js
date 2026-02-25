@@ -174,7 +174,7 @@ const SingleVideoBlock = ({
         src: attachment.source_url,
         title: attachment.title?.raw,
         caption: attachment.caption?.raw,
-        embedlink: attachment.link + '/embed',
+        embedlink: attachment.link + 'embed',
         poster: attachment.meta?.['_videopack-meta']?.poster
       };
       const updatedAttributes = Object.keys(newAttributes).reduce((acc, key) => {
@@ -1863,6 +1863,57 @@ const BelowVideo = ({
 
 /***/ },
 
+/***/ "./src/components/VideoPlayer/GenericPlayer.js"
+/*!*****************************************************!*\
+  !*** ./src/components/VideoPlayer/GenericPlayer.js ***!
+  \*****************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__);
+
+
+const GenericPlayer = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.forwardRef)(({
+  poster,
+  loop,
+  autoPlay,
+  preload,
+  controls,
+  muted,
+  playsInline,
+  className,
+  sources,
+  src
+}, ref) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("video", {
+  poster: poster,
+  loop: loop,
+  autoPlay: autoPlay,
+  preload: preload,
+  controls: controls,
+  muted: muted,
+  playsInline: playsInline,
+  width: "100%",
+  height: "100%",
+  className: className,
+  ref: ref,
+  children: [sources.map((source, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("source", {
+    src: source.src,
+    type: source.type
+  }, index)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("a", {
+    href: src,
+    children: src
+  })]
+}));
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (GenericPlayer);
+
+/***/ },
+
 /***/ "./src/components/VideoPlayer/MetaBar.js"
 /*!***********************************************!*\
   !*** ./src/components/VideoPlayer/MetaBar.js ***!
@@ -1950,7 +2001,7 @@ const MetaBar = ({
           className: 'meta-icons',
           children: [embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
             type: 'button',
-            className: shareIsOpen ? 'vjs-icon-cancel' : 'vjs-icon-share',
+            className: shareIsOpen ? 'videopack-icons close' : 'videopack-icons share',
             onClick: () => {
               setShareIsOpen(!shareIsOpen);
             }
@@ -2108,12 +2159,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
 /* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _MetaBar__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MetaBar */ "./src/components/VideoPlayer/MetaBar.js");
-/* harmony import */ var _VideoJs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./VideoJs */ "./src/components/VideoPlayer/VideoJs.js");
-/* harmony import */ var _BelowVideo__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./BelowVideo */ "./src/components/VideoPlayer/BelowVideo.js");
-/* harmony import */ var _VideoPlayer_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./VideoPlayer.scss */ "./src/components/VideoPlayer/VideoPlayer.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _GenericPlayer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./GenericPlayer */ "./src/components/VideoPlayer/GenericPlayer.js");
+/* harmony import */ var _VideoJs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./VideoJs */ "./src/components/VideoPlayer/VideoJs.js");
+/* harmony import */ var _BelowVideo__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./BelowVideo */ "./src/components/VideoPlayer/BelowVideo.js");
+/* harmony import */ var _VideoPlayer_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./VideoPlayer.scss */ "./src/components/VideoPlayer/VideoPlayer.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__);
 /* global MediaElementPlayer */
+
 
 
 
@@ -2169,6 +2222,17 @@ const VideoPlayer = ({
     }
     return sources;
   }, [sources, source_groups]);
+  const genericPlayerOptions = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => ({
+    poster,
+    loop,
+    autoPlay: actualAutoplay,
+    preload,
+    controls,
+    muted,
+    playsInline: playsinline,
+    sources: allSources,
+    src
+  }), [poster, loop, actualAutoplay, preload, controls, muted, playsinline, allSources, src]);
   const renderReady = allSources && allSources.length > 0 && allSources[0].src;
   const handlePlay = () => {
     if (wrapperRef.current) {
@@ -2227,33 +2291,6 @@ const VideoPlayer = ({
       setVideoJsOptions(options);
     }
   }, [autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, JSON.stringify(allSources), JSON.stringify(source_groups), embed_method]);
-  const videoSourceElements = () => {
-    return allSources.map((source, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("source", {
-      src: source.src,
-      type: source.type
-    }, index));
-  };
-  const GenericPlayer = () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("video", {
-    poster: poster,
-    loop: loop,
-    autoPlay: actualAutoplay,
-    preload: preload,
-    controls: controls,
-    muted: muted,
-    playsInline: playsinline,
-    width: "100%",
-    height: "100%",
-    className: embed_method === 'WordPress Default' ? 'wp-video-shortcode' : null,
-    ref: playerRef,
-    children: [videoSourceElements(), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("a", {
-      href: src,
-      children: src
-    })]
-  });
-  const WordPressDefaultPlayer = () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-    className: "wp-video",
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(GenericPlayer, {})
-  });
   const handleVideoPlayerReady = player => {
     playerRef.current = player;
     player.on('loadedmetadata', () => {
@@ -2272,20 +2309,30 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-    className: "videopack-wrapper meta-bar-visible",
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+    className: `videopack-wrapper meta-bar-visible ${skin || ''}`,
     ref: wrapperRef,
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
       className: "videopack-player",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_MetaBar__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_MetaBar__WEBPACK_IMPORTED_MODULE_2__["default"], {
         attributes: decodedAttributes
-      }), embed_method === 'Video.js' && videoJsOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_VideoJs__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      }), embed_method === 'Video.js' && videoJsOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_VideoJs__WEBPACK_IMPORTED_MODULE_4__["default"], {
         options: videoJsOptions,
         skin: skin,
         onPlay: handlePlay,
         onPause: handlePause
-      }), embed_method === 'WordPress Default' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(WordPressDefaultPlayer, {}), embed_method === 'None' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(GenericPlayer, {})]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_BelowVideo__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      }), embed_method === 'WordPress Default' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+        className: "wp-video",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_GenericPlayer__WEBPACK_IMPORTED_MODULE_3__["default"], {
+          ...genericPlayerOptions,
+          className: 'wp-video-shortcode',
+          ref: playerRef
+        })
+      }), embed_method === 'None' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_GenericPlayer__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        ...genericPlayerOptions,
+        ref: playerRef
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_BelowVideo__WEBPACK_IMPORTED_MODULE_5__["default"], {
       attributes: decodedAttributes
     })]
   });
@@ -2391,7 +2438,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
-/* harmony export */   getRecentVideos: () => (/* binding */ getRecentVideos),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
 /* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
@@ -2612,17 +2658,6 @@ const getFreemiusPage = async page => {
     });
   } catch (error) {
     console.error(`Error fetching Freemius page '${page}':`, error);
-    throw error;
-  }
-};
-const getRecentVideos = async posts => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/recent_videos?posts=${posts}`,
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching recent videos:', error);
     throw error;
   }
 };
