@@ -35,7 +35,7 @@ class Shortcode {
 				'id'              => null,
 				'orderby'         => 'menu_order ID',
 				'order'           => 'ASC',
-				'videos'          => -1,
+				'videos'          => $this->options['collection_video_limit'],
 				'start'           => '',
 				'gallery'         => 'false',
 				'gallery_source'  => 'current',

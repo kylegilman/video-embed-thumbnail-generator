@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import MetaBar from './MetaBar';
+import GenericPlayer from './GenericPlayer';
 import VideoJS from './VideoJs';
 import BelowVideo from './BelowVideo';
 import './VideoPlayer.scss';
@@ -62,7 +63,33 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		return sources;
 	}, [sources, source_groups]);
 
-	const renderReady = allSources && allSources.length > 0 && allSources[0].src;
+	const genericPlayerOptions = useMemo(
+		() => ({
+			poster,
+			loop,
+			autoPlay: actualAutoplay,
+			preload,
+			controls,
+			muted,
+			playsInline: playsinline,
+			sources: allSources,
+			src,
+		}),
+		[
+			poster,
+			loop,
+			actualAutoplay,
+			preload,
+			controls,
+			muted,
+			playsinline,
+			allSources,
+			src,
+		]
+	);
+
+	const renderReady =
+		allSources && allSources.length > 0 && allSources[0].src;
 
 	const handlePlay = () => {
 		if (wrapperRef.current) {
@@ -142,41 +169,6 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		embed_method,
 	]);
 
-	const videoSourceElements = () => {
-		return allSources.map((source, index) => (
-			<source key={index} src={source.src} type={source.type} />
-		));
-	};
-
-	const GenericPlayer = () => (
-		<video
-			poster={poster}
-			loop={loop}
-			autoPlay={actualAutoplay}
-			preload={preload}
-			controls={controls}
-			muted={muted}
-			playsInline={playsinline}
-			width="100%"
-			height="100%"
-			className={
-				embed_method === 'WordPress Default'
-					? 'wp-video-shortcode'
-					: null
-			}
-			ref={playerRef}
-		>
-			{videoSourceElements()}
-			<a href={src}>{src}</a>
-		</video>
-	);
-
-	const WordPressDefaultPlayer = () => (
-		<div className="wp-video">
-			<GenericPlayer />
-		</div>
-	);
-
 	const handleVideoPlayerReady = (player) => {
 		playerRef.current = player;
 		player.on('loadedmetadata', () => {
@@ -198,7 +190,10 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	}
 
 	return (
-		<div className="videopack-wrapper meta-bar-visible" ref={wrapperRef}>
+		<div
+			className={`videopack-wrapper meta-bar-visible ${skin || ''}`}
+			ref={wrapperRef}
+		>
 			<div className="videopack-player">
 				<MetaBar attributes={decodedAttributes} />
 				{embed_method === 'Video.js' && videoJsOptions && (
@@ -210,9 +205,17 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					/>
 				)}
 				{embed_method === 'WordPress Default' && (
-					<WordPressDefaultPlayer />
+					<div className="wp-video">
+						<GenericPlayer
+							{...genericPlayerOptions}
+							className={'wp-video-shortcode'}
+							ref={playerRef}
+						/>
+					</div>
 				)}
-				{embed_method === 'None' && <GenericPlayer />}
+				{embed_method === 'None' && (
+					<GenericPlayer {...genericPlayerOptions} ref={playerRef} />
+				)}
 			</div>
 			<BelowVideo attributes={decodedAttributes} />
 		</div>

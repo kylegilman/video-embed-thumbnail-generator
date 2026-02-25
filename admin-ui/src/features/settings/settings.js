@@ -16,7 +16,13 @@ import {
 	TabPanel,
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
-import { createRoot, useMemo, useState, useEffect } from '@wordpress/element';
+import {
+	createRoot,
+	useMemo,
+	useState,
+	useEffect,
+	useRef,
+} from '@wordpress/element';
 import { videopack } from '../../assets/icon';
 import PlayerSettings from './components/PlayerSettings';
 import VideoCollectionSettings from './components/VideoCollectionSettings';
@@ -32,6 +38,11 @@ const VideopackSettingsPage = () => {
 	const [isSettingsChanged, setIsSettingsChanged] = useState(false);
 	const defaultTab = window.location.hash.substring(1) || 'player';
 	const [activeTab, setActiveTab] = useState(defaultTab);
+	const settingsRef = useRef(settings);
+
+	useEffect(() => {
+		settingsRef.current = settings;
+	}, [settings]);
 
 	const testFfmpeg = (codec, resolution, rotate) => {
 		if (activeTab === 'encoding') {
@@ -53,8 +64,8 @@ const VideopackSettingsPage = () => {
 			settings.ffmpeg_exists === true
 		) {
 			setFfmpegTest({
-				command: __( 'Running test…', 'video-embed-thumbnail-generator' ),
-				output: __( 'Running test…', 'video-embed-thumbnail-generator' ),
+				command: __('Running test…', 'video-embed-thumbnail-generator'),
+				output: __('Running test…', 'video-embed-thumbnail-generator'),
 			});
 			testFfmpeg(
 				settings.sample_codec,
@@ -85,8 +96,20 @@ const VideopackSettingsPage = () => {
 	const debouncedSaveSettings = useDebounce((newSettings) => {
 		saveWPSettings(newSettings)
 			.then((response) => {
-				setSettings(response);
-				setIsSettingsChanged(false);
+				const currentSettings = settingsRef.current;
+				const nextSettings = { ...response };
+				let hasLocalChanges = false;
+
+				Object.keys(currentSettings).forEach((key) => {
+					if (currentSettings[key] !== newSettings[key]) {
+						nextSettings[key] = currentSettings[key];
+						hasLocalChanges = true;
+					}
+				});
+				setSettings(nextSettings);
+				if (!hasLocalChanges) {
+					setIsSettingsChanged(false);
+				}
 			})
 			.catch((error) => {
 				console.error('Error updating settings:', error);
@@ -106,8 +129,8 @@ const VideopackSettingsPage = () => {
 		return Object.keys(settings).reduce((acc, setting) => {
 			acc[setting] = (newValue) => {
 				setSettings((prevSettings) => ({
-					...prevSettings, // Spread existing properties of the settings state
-					[setting]: newValue, // Update the specific property that changed
+					...prevSettings,
+					[setting]: newValue,
 				}));
 				setIsSettingsChanged(true);
 			};
@@ -118,23 +141,23 @@ const VideopackSettingsPage = () => {
 	const tabs = [
 		{
 			name: 'player',
-			title: __( 'Video Player', 'video-embed-thumbnail-generator' ),
+			title: __('Video Player', 'video-embed-thumbnail-generator'),
 		},
 		{
 			name: 'thumbnails',
-			title: __( 'Thumbnails', 'video-embed-thumbnail-generator' ),
+			title: __('Thumbnails', 'video-embed-thumbnail-generator'),
 		},
 		{
 			name: 'gallery',
-			title: __( 'Video Collections', 'video-embed-thumbnail-generator' ),
+			title: __('Video Collections', 'video-embed-thumbnail-generator'),
 		},
 		{
 			name: 'encoding',
-			title: __( 'Encoding', 'video-embed-thumbnail-generator' ),
+			title: __('Encoding', 'video-embed-thumbnail-generator'),
 		},
 		{
 			name: 'admin',
-			title: __( 'Admin', 'video-embed-thumbnail-generator' ),
+			title: __('Admin', 'video-embed-thumbnail-generator'),
 		},
 	];
 
@@ -142,12 +165,15 @@ const VideopackSettingsPage = () => {
 		tabs.push(
 			{
 				name: 'account',
-				title: __( 'Freemius Account', 'video-embed-thumbnail-generator' ),
+				title: __(
+					'Freemius Account',
+					'video-embed-thumbnail-generator'
+				),
 				className: 'videopack-freemius-tab',
 			},
 			{
 				name: 'add-ons',
-				title: __( 'Add-ons', 'video-embed-thumbnail-generator' ),
+				title: __('Add-ons', 'video-embed-thumbnail-generator'),
 				className: 'videopack-freemius-tab',
 			}
 		);
@@ -232,7 +258,7 @@ const VideopackSettingsPage = () => {
 					icon={videopack}
 					size={40}
 				/>
-				{__( 'Videopack Settings', 'video-embed-thumbnail-generator' )}
+				{__('Videopack Settings', 'video-embed-thumbnail-generator')}
 			</h1>
 			<Panel>
 				<TabPanel
@@ -250,7 +276,10 @@ const VideopackSettingsPage = () => {
 						onClick={resetSettings}
 						className={'videopack-settings-reset'}
 					>
-						{__( 'Reset Settings', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Reset Settings',
+							'video-embed-thumbnail-generator'
+						)}
 					</Button>
 				</PanelRow>
 			</Panel>

@@ -211,20 +211,22 @@ class Attachment {
 							'post_parent' => $parent_id,
 						)
 					); // set post_parent field to the original video's post_parent //
-					if ( $this->options['delete_children'] != 'none' ) {
-						if ( $this->options['delete_children'] == 'all' ) {
-							wp_delete_attachment( $post->ID, true );
-						} elseif ( strpos( $post->post_mime_type, 'video' ) !== false ) {
-							wp_delete_attachment( $post->ID, true );
-						} //only delete videos
-					} elseif ( strpos( $post->post_mime_type, 'video' ) !== false ) {
-							$format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
+
+					$is_video = strpos( $post->post_mime_type, 'video' ) !== false;
+					$is_image = strpos( $post->post_mime_type, 'image' ) !== false;
+
+					if ( $is_image && $this->options['delete_child_thumbnails'] ) {
+						wp_delete_attachment( $post->ID, true );
+					} elseif ( $is_video && $this->options['delete_child_encoded'] ) {
+						wp_delete_attachment( $post->ID, true );
+					} elseif ( $is_video ) {
+						$format = get_post_meta( $post->ID, '_kgflashmediaplayer-format', true );
 						if ( $format ) {
 							$formats[ $format ] = $post->ID;
 						}
 					}
 				}//end loop
-				if ( $this->options['delete_children'] == 'none' ) { // find a child to be the new master video
+				if ( ! empty( $formats ) ) { // find a child to be the new master video
 					$video_formats = $this->options_manager->get_video_formats();
 					foreach ( $video_formats as $format => $format_stats ) {
 						if ( array_key_exists( $format, $formats ) ) {

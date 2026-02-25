@@ -128,26 +128,26 @@ export const deleteFile = async (attachmentId) => {
  * @param {string}            videoSrc     The URL of the video (used for filename).
  * @return {Promise<Object>} The response from the upload endpoint.
  */
-export const createThumbnailFromCanvas = ( canvas, attachmentId, videoSrc ) => {
-	return new Promise( ( resolve, reject ) => {
-		canvas.toBlob( async ( blob ) => {
-			if ( ! blob ) {
-				reject( new Error( 'Canvas is empty' ) );
+export const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
+	return new Promise((resolve, reject) => {
+		canvas.toBlob(async (blob) => {
+			if (!blob) {
+				reject(new Error('Canvas is empty'));
 				return;
 			}
 			try {
 				const formData = new FormData();
-				formData.append( 'file', blob, 'thumbnail.jpg' );
-				formData.append( 'attachment_id', attachmentId );
-				formData.append( 'post_name', getFilename( videoSrc ) );
+				formData.append('file', blob, 'thumbnail.jpg');
+				formData.append('attachment_id', attachmentId);
+				formData.append('post_name', getFilename(videoSrc));
 
-				const response = await uploadThumbnail( formData );
-				resolve( response );
-			} catch ( error ) {
-				reject( error );
+				const response = await uploadThumbnail(formData);
+				resolve(response);
+			} catch (error) {
+				reject(error);
 			}
-		}, 'image/jpeg' );
-	} );
+		}, 'image/jpeg');
+	});
 };
 
 export const uploadThumbnail = async (formData) => {
@@ -214,18 +214,6 @@ export const getFreemiusPage = async (page) => {
 	}
 };
 
-export const getRecentVideos = async (posts) => {
-	try {
-		return await apiFetch({
-			path: `/videopack/v1/recent_videos?posts=${posts}`,
-			method: 'GET',
-		});
-	} catch (error) {
-		console.error('Error fetching recent videos:', error);
-		throw error;
-	}
-};
-
 export const testFFmpegCommand = async (codec, resolution, rotate) => {
 	try {
 		return await apiFetch({
@@ -236,8 +224,6 @@ export const testFFmpegCommand = async (codec, resolution, rotate) => {
 		throw error;
 	}
 };
-
-
 
 export const getSettings = async () => {
 	try {

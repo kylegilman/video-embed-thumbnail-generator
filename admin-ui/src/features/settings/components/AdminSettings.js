@@ -16,8 +16,8 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		embeddable,
 		schema,
 		right_click,
-		delete_thumbnails,
-		delete_encoded,
+		delete_child_thumbnails,
+		delete_child_encoded,
 		template,
 		open_graph,
 		oembed_provider,
@@ -297,7 +297,8 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 									'Thumbnails',
 									'video-embed-thumbnail-generator'
 								)}
-								checked={delete_thumbnails}
+								checked={delete_child_thumbnails}
+								onChange={changeHandlerFactory.delete_child_thumbnails}
 							/>
 							<CheckboxControl
 								__nextHasNoMarginBottom
@@ -305,7 +306,8 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 									'Encoded Videos',
 									'video-embed-thumbnail-generator'
 								)}
-								checked={delete_encoded}
+								checked={delete_child_encoded}
+								onChange={changeHandlerFactory.delete_child_encoded}
 							/>
 						</BaseControl>
 					</FlexItem>

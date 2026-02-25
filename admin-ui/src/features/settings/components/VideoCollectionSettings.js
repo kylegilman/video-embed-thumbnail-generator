@@ -1,5 +1,4 @@
-import { getRecentVideos } from '../../../utils/utils';
-import { useEffect, useState } from '@wordpress/element';
+import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import {
 	PanelBody,
@@ -9,16 +8,17 @@ import {
 	ToggleControl,
 	Button,
 	Flex,
-	FlexBlock,
 	FlexItem,
 } from '@wordpress/components';
 import { sortAscending, sortDescending } from '../../../assets/icon';
 import VideoGallery from '../../../components/VideoGallery/VideoGallery';
+import TextControlOnBlur from './TextControlOnBlur';
 
 const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	const {
 		embed_method,
 		layout,
+		collection_video_limit,
 		gallery_columns,
 		gallery_end,
 		gallery_per_page,
@@ -29,37 +29,23 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		gallery_order,
 	} = settings;
 
-	const [galleryAttributes, setGalleryAttributes] = useState(null);
-	const [recentVideos, setRecentVideos] = useState(null);
-
-	useEffect(() => {
-		getRecentVideos('12')
-			.then((response) => {
-				setRecentVideos(response);
-			})
-			.catch((error) => {
-				console.error('Error fetching videos:', error);
-			});
-	}, []);
-
-	useEffect(() => {
-		if (recentVideos && Array.isArray(recentVideos)) {
-			setGalleryAttributes({
-				...settings,
-				gallery_include: recentVideos.join(','),
-			});
+	const limit = useMemo(() => {
+		const parsedLimit = parseInt(collection_video_limit, 10);
+		if (isNaN(parsedLimit) || parsedLimit <= 0) {
+			return 12;
 		}
-	}, [
-		gallery_columns,
-		gallery_end,
-		gallery_per_page,
-		gallery_title,
-		gallery_pagination,
-		gallery_orderby,
-		gallery_order,
-		recentVideos,
-		skin,
-	]);
+		return parsedLimit;
+	}, [collection_video_limit]);
+
+	const galleryAttributes = useMemo(() => {
+		return {
+			...settings,
+			gallery_source: '',
+			gallery_id: '',
+			videos: limit,
+			gallery_include: '',
+		};
+	}, [settings, limit]);
 
 	const galleryEndOptions = [
 		{
@@ -138,6 +124,38 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					onChange={changeHandlerFactory.gallery_columns}
 				/>
 			</div>
+			{!gallery_pagination && (
+				<div className="videopack-setting-auto-width">
+					<TextControlOnBlur
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__(
+							'Video Limit:',
+							'video-embed-thumbnail-generator'
+						)}
+						help={__(
+							'Maximum number of videos to show in a collection when pagination is disabled.',
+							'video-embed-thumbnail-generator'
+						)}
+						type="text"
+						value={
+							Number(collection_video_limit) === -1
+								? __('No limit', 'video-embed-thumbnail-generator')
+								: collection_video_limit
+						}
+						onChange={(value) => {
+							const intValue = parseInt(value, 10);
+							if (isNaN(intValue) || intValue <= 0) {
+								changeHandlerFactory.collection_video_limit(-1);
+							} else {
+								changeHandlerFactory.collection_video_limit(
+									intValue
+								);
+							}
+						}}
+					/>
+				</div>
+			)}
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={__(
@@ -232,7 +250,10 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			{galleryAttributes && (
 				<div className="videopack-sample-gallery">
 					<span className="videopack-settings-label">
-						{__( 'Sample Gallery:', 'video-embed-thumbnail-generator' )}
+						{__(
+							'Sample Gallery:',
+							'video-embed-thumbnail-generator'
+						)}
 					</span>
 					<VideoGallery attributes={galleryAttributes} />
 				</div>

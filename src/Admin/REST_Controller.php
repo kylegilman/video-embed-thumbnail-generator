@@ -65,21 +65,6 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/recent_videos',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'recent_videos' ),
-				'permission_callback' => '__return_true',
-				'args'                => array(
-					'posts' => array(
-						'type' => 'number',
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/video_gallery',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -99,7 +84,7 @@ class REST_Controller extends \WP_REST_Controller {
 						'type' => 'number',
 					),
 					'gallery_id'       => array(
-						'type' => 'number',
+						'type' => array( 'number', 'string' ),
 					),
 					'gallery_include'  => array(
 						'type' => 'string',
@@ -813,46 +798,6 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
-	 * REST callback to get recent video attachments.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return array An array of attachment IDs.
-	 */
-	public function recent_videos( \WP_REST_Request $request ) {
-
-		$response = array();
-
-		$args = array(
-			'post_type'      => 'attachment',
-			'orderby'        => 'post_date',
-			'order'          => 'DESC',
-			'post_mime_type' => 'video',
-			'posts_per_page' => $request->get_param( 'posts' ),
-			'post_status'    => 'published',
-			'fields'         => 'ids',
-			'meta_query'     => array(
-				'relation' => 'AND',
-				array(
-					'key'     => '_kgflashmediaplayer-externalurl',
-					'compare' => 'NOT EXISTS',
-				),
-				array(
-					'key'     => '_kgflashmediaplayer-format',
-					'compare' => 'NOT EXISTS',
-				),
-			),
-		);
-
-		$attachment_ids = new \WP_Query( $args );
-
-		if ( $attachment_ids->have_posts() ) {
-			$response = $attachment_ids->posts;
-		}
-
-		return $response;
-	}
-
-	/**
 	 * REST callback to get video gallery data.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
@@ -865,7 +810,7 @@ class REST_Controller extends \WP_REST_Controller {
 		$page         = $request->get_param( 'page_number' ) ?: 1;
 
 		// If filtering by category or tag and no specific gallery_id (post parent) was requested, clear the default ID.
-		if ( in_array( $gallery_atts['gallery_source'], array( 'category', 'tag' ) ) && ! $request->get_param( 'gallery_id' ) ) {
+		if ( in_array( $gallery_atts['gallery_source'], array( 'category', 'tag' ), true ) && ! $request->get_param( 'gallery_id' ) ) {
 			$gallery_atts['gallery_id'] = '';
 		}
 
@@ -881,9 +826,11 @@ class REST_Controller extends \WP_REST_Controller {
 			}
 		}
 
+		$max_num_pages = ( ! empty( $gallery_atts['gallery_pagination'] ) ) ? (int) $attachments->max_num_pages : 1;
+
 		$response = array(
 			'videos'        => $videos_data,
-			'max_num_pages' => (int) $attachments->max_num_pages,
+			'max_num_pages' => $max_num_pages,
 			'current_page'  => (int) $page,
 		);
 
