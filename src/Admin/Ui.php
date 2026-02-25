@@ -109,6 +109,7 @@ class Ui {
 			'auto_thumb_number'  => $options['auto_thumb_number'],
 			'auto_thumb_position'=> $options['auto_thumb_position'],
 			'ffmpeg_thumb_watermark' => $options['ffmpeg_thumb_watermark'],
+			'embed_method'       => $options['embed_method'],
 			'contentSize'        => isset( $global_settings['layout']['contentSize'] ) ? $global_settings['layout']['contentSize'] : false,
 			'wideSize'           => isset( $global_settings['layout']['wideSize'] ) ? $global_settings['layout']['wideSize'] : false,
 		);
@@ -160,10 +161,16 @@ class Ui {
 				$freemius_style_dependencies = array( 'fs-addons', 'fs-account', 'fs_dialog_boxes' );
 			}
 
-			// Always enqueue player
-			$video_js_player = new \Videopack\Frontend\Video_Players\Player_Video_Js( $this->options_manager );
+			// Always enqueue players for settings preview.
+			$video_js_player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'Video.js', $this->options_manager );
+			$video_js_player->register_scripts();
 			$video_js_player->enqueue_player_scripts();
 			$video_js_player->enqueue_styles();
+
+			$wp_player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'WordPress Default', $this->options_manager );
+			$wp_player->register_scripts();
+			$wp_player->enqueue_player_scripts();
+			$wp_player->enqueue_styles();
 
 			wp_enqueue_script(
 				'videopack-settings',
