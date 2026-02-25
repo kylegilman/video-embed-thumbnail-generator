@@ -13,28 +13,24 @@ class Player_WordPress_Default extends Player {
 
 		parent::register_scripts();
 
-		wp_register_script(
-			'mejs_sourcechooser',
-			plugins_url( '/js/mejs-source-chooser.js', __FILE__ ),
-			array( 'mediaelement' ),
-			VIDEOPACK_VERSION,
-			true
-		);
+	}
 
-		wp_register_script(
-			'mejs-speed',
-			plugins_url( '/js/mejs-speed.js', __FILE__ ),
-			array( 'mediaelement' ),
-			VIDEOPACK_VERSION,
-			true
-		);
+	public function filter_block_metadata( $metadata ) {
+		$metadata['script'][] = 'wp-mediaelement';
+		$metadata['style'][]  = 'wp-mediaelement';
+		return $metadata;
+	}
+
+	public function enqueue_player_scripts(): void {
+		wp_enqueue_script( 'wp-mediaelement' );
+		wp_enqueue_style( 'wp-mediaelement' );
 	}
 
 	public function enqueue_styles() {
 
 		parent::enqueue_styles();
 
-		wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', VIDEOPACK_VIDEOJS_VERSION ); // gives access to video-js icons for resolution gear selector and social logos
+		//wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', VIDEOPACK_VIDEOJS_VERSION ); // gives access to video-js icons for resolution gear selector and social logos
 	}
 
 	/**
@@ -46,34 +42,13 @@ class Player_WordPress_Default extends Player {
 	 */
 	public function filter_video_vars( array $video_variables, array $atts ): array {
 		$mejs_settings = array(
-			'features'    => array( 'playpause', 'progress', 'volume', 'tracks' ),
-			'classPrefix' => 'mejs-',
-			'stretching'  => 'responsive',
-			'pluginPath'  => includes_url( 'js/mediaelement/', 'relative' ),
-			'success'     => 'kgvid_mejs_success', // This function needs to be defined somewhere, likely in videopack.js or a custom script.
+			'features'              => array( 'playpause', 'progress', 'volume', 'tracks', 'sourcechooser' ),
+			'classPrefix'           => 'mejs-',
+			'stretching'            => 'responsive',
+			'pluginPath'            => includes_url( 'js/mediaelement/', 'relative' ),
+			'audioShortcodeLibrary' => 'mediaelement',
+			'videoShortcodeLibrary' => 'mediaelement',
 		);
-
-		// Add sourcechooser feature if multiple sources are available and option is enabled.
-		$has_multiple_resolutions = false;
-		if ( $this->get_sources() ) {
-			$resolutions = array();
-			foreach ( $this->get_sources() as $source_data ) {
-				if ( isset( $source_data['resolution'] ) ) {
-					$resolutions[] = $source_data['resolution'];
-				}
-			}
-			if ( count( array_unique( $resolutions ) ) > 1 ) {
-				$has_multiple_resolutions = true;
-			}
-		}
-
-		if ( $has_multiple_resolutions ) {
-			// Ensure mejs_sourcechooser is enqueued.
-			wp_enqueue_script( 'mejs_sourcechooser' );
-			if ( ! in_array( 'sourcechooser', $mejs_settings['features'], true ) ) {
-				$mejs_settings['features'][] = 'sourcechooser';
-			}
-		}
 
 		// Add speed feature if enabled.
 		if ( $atts['playback_rate'] ) {
