@@ -1,0 +1,75 @@
+@import "../start";
+
+.fs-tooltip-trigger
+{
+    &:not(a)
+    {
+        cursor: help;
+    }
+
+    position: relative;
+
+    .dashicons {
+        float: none !important;
+    }
+
+    .fs-tooltip
+    {
+        opacity:       0;
+        visibility:    hidden;
+        transition:    opacity 0.3s ease-in-out;
+        position:      absolute;
+        background:    $tooltip-bkg-color;
+        color:         $tooltip-color !important;
+        font-family:   'arial', serif;
+        font-size:     12px;
+        padding:       10px;
+        z-index:       999999;
+        bottom:        100%;
+        margin-bottom: 5px;
+        left:          -17px;
+        right:         0;
+        border-radius: 5px;
+        box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+        line-height:   1.3em;
+        font-weight:   bold;
+        text-align:    left;
+        text-transform: none !important;
+
+        .rtl &
+        {
+            text-align: right;
+            left: auto;
+            right: -17px;
+        }
+
+        &::after
+        {
+            content:      ' ';
+            display:      block;
+            width:        0;
+            height:       0;
+            border-style: solid;
+            border-width: 5px 5px 0 5px;
+            border-color: $tooltip-bkg-color transparent transparent transparent;
+            position:     absolute;
+            top:          100%;
+            left:         21px;
+
+            .rtl &
+            {
+                right: 21px;
+                left:  auto;
+            }
+        }
+    }
+
+    &:hover
+    {
+        .fs-tooltip
+        {
+            visibility: visible;
+            opacity:    1;
+        }
+    }
+}
