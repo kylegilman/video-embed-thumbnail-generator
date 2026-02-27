@@ -33,20 +33,73 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 				super( player, options );
 
 				this.resolution = options.res;
+				this.codec = options.codec;
 				this.on( [ 'click', 'tap' ], this.onClick );
 
 				player.on( 'changeRes', () => {
-					this.selected( this.resolution === player.getCurrentRes() );
+					const is_current_res = this.resolution.toString() === player.getCurrentRes().toString();
+					let is_selected_now = is_current_res;
+					const has_multiple_codecs = player.source_groups && Object.keys( player.source_groups ).length > 1;
+
+					if ( has_multiple_codecs ) {
+						is_selected_now = is_current_res && ( this.codec === player.getCurrentCodec() );
+					}
+
+					this.selected( is_selected_now );
 					this.call_count = 0;
 				} );
 			}
 
 			onClick() {
-				if ( this.call_count > 0 ) {
+				if ( this.call_count > 0 ) { return; }
+				this.player().changeRes( this.resolution, this.codec );
+				this.call_count++;
+			}
+		}
+
+		class CodecMenuItem extends MenuItem {
+			constructor(player, options) {
+				super(player, options);
+				this.on('mouseenter', this.handleMouseEnter);
+			}
+
+			handleMouseEnter() {
+				this.closeOtherSubmenus();
+			}
+
+			closeOtherSubmenus() {
+				const parent = this.parentComponent_;
+				if (parent && parent.children) {
+					parent.children().forEach(child => {
+						if (child !== this && child.hasClass && child.hasClass('vjs-has-submenu')) {
+							child.removeClass('vjs-submenu-open');
+						}
+					});
+				}
+			}
+
+			handleClick(event) {
+				// Handle double-fire from tap+click
+				if (event.type === 'click' && this.tapHandled_) {
+					this.tapHandled_ = false;
+					event.preventDefault();
+					event.stopImmediatePropagation();
 					return;
 				}
-				this.player().changeRes( this.resolution );
-				this.call_count++;
+				if (event.type === 'tap') {
+					this.tapHandled_ = true;
+					setTimeout(() => this.tapHandled_ = false, 500);
+				}
+
+				// Prevent the menu from closing when clicking a codec
+				event.preventDefault();
+				event.stopImmediatePropagation();
+
+				const wasOpen = this.hasClass('vjs-submenu-open');
+
+				// Close all other submenus
+				this.closeOtherSubmenus();
+				this.toggleClass('vjs-submenu-open', !wasOpen);
 			}
 		}
 
@@ -82,19 +135,20 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 						for (const source of group.sources) {
 							const resolution = source.resolution || source['data-res'];
 							if (resolution) {
-								resolutionItems.push(new ResolutionMenuItem(player, { res: resolution, selectable: true }));
+								resolutionItems.push(new ResolutionMenuItem(player, { res: resolution, codec: groupId, selectable: true }));
 							}
 						}
 
 						if (resolutionItems.length > 0) {
-							const subMenu = new Menu(player, {
-								items: resolutionItems
-							});
-							const menuItem = new MenuItem(player, {
+							const menuItem = new CodecMenuItem(player, {
 								label: group.label,
-								selectable: true,
+								selectable: false,
 							});
+							menuItem.el().classList.add('vjs-has-submenu');
+
+							const subMenu = new Menu(player);
 							menuItem.addChild(subMenu);
+							resolutionItems.forEach(item => subMenu.addChild(item));
 							items.push(menuItem);
 						}
 					}
@@ -146,39 +200,42 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 			const sources = this.options_.sources;
 			const available_res = { length: 0 };
 			const source_groups = options.source_groups || {};
+			const has_multiple_codecs = source_groups && Object.keys( source_groups ).length > 1;
 
-			const all_sources = Object.values(source_groups).flatMap(group => group.sources);
+			if ( ! has_multiple_codecs ) {
+				const sources_for_res_map = ( source_groups && Object.keys( source_groups ).length === 1 ) ?
+					Object.values( source_groups )[0].sources :
+					sources;
 
-			const sources_for_res_map = all_sources.length > 0 ? all_sources : sources;
+				for ( let i = sources_for_res_map.length - 1; i >= 0; i-- ) {
+					const source = sources_for_res_map[ i ];
+					const current_res = source.resolution || source[ 'data-res' ];
+					if ( ! current_res ) {
+						continue;
+					}
 
-			for ( let i = sources_for_res_map.length - 1; i >= 0; i-- ) {
-				const source = sources_for_res_map[ i ];
-				const current_res = source.resolution || source[ 'data-res' ];
-				if ( ! current_res ) {
-					continue;
-				}
+					if ( ! ( current_res in available_res ) ) {
+						available_res.length++;
+					}
+					available_res[ current_res ] = source;
 
-				if ( ! ( current_res in available_res ) ) {
-					available_res.length++;
-				}
-				available_res[ current_res ] = source;
-
-				if ( current_res === player.localize('Full') ) {
-					player.on( 'loadedmetadata', function() {
-						if ( ! Number.isNaN( player.videoHeight() ) ) {
-							const resMenu = player.controlBar.getChild( 'resolutionSelector' );
-							if ( resMenu ) {
-								const fullResEl = resMenu.$( 'li.vjs-menu-item' ).find( ( el ) => el.textContent.includes( player.localize('Full') ) );
-								if ( fullResEl ) {
-									fullResEl.innerHTML = `${ player.videoHeight() }p`;
+					if ( current_res === player.localize('Full') ) {
+						player.on( 'loadedmetadata', function() {
+							if ( ! Number.isNaN( player.videoHeight() ) ) {
+								const resMenu = player.controlBar.getChild( 'resolutionSelector' );
+								if ( resMenu ) {
+									const fullResEl = resMenu.$( 'li.vjs-menu-item' ).find( ( el ) => el.textContent.includes( player.localize('Full') ) );
+									if ( fullResEl ) {
+										fullResEl.innerHTML = `${ player.videoHeight() }p`;
+									}
 								}
 							}
-						}
-					} );
+						} );
+					}
 				}
 			}
 
-			if ( available_res.length < 2 && Object.keys(source_groups).length < 2) {
+			if ( ( ! has_multiple_codecs && available_res.length < 2 ) ) {
 				return;
 			}
 
@@ -186,8 +243,31 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 				return player.currentRes || ( sources[ 0 ] ? ( sources[ 0 ].resolution || sources[ 0 ][ 'data-res' ] ) : '' ) || '';
 			};
 
-			player.changeRes = function( target_resolution ) {
-				if ( player.getCurrentRes() === target_resolution || ! player.availableRes || ! player.availableRes[ target_resolution ] ) {
+			player.getCurrentCodec = function() {
+				return player.currentCodec || '';
+			};
+
+			player.changeRes = function( target_resolution, target_codec_id ) {
+				const current_res = player.getCurrentRes();
+				const current_codec_id = player.getCurrentCodec();
+
+				if ( current_res === target_resolution && ( ! target_codec_id || current_codec_id === target_codec_id ) ) {
+					return;
+				}
+
+				let target_source = null;
+
+				if ( has_multiple_codecs && target_codec_id ) {
+					if ( player.source_groups[ target_codec_id ] ) {
+						target_source = player.source_groups[ target_codec_id ].sources.find(
+							( s ) => ( s.resolution || s[ 'data-res' ] ) === target_resolution
+						);
+					}
+				} else {
+					target_source = player.availableRes[ target_resolution ];
+				}
+
+				if ( ! target_source ) {
 					return;
 				}
 
@@ -218,7 +298,7 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 					video.parentNode.appendChild( canvas );
 				}
 
-				player.src( player.availableRes[ target_resolution ] );
+				player.src( target_source );
 				player.one( 'loadedmetadata', function() {
 					if ( current_time > 0 ) {
 						player.currentTime( current_time );
@@ -234,6 +314,9 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 				} );
 
 				player.currentRes = target_resolution;
+				if ( target_codec_id ) {
+					player.currentCodec = target_codec_id;
+				}
 				player.trigger( 'changeRes' );
 			};
 
@@ -241,8 +324,9 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 			player.ready( () => {
 				player.getChild( 'controlBar' ).addChild( resolutionSelector, {}, 11 );
 				const default_res = options.default_res;
-				if ( default_res && available_res[ default_res ] ) {
-					player.changeRes( default_res );
+				const default_codec = options.default_codec;
+				if ( default_res ) {
+					player.changeRes( default_res, default_codec );
 				}
 			} );
 		} );

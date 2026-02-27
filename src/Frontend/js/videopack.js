@@ -334,10 +334,73 @@
 
 				t.addControlElement(player.sourcechooserButton, 'sourcechooser');
 
-				for (let i = 0, total = sources.length; i < total; i++) {
-					const src = sources[i];
-					if (src.type !== undefined && typeof media.canPlayType === 'function') {
-						player.addSourceButton(src, src.title, src.type, media.src === src.src);
+				let source_groups = null;
+				if ( window.videopack && window.videopack.player_data ) {
+					const wrapper = t.node.closest( '.videopack-player' );
+					if ( wrapper ) {
+						let id = wrapper.dataset.id;
+						if ( String( id ).startsWith( 'gallery_' ) ) {
+							id = `gallery_${ id.split( '_' )[ 1 ] }`;
+						}
+						const vars = window.videopack.player_data[ 'videopack_player_' + id ];
+						if ( vars ) {
+							source_groups = vars.source_groups;
+						}
+					}
+				}
+
+				const hasMultipleCodecs = source_groups && Object.keys( source_groups ).length > 1;
+
+				if ( hasMultipleCodecs ) {
+					for ( const codecId in source_groups ) {
+						const group = source_groups[ codecId ];
+						const codecLi = document.createElement( 'li' );
+						codecLi.className = `${ t.options.classPrefix }sourcechooser-codec-item`;
+						const span = document.createElement( 'span' );
+						span.textContent = group.label || codecId;
+						codecLi.appendChild( span );
+
+						const subMenu = document.createElement( 'ul' );
+						subMenu.className = `${ t.options.classPrefix }sourcechooser-submenu`;
+						codecLi.appendChild( subMenu );
+
+						t.sourcechooserButton.querySelector( 'ul' ).appendChild( codecLi );
+
+						for ( const groupSource of group.sources ) {
+							const isCurrent = media.src === groupSource.src;
+							player.addSourceButton( groupSource, groupSource.label, groupSource.type, isCurrent, subMenu );
+						}
+
+						codecLi.addEventListener( 'mouseenter', () => {
+							const allCodecItems = t.sourcechooserButton.querySelectorAll( `.${ t.options.classPrefix }sourcechooser-codec-item` );
+							allCodecItems.forEach( ( el ) => {
+								if ( el !== codecLi ) {
+									el.classList.remove( 'mejs-submenu-open' );
+								}
+							} );
+						} );
+
+						codecLi.addEventListener( 'click', ( e ) => {
+							if ( e.target === codecLi || e.target === span ) {
+								e.preventDefault();
+								e.stopPropagation();
+								const wasOpen = codecLi.classList.contains( 'mejs-submenu-open' );
+								const allCodecItems = t.sourcechooserButton.querySelectorAll( `.${ t.options.classPrefix }sourcechooser-codec-item` );
+								allCodecItems.forEach( ( el ) => {
+									el.classList.remove( 'mejs-submenu-open' );
+								} );
+								if ( ! wasOpen ) {
+									codecLi.classList.add( 'mejs-submenu-open' );
+								}
+							}
+						} );
+					}
+				} else {
+					for ( let i = 0, total = sources.length; i < total; i++ ) {
+						const src = sources[ i ];
+						if ( src.type !== undefined && typeof media.canPlayType === 'function' ) {
+							player.addSourceButton( src, src.title, src.type, media.src === src.src );
+						}
 					}
 				}
 
@@ -459,20 +522,29 @@
 			 * @param {String} type
 			 * @param {Boolean} isCurrent
 			 */
-			addSourceButton (src, label, type, isCurrent)  {
+			addSourceButton (src, label, type, isCurrent, container)  {
 				const t = this;
 				const sourceUrl = src.src;
 				// Prioritize data-res, fallback to the title (passed as label), and finally the src URL.
-				const resolutionLabel = ( src.dataset && src.dataset.res ) ? `${src.dataset.res}p` : ( label || sourceUrl );
+				let resolutionLabel = label || sourceUrl;
+				if ( src.dataset && src.dataset.res ) {
+					resolutionLabel = `${src.dataset.res}p`;
+				} else if ( src.resolution ) {
+					resolutionLabel = `${src.resolution}p`;
+				}
 
 				// Create a unique ID from the source URL to avoid collisions.
 				const inputId = `${t.id}_sourcechooser_${sourceUrl.replace( /[^a-zA-Z0-9]/g, '' )}`;
 
-				t.sourcechooserButton.querySelector('ul').innerHTML += `<li class="${isCurrent ? 'sourcechooser-selected' : ''}">` +
-					`<input type="radio" name="${t.id}_sourcechooser" id="${inputId}" ` +
+				const target = container || t.sourcechooserButton.querySelector( 'ul' );
+				const li = document.createElement( 'li' );
+				if ( isCurrent ) {
+					li.className = 'sourcechooser-selected';
+				}
+				li.innerHTML = `<input type="radio" name="${t.id}_sourcechooser" id="${inputId}" ` +
 						`role="menuitemradio" value="${sourceUrl}" ${(isCurrent ? 'checked="checked"' : '')} aria-selected="${isCurrent}"/>` +
-					`<label for="${inputId}" aria-hidden="true">${resolutionLabel}</label>` +
-				`</li>`;
+					`<label for="${inputId}" aria-hidden="true">${resolutionLabel}</label>`;
+				target.appendChild( li );
 
 				t.adjustSourcechooserBox();
 			},
@@ -671,9 +743,15 @@
 						force_types: [ 'video/mp4' ],
 						source_groups: source_groups,
 					};
-					const defaultResSource = sources.find( ( s ) => true === s.dataset.default_res );
+					const defaultResSource = sources.find( ( s ) => '1' === s.dataset.default_res );
 					if ( defaultResSource ) {
 						videojsOptions.plugins.resolutionSelector.default_res = defaultResSource.dataset.res;
+						for ( const groupId in source_groups ) {
+							if ( source_groups[ groupId ].sources.some( ( s ) => s.src === defaultResSource.src ) ) {
+								videojsOptions.plugins.resolutionSelector.default_codec = groupId;
+								break;
+							}
+						}
 					}
 				} else {
 					// eslint-disable-next-line no-console
