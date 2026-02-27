@@ -17,15 +17,14 @@ import {
 	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	PanelBody,
 	PanelRow,
-	RadioControl,
 	RangeControl,
 	SelectControl,
 	TextareaControl,
 	ToggleControl,
-	Tooltip,
 } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 import TextControlOnBlur from './TextControlOnBlur';
+import PerCodecQualitySettings from './PerCodecQualitySettings';
 
 const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const {
@@ -173,176 +172,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		);
 	};
 
-	const PerCodecQualitySettings = ({ codec }) => {
-		const [bitrates, setBitrates] = useState([]);
-		const { resolutions } = videopack_config;
-		const codecEncodeSettings = encode[codec.id] || {};
-		const {
-			rate_control: currentRateControl = codec.supported_rate_controls[0],
-			crf: currentCrf = codec.rate_control.crf.default,
-			vbr: currentVbr = codec.rate_control.vbr.default,
-		} = codecEncodeSettings;
-
-		const handleSettingChange = (key, value) => {
-			changeHandlerFactory.encode({
-				...encode,
-				[codec.id]: {
-					...encode[codec.id],
-					[key]: value,
-				},
-			});
-		};
-
-		useEffect(() => {
-			const newBitrates = [];
-			const vbrSettings = codec.rate_control.vbr;
-
-			resolutions.forEach((res) => {
-				const bitrate = Math.round(
-					currentVbr * 0.001 * res.width * res.height +
-						vbrSettings.constant
-				);
-				newBitrates.push(`${res.name} = ${bitrate}kbps`);
-			});
-			setBitrates(newBitrates);
-		}, [currentVbr, codec]);
-
-		return (
-			<div
-				key={codec.id}
-				className="videopack-per-codec-quality-settings"
-			>
-				<h4 className="videopack-codec-quality-header">{codec.name}</h4>
-				{codec.supported_rate_controls.length > 1 && (
-					<RadioControl
-						label={__(
-							'Primary rate control:',
-							'video-embed-thumbnail-generator'
-						)}
-						selected={currentRateControl}
-						className={'videopack-component-margin'}
-						onChange={(value) =>
-							handleSettingChange('rate_control', value)
-						}
-						options={[
-							{
-								label: __(
-									'Constant Rate Factor',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'crf',
-							},
-							{
-								label: __(
-									'Average Bitrate',
-									'video-embed-thumbnail-generator'
-								),
-								value: 'vbr',
-							},
-						]}
-						disabled={ffmpeg_exists !== true}
-					/>
-				)}
-
-				{currentRateControl === 'crf' && (
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Constant Rate Factor (CRF):',
-							'video-embed-thumbnail-generator'
-						)}
-						value={currentCrf}
-						className="videopack-settings-slider"
-						onChange={(value) => handleSettingChange('crf', value)}
-						min={codec.rate_control.crf.min}
-						max={codec.rate_control.crf.max}
-						step={1}
-						marks={generateMarks(codec.id, 'crf')}
-						disabled={ffmpeg_exists !== true}
-					/>
-				)}
-
-				{currentRateControl === 'vbr' && (
-					<RangeControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Average Bitrate:',
-							'video-embed-thumbnail-generator'
-						)}
-						value={currentVbr}
-						className="videopack-settings-slider"
-						onChange={(value) => handleSettingChange('vbr', value)}
-						min={0.01}
-						max={5}
-						step={0.01}
-						disabled={ffmpeg_exists !== true}
-						help={bitrates.map((text, index) => (
-							<span key={index}>{text}</span>
-						))}
-					/>
-				)}
-				{codec.id === 'h264' && (
-					<div className="videopack-setting-reduced-width">
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'H.264 profile',
-								'video-embed-thumbnail-generator'
-							)}
-							value={h264_profile}
-							onChange={changeHandlerFactory.h264_profile}
-							options={h264ProfileOptions}
-							disabled={ffmpeg_exists !== true}
-						/>
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'H.264 level',
-								'video-embed-thumbnail-generator'
-							)}
-							value={h264_level}
-							onChange={changeHandlerFactory.h264_level}
-							options={h264LevelOptions}
-							disabled={ffmpeg_exists !== true}
-						/>
-					</div>
-				)}
-				{codec.id === 'h265' && (
-					<div className="videopack-setting-reduced-width">
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'H.265 profile',
-								'video-embed-thumbnail-generator'
-							)}
-							value={h265_profile}
-							onChange={changeHandlerFactory.h265_profile}
-							options={h265ProfileOptions}
-							disabled={ffmpeg_exists !== true}
-						/>
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'H.265 level',
-								'video-embed-thumbnail-generator'
-							)}
-							value={h265_level}
-							onChange={changeHandlerFactory.h265_level}
-							options={h265LevelOptions}
-							disabled={ffmpeg_exists !== true}
-						/>
-					</div>
-				)}
-			</div>
-		);
-	};
-
 	const errorEmailOptions = () => {
 		const authorizedUsers = [
 			{
@@ -434,109 +263,6 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		}
 		return marks;
 	};
-
-	const generateMarks = (codecId, type) => {
-		const codec = videopack_config.codecs.find((c) => c.id === codecId);
-		if (!codec) {
-			return [];
-		}
-
-		const rateControl = codec.rate_control[type];
-		if (!rateControl) {
-			return [];
-		}
-
-		const {
-			min,
-			max,
-			labels: originalLabels = {},
-			default: defaultValue,
-		} = rateControl;
-		const labels = { ...originalLabels }; // create a mutable copy
-
-		// Add the 'Default' label if there isn't already a label for the default value
-		if (defaultValue !== undefined && !labels[defaultValue]) {
-			labels[defaultValue] = sprintf(
-				/* translators: %d: CRF value. */
-				__('%d: default', 'video-embed-thumbnail-generator'),
-				defaultValue
-			);
-		}
-
-		const marks = [];
-
-		for (let i = min; i <= max; i++) {
-			if (labels && labels[i]) {
-				marks.push({ value: i, label: labels[i] });
-			} else if (i % 5 === 0) {
-				const labelExistsNearby = Object.keys(labels).some((label) => {
-					const distance = Math.abs(i - label);
-					return distance > 0 && distance < 5;
-				});
-				if (!labelExistsNearby) {
-					marks.push({ value: i, label: String(i) });
-				}
-			}
-		}
-
-		return marks;
-	};
-
-	const h264ProfileOptions = [
-		{ value: 'none', label: __('None', 'video-embed-thumbnail-generator') },
-		{ value: 'baseline', label: 'baseline' },
-		{ value: 'main', label: 'main' },
-		{ value: 'high', label: 'high' },
-		{ value: 'high10', label: 'high10' },
-		{ value: 'high422', label: 'high422' },
-		{ value: 'high444', label: 'high444' },
-	];
-
-	const h265ProfileOptions = [
-		{ value: 'none', label: __('None', 'video-embed-thumbnail-generator') },
-		{ value: 'main', label: 'main' },
-		{ value: 'main10', label: 'main10' },
-	];
-
-	const h265LevelOptions = [
-		{ value: 'none', label: __('None', 'video-embed-thumbnail-generator') },
-		{ value: '1', label: '1' },
-		{ value: '2', label: '2' },
-		{ value: '2.1', label: '2.1' },
-		{ value: '3', label: '3' },
-		{ value: '3.1', label: '3.1' },
-		{ value: '4', label: '4' },
-		{ value: '4.1', label: '4.1' },
-		{ value: '5', label: '5' },
-		{ value: '5.1', label: '5.1' },
-		{ value: '5.2', label: '5.2' },
-		{ value: '6', label: '6' },
-		{ value: '6.1', label: '6.1' },
-		{ value: '6.2', label: '6.2' },
-	];
-
-	const h264LevelOptions = [
-		{ value: 'none', label: __('None', 'video-embed-thumbnail-generator') },
-		{ value: '1', label: '1' },
-		{ value: '1.1', label: '1.1' },
-		{ value: '1.2', label: '1.2' },
-		{ value: '1.3', label: '1.3' },
-		{ value: '2', label: '2' },
-		{ value: '2.1', label: '2.1' },
-		{ value: '2.2', label: '2.2' },
-		{ value: '3', label: '3' },
-		{ value: '3.1', label: '3.1' },
-		{ value: '3.2', label: '3.2' },
-		{ value: '4', label: '4' },
-		{ value: '4.1', label: '4.1' },
-		{ value: '4.2', label: '4.2' },
-		{ value: '5', label: '5' },
-		{ value: '5.1', label: '5.1' },
-		{ value: '5.2', label: '5.2' },
-		{ value: '6', label: '6' },
-		{ value: '6.1', label: '6.1' },
-		{ value: '6.2', label: '6.2' },
-	];
 
 	const audioBitrateOptions = [
 		{ value: '32', label: '32' },
@@ -701,6 +427,8 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 							<PerCodecQualitySettings
 								key={codec.id}
 								codec={codec}
+								settings={settings}
+								changeHandlerFactory={changeHandlerFactory}
 							/>
 						)
 				)}

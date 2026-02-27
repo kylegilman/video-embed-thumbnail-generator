@@ -313,7 +313,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.'
+							'Video.js version 8 is the default player. You can also choose the WordPress Default Mediaelement.js player which may already be skinned to match your theme. Selecting "None" will disable all plugin-related CSS and JS on the front end.',
+							'video-embed-thumbnail-generator'
 						)}
 					/>
 				</div>
@@ -526,7 +527,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							/>
 							<VideopackTooltip
 								text={__(
-									'Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.'
+									'Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.',
+									'video-embed-thumbnail-generator'
 								)}
 							/>
 						</div>
@@ -540,7 +542,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					}}
 					checked={!!gifmode}
 					help={__(
-						'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
+						'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.',
+						'video-embed-thumbnail-generator'
 					)}
 				/>
 				{embed_method.startsWith('Video.js') && (
@@ -589,7 +592,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							'When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.'
+							'When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.',
+							'video-embed-thumbnail-generator'
 						)}
 					/>
 				</div>
@@ -649,7 +653,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label={__(
-										'Expand player to full width of container'
+										'Expand player to full width of container',
+										'video-embed-thumbnail-generator'
 									)}
 									onChange={changeHandlerFactory.fullwidth}
 									checked={!!fullwidth}
@@ -672,7 +677,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 					<VideopackTooltip
 						text={__(
-							'If multiple resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.'
+							'If multiple resolutions for a video are available, you can choose to load the highest or lowest available resolution by default, automatically select the resolution based on the size of the video window, or indicate a particular resolution to use every time.',
+							'video-embed-thumbnail-generator'
 						)}
 					/>
 				</div>
@@ -680,14 +686,16 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Use device pixel ratio for resolution calculation.'
+							'Use device pixel ratio for resolution calculation.',
+							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.pixel_ratio}
 						checked={!!pixel_ratio}
 					/>
 					<VideopackTooltip
 						text={__(
-							'Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.'
+							'Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.',
+							'video-embed-thumbnail-generator'
 						)}
 					/>
 				</div>
@@ -697,14 +705,16 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Automatically search for other formats of original file.'
+							'Automatically search for other formats of original file.',
+							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.find_formats}
 						checked={!!find_formats}
 					/>
 					<VideopackTooltip
 						text={__(
-							'Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.'
+							'Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.',
+							'video-embed-thumbnail-generator'
 						)}
 					/>
 				</div>

@@ -51,7 +51,7 @@ class Video_Codec {
 	/**
 	 * Video codec library.
 	 *
-	 * @var string
+	 * @var string|array
 	 */
 	protected $vcodec;
 
@@ -104,7 +104,7 @@ class Video_Codec {
 				'default' => 23,
 			),
 			'vbr' => array(
-				'default'  => 1.0,
+				'default'  => 10.0,
 				'constant' => 0,
 			),
 		);
@@ -190,9 +190,20 @@ class Video_Codec {
 	/**
 	 * Get the video codec.
 	 *
+	 * @param array $codecs Optional. Associative array of available FFmpeg encoders.
 	 * @return string Video codec.
 	 */
-	public function get_vcodec() {
+	public function get_vcodec( array $codecs = null ) {
+		if ( is_array( $this->vcodec ) ) {
+			if ( ! empty( $codecs ) ) {
+				foreach ( $this->vcodec as $codec ) {
+					if ( ! empty( $codecs[ $codec ] ) ) {
+						return $codec;
+					}
+				}
+			}
+			return reset( $this->vcodec );
+		}
 		return $this->vcodec;
 	}
 
@@ -293,7 +304,7 @@ class Video_Codec {
 	public function get_bitrate( array $dimensions, $rate_control = null ) {
 		return round(
 			( ( $rate_control ?? $this->rate_control['vbr']['default'] )
-			* 0.001
+			* 0.0001
 			* $dimensions['width'] * $dimensions['height'] )
 			+ $this->rate_control['vbr']['constant']
 		);
@@ -337,7 +348,7 @@ class Video_Codec {
 		$flags[] = '-acodec';
 		$flags[] = $this->get_acodec( $codecs );
 		$flags[] = '-vcodec';
-		$flags[] = $this->get_vcodec();
+		$flags[] = $this->get_vcodec( $codecs );
 
 		$flags = array_merge( $flags, $this->get_ffmpeg_rate_control_flags( $plugin_options, $dimensions ) );
 
