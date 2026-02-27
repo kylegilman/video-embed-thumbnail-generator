@@ -263,7 +263,6 @@ class Encode_Attachment {
 		$all_defined_formats = $this->options_manager->get_video_formats( false );
 		$encoded_jobs        = $this->get_formats(); // Gets all jobs from DB for this attachment
 		$video_metadata      = $this->get_video_metadata();
-		$source_height       = ( $video_metadata && $video_metadata->actualheight ) ? (int) $video_metadata->actualheight : 0;
 
 		// Create a map of job objects by format_id for efficient lookup.
 		$encoded_jobs_map = array();
@@ -292,12 +291,10 @@ class Encode_Attachment {
 				}
 			}
 
-			// Skip formats that are higher resolution than the source, unless a file or job already exists.
-			$target_height = $video_format_obj->get_resolution()->get_height();
-			if ( $source_height > 0 && is_numeric( $target_height ) && $target_height >= $source_height ) {
-				if ( ! $file_exists && ! $job_exists ) {
-					continue;
-				}
+			// Skip formats that are higher resolution than the source, unless a file or job already exists for them.
+			// Also skip formats that are the same resolution and codec as the source.
+			if ( $this->is_unnecessary_encode( $video_format_obj ) && ! $file_exists && ! $job_exists ) {
+				continue;
 			}
 
 			// Start with default status and was_picked state
@@ -385,6 +382,50 @@ class Encode_Attachment {
 			default:
 				return $status;
 		}
+	}
+
+	/**
+	 * Checks if an encode is unnecessary based on source and target formats.
+	 *
+	 * An encode is considered unnecessary if it's an upscale (target resolution is
+	 * higher than source) or if it's a transcode to the exact same resolution and codec.
+	 *
+	 * @param \Videopack\Admin\Formats\Video_Format $video_format_obj The target video format object.
+	 * @return bool True if the encode is unnecessary, false otherwise.
+	 */
+	private function is_unnecessary_encode( \Videopack\Admin\Formats\Video_Format $video_format_obj ) {
+		$video_metadata = $this->get_video_metadata();
+		if ( ! $video_metadata || ! $video_metadata->worked || ! $video_format_obj->get_resolution() ) {
+			return false; // Not enough info to decide, so don't block it.
+		}
+
+		$target_height = $video_format_obj->get_resolution()->get_height();
+		$source_height = (int) $video_metadata->actualheight;
+
+		if ( $video_format_obj->get_replaces_original() || ! is_numeric( $target_height ) ) {
+			return false; // 'fullres' is never unnecessary.
+		}
+
+		// Prevent upscaling.
+		if ( $source_height < $target_height ) {
+			return true;
+		}
+
+		// Prevent re-encoding to the same resolution and codec.
+		if ( $source_height === $target_height ) {
+			$source_codec_name       = ( $video_metadata && $video_metadata->codec ) ? $video_metadata->codec : '';
+			$normalized_source_codec = '';
+			if ( ! empty( $source_codec_name ) ) {
+				$normalized_source_codec = strtolower( trim( $source_codec_name ) );
+				$normalized_source_codec = ( 'hevc' === $normalized_source_codec ) ? 'h265' : $normalized_source_codec;
+				$normalized_source_codec = ( 'theora' === $normalized_source_codec ) ? 'ogv' : $normalized_source_codec;
+				$normalized_source_codec = ( 'avc1' === $normalized_source_codec ) ? 'h264' : $normalized_source_codec;
+			}
+			if ( $video_format_obj->get_codec()->get_id() === $normalized_source_codec ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function start_encode( Encode_Format $encode_format ) {
@@ -781,13 +822,8 @@ class Encode_Attachment {
 			return 'already_exists'; // File already exists on disk
 		}
 
-		$video_metadata = $this->get_video_metadata();
-		if ( $video_metadata && $video_metadata->worked && $video_format_config->get_resolution() ) {
-			$target_height = $video_format_config->get_resolution()->get_height();
-			// If the format is not 'fullres' and source height is already less than or equal to target, it's 'lowres'.
-			if ( ! $video_format_config->get_replaces_original() && is_numeric( $target_height ) && $video_metadata->actualheight <= $target_height ) {
-				return 'lowres';
-			}
+		if ( $this->is_unnecessary_encode( $video_format_config ) ) {
+			return 'lowres';
 		}
 
 		$codecs    = $this->get_codecs();

@@ -5,11 +5,11 @@ namespace Videopack\Admin\Formats\Codecs;
 class Video_Codec_AV1 extends Video_Codec {
 	public function __construct() {
 		$properties = array(
-			'name'           => 'AV1 WEBM',
+			'name'           => 'AV1 MP4',
 			'label'          => 'AV1',
 			'id'             => 'av1',
-			'container'      => 'webm',
-			'mime'           => 'video/webm',
+			'container'      => 'mp4',
+			'mime'           => 'video/mp4',
 			'codecs_att'     => 'av01',
 			'vcodec'         => 'libaom-av1',
 			'acodec'         => 'aac',

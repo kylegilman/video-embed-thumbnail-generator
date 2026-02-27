@@ -57,29 +57,37 @@ const EncodeFormatStatus = ({
 				</span>
 			)}
 
-			{formatData.status === 'not_encoded' && !formatData.was_picked && (
-				<MediaUpload
-					title={__( 'Choose existing file', 'video-embed-thumbnail-generator' )}
-					onSelect={onSelectFormat(formatId)}
-					allowedTypes={['video']}
-					render={({ open }) => (
-						<Button
-							variant="secondary"
-							onClick={open}
-							className="videopack-format-button"
-							size="small"
-						>
-							{__( 'Select', 'video-embed-thumbnail-generator' )}
-						</Button>
-					)}
-				/>
-			)}
+			{formatData.status === 'not_encoded' &&
+				!formatData.was_picked &&
+				!formatData.replaces_original && (
+					<MediaUpload
+						title={__(
+							'Choose existing file',
+							'video-embed-thumbnail-generator'
+						)}
+						onSelect={onSelectFormat(formatId)}
+						allowedTypes={['video']}
+						render={({ open }) => (
+							<Button
+								variant="secondary"
+								onClick={open}
+								className="videopack-format-button"
+								size="small"
+							>
+								{__(
+									'Select',
+									'video-embed-thumbnail-generator'
+								)}
+							</Button>
+						)}
+					/>
+				)}
 
 			{formatData.was_picked && (
 				<MediaUpload
 					title={sprintf(
 						/* translators: %s is the label of a video resolution (eg: 720p ) */
-						__( 'Replace %s', 'video-embed-thumbnail-generator' ),
+						__('Replace %s', 'video-embed-thumbnail-generator'),
 						formatData.label
 					)}
 					onSelect={onSelectFormat(formatId)}
@@ -90,9 +98,12 @@ const EncodeFormatStatus = ({
 							onClick={open}
 							className="videopack-format-button"
 							size="small"
-							title={__( 'Replace file', 'video-embed-thumbnail-generator' )}
+							title={__(
+								'Replace file',
+								'video-embed-thumbnail-generator'
+							)}
 						>
-							{__( 'Replace', 'video-embed-thumbnail-generator' )}
+							{__('Replace', 'video-embed-thumbnail-generator')}
 						</Button>
 					)}
 				/>
@@ -103,7 +114,10 @@ const EncodeFormatStatus = ({
 					isBusy={deleteInProgress === formatId}
 					onClick={onDeleteFile}
 					variant="link"
-					text={__( 'Delete Permanently', 'video-embed-thumbnail-generator' )}
+					text={__(
+						'Delete Permanently',
+						'video-embed-thumbnail-generator'
+					)}
 					isDestructive
 				/>
 			)}

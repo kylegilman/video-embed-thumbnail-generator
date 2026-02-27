@@ -1,3 +1,5 @@
+/* global Image */
+
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -107,7 +109,7 @@ export const captureVideoFrame = (source, time, watermarkOptions = null) => {
  *
  * @param {HTMLCanvasElement} canvas  The canvas to draw on.
  * @param {Object}            options Watermark options (url, scale, align, x, valign, y).
- * @return {Promise<HTMLCanvasElement>}
+ * @return {Promise<HTMLCanvasElement>} The canvas with the captured frame.
  */
 export const drawWatermark = (canvas, options) => {
 	return new Promise((resolve, reject) => {
@@ -222,7 +224,9 @@ export const calculateTimecodes = (duration, count, options = {}) => {
 		for (let i = 0; i < count; i++) {
 			let time = ((i + 1) / (count + 1)) * duration;
 			if (random) {
-				const randomOffset = Math.floor(Math.random() * (duration / count));
+				const randomOffset = Math.floor(
+					Math.random() * (duration / count)
+				);
 				time = Math.max(time - randomOffset, 0);
 			}
 			timecodes.push(time);

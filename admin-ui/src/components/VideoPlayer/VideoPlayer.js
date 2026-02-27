@@ -21,7 +21,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	);
 
 	const {
-		embed_method = 'Video.js',
+		embed_method,
 		autoplay,
 		controls,
 		skin,
@@ -191,11 +191,11 @@ const VideoPlayer = ({ attributes, onReady }) => {
 
 	return (
 		<div
-			className={`videopack-wrapper meta-bar-visible ${skin || ''}`}
+			className={"videopack-wrapper meta-bar-visible"}
 			ref={wrapperRef}
 		>
-			<div className="videopack-player">
-				<MetaBar attributes={decodedAttributes} />
+			<div className={`videopack-player ${skin || ''}`}>
+				<MetaBar attributes={decodedAttributes} playerRef={playerRef} />
 				{embed_method === 'Video.js' && videoJsOptions && (
 					<VideoJS
 						options={videoJsOptions}

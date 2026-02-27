@@ -10,7 +10,7 @@ class Video_Codec_H265 extends Video_Codec {
 			'id'             => 'h265',
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
-			'codecs_att'     => 'hev1',
+			'codecs_att'     => 'hvc1',
 			'vcodec'         => 'libx265',
 			'acodec'         => 'aac',
 			'rate_control'   => array(
@@ -28,5 +28,26 @@ class Video_Codec_H265 extends Video_Codec {
 		);
 
 		parent::__construct( $properties );
+	}
+
+	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ): array {
+		$flags = parent::get_codec_ffmpeg_flags( $plugin_options, $dimensions, $codecs );
+
+		$x265_params = array();
+
+		if ( ! empty( $plugin_options['h265_profile'] ) && $plugin_options['h265_profile'] !== 'none' ) {
+			$x265_params[] = 'profile=' . $plugin_options['h265_profile'];
+		}
+
+		if ( ! empty( $plugin_options['h265_level'] ) && $plugin_options['h265_level'] !== 'none' ) {
+			$x265_params[] = 'level-idc=' . $plugin_options['h265_level'];
+		}
+
+		if ( ! empty( $x265_params ) ) {
+			$flags[] = '-x265-params';
+			$flags[] = implode( ':', $x265_params );
+		}
+
+		return $flags;
 	}
 }

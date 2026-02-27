@@ -39,6 +39,8 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		ffmpeg_watermark,
 		h264_profile,
 		h264_level,
+		h265_profile,
+		h265_level,
 		audio_bitrate,
 		audio_channels,
 		simultaneous_encodes,
@@ -309,6 +311,34 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						/>
 					</div>
 				)}
+				{codec.id === 'h265' && (
+					<div className="videopack-setting-reduced-width">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'H.265 profile',
+								'video-embed-thumbnail-generator'
+							)}
+							value={h265_profile}
+							onChange={changeHandlerFactory.h265_profile}
+							options={h265ProfileOptions}
+							disabled={ffmpeg_exists !== true}
+						/>
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'H.265 level',
+								'video-embed-thumbnail-generator'
+							)}
+							value={h265_level}
+							onChange={changeHandlerFactory.h265_level}
+							options={h265LevelOptions}
+							disabled={ffmpeg_exists !== true}
+						/>
+					</div>
+				)}
 			</div>
 		);
 	};
@@ -416,7 +446,23 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			return [];
 		}
 
-		const { min, max, labels = {} } = rateControl;
+		const {
+			min,
+			max,
+			labels: originalLabels = {},
+			default: defaultValue,
+		} = rateControl;
+		const labels = { ...originalLabels }; // create a mutable copy
+
+		// Add the 'Default' label if there isn't already a label for the default value
+		if (defaultValue !== undefined && !labels[defaultValue]) {
+			labels[defaultValue] = sprintf(
+				/* translators: %d: CRF value. */
+				__('%d: default', 'video-embed-thumbnail-generator'),
+				defaultValue
+			);
+		}
+
 		const marks = [];
 
 		for (let i = min; i <= max; i++) {
@@ -444,6 +490,29 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 		{ value: 'high10', label: 'high10' },
 		{ value: 'high422', label: 'high422' },
 		{ value: 'high444', label: 'high444' },
+	];
+
+	const h265ProfileOptions = [
+		{ value: 'none', label: __('None', 'video-embed-thumbnail-generator') },
+		{ value: 'main', label: 'main' },
+		{ value: 'main10', label: 'main10' },
+	];
+
+	const h265LevelOptions = [
+		{ value: 'none', label: __('None', 'video-embed-thumbnail-generator') },
+		{ value: '1', label: '1' },
+		{ value: '2', label: '2' },
+		{ value: '2.1', label: '2.1' },
+		{ value: '3', label: '3' },
+		{ value: '3.1', label: '3.1' },
+		{ value: '4', label: '4' },
+		{ value: '4.1', label: '4.1' },
+		{ value: '5', label: '5' },
+		{ value: '5.1', label: '5.1' },
+		{ value: '5.2', label: '5.2' },
+		{ value: '6', label: '6' },
+		{ value: '6.1', label: '6.1' },
+		{ value: '6.2', label: '6.2' },
 	];
 
 	const h264LevelOptions = [

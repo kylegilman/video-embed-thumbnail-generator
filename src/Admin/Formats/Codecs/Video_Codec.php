@@ -339,7 +339,7 @@ class Video_Codec {
 		$flags[] = '-vcodec';
 		$flags[] = $this->get_vcodec();
 
-		$flags[] = $this->get_ffmpeg_rate_control_flags( $plugin_options, $dimensions );
+		$flags = array_merge( $flags, $this->get_ffmpeg_rate_control_flags( $plugin_options, $dimensions ) );
 
 		$flags[] = '-s';
 		$flags[] = $dimensions['width'] . 'x' . $dimensions['height'];
@@ -347,6 +347,10 @@ class Video_Codec {
 		if ( $this->container === 'mp4' ) {
 			$flags[] = '-movflags';
 			$flags[] = 'faststart';
+
+			// Set the video tag for better compatibility, e.g. hvc1 for H.265.
+			$flags[] = '-tag:v';
+			$flags[] = $this->get_codecs_att();
 		}
 
 		return $flags;
