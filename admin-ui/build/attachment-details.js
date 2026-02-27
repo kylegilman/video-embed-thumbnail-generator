@@ -112,10 +112,12 @@ const AdditionalFormats = ({
       try {
         const formats = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_7__.getVideoFormats)(id);
         updateVideoFormats(formats);
+        return formats;
       } catch (error) {
         console.error('Error polling video formats:', error);
       }
     }
+    return null;
   };
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
     fetchVideoFormats();
@@ -191,9 +193,18 @@ const AdditionalFormats = ({
     let pollTimer = null;
     // Manage progress timer based on encoding state
     if (isEncoding) {
-      // Start polling immediately and then every 5 seconds
-      pollVideoFormats(); // Initial poll
-      pollTimer = setInterval(pollVideoFormats, 5000);
+      const runPoll = async () => {
+        const formats = await pollVideoFormats();
+        let delay = 5000;
+        if (formats) {
+          const isSlow = Object.values(formats).some(format => format.encoding_now && format.progress && format.progress.fps && parseFloat(format.progress.fps) < 5);
+          if (isSlow) {
+            delay = 20000;
+          }
+        }
+        pollTimer = setTimeout(runPoll, delay);
+      };
+      runPoll();
       if (progressTimerRef.current === null) {
         progressTimerRef.current = setInterval(incrementEncodeProgress, 1000);
       }
@@ -201,7 +212,7 @@ const AdditionalFormats = ({
       // Clear all timers if not encoding
       clearInterval(progressTimerRef.current);
       progressTimerRef.current = null;
-      clearInterval(pollTimer);
+      clearTimeout(pollTimer);
       pollTimer = null;
     }
     return () => {
@@ -210,11 +221,11 @@ const AdditionalFormats = ({
         progressTimerRef.current = null;
       }
       if (pollTimer !== null) {
-        clearInterval(pollTimer);
+        clearTimeout(pollTimer);
         pollTimer = null;
       }
     };
-  }, [isEncoding]); // Depend on isEncoding state
+  }, [isEncoding, id, src]); // Depend on isEncoding state
 
   const handleFormatCheckbox = (event, formatId) => {
     setVideoFormats(prevVideoFormats => {
@@ -522,7 +533,7 @@ const EncodeFormatStatus = ({
     return data.checked || data.status === 'queued';
   };
   const getCheckboxDisabledState = data => {
-    return data.exists || data.status === 'queued' || data.status === 'encoding' || data.status === 'processing' || data.status === 'completed';
+    return data.exists && data.status !== 'error' || data.status === 'queued' || data.status === 'encoding' || data.status === 'processing' || data.status === 'completed';
   };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
     children: [ffmpegExists === true ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.CheckboxControl, {
@@ -572,7 +583,7 @@ const EncodeFormatStatus = ({
       variant: "link",
       text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Permanently', 'video-embed-thumbnail-generator'),
       isDestructive: true
-    }), (formatData.encoding_now || formatData.status === 'failed') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_EncodeProgress__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    }), (formatData.encoding_now || formatData.status === 'error') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_EncodeProgress__WEBPACK_IMPORTED_MODULE_3__["default"], {
       formatData: formatData,
       onCancelJob: onCancelJob,
       deleteInProgress: deleteInProgress

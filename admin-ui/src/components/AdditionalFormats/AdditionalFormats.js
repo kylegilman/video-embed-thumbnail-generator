@@ -96,10 +96,12 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			try {
 				const formats = await getVideoFormats(id);
 				updateVideoFormats(formats);
+				return formats;
 			} catch (error) {
 				console.error('Error polling video formats:', error);
 			}
 		}
+		return null;
 	};
 
 	useEffect(() => {
@@ -197,9 +199,24 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		let pollTimer = null;
 		// Manage progress timer based on encoding state
 		if (isEncoding) {
-			// Start polling immediately and then every 5 seconds
-			pollVideoFormats(); // Initial poll
-			pollTimer = setInterval(pollVideoFormats, 5000);
+			const runPoll = async () => {
+				const formats = await pollVideoFormats();
+				let delay = 5000;
+				if (formats) {
+					const isSlow = Object.values(formats).some(
+						(format) =>
+							format.encoding_now &&
+							format.progress &&
+							format.progress.fps &&
+							parseFloat(format.progress.fps) < 5
+					);
+					if (isSlow) {
+						delay = 20000;
+					}
+				}
+				pollTimer = setTimeout(runPoll, delay);
+			};
+			runPoll();
 
 			if (progressTimerRef.current === null) {
 				progressTimerRef.current = setInterval(
@@ -211,7 +228,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			// Clear all timers if not encoding
 			clearInterval(progressTimerRef.current);
 			progressTimerRef.current = null;
-			clearInterval(pollTimer);
+			clearTimeout(pollTimer);
 			pollTimer = null;
 		}
 
@@ -221,11 +238,11 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 				progressTimerRef.current = null;
 			}
 			if (pollTimer !== null) {
-				clearInterval(pollTimer);
+				clearTimeout(pollTimer);
 				pollTimer = null;
 			}
 		};
-	}, [isEncoding]); // Depend on isEncoding state
+	}, [isEncoding, id, src]); // Depend on isEncoding state
 
 	const handleFormatCheckbox = (event, formatId) => {
 		setVideoFormats((prevVideoFormats) => {

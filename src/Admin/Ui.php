@@ -90,9 +90,12 @@ class Ui {
 		$resolution_objects = $this->options_manager->get_video_resolutions();
 		$resolutions_data   = array();
 		foreach ( $resolution_objects as $resolution ) {
+			$height = $resolution->get_height();
 			$resolutions_data[] = array(
-				'id'   => $resolution->get_id(),
-				'name' => $resolution->get_name(),
+				'id'     => $resolution->get_id(),
+				'name'   => $resolution->get_name(),
+				'height' => $height,
+				'width'  => $height ? ceil( $height * 16 / 9 ) : null,
 			);
 		}
 

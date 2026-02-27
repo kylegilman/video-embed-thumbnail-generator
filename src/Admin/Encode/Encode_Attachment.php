@@ -828,7 +828,7 @@ class Encode_Attachment {
 
 		$codecs    = $this->get_codecs();
 		$codec_obj = $video_format_config->get_codec();
-		$vcodec    = $codec_obj->get_vcodec();
+		$vcodec    = $codec_obj->get_vcodec( $codecs );
 		// Check if the required video codec for this format is available in FFmpeg.
 		if ( ! $codecs || ! isset( $codecs[ $vcodec ] ) || ! $codecs[ $vcodec ] ) {
 			return 'vcodec_unavailable';

@@ -28,7 +28,7 @@ const EncodeFormatStatus = ({
 
 	const getCheckboxDisabledState = (data) => {
 		return (
-			data.exists ||
+			(data.exists && data.status !== 'error') ||
 			data.status === 'queued' ||
 			data.status === 'encoding' ||
 			data.status === 'processing' ||
@@ -122,7 +122,7 @@ const EncodeFormatStatus = ({
 				/>
 			)}
 
-			{(formatData.encoding_now || formatData.status === 'failed') && (
+			{(formatData.encoding_now || formatData.status === 'error') && (
 				<EncodeProgress
 					formatData={formatData}
 					onCancelJob={onCancelJob}

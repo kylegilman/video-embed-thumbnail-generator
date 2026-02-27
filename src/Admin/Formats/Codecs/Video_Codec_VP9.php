@@ -20,7 +20,7 @@ class Video_Codec_VP9 extends Video_Codec {
 					'default' => 31,
 				),
 				'vbr' => array(
-					'default'  => 1.47,
+					'default'  => 14.7,
 					'constant' => -121.63,
 				),
 			),

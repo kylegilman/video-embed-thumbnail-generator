@@ -52,13 +52,27 @@
 	}
 
 	.videopack-settings-slider {
-		&.components-range-control{
-			margin-bottom: 74px;
-		}
+		margin-bottom: 20px;
+	}
+
+	.videopack-per-codec-quality-settings {
+
 		.components-range-control__mark-label {
 			margin-top: 20px;
 			white-space: normal;
 			width: 14px;
+		}
+
+		.components-range-control__root {
+			margin-bottom: 70px;
+		}
+
+		.videopack-bitrate-grid {
+			display: grid;
+			grid-template-columns: repeat( auto-fill, minmax( 120px, 1fr ) );
+			gap: 2px;
+			margin-top: 5px;
+			margin-bottom: 20px;
 		}
 	}
 

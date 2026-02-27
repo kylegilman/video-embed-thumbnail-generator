@@ -20,7 +20,7 @@ class Video_Codec_VP8 extends Video_Codec {
 					'default' => 10,
 				),
 				'vbr' => array(
-					'default'  => 1.89,
+					'default'  => 18.9,
 					'constant' => 469,
 				),
 			),

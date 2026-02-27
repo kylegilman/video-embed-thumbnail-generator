@@ -11,16 +11,16 @@ class Video_Codec_AV1 extends Video_Codec {
 			'container'      => 'mp4',
 			'mime'           => 'video/mp4',
 			'codecs_att'     => 'av01',
-			'vcodec'         => 'libaom-av1',
+			'vcodec'         => array( 'libsvtav1', 'libaom-av1' ),
 			'acodec'         => 'aac',
 			'rate_control'   => array(
 				'crf' => array(
 					'min'     => 0,
 					'max'     => 63,
-					'default' => 31,
+					'default' => 35,
 				),
 				'vbr' => array(
-					'default'  => 1.23,
+					'default'  => 12.3,
 					'constant' => -488.62,
 				),
 			),
