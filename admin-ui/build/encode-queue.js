@@ -122,7 +122,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
 /* harmony export */   setPosterImage: () => (/* binding */ setPosterImage),
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
-/* harmony export */   testFFmpegCommand: () => (/* binding */ testFFmpegCommand),
+/* harmony export */   testEncodeCommand: () => (/* binding */ testEncodeCommand),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
 /* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
 /* harmony export */ });
@@ -130,14 +130,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/url */ "@wordpress/url");
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 const getQueue = async () => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getQueue', undefined);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/queue'
     });
-    return response || [];
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getQueue', response || []);
   } catch (error) {
     console.error('Error fetching queue:', error);
     throw error;
@@ -194,16 +201,25 @@ const removeJob = async jobId => {
   }
 };
 const getVideoFormats = async attachmentId => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoFormats', undefined, attachmentId);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: `/videopack/v1/formats/${attachmentId}`
     });
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoFormats', response, attachmentId);
   } catch (error) {
     console.error('Error fetching video formats:', error);
     throw error;
   }
 };
 const enqueueJob = async (attachmentId, src, formats) => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_enqueueJob', undefined, attachmentId, src, formats);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: `/videopack/v1/queue/${attachmentId}`,
@@ -303,11 +319,16 @@ const saveAllThumbnails = async (attachment_id, thumb_urls) => {
   }
 };
 const getVideoGallery = async args => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/video_gallery', args),
       method: 'GET'
     });
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoGallery', response, args);
   } catch (error) {
     console.error('Error fetching video gallery:', error);
     throw error;
@@ -334,22 +355,31 @@ const getFreemiusPage = async page => {
     throw error;
   }
 };
-const testFFmpegCommand = async (codec, resolution, rotate) => {
+const testEncodeCommand = async (codec, resolution, rotate) => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`
     });
   } catch (error) {
-    console.error('Error testing FFmpeg command:', error);
+    console.error('Error testing encode command:', error);
     throw error;
   }
 };
 const getSettings = async () => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getSettings', undefined);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     const allSettings = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings'
     });
-    return allSettings.videopack_options || {};
+    const settings = allSettings.videopack_options || {};
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getSettings', settings);
   } catch (error) {
     console.error('Error fetching settings:', error);
     throw error;
@@ -413,6 +443,10 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
   }
 };
 const startBatchProcess = async (type, additionalData = {}) => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_startBatchProcess', undefined, type, additionalData);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/batch/process',
@@ -501,6 +535,16 @@ module.exports = window["wp"]["components"];
 (module) {
 
 module.exports = window["wp"]["element"];
+
+/***/ },
+
+/***/ "@wordpress/hooks"
+/*!*******************************!*\
+  !*** external ["wp","hooks"] ***!
+  \*******************************/
+(module) {
+
+module.exports = window["wp"]["hooks"];
 
 /***/ },
 

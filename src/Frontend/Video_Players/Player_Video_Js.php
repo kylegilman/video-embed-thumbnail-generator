@@ -10,6 +10,7 @@ class Player_Video_Js extends Player {
 
 		add_filter( 'videopack_video_player_data', array( $this, 'filter_video_vars' ), 10, 2 );
 		add_filter( 'videopack_video_player_classes', array( $this, 'filter_video_classes' ), 10, 2 );
+		add_filter( 'videopack_player_div_classes', array( $this, 'filter_player_div_classes' ), 10, 2 );
 	}
 
 	public function register_scripts() {
@@ -110,6 +111,17 @@ class Player_Video_Js extends Player {
 
 		// Allow user to set skin for individual videos using the skin="" attribute.
 		$classes[] = $atts['skin'] ?? $skin;
+
+		return $classes;
+	}
+
+	public function filter_player_div_classes( $classes, $atts ): array {
+		$default_skin = $this->options['skin'] ?? '';
+		$skin         = $atts['skin'] ?? $default_skin;
+
+		if ( ! empty( $skin ) ) {
+			$classes[] = $skin;
+		}
 
 		return $classes;
 	}

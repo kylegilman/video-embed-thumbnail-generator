@@ -1,11 +1,12 @@
 /* global videopack_config */
 
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	getSettings,
 	saveWPSettings,
 	resetVideopackSettings,
-	testFFmpegCommand,
+	testEncodeCommand,
 } from '../../utils/utils';
 import {
 	Button,
@@ -22,6 +23,7 @@ import {
 	useState,
 	useEffect,
 	useRef,
+	useCallback,
 } from '@wordpress/element';
 import { videopack } from '../../assets/icon';
 import PlayerSettings from './components/PlayerSettings';
@@ -44,36 +46,46 @@ const VideopackSettingsPage = () => {
 		settingsRef.current = settings;
 	}, [settings]);
 
-	const testFfmpeg = (codec, resolution, rotate) => {
-		if (activeTab === 'encoding') {
-			testFFmpegCommand(codec, resolution, rotate)
-				.then((response) => {
-					setFfmpegTest(response);
-				})
-				.catch((error) => {
-					console.error(error);
+	const testFfmpeg = useCallback(
+		(codec, resolution, rotate) => {
+			if (activeTab === 'encoding') {
+				setFfmpegTest({
+					command: __(
+						'Running test…',
+						'video-embed-thumbnail-generator'
+					),
+					output: __(
+						'Running test…',
+						'video-embed-thumbnail-generator'
+					),
 				});
-		}
-	};
+				testEncodeCommand(codec, resolution, rotate)
+					.then((response) => {
+						setFfmpegTest(response);
+					})
+					.catch((error) => {
+						console.error(error);
+					});
+			}
+		},
+		[activeTab]
+	);
 
 	useEffect(() => {
 		if (
+			!isSettingsChanged &&
 			activeTab === 'encoding' &&
 			settings.sample_codec &&
 			settings.sample_resolution &&
 			settings.ffmpeg_exists === true
 		) {
-			setFfmpegTest({
-				command: __('Running test…', 'video-embed-thumbnail-generator'),
-				output: __('Running test…', 'video-embed-thumbnail-generator'),
-			});
 			testFfmpeg(
 				settings.sample_codec,
 				settings.sample_resolution,
 				settings.sample_rotate
 			);
 		}
-	}, [settings, activeTab]);
+	}, [settings, activeTab, isSettingsChanged, testFfmpeg]);
 
 	useEffect(() => {
 		getSettings()
@@ -138,46 +150,60 @@ const VideopackSettingsPage = () => {
 		}, {});
 	}, [settings]);
 
-	const tabs = [
-		{
-			name: 'player',
-			title: __('Video Player', 'video-embed-thumbnail-generator'),
-		},
-		{
-			name: 'thumbnails',
-			title: __('Thumbnails', 'video-embed-thumbnail-generator'),
-		},
-		{
-			name: 'gallery',
-			title: __('Video Collections', 'video-embed-thumbnail-generator'),
-		},
-		{
-			name: 'encoding',
-			title: __('Encoding', 'video-embed-thumbnail-generator'),
-		},
-		{
-			name: 'admin',
-			title: __('Admin', 'video-embed-thumbnail-generator'),
-		},
-	];
-
-	if (videopack_config.freemiusEnabled) {
-		tabs.push(
+	const tabs = useMemo(() => {
+		const defaultTabs = [
 			{
-				name: 'account',
-				title: __(
-					'Freemius Account',
-					'video-embed-thumbnail-generator'
-				),
-				className: 'videopack-freemius-tab',
+				name: 'player',
+				title: __('Video Player', 'video-embed-thumbnail-generator'),
+				component: PlayerSettings,
 			},
 			{
-				name: 'add-ons',
-				title: __('Add-ons', 'video-embed-thumbnail-generator'),
-				className: 'videopack-freemius-tab',
-			}
-		);
-	}
+				name: 'thumbnails',
+				title: __('Thumbnails', 'video-embed-thumbnail-generator'),
+				component: ThumbnailSettings,
+			},
+			{
+				name: 'gallery',
+				title: __(
+					'Video Collections',
+					'video-embed-thumbnail-generator'
+				),
+				component: VideoCollectionSettings,
+			},
+			{
+				name: 'encoding',
+				title: __('Encoding', 'video-embed-thumbnail-generator'),
+				component: EncodingSettings,
+			},
+			{
+				name: 'admin',
+				title: __('Admin', 'video-embed-thumbnail-generator'),
+				component: AdminSettings,
+			},
+		];
+
+		if (videopack_config.freemiusEnabled) {
+			defaultTabs.push(
+				{
+					name: 'account',
+					title: __(
+						'Freemius Account',
+						'video-embed-thumbnail-generator'
+					),
+					className: 'videopack-freemius-tab',
+					component: () => <FreemiusPage page="account" />,
+				},
+				{
+					name: 'add-ons',
+					title: __('Add-ons', 'video-embed-thumbnail-generator'),
+					className: 'videopack-freemius-tab',
+					component: () => <FreemiusPage page="add-ons" />,
+				}
+			);
+		}
+
+		return applyFilters('videopack.settings.tabs', defaultTabs);
+	}, []);
 
 	const onTabSelect = (tabName) => {
 		setActiveTab(tabName);
@@ -186,53 +212,16 @@ const VideopackSettingsPage = () => {
 
 	const renderTab = (tab) => {
 		if (settings && settings.hasOwnProperty('embed_method')) {
-			if (tab.name === 'player') {
+			if (tab.component) {
+				const TabComponent = tab.component;
 				return (
-					<PlayerSettings
+					<TabComponent
 						settings={settings}
 						setSettings={setSettings}
-						changeHandlerFactory={changeHandlerFactory}
-					/>
-				);
-			}
-			if (tab.name === 'thumbnails') {
-				return (
-					<ThumbnailSettings
-						settings={settings}
-						changeHandlerFactory={changeHandlerFactory}
-					/>
-				);
-			}
-			if (tab.name === 'gallery') {
-				return (
-					<VideoCollectionSettings
-						settings={settings}
-						changeHandlerFactory={changeHandlerFactory}
-					/>
-				);
-			}
-			if (tab.name === 'encoding') {
-				return (
-					<EncodingSettings
-						settings={settings}
 						changeHandlerFactory={changeHandlerFactory}
 						ffmpegTest={ffmpegTest}
 					/>
 				);
-			}
-			if (tab.name === 'admin') {
-				return (
-					<AdminSettings
-						settings={settings}
-						changeHandlerFactory={changeHandlerFactory}
-					/>
-				);
-			}
-			if (tab.name === 'account') {
-				return <FreemiusPage page="account" />;
-			}
-			if (tab.name === 'add-ons') {
-				return <FreemiusPage page="add-ons" />;
 			}
 		} else {
 			return <Spinner />;

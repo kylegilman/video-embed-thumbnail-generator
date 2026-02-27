@@ -6119,20 +6119,24 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const MetaBar = ({
-  attributes
+  attributes,
+  playerRef
 }) => {
   const {
-    src,
     overlay_title,
     title,
     embedcode,
     embeddable,
     downloadlink,
     twitter_button,
-    facebook_button
+    facebook_button,
+    embed_method
   } = attributes;
   const metaBarItems = [overlay_title, embedcode, downloadlink, twitter_button, facebook_button];
   const noTitleMeta = overlay_title ? '' : ' no-title';
+  const randomId = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useMemo)(() => Math.random().toString(36).substr(2, 9), []);
+  const [startAtEnabled, setStartAtEnabled] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
+  const [startAtTime, setStartAtTime] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)('00:00');
   const [shareIsOpen, setShareIsOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
   const embedItems = () => {
     if (embeddable && embedcode) {
@@ -6146,6 +6150,61 @@ const MetaBar = ({
     }
     return '';
   };
+  const [currentEmbedCode, setCurrentEmbedCode] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(embedLink());
+  const convertToTimecode = time => {
+    const minutes = Math.floor(time / 60);
+    let seconds = Math.round(time - minutes * 60);
+    if (seconds < 10) {
+      seconds = `0${seconds}`;
+    }
+    let min_display = String(minutes);
+    if (minutes < 10) {
+      min_display = `0${minutes}`;
+    }
+    return `${min_display}:${seconds}`;
+  };
+  const handleStartAtChange = e => {
+    const isChecked = e.target.checked;
+    setStartAtEnabled(isChecked);
+    if (isChecked && playerRef.current) {
+      let currentTime = 0;
+      if (embed_method === 'Video.js') {
+        if (typeof playerRef.current.currentTime === 'function') {
+          currentTime = playerRef.current.currentTime();
+        }
+      } else if (typeof playerRef.current.currentTime === 'number') {
+        currentTime = playerRef.current.currentTime;
+      }
+      setStartAtTime(convertToTimecode(Math.floor(currentTime)));
+    }
+  };
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    const originalEmbedCode = embedLink();
+    if (!originalEmbedCode) {
+      setCurrentEmbedCode('');
+      return;
+    }
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = originalEmbedCode;
+    const iframe = tempDiv.querySelector('iframe');
+    if (!iframe) {
+      setCurrentEmbedCode(originalEmbedCode);
+      return;
+    }
+    let src = iframe.getAttribute('src');
+    if (!src) {
+      setCurrentEmbedCode(originalEmbedCode);
+      return;
+    }
+    src = src.replace(/&?videopack\[start\]=[^&]*/, '');
+    src = src.replace(/\?&/, '?').replace(/\?$/, '');
+    if (startAtEnabled && startAtTime) {
+      const separator = src.includes('?') ? '&' : '?';
+      src += `${separator}videopack[start]=${encodeURIComponent(startAtTime)}`;
+    }
+    iframe.setAttribute('src', src);
+    setCurrentEmbedCode(iframe.outerHTML);
+  }, [startAtEnabled, startAtTime, attributes.embedlink]);
   const EmbedElements = () => {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -6155,8 +6214,8 @@ const MetaBar = ({
         }
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
         className: `share-container${shareIsOpen ? ' is-visible' : ''}${noTitleMeta}`,
-        children: embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
+        children: embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
             className: "embedcode-container",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               className: "videopack-icons embed"
@@ -6164,16 +6223,33 @@ const MetaBar = ({
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Embed:', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
-                className: "embedcode",
+                className: "embedcode videopack-embed-code",
                 type: "text",
-                value: embedLink(),
+                value: currentEmbedCode,
                 onClick: event => {
                   event.target.select();
                 },
                 readOnly: true
               })
             })]
-          })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
+            className: "videopack-start-at-container",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+              type: "checkbox",
+              className: "videopack-start-at-enable",
+              id: `videopack-start-at-enable-block-${randomId}`,
+              checked: startAtEnabled,
+              onChange: handleStartAtChange
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
+              htmlFor: `videopack-start-at-enable-block-${randomId}`,
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Start at:', 'video-embed-thumbnail-generator')
+            }), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+              type: "text",
+              className: "videopack-start-at",
+              value: startAtTime,
+              onChange: e => setStartAtTime(e.target.value)
+            })]
+          })]
         })
       })]
     });
@@ -6192,7 +6268,7 @@ const MetaBar = ({
             }
           }), downloadlink && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("a", {
             className: "download-link",
-            href: src,
+            href: attributes.src,
             download: true,
             title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Click to download', 'video-embed-thumbnail-generator'),
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
@@ -6371,7 +6447,7 @@ const VideoPlayer = ({
     title: attributes.title ? (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_1__.decodeEntities)(attributes.title) : attributes.title
   }), [attributes]);
   const {
-    embed_method = 'Video.js',
+    embed_method,
     autoplay,
     controls,
     skin,
@@ -6495,12 +6571,13 @@ const VideoPlayer = ({
     return null; // Or a loading spinner
   }
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
-    className: `videopack-wrapper meta-bar-visible ${skin || ''}`,
+    className: "videopack-wrapper meta-bar-visible",
     ref: wrapperRef,
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
-      className: "videopack-player",
+      className: `videopack-player ${skin || ''}`,
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_MetaBar__WEBPACK_IMPORTED_MODULE_2__["default"], {
-        attributes: decodedAttributes
+        attributes: decodedAttributes,
+        playerRef: playerRef
       }), embed_method === 'Video.js' && videoJsOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_VideoJs__WEBPACK_IMPORTED_MODULE_4__["default"], {
         options: videoJsOptions,
         skin: skin,
@@ -6851,6 +6928,8 @@ const EncodingSettings = ({
     ffmpeg_watermark,
     h264_profile,
     h264_level,
+    h265_profile,
+    h265_level,
     audio_bitrate,
     audio_channels,
     simultaneous_encodes,
@@ -7040,6 +7119,25 @@ const EncodingSettings = ({
           options: h264LevelOptions,
           disabled: ffmpeg_exists !== true
         })]
+      }), codec.id === 'h265' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        className: "videopack-setting-reduced-width",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+          __nextHasNoMarginBottom: true,
+          __next40pxDefaultSize: true,
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('H.265 profile', 'video-embed-thumbnail-generator'),
+          value: h265_profile,
+          onChange: changeHandlerFactory.h265_profile,
+          options: h265ProfileOptions,
+          disabled: ffmpeg_exists !== true
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
+          __nextHasNoMarginBottom: true,
+          __next40pxDefaultSize: true,
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('H.265 level', 'video-embed-thumbnail-generator'),
+          value: h265_level,
+          onChange: changeHandlerFactory.h265_level,
+          options: h265LevelOptions,
+          disabled: ffmpeg_exists !== true
+        })]
       })]
     }, codec.id);
   };
@@ -7139,8 +7237,18 @@ const EncodingSettings = ({
     const {
       min,
       max,
-      labels = {}
+      labels: originalLabels = {},
+      default: defaultValue
     } = rateControl;
+    const labels = {
+      ...originalLabels
+    }; // create a mutable copy
+
+    // Add the 'Default' label if there isn't already a label for the default value
+    if (defaultValue !== undefined && !labels[defaultValue]) {
+      labels[defaultValue] = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %d: CRF value. */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%d: default', 'video-embed-thumbnail-generator'), defaultValue);
+    }
     const marks = [];
     for (let i = min; i <= max; i++) {
       if (labels && labels[i]) {
@@ -7184,6 +7292,59 @@ const EncodingSettings = ({
   }, {
     value: 'high444',
     label: 'high444'
+  }];
+  const h265ProfileOptions = [{
+    value: 'none',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('None', 'video-embed-thumbnail-generator')
+  }, {
+    value: 'main',
+    label: 'main'
+  }, {
+    value: 'main10',
+    label: 'main10'
+  }];
+  const h265LevelOptions = [{
+    value: 'none',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('None', 'video-embed-thumbnail-generator')
+  }, {
+    value: '1',
+    label: '1'
+  }, {
+    value: '2',
+    label: '2'
+  }, {
+    value: '2.1',
+    label: '2.1'
+  }, {
+    value: '3',
+    label: '3'
+  }, {
+    value: '3.1',
+    label: '3.1'
+  }, {
+    value: '4',
+    label: '4'
+  }, {
+    value: '4.1',
+    label: '4.1'
+  }, {
+    value: '5',
+    label: '5'
+  }, {
+    value: '5.1',
+    label: '5.1'
+  }, {
+    value: '5.2',
+    label: '5.2'
+  }, {
+    value: '6',
+    label: '6'
+  }, {
+    value: '6.1',
+    label: '6.1'
+  }, {
+    value: '6.2',
+    label: '6.2'
   }];
   const h264LevelOptions = [{
     value: 'none',
@@ -8863,7 +9024,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
 /* harmony export */   setPosterImage: () => (/* binding */ setPosterImage),
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
-/* harmony export */   testFFmpegCommand: () => (/* binding */ testFFmpegCommand),
+/* harmony export */   testEncodeCommand: () => (/* binding */ testEncodeCommand),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
 /* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
 /* harmony export */ });
@@ -8871,14 +9032,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/url */ "@wordpress/url");
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 const getQueue = async () => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getQueue', undefined);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/queue'
     });
-    return response || [];
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getQueue', response || []);
   } catch (error) {
     console.error('Error fetching queue:', error);
     throw error;
@@ -8935,16 +9103,25 @@ const removeJob = async jobId => {
   }
 };
 const getVideoFormats = async attachmentId => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoFormats', undefined, attachmentId);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: `/videopack/v1/formats/${attachmentId}`
     });
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoFormats', response, attachmentId);
   } catch (error) {
     console.error('Error fetching video formats:', error);
     throw error;
   }
 };
 const enqueueJob = async (attachmentId, src, formats) => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_enqueueJob', undefined, attachmentId, src, formats);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: `/videopack/v1/queue/${attachmentId}`,
@@ -9044,11 +9221,16 @@ const saveAllThumbnails = async (attachment_id, thumb_urls) => {
   }
 };
 const getVideoGallery = async args => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/video_gallery', args),
       method: 'GET'
     });
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoGallery', response, args);
   } catch (error) {
     console.error('Error fetching video gallery:', error);
     throw error;
@@ -9075,22 +9257,31 @@ const getFreemiusPage = async page => {
     throw error;
   }
 };
-const testFFmpegCommand = async (codec, resolution, rotate) => {
+const testEncodeCommand = async (codec, resolution, rotate) => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`
     });
   } catch (error) {
-    console.error('Error testing FFmpeg command:', error);
+    console.error('Error testing encode command:', error);
     throw error;
   }
 };
 const getSettings = async () => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getSettings', undefined);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     const allSettings = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/wp/v2/settings'
     });
-    return allSettings.videopack_options || {};
+    const settings = allSettings.videopack_options || {};
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getSettings', settings);
   } catch (error) {
     console.error('Error fetching settings:', error);
     throw error;
@@ -9154,6 +9345,10 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
   }
 };
 const startBatchProcess = async (type, additionalData = {}) => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_startBatchProcess', undefined, type, additionalData);
+  if (typeof pre !== 'undefined') {
+    return pre;
+  }
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/batch/process',
@@ -9208,6 +9403,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
+/* global Image */
+
 
 
 /**
@@ -9305,7 +9502,7 @@ const captureVideoFrame = (source, time, watermarkOptions = null) => {
  *
  * @param {HTMLCanvasElement} canvas  The canvas to draw on.
  * @param {Object}            options Watermark options (url, scale, align, x, valign, y).
- * @return {Promise<HTMLCanvasElement>}
+ * @return {Promise<HTMLCanvasElement>} The canvas with the captured frame.
  */
 const drawWatermark = (canvas, options) => {
   return new Promise((resolve, reject) => {
@@ -9526,6 +9723,16 @@ module.exports = window["wp"]["element"];
 
 /***/ },
 
+/***/ "@wordpress/hooks"
+/*!*******************************!*\
+  !*** external ["wp","hooks"] ***!
+  \*******************************/
+(module) {
+
+module.exports = window["wp"]["hooks"];
+
+/***/ },
+
 /***/ "@wordpress/html-entities"
 /*!**************************************!*\
   !*** external ["wp","htmlEntities"] ***!
@@ -9737,23 +9944,25 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
-/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_compose__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _assets_icon__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../assets/icon */ "./src/assets/icon.js");
-/* harmony import */ var _components_PlayerSettings__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/PlayerSettings */ "./src/features/settings/components/PlayerSettings.js");
-/* harmony import */ var _components_VideoCollectionSettings__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/VideoCollectionSettings */ "./src/features/settings/components/VideoCollectionSettings.js");
-/* harmony import */ var _components_ThumbnailSettings__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/ThumbnailSettings */ "./src/features/settings/components/ThumbnailSettings.js");
-/* harmony import */ var _components_EncodingSettings__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/EncodingSettings */ "./src/features/settings/components/EncodingSettings.js");
-/* harmony import */ var _components_AdminSettings__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/AdminSettings */ "./src/features/settings/components/AdminSettings.js");
-/* harmony import */ var _components_FreemiusPage__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/FreemiusPage */ "./src/features/settings/components/FreemiusPage.js");
-/* harmony import */ var _settings_scss__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./settings.scss */ "./src/features/settings/settings.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
+/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
+/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_compose__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _assets_icon__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../assets/icon */ "./src/assets/icon.js");
+/* harmony import */ var _components_PlayerSettings__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/PlayerSettings */ "./src/features/settings/components/PlayerSettings.js");
+/* harmony import */ var _components_VideoCollectionSettings__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/VideoCollectionSettings */ "./src/features/settings/components/VideoCollectionSettings.js");
+/* harmony import */ var _components_ThumbnailSettings__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/ThumbnailSettings */ "./src/features/settings/components/ThumbnailSettings.js");
+/* harmony import */ var _components_EncodingSettings__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/EncodingSettings */ "./src/features/settings/components/EncodingSettings.js");
+/* harmony import */ var _components_AdminSettings__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/AdminSettings */ "./src/features/settings/components/AdminSettings.js");
+/* harmony import */ var _components_FreemiusPage__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/FreemiusPage */ "./src/features/settings/components/FreemiusPage.js");
+/* harmony import */ var _settings_scss__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./settings.scss */ "./src/features/settings/settings.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__);
 /* global videopack_config */
 
 
@@ -9770,36 +9979,37 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 const VideopackSettingsPage = () => {
-  const [settings, setSettings] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)({});
-  const [ffmpegTest, setFfmpegTest] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)({});
-  const [isSettingsChanged, setIsSettingsChanged] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(false);
+  const [settings, setSettings] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)({});
+  const [ffmpegTest, setFfmpegTest] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)({});
+  const [isSettingsChanged, setIsSettingsChanged] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(false);
   const defaultTab = window.location.hash.substring(1) || 'player';
-  const [activeTab, setActiveTab] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(defaultTab);
-  const settingsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useRef)(settings);
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
+  const [activeTab, setActiveTab] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useState)(defaultTab);
+  const settingsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useRef)(settings);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
     settingsRef.current = settings;
   }, [settings]);
-  const testFfmpeg = (codec, resolution, rotate) => {
+  const testFfmpeg = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useCallback)((codec, resolution, rotate) => {
     if (activeTab === 'encoding') {
-      (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.testFFmpegCommand)(codec, resolution, rotate).then(response => {
+      setFfmpegTest({
+        command: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Running test…', 'video-embed-thumbnail-generator'),
+        output: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Running test…', 'video-embed-thumbnail-generator')
+      });
+      (0,_utils_utils__WEBPACK_IMPORTED_MODULE_2__.testEncodeCommand)(codec, resolution, rotate).then(response => {
         setFfmpegTest(response);
       }).catch(error => {
         console.error(error);
       });
     }
-  };
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
-    if (activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true) {
-      setFfmpegTest({
-        command: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Running test…', 'video-embed-thumbnail-generator'),
-        output: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Running test…', 'video-embed-thumbnail-generator')
-      });
+  }, [activeTab]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
+    if (!isSettingsChanged && activeTab === 'encoding' && settings.sample_codec && settings.sample_resolution && settings.ffmpeg_exists === true) {
       testFfmpeg(settings.sample_codec, settings.sample_resolution, settings.sample_rotate);
     }
-  }, [settings, activeTab]);
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
-    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.getSettings)().then(response => {
+  }, [settings, activeTab, isSettingsChanged, testFfmpeg]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
+    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_2__.getSettings)().then(response => {
       setSettings(response);
     }).catch(error => {
       console.error(error);
@@ -9812,8 +10022,8 @@ const VideopackSettingsPage = () => {
       window.removeEventListener('popstate', handlePopState);
     };
   }, []);
-  const debouncedSaveSettings = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_3__.useDebounce)(newSettings => {
-    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.saveWPSettings)(newSettings).then(response => {
+  const debouncedSaveSettings = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_4__.useDebounce)(newSettings => {
+    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_2__.saveWPSettings)(newSettings).then(response => {
       const currentSettings = settingsRef.current;
       const nextSettings = {
         ...response
@@ -9833,12 +10043,12 @@ const VideopackSettingsPage = () => {
       console.error('Error updating settings:', error);
     });
   }, 1000);
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useEffect)(() => {
     if (isSettingsChanged) {
       debouncedSaveSettings(settings);
     }
   }, [isSettingsChanged, debouncedSaveSettings, settings]);
-  const changeHandlerFactory = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useMemo)(() => {
+  const changeHandlerFactory = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useMemo)(() => {
     if (!settings || typeof settings !== 'object') {
       return {};
     }
@@ -9853,111 +10063,92 @@ const VideopackSettingsPage = () => {
       return acc;
     }, {});
   }, [settings]);
-  const tabs = [{
-    name: 'player',
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Player', 'video-embed-thumbnail-generator')
-  }, {
-    name: 'thumbnails',
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Thumbnails', 'video-embed-thumbnail-generator')
-  }, {
-    name: 'gallery',
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Collections', 'video-embed-thumbnail-generator')
-  }, {
-    name: 'encoding',
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encoding', 'video-embed-thumbnail-generator')
-  }, {
-    name: 'admin',
-    title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Admin', 'video-embed-thumbnail-generator')
-  }];
-  if (videopack_config.freemiusEnabled) {
-    tabs.push({
-      name: 'account',
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Freemius Account', 'video-embed-thumbnail-generator'),
-      className: 'videopack-freemius-tab'
+  const tabs = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.useMemo)(() => {
+    const defaultTabs = [{
+      name: 'player',
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Player', 'video-embed-thumbnail-generator'),
+      component: _components_PlayerSettings__WEBPACK_IMPORTED_MODULE_7__["default"]
     }, {
-      name: 'add-ons',
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Add-ons', 'video-embed-thumbnail-generator'),
-      className: 'videopack-freemius-tab'
-    });
-  }
+      name: 'thumbnails',
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Thumbnails', 'video-embed-thumbnail-generator'),
+      component: _components_ThumbnailSettings__WEBPACK_IMPORTED_MODULE_9__["default"]
+    }, {
+      name: 'gallery',
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Collections', 'video-embed-thumbnail-generator'),
+      component: _components_VideoCollectionSettings__WEBPACK_IMPORTED_MODULE_8__["default"]
+    }, {
+      name: 'encoding',
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Encoding', 'video-embed-thumbnail-generator'),
+      component: _components_EncodingSettings__WEBPACK_IMPORTED_MODULE_10__["default"]
+    }, {
+      name: 'admin',
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Admin', 'video-embed-thumbnail-generator'),
+      component: _components_AdminSettings__WEBPACK_IMPORTED_MODULE_11__["default"]
+    }];
+    if (videopack_config.freemiusEnabled) {
+      defaultTabs.push({
+        name: 'account',
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Freemius Account', 'video-embed-thumbnail-generator'),
+        className: 'videopack-freemius-tab',
+        component: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_components_FreemiusPage__WEBPACK_IMPORTED_MODULE_12__["default"], {
+          page: "account"
+        })
+      }, {
+        name: 'add-ons',
+        title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Add-ons', 'video-embed-thumbnail-generator'),
+        className: 'videopack-freemius-tab',
+        component: () => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_components_FreemiusPage__WEBPACK_IMPORTED_MODULE_12__["default"], {
+          page: "add-ons"
+        })
+      });
+    }
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack.settings.tabs', defaultTabs);
+  }, []);
   const onTabSelect = tabName => {
     setActiveTab(tabName);
     window.history.pushState(null, '', `#${tabName}`);
   };
   const renderTab = tab => {
     if (settings && settings.hasOwnProperty('embed_method')) {
-      if (tab.name === 'player') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_PlayerSettings__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      if (tab.component) {
+        const TabComponent = tab.component;
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(TabComponent, {
           settings: settings,
           setSettings: setSettings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'thumbnails') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_ThumbnailSettings__WEBPACK_IMPORTED_MODULE_8__["default"], {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'gallery') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_VideoCollectionSettings__WEBPACK_IMPORTED_MODULE_7__["default"], {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'encoding') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_EncodingSettings__WEBPACK_IMPORTED_MODULE_9__["default"], {
-          settings: settings,
           changeHandlerFactory: changeHandlerFactory,
           ffmpegTest: ffmpegTest
         });
       }
-      if (tab.name === 'admin') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_AdminSettings__WEBPACK_IMPORTED_MODULE_10__["default"], {
-          settings: settings,
-          changeHandlerFactory: changeHandlerFactory
-        });
-      }
-      if (tab.name === 'account') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_FreemiusPage__WEBPACK_IMPORTED_MODULE_11__["default"], {
-          page: "account"
-        });
-      }
-      if (tab.name === 'add-ons') {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_components_FreemiusPage__WEBPACK_IMPORTED_MODULE_11__["default"], {
-          page: "add-ons"
-        });
-      }
     } else {
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Spinner, {});
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {});
     }
   };
   const resetSettings = () => {
-    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_1__.resetVideopackSettings)().then(response => {
+    (0,_utils_utils__WEBPACK_IMPORTED_MODULE_2__.resetVideopackSettings)().then(response => {
       setSettings(response);
       setIsSettingsChanged(true);
     }).catch(error => {
       console.error(error);
     });
   };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("div", {
     className: "wrap videopack-settings",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)("h1", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Icon, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("h1", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
         className: "videopack-settings-icon",
-        icon: _assets_icon__WEBPACK_IMPORTED_MODULE_5__.videopack,
+        icon: _assets_icon__WEBPACK_IMPORTED_MODULE_6__.videopack,
         size: 40
       }), (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Videopack Settings', 'video-embed-thumbnail-generator')]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Panel, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TabPanel, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Panel, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.TabPanel, {
         tabs: tabs,
         initialTabName: activeTab,
         onSelect: onTabSelect,
         children: tab => {
           return renderTab(tab);
         }
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelRow, {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelRow, {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
           variant: "primary",
           onClick: resetSettings,
           className: 'videopack-settings-reset',
@@ -9968,8 +10159,8 @@ const VideopackSettingsPage = () => {
   });
 };
 const el = document.getElementById('videopack-settings-root');
-const root = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.createRoot)(el);
-root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_13__.jsx)(VideopackSettingsPage, {}));
+const root = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_5__.createRoot)(el);
+root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(VideopackSettingsPage, {}));
 })();
 
 /******/ })()

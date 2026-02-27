@@ -352,7 +352,15 @@ class Player {
 
 			$embed_code = '<iframe src="' . esc_url( $embed_url ) . '" width="' . esc_attr( $this->atts['width'] ) . '" height="' . esc_attr( $this->atts['height'] ) . '" frameborder="0" allowfullscreen></iframe>';
 
-			$meta_bar .= '<span class="embedcode-container"><span class="videopack-icons embed"></span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="embedcode" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
+			$meta_bar .= '<span class="embedcode-container"><span class="videopack-icons embed"></span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="embedcode videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
+
+			$start_at_id = 'videopack-start-at-enable-' . $this->get_id();
+			$meta_bar   .= '<span class="videopack-start-at-container">' .
+				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" /> ' .
+				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label> ' .
+				'<input type="text" class="videopack-start-at" value="00:00" />' .
+			'</span>';
+
 			$meta_bar .= '</div>';
 		}
 
@@ -377,7 +385,8 @@ class Player {
 		$meta_bar_class = $this->has_meta_bar() ? ' meta-bar-visible' : '';
 
 		$html  = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '">';
-		$html .= '<div class="videopack-player" data-id="' . esc_attr( $this->get_id() ) . '">';
+		$player_classes = apply_filters( 'videopack_player_div_classes', array( 'videopack-player' ), $this->atts );
+		$html .= '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
 		$html .= $this->get_schema_markup();
 		return $html;
 	}

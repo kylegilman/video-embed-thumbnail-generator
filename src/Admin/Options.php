@@ -88,6 +88,8 @@ class Options {
 			'nice'                    => true, // Adjust process priority for video encoding (lower priority).
 			'h264_profile'            => 'main', // H.264 profile for video encoding.
 			'h264_level'              => '4.1', // H.264 level for video encoding.
+			'h265_profile'            => 'none', // H.265 profile for video encoding.
+			'h265_level'              => 'none', // H.265 level for video encoding.
 			'simultaneous_encodes'    => 1, // Maximum number of simultaneous video encoding processes.
 			'error_email'             => 'nobody', // Email address to receive error notifications ('nobody', 'encoder', or user login).
 			'queue_control'           => 'play', // Control behavior for video encoding queue ('play', 'pause').
@@ -524,6 +526,8 @@ class Options {
 	 *   nice: bool,
 	 *   h264_profile: string,
 	 *   h264_level: string,
+	 *   h265_profile: string,
+	 *   h265_level: string,
 	 *   simultaneous_encodes: int,
 	 *   error_email: string,
 	 *   queue_control: string,

@@ -1,12 +1,17 @@
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs, getFilename } from '@wordpress/url';
+import { applyFilters } from '@wordpress/hooks';
 
 export const getQueue = async () => {
+	const pre = applyFilters('videopack.utils.pre_getQueue', undefined);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
 		const response = await apiFetch({
 			path: '/videopack/v1/queue',
 		});
-		return response || [];
+		return applyFilters('videopack.utils.getQueue', response || []);
 	} catch (error) {
 		console.error('Error fetching queue:', error);
 		throw error;
@@ -64,10 +69,23 @@ export const removeJob = async (jobId) => {
 };
 
 export const getVideoFormats = async (attachmentId) => {
+	const pre = applyFilters(
+		'videopack.utils.pre_getVideoFormats',
+		undefined,
+		attachmentId
+	);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
-		return await apiFetch({
+		const response = await apiFetch({
 			path: `/videopack/v1/formats/${attachmentId}`,
 		});
+		return applyFilters(
+			'videopack.utils.getVideoFormats',
+			response,
+			attachmentId
+		);
 	} catch (error) {
 		console.error('Error fetching video formats:', error);
 		throw error;
@@ -75,6 +93,16 @@ export const getVideoFormats = async (attachmentId) => {
 };
 
 export const enqueueJob = async (attachmentId, src, formats) => {
+	const pre = applyFilters(
+		'videopack.utils.pre_enqueueJob',
+		undefined,
+		attachmentId,
+		src,
+		formats
+	);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
 		return await apiFetch({
 			path: `/videopack/v1/queue/${attachmentId}`,
@@ -180,11 +208,20 @@ export const saveAllThumbnails = async (attachment_id, thumb_urls) => {
 };
 
 export const getVideoGallery = async (args) => {
+	const pre = applyFilters(
+		'videopack.utils.pre_getVideoGallery',
+		undefined,
+		args
+	);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
-		return await apiFetch({
+		const response = await apiFetch({
 			path: addQueryArgs('/videopack/v1/video_gallery', args),
 			method: 'GET',
 		});
+		return applyFilters('videopack.utils.getVideoGallery', response, args);
 	} catch (error) {
 		console.error('Error fetching video gallery:', error);
 		throw error;
@@ -214,21 +251,36 @@ export const getFreemiusPage = async (page) => {
 	}
 };
 
-export const testFFmpegCommand = async (codec, resolution, rotate) => {
+export const testEncodeCommand = async (codec, resolution, rotate) => {
+	const pre = applyFilters(
+		'videopack.utils.pre_testEncodeCommand',
+		undefined,
+		codec,
+		resolution,
+		rotate
+	);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
 		return await apiFetch({
 			path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`,
 		});
 	} catch (error) {
-		console.error('Error testing FFmpeg command:', error);
+		console.error('Error testing encode command:', error);
 		throw error;
 	}
 };
 
 export const getSettings = async () => {
+	const pre = applyFilters('videopack.utils.pre_getSettings', undefined);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
 		const allSettings = await apiFetch({ path: '/wp/v2/settings' });
-		return allSettings.videopack_options || {};
+		const settings = allSettings.videopack_options || {};
+		return applyFilters('videopack.utils.getSettings', settings);
 	} catch (error) {
 		console.error('Error fetching settings:', error);
 		throw error;
@@ -302,6 +354,15 @@ export const generateThumbnail = async (
 };
 
 export const startBatchProcess = async (type, additionalData = {}) => {
+	const pre = applyFilters(
+		'videopack.utils.pre_startBatchProcess',
+		undefined,
+		type,
+		additionalData
+	);
+	if (typeof pre !== 'undefined') {
+		return pre;
+	}
 	try {
 		return await apiFetch({
 			path: '/videopack/v1/batch/process',
