@@ -19,13 +19,14 @@ import {
 import { volumeUp, volumeDown } from '../../../assets/icon';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
 import VideopackTooltip from './VideopackTooltip';
-import ChooseFromLibrary from './ChooseFromLibrary';
+import WatermarkSettingsPanel from './WatermarkSettingsPanel';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
 		embed_method,
 		overlay_title,
 		watermark,
+		watermark_styles,
 		watermark_link_to,
 		watermark_url,
 		align,
@@ -185,11 +186,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			label: __('Download video', 'video-embed-thumbnail-generator'),
 		},
 		{
-			value: 'Custom URL',
+			value: 'custom',
 			label: __('Custom URL', 'video-embed-thumbnail-generator'),
 		},
 		{
-			value: 'None',
+			value: 'false',
 			label: __('None', 'video-embed-thumbnail-generator'),
 		},
 	];
@@ -310,6 +311,17 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	};
 
 	const handleVideoPlayerReady = () => {};
+
+	const watermarkSettings = {
+		url: watermark,
+		...watermark_styles,
+	};
+
+	const handleWatermarkChange = (newSettings) => {
+		const { url, ...styles } = newSettings;
+		changeHandlerFactory.watermark(url);
+		changeHandlerFactory.watermark_styles(styles);
+	};
 
 	return (
 		<>
@@ -726,19 +738,15 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
-			<PanelBody
+			<WatermarkSettingsPanel
 				title={__(
 					'Watermark Overlay',
 					'video-embed-thumbnail-generator'
 				)}
+				watermarkSettings={watermarkSettings}
+				onChange={handleWatermarkChange}
 				initialOpen={true}
 			>
-				<ChooseFromLibrary
-					label={__('Image URL:', 'video-embed-thumbnail-generator')}
-					type="url"
-					value={watermark}
-					onChange={changeHandlerFactory.watermark}
-				/>
 				{watermark && (
 					<div className="videopack-setting-reduced-width">
 						<SelectControl
@@ -767,7 +775,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					</div>
 				)}
-			</PanelBody>
+			</WatermarkSettingsPanel>
 			<PanelBody
 				title={__('Video Sources', 'video-embed-thumbnail-generator')}
 			>

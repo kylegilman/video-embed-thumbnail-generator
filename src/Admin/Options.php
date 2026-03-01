@@ -111,6 +111,13 @@ class Options {
 			// Player Appearance & Behavior.
 			'poster'                  => '', // Default poster image URL for videos.
 			'watermark'               => '', // Player overlay watermark image URL.
+			'watermark_styles'        => array( // Watermark positioning and styling.
+				'scale'  => '10',
+				'align'  => 'right',
+				'valign' => 'bottom',
+				'x'      => '5',
+				'y'      => '7',
+			),
 			'watermark_link_to'       => 'home', // Link target for the player watermark ('home', 'parent', 'attachment', 'download', 'false', or custom URL).
 			'watermark_url'           => '', // Custom link target URL for the player watermark (overrides watermark_link_to if set).
 			'overlay_title'           => true, // Overlay video title on the player.
@@ -431,7 +438,7 @@ class Options {
 			$att_type = 'string';
 
 			// Handle specific known object-like array structures first
-			if ( $option === 'ffmpeg_thumb_watermark' || $option === 'ffmpeg_watermark' ) {
+			if ( $option === 'ffmpeg_thumb_watermark' || $option === 'ffmpeg_watermark' || $option === 'watermark_styles' ) {
 				$schema[ $option ] = array(
 					'type'       => 'object',
 					'properties' => array(

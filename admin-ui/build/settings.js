@@ -6478,6 +6478,10 @@ const VideoPlayer = ({
     right_click,
     playback_rate,
     fullwidth,
+    watermark,
+    watermark_styles,
+    watermark_link_to,
+    watermark_url,
     sources = [],
     source_groups = {}
   } = decodedAttributes;
@@ -6578,6 +6582,52 @@ const VideoPlayer = ({
   if (!renderReady) {
     return null; // Or a loading spinner
   }
+  const getWatermarkStyle = () => {
+    const defaults = {
+      scale: 10,
+      align: 'right',
+      valign: 'bottom',
+      x: 5,
+      y: 7
+    };
+    const styles = {
+      ...defaults,
+      ...watermark_styles
+    };
+
+    // Check if styles differ from defaults
+    if (Number(styles.scale) === defaults.scale && styles.align === defaults.align && styles.valign === defaults.valign && Number(styles.x) === defaults.x && Number(styles.y) === defaults.y) {
+      return null;
+    }
+    const css = {
+      maxWidth: `${styles.scale}%`,
+      width: '100%',
+      height: 'auto',
+      position: 'absolute'
+    };
+    const x = styles.x || 0;
+    const y = styles.y || 0;
+    if (styles.align === 'left') {
+      css.left = `${x}%`;
+    } else if (styles.align === 'right') {
+      css.right = `${x}%`;
+    } else {
+      css.left = '50%';
+      css.transform = 'translateX(-50%)';
+      css.marginLeft = `${-x}%`;
+    }
+    if (styles.valign === 'top') {
+      css.top = `${y}%`;
+    } else if (styles.valign === 'bottom') {
+      css.bottom = `${y}%`;
+    } else {
+      css.top = '50%';
+      css.transform = css.transform ? 'translate(-50%, -50%)' : 'translateY(-50%)';
+      css.marginTop = `${-y}%`;
+    }
+    return css;
+  };
+  const watermarkStyle = getWatermarkStyle();
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
     className: "videopack-wrapper meta-bar-visible",
     ref: wrapperRef,
@@ -6601,6 +6651,21 @@ const VideoPlayer = ({
       }), embed_method === 'None' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_GenericPlayer__WEBPACK_IMPORTED_MODULE_3__["default"], {
         ...genericPlayerOptions,
         ref: playerRef
+      }), watermark && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+        className: "videopack-watermark",
+        children: watermark_link_to && watermark_link_to !== 'false' && watermark_link_to !== 'None' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("a", {
+          href: "#",
+          onClick: e => e.preventDefault(),
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("img", {
+            src: watermark,
+            alt: "watermark",
+            style: watermarkStyle
+          })
+        }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("img", {
+          src: watermark,
+          alt: "watermark",
+          style: watermarkStyle
+        })
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_BelowVideo__WEBPACK_IMPORTED_MODULE_5__["default"], {
       attributes: decodedAttributes
@@ -7903,7 +7968,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _assets_icon__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../assets/icon */ "./src/assets/icon.js");
 /* harmony import */ var _components_VideoPlayer_VideoPlayer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../components/VideoPlayer/VideoPlayer */ "./src/components/VideoPlayer/VideoPlayer.js");
 /* harmony import */ var _VideopackTooltip__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./VideopackTooltip */ "./src/features/settings/components/VideopackTooltip.js");
-/* harmony import */ var _ChooseFromLibrary__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ChooseFromLibrary */ "./src/features/settings/components/ChooseFromLibrary.js");
+/* harmony import */ var _WatermarkSettingsPanel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./WatermarkSettingsPanel */ "./src/features/settings/components/WatermarkSettingsPanel.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
 /* global videopack_config */
@@ -7924,6 +7989,7 @@ const PlayerSettings = ({
     embed_method,
     overlay_title,
     watermark,
+    watermark_styles,
     watermark_link_to,
     watermark_url,
     align,
@@ -8057,10 +8123,10 @@ const PlayerSettings = ({
     value: 'download',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Download video', 'video-embed-thumbnail-generator')
   }, {
-    value: 'Custom URL',
+    value: 'custom',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Custom URL', 'video-embed-thumbnail-generator')
   }, {
-    value: 'None',
+    value: 'false',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('None', 'video-embed-thumbnail-generator')
   }];
   const skinOptions = [{
@@ -8133,6 +8199,18 @@ const PlayerSettings = ({
     return items;
   };
   const handleVideoPlayerReady = () => {};
+  const watermarkSettings = {
+    url: watermark,
+    ...watermark_styles
+  };
+  const handleWatermarkChange = newSettings => {
+    const {
+      url,
+      ...styles
+    } = newSettings;
+    changeHandlerFactory.watermark(url);
+    changeHandlerFactory.watermark_styles(styles);
+  };
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.Fragment, {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
@@ -8404,15 +8482,12 @@ const PlayerSettings = ({
           text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.', 'video-embed-thumbnail-generator')
         })]
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_WatermarkSettingsPanel__WEBPACK_IMPORTED_MODULE_5__["default"], {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark Overlay', 'video-embed-thumbnail-generator'),
+      watermarkSettings: watermarkSettings,
+      onChange: handleWatermarkChange,
       initialOpen: true,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_ChooseFromLibrary__WEBPACK_IMPORTED_MODULE_5__["default"], {
-        label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Image URL:', 'video-embed-thumbnail-generator'),
-        type: "url",
-        value: watermark,
-        onChange: changeHandlerFactory.watermark
-      }), watermark && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+      children: watermark && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
         className: "videopack-setting-reduced-width",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.SelectControl, {
           __nextHasNoMarginBottom: true,
@@ -8429,7 +8504,7 @@ const PlayerSettings = ({
           value: watermark_url,
           onChange: changeHandlerFactory.watermark_url
         })]
-      })]
+      })
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Video Sources', 'video-embed-thumbnail-generator'),
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.ToggleControl, {
@@ -9156,9 +9231,9 @@ const WatermarkPositioner = ({
 
     // Use transientScale if available, else settings.scale
     const scale = transientScale !== null ? transientScale : Number(settings.scale || 50);
-    const h = containerHeight * scale / 100;
+    const w = containerWidth * scale / 100;
     const aspectRatio = watermarkImage.width / watermarkImage.height;
-    const w = h * aspectRatio;
+    const h = w / aspectRatio;
     const xOffset = Number(settings.x || 0);
     const yOffset = Number(settings.y || 0);
     const hOffsetPx = containerWidth * xOffset / 100;
@@ -9260,9 +9335,9 @@ const WatermarkPositioner = ({
     const finalScale = wasResizing && transientScale !== null ? transientScale : Number(settings.scale || 50);
 
     // Recalculate dimensions based on finalScale for alignment logic
-    const h = containerHeight * finalScale / 100;
+    const w = containerWidth * finalScale / 100;
     const aspectRatio = watermarkImage.width / watermarkImage.height;
-    const w = h * aspectRatio;
+    const h = w / aspectRatio;
 
     // Determine Horizontal Alignment and Offset
     let newAlign = 'center';
@@ -9374,11 +9449,12 @@ const WatermarkPositioner = ({
     };
     const step = e.shiftKey ? 5 : 1; // Scale step
     let scaleDelta = 0;
+    const containerWidth = baseFrame.width;
 
     // For SE and NW handles, right/down increases size.
     if (handle === 'se' || handle === 'nw') {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        scaleDelta = step;
+        scaleDelta = handle === 'se' ? step : -step;
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         scaleDelta = -step;
       }
@@ -9397,11 +9473,11 @@ const WatermarkPositioner = ({
     if (newScale === currentScale) {
       return;
     }
-    const containerHeight = baseFrame.height;
-    const oldHeight = containerHeight * currentScale / 100;
-    const oldWidth = oldHeight * (wmWidth / wmHeight);
-    const newHeight = containerHeight * newScale / 100;
-    const newWidth = newHeight * (wmWidth / wmHeight);
+    const aspectRatio = wmWidth / wmHeight;
+    const oldWidth = containerWidth * currentScale / 100;
+    const oldHeight = oldWidth / aspectRatio;
+    const newWidth = containerWidth * newScale / 100;
+    const newHeight = newWidth / aspectRatio;
     let newLeft = currentLeft;
     let newTop = currentTop;
     if (handle === 'sw' || handle === 'nw') {
@@ -9451,22 +9527,22 @@ const WatermarkPositioner = ({
         aspectRatio,
         handle
       } = dragStart;
-      const initialHeight = containerHeight * initialScale / 100;
-      const initialWidth = initialHeight * aspectRatio;
-      let newHeight = initialHeight;
-      if (handle === 'se' || handle === 'sw') {
-        newHeight = initialHeight + dyCanvas;
+      const initialWidth = containerWidth * initialScale / 100;
+      const initialHeight = initialWidth / aspectRatio;
+      let newWidth = initialWidth;
+      if (handle === 'se' || handle === 'ne') {
+        newWidth = initialWidth + dxCanvas;
       } else {
-        newHeight = initialHeight - dyCanvas;
+        newWidth = initialWidth - dxCanvas;
       }
-      let newScale = newHeight / containerHeight * 100;
+      let newScale = newWidth / containerWidth * 100;
       newScale = Math.round(newScale * 100) / 100;
       // Constrain scale
       newScale = Math.max(1, Math.min(100, newScale));
 
       // Recalculate dimensions based on constrained scale
-      newHeight = containerHeight * newScale / 100;
-      const newWidth = newHeight * aspectRatio;
+      newWidth = containerWidth * newScale / 100;
+      const newHeight = newWidth / aspectRatio;
       let newLeft = initialLeft;
       let newTop = initialTop;
       if (handle === 'sw') {
@@ -9620,7 +9696,8 @@ const WatermarkSettingsPanel = ({
   onChange,
   title,
   initialOpen = false,
-  opened
+  opened,
+  children
 }) => {
   const [baseFrame, setBaseFrame] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
   const [settingsPanelOpen, setSettingsPanelOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
@@ -9666,7 +9743,7 @@ const WatermarkSettingsPanel = ({
       } : {
         url
       })
-    }), watermarkSettings?.url && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
+    }), children, watermarkSettings?.url && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
       title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Watermark Settings', 'video-embed-thumbnail-generator'),
       opened: settingsPanelOpen,
       onToggle: () => setSettingsPanelOpen(!settingsPanelOpen),

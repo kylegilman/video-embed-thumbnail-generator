@@ -609,10 +609,57 @@ class Player {
 			return '';
 		}
 
+		$all_defaults = $this->options_manager->get_default();
+		$defaults     = $all_defaults['watermark_styles'];
+
+		$styles = array_merge( $defaults, $this->options['watermark_styles'] ?? array() );
+		$style  = '';
+
+		// Only apply inline styles if they differ from defaults.
+		if ( $styles['scale'] != $defaults['scale']
+			|| $styles['align'] !== $defaults['align']
+			|| $styles['valign'] !== $defaults['valign']
+			|| $styles['x'] != $defaults['x']
+			|| $styles['y'] != $defaults['y']
+		) {
+			$style = 'max-width: ' . $styles['scale'] . '%; width: 100%; height: auto; position: absolute;';
+
+			if ( 'left' === $styles['align'] ) {
+				$style .= ' left: ' . $styles['x'] . '%;';
+			} elseif ( 'right' === $styles['align'] ) {
+				$style .= ' right: ' . $styles['x'] . '%;';
+			} else {
+				$style .= ' left: 50%; transform: translateX(-50%); margin-left: -' . $styles['x'] . '%;';
+			}
+
+			if ( 'top' === $styles['valign'] ) {
+				$style .= ' top: ' . $styles['y'] . '%;';
+			} elseif ( 'bottom' === $styles['valign'] ) {
+				$style .= ' bottom: ' . $styles['y'] . '%;';
+			} else {
+				if ( 'center' === $styles['align'] ) {
+					// If both are center, combine transform.
+					$style = str_replace( 'transform: translateX(-50%);', 'transform: translate(-50%, -50%);', $style );
+				} else {
+					$style .= ' top: 50%; transform: translateY(-50%);';
+				}
+				$style .= ' margin-top: -' . $styles['y'] . '%;';
+			}
+
+			$style = ' style="' . esc_attr( $style ) . '"';
+		}
+
 		$html = '<div id="video_' . esc_attr( $this->get_id() ) . '_watermark" class="videopack-watermark">';
 
 		$link_to = $this->atts['watermark_link_to'] ?? 'false';
 		$url     = $this->atts['watermark_url'] ?? '';
+
+		if ( 'Custom URL' === $link_to ) {
+			$link_to = 'custom';
+		}
+		if ( 'None' === $link_to ) {
+			$link_to = 'false';
+		}
 
 		if ( 'false' !== $link_to ) {
 			$href = '#';
@@ -636,7 +683,7 @@ class Player {
 			$html .= '<a target="_parent" href="' . esc_url( $href ) . '"' . ( 'download' === $link_to ? ' download' : '' ) . '>';
 		}
 
-		$html .= '<img src="' . esc_url( $this->atts['watermark'] ) . '" alt="' . esc_attr__( 'watermark', 'video-embed-thumbnail-generator' ) . '">';
+		$html .= '<img src="' . esc_url( $this->atts['watermark'] ) . '" alt="' . esc_attr__( 'watermark', 'video-embed-thumbnail-generator' ) . '"' . $style . '>';
 
 		if ( 'false' !== $link_to ) {
 			$html .= '</a>';

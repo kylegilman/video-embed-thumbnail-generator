@@ -47,9 +47,9 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 			transientScale !== null
 				? transientScale
 				: Number(settings.scale || 50);
-		const h = (containerHeight * scale) / 100;
+		const w = (containerWidth * scale) / 100;
 		const aspectRatio = watermarkImage.width / watermarkImage.height;
-		const w = h * aspectRatio;
+		const h = w / aspectRatio;
 
 		const xOffset = Number(settings.x || 0);
 		const yOffset = Number(settings.y || 0);
@@ -157,9 +157,9 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 				: Number(settings.scale || 50);
 
 		// Recalculate dimensions based on finalScale for alignment logic
-		const h = (containerHeight * finalScale) / 100;
+		const w = (containerWidth * finalScale) / 100;
 		const aspectRatio = watermarkImage.width / watermarkImage.height;
-		const w = h * aspectRatio;
+		const h = w / aspectRatio;
 
 		// Determine Horizontal Alignment and Offset
 		let newAlign = 'center';
@@ -299,11 +299,12 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 
 		const step = e.shiftKey ? 5 : 1; // Scale step
 		let scaleDelta = 0;
+		const containerWidth = baseFrame.width;
 
 		// For SE and NW handles, right/down increases size.
 		if (handle === 'se' || handle === 'nw') {
 			if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-				scaleDelta = step;
+				scaleDelta = handle === 'se' ? step : -step;
 			} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
 				scaleDelta = -step;
 			}
@@ -325,11 +326,11 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 			return;
 		}
 
-		const containerHeight = baseFrame.height;
-		const oldHeight = (containerHeight * currentScale) / 100;
-		const oldWidth = oldHeight * (wmWidth / wmHeight);
-		const newHeight = (containerHeight * newScale) / 100;
-		const newWidth = newHeight * (wmWidth / wmHeight);
+		const aspectRatio = wmWidth / wmHeight;
+		const oldWidth = (containerWidth * currentScale) / 100;
+		const oldHeight = oldWidth / aspectRatio;
+		const newWidth = (containerWidth * newScale) / 100;
+		const newHeight = newWidth / aspectRatio;
 
 		let newLeft = currentLeft;
 		let newTop = currentTop;
@@ -390,24 +391,24 @@ const WatermarkPositioner = ({ baseFrame, settings, onChange }) => {
 					aspectRatio,
 					handle,
 				} = dragStart;
-				const initialHeight = (containerHeight * initialScale) / 100;
-				const initialWidth = initialHeight * aspectRatio;
+				const initialWidth = (containerWidth * initialScale) / 100;
+				const initialHeight = initialWidth / aspectRatio;
 
-				let newHeight = initialHeight;
-				if (handle === 'se' || handle === 'sw') {
-					newHeight = initialHeight + dyCanvas;
+				let newWidth = initialWidth;
+				if (handle === 'se' || handle === 'ne') {
+					newWidth = initialWidth + dxCanvas;
 				} else {
-					newHeight = initialHeight - dyCanvas;
+					newWidth = initialWidth - dxCanvas;
 				}
 
-				let newScale = (newHeight / containerHeight) * 100;
+				let newScale = (newWidth / containerWidth) * 100;
 				newScale = Math.round(newScale * 100) / 100;
 				// Constrain scale
 				newScale = Math.max(1, Math.min(100, newScale));
 
 				// Recalculate dimensions based on constrained scale
-				newHeight = (containerHeight * newScale) / 100;
-				const newWidth = newHeight * aspectRatio;
+				newWidth = (containerWidth * newScale) / 100;
+				const newHeight = newWidth / aspectRatio;
 
 				let newLeft = initialLeft;
 				let newTop = initialTop;
