@@ -217,6 +217,18 @@
 .videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu.vjs-submenu-open > .vjs-menu {
   display: block;
 }
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left {
+  right: auto;
+  left: 100%;
+  margin-right: 0;
+  margin-left: 0.2em;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before {
+  right: auto;
+  left: -0.2em;
+}
 .videopack-wrapper .vjs-loading-spinner {
   z-index: 1;
 }
@@ -408,6 +420,12 @@
 .videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-open > .mejs__sourcechooser-submenu,
 .videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-open > .mejs-sourcechooser-submenu {
   display: block;
+}
+.videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item.mejs-submenu-left > .mejs__sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item.mejs-submenu-left > .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-left > .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-left > .mejs-sourcechooser-submenu {
+  right: auto;
+  left: 100%;
 }
 .videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu,
 .videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu,
@@ -1073,6 +1091,10 @@
   vertical-align: text-bottom;
 }
 
+.wrap.videopack-settings .videopack-setting-reduced-width {
+  margin-bottom: 10px;
+}
+
 .wrap.videopack-settings .videopack-setting-reduced-width .components-base-control {
   width: 30rem;
   display: inline-block;
@@ -1226,6 +1248,47 @@
 
 .wrap.videopack-settings .components-flex.videopack-setting-sample-formats div {
   margin-left: 5px;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-alignment-control .components-select-control__input {
+  min-width: 180px;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-offset-control .components-text-control__input {
+  width: 100px;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  z-index: 10;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.nw {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.ne {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.sw {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.se {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
 }
 
 .wrap.videopack-settings .videopack-control-with-tooltip {

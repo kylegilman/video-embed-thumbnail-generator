@@ -122,8 +122,9 @@ export const drawWatermark = (canvas, options) => {
 		img.onload = () => {
 			const canvasWidth = canvas.width;
 			const canvasHeight = canvas.height;
-			const watermarkWidth = (canvasWidth * scale) / 100;
 			const watermarkHeight = (canvasHeight * scale) / 100;
+			const aspectRatio = img.width / img.height;
+			const watermarkWidth = watermarkHeight * aspectRatio;
 
 			const horizontalOffset = (canvasWidth * x) / 100;
 			const verticalOffset = (canvasHeight * y) / 100;
@@ -136,7 +137,7 @@ export const drawWatermark = (canvas, options) => {
 					break;
 				case 'center':
 					xPos =
-						(canvasWidth - watermarkWidth) / 2 + horizontalOffset;
+						(canvasWidth - watermarkWidth) / 2 - horizontalOffset;
 					break;
 				case 'right':
 					xPos = canvasWidth - watermarkWidth - horizontalOffset;
@@ -151,7 +152,7 @@ export const drawWatermark = (canvas, options) => {
 					break;
 				case 'center':
 					yPos =
-						(canvasHeight - watermarkHeight) / 2 + verticalOffset;
+						(canvasHeight - watermarkHeight) / 2 - verticalOffset;
 					break;
 				case 'bottom':
 					yPos = canvasHeight - watermarkHeight - verticalOffset;

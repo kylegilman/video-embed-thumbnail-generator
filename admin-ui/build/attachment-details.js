@@ -806,7 +806,7 @@ const Thumbnails = ({
     for (const time of timePoints) {
       let thumb;
       try {
-        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, time, options?.ffmpeg_thumb_watermark);
+        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, time, options?.ffmpeg_thumb_watermark || {});
         thumb = {
           src: canvas.toDataURL(),
           type: 'canvas',
@@ -1013,7 +1013,7 @@ const Thumbnails = ({
   };
   const handleUseThisFrame = async () => {
     setIsSaving(true);
-    const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, videoRef.current.currentTime, options?.ffmpeg_thumb_watermark);
+    const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, videoRef.current.currentTime, options?.ffmpeg_thumb_watermark || {});
     setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
   };
   const handleToggleVideoPlayer = event => {
@@ -1764,8 +1764,9 @@ const drawWatermark = (canvas, options) => {
     img.onload = () => {
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
-      const watermarkWidth = canvasWidth * scale / 100;
       const watermarkHeight = canvasHeight * scale / 100;
+      const aspectRatio = img.width / img.height;
+      const watermarkWidth = watermarkHeight * aspectRatio;
       const horizontalOffset = canvasWidth * x / 100;
       const verticalOffset = canvasHeight * y / 100;
       let xPos, yPos;
@@ -1774,7 +1775,7 @@ const drawWatermark = (canvas, options) => {
           xPos = horizontalOffset;
           break;
         case 'center':
-          xPos = (canvasWidth - watermarkWidth) / 2 + horizontalOffset;
+          xPos = (canvasWidth - watermarkWidth) / 2 - horizontalOffset;
           break;
         case 'right':
           xPos = canvasWidth - watermarkWidth - horizontalOffset;
@@ -1787,7 +1788,7 @@ const drawWatermark = (canvas, options) => {
           yPos = verticalOffset;
           break;
         case 'center':
-          yPos = (canvasHeight - watermarkHeight) / 2 + verticalOffset;
+          yPos = (canvasHeight - watermarkHeight) / 2 - verticalOffset;
           break;
         case 'bottom':
           yPos = canvasHeight - watermarkHeight - verticalOffset;

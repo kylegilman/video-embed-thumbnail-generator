@@ -7,6 +7,7 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
+	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	PanelBody,
 	PanelRow,
 	RadioControl,
@@ -30,6 +31,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		align,
 		resize,
 		auto_res,
+		enable_custom_resolution,
+		custom_resolution,
+		auto_codec,
 		pixel_ratio,
 		find_formats,
 		fullwidth,
@@ -291,6 +295,17 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			});
 		});
 
+		return items;
+	};
+
+	const autoCodecOptions = () => {
+		const items = [];
+		videopack_config.codecs.forEach((codec) => {
+			items.push({
+				value: codec.id,
+				label: codec.name,
+			});
+		});
 		return items;
 	};
 
@@ -668,6 +683,17 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
+							'Default codec:',
+							'video-embed-thumbnail-generator'
+						)}
+						value={auto_codec}
+						onChange={changeHandlerFactory.auto_codec}
+						options={autoCodecOptions()}
+					/>
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__(
 							'Default resolution:',
 							'video-embed-thumbnail-generator'
 						)}
@@ -682,7 +708,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					/>
 				</div>
-				<div className="videopack-setting-reduced-width">
+				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
@@ -699,50 +725,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					/>
 				</div>
-			</PanelBody>
-			<PanelBody title={__('Formats', 'video-embed-thumbnail-generator')}>
-				<div className="videopack-setting-reduced-width">
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__(
-							'Automatically search for other formats of original file.',
-							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.find_formats}
-						checked={!!find_formats}
-					/>
-					<VideopackTooltip
-						text={__(
-							'Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.',
-							'video-embed-thumbnail-generator'
-						)}
-					/>
-				</div>
-				<BaseControl
-					label={__(
-						'Available Formats:',
-						'video-embed-thumbnail-generator'
-					)}
-					id="videopack-find-formats-codecs"
-					className="videopack-setting-checkbox-group"
-				>
-					<div>
-						{videopack_config.codecs.map((codec) => (
-							<CheckboxControl
-								key={codec.id}
-								__nextHasNoMarginBottom
-								label={codec.name}
-								checked={!!encode?.[codec.id]?.enabled}
-								onChange={(isChecked) =>
-									handleCodecCheckboxChange(
-										codec.id,
-										isChecked
-									)
-								}
-							/>
-						))}
-					</div>
-				</BaseControl>
 			</PanelBody>
 			<PanelBody
 				title={__(
@@ -785,6 +767,81 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					</div>
 				)}
+			</PanelBody>
+			<PanelBody
+				title={__('Video Sources', 'video-embed-thumbnail-generator')}
+			>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Enable Custom Resolution',
+						'video-embed-thumbnail-generator'
+					)}
+					onChange={changeHandlerFactory.enable_custom_resolution}
+					checked={!!enable_custom_resolution}
+				/>
+				{enable_custom_resolution && (
+					<div className="videopack-setting-auto-width">
+						<TextControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'Custom Resolution Height:',
+								'video-embed-thumbnail-generator'
+							)}
+							type="number"
+							value={custom_resolution || ''}
+							onChange={(value) =>
+								changeHandlerFactory.custom_resolution(
+									value === '' ? 0 : parseInt(value, 10)
+								)
+							}
+						/>
+					</div>
+				)}
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Automatically search for other formats of original file.',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.find_formats}
+						checked={!!find_formats}
+					/>
+
+					<VideopackTooltip
+						text={__(
+							'Videos encoded by Videopack or manually assigned in the Media Library will always be found, but if this setting is enabled for a video named video.mp4, the player will also search for files with the naming pattern basename-codec_resolution. Eg: video-h264_720.mp4, video-vp9_1080.mp4, etc. Legacy filename structures (video-720.mp4, video-1080.mp4, etc.) are still supported.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+				<BaseControl
+					label={__(
+						'Available Formats:',
+						'video-embed-thumbnail-generator'
+					)}
+					id="videopack-find-formats-codecs"
+					className="videopack-setting-checkbox-group"
+				>
+					<div>
+						{videopack_config.codecs.map((codec) => (
+							<CheckboxControl
+								key={codec.id}
+								__nextHasNoMarginBottom
+								label={codec.name}
+								checked={!!encode?.[codec.id]?.enabled}
+								onChange={(isChecked) =>
+									handleCodecCheckboxChange(
+										codec.id,
+										isChecked
+									)
+								}
+							/>
+						))}
+					</div>
+				</BaseControl>
 			</PanelBody>
 		</>
 	);

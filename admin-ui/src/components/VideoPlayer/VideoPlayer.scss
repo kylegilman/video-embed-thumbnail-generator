@@ -239,6 +239,18 @@
 			&.vjs-submenu-open > .vjs-menu {
 				display: block;
 			}
+
+			> .vjs-menu.vjs-submenu-left {
+				left: auto;
+				right: 100%;
+				margin-left: 0;
+				margin-right: 0.2em;
+
+				&::before {
+					left: auto;
+					right: -0.2em;
+				}
+			}
 		}
 	}
 
@@ -457,6 +469,12 @@
 		&.mejs-submenu-open > .mejs__sourcechooser-submenu,
 		&.mejs-submenu-open > .mejs-sourcechooser-submenu {
 			display: block;
+		}
+
+		&.mejs-submenu-left > .mejs__sourcechooser-submenu,
+		&.mejs-submenu-left > .mejs-sourcechooser-submenu {
+			left: auto;
+			right: 100%;
 		}
 
 		.mejs__sourcechooser-submenu,

@@ -1475,7 +1475,7 @@ const Thumbnails = ({
     for (const time of timePoints) {
       let thumb;
       try {
-        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, time, options?.ffmpeg_thumb_watermark);
+        const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, time, options?.ffmpeg_thumb_watermark || {});
         thumb = {
           src: canvas.toDataURL(),
           type: 'canvas',
@@ -1682,7 +1682,7 @@ const Thumbnails = ({
   };
   const handleUseThisFrame = async () => {
     setIsSaving(true);
-    const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, videoRef.current.currentTime, options?.ffmpeg_thumb_watermark);
+    const canvas = await (0,_utils_video_capture__WEBPACK_IMPORTED_MODULE_5__.captureVideoFrame)(videoRef.current, videoRef.current.currentTime, options?.ffmpeg_thumb_watermark || {});
     setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
   };
   const handleToggleVideoPlayer = event => {
@@ -2153,11 +2153,22 @@ const VideoJS = props => {
     onPause
   } = props;
   const previousSkinRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(skin);
+  const previousPluginsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(options?.plugins);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     let initTimer;
+    let player = playerRef.current;
 
-    // On initial render, wait for sources to be available before initializing.
-    if (!playerRef.current) {
+    // Check if plugins options changed (e.g. default resolution/codec).
+    // If so, dispose of the player so it can be re-initialized with new options.
+    if (player && JSON.stringify(previousPluginsRef.current) !== JSON.stringify(options.plugins)) {
+      player.dispose();
+      playerRef.current = null;
+      player = null;
+      previousPluginsRef.current = options.plugins;
+    }
+
+    // On initial render (or after dispose), wait for sources to be available before initializing.
+    if (!player) {
       // Wrap initialization in a timeout to handle React Strict Mode double-mounts.
       // This ensures we don't init a player if the component is immediately unmounted.
       initTimer = setTimeout(() => {
@@ -2181,34 +2192,32 @@ const VideoJS = props => {
           this.on('pause', onPause);
         });
       }, 0);
-    } else {
-      const player = playerRef.current;
-      if (player && !player.isDisposed()) {
-        player.autoplay(options.autoplay);
-        player.loop(options.loop);
-        player.muted(options.muted);
-        player.volume(options.volume);
-        player.poster(options.poster);
-        player.controls(options.controls);
-        player.playbackRates(options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []);
-        player.preload(options.preload);
-        if (previousSkinRef.current !== skin) {
-          if (previousSkinRef.current) {
-            player.removeClass(previousSkinRef.current);
-          }
-          if (skin) {
-            player.addClass(skin);
-          }
-          previousSkinRef.current = skin;
+    } else if (player && !player.isDisposed()) {
+      // Update existing player options
+      player.autoplay(options.autoplay);
+      player.loop(options.loop);
+      player.muted(options.muted);
+      player.volume(options.volume);
+      player.poster(options.poster);
+      player.controls(options.controls);
+      player.playbackRates(options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []);
+      player.preload(options.preload);
+      if (previousSkinRef.current !== skin) {
+        if (previousSkinRef.current) {
+          player.removeClass(previousSkinRef.current);
         }
+        if (skin) {
+          player.addClass(skin);
+        }
+        previousSkinRef.current = skin;
+      }
 
-        // Only update src if it has actually changed to prevent reloading
-        if (options.sources && options.sources.length > 0) {
-          const currentSrc = player.currentSrc();
-          const newSrc = options.sources[0].src;
-          if (currentSrc !== newSrc) {
-            player.src(options.sources);
-          }
+      // Only update src if it has actually changed to prevent reloading
+      if (options.sources && options.sources.length > 0) {
+        const currentSrc = player.currentSrc();
+        const newSrc = options.sources[0].src;
+        if (currentSrc !== newSrc) {
+          player.src(options.sources);
         }
       }
     }
@@ -2300,6 +2309,7 @@ const VideoPlayer = ({
     volume,
     endofvideooverlay,
     auto_res,
+    auto_codec,
     pixel_ratio,
     right_click,
     playback_rate,
@@ -2377,17 +2387,15 @@ const VideoPlayer = ({
           ...options.plugins,
           resolutionSelector: {
             force_types: ['video/mp4'],
-            source_groups
+            source_groups,
+            default_res: auto_res,
+            default_codec: auto_codec
           }
         };
-        const defaultResSource = allSources.find(s => s.default);
-        if (defaultResSource) {
-          options.plugins.resolutionSelector.default_res = defaultResSource.resolution;
-        }
       }
       setVideoJsOptions(options);
     }
-  }, [autoplay, controls, muted, preload, poster, loop, playsinline, volume, playback_rate, JSON.stringify(allSources), JSON.stringify(source_groups), embed_method]);
+  }, [autoplay, controls, muted, preload, auto_res, auto_codec, poster, loop, playsinline, volume, playback_rate, JSON.stringify(allSources), JSON.stringify(source_groups), embed_method]);
   const handleVideoPlayerReady = player => {
     playerRef.current = player;
     player.on('loadedmetadata', () => {
@@ -3044,8 +3052,9 @@ const drawWatermark = (canvas, options) => {
     img.onload = () => {
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
-      const watermarkWidth = canvasWidth * scale / 100;
       const watermarkHeight = canvasHeight * scale / 100;
+      const aspectRatio = img.width / img.height;
+      const watermarkWidth = watermarkHeight * aspectRatio;
       const horizontalOffset = canvasWidth * x / 100;
       const verticalOffset = canvasHeight * y / 100;
       let xPos, yPos;
@@ -3054,7 +3063,7 @@ const drawWatermark = (canvas, options) => {
           xPos = horizontalOffset;
           break;
         case 'center':
-          xPos = (canvasWidth - watermarkWidth) / 2 + horizontalOffset;
+          xPos = (canvasWidth - watermarkWidth) / 2 - horizontalOffset;
           break;
         case 'right':
           xPos = canvasWidth - watermarkWidth - horizontalOffset;
@@ -3067,7 +3076,7 @@ const drawWatermark = (canvas, options) => {
           yPos = verticalOffset;
           break;
         case 'center':
-          yPos = (canvasHeight - watermarkHeight) / 2 + verticalOffset;
+          yPos = (canvasHeight - watermarkHeight) / 2 - verticalOffset;
           break;
         case 'bottom':
           yPos = canvasHeight - watermarkHeight - verticalOffset;

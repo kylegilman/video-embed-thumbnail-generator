@@ -93,11 +93,15 @@
 		vertical-align: text-bottom;
 	}
 
-	.videopack-setting-reduced-width .components-base-control {
-		width: 30rem;
-		display: inline-block;
-		vertical-align: text-bottom;
-		margin-right: 10px;
+	.videopack-setting-reduced-width {
+		margin-bottom: 10px;
+
+		.components-base-control {
+			width: 30rem;
+			display: inline-block;
+			vertical-align: text-bottom;
+			margin-right: 10px;
+		}
 	}
 
 	span.videopack-setting-auto-width {
@@ -246,6 +250,34 @@
 
 		div {
 			margin-right: 5px;
+		}
+	}
+
+	.videopack-watermark-settings {
+
+		.videopack-alignment-control {
+			.components-select-control__input {
+				min-width: 180px;
+			}
+		}
+
+		.videopack-offset-control {
+			.components-text-control__input {
+				width: 100px;
+			}
+		}
+
+		.videopack-resize-handle {
+			position: absolute;
+			width: 10px;
+			height: 10px;
+			background-color: #fff;
+			border: 1px solid #000;
+			z-index: 10;
+			&.nw { top: -5px; left: -5px; cursor: nw-resize; }
+			&.ne { top: -5px; right: -5px; cursor: ne-resize; }
+			&.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+			&.se { bottom: -5px; right: -5px; cursor: se-resize; }
 		}
 	}
 
