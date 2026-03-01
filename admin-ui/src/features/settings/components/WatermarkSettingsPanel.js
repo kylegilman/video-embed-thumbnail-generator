@@ -19,6 +19,7 @@ const WatermarkSettingsPanel = ({
 	title,
 	initialOpen = false,
 	opened,
+	children,
 }) => {
 	const [baseFrame, setBaseFrame] = useState(null);
 	const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
@@ -79,6 +80,7 @@ const WatermarkSettingsPanel = ({
 					)
 				}
 			/>
+			{children}
 			{watermarkSettings?.url && (
 				<PanelBody
 					title={__(
