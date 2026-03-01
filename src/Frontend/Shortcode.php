@@ -32,28 +32,28 @@ class Shortcode {
 
 		return array(
 			'default_atts'     => array(
-				'id'              => null,
-				'orderby'         => 'menu_order ID',
-				'order'           => 'ASC',
-				'videos'          => $this->options['collection_video_limit'],
-				'start'           => '',
-				'gallery'         => 'false',
-				'gallery_source'  => 'current',
-				'gallery_category'=> '',
-				'gallery_tag'     => '',
-				'layout'          => 'gallery',
-				'gallery_orderby' => 'menu_order ID',
-				'gallery_order'   => 'ASC',
-				'gallery_exclude' => '',
-				'gallery_include' => '',
-				'gallery_id'      => $post_id,
-				'caption'         => '',
-				'description'     => '',
-				'track_kind'      => 'subtitles',
-				'track_srclang'   => substr( get_bloginfo( 'language' ), 0, 2 ),
-				'track_src'       => '',
-				'track_label'     => get_bloginfo( 'language' ),
-				'track_default'   => '',
+				'id'               => null,
+				'orderby'          => 'menu_order ID',
+				'order'            => 'ASC',
+				'videos'           => $this->options['collection_video_limit'],
+				'start'            => '',
+				'gallery'          => 'false',
+				'gallery_source'   => 'current',
+				'gallery_category' => '',
+				'gallery_tag'      => '',
+				'layout'           => 'gallery',
+				'gallery_orderby'  => 'menu_order ID',
+				'gallery_order'    => 'ASC',
+				'gallery_exclude'  => '',
+				'gallery_include'  => '',
+				'gallery_id'       => $post_id,
+				'caption'          => '',
+				'description'      => '',
+				'track_kind'       => 'subtitles',
+				'track_srclang'    => substr( get_bloginfo( 'language' ), 0, 2 ),
+				'track_src'        => '',
+				'track_label'      => get_bloginfo( 'language' ),
+				'track_default'    => '',
 			),
 			'options_atts'     => array(
 				'width',
@@ -94,6 +94,7 @@ class Shortcode {
 				'right_click',
 				'resize',
 				'auto_res',
+				'auto_codec',
 				'pixel_ratio',
 				'nativecontrolsfortouch',
 				'schema',
@@ -133,9 +134,9 @@ class Shortcode {
 	}
 
 	public function get_block_attributes() {
-		$definitions = $this->get_attribute_definitions();
-		$default_atts = $definitions['default_atts'];
-		$options_atts = $definitions['options_atts'];
+		$definitions      = $this->get_attribute_definitions();
+		$default_atts     = $definitions['default_atts'];
+		$options_atts     = $definitions['options_atts'];
 		$checkbox_convert = $definitions['checkbox_convert'];
 
 		$attributes = array();
@@ -166,7 +167,7 @@ class Shortcode {
 		foreach ( $options_atts as $att ) {
 			if ( array_key_exists( $att, $this->options ) ) {
 				$attributes[ $att ] = array(
-					'type' => is_bool( $this->options[ $att ] ) ? 'boolean' : ( is_numeric( $this->options[ $att ] ) ? 'number' : 'string' ),
+					'type'    => is_bool( $this->options[ $att ] ) ? 'boolean' : ( is_numeric( $this->options[ $att ] ) ? 'number' : 'string' ),
 					'default' => $this->options[ $att ],
 				);
 			} else {
@@ -193,7 +194,7 @@ class Shortcode {
 
 	public function atts( $atts ) {
 
-		$definitions = $this->get_attribute_definitions();
+		$definitions  = $this->get_attribute_definitions();
 		$default_atts = $definitions['default_atts'];
 		$options_atts = $definitions['options_atts'];
 		$checkbox_convert = $definitions['checkbox_convert'];
@@ -250,6 +251,7 @@ class Shortcode {
 
 			$allowed_query_var_atts = array( // attributes that can be changed via URL
 				'auto_res',
+				'auto_codec',
 				'autoplay',
 				'controls',
 				'default_res',

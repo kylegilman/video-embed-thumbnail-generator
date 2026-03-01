@@ -160,6 +160,8 @@ class Player {
 
 	protected function set_sources(): void {
 		$grouped_sources = array();
+		$auto_codec      = $this->atts['auto_codec'] ?? 'h264';
+		$auto_res        = $this->atts['auto_res'] ?? 'automatic';
 
 		// Process the main source
 		$main_source = $this->get_source();
@@ -193,6 +195,46 @@ class Player {
 					$grouped_sources[ $codec_id ]['sources'][] = $child_source->get_video_player_source();
 				}
 			}
+		}
+
+		// Sort groups so the auto_codec comes first
+		if ( isset( $grouped_sources[ $auto_codec ] ) ) {
+			$preferred_group = $grouped_sources[ $auto_codec ];
+			unset( $grouped_sources[ $auto_codec ] );
+			$grouped_sources = array_merge( array( $auto_codec => $preferred_group ), $grouped_sources );
+		}
+
+		// Mark default resolution and sort sources within groups
+		foreach ( $grouped_sources as $codec_id => &$group ) {
+			$sources = $group['sources'];
+
+			// Sort sources by resolution (descending)
+			usort(
+				$sources, function( $a, $b ) {
+				$res_a = isset( $a['resolution'] ) ? (int) $a['resolution'] : 0;
+				$res_b = isset( $b['resolution'] ) ? (int) $b['resolution'] : 0;
+				return $res_b - $res_a;
+			} );
+
+			// Mark default resolution
+			foreach ( $sources as &$source ) {
+				$is_default = false;
+				if ( $codec_id === $auto_codec ) {
+					if ( 'highest' === $auto_res && $source === $sources[0] ) {
+						$is_default = true;
+					} elseif ( 'lowest' === $auto_res && $source === $sources[ count( $sources ) - 1 ] ) {
+						$is_default = true;
+					} elseif ( isset( $source['resolution'] ) && (string) $source['resolution'] === (string) $auto_res ) {
+						$is_default = true;
+					}
+				}
+
+				if ( $is_default ) {
+					$source['default_res'] = '1';
+				}
+			}
+
+			$group['sources'] = $sources;
 		}
 
 		$this->sources = $grouped_sources;
@@ -245,6 +287,7 @@ class Player {
 			'muted'             => $this->atts['muted'],
 			'endofvideooverlay' => $this->atts['endofvideooverlay'],
 			'auto_res'          => $this->atts['auto_res'],
+			'auto_codec'        => $this->atts['auto_codec'],
 			'pixel_ratio'       => $this->atts['pixel_ratio'],
 			'right_click'       => $this->atts['right_click'],
 			'playback_rate'     => $this->atts['playback_rate'],

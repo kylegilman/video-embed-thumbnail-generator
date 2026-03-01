@@ -93,9 +93,10 @@ class Ui {
 			$height = $resolution->get_height();
 			$resolutions_data[] = array(
 				'id'     => $resolution->get_id(),
-				'name'   => $resolution->get_name(),
+				'name'   => $this->options_manager->get_resolution_l10n( $resolution->get_name() ),
 				'height' => $height,
 				'width'  => $height ? ceil( $height * 16 / 9 ) : null,
+				'is_custom' => $resolution->is_custom(),
 			);
 		}
 
@@ -110,7 +111,7 @@ class Ui {
 			'browser_thumbnails' => $options['browser_thumbnails'],
 			'auto_thumb'         => $options['auto_thumb'],
 			'auto_thumb_number'  => $options['auto_thumb_number'],
-			'auto_thumb_position'=> $options['auto_thumb_position'],
+			'auto_thumb_position' => $options['auto_thumb_position'],
 			'ffmpeg_thumb_watermark' => $options['ffmpeg_thumb_watermark'],
 			'embed_method'       => $options['embed_method'],
 			'contentSize'        => isset( $global_settings['layout']['contentSize'] ) ? $global_settings['layout']['contentSize'] : false,

@@ -39,10 +39,18 @@ class Video_Resolution {
 	 */
 	protected $height;
 
+	/**
+	 * Is this a custom resolution.
+	 *
+	 * @var bool
+	 */
+	protected $is_custom;
+
 	public function __construct( $properties ) {
 		$this->height         = $properties['height'];
 		$this->name           = $properties['name'];
 		$this->default_encode = $properties['default_encode'];
+		$this->is_custom      = $properties['is_custom'] ?? false;
 
 		if ( isset( $properties['label'] ) ) {
 			$this->label = $properties['label'];
@@ -100,6 +108,15 @@ class Video_Resolution {
 	 */
 	public function get_height() {
 		return $this->height;
+	}
+
+	/**
+	 * Is this a custom resolution.
+	 *
+	 * @return bool
+	 */
+	public function is_custom() {
+		return $this->is_custom;
 	}
 
 	public function set_height( $height ) {
