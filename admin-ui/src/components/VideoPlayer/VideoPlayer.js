@@ -38,6 +38,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		volume,
 		endofvideooverlay,
 		auto_res,
+		auto_codec,
 		pixel_ratio,
 		right_click,
 		playback_rate,
@@ -143,13 +144,10 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					resolutionSelector: {
 						force_types: ['video/mp4'],
 						source_groups,
+						default_res: auto_res,
+						default_codec: auto_codec,
 					},
 				};
-				const defaultResSource = allSources.find((s) => s.default);
-				if (defaultResSource) {
-					options.plugins.resolutionSelector.default_res =
-						defaultResSource.resolution;
-				}
 			}
 
 			setVideoJsOptions(options);
@@ -159,6 +157,8 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		controls,
 		muted,
 		preload,
+		auto_res,
+		auto_codec,
 		poster,
 		loop,
 		playsinline,

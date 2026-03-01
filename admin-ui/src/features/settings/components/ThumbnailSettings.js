@@ -22,6 +22,7 @@ import {
 } from '../../../utils/video-capture';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import ChooseFromLibrary from './ChooseFromLibrary';
+import WatermarkSettingsPanel from './WatermarkSettingsPanel';
 
 const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const {
@@ -29,7 +30,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 		ffmpeg_exists,
 		poster,
 		endofvideooverlay,
-		thumb_watermark,
+		ffmpeg_thumb_watermark,
 		total_thumbnails,
 		featured,
 		thumb_parent,
@@ -309,49 +310,50 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 						onChange={changeHandlerFactory.browser_thumbnails}
 					/>
 				)}
-				<ChooseFromLibrary
-					label={__(
-						'Default thumbnail:',
+				<PanelBody
+					title={__(
+						'Video player images',
 						'video-embed-thumbnail-generator'
 					)}
-					type="url"
-					value={poster}
-					onChange={changeHandlerFactory.poster}
-				/>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__(
-						'Display thumbnail image again when video ends.',
+					initialOpen={true}
+				>
+					<ChooseFromLibrary
+						label={__(
+							'Default thumbnail:',
+							'video-embed-thumbnail-generator'
+						)}
+						type="url"
+						value={poster}
+						onChange={changeHandlerFactory.poster}
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Display thumbnail image again when video ends.',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.endofvideooverlaysame}
+						checked={!!endofvideooverlaysame}
+					/>
+					<ChooseFromLibrary
+						label={__(
+							'End of video image:',
+							'video-embed-thumbnail-generator'
+						)}
+						type="url"
+						value={endofvideooverlay}
+						onChange={changeHandlerFactory.endofvideooverlay}
+						disabled={endofvideooverlaysame}
+					/>
+				</PanelBody>
+				<WatermarkSettingsPanel
+					title={__(
+						'Add watermark to generated thumbnails',
 						'video-embed-thumbnail-generator'
 					)}
-					onChange={changeHandlerFactory.endofvideooverlaysame}
-					checked={!!endofvideooverlaysame}
-				/>
-				<ChooseFromLibrary
-					label={__(
-						'End of video image:',
-						'video-embed-thumbnail-generator'
-					)}
-					type="url"
-					value={endofvideooverlay}
-					onChange={changeHandlerFactory.endofvideooverlay}
-					disabled={endofvideooverlaysame}
-				/>
-				<ChooseFromLibrary
-					label={__(
-						'Add watermark to generated thumbnails:',
-						'video-embed-thumbnail-generator'
-					)}
-					type="url"
-					value={thumb_watermark?.url}
-					onChange={(url) =>
-						changeHandlerFactory.thumb_watermark(
-							typeof thumb_watermark === 'object' &&
-								thumb_watermark !== null
-								? { ...thumb_watermark, url }
-								: { url }
-						)
-					}
+					watermarkSettings={ffmpeg_thumb_watermark}
+					onChange={changeHandlerFactory.ffmpeg_thumb_watermark}
+					initialOpen={true}
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
@@ -425,27 +427,29 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 								)}
 					</Button>
 				</div>
-				<Button
-					__next40pxDefaultSize
-					variant="secondary"
-					onClick={handleGenerateAllThumbnails}
-					disabled={generationBatch.isProcessing}
-				>
-					{generationBatch.isProcessing
-						? sprintf(
-								/* translators: %1$d: current count, %2$d: total count */
-								__(
-									'Processing %1$d / %2$d',
+				<div className="videopack-setting-extra-margin">
+					<Button
+						__next40pxDefaultSize
+						variant="secondary"
+						onClick={handleGenerateAllThumbnails}
+						disabled={generationBatch.isProcessing}
+					>
+						{generationBatch.isProcessing
+							? sprintf(
+									/* translators: %1$d: current count, %2$d: total count */
+									__(
+										'Processing %1$d / %2$d',
+										'video-embed-thumbnail-generator'
+									),
+									generationBatch.progress.current,
+									generationBatch.progress.total
+								)
+							: __(
+									'Generate thumbnails for all videos',
 									'video-embed-thumbnail-generator'
-								),
-								generationBatch.progress.current,
-								generationBatch.progress.total
-							)
-						: __(
-								'Generate thumbnails for all videos',
-								'video-embed-thumbnail-generator'
-							)}
-				</Button>
+								)}
+					</Button>
+				</div>
 			</PanelBody>
 			{featuredBatch.confirmDialog.isOpen && (
 				<ConfirmDialog

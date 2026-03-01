@@ -217,6 +217,18 @@
 .videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu.vjs-submenu-open > .vjs-menu {
   display: block;
 }
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left {
+  right: auto;
+  left: 100%;
+  margin-right: 0;
+  margin-left: 0.2em;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before,
+.videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item.vjs-has-submenu > .vjs-menu.vjs-submenu-left::before {
+  right: auto;
+  left: -0.2em;
+}
 .videopack-wrapper .vjs-loading-spinner {
   z-index: 1;
 }
@@ -408,6 +420,12 @@
 .videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-open > .mejs__sourcechooser-submenu,
 .videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-open > .mejs-sourcechooser-submenu {
   display: block;
+}
+.videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item.mejs-submenu-left > .mejs__sourcechooser-submenu, .videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item.mejs-submenu-left > .mejs-sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-left > .mejs__sourcechooser-submenu,
+.videopack-wrapper .mejs-sourcechooser-selector .mejs-sourcechooser-codec-item.mejs-submenu-left > .mejs-sourcechooser-submenu {
+  right: auto;
+  left: 100%;
 }
 .videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item .mejs__sourcechooser-submenu,
 .videopack-wrapper .mejs__sourcechooser-selector .mejs__sourcechooser-codec-item .mejs-sourcechooser-submenu,

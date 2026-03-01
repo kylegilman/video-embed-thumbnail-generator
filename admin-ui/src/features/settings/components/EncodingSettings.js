@@ -22,24 +22,25 @@ import {
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+import {
+	useEffect,
+	useState,
+	useMemo,
+	useCallback,
+	useRef,
+} from '@wordpress/element';
 import TextControlOnBlur from './TextControlOnBlur';
 import PerCodecQualitySettings from './PerCodecQualitySettings';
+import WatermarkSettingsPanel from './WatermarkSettingsPanel';
 
 const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const {
 		app_path,
 		replace_format,
 		encode,
-		custom_format,
 		hide_video_formats,
 		error_email,
-		ffmpeg_thumb_watermark,
 		ffmpeg_watermark,
-		h264_profile,
-		h264_level,
-		h265_profile,
-		h265_level,
 		audio_bitrate,
 		audio_channels,
 		simultaneous_encodes,
@@ -80,8 +81,54 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	}, []);
 
 	const EncodeFormatGrid = () => {
-		const { codecs, resolutions } = videopack_config;
-		const { encode: currentEncode, ffmpeg_exists: ffmpegExists } = settings;
+		const { codecs, resolutions: staticResolutions } = videopack_config;
+		const {
+			encode: currentEncode,
+			ffmpeg_exists: ffmpegExists,
+			enable_custom_resolution,
+			custom_resolution,
+		} = settings;
+
+		const resolutions = useMemo(() => {
+			// Filter out the custom resolution from the static list, as it will be re-added if enabled.
+			let currentResolutions = staticResolutions.filter(
+				(r) => !r.is_custom
+			);
+
+			if (enable_custom_resolution) {
+				const height = parseInt(custom_resolution, 10) || 900;
+				const id = String(height);
+				const width = Math.ceil((height * 16) / 9);
+				const name = sprintf(
+					/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
+					__('Custom (%sp)', 'video-embed-thumbnail-generator'),
+					height
+				);
+
+				// Remove any existing resolution with the same ID to avoid duplicates.
+				currentResolutions = currentResolutions.filter(
+					(r) => r.id !== id
+				);
+
+				currentResolutions.push({
+					id,
+					name,
+					height,
+					width,
+					is_custom: true,
+				});
+			}
+
+			return currentResolutions.sort((a, b) => {
+				if (a.id === 'fullres') return -1;
+				if (b.id === 'fullres') return 1;
+				return b.height - a.height;
+			});
+		}, [
+			staticResolutions,
+			enable_custom_resolution,
+			custom_resolution,
+		]);
 
 		const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
 			const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
@@ -145,7 +192,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						</div>
 						{resolutions.map((resolution) => (
 							<CheckboxControl
-								key={resolution.id}
+								key={`${codec.id}-${resolution.id}`}
 								__nextHasNoMarginBottom
 								label={resolution.name}
 								checked={
@@ -399,6 +446,15 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					disabled={ffmpeg_exists !== true}
 				/>
 			</PanelBody>
+			<WatermarkSettingsPanel
+				title={__(
+					'Watermark Overlay',
+					'video-embed-thumbnail-generator'
+				)}
+				watermarkSettings={ffmpeg_watermark}
+				onChange={changeHandlerFactory.ffmpeg_watermark}
+				opened={ffmpeg_exists === true}
+			/>
 			<PanelBody
 				title={__(
 					'Email encoding errors to',
