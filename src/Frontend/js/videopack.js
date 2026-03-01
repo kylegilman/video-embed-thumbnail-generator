@@ -364,6 +364,12 @@
 						subMenu.className = `${ t.options.classPrefix }sourcechooser-submenu`;
 						codecLi.appendChild( subMenu );
 
+						subMenu.addEventListener( 'change', ( e ) => {
+							if ( e.target.tagName === 'INPUT' ) {
+								player.currentCodec = codecId;
+							}
+						} );
+
 						t.sourcechooserButton.querySelector( 'ul' ).appendChild( codecLi );
 
 						for ( const groupSource of group.sources ) {
@@ -378,6 +384,21 @@
 									el.classList.remove( 'mejs-submenu-open' );
 								}
 							} );
+
+							const parentRect = codecLi.getBoundingClientRect();
+							if ( subMenu ) {
+								subMenu.style.visibility = 'hidden';
+								subMenu.style.display = 'block';
+								const subMenuWidth = subMenu.offsetWidth;
+								subMenu.style.display = '';
+								subMenu.style.visibility = '';
+
+								if ( parentRect.right + subMenuWidth > window.innerWidth && parentRect.left > subMenuWidth ) {
+									codecLi.classList.add( 'mejs-submenu-left' );
+								} else {
+									codecLi.classList.remove( 'mejs-submenu-left' );
+								}
+							}
 						} );
 
 						codecLi.addEventListener( 'click', ( e ) => {
@@ -464,42 +485,8 @@
 				for (let i = 0, total = radios.length; i < total; i++) {
 					// handle clicks to the source radio buttons
 					radios[i].addEventListener('click', function() {
-						// set aria states
-						this.setAttribute('aria-selected', true);
-						this.checked = true;
-						this.closest('li').classList.add('sourcechooser-selected');
-
-						const otherRadios = this.closest(`.${t.options.classPrefix}sourcechooser-selector`).querySelectorAll('input[type=radio]');
-
-						for (let j = 0, radioTotal = otherRadios.length; j < radioTotal; j++) {
-							if (otherRadios[j] !== this) {
-								otherRadios[j].setAttribute('aria-selected', false);
-								otherRadios[j].removeAttribute('checked');
-								otherRadios[j].closest('li').classList.remove('sourcechooser-selected');
-							}
-						}
-
-						const src = this.value;
-
-						if (media.getSrc() !== src) {
-							let currentTime = media.currentTime;
-
-							const
-								paused = media.paused,
-								canPlayAfterSourceSwitchHandler = () => {
-									if (!paused) {
-										media.setCurrentTime(currentTime);
-										media.play();
-									}
-									media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
-								}
-							;
-
-							media.pause();
-							media.setSrc(src);
-							media.load();
-							media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
-						}
+						player.manualResolutionSelected = true;
+						t.changeRes(this.value);
 					});
 				}
 
@@ -547,6 +534,56 @@
 				target.appendChild( li );
 
 				t.adjustSourcechooserBox();
+			},
+
+			/**
+			 *
+			 * @param {String} src
+			 * @param {String} codec
+			 */
+			changeRes (src, codec) {
+				const t = this;
+				if ( codec ) {
+					t.currentCodec = codec;
+				}
+				const media = t.media;
+				const radios = t.sourcechooserButton.querySelectorAll('input[type=radio]');
+				let selectedRadio = null;
+
+				for (let i = 0; i < radios.length; i++) {
+					if (radios[i].value === src) {
+						selectedRadio = radios[i];
+					}
+					radios[i].setAttribute('aria-selected', false);
+					radios[i].removeAttribute('checked');
+					const li = radios[i].closest('li');
+					if (li) {
+						li.classList.remove('sourcechooser-selected');
+					}
+				}
+
+				if (selectedRadio) {
+					selectedRadio.setAttribute('aria-selected', true);
+					selectedRadio.checked = true;
+					selectedRadio.closest('li').classList.add('sourcechooser-selected');
+				}
+
+				if (media.getSrc() !== src) {
+					let currentTime = media.currentTime;
+					const paused = media.paused;
+					const canPlayAfterSourceSwitchHandler = () => {
+						media.setCurrentTime(currentTime);
+						if (!paused) {
+							media.play();
+						}
+						media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
+					};
+
+					media.pause();
+					media.setSrc(src);
+					media.load();
+					media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
+				}
 			},
 
 			/**
@@ -640,10 +677,7 @@
 				const originalSuccess = window.mejs.MepDefaults.success;
 				window.mejs.MepDefaults.success = ( mediaElement, domObject, player ) => {
 					originalSuccess( mediaElement, domObject, player );
-					const playerWrapper = domObject.closest( '.videopack-player' );
-					if ( playerWrapper && ! playerWrapper.dataset.videopackInitialized && window.videopack.player_data ) {
-						this.setupVideo( playerWrapper, window.videopack.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ] );
-					}
+					this.onMejsSuccess( mediaElement, domObject, player );
 				};
 			}
 		},
@@ -676,6 +710,23 @@
 				if ( playerWrapper.querySelector( '.mejs-container' ) ) {
 					this.setupVideo( playerWrapper, videoVars );
 				}
+			}
+		},
+
+		/**
+		 * Success callback for MediaElement.js initialization.
+		 *
+		 * @since 5.0.0
+		 * @param {HTMLElement} mediaElement The media element.
+		 * @param {HTMLElement} domObject    The original DOM object.
+		 * @param {object}      player       The MediaElementPlayer instance.
+		 */
+		onMejsSuccess: function( mediaElement, domObject, player ) {
+			// domObject is optional in some contexts, fallback to mediaElement
+			const target = domObject || mediaElement;
+			const playerWrapper = target.closest( '.videopack-player' );
+			if ( playerWrapper && ! playerWrapper.dataset.videopackInitialized && window.videopack.player_data ) {
+				this.setupVideo( playerWrapper, window.videopack.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ] );
 			}
 		},
 
@@ -1043,7 +1094,8 @@
 				}
 			}
 
-			video.addEventListener( 'loadedmetadata', () => {
+			const onLoadedMetadata = () => {
+				this.resizeVideo( playerId );
 				if ( videoVars.set_volume ) {
 					video.volume = videoVars.set_volume;
 				}
@@ -1053,7 +1105,13 @@
 				if ( false === videoVars.pauseothervideos ) {
 					player.options.pauseOtherPlayers = false;
 				}
-			} );
+			};
+
+			video.addEventListener( 'loadedmetadata', onLoadedMetadata );
+
+			if ( video.readyState >= 1 ) {
+				onLoadedMetadata();
+			}
 
 			video.addEventListener( 'play', () => {
 				document.getElementById( mejsId ).focus();
@@ -1156,8 +1214,108 @@
 		 * @param {number} aspectRatio The aspect ratio of the video.
 		 */
 		setAutomaticResolution: function( playerId, currentWidth, aspectRatio ) {
-			// This function requires a resolution chooser plugin to be active for the player.
-			// It is left as a placeholder for brevity as it depends on specific plugin implementations.
+			const videoVars = this.player_data[ `videopack_player_${ playerId }` ];
+			if ( ! videoVars ) {
+				return;
+			}
+
+			let targetWidth = currentWidth;
+			if ( true === videoVars.pixel_ratio && window.devicePixelRatio ) {
+				targetWidth *= window.devicePixelRatio;
+			}
+
+			// aspectRatio is height / width.
+			const targetHeight = targetWidth * aspectRatio;
+
+			let currentCodec = videoVars.auto_codec;
+			let player = null;
+
+			// Determine current codec and player instance
+			if ( videoVars.player_type.startsWith( 'Video.js' ) && typeof videojs !== 'undefined' ) {
+				player = videojs.getPlayer( `videopack_video_${ playerId }` );
+				if ( player && player.getCurrentCodec ) {
+					const detectedCodec = player.getCurrentCodec();
+					if ( detectedCodec ) {
+						currentCodec = detectedCodec;
+					}
+				}
+			} else if ( videoVars.player_type === 'WordPress Default' && typeof window.mejs !== 'undefined' ) {
+				// For MEJS, check the selected radio button in the source chooser
+				const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
+				const mejsContainer = playerWrapper ? playerWrapper.querySelector( '.mejs-container' ) : null;
+				if ( mejsContainer && mejs.players[ mejsContainer.id ] ) {
+					player = mejs.players[ mejsContainer.id ];
+					if ( player.manualResolutionSelected ) {
+						return;
+					}
+					// We can infer codec from the currently selected source if we had a way to map it back,
+					// but for now, we rely on auto_codec or the structure of source_groups.
+					// If the user manually switched codecs, MEJS doesn't explicitly store "currentCodec".
+					// So we check if we stored it, otherwise we try to respect auto_codec if supported,
+					// or fallback to the current source's codec.
+					if ( videoVars.source_groups ) {
+						if ( player.currentCodec ) {
+							currentCodec = player.currentCodec;
+						} else {
+							let autoCodecSupported = false;
+							if ( videoVars.auto_codec && videoVars.source_groups[ videoVars.auto_codec ] && player.media && typeof player.media.canPlayType === 'function' ) {
+								const testSource = videoVars.source_groups[ videoVars.auto_codec ].sources[ 0 ];
+								if ( testSource && player.media.canPlayType( testSource.type ) !== '' ) {
+									autoCodecSupported = true;
+									currentCodec = videoVars.auto_codec;
+								}
+							}
+
+							if ( ! autoCodecSupported ) {
+								const currentSrc = player.getSrc();
+								for ( const groupId in videoVars.source_groups ) {
+									if ( videoVars.source_groups[ groupId ].sources.some( ( s ) => s.src === currentSrc ) ) {
+										currentCodec = groupId;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			let availableSources = [];
+			if ( videoVars.source_groups && videoVars.source_groups[ currentCodec ] ) {
+				availableSources = videoVars.source_groups[ currentCodec ].sources;
+			} else if ( videoVars.sources ) {
+				availableSources = videoVars.sources;
+			}
+
+			if ( ! availableSources.length ) {
+				return;
+			}
+
+			// Filter and sort sources by resolution (ascending)
+			const resSources = availableSources.filter( ( s ) => s.resolution || s['data-res'] );
+			resSources.sort( ( a, b ) => parseInt( a.resolution || a['data-res'], 10 ) - parseInt( b.resolution || b['data-res'], 10 ) );
+
+			if ( ! resSources.length ) {
+				return;
+			}
+
+			// Find the best fit: the first source with height >= targetHeight
+			let bestSource = resSources.find( ( s ) => parseInt( s.resolution || s['data-res'], 10 ) >= targetHeight );
+
+			// If all are smaller, use the largest available
+			if ( ! bestSource ) {
+				bestSource = resSources[ resSources.length - 1 ];
+			}
+
+			// Switch resolution if needed
+			if ( videoVars.player_type.startsWith( 'Video.js' ) && player && player.changeRes ) {
+				const targetRes = bestSource.resolution || bestSource['data-res'];
+				if ( player.getCurrentRes() !== targetRes ) {
+					player.changeRes( targetRes, currentCodec );
+				}
+			} else if ( videoVars.player_type === 'WordPress Default' && player && player.changeRes ) {
+				player.changeRes( bestSource.src, currentCodec );
+			}
 		},
 
 		/**
@@ -1909,6 +2067,11 @@
 
 	// Expose the videopack object to the global scope, merging with any existing properties (like player_data).
 	window.videopack = Object.assign( window.videopack || {}, videopack_obj );
+
+	// Hook into WordPress MediaElement settings if available.
+	if ( typeof window._wpmejsSettings !== 'undefined' ) {
+		window._wpmejsSettings.success = window.videopack.onMejsSuccess.bind( window.videopack );
+	}
 
 	document.addEventListener( 'DOMContentLoaded', () => window.videopack.init() );
 }() );

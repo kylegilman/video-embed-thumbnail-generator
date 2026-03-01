@@ -64,23 +64,24 @@ class Options {
 			'ffmpeg_exists'           => 'notchecked', // Is FFmpeg installed and working ('notchecked', true, 'notinstalled').
 			'ffmpeg_error'            => '', // User-friendly error message if FFmpeg isn't working.
 			'replace_format'          => 'h264', // Default video codec to replace the original video file if 'fullres' encode is enabled.
-			'custom_resolution'       => false, // Allow custom video resolutions (height in pixels or false).
+			'enable_custom_resolution' => false, // Enable custom video resolution.
+			'custom_resolution'       => 900, // Custom video resolution height in pixels.
 			'encode'                  => array(), // List of enabled video encode formats and settings (Populated dynamically).
 			'ffmpeg_watermark'        => array( // Watermark settings for video encoding with FFmpeg.
 				'url'    => '', // Watermark image URL.
 				'scale'  => '50', // Watermark scale (percentage of video height).
 				'align'  => 'center', // Horizontal alignment ('left', 'center', 'right').
 				'valign' => 'center', // Vertical alignment ('top', 'center', 'bottom').
-				'x'      => '0', // Horizontal offset (pixels).
-				'y'      => '0', // Vertical offset (pixels).
+				'x'      => '0', // Horizontal offset (percentage).
+				'y'      => '0', // Vertical offset (percentage).
 			),
 			'ffmpeg_thumb_watermark'  => array( // Watermark settings for thumbnail generation with FFmpeg.
 				'url'    => '', // Watermark image URL.
 				'scale'  => '50', // Watermark scale (percentage of video height).
 				'align'  => 'center', // Horizontal alignment ('left', 'center', 'right').
 				'valign' => 'center', // Vertical alignment ('top', 'center', 'bottom').
-				'x'      => '0', // Horizontal offset (pixels).
-				'y'      => '0', // Vertical offset (pixels).
+				'x'      => '0', // Horizontal offset (percentage).
+				'y'      => '0', // Vertical offset (percentage).
 			),
 			'audio_bitrate'           => 160, // Audio bitrate for encoding in kbps.
 			'audio_channels'          => true, // Always encode stereo audio (if source is stereo or mono).
@@ -148,6 +149,7 @@ class Options {
 			'endofvideooverlay'       => '', // Show an image overlay at the end of videos.
 			'endofvideooverlaysame'   => false, // Display the poster image at the end of videos.
 			'auto_res'                => 'automatic', // Default video playback resolution ('automatic', 'highest', 'lowest', or specific like '1080p').
+			'auto_codec'              => 'h264', // Default video codec ('h264', 'h265', 'vp9', 'av1').
 			'pixel_ratio'             => true, // Enable adjustment for high DPI displays (retina) when auto_res is 'automatic'.
 			'find_formats'            => false, // Automatically look for other codecs and resolutions based on the video filename.
 
@@ -518,7 +520,8 @@ class Options {
 	 *   ffmpeg_exists: string|bool,
 	 *   ffmpeg_error: string,
 	 *   replace_format: string,
-	 *   custom_resolution: int|bool,
+	 *   enable_custom_resolution: bool,
+	 *   custom_resolution: int,
 	 *   encode: array<string, array{crf: int, vbr: int, resolutions: array<string|int, bool>}>,
 	 *   audio_bitrate: int,
 	 *   audio_channels: bool,
@@ -691,11 +694,16 @@ class Options {
 			),
 		);
 
-		if ( $this->options['custom_resolution'] ?? false ) {
+		if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
+			$custom_height = $this->options['custom_resolution'];
+			if ( empty( $custom_height ) || ! is_numeric( $custom_height ) ) {
+				$custom_height = 900;
+			}
 			$resolution_properties[] = array(
-				'height'         => $this->options['custom_resolution'],
+				'height'         => intval( $custom_height ),
 				'name'           => 'Custom',
 				'default_encode' => false,
+				'is_custom'      => true,
 			);
 		}
 
@@ -756,9 +764,13 @@ class Options {
 			case 'Ultra Low Definition (240p)':
 				return esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' );
 			case 'Custom':
-				if ( $this->options['custom_resolution'] ?? false ) {
+				if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
+					$custom_height = $this->options['custom_resolution'];
+					if ( empty( $custom_height ) || ! is_numeric( $custom_height ) ) {
+						$custom_height = 900;
+					}
 					/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-					return sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $this->options['custom_resolution'] ) );
+					return sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $custom_height ) );
 				}
 				return esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
 			default:

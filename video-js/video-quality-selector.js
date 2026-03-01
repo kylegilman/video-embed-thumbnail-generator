@@ -65,6 +65,24 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 
 			handleMouseEnter() {
 				this.closeOtherSubmenus();
+
+				const subMenu = this.children()[0];
+				if ( subMenu ) {
+					const subMenuEl = subMenu.el();
+					const parentRect = this.el().getBoundingClientRect();
+
+					subMenuEl.style.visibility = 'hidden';
+					subMenuEl.style.display = 'block';
+					const subMenuWidth = subMenuEl.offsetWidth;
+					subMenuEl.style.display = '';
+					subMenuEl.style.visibility = '';
+
+					if ( parentRect.right + subMenuWidth > window.innerWidth && parentRect.left > subMenuWidth ) {
+						subMenuEl.classList.add( 'vjs-submenu-left' );
+					} else {
+						subMenuEl.classList.remove( 'vjs-submenu-left' );
+					}
+				}
 			}
 
 			closeOtherSubmenus() {
@@ -239,6 +257,17 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 				return;
 			}
 
+			// Initialize currentCodec based on the initial source
+			if ( has_multiple_codecs ) {
+				const initialSrc = player.currentSrc();
+				for ( const groupId in source_groups ) {
+					if ( source_groups[ groupId ].sources.some( s => s.src === initialSrc ) ) {
+						player.currentCodec = groupId;
+						break;
+					}
+				}
+			}
+
 			player.getCurrentRes = function() {
 				return player.currentRes || ( sources[ 0 ] ? ( sources[ 0 ].resolution || sources[ 0 ][ 'data-res' ] ) : '' ) || '';
 			};
@@ -296,6 +325,11 @@ if ( 'undefined' !== typeof window.videojs && 'undefined' === typeof window.vide
 					const context = canvas.getContext( '2d' );
 					context.drawImage( video, 0, 0, canvas.width, canvas.height );
 					video.parentNode.appendChild( canvas );
+
+					// Prevent poster from showing during switch
+					player.one( 'loadstart', function() {
+						player.hasStarted( true );
+					} );
 				}
 
 				player.src( target_source );
