@@ -85,8 +85,8 @@ const SingleVideoBlock = ({
 				<AdditionalFormats attributes={attributes} options={options} />
 			</InspectorControls>
 			<div {...useBlockProps()}>
-				{showOverlay && <div className="videopack-block-overlay" />}
 				<VideoPlayer attributes={playerAttributes} />
+				{showOverlay && <div className="videopack-block-overlay" />}
 			</div>
 		</>
 	);

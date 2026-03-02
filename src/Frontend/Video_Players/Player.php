@@ -4,6 +4,7 @@ namespace Videopack\Frontend\Video_Players;
 
 class Player {
 
+
 	/**
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
@@ -210,11 +211,13 @@ class Player {
 
 			// Sort sources by resolution (descending)
 			usort(
-				$sources, function( $a, $b ) {
-				$res_a = isset( $a['resolution'] ) ? (int) $a['resolution'] : 0;
-				$res_b = isset( $b['resolution'] ) ? (int) $b['resolution'] : 0;
-				return $res_b - $res_a;
-			} );
+				$sources,
+				function ( $a, $b ) {
+					$res_a = isset( $a['resolution'] ) ? (int) $a['resolution'] : 0;
+					$res_b = isset( $b['resolution'] ) ? (int) $b['resolution'] : 0;
+					return $res_b - $res_a;
+				}
+			);
 
 			// Mark default resolution
 			foreach ( $sources as &$source ) {
@@ -293,6 +296,9 @@ class Player {
 			'playback_rate'     => $this->atts['playback_rate'],
 			'title'             => $this->atts['stats_title'],
 			'source_groups'     => $this->get_sources(),
+			'fixed_aspect'      => $this->atts['fixed_aspect'],
+			'default_ratio'     => $this->get_fixed_aspect_ratio(),
+			'tracks'            => $this->atts['tracks'] ?? array(),
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
@@ -358,7 +364,7 @@ class Player {
 		$has_embed      = $this->has_embed_meta();
 		$no_title_class = $this->atts['overlay_title'] ? '' : ' no-title';
 
-		$meta_bar = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
+		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
 		$meta_bar .= '<span class="meta-icons">';
 
 		if ( $has_embed ) {
@@ -402,7 +408,7 @@ class Player {
 				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" /> ' .
 				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label> ' .
 				'<input type="text" class="videopack-start-at" value="00:00" />' .
-			'</span>';
+				'</span>';
 
 			$meta_bar .= '</div>';
 		}
@@ -413,24 +419,30 @@ class Player {
 	protected function get_wrapper_start_html(): string {
 		$alignclass = '';
 		/* if ( $this->atts['inline'] ) {
-			$alignclass .= ' videopack-wrapper-inline';
-			if ( in_array( $this->atts['align'], array( 'left', 'right' ), true ) ) {
-				$alignclass .= ' videopack-wrapper-inline-' . $this->atts['align'];
-			} elseif ( 'center' === $this->atts['align'] ) {
-				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
-			}
+		$alignclass .= ' videopack-wrapper-inline';
+		if ( in_array( $this->atts['align'], array( 'left', 'right' ), true ) ) {
+		$alignclass .= ' videopack-wrapper-inline-' . $this->atts['align'];
 		} elseif ( 'center' === $this->atts['align'] ) {
-			$alignclass = ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
+		$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
+		}
+		} elseif ( 'center' === $this->atts['align'] ) {
+		$alignclass = ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
 		} elseif ( 'right' === $this->atts['align'] ) {
-			$alignclass = ' videopack-wrapper-auto-left';
+		$alignclass = ' videopack-wrapper-auto-left';
 		} */
 
 		$meta_bar_class = $this->has_meta_bar() ? ' meta-bar-visible' : '';
+		$style          = '';
 
-		$html  = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '">';
+		if ( $this->is_fixed_aspect() ) {
+			$alignclass .= ' videopack-fixed-aspect';
+			$style       = ' style="aspect-ratio: ' . esc_attr( $this->get_fixed_aspect_ratio() ) . ';"';
+		}
+
+		$html           = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '"' . $style . '>';
 		$player_classes = apply_filters( 'videopack_player_div_classes', array( 'videopack-player' ), $this->atts );
-		$html .= '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
-		$html .= $this->get_schema_markup();
+		$html          .= '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
+		$html          .= $this->get_schema_markup();
 		return $html;
 	}
 
@@ -450,6 +462,7 @@ class Player {
 			$video .= '" >';
 
 			$video .= $this->get_source_elements();
+			$video .= $this->get_track_elements();
 
 			$video .= '</video>';
 		}
@@ -506,7 +519,9 @@ class Player {
 
 		foreach ( $this->get_flat_sources() as $source ) {
 			$source_elements .= '<source src="' . $source['src'] . '" type="' . $source['type'];
-			if ( ! empty( $source['codecs'] ) ) {
+			// Only include the codecs parameter for H.264 (avc1), as browsers are lenient with it.
+			// For other formats (HEVC, VP9, AV1), the simple FourCC code is insufficient and causes playback failures in Chrome.
+			if ( ! empty( $source['codecs'] ) && 'avc1' === $source['codecs'] ) {
 				$source_elements .= '; codecs=' . $source['codecs'];
 			}
 			$source_elements .= '"';
@@ -550,7 +565,7 @@ class Player {
 		return apply_filters(
 			'videopack_video_player_has_below_video',
 			( ! empty( $this->atts['caption'] )
-				|| $this->atts['view_count']
+			|| $this->atts['view_count']
 			),
 			$this->atts
 		);
@@ -617,10 +632,10 @@ class Player {
 
 		// Only apply inline styles if they differ from defaults.
 		if ( $styles['scale'] != $defaults['scale']
-			|| $styles['align'] !== $defaults['align']
-			|| $styles['valign'] !== $defaults['valign']
-			|| $styles['x'] != $defaults['x']
-			|| $styles['y'] != $defaults['y']
+		|| $styles['align'] !== $defaults['align']
+		|| $styles['valign'] !== $defaults['valign']
+		|| $styles['x'] != $defaults['x']
+		|| $styles['y'] != $defaults['y']
 		) {
 			$style = 'max-width: ' . $styles['scale'] . '%; width: 100%; height: auto; position: absolute;';
 
@@ -692,5 +707,24 @@ class Player {
 		$html .= '</div>';
 
 		return $html;
+	}
+
+	protected function is_fixed_aspect(): bool {
+		if ( empty( $this->atts['fixed_aspect'] ) || 'false' === $this->atts['fixed_aspect'] ) {
+			return false;
+		}
+		if ( 'true' === $this->atts['fixed_aspect'] || true === $this->atts['fixed_aspect'] ) {
+			return true;
+		}
+		return false;
+	}
+
+	protected function get_fixed_aspect_ratio(): string {
+		$width  = (int) $this->options['width'];
+		$height = (int) $this->options['height'];
+		if ( $width > 0 && $height > 0 ) {
+			return "$width / $height";
+		}
+		return '16 / 9';
 	}
 }

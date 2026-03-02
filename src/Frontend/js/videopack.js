@@ -547,25 +547,28 @@
 					t.currentCodec = codec;
 				}
 				const media = t.media;
-				const radios = t.sourcechooserButton.querySelectorAll('input[type=radio]');
-				let selectedRadio = null;
 
-				for (let i = 0; i < radios.length; i++) {
-					if (radios[i].value === src) {
-						selectedRadio = radios[i];
-					}
-					radios[i].setAttribute('aria-selected', false);
-					radios[i].removeAttribute('checked');
-					const li = radios[i].closest('li');
-					if (li) {
-						li.classList.remove('sourcechooser-selected');
-					}
-				}
+				if ( t.sourcechooserButton ) {
+					const radios = t.sourcechooserButton.querySelectorAll( 'input[type=radio]' );
+					let selectedRadio = null;
 
-				if (selectedRadio) {
-					selectedRadio.setAttribute('aria-selected', true);
-					selectedRadio.checked = true;
-					selectedRadio.closest('li').classList.add('sourcechooser-selected');
+					for ( let i = 0; i < radios.length; i++ ) {
+						if ( radios[ i ].value === src ) {
+							selectedRadio = radios[ i ];
+						}
+						radios[ i ].setAttribute( 'aria-selected', false );
+						radios[ i ].removeAttribute( 'checked' );
+						const li = radios[ i ].closest( 'li' );
+						if ( li ) {
+							li.classList.remove( 'sourcechooser-selected' );
+						}
+					}
+
+					if ( selectedRadio ) {
+						selectedRadio.setAttribute( 'aria-selected', true );
+						selectedRadio.checked = true;
+						selectedRadio.closest( 'li' ).classList.add( 'sourcechooser-selected' );
+					}
 				}
 
 				if (media.getSrc() !== src) {
@@ -676,7 +679,9 @@
 				// This is a bit of a hack to catch MEJS players initialized after our script runs.
 				const originalSuccess = window.mejs.MepDefaults.success;
 				window.mejs.MepDefaults.success = ( mediaElement, domObject, player ) => {
-					originalSuccess( mediaElement, domObject, player );
+					if ( typeof originalSuccess === 'function' ) {
+						originalSuccess( mediaElement, domObject, player );
+					}
 					this.onMejsSuccess( mediaElement, domObject, player );
 				};
 			}
@@ -870,6 +875,23 @@
 					e.preventDefault();
 					this.checkDownloadLink( downloadLink );
 				} );
+			}
+
+			if ( 'vertical' === videoVars.fixed_aspect ) {
+				const videoElement = playerWrapper.querySelector( 'video' );
+				if ( videoElement ) {
+					const checkVertical = () => {
+						if ( videoElement.videoHeight > videoElement.videoWidth ) {
+							playerWrapper.parentElement.classList.add( 'videopack-fixed-aspect' );
+							playerWrapper.parentElement.style.aspectRatio = videoVars.default_ratio;
+						}
+					};
+					if ( videoElement.readyState >= 1 ) {
+						checkVertical();
+					} else {
+						videoElement.addEventListener( 'loadedmetadata', checkVertical, { once: true } );
+					}
+				}
 			}
 
 			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
@@ -2067,11 +2089,6 @@
 
 	// Expose the videopack object to the global scope, merging with any existing properties (like player_data).
 	window.videopack = Object.assign( window.videopack || {}, videopack_obj );
-
-	// Hook into WordPress MediaElement settings if available.
-	if ( typeof window._wpmejsSettings !== 'undefined' ) {
-		window._wpmejsSettings.success = window.videopack.onMejsSuccess.bind( window.videopack );
-	}
 
 	document.addEventListener( 'DOMContentLoaded', () => window.videopack.init() );
 }() );

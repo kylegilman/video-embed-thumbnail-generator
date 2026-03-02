@@ -60,6 +60,36 @@
 		text-align: center;
 	}
 
+	/* Fixed Aspect Ratio */
+	&.videopack-fixed-aspect {
+		width: 100%;
+		max-width: 100%;
+
+		.videopack-player {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			top: 0;
+			left: 0;
+
+			video,
+			.video-js,
+			.mejs-container {
+				width: 100% !important;
+				height: 100% !important;
+			}
+
+			/* Override Video.js fluid padding if it gets applied */
+			.video-js.vjs-fluid {
+				padding-top: 0 !important;
+			}
+		}
+
+		.mejs-poster.mejs-layer {
+			background-size: contain;
+		}
+	}
+
 	/* Video container */
 	.videopack-player {
 		position: relative;

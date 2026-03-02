@@ -52,6 +52,35 @@
   text-align: center;
 }
 .videopack-wrapper {
+  /* Fixed Aspect Ratio */
+}
+.videopack-wrapper.videopack-fixed-aspect {
+  width: 100%;
+  max-width: 100%;
+}
+.videopack-wrapper.videopack-fixed-aspect .videopack-player {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.videopack-wrapper.videopack-fixed-aspect .videopack-player video,
+.videopack-wrapper.videopack-fixed-aspect .videopack-player .video-js,
+.videopack-wrapper.videopack-fixed-aspect .videopack-player .mejs-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+.videopack-wrapper.videopack-fixed-aspect .videopack-player {
+  /* Override Video.js fluid padding if it gets applied */
+}
+.videopack-wrapper.videopack-fixed-aspect .videopack-player .video-js.vjs-fluid {
+  padding-top: 0 !important;
+}
+.videopack-wrapper.videopack-fixed-aspect .mejs-poster.mejs-layer {
+  background-size: contain;
+}
+.videopack-wrapper {
   /* Video container */
 }
 .videopack-wrapper .videopack-player {

@@ -102,11 +102,20 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 			title: attachmentObject.title?.rendered,
 			caption: attachmentObject.caption?.raw,
 			starts: attachmentObject.meta?.['_videopack-meta']?.starts,
+			text_tracks:
+				attachmentObject.meta?.['_videopack-meta']?.track ||
+				attachmentObject.meta?.['_videopack-meta']?.tracks ||
+				attachmentObject.meta?.track ||
+				attachmentObject.meta?.tracks ||
+				[],
 		};
 
 		const updatedAttributes = Object.keys(media_attributes).reduce(
 			(acc, key) => {
-				if (media_attributes[key]) {
+				if (
+					media_attributes[key] !== undefined &&
+					media_attributes[key] !== null
+				) {
 					acc[key] = media_attributes[key];
 				}
 				return acc;
@@ -172,7 +181,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				className="block-editor-media-placeholder"
 				withIllustration={true}
 				icon={icon}
-				label={__( 'Videopack Video', 'video-embed-thumbnail-generator' )}
+				label={__('Videopack Video', 'video-embed-thumbnail-generator')}
 				instructions={__(
 					'Upload a video file, pick one from your media library, or add one with a URL.'
 				)}
