@@ -286,6 +286,11 @@ class Options {
 				unset( $old_options['js_skin'] );
 			}
 
+			// Migrate embed_method
+			if ( isset( $old_options['embed_method'] ) && 'Video.js v8' === $old_options['embed_method'] ) {
+				$old_options['embed_method'] = 'Video.js';
+			}
+
 			// Migrate overlay_embedcode to embedcode
 			if ( isset( $old_options['overlay_embedcode'] ) ) {
 				$old_options['embedcode'] = $old_options['overlay_embedcode'];
@@ -303,6 +308,10 @@ class Options {
 					$options_to_init['encode'][ $format ] = array( 'resolutions' => array() );
 				}
 				$options_to_init['encode'][ $format ]['resolutions'][ $height ] = true;
+
+				// Also set as custom resolution to ensure it appears in lists if non-standard.
+				$options_to_init['enable_custom_resolution'] = true;
+				$options_to_init['custom_resolution']        = intval( $height );
 				unset( $old_options['custom_format'] );
 			}
 
@@ -347,6 +356,12 @@ class Options {
 					$options_to_init['delete_child_encoded']    = false;
 				}
 				unset( $old_options['delete_children'] );
+			}
+
+			// Migrate gallery_thumb to gallery_columns
+			if ( isset( $old_options['gallery_thumb'] ) ) {
+				$options_to_init['gallery_columns'] = round( 1500 / intval( $old_options['gallery_thumb'] ) );
+				unset( $old_options['gallery_thumb'] );
 			}
 
 			$options_to_init['legacy_dimensions'] = true;
