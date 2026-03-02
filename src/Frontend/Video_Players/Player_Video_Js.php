@@ -112,6 +112,10 @@ class Player_Video_Js extends Player {
 		// Allow user to set skin for individual videos using the skin="" attribute.
 		$classes[] = $atts['skin'] ?? $skin;
 
+		if ( $this->is_fixed_aspect() ) {
+			$classes[] = 'vjs-fill';
+		}
+
 		return $classes;
 	}
 

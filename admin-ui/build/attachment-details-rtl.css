@@ -195,6 +195,71 @@ picture.vjs-poster {
   margin-right: 8px;
   font-weight: 300;
 }
+/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/text-tracks.scss ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************/
+.videopack-text-tracks-list .videopack-text-track-item {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--wp--preset--color--accent-5, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease-in-out;
+}
+.videopack-text-tracks-list .videopack-text-track-item:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-header .videopack-text-track-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #1e293b;
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row {
+  margin-bottom: 12px;
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row.videopack-text-track-settings-row-split {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row.videopack-text-track-settings-row-split > * {
+  flex: 1;
+  min-width: 0;
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-base-control__label,
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings label {
+  font-size: 13px;
+  display: block;
+}
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-text-control,
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-select-control,
+.videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .components-toggle-control {
+  margin-bottom: 0;
+}
+.videopack-text-tracks-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+.videopack-text-tracks-actions .components-button {
+  flex: 1 1 auto;
+  min-width: -moz-fit-content;
+  min-width: fit-content;
+  justify-content: center;
+  white-space: nowrap;
+}
 /*!********************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/attachment-details/attachment-details.scss ***!
   \********************************************************************************************************************************************************************************************************************************************************************************/

@@ -7132,7 +7132,8 @@ const GenericPlayer = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.forward
   playsInline,
   className,
   sources,
-  src
+  src,
+  tracks = []
 }, ref) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("video", {
   poster: poster,
   loop: loop,
@@ -7148,6 +7149,12 @@ const GenericPlayer = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.forward
   children: [sources.map((source, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("source", {
     src: source.src,
     type: source.type
+  }, index)), tracks.map((track, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("track", {
+    src: track.src,
+    kind: track.kind,
+    srcLang: track.srclang,
+    label: track.label,
+    default: track.default
   }, index)), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("a", {
     href: src,
     children: src
@@ -7372,7 +7379,8 @@ const VideoJS = props => {
     options,
     skin,
     onPlay,
-    onPause
+    onPause,
+    onReady
   } = props;
   const previousSkinRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(skin);
   const previousPluginsRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(options?.plugins);
@@ -7410,6 +7418,9 @@ const VideoJS = props => {
         videoElement.setAttribute('playsinline', '');
         videoRef.current.appendChild(videoElement);
         playerRef.current = videojs(videoElement, options, function () {
+          if (onReady) {
+            onReady(this);
+          }
           this.on('play', onPlay);
           this.on('pause', onPause);
         });
@@ -7442,11 +7453,36 @@ const VideoJS = props => {
           player.src(options.sources);
         }
       }
+
+      // Update tracks if they changed
+      if (options.tracks) {
+        const remoteTracks = player.remoteTextTracks();
+        const currentTracks = [];
+        for (let i = 0; i < remoteTracks.length; i++) {
+          currentTracks.push({
+            src: remoteTracks[i].src,
+            kind: remoteTracks[i].kind,
+            srclang: remoteTracks[i].language,
+            label: remoteTracks[i].label,
+            default: remoteTracks[i].default
+          });
+        }
+        if (JSON.stringify(currentTracks) !== JSON.stringify(options.tracks)) {
+          // Remove old remote tracks
+          for (let i = remoteTracks.length - 1; i >= 0; i--) {
+            player.removeRemoteTextTrack(remoteTracks[i]);
+          }
+          // Add new ones
+          options.tracks.forEach(track => {
+            player.addRemoteTextTrack(track, false);
+          });
+        }
+      }
     }
     return () => {
       clearTimeout(initTimer);
     };
-  }, [options, skin, onPlay, onPause]);
+  }, [options, skin, onPlay, onPause, onReady]);
 
   // Dispose the player when the component unmounts
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
@@ -7541,7 +7577,8 @@ const VideoPlayer = ({
     watermark_link_to,
     watermark_url,
     sources = [],
-    source_groups = {}
+    source_groups = {},
+    text_tracks = []
   } = decodedAttributes;
   const actualAutoplay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
     return autoplay && muted;
@@ -7564,21 +7601,22 @@ const VideoPlayer = ({
     muted,
     playsInline: playsinline,
     sources: allSources,
-    src
-  }), [poster, loop, actualAutoplay, preload, controls, muted, playsinline, allSources, src]);
+    src,
+    tracks: text_tracks
+  }), [poster, loop, actualAutoplay, preload, controls, muted, playsinline, allSources, src, text_tracks]);
   const renderReady = allSources && allSources.length > 0 && allSources[0].src;
-  const handlePlay = () => {
+  const handlePlay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     if (wrapperRef.current) {
       wrapperRef.current.classList.remove('meta-bar-visible');
     }
-  };
-  const handlePause = () => {
+  }, []);
+  const handlePause = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     if (wrapperRef.current) {
       wrapperRef.current.classList.add('meta-bar-visible');
     }
-  };
+  }, []);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    if (embed_method === 'WordPress Default' && playerRef.current) {
+    if (embed_method === 'WordPress Default' && playerRef.current && renderReady) {
       const player = new MediaElementPlayer(playerRef.current);
       return () => {
         if (player) {
@@ -7586,7 +7624,7 @@ const VideoPlayer = ({
         }
       };
     }
-  }, [embed_method]);
+  }, [embed_method, renderReady]);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     if (embed_method === 'Video.js') {
       const options = {
@@ -7605,6 +7643,13 @@ const VideoPlayer = ({
           src: s.src,
           type: s.type,
           resolution: s.resolution
+        })),
+        tracks: text_tracks.map(t => ({
+          src: t.src,
+          kind: t.kind,
+          srclang: t.srclang,
+          label: t.label,
+          default: t.default
         }))
       };
       const hasResolutions = allSources.some(s => s.resolution);
@@ -7621,14 +7666,16 @@ const VideoPlayer = ({
       }
       setVideoJsOptions(options);
     }
-  }, [autoplay, controls, muted, preload, auto_res, auto_codec, poster, loop, playsinline, volume, playback_rate, JSON.stringify(allSources), JSON.stringify(source_groups), embed_method]);
-  const handleVideoPlayerReady = player => {
+  }, [autoplay, controls, muted, preload, auto_res, auto_codec, poster, loop, playsinline, volume, playback_rate, JSON.stringify(allSources), JSON.stringify(source_groups), JSON.stringify(text_tracks), embed_method]);
+  const handleVideoPlayerReady = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(player => {
     playerRef.current = player;
     player.on('loadedmetadata', () => {
-      if (embed_method === 'Video.js') {
-        onReady(player.el().firstChild);
-      } else {
-        onReady(player);
+      if (onReady) {
+        if (embed_method === 'Video.js') {
+          onReady(player.el().firstChild);
+        } else {
+          onReady(player);
+        }
       }
       if (actualAutoplay) {
         handlePlay();
@@ -7636,7 +7683,7 @@ const VideoPlayer = ({
     });
     player.on('waiting', () => console.log('player is waiting'));
     player.on('dispose', () => console.log('player will dispose'));
-  };
+  }, [embed_method, actualAutoplay, onReady, handlePlay]);
   if (!renderReady) {
     return null; // Or a loading spinner
   }
@@ -7698,7 +7745,8 @@ const VideoPlayer = ({
         options: videoJsOptions,
         skin: skin,
         onPlay: handlePlay,
-        onPause: handlePause
+        onPause: handlePause,
+        onReady: handleVideoPlayerReady
       }), embed_method === 'WordPress Default' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
         className: "wp-video",
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_GenericPlayer__WEBPACK_IMPORTED_MODULE_3__["default"], {

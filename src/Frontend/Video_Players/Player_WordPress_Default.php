@@ -48,7 +48,6 @@ class Player_WordPress_Default extends Player {
 			'pluginPath'            => includes_url( 'js/mediaelement/', 'relative' ),
 			'audioShortcodeLibrary' => 'mediaelement',
 			'videoShortcodeLibrary' => 'mediaelement',
-			'success'               => 'videopack.onMejsSuccess',
 		);
 
 		// Add speed feature if enabled.

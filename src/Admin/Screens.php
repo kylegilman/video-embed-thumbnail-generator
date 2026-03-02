@@ -45,7 +45,7 @@ class Screens {
 
 	public function add_settings_page() {
 		$page_hook_suffix = add_options_page(
-			esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
+			esc_html_x( 'Videopack Settings', 'Settings page title', 'video-embed-thumbnail-generator' ),
 			esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
 			'manage_options',
 			'video_embed_thumbnail_generator_settings',
