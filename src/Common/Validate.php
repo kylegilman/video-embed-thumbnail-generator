@@ -4,12 +4,13 @@ namespace Videopack\Common;
 
 class Validate {
 
+
 	public function allowed_html( $scope = 'public' ) {
 
 		$allowed_html = wp_kses_allowed_html( 'post' );
 
 		$videopack_allowed_html = array(
-			'div'    => array(
+			'div'     => array(
 				'class'     => true,
 				'style'     => true,
 				'id'        => true,
@@ -19,7 +20,7 @@ class Validate {
 				'itemtype'  => true,
 				'onclick'   => true,
 			),
-			'span'   => array(
+			'span'    => array(
 				'id'        => true,
 				'class'     => true,
 				'onclick'   => true,
@@ -28,11 +29,11 @@ class Validate {
 				'itemscope' => true,
 				'itemtype'  => true,
 			),
-			'meta'   => array(
+			'meta'    => array(
 				'itemprop' => true,
 				'content'  => true,
 			),
-			'video'  => array(
+			'video'   => array(
 				'class'       => true,
 				'id'          => true,
 				'width'       => true,
@@ -46,26 +47,26 @@ class Validate {
 				'src'         => true,
 				'playsinline' => true,
 			),
-			'source' => array(
+			'source'  => array(
 				'src'    => true,
 				'data-*' => true,
 				'type'   => true,
 			),
-			'track'  => array(
-				'id',
-				'kind',
-				'src',
-				'srclang',
-				'label',
-				'default',
+			'track'   => array(
+				'id'      => true,
+				'kind'    => true,
+				'src'     => true,
+				'srclang' => true,
+				'label'   => true,
+				'default' => true,
 			),
-			'a'      => array(
+			'a'       => array(
 				'href'    => true,
 				'title'   => true,
 				'onclick' => true,
 				'target'  => true,
 			),
-			'input'  => array(
+			'input'   => array(
 				'class'    => true,
 				'type'     => true,
 				'value'    => true,
@@ -77,12 +78,12 @@ class Validate {
 				'name'     => true,
 				'data-*'   => true,
 			),
-			'img'    => array(
+			'img'     => array(
 				'src'    => true,
 				'srcset' => true,
 				'alt'    => true,
 			),
-			'button' => array(
+			'button'  => array(
 				'class'    => true,
 				'style'    => true,
 				'onclick'  => true,
@@ -91,17 +92,17 @@ class Validate {
 				'name'     => true,
 				'type'     => true,
 			),
-			'svg'    => array(
-				'xmlns'  => true,
+			'svg'     => array(
+				'xmlns'   => true,
 				'viewbox' => true,
 			),
-			'circle'    => array(
-				'class'  => true,
-				'cx'     => true,
-				'cy'     => true,
-				'r'      => true,
+			'circle'  => array(
+				'class' => true,
+				'cx'    => true,
+				'cy'    => true,
+				'r'     => true,
 			),
-			'polygon'   => array(
+			'polygon' => array(
 				'class'  => true,
 				'points' => true,
 			),
@@ -172,10 +173,10 @@ class Validate {
 				}
 			}
 		} elseif ( self::filter_validate_url( $text_field ) ) { // not an array, is a URL
-				$text_field = sanitize_url( $text_field );
+			$text_field = sanitize_url( $text_field );
 		} else {
 			$text_field = sanitize_text_field( $text_field );
-		}//end if
+		} //end if
 
 		return $text_field;
 	}
@@ -196,8 +197,8 @@ class Validate {
 			// Replace wide chars by “X”.
 			$s = str_repeat( ' ', $l );
 			for ( $i = 0; $i < $l; ++$i ) {
-				$ch       = mb_substr( $uri, $i, 1 );
-				$s [ $i ] = strlen( $ch ) > 1 ? 'X' : $ch;
+				$ch      = mb_substr( $uri, $i, 1 );
+				$s[ $i ] = strlen( $ch ) > 1 ? 'X' : $ch;
 			}
 			// Re-check now.
 			$res = filter_var( $s, FILTER_VALIDATE_URL );

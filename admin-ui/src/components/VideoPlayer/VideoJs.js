@@ -5,7 +5,7 @@ import { useRef, useEffect } from '@wordpress/element';
 export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
-	const { options, skin, onPlay, onPause } = props;
+	const { options, skin, onPlay, onPause, onReady } = props;
 	const previousSkinRef = useRef(skin);
 	const previousPluginsRef = useRef(options?.plugins);
 
@@ -18,7 +18,7 @@ export const VideoJS = (props) => {
 		if (
 			player &&
 			JSON.stringify(previousPluginsRef.current) !==
-				JSON.stringify(options.plugins)
+			JSON.stringify(options.plugins)
 		) {
 			player.dispose();
 			playerRef.current = null;
@@ -55,6 +55,9 @@ export const VideoJS = (props) => {
 				videoRef.current.appendChild(videoElement);
 
 				playerRef.current = videojs(videoElement, options, function () {
+					if (onReady) {
+						onReady(this);
+					}
 					this.on('play', onPlay);
 					this.on('pause', onPause);
 				});
@@ -90,12 +93,38 @@ export const VideoJS = (props) => {
 					player.src(options.sources);
 				}
 			}
+
+			// Update tracks if they changed
+			if (options.tracks) {
+				const remoteTracks = player.remoteTextTracks();
+				const currentTracks = [];
+				for (let i = 0; i < remoteTracks.length; i++) {
+					currentTracks.push({
+						src: remoteTracks[i].src,
+						kind: remoteTracks[i].kind,
+						srclang: remoteTracks[i].language,
+						label: remoteTracks[i].label,
+						default: remoteTracks[i].default,
+					});
+				}
+
+				if (JSON.stringify(currentTracks) !== JSON.stringify(options.tracks)) {
+					// Remove old remote tracks
+					for (let i = remoteTracks.length - 1; i >= 0; i--) {
+						player.removeRemoteTextTrack(remoteTracks[i]);
+					}
+					// Add new ones
+					options.tracks.forEach((track) => {
+						player.addRemoteTextTrack(track, false);
+					});
+				}
+			}
 		}
 
 		return () => {
 			clearTimeout(initTimer);
 		};
-	}, [options, skin, onPlay, onPause]);
+	}, [options, skin, onPlay, onPause, onReady]);
 
 	// Dispose the player when the component unmounts
 	useEffect(() => {
