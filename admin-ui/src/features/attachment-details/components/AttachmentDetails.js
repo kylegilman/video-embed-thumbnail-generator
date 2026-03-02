@@ -3,6 +3,7 @@ import { useEntityRecord } from '@wordpress/core-data';
 import { useState, useEffect } from '@wordpress/element';
 import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
+import TextTracks from '../../../components/TextTracks/TextTracks.js';
 import { getSettings } from '../../../utils/utils.js';
 
 const AttachmentDetails = ({ attachmentId }) => {
@@ -39,7 +40,27 @@ const AttachmentDetails = ({ attachmentId }) => {
 		}
 	}, [options, attachment, attributes, attachmentId]);
 
+	const handleTrackChange = async (newTracks) => {
+		try {
+			const currentMeta = attachment.record?.meta?.['_videopack-meta'] || {};
+			await attachment.edit({
+				meta: {
+					...attachment.record.meta,
+					'_videopack-meta': {
+						...currentMeta,
+						track: newTracks,
+					},
+				},
+			});
+			await attachment.save();
+		} catch (error) {
+			console.error('Error saving text tracks to attachment metadata:', error);
+		}
+	};
+
 	if (attributes && attachment.hasResolved && options) {
+		const tracks = attachment.record?.meta?.['_videopack-meta']?.track || [];
+
 		return (
 			<div className="videopack-attachment-details">
 				<Thumbnails
@@ -48,6 +69,7 @@ const AttachmentDetails = ({ attachmentId }) => {
 					videoData={attachment}
 					options={options}
 				/>
+				<TextTracks tracks={tracks} onChange={handleTrackChange} />
 				<AdditionalFormats attributes={attributes} options={options} />
 			</div>
 		);

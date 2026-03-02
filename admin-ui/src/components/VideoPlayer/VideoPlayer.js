@@ -1,6 +1,6 @@
 /* global MediaElementPlayer */
 
-import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
+import { useRef, useEffect, useState, useMemo, useCallback } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import MetaBar from './MetaBar';
 import GenericPlayer from './GenericPlayer';
@@ -49,6 +49,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		watermark_url,
 		sources = [],
 		source_groups = {},
+		text_tracks = [],
 	} = decodedAttributes;
 
 	const actualAutoplay = useMemo(() => {
@@ -79,6 +80,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			playsInline: playsinline,
 			sources: allSources,
 			src,
+			tracks: text_tracks,
 		}),
 		[
 			poster,
@@ -90,26 +92,31 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			playsinline,
 			allSources,
 			src,
+			text_tracks,
 		]
 	);
 
 	const renderReady =
 		allSources && allSources.length > 0 && allSources[0].src;
 
-	const handlePlay = () => {
+	const handlePlay = useCallback(() => {
 		if (wrapperRef.current) {
 			wrapperRef.current.classList.remove('meta-bar-visible');
 		}
-	};
+	}, []);
 
-	const handlePause = () => {
+	const handlePause = useCallback(() => {
 		if (wrapperRef.current) {
 			wrapperRef.current.classList.add('meta-bar-visible');
 		}
-	};
+	}, []);
 
 	useEffect(() => {
-		if (embed_method === 'WordPress Default' && playerRef.current) {
+		if (
+			embed_method === 'WordPress Default' &&
+			playerRef.current &&
+			renderReady
+		) {
 			const player = new MediaElementPlayer(playerRef.current);
 			return () => {
 				if (player) {
@@ -117,7 +124,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				}
 			};
 		}
-	}, [embed_method]);
+	}, [embed_method, renderReady]);
 
 	useEffect(() => {
 		if (embed_method === 'Video.js') {
@@ -137,6 +144,13 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					src: s.src,
 					type: s.type,
 					resolution: s.resolution,
+				})),
+				tracks: text_tracks.map((t) => ({
+					src: t.src,
+					kind: t.kind,
+					srclang: t.srclang,
+					label: t.label,
+					default: t.default,
 				})),
 			};
 
@@ -170,24 +184,30 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		playback_rate,
 		JSON.stringify(allSources),
 		JSON.stringify(source_groups),
+		JSON.stringify(text_tracks),
 		embed_method,
 	]);
 
-	const handleVideoPlayerReady = (player) => {
-		playerRef.current = player;
-		player.on('loadedmetadata', () => {
-			if (embed_method === 'Video.js') {
-				onReady(player.el().firstChild);
-			} else {
-				onReady(player);
-			}
-			if (actualAutoplay) {
-				handlePlay();
-			}
-		});
-		player.on('waiting', () => console.log('player is waiting'));
-		player.on('dispose', () => console.log('player will dispose'));
-	};
+	const handleVideoPlayerReady = useCallback(
+		(player) => {
+			playerRef.current = player;
+			player.on('loadedmetadata', () => {
+				if (onReady) {
+					if (embed_method === 'Video.js') {
+						onReady(player.el().firstChild);
+					} else {
+						onReady(player);
+					}
+				}
+				if (actualAutoplay) {
+					handlePlay();
+				}
+			});
+			player.on('waiting', () => console.log('player is waiting'));
+			player.on('dispose', () => console.log('player will dispose'));
+		},
+		[embed_method, actualAutoplay, onReady, handlePlay]
+	);
 
 	if (!renderReady) {
 		return null; // Or a loading spinner
@@ -262,6 +282,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 						skin={skin}
 						onPlay={handlePlay}
 						onPause={handlePause}
+						onReady={handleVideoPlayerReady}
 					/>
 				)}
 				{embed_method === 'WordPress Default' && (
@@ -279,8 +300,8 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				{watermark && (
 					<div className="videopack-watermark">
 						{watermark_link_to &&
-						watermark_link_to !== 'false' &&
-						watermark_link_to !== 'None' ? (
+							watermark_link_to !== 'false' &&
+							watermark_link_to !== 'None' ? (
 							<a href="#" onClick={(e) => e.preventDefault()}>
 								<img src={watermark} alt="watermark" style={watermarkStyle} />
 							</a>

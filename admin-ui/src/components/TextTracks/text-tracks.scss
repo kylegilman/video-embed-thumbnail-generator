@@ -1,0 +1,75 @@
+.videopack-text-tracks-list {
+	.videopack-text-track-item {
+		margin-bottom: 24px;
+		padding: 16px;
+		background: var(--wp--preset--color--accent-5, #f8f9fa);
+		border-radius: 8px;
+		border: 1px solid #e2e8f0;
+		transition: all 0.2s ease-in-out;
+
+		&:hover {
+			border-color: #cbd5e0;
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+		}
+
+		.videopack-text-track-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 16px;
+			padding-bottom: 8px;
+			border-bottom: 1px solid #e2e8f0;
+
+			.videopack-text-track-label {
+				font-weight: 600;
+				font-size: 13px;
+				color: #1e293b;
+			}
+		}
+
+		.videopack-text-track-settings {
+			.videopack-text-track-settings-row {
+				margin-bottom: 12px;
+
+				&.videopack-text-track-settings-row-split {
+					display: flex;
+					gap: 12px;
+					align-items: flex-start;
+
+					&>* {
+						flex: 1;
+						min-width: 0; // Prevent flex children from overflowing
+					}
+				}
+			}
+
+			.components-base-control__label,
+			label {
+				font-size: 13px;
+				display: block;
+			}
+
+			.components-text-control,
+			.components-select-control,
+			.components-toggle-control {
+				margin-bottom: 0;
+			}
+		}
+	}
+}
+
+.videopack-text-tracks-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid #e2e8f0;
+
+	.components-button {
+		flex: 1 1 auto; // Allow growing and shrinking
+		min-width: fit-content;
+		justify-content: center;
+		white-space: nowrap;
+	}
+}

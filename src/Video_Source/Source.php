@@ -16,6 +16,7 @@ use Videopack\Video_Source\Video_Source_Finder;
  * @param \Videopack\Admin\Options $options_manager
  */
 abstract class Source {
+
 	/**
 	 * Primary source of the video. This could be a URL, attachment ID, or other source.
 	 * @var string|int $source
@@ -674,6 +675,9 @@ abstract class Source {
 	 * @return array
 	 */
 	public function get_tracks(): array {
+		if ( isset( $this->metadata['track'] ) ) {
+			return $this->metadata['track'];
+		}
 		return isset( $this->metadata['tracks'] ) ? $this->metadata['tracks'] : array();
 	}
 
