@@ -19,26 +19,24 @@ import {
 	PanelRow,
 	RangeControl,
 	SelectControl,
+	TextControl,
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
-import {
-	useEffect,
-	useState,
-	useMemo,
-	useCallback,
-	useRef,
-} from '@wordpress/element';
+import { useEffect, useState, useMemo } from '@wordpress/element';
 import TextControlOnBlur from './TextControlOnBlur';
 import PerCodecQualitySettings from './PerCodecQualitySettings';
 import WatermarkSettingsPanel from './WatermarkSettingsPanel';
+import VideopackTooltip from './VideopackTooltip';
 
 const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
+	const { isNetworkActive } = videopack_config;
 	const {
 		app_path,
-		replace_format,
 		encode,
 		hide_video_formats,
+		enable_custom_resolution,
+		custom_resolution,
 		error_email,
 		ffmpeg_watermark,
 		audio_bitrate,
@@ -80,55 +78,48 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			});
 	}, []);
 
-	const EncodeFormatGrid = () => {
-		const { codecs, resolutions: staticResolutions } = videopack_config;
-		const {
-			encode: currentEncode,
-			ffmpeg_exists: ffmpegExists,
-			enable_custom_resolution,
-			custom_resolution,
-		} = settings;
+	const currentResolutions = useMemo(() => {
+		// Filter out the custom resolution from the static list, as it will be re-added if enabled.
+		let resolutionsList = videopack_config.resolutions.filter(
+			(r) => !r.is_custom
+		);
 
-		const resolutions = useMemo(() => {
-			// Filter out the custom resolution from the static list, as it will be re-added if enabled.
-			let currentResolutions = staticResolutions.filter(
-				(r) => !r.is_custom
+		if (enable_custom_resolution) {
+			const height = parseInt(custom_resolution, 10) || 900;
+			const id = String(height);
+			const width = Math.ceil((height * 16) / 9);
+			const name = sprintf(
+				/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
+				__('Custom (%sp)', 'video-embed-thumbnail-generator'),
+				height
 			);
 
-			if (enable_custom_resolution) {
-				const height = parseInt(custom_resolution, 10) || 900;
-				const id = String(height);
-				const width = Math.ceil((height * 16) / 9);
-				const name = sprintf(
-					/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-					__('Custom (%sp)', 'video-embed-thumbnail-generator'),
-					height
-				);
+			// Remove any existing resolution with the same ID to avoid duplicates.
+			resolutionsList = resolutionsList.filter((r) => r.id !== id);
 
-				// Remove any existing resolution with the same ID to avoid duplicates.
-				currentResolutions = currentResolutions.filter(
-					(r) => r.id !== id
-				);
-
-				currentResolutions.push({
-					id,
-					name,
-					height,
-					width,
-					is_custom: true,
-				});
-			}
-
-			return currentResolutions.sort((a, b) => {
-				if (a.id === 'fullres') return -1;
-				if (b.id === 'fullres') return 1;
-				return b.height - a.height;
+			resolutionsList.push({
+				id,
+				name,
+				height,
+				width,
+				is_custom: true,
 			});
-		}, [
-			staticResolutions,
-			enable_custom_resolution,
-			custom_resolution,
-		]);
+		}
+
+		return resolutionsList.sort((a, b) => {
+			if (a.id === 'fullres') {
+				return -1;
+			}
+			if (b.id === 'fullres') {
+				return 1;
+			}
+			return b.height - a.height;
+		});
+	}, [enable_custom_resolution, custom_resolution]);
+
+	const EncodeFormatGrid = () => {
+		const { codecs } = videopack_config;
+		const { encode: currentEncode, ffmpeg_exists: ffmpegExists } = settings;
 
 		const handleCheckboxChange = (codecId, resolutionId, isChecked) => {
 			const newEncode = JSON.parse(JSON.stringify(currentEncode || {}));
@@ -167,7 +158,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				if (!newEncode[codecId].resolutions) {
 					newEncode[codecId].resolutions = {};
 				}
-				resolutions.forEach((resolution) => {
+				currentResolutions.forEach((resolution) => {
 					newEncode[codecId].resolutions[resolution.id] = false;
 				});
 			}
@@ -190,7 +181,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								disabled={ffmpegExists !== true}
 							/>
 						</div>
-						{resolutions.map((resolution) => (
+						{currentResolutions.map((resolution) => (
 							<CheckboxControl
 								key={`${codec.id}-${resolution.id}`}
 								__nextHasNoMarginBottom
@@ -251,7 +242,8 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			value: codec.id,
 			label: codec.name,
 		}));
-		const resolutions = videopack_config.resolutions.map((resolution) => ({
+
+		const resolutions = currentResolutions.map((resolution) => ({
 			value: resolution.id,
 			label: resolution.name,
 		}));
@@ -276,16 +268,24 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					onChange={changeHandlerFactory.sample_resolution}
 					disabled={ffmpeg_exists !== true}
 				/>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__(
-						'Test vertical video rotation.',
-						'video-embed-thumbnail-generator'
-					)}
-					onChange={changeHandlerFactory.sample_rotate}
-					checked={sample_rotate}
-					disabled={ffmpeg_exists !== true}
-				/>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Test vertical video rotation.',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.sample_rotate}
+						checked={sample_rotate}
+						disabled={ffmpeg_exists !== true}
+					/>
+					<VideopackTooltip
+						text={__(
+							"Tests FFmpeg's ability to rotate vertical videos shot on mobile devices.",
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
 			</Flex>
 		);
 	};
@@ -336,9 +336,25 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						)}
 						value={app_path}
 						onChange={changeHandlerFactory.app_path}
-						help={__(
-							'Leave blank if FFmpeg is in your system path.'
-						)}
+						help={
+							isNetworkActive
+								? __(
+										'This setting is controlled at the network level.',
+										'video-embed-thumbnail-generator'
+									)
+								: __(
+										'Leave blank if FFmpeg is in your system path.'
+									)
+						}
+						disabled={isNetworkActive}
+						title={
+							isNetworkActive
+								? __(
+										'This setting is controlled by the network administrator.',
+										'video-embed-thumbnail-generator'
+									)
+								: null
+						}
 					/>
 				</PanelRow>
 				{ffmpeg_exists !== true && ffmpeg_error && (
@@ -352,10 +368,26 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					'Default video encode formats',
 					'video-embed-thumbnail-generator'
 				)}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
 			>
 				<Flex direction="column">
 					<FlexItem>
+						<div>
+							<span className="videopack-label-with-tooltip">
+								<strong>
+									{__(
+										'About formats:',
+										'video-embed-thumbnail-generator'
+									)}
+								</strong>
+								<VideopackTooltip
+									text={__(
+										'If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.',
+										'video-embed-thumbnail-generator'
+									)}
+								/>
+							</span>
+						</div>
 						<BaseControl
 							__nextHasNoMarginBottom
 							id="default-video-encode-formats"
@@ -366,53 +398,57 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'List only default formats on WordPress admin pages.'
+							'Enable Custom Resolution',
+							'video-embed-thumbnail-generator'
 						)}
-						onChange={changeHandlerFactory.hide_video_formats}
-						checked={hide_video_formats}
-						disabled={ffmpeg_exists !== true}
+						onChange={changeHandlerFactory.enable_custom_resolution}
+						checked={!!enable_custom_resolution}
 					/>
-				</Flex>
-			</PanelBody>
-			<PanelBody
-				title={__(
-					'For previously uploaded videos',
-					'video-embed-thumbnail-generator'
-				)}
-				opened={ffmpeg_exists === true}
-			>
-				<BaseControl __nextHasNoMarginBottom id="previouslyUploaded">
-					<Button
-						__next40pxDefaultSize
-						variant="secondary"
-						disabled={
-							ffmpeg_exists !== true || encodingBatch.isProcessing
-						}
-						onClick={handleEncodeAllVideos}
-					>
-						{encodingBatch.isProcessing
-							? sprintf(
-									/* translators: 1: current count, 2: total count */
-									__(
-										'Processing %1$d / %2$d',
-										'video-embed-thumbnail-generator'
-									),
-									encodingBatch.progress.current,
-									encodingBatch.progress.total
-								)
-							: __(
-									'Encode all default formats',
+					{enable_custom_resolution && (
+						<div className="videopack-setting-auto-width">
+							<TextControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__(
+									'Custom Resolution Height:',
 									'video-embed-thumbnail-generator'
 								)}
-					</Button>
-				</BaseControl>
+								type="number"
+								value={custom_resolution || ''}
+								onChange={(value) =>
+									changeHandlerFactory.custom_resolution(
+										value === '' ? 0 : parseInt(value, 10)
+									)
+								}
+							/>
+						</div>
+					)}
+
+					<div className="videopack-control-with-tooltip">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								'Show only default formats on admin pages.'
+							)}
+							onChange={changeHandlerFactory.hide_video_formats}
+							checked={hide_video_formats}
+							disabled={ffmpeg_exists !== true}
+						/>
+						<VideopackTooltip
+							text={__(
+								'To avoid cluttering the admin interface with too many options, you can choose to list only the default formats on WordPress admin pages.',
+								'video-embed-thumbnail-generator'
+							)}
+						/>
+					</div>
+				</Flex>
 			</PanelBody>
 			<PanelBody
 				title={__(
 					'Do automatically on upload',
 					'video-embed-thumbnail-generator'
 				)}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
 			>
 				<BaseControl __nextHasNoMarginBottom id="autoEncode">
 					<ToggleControl
@@ -436,15 +472,65 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						disabled={ffmpeg_exists !== true}
 					/>
 				</BaseControl>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__(
-						"Automatically publish video's parent post when encoding finishes."
-					)}
-					onChange={changeHandlerFactory.auto_publish_post}
-					checked={auto_publish_post}
-					disabled={ffmpeg_exists !== true}
-				/>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							"Automatically publish video's parent post when encoding finishes."
+						)}
+						onChange={changeHandlerFactory.auto_publish_post}
+						checked={auto_publish_post}
+						disabled={ffmpeg_exists !== true}
+					/>
+					<VideopackTooltip
+						text={__(
+							'If all videos in the encode queue attached to a draft post are completed, the draft post will be automatically published.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+			</PanelBody>
+			<PanelBody
+				title={__(
+					'For previously uploaded videos',
+					'video-embed-thumbnail-generator'
+				)}
+				initialOpen={ffmpeg_exists === true}
+			>
+				<BaseControl __nextHasNoMarginBottom id="previouslyUploaded">
+					<div className="videopack-control-with-tooltip">
+						<Button
+							__next40pxDefaultSize
+							variant="secondary"
+							disabled={
+								ffmpeg_exists !== true ||
+								encodingBatch.isProcessing
+							}
+							onClick={handleEncodeAllVideos}
+						>
+							{encodingBatch.isProcessing
+								? sprintf(
+										/* translators: 1: current count, 2: total count */
+										__(
+											'Processing %1$d / %2$d',
+											'video-embed-thumbnail-generator'
+										),
+										encodingBatch.progress.current,
+										encodingBatch.progress.total
+									)
+								: __(
+										'Encode default formats',
+										'video-embed-thumbnail-generator'
+									)}
+						</Button>
+						<VideopackTooltip
+							text={__(
+								"Add every video in the Media Library to the encode queue if it hasn't already been encoded. Uses the default encode formats chosen above.",
+								'video-embed-thumbnail-generator'
+							)}
+						/>
+					</div>
+				</BaseControl>
 			</PanelBody>
 			<WatermarkSettingsPanel
 				title={__(
@@ -453,14 +539,15 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				)}
 				watermarkSettings={ffmpeg_watermark}
 				onChange={changeHandlerFactory.ffmpeg_watermark}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
+				disabled={ffmpeg_exists !== true}
 			/>
 			<PanelBody
 				title={__(
 					'Email encoding errors to',
 					'video-embed-thumbnail-generator'
 				)}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
 			>
 				<div className="videopack-setting-auto-width">
 					<SelectControl
@@ -475,7 +562,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			</PanelBody>
 			<PanelBody
 				title={__('Video quality', 'video-embed-thumbnail-generator')}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
 			>
 				{videopack_config.codecs.map(
 					(codec) =>
@@ -491,7 +578,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			</PanelBody>
 			<PanelBody
 				title={__('Audio', 'video-embed-thumbnail-generator')}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
 			>
 				<div className="videopack-setting-reduced-width">
 					<SelectControl
@@ -525,15 +612,25 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			</PanelBody>
 			<PanelBody
 				title={__('Execution', 'video-embed-thumbnail-generator')}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true && !isNetworkActive}
 			>
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__(
-						'Simultaneous encodes:',
-						'video-embed-thumbnail-generator'
-					)}
+					label={
+						<span className="videopack-label-with-tooltip">
+							{__(
+								'Simultaneous encodes:',
+								'video-embed-thumbnail-generator'
+							)}
+							<VideopackTooltip
+								text={__(
+									'Increasing the number will allow FFmpeg to encode more than one file at a time, but may lead to FFmpeg monopolizing system resources.',
+									'video-embed-thumbnail-generator'
+								)}
+							/>
+						</span>
+					}
 					value={simultaneous_encodes}
 					className="videopack-settings-slider"
 					onChange={changeHandlerFactory.simultaneous_encodes}
@@ -541,12 +638,38 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					max={10}
 					step={1}
 					marks={generateNonCrfMarks('simultaneous')}
-					disabled={ffmpeg_exists !== true}
+					disabled={isNetworkActive || ffmpeg_exists !== true}
+					title={
+						isNetworkActive
+							? __(
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
+							: null
+					}
+					help={
+						isNetworkActive
+							? __(
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
+							: null
+					}
 				/>
 				<RangeControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Threads:', 'video-embed-thumbnail-generator')}
+					label={
+						<span className="videopack-label-with-tooltip">
+							{__('Threads:', 'video-embed-thumbnail-generator')}
+							<VideopackTooltip
+								text={__(
+									'Default is 1, which limits encoding speed but prevents encoding from using too many system resources. Selecting 0 will allow FFmpeg to optimize the number of threads or you can set the number manually. This may lead to FFmpeg monopolizing system resources.',
+									'video-embed-thumbnail-generator'
+								)}
+							/>
+						</span>
+					}
 					value={threads}
 					className="videopack-settings-slider"
 					onChange={changeHandlerFactory.threads}
@@ -554,14 +677,57 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					max={16}
 					step={1}
 					marks={generateNonCrfMarks('threads')}
-					disabled={ffmpeg_exists !== true}
+					disabled={isNetworkActive || ffmpeg_exists !== true}
+					title={
+						isNetworkActive
+							? __(
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
+							: null
+					}
+					help={
+						isNetworkActive
+							? __(
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
+							: null
+					}
 				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__('Run nice', 'video-embed-thumbnail-generator')}
+					label={
+						<span className="videopack-label-with-tooltip">
+							{__('Run nice', 'video-embed-thumbnail-generator')}
+							<VideopackTooltip
+								text={__(
+									'Tells FFmpeg to run at a lower priority on Linux/Unix systems to avoid monopolizing system resources.',
+									'video-embed-thumbnail-generator'
+								)}
+							/>
+						</span>
+					}
+					className="videopack-flex-align-center"
 					onChange={changeHandlerFactory.nice}
 					checked={nice}
-					disabled={ffmpeg_exists !== true}
+					disabled={isNetworkActive || ffmpeg_exists !== true}
+					title={
+						isNetworkActive
+							? __(
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
+							: null
+					}
+					help={
+						isNetworkActive
+							? __(
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
+							: null
+					}
 				/>
 			</PanelBody>
 			<PanelBody
@@ -569,7 +735,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					'Video Encoding Test',
 					'video-embed-thumbnail-generator'
 				)}
-				opened={ffmpeg_exists === true}
+				initialOpen={ffmpeg_exists === true}
 			>
 				<BaseControl
 					__nextHasNoMarginBottom
