@@ -1,3 +1,4 @@
+/* global videopack_config */
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs, getFilename } from '@wordpress/url';
 import { applyFilters } from '@wordpress/hooks';
@@ -242,8 +243,15 @@ export const getUsersWithCapability = async (capability) => {
 
 export const getFreemiusPage = async (page) => {
 	try {
+		let path = `/videopack/v1/freemius/${page}`;
+		if (
+			videopack_config.isNetworkAdmin ||
+			videopack_config.isNetworkActive
+		) {
+			path += '?_fs_network_admin=true';
+		}
 		return await apiFetch({
-			path: `/videopack/v1/freemius/${page}`,
+			path,
 		});
 	} catch (error) {
 		console.error(`Error fetching Freemius page '${page}':`, error);
@@ -299,6 +307,39 @@ export const saveWPSettings = async (newSettings) => {
 		return response.videopack_options || {};
 	} catch (error) {
 		console.error('Error saving WP settings:', error);
+		throw error;
+	}
+};
+
+export const getNetworkSettings = async () => {
+	try {
+		return await apiFetch({ path: '/videopack/v1/network/settings' });
+	} catch (error) {
+		console.error('Error fetching network settings:', error);
+		throw error;
+	}
+};
+
+export const saveNetworkSettings = async (newSettings) => {
+	try {
+		return await apiFetch({
+			path: '/videopack/v1/network/settings',
+			method: 'POST',
+			data: newSettings,
+		});
+	} catch (error) {
+		console.error('Error saving network settings:', error);
+		throw error;
+	}
+};
+
+export const resetNetworkSettings = async () => {
+	try {
+		return await apiFetch({
+			path: '/videopack/v1/network/settings/defaults',
+		});
+	} catch (error) {
+		console.error('Error resetting network settings:', error);
 		throw error;
 	}
 };

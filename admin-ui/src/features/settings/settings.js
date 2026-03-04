@@ -170,17 +170,24 @@ const VideopackSettingsPage = () => {
 				),
 				component: VideoCollectionSettings,
 			},
-			{
+		];
+
+		if (
+			!videopack_config.isFfmpegOverridden ||
+			videopack_config.isSuperAdmin
+		) {
+			defaultTabs.push({
 				name: 'encoding',
 				title: __('Encoding', 'video-embed-thumbnail-generator'),
 				component: EncodingSettings,
-			},
-			{
-				name: 'admin',
-				title: __('Admin', 'video-embed-thumbnail-generator'),
-				component: AdminSettings,
-			},
-		];
+			});
+		}
+
+		defaultTabs.push({
+			name: 'admin',
+			title: __('Admin', 'video-embed-thumbnail-generator'),
+			component: AdminSettings,
+		});
 
 		if (videopack_config.freemiusEnabled) {
 			defaultTabs.push(
