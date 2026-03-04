@@ -7,13 +7,15 @@ class Source_Attachment_Local extends Source {
 	protected $meta_manager = null;
 
 	public function __construct(
-		int $attachment_id,
+		$source,
 		\Videopack\Admin\Options $options_manager,
 		$format = null,
-		$exists = false
+		$exists = false,
+		$parent_id = null
 	) {
+		$attachment_id = is_array( $source ) ? $source['id'] : $source;
 		if ( $this->validate_source( $attachment_id ) ) {
-			parent::__construct( $attachment_id, 'attachment_local', $options_manager, $format, $exists );
+			parent::__construct( $source, 'attachment_local', $options_manager, $format, $exists, $parent_id );
 			$this->set_metadata();
 		} else {
 			throw new \Exception( 'Invalid attachment ID.' );
@@ -23,7 +25,7 @@ class Source_Attachment_Local extends Source {
 	public function validate_source( $attachment_id ): bool {
 
 		if ( ! is_numeric( $attachment_id )
-			|| get_post_type( $attachment_id ) !== 'attachment'
+			|| get_post_type( (int) $attachment_id ) !== 'attachment'
 		) {
 			$this->handle_error( 'Invalid attachment ID.' );
 			return false;
@@ -33,22 +35,59 @@ class Source_Attachment_Local extends Source {
 	}
 
 	public function set_id(): void {
-		$this->id = $this->source;
+		$this->id = is_array( $this->source ) ? $this->source['id'] : $this->source;
 	}
 
-	public function set_metadata( array $metadata = null ): void {
+	public function set_metadata( ?array $metadata = null ): void {
 		if ( $metadata ) {
 			$this->metadata = $metadata;
 			return;
 		}
+		$attachment_id = is_array( $this->source ) ? $this->source['id'] : $this->source;
 		if ( ! $this->meta_manager ) {
-			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $this->source );
+			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
 		}
-		$this->metadata = $this->meta_manager->get( $this->source );
+		$this->metadata = $this->meta_manager->get();
 	}
 
 	protected function set_url(): void {
-		$this->url = wp_get_attachment_url( $this->source );
+		$attachment_id  = is_array( $this->source ) ? $this->source['id'] : $this->source;
+		$original_url   = is_array( $this->source ) ? $this->source['url'] : '';
+		$attachment_url = wp_get_attachment_url( $attachment_id );
+
+		if ( ! empty( $original_url ) ) {
+			$rewrite_url = (bool) $this->options['rewrite_attachment_url'];
+
+			if ( $rewrite_url ) {
+				$exempt_cdns = array(
+					'amazonaws.com',
+					'rackspace.com',
+					'netdna-cdn.com',
+					'nexcess-cdn.net',
+					'limelight.com',
+					'digitaloceanspaces.com',
+				);
+				/**
+				 * Filter the list of CDN domains exempt from URL rewriting.
+				 * @param array $exempt_cdns Array of CDN domains.
+				 */
+				$exempt_cdns = apply_filters( 'videopack_exempt_cdns', $exempt_cdns );
+
+				foreach ( $exempt_cdns as $exempt_cdn ) {
+					if ( strpos( $original_url, $exempt_cdn ) !== false ) {
+						$rewrite_url = false;
+						break;
+					}
+				}
+			}
+
+			if ( ! $rewrite_url ) {
+				$this->url = $original_url;
+				return;
+			}
+		}
+
+		$this->url = $attachment_url;
 	}
 
 	protected function set_exists(): void {
