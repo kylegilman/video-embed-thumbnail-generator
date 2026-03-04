@@ -442,7 +442,6 @@ class Player {
 		$html           = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '"' . $style . '>';
 		$player_classes = apply_filters( 'videopack_player_div_classes', array( 'videopack-player' ), $this->atts );
 		$html          .= '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
-		$html          .= $this->get_schema_markup();
 		return $html;
 	}
 
@@ -586,37 +585,6 @@ class Player {
 		}
 		$below_video .= '</div>';
 		return $below_video;
-	}
-
-	protected function get_schema_markup(): string {
-		if ( ! $this->atts['schema'] ) {
-			return '';
-		}
-
-		$source = $this->get_source();
-		if ( ! $source ) {
-			return '';
-		}
-
-		$html = '<span itemprop="video" itemscope itemtype="https://schema.org/VideoObject">';
-		if ( ! empty( $this->atts['poster'] ) ) {
-			$html .= '<meta itemprop="thumbnailUrl" content="' . esc_url( $this->atts['poster'] ) . '" >';
-		}
-
-		if ( $this->atts['embeddable'] && is_numeric( $source->get_id() ) ) {
-			$embed_url = site_url( '/?attachment_id=' . $source->get_id() . '&amp;videopack[enable]=true' );
-		} else {
-			$embed_url = $source->get_url();
-		}
-
-		$html .= '<meta itemprop="embedUrl" content="' . esc_url( $embed_url ) . '" >';
-		$html .= '<meta itemprop="contentUrl" content="' . esc_url( $source->get_url() ) . '" >';
-		$html .= '<meta itemprop="name" content="' . esc_attr( $this->atts['stats_title'] ) . '" >';
-		$html .= '<meta itemprop="description" content="' . esc_attr( $this->atts['description'] ) . '" >';
-		$html .= '<meta itemprop="uploadDate" content="' . esc_attr( get_the_date( 'c', $source->get_id() ) ) . '" >';
-		$html .= '</span>';
-
-		return $html;
 	}
 
 	protected function get_watermark_code(): string {
