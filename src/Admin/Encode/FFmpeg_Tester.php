@@ -2,6 +2,8 @@
 
 namespace Videopack\Admin\Encode;
 
+use Videopack\Admin\Options;
+
 /**
  * Handles running diagnostic FFmpeg encoding tests.
  */
@@ -9,7 +11,7 @@ class FFmpeg_Tester {
 
 	/**
 	 * Videopack Options manager class instance
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var Options $options_manager
 	 */
 	protected $options_manager;
 
@@ -18,7 +20,7 @@ class FFmpeg_Tester {
 	 *
 	 * @param Options $options_manager The Videopack Options manager instance.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
+	public function __construct( Options $options_manager ) {
 		$this->options_manager = $options_manager;
 	}
 
@@ -124,7 +126,7 @@ class FFmpeg_Tester {
 
 			// If the test failed with the initial path, try without the 'ffmpeg' suffix.
 			if ( ! file_exists( $test_image_path ) && substr( $test_path, -6 ) === 'ffmpeg' ) {
-				$test_path = substr( $test_path, 0, -7 ); // Remove '/ffmpeg'
+				$test_path          = substr( $test_path, 0, -7 ); // Remove '/ffmpeg'
 				$ffmpeg_test_output = $ffmpeg_thumbnails->process_thumb(
 					VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4',
 					$test_image_path,
@@ -139,7 +141,7 @@ class FFmpeg_Tester {
 				$app_path = $test_path; // Update app_path to the one that worked.
 			} else {
 				/* translators: %s is the path to the application. */
-				$ffmpeg_error = sprintf( __( 'FFmpeg could not be found or is not executable at the path: %s. Please check the path and permissions.', 'video-embed-thumbnail-generator' ), '<code>' . esc_html( $app_path ?: __( '(empty)', 'video-embed-thumbnail-generator' ) ) . '</code>' );
+				$ffmpeg_error = sprintf( __( 'FFmpeg could not be found or is not executable at the path: %s. Please check the path and permissions.', 'video-embed-thumbnail-generator' ), '<code>' . esc_html( $app_path ? $app_path : __( '(empty)', 'video-embed-thumbnail-generator' ) ) . '</code>' );
 			}
 
 			$output = explode( "\n", $ffmpeg_test_output );

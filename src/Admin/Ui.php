@@ -90,12 +90,12 @@ class Ui {
 		$resolution_objects = $this->options_manager->get_video_resolutions();
 		$resolutions_data   = array();
 		foreach ( $resolution_objects as $resolution ) {
-			$height = $resolution->get_height();
+			$height             = $resolution->get_height();
 			$resolutions_data[] = array(
-				'id'     => $resolution->get_id(),
-				'name'   => $this->options_manager->get_resolution_l10n( $resolution->get_name() ),
-				'height' => $height,
-				'width'  => $height ? ceil( $height * 16 / 9 ) : null,
+				'id'        => $resolution->get_id(),
+				'name'      => $this->options_manager->get_resolution_l10n( $resolution->get_name() ),
+				'height'    => $height,
+				'width'     => $height ? ceil( $height * 16 / 9 ) : null,
 				'is_custom' => $resolution->is_custom(),
 			);
 		}
@@ -103,19 +103,28 @@ class Ui {
 		$options         = $this->options_manager->get_options();
 		$global_settings = wp_get_global_settings();
 
+		$fs               = function_exists( 'videopack_fs' ) ? videopack_fs() : null;
+		$freemius_enabled = ( null !== $fs ) && ( $fs->is_registered() || $fs->is_pending_activation() );
+
 		return array(
-			'url'                => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
-			'codecs'             => $codecs_data,
-			'resolutions'        => $resolutions_data,
-			'ffmpeg_exists'      => $options['ffmpeg_exists'],
-			'browser_thumbnails' => $options['browser_thumbnails'],
-			'auto_thumb'         => $options['auto_thumb'],
-			'auto_thumb_number'  => $options['auto_thumb_number'],
-			'auto_thumb_position' => $options['auto_thumb_position'],
+			'url'                    => plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
+			'codecs'                 => $codecs_data,
+			'resolutions'            => $resolutions_data,
+			'ffmpeg_exists'          => $options['ffmpeg_exists'],
+			'browser_thumbnails'     => $options['browser_thumbnails'],
+			'auto_thumb'             => $options['auto_thumb'],
+			'auto_thumb_number'      => $options['auto_thumb_number'],
+			'auto_thumb_position'    => $options['auto_thumb_position'],
 			'ffmpeg_thumb_watermark' => $options['ffmpeg_thumb_watermark'],
-			'embed_method'       => $options['embed_method'],
-			'contentSize'        => isset( $global_settings['layout']['contentSize'] ) ? $global_settings['layout']['contentSize'] : false,
-			'wideSize'           => isset( $global_settings['layout']['wideSize'] ) ? $global_settings['layout']['wideSize'] : false,
+			'embed_method'           => $options['embed_method'],
+			'contentSize'            => isset( $global_settings['layout']['contentSize'] ) ? $global_settings['layout']['contentSize'] : false,
+			'wideSize'               => isset( $global_settings['layout']['wideSize'] ) ? $global_settings['layout']['wideSize'] : false,
+			'freemiusEnabled'        => $freemius_enabled,
+			'isMultisite'            => is_multisite(),
+			'isNetworkAdmin'         => is_network_admin(),
+			'isNetworkActive'        => ( null !== $fs ) && $fs->is_network_active(),
+			'isFfmpegOverridden'     => is_multisite() && ( \Videopack\Admin\Multisite::get_network_options()['superadmin_only_ffmpeg_settings'] ?? false ),
+			'isSuperAdmin'           => is_super_admin(),
 		);
 	}
 
@@ -185,7 +194,7 @@ class Ui {
 			);
 			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
 
-			$this->localize_block_settings( 'videopack-settings', array( 'freemiusEnabled' => $freemius_enabled ) );
+			$this->localize_block_settings( 'videopack-settings' );
 
 			$settings_css_dependencies = array_merge( array( 'wp-components' ), $freemius_style_dependencies );
 
@@ -284,18 +293,20 @@ class Ui {
 			return array();
 		}
 
-		$query = new \WP_Query( array(
-			'post_type'      => 'attachment',
-			'post_status'    => 'inherit',
-			'posts_per_page' => 20, // Limit to avoid performance issues.
-			'meta_query'     => array(
-				array(
-					'key'   => '_videopack_needs_browser_thumb',
-					'value' => '1',
+		$query = new \WP_Query(
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'posts_per_page' => 20, // Limit to avoid performance issues.
+				'meta_query'     => array(
+					array(
+						'key'   => '_videopack_needs_browser_thumb',
+						'value' => '1',
+					),
 				),
-			),
-			'fields'         => 'ids',
-		) );
+				'fields'         => 'ids',
+			)
+		);
 
 		$attachments = array();
 		foreach ( $query->posts as $post_id ) {
