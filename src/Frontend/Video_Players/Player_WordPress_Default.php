@@ -13,24 +13,26 @@ class Player_WordPress_Default extends Player {
 
 		parent::register_scripts();
 
+		wp_register_script(
+			'videopack-mejs',
+			plugins_url( '/src/Frontend/js/videopack-mejs.js', VIDEOPACK_PLUGIN_FILE ),
+			array( 'wp-mediaelement' ),
+			VIDEOPACK_VERSION,
+			true
+		);
 	}
 
 	public function filter_block_metadata( $metadata ) {
 		$metadata['script'][] = 'wp-mediaelement';
+		$metadata['script'][] = 'videopack-mejs';
 		$metadata['style'][]  = 'wp-mediaelement';
 		return $metadata;
 	}
 
 	public function enqueue_player_scripts(): void {
 		wp_enqueue_script( 'wp-mediaelement' );
+		wp_enqueue_script( 'videopack-mejs' );
 		wp_enqueue_style( 'wp-mediaelement' );
-	}
-
-	public function enqueue_styles() {
-
-		parent::enqueue_styles();
-
-		//wp_enqueue_style( 'video-js', plugins_url( '', dirname( __DIR__ ) ) . '/video-js/video-js.min.css', '', VIDEOPACK_VIDEOJS_VERSION ); // gives access to video-js icons for resolution gear selector and social logos
 	}
 
 	/**
@@ -52,7 +54,6 @@ class Player_WordPress_Default extends Player {
 
 		// Add speed feature if enabled.
 		if ( $atts['playback_rate'] ) {
-			wp_enqueue_script( 'mejs-speed' );
 			if ( ! in_array( 'speed', $mejs_settings['features'], true ) ) {
 				$mejs_settings['features'][] = 'speed';
 			}
