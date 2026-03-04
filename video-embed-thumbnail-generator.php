@@ -79,77 +79,78 @@ if ( ! defined( 'ABSPATH' ) ) {
 	if ( file_exists( __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php' ) ) {
 		require_once __DIR__ . '/vendor/woocommerce/action-scheduler/action-scheduler.php';
 	}
-}
 
-if ( VIDEOPACK_FREEMIUS_ENABLED && file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) && ! function_exists( 'videopack_fs' ) ) {
-	// Create a helper function for easy SDK access.
-	function videopack_fs() {
-		global $videopack_fs;
+	// Activate multisite network integration.
+	if ( VIDEOPACK_FREEMIUS_ENABLED && ! defined( 'WP_FS__PRODUCT_7761_MULTISITE' ) ) {
+		define( 'WP_FS__PRODUCT_7761_MULTISITE', true );
+	}
 
-		if ( ! isset( $videopack_fs ) ) {
-			// Activate multisite network integration.
-			if ( ! defined( 'WP_FS__PRODUCT_7761_MULTISITE' ) ) {
-				define( 'WP_FS__PRODUCT_7761_MULTISITE', true );
-			}
+	if ( VIDEOPACK_FREEMIUS_ENABLED && ! function_exists( 'videopack_fs' ) ) {
+		// Create a helper function for easy SDK access.
+		function videopack_fs() {
+			global $videopack_fs;
 
-			// Include Freemius SDK.
-			require_once __DIR__ . '/vendor/freemius/wordpress-sdk/start.php';
+			if ( ! isset( $videopack_fs ) ) {
+				// Include Freemius SDK.
+				if ( file_exists( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' ) ) {
+					require_once __DIR__ . '/vendor/freemius/wordpress-sdk/start.php';
+				}
 
-			$init_options = array(
-				'id'             => '7761',
-				'slug'           => 'video-embed-thumbnail-generator',
-				'navigation'     => 'custom',
-				'type'           => 'plugin',
-				'public_key'     => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
-				'is_premium'     => false,
-				'has_addons'     => true,
-				'has_paid_plans' => false,
-				'menu'           => array(
-					'slug'    => 'video_embed_thumbnail_generator_settings',
-					'contact' => false,
-					'support' => false,
-					'network' => true,
-					'parent'  => array(
-						'slug' => 'options-general.php',
+				$init_options = array(
+					'id'               => '7761',
+					'slug'             => 'video-embed-thumbnail-generator',
+					'premium_slug'     => 'videopack-ads-premium',
+					'type'             => 'plugin',
+					'public_key'       => 'pk_c5b15a7a3cd2ec3cc20e012a2a7bf',
+					'is_premium'       => false,
+					'has_addons'       => true,
+					'has_paid_plans'   => false,
+					'is_org_compliant' => true,
+					'navigation'       => 'menu',
+					'menu'             => array(
+						'slug'    => 'video_embed_thumbnail_generator_settings',
+						'contact' => false,
+						'network' => true,
+						'parent'  => array(
+							'slug' => 'options-general.php',
+						),
 					),
-				),
-			);
-
-			if ( fs_is_network_admin() ) {
-				$init_options['navigation']     = 'menu';
-				$init_options['menu']['parent'] = array(
-					'slug' => 'settings.php',
 				);
+
+				if ( fs_is_network_admin() ) {
+					$init_options['navigation']     = 'menu';
+					$init_options['menu']['parent'] = array(
+						'slug' => 'settings.php',
+					);
+				}
+
+				$videopack_fs = fs_dynamic_init( $init_options );
 			}
 
-			$videopack_fs = fs_dynamic_init( $init_options );
+			return $videopack_fs;
 		}
 
-		return $videopack_fs;
-	}
-
-	// Init Freemius.
-	videopack_fs();
-	// Signal that SDK was initiated.
-	do_action( 'videopack_fs_loaded' );
-}
-
-function videopack_fs_loaded() {
-	// add Freemius customizations after Freemius is loaded
-
-	if ( function_exists( 'videopack_fs' ) ) {
-
-		videopack_fs()->add_filter(
-			'hide_account_tabs',
-			function () {
-				return true;
+		function videopack_fs_loaded() {
+			// add Freemius customizations after Freemius is loaded
+			if ( function_exists( 'videopack_fs' ) ) {
+				videopack_fs()->add_filter(
+					'hide_account_tabs',
+					function () {
+						return true;
+					}
+				);
+				videopack_fs()->add_action( 'after_uninstall', 'videopack_uninstall_plugin' ); // add uninstall logic
 			}
-		);
-		videopack_fs()->add_action( 'after_uninstall', 'videopack_uninstall_plugin' ); // add uninstall logic
+		}
+		add_action( 'videopack_fs_loaded', 'videopack_fs_loaded' );
 
+		// Init Freemius.
+		videopack_fs();
+		// Signal that SDK was initiated.
+		do_action( 'videopack_fs_loaded' );
 	}
 }
-add_action( 'videopack_fs_loaded', 'videopack_fs_loaded' );
+
 
 function videopack_cleanup_plugin() {
 
