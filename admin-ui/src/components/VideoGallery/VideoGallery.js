@@ -426,7 +426,9 @@ const VideoGallery = ({
 								? { '--gallery-columns': gallery_columns }
 								: {}
 						}
-					>{renderGalleryContent()}</div>
+					>
+						{renderGalleryContent()}
+					</div>
 				</SortableContext>
 			</DndContext>
 			{totalPages > 1 && <GalleryPagination />}

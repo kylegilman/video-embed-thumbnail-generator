@@ -18,7 +18,7 @@ export const VideoJS = (props) => {
 		if (
 			player &&
 			JSON.stringify(previousPluginsRef.current) !==
-			JSON.stringify(options.plugins)
+				JSON.stringify(options.plugins)
 		) {
 			player.dispose();
 			playerRef.current = null;
@@ -108,7 +108,10 @@ export const VideoJS = (props) => {
 					});
 				}
 
-				if (JSON.stringify(currentTracks) !== JSON.stringify(options.tracks)) {
+				if (
+					JSON.stringify(currentTracks) !==
+					JSON.stringify(options.tracks)
+				) {
 					// Remove old remote tracks
 					for (let i = remoteTracks.length - 1; i >= 0; i--) {
 						player.removeRemoteTextTrack(remoteTracks[i]);

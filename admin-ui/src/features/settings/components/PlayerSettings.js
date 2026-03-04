@@ -7,7 +7,6 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
-	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	PanelBody,
 	PanelRow,
 	RadioControl,
@@ -227,33 +226,33 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			value: '',
 			label: videopack_config.contentSize
 				? sprintf(
-						/* translators: %s: Content size in pixels. */
-						__(
-							"None (use theme's default width: %s)",
-							'video-embed-thumbnail-generator'
-						),
-						videopack_config.contentSize
-					)
-				: __(
-						"None (use theme's default width)",
+					/* translators: %s: Content size in pixels. */
+					__(
+						"None (use theme's default width: %s)",
 						'video-embed-thumbnail-generator'
 					),
+					videopack_config.contentSize
+				)
+				: __(
+					"None (use theme's default width)",
+					'video-embed-thumbnail-generator'
+				),
 		},
 		{
 			value: 'wide',
 			label: videopack_config.wideSize
 				? sprintf(
-						/* translators: %s: Wide size in pixels. */
-						__(
-							"Wide (use theme's wide width: %s)",
-							'video-embed-thumbnail-generator'
-						),
-						videopack_config.wideSize
-					)
-				: __(
-						"Wide (use theme's wide width)",
+					/* translators: %s: Wide size in pixels. */
+					__(
+						"Wide (use theme's wide width: %s)",
 						'video-embed-thumbnail-generator'
 					),
+					videopack_config.wideSize
+				)
+				: __(
+					"Wide (use theme's wide width)",
+					'video-embed-thumbnail-generator'
+				),
 		},
 		{
 			value: 'full',
@@ -310,7 +309,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		return items;
 	};
 
-	const handleVideoPlayerReady = () => {};
+	const handleVideoPlayerReady = () => { };
 
 	const watermarkSettings = {
 		url: watermark,
@@ -349,9 +348,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			<PanelBody>
 				<div className={'videopack-sample-video-player'}>
 					<div
-						className={`wp-block-videopack-videopack-video${
-							align ? ` align${align}` : ''
-						}`}
+						className={`wp-block-videopack-videopack-video${align ? ` align${align}` : ''
+							}`}
 					>
 						<PanelRow>
 							<Flex className="videopack-flex-bottom">
@@ -541,38 +539,41 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							disabled={gifmode}
 							checked={!!playback_rate}
 						/>
-						<div className="videopack-control-with-tooltip">
-							<RadioControl
-								label={__(
-									'Preload',
-									'video-embed-thumbnail-generator'
-								)}
-								selected={preload}
-								onChange={changeHandlerFactory.preload}
-								options={preloadOptions}
-								disabled={gifmode}
-							/>
-							<VideopackTooltip
-								text={__(
-									'Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.',
-									'video-embed-thumbnail-generator'
-								)}
-							/>
-						</div>
+						<RadioControl
+							label={
+								<span className="videopack-label-with-tooltip">
+									{__('Preload', 'video-embed-thumbnail-generator')}
+									<VideopackTooltip
+										text={__(
+											'Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.',
+											'video-embed-thumbnail-generator'
+										)}
+									/>
+								</span>
+							}
+							selected={preload}
+							onChange={changeHandlerFactory.preload}
+							options={preloadOptions}
+							disabled={gifmode}
+						/>
 					</FlexItem>
 				</Flex>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__('GIF mode', 'video-embed-thumbnail-generator')}
-					onChange={(value) => {
-						changeGifmode(value);
-					}}
-					checked={!!gifmode}
-					help={__(
-						'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.',
-						'video-embed-thumbnail-generator'
-					)}
-				/>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__('GIF mode', 'video-embed-thumbnail-generator')}
+						onChange={(value) => {
+							changeGifmode(value);
+						}}
+						checked={!!gifmode}
+					/>
+					<VideopackTooltip
+						text={__(
+							'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
 				{embed_method.startsWith('Video.js') && (
 					<div className="videopack-setting-reduced-width">
 						<SelectControl
@@ -606,24 +607,23 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						options={alignOptions}
 					/>
 				</div>
-				<div className="videopack-control-with-tooltip">
-					<RadioControl
-						label={__(
-							'Constrain to default aspect ratio',
-							'video-embed-thumbnail-generator'
-						)}
-						selected={fixed_aspect}
-						onChange={changeHandlerFactory.fixed_aspect}
-						options={fixedAspectOptions}
-						className="videopack-setting-radio-group"
-					/>
-					<VideopackTooltip
-						text={__(
-							'When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.',
-							'video-embed-thumbnail-generator'
-						)}
-					/>
-				</div>
+				<RadioControl
+					label={
+						<span className="videopack-label-with-tooltip">
+							{__('Constrain to default aspect ratio', 'video-embed-thumbnail-generator')}
+							<VideopackTooltip
+								text={__(
+									'When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.',
+									'video-embed-thumbnail-generator'
+								)}
+							/>
+						</span>
+					}
+					selected={fixed_aspect}
+					onChange={changeHandlerFactory.fixed_aspect}
+					options={fixedAspectOptions}
+					className="videopack-setting-radio-group"
+				/>
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
@@ -677,15 +677,23 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 									onChange={changeHandlerFactory.resize}
 									checked={!!resize}
 								/>
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={__(
-										'Expand player to full width of container',
-										'video-embed-thumbnail-generator'
-									)}
-									onChange={changeHandlerFactory.fullwidth}
-									checked={!!fullwidth}
-								/>
+								<div className="videopack-control-with-tooltip">
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={__(
+											'Expand player to full width of container',
+											'video-embed-thumbnail-generator'
+										)}
+										onChange={changeHandlerFactory.fullwidth}
+										checked={!!fullwidth}
+									/>
+									<VideopackTooltip
+										text={__(
+											"Enabling this will ignore any other width settings and set the width of the video to the width of the container it's in.",
+											'video-embed-thumbnail-generator'
+										)}
+									/>
+								</div>
 							</FlexItem>
 						</Flex>
 					</>

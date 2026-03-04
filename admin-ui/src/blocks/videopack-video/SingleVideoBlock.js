@@ -44,7 +44,7 @@ const SingleVideoBlock = ({
 					}
 					return acc;
 				},
-				{},
+				{}
 			);
 
 			if (Object.keys(updatedAttributes).length > 0) {
@@ -62,7 +62,10 @@ const SingleVideoBlock = ({
 				attachment.videopack?.source_groups;
 		} else if (!id && src) {
 			newPlayerAttributes.source_groups = externalSourceGroups || {};
-			if (!externalSourceGroups || Object.keys(externalSourceGroups).length === 0)
+			if (
+				!externalSourceGroups ||
+				Object.keys(externalSourceGroups).length === 0
+			)
 				newPlayerAttributes.sources = [{ src }];
 		}
 		return newPlayerAttributes;

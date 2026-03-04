@@ -3,9 +3,11 @@
   \********************************************************************************************************************************************************************************************************************************************************************/
 .wp-block-videopack-videopack-video {
   width: var(--wp--style--global--content-size);
+  max-width: 100%;
 }
 .wp-block-videopack-videopack-video.alignwide {
   width: var(--wp--style--global--wide-size);
+  max-width: 100%;
 }
 .wp-block-videopack-videopack-video.alignfull {
   width: auto;
@@ -127,7 +129,8 @@
 }
 .videopack-wrapper .videopack-watermark a {
   display: block;
-  position: inherit !important; /* Maintain link behavior */
+  position: inherit !important;
+  /* Maintain link behavior */
 }
 .videopack-wrapper {
   /* Ensure controls are above the watermark */
@@ -136,6 +139,9 @@
 .videopack-wrapper .mejs-controls,
 .videopack-wrapper video::-webkit-media-controls-panel {
   z-index: 2;
+}
+.videopack-wrapper .videopack-no-controls .mejs-controls {
+  display: none !important;
 }
 .videopack-wrapper .videopack-title {
   font-size: 10pt;
@@ -188,7 +194,8 @@
 }
 .videopack-wrapper .vjs-res-button :before {
   font-family: VideoJs;
-  content: "\f114"; /* Gear icon */
+  content: "\f114";
+  /* Gear icon */
 }
 .videopack-wrapper .vjs-res-button span.vjs-control-text {
   display: none;
@@ -214,7 +221,8 @@
   bottom: 0;
   margin-right: 0.2em;
   margin-bottom: 0;
-  background-color: #2B333F; /* Fallback */
+  background-color: #2B333F;
+  /* Fallback */
   background-color: var(--vjs-menu-background, #2B333F);
   min-width: 8em;
   border-radius: 0.3em;

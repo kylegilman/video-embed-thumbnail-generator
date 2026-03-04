@@ -38,6 +38,7 @@ const ChooseFromLibrary = ({ value, onChange, label, ...props }) => {
 				className="videopack-library-button"
 				variant="secondary"
 				onClick={openMediaLibrary}
+				disabled={props.disabled}
 			>
 				{__('Choose from library', 'video-embed-thumbnail-generator')}
 			</Button>

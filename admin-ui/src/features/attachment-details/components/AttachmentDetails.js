@@ -42,7 +42,8 @@ const AttachmentDetails = ({ attachmentId }) => {
 
 	const handleTrackChange = async (newTracks) => {
 		try {
-			const currentMeta = attachment.record?.meta?.['_videopack-meta'] || {};
+			const currentMeta =
+				attachment.record?.meta?.['_videopack-meta'] || {};
 			await attachment.edit({
 				meta: {
 					...attachment.record.meta,
@@ -54,12 +55,16 @@ const AttachmentDetails = ({ attachmentId }) => {
 			});
 			await attachment.save();
 		} catch (error) {
-			console.error('Error saving text tracks to attachment metadata:', error);
+			console.error(
+				'Error saving text tracks to attachment metadata:',
+				error
+			);
 		}
 	};
 
 	if (attributes && attachment.hasResolved && options) {
-		const tracks = attachment.record?.meta?.['_videopack-meta']?.track || [];
+		const tracks =
+			attachment.record?.meta?.['_videopack-meta']?.track || [];
 
 		return (
 			<div className="videopack-attachment-details">

@@ -160,7 +160,9 @@ const MetaBar = ({ attributes, playerRef }) => {
 									type="text"
 									className="videopack-start-at"
 									value={startAtTime}
-									onChange={(e) => setStartAtTime(e.target.value)}
+									onChange={(e) =>
+										setStartAtTime(e.target.value)
+									}
 								/>
 							</span>
 						</>

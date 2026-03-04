@@ -8,7 +8,7 @@
 	"description": "Display a collection of videos with Videopack features.",
 	"supports": {
 		"html": false,
-		"align": [ "left", "right", "center", "wide", "full" ]
+		"align": ["left", "right", "center", "wide", "full"]
 	},
 	"attributes": {
 		"gallery": {
@@ -76,8 +76,8 @@
 			"default": -1
 		}
 	},
-	"usesContext": [ "postId" ],
+	"usesContext": ["postId"],
 	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": [ "file:../../videopack-collection.js" ],
+	"editorScript": ["file:../../videopack-collection.js"],
 	"style": ["file:../../videopack-collection.css"]
 }

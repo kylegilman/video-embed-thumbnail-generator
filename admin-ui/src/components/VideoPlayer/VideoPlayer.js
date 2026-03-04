@@ -1,6 +1,12 @@
 /* global MediaElementPlayer */
 
-import { useRef, useEffect, useState, useMemo, useCallback } from '@wordpress/element';
+import {
+	useRef,
+	useEffect,
+	useState,
+	useMemo,
+	useCallback,
+} from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import MetaBar from './MetaBar';
 import GenericPlayer from './GenericPlayer';
@@ -50,6 +56,8 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		sources = [],
 		source_groups = {},
 		text_tracks = [],
+		align,
+		resize,
 	} = decodedAttributes;
 
 	const actualAutoplay = useMemo(() => {
@@ -112,19 +120,89 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	}, []);
 
 	useEffect(() => {
+		let player = null;
+		let timeoutId = null;
+
 		if (
 			embed_method === 'WordPress Default' &&
 			playerRef.current &&
 			renderReady
 		) {
-			const player = new MediaElementPlayer(playerRef.current);
-			return () => {
-				if (player) {
-					player.remove();
+			// Give the DOM a moment to reflect the new layout constraints
+			// so MediaElement can accurately attach fixed dimensions.
+			timeoutId = setTimeout(() => {
+				if (playerRef.current) {
+					const mejsOptions = window._wpmejsSettings
+						? { ...window._wpmejsSettings }
+						: {};
+					delete mejsOptions.stretching; // Prevent videoWidth crash during remounts
+
+					if (!controls) {
+						mejsOptions.features = [];
+						mejsOptions.controls = false;
+					}
+
+					if (playback_rate) {
+						if (!mejsOptions.features) {
+							mejsOptions.features = [
+								'playpause',
+								'progress',
+								'volume',
+								'tracks',
+								'sourcechooser',
+							];
+						}
+						if (!mejsOptions.features.includes('speed')) {
+							mejsOptions.features.push('speed');
+						}
+						mejsOptions.speeds = ['0.5', '1', '1.25', '1.5', '2'];
+					}
+
+					mejsOptions.success = (media) => {
+						if (actualAutoplay) {
+							const playPromise = media.play();
+							if (playPromise !== undefined) {
+								playPromise.catch((e) => {
+									console.warn('Autoplay prevented:', e);
+								});
+							}
+						}
+					};
+
+					player = new MediaElementPlayer(
+						playerRef.current,
+						mejsOptions
+					);
 				}
-			};
+			}, 50);
 		}
-	}, [embed_method, renderReady]);
+
+		return () => {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+			if (player) {
+				try {
+					player.remove();
+				} catch (err) {
+					console.warn(err);
+				}
+			}
+		};
+	}, [
+		embed_method,
+		renderReady,
+		align,
+		resize,
+		fullwidth,
+		width,
+		height,
+		controls,
+		actualAutoplay,
+		preload,
+		playsinline,
+		playback_rate,
+	]);
 
 	useEffect(() => {
 		if (embed_method === 'Video.js') {
@@ -261,7 +339,9 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			css.bottom = `${y}%`;
 		} else {
 			css.top = '50%';
-			css.transform = css.transform ? 'translate(-50%, -50%)' : 'translateY(-50%)';
+			css.transform = css.transform
+				? 'translate(-50%, -50%)'
+				: 'translateY(-50%)';
 			css.marginTop = `${-y}%`;
 		}
 		return css;
@@ -270,10 +350,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const watermarkStyle = getWatermarkStyle();
 
 	return (
-		<div
-			className={"videopack-wrapper meta-bar-visible"}
-			ref={wrapperRef}
-		>
+		<div className={'videopack-wrapper meta-bar-visible'} ref={wrapperRef}>
 			<div className={`videopack-player ${skin || ''}`}>
 				<MetaBar attributes={decodedAttributes} playerRef={playerRef} />
 				{embed_method === 'Video.js' && videoJsOptions && (
@@ -286,7 +363,10 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					/>
 				)}
 				{embed_method === 'WordPress Default' && (
-					<div className="wp-video">
+					<div
+						className={`wp-video${!controls ? ' videopack-no-controls' : ''}`}
+						key={`${align}-${resize}-${fullwidth}-${width}-${height}-${controls}-${actualAutoplay}-${preload}-${playsinline}-${playback_rate}`}
+					>
 						<GenericPlayer
 							{...genericPlayerOptions}
 							className={'wp-video-shortcode'}
@@ -303,10 +383,18 @@ const VideoPlayer = ({ attributes, onReady }) => {
 							watermark_link_to !== 'false' &&
 							watermark_link_to !== 'None' ? (
 							<a href="#" onClick={(e) => e.preventDefault()}>
-								<img src={watermark} alt="watermark" style={watermarkStyle} />
+								<img
+									src={watermark}
+									alt="watermark"
+									style={watermarkStyle}
+								/>
 							</a>
 						) : (
-							<img src={watermark} alt="watermark" style={watermarkStyle} />
+							<img
+								src={watermark}
+								alt="watermark"
+								style={watermarkStyle}
+							/>
 						)}
 					</div>
 				)}

@@ -16,11 +16,11 @@
 			"width": true
 		},
 		"spacing": {
-			"margin" : true,
-			"padding" : true
+			"margin": true,
+			"padding": true
 		}
 	},
 	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": [ "file:../../videopack-video.js" ],
-	"style": [ "file:../../videopack-video.css" ]
+	"editorScript": ["file:../../videopack-video.js"],
+	"style": ["file:../../videopack-video.css"]
 }

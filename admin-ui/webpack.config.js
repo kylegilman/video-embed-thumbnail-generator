@@ -26,6 +26,13 @@ module.exports = {
 			'settings',
 			'settings.js'
 		),
+		'settings-network': path.resolve(
+			process.cwd(),
+			'src',
+			'features',
+			'settings-network',
+			'settings-network.js'
+		),
 		'attachment-details': path.resolve(
 			process.cwd(),
 			'src',
