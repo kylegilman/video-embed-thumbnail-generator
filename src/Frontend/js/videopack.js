@@ -6,650 +6,8 @@
 
 /* global videojs, mejs, videopack_l10n, gtag, ga, __gaTracker, _gaq */
 
-( function() {
+(function () {
 	'use strict';
-
-	/**
-	 * ============================================================================
-	 * MediaElement.js Plugins (Speed and Source Chooser)
-	 * ============================================================================
-	 */
-	if ( 'undefined' !== typeof window.mejs ) {
-		/**
-		 * Speed plugin
-		 *
-		 * This feature creates a button to speed media in different levels.
-		 */
-
-		// Translations (English required)
-		mejs.i18n.en['mejs.speed-rate'] = 'Speed Rate';
-
-		// Feature configuration
-		Object.assign(mejs.MepDefaults, {
-			/**
-			 * The speeds media can be accelerated
-			 *
-			 * Supports an array of float values or objects with format
-			 * [{name: 'Slow', value: '0.75'}, {name: 'Normal', value: '1.00'}, ...]
-			 * @type {{String[]|Object[]}}
-			 */
-			speeds: ['2.00', '1.50', '1.25', '1.00', '0.75'],
-			/**
-			 * @type {String}
-			 */
-			defaultSpeed: '1.00',
-			/**
-			 * @type {String}
-			 */
-			speedChar: 'x',
-			/**
-			 * @type {?String}
-			 */
-			speedText: null
-		});
-
-		Object.assign(
-			MediaElementPlayer.prototype,
-			{
-				buildspeed: function buildspeed(player, controls, layers, media) {
-				const
-					t = this,
-					isNative = t.media.rendererName !== null && /(native|html5)/i.test(t.media.rendererName)
-				;
-
-				if (!isNative) {
-					return;
-				}
-
-				const
-					speeds = [],
-					speedTitle = mejs.Utils.isString(t.options.speedText) ? t.options.speedText : mejs.i18n.t('mejs.speed-rate'),
-					getSpeedNameFromValue = (value) => {
-						for (let i = 0, total = speeds.length; i < total; i++) {
-							if (speeds[i].value === value) {
-								return speeds[i].name;
-							}
-						}
-					}
-				;
-
-				let
-					playbackSpeed,
-					defaultInArray = false
-				;
-
-				for (let i = 0, total = t.options.speeds.length; i < total; i++) {
-					const s = t.options.speeds[i];
-
-					if (typeof s === 'string') {
-						speeds.push({
-							name: `${s}${t.options.speedChar}`,
-							value: s
-						});
-
-						if (s === t.options.defaultSpeed) {
-							defaultInArray = true;
-						}
-					}
-					else {
-						speeds.push(s);
-						if (s.value === t.options.defaultSpeed) {
-							defaultInArray = true;
-						}
-					}
-				}
-
-				if (!defaultInArray) {
-					speeds.push({
-						name: t.options.defaultSpeed + t.options.speedChar,
-						value: t.options.defaultSpeed
-					});
-				}
-
-				speeds.sort((a, b) => {
-					return parseFloat(b.value) - parseFloat(a.value);
-				});
-
-				t.cleanspeed(player);
-
-				player.speedButton = document.createElement('div');
-				player.speedButton.className = `${t.options.classPrefix}button ${t.options.classPrefix}speed-button`;
-				player.speedButton.innerHTML = `<button type="button" aria-controls="${t.id}" title="${speedTitle}" ` +
-					`aria-label="${speedTitle}" tabindex="0">${getSpeedNameFromValue(t.options.defaultSpeed)}</button>` +
-					`<div class="${t.options.classPrefix}speed-selector ${t.options.classPrefix}offscreen">` +
-						`<ul class="${t.options.classPrefix}speed-selector-list"></ul>` +
-					`</div>`;
-
-				t.addControlElement(player.speedButton, 'speed');
-
-				for (let i = 0, total = speeds.length; i < total; i++) {
-
-					const inputId = `${t.id}-speed-${speeds[i].value}`;
-
-					player.speedButton.querySelector('ul').innerHTML += `<li class="${t.options.classPrefix}speed-selector-list-item">` +
-						`<input class="${t.options.classPrefix}speed-selector-input" type="radio" name="${t.id}_speed"` +
-							`disabled="disabled" value="${speeds[i].value}" id="${inputId}"  ` +
-							`${(speeds[i].value === t.options.defaultSpeed ? ' checked="checked"' : '')}/>` +
-						`<label for="${inputId}" class="${t.options.classPrefix}speed-selector-label` +
-							`${(speeds[i].value === t.options.defaultSpeed ? ` ${t.options.classPrefix}speed-selected` : '')}">` +
-							`${speeds[i].name}</label>` +
-						`</li>`;
-				}
-
-				playbackSpeed = t.options.defaultSpeed;
-
-				player.speedSelector = player.speedButton.querySelector(`.${t.options.classPrefix}speed-selector`);
-
-				const
-					inEvents = ['mouseenter', 'focusin'],
-					outEvents = ['mouseleave', 'focusout'],
-					// Enable inputs after they have been appended to controls to avoid tab and up/down arrow focus issues
-					radios = player.speedButton.querySelectorAll('input[type="radio"]'),
-					labels = player.speedButton.querySelectorAll(`.${t.options.classPrefix}speed-selector-label`)
-				;
-
-				/**
-				 * Store a reference to the radio buttons to prevent a scope bug in keyboard events
-				 * when multiple MediaElement players are on the same page. Otherwise these keyboard
-				 * events would always control the first speed button instance on the page.
-				 */
-				player.speedRadioButtons = radios;
-
-				// hover or keyboard focus
-				for (let i = 0, total = inEvents.length; i < total; i++) {
-					player.speedButton.addEventListener(inEvents[i], () => {
-						mejs.Utils.removeClass(player.speedSelector, `${t.options.classPrefix}offscreen`);
-						player.speedSelector.style.height = player.speedSelector.querySelector('ul').offsetHeight;
-						player.speedSelector.style.top = `${(-1 * parseFloat(player.speedSelector.offsetHeight))}px`;
-					});
-				}
-
-				for (let i = 0, total = outEvents.length; i < total; i++) {
-					player.speedSelector.addEventListener(outEvents[i], function () {
-						mejs.Utils.addClass(this, `${t.options.classPrefix}offscreen`);
-					});
-				}
-
-				for (let i = 0, total = radios.length; i < total; i++) {
-					const radio = radios[i];
-					radio.disabled = false;
-					radio.addEventListener('click', function() {
-						const
-							self = this,
-							newSpeed = self.value
-						;
-
-						playbackSpeed = newSpeed;
-						media.playbackRate = parseFloat(newSpeed);
-						player.speedButton.querySelector('button').innerHTML = (getSpeedNameFromValue(newSpeed));
-						const selected = player.speedButton.querySelectorAll(`.${t.options.classPrefix}speed-selected`);
-						for (let i = 0, total = selected.length; i < total; i++) {
-							mejs.Utils.removeClass(selected[i], `${t.options.classPrefix}speed-selected`);
-						}
-
-						self.checked = true;
-						const siblings = mejs.Utils.siblings(self, (el) => mejs.Utils.hasClass(el, `${t.options.classPrefix}speed-selector-label`));
-						for (let j = 0, total = siblings.length; j < total; j++) {
-							mejs.Utils.addClass(siblings[j], `${t.options.classPrefix}speed-selected`);
-							mejs.Utils.addClass(siblings[j].parentElement, `${t.options.classPrefix}speed-selected`);
-						}
-					});
-				}
-
-				for (let i = 0, total = labels.length; i < total; i++) {
-					labels[i].addEventListener('click',  function () {
-						const
-							radio = mejs.Utils.siblings(this, (el) => el.tagName === 'INPUT')[0],
-							event = mejs.Utils.createEvent('click', radio)
-						;
-						radio.dispatchEvent(event);
-					});
-				}
-
-				t.options.keyActions.push({
-					/*
-					* Need to listen for both because keyActions dispatches
-					* based on e.which || e.keyCode instead of e.key, so we
-					* get the same value for comma as for less than.
-					*/
-					keys: [60, 188], // "<" & ","
-					action: (player, media, key, event) => {
-						if (event.key != '<')
-							return;
-
-						const _radios = player.speedRadioButtons;
-						for (let i = 0; i < _radios.length - 1; i++) {
-							if (_radios[i].checked) {
-								const nextRadio = _radios[i+1];
-								nextRadio.dispatchEvent(mejs.Utils.createEvent('click', nextRadio));
-								break;
-							}
-						}
-					}
-				}, {
-					keys: [62, 190], // ">" & "."
-					action: (player, media, key, event) => {
-						if (event.key != '>')
-							return;
-
-						const _radios = player.speedRadioButtons;
-						for (let i = 1; i < _radios.length; i++) {
-							if (_radios[i].checked) {
-								const prevRadio = _radios[i-1];
-								prevRadio.dispatchEvent(mejs.Utils.createEvent('click', prevRadio));
-								break;
-							}
-						}
-					}
-				});
-
-				//Allow up/down arrow to change the selected radio without changing the volume.
-				player.speedSelector.addEventListener('keydown', (e) => {
-					e.stopPropagation();
-				});
-
-				media.addEventListener('loadedmetadata', () => {
-					if (playbackSpeed) {
-						media.playbackRate = parseFloat(playbackSpeed);
-					}
-				});
-			},
-			/**
-			 * Feature destructor.
-			 *
-			 * Always has to be prefixed with `clean` and the name that was used in MepDefaults.features list
-			 * @param {MediaElementPlayer} player
-			 */
-			cleanspeed: function cleanspeed(player) {
-				if (player) {
-					if (player.speedButton) {
-						player.speedButton.parentNode.removeChild(player.speedButton);
-					}
-					if (player.speedSelector) {
-						player.speedSelector.parentNode.removeChild(player.speedSelector);
-					}
-				}
-			}
-		});
-
-		/**
-		 * Source chooser plugin
-		 *
-		 * This feature creates a button to speed media in different levels.
-		 */
-
-		// Translations (English required)
-		mejs.i18n.en['mejs.source-chooser'] = 'Source Chooser';
-
-		// Feature configuration
-		Object.assign(mejs.MepDefaults, {
-			/**
-			 * @type {?String}
-			 */
-			sourcechooserText: null
-		});
-
-		Object.assign(MediaElementPlayer.prototype, {
-
-			/**
-			 * Feature constructor.
-			 *
-			 * Always has to be prefixed with `build` and the name that will be used in MepDefaults.features list
-			 * @param {MediaElementPlayer} player
-			 * @param {HTMLElement} controls
-			 * @param {HTMLElement} layers
-			 * @param {HTMLElement} media
-			 */
-			buildsourcechooser (player, controls, layers, media)  {
-
-				const
-					t = this,
-					sourceTitle = mejs.Utils.isString(t.options.sourcechooserText) ? t.options.sourcechooserText : mejs.i18n.t('mejs.source-chooser'),
-					sources = [],
-					children = t.mediaFiles ? t.mediaFiles : t.node.children
-				;
-
-				// add to list
-				let hoverTimeout;
-
-				for (let i = 0, total = children.length; i < total; i++) {
-					const s = children[i];
-
-					if (t.mediaFiles) {
-						sources.push(s);
-					} else if (s.nodeName === 'SOURCE') {
-						sources.push(s);
-					}
-				}
-
-				if (sources.length <= 1) {
-					return;
-				}
-
-				player.sourcechooserButton = document.createElement('div');
-				player.sourcechooserButton.className = `${t.options.classPrefix}button ${t.options.classPrefix}sourcechooser-button`;
-				player.sourcechooserButton.innerHTML =
-					`<button type="button" role="button" aria-haspopup="true" aria-owns="${t.id}" title="${sourceTitle}" aria-label="${sourceTitle}" tabindex="0"><span class="videopack-icons gear"></span></button>` +
-					`<div class="${t.options.classPrefix}sourcechooser-selector ${t.options.classPrefix}offscreen" role="menu" aria-expanded="false" aria-hidden="true"><ul></ul></div>`;
-
-				t.addControlElement(player.sourcechooserButton, 'sourcechooser');
-
-				let source_groups = null;
-				if ( window.videopack && window.videopack.player_data ) {
-					const wrapper = t.node.closest( '.videopack-player' );
-					if ( wrapper ) {
-						let id = wrapper.dataset.id;
-						if ( String( id ).startsWith( 'gallery_' ) ) {
-							id = `gallery_${ id.split( '_' )[ 1 ] }`;
-						}
-						const vars = window.videopack.player_data[ 'videopack_player_' + id ];
-						if ( vars ) {
-							source_groups = vars.source_groups;
-						}
-					}
-				}
-
-				const hasMultipleCodecs = source_groups && Object.keys( source_groups ).length > 1;
-
-				if ( hasMultipleCodecs ) {
-					for ( const codecId in source_groups ) {
-						const group = source_groups[ codecId ];
-						const codecLi = document.createElement( 'li' );
-						codecLi.className = `${ t.options.classPrefix }sourcechooser-codec-item`;
-						const span = document.createElement( 'span' );
-						span.textContent = group.label || codecId;
-						codecLi.appendChild( span );
-
-						const subMenu = document.createElement( 'ul' );
-						subMenu.className = `${ t.options.classPrefix }sourcechooser-submenu`;
-						codecLi.appendChild( subMenu );
-
-						subMenu.addEventListener( 'change', ( e ) => {
-							if ( e.target.tagName === 'INPUT' ) {
-								player.currentCodec = codecId;
-							}
-						} );
-
-						t.sourcechooserButton.querySelector( 'ul' ).appendChild( codecLi );
-
-						for ( const groupSource of group.sources ) {
-							const isCurrent = media.src === groupSource.src;
-							player.addSourceButton( groupSource, groupSource.label, groupSource.type, isCurrent, subMenu );
-						}
-
-						codecLi.addEventListener( 'mouseenter', () => {
-							const allCodecItems = t.sourcechooserButton.querySelectorAll( `.${ t.options.classPrefix }sourcechooser-codec-item` );
-							allCodecItems.forEach( ( el ) => {
-								if ( el !== codecLi ) {
-									el.classList.remove( 'mejs-submenu-open' );
-								}
-							} );
-
-							const parentRect = codecLi.getBoundingClientRect();
-							if ( subMenu ) {
-								subMenu.style.visibility = 'hidden';
-								subMenu.style.display = 'block';
-								const subMenuWidth = subMenu.offsetWidth;
-								subMenu.style.display = '';
-								subMenu.style.visibility = '';
-
-								if ( parentRect.right + subMenuWidth > window.innerWidth && parentRect.left > subMenuWidth ) {
-									codecLi.classList.add( 'mejs-submenu-left' );
-								} else {
-									codecLi.classList.remove( 'mejs-submenu-left' );
-								}
-							}
-						} );
-
-						codecLi.addEventListener( 'click', ( e ) => {
-							if ( e.target === codecLi || e.target === span ) {
-								e.preventDefault();
-								e.stopPropagation();
-								const wasOpen = codecLi.classList.contains( 'mejs-submenu-open' );
-								const allCodecItems = t.sourcechooserButton.querySelectorAll( `.${ t.options.classPrefix }sourcechooser-codec-item` );
-								allCodecItems.forEach( ( el ) => {
-									el.classList.remove( 'mejs-submenu-open' );
-								} );
-								if ( ! wasOpen ) {
-									codecLi.classList.add( 'mejs-submenu-open' );
-								}
-							}
-						} );
-					}
-				} else {
-					for ( let i = 0, total = sources.length; i < total; i++ ) {
-						const src = sources[ i ];
-						if ( src.type !== undefined && typeof media.canPlayType === 'function' ) {
-							player.addSourceButton( src, src.title, src.type, media.src === src.src );
-						}
-					}
-				}
-
-				// hover
-				player.sourcechooserButton.addEventListener('mouseover', () => {
-					clearTimeout(hoverTimeout);
-					player.showSourcechooserSelector();
-				});
-				player.sourcechooserButton.addEventListener('mouseout', () => {
-					hoverTimeout = setTimeout(() => {
-						player.hideSourcechooserSelector();
-					}, 0);
-				});
-
-					// keyboard menu activation
-				player.sourcechooserButton.addEventListener('keydown', (e) => {
-
-					if (t.options.keyActions.length) {
-						const keyCode = e.which || e.keyCode || 0;
-
-						switch (keyCode) {
-							case 32: // space
-								if (!mejs.MediaFeatures.isFirefox) { // space sends the click event in Firefox
-									player.showSourcechooserSelector();
-								}
-								player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
-								break;
-							case 13: // enter
-								player.showSourcechooserSelector();
-								player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
-								break;
-							case 27: // esc
-								player.hideSourcechooserSelector();
-								player.sourcechooserButton.querySelector('button').focus();
-								break;
-							default:
-								return true;
-						}
-
-						e.preventDefault();
-						e.stopPropagation();
-					}
-				});
-
-				// close menu when tabbing away
-				player.sourcechooserButton.addEventListener('focusout', mejs.Utils.debounce(() => {
-					// Safari triggers focusout multiple times
-					// Firefox does NOT support e.relatedTarget to see which element
-					// just lost focus, so wait to find the next focused element
-					setTimeout(() => {
-						const parent = document.activeElement.closest(`.${t.options.classPrefix}sourcechooser-selector`);
-						if (!parent) {
-							// focus is outside the control; close menu
-							player.hideSourcechooserSelector();
-						}
-					}, 0);
-				}, 100));
-
-				const radios = player.sourcechooserButton.querySelectorAll('input[type=radio]');
-
-				for (let i = 0, total = radios.length; i < total; i++) {
-					// handle clicks to the source radio buttons
-					radios[i].addEventListener('click', function() {
-						player.manualResolutionSelected = true;
-						t.changeRes(this.value);
-					});
-				}
-
-				// Handle click so that screen readers can toggle the menu
-				player.sourcechooserButton.querySelector('button').addEventListener('click', function() {
-					if (mejs.Utils.hasClass(mejs.Utils.siblings(this, `.${t.options.classPrefix}sourcechooser-selector`), `${t.options.classPrefix}offscreen`)) {
-						player.showSourcechooserSelector();
-						player.sourcechooserButton.querySelector('input[type=radio]:checked').focus();
-					} else {
-						player.hideSourcechooserSelector();
-					}
-				});
-
-			},
-
-			/**
-			 *
-			 * @param {String} src
-			 * @param {String} label
-			 * @param {String} type
-			 * @param {Boolean} isCurrent
-			 */
-			addSourceButton (src, label, type, isCurrent, container)  {
-				const t = this;
-				const sourceUrl = src.src;
-				// Prioritize data-res, fallback to the title (passed as label), and finally the src URL.
-				let resolutionLabel = label || sourceUrl;
-				if ( src.dataset && src.dataset.res ) {
-					resolutionLabel = `${src.dataset.res}p`;
-				} else if ( src.resolution ) {
-					resolutionLabel = `${src.resolution}p`;
-				}
-
-				// Create a unique ID from the source URL to avoid collisions.
-				const inputId = `${t.id}_sourcechooser_${sourceUrl.replace( /[^a-zA-Z0-9]/g, '' )}`;
-
-				const target = container || t.sourcechooserButton.querySelector( 'ul' );
-				const li = document.createElement( 'li' );
-				if ( isCurrent ) {
-					li.className = 'sourcechooser-selected';
-				}
-				li.innerHTML = `<input type="radio" name="${t.id}_sourcechooser" id="${inputId}" ` +
-						`role="menuitemradio" value="${sourceUrl}" ${(isCurrent ? 'checked="checked"' : '')} aria-selected="${isCurrent}"/>` +
-					`<label for="${inputId}" aria-hidden="true">${resolutionLabel}</label>`;
-				target.appendChild( li );
-
-				t.adjustSourcechooserBox();
-			},
-
-			/**
-			 *
-			 * @param {String} src
-			 * @param {String} codec
-			 */
-			changeRes (src, codec) {
-				const t = this;
-				if ( codec ) {
-					t.currentCodec = codec;
-				}
-				const media = t.media;
-
-				if ( t.sourcechooserButton ) {
-					const radios = t.sourcechooserButton.querySelectorAll( 'input[type=radio]' );
-					let selectedRadio = null;
-
-					for ( let i = 0; i < radios.length; i++ ) {
-						if ( radios[ i ].value === src ) {
-							selectedRadio = radios[ i ];
-						}
-						radios[ i ].setAttribute( 'aria-selected', false );
-						radios[ i ].removeAttribute( 'checked' );
-						const li = radios[ i ].closest( 'li' );
-						if ( li ) {
-							li.classList.remove( 'sourcechooser-selected' );
-						}
-					}
-
-					if ( selectedRadio ) {
-						selectedRadio.setAttribute( 'aria-selected', true );
-						selectedRadio.checked = true;
-						selectedRadio.closest( 'li' ).classList.add( 'sourcechooser-selected' );
-					}
-				}
-
-				if (media.getSrc() !== src) {
-					let currentTime = media.currentTime;
-					const paused = media.paused;
-					const canPlayAfterSourceSwitchHandler = () => {
-						media.setCurrentTime(currentTime);
-						if (!paused) {
-							media.play();
-						}
-						media.removeEventListener('canplay', canPlayAfterSourceSwitchHandler);
-					};
-
-					media.pause();
-					media.setSrc(src);
-					media.load();
-					media.addEventListener('canplay', canPlayAfterSourceSwitchHandler);
-				}
-			},
-
-			/**
-			 *
-			 */
-			adjustSourcechooserBox ()  {
-				const t = this;
-				// adjust the size of the outer box
-				t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`).style.height =
-					`${parseFloat(t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector ul`).offsetHeight)}px`;
-			},
-
-			/**
-			 *
-			 */
-			hideSourcechooserSelector ()  {
-
-				const t = this;
-
-				if (t.sourcechooserButton === undefined || !t.sourcechooserButton.querySelector('input[type=radio]')) {
-					return;
-				}
-
-				const
-					selector = t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`),
-					radios = selector.querySelectorAll('input[type=radio]')
-				;
-				selector.setAttribute('aria-expanded', false);
-				selector.setAttribute('aria-hidden', true);
-				mejs.Utils.addClass(selector, `${t.options.classPrefix}offscreen`);
-
-				// make radios not focusable
-				for (let i = 0, total = radios.length; i < total; i++) {
-					radios[i].setAttribute('tabindex', '-1');
-				}
-			},
-
-			/**
-			 *
-			 */
-			showSourcechooserSelector ()  {
-
-				const t = this;
-
-				if (t.sourcechooserButton === undefined || !t.sourcechooserButton.querySelector('input[type=radio]')) {
-					return;
-				}
-
-				const
-					selector = t.sourcechooserButton.querySelector(`.${t.options.classPrefix}sourcechooser-selector`),
-					radios = selector.querySelectorAll('input[type=radio]')
-				;
-				selector.setAttribute('aria-expanded', true);
-				selector.setAttribute('aria-hidden', false);
-				mejs.Utils.removeClass(selector, `${t.options.classPrefix}offscreen`);
-
-				// make radios not focusable
-				for (let i = 0, total = radios.length; i < total; i++) {
-					radios[i].setAttribute('tabindex', '0');
-				}
-			}
-		});
-	}
 
 	/**
 	 * Main Videopack object.
@@ -663,26 +21,26 @@
 		 *
 		 * @since 5.0.0
 		 */
-		init: function() {
-			document.querySelectorAll( '.videopack-player' ).forEach( ( element ) => {
-				this.initPlayer( element );
-			} );
+		init: function () {
+			document.querySelectorAll('.videopack-player').forEach((element) => {
+				this.initPlayer(element);
+			});
 
 			// Initialize galleries
-			document.querySelectorAll( '.videopack-gallery-wrapper' ).forEach( ( element ) => {
-				this.initGallery( element );
-			} );
+			document.querySelectorAll('.videopack-gallery-wrapper').forEach((element) => {
+				this.initGallery(element);
+			});
 
 
 			// Fallback for MediaElement.js players initialized by other plugins/themes.
-			if ( typeof window.mejs !== 'undefined' ) {
+			if (typeof window.mejs !== 'undefined') {
 				// This is a bit of a hack to catch MEJS players initialized after our script runs.
 				const originalSuccess = window.mejs.MepDefaults.success;
-				window.mejs.MepDefaults.success = ( mediaElement, domObject, player ) => {
-					if ( typeof originalSuccess === 'function' ) {
-						originalSuccess( mediaElement, domObject, player );
+				window.mejs.MepDefaults.success = (mediaElement, domObject, player) => {
+					if (typeof originalSuccess === 'function') {
+						originalSuccess(mediaElement, domObject, player);
 					}
-					this.onMejsSuccess( mediaElement, domObject, player );
+					this.onMejsSuccess(mediaElement, domObject, player);
 				};
 			}
 		},
@@ -693,27 +51,27 @@
 		 * @since 5.0.0
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		initPlayer: function( playerWrapper ) {
-			let playerId  = playerWrapper.dataset.id;
+		initPlayer: function (playerWrapper) {
+			let playerId = playerWrapper.dataset.id;
 
 			// Handle gallery player IDs which have a prefix.
-			if ( String( playerId ).startsWith( 'gallery_' ) ) {
-				playerId = `gallery_${ playerId.split( '_' )[ 1 ] }`;
+			if (String(playerId).startsWith('gallery_')) {
+				playerId = `gallery_${playerId.split('_')[1]}`;
 			}
-			const videoVars = window.videopack.player_data && window.videopack.player_data[ `videopack_player_${ playerId }` ];
+			const videoVars = window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`];
 
-			if ( ! videoVars ) {
+			if (!videoVars) {
 				return;
 			}
 
-			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-				this.loadVideoJS( playerWrapper, videoVars );
-			} else if ( videoVars.player_type === 'WordPress Default' ) {
+			if (videoVars.player_type.startsWith('Video.js')) {
+				this.loadVideoJS(playerWrapper, videoVars);
+			} else if (videoVars.player_type === 'WordPress Default') {
 				// ME.js is often auto-initialized by WP. We'll set up our hooks after it's ready.
 				// The success callback hook in init() should handle this.
 				// If it's already initialized, we set it up now.
-				if ( playerWrapper.querySelector( '.mejs-container' ) ) {
-					this.setupVideo( playerWrapper, videoVars );
+				if (playerWrapper.querySelector('.mejs-container')) {
+					this.setupVideo(playerWrapper, videoVars);
 				}
 			}
 		},
@@ -726,12 +84,12 @@
 		 * @param {HTMLElement} domObject    The original DOM object.
 		 * @param {object}      player       The MediaElementPlayer instance.
 		 */
-		onMejsSuccess: function( mediaElement, domObject, player ) {
+		onMejsSuccess: function (mediaElement, domObject, player) {
 			// domObject is optional in some contexts, fallback to mediaElement
 			const target = domObject || mediaElement;
-			const playerWrapper = target.closest( '.videopack-player' );
-			if ( playerWrapper && ! playerWrapper.dataset.videopackInitialized && window.videopack.player_data ) {
-				this.setupVideo( playerWrapper, window.videopack.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ] );
+			const playerWrapper = target.closest('.videopack-player');
+			if (playerWrapper && !playerWrapper.dataset.videopackInitialized && window.videopack.player_data) {
+				this.setupVideo(playerWrapper, window.videopack.player_data[`videopack_player_${playerWrapper.dataset.id}`]);
 			}
 		},
 
@@ -742,11 +100,11 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 * @param {object} videoVars      The video variables.
 		 */
-		loadVideoJS: function( playerWrapper, videoVars ) {
+		loadVideoJS: function (playerWrapper, videoVars) {
 			const playerId = playerWrapper.dataset.id;
-			const videoElement = playerWrapper.querySelector( 'video' );
+			const videoElement = playerWrapper.querySelector('video');
 
-			if ( ! videoElement ) {
+			if (!videoElement) {
 				return;
 			}
 			const videoElementId = videoElement.id;
@@ -757,53 +115,53 @@
 				userActions: { hotkeys: true },
 			};
 
-			if ( true === videoVars.autoplay ) {
+			if (true === videoVars.autoplay) {
 				videojsOptions.autoplay = 'any';
 			}
 
-			if ( true === videoVars.resize || true === videoVars.fullwidth ) {
+			if (true === videoVars.resize || true === videoVars.fullwidth) {
 				videojsOptions.fluid = true;
 			} else {
 				videojsOptions.fluid = false;
 			}
 
-			if ( videojsOptions.fluid && videoVars.width && ( typeof videoVars.width !== 'string' || -1 === videoVars.width.indexOf( '%' ) ) && videoVars.height && videoVars.fixed_aspect ) {
-				videojsOptions.aspectRatio = `${ videoVars.width }:${ videoVars.height }`;
+			if (videojsOptions.fluid && videoVars.width && (typeof videoVars.width !== 'string' || -1 === videoVars.width.indexOf('%')) && videoVars.height && videoVars.fixed_aspect) {
+				videojsOptions.aspectRatio = `${videoVars.width}:${videoVars.height}`;
 			}
 
-			if ( true === videoVars.nativecontrolsfortouch ) {
+			if (true === videoVars.nativecontrolsfortouch) {
 				videojsOptions.nativeControlsForTouch = true;
 			}
 
-			if ( true === videoVars.playback_rate ) {
-				videojsOptions.playbackRates = [ 0.5, 1, 1.25, 1.5, 2 ];
+			if (true === videoVars.playback_rate) {
+				videojsOptions.playbackRates = [0.5, 1, 1.25, 1.5, 2];
 			}
 
-			if ( videoVars.skip_buttons && videoVars.skip_buttons.forward && videoVars.skip_buttons.backward ) {
+			if (videoVars.skip_buttons && videoVars.skip_buttons.forward && videoVars.skip_buttons.backward) {
 				videojsOptions.controlBar = {
 					skipButtons: {
-						forward: Number( videoVars.skip_buttons.forward ),
-						backward: Number( videoVars.skip_buttons.backward ),
+						forward: Number(videoVars.skip_buttons.forward),
+						backward: Number(videoVars.skip_buttons.backward),
 					},
 				};
 			}
 
-			const sources = Array.from( videoElement.querySelectorAll( 'source' ) );
-			const hasResolutions = sources.some( ( s ) => s.dataset.res );
+			const sources = Array.from(videoElement.querySelectorAll('source'));
+			const hasResolutions = sources.some((s) => s.dataset.res);
 			const source_groups = videoVars.source_groups || {};
 
-			if ( hasResolutions || ( source_groups && Object.keys(source_groups).length > 1 ) ) {
-				if ( videojs.VERSION.split( '.' )[ 0 ] >= 5 ) {
+			if (hasResolutions || (source_groups && Object.keys(source_groups).length > 1)) {
+				if (videojs.VERSION.split('.')[0] >= 5) {
 					videojsOptions.plugins = videojsOptions.plugins || {};
 					videojsOptions.plugins.resolutionSelector = {
-						force_types: [ 'video/mp4' ],
+						force_types: ['video/mp4'],
 						source_groups: source_groups,
 					};
-					const defaultResSource = sources.find( ( s ) => '1' === s.dataset.default_res );
-					if ( defaultResSource ) {
+					const defaultResSource = sources.find((s) => '1' === s.dataset.default_res);
+					if (defaultResSource) {
 						videojsOptions.plugins.resolutionSelector.default_res = defaultResSource.dataset.res;
-						for ( const groupId in source_groups ) {
-							if ( source_groups[ groupId ].sources.some( ( s ) => s.src === defaultResSource.src ) ) {
+						for (const groupId in source_groups) {
+							if (source_groups[groupId].sources.some((s) => s.src === defaultResSource.src)) {
 								videojsOptions.plugins.resolutionSelector.default_codec = groupId;
 								break;
 							}
@@ -811,17 +169,17 @@
 					}
 				} else {
 					// eslint-disable-next-line no-console
-					console.warn( 'Videopack: Video.js version ' + videojs.VERSION + ' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.' );
+					console.warn('Videopack: Video.js version ' + videojs.VERSION + ' is loaded by another application. Resolution selection is not compatible with this older version and has been disabled.');
 				}
 			}
 
-			if ( videojs.getPlayer( videoElementId ) ) {
-				videojs.getPlayer( videoElementId ).dispose();
+			if (videojs.getPlayer(videoElementId)) {
+				videojs.getPlayer(videoElementId).dispose();
 			}
 
-			videojs( videoElement, videojsOptions ).ready( () => {
-				this.setupVideo( playerWrapper, videoVars );
-			} );
+			videojs(videoElement, videojsOptions).ready(() => {
+				this.setupVideo(playerWrapper, videoVars);
+			});
 		},
 
 		/**
@@ -831,101 +189,101 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 * @param {object} videoVars The video variables.
 		 */
-		setupVideo: function( playerWrapper, videoVars ) {
-			if ( playerWrapper.dataset.videopackInitialized ) {
+		setupVideo: function (playerWrapper, videoVars) {
+			if (playerWrapper.dataset.videopackInitialized) {
 				return;
 			}
 
 			const playerId = playerWrapper.dataset.id;
 
 			// Move watermark and meta into the player.
-			const watermark = document.getElementById( `video_${ playerId }_watermark` );
-			if ( watermark ) {
-				playerWrapper.prepend( watermark );
+			const watermark = document.getElementById(`video_${playerId}_watermark`);
+			if (watermark) {
+				playerWrapper.prepend(watermark);
 				watermark.style.display = 'block';
 			}
 
-			const meta = document.getElementById( `video_${ playerId }_meta` );
-			if ( meta ) {
-				playerWrapper.prepend( meta );
+			const meta = document.getElementById(`video_${playerId}_meta`);
+			if (meta) {
+				playerWrapper.prepend(meta);
 				meta.style.display = 'block';
 			}
 
 			// Setup share functionality.
-			const shareIcon = playerWrapper.querySelector( '.videopack-icons.share' );
-			if ( shareIcon ) {
-				shareIcon.addEventListener( 'click', () => this.toggleShare( playerWrapper ) );
-				playerWrapper.querySelector( '.click-trap' ).addEventListener( 'click', () => this.toggleShare( playerWrapper ) );
+			const shareIcon = playerWrapper.querySelector('.videopack-icons.share');
+			if (shareIcon) {
+				shareIcon.addEventListener('click', () => this.toggleShare(playerWrapper));
+				playerWrapper.querySelector('.click-trap').addEventListener('click', () => this.toggleShare(playerWrapper));
 			}
 
-			if ( true !== videoVars.right_click ) {
-				playerWrapper.addEventListener( 'contextmenu', (e) => e.preventDefault() );
+			if (true !== videoVars.right_click) {
+				playerWrapper.addEventListener('contextmenu', (e) => e.preventDefault());
 			}
 
 			// Setup "start at" functionality.
-			const embedWrapper = playerWrapper.querySelector( '.share-container' );
-			if ( embedWrapper ) {
-				embedWrapper.querySelector( '.videopack-start-at-enable' ).addEventListener( 'change', () => this.setStartAt( playerWrapper ) );
-				embedWrapper.querySelector( '.videopack-start-at' ).addEventListener( 'change', () => this.changeStartAt( playerWrapper ) );
+			const embedWrapper = playerWrapper.querySelector('.share-container');
+			if (embedWrapper) {
+				embedWrapper.querySelector('.videopack-start-at-enable').addEventListener('change', () => this.setStartAt(playerWrapper));
+				embedWrapper.querySelector('.videopack-start-at').addEventListener('change', () => this.changeStartAt(playerWrapper));
 			}
 
-			const downloadLink = playerWrapper.querySelector( '.download-link' );
-			if ( downloadLink && downloadLink.hasAttribute( 'download' ) && downloadLink.dataset.alt_link ) {
-				downloadLink.addEventListener( 'click', ( e ) => {
+			const downloadLink = playerWrapper.querySelector('.download-link');
+			if (downloadLink && downloadLink.hasAttribute('download') && downloadLink.dataset.alt_link) {
+				downloadLink.addEventListener('click', (e) => {
 					e.preventDefault();
-					this.checkDownloadLink( downloadLink );
-				} );
+					this.checkDownloadLink(downloadLink);
+				});
 			}
 
-			if ( 'vertical' === videoVars.fixed_aspect ) {
-				const videoElement = playerWrapper.querySelector( 'video' );
-				if ( videoElement ) {
+			if ('vertical' === videoVars.fixed_aspect) {
+				const videoElement = playerWrapper.querySelector('video');
+				if (videoElement) {
 					const checkVertical = () => {
-						if ( videoElement.videoHeight > videoElement.videoWidth ) {
-							playerWrapper.parentElement.classList.add( 'videopack-fixed-aspect' );
+						if (videoElement.videoHeight > videoElement.videoWidth) {
+							playerWrapper.parentElement.classList.add('videopack-fixed-aspect');
 							playerWrapper.parentElement.style.aspectRatio = videoVars.default_ratio;
 						}
 					};
-					if ( videoElement.readyState >= 1 ) {
+					if (videoElement.readyState >= 1) {
 						checkVertical();
 					} else {
-						videoElement.addEventListener( 'loadedmetadata', checkVertical, { once: true } );
+						videoElement.addEventListener('loadedmetadata', checkVertical, { once: true });
 					}
 				}
 			}
 
-			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-				this.setupVideoJSPlayer( playerWrapper, videoVars );
-			} else if ( videoVars.player_type === 'WordPress Default' ) {
-				this.setupMEJSPlayer( playerWrapper, videoVars );
+			if (videoVars.player_type.startsWith('Video.js')) {
+				this.setupVideoJSPlayer(playerWrapper, videoVars);
+			} else if (videoVars.player_type === 'WordPress Default') {
+				this.setupMEJSPlayer(playerWrapper, videoVars);
 			}
 
 			// Resize logic.
-			if ( true === videoVars.resize || 'automatic' === videoVars.auto_res || window.location.search.includes( 'videopack[enable]=true' ) ) {
-				this.resizeVideo( playerId );
+			if (true === videoVars.resize || 'automatic' === videoVars.auto_res || window.location.search.includes('videopack[enable]=true')) {
+				this.resizeVideo(playerId);
 
 				const target = playerWrapper.parentElement;
 
-				if ( ! target ) {
+				if (!target) {
 					return;
 				}
 
 				let resizeId;
 				const debouncedResize = () => {
-					clearTimeout( resizeId );
-					resizeId = setTimeout( () => this.resizeVideo( playerId ), 200 );
+					clearTimeout(resizeId);
+					resizeId = setTimeout(() => this.resizeVideo(playerId), 200);
 				};
 
-				const resizeObserver = new ResizeObserver( debouncedResize );
-				resizeObserver.observe( target );
+				const resizeObserver = new ResizeObserver(debouncedResize);
+				resizeObserver.observe(target);
 
 				// Cleanup observer on player disposal.
-				if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
-					const player = videojs.getPlayer( 'videopack_video_' + playerId );
-					if ( player ) {
-						player.on( 'dispose', () => {
+				if (videoVars.player_type.startsWith('Video.js')) {
+					const player = videojs.getPlayer('videopack_video_' + playerId);
+					if (player) {
+						player.on('dispose', () => {
 							resizeObserver.disconnect();
-						} );
+						});
 					}
 				}
 				// Note: MediaElement.js cleanup is not added to avoid complexity without a clear dispose event.
@@ -941,136 +299,136 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 * @param {object} videoVars The video variables.
 		 */
-		setupVideoJSPlayer: function( playerWrapper, videoVars ) {
+		setupVideoJSPlayer: function (playerWrapper, videoVars) {
 			const playerId = playerWrapper.dataset.id;
-			const videoElement = playerWrapper.querySelector( 'video' );
+			const videoElement = playerWrapper.querySelector('video');
 
-			if ( ! videoElement ) {
+			if (!videoElement) {
 				return;
 			}
 
-			const player = videojs.getPlayer( videoElement.id );
+			const player = videojs.getPlayer(videoElement.id);
 
-			if ( ! player ) {
+			if (!player) {
 				return;
 			}
 
 			// Move watermark inside video element for proper positioning.
-			const watermark = document.getElementById( `video_${ playerId }_watermark` );
-			if ( watermark ) {
-				player.el().appendChild( watermark );
+			const watermark = document.getElementById(`video_${playerId}_watermark`);
+			if (watermark) {
+				player.el().appendChild(watermark);
 			}
 
 			// Touch device checks.
-			if ( videojs.browser.TOUCH_ENABLED ) {
-				if ( true === videoVars.nativecontrolsfortouch && videojs.browser.IS_ANDROID ) {
+			if (videojs.browser.TOUCH_ENABLED) {
+				if (true === videoVars.nativecontrolsfortouch && videojs.browser.IS_ANDROID) {
 					player.bigPlayButton.hide();
 				}
-				if ( ! player.controls() && ! player.muted() ) {
-					player.controls( true );
+				if (!player.controls() && !player.muted()) {
+					player.controls(true);
 				}
 			}
 
-			player.on( 'loadedmetadata', () => {
+			player.on('loadedmetadata', () => {
 				const played = playerWrapper.dataset.played || 'not played';
 
-				if ( 'not played' === played ) {
+				if ('not played' === played) {
 					// Set default captions/subtitles.
 					const trackElements = player.options_.tracks;
-					if ( trackElements ) {
-						player.textTracks().tracks_.forEach( ( track, index ) => {
-							if ( trackElements[ index ] && trackElements[ index ].default && 'showing' !== track.mode ) {
+					if (trackElements) {
+						player.textTracks().tracks_.forEach((track, index) => {
+							if (trackElements[index] && trackElements[index].default && 'showing' !== track.mode) {
 								track.mode = 'showing';
 							}
-						} );
+						});
 					}
 
-					if ( videoVars.start ) {
-						player.currentTime( this.convertFromTimecode( videoVars.start ) );
+					if (videoVars.start) {
+						player.currentTime(this.convertFromTimecode(videoVars.start));
 					}
 				}
 
-				if ( videoVars.set_volume ) {
-					player.volume( videoVars.set_volume );
+				if (videoVars.set_volume) {
+					player.volume(videoVars.set_volume);
 				}
 
-				if ( true === videoVars.autoplay && player.paused() ) {
+				if (true === videoVars.autoplay && player.paused()) {
 					const promise = player.play();
-					if ( 'undefined' !== typeof promise ) {
-						promise.catch( () => {
+					if ('undefined' !== typeof promise) {
+						promise.catch(() => {
 							// Autoplay was prevented.
-						} );
+						});
 					}
 				}
-			} );
+			});
 
-			player.on( 'play', () => {
+			player.on('play', () => {
 				player.focus();
 
-				if ( videoVars.endofvideooverlay ) {
+				if (videoVars.endofvideooverlay) {
 					player.posterImage.el().style.display = 'none';
 				}
 
-				playerWrapper.parentElement.classList.remove( 'meta-bar-visible' );
+				playerWrapper.parentElement.classList.remove('meta-bar-visible');
 
-				if ( true === videoVars.pauseothervideos ) {
+				if (true === videoVars.pauseothervideos) {
 					const players = videojs.getPlayers();
-					for ( const otherPlayerId in players ) {
-						if ( players.hasOwnProperty( otherPlayerId ) ) {
-							const otherPlayer = players[ otherPlayerId ];
-							if ( otherPlayer && player.id() !== otherPlayer.id() && ! otherPlayer.paused() && ! otherPlayer.autoplay() ) {
+					for (const otherPlayerId in players) {
+						if (players.hasOwnProperty(otherPlayerId)) {
+							const otherPlayer = players[otherPlayerId];
+							if (otherPlayer && player.id() !== otherPlayer.id() && !otherPlayer.paused() && !otherPlayer.autoplay()) {
 								otherPlayer.pause();
 							}
 						}
 					}
 				}
 
-				this.videoCounter( playerId, 'play' );
+				this.videoCounter(playerId, 'play');
 
-				player.on( 'timeupdate', () => {
-					const percent = Math.round( ( player.currentTime() / player.duration() ) * 100 );
-					if ( ! playerWrapper.dataset['25'] && percent >= 25 && percent < 50 ) {
+				player.on('timeupdate', () => {
+					const percent = Math.round((player.currentTime() / player.duration()) * 100);
+					if (!playerWrapper.dataset['25'] && percent >= 25 && percent < 50) {
 						playerWrapper.dataset['25'] = true;
-						this.videoCounter( playerId, '25' );
-					} else if ( ! playerWrapper.dataset['50'] && percent >= 50 && percent < 75 ) {
+						this.videoCounter(playerId, '25');
+					} else if (!playerWrapper.dataset['50'] && percent >= 50 && percent < 75) {
 						playerWrapper.dataset['50'] = true;
-						this.videoCounter( playerId, '50' );
-					} else if ( ! playerWrapper.dataset['75'] && percent >= 75 && percent < 100 ) {
+						this.videoCounter(playerId, '50');
+					} else if (!playerWrapper.dataset['75'] && percent >= 75 && percent < 100) {
 						playerWrapper.dataset['75'] = true;
-						this.videoCounter( playerId, '75' );
+						this.videoCounter(playerId, '75');
 					}
-				} );
-			} );
+				});
+			});
 
-			player.on( 'pause', () => {
-				playerWrapper.parentElement.classList.add( 'meta-bar-visible' );
-				this.videoCounter( playerId, 'pause' );
-			} );
-			player.on( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
+			player.on('pause', () => {
+				playerWrapper.parentElement.classList.add('meta-bar-visible');
+				this.videoCounter(playerId, 'pause');
+			});
+			player.on('seeked', () => this.videoCounter(playerId, 'seek'));
 
-			player.on( 'ended', () => {
-				if ( ! playerWrapper.dataset.end ) {
+			player.on('ended', () => {
+				if (!playerWrapper.dataset.end) {
 					playerWrapper.dataset.end = true;
-					this.videoCounter( playerId, 'end' );
+					this.videoCounter(playerId, 'end');
 				}
-				setTimeout( () => {
-					if ( player.loadingSpinner && player.loadingSpinner.el() ) {
+				setTimeout(() => {
+					if (player.loadingSpinner && player.loadingSpinner.el()) {
 						player.loadingSpinner.el().style.display = 'none';
 					}
-				}, 250 );
+				}, 250);
 
-				if ( videoVars.endofvideooverlay ) {
+				if (videoVars.endofvideooverlay) {
 					const posterImage = player.posterImage.el();
-					if ( posterImage ) {
-						posterImage.style.backgroundImage = `url(${ videoVars.endofvideooverlay })`;
+					if (posterImage) {
+						posterImage.style.backgroundImage = `url(${videoVars.endofvideooverlay})`;
 						posterImage.style.display = 'block';
 					}
 				}
-			} );
+			});
 
-			player.on( 'fullscreenchange', () => {
-				this.resizeVideo( playerId );
-			} );
+			player.on('fullscreenchange', () => {
+				this.resizeVideo(playerId);
+			});
 		},
 
 		/**
@@ -1080,107 +438,107 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 * @param {object} videoVars The video variables.
 		 */
-		setupMEJSPlayer: function( playerWrapper, videoVars ) {
+		setupMEJSPlayer: function (playerWrapper, videoVars) {
 			const playerId = playerWrapper.dataset.id;
-			const video = playerWrapper.querySelector( 'video' );
-			const mejsId = playerWrapper.querySelector( '.mejs-container' ).id;
+			const video = playerWrapper.querySelector('video');
+			const mejsId = playerWrapper.querySelector('.mejs-container').id;
 
-			if ( ! video || ! mejsId || ! mejs.players[ mejsId ] ) {
+			if (!video || !mejsId || !mejs.players[mejsId]) {
 				return;
 			}
 
-			const player = mejs.players[ mejsId ];
+			const player = mejs.players[mejsId];
 
 			// Move watermark.
-			const watermark = document.getElementById( `video_${ playerId }_watermark` );
-			if ( watermark ) {
-				playerWrapper.querySelector( '.mejs-container' ).append( watermark );
+			const watermark = document.getElementById(`video_${playerId}_watermark`);
+			if (watermark) {
+				playerWrapper.querySelector('.mejs-container').append(watermark);
 			}
 
 			const played = playerWrapper.dataset.played || 'not played';
-			if ( 'not played' === played ) {
+			if ('not played' === played) {
 				// Default captions.
-				if ( player.tracks && player.tracks.length > 0 ) {
-					const defaultTrack = document.querySelector( `#${ mejsId } track[default]` );
-					if ( defaultTrack ) {
-						const defaultLang = defaultTrack.getAttribute( 'srclang' ).toLowerCase();
-						const trackToSet = player.tracks.find( ( t ) => t.srclang === defaultLang );
-						if ( trackToSet ) {
-							player.setTrack( trackToSet.trackId );
+				if (player.tracks && player.tracks.length > 0) {
+					const defaultTrack = document.querySelector(`#${mejsId} track[default]`);
+					if (defaultTrack) {
+						const defaultLang = defaultTrack.getAttribute('srclang').toLowerCase();
+						const trackToSet = player.tracks.find((t) => t.srclang === defaultLang);
+						if (trackToSet) {
+							player.setTrack(trackToSet.trackId);
 						}
 					}
 				}
 
-				if ( videoVars.start ) {
-					video.setCurrentTime( this.convertFromTimecode( videoVars.start ) );
+				if (videoVars.start) {
+					video.setCurrentTime(this.convertFromTimecode(videoVars.start));
 				}
 			}
 
 			const onLoadedMetadata = () => {
-				this.resizeVideo( playerId );
-				if ( videoVars.set_volume ) {
+				this.resizeVideo(playerId);
+				if (videoVars.set_volume) {
 					video.volume = videoVars.set_volume;
 				}
-				if ( true === videoVars.mute ) {
-					video.setMuted( true );
+				if (true === videoVars.mute) {
+					video.setMuted(true);
 				}
-				if ( false === videoVars.pauseothervideos ) {
+				if (false === videoVars.pauseothervideos) {
 					player.options.pauseOtherPlayers = false;
 				}
 			};
 
-			video.addEventListener( 'loadedmetadata', onLoadedMetadata );
+			video.addEventListener('loadedmetadata', onLoadedMetadata);
 
-			if ( video.readyState >= 1 ) {
+			if (video.readyState >= 1) {
 				onLoadedMetadata();
 			}
 
-			video.addEventListener( 'play', () => {
-				document.getElementById( mejsId ).focus();
-				playerWrapper.parentElement.classList.remove( 'meta-bar-visible' );
-				this.videoCounter( playerId, 'play' );
+			video.addEventListener('play', () => {
+				document.getElementById(mejsId).focus();
+				playerWrapper.parentElement.classList.remove('meta-bar-visible');
+				this.videoCounter(playerId, 'play');
 
-				video.addEventListener( 'timeupdate', () => {
-					const percent = Math.round( ( video.currentTime / video.duration ) * 100 );
-					if ( ! playerWrapper.dataset['25'] && percent >= 25 && percent < 50 ) {
+				video.addEventListener('timeupdate', () => {
+					const percent = Math.round((video.currentTime / video.duration) * 100);
+					if (!playerWrapper.dataset['25'] && percent >= 25 && percent < 50) {
 						playerWrapper.dataset['25'] = true;
-						this.videoCounter( playerId, '25' );
-					} else if ( ! playerWrapper.dataset['50'] && percent >= 50 && percent < 75 ) {
+						this.videoCounter(playerId, '25');
+					} else if (!playerWrapper.dataset['50'] && percent >= 50 && percent < 75) {
 						playerWrapper.dataset['50'] = true;
-						this.videoCounter( playerId, '50' );
-					} else if ( ! playerWrapper.dataset['75'] && percent >= 75 && percent < 100 ) {
+						this.videoCounter(playerId, '50');
+					} else if (!playerWrapper.dataset['75'] && percent >= 75 && percent < 100) {
 						playerWrapper.dataset['75'] = true;
-						this.videoCounter( playerId, '75' );
+						this.videoCounter(playerId, '75');
 					}
-				} );
-			} );
+				});
+			});
 
-			video.addEventListener( 'pause', () => {
-				playerWrapper.parentElement.classList.add( 'meta-bar-visible' );
-				this.videoCounter( playerId, 'pause' );
-			} );
-			video.addEventListener( 'seeked', () => this.videoCounter( playerId, 'seek' ) );
+			video.addEventListener('pause', () => {
+				playerWrapper.parentElement.classList.add('meta-bar-visible');
+				this.videoCounter(playerId, 'pause');
+			});
+			video.addEventListener('seeked', () => this.videoCounter(playerId, 'seek'));
 
-			video.addEventListener( 'ended', () => {
-				if ( ! playerWrapper.dataset.end ) {
+			video.addEventListener('ended', () => {
+				if (!playerWrapper.dataset.end) {
 					playerWrapper.dataset.end = true;
-					this.videoCounter( playerId, 'end' );
+					this.videoCounter(playerId, 'end');
 				}
-				if ( videoVars.endofvideooverlay ) {
-					const poster = playerWrapper.querySelector( '.mejs-poster' );
-					if ( poster ) {
-						poster.style.backgroundImage = `url(${ videoVars.endofvideooverlay })`;
+				if (videoVars.endofvideooverlay) {
+					const poster = playerWrapper.querySelector('.mejs-poster');
+					if (poster) {
+						poster.style.backgroundImage = `url(${videoVars.endofvideooverlay})`;
 						poster.style.display = 'block';
 					}
-					video.addEventListener( 'seeking', () => {
-						if ( 0 !== video.currentTime ) {
-							if ( poster ) {
+					video.addEventListener('seeking', () => {
+						if (0 !== video.currentTime) {
+							if (poster) {
 								poster.style.display = 'none';
 							}
 						}
-					}, { once: true } );
+					}, { once: true });
 				}
-			} );
+			});
 		},
 
 		/**
@@ -1189,40 +547,40 @@
 		 * @since 5.0.0
 		 * @param {number} playerId The player ID.
 		 */
-		resizeVideo: function( playerId ) {
-			const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
-			if ( ! playerWrapper ) {
+		resizeVideo: function (playerId) {
+			const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
+			if (!playerWrapper) {
 				return;
 			}
-			const videoVars = this.player_data[ `videopack_player_${ playerId }` ];
-			if ( ! videoVars ) {
+			const videoVars = this.player_data[`videopack_player_${playerId}`];
+			if (!videoVars) {
 				return;
 			}
 
 			let setWidth = videoVars.width;
 			const setHeight = videoVars.height;
-			const aspectRatio = Math.round( ( setHeight / setWidth ) * 1000 ) / 1000;
+			const aspectRatio = Math.round((setHeight / setWidth) * 1000) / 1000;
 			const wrapperParent = playerWrapper.parentElement;
 
 			let parentWidth;
-			if ( wrapperParent.tagName === 'BODY' ) { // Embedded video
+			if (wrapperParent.tagName === 'BODY') { // Embedded video
 				parentWidth = window.innerWidth;
 				setWidth = window.innerWidth;
 			} else {
 				parentWidth = wrapperParent.offsetWidth;
-				if ( true === videoVars.fullwidth ) {
+				if (true === videoVars.fullwidth) {
 					setWidth = parentWidth;
 				}
 			}
 
-			if ( parentWidth < setWidth ) {
+			if (parentWidth < setWidth) {
 				setWidth = parentWidth;
 			}
 
-			if ( setWidth > 0 && setWidth < 30000 ) {
+			if (setWidth > 0 && setWidth < 30000) {
 				// Automatic resolution switching logic
-				if ( 'automatic' === videoVars.auto_res ) {
-					this.setAutomaticResolution( playerId, setWidth, aspectRatio );
+				if ('automatic' === videoVars.auto_res) {
+					this.setAutomaticResolution(playerId, setWidth, aspectRatio);
 				}
 			}
 		},
@@ -1235,14 +593,14 @@
 		 * @param {number} currentWidth The current width of the player.
 		 * @param {number} aspectRatio The aspect ratio of the video.
 		 */
-		setAutomaticResolution: function( playerId, currentWidth, aspectRatio ) {
-			const videoVars = this.player_data[ `videopack_player_${ playerId }` ];
-			if ( ! videoVars ) {
+		setAutomaticResolution: function (playerId, currentWidth, aspectRatio) {
+			const videoVars = this.player_data[`videopack_player_${playerId}`];
+			if (!videoVars) {
 				return;
 			}
 
 			let targetWidth = currentWidth;
-			if ( true === videoVars.pixel_ratio && window.devicePixelRatio ) {
+			if (true === videoVars.pixel_ratio && window.devicePixelRatio) {
 				targetWidth *= window.devicePixelRatio;
 			}
 
@@ -1253,21 +611,21 @@
 			let player = null;
 
 			// Determine current codec and player instance
-			if ( videoVars.player_type.startsWith( 'Video.js' ) && typeof videojs !== 'undefined' ) {
-				player = videojs.getPlayer( `videopack_video_${ playerId }` );
-				if ( player && player.getCurrentCodec ) {
+			if (videoVars.player_type.startsWith('Video.js') && typeof videojs !== 'undefined') {
+				player = videojs.getPlayer(`videopack_video_${playerId}`);
+				if (player && player.getCurrentCodec) {
 					const detectedCodec = player.getCurrentCodec();
-					if ( detectedCodec ) {
+					if (detectedCodec) {
 						currentCodec = detectedCodec;
 					}
 				}
-			} else if ( videoVars.player_type === 'WordPress Default' && typeof window.mejs !== 'undefined' ) {
+			} else if (videoVars.player_type === 'WordPress Default' && typeof window.mejs !== 'undefined') {
 				// For MEJS, check the selected radio button in the source chooser
-				const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
-				const mejsContainer = playerWrapper ? playerWrapper.querySelector( '.mejs-container' ) : null;
-				if ( mejsContainer && mejs.players[ mejsContainer.id ] ) {
-					player = mejs.players[ mejsContainer.id ];
-					if ( player.manualResolutionSelected ) {
+				const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
+				const mejsContainer = playerWrapper ? playerWrapper.querySelector('.mejs-container') : null;
+				if (mejsContainer && mejs.players[mejsContainer.id]) {
+					player = mejs.players[mejsContainer.id];
+					if (player.manualResolutionSelected) {
 						return;
 					}
 					// We can infer codec from the currently selected source if we had a way to map it back,
@@ -1275,23 +633,23 @@
 					// If the user manually switched codecs, MEJS doesn't explicitly store "currentCodec".
 					// So we check if we stored it, otherwise we try to respect auto_codec if supported,
 					// or fallback to the current source's codec.
-					if ( videoVars.source_groups ) {
-						if ( player.currentCodec ) {
+					if (videoVars.source_groups) {
+						if (player.currentCodec) {
 							currentCodec = player.currentCodec;
 						} else {
 							let autoCodecSupported = false;
-							if ( videoVars.auto_codec && videoVars.source_groups[ videoVars.auto_codec ] && player.media && typeof player.media.canPlayType === 'function' ) {
-								const testSource = videoVars.source_groups[ videoVars.auto_codec ].sources[ 0 ];
-								if ( testSource && player.media.canPlayType( testSource.type ) !== '' ) {
+							if (videoVars.auto_codec && videoVars.source_groups[videoVars.auto_codec] && player.media && typeof player.media.canPlayType === 'function') {
+								const testSource = videoVars.source_groups[videoVars.auto_codec].sources[0];
+								if (testSource && player.media.canPlayType(testSource.type) !== '') {
 									autoCodecSupported = true;
 									currentCodec = videoVars.auto_codec;
 								}
 							}
 
-							if ( ! autoCodecSupported ) {
+							if (!autoCodecSupported) {
 								const currentSrc = player.getSrc();
-								for ( const groupId in videoVars.source_groups ) {
-									if ( videoVars.source_groups[ groupId ].sources.some( ( s ) => s.src === currentSrc ) ) {
+								for (const groupId in videoVars.source_groups) {
+									if (videoVars.source_groups[groupId].sources.some((s) => s.src === currentSrc)) {
 										currentCodec = groupId;
 										break;
 									}
@@ -1303,40 +661,40 @@
 			}
 
 			let availableSources = [];
-			if ( videoVars.source_groups && videoVars.source_groups[ currentCodec ] ) {
-				availableSources = videoVars.source_groups[ currentCodec ].sources;
-			} else if ( videoVars.sources ) {
+			if (videoVars.source_groups && videoVars.source_groups[currentCodec]) {
+				availableSources = videoVars.source_groups[currentCodec].sources;
+			} else if (videoVars.sources) {
 				availableSources = videoVars.sources;
 			}
 
-			if ( ! availableSources.length ) {
+			if (!availableSources.length) {
 				return;
 			}
 
 			// Filter and sort sources by resolution (ascending)
-			const resSources = availableSources.filter( ( s ) => s.resolution || s['data-res'] );
-			resSources.sort( ( a, b ) => parseInt( a.resolution || a['data-res'], 10 ) - parseInt( b.resolution || b['data-res'], 10 ) );
+			const resSources = availableSources.filter((s) => s.resolution || s['data-res']);
+			resSources.sort((a, b) => parseInt(a.resolution || a['data-res'], 10) - parseInt(b.resolution || b['data-res'], 10));
 
-			if ( ! resSources.length ) {
+			if (!resSources.length) {
 				return;
 			}
 
 			// Find the best fit: the first source with height >= targetHeight
-			let bestSource = resSources.find( ( s ) => parseInt( s.resolution || s['data-res'], 10 ) >= targetHeight );
+			let bestSource = resSources.find((s) => parseInt(s.resolution || s['data-res'], 10) >= targetHeight);
 
 			// If all are smaller, use the largest available
-			if ( ! bestSource ) {
-				bestSource = resSources[ resSources.length - 1 ];
+			if (!bestSource) {
+				bestSource = resSources[resSources.length - 1];
 			}
 
 			// Switch resolution if needed
-			if ( videoVars.player_type.startsWith( 'Video.js' ) && player && player.changeRes ) {
+			if (videoVars.player_type.startsWith('Video.js') && player && player.changeRes) {
 				const targetRes = bestSource.resolution || bestSource['data-res'];
-				if ( player.getCurrentRes() !== targetRes ) {
-					player.changeRes( targetRes, currentCodec );
+				if (player.getCurrentRes() !== targetRes) {
+					player.changeRes(targetRes, currentCodec);
 				}
-			} else if ( videoVars.player_type === 'WordPress Default' && player && player.changeRes ) {
-				player.changeRes( bestSource.src, currentCodec );
+			} else if (videoVars.player_type === 'WordPress Default' && player && player.changeRes) {
+				player.changeRes(bestSource.src, currentCodec);
 			}
 		},
 
@@ -1347,15 +705,15 @@
 		 * @param {string} event The event name.
 		 * @param {string} label The event label.
 		 */
-		sendGoogleAnalytics: function( event, label ) {
-			if ( 'undefined' !== typeof gtag ) {
-				gtag( 'event', event, { event_category: 'Videos', event_label: label } );
-			} else if ( 'undefined' !== typeof ga ) {
-				ga( 'send', 'event', 'Videos', event, label );
-			} else if ( 'undefined' !== typeof __gaTracker ) {
-				__gaTracker( 'send', 'event', 'Videos', event, label );
-			} else if ( 'undefined' !== typeof _gaq ) {
-				_gaq.push( [ '_trackEvent', 'Videos', event, label ] );
+		sendGoogleAnalytics: function (event, label) {
+			if ('undefined' !== typeof gtag) {
+				gtag('event', event, { event_category: 'Videos', event_label: label });
+			} else if ('undefined' !== typeof ga) {
+				ga('send', 'event', 'Videos', event, label);
+			} else if ('undefined' !== typeof __gaTracker) {
+				__gaTracker('send', 'event', 'Videos', event, label);
+			} else if ('undefined' !== typeof _gaq) {
+				_gaq.push(['_trackEvent', 'Videos', event, label]);
 			}
 		},
 
@@ -1366,73 +724,73 @@
 		 * @param {number} playerId The player ID.
 		 * @param {string} event    The video event (play, pause, etc.).
 		 */
-		videoCounter: function( playerId, event ) {
-			const playerWrapper = document.querySelector( `.videopack-player[data-id="${ playerId }"]` );
-			const videoVars = this.player_data[ `videopack_player_${ playerId }` ];
+		videoCounter: function (playerId, event) {
+			const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
+			const videoVars = this.player_data[`videopack_player_${playerId}`];
 
-			if ( ! videoVars ) {
+			if (!videoVars) {
 				return;
 			}
 
-			const viewCountWrapper = playerWrapper.closest( '.videopack-wrapper' );
-			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector( '.viewcount' ) : null;
+			const viewCountWrapper = playerWrapper.closest('.videopack-wrapper');
+			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector('.viewcount') : null;
 
 			let changed = false;
 			const played = playerWrapper.dataset.played || 'not played';
 
-			if ( 'play' === event ) {
-				if ( 'not played' === played ) { // Play start
-					if ( videoVars.countable ) {
+			if ('play' === event) {
+				if ('not played' === played) { // Play start
+					if (videoVars.countable) {
 						changed = true;
 					}
 					playerWrapper.dataset.played = 'played';
-					this.sendGoogleAnalytics( videopack_l10n.playstart, videoVars.title );
+					this.sendGoogleAnalytics(videopack_l10n.playstart, videoVars.title);
 				} else { // Resume
-					this.sendGoogleAnalytics( videopack_l10n.resume, videoVars.title );
+					this.sendGoogleAnalytics(videopack_l10n.resume, videoVars.title);
 				}
-			} else if ( [ 'seek', 'pause', 'end' ].includes( event ) ) {
-				if ( 'end' === event && videoVars.countable ) {
+			} else if (['seek', 'pause', 'end'].includes(event)) {
+				if ('end' === event && videoVars.countable) {
 					changed = true;
 				}
-				this.sendGoogleAnalytics( videopack_l10n[ event ], videoVars.title );
-			} else if ( ! isNaN( event ) ) { // Quarter-play
-				if ( videoVars.countable ) {
+				this.sendGoogleAnalytics(videopack_l10n[event], videoVars.title);
+			} else if (!isNaN(event)) { // Quarter-play
+				if (videoVars.countable) {
 					changed = true;
 				}
-				this.sendGoogleAnalytics( `${ event }%`, videoVars.title );
+				this.sendGoogleAnalytics(`${event}%`, videoVars.title);
 			}
 
-			if ( changed && false !== videoVars.count_views ) {
+			if (changed && false !== videoVars.count_views) {
 				const countCondition = videoVars.count_views === 'quarters' ||
-					( videoVars.count_views === 'start_complete' && ( 'play' === event || 'end' === event ) ) ||
-					( videoVars.count_views === 'start' && 'play' === event );
+					(videoVars.count_views === 'start_complete' && ('play' === event || 'end' === event)) ||
+					(videoVars.count_views === 'start' && 'play' === event);
 
-				if ( countCondition ) {
-					fetch( `${ videopack_l10n.rest_url }videopack/v1/count-play`, {
+				if (countCondition) {
+					fetch(`${videopack_l10n.rest_url}videopack/v1/count-play`, {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
 						},
-						body: JSON.stringify( {
+						body: JSON.stringify({
 							post_id: videoVars.attachment_id,
 							video_event: event,
 							show_views: !!viewCountElement,
-						} ),
-					} )
-						.then( ( response ) => {
-							if ( ! response.ok ) {
-								throw new Error( `HTTP error! status: ${ response.status }` );
+						}),
+					})
+						.then((response) => {
+							if (!response.ok) {
+								throw new Error(`HTTP error! status: ${response.status}`);
 							}
 							return response.json();
-						} )
-						.then( ( data ) => {
-							if ( 'play' === event && data.view_count && viewCountElement ) {
+						})
+						.then((data) => {
+							if ('play' === event && data.view_count && viewCountElement) {
 								viewCountElement.innerHTML = data.view_count;
 							}
-						} )
-						.catch( ( error ) => {
-							console.error( 'Videopack REST API Error:', error );
-						} );
+						})
+						.catch((error) => {
+							console.error('Videopack REST API Error:', error);
+						});
 				}
 			}
 		},
@@ -1444,14 +802,14 @@
 		 * @param {number} time Time in seconds.
 		 * @return {string} Formatted timecode.
 		 */
-		convertToTimecode: function( time ) {
-			const minutes = Math.floor( time / 60 );
-			let seconds = Math.round( ( time - ( minutes * 60 ) ) * 100 ) / 100;
+		convertToTimecode: function (time) {
+			const minutes = Math.floor(time / 60);
+			let seconds = Math.round((time - (minutes * 60)) * 100) / 100;
 			let timeDisplay = '';
 
-			timeDisplay += minutes < 10 ? `0${ minutes }` : minutes;
+			timeDisplay += minutes < 10 ? `0${minutes}` : minutes;
 			timeDisplay += ':';
-			timeDisplay += seconds < 10 ? `0${ seconds }` : seconds;
+			timeDisplay += seconds < 10 ? `0${seconds}` : seconds;
 
 			return timeDisplay;
 		},
@@ -1463,18 +821,18 @@
 		 * @param {string} timecode Timecode string.
 		 * @return {number} Time in seconds.
 		 */
-		convertFromTimecode: function( timecode ) {
-			const timecodeArray = timecode.split( ':' ).reverse();
+		convertFromTimecode: function (timecode) {
+			const timecodeArray = timecode.split(':').reverse();
 			let totalSeconds = 0;
 
-			if ( timecodeArray[ 0 ] ) {
-				totalSeconds += parseFloat( timecodeArray[ 0 ] );
+			if (timecodeArray[0]) {
+				totalSeconds += parseFloat(timecodeArray[0]);
 			}
-			if ( timecodeArray[ 1 ] ) {
-				totalSeconds += parseFloat( timecodeArray[ 1 ] ) * 60;
+			if (timecodeArray[1]) {
+				totalSeconds += parseFloat(timecodeArray[1]) * 60;
 			}
-			if ( timecodeArray[ 2 ] ) {
-				totalSeconds += parseFloat( timecodeArray[ 2 ] ) * 3600;
+			if (timecodeArray[2]) {
+				totalSeconds += parseFloat(timecodeArray[2]) * 3600;
 			}
 
 			return totalSeconds;
@@ -1486,45 +844,45 @@
 		 * @since 5.0.0
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		toggleShare: function( playerWrapper ) {
-			const videoVars = this.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ];
-			const shareIcon = playerWrapper.querySelector( '.videopack-icons.share, .videopack-icons.close' );
-			const embedWrapper = playerWrapper.querySelector( '.share-container' );
-			const clickTrap = playerWrapper.querySelector( '.click-trap' );
+		toggleShare: function (playerWrapper) {
+			const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
+			const shareIcon = playerWrapper.querySelector('.videopack-icons.share, .videopack-icons.close');
+			const embedWrapper = playerWrapper.querySelector('.share-container');
+			const clickTrap = playerWrapper.querySelector('.click-trap');
 
-			const isShareActive = shareIcon.classList.contains( 'close' );
+			const isShareActive = shareIcon.classList.contains('close');
 
-			if ( isShareActive ) {
-				shareIcon.classList.remove( 'close' );
-				shareIcon.classList.add( 'share' );
-				embedWrapper.classList.remove( 'is-visible' );
-				clickTrap.classList.remove( 'is-visible' );
+			if (isShareActive) {
+				shareIcon.classList.remove('close');
+				shareIcon.classList.add('share');
+				embedWrapper.classList.remove('is-visible');
+				clickTrap.classList.remove('is-visible');
 			} else {
-				shareIcon.classList.remove( 'share' );
-				shareIcon.classList.add( 'close' );
-				embedWrapper.classList.add( 'is-visible' );
-				clickTrap.classList.add( 'is-visible' );
+				shareIcon.classList.remove('share');
+				shareIcon.classList.add('close');
+				embedWrapper.classList.add('is-visible');
+				clickTrap.classList.add('is-visible');
 			}
 
-			if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+			if (videoVars.player_type.startsWith('Video.js')) {
 				const playerId = playerWrapper.dataset.id;
-				const player = videojs.getPlayer( `videopack_video_${ playerId }` );
-				if ( player ) {
+				const player = videojs.getPlayer(`videopack_video_${playerId}`);
+				if (player) {
 					player.pause();
 					const controls = player.hasStarted() ? player.controlBar.el() : player.bigPlayButton.el();
-					if ( isShareActive ) {
+					if (isShareActive) {
 						controls.style.display = '';
 					} else {
 						controls.style.display = 'none';
 					}
 				}
-			} else if ( videoVars.player_type === 'WordPress Default' ) {
-				const video = playerWrapper.querySelector( 'video' );
-				if ( video ) {
+			} else if (videoVars.player_type === 'WordPress Default') {
+				const video = playerWrapper.querySelector('video');
+				if (video) {
 					video.pause();
 				}
-				const overlayButton = playerWrapper.querySelector( '.mejs-overlay-button' );
-				if ( overlayButton ) {
+				const overlayButton = playerWrapper.querySelector('.mejs-overlay-button');
+				if (overlayButton) {
 					overlayButton.style.display = overlayButton.style.display === 'none' ? '' : 'none';
 				}
 			}
@@ -1536,27 +894,27 @@
 		 * @since 5.0.0
 		 * @param {HTMLAnchorElement} downloadLink The download link element.
 		 */
-		checkDownloadLink: async function( downloadLink ) {
+		checkDownloadLink: async function (downloadLink) {
 			const url = downloadLink.href;
 			const altUrl = downloadLink.dataset.alt_link;
 
 			try {
-				const response = await fetch( url, { method: 'HEAD' } );
-				if ( ! response.ok ) {
-					throw new Error( 'Response not OK' );
+				const response = await fetch(url, { method: 'HEAD' });
+				if (!response.ok) {
+					throw new Error('Response not OK');
 				}
-				const link = document.createElement( 'a' );
+				const link = document.createElement('a');
 				link.href = url;
-				link.setAttribute( 'download', '' );
-				document.body.appendChild( link );
+				link.setAttribute('download', '');
+				document.body.appendChild(link);
 				link.click();
-				document.body.removeChild( link );
-			} catch ( error ) {
-				if ( altUrl ) {
+				document.body.removeChild(link);
+			} catch (error) {
+				if (altUrl) {
 					window.location.href = altUrl;
 				} else {
 					// Optional: handle case where direct download fails and there's no altUrl
-					console.error( 'Download failed and no alternative link available.' );
+					console.error('Download failed and no alternative link available.');
 				}
 			}
 		},
@@ -1567,29 +925,29 @@
 		 * @since 5.0.0
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		setStartAt: function( playerWrapper ) {
-			const embedWrapper = playerWrapper.querySelector( '.share-container' );
-			if ( embedWrapper.querySelector( '.videopack-start-at-enable' ).checked ) {
-				const videoVars = this.player_data[ `videopack_player_${ playerWrapper.dataset.id }` ];
+		setStartAt: function (playerWrapper) {
+			const embedWrapper = playerWrapper.querySelector('.share-container');
+			if (embedWrapper.querySelector('.videopack-start-at-enable').checked) {
+				const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
 				let currentTime = 0;
 
-				if ( videoVars.player_type.startsWith( 'Video.js' ) ) {
+				if (videoVars.player_type.startsWith('Video.js')) {
 					const playerId = playerWrapper.dataset.id;
-					const player = videojs.getPlayer( `videopack_video_${ playerId }` );
-					if ( player ) {
+					const player = videojs.getPlayer(`videopack_video_${playerId}`);
+					if (player) {
 						currentTime = player.currentTime();
 					}
-				} else if ( videoVars.player_type === 'WordPress Default' ) {
-					const video = playerWrapper.querySelector( 'video' );
-					if ( video ) {
+				} else if (videoVars.player_type === 'WordPress Default') {
+					const video = playerWrapper.querySelector('video');
+					if (video) {
 						currentTime = video.currentTime;
 					}
 				}
 
-				embedWrapper.querySelector( '.videopack-start-at' ).value = this.convertToTimecode( Math.floor( currentTime ) );
+				embedWrapper.querySelector('.videopack-start-at').value = this.convertToTimecode(Math.floor(currentTime));
 			}
 
-			this.changeStartAt( playerWrapper );
+			this.changeStartAt(playerWrapper);
 		},
 
 		/**
@@ -1598,35 +956,35 @@
 		 * @since 5.0.0
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
-		changeStartAt: function( playerWrapper ) {
-			const embedWrapper = playerWrapper.querySelector( '.share-container' );
-			const embedCodeTextarea = embedWrapper.querySelector( '.videopack-embed-code' );
+		changeStartAt: function (playerWrapper) {
+			const embedWrapper = playerWrapper.querySelector('.share-container');
+			const embedCodeTextarea = embedWrapper.querySelector('.videopack-embed-code');
 			const embedCode = embedCodeTextarea.value;
 
-			const tempDiv = document.createElement( 'div' );
+			const tempDiv = document.createElement('div');
 			tempDiv.innerHTML = embedCode;
-			const iframe = tempDiv.querySelector( 'iframe' );
-			if ( ! iframe ) {
+			const iframe = tempDiv.querySelector('iframe');
+			if (!iframe) {
 				return;
 			}
 
-			let src = iframe.getAttribute( 'src' );
-			if ( ! src ) {
+			let src = iframe.getAttribute('src');
+			if (!src) {
 				return;
 			}
 
-			src = src.replace( /&?videopack\[start\]=[^&]*/, '' );
-			src = src.replace( /\?&/, '?' ).replace( /\?$/, '' );
+			src = src.replace(/&?videopack\[start\]=[^&]*/, '');
+			src = src.replace(/\?&/, '?').replace(/\?$/, '');
 
-			if ( embedWrapper.querySelector( '.videopack-start-at-enable' ).checked ) {
-				const startTime = embedWrapper.querySelector( '.videopack-start-at' ).value;
-				if ( startTime ) {
-					const separator = src.includes( '?' ) ? '&' : '?';
-					src += `${ separator }videopack[start]=${ encodeURIComponent( startTime ) }`;
+			if (embedWrapper.querySelector('.videopack-start-at-enable').checked) {
+				const startTime = embedWrapper.querySelector('.videopack-start-at').value;
+				if (startTime) {
+					const separator = src.includes('?') ? '&' : '?';
+					src += `${separator}videopack[start]=${encodeURIComponent(startTime)}`;
 				}
 			}
 
-			iframe.setAttribute( 'src', src );
+			iframe.setAttribute('src', src);
 			embedCodeTextarea.value = iframe.outerHTML;
 		},
 
@@ -1642,106 +1000,106 @@
 		 * @since 5.0.0
 		 * @param {HTMLElement} container The container to search for gallery items.
 		 */
-		setupGalleryItemScaling: function( container ) {
-			if ( typeof ResizeObserver === 'undefined' ) {
+		setupGalleryItemScaling: function (container) {
+			if (typeof ResizeObserver === 'undefined') {
 				return;
 			}
 
-			const ro = new ResizeObserver( ( entries ) => {
-				entries.forEach( ( entry ) => {
+			const ro = new ResizeObserver((entries) => {
+				entries.forEach((entry) => {
 					const clickableArea = entry.target;
-					const button = clickableArea.querySelector( '.mejs-overlay-button' );
-					if ( button ) {
+					const button = clickableArea.querySelector('.mejs-overlay-button');
+					if (button) {
 						const containerWidth = entry.contentRect.width;
 						const desiredButtonWidth = containerWidth * 0.25;
 						const initialButtonWidth = 80;
-						const finalButtonWidth = Math.min( desiredButtonWidth, 90 );
+						const finalButtonWidth = Math.min(desiredButtonWidth, 90);
 						const scale = finalButtonWidth / initialButtonWidth;
 						button.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
 					}
-				} );
-			} );
+				});
+			});
 
-			container.querySelectorAll( '.videopack-gallery-item .gallery-item-clickable-area' ).forEach( ( area ) => {
-				if ( area.querySelector( '.mejs-overlay-button' ) ) {
-					ro.observe( area );
+			container.querySelectorAll('.videopack-gallery-item .gallery-item-clickable-area').forEach((area) => {
+				if (area.querySelector('.mejs-overlay-button')) {
+					ro.observe(area);
 				}
-			} );
+			});
 		},
 
 		/**
 		 * Initialize a single gallery.
 		 * @param {HTMLElement} galleryWrapper The gallery wrapper element.
 		 */
-		initGallery: function( galleryWrapper ) {
-			if ( galleryWrapper.dataset.videopackGalleryInitialized ) {
+		initGallery: function (galleryWrapper) {
+			if (galleryWrapper.dataset.videopackGalleryInitialized) {
 				return;
 			}
 
-			const gallerySettings = JSON.parse( galleryWrapper.dataset.gallerySettings || '{}' );
+			const gallerySettings = JSON.parse(galleryWrapper.dataset.gallerySettings || '{}');
 			// A better approach than setting data on the element would be a WeakMap, but for now this is fine.
-			galleryWrapper.dataset.gallerySettingsCache = JSON.stringify( gallerySettings );
+			galleryWrapper.dataset.gallerySettingsCache = JSON.stringify(gallerySettings);
 
 			// Store initial video data order for navigation.
 			const initialVideoOrder = [];
-			galleryWrapper.querySelectorAll( '.videopack-gallery-item' ).forEach( ( thumb ) => {
-				initialVideoOrder.push( String( thumb.dataset.attachmentId ) );
-			} );
+			galleryWrapper.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
+				initialVideoOrder.push(String(thumb.dataset.attachmentId));
+			});
 			// See above note about WeakMap.
-			galleryWrapper.dataset.currentVideosOrder = JSON.stringify( initialVideoOrder );
+			galleryWrapper.dataset.currentVideosOrder = JSON.stringify(initialVideoOrder);
 			galleryWrapper.dataset.currentPage = '1';
-			const totalPages = galleryWrapper.querySelector( '.videopack-gallery-pagination' ) ? galleryWrapper.querySelectorAll( '.videopack-page-number-div' ).length : 1;
+			const totalPages = galleryWrapper.querySelector('.videopack-gallery-pagination') ? galleryWrapper.querySelectorAll('.videopack-page-number-div').length : 1;
 			galleryWrapper.dataset.totalPages = totalPages;
 
-			this.setupGalleryItemScaling( galleryWrapper );
+			this.setupGalleryItemScaling(galleryWrapper);
 
 			// Event Listeners
-			galleryWrapper.addEventListener( 'click', ( e ) => {
-				const clickableArea = e.target.closest( '.gallery-item-clickable-area' );
-				if ( clickableArea ) {
-					this.handleGalleryThumbnailClick( e, galleryWrapper );
+			galleryWrapper.addEventListener('click', (e) => {
+				const clickableArea = e.target.closest('.gallery-item-clickable-area');
+				if (clickableArea) {
+					this.handleGalleryThumbnailClick(e, galleryWrapper);
 				}
 
-				const pageButton = e.target.closest( '.videopack-gallery-pagination button' );
-				if ( pageButton && ! pageButton.disabled ) {
-					this.handleGalleryPaginationClick( e, galleryWrapper );
+				const pageButton = e.target.closest('.videopack-gallery-pagination button');
+				if (pageButton && !pageButton.disabled) {
+					this.handleGalleryPaginationClick(e, galleryWrapper);
 				}
-			} );
+			});
 
-			const popup = galleryWrapper.querySelector( '.videopack-modal-overlay' );
-			popup.addEventListener( 'click', ( e ) => {
-				if ( e.target.matches( '.modal-close, .videopack-modal-overlay' ) ) {
-					this.closeGalleryPopup( popup );
-				} else if ( e.target.matches( '.modal-next' ) ) {
-					this.navigateGalleryPopup( 1, galleryWrapper );
-				} else if ( e.target.matches( '.modal-previous' ) ) {
-					this.navigateGalleryPopup( -1, galleryWrapper );
+			const popup = galleryWrapper.querySelector('.videopack-modal-overlay');
+			popup.addEventListener('click', (e) => {
+				if (e.target.matches('.modal-close, .videopack-modal-overlay')) {
+					this.closeGalleryPopup(popup);
+				} else if (e.target.matches('.modal-next')) {
+					this.navigateGalleryPopup(1, galleryWrapper);
+				} else if (e.target.matches('.modal-previous')) {
+					this.navigateGalleryPopup(-1, galleryWrapper);
 				}
-			} );
+			});
 
 			galleryWrapper.dataset.videopackGalleryInitialized = true;
 		},
 
-		handleGalleryThumbnailClick: function( e, galleryWrapper ) {
+		handleGalleryThumbnailClick: function (e, galleryWrapper) {
 			e.preventDefault();
-			const galleryItem = e.target.closest( '.videopack-gallery-item' );
+			const galleryItem = e.target.closest('.videopack-gallery-item');
 			const attachmentId = galleryItem.dataset.attachmentId;
-			const videoOrder = JSON.parse( galleryWrapper.dataset.currentVideosOrder );
-			const videoIndex = videoOrder.indexOf( String( attachmentId ) );
+			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
+			const videoIndex = videoOrder.indexOf(String(attachmentId));
 
-			const videoData = window.videopack.player_data && window.videopack.player_data[ `videopack_player_gallery_${ attachmentId }` ];
+			const videoData = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${attachmentId}`];
 
-			if ( videoData ) {
-				this.openGalleryPopup( videoData, galleryWrapper, videoIndex );
+			if (videoData) {
+				this.openGalleryPopup(videoData, galleryWrapper, videoIndex);
 			}
 		},
 
-		openGalleryPopup: function( videoData, galleryWrapper, videoIndex ) {
-			const popup = galleryWrapper.querySelector( '.videopack-modal-overlay' );
-			const playerContainer = popup.querySelector( '.modal-content' );
-			const gallerySettings = JSON.parse( galleryWrapper.dataset.gallerySettingsCache || '{}' );
+		openGalleryPopup: function (videoData, galleryWrapper, videoIndex) {
+			const popup = galleryWrapper.querySelector('.videopack-modal-overlay');
+			const playerContainer = popup.querySelector('.modal-content');
+			const gallerySettings = JSON.parse(galleryWrapper.dataset.gallerySettingsCache || '{}');
 			let skinClass = gallerySettings.skin || 'vjs-default-skin';
-			if ( skinClass === 'default' ) {
+			if (skinClass === 'default') {
 				skinClass = 'vjs-default-skin';
 			}
 
@@ -1751,7 +1109,7 @@
 
 			const playerId = videoData.id; // This is 'videopack_player_gallery_XXX'
 			const attachmentId = videoData.attachment_id;
-			const posterAttr = videoData.poster ? `poster="${ videoData.poster }"` : '';
+			const posterAttr = videoData.poster ? `poster="${videoData.poster}"` : '';
 
 			// Force autoplay for gallery popup.
 			videoData.autoplay = true;
@@ -1759,93 +1117,93 @@
 			// Create player HTML
 			const playerHtml = `
 				<div class="videopack-wrapper">
-					<div class="videopack-player" data-id="gallery_${ attachmentId }">
-						<video id="${ playerId }" class="videopack-video video-js ${ skinClass }" controls autoplay preload="auto" width="${ videoData.width }" height="${ videoData.height }" ${ posterAttr }>
-							${ videoData.sources.map( ( source ) => `
-								<source src="${ source.src }" type="${ source.type }" ${ source.resolution ? `data-res="${ source.resolution }"` : '' } />
-							` ).join( '' ) }
+					<div class="videopack-player" data-id="gallery_${attachmentId}">
+						<video id="${playerId}" class="videopack-video video-js ${skinClass}" controls autoplay preload="auto" width="${videoData.width}" height="${videoData.height}" ${posterAttr}>
+							${videoData.sources.map((source) => `
+								<source src="${source.src}" type="${source.type}" ${source.resolution ? `data-res="${source.resolution}"` : ''} />
+							` ).join('')}
 						</video>
 					</div>
 				</div>
 			`;
 			playerContainer.innerHTML = playerHtml;
 
-			const playerWrapper = playerContainer.querySelector( '.videopack-player' );
+			const playerWrapper = playerContainer.querySelector('.videopack-player');
 
-			if ( videoData.player_type && videoData.player_type.startsWith( 'Video.js' ) ) {
-				this.initPlayer( playerWrapper );
+			if (videoData.player_type && videoData.player_type.startsWith('Video.js')) {
+				this.initPlayer(playerWrapper);
 
-				const checkPlayer = setInterval( () => {
-					const player = videojs.getPlayer( playerId );
-					if ( player ) {
-						clearInterval( checkPlayer );
+				const checkPlayer = setInterval(() => {
+					const player = videojs.getPlayer(playerId);
+					if (player) {
+						clearInterval(checkPlayer);
 						this.currentGalleryPlayer = player;
-						player.ready( () => {
-							player.on( 'ended', () => {
-								if ( gallerySettings.gallery_end === 'next' ) {
-									this.navigateGalleryPopup( 1, galleryWrapper );
+						player.ready(() => {
+							player.on('ended', () => {
+								if (gallerySettings.gallery_end === 'next') {
+									this.navigateGalleryPopup(1, galleryWrapper);
 								}
-								if ( gallerySettings.gallery_end === 'close' ) {
-									this.closeGalleryPopup( popup );
+								if (gallerySettings.gallery_end === 'close') {
+									this.closeGalleryPopup(popup);
 								}
-							} );
-						} );
+							});
+						});
 					}
-				}, 100 );
-			} else if ( videoData.player_type === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined' ) {
-				const settings = Object.assign( {}, window._wpmejsSettings || {} );
-				settings.success = ( mediaElement, domObject, player ) => {
+				}, 100);
+			} else if (videoData.player_type === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined') {
+				const settings = Object.assign({}, window._wpmejsSettings || {});
+				settings.success = (mediaElement, domObject, player) => {
 					this.currentGalleryPlayer = player;
-					if ( ! playerWrapper.dataset.videopackInitialized ) {
-						this.setupVideo( playerWrapper, videoData );
+					if (!playerWrapper.dataset.videopackInitialized) {
+						this.setupVideo(playerWrapper, videoData);
 					}
-					mediaElement.addEventListener( 'ended', () => {
-						if ( gallerySettings.gallery_end === 'next' ) {
-							this.navigateGalleryPopup( 1, galleryWrapper );
+					mediaElement.addEventListener('ended', () => {
+						if (gallerySettings.gallery_end === 'next') {
+							this.navigateGalleryPopup(1, galleryWrapper);
 						}
-						if ( gallerySettings.gallery_end === 'close' ) {
-							this.closeGalleryPopup( popup );
+						if (gallerySettings.gallery_end === 'close') {
+							this.closeGalleryPopup(popup);
 						}
-					} );
+					});
 				};
-				new MediaElementPlayer( playerId, settings );
+				new MediaElementPlayer(playerId, settings);
 			} else {
-				this.setupVideo( playerWrapper, videoData );
-				const videoElement = document.getElementById( playerId );
-				if ( videoElement ) {
+				this.setupVideo(playerWrapper, videoData);
+				const videoElement = document.getElementById(playerId);
+				if (videoElement) {
 					this.currentGalleryPlayer = videoElement;
-					videoElement.addEventListener( 'ended', () => {
-						if ( gallerySettings.gallery_end === 'next' ) {
-							this.navigateGalleryPopup( 1, galleryWrapper );
+					videoElement.addEventListener('ended', () => {
+						if (gallerySettings.gallery_end === 'next') {
+							this.navigateGalleryPopup(1, galleryWrapper);
 						}
-						if ( gallerySettings.gallery_end === 'close' ) {
-							this.closeGalleryPopup( popup );
+						if (gallerySettings.gallery_end === 'close') {
+							this.closeGalleryPopup(popup);
 						}
-					} );
+					});
 				}
 			}
 
 			galleryWrapper.dataset.currentGalleryAttachmentId = attachmentId;
 			galleryWrapper.dataset.currentGalleryVideoIndex = videoIndex;
 
-			popup.classList.add( 'is-visible' );
+			popup.classList.add('is-visible');
 			popup.style.display = 'flex';
 
 			// Update nav buttons visibility
-			const videoOrder = JSON.parse( galleryWrapper.dataset.currentVideosOrder );
-			const totalPages = parseInt( galleryWrapper.dataset.totalPages, 10 );
-			const currentPage = parseInt( galleryWrapper.dataset.currentPage, 10 );
+			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
+			const totalPages = parseInt(galleryWrapper.dataset.totalPages, 10);
+			const currentPage = parseInt(galleryWrapper.dataset.currentPage, 10);
 
-			const prevButton = popup.querySelector( '.modal-previous' );
-			const nextButton = popup.querySelector( '.modal-next' );
+			const prevButton = popup.querySelector('.modal-previous');
+			const nextButton = popup.querySelector('.modal-next');
 
-			if ( videoIndex > 0 || currentPage > 1 ) {
+			if (videoIndex > 0 || currentPage > 1) {
 				prevButton.style.display = 'block';
 			} else {
 				prevButton.style.display = 'none';
 			}
 
-			if ( videoIndex < videoOrder.length - 1 || currentPage < totalPages ) {
+			if (videoIndex < videoOrder.length - 1 || currentPage < totalPages) {
 				nextButton.style.display = 'block';
 			} else {
 				nextButton.style.display = 'none';
@@ -1856,36 +1214,36 @@
 		 * Safely destroy the current gallery player instance.
 		 * Handles Video.js and MediaElement.js players.
 		 */
-		destroyCurrentGalleryPlayer: function() {
-			if ( ! this.currentGalleryPlayer ) {
+		destroyCurrentGalleryPlayer: function () {
+			if (!this.currentGalleryPlayer) {
 				return;
 			}
 
 			// For Video.js players
-			if ( typeof this.currentGalleryPlayer.dispose === 'function' ) {
+			if (typeof this.currentGalleryPlayer.dispose === 'function') {
 				this.currentGalleryPlayer.dispose();
-			} else if ( typeof this.currentGalleryPlayer.remove === 'function' ) {
+			} else if (typeof this.currentGalleryPlayer.remove === 'function') {
 				// For MediaElement.js players
 				try {
 					// Prevent MEJS from crashing during removal due to async resize events.
-					if ( this.currentGalleryPlayer.setPlayerSize ) {
-						this.currentGalleryPlayer.setPlayerSize = function() {};
+					if (this.currentGalleryPlayer.setPlayerSize) {
+						this.currentGalleryPlayer.setPlayerSize = function () { };
 					}
-					if ( this.currentGalleryPlayer.setControlsSize ) {
-						this.currentGalleryPlayer.setControlsSize = function() {};
+					if (this.currentGalleryPlayer.setControlsSize) {
+						this.currentGalleryPlayer.setControlsSize = function () { };
 					}
-					if ( typeof this.currentGalleryPlayer.pause === 'function' ) {
+					if (typeof this.currentGalleryPlayer.pause === 'function') {
 						this.currentGalleryPlayer.pause();
 					}
 					this.currentGalleryPlayer.remove();
-				} catch ( e ) {
+				} catch (e) {
 					// Ignore errors from MediaElement.js cleanup.
 				}
 				// Ensure player instance is removed from global registry.
-				if ( this.currentGalleryPlayer.id && window.mejs && window.mejs.players && window.mejs.players[ this.currentGalleryPlayer.id ] ) {
-					delete window.mejs.players[ this.currentGalleryPlayer.id ];
+				if (this.currentGalleryPlayer.id && window.mejs && window.mejs.players && window.mejs.players[this.currentGalleryPlayer.id]) {
+					delete window.mejs.players[this.currentGalleryPlayer.id];
 				}
-			} else if ( typeof this.currentGalleryPlayer.pause === 'function' ) {
+			} else if (typeof this.currentGalleryPlayer.pause === 'function') {
 				// Fallback for other player types
 				this.currentGalleryPlayer.pause();
 			}
@@ -1893,129 +1251,129 @@
 			this.currentGalleryPlayer = null;
 		},
 
-		closeGalleryPopup: function( popup ) {
+		closeGalleryPopup: function (popup) {
 			this.destroyCurrentGalleryPlayer();
-			popup.classList.remove( 'is-visible' );
+			popup.classList.remove('is-visible');
 			popup.style.display = 'none';
-			const content = popup.querySelector( '.modal-content' );
-			if ( content ) {
+			const content = popup.querySelector('.modal-content');
+			if (content) {
 				content.innerHTML = '';
 			}
 		},
 
-		navigateGalleryPopup: function( direction, galleryWrapper ) {
-			const currentIndex = parseInt( galleryWrapper.dataset.currentGalleryVideoIndex, 10 );
-			const videoOrder = JSON.parse( galleryWrapper.dataset.currentVideosOrder );
-			const currentPage = parseInt( galleryWrapper.dataset.currentPage, 10 );
-			const totalPages = parseInt( galleryWrapper.dataset.totalPages, 10 );
+		navigateGalleryPopup: function (direction, galleryWrapper) {
+			const currentIndex = parseInt(galleryWrapper.dataset.currentGalleryVideoIndex, 10);
+			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
+			const currentPage = parseInt(galleryWrapper.dataset.currentPage, 10);
+			const totalPages = parseInt(galleryWrapper.dataset.totalPages, 10);
 
 			let nextIndex = currentIndex + direction;
 
-			if ( nextIndex >= videoOrder.length && currentPage < totalPages ) {
+			if (nextIndex >= videoOrder.length && currentPage < totalPages) {
 				// Go to next page
-				this.loadGalleryPage( currentPage + 1, galleryWrapper, 0 ); // Load next page and open first video
-			} else if ( nextIndex < 0 && currentPage > 1 ) {
+				this.loadGalleryPage(currentPage + 1, galleryWrapper, 0); // Load next page and open first video
+			} else if (nextIndex < 0 && currentPage > 1) {
 				// Go to previous page
-				this.loadGalleryPage( currentPage - 1, galleryWrapper, -1 ); // Load prev page and open last video
-			} else if ( nextIndex >= 0 && nextIndex < videoOrder.length ) {
+				this.loadGalleryPage(currentPage - 1, galleryWrapper, -1); // Load prev page and open last video
+			} else if (nextIndex >= 0 && nextIndex < videoOrder.length) {
 				// Navigate within the current page
-				const nextAttachmentId = videoOrder[ nextIndex ];
-				const nextVideoData = window.videopack.player_data && window.videopack.player_data[ `videopack_player_gallery_${ nextAttachmentId }` ];
+				const nextAttachmentId = videoOrder[nextIndex];
+				const nextVideoData = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${nextAttachmentId}`];
 
-				if ( nextVideoData ) {
-					this.openGalleryPopup( nextVideoData, galleryWrapper, nextIndex );
+				if (nextVideoData) {
+					this.openGalleryPopup(nextVideoData, galleryWrapper, nextIndex);
 				}
 			} else {
 				// This case handles wrapping on single-page galleries or at the ends of a multi-page gallery
-				if ( nextIndex < 0 ) {
+				if (nextIndex < 0) {
 					nextIndex = videoOrder.length - 1;
-				} else if ( nextIndex >= videoOrder.length ) {
+				} else if (nextIndex >= videoOrder.length) {
 					nextIndex = 0;
 				}
-				const nextAttachmentId = videoOrder[ nextIndex ];
-				const nextVideoData = window.videopack.player_data && window.videopack.player_data[ `videopack_player_gallery_${ nextAttachmentId }` ];
+				const nextAttachmentId = videoOrder[nextIndex];
+				const nextVideoData = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${nextAttachmentId}`];
 
-				if ( nextVideoData ) {
-					this.openGalleryPopup( nextVideoData, galleryWrapper, nextIndex );
+				if (nextVideoData) {
+					this.openGalleryPopup(nextVideoData, galleryWrapper, nextIndex);
 				}
 			}
 		},
 
-		handleGalleryPaginationClick: function( e, galleryWrapper ) {
+		handleGalleryPaginationClick: function (e, galleryWrapper) {
 			e.preventDefault();
-			const page = e.target.closest( 'button' ).dataset.page;
-			this.loadGalleryPage( page, galleryWrapper );
+			const page = e.target.closest('button').dataset.page;
+			this.loadGalleryPage(page, galleryWrapper);
 		},
 
-		loadGalleryPage: function( page, galleryWrapper, openVideoAtIndex = null ) {
-			const gallerySettings = JSON.parse( galleryWrapper.dataset.gallerySettingsCache );
-			const grid = galleryWrapper.querySelector( '.videopack-gallery-items' );
-			const pagination = galleryWrapper.querySelector( '.videopack-gallery-pagination' );
+		loadGalleryPage: function (page, galleryWrapper, openVideoAtIndex = null) {
+			const gallerySettings = JSON.parse(galleryWrapper.dataset.gallerySettingsCache);
+			const grid = galleryWrapper.querySelector('.videopack-gallery-items');
+			const pagination = galleryWrapper.querySelector('.videopack-gallery-pagination');
 
 			grid.style.opacity = 0.5; // Loading indicator
 
-			const restUrl = new URL( videopack_l10n.rest_url + 'videopack/v1/video_gallery' );
+			const restUrl = new URL(videopack_l10n.rest_url + 'videopack/v1/video_gallery');
 
 			// Append gallery settings and page to URL params
-			Object.keys( gallerySettings ).forEach( ( key ) => {
-				if ( gallerySettings[ key ] !== null && gallerySettings[ key ] !== false && gallerySettings[ key ] !== '' ) {
-					restUrl.searchParams.append( key, gallerySettings[ key ] );
+			Object.keys(gallerySettings).forEach((key) => {
+				if (gallerySettings[key] !== null && gallerySettings[key] !== false && gallerySettings[key] !== '') {
+					restUrl.searchParams.append(key, gallerySettings[key]);
 				}
-			} );
-			restUrl.searchParams.append( 'page_number', page );
+			});
+			restUrl.searchParams.append('page_number', page);
 
-			fetch( restUrl )
-				.then( ( response ) => response.json() )
-				.then( ( data ) => {
-					if ( data && data.videos ) {
+			fetch(restUrl)
+				.then((response) => response.json())
+				.then((data) => {
+					if (data && data.videos) {
 						// Update caches
 						const newVideoOrder = [];
-						data.videos.forEach( ( video ) => {
+						data.videos.forEach((video) => {
 							// Add data to global object for initPlayer
-							window.videopack.player_data[ video.player_vars.id ] = video.player_vars;
-							newVideoOrder.push( String( video.attachment_id ) );
-						} );
-						galleryWrapper.dataset.currentVideosOrder = JSON.stringify( newVideoOrder );
+							window.videopack.player_data[video.player_vars.id] = video.player_vars;
+							newVideoOrder.push(String(video.attachment_id));
+						});
+						galleryWrapper.dataset.currentVideosOrder = JSON.stringify(newVideoOrder);
 						galleryWrapper.dataset.currentPage = data.current_page;
 						galleryWrapper.dataset.totalPages = data.max_num_pages;
 
 						// Render new content
-						this.renderGalleryThumbnails( data.videos, grid, gallerySettings );
-						this.renderGalleryPagination( data.max_num_pages, data.current_page, pagination );
+						this.renderGalleryThumbnails(data.videos, grid, gallerySettings);
+						this.renderGalleryPagination(data.max_num_pages, data.current_page, pagination);
 
-						this.setupGalleryItemScaling( grid );
+						this.setupGalleryItemScaling(grid);
 
-						if ( openVideoAtIndex !== null ) {
+						if (openVideoAtIndex !== null) {
 							let indexToOpen = openVideoAtIndex;
-							if ( indexToOpen === -1 ) { // -1 means open the last one
+							if (indexToOpen === -1) { // -1 means open the last one
 								indexToOpen = data.videos.length - 1;
 							}
-							const videoToOpen = data.videos[ indexToOpen ];
-							if ( videoToOpen ) {
-								this.openGalleryPopup( videoToOpen.player_vars, galleryWrapper, indexToOpen );
+							const videoToOpen = data.videos[indexToOpen];
+							if (videoToOpen) {
+								this.openGalleryPopup(videoToOpen.player_vars, galleryWrapper, indexToOpen);
 							}
 						}
 					}
 					grid.style.opacity = 1;
-				} )
-				.catch( ( error ) => {
-					console.error( 'Error loading gallery page:', error );
+				})
+				.catch((error) => {
+					console.error('Error loading gallery page:', error);
 					grid.style.opacity = 1;
-				} );
+				});
 		},
 
-		renderGalleryThumbnails: function( videos, grid, settings ) {
+		renderGalleryThumbnails: function (videos, grid, settings) {
 			grid.innerHTML = '';
 			let html = '';
-			videos.forEach( ( video ) => {
+			videos.forEach((video) => {
 				html += `
-					<div class="gallery-thumbnail videopack-gallery-item ${ settings.skin || '' }" data-attachment-id="${ video.attachment_id }">
+					<div class="gallery-thumbnail videopack-gallery-item ${settings.skin || ''}" data-attachment-id="${video.attachment_id}">
 						<div class="gallery-item-clickable-area">
-							<img src="${ video.poster_url }"
-								 ${ video.poster_srcset ? `srcset="${ video.poster_srcset }"` : '' }
-								 alt="${ video.title }">
+							<img src="${video.poster_url}"
+								 ${video.poster_srcset ? `srcset="${video.poster_srcset}"` : ''}
+								 alt="${video.title}">
 				`;
-				if ( settings.embed_method === 'WordPress Default' ) {
+				if (settings.embed_method === 'WordPress Default') {
 					html += `
 						<div class="mejs-overlay mejs-layer mejs-overlay-play">
 							<div class="mejs-overlay-button" role="button" tabindex="0" aria-label="Play" aria-pressed="false"></div>
@@ -2023,7 +1381,7 @@
 					`;
 				} else {
 					html += `
-						<div class="play-button-container video-js ${ settings.skin || 'kg-video-js-skin' } vjs-big-play-centered vjs-paused vjs-controls-enabled">
+						<div class="play-button-container video-js ${settings.skin || 'kg-video-js-skin'} vjs-big-play-centered vjs-paused vjs-controls-enabled">
 							<button class="vjs-big-play-button" type="button" title="Play Video" aria-disabled="false">
 								<span class="vjs-icon-placeholder" aria-hidden="true"></span>
 								<span class="vjs-control-text" aria-live="polite">Play Video</span>
@@ -2032,52 +1390,52 @@
 					`;
 				}
 				html += `
-							${ settings.gallery_title ? `
+							${settings.gallery_title ? `
 								<div class="video-title">
 									<div class="video-title-background"></div>
-									<span class="video-title-text">${ video.title }</span>
+									<span class="video-title-text">${video.title}</span>
 								</div>
-							` : '' }
+							` : ''}
 						</div>
 					</div>
 				`;
-			} );
+			});
 			grid.innerHTML = html;
 		},
 
-		renderGalleryPagination: function( maxPages, currentPage, pagination ) {
+		renderGalleryPagination: function (maxPages, currentPage, pagination) {
 			pagination.innerHTML = '';
-			if ( maxPages <= 1 ) {
+			if (maxPages <= 1) {
 				return;
 			}
 			let html = `
 				<button
-					class="videopack-pagination-arrow${ currentPage > 1 ? '' : ' videopack-hidden' }"
-					data-page="${ currentPage - 1 }"
+					class="videopack-pagination-arrow${currentPage > 1 ? '' : ' videopack-hidden'}"
+					data-page="${currentPage - 1}"
 				>
 					<span>&laquo;</span>
 				</button>
 			`;
-			for ( let i = 1; i <= maxPages; i++ ) {
+			for (let i = 1; i <= maxPages; i++) {
 				html += `
 					<div class="videopack-page-number-div">
 						<button
-							data-page="${ i }"
-							class="videopack-page-number${ i === currentPage ? ' current-page' : '' }"
-							${ i === currentPage ? 'disabled' : '' }
+							data-page="${i}"
+							class="videopack-page-number${i === currentPage ? ' current-page' : ''}"
+							${i === currentPage ? 'disabled' : ''}
 						>
-							<span>${ i }</span>
+							<span>${i}</span>
 						</button>
 						<span class="videopack-pagination-separator">
-							${ i === maxPages ? '' : '|' }
+							${i === maxPages ? '' : '|'}
 						</span>
 					</div>
 				`;
 			}
 			html += `
 				<button
-					class="videopack-pagination-arrow${ currentPage < maxPages ? '' : ' videopack-hidden' }"
-					data-page="${ currentPage + 1 }"
+					class="videopack-pagination-arrow${currentPage < maxPages ? '' : ' videopack-hidden'}"
+					data-page="${currentPage + 1}"
 				>
 					<span>&raquo;</span>
 				</button>
@@ -2088,7 +1446,7 @@
 	};
 
 	// Expose the videopack object to the global scope, merging with any existing properties (like player_data).
-	window.videopack = Object.assign( window.videopack || {}, videopack_obj );
+	window.videopack = Object.assign(window.videopack || {}, videopack_obj);
 
-	document.addEventListener( 'DOMContentLoaded', () => window.videopack.init() );
-}() );
+	document.addEventListener('DOMContentLoaded', () => window.videopack.init());
+}());
