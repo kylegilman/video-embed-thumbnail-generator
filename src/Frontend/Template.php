@@ -54,11 +54,10 @@ class Template {
 
 		$post = get_post();
 
-		if ( $this->options['template'] === 'gentle'
-			&& isset( $post )
+		if ( isset( $post )
 			&& strpos( $post->post_mime_type, 'video' ) !== false
 		) {
-			$kgvid_video_embed = array(); // no query set
+			$kgvid_video_embed = array(); // No query set.
 			$content           = ( new Shortcode( $this->options_manager ) )->generate_attachment_shortcode( $kgvid_video_embed );
 			$content          .= '<p>' . $post->post_content . '</p>';
 		}
@@ -70,18 +69,11 @@ class Template {
 		$kgvid_video_embed = get_query_var( 'videopack' ) ? get_query_var( 'videopack' ) : get_query_var( 'kgvid_video_embed' );
 		$kgvid_video_embed = is_array( $kgvid_video_embed ) ? $kgvid_video_embed : array( 'enable' => $kgvid_video_embed );
 
-		// Default values
+		// Default values.
 		$kgvid_video_embed += array(
-			'enable'   => $this->options['template'] === 'old' ? 'true' : 'false',
+			'enable'   => 'false',
 			'download' => 'false',
 		);
-
-		// Update enable condition
-		if ( $this->options['embeddable'] === false &&
-			! array_key_exists( 'sample', $kgvid_video_embed ) &&
-			! array_key_exists( 'gallery', $kgvid_video_embed ) ) {
-			$kgvid_video_embed['enable'] = 'false';
-		}
 
 		$post     = get_post();
 		$is_video = is_attachment()
