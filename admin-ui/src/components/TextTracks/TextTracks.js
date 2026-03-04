@@ -44,17 +44,28 @@ const TextTracks = ({ tracks = [], onChange }) => {
 	};
 
 	return (
-		<PanelBody title={__('Text Tracks', 'video-embed-thumbnail-generator')} initialOpen={false}>
+		<PanelBody
+			title={__('Text Tracks', 'video-embed-thumbnail-generator')}
+			initialOpen={false}
+		>
 			<div className="videopack-text-tracks-list">
 				{tracks.map((track, index) => (
 					<div key={index} className="videopack-text-track-item">
 						<div className="videopack-text-track-header">
 							<span className="videopack-text-track-label">
-								{track.label || track.src.split('/').pop() || __('Untitled Track', 'video-embed-thumbnail-generator')}
+								{track.label ||
+									track.src.split('/').pop() ||
+									__(
+										'Untitled Track',
+										'video-embed-thumbnail-generator'
+									)}
 							</span>
 							<Button
 								icon={close}
-								label={__('Remove Track', 'video-embed-thumbnail-generator')}
+								label={__(
+									'Remove Track',
+									'video-embed-thumbnail-generator'
+								)}
 								onClick={() => removeTrack(index)}
 								isDestructive
 								className="videopack-remove-track"
@@ -63,53 +74,112 @@ const TextTracks = ({ tracks = [], onChange }) => {
 						<div className="videopack-text-track-settings">
 							<div className="videopack-text-track-settings-row">
 								<TextControl
-									label={__('Source URL', 'video-embed-thumbnail-generator')}
+									label={__(
+										'Source URL',
+										'video-embed-thumbnail-generator'
+									)}
 									value={track.src}
-									onChange={(value) => updateTrack(index, { src: value })}
+									onChange={(value) =>
+										updateTrack(index, { src: value })
+									}
 									__nextHasNoMarginBottom
 								/>
 							</div>
 							<div className="videopack-text-track-settings-row videopack-text-track-settings-row-split">
 								<SelectControl
-									label={__('Kind', 'video-embed-thumbnail-generator')}
+									label={__(
+										'Kind',
+										'video-embed-thumbnail-generator'
+									)}
 									value={track.kind}
 									options={[
-										{ label: __('Subtitles', 'video-embed-thumbnail-generator'), value: 'subtitles' },
-										{ label: __('Captions', 'video-embed-thumbnail-generator'), value: 'captions' },
-										{ label: __('Descriptions', 'video-embed-thumbnail-generator'), value: 'descriptions' },
-										{ label: __('Chapters', 'video-embed-thumbnail-generator'), value: 'chapters' },
-										{ label: __('Metadata', 'video-embed-thumbnail-generator'), value: 'metadata' },
+										{
+											label: __(
+												'Subtitles',
+												'video-embed-thumbnail-generator'
+											),
+											value: 'subtitles',
+										},
+										{
+											label: __(
+												'Captions',
+												'video-embed-thumbnail-generator'
+											),
+											value: 'captions',
+										},
+										{
+											label: __(
+												'Descriptions',
+												'video-embed-thumbnail-generator'
+											),
+											value: 'descriptions',
+										},
+										{
+											label: __(
+												'Chapters',
+												'video-embed-thumbnail-generator'
+											),
+											value: 'chapters',
+										},
+										{
+											label: __(
+												'Metadata',
+												'video-embed-thumbnail-generator'
+											),
+											value: 'metadata',
+										},
 									]}
-									onChange={(value) => updateTrack(index, { kind: value })}
+									onChange={(value) =>
+										updateTrack(index, { kind: value })
+									}
 									__nextHasNoMarginBottom
 								/>
 								<TextControl
-									label={__('Language', 'video-embed-thumbnail-generator')}
+									label={__(
+										'Language',
+										'video-embed-thumbnail-generator'
+									)}
 									value={track.srclang}
-									onChange={(value) => updateTrack(index, { srclang: value })}
+									onChange={(value) =>
+										updateTrack(index, { srclang: value })
+									}
 									placeholder="en"
 									__nextHasNoMarginBottom
 								/>
 							</div>
 							<div className="videopack-text-track-settings-row">
 								<TextControl
-									label={__('Label', 'video-embed-thumbnail-generator')}
+									label={__(
+										'Label',
+										'video-embed-thumbnail-generator'
+									)}
 									value={track.label}
-									onChange={(value) => updateTrack(index, { label: value })}
-									placeholder={__('e.g. English Subtitles', 'video-embed-thumbnail-generator')}
+									onChange={(value) =>
+										updateTrack(index, { label: value })
+									}
+									placeholder={__(
+										'e.g. English Subtitles',
+										'video-embed-thumbnail-generator'
+									)}
 									__nextHasNoMarginBottom
 								/>
 							</div>
 							<PanelRow>
 								<ToggleControl
-									label={__('Default', 'video-embed-thumbnail-generator')}
+									label={__(
+										'Default',
+										'video-embed-thumbnail-generator'
+									)}
 									checked={track.default}
 									onChange={(value) => {
 										// If setting to true, uncheck others (only one default per track set)
-										const newTracks = tracks.map((t, i) => ({
-											...t,
-											default: i === index ? value : false,
-										}));
+										const newTracks = tracks.map(
+											(t, i) => ({
+												...t,
+												default:
+													i === index ? value : false,
+											})
+										);
 										onChange(newTracks);
 									}}
 									__nextHasNoMarginBottom
@@ -125,18 +195,25 @@ const TextTracks = ({ tracks = [], onChange }) => {
 					onSelect={handleMediaSelect}
 					allowedTypes={['text/vtt', 'application/vtt', 'text/plain']} // VTT files often detected as text/plain
 					render={({ open }) => (
-						<Button
-							variant="secondary"
-							icon={plus}
-							onClick={open}
-						>
-							{__('Add from Library', 'video-embed-thumbnail-generator')}
+						<Button variant="secondary" icon={plus} onClick={open}>
+							{__(
+								'Add from Library',
+								'video-embed-thumbnail-generator'
+							)}
 						</Button>
 					)}
 				/>
 				<Button
 					variant="tertiary"
-					onClick={() => addTrack({ src: '', kind: 'subtitles', srclang: '', label: '', default: false })}
+					onClick={() =>
+						addTrack({
+							src: '',
+							kind: 'subtitles',
+							srclang: '',
+							label: '',
+							default: false,
+						})
+					}
 				>
 					{__('Add URL', 'video-embed-thumbnail-generator')}
 				</Button>

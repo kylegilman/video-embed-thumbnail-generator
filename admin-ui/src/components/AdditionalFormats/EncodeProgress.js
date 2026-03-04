@@ -43,21 +43,25 @@ const EncodeProgress = ({ formatData, onCancelJob, deleteInProgress }) => {
 						size="small"
 						isBusy={deleteInProgress === formatData.job_id}
 					>
-						{__( 'Cancel', 'video-embed-thumbnail-generator' )}
+						{__('Cancel', 'video-embed-thumbnail-generator')}
 					</Button>
 				)}
 				<div className="videopack-encode-progress-small-text">
 					<span>
-						{__( 'Elapsed:', 'video-embed-thumbnail-generator' ) +
+						{__('Elapsed:', 'video-embed-thumbnail-generator') +
 							' ' +
 							convertToTimecode(formatData.progress.elapsed)}
 					</span>
 					<span>
-						{__( 'Remaining:', 'video-embed-thumbnail-generator' ) +
+						{__('Remaining:', 'video-embed-thumbnail-generator') +
 							' ' +
 							convertToTimecode(formatData.progress.remaining)}
 					</span>
-					<span>{__( 'fps:', 'video-embed-thumbnail-generator' ) + ' ' + formatData.progress.fps}</span>
+					<span>
+						{__('fps:', 'video-embed-thumbnail-generator') +
+							' ' +
+							formatData.progress.fps}
+					</span>
 				</div>
 			</div>
 		);
@@ -66,12 +70,18 @@ const EncodeProgress = ({ formatData, onCancelJob, deleteInProgress }) => {
 	if (formatData?.status === 'failed' && formatData?.error_message) {
 		return (
 			<div className="videopack-encode-error">
-				{sprintf(__( 'Error: %s', 'video-embed-thumbnail-generator' ), formatData.error_message)}
+				{sprintf(
+					__('Error: %s', 'video-embed-thumbnail-generator'),
+					formatData.error_message
+				)}
 				{formatData.job_id && (
 					<Button
 						onClick={() => onCancelJob(formatData.job_id)}
 						variant="link"
-						text={__( 'Delete Job', 'video-embed-thumbnail-generator' )}
+						text={__(
+							'Delete Job',
+							'video-embed-thumbnail-generator'
+						)}
 						isDestructive
 						isBusy={deleteInProgress === formatData.job_id}
 					/>

@@ -54,7 +54,7 @@ const VideoListItem = ({
 					<button
 						className="videopack-edit-item"
 						onClick={() => onEdit(video)}
-						title={__( 'Edit', 'video-embed-thumbnail-generator' )}
+						title={__('Edit', 'video-embed-thumbnail-generator')}
 						type="button"
 					>
 						<Icon icon={pencil} />
@@ -62,10 +62,7 @@ const VideoListItem = ({
 					<button
 						className="videopack-remove-item"
 						onClick={() => onRemove(video.attachment_id)}
-						title={__(
-							'Remove',
-							'video-embed-thumbnail-generator'
-						)}
+						title={__('Remove', 'video-embed-thumbnail-generator')}
 						type="button"
 					>
 						<Icon icon={close} />

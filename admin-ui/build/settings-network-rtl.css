@@ -1,0 +1,40 @@
+/*!****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/settings-network/settings-network.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************/
+.videopack-settings-network {
+  padding: 20px;
+}
+.videopack-settings-network h1 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.videopack-settings-network .videopack-settings-icon {
+  vertical-align: text-bottom;
+  margin-left: 10px;
+}
+.videopack-settings-network .videopack-settings-slider {
+  margin-bottom: 20px;
+}
+.videopack-settings-network .videopack-setting-auto-width .components-base-control {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+.videopack-settings-network .components-base-control.components-toggle-control,
+.videopack-settings-network .videopack-component-margin {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.videopack-settings-network .components-base-control.components-checkbox-control {
+  margin-bottom: 3px;
+}
+.videopack-settings-network button.components-button.videopack-settings-reset.is-primary {
+  margin: 0px 10px 10px 10px;
+}
+.components-tooltip {
+  color: black;
+  white-space: normal;
+  max-width: 400px;
+  background: var(--wp--preset--color--accent-5);
+  box-shadow: -2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}

@@ -1,5 +1,5 @@
 #wpwrap {
-    font-size: small;
+	font-size: small;
 }
 
 .wrap.videopack-settings {
@@ -30,7 +30,11 @@
 	}
 
 	.videopack-flex-right {
-    	justify-content: flex-end;
+		justify-content: flex-end;
+	}
+
+	.videopack-flex-align-center .components-flex {
+		align-items: center;
 	}
 
 	.videopack-library-button {
@@ -46,9 +50,32 @@
 		width: 225px;
 	}
 
-	.videopack-tooltip svg {
-		margin-left: 5px;
-		margin-bottom: 5px;
+	.videopack-label-with-tooltip {
+		display: inline-flex;
+		align-items: center;
+
+		svg {
+			margin-left: 5px;
+			margin-bottom: 0;
+		}
+	}
+
+	.videopack-tooltip {
+		line-height: 1;
+		position: relative;
+		z-index: 10;
+		pointer-events: auto;
+
+		svg {
+			margin-left: 5px;
+		}
+	}
+
+	.components-text-control__input:disabled {
+		background: rgba(255, 255, 255, .5);
+		border-color: rgba(220, 220, 222, .75);
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, .04);
+		color: rgba(44, 51, 56, .5);
 	}
 
 	.videopack-settings-slider {
@@ -69,7 +96,7 @@
 
 		.videopack-bitrate-grid {
 			display: grid;
-			grid-template-columns: repeat( auto-fill, minmax( 120px, 1fr ) );
+			grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 			gap: 2px;
 			margin-top: 5px;
 			margin-bottom: 20px;
@@ -79,7 +106,9 @@
 	.components-flex {
 		align-items: flex-start;
 	}
-	.components-base-control.components-toggle-control, .videopack-component-margin {
+
+	.components-base-control.components-toggle-control,
+	.videopack-component-margin {
 		margin-top: 10px;
 		margin-bottom: 10px;
 	}
@@ -126,7 +155,7 @@
 
 	.videopack-vertical-center .components-form-toggle {
 		margin-top: auto;
-    	margin-bottom: auto;
+		margin-bottom: auto;
 	}
 
 	.components-base-control.videopack-setting-auto-thumb {
@@ -234,8 +263,8 @@
 		}
 
 		button.components-button.is-secondary.has-icon {
-    		box-shadow: none;
-    		border: 1px solid #8c8f94;
+			box-shadow: none;
+			border: 1px solid #8c8f94;
 		}
 	}
 
@@ -274,20 +303,43 @@
 			background-color: #fff;
 			border: 1px solid #000;
 			z-index: 10;
-			&.nw { top: -5px; left: -5px; cursor: nw-resize; }
-			&.ne { top: -5px; right: -5px; cursor: ne-resize; }
-			&.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-			&.se { bottom: -5px; right: -5px; cursor: se-resize; }
+
+			&.nw {
+				top: -5px;
+				left: -5px;
+				cursor: nw-resize;
+			}
+
+			&.ne {
+				top: -5px;
+				right: -5px;
+				cursor: ne-resize;
+			}
+
+			&.sw {
+				bottom: -5px;
+				left: -5px;
+				cursor: sw-resize;
+			}
+
+			&.se {
+				bottom: -5px;
+				right: -5px;
+				cursor: se-resize;
+			}
 		}
 	}
 
 	.videopack-control-with-tooltip {
 		margin-top: 10px;
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
+		flex-wrap: wrap;
 
 		.components-base-control {
 			margin-right: 5px;
+			margin-top: 0;
+			margin-bottom: 0;
 		}
 	}
 

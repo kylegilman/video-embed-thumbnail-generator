@@ -3,9 +3,11 @@
   \********************************************************************************************************************************************************************************************************************************************************************/
 .wp-block-videopack-videopack-video {
   width: var(--wp--style--global--content-size);
+  max-width: 100%;
 }
 .wp-block-videopack-videopack-video.alignwide {
   width: var(--wp--style--global--wide-size);
+  max-width: 100%;
 }
 .wp-block-videopack-videopack-video.alignfull {
   width: auto;
@@ -127,7 +129,8 @@
 }
 .videopack-wrapper .videopack-watermark a {
   display: block;
-  position: inherit !important; /* Maintain link behavior */
+  position: inherit !important;
+  /* Maintain link behavior */
 }
 .videopack-wrapper {
   /* Ensure controls are above the watermark */
@@ -136,6 +139,9 @@
 .videopack-wrapper .mejs-controls,
 .videopack-wrapper video::-webkit-media-controls-panel {
   z-index: 2;
+}
+.videopack-wrapper .videopack-no-controls .mejs-controls {
+  display: none !important;
 }
 .videopack-wrapper .videopack-title {
   font-size: 10pt;
@@ -188,7 +194,8 @@
 }
 .videopack-wrapper .vjs-res-button :before {
   font-family: VideoJs;
-  content: "\f114"; /* Gear icon */
+  content: "\f114";
+  /* Gear icon */
 }
 .videopack-wrapper .vjs-res-button span.vjs-control-text {
   display: none;
@@ -214,7 +221,8 @@
   bottom: 0;
   margin-right: 0.2em;
   margin-bottom: 0;
-  background-color: #2B333F; /* Fallback */
+  background-color: #2B333F;
+  /* Fallback */
   background-color: var(--vjs-menu-background, #2B333F);
   min-width: 8em;
   border-radius: 0.3em;
@@ -1062,6 +1070,10 @@
   justify-content: flex-end;
 }
 
+.wrap.videopack-settings .videopack-flex-align-center .components-flex {
+  align-items: center;
+}
+
 .wrap.videopack-settings .videopack-library-button {
   margin-right: 20px;
   vertical-align: text-bottom;
@@ -1075,9 +1087,32 @@
   width: 225px;
 }
 
+.wrap.videopack-settings .videopack-label-with-tooltip {
+  display: inline-flex;
+  align-items: center;
+}
+
+.wrap.videopack-settings .videopack-label-with-tooltip svg {
+  margin-right: 5px;
+  margin-bottom: 0;
+}
+
+.wrap.videopack-settings .videopack-tooltip {
+  line-height: 1;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
 .wrap.videopack-settings .videopack-tooltip svg {
   margin-right: 5px;
-  margin-bottom: 5px;
+}
+
+.wrap.videopack-settings .components-text-control__input:disabled {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(220, 220, 222, 0.75);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: rgba(44, 51, 56, 0.5);
 }
 
 .wrap.videopack-settings .videopack-settings-slider {
@@ -1106,7 +1141,8 @@
   align-items: flex-start;
 }
 
-.wrap.videopack-settings .components-base-control.components-toggle-control, .wrap.videopack-settings .videopack-component-margin {
+.wrap.videopack-settings .components-base-control.components-toggle-control,
+.wrap.videopack-settings .videopack-component-margin {
   margin-top: 10px;
   margin-bottom: 10px;
 }
@@ -1323,11 +1359,14 @@
 .wrap.videopack-settings .videopack-control-with-tooltip {
   margin-top: 10px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .wrap.videopack-settings .videopack-control-with-tooltip .components-base-control {
   margin-left: 5px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .components-tooltip {

@@ -140,7 +140,10 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						type="text"
 						value={
 							Number(collection_video_limit) === -1
-								? __('No limit', 'video-embed-thumbnail-generator')
+								? __(
+										'No limit',
+										'video-embed-thumbnail-generator'
+									)
 								: collection_video_limit
 						}
 						onChange={(value) => {

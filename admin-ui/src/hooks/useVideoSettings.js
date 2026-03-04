@@ -44,8 +44,11 @@ const useVideoSettings = (attributes, setAttributes) => {
 	};
 
 	const preloadOptions = [
-		{ value: 'auto', label: __( 'Auto', 'video-embed-thumbnail-generator' ) },
-		{ value: 'metadata', label: __( 'Metadata', 'video-embed-thumbnail-generator' ) },
+		{ value: 'auto', label: __('Auto', 'video-embed-thumbnail-generator') },
+		{
+			value: 'metadata',
+			label: __('Metadata', 'video-embed-thumbnail-generator'),
+		},
 		{ value: 'none', label: _x('None', 'Preload value') },
 	];
 

@@ -1464,6 +1464,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
+/* harmony export */   getNetworkSettings: () => (/* binding */ getNetworkSettings),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
 /* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
@@ -1471,8 +1472,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
+/* harmony export */   resetNetworkSettings: () => (/* binding */ resetNetworkSettings),
 /* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
+/* harmony export */   saveNetworkSettings: () => (/* binding */ saveNetworkSettings),
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
 /* harmony export */   setPosterImage: () => (/* binding */ setPosterImage),
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
@@ -1486,6 +1489,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__);
+/* global videopack_config */
 
 
 
@@ -1701,8 +1705,12 @@ const getUsersWithCapability = async capability => {
 };
 const getFreemiusPage = async page => {
   try {
+    let path = `/videopack/v1/freemius/${page}`;
+    if (videopack_config.isNetworkAdmin || videopack_config.isNetworkActive) {
+      path += '?_fs_network_admin=true';
+    }
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/freemius/${page}`
+      path
     });
   } catch (error) {
     console.error(`Error fetching Freemius page '${page}':`, error);
@@ -1751,6 +1759,38 @@ const saveWPSettings = async newSettings => {
     return response.videopack_options || {};
   } catch (error) {
     console.error('Error saving WP settings:', error);
+    throw error;
+  }
+};
+const getNetworkSettings = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/network/settings'
+    });
+  } catch (error) {
+    console.error('Error fetching network settings:', error);
+    throw error;
+  }
+};
+const saveNetworkSettings = async newSettings => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/network/settings',
+      method: 'POST',
+      data: newSettings
+    });
+  } catch (error) {
+    console.error('Error saving network settings:', error);
+    throw error;
+  }
+};
+const resetNetworkSettings = async () => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/network/settings/defaults'
+    });
+  } catch (error) {
+    console.error('Error resetting network settings:', error);
     throw error;
   }
 };

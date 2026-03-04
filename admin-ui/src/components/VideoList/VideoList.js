@@ -117,7 +117,10 @@ const VideoList = ({
 				setListVideos(response.videos);
 			})
 			.catch((error) => {
-				if (error.status === 404 || (error.data && error.data.status === 404)) {
+				if (
+					error.status === 404 ||
+					(error.data && error.data.status === 404)
+				) {
 					setTotalPages(0);
 					setListVideos([]);
 				} else {
@@ -174,7 +177,11 @@ const VideoList = ({
 		});
 
 		frame.on('select', () => {
-			const newAttachment = frame.state().get('selection').first().toJSON();
+			const newAttachment = frame
+				.state()
+				.get('selection')
+				.first()
+				.toJSON();
 			if (video.attachment_id === newAttachment.id) {
 				setRefreshTrigger((v) => v + 1);
 				return;
@@ -205,9 +212,7 @@ const VideoList = ({
 						<button
 							onClick={() => setListPage(pageNumber)}
 							className={`videopack-page-number${
-								pageNumber === listPage
-									? ' current-page'
-									: ''
+								pageNumber === listPage ? ' current-page' : ''
 							}`}
 							disabled={pageNumber === listPage}
 						>
@@ -246,7 +251,9 @@ const VideoList = ({
 						onDragEnd={handleDragEnd}
 					>
 						<SortableContext
-							items={listVideos.map((video) => video.attachment_id)}
+							items={listVideos.map(
+								(video) => video.attachment_id
+							)}
 							strategy={verticalListSortingStrategy}
 						>
 							{listVideos.map((video) => (
@@ -267,8 +274,14 @@ const VideoList = ({
 					isEditing && (
 						<Placeholder
 							icon="format-video"
-							label={__( 'No videos found', 'video-embed-thumbnail-generator' )}
-							instructions={__( 'Try adjusting your query settings.', 'video-embed-thumbnail-generator' )}
+							label={__(
+								'No videos found',
+								'video-embed-thumbnail-generator'
+							)}
+							instructions={__(
+								'Try adjusting your query settings.',
+								'video-embed-thumbnail-generator'
+							)}
 						/>
 					)
 				)}

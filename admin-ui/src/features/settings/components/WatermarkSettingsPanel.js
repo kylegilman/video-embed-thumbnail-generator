@@ -20,6 +20,7 @@ const WatermarkSettingsPanel = ({
 	initialOpen = false,
 	opened,
 	children,
+	disabled = false,
 }) => {
 	const [baseFrame, setBaseFrame] = useState(null);
 	const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
@@ -79,6 +80,7 @@ const WatermarkSettingsPanel = ({
 							: { url }
 					)
 				}
+				disabled={disabled}
 			/>
 			{children}
 			{watermarkSettings?.url && (
@@ -109,6 +111,7 @@ const WatermarkSettingsPanel = ({
 							max={100}
 							step={0.01}
 							__nextHasNoMarginBottom
+							disabled={disabled}
 						/>
 						<Flex
 							gap={4}
@@ -150,6 +153,7 @@ const WatermarkSettingsPanel = ({
 										updateSetting('align', value)
 									}
 									__nextHasNoMarginBottom
+									disabled={disabled}
 								/>
 							</FlexItem>
 							<FlexItem className="videopack-offset-control">
@@ -165,6 +169,7 @@ const WatermarkSettingsPanel = ({
 										updateSetting('x', value)
 									}
 									__nextHasNoMarginBottom
+									disabled={disabled}
 								/>
 							</FlexItem>
 						</Flex>
@@ -203,6 +208,7 @@ const WatermarkSettingsPanel = ({
 										updateSetting('valign', value)
 									}
 									__nextHasNoMarginBottom
+									disabled={disabled}
 								/>
 							</FlexItem>
 							<FlexItem className="videopack-offset-control">
@@ -218,6 +224,7 @@ const WatermarkSettingsPanel = ({
 										updateSetting('y', value)
 									}
 									__nextHasNoMarginBottom
+									disabled={disabled}
 								/>
 							</FlexItem>
 						</Flex>
