@@ -37,7 +37,7 @@ class Videopack {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Videopack_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Common\Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -124,7 +124,7 @@ class Videopack {
 	 * Callback for the 'videopack_get_options_manager' filter.
 	 * Returns the initialized Options manager instance.
 	 */
-	public function get_options_manager_instance( $value = null ) {
+	public function get_options_manager_instance() {
 		return $this->options_manager;
 	}
 
@@ -178,6 +178,7 @@ class Videopack {
 
 		if ( Admin\Multisite::is_videopack_active_for_network() ) {
 			$multisite = new Admin\Multisite( $this->options_manager );
+			$this->loader->add_action( 'init', $multisite, 'init' );
 			$this->loader->add_action( 'wpmu_new_blog', $multisite, 'add_new_blog' );
 			$this->loader->add_filter( 'network_admin_plugin_action_links_' . VIDEOPACK_BASENAME, $multisite, 'network_admin_action_links' );
 			$this->loader->add_action( 'network_admin_menu', $multisite, 'add_network_settings_page' );
@@ -226,13 +227,15 @@ class Videopack {
 
 		$frontend_metadata = new Frontend\Metadata( $this->options_manager );
 		$this->loader->add_action( 'wp_head', $frontend_metadata, 'print_scripts' );
-		$this->loader->add_action( 'wp_footer', $frontend_metadata, 'clear_first_embedded_video_meta', 12 );
 
 		$frontend_shortcode = new Frontend\Shortcode( $this->options_manager );
 		$this->loader->add_action( 'wp_loaded', $frontend_shortcode, 'overwrite_video_shortcode' );
 		$this->loader->add_action( 'init', $frontend_shortcode, 'add' );
 		$this->loader->add_filter( 'no_texturize_shortcodes', $frontend_shortcode, 'no_texturize' );
 		$this->loader->add_filter( 'query_vars', $frontend_shortcode, 'add_query_vars' );
+
+		$frontend_schema = new Frontend\Schema( $this->options_manager );
+		$this->loader->add_action( 'template_redirect', $frontend_schema, 'init' );
 
 		$frontend_template = new Frontend\Template( $this->options_manager );
 		$this->loader->add_filter( 'oembed_response_data', $frontend_template, 'change_oembed_data', 11, 4 );
@@ -252,10 +255,9 @@ class Videopack {
 	}
 
 	/**
-	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    Videopack_Loader    Orchestrates the hooks of the plugin.
+	 * @return    Common\Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;

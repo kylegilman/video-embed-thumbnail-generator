@@ -10,7 +10,7 @@ class Source_Factory {
 		$format = null,
 		$exists = null,
 		$parent_id = null,
-		string $source_type = null
+		?string $source_type = null
 	) {
 
 		$instance_source = $source;
@@ -22,13 +22,13 @@ class Source_Factory {
 		/**
 		 * Allow modification of the source type or direct overriding of the instance creation
 		 * for custom source types.
-		 * @param Source|null $video_source_instance
-		 * @param mixed       $source                 attachment ID, file path, URL, etc.
-		 * @param Options     $options_manager
-		 * @param string      $format
-		 * @param bool        $exists
-		 * @param int|null    $parent_id
-		 * @param string      $source_type            as determined by the factory
+		 * @param Source|null               $video_source_instance
+		 * @param mixed                     $source                 attachment ID, file path, URL, etc.
+		 * @param \Videopack\Admin\Options $options_manager
+		 * @param string                    $format
+		 * @param bool                      $exists
+		 * @param int|null                  $parent_id
+		 * @param string                    $source_type            as determined by the factory
 		 */
 		$video_source_instance = apply_filters( 'videopack_source_class', null, $source, $options_manager, $format, $exists, $parent_id, $source_type );
 
@@ -60,7 +60,13 @@ class Source_Factory {
 			// First, try to resolve it to an attachment ID. This is the most specific case.
 			$attachment_id = ( new \Videopack\Admin\Attachment( $options_manager ) )->url_to_id( $source );
 			if ( $attachment_id ) {
-				return array( $attachment_id, 'attachment_local' );
+				return array(
+					array(
+						'id'  => $attachment_id,
+						'url' => $source,
+					),
+					'attachment_local',
+				);
 			}
 
 			// Next, check if it's a URL pointing to a local file by comparing hosts.

@@ -187,26 +187,26 @@ class REST_Controller extends \WP_REST_Controller {
 						return ( current_user_can( 'make_video_thumbnails' ) && $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
-						'url'                      => array(
+						'url'              => array(
 							'type'     => 'string',
 							'required' => true,
 						), // The video URL, for context.
-						'total_thumbnails'         => array(
+						'total_thumbnails' => array(
 							'type'     => 'number',
 							'minimum'  => 1,
 							'maximum'  => 100,
 							'default'  => 4,
 							'required' => true,
 						), // Total number of thumbs being generated in this batch.
-						'thumbnail_index'          => array(
+						'thumbnail_index'  => array(
 							'type'     => 'number',
 							'required' => true,
 						), // The 1-based index of the thumbnail to generate.
-						'attachment_id'            => array(
+						'attachment_id'    => array(
 							'type'     => 'number',
 							'required' => true,
 						), // The ID of the source video attachment.
-						'generate_button'          => array(
+						'generate_button'  => array(
 							'type'     => 'string',
 							'required' => true,
 						),
@@ -249,7 +249,7 @@ class REST_Controller extends \WP_REST_Controller {
 						'type'     => 'number',
 						'required' => true,
 					),
-					'thumb_urls'   => array(
+					'thumb_urls'    => array(
 						'type'     => 'array',
 						'required' => true,
 						'items'    => array(
@@ -582,7 +582,7 @@ class REST_Controller extends \WP_REST_Controller {
 			return '(recursion limit reached)';
 		}
 
-		$depth++;
+		++$depth;
 		foreach ( $dirty_array as $key => $value ) {
 			if ( is_array( $value ) ) {
 				$dirty_array[ $key ] = $this->clean_array( $value );
@@ -598,7 +598,7 @@ class REST_Controller extends \WP_REST_Controller {
 				$dirty_array[ $key ] = true;
 			}
 		}
-		$depth--;
+		--$depth;
 		return $dirty_array;
 	}
 
@@ -630,6 +630,10 @@ class REST_Controller extends \WP_REST_Controller {
 
 		switch ( $page_slug ) {
 			case 'account':
+				if ( ! is_object( $freemius->get_user() ) ) {
+					ob_end_clean();
+					return new \WP_Error( 'freemius_no_user', 'Freemius user data not available. This can happen if the plugin is network-activated but not yet opted-in at the network level.', array( 'status' => 403 ) );
+				}
 				$freemius->_account_page_render();
 				break;
 			case 'add-ons':
@@ -743,7 +747,7 @@ class REST_Controller extends \WP_REST_Controller {
 		if ( ! empty( $post_name ) ) {
 			$post_name = pathinfo( $post_name, PATHINFO_FILENAME );
 		}
-		$files         = $request->get_file_params();
+		$files = $request->get_file_params();
 
 		if ( empty( $files['file'] ) ) {
 			return new \WP_Error( 'missing_file', 'No file was uploaded.', array( 'status' => 400 ) );
@@ -845,8 +849,8 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function video_sources( \WP_REST_Request $request ) {
 
-		$url          = $request->get_param( 'url' );
-		$post_id      = $request->get_param( 'id' );
+		$url     = $request->get_param( 'url' );
+		$post_id = $request->get_param( 'id' );
 		// Prioritize numeric IDs, otherwise fall back to the URL.
 		$source_input = is_numeric( $post_id ) ? (int) $post_id : $url;
 		if ( ! $source_input ) {
@@ -1068,8 +1072,8 @@ class REST_Controller extends \WP_REST_Controller {
 		if ( ! $source || ! $source->exists() ) {
 			// If source isn't found, return an empty sources array to avoid breaking the REST response.
 			return array(
-				'srcset'  => wp_get_attachment_image_srcset( $post_id ),
-				'sources' => array(),
+				'srcset'        => wp_get_attachment_image_srcset( $post_id ),
+				'sources'       => array(),
 				'source_groups' => new \stdClass(),
 			);
 		}
@@ -1079,8 +1083,8 @@ class REST_Controller extends \WP_REST_Controller {
 		$player->set_source( $source );
 
 		return array(
-			'srcset'  => wp_get_attachment_image_srcset( $post_id ),
-			'sources' => $player->get_flat_sources(),
+			'srcset'        => wp_get_attachment_image_srcset( $post_id ),
+			'sources'       => $player->get_flat_sources(),
 			'source_groups' => $player->get_sources(),
 		);
 	}
@@ -1129,7 +1133,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function queue_control( \WP_REST_Request $request ) {
-		$action = $request->get_param( 'action' );
+		$action     = $request->get_param( 'action' );
 		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
 
 		if ( 'play' === $action ) {
@@ -1167,7 +1171,7 @@ class REST_Controller extends \WP_REST_Controller {
 
 		return new \WP_REST_Response(
 			array(
-				'status' => 'success',
+				'status'  => 'success',
 				// translators: %s is 'completed' or 'all'.
 				'message' => sprintf( esc_html__( 'Queue cleared: %s jobs.', 'video-embed-thumbnail-generator' ), $type ),
 			),
@@ -1310,7 +1314,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @param \WP_REST_Request  $request Request used to generate the response.
 	 * @return \WP_REST_Response The unchanged result.
 	 */
-		public function log_rest_api_errors( $result, $server, $request ) {
+	public function log_rest_api_errors( $result, $server, $request ) {
 		$is_error      = false;
 		$error_details = '';
 
