@@ -19,226 +19,94 @@ class Metadata {
 		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
 	}
 
+	/**
+	 * Detects the first Videopack video in the post content (Block or Shortcode).
+	 *
+	 * @param \WP_Post $post The post object.
+	 * @return array The video attributes and metadata.
+	 */
 	public function get_first_embedded_video( $post ) {
-
-		$url        = '';
-		$attributes = array();
-
-		$first_embedded_video_meta = get_post_meta( $post->ID, '_kgvid_first_embedded_video', true );
-
-		if ( ! empty( $first_embedded_video_meta ) ) {
-
-			if ( is_array( $first_embedded_video_meta['atts'] ) ) {
-				$dataattributes = array_map( array( $this, 'build_paired_attributes' ), array_values( $first_embedded_video_meta['atts'] ), array_keys( $first_embedded_video_meta['atts'] ) );
-
-				$dataattributes = ' ' . implode( ' ', $dataattributes );
-			} else {
-				$dataattributes = $first_embedded_video_meta['atts'];
-			}
-
-			$shortcode_text = '[videopack' . $dataattributes . ']' . $first_embedded_video_meta['content'] . '[/videopack]';
-
-		} else {
-			$shortcode_text = $post->post_content;
+		if ( ! $post || empty( $post->post_content ) ) {
+			return array( 'url' => '' );
 		}
 
-		$pattern = get_shortcode_regex();
-		preg_match_all( '/' . $pattern . '/s', $shortcode_text, $matches );
+		$atts = Video_Finder::find_first( $post->post_content );
 
-		if ( is_array( $matches )
-			&& array_key_exists( 2, $matches )
-			&& array_key_exists( 5, $matches )
-			&& ( in_array( 'videopack', $matches[2] )
-				|| in_array( 'VIDEOPACK', $matches[2] )
-				|| in_array( 'KGVID', $matches[2] )
-				|| in_array( 'FMP', $matches[2] )
-			)
-		) { // if videopack, KGVID, or FMP shortcode is in posts on this page.
-
-			if ( isset( $matches ) ) {
-
-				$shortcode_names = array(
-					'videopack',
-					'VIDEOPACK',
-					'KGVID',
-					'FMP',
-				);
-
-				$first_key = false;
-				foreach ( $shortcode_names as $shortcode ) {
-					$first_key = array_search( $shortcode, $matches[2] );
-					if ( $first_key !== false ) {
-						break;
-					}
-				}
-
-				if ( $first_key !== false ) {
-
-					$url = '';
-
-					if ( array_key_exists( 3, $matches ) ) {
-						$attributes = shortcode_parse_atts( $matches[3][ $first_key ] );
-					}
-
-					if ( is_array( $attributes )
-						&& array_key_exists( 'id', $attributes )
-					) {
-						$url = wp_get_attachment_url( $attributes['id'] );
-						//end if there's an ID attribute
-					} elseif ( ! empty( $matches[5][ $first_key ] ) ) { // there's a URL but no ID
-
-						$url = $matches[5][ $first_key ];
-						if ( ! is_array( $attributes ) ) {
-							$attributes = array();
-						}
-						$attributes['id'] = ( new \Videopack\Admin\Attachment( $this->options_manager ) )->url_to_id( $matches[5][ $first_key ] );
-
-					} elseif (
-						( is_array( $attributes )
-							&& ! array_key_exists( 'id', $attributes )
-						)
-						|| empty( $attributes )
-					) {
-
-						$args             = array(
-							'numberposts'    => 1,
-							'post_mime_type' => 'video',
-							'post_parent'    => $post->ID,
-							'post_status'    => null,
-							'post_type'      => 'attachment',
-						);
-						$video_attachment = get_posts( $args );
-
-						if ( $video_attachment ) {
-							if ( empty( $attributes ) ) {
-								$attributes = array();
-							}
-							$attributes['id'] = $video_attachment[0]->ID;
-							$url              = wp_get_attachment_url( $attributes['id'] );
-						}
-						//end if no URL or ID attribute
-					}
-					//if there's a KGVID shortcode in the post
-				}
-				//end if there's a shortcode in the post
-			} elseif ( is_attachment() ) {
-				$attributes['id']  = $post->ID;
-				$attributes['url'] = wp_get_attachment_url( $post->ID );
-			}
-
-			if ( is_array( $attributes )
-				&& array_key_exists( 'id', $attributes )
-			) {
-
-				$kgvid_postmeta           = $this->attachment_meta->get( $attributes['id'] );
-				$kgvid_postmeta['poster'] = get_post_meta( $attributes['id'], '_kgflashmediaplayer-poster', true );
-				$dimensions               = $this->calculate_video_dimensions( (int) $attributes['id'] );
-				$attributes               = array_merge( $dimensions, array_filter( (array) $kgvid_postmeta ), $attributes );
-
-			}
+		if ( empty( $atts ) ) {
+			return array( 'url' => '' );
 		}
 
-		if ( ! is_array( $attributes ) ) {
-			$attributes = array();
+		$source_input = $atts['id'] ?? $atts['src'] ?? null;
+		if ( ! $source_input ) {
+			return array( 'url' => '' );
 		}
 
-		$attributes['url'] = $url;
-		return $attributes;
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager );
+		if ( ! $source || ! $source->exists() ) {
+			return array( 'url' => '' );
+		}
+
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$final_atts        = $shortcode_handler->get_final_atts( $atts, $source );
+
+		$final_atts['url']         = $source->get_url();
+		$final_atts['id']          = $source->get_id();
+		$final_atts['mime_type']   = $source->get_mime_type();
+		$final_atts['description'] = $this->generate_video_description( $final_atts, $post );
+
+		return $final_atts;
 	}
 
 	/**
-	 * Calculate video dimensions based on attachment metadata and plugin options.
-	 *
-	 * @param int  $id The attachment ID.
-	 * @param bool $gallery Whether the video is in a gallery context.
-	 * @return array An array containing width, height, actualwidth, and actualheight.
+	 * Prints Open Graph metadata to the head of the page.
 	 */
-	private function calculate_video_dimensions( int $id, bool $gallery = false ): array {
-		$video_meta     = wp_get_attachment_metadata( $id );
-		$kgvid_postmeta = $this->attachment_meta->get( $id );
-
-		$width  = $kgvid_postmeta['width'] ?? null;
-		$height = $kgvid_postmeta['height'] ?? null;
-
-		// Set actual width and height from video metadata if available, otherwise use options
-		$actualwidth  = $video_meta['width'] ?? $this->options['width'];
-		$actualheight = $video_meta['height'] ?? $this->options['height'];
-
-		// Set width and height if not already set
-		if ( empty( $width ) ) {
-			$width = $actualwidth;
-		}
-		if ( empty( $height ) ) {
-			$height = $actualheight;
-		}
-
-		// Calculate aspect ratio
-		$aspect_ratio = ( $width > 0 && $height > 0 )
-			? $height / $width
-			: $this->options['height'] / $this->options['width'];
-
-		// Adjust dimensions for gallery or max width
-		if ( $gallery ) {
-			$width = ! empty( $actualwidth ) ? $actualwidth : $width;
-		} elseif ( (int) $width > (int) $this->options['width'] ) {
-			$width = $this->options['width'];
-		}
-
-		// Calculate height based on aspect ratio
-		$height = round( $width * $aspect_ratio );
-
-		return compact( 'width', 'height', 'actualwidth', 'actualheight' );
-	}
-
 	public function print_scripts() {
-
-		global $wp_query;
-		if ( ! isset( $wp_query ) ) {
-			return false;
+		if ( ! $this->options['open_graph'] ) {
+			return;
 		}
 
-		if ( ! empty( $wp_query->posts )
-			&& is_array( $wp_query->posts )
-		) {
-			foreach ( $wp_query->posts as $post ) {
-				$first_embedded_video = $this->get_first_embedded_video( $post );
-				if ( ! empty( $first_embedded_video['url'] ) ) { // if KGVID or FMP shortcode is in posts on this page.
+		$post = get_post();
+		if ( ! $post ) {
+			return;
+		}
 
-					if ( $this->options['open_graph'] == true ) {
+		$video = $this->get_first_embedded_video( $post );
+		if ( empty( $video['url'] ) ) {
+			return;
+		}
 
-						remove_action( 'wp_head', 'jetpack_og_tags' );
-						echo '<meta property="og:url" content="' . esc_url( get_permalink( $post ) ) . '" >' . "\n";
-						echo '<meta property="og:title" content="' . esc_attr( get_the_title( $post ) ) . '" >' . "\n";
-						echo '<meta property="og:description" content="' . esc_attr( $this->generate_video_description( $first_embedded_video, $post ) ) . '" >' . "\n";
-						echo '<meta property="og:video" content="' . esc_url( $first_embedded_video['url'] ) . '" >' . "\n";
-						$secure_url = str_replace( 'http://', 'https://', $first_embedded_video['url'] );
-						echo '<meta property="og:video:secure_url" content="' . esc_url( $secure_url ) . '" >' . "\n";
-						$mime_type_check = $this->attachment_meta->url_mime_type( $first_embedded_video['url'], $post->ID );
-						echo '<meta property="og:video:type" content="' . esc_attr( $mime_type_check['type'] ) . '" >' . "\n";
+		// Disable Jetpack OG tags if present to prevent duplication
+		remove_action( 'wp_head', 'jetpack_og_tags' );
 
-						if ( array_key_exists( 'width', $first_embedded_video ) ) {
-							echo '<meta property="og:video:width" content="' . esc_attr( $first_embedded_video['width'] ) . '" >' . "\n";
-							if ( array_key_exists( 'height', $first_embedded_video ) ) {
-								echo '<meta property="og:video:height" content="' . esc_attr( $first_embedded_video['height'] ) . '" >' . "\n";
-							}
-						}
+		$og_tags = array(
+			'og:type'             => 'video.other',
+			'og:url'              => get_permalink( $post ),
+			'og:title'            => get_the_title( $post ),
+			'og:description'      => $video['description'],
+			'og:video'            => $video['url'],
+			'og:video:secure_url' => str_replace( 'http://', 'https://', $video['url'] ),
+			'og:video:type'       => $video['mime_type'],
+		);
 
-						if ( array_key_exists( 'poster', $first_embedded_video ) ) {
-							echo '<meta property="og:image" content="' . esc_url( $first_embedded_video['poster'] ) . '" >' . "\n";
-							if ( array_key_exists( 'width', $first_embedded_video ) ) {
-								echo '<meta property="og:image:width" content="' . esc_attr( $first_embedded_video['width'] ) . '" >' . "\n";
-								if ( array_key_exists( 'height', $first_embedded_video ) ) {
-									echo '<meta property="og:image:height" content="' . esc_attr( $first_embedded_video['height'] ) . '" >' . "\n";
-								}
-							}
-						}
-					}
+		if ( ! empty( $video['width'] ) ) {
+			$og_tags['og:video:width'] = $video['width'];
+		}
+		if ( ! empty( $video['height'] ) ) {
+			$og_tags['og:video:height'] = $video['height'];
+		}
 
-					break; // end execution after the first video embedded using the shortcode
+		if ( ! empty( $video['poster'] ) ) {
+			$og_tags['og:image']        = $video['poster'];
+			$og_tags['og:image:width']  = $video['width'] ?? '';
+			$og_tags['og:image:height'] = $video['height'] ?? '';
+		}
 
-				}//end if shortcode is in post or is attachment
-			}//end post loop
-		}//end if posts
+		echo "\n<!-- Videopack Open Graph Meta Tags -->\n";
+		foreach ( $og_tags as $property => $content ) {
+			if ( ! empty( $content ) ) {
+				printf( '<meta property="%s" content="%s" >' . "\n", esc_attr( $property ), esc_attr( $content ) );
+			}
+		}
 	}
 
 	public function build_paired_attributes( $value, $key ) {
@@ -275,18 +143,5 @@ class Metadata {
 		}
 
 		return apply_filters( 'videopack_generate_video_description', $description, $query_atts );
-	}
-
-	public function clear_first_embedded_video_meta() {
-
-		global $kgvid_video_id;
-		$post = get_post();
-
-		if ( $kgvid_video_id == null && $post ) { // there's no Videopack video on this page
-			$first_embedded_video_meta = get_post_meta( $post->ID, '_kgvid_first_embedded_video', true );
-			if ( ! empty( $first_embedded_video_meta ) ) {
-				delete_post_meta( $post->ID, '_kgvid_first_embedded_video' );
-			}
-		}
 	}
 }
