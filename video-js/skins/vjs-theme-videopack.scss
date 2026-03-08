@@ -1,0 +1,250 @@
+/*
+  Player Skin Designer for Video.js
+  http://videojs.com
+
+  To customize the player skin edit
+  the CSS below. Click "details"
+  below to add comments or questions.
+  This file uses some SCSS. Learn more
+  at http://sass-lang.com/guide)
+
+  This designer can be linked to at:
+*/
+@use "sass:math";
+@use "sass:color";
+
+// The following are SCSS variables to automate some of the values.
+// But don't feel limited by them. Change/replace whatever you want.
+
+// The color of icons, text, and the big play button border.
+// Try changing to #0f0
+$primary-foreground-color: #fff; // #fff default
+
+// The default color of control backgrounds is mostly black but with a little
+// bit of blue so it can still be seen on all-black video frames, which are common.
+// Try changing to #900
+$primary-background-color: #4e4e4e; // #2B333F default
+
+// Try changing to true
+$center-big-play-button: true; // true default
+
+.vjs-theme-videopack {
+  /* The base font size controls the size of everything, not just text.
+     All dimensions use em-based sizes so that the scale along with the font size.
+     Try increasing it to 15px and see what happens. */
+  font-size: 10px;
+
+  /* The main font color changes the ICON COLORS as well as the text */
+  color: $primary-foreground-color;
+
+
+  /* The "Big Play Button" is the play button that shows before the video plays. */
+  .vjs-big-play-button {
+    font-size: 3em;
+
+    $big-play-width: 3em;
+    $big-play-height: 3em;
+
+    line-height: 0;
+    height: $big-play-height;
+    width: $big-play-width;
+
+    border: none;
+    border-radius: 3em;
+
+    @if $center-big-play-button {
+      /* Align center */
+      left: 50%;
+      top: 50%;
+      margin-left: -(math.div($big-play-width, 2));
+      margin-top: -(math.div($big-play-height, 2));
+    }
+
+    @else {
+      /* Align top left. */
+      left: 0.5em;
+      top: 0.5em;
+    }
+  }
+
+  .vjs-big-play-button .vjs-icon-placeholder:before {
+    content: none;
+  }
+
+  .vjs-big-play-button::before {
+    content: '\f101';
+    font-size: 2.1em;
+    font-family: 'Videojs';
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    line-height: 1.3em;
+    color: $primary-foreground-color;
+  }
+
+  /* The default color of control backgrounds is mostly black but with a little
+    bit of blue so it can still be seen on all-black video frames, which are common. */
+  .vjs-control-bar {
+    /* Control bar wrapping around only the icons */
+    background: none;
+    /* Make main container clear */
+    background-color: transparent;
+    width: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 0;
+  }
+
+  /* Hide the default spacer so we can use margin-right: auto on .vjs-remaining-time instead */
+  .vjs-custom-control-spacer {
+    display: none;
+  }
+
+  /* Semi-transparent rounded background for the individual controls */
+  .vjs-control,
+  .vjs-time-control {
+    background-color: rgba($primary-background-color, 0.7);
+    margin-right: 4px;
+    border-radius: 8px;
+    /* Rounded corners */
+  }
+
+  .vjs-control.vjs-volume-panel button,
+  .vjs-control.vjs-volume-panel div.vjs-volume-control {
+    background-color: transparent;
+  }
+
+  /* Don't apply background to the progress control or spacer itself */
+  .vjs-progress-control,
+  .vjs-custom-control-spacer {
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  .vjs-progress-control .vjs-progress-holder {
+    margin: 0;
+  }
+
+  /* Remove margin from the last control on the right */
+  .vjs-control:last-child {
+    margin-right: 0;
+  }
+
+  .vjs-big-play-button,
+  .vjs-menu-button .vjs-menu-content {
+    background-color: rgba($primary-background-color, 0.7);
+  }
+
+  .js-focus-visible .vjs-menu li.vjs-menu-item:hover,
+  .vjs-menu li.vjs-menu-item:focus,
+  .vjs-menu li.vjs-menu-item:hover {
+    background-color: rgba($primary-foreground-color, 0.2);
+  }
+
+  .vjs-menu li.vjs-selected {
+    background-color: rgba($primary-foreground-color, 0.9);
+  }
+
+.js-focus-visible .vjs-menu li.vjs-selected:hover,
+.vjs-menu li.vjs-selected:focus,
+.vjs-menu li.vjs-selected:hover {
+  background-color: rgba($primary-foreground-color, 0.6);
+}
+
+/* Round the first and last items so their hover backgrounds don't bleed past the menu corners */
+.vjs-menu li.vjs-menu-item {
+  &:first-of-type {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+
+  &:last-of-type {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+}
+
+.vjs-menu-button-popup .vjs-menu {
+  /* Position the menu container exactly at the top of the button */
+  bottom: 100%;
+  margin-bottom: 0;
+
+  /* Make the container clear so only the content is visible (also fixes submenu doubling) */
+  background-color: transparent;
+  /* Ensure the container captures pointer events for hover persistence */
+  pointer-events: auto;
+}
+
+.vjs-menu-button-popup>.vjs-menu {
+  padding-bottom: 4px;
+}
+
+.vjs-menu-button.vjs-menu-button-popup.vjs-control .vjs-menu .vjs-menu-content {
+  border-radius: 8px;
+  bottom: 4px;
+  margin-bottom: 0;
+}
+
+$slider-bg-color: color.adjust($primary-background-color, $lightness: 33%);
+
+/* Slider - used for Volume bar and Progress bar */
+.vjs-slider {
+  background-color: $slider-bg-color;
+  background-color: rgba($slider-bg-color, 0.5);
+}
+
+/* Move progress bar above controls */
+.vjs-progress-control {
+  position: absolute;
+  top: -20px;
+  /* Shift it above the control bar */
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 20px;
+}
+
+/* The slider bar color is used for the progress bar and the volume bar */
+.vjs-volume-level,
+.vjs-play-progress,
+.vjs-slider-bar {
+  background: $primary-foreground-color;
+}
+
+/* Styling the white dot on the progress bar */
+.vjs-play-progress::before {
+  /* Keep it hidden until hovered */
+  transform: scale(0);
+  transition: transform 0.1s ease-in-out;
+}
+
+.vjs-progress-control:hover .vjs-play-progress::before {
+  /* Show and grow on hover */
+  transform: scale(1);
+}
+
+/* The main progress bar also has a bar that shows how much has been loaded. */
+.vjs-load-progress {
+  /* Otherwise we'll rely on stacked opacities */
+  background: rgba($slider-bg-color, 0.5);
+}
+
+/* The load progress bar also has internal divs that represent
+    smaller disconnected loaded time ranges */
+.vjs-load-progress div {
+  /* Otherwise we'll rely on stacked opacities */
+  background: rgba($slider-bg-color, 0.75);
+}
+
+/* Push any controls that follow the remaining time to the right side of the control bar */
+.vjs-remaining-time {
+  margin-right: auto;
+}
+
+/* Make the small play control a circle */
+.vjs-play-control {
+  border-radius: 50%;
+  width: 3em;
+}
+}

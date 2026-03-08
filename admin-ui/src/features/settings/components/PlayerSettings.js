@@ -19,6 +19,7 @@ import { volumeUp, volumeDown } from '../../../assets/icon';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
 import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from './WatermarkSettingsPanel';
+import useResolutions from '../../../hooks/useResolutions';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 	const {
@@ -50,9 +51,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		embeddable,
 		embedcode,
 		downloadlink,
-		view_count,
 		inline,
-		minimum_width,
+		view_count,
 		autoplay,
 		loop,
 		muted,
@@ -60,6 +60,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		playback_rate,
 		encode,
 	} = settings;
+
+	const currentResolutions = useResolutions(
+		enable_custom_resolution,
+		custom_resolution
+	);
 
 	const changeGifmode = (value) => {
 		setSettings((prevSettings) => ({
@@ -196,8 +201,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 
 	const skinOptions = [
 		{
-			value: 'kg-video-js-skin',
+			value: 'vjs-theme-videopack',
 			label: __('Videopack', 'video-embed-thumbnail-generator'),
+		},
+		{
+			value: 'kg-video-js-skin',
+			label: __('Videopack Classic', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'default',
@@ -288,7 +297,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			},
 		];
 
-		videopack_config.resolutions.forEach((resolution) => {
+		currentResolutions.forEach((resolution) => {
 			items.push({
 				value: resolution.id,
 				label: resolution.name,
@@ -412,6 +421,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								id: 'sample-video',
 								title: 'Sample Video',
 								overlay_title,
+								width: undefined,
+								height: undefined,
 								starts: 23,
 								embedlink: 'https://www.website.com/embed/',
 								caption: __(
@@ -462,6 +473,16 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							help={__(
 								'Most browsers will only autoplay if the video starts muted.'
 							)}
+						/>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								'Pause other videos on page when starting a new video.',
+								'video-embed-thumbnail-generator'
+							)}
+							onChange={changeHandlerFactory.pauseothervideos}
+							checked={!!pauseothervideos}
+							disabled={gifmode}
 						/>
 						<ToggleControl
 							__nextHasNoMarginBottom
@@ -542,7 +563,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						<RadioControl
 							label={
 								<span className="videopack-label-with-tooltip">
-									{__('Preload', 'video-embed-thumbnail-generator')}
+									{__(
+										'Preload',
+										'video-embed-thumbnail-generator'
+									)}
 									<VideopackTooltip
 										text={__(
 											'Controls how much of a video to load before the user starts playback. Mobile browsers never preload any video information. Selecting "metadata" will load the height and width and format information along with a few seconds of the video in some desktop browsers. "Auto" will preload nearly a minute of video in most desktop browsers. "None" will prevent all data from preloading.',
@@ -561,7 +585,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				<div className="videopack-control-with-tooltip">
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={__('GIF mode', 'video-embed-thumbnail-generator')}
+						label={__(
+							'GIF mode',
+							'video-embed-thumbnail-generator'
+						)}
 						onChange={(value) => {
 							changeGifmode(value);
 						}}
@@ -610,7 +637,10 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				<RadioControl
 					label={
 						<span className="videopack-label-with-tooltip">
-							{__('Constrain to default aspect ratio', 'video-embed-thumbnail-generator')}
+							{__(
+								'Constrain to default aspect ratio',
+								'video-embed-thumbnail-generator'
+							)}
 							<VideopackTooltip
 								text={__(
 									'When set to "none," the video player will automatically adjust to the aspect ratio of the video, but in some cases a fixed aspect ratio is required, and vertical videos often fit better on the page when shown in a shorter window.',
@@ -661,6 +691,15 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								onChange={changeHandlerFactory.height}
 							/>
 						</span>
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								'Make video display inline',
+								'video-embed-thumbnail-generator'
+							)}
+							onChange={changeHandlerFactory.inline}
+							checked={!!inline}
+						/>
 						<Flex
 							direction="column"
 							expanded={false}
@@ -684,7 +723,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 											'Expand player to full width of container',
 											'video-embed-thumbnail-generator'
 										)}
-										onChange={changeHandlerFactory.fullwidth}
+										onChange={
+											changeHandlerFactory.fullwidth
+										}
 										checked={!!fullwidth}
 									/>
 									<VideopackTooltip
