@@ -1,15 +1,14 @@
 .wp-block-videopack-videopack-video {
 
-	width: var(--wp--style--global--content-size);
-	max-width: 100%;
+	width: 100%;
+	max-width: var(--wp--style--global--content-size);
 
 	&.alignwide {
-		width: var(--wp--style--global--wide-size);
-		max-width: 100%;
+		max-width: var(--wp--style--global--wide-size);
 	}
 
 	&.alignfull {
-		width: auto;
+		max-width: none;
 	}
 
 	&.aligncenter {
@@ -26,6 +25,39 @@
 .videopack-wrapper {
 	margin: 1em 0;
 	position: relative;
+	container-type: inline-size;
+
+	@container (max-width: 499px) {
+
+		.vjs-big-play-button,
+		.mejs-overlay-button {
+			transform: scale(0.9);
+		}
+	}
+
+	@container (max-width: 399px) {
+
+		.vjs-big-play-button,
+		.mejs-overlay-button {
+			transform: scale(0.8);
+		}
+	}
+
+	@container (max-width: 359px) {
+
+		.vjs-big-play-button,
+		.mejs-overlay-button {
+			transform: scale(0.7);
+		}
+	}
+
+	@container (max-width: 260px) {
+
+		.vjs-big-play-button,
+		.mejs-overlay-button {
+			transform: scale(0.6);
+		}
+	}
 
 	&.videopack-wrapper-auto-left {
 		margin-left: auto;
@@ -76,7 +108,8 @@
 
 			video,
 			.video-js,
-			.mejs-container {
+			.mejs-container,
+			.wp-video {
 				width: 100% !important;
 				height: 100% !important;
 			}
@@ -120,8 +153,6 @@
 
 			.vjs-menu-button .vjs-menu-content {
 				background-color: hsla(0, 0%, 100%, .4);
-				bottom: 2.5em;
-
 			}
 
 			.vjs-button:hover li {
@@ -232,9 +263,39 @@
 		}
 	}
 
+	.vjs-menu-button-popup .vjs-menu.vjs-lock-showing,
+	.vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu {
+		bottom: 100%;
+		margin-bottom: 0;
+
+		/* Alignment shifts for player boundaries */
+		&.vjs-menu-align-right {
+			left: auto;
+			right: 0;
+
+			.vjs-menu-content {
+				left: auto;
+				right: 0;
+			}
+		}
+
+		&.vjs-menu-align-left {
+			left: 0;
+
+			.vjs-menu-content {
+				left: 0;
+			}
+		}
+	}
+
+	.vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+		bottom: 0;
+	}
+
 	.vjs-res-button .vjs-menu .vjs-menu-content,
 	.vjs-res-button+.vjs-menu .vjs-menu-content {
 		overflow: visible;
+		bottom: 0;
 	}
 
 	.vjs-res-button .vjs-menu li.vjs-menu-item,
@@ -252,9 +313,6 @@
 				bottom: 0;
 				margin-left: 0.2em;
 				margin-bottom: 0;
-				background-color: #2B333F;
-				/* Fallback */
-				background-color: var(--vjs-menu-background, #2B333F);
 				min-width: 8em;
 				border-radius: 0.3em;
 				height: auto;
@@ -308,10 +366,6 @@
 	ul li.vjs-menu-title.vjs-res-menu-title:hover {
 		cursor: default;
 		background-color: transparent;
-		color: #ccc;
-
-		-moz-box-shadow: none;
-		-webkit-box-shadow: none;
 		box-shadow: none;
 	}
 

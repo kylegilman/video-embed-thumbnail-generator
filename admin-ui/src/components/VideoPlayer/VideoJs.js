@@ -2,6 +2,21 @@
 
 import { useRef, useEffect } from '@wordpress/element';
 
+/**
+ * Video.js React component.
+ *
+ * Uses setTimeout(fn, 0) to defer initialization to the next event loop tick.
+ * This handles both React Strict Mode (cleanup cancels the timer) and the
+ * WordPress Block Editor iframe migration (the container is in the correct
+ * document by the time the timer fires).
+ *
+ * @param {Object}   props         Component props.
+ * @param {Object}   props.options Video.js player options.
+ * @param {string}   props.skin    CSS class name for the player skin.
+ * @param {Function} props.onPlay  Callback for the play event.
+ * @param {Function} props.onPause Callback for the pause event.
+ * @param {Function} props.onReady Callback fired once the player is ready.
+ */
 export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
@@ -11,26 +26,51 @@ export const VideoJS = (props) => {
 
 	useEffect(() => {
 		let initTimer;
-		let player = playerRef.current;
+		const player = playerRef.current;
 
-		// Check if plugins options changed (e.g. default resolution/codec).
-		// If so, dispose of the player so it can be re-initialized with new options.
+
+
+		// When plugins change (e.g. resolution selector added after entity
+		// record resolves), initialize the plugin on the existing player
+		// rather than disposing. Disposing triggers a setTimeout reinit,
+		// but by then the container is disconnected from the iframe.
 		if (
 			player &&
+			!player.isDisposed() &&
 			JSON.stringify(previousPluginsRef.current) !==
-				JSON.stringify(options.plugins)
+			JSON.stringify(options.plugins)
 		) {
-			player.dispose();
-			playerRef.current = null;
-			player = null;
 			previousPluginsRef.current = options.plugins;
+
+			if (
+				options.plugins &&
+				typeof player.resolutionSelector === 'function'
+			) {
+				try {
+					// Update sources first so the plugin sees all resolutions.
+					if (options.sources && options.sources.length > 0) {
+						const currentSrc = player.currentSrc();
+						const newSrc = options.sources[0].src;
+						if (currentSrc !== newSrc) {
+							player.src(options.sources);
+						}
+					}
+					player.resolutionSelector(
+						options.plugins.resolutionSelector
+					);
+				} catch (e) {
+					console.warn('Video.js plugin update error:', e);
+				}
+			}
 		}
 
 		// On initial render (or after dispose), wait for sources to be available before initializing.
 		if (!player) {
 			// Wrap initialization in a timeout to handle React Strict Mode double-mounts.
 			// This ensures we don't init a player if the component is immediately unmounted.
+
 			initTimer = setTimeout(() => {
+
 				if (
 					!options ||
 					!options.sources ||
@@ -125,6 +165,7 @@ export const VideoJS = (props) => {
 		}
 
 		return () => {
+
 			clearTimeout(initTimer);
 		};
 	}, [options, skin, onPlay, onPause, onReady]);
