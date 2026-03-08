@@ -5,7 +5,6 @@ import {
 	MediaPlaceholder,
 	MediaReplaceFlow,
 	useBlockProps,
-	store as blockEditorStore,
 } from '@wordpress/block-editor';
 
 import { useEffect, useState } from '@wordpress/element';
@@ -15,7 +14,7 @@ import { store as noticesStore } from '@wordpress/notices';
 
 import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
-import CollectionBlock from './CollectionBlock';
+import ListBlock from './ListBlock';
 import './editor.scss';
 
 export default function Edit({
@@ -129,11 +128,11 @@ export default function Edit({
 				withIllustration={true}
 				icon={icon}
 				label={__(
-					'Videopack Video Collection',
+					'Videopack Video List',
 					'video-embed-thumbnail-generator'
 				)}
 				instructions={__(
-					'Select video files to create a collection.',
+					'Select video files to create a list.',
 					'video-embed-thumbnail-generator'
 				)}
 			>
@@ -188,7 +187,7 @@ export default function Edit({
 				/>
 			</BlockControls>
 
-			<CollectionBlock
+			<ListBlock
 				setAttributes={setAttributes}
 				attributes={attributes}
 				options={options}
