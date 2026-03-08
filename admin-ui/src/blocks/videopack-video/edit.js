@@ -1,5 +1,7 @@
+/* global videopack_config */
+
 import { getBlobByURL, isBlobURL } from '@wordpress/blob';
-import { Button, Placeholder } from '@wordpress/components';
+import { Placeholder } from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
@@ -75,7 +77,13 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	}, []);
 
 	useEffect(() => {
-		if (!id && src) {
+		if (src === 'videopack-preview-video') {
+			setAttributes({
+				src:
+					videopack_config.url +
+					'/src/images/Adobestock_469037984.mp4',
+			});
+		} else if (!id && src && src !== 'videopack-preview-video') {
 			setExternalSourceGroups(null);
 			apiFetch({
 				path: `/videopack/v1/sources?url=${encodeURIComponent(src)}`,
