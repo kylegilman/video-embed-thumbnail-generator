@@ -23,11 +23,12 @@ import {
 	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
-import { useEffect, useState, useMemo } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import TextControlOnBlur from './TextControlOnBlur';
 import PerCodecQualitySettings from './PerCodecQualitySettings';
 import WatermarkSettingsPanel from './WatermarkSettingsPanel';
 import VideopackTooltip from './VideopackTooltip';
+import useResolutions from '../../../hooks/useResolutions';
 
 const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const { isNetworkActive } = videopack_config;
@@ -78,44 +79,10 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			});
 	}, []);
 
-	const currentResolutions = useMemo(() => {
-		// Filter out the custom resolution from the static list, as it will be re-added if enabled.
-		let resolutionsList = videopack_config.resolutions.filter(
-			(r) => !r.is_custom
-		);
-
-		if (enable_custom_resolution) {
-			const height = parseInt(custom_resolution, 10) || 900;
-			const id = String(height);
-			const width = Math.ceil((height * 16) / 9);
-			const name = sprintf(
-				/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-				__('Custom (%sp)', 'video-embed-thumbnail-generator'),
-				height
-			);
-
-			// Remove any existing resolution with the same ID to avoid duplicates.
-			resolutionsList = resolutionsList.filter((r) => r.id !== id);
-
-			resolutionsList.push({
-				id,
-				name,
-				height,
-				width,
-				is_custom: true,
-			});
-		}
-
-		return resolutionsList.sort((a, b) => {
-			if (a.id === 'fullres') {
-				return -1;
-			}
-			if (b.id === 'fullres') {
-				return 1;
-			}
-			return b.height - a.height;
-		});
-	}, [enable_custom_resolution, custom_resolution]);
+	const currentResolutions = useResolutions(
+		enable_custom_resolution,
+		custom_resolution
+	);
 
 	const EncodeFormatGrid = () => {
 		const { codecs } = videopack_config;
@@ -188,7 +155,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								label={resolution.name}
 								checked={
 									!!currentEncode?.[codec.id]?.resolutions?.[
-										resolution.id
+									resolution.id
 									]
 								}
 								onChange={(isChecked) =>
@@ -339,20 +306,20 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						help={
 							isNetworkActive
 								? __(
-										'This setting is controlled at the network level.',
-										'video-embed-thumbnail-generator'
-									)
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
 								: __(
-										'Leave blank if FFmpeg is in your system path.'
-									)
+									'Leave blank if FFmpeg is in your system path.'
+								)
 						}
 						disabled={isNetworkActive}
 						title={
 							isNetworkActive
 								? __(
-										'This setting is controlled by the network administrator.',
-										'video-embed-thumbnail-generator'
-									)
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
 								: null
 						}
 					/>
@@ -510,18 +477,18 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						>
 							{encodingBatch.isProcessing
 								? sprintf(
-										/* translators: 1: current count, 2: total count */
-										__(
-											'Processing %1$d / %2$d',
-											'video-embed-thumbnail-generator'
-										),
-										encodingBatch.progress.current,
-										encodingBatch.progress.total
-									)
-								: __(
-										'Encode default formats',
+									/* translators: 1: current count, 2: total count */
+									__(
+										'Processing %1$d / %2$d',
 										'video-embed-thumbnail-generator'
-									)}
+									),
+									encodingBatch.progress.current,
+									encodingBatch.progress.total
+								)
+								: __(
+									'Encode default formats',
+									'video-embed-thumbnail-generator'
+								)}
 						</Button>
 						<VideopackTooltip
 							text={__(
@@ -642,17 +609,17 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					title={
 						isNetworkActive
 							? __(
-									'This setting is controlled by the network administrator.',
-									'video-embed-thumbnail-generator'
-								)
+								'This setting is controlled by the network administrator.',
+								'video-embed-thumbnail-generator'
+							)
 							: null
 					}
 					help={
 						isNetworkActive
 							? __(
-									'This setting is controlled at the network level.',
-									'video-embed-thumbnail-generator'
-								)
+								'This setting is controlled at the network level.',
+								'video-embed-thumbnail-generator'
+							)
 							: null
 					}
 				/>
@@ -681,17 +648,17 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					title={
 						isNetworkActive
 							? __(
-									'This setting is controlled by the network administrator.',
-									'video-embed-thumbnail-generator'
-								)
+								'This setting is controlled by the network administrator.',
+								'video-embed-thumbnail-generator'
+							)
 							: null
 					}
 					help={
 						isNetworkActive
 							? __(
-									'This setting is controlled at the network level.',
-									'video-embed-thumbnail-generator'
-								)
+								'This setting is controlled at the network level.',
+								'video-embed-thumbnail-generator'
+							)
 							: null
 					}
 				/>
@@ -715,17 +682,17 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					title={
 						isNetworkActive
 							? __(
-									'This setting is controlled by the network administrator.',
-									'video-embed-thumbnail-generator'
-								)
+								'This setting is controlled by the network administrator.',
+								'video-embed-thumbnail-generator'
+							)
 							: null
 					}
 					help={
 						isNetworkActive
 							? __(
-									'This setting is controlled at the network level.',
-									'video-embed-thumbnail-generator'
-								)
+								'This setting is controlled at the network level.',
+								'video-embed-thumbnail-generator'
+							)
 							: null
 					}
 				/>

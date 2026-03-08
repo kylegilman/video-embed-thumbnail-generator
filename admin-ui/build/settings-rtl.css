@@ -2,15 +2,14 @@
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoPlayer/VideoPlayer.scss ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
 .wp-block-videopack-videopack-video {
-  width: var(--wp--style--global--content-size);
-  max-width: 100%;
+  width: 100%;
+  max-width: var(--wp--style--global--content-size);
 }
 .wp-block-videopack-videopack-video.alignwide {
-  width: var(--wp--style--global--wide-size);
-  max-width: 100%;
+  max-width: var(--wp--style--global--wide-size);
 }
 .wp-block-videopack-videopack-video.alignfull {
-  width: auto;
+  max-width: none;
 }
 .wp-block-videopack-videopack-video.aligncenter {
   margin-right: auto;
@@ -23,6 +22,31 @@
 .videopack-wrapper {
   margin: 1em 0;
   position: relative;
+  container-type: inline-size;
+}
+@container (max-width: 499px) {
+  .videopack-wrapper .vjs-big-play-button,
+  .videopack-wrapper .mejs-overlay-button {
+    transform: scale(0.9);
+  }
+}
+@container (max-width: 399px) {
+  .videopack-wrapper .vjs-big-play-button,
+  .videopack-wrapper .mejs-overlay-button {
+    transform: scale(0.8);
+  }
+}
+@container (max-width: 359px) {
+  .videopack-wrapper .vjs-big-play-button,
+  .videopack-wrapper .mejs-overlay-button {
+    transform: scale(0.7);
+  }
+}
+@container (max-width: 260px) {
+  .videopack-wrapper .vjs-big-play-button,
+  .videopack-wrapper .mejs-overlay-button {
+    transform: scale(0.6);
+  }
 }
 .videopack-wrapper.videopack-wrapper-auto-left {
   margin-right: auto;
@@ -69,7 +93,8 @@
 }
 .videopack-wrapper.videopack-fixed-aspect .videopack-player video,
 .videopack-wrapper.videopack-fixed-aspect .videopack-player .video-js,
-.videopack-wrapper.videopack-fixed-aspect .videopack-player .mejs-container {
+.videopack-wrapper.videopack-fixed-aspect .videopack-player .mejs-container,
+.videopack-wrapper.videopack-fixed-aspect .videopack-player .wp-video {
   width: 100% !important;
   height: 100% !important;
 }
@@ -106,7 +131,6 @@
 }
 .videopack-wrapper .videopack-player.vjs-theme-sea .vjs-menu-button .vjs-menu-content {
   background-color: hsla(0, 0%, 100%, 0.4);
-  bottom: 2.5em;
 }
 .videopack-wrapper .videopack-player.vjs-theme-sea .vjs-button:hover li {
   color: white;
@@ -200,9 +224,37 @@
 .videopack-wrapper .vjs-res-button span.vjs-control-text {
   display: none;
 }
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu {
+  bottom: 100%;
+  margin-bottom: 0;
+  /* Alignment shifts for player boundaries */
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-right,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-right {
+  right: auto;
+  left: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-right .vjs-menu-content,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-right .vjs-menu-content {
+  right: auto;
+  left: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-left,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-left {
+  right: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu.vjs-lock-showing.vjs-menu-align-left .vjs-menu-content,
+.videopack-wrapper .vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu.vjs-menu-align-left .vjs-menu-content {
+  right: 0;
+}
+.videopack-wrapper .vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+  bottom: 0;
+}
 .videopack-wrapper .vjs-res-button .vjs-menu .vjs-menu-content,
 .videopack-wrapper .vjs-res-button + .vjs-menu .vjs-menu-content {
   overflow: visible;
+  bottom: 0;
 }
 .videopack-wrapper .vjs-res-button .vjs-menu li.vjs-menu-item,
 .videopack-wrapper .vjs-res-button + .vjs-menu li.vjs-menu-item {
@@ -221,9 +273,6 @@
   bottom: 0;
   margin-right: 0.2em;
   margin-bottom: 0;
-  background-color: #2B333F;
-  /* Fallback */
-  background-color: var(--vjs-menu-background, #2B333F);
   min-width: 8em;
   border-radius: 0.3em;
   height: auto;
@@ -275,7 +324,6 @@
 .videopack-wrapper ul li.vjs-menu-title.vjs-res-menu-title:hover {
   cursor: default;
   background-color: transparent;
-  color: #ccc;
   box-shadow: none;
 }
 .videopack-wrapper .videopack_temp_thumb {

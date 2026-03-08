@@ -39,6 +39,8 @@ const VideoList = ({
 		gallery_source,
 		gallery_category,
 		gallery_tag,
+		videos,
+		collection_video_limit,
 	} = attributes;
 
 	const [listVideos, setListVideos] = useState([]);
@@ -108,6 +110,7 @@ const VideoList = ({
 			gallery_source,
 			gallery_category,
 			gallery_tag,
+			videos: videos !== undefined ? videos : collection_video_limit,
 		};
 
 		setIsLoading(true);
@@ -141,6 +144,8 @@ const VideoList = ({
 		gallery_source,
 		gallery_category,
 		gallery_tag,
+		videos,
+		collection_video_limit,
 		listPage,
 		refreshTrigger,
 	]);
@@ -240,11 +245,12 @@ const VideoList = ({
 	return (
 		<div className="videopack-video-list-wrapper">
 			<div className="videopack-video-list">
-				{isLoading ? (
+				{isLoading && (
 					<div className="videopack-loading-container">
 						<Spinner />
 					</div>
-				) : listVideos && listVideos.length > 0 ? (
+				)}
+				{!isLoading && listVideos && listVideos.length > 0 && (
 					<DndContext
 						sensors={sensors}
 						collisionDetection={closestCenter}
@@ -270,7 +276,9 @@ const VideoList = ({
 							))}
 						</SortableContext>
 					</DndContext>
-				) : (
+				)}
+				{!isLoading &&
+					(!listVideos || listVideos.length === 0) &&
 					isEditing && (
 						<Placeholder
 							icon="format-video"
@@ -283,8 +291,7 @@ const VideoList = ({
 								'video-embed-thumbnail-generator'
 							)}
 						/>
-					)
-				)}
+					)}
 			</div>
 			{totalPages > 1 && <Pagination />}
 		</div>

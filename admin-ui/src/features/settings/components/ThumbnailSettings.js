@@ -11,15 +11,7 @@ import {
 import {
 	startBatchProcess,
 	getBatchProgress,
-	getThumbnailCandidates,
-	createThumbnailFromCanvas,
-	setPosterImage,
 } from '../../../utils/utils';
-import {
-	getVideoMetadata,
-	calculateTimecodes,
-	captureVideoFrame,
-} from '../../../utils/video-capture';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import ChooseFromLibrary from './ChooseFromLibrary';
 import WatermarkSettingsPanel from './WatermarkSettingsPanel';
@@ -83,84 +75,14 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 
 	const executeGenerateAllThumbnails = async () => {
 		try {
-			if (!ffmpeg_exists) {
-				generationBatch.setIsProcessing(true);
-				generationBatch.setProgress({ current: 0, total: 0 });
-
-				const candidates = await getThumbnailCandidates();
-				const total = candidates.length;
-
-				if (total === 0) {
-					generationBatch.setIsProcessing(false);
-					generationBatch.showAlert(
-						__(
-							'No videos found to process.',
-							'video-embed-thumbnail-generator'
-						)
-					);
-					return;
-				}
-
-				generationBatch.setProgress({ current: 0, total });
-
-				const totalThumbnails = Number(auto_thumb_number) || 1;
-				const position = Number(auto_thumb_position) || 50;
-				const watermarkOptions = ffmpeg_thumb_watermark;
-
-				for (let i = 0; i < total; i++) {
-					const { id, url } = candidates[i];
-					try {
-						const video = await getVideoMetadata(url);
-						const duration = video.duration;
-
-						if (duration) {
-							const timecodes = calculateTimecodes(duration, 1, {
-								position,
-							});
-							// We only generate one thumbnail for batch processing to avoid overload
-							if (timecodes.length > 0) {
-								const canvas = await captureVideoFrame(
-									video,
-									timecodes[0],
-									watermarkOptions
-								);
-								const response =
-									await createThumbnailFromCanvas(
-										canvas,
-										id,
-										url
-									);
-								if (response && response.thumb_url) {
-									await setPosterImage(
-										id,
-										response.thumb_url
-									);
-								}
-							}
-						}
-					} catch (e) {
-						console.error(
-							`Failed to generate thumbnail for video ${id}`,
-							e
-						);
-					}
-					generationBatch.setProgress((prev) => ({
-						...prev,
-						current: i + 1,
-					}));
-				}
-				generationBatch.setIsProcessing(false);
-			} else {
-				// Server-side FFmpeg processing
-				generationBatch.runPolling(
-					() => startBatchProcess('thumbs'),
-					() => getBatchProgress('thumbs'),
-					__(
-						'No videos found to process.',
-						'video-embed-thumbnail-generator'
-					)
-				);
-			}
+			generationBatch.runPolling(
+				() => startBatchProcess('thumbs'),
+				() => getBatchProgress('thumbs'),
+				__(
+					'No videos found to process.',
+					'video-embed-thumbnail-generator'
+				)
+			);
 		} catch (error) {
 			console.error(error);
 			generationBatch.setIsProcessing(false);

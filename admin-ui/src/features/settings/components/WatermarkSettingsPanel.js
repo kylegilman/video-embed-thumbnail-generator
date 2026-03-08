@@ -40,7 +40,8 @@ const WatermarkSettingsPanel = ({
 		if (watermarkSettings?.url && !baseFrame) {
 			const videoUrl =
 				videopack_config.url + '/src/images/Adobestock_469037984.mp4';
-			captureVideoFrame(videoUrl, 1.0)
+			const videoOffset = Math.random() * 1.9;
+			captureVideoFrame(videoUrl, videoOffset)
 				.then((canvas) => {
 					setBaseFrame(canvas);
 				})
