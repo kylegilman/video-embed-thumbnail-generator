@@ -32,35 +32,37 @@ class Shortcode {
 		}
 
 		return array(
-			'default_atts'     => array(
-				'id'               => null,
-				'orderby'          => 'menu_order ID',
-				'order'            => 'ASC',
-				'videos'           => $this->options['collection_video_limit'],
-				'start'            => '',
-				'gallery'          => 'false',
-				'gallery_source'   => 'current',
-				'gallery_category' => '',
-				'gallery_tag'      => '',
-				'layout'           => 'gallery',
-				'gallery_orderby'  => 'menu_order ID',
-				'gallery_order'    => 'ASC',
-				'gallery_exclude'  => '',
-				'gallery_include'  => '',
-				'gallery_id'       => $post_id,
-				'caption'          => '',
-				'description'      => '',
-				'track_kind'       => 'subtitles',
-				'track_srclang'    => substr( get_bloginfo( 'language' ), 0, 2 ),
-				'track_src'        => '',
-				'track_label'      => get_bloginfo( 'language' ),
-				'track_default'    => '',
-				'title'            => '',
-				'text_tracks'      => array(),
+			'default_atts'    => array(
+				'id'                            => null,
+				'orderby'                       => 'menu_order ID',
+				'order'                         => 'ASC',
+				'videos'                        => $this->options['collection_video_limit'],
+				'start'                         => '',
+				'gallery'                       => 'false',
+				'gallery_source'                => 'current',
+				'gallery_category'              => '',
+				'gallery_tag'                   => '',
+				'gallery_orderby'               => 'menu_order ID',
+				'gallery_order'                 => 'ASC',
+				'gallery_exclude'               => '',
+				'gallery_include'               => '',
+				'gallery_id'                    => $post_id,
+				'caption'                       => '',
+				'description'                   => '',
+				'track_kind'                    => 'subtitles',
+				'track_srclang'                 => substr( get_bloginfo( 'language' ), 0, 2 ),
+				'track_src'                     => '',
+				'track_label'                   => get_bloginfo( 'language' ),
+				'track_default'                 => '',
+				'title'                         => '',
+				'text_tracks'                   => array(),
+				'enable_collection_video_limit' => false,
+				'collection_video_limit'        => -1,
 			),
-			'options_atts'     => array(
+			'options_atts'    => array(
 				'width',
 				'height',
+				'legacy_dimensions',
 				'fullwidth',
 				'fixed_aspect',
 				'align',
@@ -102,11 +104,10 @@ class Shortcode {
 				'nativecontrolsfortouch',
 				'schema',
 				'gallery_thumb',
-				'layout',
 				'gallery_orderby',
 				'gallery_order',
 			),
-			'checkbox_convert' => array(
+			'boolean_convert' => array(
 				'endofvideooverlaysame',
 				'loop',
 				'playsinline',
@@ -132,15 +133,16 @@ class Shortcode {
 				'right_click',
 				'skip_buttons',
 				'gallery',
+				'enable_collection_video_limit',
 			),
 		);
 	}
 
 	public function get_block_attributes() {
-		$definitions      = $this->get_attribute_definitions();
-		$default_atts     = $definitions['default_atts'];
-		$options_atts     = $definitions['options_atts'];
-		$checkbox_convert = $definitions['checkbox_convert'];
+		$definitions     = $this->get_attribute_definitions();
+		$default_atts    = $definitions['default_atts'];
+		$options_atts    = $definitions['options_atts'];
+		$boolean_convert = $definitions['boolean_convert'];
 
 		$attributes = array();
 
@@ -180,7 +182,7 @@ class Shortcode {
 			}
 		}
 
-		foreach ( $checkbox_convert as $key ) {
+		foreach ( $boolean_convert as $key ) {
 			if ( isset( $attributes[ $key ] ) ) {
 				$attributes[ $key ]['type'] = 'boolean';
 			} else {
@@ -212,10 +214,10 @@ class Shortcode {
 
 	public function atts( $atts ) {
 
-		$definitions      = $this->get_attribute_definitions();
-		$default_atts     = $definitions['default_atts'];
-		$options_atts     = $definitions['options_atts'];
-		$checkbox_convert = $definitions['checkbox_convert'];
+		$definitions     = $this->get_attribute_definitions();
+		$default_atts    = $definitions['default_atts'];
+		$options_atts    = $definitions['options_atts'];
+		$boolean_convert = $definitions['boolean_convert'];
 
 		$deprecated_atts = array(
 			'controlbar'    => 'controls',
@@ -296,7 +298,7 @@ class Shortcode {
 		}
 
 		// Convert boolean-like attributes to booleans
-		foreach ( $checkbox_convert as $key ) {
+		foreach ( $boolean_convert as $key ) {
 			if ( isset( $query_atts[ $key ] ) ) {
 				if ( $query_atts[ $key ] === 'true' || $query_atts[ $key ] === true || $query_atts[ $key ] === '1' || $query_atts[ $key ] === 1 ) {
 					$query_atts[ $key ] = true;
@@ -311,6 +313,17 @@ class Shortcode {
 		// Ensure gallery_thumb is always an integer
 		if ( isset( $query_atts['gallery_thumb'] ) ) {
 			$query_atts['gallery_thumb'] = intval( $query_atts['gallery_thumb'] );
+		}
+
+		// Map collection_video_limit -> videos only if it was passed explicitly (e.g. from the block)
+		if ( ! empty( $query_atts['enable_collection_video_limit'] ) ) {
+			$query_atts['videos'] = $query_atts['collection_video_limit'];
+		} elseif ( is_array( $atts ) && array_key_exists( 'enable_collection_video_limit', $atts ) ) {
+			// This is a block instance where the toggle is explicitly OFF, so we override to no limit.
+			$query_atts['videos'] = -1;
+		} elseif ( is_array( $atts ) && isset( $atts['collection_video_limit'] ) ) {
+			// This handles legacy shortcodes where only the limit was passed.
+			$query_atts['videos'] = $atts['collection_video_limit'];
 		}
 
 		if ( $query_atts['auto_res'] == 'true' ) {
@@ -476,67 +489,11 @@ class Shortcode {
 				$query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
 			}
 
-			if ( isset( $query_atts['layout'] ) && 'list' === $query_atts['layout'] ) {
-				$gallery = new Gallery( $this->options_manager );
-				$page    = 1;
-				if ( get_query_var( 'paged' ) ) {
-					$page = get_query_var( 'paged' );
-				} elseif ( get_query_var( 'page' ) ) {
-					$page = get_query_var( 'page' );
-				}
+			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+			$player->enqueue_scripts();
 
-				$attachments = $gallery->get_gallery_videos( $page, $query_atts );
-				$code        = '<div class="videopack-video-list">';
-
-				if ( $attachments->have_posts() ) {
-					foreach ( $attachments->posts as $post ) {
-						$source = \Videopack\Video_Source\Source_Factory::create( $post->ID, $this->options_manager );
-						if ( $source && $source->exists() ) {
-							$video_atts             = $query_atts;
-							$video_atts['id']       = $post->ID;
-							$video_atts['autoplay'] = false;
-
-							$final_atts = $this->get_final_atts( $video_atts, $source );
-
-							if ( isset( $final_atts['embed_method'] ) ) {
-								$player_type = $final_atts['embed_method'];
-							} else {
-								$player_type = $this->options['embed_method'];
-							}
-							$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options_manager );
-							$player->set_source( $source );
-							$player->set_atts( $final_atts );
-							$player->enqueue_scripts();
-
-							$code .= '<div class="videopack-list-item">';
-							$code .= $player->get_player_code( $final_atts );
-							$code .= '</div>';
-						}
-					}
-				}
-				$code .= '</div>';
-
-				if ( isset( $query_atts['gallery_pagination'] ) && true === $query_atts['gallery_pagination'] ) {
-					$big        = 999999999; // need an unlikely integer
-					$pagination = paginate_links(
-						array(
-							'base'    => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-							'format'  => '?paged=%#%',
-							'current' => max( 1, $page ),
-							'total'   => $attachments->max_num_pages,
-						)
-					);
-					if ( $pagination ) {
-						$code .= '<div class="videopack-gallery-pagination">' . $pagination . '</div>';
-					}
-				}
-			} else {
-				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
-				$player->enqueue_scripts();
-
-				$gallery = new Gallery( $this->options_manager );
-				$code    = $gallery->gallery_page( 1, $query_atts );
-			}
+			$gallery = new Gallery( $this->options_manager );
+			$code    = $gallery->gallery_page( 1, $query_atts );
 		} else {
 			$post_id = get_the_ID();
 			if ( ! $post_id && ! is_admin() ) {
@@ -544,10 +501,15 @@ class Shortcode {
 			}
 
 			// Determine the video source based on shortcode attributes or content
-			$source_ids = array();
+			$source_ids  = array();
+			$attachments = null;
+			$page        = 1;
 
 			if ( ! empty( $query_atts['id'] ) ) {
-				$source_ids[] = $query_atts['id'];
+				$ids = explode( ',', $query_atts['id'] );
+				foreach ( $ids as $id ) {
+					$source_ids[] = trim( $id );
+				}
 			} elseif ( ! empty( $content ) ) {
 				// Workaround for relative video URL
 				if ( substr( $content, 0, 1 ) === '/' ) {
@@ -555,27 +517,29 @@ class Shortcode {
 				}
 				$source_ids[] = trim( $content );
 			} else {
-				// If no explicit source, try to find the first video attachment of the current post
-				$args              = array(
-					'numberposts'    => 1,
-					'post_mime_type' => 'video',
-					'post_parent'    => $post_id,
-					'post_status'    => null,
-					'post_type' => 'attachment', // phpcs:ignore
-					'orderby'        => $query_atts['orderby'],
-					'order'          => $query_atts['order'],
-				);
-				$video_attachments = get_posts( $args );
-				if ( $video_attachments ) {
-					foreach ( $video_attachments as $attachment ) {
-						$source_ids[] = $attachment->ID;
+				// We fallback to get_gallery_videos for multiple querying capabilities
+				if ( get_query_var( 'paged' ) ) {
+					$page = get_query_var( 'paged' );
+				} elseif ( get_query_var( 'page' ) ) {
+					$page = get_query_var( 'page' );
+				}
+
+				$gallery     = new Gallery( $this->options_manager );
+				$attachments = $gallery->get_gallery_videos( $page, $query_atts );
+
+				if ( $attachments->have_posts() ) {
+					foreach ( $attachments->posts as $post ) {
+						$source_ids[] = $post->ID;
 					}
-				} else {
-					return ''; // No video source found, return empty
 				}
 			}
 
-			$code = '';
+			$is_list = $attachments || count( $source_ids ) > 1;
+			$code    = '';
+
+			if ( $is_list ) {
+				$code .= '<div class="videopack-video-list">';
+			}
 
 			foreach ( $source_ids as $source_input ) {
 				// Create the Source object
@@ -604,7 +568,32 @@ class Shortcode {
 				$player->enqueue_scripts();
 
 				// Get the generated HTML code for the video player
+				if ( $is_list ) {
+					$code .= '<div class="videopack-list-item">';
+				}
 				$code .= $player->get_player_code( $final_atts );
+				if ( $is_list ) {
+					$code .= '</div>';
+				}
+			}
+
+			if ( $is_list ) {
+				$code .= '</div>';
+
+				if ( $attachments && ! empty( $query_atts['gallery_pagination'] ) ) {
+					$big        = 999999999;
+					$pagination = paginate_links(
+						array(
+							'base'    => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+							'format'  => '?paged=%#%',
+							'current' => max( 1, $page ),
+							'total'   => $attachments->max_num_pages,
+						)
+					);
+					if ( $pagination ) {
+						$code .= '<div class="videopack-gallery-pagination">' . $pagination . '</div>';
+					}
+				}
 			}
 		}
 
