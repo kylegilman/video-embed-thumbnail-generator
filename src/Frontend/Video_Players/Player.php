@@ -198,6 +198,18 @@ class Player {
 			}
 		}
 
+		if ( ! isset( $grouped_sources[ $auto_codec ] ) && ! empty( $grouped_sources ) ) {
+			if ( count( $grouped_sources ) === 1 ) {
+				reset( $grouped_sources );
+				$auto_codec = key( $grouped_sources );
+			} elseif ( isset( $grouped_sources['h264'] ) ) {
+				$auto_codec = 'h264';
+			} else {
+				reset( $grouped_sources );
+				$auto_codec = key( $grouped_sources );
+			}
+		}
+
 		// Sort groups so the auto_codec comes first
 		if ( isset( $grouped_sources[ $auto_codec ] ) ) {
 			$preferred_group = $grouped_sources[ $auto_codec ];
@@ -277,7 +289,7 @@ class Player {
 		$video_variables = array(
 			'id'                => 'videopack_player_' . $this->get_id(),
 			'attachment_id'     => $this->get_source() ? $this->get_source()->get_id() : 0,
-			'player_type'       => $this->options['embed_method'],
+			'embed_method'      => $this->options['embed_method'],
 			'width'             => $this->atts['width'],
 			'height'            => $this->atts['height'],
 			'fullwidth'         => $this->atts['fullwidth'],
@@ -418,25 +430,39 @@ class Player {
 
 	protected function get_wrapper_start_html(): string {
 		$alignclass = '';
-		/* if ( $this->atts['inline'] ) {
-		$alignclass .= ' videopack-wrapper-inline';
-		if ( in_array( $this->atts['align'], array( 'left', 'right' ), true ) ) {
-		$alignclass .= ' videopack-wrapper-inline-' . $this->atts['align'];
+		if ( $this->atts['inline'] ) {
+			$alignclass .= ' videopack-wrapper-inline';
+			if ( in_array( $this->atts['align'], array( 'left', 'right' ), true ) ) {
+				$alignclass .= ' videopack-wrapper-inline-' . $this->atts['align'];
+			} elseif ( 'center' === $this->atts['align'] ) {
+				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
+			}
 		} elseif ( 'center' === $this->atts['align'] ) {
-		$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
-		}
-		} elseif ( 'center' === $this->atts['align'] ) {
-		$alignclass = ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
+				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
 		} elseif ( 'right' === $this->atts['align'] ) {
-		$alignclass = ' videopack-wrapper-auto-left';
-		} */
+			$alignclass .= ' videopack-wrapper-auto-left';
+		}
 
 		$meta_bar_class = $this->has_meta_bar() ? ' meta-bar-visible' : '';
-		$style          = '';
+		$style_attrs    = array();
 
 		if ( $this->is_fixed_aspect() ) {
-			$alignclass .= ' videopack-fixed-aspect';
-			$style       = ' style="aspect-ratio: ' . esc_attr( $this->get_fixed_aspect_ratio() ) . ';"';
+			$alignclass   .= ' videopack-fixed-aspect';
+			$style_attrs[] = 'aspect-ratio: ' . esc_attr( $this->get_fixed_aspect_ratio() );
+		}
+
+		if ( $this->atts['legacy_dimensions'] ) {
+			if ( $this->atts['fullwidth'] ) {
+				$style_attrs[] = 'width: 100%';
+			} elseif ( $this->atts['width'] ) {
+				$style_attrs[] = 'width: ' . esc_attr( $this->atts['width'] ) . ( is_numeric( $this->atts['width'] ) ? 'px' : '' );
+				$style_attrs[] = 'max-width: 100%';
+			}
+		}
+
+		$style = '';
+		if ( ! empty( $style_attrs ) ) {
+			$style = ' style="' . implode( '; ', $style_attrs ) . ';"';
 		}
 
 		$html           = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '"' . $style . '>';

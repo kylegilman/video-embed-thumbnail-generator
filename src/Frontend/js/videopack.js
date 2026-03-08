@@ -64,9 +64,9 @@
 				return;
 			}
 
-			if (videoVars.player_type.startsWith('Video.js')) {
+			if (videoVars.embed_method.startsWith('Video.js')) {
 				this.loadVideoJS(playerWrapper, videoVars);
-			} else if (videoVars.player_type === 'WordPress Default') {
+			} else if (videoVars.embed_method === 'WordPress Default') {
 				// ME.js is often auto-initialized by WP. We'll set up our hooks after it's ready.
 				// The success callback hook in init() should handle this.
 				// If it's already initialized, we set it up now.
@@ -252,9 +252,9 @@
 				}
 			}
 
-			if (videoVars.player_type.startsWith('Video.js')) {
+			if (videoVars.embed_method.startsWith('Video.js')) {
 				this.setupVideoJSPlayer(playerWrapper, videoVars);
-			} else if (videoVars.player_type === 'WordPress Default') {
+			} else if (videoVars.embed_method === 'WordPress Default') {
 				this.setupMEJSPlayer(playerWrapper, videoVars);
 			}
 
@@ -278,7 +278,7 @@
 				resizeObserver.observe(target);
 
 				// Cleanup observer on player disposal.
-				if (videoVars.player_type.startsWith('Video.js')) {
+				if (videoVars.embed_method.startsWith('Video.js')) {
 					const player = videojs.getPlayer('videopack_video_' + playerId);
 					if (player) {
 						player.on('dispose', () => {
@@ -608,10 +608,22 @@
 			const targetHeight = targetWidth * aspectRatio;
 
 			let currentCodec = videoVars.auto_codec;
+
+			if (videoVars.source_groups && !videoVars.source_groups[currentCodec]) {
+				const groupIds = Object.keys(videoVars.source_groups);
+				if (groupIds.length === 1) {
+					currentCodec = groupIds[0];
+				} else if (videoVars.source_groups['h264']) {
+					currentCodec = 'h264';
+				} else if (groupIds.length > 0) {
+					currentCodec = groupIds[0];
+				}
+			}
+
 			let player = null;
 
 			// Determine current codec and player instance
-			if (videoVars.player_type.startsWith('Video.js') && typeof videojs !== 'undefined') {
+			if (videoVars.embed_method.startsWith('Video.js') && typeof videojs !== 'undefined') {
 				player = videojs.getPlayer(`videopack_video_${playerId}`);
 				if (player && player.getCurrentCodec) {
 					const detectedCodec = player.getCurrentCodec();
@@ -619,7 +631,7 @@
 						currentCodec = detectedCodec;
 					}
 				}
-			} else if (videoVars.player_type === 'WordPress Default' && typeof window.mejs !== 'undefined') {
+			} else if (videoVars.embed_method === 'WordPress Default' && typeof window.mejs !== 'undefined') {
 				// For MEJS, check the selected radio button in the source chooser
 				const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
 				const mejsContainer = playerWrapper ? playerWrapper.querySelector('.mejs-container') : null;
@@ -638,11 +650,10 @@
 							currentCodec = player.currentCodec;
 						} else {
 							let autoCodecSupported = false;
-							if (videoVars.auto_codec && videoVars.source_groups[videoVars.auto_codec] && player.media && typeof player.media.canPlayType === 'function') {
-								const testSource = videoVars.source_groups[videoVars.auto_codec].sources[0];
+							if (currentCodec && videoVars.source_groups[currentCodec] && player.media && typeof player.media.canPlayType === 'function') {
+								const testSource = videoVars.source_groups[currentCodec].sources[0];
 								if (testSource && player.media.canPlayType(testSource.type) !== '') {
 									autoCodecSupported = true;
-									currentCodec = videoVars.auto_codec;
 								}
 							}
 
@@ -688,12 +699,12 @@
 			}
 
 			// Switch resolution if needed
-			if (videoVars.player_type.startsWith('Video.js') && player && player.changeRes) {
+			if (videoVars.embed_method.startsWith('Video.js') && player && player.changeRes) {
 				const targetRes = bestSource.resolution || bestSource['data-res'];
 				if (player.getCurrentRes() !== targetRes) {
 					player.changeRes(targetRes, currentCodec);
 				}
-			} else if (videoVars.player_type === 'WordPress Default' && player && player.changeRes) {
+			} else if (videoVars.embed_method === 'WordPress Default' && player && player.changeRes) {
 				player.changeRes(bestSource.src, currentCodec);
 			}
 		},
@@ -864,7 +875,7 @@
 				clickTrap.classList.add('is-visible');
 			}
 
-			if (videoVars.player_type.startsWith('Video.js')) {
+			if (videoVars.embed_method.startsWith('Video.js')) {
 				const playerId = playerWrapper.dataset.id;
 				const player = videojs.getPlayer(`videopack_video_${playerId}`);
 				if (player) {
@@ -876,7 +887,7 @@
 						controls.style.display = 'none';
 					}
 				}
-			} else if (videoVars.player_type === 'WordPress Default') {
+			} else if (videoVars.embed_method === 'WordPress Default') {
 				const video = playerWrapper.querySelector('video');
 				if (video) {
 					video.pause();
@@ -931,13 +942,13 @@
 				const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
 				let currentTime = 0;
 
-				if (videoVars.player_type.startsWith('Video.js')) {
+				if (videoVars.embed_method.startsWith('Video.js')) {
 					const playerId = playerWrapper.dataset.id;
 					const player = videojs.getPlayer(`videopack_video_${playerId}`);
 					if (player) {
 						currentTime = player.currentTime();
 					}
-				} else if (videoVars.player_type === 'WordPress Default') {
+				} else if (videoVars.embed_method === 'WordPress Default') {
 					const video = playerWrapper.querySelector('video');
 					if (video) {
 						currentTime = video.currentTime;
@@ -1130,7 +1141,7 @@
 
 			const playerWrapper = playerContainer.querySelector('.videopack-player');
 
-			if (videoData.player_type && videoData.player_type.startsWith('Video.js')) {
+			if (videoData.embed_method && videoData.embed_method.startsWith('Video.js')) {
 				this.initPlayer(playerWrapper);
 
 				const checkPlayer = setInterval(() => {
@@ -1150,7 +1161,7 @@
 						});
 					}
 				}, 100);
-			} else if (videoData.player_type === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined') {
+			} else if (videoData.embed_method === 'WordPress Default' && typeof window.MediaElementPlayer !== 'undefined') {
 				const settings = Object.assign({}, window._wpmejsSettings || {});
 				settings.success = (mediaElement, domObject, player) => {
 					this.currentGalleryPlayer = player;
