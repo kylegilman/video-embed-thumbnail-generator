@@ -2,6 +2,9 @@
 
 namespace Videopack\Admin\Encode;
 
+use Videopack\Common\Debug_Logger;
+use Videopack\Admin\Attachment;
+
 class Encode_Attachment {
 	/**
 	 * The ID of the video attachment.
@@ -219,8 +222,8 @@ class Encode_Attachment {
 
 	public function get_formats_by_status( string $status ) {
 		global $wpdb;
-		$formats = array();
-		$results = null;
+		$formats         = array();
+		$results         = null;
 		$current_blog_id = get_current_blog_id(); // Assumes context is correctly set by caller
 
 		if ( $this->is_attachment && is_numeric( $this->id ) ) {
@@ -327,11 +330,11 @@ class Encode_Attachment {
 					$format_array['progress'] = $matching_encode_format->get_progress();
 				}
 
-				$job_data_array         = $matching_encode_format->to_array();
+				$job_data_array = $matching_encode_format->to_array();
 
 				// Preserve the was_picked value determined from file meta
-				$was_picked_value = $format_array['was_picked'];
-				$format_array     = array_merge( $format_array, $job_data_array );
+				$was_picked_value           = $format_array['was_picked'];
+				$format_array               = array_merge( $format_array, $job_data_array );
 				$format_array['was_picked'] = $was_picked_value;
 
 				$format_array['status'] = $matching_encode_format->get_status(); // This is the definitive status.
@@ -377,6 +380,8 @@ class Encode_Attachment {
 				return __( 'Completed', 'video-embed-thumbnail-generator' );
 			case 'deleted':
 				return __( 'Deleted', 'video-embed-thumbnail-generator' );
+			case 'canceled':
+				return __( 'Cancelled', 'video-embed-thumbnail-generator' );
 			case 'needs_insert':
 				return __( 'Finishing', 'video-embed-thumbnail-generator' );
 			default:
@@ -442,15 +447,15 @@ class Encode_Attachment {
 			return $encode_format;
 		}
 
+		Debug_Logger::log( 'Starting FFmpeg process', array( 'command' => implode( ' ', $encode_array ) ) );
+
 		$process = new FFmpeg_Process( $encode_array );
 		try {
+			$process->disableOutput();
 			$process->start(); // Starts the process in the background
-			// It might take a moment for the OS to assign and report the PID
-			// A small sleep might be useful but can be unreliable.
-			// FFmpeg_Process should ideally handle PID retrieval robustly.
-			sleep( 1 ); // Keep for now, but review FFmpeg_Process
 			$pid = $process->getPID();
 			if ( $pid ) {
+				Debug_Logger::log( 'FFmpeg process started successfully', array( 'pid' => $pid ) );
 				$encode_format->set_encode_start( $pid, time() );
 			} else {
 				// Attempt to get error output if PID is not available
@@ -463,14 +468,21 @@ class Encode_Attachment {
 				if ( ! empty( $std_output ) ) {
 					$error_msg .= ' Standard Output: ' . $std_output;
 				}
+				Debug_Logger::log( 'FFmpeg process failed to start (no PID)', array( 'error' => $error_msg ) );
 				$encode_format->set_error( $error_msg );
 			}
 		} catch ( \Symfony\Component\Process\Exception\ProcessTimedOutException $e ) {
-			$encode_format->set_error( __( 'FFmpeg process timed out on start: ', 'video-embed-thumbnail-generator' ) . $e->getMessage() );
+			$msg = __( 'FFmpeg process timed out on start: ', 'video-embed-thumbnail-generator' ) . $e->getMessage();
+			Debug_Logger::log( 'FFmpeg process timeout on start', array( 'error' => $msg ) );
+			$encode_format->set_error( $msg );
 		} catch ( \Symfony\Component\Process\Exception\ProcessFailedException $e ) {
-			$encode_format->set_error( __( 'FFmpeg process failed on start: ', 'video-embed-thumbnail-generator' ) . $e->getMessage() . ' Output: ' . $e->getProcess()->getErrorOutput() );
+			$msg = __( 'FFmpeg process failed on start: ', 'video-embed-thumbnail-generator' ) . $e->getMessage() . ' Output: ' . $e->getProcess()->getErrorOutput();
+			Debug_Logger::log( 'FFmpeg process failure on start', array( 'error' => $msg ) );
+			$encode_format->set_error( $msg );
 		} catch ( \Exception $e ) {
-			$encode_format->set_error( __( 'General error starting FFmpeg: ', 'video-embed-thumbnail-generator' ) . $e->getMessage() );
+			$msg = __( 'General error starting FFmpeg: ', 'video-embed-thumbnail-generator' ) . $e->getMessage();
+			Debug_Logger::log( 'General error starting FFmpeg', array( 'error' => $msg ) );
+			$encode_format->set_error( $msg );
 		} finally {
 			$this->save_format( $encode_format ); // Save PID, status, logfile, or error to DB
 			return $encode_format;
@@ -654,7 +666,7 @@ class Encode_Attachment {
 
 		if ( ! empty( $watermark_options['url'] ) && $video_metadata && $video_metadata->worked && $video_metadata->actualwidth ) {
 
-			$watermark_path = $watermark_options['url'];
+			$watermark_path                    = $watermark_options['url'];
 			$this->current_temp_watermark_path = null; // Reset for this call
 
 			// Check if watermark URL is external and try to get local path
@@ -754,6 +766,8 @@ class Encode_Attachment {
 			$nice_prefix,
 			array(
 				$this->ffmpeg_path,
+				'-nostats',
+				'-hide_banner',
 				'-y', // Overwrite output files without asking
 				'-i',
 				$input_source,
@@ -870,9 +884,9 @@ class Encode_Attachment {
 		// Check for an existing job for this video and format.
 		$is_attachment = is_numeric( $this->id ) && get_post_type( $this->id ) === 'attachment';
 		if ( $is_attachment ) {
-			$existing_job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM %i WHERE attachment_id = %d AND format_id = %s AND blog_id = %d", $this->queue_table_name, $this->id, $format_id, $blog_id ) );
+			$existing_job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE attachment_id = %d AND format_id = %s AND blog_id = %d', $this->queue_table_name, $this->id, $format_id, $blog_id ) );
 		} else {
-			$existing_job = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM %i WHERE input_url = %s AND format_id = %s AND blog_id = %d", $this->queue_table_name, $this->url, $format_id, $blog_id ) );
+			$existing_job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE input_url = %s AND format_id = %s AND blog_id = %d', $this->queue_table_name, $this->url, $format_id, $blog_id ) );
 		}
 
 		if ( $existing_job ) {
@@ -883,17 +897,17 @@ class Encode_Attachment {
 				$wpdb->update(
 					$this->queue_table_name,
 					array(
-						'status'                 => 'queued',
-						'user_id'                => $user_id,
-						'pid'                    => null,
-						'logfile_path'           => null,
-						'started_at'             => null,
-						'completed_at'           => null,
-						'failed_at'              => null,
-						'error_message'          => null,
-						'output_attachment_id'   => null,
-						'retry_count'            => (int) $existing_job->retry_count + 1,
-						'updated_at'             => current_time( 'mysql', true ),
+						'status'               => 'queued',
+						'user_id'              => $user_id,
+						'pid'                  => null,
+						'logfile_path'         => null,
+						'started_at'           => null,
+						'completed_at'         => null,
+						'failed_at'            => null,
+						'error_message'        => null,
+						'output_attachment_id' => null,
+						'retry_count'          => (int) $existing_job->retry_count + 1,
+						'updated_at'           => current_time( 'mysql', true ),
 					),
 					array( 'id' => $job_id )
 				);
@@ -1082,8 +1096,8 @@ class Encode_Attachment {
 		// Build a list of video codecs we are interested in from $this->video_formats
 		if ( ! empty( $codec_output ) ) {
 
-			$lines = preg_split( '/\r\n|\r|\n/', $codec_output );
-			$parsing_codecs = false;
+			$lines           = preg_split( '/\r\n|\r|\n/', $codec_output );
+			$parsing_codecs  = false;
 			$detected_format = null; // Can be 'modern', 'legacy', or null
 
 			foreach ( $lines as $line ) {
@@ -1097,25 +1111,29 @@ class Encode_Attachment {
 
 				$is_encoder = false;
 				$codec_name = null;
-				$matched = false;
+				$matched    = false;
 
 				// If format is unknown or modern, try modern regex
 				if ( $detected_format === null || $detected_format === 'modern' ) {
 					if ( preg_match( '/^\s*([D\.])([E\.])([VASDT\.])([I\.])([L\.])([S\.])\s+([a-zA-Z0-9_\-]+)\s+.*/', $line, $matches ) ) {
-						if ( $detected_format === null ) $detected_format = 'modern';
+						if ( $detected_format === null ) {
+							$detected_format = 'modern';
+						}
 						$is_encoder = ( $matches[2] === 'E' );
 						$codec_name = $matches[7];
-						$matched = true;
+						$matched    = true;
 					}
 				}
 
 				// If not matched yet, and format is unknown or legacy, try legacy regex
 				if ( ! $matched && ( $detected_format === null || $detected_format === 'legacy' ) ) {
 					if ( preg_match( '/^\s*([D\.])([E\.])([V\.])([A\.])([S\.])([I\.])([L\.])([S\.])\s+([a-zA-Z0-9_\-]+)\s+.*/', $line, $matches ) ) {
-						if ( $detected_format === null ) $detected_format = 'legacy';
+						if ( $detected_format === null ) {
+							$detected_format = 'legacy';
+						}
 						$is_encoder = ( $matches[2] === 'E' );
 						$codec_name = $matches[9];
-						$matched = true;
+						$matched    = true;
 					}
 				}
 
@@ -1428,8 +1446,8 @@ class Encode_Attachment {
 			}
 		}
 
-		// Mark the job status as 'deleted' in the database.
-		$encode_format->set_status( 'deleted' );
+		// Mark the job status as 'canceled' in the database.
+		$encode_format->set_status( 'canceled' );
 		// Clear path and URL as the files are gone (or should be)
 		$encode_format->set_path( null );
 		$encode_format->set_url( null );
@@ -1471,7 +1489,7 @@ class Encode_Attachment {
 
 	private function has_pending_jobs( Encode_Format $encode_format ) {
 		global $wpdb;
-		$current_blog_id = get_current_blog_id();
+		$current_blog_id   = get_current_blog_id();
 		$pending_job_count = 0;
 
 		if ( $this->is_attachment && is_numeric( $this->id ) ) {
@@ -1519,10 +1537,10 @@ class Encode_Attachment {
 	}
 
 	private function create_new_attachment( Encode_Format $encode_format ) {
-		$path = $encode_format->get_path();
-		$url = $encode_format->get_url();
-		$user_id = $encode_format->get_user_id();
-		$format_id = $encode_format->get_format_id();
+		$path                = $encode_format->get_path();
+		$url                 = $encode_format->get_url();
+		$user_id             = $encode_format->get_user_id();
+		$format_id           = $encode_format->get_format_id();
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
 
 		$parent_post_id = 0;
@@ -1538,7 +1556,7 @@ class Encode_Attachment {
 			$title       = $title_base . ' ' . $video_format_config->get_label();
 
 			$author_id_from_parent = $parent_post_id ? get_post_field( 'post_author', $parent_post_id ) : get_current_user_id();
-			$author_id = $user_id ?: $author_id_from_parent;
+			$author_id             = $user_id ?: $author_id_from_parent;
 			if ( ! $author_id ) {
 				$author_id = get_current_user_id();
 			}

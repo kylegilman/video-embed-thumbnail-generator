@@ -166,7 +166,7 @@ class Encode_Format {
 			'canceled',
 			'deleted',
 			'pending_replacement',
-			'error',
+			'failed',
 		);
 		if ( in_array( $status, $allowed ) ) {
 			$this->status = $status;
@@ -202,7 +202,7 @@ class Encode_Format {
 	}
 
 	public function set_error( ?string $error ) {
-		$this->set_status( 'error' );
+		$this->set_status( 'failed' );
 		$this->error = $error;
 	}
 
@@ -248,16 +248,28 @@ class Encode_Format {
 			&& $this->logfile
 			&& file_exists( $this->logfile )
 		) {
-			$lines       = array_slice( file( $this->logfile ), -25 );
+			$handle      = fopen( $this->logfile, 'r' );
 			$parsed_data = array();
-
-			foreach ( $lines as $line ) {
-				if ( trim( $line ) === '' ) {
-					continue;
+			if ( $handle ) {
+				$fsize    = filesize( $this->logfile );
+				$read_len = min( $fsize, 4096 );
+				if ( $read_len > 0 ) {
+					fseek( $handle, -$read_len, SEEK_END );
+					$content = fread( $handle, $read_len );
+					$lines   = explode( "\n", $content );
+					// Skip the first partial line if we didn't read from the start
+					if ( $fsize > $read_len ) {
+						array_shift( $lines );
+					}
+					foreach ( $lines as $line ) {
+						$line = trim( $line );
+						if ( strpos( $line, '=' ) !== false ) {
+							list( $key, $value ) = explode( '=', $line, 2 );
+							$parsed_data[ $key ] = trim( $value );
+						}
+					}
 				}
-
-				list( $key, $value ) = explode( '=', trim( $line ), 2 );
-				$parsed_data[ $key ] = $value;
+				fclose( $handle );
 			}
 
 			$this->progress = array(
