@@ -55,23 +55,23 @@ class Options {
 
 		$default_options = array(
 			// General Settings.
-			'embed_method'             => 'Video.js', // Video player to use.
-			'hide_video_formats'       => true, // List only enabled default video formats in the Admin area.
-			'hide_thumbnails'          => false, // Hide generated thumbnails in the Admin area.
-			'delete_child_thumbnails'  => false, // Delete associated thumbnails upon video deletion.
-			'delete_child_encoded'     => true, // Delete associated encoded videos upon video deletion.
-			'thumb_parent'             => 'video', // Parent post type for video thumbnails ('video', 'post').
-			'transient_cache'          => false, // Enable transient caching for URL to Attachment ID lookups.
+			'embed_method'                  => 'Video.js', // Video player to use.
+			'hide_video_formats'            => true, // List only enabled default video formats in the Admin area.
+			'hide_thumbnails'               => false, // Hide generated thumbnails in the Admin area.
+			'delete_child_thumbnails'       => false, // Delete associated thumbnails upon video deletion.
+			'delete_child_encoded'          => true, // Delete associated encoded videos upon video deletion.
+			'thumb_parent'                  => 'video', // Parent post type for video thumbnails ('video', 'post').
+			'transient_cache'               => false, // Enable transient caching for URL to Attachment ID lookups.
 
 			// FFmpeg & Encoding Settings.
-			'app_path'                 => '', // Path to the FFmpeg application.
-			'ffmpeg_exists'            => 'notchecked', // Is FFmpeg installed and working ('notchecked', true, 'notinstalled').
-			'ffmpeg_error'             => '', // User-friendly error message if FFmpeg isn't working.
-			'replace_format'           => 'h264', // Default video codec to replace the original video file if 'fullres' encode is enabled.
-			'enable_custom_resolution' => false, // Enable custom video resolution.
-			'custom_resolution'        => 900, // Custom video resolution height in pixels.
-			'encode'                   => array(), // List of enabled video encode formats and settings (Populated dynamically).
-			'ffmpeg_watermark'         => array( // Watermark settings for video encoding with FFmpeg.
+			'app_path'                      => '', // Path to the FFmpeg application.
+			'ffmpeg_exists'                 => 'notchecked', // Is FFmpeg installed and working ('notchecked', true, 'notinstalled').
+			'ffmpeg_error'                  => '', // User-friendly error message if FFmpeg isn't working.
+			'replace_format'                => 'h264', // Default video codec to replace the original video file if 'fullres' encode is enabled.
+			'enable_custom_resolution'      => false, // Enable custom video resolution.
+			'custom_resolution'             => 900, // Custom video resolution height in pixels.
+			'encode'                        => array(), // List of enabled video encode formats and settings (Populated dynamically).
+			'ffmpeg_watermark'              => array( // Watermark settings for video encoding with FFmpeg.
 				'url'    => '', // Watermark image URL.
 				'scale'  => '50', // Watermark scale (percentage of video height).
 				'align'  => 'center', // Horizontal alignment ('left', 'center', 'right').
@@ -79,7 +79,7 @@ class Options {
 				'x'      => '0', // Horizontal offset (percentage).
 				'y'      => '0', // Vertical offset (percentage).
 			),
-			'ffmpeg_thumb_watermark'   => array( // Watermark settings for thumbnail generation with FFmpeg.
+			'ffmpeg_thumb_watermark'        => array( // Watermark settings for thumbnail generation with FFmpeg.
 				'url'    => '', // Watermark image URL.
 				'scale'  => '50', // Watermark scale (percentage of video height).
 				'align'  => 'center', // Horizontal alignment ('left', 'center', 'right').
@@ -87,110 +87,110 @@ class Options {
 				'x'      => '0', // Horizontal offset (percentage).
 				'y'      => '0', // Vertical offset (percentage).
 			),
-			'audio_bitrate'            => 160, // Audio bitrate for encoding in kbps.
-			'audio_channels'           => true, // Always encode stereo audio (if source is stereo or mono).
-			'threads'                  => 1, // Number of threads for video processing with FFmpeg.
-			'nice'                     => true, // Adjust process priority for video encoding (lower priority).
-			'h264_profile'             => 'main', // H.264 profile for video encoding.
-			'h264_level'               => '4.1', // H.264 level for video encoding.
-			'h265_profile'             => 'none', // H.265 profile for video encoding.
-			'h265_level'               => 'none', // H.265 level for video encoding.
-			'simultaneous_encodes'     => 1, // Maximum number of simultaneous video encoding processes.
-			'error_email'              => 'nobody', // Email address to receive error notifications ('nobody', 'encoder', or user login).
-			'queue_control'            => 'play', // Control behavior for video encoding queue ('play', 'pause').
+			'audio_bitrate'                 => 160, // Audio bitrate for encoding in kbps.
+			'audio_channels'                => true, // Always encode stereo audio (if source is stereo or mono).
+			'threads'                       => 1, // Number of threads for video processing with FFmpeg.
+			'nice'                          => true, // Adjust process priority for video encoding (lower priority).
+			'h264_profile'                  => 'main', // H.264 profile for video encoding.
+			'h264_level'                    => '4.1', // H.264 level for video encoding.
+			'h265_profile'                  => 'none', // H.265 profile for video encoding.
+			'h265_level'                    => 'none', // H.265 level for video encoding.
+			'simultaneous_encodes'          => 1, // Maximum number of simultaneous video encoding processes.
+			'error_email'                   => 'nobody', // Email address to receive error notifications ('nobody', 'encoder', or user login).
+			'queue_control'                 => 'play', // Control behavior for video encoding queue ('play', 'pause').
 
 			// Thumbnail Settings.
-			'total_thumbnails'         => 4, // Default total_thumbnails to generate when manually creating.
-			'featured'                 => true, // Set generated thumbnail as post's featured thumbnail.
-			'browser_thumbnails'       => true, // Use browser technology to generate thumbnails instead of FFmpeg if FFmpeg is unavailable.
+			'total_thumbnails'              => 4, // Default total_thumbnails to generate when manually creating.
+			'featured'                      => true, // Set generated thumbnail as post's featured thumbnail.
+			'browser_thumbnails'            => true, // Use browser technology to generate thumbnails instead of FFmpeg if FFmpeg is unavailable.
 
 			// Automation Settings.
-			'auto_encode'              => false, // Automatically encode videos upon upload.
-			'auto_encode_gif'          => false, // Automatically convert animated GIFs to video upon upload.
-			'auto_thumb'               => false, // Automatically generate thumbnails for videos upon upload.
-			'auto_thumb_number'        => 1, // Number of thumbnails to automatically generate.
-			'auto_thumb_position'      => 50, // Position within video for automatic thumbnail generation (percentage or frame number if auto_thumb_number > 1).
-			'auto_publish_post'        => false, // Automatically publish posts after video processing is complete.
+			'auto_encode'                   => false, // Automatically encode videos upon upload.
+			'auto_encode_gif'               => false, // Automatically convert animated GIFs to video upon upload.
+			'auto_thumb'                    => false, // Automatically generate thumbnails for videos upon upload.
+			'auto_thumb_number'             => 1, // Number of thumbnails to automatically generate.
+			'auto_thumb_position'           => 50, // Position within video for automatic thumbnail generation (percentage or frame number if auto_thumb_number > 1).
+			'auto_publish_post'             => false, // Automatically publish posts after video processing is complete.
 
 			// Player Appearance & Behavior.
-			'poster'                   => '', // Default poster image URL for videos.
-			'watermark'                => '', // Player overlay watermark image URL.
-			'watermark_styles'         => array( // Watermark positioning and styling.
+			'poster'                        => '', // Default poster image URL for videos.
+			'watermark'                     => '', // Player overlay watermark image URL.
+			'watermark_styles'              => array( // Watermark positioning and styling.
 				'scale'  => '10',
 				'align'  => 'right',
 				'valign' => 'bottom',
 				'x'      => '5',
 				'y'      => '7',
 			),
-			'watermark_link_to'        => 'home', // Link target for the player watermark ('home', 'parent', 'attachment', 'download', 'false', or custom URL).
-			'watermark_url'            => '', // Custom link target URL for the player watermark (overrides watermark_link_to if set).
-			'overlay_title'            => true, // Overlay video title on the player.
-			'embedcode'                => false, // Enable embedding code overlay on the player.
-			'downloadlink'             => false, // Enable a download link/icon for the video.
-			'click_download'           => true, // Enable single-click download methods (if downloadlink is true).
-			'view_count'               => false, // Show view count below video.
-			'count_views'              => 'start_complete', // Level of view count tracking ('start_complete', 'quarters', 'start', 'none').
-			'embeddable'               => true, // Allow videos to be embedded on other sites.
-			'inline'                   => true, // Allow content on the left and right side of videos (CSS float).
-			'align'                    => '', // Default alignment for the video player ('', 'wide', 'full', 'left', 'center', 'right').
-			'width'                    => 960, // Default width for the video player in pixels.
-			'height'                   => 540, // Default height for the video player in pixels.
-			'legacy_dimensions'        => false, // Use legacy fixed dimensions.
-			'fullwidth'                => true, // Expand video players to the full width of their container.
-			'fixed_aspect'             => 'vertical', // Fixed aspect ratio setting for the video player (true, false, 'vertical').
-			'skin'                     => 'kg-video-js-skin', // Skin class for the Video.js player.
-			'right_click'              => true, // Enable right-click context menu on video player.
-			'resize'                   => true, // Enable responsive video resizing.
+			'watermark_link_to'             => 'home', // Link target for the player watermark ('home', 'parent', 'attachment', 'download', 'false', or custom URL).
+			'watermark_url'                 => '', // Custom link target URL for the player watermark (overrides watermark_link_to if set).
+			'overlay_title'                 => true, // Overlay video title on the player.
+			'embedcode'                     => false, // Enable embedding code overlay on the player.
+			'downloadlink'                  => false, // Enable a download link/icon for the video.
+			'click_download'                => true, // Enable single-click download methods (if downloadlink is true).
+			'view_count'                    => false, // Show view count below video.
+			'count_views'                   => 'start_complete', // Level of view count tracking ('start_complete', 'quarters', 'start', 'none').
+			'embeddable'                    => true, // Allow videos to be embedded on other sites.
+			'inline'                        => false, // Allow content on the left and right side of videos (CSS float).
+			'align'                         => '', // Default alignment for the video player ('', 'wide', 'full', 'left', 'center', 'right').
+			'width'                         => 960, // Default width for the video player in pixels.
+			'height'                        => 540, // Default height for the video player in pixels.
+			'legacy_dimensions'             => false, // Use legacy fixed dimensions.
+			'fullwidth'                     => true, // Expand video players to the full width of their container.
+			'fixed_aspect'                  => 'vertical', // Fixed aspect ratio setting for the video player (true, false, 'vertical').
+			'skin'                          => 'vjs-theme-videopack', // Skin class for the Video.js player.
+			'right_click'                   => true, // Enable right-click context menu on video player.
+			'resize'                        => true, // Enable responsive video resizing.
 
 			// Player Controls & Playback.
-			'nativecontrolsfortouch'   => false, // Use native browser controls for touch devices instead of custom player controls.
-			'controls'                 => true, // Show player controls.
-			'autoplay'                 => false, // Autoplay videos on load.
-			'pauseothervideos'         => true, // Pause other videos on the page when a new video is played.
-			'loop'                     => false, // Loop video playback.
-			'playsinline'              => true, // Play videos inline on mobile devices (especially iOS).
-			'volume'                   => 1.0, // Initial volume of the video player (0.0 to 1.0).
-			'muted'                    => false, // Start videos in muted state.
-			'gifmode'                  => false, // Enable GIF-like behavior (autoplay, muted, loop, playsinline, no controls).
-			'preload'                  => 'metadata', // Preload setting for videos ('metadata', 'auto', 'none').
-			'playback_rate'            => false, // Enable playback rate control in the player.
-			'skip_buttons'             => false, // Enable skip forward/backward buttons in the player.
-			'skip_forward'             => 10, // Time to skip forward in seconds.
-			'skip_backward'            => 10, // Time to skip backward in seconds.
-			'endofvideooverlay'        => '', // Show an image overlay at the end of videos.
-			'endofvideooverlaysame'    => false, // Display the poster image at the end of videos.
-			'auto_res'                 => 'automatic', // Default video playback resolution ('automatic', 'highest', 'lowest', or specific like '1080p').
-			'auto_codec'               => 'h264', // Default video codec ('h264', 'h265', 'vp9', 'av1').
-			'pixel_ratio'              => true, // Enable adjustment for high DPI displays (retina) when auto_res is 'automatic'.
-			'find_formats'             => false, // Automatically look for other codecs and resolutions based on the video filename.
+			'nativecontrolsfortouch'        => false, // Use native browser controls for touch devices instead of custom player controls.
+			'controls'                      => true, // Show player controls.
+			'autoplay'                      => false, // Autoplay videos on load.
+			'pauseothervideos'              => true, // Pause other videos on the page when a new video is played.
+			'loop'                          => false, // Loop video playback.
+			'playsinline'                   => true, // Play videos inline on mobile devices (especially iOS).
+			'volume'                        => 1.0, // Initial volume of the video player (0.0 to 1.0).
+			'muted'                         => false, // Start videos in muted state.
+			'gifmode'                       => false, // Enable GIF-like behavior (autoplay, muted, loop, playsinline, no controls).
+			'preload'                       => 'metadata', // Preload setting for videos ('metadata', 'auto', 'none').
+			'playback_rate'                 => false, // Enable playback rate control in the player.
+			'skip_buttons'                  => false, // Enable skip forward/backward buttons in the player.
+			'skip_forward'                  => 10, // Time to skip forward in seconds.
+			'skip_backward'                 => 10, // Time to skip backward in seconds.
+			'endofvideooverlay'             => '', // Show an image overlay at the end of videos.
+			'endofvideooverlaysame'         => false, // Display the poster image at the end of videos.
+			'auto_res'                      => 'automatic', // Default video playback resolution ('automatic', 'highest', 'lowest', or specific like '1080p').
+			'auto_codec'                    => 'h264', // Default video codec ('h264', 'h265', 'vp9', 'av1').
+			'pixel_ratio'                   => true, // Enable adjustment for high DPI displays (retina) when auto_res is 'automatic'.
+			'find_formats'                  => false, // Automatically look for other codecs and resolutions based on the video filename.
 
 			// Gallery Settings.
-			'layout'                   => 'gallery', // Default layout ('gallery', 'list').
-			'gallery_orderby'          => 'menu_order', // Default sort order.
-			'collection_video_limit'   => -1, // Maximum number of videos in a collection when pagination is disabled. -1 for no limit.
-			'gallery_order'            => 'ASC', // Default sort direction.
-			'gallery_columns'          => 4, // Number of columns in video galleries.
-			'gallery_end'              => '', // Custom content to display at the end of video galleries ('close', 'next', or custom HTML).
-			'gallery_pagination'       => false, // Enable pagination for video galleries.
-			'gallery_per_page'         => 6, // Number of videos per page in galleries (false for no pagination, or integer).
-			'gallery_title'            => true, // Display titles on video gallery thumbnails.
+			'gallery_orderby'               => 'menu_order', // Default sort order.
+			'enable_collection_video_limit' => false, // Enable maximum number of videos.
+			'collection_video_limit'        => -1, // Maximum number of videos in a collection when pagination is disabled. -1 for no limit.
+			'gallery_order'                 => 'ASC', // Default sort direction.
+			'gallery_columns'               => 4, // Number of columns in video galleries.
+			'gallery_end'                   => '', // Custom content to display at the end of video galleries ('close', 'next', or custom HTML).
+			'gallery_pagination'            => false, // Enable pagination for video galleries.
+			'gallery_per_page'              => 6, // Number of videos per page in galleries (false for no pagination, or integer).
+			'gallery_title'                 => true, // Display titles on video gallery thumbnails.
 
 			// Integration & Advanced.
-			'capabilities'             => array(), // Enabled capabilities required for Videopack functions (Populated dynamically).
-			'open_graph'               => false, // Enable Open Graph meta tags for videos.
-			'schema'                   => true, // Enable Schema.org (JSON-LD) markup for videos.
-			'oembed_provider'          => false, // Enable oEmbed provider functionality for Videopack videos.
-			'htaccess_login'           => '', // Login username for .htaccess protected directories (if FFmpeg needs to access files there).
-			'htaccess_password'        => '', // Login password for .htaccess protected directories.
-			'alwaysloadscripts'        => false, // Always load video player scripts, regardless of whether a video is detected on the page.
-			'replace_video_shortcode'  => false, // Replace the default WordPress [video] shortcode with the Videopack player.
-			'default_insert'           => 'Single Video', // Default method for inserting videos into posts from Media Library ('Single Video', 'Video Gallery', 'WordPress Default').
-			'rewrite_attachment_url'   => true, // Prefer the official WordPress attachment URL over the provided source URL (unless it's a CDN).
+			'capabilities'                  => array(), // Enabled capabilities required for Videopack functions (Populated dynamically).
+			'open_graph'                    => false, // Enable Open Graph meta tags for videos.
+			'schema'                        => true, // Enable Schema.org (JSON-LD) markup for videos.
+			'oembed_provider'               => false, // Enable oEmbed provider functionality for Videopack videos.
+			'htaccess_login'                => '', // Login username for .htaccess protected directories (if FFmpeg needs to access files there).
+			'htaccess_password'             => '', // Login password for .htaccess protected directories.
+			'alwaysloadscripts'             => false, // Always load video player scripts, regardless of whether a video is detected on the page.
+			'replace_video_shortcode'       => false, // Replace the default WordPress [video] shortcode with the Videopack player.
+			'default_insert'                => 'Single Video', // Default method for inserting videos into posts from Media Library ('Single Video', 'Video Gallery', 'WordPress Default').
+			'rewrite_attachment_url'        => true, // Prefer the official WordPress attachment URL over the provided source URL (unless it's a CDN).
 
 			// Testing & Debug.
-			'sample_codec'             => 'h264', // Sample codec for FFmpeg testing on settings page.
-			'sample_resolution'        => 360, // Sample resolution (height) for FFmpeg testing on settings page.
-			'sample_rotate'            => false, // Test FFmpeg encode settings on a sample vertical video.
+			'sample_codec'                  => 'h264', // Sample codec for FFmpeg testing on settings page.
+			'sample_resolution'             => 360, // Sample resolution (height) for FFmpeg testing on settings page.
+			'sample_rotate'                 => false, // Test FFmpeg encode settings on a sample vertical video.
 		);
 
 		foreach ( $this->default_capabilities as $videopack_capability => $wp_capability ) {
@@ -613,8 +613,8 @@ class Options {
 	 *   auto_codec: string,
 	 *   pixel_ratio: bool,
 	 *   find_formats: bool,
-	 *   layout: string,
 	 *   gallery_orderby: string,
+	 *   enable_collection_video_limit: bool,
 	 *   collection_video_limit: int,
 	 *   gallery_order: string,
 	 *   gallery_columns: int,
