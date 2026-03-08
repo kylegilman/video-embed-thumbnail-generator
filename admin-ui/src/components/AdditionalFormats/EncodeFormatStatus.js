@@ -17,13 +17,14 @@ const EncodeFormatStatus = ({
 	onDeleteFile,
 	onCancelJob,
 	deleteInProgress,
+	onRefresh,
 }) => {
 	if (!formatData) {
 		return <Spinner />;
 	}
 
 	const getCheckboxCheckedState = (data) => {
-		return data.checked || data.status === 'queued';
+		return !!data.checked;
 	};
 
 	const getCheckboxDisabledState = (data) => {
@@ -32,7 +33,9 @@ const EncodeFormatStatus = ({
 			data.status === 'queued' ||
 			data.status === 'encoding' ||
 			data.status === 'processing' ||
-			data.status === 'completed'
+			data.status === 'completed' ||
+			data.status === 'needs_insert' ||
+			data.status === 'pending_replacement'
 		);
 	};
 
@@ -127,6 +130,7 @@ const EncodeFormatStatus = ({
 					formatData={formatData}
 					onCancelJob={onCancelJob}
 					deleteInProgress={deleteInProgress}
+					onRefresh={onRefresh}
 				/>
 			)}
 			<Divider />

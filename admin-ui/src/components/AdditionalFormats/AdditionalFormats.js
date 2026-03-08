@@ -1,6 +1,6 @@
 /* global videopack_config */
 
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	PanelBody,
@@ -8,7 +8,7 @@ import {
 	Spinner,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import { useRef, useEffect, useState } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import './additional-formats.scss';
@@ -20,6 +20,27 @@ import {
 	deleteFile,
 	deleteJob,
 } from '../../utils/utils';
+
+const getOrdinal = (n, locale = 'en-US') => {
+	const pr = new Intl.PluralRules(locale.replace('_', '-'), {
+		type: 'ordinal',
+	});
+	const rule = pr.select(n);
+	switch (rule) {
+		case 'one':
+			/* translators: %d is a number. This is for the 1st position in a queue. */
+			return sprintf(__('%dst', 'video-embed-thumbnail-generator'), n);
+		case 'two':
+			/* translators: %d is a number. This is for the 2nd position in a queue. */
+			return sprintf(__('%dnd', 'video-embed-thumbnail-generator'), n);
+		case 'few':
+			/* translators: %d is a number. This is for the 3rd position in a queue. */
+			return sprintf(__('%drd', 'video-embed-thumbnail-generator'), n);
+		default:
+			/* translators: %d is a number. This is for the 4th, 5th, etc. position in a queue. */
+			return sprintf(__('%dth', 'video-embed-thumbnail-generator'), n);
+	}
+};
 
 const AdditionalFormats = ({ attributes, options = {} }) => {
 	const { id, src } = attributes;
@@ -33,24 +54,50 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	const [isEncoding, setIsEncoding] = useState(false);
 	const progressTimerRef = useRef(null);
 
-	const updateVideoFormats = (response) => {
+	// Auto-clear success messages after 30 seconds.
+	useEffect(() => {
+		if (
+			encodeMessage &&
+			!encodeMessage.includes(
+				__('Error:', 'video-embed-thumbnail-generator')
+			)
+		) {
+			const timer = setTimeout(() => {
+				setEncodeMessage(null);
+			}, 30000);
+			return () => clearTimeout(timer);
+		}
+	}, [encodeMessage]);
+
+	const updateVideoFormats = useCallback((response) => {
 		setVideoFormats((currentVideoFormats) => {
-			if (response && typeof response === 'object') {
+			if (response && response.constructor === Object) {
 				const newFormats = { ...response };
-				Object.keys(newFormats).forEach((key) => {
-					const newFormat = newFormats[key];
-					const oldFormat = currentVideoFormats?.[key];
 
-					// Preserve the existing 'checked' state to prevent UI flicker on poll refresh.
-					newFormat.checked = oldFormat?.checked || false;
+				// If we have old data, try to preserve some client-side state
+				Object.keys(newFormats).forEach((fId) => {
+					const newFormat = newFormats[fId];
+					const oldFormat = currentVideoFormats?.[fId];
 
-					// If the format is encoding, merge progress data carefully.
+					// Carry over UI-only 'checked' state or initialize it.
+					newFormat.checked = oldFormat
+						? !!oldFormat.checked
+						: !!newFormat.checked;
+
+					// Special handling for progress interpolation
 					if (newFormat.encoding_now && newFormat.progress) {
-						// If there's old progress data, merge it to prevent flashes of 0%.
-						if (oldFormat?.progress) {
+						if (
+							oldFormat &&
+							oldFormat.encoding_now &&
+							oldFormat.progress &&
+							newFormat.progress.percent <
+							oldFormat.progress.percent
+						) {
+							// Don't let progress jump backwards due to server polling lag
 							newFormat.progress = {
-								...oldFormat.progress,
 								...newFormat.progress,
+								percent: oldFormat.progress.percent,
+								remaining: oldFormat.progress.remaining,
 							};
 						} else {
 							// If no old progress, ensure we don't start with a negative percent.
@@ -63,6 +110,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 				});
 
 				// Only update state if the formats have actually changed.
+				// This check is important to prevent unnecessary re-renders.
 				if (
 					JSON.stringify(currentVideoFormats) !==
 					JSON.stringify(newFormats)
@@ -77,9 +125,9 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			}
 			return currentVideoFormats;
 		});
-	};
+	}, []);
 
-	const fetchVideoFormats = async () => {
+	const fetchVideoFormats = useCallback(async () => {
 		if (!id) {
 			return;
 		} // Don't fetch if there's no ID.
@@ -89,9 +137,9 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		} catch (error) {
 			console.error('Error fetching video formats:', error);
 		}
-	};
+	}, [id, updateVideoFormats]);
 
-	const pollVideoFormats = async () => {
+	const pollVideoFormats = useCallback(async () => {
 		if (src && id) {
 			try {
 				const formats = await getVideoFormats(id);
@@ -102,11 +150,11 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			}
 		}
 		return null;
-	};
+	}, [src, id, updateVideoFormats]);
 
 	useEffect(() => {
 		fetchVideoFormats();
-	}, [id]); // Fetch formats when the attachment ID changes
+	}, [fetchVideoFormats]); // Fetch formats when the attachment ID changes
 
 	const siteSettings = useSelect((select) => {
 		return select('core').getSite();
@@ -126,15 +174,15 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		);
 	};
 
-	const incrementEncodeProgress = () => {
+	const incrementEncodeProgress = useCallback(() => {
 		setVideoFormats((currentVideoFormats) => {
 			if (!currentVideoFormats || !isEncoding) {
 				return currentVideoFormats;
 			}
 
 			const updatedVideoFormats = { ...currentVideoFormats };
-			Object.keys(updatedVideoFormats).forEach((key) => {
-				const format = updatedVideoFormats[key];
+			Object.keys(updatedVideoFormats).forEach((fId) => {
+				const format = updatedVideoFormats[fId];
 				if (format.encoding_now && format.progress) {
 					const elapsed =
 						new Date().getTime() / 1000 - format.started;
@@ -176,7 +224,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 					remaining =
 						remaining !== null ? Math.max(0, remaining) : null;
 
-					updatedVideoFormats[key] = {
+					updatedVideoFormats[fId] = {
 						...format,
 						progress: {
 							...format.progress,
@@ -189,7 +237,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			});
 			return updatedVideoFormats;
 		});
-	};
+	}, [isEncoding]);
 
 	useEffect(() => {
 		setIsEncoding(shouldPoll(videoFormats));
@@ -201,7 +249,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		if (isEncoding) {
 			const runPoll = async () => {
 				const formats = await pollVideoFormats();
-				let delay = 5000;
+				let delay = 15000;
 				if (formats) {
 					const isSlow = Object.values(formats).some(
 						(format) =>
@@ -211,7 +259,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 							parseFloat(format.progress.fps) < 5
 					);
 					if (isSlow) {
-						delay = 20000;
+						delay = 30000;
 					}
 				}
 				pollTimer = setTimeout(runPoll, delay);
@@ -242,7 +290,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 				pollTimer = null;
 			}
 		};
-	}, [isEncoding, id, src]); // Depend on isEncoding state
+	}, [isEncoding, pollVideoFormats, incrementEncodeProgress]); // Depend on isEncoding state and stable callbacks
 
 	const handleFormatCheckbox = (event, formatId) => {
 		setVideoFormats((prevVideoFormats) => {
@@ -265,59 +313,52 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		// Get list of format IDs that are checked and available
 		const formatsToEncode = Object.entries(videoFormats)
 			.filter(
-				([key, value]) =>
+				([, value]) =>
 					value.checked &&
 					value.status !== 'queued' &&
 					value.status !== 'processing' &&
 					value.status !== 'completed'
 			)
-			.reduce((acc, [key, value]) => {
-				acc[key] = true; // Backend expects an object { format_id: true, ... }
+			.reduce((acc, [formatId]) => {
+				acc[formatId] = true; // Backend expects an object { format_id: true, ... }
 				return acc;
 			}, {});
 
 		try {
 			const response = await enqueueJob(id, src, formatsToEncode);
-			const queueMessage = () => {
-				const queueList = (() => {
-					if (
-						response?.encode_list &&
-						Array.isArray(response.encode_list) &&
-						response.encode_list.length > 0
-					) {
-						return new Intl.ListFormat(
-							siteSettings?.language
-								? siteSettings.language.replace('_', '-')
-								: 'en-US',
-							{ style: 'long', type: 'conjunction' }
-						).format(response.encode_list);
-					}
-					return '';
-				})();
+			const jobCount = response?.encode_list?.length || 0;
 
-				if (!queueList) {
-					if (response?.log?.length > 0) {
-						return response.log.join(' ');
-					}
-					return __(
-						'No formats were added to the queue.',
-						'video-embed-thumbnail-generator'
-					);
-				}
-
+			if (jobCount === 0) {
+				const emptyMsg =
+					response?.log?.length > 0
+						? response.log.join(' ')
+						: __(
+							'No formats were added to the queue.',
+							'video-embed-thumbnail-generator'
+						);
+				setEncodeMessage(emptyMsg);
+			} else {
 				const queuePosition = response?.new_queue_position;
-
-				return sprintf(
-					/* translators: %1$s is a list of video formats. %2$s is a number */
-					__(
-						'%1$s added to queue in position %2$s.',
-						'video-embed-thumbnail-generator'
-					),
-					queueList,
-					queuePosition
+				const startPosition = Math.max(1, queuePosition - jobCount + 1);
+				const ordinalPosition = getOrdinal(
+					startPosition,
+					siteSettings?.language || 'en-US'
 				);
-			};
-			setEncodeMessage(queueMessage());
+
+				setEncodeMessage(
+					sprintf(
+						/* translators: %1$d is the number of jobs. %2$s is the ordinal position (e.g. 1st, 2nd). */
+						_n(
+							'%1$d job added to queue in %2$s position.',
+							'%1$d jobs added to queue starting in %2$s position.',
+							jobCount,
+							'video-embed-thumbnail-generator'
+						),
+						jobCount,
+						ordinalPosition
+					)
+				);
+			}
 			fetchVideoFormats(); // Re-fetch to update statuses
 		} catch (error) {
 			console.error(error);
@@ -328,7 +369,8 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			/* translators: %s is an error message */
 			setEncodeMessage(
 				sprintf(
-					__('Error: %s', 'video-embed-thumbnail-generator'),
+					/* translators: %s is an error message */
+					__('Error: %s.', 'video-embed-thumbnail-generator'),
 					errorMessage
 				)
 			);
@@ -505,9 +547,9 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			return isLoading
 				? __('Loading…', 'video-embed-thumbnail-generator')
 				: __(
-						'Encode selected formats',
-						'video-embed-thumbnail-generator'
-					);
+					'Encode selected formats',
+					'video-embed-thumbnail-generator'
+				);
 		}
 
 		return __(
@@ -587,9 +629,8 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 					{videoFormats ? (
 						<>
 							<ul
-								className={`videopack-formats-list${
-									ffmpeg_exists === true ? '' : ' no-ffmpeg'
-								}`}
+								className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'
+									}`}
 							>
 								{Object.keys(groupedFormats).map((codecId) => {
 									const codecGroup = groupedFormats[codecId];
@@ -642,6 +683,9 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 																deleteInProgress={
 																	deleteInProgress
 																}
+																onRefresh={
+																	fetchVideoFormats
+																}
 															/>
 														);
 													}
@@ -655,6 +699,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 								isOpen={isConfirmOpen}
 								onConfirm={handleConfirm}
 								onCancel={handleCancel}
+								className="videopack-confirm-dialog"
 							>
 								{confirmDialogMessage()}
 							</ConfirmDialog>
@@ -666,7 +711,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 					)}
 				</PanelRow>
 				{ffmpeg_exists === true && videoFormats && canUploadFiles && (
-					<PanelRow>
+					<PanelRow className="videopack-encode-button-row">
 						<Button
 							variant="secondary"
 							onClick={handleEnqueue}

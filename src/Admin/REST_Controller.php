@@ -11,6 +11,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Debug_Logger;
+
 /**
  * Class REST_Controller
  *
@@ -547,7 +549,7 @@ class REST_Controller extends \WP_REST_Controller {
 					'type' => array(
 						'required' => true,
 						'type'     => 'string',
-						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding' ),
+						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding', 'all', 'browser' ),
 					),
 				),
 			)
@@ -558,6 +560,17 @@ class REST_Controller extends \WP_REST_Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_thumbnail_candidates' ),
+				'permission_callback' => function () {
+					return current_user_can( 'make_video_thumbnails' );
+				},
+			)
+		);
+		register_rest_route(
+			$this->namespace,
+			'/thumbs/browser-candidates',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_browser_thumbnail_candidates' ),
 				'permission_callback' => function () {
 					return current_user_can( 'make_video_thumbnails' );
 				},
@@ -811,7 +824,7 @@ class REST_Controller extends \WP_REST_Controller {
 		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options_manager );
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options_manager );
 		$gallery_atts = $shortcode->atts( $request->get_params() );
-		$page         = $request->get_param( 'page_number' ) ?: 1;
+		$page         = $request->get_param( 'page_number' ) ? $request->get_param( 'page_number' ) : 1;
 
 		// If filtering by category or tag and no specific gallery_id (post parent) was requested, clear the default ID.
 		if ( in_array( $gallery_atts['gallery_source'], array( 'category', 'tag' ), true ) && ! $request->get_param( 'gallery_id' ) ) {
@@ -883,15 +896,28 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return array The encoding queue data.
 	 */
 	public function queue_get( \WP_REST_Request $request ) {
+		return Debug_Logger::measure(
+			'REST Endpoint: queue_get',
+			function () use ( $request ) {
+				$params = $request->get_params();
+				if ( array_key_exists( 'id', $params ) ) {
+					$encoder = new Encode\Encode_Attachment( $this->options_manager, $params['id'] );
+					return $encoder->get_formats_array();
+				} else {
+					$cache_key = 'videopack_rest_queue_all';
+					$cached    = get_transient( $cache_key );
+					if ( false !== $cached ) {
+						return $cached;
+					}
 
-		$params = $request->get_params();
-		if ( array_key_exists( 'id', $params ) ) {
-			$encoder = new Encode\Encode_Attachment( $this->options_manager, $params['id'] );
-			return $encoder->get_formats_array();
-		} else {
-			$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
-			return $controller->get_full_queue_array();
-		}
+					$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+					$queue      = $controller->get_full_queue_array();
+
+					set_transient( $cache_key, $queue, 15 ); // Cache for 15 seconds to throttle rapid polling
+					return $queue;
+				}
+			}
+		);
 	}
 
 	/**
@@ -945,6 +971,8 @@ class REST_Controller extends \WP_REST_Controller {
 			);
 		}
 
+		delete_transient( 'videopack_rest_queue_all' );
+
 		return $response;
 	}
 
@@ -969,6 +997,7 @@ class REST_Controller extends \WP_REST_Controller {
 
 		// Clean array to remove paths before sending to UI.
 		$response_data = $this->clean_array( $result );
+		delete_transient( 'videopack_rest_queue_all' );
 		return new \WP_REST_Response( $response_data, 200 );
 	}
 
@@ -990,6 +1019,8 @@ class REST_Controller extends \WP_REST_Controller {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
+
+		delete_transient( 'videopack_rest_queue_all' );
 
 		return new \WP_REST_Response(
 			array(
@@ -1019,6 +1050,7 @@ class REST_Controller extends \WP_REST_Controller {
 			return $result;
 		}
 
+		delete_transient( 'videopack_rest_queue_all' );
 		return new \WP_REST_Response( array( 'status' => 'success' ), 200 );
 	}
 
@@ -1164,10 +1196,12 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function queue_clear( \WP_REST_Request $request ) {
-		$type = $request->get_param( 'type' ); // 'completed' or 'all'
+		$type = $request->get_param( 'type' ); // completed or all
 
 		$encode_queue_controller = new Encode\Encode_Queue_Controller( $this->options_manager );
 		$encode_queue_controller->clear_completed_queue( $type );
+
+		delete_transient( 'videopack_rest_queue_all' );
 
 		return new \WP_REST_Response(
 			array(
@@ -1195,6 +1229,8 @@ class REST_Controller extends \WP_REST_Controller {
 				return current_user_can( 'make_video_thumbnails' );
 			case 'encoding':
 				return current_user_can( 'encode_videos' );
+			case 'all':
+				return current_user_can( 'manage_options' ) && current_user_can( 'make_video_thumbnails' ) && current_user_can( 'encode_videos' );
 		}
 		return false;
 	}
@@ -1261,6 +1297,17 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * REST callback to get a list of videos that need browser thumbnails generated.
+	 *
+	 * @return \WP_REST_Response The list of candidates.
+	 */
+	public function get_browser_thumbnail_candidates() {
+		$attachment = new Attachment( $this->options_manager );
+		$results    = $attachment->get_pending_browser_thumbnails();
+		return new \WP_REST_Response( $results, 200 );
+	}
+
+	/**
 	 * REST callback to get the progress of a batch process.
 	 *
 	 * @param \WP_REST_Request $request The REST request object.
@@ -1268,21 +1315,71 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|\WP_Error The progress data.
 	 */
 	public function batch_progress( $request ) {
-		$type   = $request->get_param( 'type' );
-		$groups = array(
-			'featured' => 'videopack-featured-images',
-			'parents'  => 'videopack-parent-switching',
-			'thumbs'   => 'videopack-generate-thumbnails',
-			'encoding' => 'videopack-batch-enqueue',
+		return Debug_Logger::measure(
+			'REST Endpoint: batch_progress',
+			function () use ( $request ) {
+				$type      = $request->get_param( 'type' );
+				$cache_key = 'videopack_rest_batch_progress_' . $type;
+				$cached    = get_transient( $cache_key );
+				if ( false !== $cached ) {
+					return $cached;
+				}
+
+				$groups = array(
+					'featured' => 'videopack-featured-images',
+					'parents'  => 'videopack-parent-switching',
+					'thumbs'   => 'videopack-generate-thumbnails',
+					'encoding' => 'videopack-batch-enqueue',
+				);
+
+				$response = null;
+
+				if ( 'all' === $type ) {
+					$all_counts = array();
+					foreach ( $groups as $key => $group ) {
+						$counts = $this->get_action_scheduler_progress( $group );
+						if ( ! is_wp_error( $counts ) ) {
+							$all_counts[ $key ] = $counts;
+						}
+					}
+					$all_counts['browser'] = $this->get_browser_thumbnail_progress();
+					$response              = new \WP_REST_Response( $all_counts, 200 );
+				} elseif ( 'browser' === $type ) {
+					$response = new \WP_REST_Response( $this->get_browser_thumbnail_progress(), 200 );
+				} elseif ( isset( $groups[ $type ] ) ) {
+					$counts = $this->get_action_scheduler_progress( $groups[ $type ] );
+
+					if ( is_wp_error( $counts ) ) {
+						return $counts;
+					}
+
+					$response = new \WP_REST_Response( $counts, 200 );
+				}
+
+				if ( $response ) {
+					set_transient( $cache_key, $response, 10 ); // Cache for 10 seconds
+				}
+
+				return $response;
+			}
 		);
+	}
 
-		$counts = $this->get_action_scheduler_progress( $groups[ $type ] );
-
-		if ( is_wp_error( $counts ) ) {
-			return $counts;
-		}
-
-		return new \WP_REST_Response( $counts, 200 );
+	/**
+	 * Helper to get progress for browser thumbnails.
+	 *
+	 * @return array The progress counts.
+	 */
+	private function get_browser_thumbnail_progress() {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key = %s AND meta_value = %s", '_videopack_needs_browser_thumb', '1' ) );
+		return array(
+			'pending'     => (int) $count,
+			'in-progress' => 0,
+			'complete'    => 0,
+			'failed'      => 0,
+		);
 	}
 
 	/**
@@ -1327,6 +1424,7 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		if ( $is_error ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log(
 				sprintf(
 					'REST API Error: Route: %s, Method: %s, Params: %s, Error: %s',
@@ -1362,14 +1460,13 @@ class REST_Controller extends \WP_REST_Controller {
 		$counts   = array();
 
 		foreach ( $statuses as $key => $status ) {
-			$actions        = $store->query_actions(
+			$counts[ $key ] = (int) $store->query_actions(
 				array(
-					'group'    => $group,
-					'status'   => $status,
-					'per_page' => -1,
-				)
+					'group'  => $group,
+					'status' => $status,
+				),
+				'count'
 			);
-			$counts[ $key ] = count( $actions );
 		}
 
 		return $counts;

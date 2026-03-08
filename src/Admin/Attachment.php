@@ -178,7 +178,7 @@ class Attachment {
 			if ( $parent_id ) {
 				$format_id = get_post_meta( $video_id, '_kgflashmediaplayer-format', true );
 				if ( $format_id ) {
-					$encoder     = new Encode\Encode_Attachment( $this->options_manager, $parent_id );
+					$encoder       = new Encode\Encode_Attachment( $this->options_manager, $parent_id );
 					$encode_format = $encoder->get_encode_format( $format_id );
 					if ( $encode_format && $encode_format->get_job_id() ) {
 						$encode_queue->delete_job( $encode_format->get_job_id() );
@@ -280,8 +280,6 @@ class Attachment {
 			$post = get_post( $post_id );
 			if ( $this->is_video( $post ) ) {
 				as_schedule_single_action( time(), 'videopack_process_new_attachment', array( 'post_id' => $post_id ), 'videopack-attachments' );
-				// After scheduling, immediately trigger the Action Scheduler to process pending jobs.
-				do_action( 'action_scheduler_run_queue' );
 			}
 		}
 	}
@@ -313,7 +311,7 @@ class Attachment {
 				$movieurl          = wp_get_attachment_url( $post_id );
 				$encode_attachment = new Encode\Encode_Attachment( $this->options_manager, $post_id, $movieurl );
 
-				$all_formats = $this->options_manager->get_video_formats();
+				$all_formats       = $this->options_manager->get_video_formats();
 				$formats_to_encode = array();
 
 				foreach ( $all_formats as $format_id => $format_object ) {
@@ -543,6 +541,9 @@ class Attachment {
 	 */
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
 		if ( $this->options['ffmpeg_exists'] !== true ) {
+			if ( $this->options['browser_thumbnails'] === true ) {
+				update_post_meta( $post_id, '_videopack_needs_browser_thumb', 1 );
+			}
 			return;
 		}
 
@@ -638,7 +639,7 @@ class Attachment {
 					array( $parent_id, (int) $poster_id ),
 					'videopack-featured-images'
 				);
-				$count++;
+				++$count;
 			}
 		}
 
@@ -687,7 +688,7 @@ class Attachment {
 							array( $thumb_id, 'post', $parent_id, $video_id ),
 							'videopack-parent-switching'
 						);
-						$count++;
+						++$count;
 					}
 				}
 			}
@@ -712,7 +713,7 @@ class Attachment {
 						array( $thumb_id, 'video', (int) $video_id, 0 ),
 						'videopack-parent-switching'
 					);
-					$count++;
+					++$count;
 				}
 			}
 		}
@@ -774,6 +775,47 @@ class Attachment {
 	}
 
 	/**
+	 * Retrieves a list of attachments that need browser-based thumbnail generation.
+	 *
+	 * @return array List of attachments with 'id' and 'url'.
+	 */
+	public function get_pending_browser_thumbnails() {
+		$options = $this->options_manager->get_options();
+
+		// Only proceed if browser thumbnails are enabled and user has capability.
+		if ( empty( $options['browser_thumbnails'] ) || ! current_user_can( 'make_video_thumbnails' ) ) {
+			return array();
+		}
+
+		$query = new \WP_Query(
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'posts_per_page' => 20, // Limit to avoid performance issues.
+				'meta_query'     => array(
+					array(
+						'key'   => '_videopack_needs_browser_thumb',
+						'value' => '1',
+					),
+				),
+				'fields'         => 'ids',
+			)
+		);
+
+		$attachments = array();
+		foreach ( $query->posts as $post_id ) {
+			$url = wp_get_attachment_url( $post_id );
+			if ( $url ) {
+				$attachments[] = array(
+					'id'  => $post_id,
+					'url' => $url,
+				);
+			}
+		}
+		return $attachments;
+	}
+
+	/**
 	 * Helper to process thumbnail generation batch.
 	 *
 	 * @return array Array containing the total count of scheduled actions.
@@ -789,7 +831,7 @@ class Attachment {
 				array( $video_id ),
 				'videopack-generate-thumbnails'
 			);
-			$count++;
+			++$count;
 		}
 
 		return array( 'total' => $count );
@@ -824,7 +866,7 @@ class Attachment {
 				array( $video_id ),
 				'videopack-batch-enqueue'
 			);
-			$count++;
+			++$count;
 		}
 
 		return array( 'total' => $count );

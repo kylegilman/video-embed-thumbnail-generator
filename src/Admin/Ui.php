@@ -36,7 +36,14 @@ class Ui {
 		);
 
 		register_block_type(
-			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-collection',
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery',
+			array(
+				'render_callback' => array( $this, 'render_videopack_block' ),
+			)
+		);
+
+		register_block_type(
+			VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-list',
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
 			)
@@ -44,6 +51,7 @@ class Ui {
 
 		$this->localize_block_settings( 'videopack-videopack-video-editor-script' );
 		$this->localize_block_settings( 'videopack-videopack-gallery-editor-script' );
+		$this->localize_block_settings( 'videopack-videopack-list-editor-script' );
 	}
 
 	public function conditionally_add_assets_to_block_metadata( $metadata ) {
@@ -69,6 +77,13 @@ class Ui {
 	 */
 	public function render_videopack_block( $attributes, $content, $block ) {
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
+
+		if ( $block->name === 'videopack/videopack-list' ) {
+			$attributes['gallery'] = false;
+		} elseif ( $block->name === 'videopack/videopack-gallery' ) {
+			$attributes['gallery'] = true;
+		}
+
 		return '<div ' . get_block_wrapper_attributes() . ' >' . $shortcode_handler->do( $attributes, $content ) . '</div>';
 	}
 
@@ -244,6 +259,9 @@ class Ui {
 				'before'
 			);
 
+			// Allow the encode queue page to process in-browser thumbnails in the background.
+			wp_enqueue_media();
+
 		}
 	}
 
@@ -269,7 +287,8 @@ class Ui {
 
 		$this->localize_block_settings( 'videopack-attachment-details' );
 
-		$pending_attachments = $this->get_pending_browser_thumbnails();
+		$attachment          = new Attachment( $this->options_manager );
+		$pending_attachments = $attachment->get_pending_browser_thumbnails();
 		$this->localize_block_settings( 'videopack-attachment-details', array( 'pending_attachments' => $pending_attachments ) );
 
 		wp_enqueue_style(
@@ -278,46 +297,5 @@ class Ui {
 			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);
-	}
-
-	/**
-	 * Retrieves a list of attachments that need browser-based thumbnail generation.
-	 *
-	 * @return array List of attachments with 'id' and 'url'.
-	 */
-	private function get_pending_browser_thumbnails() {
-		$options = $this->options_manager->get_options();
-
-		// Only proceed if browser thumbnails are enabled and user has capability.
-		if ( empty( $options['browser_thumbnails'] ) || ! current_user_can( 'make_video_thumbnails' ) ) {
-			return array();
-		}
-
-		$query = new \WP_Query(
-			array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'inherit',
-				'posts_per_page' => 20, // Limit to avoid performance issues.
-				'meta_query'     => array(
-					array(
-						'key'   => '_videopack_needs_browser_thumb',
-						'value' => '1',
-					),
-				),
-				'fields'         => 'ids',
-			)
-		);
-
-		$attachments = array();
-		foreach ( $query->posts as $post_id ) {
-			$url = wp_get_attachment_url( $post_id );
-			if ( $url ) {
-				$attachments[] = array(
-					'id'  => $post_id,
-					'url' => $url,
-				);
-			}
-		}
-		return $attachments;
 	}
 }

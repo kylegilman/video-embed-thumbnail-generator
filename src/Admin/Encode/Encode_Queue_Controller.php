@@ -3,6 +3,7 @@
 namespace Videopack\Admin\Encode;
 
 use ActionScheduler;
+use Videopack\Common\Debug_Logger;
 
 class Encode_Queue_Controller {
 
@@ -137,9 +138,9 @@ class Encode_Queue_Controller {
 		}
 		// After enqueuing, trigger the queue processor to check for jobs.
 		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
-		do_action( 'action_scheduler_run_queue' );
 
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
+		wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
 		return array(
 			'log'                => $this->queue_log->get_log(),
 			'results'            => $results,
@@ -174,272 +175,342 @@ class Encode_Queue_Controller {
 	 * @param int $job_id The ID of the job from the custom DB table.
 	 */
 	public function handle_job_action( $job_id ) {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+		return Debug_Logger::measure(
+			"AS Job Handle: $job_id",
+			function () use ( $job_id ) {
+				global $wpdb;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
 
-		if ( ! $job ) {
-			// Log error: job not found
-			return;
-		}
+				if ( ! $job ) {
+					// Log error: job not found
+					return;
+				}
 
-		$original_blog_id = false;
-		if ( is_multisite() ) {
-			$original_blog_id = get_current_blog_id();
-			if ( $job['blog_id'] != $original_blog_id ) {
-				switch_to_blog( $job['blog_id'] );
+				$original_blog_id = false;
+				if ( is_multisite() ) {
+					$original_blog_id = get_current_blog_id();
+					if ( $job['blog_id'] != $original_blog_id ) {
+						switch_to_blog( $job['blog_id'] );
+					}
+				}
+
+				// Re-fetch options in case they changed since constructor
+				// Options should be fetched for the context of $job['blog_id']
+				$this->options = $this->options_manager->get_options(); // Options manager loads for current blog context
+
+				$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
+
+				$encoder = new Encode_Attachment( $this->options_manager, $attachment_id_or_url, $job['input_url'] );
+
+				switch ( $job['status'] ) {
+					case 'queued':
+						// The gatekeeper (process_pending_jobs_action) should prevent this from running if paused, but as a safeguard:
+						if ( $this->options['queue_control'] !== 'play' ) {
+							as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if paused
+							return;
+						}
+
+						// The queue processor has already checked for capacity. We can proceed.
+						// Update job to 'processing'. The `where` clause ensures we only grab it if it's still 'queued'.
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+						$updated_rows = $wpdb->update(
+							$this->queue_table_name,
+							array(
+								'status'     => 'processing',
+								'started_at' => current_time( 'mysql', true ),
+							),
+							array(
+								'id'     => $job_id,
+								'status' => 'queued',
+							)
+						);
+
+						if ( 0 === $updated_rows ) {
+							// This job was already picked up by another process. We can stop.
+							return;
+						}
+
+						$encode_format_obj = new Encode_Format( $job['format_id'] );
+						$encode_format_obj->set_path( $job['output_path'] );
+						$encode_format_obj->set_url( $job['output_url'] );
+						$encode_format_obj->set_job_id( $job_id );
+
+						$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID
+
+						if ( $started_format->get_pid() && $started_format->get_status() === 'encoding' ) {
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( // Store PID and logfile path
+									'status'       => 'encoding',
+									'pid'          => $started_format->get_pid(),
+									'logfile_path' => $started_format->get_logfile(),
+								),
+								array( 'id' => $job_id )
+							);
+							as_schedule_single_action( time() + 30, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+						} else {
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( // Mark as failed if FFmpeg didn't start
+									'status'        => 'failed',
+									'error_message' => 'Failed to start FFmpeg: ' . $started_format->get_error(),
+									'failed_at'     => current_time( 'mysql', true ),
+								),
+								array( 'id' => $job_id )
+							);
+							$this->send_error_email( $job_id );
+						}
+						break;
+
+					case 'encoding':
+					case 'processing':
+						$encode_format_obj = Encode_Format::from_array( $job );
+						$encode_format_obj->set_status( 'encoding' ); // status must be encoding for progress check
+
+						$progress_status = $encode_format_obj->get_progress(); // This calls set_progress() which updates status
+
+						if ( $encode_format_obj->get_status() === 'needs_insert' ) {
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( // Update status to needs_insert
+									'status'       => 'needs_insert',
+									'completed_at' => current_time( 'mysql', true ),
+								),
+								array( 'id' => $job_id )
+							);
+
+							// Instead of rescheduling, just handle the insertion now.
+							$inserted = $encoder->insert_attachment( $encode_format_obj );
+
+							if ( $inserted ) {
+								$update_data = array( 'status' => 'completed' );
+								if ( $encode_format_obj->get_id() ) {
+									$update_data['output_attachment_id'] = $encode_format_obj->get_id();
+								}
+								// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+								$wpdb->update(
+									$this->queue_table_name,
+									$update_data,
+									array( 'id' => $job_id )
+								);
+								$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
+							} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
+								// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+								$wpdb->update(
+									$this->queue_table_name,
+									array( 'status' => 'pending_replacement' ),
+									array( 'id' => $job_id )
+								);
+								as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+							} else {
+								$error_msg = $encode_format_obj->get_error();
+								if ( ! $error_msg ) {
+									$error_msg = 'Insert attachment failed.';
+								}
+								// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+								$wpdb->update(
+									$this->queue_table_name,
+									array(
+										'status'        => 'failed',
+										'error_message' => $error_msg,
+									),
+									array( 'id' => $job_id )
+								);
+								$this->send_error_email( $job_id );
+							}
+						} elseif ( $encode_format_obj->get_status() === 'error' ) {
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( // Mark as failed if error during encoding
+									'status'        => 'failed',
+									'error_message' => $encode_format_obj->get_error(),
+									'failed_at'     => current_time( 'mysql', true ),
+								),
+								array( 'id' => $job_id )
+							);
+							$this->send_error_email( $job_id );
+						} elseif ( $progress_status === 'recheck' || $encode_format_obj->get_status() === 'encoding' ) {
+							// If logfile not found yet, or still encoding, recheck.
+							as_schedule_single_action( time() + 30, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+						}
+
+						// Cleanup temporary watermark if job is now in a terminal state
+						if ( ( $encode_format_obj->get_status() === 'needs_insert' || $encode_format_obj->get_status() === 'failed' )
+						&& ! empty( $job['temp_watermark_path'] )
+						&& file_exists( $job['temp_watermark_path'] )
+						) {
+							wp_delete_file( $job['temp_watermark_path'] );
+							// clear the path from DB:
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( 'temp_watermark_path' => null ), // Clear temp watermark path
+								array( 'id' => $job_id )
+							);
+						}
+						break;
+
+					case 'needs_insert':
+					case 'pending_replacement':
+						$encode_format_obj = Encode_Format::from_array( $job );
+						$inserted          = $encoder->insert_attachment( $encode_format_obj );
+
+						if ( $inserted ) {
+							$update_data = array( 'status' => 'completed' );
+							if ( $encode_format_obj->get_id() ) {
+								$update_data['output_attachment_id'] = $encode_format_obj->get_id();
+							}
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								$update_data,
+								array( 'id' => $job_id )
+							);
+							$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
+						} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array( 'status' => 'pending_replacement' ),
+								array( 'id' => $job_id )
+							);
+							as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+						} else {
+							$error_msg = $encode_format_obj->get_error();
+							if ( ! $error_msg ) {
+								$error_msg = 'Insert attachment failed.';
+							}
+							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+							$wpdb->update(
+								$this->queue_table_name,
+								array(
+									'status'        => 'failed',
+									'error_message' => $error_msg,
+								),
+								array( 'id' => $job_id )
+							);
+							$this->send_error_email( $job_id );
+						}
+						break;
+
+					// 'completed', 'failed', 'canceled' are terminal states, no action needed by default.
+				}
+
+				if ( $original_blog_id && $job['blog_id'] != $original_blog_id ) {
+					restore_current_blog();
+				}
+
+				// Re-fetch the job to get the LATEST status after all processing steps above.
+				// This ensures the terminal state check below uses actual DB state, not stale memory.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$updated_job = $wpdb->get_row( $wpdb->prepare( 'SELECT status, blog_id FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+
+				// After handling a job, if it reached a terminal state, try to process the next pending job from the queue.
+				if ( $updated_job && in_array( $updated_job['status'], array( 'completed', 'failed', 'canceled' ), true ) ) {
+					as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+				}
+				wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+				wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
 			}
+		);
+	}
+
+	public function process_pending_jobs_action() {
+		Debug_Logger::log( 'AS Heartbeat: process_pending_jobs_action' );
+		global $wpdb;
+
+		if ( $this->options['queue_control'] !== 'play' ) {
+			return; // Queue is paused
 		}
 
-		// Re-fetch options in case they changed since constructor
-		// Options should be fetched for the context of $job['blog_id']
-		$this->options = $this->options_manager->get_options(); // Options manager loads for current blog context
+		// 1. Check active encoding jobs to see if they finished.
+		// This ensures that even if ActionScheduler is slow, a heartbeat (like a UI refresh)
+		// will advance the status of finished jobs and free up capacity.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$active_encodes = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM %i WHERE status IN ('processing', 'encoding')", $this->queue_table_name ), ARRAY_A );
+		$status_changed = false;
 
-		$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
+		if ( ! empty( $active_encodes ) ) {
+			foreach ( $active_encodes as $job_data ) {
+				$job_id                = $job_data['id'];
+				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
+				$encoder               = new Encode_Attachment( $this->options_manager, $attachment_identifier, $job_data['input_url'] );
+				$encode_format         = Encode_Format::from_array( $job_data );
+				$encode_format->get_progress(); // Updates internal status if log says 'end'
 
-		$encoder = new Encode_Attachment( $this->options_manager, $attachment_id_or_url, $job['input_url'] );
-
-		switch ( $job['status'] ) {
-			case 'queued':
-				// The gatekeeper (process_pending_jobs_action) should prevent this from running if paused, but as a safeguard:
-				if ( $this->options['queue_control'] !== 'play' ) {
-					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if paused
-					return;
-				}
-
-				// The queue processor has already checked for capacity. We can proceed.
-				// Update job to 'processing'. The `where` clause ensures we only grab it if it's still 'queued'.
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-				$updated_rows = $wpdb->update(
-					$this->queue_table_name,
-					array(
-						'status'     => 'processing',
-						'started_at' => current_time( 'mysql', true ),
-					),
-					array(
-						'id'     => $job_id,
-						'status' => 'queued',
-					)
-				);
-
-				if ( 0 === $updated_rows ) {
-					// This job was already picked up by another process. We can stop.
-					return;
-				}
-
-				$encode_format_obj = new Encode_Format( $job['format_id'] );
-				$encode_format_obj->set_path( $job['output_path'] );
-				$encode_format_obj->set_url( $job['output_url'] );
-				$encode_format_obj->set_job_id( $job_id );
-
-				$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID
-
-				if ( $started_format->get_pid() && $started_format->get_status() === 'encoding' ) {
+				if ( $encode_format->get_status() === 'needs_insert' ) {
+					// The job is done! Update DB status.
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					$wpdb->update(
 						$this->queue_table_name,
-						array( // Store PID and logfile path
-							'status'       => 'encoding',
-							'pid'          => $started_format->get_pid(),
-							'logfile_path' => $started_format->get_logfile(),
-						),
-						array( 'id' => $job_id )
-					);
-					as_schedule_single_action( time() + 5, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-				} else {
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						array( // Mark as failed if FFmpeg didn't start
-							'status'        => 'failed',
-							'error_message' => 'Failed to start FFmpeg: ' . $started_format->get_error(),
-							'failed_at'     => current_time( 'mysql', true ),
-						),
-						array( 'id' => $job_id )
-					);
-					$this->send_error_email( $job_id );
-				}
-				break;
-
-			case 'encoding':
-			case 'processing':
-				$encode_format_obj = Encode_Format::from_array( $job );
-				$encode_format_obj->set_status( 'encoding' ); // Critical for get_progress()
-
-				$progress_status = $encode_format_obj->get_progress(); // This calls set_progress() which updates status
-
-				if ( $encode_format_obj->get_status() === 'needs_insert' ) {
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						array( // Update status to needs_insert
+						array(
 							'status'       => 'needs_insert',
 							'completed_at' => current_time( 'mysql', true ),
 						),
 						array( 'id' => $job_id )
 					);
-
-					// Instead of rescheduling, just handle the insertion now.
-					$inserted = $encoder->insert_attachment( $encode_format_obj );
-
-					if ( $inserted ) {
-						$update_data = array( 'status' => 'completed' );
-						if ( $encode_format_obj->get_id() ) {
-							$update_data['output_attachment_id'] = $encode_format_obj->get_id();
-						}
-						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-						$wpdb->update(
-							$this->queue_table_name,
-							$update_data,
-							array( 'id' => $job_id )
-						);
-						$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
-					} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
-						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-						$wpdb->update(
-							$this->queue_table_name,
-							array( 'status' => 'pending_replacement' ),
-							array( 'id' => $job_id )
-						);
-						as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-					} else {
-						$error_msg = $encode_format_obj->get_error();
-						if ( ! $error_msg ) {
-							$error_msg = 'Insert attachment failed.';
-						}
-						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-						$wpdb->update(
-							$this->queue_table_name,
-							array(
-								'status'        => 'failed',
-								'error_message' => $error_msg,
-							),
-							array( 'id' => $job_id )
-						);
-						$this->send_error_email( $job_id );
-					}
-				} elseif ( $encode_format_obj->get_status() === 'error' ) {
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						array( // Mark as failed if error during encoding
-							'status'        => 'failed',
-							'error_message' => $encode_format_obj->get_error(),
-							'failed_at'     => current_time( 'mysql', true ),
-						),
-						array( 'id' => $job_id )
-					);
-					$this->send_error_email( $job_id );
-				} elseif ( $progress_status === 'recheck' || $encode_format_obj->get_status() === 'encoding' ) {
-					// If logfile not found yet, or still encoding, recheck.
-					as_schedule_single_action( time() + 5, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					$status_changed = true;
+					// Trigger immediate handling by the handle_job action.
+					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 				}
-
-				// Cleanup temporary watermark if job is now in a terminal state
-				if ( ( $encode_format_obj->get_status() === 'needs_insert' || $encode_format_obj->get_status() === 'failed' )
-					&& ! empty( $job['temp_watermark_path'] )
-					&& file_exists( $job['temp_watermark_path'] )
-				) {
-					wp_delete_file( $job['temp_watermark_path'] );
-					// clear the path from DB:
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						array( 'temp_watermark_path' => null ), // Clear temp watermark path
-						array( 'id' => $job_id )
-					);
-				}
-				break;
-
-			case 'needs_insert':
-			case 'pending_replacement':
-				$encode_format_obj = Encode_Format::from_array( $job );
-				$inserted          = $encoder->insert_attachment( $encode_format_obj );
-
-				if ( $inserted ) {
-					$update_data = array( 'status' => 'completed' );
-					if ( $encode_format_obj->get_id() ) {
-						$update_data['output_attachment_id'] = $encode_format_obj->get_id();
-					}
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						$update_data,
-						array( 'id' => $job_id )
-					);
-					$this->maybe_auto_publish_post( $job['attachment_id'], $job['blog_id'] );
-				} elseif ( $encode_format_obj->get_status() === 'pending_replacement' ) {
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						array( 'status' => 'pending_replacement' ),
-						array( 'id' => $job_id )
-					);
-					as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
-				} else {
-					$error_msg = $encode_format_obj->get_error();
-					if ( ! $error_msg ) {
-						$error_msg = 'Insert attachment failed.';
-					}
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-					$wpdb->update(
-						$this->queue_table_name,
-						array(
-							'status'        => 'failed',
-							'error_message' => $error_msg,
-						),
-						array( 'id' => $job_id )
-					);
-					$this->send_error_email( $job_id );
-				}
-				break;
-
-				// 'completed', 'failed', 'canceled' are terminal states, no action needed by default.
+			}
 		}
 
-		if ( $original_blog_id && $job['blog_id'] != $original_blog_id ) {
-			restore_current_blog();
+		// 2. Watchdog: Ensure non-terminal jobs that aren't currently encoding/processing
+		// but aren't 'queued' or 'completed' are still being handled.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$pending_system_jobs = $wpdb->get_results( $wpdb->prepare( "SELECT id FROM %i WHERE status IN ('needs_insert', 'pending_replacement')", $this->queue_table_name ), ARRAY_A );
+		if ( ! empty( $pending_system_jobs ) ) {
+			foreach ( $pending_system_jobs as $job_row ) {
+				$job_id = $job_row['id'];
+				if ( ! as_has_scheduled_action( 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ) ) {
+					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+				}
+			}
 		}
 
-		// After handling a job, try to process the next pending job from the queue.
-		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
-		do_action( 'action_scheduler_run_queue' );
-		wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
-	}
-
-	/**
-	 * ActionScheduler callback to pick up the next 'queued' job.
-	 */
-	public function process_pending_jobs_action() {
-		global $wpdb;
-		if ( $this->options['queue_control'] !== 'play' ) {
-			return; // Queue is paused
+		if ( $status_changed ) {
+			wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
 		}
+
+		// 2. Capacity Check: Only count active encodes against the simultaneous_encodes limit.
+		// 'needs_insert' and 'pending_replacement' are light database operations and shouldn't block NEW encodes.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$encoding_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE status IN ('processing', 'encoding')", $this->queue_table_name ) );
+		$capacity       = (int) ( $this->options['simultaneous_encodes'] ?? 1 );
+
+		if ( $encoding_count >= $capacity ) {
+			return; // Max concurrent encodes reached
+		}
+
+		$needed = $capacity - $encoding_count;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$processing_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE status IN ('processing', 'encoding')", $this->queue_table_name ) );
-		if ( $processing_count >= (int) ( $this->options['simultaneous_encodes'] ?? 1 ) ) {
-			return; // Max concurrent jobs reached
-		}
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$next_job = $wpdb->get_row(
-			$wpdb->prepare( 'SELECT id FROM %i WHERE status = %s ORDER BY created_at ASC LIMIT 1', $this->queue_table_name, 'queued' ),
+		$next_jobs = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT id FROM %i WHERE status = %s ORDER BY created_at ASC LIMIT %d', $this->queue_table_name, 'queued', $needed ),
 			ARRAY_A
 		);
 
-		if ( $next_job && isset( $next_job['id'] ) ) {
-			// Schedule to handle this specific job.
-			// Check if an action for this job_id with status 'queued' is already scheduled to avoid duplicates.
-			$existing_actions = as_get_scheduled_actions(
-				array(
-					'hook'   => 'videopack_handle_job',
-					'args'   => array( 'job_id' => $next_job['id'] ),
-					'status' => \ActionScheduler_Store::STATUS_PENDING,
-				)
-			);
-			if ( empty( $existing_actions ) ) {
-				as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $next_job['id'] ), 'videopack_encode_jobs' );
+		if ( ! empty( $next_jobs ) ) {
+			foreach ( $next_jobs as $job_row ) {
+				$job_id = $job_row['id'];
+				// Schedule to handle this specific job.
+				$existing_actions = as_get_scheduled_actions(
+					array(
+						'hook'   => 'videopack_handle_job',
+						'args'   => array( 'job_id' => $job_id ),
+						'status' => \ActionScheduler_Store::STATUS_PENDING,
+					)
+				);
+				if ( empty( $existing_actions ) ) {
+					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+				}
 			}
 		}
 	}
@@ -458,53 +529,40 @@ class Encode_Queue_Controller {
 		return $action_args;
 	}
 
-	/**
-	 * Get queue items.
-	 *
-	 * @param int|null $blog_id Optional. Blog ID to filter by. If null, returns for all blogs (network admin).
-	 * @param array $statuses Optional. Array of statuses to include. Defaults to non-terminal.
-	 * @return array
-	 */
-	public function get_queue_items( $blog_id = null, $statuses = null ) {
+	public function get_queue_items( $blog_id = null ) {
 		global $wpdb;
+
 		if ( $blog_id ) {
 			$cache_key = 'videopack_queue_items_' . $blog_id;
 		} else {
 			$cache_key = 'videopack_queue_items_all';
 		}
+
 		$cached_items = wp_cache_get( $cache_key, 'videopack' );
 
 		if ( false !== $cached_items ) {
-			$all_items = $cached_items;
+			return $cached_items;
+		}
+
+		$table = $this->queue_table_name;
+
+		if ( null !== $blog_id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$all_items = $wpdb->get_results(
+				$wpdb->prepare( 'SELECT * FROM %i WHERE blog_id = %d ORDER BY created_at ASC', $table, $blog_id ),
+				ARRAY_A
+			);
 		} else {
-			if ( null !== $blog_id ) {
-				global $wpdb;
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$all_items = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE blog_id = %d ORDER BY created_at ASC', $this->queue_table_name, $blog_id ), ARRAY_A );
-			} else {
-				global $wpdb;
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$all_items = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY created_at ASC', $this->queue_table_name ), ARRAY_A );
-			}
-			wp_cache_set( $cache_key, $all_items, 'videopack', 15 );
-		}
-
-		if ( empty( $all_items ) ) {
-			return array();
-		}
-
-		$filter_statuses = $statuses ?? array( 'queued', 'processing', 'needs_insert', 'pending_replacement', 'completed' );
-
-		if ( ! empty( $filter_statuses ) ) {
-			$all_items = array_filter(
-				$all_items,
-				function ( $item ) use ( $filter_statuses ) {
-					return isset( $item['status'] ) && in_array( $item['status'], $filter_statuses, true );
-				}
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$all_items = $wpdb->get_results(
+				$wpdb->prepare( 'SELECT * FROM %i ORDER BY created_at ASC', $table ),
+				ARRAY_A
 			);
 		}
 
-		return array_values( $all_items ); // Re-index array after filtering
+		wp_cache_set( $cache_key, $all_items, 'videopack', 15 );
+
+		return $all_items;
 	}
 
 	public function get_queue_for_blog( int $blog_id ) {
@@ -573,7 +631,9 @@ class Encode_Queue_Controller {
 			if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
 				restore_current_blog();
 			}
-							wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+			wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
+			as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
 		}
 	}
 
@@ -630,6 +690,8 @@ class Encode_Queue_Controller {
 				restore_current_blog();
 			}
 			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
+			wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
+			as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
 		}
 	}
 
@@ -638,12 +700,9 @@ class Encode_Queue_Controller {
 		$user_ID         = get_current_user_id();
 		$current_blog_id = get_current_blog_id();
 
-		// Get all queue items. We'll filter them based on type and scope.
-		// For 'all' type, we might need to get all statuses to ensure we can cancel 'encoding' ones.
-		// For 'completed' type, we primarily care about 'completed' status.
+		// Get all queue items. We'll filter them based on type and scope in the loop below.
 		$all_queue_items = $this->get_queue_items(
-			( $scope === 'network' && is_network_admin() ) ? null : $current_blog_id,
-			( $type === 'all' ) ? null : array( 'completed', 'failed', 'canceled' ) // Get all terminal states for 'completed' type, or all for 'all'
+			( $scope === 'network' && is_network_admin() ) ? null : $current_blog_id
 		);
 
 		if ( empty( $all_queue_items ) || ! is_array( $all_queue_items ) ) {
@@ -661,8 +720,8 @@ class Encode_Queue_Controller {
 			if ( $type === 'all' ) {
 				// If clearing 'all', we attempt to delete all jobs that the user has permission to delete.
 				$can_delete_job = (
-					( ! is_multisite() || $job_blog_id === $current_blog_id ) ||
-					( is_multisite() && is_network_admin() && $scope === 'network' )
+				( ! is_multisite() || $job_blog_id === $current_blog_id ) ||
+				( is_multisite() && is_network_admin() && $scope === 'network' )
 				) && (
 					current_user_can( 'edit_others_video_encodes' ) ||
 					( current_user_can( 'encode_videos' ) && $job_user_id === $user_ID )
@@ -708,6 +767,8 @@ class Encode_Queue_Controller {
 				}
 			}
 		}
+		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
+		wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
 	}
 
 	/**
@@ -789,8 +850,12 @@ class Encode_Queue_Controller {
 	 * @return array An array of all queue items.
 	 */
 	public function get_full_queue_array() {
-		// Get all jobs, regardless of status. Pass an empty array to get_queue_items to bypass default status filtering.
-		$all_jobs = $this->get_queue_items( null, array() );
+		// Active Check: Trigger the queue processor to fill any available capacity.
+		// This acts as a watchdog heartbeat whenever the queue is viewed.
+		$this->process_pending_jobs_action();
+
+		// Get all jobs, regardless of status.
+		$all_jobs = $this->get_queue_items( null );
 
 		if ( empty( $all_jobs ) ) {
 			return array();
@@ -818,10 +883,11 @@ class Encode_Queue_Controller {
 			}
 
 			if ( ! empty( $job['attachment_id'] ) ) {
+				$attachment_meta    = new \Videopack\Admin\Attachment_Meta( $this->options_manager, (int) $job['attachment_id'] );
 				$job['video_title'] = html_entity_decode( get_the_title( $job['attachment_id'] ), ENT_QUOTES, 'UTF-8' );
 				$poster_id          = get_post_thumbnail_id( $job['attachment_id'] );
 				if ( ! $poster_id ) {
-					$videopack_meta = $attachment_meta->get( $job['attachment_id'] );
+					$videopack_meta = $attachment_meta->get();
 					$poster_id      = $videopack_meta['poster_id'] ?? null;
 				}
 				$job['poster_url']      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '';
@@ -848,6 +914,38 @@ class Encode_Queue_Controller {
 			}
 
 			$job['status_l10n'] = $this->get_l10n_status( $job['status'] );
+
+			// Add real-time progress for active jobs
+			if ( in_array( $job['status'], array( 'encoding', 'processing' ), true ) ) {
+				$encode_format = Encode_Format::from_array( $job );
+				if ( ! empty( $job['attachment_id'] ) ) {
+					$v_meta = $attachment_meta->get();
+					if ( ! empty( $v_meta['duration'] ) ) {
+						// duration in meta is usually seconds, Encode_Format expects microseconds
+						$job['video_duration'] = (int) ( $v_meta['duration'] * 1000000 );
+						$encode_format->set_video_duration( $job['video_duration'] );
+					}
+				}
+				$job['progress'] = $encode_format->get_progress();
+
+				// Normalize progress to always be an object for the frontend
+				if ( ! is_array( $job['progress'] ) ) {
+					$job['progress'] = array(
+						'percent' => 0,
+					);
+				}
+
+				if ( ! empty( $job['started_at'] ) ) {
+					$job['started'] = strtotime( $job['started_at'] );
+				} elseif ( empty( $job['started'] ) ) {
+					$job['started'] = time(); // Fallback to now if not set but encoding
+				}
+
+				// Ensure percent is included
+				if ( ! isset( $job['progress']['percent'] ) ) {
+					$job['progress']['percent'] = 0;
+				}
+			}
 
 			$processed_jobs[] = $job;
 		}
