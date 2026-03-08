@@ -198,6 +198,9 @@ class Videopack {
 		$this->loader->add_action( 'manage_media_columns', $admin_screens, 'add_video_stats_column' );
 		$this->loader->add_action( 'manage_media_custom_column', $admin_screens, 'add_video_stats_column_content', 10, 2 );
 		$this->loader->add_action( 'pre_get_posts', $admin_screens, 'hide_video_children' );
+		$this->loader->add_action( 'restrict_manage_posts', $admin_screens, 'add_media_filter_dropdown' );
+		$this->loader->add_filter( 'media_view_settings', $admin_screens, 'add_grid_media_filter' );
+		$this->loader->add_filter( 'ajax_query_attachments_args', $admin_screens, 'filter_ajax_query_attachments' );
 		$this->loader->add_action( 'wp_redirect', $admin_screens, 'upload_page_change_thumbnail_parent' );
 		$this->loader->add_action( 'admin_head-post.php', $admin_screens, 'add_contextual_help_tab' );
 		$this->loader->add_action( 'admin_head-post-new.php', $admin_screens, 'add_contextual_help_tab' );

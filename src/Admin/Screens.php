@@ -65,8 +65,8 @@ class Screens {
 		if ( $this->options['ffmpeg_exists'] === true ) { // only add the queue page if FFmpeg is installed
 			add_submenu_page(
 				'tools.php', // Parent slug
-				esc_html_x( 'Videopack Encode Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), // Page title
-				esc_html_x( 'Videopack Encode Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), // Menu title
+				esc_html_x( 'Videopack Queue', 'Tools page title', 'video-embed-thumbnail-generator' ), // Page title
+				esc_html_x( 'Videopack Queue', 'Title in admin sidebar', 'video-embed-thumbnail-generator' ), // Menu title
 				'encode_videos', // Capability required
 				'videopack_encode_queue', // Menu slug
 				array( $this, 'output_encode_queue_page' ) // Callback function
@@ -126,12 +126,53 @@ class Screens {
 
 	public function hide_video_children( $wp_query_obj ) {
 
-		if ( is_admin()
-			&& is_array( $wp_query_obj->query_vars )
-			&& array_key_exists( 'post_type', $wp_query_obj->query_vars )
-			&& $wp_query_obj->query_vars['post_type'] == 'attachment' // only deal with attachments
-			&& ! array_key_exists( 'post_mime_type', $wp_query_obj->query_vars ) // show children when specifically displaying videos
-			&& ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) // hide children only when showing paged content (makes sure that -1 will actually return all attachments)
+		if ( ! is_admin()
+			|| ! is_array( $wp_query_obj->query_vars )
+			|| ! array_key_exists( 'post_type', $wp_query_obj->query_vars )
+			|| 'attachment' !== $wp_query_obj->query_vars['post_type'] // only deal with attachments
+		) {
+			return;
+		}
+
+		$show_children      = false;
+		$show_only_children = false;
+
+		// Check if we should show children based on the new filter (List View).
+		if ( isset( $_GET['videopack_show_children'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['videopack_show_children'] ) ) ) {
+			$show_children = true;
+		}
+
+		// Check if we're in the grid view/modal and the "Child Formats" filter is selected.
+		if ( isset( $wp_query_obj->query_vars['videopack_show_children'] ) && '1' === $wp_query_obj->query_vars['videopack_show_children'] ) {
+			$show_children = true;
+		}
+
+		// Check if we specifically want ONLY child formats (Grid View selection).
+		if ( isset( $wp_query_obj->query_vars['videopack_show_only_children'] ) && '1' === $wp_query_obj->query_vars['videopack_show_only_children'] ) {
+			$show_only_children = true;
+		}
+
+		if ( true === $show_only_children ) {
+			$meta_query = $wp_query_obj->get( 'meta_query' );
+			if ( ! is_array( $meta_query ) ) {
+				$meta_query = array();
+			}
+			$meta_query['relation'] = 'AND';
+			$meta_query[]           = array(
+				'key'     => '_kgflashmediaplayer-format',
+				'compare' => 'EXISTS',
+			);
+			$wp_query_obj->set( 'meta_query', $meta_query );
+			return;
+		}
+
+		if ( true === $show_children ) {
+			return;
+		}
+
+		// If we're not explicitly showing children, hide them.
+		// Note: We no longer automatically show children just because post_mime_type is set.
+		if ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 // hide children only when showing paged content (makes sure that -1 will actually return all attachments)
 		) {
 
 			$meta_query = $wp_query_obj->get( 'meta_query' );
@@ -154,6 +195,50 @@ class Screens {
 				$meta_query
 			);
 		}
+	}
+
+	/**
+	 * Adds a dropdown to the Media Library list view to show/hide child formats.
+	 */
+	public function add_media_filter_dropdown() {
+		$screen = get_current_screen();
+		if ( 'upload' !== $screen->id ) {
+			return;
+		}
+
+		$selected = isset( $_GET['videopack_show_children'] ) ? sanitize_text_field( wp_unslash( $_GET['videopack_show_children'] ) ) : '0';
+/* phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+		?>
+		<select name="videopack_show_children" id="videopack_show_children">
+			<option value="0" <?php selected( $selected, '0' ); ?>><?php esc_html_e( 'Hide child formats', 'video-embed-thumbnail-generator' ); ?></option>
+			<option value="1" <?php selected( $selected, '1' ); ?>><?php esc_html_e( 'Show child formats', 'video-embed-thumbnail-generator' ); ?></option>
+		</select>
+		<?php
+	}
+
+	/**
+	 * Adds a "Child Formats" option to the Media Library grid view filter.
+	 *
+	 * @param array $settings The media view settings.
+	 * @return array The filtered settings.
+	 */
+	public function add_grid_media_filter( $settings ) {
+		$settings['mimeTypes']['videopack_child_formats'] = esc_html__( 'Videopack Formats', 'video-embed-thumbnail-generator' );
+		return $settings;
+	}
+
+	/**
+	 * Filters the AJAX query arguments for the Media Library grid view.
+	 *
+	 * @param array $query The query arguments.
+	 * @return array The filtered query arguments.
+	 */
+	public function filter_ajax_query_attachments( $query ) {
+		if ( isset( $query['post_mime_type'] ) && 'videopack_child_formats' === $query['post_mime_type'] ) {
+			$query['post_mime_type']               = 'video';
+			$query['videopack_show_only_children'] = '1';
+		}
+		return $query;
 	}
 
 	public function upload_page_change_thumbnail_parent( $location ) {
