@@ -46,7 +46,6 @@ export const useVideoData = (id, src, isExternal) => {
 		}
 
 		if (attachment) {
-			console.log(attachment);
 			setVideoData({
 				poster: attachment?.meta?.['_videopack-meta']?.poster,
 				total_thumbnails:

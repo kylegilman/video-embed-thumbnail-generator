@@ -1,3 +1,4 @@
+/* global videopack_config */
 import { useEntityRecord } from '@wordpress/core-data';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
@@ -55,18 +56,18 @@ const SingleVideoBlock = ({
 
 	const playerAttributes = useMemo(() => {
 		const newPlayerAttributes = { ...options, ...attributes };
-
-		if (attachment) {
-			newPlayerAttributes.sources = attachment.videopack?.sources;
+		if (attachment && attachment.videopack?.sources) {
+			newPlayerAttributes.sources = attachment.videopack.sources;
 			newPlayerAttributes.source_groups =
-				attachment.videopack?.source_groups;
-		} else if (!id && src) {
+				attachment.videopack.source_groups;
+		} else if (src) {
 			newPlayerAttributes.source_groups = externalSourceGroups || {};
 			if (
 				!externalSourceGroups ||
 				Object.keys(externalSourceGroups).length === 0
-			)
+			) {
 				newPlayerAttributes.sources = [{ src }];
+			}
 		}
 		return newPlayerAttributes;
 	}, [options, attributes, attachment, externalSourceGroups, id, src]);

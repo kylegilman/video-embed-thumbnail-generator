@@ -1,16 +1,9 @@
-/* global MediaElementPlayer */
-
-import {
-	useRef,
-	useEffect,
-	useState,
-	useMemo,
-	useCallback,
-} from '@wordpress/element';
+import { useRef, useEffect, useMemo, useCallback } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import MetaBar from './MetaBar';
 import GenericPlayer from './GenericPlayer';
 import VideoJS from './VideoJs';
+import WpMejsPlayer from './WpMejsPlayer';
 import BelowVideo from './BelowVideo';
 import './VideoPlayer.scss';
 
@@ -29,7 +22,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const {
 		embed_method,
 		autoplay,
-		controls,
+		controls = true,
 		skin,
 		loop,
 		muted,
@@ -37,36 +30,28 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		poster,
 		preload,
 		src,
-		width,
-		height,
-		start,
-		pauseothervideos,
 		volume,
-		endofvideooverlay,
 		auto_res,
 		auto_codec,
-		pixel_ratio,
-		right_click,
-		playback_rate,
-		fullwidth,
-		watermark,
-		watermark_styles,
-		watermark_link_to,
-		watermark_url,
 		sources = [],
 		source_groups = {},
 		text_tracks = [],
-		align,
-		resize,
+		inline,
+		playback_rate,
+		watermark,
+		watermark_styles,
+		watermark_link_to,
+		fixed_aspect,
+		default_ratio,
 	} = decodedAttributes;
 
 	const actualAutoplay = useMemo(() => {
-		return autoplay && muted;
-	}, [autoplay, muted]);
+		return autoplay;
+	}, [autoplay]);
 
-	const playerRef = useRef(null);
+	const videoRef = useRef(null);
+	const playerInstanceRef = useRef(null);
 	const wrapperRef = useRef(null);
-	const [videoJsOptions, setVideoJsOptions] = useState(null);
 
 	const allSources = useMemo(() => {
 		if (Object.keys(source_groups).length > 0) {
@@ -81,14 +66,16 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		() => ({
 			poster,
 			loop,
-			autoPlay: actualAutoplay,
 			preload,
-			controls,
+			controls: !!controls,
 			muted,
 			playsInline: playsinline,
+			className: 'videopack-video',
 			sources: allSources,
 			src,
 			tracks: text_tracks,
+			autoPlay:
+				embed_method === 'WordPress Default' ? false : actualAutoplay,
 		}),
 		[
 			poster,
@@ -98,11 +85,76 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			controls,
 			muted,
 			playsinline,
-			allSources,
 			src,
+			allSources,
 			text_tracks,
-		]
+			embed_method,
+		] // eslint-disable-line react-hooks/exhaustive-deps
 	);
+
+	const videoJsOptions = useMemo(() => {
+		if (embed_method !== 'Video.js') {
+			return null;
+		}
+
+		const options = {
+			autoplay: actualAutoplay,
+			controls,
+			fluid: true,
+			responsive: true,
+			muted,
+			preload,
+			poster,
+			loop,
+			playsinline,
+			volume,
+			playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
+			sources: allSources.map((s) => ({
+				src: s.src,
+				type: s.type,
+				resolution: s.resolution,
+			})),
+			tracks: text_tracks.map((t) => ({
+				src: t.src,
+				kind: t.kind,
+				srclang: t.srclang,
+				label: t.label,
+				default: t.default,
+			})),
+		};
+
+		const hasResolutions = allSources.some((s) => s.resolution);
+
+		if (hasResolutions) {
+			options.plugins = {
+				...options.plugins,
+				resolutionSelector: {
+					force_types: ['video/mp4'],
+					source_groups,
+					default_res: auto_res,
+					default_codec: auto_codec,
+				},
+			};
+		}
+
+		return options;
+	}, [
+		embed_method,
+		actualAutoplay,
+		controls,
+		muted,
+		preload,
+		poster,
+		loop,
+		playback_rate,
+		playsinline,
+		volume,
+		auto_res,
+		auto_codec,
+		allSources,
+		source_groups,
+		text_tracks,
+	]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const renderReady =
 		allSources && allSources.length > 0 && allSources[0].src;
@@ -119,156 +171,14 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		}
 	}, []);
 
+	const onReadyRef = useRef(onReady);
 	useEffect(() => {
-		let player = null;
-		let timeoutId = null;
-
-		if (
-			embed_method === 'WordPress Default' &&
-			playerRef.current &&
-			renderReady
-		) {
-			// Give the DOM a moment to reflect the new layout constraints
-			// so MediaElement can accurately attach fixed dimensions.
-			timeoutId = setTimeout(() => {
-				if (playerRef.current) {
-					const mejsOptions = window._wpmejsSettings
-						? { ...window._wpmejsSettings }
-						: {};
-					delete mejsOptions.stretching; // Prevent videoWidth crash during remounts
-
-					if (!controls) {
-						mejsOptions.features = [];
-						mejsOptions.controls = false;
-					}
-
-					if (playback_rate) {
-						if (!mejsOptions.features) {
-							mejsOptions.features = [
-								'playpause',
-								'progress',
-								'volume',
-								'tracks',
-								'sourcechooser',
-							];
-						}
-						if (!mejsOptions.features.includes('speed')) {
-							mejsOptions.features.push('speed');
-						}
-						mejsOptions.speeds = ['0.5', '1', '1.25', '1.5', '2'];
-					}
-
-					mejsOptions.success = (media) => {
-						if (actualAutoplay) {
-							const playPromise = media.play();
-							if (playPromise !== undefined) {
-								playPromise.catch((e) => {
-									console.warn('Autoplay prevented:', e);
-								});
-							}
-						}
-					};
-
-					player = new MediaElementPlayer(
-						playerRef.current,
-						mejsOptions
-					);
-				}
-			}, 50);
-		}
-
-		return () => {
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
-			if (player) {
-				try {
-					player.remove();
-				} catch (err) {
-					console.warn(err);
-				}
-			}
-		};
-	}, [
-		embed_method,
-		renderReady,
-		align,
-		resize,
-		fullwidth,
-		width,
-		height,
-		controls,
-		actualAutoplay,
-		preload,
-		playsinline,
-		playback_rate,
-	]);
-
-	useEffect(() => {
-		if (embed_method === 'Video.js') {
-			const options = {
-				autoplay: actualAutoplay,
-				controls,
-				fluid: true,
-				responsive: true,
-				muted,
-				preload,
-				poster,
-				loop,
-				playsinline,
-				volume,
-				playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
-				sources: allSources.map((s) => ({
-					src: s.src,
-					type: s.type,
-					resolution: s.resolution,
-				})),
-				tracks: text_tracks.map((t) => ({
-					src: t.src,
-					kind: t.kind,
-					srclang: t.srclang,
-					label: t.label,
-					default: t.default,
-				})),
-			};
-
-			const hasResolutions = allSources.some((s) => s.resolution);
-
-			if (hasResolutions) {
-				options.plugins = {
-					...options.plugins,
-					resolutionSelector: {
-						force_types: ['video/mp4'],
-						source_groups,
-						default_res: auto_res,
-						default_codec: auto_codec,
-					},
-				};
-			}
-
-			setVideoJsOptions(options);
-		}
-	}, [
-		autoplay,
-		controls,
-		muted,
-		preload,
-		auto_res,
-		auto_codec,
-		poster,
-		loop,
-		playsinline,
-		volume,
-		playback_rate,
-		JSON.stringify(allSources),
-		JSON.stringify(source_groups),
-		JSON.stringify(text_tracks),
-		embed_method,
-	]);
+		onReadyRef.current = onReady;
+	}, [onReady]);
 
 	const handleVideoPlayerReady = useCallback(
 		(player) => {
-			playerRef.current = player;
+			playerInstanceRef.current = player;
 			player.on('loadedmetadata', () => {
 				if (onReady) {
 					if (embed_method === 'Video.js') {
@@ -281,10 +191,18 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					handlePlay();
 				}
 			});
-			player.on('waiting', () => console.log('player is waiting'));
-			player.on('dispose', () => console.log('player will dispose'));
 		},
 		[embed_method, actualAutoplay, onReady, handlePlay]
+	);
+
+	const handleMejsReady = useCallback(
+		(player) => {
+			playerInstanceRef.current = player;
+			if (onReady) {
+				onReady(player);
+			}
+		},
+		[onReady]
 	);
 
 	if (!renderReady) {
@@ -350,11 +268,15 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const watermarkStyle = getWatermarkStyle();
 
 	return (
-		<div className={'videopack-wrapper meta-bar-visible'} ref={wrapperRef}>
+		<div className={`videopack-wrapper meta-bar-visible`} ref={wrapperRef}>
 			<div className={`videopack-player ${skin || ''}`}>
-				<MetaBar attributes={decodedAttributes} playerRef={playerRef} />
+				<MetaBar
+					attributes={decodedAttributes}
+					playerRef={playerInstanceRef}
+				/>
 				{embed_method === 'Video.js' && videoJsOptions && (
 					<VideoJS
+						key={`videojs-${src}`}
 						options={videoJsOptions}
 						skin={skin}
 						onPlay={handlePlay}
@@ -363,26 +285,29 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					/>
 				)}
 				{embed_method === 'WordPress Default' && (
-					<div
-						className={`wp-video${!controls ? ' videopack-no-controls' : ''}`}
-						key={`${align}-${resize}-${fullwidth}-${width}-${height}-${controls}-${actualAutoplay}-${preload}-${playsinline}-${playback_rate}`}
-					>
-						<GenericPlayer
-							{...genericPlayerOptions}
-							className={'wp-video-shortcode'}
-							ref={playerRef}
-						/>
-					</div>
+					<WpMejsPlayer
+						key={`wpvideo-${src}`}
+						options={genericPlayerOptions}
+						controls={controls}
+						actualAutoplay={actualAutoplay}
+						onReady={handleMejsReady}
+						onPlay={handlePlay}
+						playback_rate={playback_rate}
+					/>
 				)}
 				{embed_method === 'None' && (
-					<GenericPlayer {...genericPlayerOptions} ref={playerRef} />
+					<GenericPlayer {...genericPlayerOptions} ref={videoRef} />
 				)}
 				{watermark && (
 					<div className="videopack-watermark">
 						{watermark_link_to &&
 							watermark_link_to !== 'false' &&
 							watermark_link_to !== 'None' ? (
-							<a href="#" onClick={(e) => e.preventDefault()}>
+							<a
+								href="#videopack-watermark-link"
+								className="videopack-watermark-link"
+								onClick={(e) => e.preventDefault()}
+							>
 								<img
 									src={watermark}
 									alt="watermark"
