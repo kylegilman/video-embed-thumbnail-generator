@@ -5,6 +5,7 @@ import {
 	Button,
 	Dashicon,
 	Icon,
+	Modal,
 	PanelBody,
 	RangeControl,
 	Spinner,
@@ -24,8 +25,110 @@ import {
 	calculateTimecodes,
 } from '../../utils/video-capture';
 
-import { chevronUp, chevronDown } from '@wordpress/icons';
+import { chevronUp, chevronDown, external } from '@wordpress/icons';
 import './Thumbnails.scss';
+
+const VideoPlayerInner = ({
+	videoRef,
+	panelRef,
+	src,
+	isPlaying,
+	currentTime,
+	isSaving,
+	togglePlayback,
+	handleSliderChange,
+	handleUseThisFrame,
+	onPopOut,
+	onKeyDown,
+	isModal = false,
+}) => {
+	const localPanelRef = useRef();
+	const containerRef = panelRef || localPanelRef;
+	const [duration, setDuration] = useState(videoRef.current?.duration || 0);
+
+	const onLoadedMetadata = (event) => {
+		setDuration(event.target.duration);
+	};
+
+	useEffect(() => {
+		if (videoRef.current?.duration) {
+			setDuration(videoRef.current.duration);
+		}
+	}, [videoRef.current?.duration]);
+
+	useEffect(() => {
+		if ((isModal || containerRef === panelRef) && containerRef?.current) {
+			// Trigger a small delay to ensure the panel is visible/ready before focusing
+			const timer = setTimeout(() => {
+				containerRef.current?.focus();
+			}, 100);
+			return () => clearTimeout(timer);
+		}
+	}, [isModal, panelRef]);
+
+	return (
+		<div
+			className={`videopack-thumb-video-panel spinner-container${isSaving ? ' saving' : ''
+				} ${isModal ? 'is-modal' : ''}`}
+			tabIndex={0}
+			ref={containerRef}
+			onKeyDown={onKeyDown}
+		>
+			<video
+				src={src}
+				ref={videoRef}
+				muted={true}
+				preload="metadata"
+				onClick={() => togglePlayback(videoRef)}
+				onLoadedMetadata={onLoadedMetadata}
+			/>
+			<div className="videopack-thumb-video-controls">
+				<Button
+					className="videopack-play-pause"
+					onClick={() => togglePlayback(videoRef)}
+				>
+					<Dashicon
+						icon={isPlaying ? 'controls-pause' : 'controls-play'}
+					/>
+				</Button>
+				{duration > 0 && (
+					<RangeControl
+						__nextHasNoMarginBottom
+						min={0}
+						max={duration}
+						step="any"
+						initialPosition={0}
+						value={currentTime || 0}
+						onChange={(val) => handleSliderChange(val, videoRef)}
+						className="videopack-thumbvideo-slider"
+						type="slider"
+					/>
+				)}
+				{!isModal && onPopOut && (
+					<Button
+						className="videopack-popout"
+						onClick={onPopOut}
+						icon={external}
+						label={__(
+							'Open in larger window',
+							'video-embed-thumbnail-generator'
+						)}
+						showTooltip={true}
+					/>
+				)}
+			</div>
+			<Button
+				variant="secondary"
+				onClick={() => handleUseThisFrame(videoRef)}
+				className="videopack-use-this-frame"
+				disabled={isSaving}
+			>
+				{__('Use this frame', 'video-embed-thumbnail-generator')}
+			</Button>
+			{isSaving && <Spinner />}
+		</div>
+	);
+};
 
 const Thumbnails = ({
 	setAttributes,
@@ -33,19 +136,21 @@ const Thumbnails = ({
 	videoData, // Changed from attachment
 	options = {},
 }) => {
-	const { id, src, poster, poster_id, isExternal } = attributes;
+	const { id, src, poster } = attributes;
 	const total_thumbnails =
 		attributes.total_thumbnails ||
 		videoData?.record?.total_thumbnails ||
 		options.total_thumbnails;
 	const thumbVideoPanel = useRef();
 	const videoRef = useRef();
+	const modalVideoRef = useRef();
 	const posterImageButton = useRef();
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isOpened, setIsOpened] = useState(false);
 	const [currentTime, setCurrentTime] = useState(false);
 	const [thumbChoices, setThumbChoices] = useState([]);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
 
@@ -144,7 +249,7 @@ const Thumbnails = ({
 						};
 						newThumbCanvases.push(thumb);
 						setThumbChoices([...newThumbCanvases]);
-					} catch (ffmpegError) {}
+					} catch (ffmpegError) { }
 				}
 			}
 		}
@@ -152,45 +257,56 @@ const Thumbnails = ({
 	});
 
 	// function to toggle video playback
-	const togglePlayback = () => {
-		if (videoRef.current?.paused) {
-			videoRef.current.play();
+	const togglePlayback = (ref = videoRef) => {
+		if (ref.current?.paused) {
+			ref.current.play();
 			setIsPlaying(true);
 		} else {
-			videoRef.current?.pause();
+			ref.current?.pause();
 			setIsPlaying(false);
 		}
 	};
 
-	const pauseVideo = () => {
-		videoRef.current.pause();
+	const pauseVideo = (ref = videoRef) => {
+		ref.current?.pause();
 		setIsPlaying(false);
 	};
 
-	const playVideo = () => {
-		videoRef.current.play();
+	const playVideo = (ref = videoRef) => {
+		ref.current?.play();
 		setIsPlaying(true);
 	};
 
 	// function to handle slider changes
-	const handleSliderChange = (value) => {
-		videoRef.current.currentTime = value;
+	const handleSliderChange = (value, ref = videoRef) => {
+		if (ref.current) {
+			ref.current.currentTime = value;
+		}
 		setCurrentTime(value);
 	};
 
 	useEffect(() => {
-		const handleTimeUpdate = () => {
-			setCurrentTime(videoRef.current.currentTime); // update currentTime state variable
+		const handleTimeUpdate = (event) => {
+			setCurrentTime(event.target.currentTime); // update currentTime state variable
 		};
 
-		videoRef.current?.addEventListener('timeupdate', handleTimeUpdate);
+		const mainVideo = videoRef.current;
+		const modalVideo = modalVideoRef.current;
+
+		mainVideo?.addEventListener('timeupdate', handleTimeUpdate);
+		modalVideo?.addEventListener('timeupdate', handleTimeUpdate);
+
 		return () => {
-			videoRef.current?.removeEventListener(
-				'timeupdate',
-				handleTimeUpdate
-			);
+			mainVideo?.removeEventListener('timeupdate', handleTimeUpdate);
+			modalVideo?.removeEventListener('timeupdate', handleTimeUpdate);
 		};
-	}, []);
+	}, [isModalOpen]); // Re-attach when modal state changes to catch modalVideoRef
+
+	useEffect(() => {
+		if (isModalOpen && modalVideoRef.current && videoRef.current) {
+			modalVideoRef.current.currentTime = videoRef.current.currentTime;
+		}
+	}, [isModalOpen]);
 
 	const handleSaveThumbnail = (event, thumb) => {
 		event.currentTarget.classList.add('saving');
@@ -321,61 +437,85 @@ const Thumbnails = ({
 		}
 	};
 
-	const handleVideoKeyboardControl = (event) => {
-		event.stopImmediatePropagation();
-
+	const handleVideoKeyboardControl = (event, ref = videoRef) => {
 		switch (event.code) {
 			case 'Space': // spacebar
-				togglePlayback();
+				event.preventDefault();
+				event.stopPropagation();
+				togglePlayback(ref);
 				break;
 
 			case 'ArrowLeft': // left
-				pauseVideo();
-				videoRef.current.currentTime =
-					videoRef.current.currentTime - 0.042;
+				event.preventDefault();
+				event.stopPropagation();
+				pauseVideo(ref);
+				if (ref.current) {
+					ref.current.currentTime = ref.current.currentTime - 0.042;
+				}
 				break;
 
 			case 'ArrowRight': // right
-				pauseVideo();
-				videoRef.current.currentTime =
-					videoRef.current.currentTime + 0.042;
+				event.preventDefault();
+				event.stopPropagation();
+				pauseVideo(ref);
+				if (ref.current) {
+					ref.current.currentTime = ref.current.currentTime + 0.042;
+				}
 				break;
 
 			case 'KeyJ': //j
-				if (isPlaying) {
-					videoRef.current.playbackRate = Math.max(
+				event.preventDefault();
+				event.stopPropagation();
+				if (isPlaying && ref.current) {
+					ref.current.playbackRate = Math.max(
 						0,
-						videoRef.current.playbackRate - 1
+						ref.current.playbackRate - 1
 					);
 				}
 				break;
 
 			case 'KeyK': // k
-				pauseVideo();
+				event.preventDefault();
+				event.stopPropagation();
+				pauseVideo(ref);
 				break;
 
 			case 'KeyL': //l
-				if (isPlaying) {
-					videoRef.current.playbackRate =
-						videoRef.current.playbackRate + 1;
+				event.preventDefault();
+				event.stopPropagation();
+				if (isPlaying && ref.current) {
+					ref.current.playbackRate = ref.current.playbackRate + 1;
 				}
-				playVideo();
+				playVideo(ref);
 				break;
 
 			default:
 				return; // exit this handler for other keys
 		}
-		event.preventDefault(); // prevent the default action (scroll / move caret)
 	};
 
-	const handleUseThisFrame = async () => {
+	const handleUseThisFrame = async (ref = videoRef) => {
 		setIsSaving(true);
 		const canvas = await captureVideoFrame(
-			videoRef.current,
-			videoRef.current.currentTime,
+			ref.current,
+			ref.current.currentTime,
 			options?.ffmpeg_thumb_watermark || {}
 		);
 		setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
+	};
+
+	const handlePopOut = (event) => {
+		event.preventDefault();
+		pauseVideo(videoRef);
+		setIsModalOpen(true);
+	};
+
+	const handleCloseModal = () => {
+		if (modalVideoRef.current && videoRef.current) {
+			videoRef.current.currentTime = modalVideoRef.current.currentTime;
+		}
+		pauseVideo(modalVideoRef);
+		setIsModalOpen(false);
 	};
 
 	const handleToggleVideoPlayer = (event) => {
@@ -383,16 +523,10 @@ const Thumbnails = ({
 		const next = !isOpened;
 		setIsOpened(next);
 		if (next && thumbVideoPanel.current) {
-			thumbVideoPanel.current.focus();
-			thumbVideoPanel.current.addEventListener(
-				'keydown',
-				handleVideoKeyboardControl
-			);
-		} else {
-			thumbVideoPanel.current.addEventListener(
-				'keydown',
-				handleVideoKeyboardControl
-			);
+			// Trigger a small delay to ensure the panel is visible before focusing
+			setTimeout(() => {
+				thumbVideoPanel.current?.focus();
+			}, 50);
 		}
 	};
 
@@ -433,13 +567,13 @@ const Thumbnails = ({
 							>
 								{!poster
 									? __(
-											'Select',
-											'video-embed-thumbnail-generator'
-										)
+										'Select',
+										'video-embed-thumbnail-generator'
+									)
 									: __(
-											'Replace',
-											'video-embed-thumbnail-generator'
-										)}
+										'Replace',
+										'video-embed-thumbnail-generator'
+									)}
 							</Button>
 						)}
 					/>
@@ -543,60 +677,51 @@ const Thumbnails = ({
 						</button>
 					</h2>
 					<div
-						className={`videopack-thumb-video-panel spinner-container${
-							isSaving ? ' saving' : ''
-						}`}
-						tabIndex={0}
-						ref={thumbVideoPanel}
+						className={`videopack-thumb-video-container ${isOpened ? 'is-opened' : ''}`}
 					>
-						<video
+						<VideoPlayerInner
+							videoRef={videoRef}
+							panelRef={thumbVideoPanel}
 							src={src}
-							ref={videoRef}
-							muted={true}
-							preload="metadata"
-							onClick={togglePlayback}
+							isPlaying={isPlaying}
+							currentTime={currentTime}
+							isSaving={isSaving}
+							togglePlayback={togglePlayback}
+							handleSliderChange={handleSliderChange}
+							handleUseThisFrame={handleUseThisFrame}
+							onPopOut={handlePopOut}
+							onKeyDown={(e) =>
+								handleVideoKeyboardControl(e, videoRef)
+							}
 						/>
-						<div className="videopack-thumb-video-controls">
-							<Button
-								className="videopack-play-pause"
-								onClick={togglePlayback}
-							>
-								<Dashicon
-									icon={
-										isPlaying
-											? 'controls-pause'
-											: 'controls-play'
-									}
-								/>
-							</Button>
-							{!isNaN(videoRef.current?.duration) && (
-								<RangeControl
-									__nextHasNoMarginBottom
-									min={0}
-									max={videoRef.current.duration}
-									step="any"
-									initialPosition={0}
-									value={videoRef.current.currentTime}
-									onChange={handleSliderChange}
-									className="videopack-thumbvideo-slider"
-									type="slider"
-								/>
-							)}
-						</div>
-						<Button
-							variant="secondary"
-							onClick={handleUseThisFrame}
-							className="videopack-use-this-frame"
-							disabled={isSaving}
-						>
-							{__(
-								'Use this frame',
-								'video-embed-thumbnail-generator'
-							)}
-						</Button>
-						{isSaving && <Spinner />}
 					</div>
 				</div>
+				{isModalOpen && (
+					<Modal
+						title={__(
+							'Choose From Video',
+							'video-embed-thumbnail-generator'
+						)}
+						onRequestClose={handleCloseModal}
+						className="videopack-video-modal"
+						overlayClassName="videopack-video-modal-overlay"
+					>
+						<VideoPlayerInner
+							videoRef={modalVideoRef}
+							src={src}
+							isPlaying={isPlaying}
+							currentTime={currentTime}
+							isSaving={isSaving}
+							togglePlayback={togglePlayback}
+							handleSliderChange={handleSliderChange}
+							handleUseThisFrame={handleUseThisFrame}
+							onKeyDown={(e) =>
+								handleVideoKeyboardControl(e, modalVideoRef)
+							}
+							isModal={true}
+						/>
+					</Modal>
+				)}
 			</PanelBody>
 		</div>
 	);
