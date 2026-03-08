@@ -1,5 +1,5 @@
 import { getVideoGallery } from '../../utils/utils';
-import { useEffect, useState, useCallback } from '@wordpress/element';
+import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Placeholder, Spinner } from '@wordpress/components';
 import {
@@ -49,8 +49,7 @@ const VideoGallery = ({
 	const [galleryPage, setGalleryPage] = useState(1);
 	const [openVideo, setOpenVideo] = useState(null);
 	const [currentVideoIndex, setCurrentVideoIndex] = useState(null);
-	const [openVideoAttributes, setOpenVideoAttributes] = useState(attributes);
-	const [currentVideoPlayer, setCurrentVideoPlayer] = useState(null);
+
 	const [isPlayerReady, setIsPlayerReady] = useState(true);
 	const [isHovering, setIsHovering] = useState(false);
 	const [galleryVersion, setGalleryVersion] = useState(0);
@@ -62,6 +61,17 @@ const VideoGallery = ({
 			coordinateGetter: sortableKeyboardCoordinates,
 		})
 	);
+
+	const openVideoAttributes = useMemo(() => {
+		if (!openVideo) {
+			return null;
+		}
+		return {
+			...attributes,
+			...openVideo.player_vars,
+			autoplay: true,
+		};
+	}, [attributes, openVideo]);
 
 	function handleDragEnd(event) {
 		const { active, over } = event;
@@ -210,14 +220,8 @@ const VideoGallery = ({
 		};
 
 		if (openVideo) {
-			setOpenVideoAttributes({
-				...attributes,
-				...openVideo?.player_vars,
-				autoplay: true,
-			});
 			document.addEventListener('keydown', handleNavigationKeyPress);
 		} else {
-			setOpenVideoAttributes(attributes);
 			document.removeEventListener('keydown', handleNavigationKeyPress);
 		}
 
@@ -228,7 +232,6 @@ const VideoGallery = ({
 		openVideo,
 		currentVideoIndex,
 		galleryVideos,
-		attributes,
 		closeVideo,
 		handleNavigationArrowClick,
 	]);
@@ -239,7 +242,6 @@ const VideoGallery = ({
 
 	const handleVideoPlayerReady = useCallback(
 		(player) => {
-			setCurrentVideoPlayer(player);
 			setIsPlayerReady(true);
 
 			player.addEventListener('ended', () => {
@@ -302,9 +304,8 @@ const VideoGallery = ({
 		return (
 			<div className="videopack-gallery-pagination">
 				<button
-					className={`videopack-pagination-arrow${
-						galleryPage > 1 ? '' : ' videopack-hidden'
-					}`}
+					className={`videopack-pagination-arrow${galleryPage > 1 ? '' : ' videopack-hidden'
+						}`}
 					onClick={() => {
 						setGalleryPage(galleryPage - 1);
 					}}
@@ -315,11 +316,10 @@ const VideoGallery = ({
 					<div key={pageNumber} className="videopack-page-number-div">
 						<button
 							onClick={() => setGalleryPage(pageNumber)}
-							className={`videopack-page-number${
-								pageNumber === galleryPage
-									? ' current-page'
-									: ''
-							}`}
+							className={`videopack-page-number${pageNumber === galleryPage
+								? ' current-page'
+								: ''
+								}`}
 							disabled={pageNumber === galleryPage}
 						>
 							<span>{pageNumber}</span>
@@ -330,9 +330,8 @@ const VideoGallery = ({
 					</div>
 				))}
 				<button
-					className={`videopack-pagination-arrow${
-						galleryPage < totalPages ? '' : ' videopack-hidden'
-					}`}
+					className={`videopack-pagination-arrow${galleryPage < totalPages ? '' : ' videopack-hidden'
+						}`}
 					onClick={() => {
 						setGalleryPage(galleryPage + 1);
 					}}
@@ -452,20 +451,20 @@ const VideoGallery = ({
 						/>
 						{(currentVideoIndex < galleryVideos.length - 1 ||
 							totalPages > galleryPage) && (
-							<button
-								type="button"
-								className="modal-navigation modal-next videopack-icons right-arrow"
-								title={__(
-									'Next',
-									'video-embed-thumbnail-generator'
-								)}
-								onClick={() => {
-									handleNavigationArrowClick(
-										currentVideoIndex + 1
-									);
-								}}
-							/>
-						)}
+								<button
+									type="button"
+									className="modal-navigation modal-next videopack-icons right-arrow"
+									title={__(
+										'Next',
+										'video-embed-thumbnail-generator'
+									)}
+									onClick={() => {
+										handleNavigationArrowClick(
+											currentVideoIndex + 1
+										);
+									}}
+								/>
+							)}
 						{(currentVideoIndex > 0 || galleryPage > 1) && (
 							<button
 								type="button"
@@ -484,7 +483,7 @@ const VideoGallery = ({
 						<div className="modal-content">
 							{openVideoAttributes && (
 								<VideoPlayer
-									key={openVideoAttributes?.src}
+									key={openVideo?.attachment_id}
 									attributes={openVideoAttributes}
 									onReady={handleVideoPlayerReady}
 								/>

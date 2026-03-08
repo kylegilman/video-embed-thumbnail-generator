@@ -157,10 +157,10 @@ class Gallery {
 		);
 	}
 
-	public function gallery_page( $page_number, $query_atts, $last_video_id = 0 ) {
+	public function gallery_page( $page_number, $query_atts ) {
 		$query_atts['embed_method'] = $this->options['embed_method'];
-		$attachments = $this->get_gallery_videos( $page_number, $query_atts );
-		$videos_data = array();
+		$attachments                = $this->get_gallery_videos( $page_number, $query_atts );
+		$videos_data                = array();
 
 		if ( $attachments->have_posts() ) {
 			foreach ( $attachments->posts as $attachment ) {
@@ -223,7 +223,7 @@ class Gallery {
 				<?php endforeach; ?>
 			</div>
 
-			<?php if ( $attachments->max_num_pages > 1 ) : ?>
+			<?php if ( ! empty( $query_atts['gallery_pagination'] ) && $attachments->max_num_pages > 1 ) : ?>
 				<div class="videopack-gallery-pagination">
 					<?php echo $this->render_pagination_html( $attachments->max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>

@@ -133,10 +133,8 @@ const GalleryItem = ({
 				className="gallery-item-clickable-area"
 				ref={buttonContainerRef}
 				onClick={() => {
-					if (!isEditing) {
-						setOpenVideo(videoRecord);
-						setCurrentVideoIndex(videoIndex);
-					}
+					setOpenVideo(videoRecord);
+					setCurrentVideoIndex(videoIndex);
 				}}
 			>
 				<img
