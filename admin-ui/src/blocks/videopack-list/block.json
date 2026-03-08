@@ -1,0 +1,102 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/videopack-list",
+	"title": "Videopack Video List",
+	"category": "media",
+	"icon": "format-video",
+	"description": "Display a dynamically-generated list of Videopack video players.",
+	"supports": {
+		"html": false,
+		"align": [
+			"left",
+			"right",
+			"center",
+			"wide",
+			"full"
+		]
+	},
+	"attributes": {
+		"gallery": {
+			"type": "boolean",
+			"default": false
+		},
+		"gallery_id": {
+			"type": "number",
+			"default": 0
+		},
+		"gallery_source": {
+			"type": "string",
+			"default": "current"
+		},
+		"gallery_category": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_tag": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_orderby": {
+			"type": "string",
+			"default": "menu_order"
+		},
+		"gallery_order": {
+			"type": "string",
+			"default": "ASC"
+		},
+		"gallery_include": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_exclude": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_end": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_pagination": {
+			"type": "boolean",
+			"default": false
+		},
+		"gallery_per_page": {
+			"type": "number",
+			"default": 6
+		},
+		"gallery_title": {
+			"type": "boolean",
+			"default": true
+		},
+		"gallery_columns": {
+			"type": "number",
+			"default": 4
+		},
+		"collection_video_limit": {
+			"type": "number",
+			"default": -1
+		},
+		"enable_collection_video_limit": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"usesContext": [
+		"postId"
+	],
+	"example": {
+		"attributes": {
+			"gallery_pagination": false,
+			"enable_collection_video_limit": true,
+			"collection_video_limit": 3
+		}
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": [
+		"file:../../videopack-list.js"
+	],
+	"style": [
+		"file:../../videopack-list.css"
+	]
+}

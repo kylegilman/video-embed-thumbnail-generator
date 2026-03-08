@@ -1,23 +1,25 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "videopack/videopack-collection",
-	"title": "Videopack Video Collection",
+	"name": "videopack/videopack-gallery",
+	"title": "Videopack Video Gallery",
 	"category": "media",
 	"icon": "format-video",
-	"description": "Display a collection of videos with Videopack features.",
+	"description": "Display a dynamically-generated pop-up gallery of Videopack videos.",
 	"supports": {
 		"html": false,
-		"align": ["left", "right", "center", "wide", "full"]
+		"align": [
+			"left",
+			"right",
+			"center",
+			"wide",
+			"full"
+		]
 	},
 	"attributes": {
 		"gallery": {
 			"type": "boolean",
 			"default": true
-		},
-		"layout": {
-			"type": "string",
-			"default": "gallery"
 		},
 		"gallery_id": {
 			"type": "number",
@@ -72,12 +74,28 @@
 			"default": 4
 		},
 		"collection_video_limit": {
-			"type": ["number", "string"],
+			"type": "number",
 			"default": -1
+		},
+		"enable_collection_video_limit": {
+			"type": "boolean",
+			"default": false
 		}
 	},
-	"usesContext": ["postId"],
+	"usesContext": [
+		"postId"
+	],
+	"example": {
+		"attributes": {
+			"gallery_columns": 3,
+			"gallery_pagination": false
+		}
+	},
 	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": ["file:../../videopack-collection.js"],
-	"style": ["file:../../videopack-collection.css"]
+	"editorScript": [
+		"file:../../videopack-gallery.js"
+	],
+	"style": [
+		"file:../../videopack-gallery.css"
+	]
 }
