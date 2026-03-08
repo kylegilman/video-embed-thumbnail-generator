@@ -34,6 +34,7 @@ class Player_Video_Js extends Player {
 		wp_register_style( 'video-js', plugins_url( 'video-js/video-js.min.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION );
 
 		$js_skins = array(
+			'vjs-theme-videopack',
 			'kg-video-js-skin',
 			'vjs-theme-city',
 			'vjs-theme-fantasy',
