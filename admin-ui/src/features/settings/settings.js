@@ -165,7 +165,7 @@ const VideopackSettingsPage = () => {
 			{
 				name: 'gallery',
 				title: __(
-					'Video Collections',
+					'Galleries & Lists',
 					'video-embed-thumbnail-generator'
 				),
 				component: VideoCollectionSettings,

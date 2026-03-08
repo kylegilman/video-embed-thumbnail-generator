@@ -2,7 +2,6 @@ import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import {
 	PanelBody,
-	RadioControl,
 	SelectControl,
 	TextControl,
 	ToggleControl,
@@ -12,19 +11,16 @@ import {
 } from '@wordpress/components';
 import { sortAscending, sortDescending } from '../../../assets/icon';
 import VideoGallery from '../../../components/VideoGallery/VideoGallery';
-import TextControlOnBlur from './TextControlOnBlur';
 
 const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 	const {
-		embed_method,
-		layout,
+		enable_collection_video_limit,
 		collection_video_limit,
 		gallery_columns,
 		gallery_end,
 		gallery_per_page,
 		gallery_title,
 		gallery_pagination,
-		skin,
 		gallery_orderby,
 		gallery_order,
 	} = settings;
@@ -90,88 +86,10 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 
 	return (
 		<PanelBody>
-			<RadioControl
-				label={__(
-					'Default Collection Layout',
-					'video-embed-thumbnail-generator'
-				)}
-				selected={layout}
-				options={[
-					{
-						label: __(
-							'Pop-up gallery',
-							'video-embed-thumbnail-generator'
-						),
-						value: 'gallery',
-					},
-					{
-						label: __(
-							'Multiple Video Players',
-							'video-embed-thumbnail-generator'
-						),
-						value: 'list',
-					},
-				]}
-				onChange={changeHandlerFactory.layout}
-			/>
-			<div className="videopack-setting-auto-width">
-				<TextControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					label={__('Columns:', 'video-embed-thumbnail-generator')}
-					type="number"
-					value={gallery_columns}
-					onChange={changeHandlerFactory.gallery_columns}
-				/>
-			</div>
-			{!gallery_pagination && (
-				<div className="videopack-setting-auto-width">
-					<TextControlOnBlur
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Video Limit:',
-							'video-embed-thumbnail-generator'
-						)}
-						help={__(
-							'Maximum number of videos to show in a collection when pagination is disabled.',
-							'video-embed-thumbnail-generator'
-						)}
-						type="text"
-						value={
-							Number(collection_video_limit) === -1
-								? __(
-										'No limit',
-										'video-embed-thumbnail-generator'
-									)
-								: collection_video_limit
-						}
-						onChange={(value) => {
-							const intValue = parseInt(value, 10);
-							if (isNaN(intValue) || intValue <= 0) {
-								changeHandlerFactory.collection_video_limit(-1);
-							} else {
-								changeHandlerFactory.collection_video_limit(
-									intValue
-								);
-							}
-						}}
-					/>
-				</div>
-			)}
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={__(
-					'Overlay video title on thumbnails.',
-					'video-embed-thumbnail-generator'
-				)}
-				onChange={changeHandlerFactory.gallery_title}
-				checked={!!gallery_title}
-			/>
-			<ToggleControl
-				__nextHasNoMarginBottom
-				label={__(
-					'Paginate video collections.',
+					'Paginate video galleries & lists.',
 					'video-embed-thumbnail-generator'
 				)}
 				onChange={changeHandlerFactory.gallery_pagination}
@@ -191,6 +109,53 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						onChange={changeHandlerFactory.gallery_per_page}
 					/>
 				</div>
+			)}
+			{!gallery_pagination && (
+				<>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Limit number of videos in galleries & lists.',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={(val) => {
+							changeHandlerFactory.enable_collection_video_limit(
+								val
+							);
+							if (!val) {
+								changeHandlerFactory.collection_video_limit(-1);
+							} else if (Number(collection_video_limit) === -1) {
+								changeHandlerFactory.collection_video_limit(12);
+							}
+						}}
+						checked={!!enable_collection_video_limit}
+					/>
+					{!!enable_collection_video_limit && (
+						<div className="videopack-setting-auto-width">
+							<TextControl
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+								label={__(
+									'Video Limit:',
+									'video-embed-thumbnail-generator'
+								)}
+								help={__(
+									'Maximum number of videos to show in a gallery or list when pagination is disabled.',
+									'video-embed-thumbnail-generator'
+								)}
+								type="number"
+								value={
+									Number(collection_video_limit) === -1
+										? 12
+										: collection_video_limit
+								}
+								onChange={
+									changeHandlerFactory.collection_video_limit
+								}
+							/>
+						</div>
+					)}
+				</>
 			)}
 			<div className="videopack-sort-settings">
 				<Flex align="flex-end" className="videopack-sort-controls">
@@ -237,30 +202,57 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					</FlexItem>
 				</Flex>
 			</div>
-			<div className="videopack-setting-auto-width">
-				<SelectControl
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-					label={__(
-						'When current gallery video finishes:',
-						'video-embed-thumbnail-generator'
-					)}
-					value={gallery_end}
-					onChange={changeHandlerFactory.gallery_end}
-					options={galleryEndOptions}
-				/>
-			</div>
-			{galleryAttributes && (
-				<div className="videopack-sample-gallery">
-					<span className="videopack-settings-label">
-						{__(
-							'Sample Gallery:',
+			<PanelBody
+				title={__('Galleries', 'video-embed-thumbnail-generator')}
+				initialOpen={true}
+			>
+				<div className="videopack-setting-auto-width">
+					<TextControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__(
+							'Columns:',
 							'video-embed-thumbnail-generator'
 						)}
-					</span>
-					<VideoGallery attributes={galleryAttributes} />
+						type="number"
+						value={gallery_columns}
+						onChange={changeHandlerFactory.gallery_columns}
+					/>
 				</div>
-			)}
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Overlay video title thumbnails.',
+						'video-embed-thumbnail-generator'
+					)}
+					onChange={changeHandlerFactory.gallery_title}
+					checked={!!gallery_title}
+				/>
+				<div className="videopack-setting-auto-width">
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__(
+							'When current gallery video finishes:',
+							'video-embed-thumbnail-generator'
+						)}
+						value={gallery_end}
+						onChange={changeHandlerFactory.gallery_end}
+						options={galleryEndOptions}
+					/>
+				</div>
+				{galleryAttributes && (
+					<div className="videopack-sample-gallery">
+						<span className="videopack-settings-label">
+							{__(
+								'Sample Gallery:',
+								'video-embed-thumbnail-generator'
+							)}
+						</span>
+						<VideoGallery attributes={galleryAttributes} />
+					</div>
+				)}
+			</PanelBody>
 		</PanelBody>
 	);
 };
