@@ -14,18 +14,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _EncodeProgress_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./EncodeProgress.scss */ "./src/components/AdditionalFormats/EncodeProgress.scss");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+
+
 
 
 
 const EncodeProgress = ({
   formatData,
   onCancelJob,
-  deleteInProgress
+  deleteInProgress,
+  onRefresh
 }) => {
+  const hasTriggeredRefresh = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(false);
   const convertToTimecode = time => {
     if (time === null || time === undefined || isNaN(time)) {
       return '--:--';
@@ -39,46 +46,66 @@ const EncodeProgress = ({
     const ss = padZero(s);
     return hh + mm + ':' + ss;
   };
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    const percent = formatData?.progress?.percent || 0;
+    const isFinished = percent >= 100 || formatData?.progress?.progress === 'end';
+    if (isFinished && onRefresh && !hasTriggeredRefresh.current && formatData?.encoding_now) {
+      hasTriggeredRefresh.current = true;
+      onRefresh();
+    } else if (!isFinished) {
+      hasTriggeredRefresh.current = false;
+    }
+  }, [formatData?.progress?.percent, formatData?.progress?.progress, onRefresh, formatData?.encoding_now]);
   if (formatData?.encoding_now && formatData?.progress) {
     const percent = Math.round(formatData.progress.percent);
     const percentText = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)('%d%%', percent);
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "videopack-encode-progress",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-        className: "videopack-meter",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-          className: "videopack-meter-bar",
-          style: {
-            width: percentText
-          },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-            className: "videopack-meter-text",
-            children: percentText
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+        className: "videopack-encode-progress-row",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+          className: "videopack-meter",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+            className: "videopack-meter-bar",
+            style: {
+              width: percentText
+            },
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+              className: "videopack-meter-text",
+              children: percentText
+            })
           })
-        })
-      }), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-        onClick: onCancelJob,
-        variant: "secondary",
-        isDestructive: true,
-        size: "small",
-        isBusy: deleteInProgress === formatData.job_id,
-        children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator')
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+        }), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+          onClick: onCancelJob,
+          variant: "secondary",
+          isDestructive: true,
+          size: "small",
+          className: "videopack-cancel-job",
+          isBusy: deleteInProgress === formatData.job_id,
+          icon: "no-alt",
+          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator'),
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "videopack-button-text",
+            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator')
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
         className: "videopack-encode-progress-small-text",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Elapsed:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(formatData.progress.elapsed)
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(formatData.progress.remaining)
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + formatData.progress.fps
         })]
       })]
     });
   }
   if (formatData?.status === 'failed' && formatData?.error_message) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
       className: "videopack-encode-error",
-      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s', 'video-embed-thumbnail-generator'), formatData.error_message), formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
+      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is an error message */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s.', 'video-embed-thumbnail-generator'), formatData.error_message), ' ', formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
         onClick: () => onCancelJob(formatData.job_id),
         variant: "link",
         text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Job', 'video-embed-thumbnail-generator'),
@@ -526,6 +553,18 @@ const getThumbnailCandidates = async () => {
 
 /***/ },
 
+/***/ "./src/components/AdditionalFormats/EncodeProgress.scss"
+/*!**************************************************************!*\
+  !*** ./src/components/AdditionalFormats/EncodeProgress.scss ***!
+  \**************************************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ },
+
 /***/ "./src/features/encode-queue/encode-queue.scss"
 /*!*****************************************************!*\
   !*** ./src/features/encode-queue/encode-queue.scss ***!
@@ -585,6 +624,16 @@ module.exports = window["wp"]["element"];
 (module) {
 
 module.exports = window["wp"]["hooks"];
+
+/***/ },
+
+/***/ "@wordpress/html-entities"
+/*!**************************************!*\
+  !*** external ["wp","htmlEntities"] ***!
+  \**************************************/
+(module) {
+
+module.exports = window["wp"]["htmlEntities"];
 
 /***/ },
 
@@ -696,11 +745,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _components_AdditionalFormats_EncodeProgress__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../components/AdditionalFormats/EncodeProgress */ "./src/components/AdditionalFormats/EncodeProgress.js");
-/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _components_AdditionalFormats_EncodeProgress__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../components/AdditionalFormats/EncodeProgress */ "./src/components/AdditionalFormats/EncodeProgress.js");
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__);
 /* global videopack */
+
 
 
 
@@ -714,46 +766,59 @@ const JobRow = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.memo)(({
   index,
   isMultisite,
   openConfirmDialog,
-  deletingJobId
+  deletingJobId,
+  fetchQueue
 }) => {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tr", {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("tr", {
+    className: job.status === 'encoding' || job.status === 'processing' ? 'videopack-job-encoding' : '',
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
       children: index + 1
-    }), isMultisite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
+    }), isMultisite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
       children: job.blog_name
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
       children: job.user_name || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('N/A', 'video-embed-thumbnail-generator')
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
-      children: job.poster_url ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("img", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
+      children: job.poster_url ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("img", {
         src: job.poster_url,
         alt: job.video_title,
         className: "videopack-queue-attachment-poster"
-      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
         icon: "format-video"
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
-      children: job.attachment_link ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("a", {
-        href: job.attachment_link,
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
+      children: job.attachment_link ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("a", {
+        href: (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_4__.decodeEntities)(job.attachment_link),
         children: job.video_title
       }) : job.video_title
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
       children: job.format_name
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("td", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("td", {
+      className: "videopack-status-cell",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
         children: job.status_l10n
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_components_AdditionalFormats_EncodeProgress__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      }), job.status === 'completed' && job.completed_at && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+        className: "videopack-completion-time",
+        children: new Date(job.completed_at + 'Z').toLocaleString([], {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_components_AdditionalFormats_EncodeProgress__WEBPACK_IMPORTED_MODULE_5__["default"], {
         formatData: {
           ...job,
-          encoding_now: job.status === 'encoding',
+          encoding_now: job.status === 'encoding' || job.status === 'processing',
           job_id: job.id
         },
         onCancelJob: () => openConfirmDialog('delete', {
           jobId: job.id
         }),
-        deleteInProgress: deletingJobId
+        deleteInProgress: deletingJobId,
+        onRefresh: () => fetchQueue()
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
-      children: job.status !== 'encoding' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
+      children: job.status !== 'encoding' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
         variant: "tertiary",
         isDestructive: true,
         onClick: () => openConfirmDialog('remove', {
@@ -775,15 +840,74 @@ const EncodeQueue = () => {
   const [isConfirmOpen, setIsConfirmOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
   const [itemToActOn, setItemToActOn] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobId: ? }
   const [deletingJobId, setDeletingJobId] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null);
+  const [batchProgress, setBatchProgress] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({});
+  const progressTimerRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useRef)(null);
+
+  // Auto-clear success messages after 30 seconds.
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    if (message && message.type === 'success') {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+  const isEncoding = queueData.some(job => job.status === 'encoding' || job.status === 'processing');
+  const incrementEncodeProgress = () => {
+    setQueueData(currentQueueData => {
+      if (!currentQueueData) {
+        return currentQueueData;
+      }
+      const anyActive = currentQueueData.some(job => job.status === 'encoding' || job.status === 'processing');
+      if (!anyActive) {
+        return currentQueueData;
+      }
+      const updatedQueueData = [...currentQueueData];
+      const now = new Date().getTime() / 1000;
+      updatedQueueData.forEach((job, index) => {
+        if ((job.status === 'encoding' || job.status === 'processing') && job.progress && job.started) {
+          // Handle potential clock drift between server and client
+          const elapsed = Math.max(0, now - job.started);
+          let percent = parseFloat(job.progress.percent) || 0;
+          let remaining = job.progress.remaining;
+          if (job.video_duration && job.video_duration > 0) {
+            const totalDurationInSeconds = job.video_duration / 1000000;
+            const speedMatch = job.progress.speed ? String(job.progress.speed).match(/(\d*\.?\d+)/) : null;
+            const speed = speedMatch ? parseFloat(speedMatch[1]) : 1;
+
+            // Interpolate progress
+            const interpolatedPercent = elapsed * speed * 100 / totalDurationInSeconds;
+
+            // Don't let interpolation go backwards or exceed 100%
+            percent = Math.min(100, Math.max(percent, interpolatedPercent));
+            const remainingSeconds = (totalDurationInSeconds - totalDurationInSeconds * percent / 100) / speed;
+            remaining = Math.max(0, remainingSeconds);
+          }
+          updatedQueueData[index] = {
+            ...job,
+            progress: {
+              ...job.progress,
+              elapsed,
+              remaining,
+              percent
+            }
+          };
+        }
+      });
+      return updatedQueueData;
+    });
+  };
   const fetchQueue = async () => {
     try {
-      const newData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.getQueue)();
+      const newData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_6__.getQueue)();
       setQueueData(prevData => {
         if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
           return newData;
         }
         return prevData;
       });
+      const progressData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_6__.getBatchProgress)('all');
+      setBatchProgress(progressData);
     } catch (error) {
       console.error('Error fetching queue:', error);
       setMessage({
@@ -800,11 +924,27 @@ const EncodeQueue = () => {
     const interval = setInterval(fetchQueue, 15000); // Poll every 15 seconds
     return () => clearInterval(interval);
   }, []);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    if (isEncoding) {
+      if (progressTimerRef.current === null) {
+        progressTimerRef.current = setInterval(incrementEncodeProgress, 1000);
+      }
+    } else {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
+    return () => {
+      if (progressTimerRef.current !== null) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+    };
+  }, [isEncoding]);
   const handleToggleQueue = async () => {
     setIsTogglingQueue(true);
     const action = isQueuePaused ? 'play' : 'pause';
     try {
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.toggleQueue)(action);
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_6__.toggleQueue)(action);
       setIsQueuePaused(response.queue_state === 'pause');
       setMessage({
         type: 'success',
@@ -846,7 +986,7 @@ const EncodeQueue = () => {
   const handleClearQueue = async type => {
     setIsClearing(true);
     try {
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.clearQueue)(type);
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_6__.clearQueue)(type);
       setMessage({
         type: 'success',
         text: response.message
@@ -866,7 +1006,7 @@ const EncodeQueue = () => {
   const handleDeleteJob = async jobId => {
     setDeletingJobId(jobId);
     try {
-      await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.deleteJob)(jobId);
+      await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_6__.deleteJob)(jobId);
       setMessage({
         type: 'success',
         text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job deleted.', 'video-embed-thumbnail-generator')
@@ -876,7 +1016,8 @@ const EncodeQueue = () => {
       console.error('Error deleting job:', error);
       setMessage({
         type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error deleting job: %s', 'video-embed-thumbnail-generator'), error.message)
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error deleting job: %s', 'video-embed-thumbnail-generator'), error.message)
       });
     } finally {
       setDeletingJobId(null);
@@ -885,7 +1026,7 @@ const EncodeQueue = () => {
   const handleRemoveJob = async jobId => {
     setDeletingJobId(jobId);
     try {
-      await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_5__.removeJob)(jobId);
+      await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_6__.removeJob)(jobId);
       setMessage({
         type: 'success',
         text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job removed from queue.', 'video-embed-thumbnail-generator')
@@ -895,44 +1036,97 @@ const EncodeQueue = () => {
       console.error('Error removing job:', error);
       setMessage({
         type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error removing job: %s', 'video-embed-thumbnail-generator'), error.message)
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error removing job: %s', 'video-embed-thumbnail-generator'), error.message)
       });
     } finally {
       setDeletingJobId(null);
     }
   };
   const isMultisite = videopack.isMultisite || videopack.encodeQueueData?.isNetwork;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
     className: "wrap videopack-encode-queue",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("h1", {
-      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Encode Queue', 'video-embed-thumbnail-generator')
-    }), message && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Notice, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("h1", {
+      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Queue', 'video-embed-thumbnail-generator')
+    }), Object.entries(batchProgress).map(([type, progress]) => {
+      if (!progress || progress.pending === 0 && progress['in-progress'] === 0) {
+        return null;
+      }
+      const labels = {
+        featured: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Setting Featured Images', 'video-embed-thumbnail-generator'),
+        parents: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Updating Parents', 'video-embed-thumbnail-generator'),
+        thumbs: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Generating Thumbnails (FFmpeg)', 'video-embed-thumbnail-generator'),
+        encoding: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Bulk Encoding', 'video-embed-thumbnail-generator'),
+        browser: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pending In-Browser Thumbnails', 'video-embed-thumbnail-generator')
+      };
+      const label = labels[type] || type;
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+        title: label,
+        initialOpen: true,
+        className: "videopack-batch-progress-panel",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+          className: "videopack-batch-progress-content",
+          children: type === 'browser' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of videos waiting for browser-side processing */
+            (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Waiting for processing: %d', 'video-embed-thumbnail-generator'), progress.pending)
+          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.Fragment, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+              className: "videopack-batch-stats",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of pending items */
+                (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pending: %d', 'video-embed-thumbnail-generator'), progress.pending)
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of in-progress items */
+                (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('In-Progress: %d', 'video-embed-thumbnail-generator'), progress['in-progress'])
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of completed items */
+                (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Completed: %d', 'video-embed-thumbnail-generator'), progress.complete)
+              }), progress.failed > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
+                className: "videopack-failed-count",
+                children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of failed items */
+                (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed: %d', 'video-embed-thumbnail-generator'), progress.failed)
+              })]
+            }), progress.total > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+              className: "videopack-meter",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+                className: "videopack-meter-bar",
+                style: {
+                  width: `${Math.round((progress.complete + progress.failed) / progress.total * 100)}%`
+                }
+              })
+            })]
+          })
+        })
+      }, type);
+    }), message && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Notice, {
       status: message.type,
       onRemove: () => setMessage(null),
       children: message.text
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalConfirmDialog, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalConfirmDialog, {
       isOpen: isConfirmOpen,
       onConfirm: handleConfirm,
       onCancel: () => setIsConfirmOpen(false),
-      children: itemToActOn?.action === 'clear' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to clear %s jobs?', 'video-embed-thumbnail-generator'), itemToActOn.type) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job?', 'video-embed-thumbnail-generator')
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+      className: "videopack-confirm-dialog",
+      children: itemToActOn?.action === 'clear' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s: jobs type ('completed' or 'all') */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to clear %s jobs?', 'video-embed-thumbnail-generator'), itemToActOn.type) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job?', 'video-embed-thumbnail-generator')
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
         className: "videopack-queue-controls",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
           variant: "primary",
           onClick: handleToggleQueue,
           isBusy: isTogglingQueue,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
             icon: isQueuePaused ? 'controls-play' : 'controls-pause'
           }), isQueuePaused ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Queue', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pause Queue', 'video-embed-thumbnail-generator')]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
           variant: "secondary",
           onClick: () => openConfirmDialog('clear', {
             type: 'completed'
           }),
           isBusy: isClearing,
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear Completed', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
           variant: "tertiary",
           isDestructive: true,
           onClick: () => openConfirmDialog('clear', {
@@ -940,46 +1134,49 @@ const EncodeQueue = () => {
           }),
           isBusy: isClearing,
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear All', 'video-embed-thumbnail-generator')
-        }), isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {})]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalDivider, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("table", {
-        className: "wp-list-table widefat fixed striped table-view-list videopack-queue-table",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("thead", {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tr", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+        }), isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {})]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalDivider, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("table", {
+        className: `wp-list-table widefat striped table-view-list videopack-queue-table ${isMultisite ? 'is-multisite' : ''}`,
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("thead", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("tr", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Order', 'video-embed-thumbnail-generator')
-            }), isMultisite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), isMultisite && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Site', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('User', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Thumbnail', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('File', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Format', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Status', 'video-embed-thumbnail-generator')
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("th", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("th", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Actions', 'video-embed-thumbnail-generator')
             })]
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("tbody", {
-          children: [isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("tr", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("tbody", {
+          children: [isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("tr", {
+            className: "videopack-queue-message-row",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
               colSpan: isMultisite ? 8 : 7,
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Loading queue…', 'video-embed-thumbnail-generator')
             })
-          }), !isLoading && queueData.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("tr", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("td", {
+          }), !isLoading && queueData.length === 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("tr", {
+            className: "videopack-queue-message-row",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("td", {
               colSpan: isMultisite ? 8 : 7,
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('The encode queue is empty.', 'video-embed-thumbnail-generator')
             })
-          }), !isLoading && queueData.map((job, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(JobRow, {
+          }), !isLoading && queueData.map((job, index) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(JobRow, {
             job: job,
             index: index,
             isMultisite: isMultisite,
             openConfirmDialog: openConfirmDialog,
-            deletingJobId: deletingJobId
+            deletingJobId: deletingJobId,
+            fetchQueue: fetchQueue
           }, job.id))]
         })]
       })]
@@ -992,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const rootElement = document.getElementById('videopack-queue-root') || document.getElementById('videopack-network-queue-root');
   if (rootElement) {
     const root = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.createRoot)(rootElement);
-    root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(EncodeQueue, {}));
+    root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(EncodeQueue, {}));
   }
 });
 })();

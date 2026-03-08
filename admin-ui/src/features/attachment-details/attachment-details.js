@@ -184,12 +184,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Processes a list of pending attachments.
+ * Processes a list of pending attachments and polls for more when finished.
  *
  * @param {Array}  attachments List of attachment objects {id, url}.
  * @param {Object} config      Plugin configuration.
  */
 async function processPendingAttachments(attachments, config) {
+	if (!attachments || attachments.length === 0) {
+		return;
+	}
+
 	const total = attachments.length;
 	let count = 0;
 
@@ -226,15 +230,27 @@ async function processPendingAttachments(attachments, config) {
 		}
 	}
 
-	notice.textContent = __(
-		'Thumbnail generation complete.',
-		'video-embed-thumbnail-generator'
-	);
-	setTimeout(() => {
-		if (notice.parentNode) {
-			notice.parentNode.removeChild(notice);
+	// Check for more pending attachments
+	try {
+		const nextBatch = await wp.apiFetch({
+			path: '/videopack/v1/thumbs/browser-candidates',
+		});
+		if (nextBatch && nextBatch.length > 0) {
+			processPendingAttachments(nextBatch, config);
+		} else {
+			notice.textContent = __(
+				'Thumbnail generation complete.',
+				'video-embed-thumbnail-generator'
+			);
+			setTimeout(() => {
+				if (notice.parentNode) {
+					notice.parentNode.removeChild(notice);
+				}
+			}, 3000);
 		}
-	}, 3000);
+	} catch (e) {
+		console.error('Videopack: Failed to fetch next batch of thumbnails', e);
+	}
 }
 
 /**

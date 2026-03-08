@@ -20,6 +20,13 @@
       "padding": true
     }
   },
+  "example": {
+    "attributes": {
+      "src": "videopack-preview-video",
+      "title": "Sample Video",
+      "overlay_title": true
+    }
+  },
   "textdomain": "video-embed-thumbnail-generator",
   "editorScript": [
     "file:../../videopack-video.js"
