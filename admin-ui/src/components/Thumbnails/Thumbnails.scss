@@ -1,7 +1,7 @@
 .videopack-thumbnail-generator {
 
 	button.is-secondary {
-		font-size:12px;
+		font-size: 12px;
 	}
 
 	.spinner-container {
@@ -22,14 +22,15 @@
 	}
 
 	.videopack-thumb-video-controls {
-		display: block;
+		display: flex;
+		align-items: center;
+		flex-wrap: nowrap;
 		margin-left: auto;
 		margin-right: auto;
 
 		.videopack-play-pause {
 			color: var(--wp-admin-theme-color);
-			display: inline-block;
-			vertical-align: text-bottom;
+			flex-shrink: 0;
 			padding: 0;
 			margin-right: 8px;
 			border: none;
@@ -37,8 +38,29 @@
 		}
 
 		.videopack-thumbvideo-slider {
-			display: inline-block;
-			width: 85%;
+			flex-grow: 1;
+			margin-bottom: 0;
+
+			.components-range-control__root {
+				margin-bottom: 0;
+			}
+		}
+
+		.videopack-popout {
+			color: var(--wp-admin-theme-color);
+			flex-shrink: 0;
+			padding: 0;
+			margin-left: 8px;
+			border: none;
+			background: none;
+
+			&:hover {
+				color: var(--wp-admin-theme-color-darker);
+			}
+
+			svg {
+				fill: currentColor;
+			}
 		}
 	}
 
@@ -70,8 +92,22 @@
 		margin-left: 12px;
 	}
 
-	.videopack-thumb-video-panel {
+	.videopack-thumb-video-container {
 		display: none;
+
+		&.is-opened {
+			display: block;
+		}
+	}
+
+	.videopack-thumb-video-panel {
+		padding: 10px 0;
+
+		video {
+			display: block;
+			width: 100%;
+			margin-bottom: 10px;
+		}
 	}
 
 	.videopack-thumbnail.saving,
@@ -100,7 +136,7 @@
 
 	}
 
-	.components-panel__body.videopack-thumb-video.is-opened .videopack-thumb-video-panel {
+	.components-panel__body.videopack-thumb-video.is-opened .videopack-thumb-video-container {
 		display: block;
 	}
 
@@ -141,3 +177,43 @@ picture.vjs-poster {
 	margin-right: 10px;
 }
 
+.videopack-video-modal-overlay {
+	z-index: 1000001 !important; // Must be higher than Media Library modal (160000)
+}
+
+.videopack-video-modal {
+	.components-modal__content {
+		width: 800px;
+		max-width: 90vw;
+		padding: 24px;
+	}
+
+	.videopack-thumb-video-panel {
+		display: block;
+		padding: 0;
+
+		video {
+			max-height: 65vh;
+			background: #000;
+			border-radius: 4px;
+		}
+
+		.videopack-thumb-video-controls {
+			margin-top: 15px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.videopack-thumbvideo-slider {
+				width: 85%;
+			}
+		}
+
+		button.components-button.videopack-use-this-frame.is-secondary {
+			display: block;
+			margin: 20px auto 0;
+			padding: 10px 20px;
+			height: auto;
+		}
+	}
+}
