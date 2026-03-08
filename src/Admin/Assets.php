@@ -109,6 +109,7 @@ class Assets {
 				VIDEOPACK_VIDEOJS_VERSION
 			);
 			$js_skins = array(
+				'vjs-theme-videopack',
 				'kg-video-js-skin',
 				'vjs-theme-city',
 				'vjs-theme-fantasy',
