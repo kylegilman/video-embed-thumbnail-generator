@@ -1,3 +1,5 @@
+@use "@wordpress/base-styles/colors";
+
 #wpwrap {
 	font-size: small;
 }
@@ -220,7 +222,7 @@
 			flex: 0 1 auto;
 			margin: 0.5rem;
 			padding: 0.5rem;
-			border: 1px solid #ccc;
+			border: 1px solid colors.$gray-400;
 			border-radius: 4px;
 		}
 
@@ -264,7 +266,7 @@
 
 		button.components-button.is-secondary.has-icon {
 			box-shadow: none;
-			border: 1px solid #8c8f94;
+			border: 1px solid colors.$gray-600;
 		}
 	}
 
@@ -300,8 +302,8 @@
 			position: absolute;
 			width: 10px;
 			height: 10px;
-			background-color: #fff;
-			border: 1px solid #000;
+			background-color: colors.$white;
+			border: 1px solid colors.$black;
 			z-index: 10;
 
 			&.nw {
@@ -346,11 +348,11 @@
 }
 
 .components-tooltip {
-	color: black;
+	color: colors.$black;
 	white-space: normal;
 	max-width: 400px;
 	background: var(--wp--preset--color--accent-5);
-	box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+	box-shadow: 2px 2px 2px 1px rgba(colors.$black, 0.2);
 }
 
 #fs_addons .fs-cards-list {

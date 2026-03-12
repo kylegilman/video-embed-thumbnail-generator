@@ -1,3 +1,5 @@
+@use "@wordpress/base-styles/colors";
+
 /* Gallery container */
 .videopack-gallery-wrapper {
 	max-width: 100%;
@@ -16,8 +18,10 @@
 	.gallery-thumbnail {
 		position: relative;
 		padding: 0;
-		padding-top: 56.25%; /* 16:9 Aspect Ratio */
-		height: 0; /* Important for padding-top trick */
+		padding-top: 56.25%;
+		/* 16:9 Aspect Ratio */
+		height: 0;
+		/* Important for padding-top trick */
 		cursor: pointer;
 		overflow: hidden;
 		border: none;
@@ -27,13 +31,14 @@
 		container-type: inline-size;
 
 		img {
-		position: absolute; /* Position image to fill the padded space */
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		display: block;
-		object-fit: cover;
+			position: absolute;
+			/* Position image to fill the padded space */
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+			object-fit: cover;
 		}
 
 		.mejs-overlay {
@@ -45,15 +50,15 @@
 		}
 
 		.mejs-overlay-button {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: 80px;
-		height: 80px;
-		/* Let JS handle the transform for scaling, overriding default margin-based centering */
-		margin: 0;
-		transform: translate(-50%, -50%);
-		background-size: auto;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 80px;
+			height: 80px;
+			/* Let JS handle the transform for scaling, overriding default margin-based centering */
+			margin: 0;
+			transform: translate(-50%, -50%);
+			background-size: auto;
 		}
 
 		.play-button-container {
@@ -82,14 +87,14 @@
 
 				.play-button-circle {
 					fill-opacity: 0.75;
-					fill: #282828;
-					stroke: #fff;
+					fill: colors.$gray-800;
+					stroke: colors.$white;
 					stroke-width: 20;
 					stroke-miterlimit: 10;
 				}
 
 				.play-button-triangle {
-					fill: #ffff;
+					fill: colors.$white;
 				}
 			}
 		}
@@ -130,9 +135,11 @@
 			.video-title-background::before {
 				opacity: 0.8;
 			}
+
 			.video-title-text {
 				color: var(--wp--preset--color--base, white);
 			}
+
 			.play-button-container svg .play-button-circle {
 				fill-opacity: 0.4;
 			}
@@ -140,17 +147,21 @@
 
 		/* Skin-specific title background styles */
 		&.default .video-title-background::before {
-			background-color: #2b333f;
+			background-color: colors.$gray-900;
 		}
+
 		&.vjs-theme-city .video-title-background::before {
 			background-color: var(--vjs-theme-city--primary);
 		}
+
 		&.vjs-theme-fantasy .video-title-background::before {
 			background-color: var(--vjs-theme-fantasy--primary);
 		}
+
 		&.vjs-theme-forest .video-title-background::before {
 			background-color: var(--vjs-theme-forest--primary);
 		}
+
 		&.vjs-theme-sea .video-title-background::before {
 			background-color: rgba(65, 118, 188);
 		}
@@ -242,16 +253,22 @@
 
 		&.is-dragging {
 			opacity: 0.5;
-			border: 2px dashed #ccc;
+			border: 2px dashed colors.$gray-400;
 		}
 
-		.gallery-item-remove, .gallery-item-edit, .videopack-drag-handle, .gallery-add-button {
+		.gallery-item-remove,
+		.gallery-item-edit,
+		.videopack-drag-handle,
+		.gallery-add-button {
 			position: absolute;
 		}
 
-		.gallery-item-remove, .gallery-item-edit, .videopack-drag-handle {
+		.gallery-item-remove,
+		.gallery-item-edit,
+		.videopack-drag-handle {
 			top: 5px;
-			display: none; /* Hidden by default */
+			display: none;
+			/* Hidden by default */
 		}
 
 		.gallery-add-button {
@@ -278,8 +295,11 @@
 			cursor: move;
 		}
 
-		&:hover .gallery-item-remove, &:hover .gallery-item-edit, &:hover .videopack-drag-handle {
-			display: flex; /* Show on hover of the parent item */
+		&:hover .gallery-item-remove,
+		&:hover .gallery-item-edit,
+		&:hover .videopack-drag-handle {
+			display: flex;
+			/* Show on hover of the parent item */
 		}
 	}
 }
@@ -327,12 +347,14 @@
 				}
 			}
 		}
+
 		span {
 			cursor: pointer;
 		}
 	}
 
-	.videopack-pagination-separator, .videopack-pagination-arrow {
+	.videopack-pagination-separator,
+	.videopack-pagination-arrow {
 		font-size: .8em;
 		font-weight: 100;
 		vertical-align: middle;
