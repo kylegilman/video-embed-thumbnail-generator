@@ -1,16 +1,24 @@
-/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/text-tracks.scss ***!
-  \*******************************************************************************************************************************************************************************************************************************************************************/
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/TextTracks.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+/** @format */
+/**
+ * Deprecated colors.
+ * Please avoid using these.
+ */
 .videopack-text-tracks-list .videopack-text-track-item {
   margin-bottom: 24px;
   padding: 16px;
-  background: var(--wp--preset--color--accent-5, #f8f9fa);
+  background: #f6f7f7;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ddd;
   transition: all 0.2s ease-in-out;
 }
 .videopack-text-tracks-list .videopack-text-track-item:hover {
-  border-color: #cbd5e0;
+  border-color: #ccc;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 .videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-header {
@@ -19,12 +27,12 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #f0f0f0;
 }
 .videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-header .videopack-text-track-label {
   font-weight: 600;
   font-size: 13px;
-  color: #1e293b;
+  color: #1e1e1e;
 }
 .videopack-text-tracks-list .videopack-text-track-item .videopack-text-track-settings .videopack-text-track-settings-row {
   margin-bottom: 12px;
@@ -54,7 +62,7 @@
   gap: 12px;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #f0f0f0;
 }
 .videopack-text-tracks-actions .components-button {
   flex: 1 1 auto;
@@ -63,9 +71,46 @@
   justify-content: center;
   white-space: nowrap;
 }
+/*!**********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/videopack-video/VideoSettings.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************/
+.videopack-video-settings {
+  container-type: inline-size;
+  container-name: videopack-settings;
+}
+.videopack-video-settings .videopack-video-settings-input-wrapper {
+  width: 100%;
+  margin-bottom: 16px;
+}
+.videopack-video-settings .videopack-video-settings-input-wrapper .components-base-control__field {
+  width: 100%;
+}
+.videopack-video-settings .videopack-video-settings-full-width {
+  width: 100%;
+}
+.videopack-video-settings .components-flex {
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+@container videopack-settings (max-width: 300px) {
+  .videopack-video-settings .videopack-player-settings-flex {
+    flex-direction: column;
+    gap: 0;
+  }
+  .videopack-video-settings .videopack-player-settings-flex .components-flex-item {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .videopack-video-settings .videopack-player-settings-flex .components-flex-item:last-child {
+    margin-bottom: 0;
+  }
+}
 /*!******************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/Thumbnails/Thumbnails.scss ***!
   \******************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 .videopack-thumbnail-generator button.is-secondary {
   font-size: 12px;
 }
@@ -202,6 +247,8 @@ picture.vjs-poster {
   pointer-events: none;
 }
 .videopack-current-thumbnail {
+  width: var(--wp--style--global--content-size);
+  width: 640px;
   max-width: 100%;
   height: auto;
   margin-bottom: 1em;
@@ -241,22 +288,68 @@ picture.vjs-poster {
   padding: 10px 20px;
   height: auto;
 }
-/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/additional-formats.scss ***!
-  \*********************************************************************************************************************************************************************************************************************************************************************************/
-.videopack-formats-list {
-  width: 90%;
-  margin-top: -27px;
-  margin-bottom: 0;
+/*!********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/AdditionalFormats.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+/** @format */
+/**
+ * Deprecated colors.
+ * Please avoid using these.
+ */
+.videopack-formats-container {
+  width: 100%;
+  margin-bottom: 20px;
+  container-type: inline-size;
+  container-name: videopack-formats;
 }
-.videopack-formats-list li {
-  margin-top: 27px;
+.videopack-formats-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@container videopack-formats (max-width: 350px) {
+  .videopack-formats-list {
+    grid-template-columns: 1fr;
+  }
+}
+@container videopack-formats (min-width: 351px) and (max-width: 700px) {
+  .videopack-formats-list {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+.videopack-formats-list > li {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f6f7f7;
+}
+.videopack-formats-list > li ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.videopack-formats-list .videopack-codec-name {
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+  font-weight: 600;
 }
 .videopack-formats-list li label {
   max-width: 95%;
+  margin-right: 6px;
 }
 .videopack-formats-list hr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e0e0e0;
   border-top: none;
   margin: 0.7em 0;
 }
@@ -288,8 +381,10 @@ picture.vjs-poster {
   font-size: inherit;
 }
 .videopack-encode-message {
-  margin-left: 8px;
+  margin-left: 12px;
   font-weight: 300;
+  font-style: italic;
+  color: #949494;
 }
 .videopack-encode-button-row {
   justify-content: flex-start;
@@ -300,8 +395,11 @@ picture.vjs-poster {
 /*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeProgress.scss ***!
   \*****************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 .videopack-meter {
-  background-color: #f0f0f1;
+  background-color: #f0f0f0;
   width: 100%;
   border-radius: 4px;
   height: 22px;
@@ -317,7 +415,7 @@ picture.vjs-poster {
   transition: width 0.3s ease;
 }
 .videopack-meter .videopack-meter-text {
-  color: white;
+  color: #fff;
   text-align: right;
   margin-right: 5px;
   line-height: 22px;
@@ -385,7 +483,7 @@ picture.vjs-poster {
   display: flex;
   justify-content: space-between;
   margin-top: 2px;
-  color: #646970;
+  color: #949494;
 }
 .videopack-encode-progress-small-text span {
   margin-right: 10px;

@@ -792,6 +792,9 @@
 /*!**********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoGallery/VideoGallery.scss ***!
   \**********************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 /* Gallery container */
 .videopack-gallery-wrapper {
   max-width: 100%;
@@ -808,8 +811,10 @@
 .videopack-gallery-wrapper .gallery-thumbnail {
   position: relative;
   padding: 0;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
-  height: 0; /* Important for padding-top trick */
+  padding-top: 56.25%;
+  /* 16:9 Aspect Ratio */
+  height: 0;
+  /* Important for padding-top trick */
   cursor: pointer;
   overflow: hidden;
   border: none;
@@ -819,7 +824,8 @@
   container-type: inline-size;
 }
 .videopack-gallery-wrapper .gallery-thumbnail img {
-  position: absolute; /* Position image to fill the padded space */
+  position: absolute;
+  /* Position image to fill the padded space */
   top: 0;
   left: 0;
   width: 100%;
@@ -871,13 +877,13 @@
 }
 .videopack-gallery-wrapper .gallery-thumbnail .play-button-container.kg-video-js-skin svg .play-button-circle {
   fill-opacity: 0.75;
-  fill: #282828;
+  fill: #2f2f2f;
   stroke: #fff;
   stroke-width: 20;
   stroke-miterlimit: 10;
 }
 .videopack-gallery-wrapper .gallery-thumbnail .play-button-container.kg-video-js-skin svg .play-button-triangle {
-  fill: white;
+  fill: #fff;
 }
 .videopack-gallery-wrapper .gallery-thumbnail .video-title {
   box-sizing: border-box;
@@ -921,7 +927,7 @@
   /* Skin-specific title background styles */
 }
 .videopack-gallery-wrapper .gallery-thumbnail.default .video-title-background::before {
-  background-color: #2b333f;
+  background-color: #1e1e1e;
 }
 .videopack-gallery-wrapper .gallery-thumbnail.vjs-theme-city .video-title-background::before {
   background-color: var(--vjs-theme-city--primary);
@@ -1008,12 +1014,18 @@
   opacity: 0.5;
   border: 2px dashed #ccc;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle, .videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove,
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit,
+.videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle,
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
   position: absolute;
 }
-.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle {
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-remove,
+.videopack-gallery-wrapper .videopack-gallery-item .gallery-item-edit,
+.videopack-gallery-wrapper .videopack-gallery-item .videopack-drag-handle {
   top: 5px;
-  display: none; /* Hidden by default */
+  display: none;
+  /* Hidden by default */
 }
 .videopack-gallery-wrapper .videopack-gallery-item .gallery-add-button {
   bottom: 5px;
@@ -1035,7 +1047,8 @@
   cursor: move;
 }
 .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-remove, .videopack-gallery-wrapper .videopack-gallery-item:hover .gallery-item-edit, .videopack-gallery-wrapper .videopack-gallery-item:hover .videopack-drag-handle {
-  display: flex; /* Show on hover of the parent item */
+  display: flex;
+  /* Show on hover of the parent item */
 }
 /* Gallery pagination */
 .videopack-gallery-pagination {
@@ -1076,7 +1089,8 @@
 .videopack-gallery-pagination button span {
   cursor: pointer;
 }
-.videopack-gallery-pagination .videopack-pagination-separator, .videopack-gallery-pagination .videopack-pagination-arrow {
+.videopack-gallery-pagination .videopack-pagination-separator,
+.videopack-gallery-pagination .videopack-pagination-arrow {
   font-size: 0.8em;
   font-weight: 100;
   vertical-align: middle;

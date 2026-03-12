@@ -1,6 +1,9 @@
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/encode-queue/encode-queue.scss ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 .videopack-encode-queue .videopack-queue-controls {
   display: flex;
   gap: 10px;
@@ -16,7 +19,7 @@
   overflow: hidden;
   border-collapse: separate;
   border-spacing: 0;
-  background: white;
+  background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   width: 100%;
   margin-top: 15px;
@@ -40,25 +43,25 @@
   }
 }
 .videopack-encode-queue .videopack-queue-table thead {
-  background-color: #f9fafb;
+  background-color: #f0f0f0;
 }
 .videopack-encode-queue .videopack-queue-table thead tr th {
   padding: 12px 15px;
   font-weight: 600;
   font-size: 13px;
-  color: #3c434a;
-  border-bottom: 2px solid #f0f0f1;
+  color: #2f2f2f;
+  border-bottom: 2px solid #e0e0e0;
   text-align: left;
 }
 .videopack-encode-queue .videopack-queue-table tbody tr {
   transition: all 0.2s ease;
-  border-bottom: 1px solid #f0f0f1;
+  border-bottom: 1px solid #e0e0e0;
 }
 .videopack-encode-queue .videopack-queue-table tbody tr:last-child {
   border-bottom: none;
 }
 .videopack-encode-queue .videopack-queue-table tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: #f0f0f0;
   transform: translateY(-1px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   z-index: 1;
@@ -80,7 +83,7 @@
   text-align: center;
   padding: 40px !important;
   font-style: italic;
-  color: #646970;
+  color: #949494;
   white-space: normal;
 }
 .videopack-encode-queue .videopack-queue-table tbody tr.videopack-queue-message-row:hover {
@@ -89,11 +92,11 @@
   background-color: transparent;
 }
 .videopack-encode-queue .videopack-job-encoding {
-  background-color: #f0f6fb !important;
-  border-left: 4px solid #2271b1 !important;
+  background-color: rgba(34, 113, 177, 0.05) !important;
+  border-left: 4px solid var(--wp-admin-theme-color, #2271b1) !important;
 }
 .videopack-encode-queue .videopack-job-encoding:hover {
-  background-color: #ebf3fa !important;
+  background-color: rgba(34, 113, 177, 0.1) !important;
 }
 .videopack-encode-queue .videopack-job-encoding td:first-child {
   padding-left: 11px;
@@ -105,7 +108,7 @@
 }
 .videopack-batch-progress-panel .components-panel__body-title {
   font-weight: 600;
-  background: #f8f9f9;
+  background: #f0f0f0;
   margin: 0;
 }
 .videopack-batch-progress-panel .videopack-batch-progress-content {
@@ -122,10 +125,10 @@
   font-size: 13px;
 }
 .videopack-batch-progress-panel .videopack-batch-stats span {
-  color: #50575e;
+  color: #757575;
 }
 .videopack-batch-progress-panel .videopack-batch-stats .videopack-failed-count {
-  color: #d63638;
+  color: #cc1818;
   font-weight: 600;
 }
 .videopack-batch-progress-panel {
@@ -133,21 +136,24 @@
 }
 .videopack-batch-progress-panel .videopack-meter {
   height: 12px;
-  background: #f0f0f1;
+  background: #e0e0e0;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
 }
 .videopack-batch-progress-panel .videopack-meter .videopack-meter-bar {
   height: 100%;
-  background: #2271b1;
+  background: var(--wp-admin-theme-color, #2271b1);
   transition: width 0.3s ease;
 }
 /*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeProgress.scss ***!
   \*****************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 .videopack-meter {
-  background-color: #f0f0f1;
+  background-color: #f0f0f0;
   width: 100%;
   border-radius: 4px;
   height: 22px;
@@ -163,7 +169,7 @@
   transition: width 0.3s ease;
 }
 .videopack-meter .videopack-meter-text {
-  color: white;
+  color: #fff;
   text-align: right;
   margin-right: 5px;
   line-height: 22px;
@@ -231,7 +237,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 2px;
-  color: #646970;
+  color: #949494;
 }
 .videopack-encode-progress-small-text span {
   margin-right: 10px;

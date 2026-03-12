@@ -10412,6 +10412,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteJob: () => (/* binding */ deleteJob),
 /* harmony export */   enqueueJob: () => (/* binding */ enqueueJob),
+/* harmony export */   generateShortcode: () => (/* binding */ generateShortcode),
 /* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
@@ -10422,6 +10423,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
+/* harmony export */   normalizeOptions: () => (/* binding */ normalizeOptions),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
 /* harmony export */   resetNetworkSettings: () => (/* binding */ resetNetworkSettings),
 /* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
@@ -10509,22 +10511,25 @@ const removeJob = async jobId => {
     throw error;
   }
 };
-const getVideoFormats = async attachmentId => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoFormats', undefined, attachmentId);
+const getVideoFormats = async (attachmentId, url = '') => {
+  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoFormats', undefined, attachmentId, url);
   if (typeof pre !== 'undefined') {
     return pre;
   }
   try {
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/formats/${attachmentId}`
+    const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/formats/${attachmentId}`, {
+      url
     });
-    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoFormats', response, attachmentId);
+    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path
+    });
+    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoFormats', response, attachmentId, url);
   } catch (error) {
     console.error('Error fetching video formats:', error);
     throw error;
   }
 };
-const enqueueJob = async (attachmentId, src, formats) => {
+const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_enqueueJob', undefined, attachmentId, src, formats);
   if (typeof pre !== 'undefined') {
     return pre;
@@ -10535,7 +10540,8 @@ const enqueueJob = async (attachmentId, src, formats) => {
       method: 'POST',
       data: {
         url: src,
-        formats
+        formats,
+        parent_id: parentId
       }
     });
   } catch (error) {
@@ -10578,9 +10584,10 @@ const deleteFile = async attachmentId => {
  * @param {HTMLCanvasElement} canvas       The canvas element to upload.
  * @param {number}            attachmentId The ID of the video attachment.
  * @param {string}            videoSrc     The URL of the video (used for filename).
+ * @param {number}            parentId     The ID of the parent post.
  * @return {Promise<Object>} The response from the upload endpoint.
  */
-const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
+const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0) => {
   return new Promise((resolve, reject) => {
     canvas.toBlob(async blob => {
       if (!blob) {
@@ -10591,6 +10598,8 @@ const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
         const formData = new FormData();
         formData.append('file', blob, 'thumbnail.jpg');
         formData.append('attachment_id', attachmentId);
+        formData.append('parent_id', parentId);
+        formData.append('url', videoSrc);
         formData.append('post_name', (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.getFilename)(videoSrc));
         const response = await uploadThumbnail(formData);
         resolve(response);
@@ -10612,14 +10621,16 @@ const uploadThumbnail = async formData => {
     throw error;
   }
 };
-const saveAllThumbnails = async (attachment_id, thumb_urls) => {
+const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '') => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/thumbs/save_all',
       method: 'POST',
       data: {
         attachment_id,
-        thumb_urls
+        thumb_urls,
+        parent_id,
+        url
       }
     });
   } catch (error) {
@@ -10755,14 +10766,16 @@ const resetVideopackSettings = async () => {
     throw error;
   }
 };
-const setPosterImage = async (attachment_id, thumb_url) => {
+const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '') => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/thumbs',
       method: 'PUT',
       data: {
         attachment_id,
-        thumburl: thumb_url
+        thumburl: thumb_url,
+        parent_id,
+        url
       }
     });
   } catch (error) {
@@ -10770,14 +10783,15 @@ const setPosterImage = async (attachment_id, thumb_url) => {
     throw error;
   }
 };
-const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button) => {
+const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0) => {
   try {
     const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', {
       url,
       total_thumbnails,
       thumbnail_index,
       attachment_id,
-      generate_button
+      generate_button,
+      parent_id
     });
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path
@@ -10827,6 +10841,83 @@ const getThumbnailCandidates = async () => {
     console.error('Error fetching thumbnail candidates:', error);
     throw error;
   }
+};
+
+/**
+ * Normalizes options/attributes to ensure booleans are actual booleans
+ * and not 'on'/'off' strings.
+ *
+ * @param {Object} data The object to normalize.
+ * @return {Object} Normalized object.
+ */
+const normalizeOptions = data => {
+  if (!data) {
+    return {};
+  }
+  const normalized = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === 'on') {
+      normalized[key] = true;
+    } else if (value === 'off') {
+      normalized[key] = false;
+    } else {
+      normalized[key] = value;
+    }
+  });
+  return normalized;
+};
+
+/**
+ * Generates the [videopack] shortcode string based on attributes.
+ *
+ * @param {Object} attributes The attributes to include in the shortcode.
+ * @param {string} url        Optional URL for the video source.
+ * @param {Object} options    Optional global options to compare against for defaults.
+ * @return {string} The generated shortcode.
+ */
+const generateShortcode = (attributes, url = '', options = null) => {
+  const {
+    id,
+    gallery,
+    ...rest
+  } = attributes;
+  let shortcode = '[videopack';
+  const normalizedOptions = options ? normalizeOptions(options) : null;
+  if (gallery) {
+    shortcode += ' gallery="true"';
+  } else if (id) {
+    shortcode += ` id="${id}"`;
+  }
+  Object.entries(rest).forEach(([key, value]) => {
+    // Only include if value is set and not null/undefined
+    if (value !== undefined && value !== null && value !== '') {
+      // Skip if value matches global option (default)
+      if (normalizedOptions && normalizedOptions[key] !== undefined) {
+        if (value === normalizedOptions[key]) {
+          return;
+        }
+      }
+
+      // Skip temporary UI-only attributes
+      if (key === 'tinymce_edit') {
+        return;
+      }
+
+      // Skip src attribute if we have an attachment id
+      if (id && key === 'src') {
+        return;
+      }
+      shortcode += ` ${key}="${value}"`;
+    }
+  });
+  shortcode += ']';
+
+  // Include URL content for clarity, even if we have an attachment id
+  if (url && !gallery) {
+    shortcode += url;
+  }
+  shortcode += '[/videopack]';
+  return shortcode;
 };
 
 /***/ },
