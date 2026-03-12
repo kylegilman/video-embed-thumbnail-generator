@@ -16,7 +16,7 @@
 		// @todo: this should eventually be overridden by a custom border-radius set in the inspector.
 		border-radius: variables.$radius-block-ui;
 
-		> svg {
+		>svg {
 			opacity: 0;
 		}
 
@@ -39,91 +39,10 @@
 	}
 }
 
-.videopack-sort-control-wrapper {
-	display: flex;
-	align-items: flex-end;
-	gap: 8px;
-	margin-bottom: 16px;
-
-	.components-base-control {
-		flex-grow: 1;
-		margin-bottom: 0;
-	}
-
-	.components-button.has-icon {
-		margin-bottom: 4px;
-	}
-}
-
-.videopack-excluded-videos {
-	margin-top: 20px;
-	border-top: 1px solid #ddd;
-	padding-top: 10px;
-
-	p {
-		font-weight: 500;
-		margin-bottom: 10px;
-	}
-
-	.videopack-excluded-list {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.videopack-excluded-item {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		background: #f0f0f0;
-		padding: 5px;
-		border-radius: 4px;
-
-		.videopack-excluded-thumbnail {
-			width: 60px;
-			background: #ccc;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			overflow: hidden;
-			border-radius: 2px;
-			flex-shrink: 0;
-
-			img {
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-			}
-			svg {
-				width: 16px;
-				height: 16px;
-			}
-		}
-
-		.videopack-excluded-title {
-			flex-grow: 1;
-			font-size: 12px;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-
-		.videopack-restore-item {
-			min-width: 24px;
-			padding: 0;
-			color: #666;
-			background: transparent;
-			&:hover {
-				color: #d00;
-				background: #e0e0e0;
-			}
-		}
-	}
-}
-
 // Shared styles for overlay buttons in both List and Gallery views
 .videopack-video-list-wrapper,
 .videopack-gallery-wrapper {
+
 	.videopack-remove-item,
 	.videopack-edit-item,
 	.videopack-drag-handle,
