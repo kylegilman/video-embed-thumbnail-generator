@@ -11,7 +11,7 @@ import {
 import { useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
 import { plus, close, dragHandle } from '@wordpress/icons';
-import './text-tracks.scss';
+import './TextTracks.scss';
 
 const TextTracks = ({ tracks = [], onChange }) => {
 	const [isAdding, setIsAdding] = useState(false);
