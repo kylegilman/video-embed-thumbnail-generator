@@ -65,7 +65,7 @@ const EncodeFormatStatus = ({
 				!formatData.replaces_original && (
 					<MediaUpload
 						title={__(
-							'Choose existing file',
+							'Pick existing file',
 							'video-embed-thumbnail-generator'
 						)}
 						onSelect={onSelectFormat(formatId)}
@@ -76,6 +76,10 @@ const EncodeFormatStatus = ({
 								onClick={open}
 								className="videopack-format-button"
 								size="small"
+								title={__(
+									'Manually select an existing file from Media Library',
+									'video-embed-thumbnail-generator'
+								)}
 							>
 								{__(
 									'Select',
