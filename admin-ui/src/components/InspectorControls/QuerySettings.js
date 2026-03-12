@@ -1,5 +1,6 @@
 import { SelectControl, ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { decodeEntities } from '@wordpress/html-entities';
 
 export default function QuerySettings({
 	attributes,
@@ -28,7 +29,7 @@ export default function QuerySettings({
 	if (currentPost) {
 		optionsForSelect.push({
 			value: currentPost.id,
-			label: currentPost.title.rendered,
+			label: decodeEntities(currentPost.title.rendered),
 		});
 	}
 	if (searchResults) {
@@ -36,7 +37,7 @@ export default function QuerySettings({
 			if (!optionsForSelect.find((o) => o.value === post.id)) {
 				optionsForSelect.push({
 					value: post.id,
-					label: post.title.rendered,
+					label: decodeEntities(post.title.rendered),
 				});
 			}
 		});

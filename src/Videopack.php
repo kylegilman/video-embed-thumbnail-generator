@@ -157,6 +157,8 @@ class Videopack {
 		$this->loader->add_action( 'videopack_cron_check_post_parent', $plugin_attachment, 'cron_check_post_parent_handler' );
 		$this->loader->add_action( 'edit_attachment', $plugin_attachment, 'validate_attachment_updated' );
 		$this->loader->add_filter( 'mime_types', $plugin_attachment, 'add_mime_types' );
+		$this->loader->add_filter( 'wp_get_attachment_url', $plugin_attachment, 'filter_attachment_url', 10, 2 );
+		$this->loader->add_filter( 'get_attached_file', $plugin_attachment, 'filter_attached_file', 10, 2 );
 		$this->loader->add_action( 'wp_read_video_metadata', $plugin_attachment, 'add_extra_video_metadata', 10, 4 );
 		$this->loader->add_action( 'updated_post_meta', $plugin_attachment, 'clear_browser_thumb_flag', 10, 4 );
 		$this->loader->add_action( 'added_post_meta', $plugin_attachment, 'clear_browser_thumb_flag', 10, 4 );
@@ -174,6 +176,8 @@ class Videopack {
 		$this->loader->add_filter( 'media_send_to_editor', $edit_posts, 'modify_media_insert', 10, 3 );
 		$this->loader->add_action( 'media_upload_tabs', $edit_posts, 'add_embedurl_tab' );
 		$this->loader->add_action( 'media_upload_embedurl', $edit_posts, 'embedurl_handle' );
+		$this->loader->add_action( 'media_upload_embedgallery', $edit_posts, 'embedurl_handle' );
+		$this->loader->add_action( 'media_upload_embedlist', $edit_posts, 'embedurl_handle' );
 		$this->loader->add_action( 'save_post', $edit_posts, 'render_post' );
 
 		if ( Admin\Multisite::is_videopack_active_for_network() ) {
@@ -195,8 +199,9 @@ class Videopack {
 		$this->loader->add_action( 'in_plugin_update_message-' . VIDEOPACK_BASENAME, $admin_screens, 'upgrade_notification' );
 		$this->loader->add_action( 'admin_menu', $admin_screens, 'add_settings_page' );
 		$this->loader->add_action( 'admin_menu', $admin_screens, 'add_encode_queue_page' );
-		$this->loader->add_action( 'manage_media_columns', $admin_screens, 'add_video_stats_column' );
-		$this->loader->add_action( 'manage_media_custom_column', $admin_screens, 'add_video_stats_column_content', 10, 2 );
+		$this->loader->add_action( 'manage_media_columns', $admin_screens, 'add_video_columns' );
+		$this->loader->add_action( 'manage_media_custom_column', $admin_screens, 'add_video_column_content', 10, 2 );
+		$this->loader->add_filter( 'wp_prepare_attachment_for_js', $admin_screens, 'prepare_attachment_for_js', 10, 3 );
 		$this->loader->add_action( 'pre_get_posts', $admin_screens, 'hide_video_children' );
 		$this->loader->add_action( 'restrict_manage_posts', $admin_screens, 'add_media_filter_dropdown' );
 		$this->loader->add_filter( 'media_view_settings', $admin_screens, 'add_grid_media_filter' );
@@ -212,6 +217,12 @@ class Videopack {
 		$this->loader->add_action( 'init', $admin_ui, 'block_init' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_page_assets' );
 		$this->loader->add_action( 'wp_enqueue_media', $admin_ui, 'enqueue_attachment_details' );
+
+		// TinyMCE Classic Editor integration hooks.
+		$this->loader->add_filter( 'mce_external_plugins', $admin_ui, 'register_tinymce_plugin' );
+		$this->loader->add_action( 'admin_footer-post.php', $admin_ui, 'print_tinymce_template' );
+		$this->loader->add_action( 'admin_footer-post-new.php', $admin_ui, 'print_tinymce_template' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_tinymce_assets' );
 
 		// Action Scheduler hooks for encoding queue.
 		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager );

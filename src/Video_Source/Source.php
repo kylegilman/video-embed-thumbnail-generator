@@ -189,6 +189,14 @@ abstract class Source {
 		$this->parent_id       = $parent_id;
 	}
 
+	public function get_options(): array {
+		return $this->options;
+	}
+
+	public function get_options_manager(): \Videopack\Admin\Options {
+		return $this->options_manager;
+	}
+
 	abstract public function set_metadata( array $metadata = null ): void;
 
 	protected function validate_source( $source ): bool {
@@ -202,7 +210,10 @@ abstract class Source {
 		return true;
 	}
 
-	public function get_source(): string {
+	public function get_source() {
+		if ( is_array( $this->source ) ) {
+			return $this->source['id'] ?? '';
+		}
 		return $this->source;
 	}
 
@@ -242,6 +253,10 @@ abstract class Source {
 			$this->set_exists();
 		}
 		return $this->exists;
+	}
+
+	public function url_exists( $url ) {
+		return Video_Source_Finder::url_exists( $url );
 	}
 
 	abstract protected function set_direct_path(): void;
@@ -296,16 +311,29 @@ abstract class Source {
 	}
 
 	protected function set_path_parts(): void {
+		$direct_path = $this->get_direct_path();
 
-		$pathinfo   = pathinfo( $this->get_direct_path() );
+		// For remote URLs, strip query strings and fragments before pathinfo
+		$path_for_info = $direct_path;
+		if ( filter_var( $direct_path, FILTER_VALIDATE_URL ) ) {
+			$path_for_info = wp_parse_url( $direct_path, PHP_URL_PATH );
+		}
+
+		$pathinfo = pathinfo( $path_for_info );
+
 		$path_parts = array(
-			'dirname'   => $pathinfo['dirname'],
-			'basename'  => sanitize_file_name( $pathinfo['basename'] ),
-			'extension' => $pathinfo['extension'],
-			'filename'  => sanitize_file_name( $pathinfo['filename'] ),
+			'dirname'      => $pathinfo['dirname'] ?? '.',
+			'basename'     => sanitize_file_name( $pathinfo['basename'] ?? '' ),
+			'extension'    => $pathinfo['extension'] ?? '',
+			'filename'     => sanitize_file_name( $pathinfo['filename'] ?? '' ),
+			'no_extension' => '',
 		);
 
-		$path_parts['no_extension'] = $pathinfo['dirname'] . '/' . $pathinfo['filename'];
+		// If we only have a dirname, ensure it's not null before concatenation
+		$dirname  = $path_parts['dirname'];
+		$filename = $path_parts['filename'];
+
+		$path_parts['no_extension'] = $dirname . '/' . $filename;
 
 		$this->path_parts = $path_parts;
 	}
@@ -314,14 +342,14 @@ abstract class Source {
 		if ( ! $this->path_parts ) {
 			$this->set_path_parts();
 		}
-		return $this->path_parts['dirname'];
+		return (string) ( $this->path_parts['dirname'] ?? '' );
 	}
 
 	public function get_basename(): string {
 		if ( ! $this->path_parts ) {
 			$this->set_path_parts();
 		}
-		return $this->path_parts['basename'];
+		return (string) ( $this->path_parts['basename'] ?? '' );
 	}
 
 	public function get_extension(): string {
@@ -376,7 +404,10 @@ abstract class Source {
 	}
 
 	protected function set_title(): void {
-		$this->title = basename( $this->source );
+		$filename    = basename( $this->source );
+		$path_parts  = pathinfo( $filename );
+		$title       = $path_parts['filename'];
+		$this->title = str_replace( '-', ' ', $title );
 	}
 
 	public function get_title(): string {
@@ -452,11 +483,11 @@ abstract class Source {
 
 	protected function get_codec_by_mime_type() {
 
-		if ( $this->mime_type ) {
+		if ( $this->get_mime_type() ) {
 			$codecs         = $this->options_manager->get_video_codecs();
 			$same_mime_type = array();
 			foreach ( $codecs as $codec ) {
-				if ( $codec->get_mime_type() === $this->mime_type ) {
+				if ( $codec->get_mime_type() === $this->get_mime_type() ) {
 					$same_mime_type[] = $codec;
 				}
 			}
@@ -467,7 +498,7 @@ abstract class Source {
 			} elseif ( count( $same_mime_type ) > 1 ) {
 				//multiple available codecs with the same mime type
 				$preferred_codecs = $this->get_preferred_codecs();
-				if ( array_key_exists( $this->mime_type, $preferred_codecs ) ) {
+				if ( array_key_exists( $this->get_mime_type(), $preferred_codecs ) ) {
 					foreach ( $same_mime_type as $codec_candidate ) {
 						if ( $preferred_codecs[ $this->get_mime_type() ] === $codec_candidate->get_id() ) {
 							return $codec_candidate;
@@ -486,7 +517,7 @@ abstract class Source {
 		if ( ! isset( $this->metadata['codec'] ) ) {
 			$this->set_metadata_codec();
 		}
-		return $this->metadata['codec'] ?? '';
+		return (string) ( $this->metadata['codec'] ?? '' );
 	}
 
 	protected function set_metadata_codec(): void {
@@ -512,14 +543,18 @@ abstract class Source {
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$this->codec = $formats[ $this->format ]->get_codec();
 			}
-		} elseif ( $this->get_metadata_codec() ) {
+		}
+
+		if ( ! $this->codec && $this->get_metadata_codec() ) {
 			foreach ( $codecs as $codec ) {
 				if ( $codec->get_codecs_att() === $this->get_metadata_codec() ) {
 					$this->codec = $codec;
 					break;
 				}
 			}
-		} else {
+		}
+
+		if ( ! $this->codec ) {
 			$codec = $this->get_codec_by_mime_type();
 			if ( $codec ) {
 				$this->codec = $codec;
@@ -643,7 +678,7 @@ abstract class Source {
 		if ( ! isset( $this->metadata['starts'] ) ) {
 			$this->set_metadata();
 		}
-		return $this->metadata['starts'];
+		return isset( $this->metadata['starts'] ) ? (int) $this->metadata['starts'] : 0;
 	}
 
 	/**

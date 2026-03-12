@@ -69,23 +69,26 @@ export const removeJob = async (jobId) => {
 	}
 };
 
-export const getVideoFormats = async (attachmentId) => {
+export const getVideoFormats = async (attachmentId, url = '') => {
 	const pre = applyFilters(
 		'videopack.utils.pre_getVideoFormats',
 		undefined,
-		attachmentId
+		attachmentId,
+		url
 	);
 	if (typeof pre !== 'undefined') {
 		return pre;
 	}
 	try {
-		const response = await apiFetch({
-			path: `/videopack/v1/formats/${attachmentId}`,
+		const path = addQueryArgs(`/videopack/v1/formats/${attachmentId}`, {
+			url,
 		});
+		const response = await apiFetch({ path });
 		return applyFilters(
 			'videopack.utils.getVideoFormats',
 			response,
-			attachmentId
+			attachmentId,
+			url
 		);
 	} catch (error) {
 		console.error('Error fetching video formats:', error);
@@ -93,7 +96,7 @@ export const getVideoFormats = async (attachmentId) => {
 	}
 };
 
-export const enqueueJob = async (attachmentId, src, formats) => {
+export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 	const pre = applyFilters(
 		'videopack.utils.pre_enqueueJob',
 		undefined,
@@ -111,6 +114,7 @@ export const enqueueJob = async (attachmentId, src, formats) => {
 			data: {
 				url: src,
 				formats,
+				parent_id: parentId,
 			},
 		});
 	} catch (error) {
@@ -155,9 +159,15 @@ export const deleteFile = async (attachmentId) => {
  * @param {HTMLCanvasElement} canvas       The canvas element to upload.
  * @param {number}            attachmentId The ID of the video attachment.
  * @param {string}            videoSrc     The URL of the video (used for filename).
+ * @param {number}            parentId     The ID of the parent post.
  * @return {Promise<Object>} The response from the upload endpoint.
  */
-export const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
+export const createThumbnailFromCanvas = (
+	canvas,
+	attachmentId,
+	videoSrc,
+	parentId = 0
+) => {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob(async (blob) => {
 			if (!blob) {
@@ -168,6 +178,8 @@ export const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc) => {
 				const formData = new FormData();
 				formData.append('file', blob, 'thumbnail.jpg');
 				formData.append('attachment_id', attachmentId);
+				formData.append('parent_id', parentId);
+				formData.append('url', videoSrc);
 				formData.append('post_name', getFilename(videoSrc));
 
 				const response = await uploadThumbnail(formData);
@@ -192,7 +204,12 @@ export const uploadThumbnail = async (formData) => {
 	}
 };
 
-export const saveAllThumbnails = async (attachment_id, thumb_urls) => {
+export const saveAllThumbnails = async (
+	attachment_id,
+	thumb_urls,
+	parent_id = 0,
+	url = ''
+) => {
 	try {
 		return await apiFetch({
 			path: '/videopack/v1/thumbs/save_all',
@@ -200,6 +217,8 @@ export const saveAllThumbnails = async (attachment_id, thumb_urls) => {
 			data: {
 				attachment_id,
 				thumb_urls,
+				parent_id,
+				url,
 			},
 		});
 	} catch (error) {
@@ -355,7 +374,12 @@ export const resetVideopackSettings = async () => {
 	}
 };
 
-export const setPosterImage = async (attachment_id, thumb_url) => {
+export const setPosterImage = async (
+	attachment_id,
+	thumb_url,
+	parent_id = 0,
+	url = ''
+) => {
 	try {
 		return await apiFetch({
 			path: '/videopack/v1/thumbs',
@@ -363,6 +387,8 @@ export const setPosterImage = async (attachment_id, thumb_url) => {
 			data: {
 				attachment_id,
 				thumburl: thumb_url,
+				parent_id,
+				url,
 			},
 		});
 	} catch (error) {
@@ -376,7 +402,8 @@ export const generateThumbnail = async (
 	total_thumbnails,
 	thumbnail_index,
 	attachment_id,
-	generate_button
+	generate_button,
+	parent_id = 0
 ) => {
 	try {
 		const path = addQueryArgs('/videopack/v1/thumbs', {
@@ -385,6 +412,7 @@ export const generateThumbnail = async (
 			thumbnail_index,
 			attachment_id,
 			generate_button,
+			parent_id,
 		});
 
 		return await apiFetch({ path });
@@ -438,4 +466,84 @@ export const getThumbnailCandidates = async () => {
 		console.error('Error fetching thumbnail candidates:', error);
 		throw error;
 	}
+};
+
+/**
+ * Normalizes options/attributes to ensure booleans are actual booleans
+ * and not 'on'/'off' strings.
+ *
+ * @param {Object} data The object to normalize.
+ * @return {Object} Normalized object.
+ */
+export const normalizeOptions = (data) => {
+	if (!data) {
+		return {};
+	}
+	const normalized = {};
+	Object.entries(data).forEach(([key, value]) => {
+		if (value === 'on') {
+			normalized[key] = true;
+		} else if (value === 'off') {
+			normalized[key] = false;
+		} else {
+			normalized[key] = value;
+		}
+	});
+	return normalized;
+};
+
+/**
+ * Generates the [videopack] shortcode string based on attributes.
+ *
+ * @param {Object} attributes The attributes to include in the shortcode.
+ * @param {string} url        Optional URL for the video source.
+ * @param {Object} options    Optional global options to compare against for defaults.
+ * @return {string} The generated shortcode.
+ */
+export const generateShortcode = (attributes, url = '', options = null) => {
+	const { id, gallery, ...rest } = attributes;
+	let shortcode = '[videopack';
+
+	const normalizedOptions = options ? normalizeOptions(options) : null;
+
+	if (gallery) {
+		shortcode += ' gallery="true"';
+	} else if (id) {
+		shortcode += ` id="${id}"`;
+	}
+
+	Object.entries(rest).forEach(([key, value]) => {
+		// Only include if value is set and not null/undefined
+		if (value !== undefined && value !== null && value !== '') {
+			// Skip if value matches global option (default)
+			if (normalizedOptions && normalizedOptions[key] !== undefined) {
+				if (value === normalizedOptions[key]) {
+					return;
+				}
+			}
+
+			// Skip temporary UI-only attributes
+			if (key === 'tinymce_edit') {
+				return;
+			}
+
+			// Skip src attribute if we have an attachment id
+			if (id && key === 'src') {
+				return;
+			}
+
+			shortcode += ` ${key}="${value}"`;
+		}
+	});
+
+	shortcode += ']';
+
+	// Include URL content for clarity, even if we have an attachment id
+	if (url && !gallery) {
+		shortcode += url;
+	}
+
+	shortcode += '[/videopack]';
+
+	return shortcode;
 };

@@ -1,0 +1,35 @@
+@use "@wordpress/base-styles/colors";
+
+// Hide the legacy WordPress media tabs/header when we're inside the Videopack specialized view
+#media-upload-header {
+	display: none;
+}
+
+// Ensure the body fills the space cleanly
+body {
+	background: #fff;
+}
+
+.videopack-classic-embed {
+
+	background-color: colors.$white;
+	padding-bottom: 1px;
+
+	.videopack-tab-content {
+		margin: 0 15px;
+		padding-top: 15px;
+	}
+
+	.videopack-insert-button-wrapper {
+		margin: 20px 0;
+		padding: 0 16px;
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.components-panel__body {
+		border: 1px solid colors.$gray-200;
+		border-radius: 4px;
+		margin-bottom: 15px;
+	}
+}

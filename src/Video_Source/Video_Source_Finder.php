@@ -74,7 +74,8 @@ class Video_Source_Finder {
 
 	public static function find_format_in_same_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source ) {
 
-		if ( $source->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
+		$options = $source->get_options();
+		if ( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
 			$file = $source->get_no_extension() . $format->get_suffix();
 			if ( ! file_exists( $file ) ) {
 				$legacy_file = $source->get_no_extension() . $format->get_legacy_suffix();
@@ -85,7 +86,7 @@ class Video_Source_Finder {
 
 			if ( file_exists( $file ) ) {
 
-				$attachment_manager = new \Videopack\Admin\Attachment( $source->options_manager );
+				$attachment_manager = new \Videopack\Admin\Attachment( $source->get_options_manager() );
 				$attachment_id      = $attachment_manager->url_to_id( $file );
 
 				if ( $attachment_id ) {
@@ -113,7 +114,8 @@ class Video_Source_Finder {
 
 	public static function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source ) {
 
-		if ( ! empty( $source->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
+		$options = $source->get_options();
+		if ( ! empty( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
 			$potential_url = $source->get_no_extension() . $format->get_suffix();
 
 			if ( self::url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
@@ -151,7 +153,8 @@ class Video_Source_Finder {
 	}
 
 	public static function get_source_from_same_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
-		if ( $source_obj->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
+		$options = $source_obj->get_options();
+		if ( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) {
 			$file = $source_obj->get_no_extension() . $format->get_suffix();
 			if ( ! file_exists( $file ) ) {
 				$legacy_file = $source_obj->get_no_extension() . $format->get_legacy_suffix();
@@ -161,13 +164,13 @@ class Video_Source_Finder {
 			}
 
 			if ( file_exists( $file ) ) {
-				$attachment_manager = new \Videopack\Admin\Attachment( $source_obj->options_manager );
+				$attachment_manager = new \Videopack\Admin\Attachment( $source_obj->get_options_manager() );
 				$attachment_id      = $attachment_manager->url_to_id( $file );
 
 				if ( $attachment_id ) {
 					return Source_Factory::create(
 						$attachment_id,
-						$source_obj->options_manager,
+						$source_obj->get_options_manager(),
 						$format->get_id(),
 						true,
 						$source_obj->get_parent_id(),
@@ -177,7 +180,7 @@ class Video_Source_Finder {
 
 				return Source_Factory::create(
 					$file,
-					$source_obj->options_manager,
+					$source_obj->get_options_manager(),
 					$format->get_id(),
 					true,
 					$source_obj->get_parent_id(),
@@ -188,15 +191,16 @@ class Video_Source_Finder {
 		return null;
 	}
 
-	public static function get_source_from_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ) : ?Source {
+	public static function get_source_from_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
 
-		if ( ! empty( $source_obj->options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
+		$options = $source_obj->get_options();
+		if ( ! empty( $options['encode'][ $format->get_codec()->get_id() ]['enabled'] ) ) {
 			$potential_url = $source_obj->get_no_extension() . $format->get_suffix();
 
 			if ( self::url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
 				return Source_Factory::create(
 					$potential_url,
-					$source_obj->options_manager,
+					$source_obj->get_options_manager(),
 					$format->get_id(),
 					true,
 					$source_obj->get_parent_id(),

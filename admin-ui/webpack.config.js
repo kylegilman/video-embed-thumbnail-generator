@@ -60,6 +60,20 @@ module.exports = {
 			'frontend-styles',
 			'frontend-styles.js'
 		),
+		'classic-embed': path.resolve(
+			process.cwd(),
+			'src',
+			'features',
+			'classic-embed',
+			'classic-embed.js'
+		),
+		tinymce: path.resolve(
+			process.cwd(),
+			'src',
+			'features',
+			'tinymce',
+			'tinymce.js'
+		),
 	},
 	optimization: {
 		...config.optimization,

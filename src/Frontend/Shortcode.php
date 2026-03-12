@@ -361,6 +361,26 @@ class Shortcode {
 	public function get_final_atts( array $atts, \Videopack\Video_Source\Source $source ): array {
 		$query_atts = $this->atts( $atts );
 
+		// Apply per-video overrides from _videopack-meta.
+		// These override the global option defaults but NOT values explicitly
+		// set in the shortcode text (which are already in $atts).
+		$attachment_id = $source->get_id();
+		if ( is_numeric( $attachment_id ) ) {
+			$videopack_meta = get_post_meta( intval( $attachment_id ), '_videopack-meta', true );
+			if ( is_array( $videopack_meta ) && ! empty( $videopack_meta ) ) {
+				foreach ( $videopack_meta as $key => $value ) {
+					// Only apply if the key exists in $query_atts and was NOT
+					// explicitly provided in the shortcode text.
+					if ( array_key_exists( $key, $query_atts )
+						&& ( ! is_array( $atts ) || ! array_key_exists( $key, $atts ) )
+						&& $value !== null
+					) {
+						$query_atts[ $key ] = $value;
+					}
+				}
+			}
+		}
+
 		// Populate shortcode attributes with data from the Source object, if not already set by the user.
 		if ( empty( $query_atts['poster'] ) ) {
 			$query_atts['poster'] = $source->get_poster();

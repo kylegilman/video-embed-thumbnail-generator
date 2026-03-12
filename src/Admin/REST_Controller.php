@@ -125,13 +125,13 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/formats/(?P<id>\d+)',
+			'/formats/(?P<attachment_id>\d+)',
 			array( // This route handles specific attachment IDs.
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'formats' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'id' => array(
+					'attachment_id' => array(
 						'type' => 'number',
 					),
 				),
@@ -172,6 +172,15 @@ class REST_Controller extends \WP_REST_Controller {
 							),
 							'required' => true,
 						),
+						'parent_id'       => array(
+							'type'     => 'number',
+							'required' => false,
+							'default'  => 0,
+						),
+						'url'             => array(
+							'type'     => 'string',
+							'required' => false,
+						),
 						'thumburl'        => array(
 							'type'     => 'string',
 							'required' => true,
@@ -208,6 +217,11 @@ class REST_Controller extends \WP_REST_Controller {
 							'type'     => 'number',
 							'required' => true,
 						), // The ID of the source video attachment.
+						'parent_id'        => array(
+							'type'     => 'number',
+							'required' => false,
+							'default'  => 0,
+						), // The ID of the parent post.
 						'generate_button'  => array(
 							'type'     => 'string',
 							'required' => true,
@@ -230,6 +244,15 @@ class REST_Controller extends \WP_REST_Controller {
 						'type'     => 'number',
 						'required' => true,
 					),
+					'parent_id'     => array(
+						'type'     => 'number',
+						'required' => false,
+						'default'  => 0,
+					),
+					'url'           => array(
+						'type'     => 'string',
+						'required' => false,
+					),
 					'post_name'     => array(
 						'type'     => 'string',
 						'required' => true,
@@ -250,6 +273,15 @@ class REST_Controller extends \WP_REST_Controller {
 					'attachment_id' => array(
 						'type'     => 'number',
 						'required' => true,
+					),
+					'parent_id'     => array(
+						'type'     => 'number',
+						'required' => false,
+						'default'  => 0,
+					),
+					'url'           => array(
+						'type'     => 'string',
+						'required' => false,
 					),
 					'thumb_urls'    => array(
 						'type'     => 'array',
@@ -361,10 +393,10 @@ class REST_Controller extends \WP_REST_Controller {
 				'callback'            => array( $this, 'video_sources' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'url' => array(
+					'url'           => array(
 						'type' => 'string',
 					),
-					'id'  => array(
+					'attachment_id' => array(
 						'type' => array(
 							'number',
 							'string',
@@ -387,7 +419,7 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/queue/(?P<id>\w+)',
+			'/queue/(?P<attachment_id>\w+)',
 			array(
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
@@ -396,8 +428,8 @@ class REST_Controller extends \WP_REST_Controller {
 						return ( $this->options['ffmpeg_exists'] === true );
 					},
 					'args'                => array(
-						'id' => array(
-							'type' => 'number',
+						'attachment_id' => array(
+							'type' => array( 'number', 'string' ),
 						),
 					),
 				),
@@ -498,23 +530,42 @@ class REST_Controller extends \WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/render-shortcode',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'render_shortcode' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'attrs'   => array(
+						'type'     => 'object',
+						'required' => false,
+					),
+					'content' => array(
+						'type'     => 'string',
+						'required' => false,
+					),
+				),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
 			'/count-play',
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE, // Use CREATABLE for actions that modify data
 				'callback'            => array( $this, 'count_play' ),
 				'permission_callback' => '__return_true', // Public endpoint for view counting
 				'args'                => array(
-					'post_id'     => array(
+					'attachment_id' => array(
 						'type'              => 'integer',
 						'required'          => true,
 						'sanitize_callback' => 'absint',
 					),
-					'video_event' => array(
+					'video_event'   => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'show_views'  => array(
+					'show_views'    => array(
 						'type'              => 'boolean',
 						'default'           => false,
 						'sanitize_callback' => 'rest_sanitize_boolean',
@@ -576,6 +627,29 @@ class REST_Controller extends \WP_REST_Controller {
 				},
 			)
 		);
+		register_rest_route(
+			$this->namespace,
+			'/resolve-url',
+			array(
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => array( $this, 'resolve_url_to_attachment' ),
+				'permission_callback' => function () {
+					return current_user_can( 'upload_files' );
+				},
+				'args'                => array(
+					'url'       => array(
+						'type'     => 'string',
+						'required' => true,
+						'format'   => 'uri',
+					),
+					'parent_id' => array(
+						'type'     => 'number',
+						'required' => false,
+						'default'  => 0,
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -600,9 +674,9 @@ class REST_Controller extends \WP_REST_Controller {
 			if ( is_array( $value ) ) {
 				$dirty_array[ $key ] = $this->clean_array( $value );
 			} elseif ( is_float( $value )
-				&& ( is_nan( $value )
-					|| is_infinite( $value )
-				)
+			&& ( is_nan( $value )
+				|| is_infinite( $value )
+			)
 			) {
 				$dirty_array[ $key ] = null;
 			} elseif ( strpos( $key, 'path' ) !== false ) {
@@ -672,8 +746,8 @@ class REST_Controller extends \WP_REST_Controller {
 		$video_formats_data = array();
 
 		// Determine if a specific video is being requested by ID or URL.
-		if ( ! empty( $params['id'] ) && get_post_type( $params['id'] ) === 'attachment' ) {
-			$encoder = new encode\Encode_Attachment( $this->options_manager, (int) $params['id'] );
+		if ( ! empty( $params['attachment_id'] ) && get_post_type( $params['attachment_id'] ) === 'attachment' ) {
+			$encoder = new encode\Encode_Attachment( $this->options_manager, (int) $params['attachment_id'] );
 		} elseif ( ! empty( $params['url'] ) ) {
 			$input_url     = esc_url_raw( $params['url'] );
 			$sanitized_url = new Sanitize_Url( $input_url );
@@ -703,9 +777,14 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function thumb_generate( \WP_REST_Request $request ) {
 
+		$attachment_id = $this->ensure_attachment_id( $request );
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
 		$ffmpeg_thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
 		$result            = $ffmpeg_thumbnails->generate_single_thumbnail_data(
-			$request->get_param( 'attachment_id' ),
+			$attachment_id,
 			$request->get_param( 'total_thumbnails' ),
 			$request->get_param( 'thumbnail_index' ),
 			( $request->get_param( 'generate_button' ) === 'random' ) // Whether to use a random offset for the timecode.
@@ -716,7 +795,13 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		// The result is an array with 'path' and 'url'. The client only needs the URL.
-		return new \WP_REST_Response( array( 'real_thumb_url' => $result['url'] ), 200 );
+		return new \WP_REST_Response(
+			array(
+				'real_thumb_url' => $result['url'],
+				'attachment_id'  => $attachment_id,
+			),
+			200
+		);
 	}
 
 	/**
@@ -726,8 +811,13 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response The REST response with the results of the save operations.
 	 */
 	public function thumb_save_all( \WP_REST_Request $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
-		$thumb_urls    = $request->get_param( 'thumb_urls' );
+
+		$attachment_id = $this->ensure_attachment_id( $request );
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		$thumb_urls = $request->get_param( 'thumb_urls' );
 
 		$thumbnails     = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
 		$post_name      = '';
@@ -742,7 +832,9 @@ class REST_Controller extends \WP_REST_Controller {
 		$results = array();
 
 		foreach ( $thumb_urls as $index => $url ) {
-			$results[] = $thumbnails->save( $attachment_id, $post_name, $url, $index + 1 );
+			$res                  = $thumbnails->save( $attachment_id, $post_name, $url, $index + 1 );
+			$res['attachment_id'] = $attachment_id;
+			$results[]            = $res;
 		}
 
 		return new \WP_REST_Response( $results, 200 );
@@ -755,8 +847,13 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|\WP_Error The response.
 	 */
 	public function thumb_upload_save( $request ) {
-		$attachment_id = $request->get_param( 'attachment_id' );
-		$post_name     = $request->get_param( 'post_name' );
+
+		$attachment_id = $this->ensure_attachment_id( $request );
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		$post_name = $request->get_param( 'post_name' );
 		if ( ! empty( $post_name ) ) {
 			$post_name = pathinfo( $post_name, PATHINFO_FILENAME );
 		}
@@ -768,6 +865,8 @@ class REST_Controller extends \WP_REST_Controller {
 
 		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager );
 		$response   = $thumbnails->save_from_blob( $attachment_id, $post_name, $files['file'] );
+
+		$response['attachment_id'] = $attachment_id;
 
 		if ( ! $response['thumb_id'] ) {
 			return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
@@ -784,9 +883,13 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function thumb_save( \WP_REST_Request $request ) {
 
-		$params        = $request->get_params();
-		$attachment_id = $params['attachment_id'];
-		$thumbnails    = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
+		$attachment_id = $this->ensure_attachment_id( $request );
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
+		$params     = $request->get_params();
+		$thumbnails = new FFmpeg_Thumbnails( $this->options_manager ); // Use FFmpeg_Thumbnails for saving
 
 		if ( is_numeric( $attachment_id ) ) {
 			$post_name      = '';
@@ -862,10 +965,10 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function video_sources( \WP_REST_Request $request ) {
 
-		$url     = $request->get_param( 'url' );
-		$post_id = $request->get_param( 'id' );
+		$url           = $request->get_param( 'url' );
+		$attachment_id = $request->get_param( 'attachment_id' );
 		// Prioritize numeric IDs, otherwise fall back to the URL.
-		$source_input = is_numeric( $post_id ) ? (int) $post_id : $url;
+		$source_input = is_numeric( $attachment_id ) ? (int) $attachment_id : $url;
 		if ( ! $source_input ) {
 			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing Video URL or ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
@@ -900,8 +1003,8 @@ class REST_Controller extends \WP_REST_Controller {
 			'REST Endpoint: queue_get',
 			function () use ( $request ) {
 				$params = $request->get_params();
-				if ( array_key_exists( 'id', $params ) ) {
-					$encoder = new Encode\Encode_Attachment( $this->options_manager, $params['id'] );
+				if ( array_key_exists( 'attachment_id', $params ) ) {
+					$encoder = new Encode\Encode_Attachment( $this->options_manager, $params['attachment_id'] );
 					return $encoder->get_formats_array();
 				} else {
 					$cache_key = 'videopack_rest_queue_all';
@@ -939,17 +1042,23 @@ class REST_Controller extends \WP_REST_Controller {
 			)
 		);
 
+		$attachment_id = $this->ensure_attachment_id( $request );
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
+		}
+
 		$controller = new Encode\Encode_Queue_Controller( $this->options_manager );
 		$video_url  = $params['url'] ?? null;
 		if ( empty( $video_url ) ) {
 			return new \WP_Error( 'rest_invalid_param', esc_html__( 'Missing video URL.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
-		$args     = array(
-			'id'      => $params['id'],
+		$args                      = array(
+			'id'      => $attachment_id,
 			'url'     => $video_url,
 			'formats' => $formats_to_enqueue,
 		);
-		$response = $controller->enqueue_encodes( $args );
+		$response                  = $controller->enqueue_encodes( $args );
+		$response['attachment_id'] = $attachment_id;
 
 		// Check if any of the results have a 'failed' status
 		$has_failures = false;
@@ -1091,6 +1200,27 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
+	 * REST callback to render a Videopack shortcode.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response The HTML output of the shortcode.
+	 */
+	public function render_shortcode( \WP_REST_Request $request ) {
+		$atts    = $request->get_param( 'attrs' );
+		$content = $request->get_param( 'content' );
+
+		// Convert attrs from object to array if needed
+		if ( is_object( $atts ) ) {
+			$atts = (array) $atts;
+		}
+
+		$shortcode = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$response  = $shortcode->do( $atts, $content );
+
+		return new \WP_REST_Response( array( 'html' => $response ), 200 );
+	}
+
+	/**
 	 * Prepares additional Videopack data for an attachment in a REST response.
 	 *
 	 * @param array $post The post object as an array.
@@ -1132,17 +1262,16 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function count_play( \WP_REST_Request $request ) {
-		$post_id = $request->get_param( 'post_id' );
-
-		// Validate post_id: ensure it's a valid attachment ID.
-		if ( ! $post_id || ! is_numeric( $post_id ) || 'attachment' !== get_post_type( $post_id ) ) {
-			return new \WP_Error( 'rest_invalid_post_id', esc_html__( 'Invalid post ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
+		$attachment_id = $request->get_param( 'attachment_id' );
+		// Validate attachment_id: ensure it's a valid attachment ID.
+		if ( ! $attachment_id || ! is_numeric( $attachment_id ) || 'attachment' !== get_post_type( $attachment_id ) ) {
+			return new \WP_Error( 'rest_invalid_attachment_id', esc_html__( 'Invalid attachment ID.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
 
 		$video_event = $request->get_param( 'video_event' );
 		$show_views  = $request->get_param( 'show_views' );
 
-		$attachment_meta_manager = new Attachment_Meta( $this->options_manager, $post_id );
+		$attachment_meta_manager = new Attachment_Meta( $this->options_manager, $attachment_id );
 		$updated_meta            = $attachment_meta_manager->increment_video_stat( $video_event );
 
 		$response_data = array(
@@ -1470,5 +1599,50 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		return $counts;
+	}
+
+	/**
+	 * REST callback to resolve a URL to an attachment ID.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response|\WP_Error The response with the attachment ID or an error.
+	 */
+	public function resolve_url_to_attachment( \WP_REST_Request $request ) {
+		$url       = $request->get_param( 'url' );
+		$parent_id = $request->get_param( 'parent_id' ) ? (int) $request->get_param( 'parent_id' ) : 0;
+		$create    = $request->get_param( 'create' ) ? (bool) $request->get_param( 'create' ) : false;
+
+		$attachment = new Attachment( $this->options_manager );
+		$result     = $attachment->resolve_url_to_attachment( $url, $parent_id, $create );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return new \WP_REST_Response( array( 'attachment_id' => $result ), 200 );
+	}
+
+	/**
+	 * Ensures we have a valid attachment ID, creating one from a URL if necessary.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return int|\WP_Error The attachment ID or a WP_Error on failure.
+	 */
+	protected function ensure_attachment_id( \WP_REST_Request $request ) {
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+
+		if ( 0 === $attachment_id ) {
+			$url       = $request->get_param( 'url' );
+			$parent_id = $request->get_param( 'parent_id' ) ? (int) $request->get_param( 'parent_id' ) : 0;
+			if ( $url ) {
+				$attachment = new Attachment( $this->options_manager );
+				$resolved   = $attachment->resolve_url_to_attachment( $url, $parent_id, true );
+				if ( is_wp_error( $resolved ) ) {
+					return $resolved;
+				}
+				return (int) $resolved;
+			}
+		}
+		return $attachment_id;
 	}
 }
