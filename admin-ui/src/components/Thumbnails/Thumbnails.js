@@ -135,8 +135,11 @@ const Thumbnails = ({
 	attributes,
 	videoData, // Changed from attachment
 	options = {},
+	parentId = 0,
+	src: propSrc, // Accept src as a separate prop
 }) => {
-	const { id, src, poster } = attributes;
+	const { id, poster } = attributes;
+	const src = propSrc || attributes.src;
 	const total_thumbnails =
 		attributes.total_thumbnails ||
 		videoData?.record?.total_thumbnails ||
@@ -193,14 +196,24 @@ const Thumbnails = ({
 		if (!browserThumbnailsEnabled && ffmpegExists) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
 			const newThumbImages = [];
+			let workingId = Number(id);
 			for (let i = 1; i <= Number(total_thumbnails); i++) {
-				const response = await generateThumb(i, type);
+				const response = await generateThumb(i, type, workingId);
+				if (response?.attachment_id && workingId === 0) {
+					workingId = parseInt(response.attachment_id, 10) || 0;
+					setAttributes({
+						...attributes,
+						id: workingId,
+					});
+				}
 				const thumb = {
-					src: response.real_thumb_url,
+					src: response ? response.real_thumb_url : null,
 					type: 'ffmpeg',
 				};
-				newThumbImages.push(thumb);
-				setThumbChoices([...newThumbImages]); // Update incrementally
+				if (thumb.src) {
+					newThumbImages.push(thumb);
+					setThumbChoices([...newThumbImages]); // Update incrementally
+				}
 			}
 			setIsSaving(false);
 		} else {
@@ -213,6 +226,7 @@ const Thumbnails = ({
 		const thumbsInt = Number(total_thumbnails);
 		const newThumbCanvases = [];
 		const ffmpegExists = videopack_config.ffmpeg_exists;
+		let workingId = parseInt(id, 10) || 0;
 
 		const timePoints = calculateTimecodes(
 			videoRef.current.duration,
@@ -220,7 +234,9 @@ const Thumbnails = ({
 			{ random: type === 'random' }
 		);
 
-		for (const time of timePoints) {
+		for (let i = 0; i < timePoints.length; i++) {
+			const time = timePoints[i];
+			const index = i + 1;
 			let thumb;
 			try {
 				const canvas = await captureVideoFrame(
@@ -240,16 +256,28 @@ const Thumbnails = ({
 				if (ffmpegExists) {
 					try {
 						const response = await generateThumb(
-							newThumbCanvases.length + 1,
-							type
+							index,
+							type,
+							workingId
 						);
-						thumb = {
-							src: response.real_thumb_url,
-							type: 'ffmpeg',
-						};
-						newThumbCanvases.push(thumb);
-						setThumbChoices([...newThumbCanvases]);
-					} catch (ffmpegError) { }
+						if (response?.attachment_id && workingId === 0) {
+							workingId = parseInt(response.attachment_id, 10) || 0;
+							setAttributes({
+								...attributes,
+								id: workingId,
+							});
+						}
+						if (response?.real_thumb_url) {
+							thumb = {
+								src: response.real_thumb_url,
+								type: 'ffmpeg',
+							};
+							newThumbCanvases.push(thumb);
+							setThumbChoices([...newThumbCanvases]);
+						}
+					} catch (ffmpegError) {
+						console.error('Error in FFmpeg fallback:', ffmpegError);
+					}
 				}
 			}
 		}
@@ -324,7 +352,12 @@ const Thumbnails = ({
 
 		if (firstThumbType === 'canvas') {
 			const uploadPromises = thumbChoices.map((thumb) => {
-				return createThumbnailFromCanvas(thumb.canvasObject, id, src);
+				return createThumbnailFromCanvas(
+					thumb.canvasObject,
+					id,
+					src,
+					parentId
+				);
 			});
 
 			try {
@@ -337,7 +370,19 @@ const Thumbnails = ({
 			// For FFmpeg thumbnails, send their temporary URLs to the server to be saved
 			const thumbUrls = thumbChoices.map((thumb) => thumb.src);
 			try {
-				await saveAllThumbnails(id, thumbUrls);
+				const response = await saveAllThumbnails(
+					id,
+					thumbUrls,
+					parentId,
+					src
+				);
+				const firstResult = response?.[0];
+				if (firstResult?.attachment_id && Number(id) === 0) {
+					setAttributes({
+						...attributes,
+						id: Number(firstResult.attachment_id),
+					});
+				}
 				setThumbChoices([]); // Clear choices after saving
 			} catch (error) {
 				console.error('Error saving all FFmpeg thumbnails:', error);
@@ -352,7 +397,8 @@ const Thumbnails = ({
 			const response = await createThumbnailFromCanvas(
 				canvasObject,
 				id,
-				src
+				src,
+				parentId
 			);
 
 			setPosterData(response.thumb_url, response.thumb_id);
@@ -363,7 +409,11 @@ const Thumbnails = ({
 		}
 	};
 
-	const setPosterData = async (new_poster, new_poster_id) => {
+	const setPosterData = async (
+		new_poster,
+		new_poster_id,
+		new_attachment_id
+	) => {
 		try {
 			const metaData = {};
 			if (new_poster) {
@@ -371,17 +421,39 @@ const Thumbnails = ({
 				metaData['_kgflashmediaplayer-poster'] = new_poster;
 				metaData['_kgflashmediaplayer-poster-id'] =
 					Number(new_poster_id);
+
+				const existingMeta =
+					videoData?.record?.meta?.['_videopack-meta'] || {};
 				metaData['_videopack-meta'] = {
-					...videoData?.record?.meta?.['_videopack-meta'],
+					...existingMeta,
 					poster: new_poster,
+					poster_id: Number(new_poster_id),
 				};
 			}
 
-			await videoData?.edit({
-				featured_media: new_poster_id ? Number(new_poster_id) : null,
-				meta: metaData,
-			});
-			await videoData?.save();
+			// If we just created the attachment, we need to update the attributes first.
+			if (new_attachment_id && Number(id) === 0) {
+				setAttributes({
+					id: Number(new_attachment_id),
+					poster: new_poster,
+					poster_id: Number(new_poster_id),
+				});
+			} else if (new_poster) {
+				setAttributes({
+					poster: new_poster,
+					poster_id: Number(new_poster_id),
+				});
+			}
+
+			if (videoData?.edit) {
+				await videoData.edit({
+					featured_media: new_poster_id
+						? Number(new_poster_id)
+						: null,
+					meta: metaData,
+				});
+				await videoData.save();
+			}
 
 			// Refresh the media library grid to show the updated thumbnail.
 			if (wp.media && wp.media.frame) {
@@ -414,21 +486,26 @@ const Thumbnails = ({
 
 	const setImgAsPoster = async (thumb_url) => {
 		try {
-			const response = await setPosterImage(id, thumb_url);
-			setPosterData(response.thumb_url, response.thumb_id);
+			const response = await setPosterImage(id, thumb_url, parentId, src);
+			setPosterData(
+				response.thumb_url,
+				response.thumb_id,
+				response.attachment_id
+			);
 		} catch (error) {
 			console.error(error);
 		}
 	};
 
-	const generateThumb = async (i, type) => {
+	const generateThumb = async (i, type, forceId = null) => {
 		try {
 			const response = await generateThumbnail(
 				src,
 				total_thumbnails,
 				i,
-				id,
-				type
+				forceId !== null ? forceId : id,
+				type,
+				parentId
 			);
 
 			return response;
