@@ -1,3 +1,5 @@
+@use "@wordpress/base-styles/colors";
+
 .videopack-thumbnail-generator {
 
 	button.is-secondary {
@@ -168,6 +170,8 @@ picture.vjs-poster {
 }
 
 .videopack-current-thumbnail {
+	width: var(--wp--style--global--content-size);
+	width: 640px;
 	max-width: 100%;
 	height: auto;
 	margin-bottom: 1em;
@@ -194,7 +198,7 @@ picture.vjs-poster {
 
 		video {
 			max-height: 65vh;
-			background: #000;
+			background: colors.$black;
 			border-radius: 4px;
 		}
 

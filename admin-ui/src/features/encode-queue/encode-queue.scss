@@ -1,3 +1,5 @@
+@use "@wordpress/base-styles/colors";
+
 .videopack-encode-queue {
 	.videopack-queue-controls {
 		display: flex;
@@ -11,13 +13,13 @@
 	}
 
 	.videopack-queue-table {
-		border: 1px solid #e0e0e0;
+		border: 1px solid colors.$gray-200;
 		border-radius: 8px;
 		overflow: hidden;
 		border-collapse: separate;
 		border-spacing: 0;
-		background: white;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+		background: colors.$white;
+		box-shadow: 0 1px 3px rgba(colors.$black, 0.05);
 		width: 100%;
 		margin-top: 15px;
 
@@ -41,15 +43,15 @@
 		}
 
 		thead {
-			background-color: #f9fafb;
+			background-color: colors.$gray-100;
 
 			tr {
 				th {
 					padding: 12px 15px;
 					font-weight: 600;
 					font-size: 13px;
-					color: #3c434a;
-					border-bottom: 2px solid #f0f0f1;
+					color: colors.$gray-800;
+					border-bottom: 2px solid colors.$gray-200;
 					text-align: left;
 				}
 			}
@@ -58,16 +60,16 @@
 		tbody {
 			tr {
 				transition: all 0.2s ease;
-				border-bottom: 1px solid #f0f0f1;
+				border-bottom: 1px solid colors.$gray-200;
 
 				&:last-child {
 					border-bottom: none;
 				}
 
 				&:hover {
-					background-color: #f8fafc;
+					background-color: colors.$gray-100;
 					transform: translateY(-1px);
-					box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+					box-shadow: 0 4px 6px -1px rgba(colors.$black, 0.1);
 					z-index: 1;
 					position: relative;
 				}
@@ -92,7 +94,7 @@
 					text-align: center;
 					padding: 40px !important;
 					font-style: italic;
-					color: #646970;
+					color: colors.$gray-600;
 					white-space: normal;
 				}
 
@@ -106,11 +108,11 @@
 	}
 
 	.videopack-job-encoding {
-		background-color: #f0f6fb !important;
-		border-left: 4px solid #2271b1 !important;
+		background-color: rgba(34, 113, 177, 0.05) !important;
+		border-left: 4px solid var(--wp-admin-theme-color, #2271b1) !important;
 
 		&:hover {
-			background-color: #ebf3fa !important;
+			background-color: rgba(34, 113, 177, 0.1) !important;
 		}
 
 		td:first-child {
@@ -121,12 +123,12 @@
 
 .videopack-batch-progress-panel {
 	margin-bottom: 20px;
-	border: 1px solid #e0e0e0;
+	border: 1px solid colors.$gray-200;
 	border-radius: 4px;
 
 	.components-panel__body-title {
 		font-weight: 600;
-		background: #f8f9f9;
+		background: colors.$gray-100;
 		margin: 0;
 	}
 
@@ -146,11 +148,11 @@
 		font-size: 13px;
 
 		span {
-			color: #50575e;
+			color: colors.$gray-700;
 		}
 
 		.videopack-failed-count {
-			color: #d63638;
+			color: colors.$alert-red;
 			font-weight: 600;
 		}
 	}
@@ -158,14 +160,14 @@
 	/* Batch progress uses a simpler meter than EncodeProgress */
 	.videopack-meter {
 		height: 12px;
-		background: #f0f0f1;
+		background: colors.$gray-200;
 		border-radius: 10px;
 		overflow: hidden;
 		position: relative;
 
 		.videopack-meter-bar {
 			height: 100%;
-			background: #2271b1;
+			background: var(--wp-admin-theme-color, #2271b1);
 			transition: width 0.3s ease;
 		}
 	}

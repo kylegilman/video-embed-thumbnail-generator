@@ -1,5 +1,7 @@
+@use "@wordpress/base-styles/colors";
+
 .videopack-meter {
-	background-color: #f0f0f1;
+	background-color: colors.$gray-100;
 	width: 100%;
 	border-radius: 4px;
 	height: 22px;
@@ -16,7 +18,7 @@
 	}
 
 	.videopack-meter-text {
-		color: white;
+		color: colors.$white;
 		text-align: right;
 		margin-right: 5px;
 		line-height: 22px;
@@ -95,7 +97,7 @@
 	display: flex;
 	justify-content: space-between;
 	margin-top: 2px;
-	color: #646970;
+	color: colors.$gray-600;
 
 	span {
 		margin-right: 10px;
