@@ -11,7 +11,7 @@ import {
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
-import './additional-formats.scss';
+import './AdditionalFormats.scss';
 import EncodeFormatStatus from './EncodeFormatStatus';
 import {
 	getVideoFormats,
@@ -42,8 +42,14 @@ const getOrdinal = (n, locale = 'en-US') => {
 	}
 };
 
-const AdditionalFormats = ({ attributes, options = {} }) => {
-	const { id, src } = attributes;
+const AdditionalFormats = ({
+	setAttributes,
+	attributes,
+	options = {},
+	parentId = 0,
+	src: propSrc, // Accept src as a separate prop
+}) => {
+	const src = propSrc || attributes.src;
 	const { ffmpeg_exists } = options;
 	const [videoFormats, setVideoFormats] = useState({});
 	const [encodeMessage, setEncodeMessage] = useState();
@@ -53,6 +59,27 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isEncoding, setIsEncoding] = useState(false);
 	const progressTimerRef = useRef(null);
+	const siteSettings = useSelect((select) => {
+		return select('core').getSite();
+	}, []);
+
+	const sanitizeError = useCallback(
+		(error) => {
+			let errorMessage = error?.data?.details
+				? error.data.details.join(', ')
+				: error.message || '';
+
+			// If the message contains HTML, it's likely a WordPress fatal error response
+			if (/<[a-z][\s\S]*>/i.test(errorMessage)) {
+				errorMessage = __(
+					'A server error occurred. Please check the PHP logs.',
+					'video-embed-thumbnail-generator'
+				);
+			}
+			return errorMessage;
+		},
+		[]
+	);
 
 	// Auto-clear success messages after 30 seconds.
 	useEffect(() => {
@@ -128,21 +155,23 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	}, []);
 
 	const fetchVideoFormats = useCallback(async () => {
-		if (!id) {
+		const activeId = attributes.id || 0;
+		if (!activeId && !src) {
 			return;
-		} // Don't fetch if there's no ID.
+		} // Don't fetch if no ID and no URL.
 		try {
-			const formats = await getVideoFormats(id);
+			const formats = await getVideoFormats(activeId, src);
 			updateVideoFormats(formats);
 		} catch (error) {
 			console.error('Error fetching video formats:', error);
 		}
-	}, [id, updateVideoFormats]);
+	}, [attributes.id, src, updateVideoFormats]);
 
 	const pollVideoFormats = useCallback(async () => {
-		if (src && id) {
+		const activeId = attributes.id || 0;
+		if (src) {
 			try {
-				const formats = await getVideoFormats(id);
+				const formats = await getVideoFormats(activeId, src);
 				updateVideoFormats(formats);
 				return formats;
 			} catch (error) {
@@ -150,15 +179,11 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			}
 		}
 		return null;
-	}, [src, id, updateVideoFormats]);
+	}, [src, attributes.id, updateVideoFormats]);
 
 	useEffect(() => {
 		fetchVideoFormats();
 	}, [fetchVideoFormats]); // Fetch formats when the attachment ID changes
-
-	const siteSettings = useSelect((select) => {
-		return select('core').getSite();
-	}, []);
 
 	const shouldPoll = (formats) => {
 		if (!formats) {
@@ -325,7 +350,20 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			}, {});
 
 		try {
-			const response = await enqueueJob(id, src, formatsToEncode);
+			const activeId = attributes.id || 0;
+			const response = await enqueueJob(
+				activeId,
+				src,
+				formatsToEncode,
+				parentId
+			);
+			if (response?.attachment_id && !attributes.id) {
+				// Attachment was created on the fly
+				setAttributes({
+					...attributes,
+					id: Number(response.attachment_id),
+				});
+			}
 			const jobCount = response?.encode_list?.length || 0;
 
 			if (jobCount === 0) {
@@ -362,10 +400,8 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			fetchVideoFormats(); // Re-fetch to update statuses
 		} catch (error) {
 			console.error(error);
-			// Use the detailed error messages from the server if available
-			const errorMessage = error?.data?.details
-				? error.data.details.join(', ')
-				: error.message;
+			const errorMessage = sanitizeError(error);
+
 			/* translators: %s is an error message */
 			setEncodeMessage(
 				sprintf(
@@ -388,7 +424,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 		setIsLoading(true);
 
 		try {
-			await assignFormat(media.id, formatId, id);
+			await assignFormat(media.id, formatId, attributes.id);
 			setEncodeMessage(
 				__(
 					'Video format assigned successfully.',
@@ -398,11 +434,12 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			fetchVideoFormats(); // Refresh the list
 		} catch (error) {
 			console.error('Error assigning video format:', error);
+			const errorMessage = sanitizeError(error);
 			setEncodeMessage(
 				sprintf(
 					/* translators: %s is an error message */
 					__('Error: %s', 'video-embed-thumbnail-generator'),
-					error.message
+					errorMessage
 				)
 			);
 		} finally {
@@ -438,6 +475,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			fetchVideoFormats(); // Re-fetch to get the latest status from backend
 		} catch (error) {
 			console.error('File delete failed:', error);
+			const errorMessage = sanitizeError(error);
 			setEncodeMessage(
 				/* translators: %s is an error message */
 				sprintf(
@@ -445,7 +483,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 						'Error deleting file: %s',
 						'video-embed-thumbnail-generator'
 					),
-					error.message
+					errorMessage
 				)
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
@@ -471,13 +509,14 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			await deleteJob(jobId);
 			setEncodeMessage(
 				__(
-					'Job cancelled/deleted successfully.',
+					'Job canceled/deleted successfully.',
 					'video-embed-thumbnail-generator'
 				)
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
 		} catch (error) {
 			console.error('Job delete failed:', error);
+			const errorMessage = sanitizeError(error);
 			setEncodeMessage(
 				/* translators: %s is an error message */
 				sprintf(
@@ -485,7 +524,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 						'Error deleting job: %s',
 						'video-embed-thumbnail-generator'
 					),
-					error.message
+					errorMessage
 				)
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
@@ -566,19 +605,21 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 			return '';
 		}
 		if (itemToDelete.type === 'file') {
+			/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
 			return sprintf(
-				/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
 				__(
-					'You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.'
+					'You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.',
+					'video-embed-thumbnail-generator'
 				),
 				itemToDelete.name
 			);
 		}
 		if (itemToDelete.type === 'job') {
+			/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
 			return sprintf(
-				/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
 				__(
-					'You are about to permanently delete the encoding job for the %s video. This will also delete the encoded video file if it exists (if created by this job and not yet a separate attachment). This action cannot be undone.'
+					'You are about to permanently delete the encoding job for the %s video. This will also delete the encoded video file if it exists (if created by this job and not yet a separate attachment). This action cannot be undone.',
+					'video-embed-thumbnail-generator'
 				),
 				itemToDelete.name
 			);
@@ -586,8 +627,28 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 	};
 
 	const canUploadFiles = useSelect(
-		(select) => select(coreStore).canUser('create', 'media', id),
-		[id]
+		(select) => {
+			const activeId = attributes.id || 0;
+			if (activeId) {
+				return select(coreStore).canUser('create', 'media', activeId);
+			}
+			// If no ID but we have a src, check general media creation permissions
+			return !!src && select(coreStore).canUser('create', 'media');
+		},
+		[attributes.id, src]
+	);
+
+	useSelect(
+		(select) => {
+			const activeId = attributes.id || 0;
+			const editorSelector = select('core/editor');
+			return (
+				!!activeId &&
+				!!editorSelector &&
+				editorSelector.isDeletingPost(activeId)
+			);
+		},
+		[attributes.id]
 	);
 
 	const groupedFormats = Object.values(videoFormats).reduce((acc, format) => {
@@ -625,91 +686,87 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 					'video-embed-thumbnail-generator'
 				)}
 			>
-				<PanelRow>
-					{videoFormats ? (
-						<>
-							<ul
-								className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'
-									}`}
-							>
-								{Object.keys(groupedFormats).map((codecId) => {
-									const codecGroup = groupedFormats[codecId];
-									if (
-										options.encode[codecId]?.enabled !==
-										true
-									) {
-										return null;
-									}
-									return (
-										<li key={codecId}>
-											<h4 className="videopack-codec-name">
-												{codecGroup.name}
-											</h4>
-											<ul>
-												{codecGroup.formats.map(
-													(formatData) => {
-														const formatId =
-															formatData.format_id;
-														return (
-															<EncodeFormatStatus
-																key={formatId}
-																formatId={
+				{videoFormats ? (
+					<div className="videopack-formats-container">
+						<ul
+							className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'
+								}`}
+						>
+							{Object.keys(groupedFormats).map((codecId) => {
+								const codecGroup = groupedFormats[codecId];
+								if (
+									options.encode[codecId]?.enabled !==
+									true
+								) {
+									return null;
+								}
+								return (
+									<li key={codecId}>
+										<h4 className="videopack-codec-name">
+											{codecGroup.name}
+										</h4>
+										<ul>
+											{codecGroup.formats.map(
+												(formatData) => {
+													const formatId =
+														formatData.format_id;
+													return (
+														<EncodeFormatStatus
+															key={formatId}
+															formatId={
+																formatId
+															}
+															formatData={
+																formatData
+															}
+															ffmpegExists={
+																ffmpeg_exists
+															}
+															onCheckboxChange={
+																handleFormatCheckbox
+															}
+															onSelectFormat={
+																onSelectFormat
+															}
+															onDeleteFile={() =>
+																openConfirmDialog(
+																	'file',
 																	formatId
-																}
-																formatData={
-																	formatData
-																}
-																ffmpegExists={
-																	ffmpeg_exists
-																}
-																onCheckboxChange={
-																	handleFormatCheckbox
-																}
-																onSelectFormat={
-																	onSelectFormat
-																}
-																onDeleteFile={() =>
-																	openConfirmDialog(
-																		'file',
-																		formatId
-																	)
-																}
-																onCancelJob={() =>
-																	openConfirmDialog(
-																		'job',
-																		formatId
-																	)
-																}
-																deleteInProgress={
-																	deleteInProgress
-																}
-																onRefresh={
-																	fetchVideoFormats
-																}
-															/>
-														);
-													}
-												)}
-											</ul>
-										</li>
-									);
-								})}
-							</ul>
-							<ConfirmDialog
-								isOpen={isConfirmOpen}
-								onConfirm={handleConfirm}
-								onCancel={handleCancel}
-								className="videopack-confirm-dialog"
-							>
-								{confirmDialogMessage()}
-							</ConfirmDialog>
-						</>
-					) : (
-						<>
-							<Spinner />
-						</>
-					)}
-				</PanelRow>
+																)
+															}
+															onCancelJob={() =>
+																openConfirmDialog(
+																	'job',
+																	formatId
+																)
+															}
+															deleteInProgress={
+																deleteInProgress
+															}
+															onRefresh={
+																fetchVideoFormats
+															}
+														/>
+													);
+												}
+											)}
+										</ul>
+									</li>
+								);
+							})}
+						</ul>
+						<ConfirmDialog
+							isOpen={isConfirmOpen}
+							onConfirm={handleConfirm}
+							onCancel={handleCancel}
+							className="videopack-confirm-dialog"
+						>
+							{confirmDialogMessage()}
+						</ConfirmDialog>
+					</div>
+				) : (
+					<Spinner />
+				)}
 				{ffmpeg_exists === true && videoFormats && canUploadFiles && (
 					<PanelRow className="videopack-encode-button-row">
 						<Button
@@ -721,7 +778,7 @@ const AdditionalFormats = ({ attributes, options = {} }) => {
 								'video-embed-thumbnail-generator'
 							)}
 							disabled={isEncodeButtonDisabled}
-						></Button>
+						/>
 						{isLoading && <Spinner />}
 						{encodeMessage && (
 							<span className="videopack-encode-message">

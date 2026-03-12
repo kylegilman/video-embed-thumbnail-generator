@@ -1,0 +1,111 @@
+@use "@wordpress/base-styles/colors";
+@use "@wordpress/base-styles/colors.native" as native;
+
+.videopack-formats-container {
+	width: 100%;
+	margin-bottom: 20px;
+	container-type: inline-size;
+	container-name: videopack-formats;
+}
+
+.videopack-formats-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 10px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	@container videopack-formats (max-width: 350px) {
+		grid-template-columns: 1fr;
+	}
+
+	@container videopack-formats (min-width: 351px) and (max-width: 700px) {
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	}
+
+	>li {
+		margin: 0;
+		padding: 10px;
+		border: 1px solid colors.$gray-300;
+		border-radius: 4px;
+		background: native.$gray-0;
+
+		ul {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+	}
+
+	.videopack-codec-name {
+		margin-top: 0;
+		margin-bottom: 12px;
+		padding-bottom: 8px;
+		border-bottom: 1px solid colors.$gray-200;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	li label {
+		max-width: 95%;
+		margin-right: 6px;
+	}
+
+	hr {
+		border-bottom: 1px solid colors.$gray-200;
+		border-top: none;
+		margin: 0.7em 0;
+	}
+
+	button.components-button.is-link.is-destructive {
+		margin-top: 3px;
+	}
+
+	.components-checkbox-control {
+		display: inline-block;
+		margin-bottom: 7px;
+	}
+
+	span.videopack-format {
+		margin-right: 15px;
+		vertical-align: middle;
+		display: inline-flex;
+	}
+
+	.videopack-format-status {
+		text-transform: capitalize;
+		display: inline-flex;
+		vertical-align: middle;
+		font-size: 11px;
+		margin-right: 11px;
+		font-weight: 300;
+	}
+
+	&.no-ffmpeg {
+		span {
+			margin-right: 8px;
+		}
+
+		button {
+			height: inherit;
+			font-size: inherit;
+		}
+	}
+}
+
+.videopack-encode-message {
+	margin-left: 12px;
+	font-weight: 300;
+	font-style: italic;
+	color: colors.$gray-600;
+}
+
+.videopack-encode-button-row {
+	justify-content: flex-start;
+}
+
+.videopack-confirm-dialog .components-modal__frame {
+	max-width: 500px;
+}

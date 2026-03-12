@@ -1,14 +1,17 @@
+@use "@wordpress/base-styles/colors";
+@use "@wordpress/base-styles/colors.native" as native;
+
 .videopack-text-tracks-list {
 	.videopack-text-track-item {
 		margin-bottom: 24px;
 		padding: 16px;
-		background: var(--wp--preset--color--accent-5, #f8f9fa);
+		background: native.$gray-0;
 		border-radius: 8px;
-		border: 1px solid #e2e8f0;
+		border: 1px solid colors.$gray-300;
 		transition: all 0.2s ease-in-out;
 
 		&:hover {
-			border-color: #cbd5e0;
+			border-color: colors.$gray-400;
 			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 		}
 
@@ -18,12 +21,12 @@
 			align-items: center;
 			margin-bottom: 16px;
 			padding-bottom: 8px;
-			border-bottom: 1px solid #e2e8f0;
+			border-bottom: 1px solid colors.$gray-100;
 
 			.videopack-text-track-label {
 				font-weight: 600;
 				font-size: 13px;
-				color: #1e293b;
+				color: colors.$gray-900;
 			}
 		}
 
@@ -64,7 +67,7 @@
 	gap: 12px;
 	margin-top: 16px;
 	padding-top: 16px;
-	border-top: 1px solid #e2e8f0;
+	border-top: 1px solid colors.$gray-100;
 
 	.components-button {
 		flex: 1 1 auto; // Allow growing and shrinking
