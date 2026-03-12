@@ -1,0 +1,41 @@
+.videopack-video-settings {
+	container-type: inline-size;
+	container-name: videopack-settings;
+
+	.videopack-video-settings-input-wrapper {
+		width: 100%;
+		margin-bottom: 16px;
+
+		// Ensure the inner control also takes full width
+		.components-base-control__field {
+			width: 100%;
+		}
+	}
+
+	.videopack-video-settings-full-width {
+		width: 100%;
+	}
+
+	// Adjust Flex spacing for Player Settings if needed
+	.components-flex {
+		align-items: flex-start;
+		margin-bottom: 16px;
+	}
+
+	// Responsive layout: collapse to single column if less than 300px
+	@container videopack-settings (max-width: 300px) {
+		.videopack-player-settings-flex {
+			flex-direction: column;
+			gap: 0;
+
+			.components-flex-item {
+				width: 100%;
+				margin-bottom: 16px;
+
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+}

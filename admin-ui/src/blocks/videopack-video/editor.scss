@@ -1,7 +1,7 @@
 @use '@wordpress/base-styles/colors';
 @use '@wordpress/base-styles/variables';
 
- .wp-block-create-block-videopack-block {
+.wp-block-create-block-videopack-block {
 	border: 1px dotted #f00;
 }
 
@@ -20,7 +20,7 @@
 		// @todo: this should eventually be overridden by a custom border-radius set in the inspector.
 		border-radius: variables.$radius-block-ui;
 
-		> svg {
+		>svg {
 			opacity: 0;
 		}
 
@@ -43,7 +43,7 @@
 	}
 }
 
-.wp-block[data-align="center"] > .wp-block-video {
+.wp-block[data-align="center"]>.wp-block-video {
 	text-align: center;
 }
 

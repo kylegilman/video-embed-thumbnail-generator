@@ -196,9 +196,10 @@ const EncodeQueue = () => {
 						const interpolatedPercent =
 							(elapsed * speed * 100) / totalDurationInSeconds;
 
-						// Don't let interpolation go backwards or exceed 100%
+						// Don't let interpolation go backwards or exceed 99%
+						// 100% should only be set by the server response
 						percent = Math.min(
-							100,
+							99,
 							Math.max(percent, interpolatedPercent)
 						);
 
