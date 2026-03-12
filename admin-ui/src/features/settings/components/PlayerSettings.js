@@ -235,33 +235,33 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			value: '',
 			label: videopack_config.contentSize
 				? sprintf(
-					/* translators: %s: Content size in pixels. */
-					__(
-						"None (use theme's default width: %s)",
+						/* translators: %s: Content size in pixels. */
+						__(
+							"None (use theme's default width: %s)",
+							'video-embed-thumbnail-generator'
+						),
+						videopack_config.contentSize
+					)
+				: __(
+						"None (use theme's default width)",
 						'video-embed-thumbnail-generator'
 					),
-					videopack_config.contentSize
-				)
-				: __(
-					"None (use theme's default width)",
-					'video-embed-thumbnail-generator'
-				),
 		},
 		{
 			value: 'wide',
 			label: videopack_config.wideSize
 				? sprintf(
-					/* translators: %s: Wide size in pixels. */
-					__(
-						"Wide (use theme's wide width: %s)",
+						/* translators: %s: Wide size in pixels. */
+						__(
+							"Wide (use theme's wide width: %s)",
+							'video-embed-thumbnail-generator'
+						),
+						videopack_config.wideSize
+					)
+				: __(
+						"Wide (use theme's wide width)",
 						'video-embed-thumbnail-generator'
 					),
-					videopack_config.wideSize
-				)
-				: __(
-					"Wide (use theme's wide width)",
-					'video-embed-thumbnail-generator'
-				),
 		},
 		{
 			value: 'full',
@@ -318,7 +318,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		return items;
 	};
 
-	const handleVideoPlayerReady = () => { };
+	const handleVideoPlayerReady = () => {};
 
 	const watermarkSettings = {
 		url: watermark,
@@ -357,8 +357,9 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			<PanelBody>
 				<div className={'videopack-sample-video-player'}>
 					<div
-						className={`wp-block-videopack-videopack-video${align ? ` align${align}` : ''
-							}`}
+						className={`wp-block-videopack-videopack-video${
+							align ? ` align${align}` : ''
+						}`}
 					>
 						<PanelRow>
 							<Flex className="videopack-flex-bottom">
