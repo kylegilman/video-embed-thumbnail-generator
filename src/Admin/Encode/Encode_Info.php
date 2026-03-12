@@ -12,10 +12,10 @@ class Encode_Info {
 	public $url;
 	public $basename;
 	public $path;
-	public $exists = false;
-	public $writable = false;
+	public $exists     = false;
+	public $writable   = false;
 	public $sameserver = false;
-	public $deletable = false;
+	public $deletable  = false;
 	public $width;
 	public $height;
 	public $id;
@@ -38,7 +38,7 @@ class Encode_Info {
 		$this->url             = $input_url;
 		$this->options_manager = $options_manager;
 
-		$this->source = Source_Factory::create( $this->id, $this->options_manager );
+		$this->source = Source_Factory::create( ! empty( $this->id ) ? $this->id : $this->url, $this->options_manager );
 
 		$this->sanitized_url = new Sanitize_Url( $this->url );
 		$this->basename      = $this->sanitized_url->basename;
@@ -167,7 +167,10 @@ class Encode_Info {
 
 		$moviefilename = $this->basename . $this->format->get_suffix();
 		require_once ABSPATH . 'wp-admin/includes/file.php';
+		$local_file = get_attached_file( $this->id );
 		if ( get_post_type( $this->id ) == 'attachment'
+			&& $local_file
+			&& file_exists( $local_file )
 			&& get_filesystem_method( array(), $this->path, true ) === 'direct'
 		) {
 			$this->url  = $this->sanitized_url->noextension . $this->format->get_suffix();

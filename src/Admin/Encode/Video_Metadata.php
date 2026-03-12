@@ -51,14 +51,18 @@ class Video_Metadata {
 			}
 		}
 
-		$result   = null;
+		$result = null;
 
 		$get_info = new FFmpeg_process(
 			array(
 				$this->ffmpeg_path,
 				'-i',
 				$this->encode_input,
-			)
+			),
+			null,
+			null,
+			null,
+			30
 		);
 
 		try {
@@ -68,7 +72,7 @@ class Video_Metadata {
 			$output = $e->getMessage();
 		}
 
-		$regex = '/([0-9]{2,4})x([0-9]{2,4})/';
+			$regex = '/([0-9]{2,4})x([0-9]{2,4})/';
 
 		if ( ! empty( $output ) && preg_match( $regex, $output, $regs ) ) {
 			$result = $regs[0];
@@ -94,7 +98,7 @@ class Video_Metadata {
 
 			preg_match( '/rotate          : (.*?)\n/', $output, $matches );
 			if ( is_array( $matches )
-				&& array_key_exists( 1, $matches ) === true
+			&& array_key_exists( 1, $matches ) === true
 			) {
 				$rotate = $matches[1];
 			} else {

@@ -75,6 +75,9 @@ class Encode_Attachment {
 		}
 		if ( $this->is_attachment ) {
 			$this->encode_input = get_attached_file( $this->id );
+			if ( ! $this->encode_input ) {
+				$this->encode_input = get_post_meta( $this->id, '_kgflashmediaplayer-externalurl', true );
+			}
 			if ( ! $this->url ) {
 				$this->url = wp_get_attachment_url( $this->id );
 			}
@@ -281,7 +284,10 @@ class Encode_Attachment {
 
 			// Instantiate Encode_Info to check for the physical file's existence and details.
 			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options_manager );
-			$file_exists = $encode_info->exists && filesize( $encode_info->path ) > 0;
+			$file_exists = false;
+			if ( $encode_info->exists && ! empty( $encode_info->path ) && is_file( $encode_info->path ) ) {
+				$file_exists = filesize( $encode_info->path ) > 0;
+			}
 
 			// Skip formats that are disabled in options, unless a file or job already exists for them.
 			if ( $this->options['hide_video_formats'] ) {
@@ -381,7 +387,7 @@ class Encode_Attachment {
 			case 'deleted':
 				return __( 'Deleted', 'video-embed-thumbnail-generator' );
 			case 'canceled':
-				return __( 'Cancelled', 'video-embed-thumbnail-generator' );
+				return __( 'Canceled', 'video-embed-thumbnail-generator' );
 			case 'needs_insert':
 				return __( 'Finishing', 'video-embed-thumbnail-generator' );
 			default:
@@ -1446,8 +1452,8 @@ class Encode_Attachment {
 			}
 		}
 
-		// Mark the job status as 'canceled' in the database.
-		$encode_format->set_status( 'canceled' );
+		// Mark the job status as 'deleted' in the database.
+		$encode_format->set_status( 'deleted' );
 		// Clear path and URL as the files are gone (or should be)
 		$encode_format->set_path( null );
 		$encode_format->set_url( null );

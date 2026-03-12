@@ -88,11 +88,12 @@ class FFmpeg_Thumbnails {
 	 * @return array|\WP_Error An array with 'path' and 'url' of the generated temp file on success, or WP_Error on failure.
 	 */
 	public function generate_single_thumbnail_data( int $attachment_id, int $total_thumbnails, int $thumbnail_index, bool $is_random ) {
-		// 1. Get video metadata.
-		$input_path = get_attached_file( $attachment_id );
-		if ( ! $input_path || ! file_exists( $input_path ) ) {
+		// 1. Get video source.
+		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options_manager );
+		if ( ! $source || ! $source->exists() ) {
 			return new \WP_Error( 'file_not_found', __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
+		$input_path     = $source->get_direct_path();
 		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
 		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $attachment_id, $input_path, true, $ffmpeg_path, $this->options_manager );
 		if ( ! $video_metadata->worked || ! $video_metadata->duration ) { // Check for duration as well.
@@ -105,7 +106,7 @@ class FFmpeg_Thumbnails {
 		if ( $is_random ) {
 			// For random, subtract a random amount from the evenly spaced point.
 			$random_max_subtraction = $video_metadata->duration / $total_thumbnails;
-			$random_subtraction     = ( mt_rand() / mt_getrandmax() ) * $random_max_subtraction;
+			$random_subtraction     = ( wp_rand( 0, 1000000 ) / 1000000 ) * $random_max_subtraction;
 			$timecode              -= $random_subtraction;
 		}
 		$timecode = max( 0, round( $timecode, 3 ) );
@@ -125,10 +126,11 @@ class FFmpeg_Thumbnails {
 	 * @return array|\WP_Error An array with 'path' and 'url' of the generated temp file on success, or WP_Error on failure.
 	 */
 	public function generate_thumbnail_at_timecode( int $attachment_id, float $timecode ) {
-		$input_path = get_attached_file( $attachment_id );
-		if ( ! $input_path || ! file_exists( $input_path ) ) {
+		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options_manager );
+		if ( ! $source || ! $source->exists() ) {
 			return new \WP_Error( 'file_not_found', __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
+		$input_path     = $source->get_direct_path();
 		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
 		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( $attachment_id, $input_path, true, $ffmpeg_path, $this->options_manager );
 		if ( ! $video_metadata->worked ) {
@@ -388,8 +390,9 @@ class FFmpeg_Thumbnails {
 				}
 
 				// Generate a unique filename in the main uploads directory.
-				$base_filename = sanitize_file_name( $post_name );
-				$extension     = pathinfo( $posterfile_basename, PATHINFO_EXTENSION ) ?: 'jpg';
+				$base_filename    = sanitize_file_name( $post_name );
+				$poster_extension = pathinfo( $posterfile_basename, PATHINFO_EXTENSION );
+				$extension        = ! empty( $poster_extension ) ? $poster_extension : 'jpg';
 
 				$index = 1;
 				// If an index is passed, use it as the starting point. Otherwise, start at 1.
@@ -416,7 +419,7 @@ class FFmpeg_Thumbnails {
 
 				if ( ! $success ) {
 					return array(
-						'thumb_id' => false,
+						'thumb_id'  => false,
 						'thumb_url' => $thumb_url,
 					); // Failed to copy.
 				}
@@ -509,9 +512,10 @@ class FFmpeg_Thumbnails {
 				update_post_meta( $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
 				update_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', $thumb_id );
 				// 3. Set _videopack-meta['poster'].
-				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
-				$current_meta             = $attachment_meta_instance->get();
-				$current_meta['poster']   = $final_poster_url;
+				$attachment_meta_instance  = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
+				$current_meta              = $attachment_meta_instance->get();
+				$current_meta['poster']    = $final_poster_url;
+				$current_meta['poster_id'] = $thumb_id;
 				$attachment_meta_instance->save( $current_meta );
 				// 4. Clear the flag.
 				delete_post_meta( $attachment_id, '_videopack_needs_browser_thumb' );
