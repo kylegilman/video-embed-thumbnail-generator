@@ -442,22 +442,36 @@ class Encode_Queue_Controller {
 				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
 				$encoder               = new Encode_Attachment( $this->options_manager, $attachment_identifier, $job_data['input_url'] );
 				$encode_format         = Encode_Format::from_array( $job_data );
-				$encode_format->get_progress(); // Updates internal status if log says 'end'
+				$encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out
 
-				if ( $encode_format->get_status() === 'needs_insert' ) {
-					// The job is done! Update DB status.
+				if ( $encode_format->get_status() !== $job_data['status'] ) {
+					$new_status  = $encode_format->get_status();
+					$update_data = array(
+						'status'     => $new_status,
+						'updated_at' => current_time( 'mysql', true ),
+					);
+
+					if ( 'needs_insert' === $new_status ) {
+						$update_data['completed_at'] = current_time( 'mysql', true );
+					} elseif ( 'failed' === $new_status ) {
+						$update_data['failed_at']     = current_time( 'mysql', true );
+						$update_data['error_message'] = $encode_format->get_error();
+					}
+
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 					$wpdb->update(
 						$this->queue_table_name,
-						array(
-							'status'       => 'needs_insert',
-							'completed_at' => current_time( 'mysql', true ),
-						),
+						$update_data,
 						array( 'id' => $job_id )
 					);
 					$status_changed = true;
-					// Trigger immediate handling by the handle_job action.
-					as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+
+					if ( 'needs_insert' === $new_status ) {
+						// Trigger immediate handling by the handle_job action.
+						as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
+					} elseif ( 'failed' === $new_status ) {
+						$this->send_error_email( $job_id );
+					}
 				}
 			}
 		}
