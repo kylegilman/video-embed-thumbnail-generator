@@ -11,6 +11,7 @@ import { close } from '@wordpress/icons';
 import { decodeEntities } from '@wordpress/html-entities';
 import { sortAscending, sortDescending } from '../../assets/icon';
 import QuerySettingsPanel from './QuerySettings';
+import './CollectionSettingsPanel.scss';
 
 export default function CollectionSettingsPanel({
 	attributes,
@@ -59,15 +60,15 @@ export default function CollectionSettingsPanel({
 
 	const filteredGalleryOrderbyOptions = gallery_include
 		? [
-				...baseGalleryOrderbyOptions,
-				{
-					value: 'include',
-					label: __(
-						'Manually Sorted',
-						'video-embed-thumbnail-generator'
-					),
-				},
-			]
+			...baseGalleryOrderbyOptions,
+			{
+				value: 'include',
+				label: __(
+					'Manually Sorted',
+					'video-embed-thumbnail-generator'
+				),
+			},
+		]
 		: baseGalleryOrderbyOptions;
 
 	const attributeChangeFactory = (attributeName, isNumeric = false) => {
@@ -134,9 +135,9 @@ export default function CollectionSettingsPanel({
 						gallery_order === 'ASC'
 							? __('Ascending', 'video-embed-thumbnail-generator')
 							: __(
-									'Descending',
-									'video-embed-thumbnail-generator'
-								)
+								'Descending',
+								'video-embed-thumbnail-generator'
+							)
 					}
 					onClick={() =>
 						setAttributes({
