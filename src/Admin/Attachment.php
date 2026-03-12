@@ -107,31 +107,43 @@ class Attachment {
 	}
 
 	public function is_video( $post ) {
+		if ( ! $post || ! is_object( $post ) || ! property_exists( $post, 'post_mime_type' ) ) {
+			return false;
+		}
 
-		if ( $post && is_object( $post ) && property_exists( $post, 'post_mime_type' ) ) {
+		$is_animated = false;
+		if ( 'image/gif' === $post->post_mime_type ) {
+			$moviefile      = get_attached_file( $post->ID );
+			$kgvid_postmeta = $this->attachment_meta->get( $post->ID );
+			if ( isset( $kgvid_postmeta['animated'] ) && $kgvid_postmeta['animated'] === 'notchecked' ) {
+				$kgvid_postmeta['animated'] = $this->is_animated_gif( $moviefile );
+				$this->attachment_meta->save( $post->ID, $kgvid_postmeta );
+			}
+			$is_animated = ! empty( $kgvid_postmeta['animated'] );
+		}
 
-			if ( $post->post_mime_type == 'image/gif' ) {
-				$moviefile      = get_attached_file( $post->ID );
-				$kgvid_postmeta = $this->attachment_meta->get( $post->ID );
-				if ( $kgvid_postmeta['animated'] === 'notchecked' ) {
-					$kgvid_postmeta['animated'] = $this->is_animated_gif( $moviefile );
-					$this->attachment_meta->save( $post->ID, $kgvid_postmeta );
-				}
-			} else {
-				$kgvid_postmeta['animated'] = false;
+		if ( $is_animated ) {
+			return true;
+		}
+
+		if ( 0 === strpos( $post->post_mime_type, 'video/' ) ) {
+			// A video is considered a "master" video if:
+			// 1. It has no parent.
+			// 2. Its parent is not a video (e.g., it's attached to a post).
+			// 3. It is a remote placeholder (has external URL meta), even if attached to a post.
+			if ( empty( $post->post_parent ) || (int) $post->post_parent === (int) $post->ID ) {
+				return true;
 			}
 
-			if ( ( substr( $post->post_mime_type, 0, 5 ) === 'video'
-				&& ( empty( $post->post_parent )
-					|| ( strpos( get_post_mime_type( $post->post_parent ), 'video' ) === false
-						&& get_post_meta( $post->ID, '_kgflashmediaplayer-externalurl', true ) == ''
-					)
-				) )
-				|| $kgvid_postmeta['animated']
-			) { // if the attachment is a video with no parent or if it has a parent the parent is not a video and the video doesn't have the externalurl post meta
-
+			// If it has a parent, check if the parent is a video.
+			$parent_mime = get_post_mime_type( $post->post_parent );
+			if ( ! $parent_mime || 0 !== strpos( $parent_mime, 'video/' ) ) {
 				return true;
+			}
 
+			// If parent is a video, it might still be a master if it's a remote placeholder.
+			if ( ! empty( get_post_meta( $post->ID, '_kgflashmediaplayer-externalurl', true ) ) ) {
+				return true;
 			}
 		}
 
@@ -870,5 +882,128 @@ class Attachment {
 		}
 
 		return array( 'total' => $count );
+	}
+
+	/**
+	 * Resolves a URL to an attachment ID, creating a "remote attachment" if needed.
+	 *
+	 * @param string $url       The external video URL.
+	 * @param int    $parent_id The ID of the post to associate the attachment with.
+	 * @param bool   $create    Whether to create the attachment if it doesn't exist.
+	 * @return int|\WP_Error|null The attachment ID on success, null if not found (and $create is false), or WP_Error on failure.
+	 */
+	public function resolve_url_to_attachment( $url, $parent_id = 0, $create = false ) {
+		if ( ! $url ) {
+			return new \WP_Error( 'missing_url', __( 'No URL provided.', 'video-embed-thumbnail-generator' ) );
+		}
+
+		$url = esc_url_raw( $url );
+
+		// Check for existing attachment with this external URL that is NOT a child format
+		$existing = get_posts(
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					'relation' => 'AND',
+					array(
+						'key'   => '_kgflashmediaplayer-externalurl',
+						'value' => $url,
+					),
+					array(
+						'key'     => '_kgflashmediaplayer-format',
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			)
+		);
+
+		if ( ! empty( $existing ) ) {
+			$attachment_id = (int) $existing[0];
+			// Update parent if it's currently 0 or different?
+			if ( $parent_id && (int) wp_get_post_parent_id( $attachment_id ) !== (int) $parent_id ) {
+				wp_update_post(
+					array(
+						'ID'          => $attachment_id,
+						'post_parent' => $parent_id,
+					)
+				);
+			}
+			return $attachment_id;
+		}
+
+		if ( ! $create ) {
+			return null;
+		}
+
+		// Create a new remote attachment
+		$filename = basename( $url );
+		$title    = pathinfo( $filename, PATHINFO_FILENAME );
+		$title    = str_replace( '-', ' ', $title );
+
+		$filetype = wp_check_filetype( $url );
+		$mime     = ! empty( $filetype['type'] ) ? $filetype['type'] : 'video/mp4';
+
+		$attachment_data = array(
+			/* translators: %s is the video title */
+			'post_title'     => $title,
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			'post_parent'    => $parent_id,
+			'post_mime_type' => $mime,
+			'post_content'   => $url, // Store the URL in the description for easy searching
+		);
+
+		$attachment_id = wp_insert_post( $attachment_data );
+
+		if ( is_wp_error( $attachment_id ) || ! $attachment_id ) {
+			return new \WP_Error( 'create_failed', __( 'Could not create remote attachment.', 'video-embed-thumbnail-generator' ) );
+		}
+
+		update_post_meta( $attachment_id, '_kgflashmediaplayer-externalurl', $url );
+		// Flag to easily identify these for hiding from media library
+		update_post_meta( $attachment_id, '_kgflashmediaplayer-external-remote', 'true' );
+
+		return (int) $attachment_id;
+	}
+
+	/**
+	 * Filters the attachment URL to return the external URL if it exists.
+	 *
+	 * @param string $url     The attachment URL.
+	 * @param int    $post_id The attachment ID.
+	 * @return string The filtered URL.
+	 */
+	public function filter_attachment_url( $url, $post_id ) {
+		$external_url = get_post_meta( $post_id, '_kgflashmediaplayer-externalurl', true );
+		if ( $external_url ) {
+			return $external_url;
+		}
+		return $url;
+	}
+
+	/**
+	 * Filters the attached file path to return the external URL for remote attachments.
+	 *
+	 * @param string $file          Path to the attached file.
+	 * @param int    $attachment_id Attachment ID.
+	 * @return string The filtered file path.
+	 */
+	public function filter_attached_file( $file, $attachment_id ) {
+		if ( empty( $file ) ) {
+			$external_url = get_post_meta( $attachment_id, '_kgflashmediaplayer-externalurl', true );
+			if ( $external_url ) {
+				if ( is_admin() && function_exists( 'get_current_screen' ) ) {
+					$screen = get_current_screen();
+					if ( is_object( $screen ) && 'upload' === $screen->id ) {
+						return '/[External URL] ' . basename( $external_url );
+					}
+				}
+				return $external_url;
+			}
+		}
+		return $file;
 	}
 }

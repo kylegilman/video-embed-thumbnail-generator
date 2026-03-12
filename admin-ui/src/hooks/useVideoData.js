@@ -48,6 +48,7 @@ export const useVideoData = (id, src, isExternal) => {
 		if (attachment) {
 			setVideoData({
 				poster: attachment?.meta?.['_videopack-meta']?.poster,
+				poster_id: attachment?.meta?.['_videopack-meta']?.poster_id,
 				total_thumbnails:
 					attachment?.meta?.['_videopack-meta']?.total_thumbnails,
 				attachment,
@@ -58,6 +59,7 @@ export const useVideoData = (id, src, isExternal) => {
 			// This will handle external URLs and cases with no ID
 			setVideoData({
 				poster: undefined,
+				poster_id: undefined,
 				total_thumbnails: undefined,
 				attachment: null,
 				error: null,

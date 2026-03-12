@@ -81,8 +81,7 @@ class Screens {
 		echo '<div id="videopack-queue-root"></div>';
 	}
 
-	public function add_video_stats_column( $cols ) {
-
+	public function add_video_columns( $cols ) {
 		$cols['video_stats'] = esc_html__( 'Video Stats', 'video-embed-thumbnail-generator' );
 		return $cols;
 	}
@@ -106,9 +105,14 @@ class Screens {
 		}
 	}
 
-	public function add_video_stats_column_content( $column_name, $id ) {
+	public function add_video_column_content( $column_name, $id ) {
 
-		if ( $column_name == 'video_stats' ) {
+		if ( 'video_stats' === $column_name ) {
+			$external_url = get_post_meta( $id, '_kgflashmediaplayer-externalurl', true );
+			if ( $external_url ) {
+				echo '<strong>' . esc_html__( 'Remote Source:', 'video-embed-thumbnail-generator' ) . '</strong><br>';
+				echo '<a href="' . esc_url( $external_url ) . '" target="_blank" rel="noopener noreferrer" style="word-break: break-all;">' . esc_html( $external_url ) . '</a><br><br>';
+			}
 
 			$kgvid_postmeta = ( new Attachment_Meta( $this->options_manager ) )->get( $id );
 			if ( is_array( $kgvid_postmeta ) && array_key_exists( 'starts', $kgvid_postmeta ) && intval( $kgvid_postmeta['starts'] ) > 0 ) {
@@ -127,28 +131,31 @@ class Screens {
 	public function hide_video_children( $wp_query_obj ) {
 
 		if ( ! is_admin()
-			|| ! is_array( $wp_query_obj->query_vars )
-			|| ! array_key_exists( 'post_type', $wp_query_obj->query_vars )
-			|| 'attachment' !== $wp_query_obj->query_vars['post_type'] // only deal with attachments
+		|| ! is_array( $wp_query_obj->query_vars )
+		|| ! array_key_exists( 'post_type', $wp_query_obj->query_vars )
+		|| 'attachment' !== $wp_query_obj->query_vars['post_type'] // only deal with attachments
 		) {
+			return;
+		}
+
+		if ( ! current_user_can( 'upload_files' ) ) {
 			return;
 		}
 
 		$show_children      = false;
 		$show_only_children = false;
+		$show_only_remote   = false;
 
-		// Check if we should show children based on the new filter (List View).
-		if ( isset( $_GET['videopack_show_children'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['videopack_show_children'] ) ) ) {
-			$show_children = true;
+		$filter = isset( $_GET['videopack_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['videopack_filter'] ) ) : '0';
+		if ( '0' === $filter && isset( $wp_query_obj->query_vars['videopack_filter'] ) ) {
+			$filter = $wp_query_obj->query_vars['videopack_filter'];
 		}
 
-		// Check if we're in the grid view/modal and the "Child Formats" filter is selected.
-		if ( isset( $wp_query_obj->query_vars['videopack_show_children'] ) && '1' === $wp_query_obj->query_vars['videopack_show_children'] ) {
+		if ( 'show_children' === $filter ) {
 			$show_children = true;
-		}
-
-		// Check if we specifically want ONLY child formats (Grid View selection).
-		if ( isset( $wp_query_obj->query_vars['videopack_show_only_children'] ) && '1' === $wp_query_obj->query_vars['videopack_show_only_children'] ) {
+		} elseif ( 'only_remote' === $filter ) {
+			$show_only_remote = true;
+		} elseif ( 'only_children' === $filter ) {
 			$show_only_children = true;
 		}
 
@@ -166,12 +173,24 @@ class Screens {
 			return;
 		}
 
+		if ( true === $show_only_remote ) {
+			$meta_query = $wp_query_obj->get( 'meta_query' );
+			if ( ! is_array( $meta_query ) ) {
+				$meta_query = array();
+			}
+			$meta_query['relation'] = 'AND';
+			$meta_query[]           = array(
+				'key'     => '_kgflashmediaplayer-external-remote',
+				'compare' => 'EXISTS',
+			);
+			$wp_query_obj->set( 'meta_query', $meta_query );
+			return;
+		}
+
 		if ( true === $show_children ) {
 			return;
 		}
 
-		// If we're not explicitly showing children, hide them.
-		// Note: We no longer automatically show children just because post_mime_type is set.
 		if ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 // hide children only when showing paged content (makes sure that -1 will actually return all attachments)
 		) {
 
@@ -206,12 +225,13 @@ class Screens {
 			return;
 		}
 
-		$selected = isset( $_GET['videopack_show_children'] ) ? sanitize_text_field( wp_unslash( $_GET['videopack_show_children'] ) ) : '0';
-/* phpcs:ignore WordPress.Security.NonceVerification.Recommended */
+		$selected = isset( $_GET['videopack_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['videopack_filter'] ) ) : '0';
+		/* phpcs:ignore WordPress.Security.NonceVerification.Recommended */
 		?>
-		<select name="videopack_show_children" id="videopack_show_children">
-			<option value="0" <?php selected( $selected, '0' ); ?>><?php esc_html_e( 'Hide child formats', 'video-embed-thumbnail-generator' ); ?></option>
-			<option value="1" <?php selected( $selected, '1' ); ?>><?php esc_html_e( 'Show child formats', 'video-embed-thumbnail-generator' ); ?></option>
+		<select name="videopack_filter" id="videopack_filter">
+			<option value="0" <?php selected( $selected, '0' ); ?>><?php esc_html_e( 'Standard View', 'video-embed-thumbnail-generator' ); ?></option>
+			<option value="show_children" <?php selected( $selected, 'show_children' ); ?>><?php esc_html_e( 'Show Child Formats', 'video-embed-thumbnail-generator' ); ?></option>
+			<option value="only_remote" <?php selected( $selected, 'only_remote' ); ?>><?php esc_html_e( 'Remote Videos Only', 'video-embed-thumbnail-generator' ); ?></option>
 		</select>
 		<?php
 	}
@@ -223,7 +243,8 @@ class Screens {
 	 * @return array The filtered settings.
 	 */
 	public function add_grid_media_filter( $settings ) {
-		$settings['mimeTypes']['videopack_child_formats'] = esc_html__( 'Videopack Formats', 'video-embed-thumbnail-generator' );
+		$settings['mimeTypes']['videopack_child_formats'] = esc_html__( 'Child Formats', 'video-embed-thumbnail-generator' );
+		$settings['mimeTypes']['videopack_remote_videos'] = esc_html__( 'Remote Videos', 'video-embed-thumbnail-generator' );
 		return $settings;
 	}
 
@@ -234,9 +255,14 @@ class Screens {
 	 * @return array The filtered query arguments.
 	 */
 	public function filter_ajax_query_attachments( $query ) {
-		if ( isset( $query['post_mime_type'] ) && 'videopack_child_formats' === $query['post_mime_type'] ) {
-			$query['post_mime_type']               = 'video';
-			$query['videopack_show_only_children'] = '1';
+		if ( isset( $query['post_mime_type'] ) ) {
+			if ( 'videopack_child_formats' === $query['post_mime_type'] ) {
+				$query['post_mime_type']   = 'video';
+				$query['videopack_filter'] = 'only_children';
+			} elseif ( 'videopack_remote_videos' === $query['post_mime_type'] ) {
+				$query['post_mime_type']   = 'video';
+				$query['videopack_filter'] = 'only_remote';
+			}
 		}
 		return $query;
 	}
@@ -244,7 +270,7 @@ class Screens {
 	public function upload_page_change_thumbnail_parent( $location ) {
 
 		if ( ! is_admin()
-			|| ! function_exists( 'get_current_screen' )
+		|| ! function_exists( 'get_current_screen' )
 		) {
 			return $location;
 		}
@@ -252,11 +278,11 @@ class Screens {
 		$current_screen = get_current_screen();
 
 		if ( is_object( $current_screen )
-			&& 'upload' === $current_screen->id
-			&& isset( $_GET['media'] )
-			&& is_array( $_GET['media'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			&& $this->options['thumb_parent'] === 'post'
-			&& check_admin_referer( 'bulk-media' )
+		&& 'upload' === $current_screen->id
+		&& isset( $_GET['media'] )
+		&& is_array( $_GET['media'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		&& $this->options['thumb_parent'] === 'post'
+		&& check_admin_referer( 'bulk-media' )
 		) {
 			$media = \Videopack\Common\Validate::text_field( wp_unslash( $_GET['media'] ) );
 			if ( isset( $_GET['found_post_id'] ) ) {
@@ -270,7 +296,7 @@ class Screens {
 				( new Attachment( $this->options_manager ) )->change_thumbnail_parent( $post_id, $parent_id );
 
 				if ( $this->options['featured'] == true
-					&& ! has_post_thumbnail( $parent_id )
+				&& ! has_post_thumbnail( $parent_id )
 				) {
 					$featured_id = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
 					if ( ! empty( $featured_id ) ) {
@@ -357,5 +383,32 @@ class Screens {
 	<li><code>gallery_title="true/false"</code> ' . esc_html__( 'display the title overlay on gallery thumbnails.', 'video-embed-thumbnail-generator' ) . '</li></ul>',
 			)
 		);
+	}
+
+	/**
+	 * Filters the attachment data sent to the Media Library JS.
+	 *
+	 * @param array       $response   Array of prepared attachment data.
+	 * @param \WP_Post    $attachment Attachment object.
+	 * @param array|false $meta       Array of attachment meta data, or false.
+	 * @return array
+	 */
+	public function prepare_attachment_for_js( $response, $attachment, $meta ) {
+		$external_url = get_post_meta( $attachment->ID, '_kgflashmediaplayer-externalurl', true );
+		if ( $external_url ) {
+			$response['filename'] = __( '[External URL]', 'video-embed-thumbnail-generator' ) . ' ' . basename( $external_url );
+			$response['url']      = $external_url;
+		}
+
+		// Add poster image data for visual previews if it exists.
+		$poster_id = get_post_thumbnail_id( $attachment->ID );
+		if ( $poster_id ) {
+			$poster_src = wp_get_attachment_image_src( $poster_id, 'medium' );
+			if ( $poster_src ) {
+				$response['videopack_poster_src'] = $poster_src[0];
+			}
+		}
+
+		return $response;
 	}
 }

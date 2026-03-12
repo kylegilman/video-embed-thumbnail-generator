@@ -1,6 +1,5 @@
 import { createRoot } from '@wordpress/element';
 import AttachmentDetails from './components/AttachmentDetails';
-import './attachment-details.scss';
 import {
 	captureVideoFrame,
 	getVideoMetadata,
@@ -8,6 +7,7 @@ import {
 } from '../../utils/video-capture';
 import { createThumbnailFromCanvas, setPosterImage } from '../../utils/utils';
 import { __, sprintf } from '@wordpress/i18n';
+import './attachment-details.scss';
 
 // render on edit media screen
 const editMediaContainer = document.getElementById(
@@ -48,50 +48,64 @@ if (
 			);
 			// Listen for the 'ready' event, which is fired after the view is rendered.
 			this.on('ready', this.renderVideopackComponent, this);
+			// Also listen for model changes in case type/metadata is fetched later.
+			this.model.on('change', this.renderVideopackComponent, this);
 		},
 
 		renderVideopackComponent() {
-			// Unmount any existing React component before re-rendering.
-			if (this.videopackReactRoot) {
-				this.videopackReactRoot.unmount();
-				this.videopackReactRoot = null;
+			const attachmentId = this.model.attributes.id;
+
+			// Don't re-render if it's already the same attachment.
+			if (
+				this.videopackReactRoot &&
+				this.renderedAttachmentId === attachmentId
+			) {
+				return;
 			}
 
 			// Check if the attachment is a video.
 			const isVideo = this.model.attributes.type === 'video';
 			const isAnimatedGif =
 				this.model.attributes.subtype === 'gif' &&
-				this.model.attributes.meta?.['_kgvid-meta']?.animated;
+				this.model.attributes.meta?.['_videopack-meta']?.animated;
 
 			if (isVideo || isAnimatedGif) {
-				// Find the .settings section in the attachment details sidebar.
-				// Note: We use this.$el to scope the find to this view's element.
-				let settingsSection = this.$el.find('.settings');
-				if (settingsSection.length === 0) {
-					if (this.$el.hasClass('attachment-details')) {
-						settingsSection = this.$el;
+				// Use requestAnimationFrame to ensure the DOM is ready for our injected div.
+				window.requestAnimationFrame(() => {
+					// Verify we haven't been removed or changed since the frame was requested.
+					if (this.model.attributes.id !== attachmentId) {
+						return;
 					}
-				}
 
-				if (settingsSection.length === 0) {
-					console.error(
-						'Videopack: Could not find the .settings or .attachment-details section in the attachment details sidebar.'
+					let settingsSection = this.$el.find('.settings');
+					if (settingsSection.length === 0) {
+						if (this.$el.hasClass('attachment-details')) {
+							settingsSection = this.$el;
+						}
+					}
+
+					if (settingsSection.length === 0) {
+						return;
+					}
+
+					// Cleanup existing root if any.
+					if (this.videopackReactRoot) {
+						this.videopackReactRoot.unmount();
+						this.videopackReactRoot = null;
+					}
+
+					// Create and append the root div for our React component.
+					const reactRootDiv = document.createElement('div');
+					reactRootDiv.id = 'videopack-attachment-details-root';
+					settingsSection.append(reactRootDiv);
+
+					// Create a new React root and render the component.
+					this.videopackReactRoot = createRoot(reactRootDiv);
+					this.videopackReactRoot.render(
+						<AttachmentDetails attachmentId={attachmentId} model={this.model} />
 					);
-					return;
-				}
-
-				// Create and append the root div for our React component.
-				const reactRootDiv = document.createElement('div');
-				reactRootDiv.id = 'videopack-attachment-details-root';
-				settingsSection.append(reactRootDiv);
-
-				// Create a new React root and render the component.
-				this.videopackReactRoot = createRoot(reactRootDiv);
-				this.videopackReactRoot.render(
-					<AttachmentDetails
-						attachmentId={this.model.attributes.id}
-					/>
-				);
+					this.renderedAttachmentId = attachmentId;
+				});
 			}
 		},
 
@@ -136,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		) {
 			const originalAdd = media.model.Attachments.prototype.add;
 
-			media.model.Attachments.prototype.add = function (models, options) {
+			media.model.Attachments.prototype.add = function (_models, _options) {
 				const added = originalAdd.apply(this, arguments);
 
 				if (!added) {

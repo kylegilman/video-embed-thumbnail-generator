@@ -59,12 +59,38 @@ class Attachment_Meta {
 			'featuredchanged'   => false,
 			'url'               => null, // This is the URL of the original video, not the attachment URL.
 			'poster'            => null,
+			'poster_id'         => null,
 			'maxwidth'          => null,
 			'maxheight'         => null,
 			'animated'          => 'notchecked',
 			'frame_rate'        => null,
 			'codec'             => null,
 			'worked'            => false,
+			// Player settings — default from global options.
+			// Only stored in meta when the per-video value differs.
+			'autoplay'          => $this->options['autoplay'] ?? false,
+			'loop'              => $this->options['loop'] ?? false,
+			'muted'             => $this->options['muted'] ?? false,
+			'controls'          => $this->options['controls'] ?? true,
+			'volume'            => $this->options['volume'] ?? 1,
+			'preload'           => $this->options['preload'] ?? 'metadata',
+			'playback_rate'     => $this->options['playback_rate'] ?? false,
+			'playsinline'       => $this->options['playsinline'] ?? true,
+			'right_click'       => $this->options['right_click'] ?? true,
+			'gifmode'           => $this->options['gifmode'] ?? false,
+			'fixed_aspect'      => $this->options['fixed_aspect'] ?? 'vertical',
+			'align'             => $this->options['align'] ?? '',
+			'fullwidth'         => $this->options['fullwidth'] ?? false,
+			'resize'            => $this->options['resize'] ?? true,
+			'inline'            => $this->options['inline'] ?? false,
+			'embeddable'        => $this->options['embeddable'] ?? false,
+			'embedcode'         => $this->options['embedcode'] ?? false,
+			'overlay_title'     => $this->options['overlay_title'] ?? false,
+			'view_count'        => $this->options['view_count'] ?? false,
+			'watermark'         => $this->options['watermark'] ?? '',
+			'watermark_link_to' => $this->options['watermark_link_to'] ?? 'none',
+			'watermark_url'     => $this->options['watermark_url'] ?? '',
+			'is_remote'         => false,
 		);
 	}
 
@@ -107,7 +133,7 @@ class Attachment_Meta {
 					}
 				}
 				// Handle old encode keys
-				$old_meta_encode_keys = array(
+				$old_meta_encode_keys         = array(
 					'encodefullres',
 					'encode1080',
 					'encode720',
@@ -120,7 +146,7 @@ class Attachment_Meta {
 				$temp_migrated_meta['encode'] = $temp_migrated_meta['encode'] ?? array();
 				foreach ( $old_meta_encode_keys as $old_key ) {
 					if ( array_key_exists( $old_key, $temp_migrated_meta ) ) {
-						$format = str_replace( 'encode', '', $old_key );
+						$format                                  = str_replace( 'encode', '', $old_key );
 						$temp_migrated_meta['encode'][ $format ] = $temp_migrated_meta[ $old_key ];
 						unset( $temp_migrated_meta[ $old_key ] );
 					}
@@ -131,7 +157,7 @@ class Attachment_Meta {
 					unset( $temp_migrated_meta['numberofthumbs'] );
 				}
 				$current_meta = $temp_migrated_meta;
-				$migrated = true;
+				$migrated     = true;
 			}
 		}
 
@@ -139,6 +165,9 @@ class Attachment_Meta {
 		if ( $migrated ) {
 			$this->save( $current_meta ); // This will save to _videopack-meta
 		}
+
+		// Check for remote status from legacy meta
+		$current_meta['is_remote'] = ( get_post_meta( $this->post_id, '_kgflashmediaplayer-external-remote', true ) === 'true' );
 
 		// Merge database meta with defaults to ensure all keys are present
 		$meta_data = array_merge( $defaults, $current_meta );
@@ -162,7 +191,7 @@ class Attachment_Meta {
 		}
 
 		// Fallback to wp_read_video_metadata if still missing codec or frame_rate
-		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) ) {
+		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) || ( empty( $meta_data['actualwidth'] ) && ! empty( get_attached_file( $this->post_id ) ) ) ) {
 			$video_path = get_attached_file( $this->post_id );
 			if ( $video_path ) {
 				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
@@ -181,6 +210,16 @@ class Attachment_Meta {
 					if ( empty( $meta_data['frame_rate'] ) && ! empty( $video_info['frame_rate'] ) ) {
 						$meta_data['frame_rate'] = $video_info['frame_rate'];
 						$changed                 = true;
+					}
+				}
+			} else {
+				// Check if it's a remote URL for hybrid attachment
+				$external_url = get_post_meta( $this->post_id, '_kgflashmediaplayer-externalurl', true );
+				if ( $external_url && ( empty( $meta_data['actualwidth'] ) || empty( $meta_data['actualheight'] ) || empty( $meta_data['duration'] ) ) ) {
+					$remote_metadata = $this->fetch_remote_metadata( $external_url, $this->post_id );
+					if ( $remote_metadata ) {
+						$meta_data = array_merge( $meta_data, $remote_metadata );
+						$changed   = true;
 					}
 				}
 			}
@@ -211,9 +250,9 @@ class Attachment_Meta {
 			// Only save if the key is not in defaults (custom meta) or if the value differs from the default.
 			// Also, ensure empty arrays that are default as empty arrays are not saved unless they become non-empty.
 			if (
-				! array_key_exists( $key, $defaults )
-				|| ( $value !== $defaults[ $key ] )
-				|| ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ $key ] ) )
+			! array_key_exists( $key, $defaults )
+			|| ( $value !== $defaults[ $key ] )
+			|| ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ $key ] ) )
 			) {
 				$meta_to_persist[ $key ] = $value;
 			}
@@ -310,6 +349,90 @@ class Attachment_Meta {
 		}
 
 		return $mime_info;
+	}
+
+	/**
+	 * Fetches metadata from a remote video URL by downloading a small portion and analyzing it with getID3.
+	 *
+	 * @param string $url           The remote video URL.
+	 * @param int    $attachment_id The attachment ID.
+	 * @return array|false The extracted metadata or false on failure.
+	 */
+	public function fetch_remote_metadata( $url, $attachment_id ) {
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return false;
+		}
+
+		// Range request for 2MB
+		$args = array(
+			'timeout'   => 30,
+			'sslverify' => false,
+			'headers'   => array(
+				'Range' => 'bytes=0-2097151', // 2MB
+			),
+		);
+
+		$response = wp_remote_get( $url, $args );
+
+		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
+			// Fallback to full request if Range is not supported or failed
+			unset( $args['headers']['Range'] );
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
+				return false;
+			}
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		if ( empty( $body ) ) {
+			return false;
+		}
+
+		$temp_file = wp_tempnam( basename( $url ) );
+		if ( ! $temp_file ) {
+			return false;
+		}
+
+		if ( empty( $GLOBALS['wp_filesystem'] ) ) {
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+			WP_Filesystem();
+		}
+
+		if ( ! empty( $GLOBALS['wp_filesystem'] ) ) {
+			$GLOBALS['wp_filesystem']->put_contents( $temp_file, $body );
+		} else {
+			file_put_contents( $temp_file, $body ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
+		}
+
+		if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+		}
+
+		// This will trigger the Videopack filter via Videopack\Admin\Attachment::add_extra_video_metadata
+		$metadata = wp_read_video_metadata( $temp_file );
+
+		wp_delete_file( $temp_file );
+
+		if ( ! $metadata ) {
+			return false;
+		}
+
+		// Save to WordPress core metadata
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		// Prepare Videopack meta
+		$videopack_meta = array(
+			'actualwidth'  => $metadata['width'] ?? null,
+			'actualheight' => $metadata['height'] ?? null,
+			'duration'     => $metadata['length'] ?? null,
+			'codec'        => $metadata['codec'] ?? ( $metadata['videocodec'] ?? null ),
+			'frame_rate'   => $metadata['frame_rate'] ?? null,
+			'worked'       => true,
+		);
+
+		return $videopack_meta;
 	}
 
 	public function filter_rest_response_meta( $response, $post, $request ) {
@@ -430,6 +553,7 @@ class Attachment_Meta {
 				'type' => array(
 					'string',
 					'boolean',
+					'null',
 				), // Enable download link
 			),
 			'duration'            => array(
@@ -460,18 +584,21 @@ class Attachment_Meta {
 				'type' => array(
 					'string',
 					'boolean',
+					'null',
 				), // Set as featured image
 			),
 			'featuredchanged'     => array(
 				'type' => array(
 					'string',
 					'boolean',
+					'null',
 				), // Internal flag for featured image changes
 			),
 			'forcefirst'          => array(
 				'type' => array(
 					'string',
 					'boolean',
+					'null',
 				), // Force first frame for thumbnail
 			),
 			'frame_rate'          => array(
@@ -524,6 +651,7 @@ class Attachment_Meta {
 				'type' => array(
 					'string',
 					'boolean',
+					'null',
 				), // Lock aspect ratio
 			),
 			'maxheight'           => array(
@@ -536,6 +664,7 @@ class Attachment_Meta {
 				'type' => array(
 					'string',
 					'number',
+					'null',
 				), // Number of thumbnails
 			),
 			'original_replaced'   => array(
@@ -564,6 +693,9 @@ class Attachment_Meta {
 			),
 			'poster'              => array(
 				'type' => array( 'string', 'null' ), // URL to poster image
+			),
+			'poster_id'           => array(
+				'type' => array( 'string', 'number', 'null' ), // Attachment ID for poster image
 			),
 			'rotate'              => array(
 				'type' => array( 'string', 'number', 'null' ), // Rotation value
@@ -636,6 +768,76 @@ class Attachment_Meta {
 					'string',
 					'boolean',
 				), // Indicates if metadata retrieval worked
+			),
+			// Player settings (per-video overrides of global options)
+			'autoplay'            => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'loop'                => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'muted'               => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'controls'            => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'volume'              => array(
+				'type' => array( 'string', 'number', 'null' ),
+			),
+			'preload'             => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'playback_rate'       => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'playsinline'         => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'right_click'         => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'gifmode'             => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'fixed_aspect'        => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'align'               => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'fullwidth'           => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'resize'              => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'inline'              => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'embeddable'          => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'embedcode'           => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'overlay_title'       => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'view_count'          => array(
+				'type' => array( 'string', 'boolean', 'null' ),
+			),
+			'watermark'           => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'watermark_link_to'   => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'watermark_url'       => array(
+				'type' => array( 'string', 'null' ),
+			),
+			'is_remote'           => array(
+				'type' => array( 'boolean' ),
 			),
 		);
 

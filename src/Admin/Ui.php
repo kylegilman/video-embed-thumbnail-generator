@@ -92,7 +92,7 @@ class Ui {
 	 *
 	 * @return array The settings data.
 	 */
-	private function get_videopack_config_data() {
+	public function get_videopack_config_data() {
 		// Prepare codec data for localization, making it easier to read and debug.
 		$codec_objects = $this->options_manager->get_video_codecs();
 		$codecs_data   = array();
@@ -140,6 +140,9 @@ class Ui {
 			'isNetworkActive'        => ( null !== $fs ) && $fs->is_network_active(),
 			'isFfmpegOverridden'     => is_multisite() && ( \Videopack\Admin\Multisite::get_network_options()['superadmin_only_ffmpeg_settings'] ?? false ),
 			'isSuperAdmin'           => is_super_admin(),
+			'rest_url'               => get_rest_url(),
+			'rest_url_render'        => get_rest_url( null, 'videopack/v1/render-shortcode' ),
+			'postId'                 => get_the_ID(),
 		);
 	}
 
@@ -149,7 +152,7 @@ class Ui {
 	 * @param string $handle The script handle to attach the inline script to.
 	 * @param array  $extra_data Extra data to merge into the settings object.
 	 */
-	private function localize_block_settings( $handle, $extra_data = array() ) {
+	public function localize_block_settings( $handle, $extra_data = array() ) {
 		$settings_data = $this->get_videopack_config_data();
 		if ( ! empty( $extra_data ) ) {
 			$settings_data = array_merge( $settings_data, $extra_data );
@@ -297,5 +300,64 @@ class Ui {
 			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);
+	}
+
+	public function register_tinymce_plugin( $plugin_array ) {
+		$script_asset_path = plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/tinymce.asset.php';
+		if ( file_exists( $script_asset_path ) ) {
+			// wp.mce.views script loading through this filter expects just the URL.
+			$plugin_array['videopack-tinymce'] = plugins_url( 'admin-ui/build/tinymce.js', VIDEOPACK_PLUGIN_FILE );
+		}
+		return $plugin_array;
+	}
+
+	/**
+	 * Enqueue styles and scripts needed for the TinyMCE visual editor integration.
+	 * These are loaded in the parent document and manage the .wpview-wrap placeholders.
+	 */
+	public function enqueue_tinymce_assets( $hook_suffix ) {
+		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+
+		// Ensure WordPress's own view manager and dependencies are loaded.
+		wp_enqueue_script( 'mce-view' );
+		wp_enqueue_script( 'wp-util' );
+		wp_enqueue_script( 'wp-shortcode' );
+		wp_enqueue_media();
+		wp_enqueue_script( 'wp-api-fetch' );
+		wp_enqueue_script( 'wp-url' );
+
+		$this->localize_block_settings( 'mce-view' );
+
+		// Add core styles to the TinyMCE iframe for our visual previews.
+		add_editor_style( includes_url( 'css/media-views.css' ) );
+		add_editor_style( includes_url( 'css/dashicons.css' ) );
+		add_editor_style( includes_url( 'js/mediaelement/wp-mediaelement.css' ) );
+
+		$css_url  = plugins_url( 'admin-ui/build/tinymce.css', VIDEOPACK_PLUGIN_FILE );
+		$css_path = plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/tinymce.css';
+		if ( file_exists( $css_path ) ) {
+			wp_enqueue_style(
+				'videopack-tinymce',
+				$css_url,
+				array(),
+				VIDEOPACK_VERSION
+			);
+			add_editor_style( $css_url );
+		}
+
+		$frontend_css_url  = plugins_url( 'admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE );
+		$frontend_css_path = plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/frontend-styles.css';
+		if ( file_exists( $frontend_css_path ) ) {
+			add_editor_style( $frontend_css_url );
+		}
+	}
+
+	/**
+	 * Prints the Underscore template used by wp.mce.views for our visual shortcode preview.
+	 */
+	public function print_tinymce_template() {
+		include VIDEOPACK_PLUGIN_DIR . 'src/Admin/partials/tinymce-template.php';
 	}
 }

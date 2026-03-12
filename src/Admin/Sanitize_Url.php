@@ -6,13 +6,13 @@ class Sanitize_Url {
 
 	protected $url;
 
-	public $noextension = '';
-	public $basename = '';
+	public $noextension  = '';
+	public $basename     = '';
 	public $singleurl_id = '';
-	public $movieurl = '';
+	public $movieurl     = '';
 
 	public function __construct( $url ) {
-		$this->url = $url;
+		$this->url = (string) $url;
 		$this->sanitize();
 		$this->singleurl_id = 'singleurl_' . sanitize_key( $this->basename );
 	}
