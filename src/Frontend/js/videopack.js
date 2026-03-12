@@ -119,13 +119,13 @@
 				videojsOptions.autoplay = 'any';
 			}
 
-			if (true === videoVars.resize || true === videoVars.fullwidth) {
-				videojsOptions.fluid = true;
+			if (videoVars.legacy_dimensions) {
+				videojsOptions.fluid = (true === videoVars.resize || true === videoVars.fullwidth);
 			} else {
-				videojsOptions.fluid = false;
+				videojsOptions.fluid = true;
 			}
 
-			if (videojsOptions.fluid && videoVars.width && (typeof videoVars.width !== 'string' || -1 === videoVars.width.indexOf('%')) && videoVars.height && videoVars.fixed_aspect) {
+			if (videojsOptions.fluid && videoVars.legacy_dimensions && videoVars.width && (typeof videoVars.width !== 'string' || -1 === videoVars.width.indexOf('%')) && videoVars.height && videoVars.fixed_aspect) {
 				videojsOptions.aspectRatio = `${videoVars.width}:${videoVars.height}`;
 			}
 
@@ -259,7 +259,7 @@
 			}
 
 			// Resize logic.
-			if (true === videoVars.resize || 'automatic' === videoVars.auto_res || window.location.search.includes('videopack[enable]=true')) {
+			if ((videoVars.legacy_dimensions && true === videoVars.resize) || 'automatic' === videoVars.auto_res || window.location.search.includes('videopack[enable]=true')) {
 				this.resizeVideo(playerId);
 
 				const target = playerWrapper.parentElement;
@@ -783,7 +783,7 @@
 							'Content-Type': 'application/json',
 						},
 						body: JSON.stringify({
-							post_id: videoVars.attachment_id,
+							attachment_id: videoVars.attachment_id,
 							video_event: event,
 							show_views: !!viewCountElement,
 						}),
