@@ -166,8 +166,10 @@ class Player {
 
 		// Process the main source
 		$main_source = $this->get_source();
+
 		if ( $main_source && $main_source->exists() && $main_source->is_compatible() ) {
-			$codec = $main_source->get_codec();
+			$codec     = $main_source->get_codec();
+			$mime_type = $main_source->get_mime_type();
 			if ( $codec ) {
 				$codec_id = $codec->get_id();
 				if ( ! isset( $grouped_sources[ $codec_id ] ) ) {
@@ -176,7 +178,8 @@ class Player {
 						'sources' => array(),
 					);
 				}
-				$grouped_sources[ $codec_id ]['sources'][] = $main_source->get_video_player_source();
+				$source_data                               = $main_source->get_video_player_source();
+				$grouped_sources[ $codec_id ]['sources'][] = $source_data;
 			}
 		}
 
@@ -311,6 +314,8 @@ class Player {
 			'fixed_aspect'      => $this->atts['fixed_aspect'],
 			'default_ratio'     => $this->get_fixed_aspect_ratio(),
 			'tracks'            => $this->atts['tracks'] ?? array(),
+			'legacy_dimensions' => $this->atts['legacy_dimensions'],
+			'resize'            => $this->atts['resize'],
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
