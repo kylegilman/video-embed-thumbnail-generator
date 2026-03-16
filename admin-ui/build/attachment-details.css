@@ -6,6 +6,10 @@
  */
 .videopack-thumbnail-generator button.is-secondary {
   font-size: 12px;
+  margin-bottom: 10px;
+}
+.videopack-thumbnail-generator .components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
 }
 .videopack-thumbnail-generator .spinner-container {
   position: relative;
@@ -86,9 +90,6 @@
 }
 .videopack-thumbnail-generator .videopack-thumb-video-container.is-opened {
   display: block;
-}
-.videopack-thumbnail-generator .videopack-thumb-video-panel {
-  padding: 10px 0;
 }
 .videopack-thumbnail-generator .videopack-thumb-video-panel video {
   display: block;
@@ -180,6 +181,100 @@ picture.vjs-poster {
   margin: 20px auto 0;
   padding: 10px 20px;
   height: auto;
+}
+/*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-watermark-settings {
+  container-type: inline-size;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-watermark-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .components-flex {
+    margin-bottom: 0;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-select-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-text-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-select-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-text-control__input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+.videopack-watermark-settings .videopack-alignment-control .components-select-control__input {
+  min-width: 180px;
+}
+.videopack-watermark-settings .videopack-offset-control .components-text-control__input {
+  width: 100px;
+}
+.videopack-watermark-settings .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  z-index: 10;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle {
+    width: 6px;
+    height: 6px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.nw {
+    top: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.ne {
+    top: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.sw {
+    bottom: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.se {
+    bottom: -3px;
+    right: -3px;
+  }
 }
 /*!******************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/TextTracks.scss ***!
@@ -275,7 +370,10 @@ picture.vjs-poster {
   align-items: flex-start;
   margin-bottom: 16px;
 }
-@container videopack-settings (max-width: 300px) {
+.videopack-video-settings .components-flex.videopack-player-settings-flex .components-flex-item {
+  flex: 1;
+}
+@container videopack-settings (max-width: 400px) {
   .videopack-video-settings .videopack-player-settings-flex {
     flex-direction: column;
     gap: 0;
@@ -335,6 +433,9 @@ picture.vjs-poster {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+.videopack-formats-list > li ul li button.is-secondary.is-small {
+  margin-right: 5px;
 }
 .videopack-formats-list .videopack-codec-name {
   margin-top: 0;
@@ -487,6 +588,17 @@ picture.vjs-poster {
 }
 .videopack-encode-progress-small-text span {
   margin-right: 10px;
+}
+/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeFormatStatus.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-formats-list li.videopack-format-row:not(:last-child) {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 11px;
+  padding-top: 5px;
 }
 /*!********************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/features/attachment-details/attachment-details.scss ***!

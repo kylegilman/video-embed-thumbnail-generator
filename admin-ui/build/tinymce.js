@@ -115,7 +115,7 @@ __webpack_require__.r(__webpack_exports__);
 
 (function () {
   /* global tinymce, videopack_config */
-  console.log('Videopack TinyMCE integration script loading...');
+
   const decodeEntities = text => {
     if (typeof text !== 'string') {
       return text;
@@ -161,7 +161,6 @@ __webpack_require__.r(__webpack_exports__);
        * We handle the data fetching and rendering here.
        */
       initialize() {
-        console.log('Videopack TinyMCE view initialize called', this.shortcode);
         const self = this;
         const attrs = this.shortcode.attrs.named;
         const isGallery = attrs.gallery === 'true';
@@ -176,7 +175,6 @@ __webpack_require__.r(__webpack_exports__);
 
         // Simple wrapper to call render
         const finalizeRender = renderData => {
-          console.log('Videopack TinyMCE finalizing render with data:', renderData);
           self.render(self.template(renderData));
         };
 
@@ -202,17 +200,14 @@ __webpack_require__.r(__webpack_exports__);
           return;
         }
         const isList = !isGallery && (attrs.id && attrs.id.indexOf(',') !== -1 || this.shortcode.content && this.shortcode.content.indexOf(',') !== -1 || attrs.gallery_source || attrs.gallery_category || attrs.gallery_tag || !attrs.id && !attrs.url && !this.shortcode.content || attrs.gallery_id && !attrs.id && !attrs.url && !this.shortcode.content);
-        console.log('Videopack TinyMCE isList:', isList, 'attrs:', attrs);
 
         // If it's a list (not a gallery), fetch data for all IDs
         if (isList && typeof wp.media !== 'undefined') {
           const idString = attrs.id || this.shortcode.content || '';
           const ids = idString.split(',').map(id => id.trim()).filter(id => id.length > 0);
-          console.log('Videopack TinyMCE list IDs identified:', ids);
 
           // Dynamic list (based on source/category/tag/parent)
           if (ids.length === 0 && typeof wp !== 'undefined' && wp.apiFetch) {
-            console.log('Videopack TinyMCE fetching dynamic list from video_gallery');
             const fetchParams = {
               ...attrs
             };
@@ -232,7 +227,6 @@ __webpack_require__.r(__webpack_exports__);
                   showTitle: attrs.overlay_title !== 'false'
                 };
               });
-              console.log('Videopack TinyMCE dynamic list fetched:', videos);
               finalizeRender({
                 ...data,
                 videos
@@ -275,7 +269,6 @@ __webpack_require__.r(__webpack_exports__);
               };
               pending--;
               if (pending === 0) {
-                console.log('Videopack TinyMCE all list items fetched', videoDataList);
                 clearTimeout(listTimeout);
                 finalizeRender({
                   ...data,

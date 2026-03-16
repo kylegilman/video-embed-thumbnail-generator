@@ -1,6 +1,9 @@
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoPlayer/VideoPlayer.scss ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 .wp-block-videopack-videopack-video {
   width: 100%;
   max-width: var(--wp--style--global--content-size);
@@ -167,28 +170,6 @@
 .videopack-wrapper .videopack-no-controls .mejs-controls {
   display: none !important;
 }
-.videopack-wrapper .videopack-title {
-  font-size: 10pt;
-  padding-right: 4px;
-  line-height: 20pt;
-}
-.videopack-wrapper .videopack-meta-icons {
-  position: relative;
-  float: left;
-  margin: 3px 0;
-}
-.videopack-wrapper .videopack-meta-icons a {
-  text-decoration: none;
-  border: none;
-  box-shadow: none !important;
-}
-.videopack-wrapper .videopack-meta-icons span {
-  cursor: pointer;
-  color: white;
-  margin-left: 5px;
-  vertical-align: middle;
-  font-size: 13pt;
-}
 .videopack-wrapper .no-title .videopack-meta-icons span {
   font-size: 19pt;
   text-shadow: -1px 1px rgba(20, 20, 20, 0.8);
@@ -203,12 +184,12 @@
   overflow: hidden;
   font-size: medium;
 }
-.videopack-wrapper .videopack-below-video .viewcount {
+.videopack-wrapper .videopack-below-video .videopack-viewcount {
   float: left;
   margin-right: 12px;
   white-space: nowrap;
 }
-.videopack-wrapper .videopack-below-video .caption {
+.videopack-wrapper .videopack-below-video .videopack-caption {
   font-size: 0.85em;
   line-height: 150%;
   font-style: italic;
@@ -375,7 +356,7 @@
 }
 .videopack-wrapper .mejs-controls div.mejs-sourcechooser-button button {
   background: none;
-  color: white;
+  color: #fff;
   font-size: 11pt;
 }
 .videopack-wrapper {
@@ -405,7 +386,7 @@
   box-shadow: 0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
 }
 .videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector span {
-  color: white;
+  color: #fff;
   padding: 0px 10px 5px 10px;
   display: block;
   white-space: nowrap;
@@ -420,7 +401,7 @@
 }
 .videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li:hover {
   color: #111;
-  background-color: #ffffff;
+  background-color: #fff;
   background-color: rgba(255, 255, 255, 0.75);
 }
 .videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li input {
@@ -635,8 +616,12 @@
 .videopack-wrapper .mejs-speed-button:hover .mejs-speed-selector {
   visibility: visible;
 }
-.videopack-wrapper .share-container {
-  text-align: center;
+.videopack-wrapper .videopack-share-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
   color: white;
   top: 0;
   padding-top: 46px;
@@ -649,41 +634,47 @@
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-.videopack-wrapper .share-container.no-title {
+.videopack-wrapper .videopack-share-container .videopack-embedcode-container,
+.videopack-wrapper .videopack-share-container .videopack-start-at-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.videopack-wrapper .videopack-share-container .videopack-embedcode-container span,
+.videopack-wrapper .videopack-share-container .videopack-start-at-container span {
+  display: flex;
+  align-items: center;
+}
+.videopack-wrapper .videopack-share-container.no-title {
   padding-top: 32px;
 }
-.videopack-wrapper .share-container.is-visible {
+.videopack-wrapper .videopack-share-container.is-visible {
   opacity: 1;
   visibility: visible;
 }
-.videopack-wrapper .share-container input[type=text].embedcode {
-  width: 30%;
-}
-.videopack-wrapper .share-container .social-icons {
-  margin-top: 16px;
-  font-size: 19pt;
-}
-.videopack-wrapper .share-container .social-icons a {
-  text-decoration: none;
+.videopack-wrapper .videopack-share-container input {
+  height: 18px;
+  min-height: auto;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  background-color: #fff;
+  box-shadow: 0 0 0 transparent;
+  border-radius: 2px;
   border: none;
-  box-shadow: none;
-}
-.videopack-wrapper .share-container .social-icons span {
-  font-size: 13pt;
-  line-height: 29pt;
-  text-decoration: none;
   margin: 0;
-  padding: 0;
+  color: #2f2f2f;
 }
-.videopack-wrapper .share-container .social-icons .vjs-icon-twitter {
-  color: #55acee;
-  font-size: 32pt;
+.videopack-wrapper .videopack-share-container input[type=text] {
+  padding: 2px;
 }
-.videopack-wrapper .share-container .social-icons .vjs-icon-facebook {
-  color: #3b5998;
-  font-size: 32pt;
+.videopack-wrapper .videopack-share-container input[type=text].videopack-embed-code {
+  width: 15rem;
 }
-.videopack-wrapper .click-trap {
+.videopack-wrapper .videopack-share-container input[type=text].videopack-start-at {
+  width: 3rem;
+  text-align: center;
+}
+.videopack-wrapper .videopack-click-trap {
   width: 100%;
   height: 100%;
   background: none;
@@ -694,7 +685,7 @@
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-.videopack-wrapper .click-trap.is-visible {
+.videopack-wrapper .videopack-click-trap.is-visible {
   opacity: 1;
   visibility: visible;
 }
@@ -718,43 +709,43 @@
 .videopack-wrapper .videopack-meta-bar.no-title {
   background: none;
 }
-.videopack-wrapper .videopack-meta-bar.no-title .meta-icons span {
+.videopack-wrapper .videopack-meta-bar.no-title .videopack-meta-icons span {
   font-size: 19pt;
   text-shadow: -1px 1px rgba(20, 20, 20, 0.8);
 }
-.videopack-wrapper .videopack-meta-bar .title {
+.videopack-wrapper .videopack-meta-bar .videopack-title {
   font-size: 10pt;
   padding-right: 4px;
   line-height: 20pt;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons {
   position: relative;
   float: left;
   margin: 3px 0px 3px 0px;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons a {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons a {
   text-decoration: none;
   border: none;
   box-shadow: none;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons span {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons span {
   cursor: pointer;
   color: white;
   margin-left: 5px;
   vertical-align: middle;
   font-size: 13pt;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons button {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons button {
   background-color: unset;
   border: none;
   color: white;
   vertical-align: middle;
   cursor: pointer;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons button:focus {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons button:focus {
   outline-width: 0;
 }
-.videopack-wrapper.meta-bar-visible .videopack-meta-bar, .videopack-wrapper:hover .videopack-meta-bar {
+.videopack-wrapper.videopack-meta-bar-visible .videopack-meta-bar, .videopack-wrapper:hover .videopack-meta-bar {
   opacity: 1;
   visibility: visible;
 }
@@ -788,6 +779,100 @@
 .videopack-icons.gear {
   background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ctitle%3Eicon%2F24%2Ficon-settings%3C%2Ftitle%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M18.113%2013.03a6%206%200%200%200%20.057-.806c0-.28-.025-.542-.057-.806l1.735-1.357a.415.415%200%200%200%20.099-.526l-1.645-2.846a.41.41%200%200%200-.502-.18l-2.048.822a6%206%200%200%200-1.39-.806l-.312-2.18A.4.4%200%200%200%2013.647%204h-3.29a.4.4%200%200%200-.403.345l-.313%202.18a6.3%206.3%200%200%200-1.39.806l-2.047-.823a.4.4%200%200%200-.502.181L4.057%209.535a.405.405%200%200%200%20.099.526l1.735%201.357a7%207%200%200%200-.058.806c0%20.272.025.543.058.806l-1.735%201.357a.415.415%200%200%200-.099.527l1.645%202.845c.099.181.32.247.502.181l2.047-.822q.64.495%201.39.806l.313%202.18a.4.4%200%200%200%20.403.345h3.29a.4.4%200%200%200%20.403-.346l.312-2.179a6.3%206.3%200%200%200%201.39-.806l2.048.822c.19.074.403%200%20.502-.18l1.645-2.846a.415.415%200%200%200-.1-.527zm-6.111%202.073a2.88%202.88%200%200%201-2.879-2.879%202.88%202.88%200%200%201%202.879-2.878%202.88%202.88%200%200%201%202.878%202.878%202.88%202.88%200%200%201-2.878%202.879%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
   margin: 0;
+}
+/*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-watermark-settings {
+  container-type: inline-size;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-watermark-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .components-flex {
+    margin-bottom: 0;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-select-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-text-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-select-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-text-control__input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+.videopack-watermark-settings .videopack-alignment-control .components-select-control__input {
+  min-width: 180px;
+}
+.videopack-watermark-settings .videopack-offset-control .components-text-control__input {
+  width: 100px;
+}
+.videopack-watermark-settings .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  z-index: 10;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle {
+    width: 6px;
+    height: 6px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.nw {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.nw {
+    top: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.ne {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.ne {
+    top: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.sw {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.sw {
+    bottom: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.se {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.se {
+    bottom: -3px;
+    left: -3px;
+  }
 }
 /*!**********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoGallery/VideoGallery.scss ***!
@@ -1107,6 +1192,10 @@
 #wpwrap {
   font-size: small;
 }
+.wrap.videopack-settings {
+  container-type: inline-size;
+  container-name: videopack-settings;
+}
 .wrap.videopack-settings .components-radio-control {
   margin-bottom: 20px;
 }
@@ -1185,6 +1274,22 @@
 .wrap.videopack-settings .components-flex {
   align-items: flex-start;
 }
+.wrap.videopack-settings .components-flex.videopack-player-settings-flex .components-flex-item {
+  flex: 1;
+}
+@container videopack-settings (max-width: 500px) {
+  .wrap.videopack-settings .videopack-player-settings-flex {
+    flex-direction: column;
+    gap: 0;
+  }
+  .wrap.videopack-settings .videopack-player-settings-flex .components-flex-item {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .wrap.videopack-settings .videopack-player-settings-flex .components-flex-item:last-child {
+    margin-bottom: 0;
+  }
+}
 .wrap.videopack-settings .components-base-control.components-toggle-control,
 .wrap.videopack-settings .videopack-component-margin {
   margin-top: 10px;
@@ -1199,12 +1304,22 @@
 }
 .wrap.videopack-settings .videopack-setting-reduced-width {
   margin-bottom: 10px;
+  display: flex;
+  align-items: flex-end;
 }
 .wrap.videopack-settings .videopack-setting-reduced-width .components-base-control {
   width: 30rem;
   display: inline-block;
   vertical-align: text-bottom;
   margin-left: 10px;
+  margin-bottom: 0;
+}
+.wrap.videopack-settings .videopack-setting-reduced-width .videopack-library-button-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+.wrap.videopack-settings .videopack-setting-reduced-width .videopack-library-button-wrapper .videopack-tooltip {
+  margin-right: 5px;
 }
 .wrap.videopack-settings span.videopack-setting-auto-width {
   margin-left: 20px;
@@ -1243,9 +1358,6 @@
   color: lightslategray;
   display: flex;
   justify-content: space-evenly;
-}
-.wrap.videopack-settings .videopack-clear-button {
-  margin-bottom: 20px;
 }
 .wrap.videopack-settings .videopack-sample-video-player {
   width: 100%;
@@ -1326,45 +1438,14 @@
 .wrap.videopack-settings .components-flex.videopack-setting-sample-formats div {
   margin-left: 5px;
 }
-.wrap.videopack-settings .videopack-watermark-settings .videopack-alignment-control .components-select-control__input {
-  min-width: 180px;
-}
-.wrap.videopack-settings .videopack-watermark-settings .videopack-offset-control .components-text-control__input {
-  width: 100px;
-}
-.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: #fff;
-  border: 1px solid #000;
-  z-index: 10;
-}
-.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.nw {
-  top: -5px;
-  right: -5px;
-  cursor: ne-resize;
-}
-.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.ne {
-  top: -5px;
-  left: -5px;
-  cursor: nw-resize;
-}
-.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.sw {
-  bottom: -5px;
-  right: -5px;
-  cursor: se-resize;
-}
-.wrap.videopack-settings .videopack-watermark-settings .videopack-resize-handle.se {
-  bottom: -5px;
-  left: -5px;
-  cursor: sw-resize;
-}
 .wrap.videopack-settings .videopack-control-with-tooltip {
-  margin-top: 10px;
+  margin: 10px 0;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+}
+.wrap.videopack-settings .videopack-control-with-tooltip.videopack-delete-children-tooltip {
+  align-items: flex-start;
 }
 .wrap.videopack-settings .videopack-control-with-tooltip .components-base-control {
   margin-left: 5px;

@@ -1,3 +1,97 @@
+/*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/WatermarkSettingsPanel/WatermarkSettingsPanel.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-watermark-settings {
+  container-type: inline-size;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-watermark-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .components-flex {
+    margin-bottom: 0;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-select-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-alignment-control .components-text-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-select-control__input,
+  .videopack-watermark-settings .videopack-watermark-row .videopack-offset-control .components-text-control__input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+.videopack-watermark-settings .videopack-alignment-control .components-select-control__input {
+  min-width: 180px;
+}
+.videopack-watermark-settings .videopack-offset-control .components-text-control__input {
+  width: 100px;
+}
+.videopack-watermark-settings .videopack-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  z-index: 10;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle {
+    width: 6px;
+    height: 6px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.nw {
+    top: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.ne {
+    top: -3px;
+    right: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.sw {
+    bottom: -3px;
+    left: -3px;
+  }
+}
+.videopack-watermark-settings .videopack-resize-handle.se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+@container (max-width: 600px) {
+  .videopack-watermark-settings .videopack-resize-handle.se {
+    bottom: -3px;
+    right: -3px;
+  }
+}
 /*!******************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/TextTracks/TextTracks.scss ***!
   \******************************************************************************************************************************************************************************************************************************************************************/
@@ -92,7 +186,10 @@
   align-items: flex-start;
   margin-bottom: 16px;
 }
-@container videopack-settings (max-width: 300px) {
+.videopack-video-settings .components-flex.videopack-player-settings-flex .components-flex-item {
+  flex: 1;
+}
+@container videopack-settings (max-width: 400px) {
   .videopack-video-settings .videopack-player-settings-flex {
     flex-direction: column;
     gap: 0;
@@ -113,6 +210,10 @@
  */
 .videopack-thumbnail-generator button.is-secondary {
   font-size: 12px;
+  margin-bottom: 10px;
+}
+.videopack-thumbnail-generator .components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
 }
 .videopack-thumbnail-generator .spinner-container {
   position: relative;
@@ -193,9 +294,6 @@
 }
 .videopack-thumbnail-generator .videopack-thumb-video-container.is-opened {
   display: block;
-}
-.videopack-thumbnail-generator .videopack-thumb-video-panel {
-  padding: 10px 0;
 }
 .videopack-thumbnail-generator .videopack-thumb-video-panel video {
   display: block;
@@ -335,6 +433,9 @@ picture.vjs-poster {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+.videopack-formats-list > li ul li button.is-secondary.is-small {
+  margin-right: 5px;
 }
 .videopack-formats-list .videopack-codec-name {
   margin-top: 0;
@@ -488,9 +589,23 @@ picture.vjs-poster {
 .videopack-encode-progress-small-text span {
   margin-right: 10px;
 }
+/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeFormatStatus.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-formats-list li.videopack-format-row:not(:last-child) {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 11px;
+  padding-top: 5px;
+}
 /*!********************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoPlayer/VideoPlayer.scss ***!
   \********************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
 .wp-block-videopack-videopack-video {
   width: 100%;
   max-width: var(--wp--style--global--content-size);
@@ -657,28 +772,6 @@ picture.vjs-poster {
 .videopack-wrapper .videopack-no-controls .mejs-controls {
   display: none !important;
 }
-.videopack-wrapper .videopack-title {
-  font-size: 10pt;
-  padding-left: 4px;
-  line-height: 20pt;
-}
-.videopack-wrapper .videopack-meta-icons {
-  position: relative;
-  float: right;
-  margin: 3px 0;
-}
-.videopack-wrapper .videopack-meta-icons a {
-  text-decoration: none;
-  border: none;
-  box-shadow: none !important;
-}
-.videopack-wrapper .videopack-meta-icons span {
-  cursor: pointer;
-  color: white;
-  margin-right: 5px;
-  vertical-align: middle;
-  font-size: 13pt;
-}
 .videopack-wrapper .no-title .videopack-meta-icons span {
   font-size: 19pt;
   text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
@@ -693,12 +786,12 @@ picture.vjs-poster {
   overflow: hidden;
   font-size: medium;
 }
-.videopack-wrapper .videopack-below-video .viewcount {
+.videopack-wrapper .videopack-below-video .videopack-viewcount {
   float: right;
   margin-left: 12px;
   white-space: nowrap;
 }
-.videopack-wrapper .videopack-below-video .caption {
+.videopack-wrapper .videopack-below-video .videopack-caption {
   font-size: 0.85em;
   line-height: 150%;
   font-style: italic;
@@ -865,7 +958,7 @@ picture.vjs-poster {
 }
 .videopack-wrapper .mejs-controls div.mejs-sourcechooser-button button {
   background: none;
-  color: white;
+  color: #fff;
   font-size: 11pt;
 }
 .videopack-wrapper {
@@ -895,7 +988,7 @@ picture.vjs-poster {
   box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
 }
 .videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector span {
-  color: white;
+  color: #fff;
   padding: 0px 10px 5px 10px;
   display: block;
   white-space: nowrap;
@@ -910,7 +1003,7 @@ picture.vjs-poster {
 }
 .videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li:hover {
   color: #111;
-  background-color: #ffffff;
+  background-color: #fff;
   background-color: rgba(255, 255, 255, 0.75);
 }
 .videopack-wrapper.videopack-compat-mep div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector ul li input {
@@ -1125,8 +1218,12 @@ picture.vjs-poster {
 .videopack-wrapper .mejs-speed-button:hover .mejs-speed-selector {
   visibility: visible;
 }
-.videopack-wrapper .share-container {
-  text-align: center;
+.videopack-wrapper .videopack-share-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
   color: white;
   top: 0;
   padding-top: 46px;
@@ -1139,41 +1236,47 @@ picture.vjs-poster {
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-.videopack-wrapper .share-container.no-title {
+.videopack-wrapper .videopack-share-container .videopack-embedcode-container,
+.videopack-wrapper .videopack-share-container .videopack-start-at-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.videopack-wrapper .videopack-share-container .videopack-embedcode-container span,
+.videopack-wrapper .videopack-share-container .videopack-start-at-container span {
+  display: flex;
+  align-items: center;
+}
+.videopack-wrapper .videopack-share-container.no-title {
   padding-top: 32px;
 }
-.videopack-wrapper .share-container.is-visible {
+.videopack-wrapper .videopack-share-container.is-visible {
   opacity: 1;
   visibility: visible;
 }
-.videopack-wrapper .share-container input[type=text].embedcode {
-  width: 30%;
-}
-.videopack-wrapper .share-container .social-icons {
-  margin-top: 16px;
-  font-size: 19pt;
-}
-.videopack-wrapper .share-container .social-icons a {
-  text-decoration: none;
+.videopack-wrapper .videopack-share-container input {
+  height: 18px;
+  min-height: auto;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  background-color: #fff;
+  box-shadow: 0 0 0 transparent;
+  border-radius: 2px;
   border: none;
-  box-shadow: none;
-}
-.videopack-wrapper .share-container .social-icons span {
-  font-size: 13pt;
-  line-height: 29pt;
-  text-decoration: none;
   margin: 0;
-  padding: 0;
+  color: #2f2f2f;
 }
-.videopack-wrapper .share-container .social-icons .vjs-icon-twitter {
-  color: #55acee;
-  font-size: 32pt;
+.videopack-wrapper .videopack-share-container input[type=text] {
+  padding: 2px;
 }
-.videopack-wrapper .share-container .social-icons .vjs-icon-facebook {
-  color: #3b5998;
-  font-size: 32pt;
+.videopack-wrapper .videopack-share-container input[type=text].videopack-embed-code {
+  width: 15rem;
 }
-.videopack-wrapper .click-trap {
+.videopack-wrapper .videopack-share-container input[type=text].videopack-start-at {
+  width: 3rem;
+  text-align: center;
+}
+.videopack-wrapper .videopack-click-trap {
   width: 100%;
   height: 100%;
   background: none;
@@ -1184,7 +1287,7 @@ picture.vjs-poster {
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-.videopack-wrapper .click-trap.is-visible {
+.videopack-wrapper .videopack-click-trap.is-visible {
   opacity: 1;
   visibility: visible;
 }
@@ -1208,43 +1311,43 @@ picture.vjs-poster {
 .videopack-wrapper .videopack-meta-bar.no-title {
   background: none;
 }
-.videopack-wrapper .videopack-meta-bar.no-title .meta-icons span {
+.videopack-wrapper .videopack-meta-bar.no-title .videopack-meta-icons span {
   font-size: 19pt;
   text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
 }
-.videopack-wrapper .videopack-meta-bar .title {
+.videopack-wrapper .videopack-meta-bar .videopack-title {
   font-size: 10pt;
   padding-left: 4px;
   line-height: 20pt;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons {
   position: relative;
   float: right;
   margin: 3px 0px 3px 0px;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons a {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons a {
   text-decoration: none;
   border: none;
   box-shadow: none;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons span {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons span {
   cursor: pointer;
   color: white;
   margin-right: 5px;
   vertical-align: middle;
   font-size: 13pt;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons button {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons button {
   background-color: unset;
   border: none;
   color: white;
   vertical-align: middle;
   cursor: pointer;
 }
-.videopack-wrapper .videopack-meta-bar .meta-icons button:focus {
+.videopack-wrapper .videopack-meta-bar .videopack-meta-icons button:focus {
   outline-width: 0;
 }
-.videopack-wrapper.meta-bar-visible .videopack-meta-bar, .videopack-wrapper:hover .videopack-meta-bar {
+.videopack-wrapper.videopack-meta-bar-visible .videopack-meta-bar, .videopack-wrapper:hover .videopack-meta-bar {
   opacity: 1;
   visibility: visible;
 }
@@ -1374,6 +1477,19 @@ picture.vjs-poster {
   right: 0;
   bottom: 0;
   z-index: 10;
+}
+.videopack-uploading-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.videopack-uploading-overlay-content p {
+  margin: 0;
+  font-weight: 500;
 }
 
 /*# sourceMappingURL=videopack-video.css.map*/
