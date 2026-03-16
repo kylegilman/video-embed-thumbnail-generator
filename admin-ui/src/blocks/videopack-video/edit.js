@@ -1,7 +1,6 @@
 /* global videopack_config */
-
 import { getBlobByURL, isBlobURL } from '@wordpress/blob';
-import { Placeholder } from '@wordpress/components';
+import { Placeholder, ProgressBar } from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
@@ -11,7 +10,13 @@ import {
 	store as blockEditorStore,
 } from '@wordpress/block-editor';
 
-import { useEffect, useState } from '@wordpress/element';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
@@ -29,41 +34,176 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	const [options, setOptions] = useState();
 	const [externalSourceGroups, setExternalSourceGroups] = useState(null);
 	const blockProps = useBlockProps();
+	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
 	const mediaUpload = useSelect(
 		(select) => select(blockEditorStore).getSettings().mediaUpload,
 		[]
 	);
 
-	const { postId } = useSelect(
-		(select) => ({
-			postId: select('core/editor').getCurrentPostId(),
-		}),
-		[]
+	const [attachment, setAttachment] = useState(null);
+	const [hasResolved, setHasResolved] = useState(false);
+
+	const videoData = useMemo(
+		() => ({ record: attachment, hasResolved }),
+		[attachment, hasResolved]
 	);
 
-	const { attachment } = useSelect(
-		(select) => ({
-			attachment:
-				id && typeof id === 'number'
-					? select('core').getMedia(id)
+	const attributesRef = useRef(attributes);
+	useEffect(() => {
+		attributesRef.current = attributes;
+	}, [attributes]);
+
+	const setAttributesFromMedia = useCallback(
+		(attachmentObject) => {
+			const media_attributes = {
+				src: attachmentObject.source_url || attachmentObject.url,
+				id: attachmentObject.id,
+				poster: attachmentObject.meta?.['_videopack-meta']?.poster,
+				total_thumbnails:
+					attachmentObject.meta?.['_videopack-meta']
+						?.total_thumbnails,
+				featured:
+					attachmentObject.meta?.['_videopack-meta']?.featured,
+				title:
+					typeof attachmentObject.title === 'string'
+						? attachmentObject.title
+						: (attachmentObject.title?.raw ??
+							attachmentObject.title?.rendered),
+				caption:
+					typeof attachmentObject.caption === 'string'
+						? attachmentObject.caption
+						: (attachmentObject.caption?.raw ??
+							attachmentObject.caption?.rendered),
+				starts: attachmentObject.meta?.['_videopack-meta']?.starts,
+				text_tracks:
+					attachmentObject.meta?.['_videopack-meta']?.track ||
+					attachmentObject.meta?.['_videopack-meta']?.tracks ||
+					attachmentObject.meta?.track ||
+					attachmentObject.meta?.tracks ||
+					[],
+				embedlink: attachmentObject.link
+					? attachmentObject.link + 'embed'
 					: undefined,
-		}),
-		[id]
+			};
+
+			const updatedAttributes = Object.keys(media_attributes).reduce(
+				(acc, key) => {
+					if (
+						media_attributes[key] !== undefined &&
+						media_attributes[key] !== null &&
+						media_attributes[key] !== attributesRef.current[key]
+					) {
+						acc[key] = media_attributes[key];
+					}
+					return acc;
+				},
+				{}
+			);
+
+			if (Object.keys(updatedAttributes).length > 0) {
+				setAttributes(updatedAttributes);
+			}
+		},
+		[setAttributes]
 	);
 
 	useEffect(() => {
-		if (attachment) {
-			setAttributesFromMedia(attachment);
+		if (id && typeof id === 'number') {
+			setHasResolved(false);
+			apiFetch({ path: `/wp/v2/media/${id}?context=edit` })
+				.then((record) => {
+					setAttachment(record);
+					setHasResolved(true);
+					setAttributesFromMedia(record);
+				})
+				.catch((error) => {
+					setAttachment(null);
+					setHasResolved(true);
+					if (error.status === 404 || error.status === 403) {
+						setAttributes({
+							id: undefined,
+							src: undefined,
+							poster: undefined,
+							title: undefined,
+							caption: undefined,
+						});
+					}
+				});
+		} else {
+			setAttachment(null);
+			setHasResolved(false);
 		}
-	}, [attachment]);
+	}, [id, setAttributesFromMedia, setAttributes]);
+
+	const onUploadError = useCallback(
+		(message) => {
+			createErrorNotice(message, { type: 'snackbar' });
+		},
+		[createErrorNotice]
+	);
+
+	const onSelectVideo = useCallback(
+		(video) => {
+			const videoArray = Array.isArray(video) ? video : [video];
+
+			if (
+				!videoArray ||
+				!videoArray.some((item) => item.hasOwnProperty('url'))
+			) {
+				setAttributes({
+					src: undefined,
+					id: undefined,
+					poster: undefined,
+				});
+				return;
+			}
+
+			if (videoArray.length === 1) {
+				if (isBlobURL(videoArray[0].url)) {
+					hasAttemptedInitialUpload.current = true;
+				}
+				setAttributesFromMedia(videoArray[0]);
+			}
+		},
+		[setAttributesFromMedia, setAttributes]
+	);
+
+	const onSelectURL = useCallback(
+		(newSrc) => {
+			if (newSrc !== src) {
+				let filename = newSrc.split('?')[0].split('#')[0];
+				filename = filename.split('/').pop();
+				if (filename.includes('.')) {
+					filename = filename.substring(0, filename.lastIndexOf('.'));
+				}
+				try {
+					filename = decodeURIComponent(filename);
+				} catch (e) {
+					// Ignore decoding errors
+				}
+
+				setAttributes({
+					src: newSrc,
+					id: undefined,
+					title: filename,
+					caption: '',
+					poster: '',
+					starts: undefined,
+					embedlink: '',
+				});
+			}
+		},
+		[src, setAttributes]
+	);
 
 	useEffect(() => {
 		getSettings().then((response) => {
 			setOptions(response);
 		});
 
-		if (!id && isBlobURL(src)) {
+		if (!hasAttemptedInitialUpload.current && !id && isBlobURL(src)) {
+			hasAttemptedInitialUpload.current = true;
 			const file = getBlobByURL(src);
 			if (file) {
 				mediaUpload({
@@ -74,7 +214,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				});
 			}
 		}
-	}, []);
+	}, [id, src, mediaUpload, onSelectVideo, onUploadError]);
 
 	useEffect(() => {
 		if (src === 'videopack-preview-video') {
@@ -83,7 +223,12 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 					videopack_config.url +
 					'/src/images/Adobestock_469037984.mp4',
 			});
-		} else if (!id && src && src !== 'videopack-preview-video') {
+		} else if (
+			!id &&
+			src &&
+			src !== 'videopack-preview-video' &&
+			!isBlobURL(src)
+		) {
 			setExternalSourceGroups(null);
 			apiFetch({
 				path: `/videopack/v1/sources?url=${encodeURIComponent(src)}`,
@@ -98,90 +243,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 		} else {
 			setExternalSourceGroups(null);
 		}
-	}, [id, src]);
-
-	function setAttributesFromMedia(attachmentObject) {
-		const media_attributes = {
-			src: attachmentObject.url,
-			id: attachmentObject.id,
-			poster: attachmentObject.meta?.['_videopack-meta']?.poster,
-			total_thumbnails:
-				attachmentObject.meta?.['_videopack-meta']?.total_thumbnails,
-			title: attachmentObject.title?.rendered,
-			caption: attachmentObject.caption?.raw,
-			starts: attachmentObject.meta?.['_videopack-meta']?.starts,
-			text_tracks:
-				attachmentObject.meta?.['_videopack-meta']?.track ||
-				attachmentObject.meta?.['_videopack-meta']?.tracks ||
-				attachmentObject.meta?.track ||
-				attachmentObject.meta?.tracks ||
-				[],
-		};
-
-		const updatedAttributes = Object.keys(media_attributes).reduce(
-			(acc, key) => {
-				if (
-					media_attributes[key] !== undefined &&
-					media_attributes[key] !== null
-				) {
-					acc[key] = media_attributes[key];
-				}
-				return acc;
-			},
-			{}
-		);
-
-		setAttributes(updatedAttributes);
-	}
-
-	function onSelectVideo(video) {
-		const videoArray = Array.isArray(video) ? video : [video];
-
-		if (
-			!videoArray ||
-			!videoArray.some((item) => item.hasOwnProperty('url'))
-		) {
-			setAttributes({
-				src: undefined,
-				id: undefined,
-				poster: undefined,
-			});
-			return;
-		}
-
-		if (videoArray.length === 1) {
-			setAttributesFromMedia(videoArray[0]);
-		}
-	}
-
-	function onSelectURL(newSrc) {
-		if (newSrc !== src) {
-			let filename = newSrc.split('?')[0].split('#')[0];
-			filename = filename.split('/').pop();
-			if (filename.includes('.')) {
-				filename = filename.substring(0, filename.lastIndexOf('.'));
-			}
-			try {
-				filename = decodeURIComponent(filename);
-			} catch (e) {
-				// Ignore decoding errors
-			}
-
-			setAttributes({
-				src: newSrc,
-				id: undefined,
-				title: filename,
-				caption: '',
-				poster: '',
-				starts: undefined,
-				embedlink: '',
-			});
-		}
-	}
-
-	function onUploadError(message) {
-		createErrorNotice(message, { type: 'snackbar' });
-	}
+	}, [id, src, setAttributes]);
 
 	const placeholder = (content) => {
 		return (
@@ -216,6 +278,35 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 		);
 	}
 
+	if (!id && src && isBlobURL(src)) {
+		return (
+			<div {...blockProps}>
+				<div className="components-placeholder block-editor-media-placeholder is-large has-illustration">
+					<div className="components-placeholder__label">
+						<BlockIcon icon={icon} />
+						{__(
+							'Videopack Video',
+							'video-embed-thumbnail-generator'
+						)}
+					</div>
+					<div className="components-placeholder__fieldset">
+						<div className="videopack-uploading-overlay-content">
+							<p>
+								{__(
+									'Uploading…',
+									'video-embed-thumbnail-generator'
+								)}
+							</p>
+							<div className="videopack-progress-bar-container">
+								<ProgressBar />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<>
 			<BlockControls group="other">
@@ -235,6 +326,7 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				options={options}
 				isSelected={isSelected}
 				externalSourceGroups={externalSourceGroups}
+				videoData={videoData}
 			/>
 		</>
 	);
