@@ -4,6 +4,18 @@ namespace Videopack\Admin\Encode;
 
 class Encode_Format {
 
+	const STATUS_QUEUED              = 'queued';
+	const STATUS_PROCESSING          = 'processing';
+	const STATUS_ENCODING            = 'encoding';
+	const STATUS_NEEDS_INSERT        = 'needs_insert';
+	const STATUS_PENDING_REPLACEMENT = 'pending_replacement';
+	const STATUS_COMPLETED           = 'completed';
+	const STATUS_FAILED              = 'failed';
+	const STATUS_CANCELED            = 'canceled';
+	const STATUS_DELETED             = 'deleted';
+	const STATUS_ERROR               = 'error';
+	const STATUS_NOT_ENCODED         = 'not_encoded';
+
 	private $format_id;
 	private $status;
 	private $path;
@@ -22,6 +34,11 @@ class Encode_Format {
 	private $job_id; // ID from the wp_videopack_encoding_queue table
 	private $temp_watermark_path;
 	private $video_duration; // Total duration of the video in microseconds
+	private $attachment_id;
+	private $input_url;
+	private $blog_id;
+	private $created_at;
+	private $updated_at;
 
 	public function __construct( string $format_id ) {
 		$this->format_id = $format_id;
@@ -67,6 +84,12 @@ class Encode_Format {
 		$format->set_id( $format->set_or_null( $data, 'output_attachment_id' ) );
 		$format->set_temp_watermark_path( $format->set_or_null( $data, 'temp_watermark_path' ) );
 
+		$format->attachment_id = $format->set_or_null( $data, 'attachment_id' );
+		$format->input_url     = $format->set_or_null( $data, 'input_url' );
+		$format->blog_id       = $format->set_or_null( $data, 'blog_id' );
+		$format->created_at    = $format->set_or_null( $data, 'created_at' );
+		$format->updated_at    = $format->set_or_null( $data, 'updated_at' );
+
 		return $format;
 	}
 
@@ -80,15 +103,23 @@ class Encode_Format {
 	// Getters
 
 	public function get_progress() {
-		if ( $this->status === 'encoding'
+		if ( $this->status === self::STATUS_ENCODING
 			&& $this->logfile
 			&& file_exists( $this->logfile )
 		) {
-			$this->set_progress();
-			return $this->progress;
+			$this->progress = Encode_Progress::from_log_file( $this->logfile, (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
+		} elseif ( in_array( $this->status, array( self::STATUS_NEEDS_INSERT, self::STATUS_PENDING_REPLACEMENT, self::STATUS_COMPLETED ), true ) ) {
+			// If it's finishing or finished, mock the progress as 100%
+			$this->progress = Encode_Progress::finished( (int) $this->video_duration, (int) $this->started, (int) $this->job_id )->to_array();
 		} else {
 			return 'recheck';
 		}
+
+		if ( is_array( $this->progress ) ) {
+			return $this->progress;
+		}
+
+		return 'recheck';
 	}
 
 	public function get_format_id() {
@@ -156,6 +187,30 @@ class Encode_Format {
 		return $this->temp_watermark_path;
 	}
 
+	public function get_attachment_id() {
+		return $this->attachment_id;
+	}
+
+	public function get_input_url() {
+		return $this->input_url;
+	}
+
+	public function get_blog_id() {
+		return $this->blog_id;
+	}
+
+	public function get_created_at() {
+		return $this->created_at;
+	}
+
+	public function get_updated_at() {
+		return $this->updated_at;
+	}
+
+	public function get_video_duration() {
+		return $this->video_duration;
+	}
+
 	public function set_status( ?string $status ) {
 		$allowed = array(
 			'queued',
@@ -202,7 +257,7 @@ class Encode_Format {
 	}
 
 	public function set_error( ?string $error ) {
-		$this->set_status( 'failed' );
+		$this->set_status( self::STATUS_FAILED );
 		$this->error = $error;
 	}
 
@@ -231,72 +286,30 @@ class Encode_Format {
 	}
 
 	public function set_queued( string $path, string $url, int $user_id ) {
-		$this->set_status( 'queued' );
+		$this->set_status( self::STATUS_QUEUED );
 		$this->set_path( $path );
 		$this->set_url( $url );
 		$this->set_user_id( $user_id );
 	}
 
 	public function set_encode_start( int $pid, int $started ) {
-		$this->set_status( 'encoding' );
+		$this->set_status( self::STATUS_ENCODING );
 		$this->set_pid( $pid );
 		$this->set_started( $started );
 	}
 
 	protected function set_progress() {
-		if ( $this->status === 'encoding'
+		if ( $this->status === self::STATUS_ENCODING
 			&& $this->logfile
 			&& file_exists( $this->logfile )
 		) {
-			$handle      = fopen( $this->logfile, 'r' );
-			$parsed_data = array();
-			if ( $handle ) {
-				$fsize    = filesize( $this->logfile );
-				$read_len = min( $fsize, 4096 );
-				if ( $read_len > 0 ) {
-					fseek( $handle, -$read_len, SEEK_END );
-					$content = fread( $handle, $read_len );
-					$lines   = explode( "\n", $content );
-					// Skip the first partial line if we didn't read from the start
-					if ( $fsize > $read_len ) {
-						array_shift( $lines );
-					}
-					foreach ( $lines as $line ) {
-						$line = trim( $line );
-						if ( strpos( $line, '=' ) !== false ) {
-							list( $key, $value ) = explode( '=', $line, 2 );
-							$parsed_data[ $key ] = trim( $value );
-						}
-					}
-				}
-				fclose( $handle );
-			}
-
-			$this->progress = array(
-				'frame'       => $this->set_or_null( $parsed_data, 'frame' ),
-				'fps'         => $this->set_or_null( $parsed_data, 'fps' ),
-				'stream'      => $this->set_or_null( $parsed_data, 'stream' ),
-				'bitrate'     => $this->set_or_null( $parsed_data, 'bitrate' ),
-				'total_size'  => $this->set_or_null( $parsed_data, 'total_size' ),
-				'out_time_us' => $this->set_or_null( $parsed_data, 'out_time_us' ),
-				'out_time_ms' => $this->set_or_null( $parsed_data, 'out_time_ms' ),
-				'out_time'    => $this->set_or_null( $parsed_data, 'out_time' ),
-				'dup_frames'  => $this->set_or_null( $parsed_data, 'dup_frames' ),
-				'drop_frames' => $this->set_or_null( $parsed_data, 'drop_frames' ),
-				'speed'       => $this->set_or_null( $parsed_data, 'speed' ),
-				'progress'    => $this->set_or_null( $parsed_data, 'progress' ),
-				'percent'     => 0, // Initialize percent
-			);
-
-			if ( ! empty( $this->video_duration ) && isset( $this->progress['out_time_us'] ) ) {
-				$out_time_us               = (int) $this->progress['out_time_us'];
-				$this->progress['percent'] = min( 100, round( ( $out_time_us / $this->video_duration ) * 100, 2 ) );
-			}
+			$progress_obj   = Encode_Progress::from_log_file( $this->logfile, (int) $this->video_duration, (int) $this->started, (int) $this->job_id );
+			$this->progress = $progress_obj->to_array();
 
 			if ( isset( $this->progress['progress'] ) && 'end' === $this->progress['progress'] ) {
 				$this->set_needs_insert();
 			} elseif ( time() - filemtime( $this->logfile ) > 60 ) {
-				//it's been more than a minute since encoding progress was recorded
+				// it's been more than a minute since encoding progress was recorded
 				$this->set_error( __( 'Encoding stopped unexpectedly', 'video-embed-thumbnail-generator' ) );
 			}
 		}
@@ -312,9 +325,43 @@ class Encode_Format {
 	}
 
 	public function set_canceled() {
-		$this->set_status( 'canceled' );
+		$this->set_status( self::STATUS_CANCELED );
 		if ( current_user_can( 'encode_videos' ) ) {
 			wp_delete_file( $this->get_path() );
+		}
+	}
+
+	/**
+	 * Get the localized label for a given status.
+	 *
+	 * @param string $status The internal status string.
+	 * @return string The localized status label.
+	 */
+	public static function get_status_label( $status ) {
+		switch ( $status ) {
+			case self::STATUS_NOT_ENCODED:
+				return __( 'Not Encoded', 'video-embed-thumbnail-generator' );
+			case self::STATUS_COMPLETED:
+			case 'encoded': // Handle legacy status from old DB rows if they exist
+				return __( 'Completed', 'video-embed-thumbnail-generator' );
+			case self::STATUS_QUEUED:
+				return __( 'Queued', 'video-embed-thumbnail-generator' );
+			case self::STATUS_PROCESSING:
+				return __( 'Processing', 'video-embed-thumbnail-generator' );
+			case self::STATUS_ENCODING:
+				return __( 'Encoding', 'video-embed-thumbnail-generator' );
+			case self::STATUS_FAILED:
+			case self::STATUS_ERROR:
+				return __( 'Failed', 'video-embed-thumbnail-generator' );
+			case self::STATUS_CANCELED:
+				return __( 'Canceled', 'video-embed-thumbnail-generator' );
+			case self::STATUS_DELETED:
+				return __( 'Deleted', 'video-embed-thumbnail-generator' );
+			case self::STATUS_NEEDS_INSERT:
+			case self::STATUS_PENDING_REPLACEMENT:
+				return __( 'Finishing', 'video-embed-thumbnail-generator' );
+			default:
+				return $status;
 		}
 	}
 }

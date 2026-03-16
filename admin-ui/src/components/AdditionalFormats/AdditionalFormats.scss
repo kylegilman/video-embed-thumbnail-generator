@@ -36,6 +36,10 @@
 			list-style: none;
 			padding: 0;
 			margin: 0;
+
+			li button.is-secondary.is-small {
+				margin-right: 5px;
+			}
 		}
 	}
 

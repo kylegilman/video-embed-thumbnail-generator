@@ -40,6 +40,12 @@ class Encode_Attachment {
 	protected $ffmpeg_path;
 	protected $queue_table_name;
 	protected $current_temp_watermark_path = null;
+	/**
+	 * Flag to prevent recursion during deletion.
+	 *
+	 * @var bool
+	 */
+	private static $in_delete_format = false;
 
 	/**
 	 * Constructor.
@@ -285,8 +291,13 @@ class Encode_Attachment {
 			// Instantiate Encode_Info to check for the physical file's existence and details.
 			$encode_info = new Encode_Info( $this->id, $this->url, $video_format_obj, $this->options_manager );
 			$file_exists = false;
-			if ( $encode_info->exists && ! empty( $encode_info->path ) && is_file( $encode_info->path ) ) {
-				$file_exists = filesize( $encode_info->path ) > 0;
+			if ( $encode_info->exists ) {
+				if ( ! empty( $encode_info->path ) && is_file( $encode_info->path ) ) {
+					$file_exists = filesize( $encode_info->path ) > 0;
+				} else {
+					// For remote videos or attachments where is_file might fail but Encode_Info confirmed existence.
+					$file_exists = true;
+				}
 			}
 
 			// Skip formats that are disabled in options, unless a file or job already exists for them.
@@ -307,19 +318,25 @@ class Encode_Attachment {
 			}
 
 			// Start with default status and was_picked state
-			$format_array['status']     = 'not_encoded';
+			$format_array['status']     = Encode_Format::STATUS_NOT_ENCODED;
 			$format_array['was_picked'] = false;
 
-			// 1. Check for an existing file first. This is a reliable indicator of a completed state.
 			if ( $file_exists && $encode_info->id ) {
-				$format_array['status'] = 'encoded'; // Use 'encoded' as a more descriptive term than 'completed' for a found file.
+				$format_array['status'] = Encode_Format::STATUS_COMPLETED; // Using standard completed status
 				$format_array['url']    = $encode_info->url;
 				$format_array['id']     = $encode_info->id;
 
-				$parent_id = get_post_meta( $encode_info->id, '_kgflashmediaplayer-parent', true );
+				$parent_id   = get_post_meta( $encode_info->id, '_kgflashmediaplayer-parent', true );
+				$format_post = get_post( $encode_info->id );
+
+				// was_picked should strictly mean it was manually assigned by a user
 				if ( ! empty( $parent_id ) && (int) $parent_id === (int) $this->id ) {
 					$format_array['was_picked'] = true;
 				}
+
+				// If it's a child but not manually assigned, it's auto-generated
+				$is_child = ( $format_post && (int) $format_post->post_parent === (int) $this->id );
+				// We don't change was_picked here, but we've already confirmed it exists via $file_exists
 			}
 
 			// 2. If a job exists in the database, its status is the source of truth and may override the file check.
@@ -331,8 +348,8 @@ class Encode_Attachment {
 					$matching_encode_format->set_video_duration( $duration_in_microseconds );
 				}
 
-				// If the job is currently encoding, get progress.
-				if ( 'encoding' === $matching_encode_format->get_status() ) {
+				// If the job is currently encoding or finishing, get progress to ensure job_id and 100% progress for finishing states.
+				if ( in_array( $matching_encode_format->get_status(), array( Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
 					$format_array['progress'] = $matching_encode_format->get_progress();
 				}
 
@@ -348,7 +365,7 @@ class Encode_Attachment {
 
 			// Final properties based on the determined status.
 			$format_array['exists']       = $file_exists;
-			$format_array['encoding_now'] = in_array( $format_array['status'], array( 'processing', 'encoding' ), true );
+			$format_array['encoding_now'] = in_array( $format_array['status'], array( Encode_Format::STATUS_QUEUED, Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true );
 			$format_array['deletable']    = false;
 			if ( $file_exists && ! $video_format_obj->get_replaces_original() && $this->is_attachment ) {
 				$attachment_post = get_post( $this->id );
@@ -358,41 +375,30 @@ class Encode_Attachment {
 			}
 
 			// Add translated strings for UI.
-			$format_array['resolution']['name']  = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_name() );
-			$format_array['resolution']['label'] = $this->options_manager->get_resolution_l10n( $video_format_obj->get_resolution()->get_label() );
-			$format_array['status_l10n']         = $this->get_status_l10n( $format_array['status'] );
+			$res_name  = $video_format_obj->get_resolution()->get_name();
+			$res_label = $video_format_obj->get_resolution()->get_label();
+
+			if ( $video_format_obj->get_replaces_original() ) {
+				$res_label = __( 'Replace with full resolution', 'video-embed-thumbnail-generator' );
+				if ( $video_metadata && $video_metadata->actualheight ) {
+					/* translators: %s is a resolution height (eg: 720 ) */
+					$res_name = sprintf( __( 'Replace with %sp', 'video-embed-thumbnail-generator' ), $video_metadata->actualheight );
+				} else {
+					$res_name = $res_label;
+				}
+			}
+
+			$format_array['resolution']['name']  = $this->options_manager->get_resolution_l10n( $res_name );
+			$format_array['resolution']['label'] = $this->options_manager->get_resolution_l10n( $res_label );
+			$format_array['name']                = $video_format_obj->get_codec()->get_name() . ' ' . $format_array['resolution']['name'];
+			$format_array['label']               = $format_array['resolution']['label'];
+			$format_array['status_l10n']         = Encode_Format::get_status_label( $format_array['status'] );
+			$format_array['video_duration']     = ( $video_metadata && $video_metadata->duration ) ? (int) round( $video_metadata->duration * 1000000 ) : null;
 
 			$video_formats_data[ $format_id ] = $format_array;
 		}
 
 		return $video_formats_data;
-	}
-
-	private function get_status_l10n( $status ) {
-		switch ( $status ) {
-			case 'not_encoded':
-				return __( 'Not Encoded', 'video-embed-thumbnail-generator' );
-			case 'encoded':
-				return __( 'Encoded', 'video-embed-thumbnail-generator' );
-			case 'queued':
-				return __( 'Queued', 'video-embed-thumbnail-generator' );
-			case 'processing':
-				return __( 'Processing', 'video-embed-thumbnail-generator' );
-			case 'encoding':
-				return __( 'Encoding', 'video-embed-thumbnail-generator' );
-			case 'failed':
-				return __( 'Failed', 'video-embed-thumbnail-generator' );
-			case 'completed':
-				return __( 'Completed', 'video-embed-thumbnail-generator' );
-			case 'deleted':
-				return __( 'Deleted', 'video-embed-thumbnail-generator' );
-			case 'canceled':
-				return __( 'Canceled', 'video-embed-thumbnail-generator' );
-			case 'needs_insert':
-				return __( 'Finishing', 'video-embed-thumbnail-generator' );
-			default:
-				return $status;
-		}
 	}
 
 	/**
@@ -412,18 +418,24 @@ class Encode_Attachment {
 
 		$target_height = $video_format_obj->get_resolution()->get_height();
 		$source_height = (int) $video_metadata->actualheight;
+		$source_width  = (int) $video_metadata->actualwidth;
 
 		if ( $video_format_obj->get_replaces_original() || ! is_numeric( $target_height ) ) {
 			return false; // 'fullres' is never unnecessary.
 		}
 
-		// Prevent upscaling.
-		if ( $source_height < $target_height ) {
+		// Calculate target width based on a 16:9 baseline for upscale checking.
+		// This ensures that non-16:9 videos (like ultrawide) aren't blocked from 1080p
+		// if their width is 1080p-tier even if their height is lower.
+		$target_width = (int) round( $target_height * 16 / 9 );
+
+		// Prevent upscaling if BOTH dimensions are smaller than the target baseline.
+		if ( $source_height < $target_height && $source_width < $target_width ) {
 			return true;
 		}
 
 		// Prevent re-encoding to the same resolution and codec.
-		if ( $source_height === $target_height ) {
+		if ( $source_height === $target_height || $source_width === $target_width ) {
 			$source_codec_name       = ( $video_metadata && $video_metadata->codec ) ? $video_metadata->codec : '';
 			$normalized_source_codec = '';
 			if ( ! empty( $source_codec_name ) ) {
@@ -913,6 +925,7 @@ class Encode_Attachment {
 						'error_message'        => null,
 						'output_attachment_id' => null,
 						'retry_count'          => (int) $existing_job->retry_count + 1,
+						'created_at'           => current_time( 'mysql', true ),
 						'updated_at'           => current_time( 'mysql', true ),
 					),
 					array( 'id' => $job_id )
@@ -1404,7 +1417,7 @@ class Encode_Attachment {
 	/**
 	 * Delete the encoded file.
 	 */
-	public function delete_format( int $job_id ) {
+	public function delete_format( int $job_id, bool $delete_attachment = true ) {
 		$encode_format = $this->get_encode_format_by_job_id( $job_id );
 
 		if ( ! $encode_format ) {
@@ -1424,12 +1437,12 @@ class Encode_Attachment {
 			return false;
 		}
 
+		$overall_success = true;
 		// Attempt to clean up all associated files.
 		// cleanup_encode_files will set an error on $encode_format if it fails.
 		if ( ! $this->cleanup_encode_files( $encode_format ) ) {
 			// An error occurred during file cleanup and was set on $encode_format.
-			$this->save_format( $encode_format ); // Save the error.
-			// Proceed to mark as deleted in DB anyway, but the error will be logged.
+			$overall_success = false;
 		}
 
 		// Delete the WordPress attachment if this format created one (and it's not the original)
@@ -1444,11 +1457,19 @@ class Encode_Attachment {
 				// Just clean up files and mark job as deleted.
 			} else {
 				// This is a child attachment created by the encoding process. Delete it.
-								// This is a child attachment created by the encoding process.
-				// The wp_delete_attachment() call for this ID is handled by the main delete_attachment hook,
-				// which triggers Attachment::delete_video_attachment().
-				// We only need to ensure the job is marked as deleted and files are cleaned up.
-				// No need to call wp_delete_attachment() here to avoid recursion.
+				if ( $delete_attachment ) {
+					// We use a static flag to prevent recursion if Attachment::delete_video_attachment() calls back here.
+					if ( ! self::$in_delete_format ) {
+						self::$in_delete_format = true;
+						$attachment_deleted     = wp_delete_attachment( $wp_attachment_id, true );
+						self::$in_delete_format = false;
+
+						if ( ! $attachment_deleted ) {
+							$encode_format->set_error( __( 'Failed to delete WordPress attachment.', 'video-embed-thumbnail-generator' ) );
+							$overall_success = false;
+						}
+					}
+				}
 			}
 		}
 
@@ -1457,12 +1478,13 @@ class Encode_Attachment {
 		// Clear path and URL as the files are gone (or should be)
 		$encode_format->set_path( null );
 		$encode_format->set_url( null );
+		$encode_format->set_id( null );
 		$encode_format->set_logfile( null );
 		$encode_format->set_temp_watermark_path( null );
 
 		$this->save_format( $encode_format ); // Save the 'deleted' status and any errors.
 
-		return true; // Indicates the deletion process was attempted. Check $encode_format->get_error() for issues.
+		return $overall_success; // Indicates the deletion process was attempted. Check $encode_format->get_error() for issues.
 	}
 
 	/**
@@ -1525,16 +1547,18 @@ class Encode_Attachment {
 
 	private function replace_original_attachment( Encode_Format $encode_format ) {
 		if ( $this->has_pending_jobs( $encode_format ) ) {
-			$encode_format->set_status( 'pending_replacement' );
+			$encode_format->set_status( Encode_Format::STATUS_PENDING_REPLACEMENT );
 			$this->save_format( $encode_format );
+			Debug_Logger::log( 'Setting status to pending_replacement', array( 'job_id' => $encode_format->get_job_id() ) );
 			return false;
 		}
 
 		$result = $this->replace_original( $encode_format );
 
 		if ( true === $result ) {
-			$encode_format->set_status( 'completed' );
+			$encode_format->set_status( Encode_Format::STATUS_COMPLETED );
 			$this->save_format( $encode_format );
+			Debug_Logger::log( 'Successfully replaced original attachment', array( 'job_id' => $encode_format->get_job_id() ) );
 			return true;
 		} else {
 			$this->save_format( $encode_format );
@@ -1577,8 +1601,9 @@ class Encode_Attachment {
 			);
 
 			$new_attachment_id = wp_insert_attachment( $attachment_data, $path, $parent_post_id );
+			$is_error          = is_wp_error( $new_attachment_id );
 
-			if ( ! is_wp_error( $new_attachment_id ) ) {
+			if ( ! $is_error && $new_attachment_id > 0 ) {
 				if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/image.php';
 				}
@@ -1594,23 +1619,28 @@ class Encode_Attachment {
 				}
 
 				$encode_format->set_id( $new_attachment_id );
-				$encode_format->set_status( 'completed' );
+				$encode_format->set_status( Encode_Format::STATUS_COMPLETED );
 				$this->save_format( $encode_format );
+				Debug_Logger::log( 'Successfully inserted attachment', array( 'job_id' => $encode_format->get_job_id(), 'attachment_id' => $new_attachment_id ) );
 				return true;
 			} else {
-				$encode_format->set_error( __( 'Failed to insert new attachment: ', 'video-embed-thumbnail-generator' ) . $new_attachment_id->get_error_message() );
+				$msg = $is_error ? $new_attachment_id->get_error_message() : __( 'wp_insert_attachment returned 0 or invalid ID.', 'video-embed-thumbnail-generator' );
+				$encode_format->set_error( __( 'Failed to insert new attachment: ', 'video-embed-thumbnail-generator' ) . $msg );
 				$this->save_format( $encode_format );
+				Debug_Logger::log( 'Failed to insert attachment', array( 'job_id' => $encode_format->get_job_id(), 'error' => $msg ) );
 				return false;
 			}
 		} else {
 			$encode_format->set_id( $existing_attachment_id );
-			$encode_format->set_status( 'completed' );
+			$encode_format->set_status( Encode_Format::STATUS_COMPLETED );
 			$this->save_format( $encode_format );
+			Debug_Logger::log( 'Attachment already exists, marking job completed', array( 'job_id' => $encode_format->get_job_id(), 'attachment_id' => $existing_attachment_id ) );
 			return true;
 		}
 	}
 
 	public function insert_attachment( Encode_Format $encode_format ) {
+		Debug_Logger::log( 'Starting insert_attachment', array( 'job_id' => $encode_format->get_job_id() ) );
 		$format_id           = $encode_format->get_format_id();
 		$path                = $encode_format->get_path();
 		$video_format_config = $this->video_formats[ $format_id ] ?? null;
@@ -1632,8 +1662,9 @@ class Encode_Attachment {
 		} elseif ( ! $encode_format->get_id() ) {
 			return $this->create_new_attachment( $encode_format );
 		} elseif ( $encode_format->get_id() && file_exists( $path ) ) {
-			$encode_format->set_status( 'completed' );
+			$encode_format->set_status( Encode_Format::STATUS_COMPLETED );
 			$this->save_format( $encode_format );
+			Debug_Logger::log( 'Attachment ID already set and file exists, marking job completed', array( 'job_id' => $encode_format->get_job_id() ) );
 			return true;
 		} elseif ( $encode_format->get_id() && ! file_exists( $path ) ) {
 			$encode_format->set_error( sprintf( __( 'Encoded file is missing for existing attachment ID %1$d at path: %2$s', 'video-embed-thumbnail-generator' ), $encode_format->get_id(), $path ) );
@@ -1641,7 +1672,7 @@ class Encode_Attachment {
 			return false;
 		}
 
-		if ( ! $encode_format->get_error() && 'completed' !== $encode_format->get_status() ) {
+		if ( ! $encode_format->get_error() && Encode_Format::STATUS_COMPLETED !== $encode_format->get_status() ) {
 			$encode_format->set_error( __( 'An unexpected error occurred during attachment processing.', 'video-embed-thumbnail-generator' ) );
 		}
 		$this->save_format( $encode_format );

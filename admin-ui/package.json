@@ -23,6 +23,7 @@
 		"@wordpress/api-fetch": "^7.41.0",
 		"@wordpress/blocks": "^15.14.0",
 		"@wordpress/core-data": "^7.41.0",
+		"@wordpress/dataviews": "^13.0.0",
 		"@wordpress/i18n": "^6.14.0",
 		"@wordpress/icons": "^11.8.0",
 		"@wordpress/media-utils": "^5.41.0",

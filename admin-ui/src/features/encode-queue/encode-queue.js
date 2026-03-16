@@ -1,13 +1,11 @@
-/* global videopack */
-
 import './encode-queue.scss';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	createRoot,
 	useState,
 	useEffect,
-	memo,
-	useRef,
+	useCallback,
+	useMemo,
 } from '@wordpress/element';
 import {
 	PanelBody,
@@ -18,126 +16,60 @@ import {
 	__experimentalConfirmDialog as ConfirmDialog,
 	__experimentalDivider as Divider,
 } from '@wordpress/components';
+import { DataViews, filterSortAndPaginate } from '@wordpress/dataviews';
 import { decodeEntities } from '@wordpress/html-entities';
-import EncodeProgress from '../../components/AdditionalFormats/EncodeProgress';
+import EncodeFormatStatus from '../../components/AdditionalFormats/EncodeFormatStatus';
 import {
 	getQueue,
 	toggleQueue,
 	clearQueue,
 	deleteJob,
+	retryJob,
 	removeJob,
 	getBatchProgress,
 } from '../../utils/utils';
 
-const JobRow = memo(
-	({
-		job,
-		index,
-		isMultisite,
-		openConfirmDialog,
-		deletingJobId,
-		fetchQueue,
-	}) => {
-		return (
-			<tr
-				key={job.id}
-				className={
-					job.status === 'encoding' || job.status === 'processing'
-						? 'videopack-job-encoding'
-						: ''
-				}
-			>
-				<td>{index + 1}</td>
-				{isMultisite && <td>{job.blog_name}</td>}
-				<td>
-					{job.user_name ||
-						__('N/A', 'video-embed-thumbnail-generator')}
-				</td>
-				<td>
-					{job.poster_url ? (
-						<img
-							src={job.poster_url}
-							alt={job.video_title}
-							className="videopack-queue-attachment-poster"
-						/>
-					) : (
-						<Icon icon="format-video" />
-					)}
-				</td>
-				<td>
-					{job.attachment_link ? (
-						<a href={decodeEntities(job.attachment_link)}>
-							{job.video_title}
-						</a>
-					) : (
-						job.video_title
-					)}
-				</td>
-				<td>{job.format_name}</td>
-				<td className="videopack-status-cell">
-					<div>{job.status_l10n}</div>
-					{job.status === 'completed' && job.completed_at && (
-						<div className="videopack-completion-time">
-							{new Date(job.completed_at + 'Z').toLocaleString(
-								[],
-								{
-									year: 'numeric',
-									month: 'numeric',
-									day: 'numeric',
-									hour: 'numeric',
-									minute: 'numeric',
-								}
-							)}
-						</div>
-					)}
-					<EncodeProgress
-						formatData={{
-							...job,
-							encoding_now:
-								job.status === 'encoding' ||
-								job.status === 'processing',
-							job_id: job.id,
-						}}
-						onCancelJob={() =>
-							openConfirmDialog('delete', { jobId: job.id })
-						}
-						deleteInProgress={deletingJobId}
-						onRefresh={() => fetchQueue()}
-					/>
-				</td>
-				<td>
-					{job.status !== 'encoding' && (
-						<Button
-							variant="tertiary"
-							isDestructive
-							onClick={() =>
-								openConfirmDialog('remove', { jobId: job.id })
-							}
-							isBusy={deletingJobId === job.id}
-						>
-							{__('Clear', 'video-embed-thumbnail-generator')}
-						</Button>
-					)}
-				</td>
-			</tr>
-		);
-	}
-);
+const primaryField = 'video_title';
+const defaultLayouts = {
+	table: {
+		layout: {
+			primaryField,
+		},
+	},
+};
 
 const EncodeQueue = () => {
 	const [queueData, setQueueData] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isQueuePaused, setIsQueuePaused] = useState(
-		videopack.encodeQueueData.initialQueueState === 'pause'
+		window.videopack?.encodeQueueData?.initialQueueState === 'pause'
 	);
 	const [message, setMessage] = useState(null);
 	const [isClearing, setIsClearing] = useState(false);
 	const [isTogglingQueue, setIsTogglingQueue] = useState(false);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobId: ? }
-	const [deletingJobId, setDeletingJobId] = useState(null);
+	const [itemToActOn, setItemToActOn] = useState(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobIds: [] }
+	const [actingJobIds, setActingJobIds] = useState([]);
 	const [batchProgress, setBatchProgress] = useState({});
-	const progressTimerRef = useRef(null);
+
+	const isMultisite =
+		window.videopack?.isMultisite ||
+		window.videopack?.encodeQueueData?.isNetwork;
+
+	const [view, setView] = useState({
+		type: 'table',
+		perPage: 10,
+		page: 1,
+		fields: [
+			'poster',
+			'blog_name',
+			'user_name',
+			'video_title',
+			'format_name',
+			'status',
+		].filter((field) => (field === 'blog_name' ? isMultisite : true)),
+		layout: defaultLayouts.table.layout,
+	});
 
 	// Auto-clear success messages after 30 seconds.
 	useEffect(() => {
@@ -148,83 +80,6 @@ const EncodeQueue = () => {
 			return () => clearTimeout(timer);
 		}
 	}, [message]);
-
-	const isEncoding = queueData.some(
-		(job) => job.status === 'encoding' || job.status === 'processing'
-	);
-
-	const incrementEncodeProgress = () => {
-		setQueueData((currentQueueData) => {
-			if (!currentQueueData) {
-				return currentQueueData;
-			}
-
-			const anyActive = currentQueueData.some(
-				(job) =>
-					job.status === 'encoding' || job.status === 'processing'
-			);
-			if (!anyActive) {
-				return currentQueueData;
-			}
-
-			const updatedQueueData = [...currentQueueData];
-			const now = new Date().getTime() / 1000;
-
-			updatedQueueData.forEach((job, index) => {
-				if (
-					(job.status === 'encoding' ||
-						job.status === 'processing') &&
-					job.progress &&
-					job.started
-				) {
-					// Handle potential clock drift between server and client
-					const elapsed = Math.max(0, now - job.started);
-					let percent = parseFloat(job.progress.percent) || 0;
-					let remaining = job.progress.remaining;
-
-					if (job.video_duration && job.video_duration > 0) {
-						const totalDurationInSeconds =
-							job.video_duration / 1000000;
-						const speedMatch = job.progress.speed
-							? String(job.progress.speed).match(/(\d*\.?\d+)/)
-							: null;
-						const speed = speedMatch
-							? parseFloat(speedMatch[1])
-							: 1;
-
-						// Interpolate progress
-						const interpolatedPercent =
-							(elapsed * speed * 100) / totalDurationInSeconds;
-
-						// Don't let interpolation go backwards or exceed 99%
-						// 100% should only be set by the server response
-						percent = Math.min(
-							99,
-							Math.max(percent, interpolatedPercent)
-						);
-
-						const remainingSeconds =
-							(totalDurationInSeconds -
-								(totalDurationInSeconds * percent) / 100) /
-							speed;
-						remaining = Math.max(0, remainingSeconds);
-					}
-
-					updatedQueueData[index] = {
-						...job,
-						progress: {
-							...job.progress,
-							elapsed,
-							remaining,
-							percent,
-						},
-					};
-				}
-			});
-			return updatedQueueData;
-		});
-	};
-
 	const fetchQueue = async () => {
 		try {
 			const newData = await getQueue();
@@ -261,26 +116,6 @@ const EncodeQueue = () => {
 		return () => clearInterval(interval);
 	}, []);
 
-	useEffect(() => {
-		if (isEncoding) {
-			if (progressTimerRef.current === null) {
-				progressTimerRef.current = setInterval(
-					incrementEncodeProgress,
-					1000
-				);
-			}
-		} else {
-			clearInterval(progressTimerRef.current);
-			progressTimerRef.current = null;
-		}
-
-		return () => {
-			if (progressTimerRef.current !== null) {
-				clearInterval(progressTimerRef.current);
-				progressTimerRef.current = null;
-			}
-		};
-	}, [isEncoding]);
 
 	const handleToggleQueue = async () => {
 		setIsTogglingQueue(true);
@@ -321,9 +156,11 @@ const EncodeQueue = () => {
 		if (itemToActOn.action === 'clear') {
 			handleClearQueue(itemToActOn.type);
 		} else if (itemToActOn.action === 'delete') {
-			handleDeleteJob(itemToActOn.jobId);
+			handleDeleteJobs(itemToActOn.jobIds);
 		} else if (itemToActOn.action === 'remove') {
-			handleRemoveJob(itemToActOn.jobId);
+			handleRemoveJobs(itemToActOn.jobIds);
+		} else if (itemToActOn.action === 'delete_permanently') {
+			handleDeleteJobs(itemToActOn.jobIds);
 		}
 		setIsConfirmOpen(false);
 		setItemToActOn(null);
@@ -353,65 +190,363 @@ const EncodeQueue = () => {
 		}
 	};
 
-	const handleDeleteJob = async (jobId) => {
-		setDeletingJobId(jobId);
+	const handleDeleteJobs = async (jobIds) => {
+		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+		setActingJobIds((prev) => [...prev, ...ids]);
 		try {
-			await deleteJob(jobId);
+			for (const jobId of ids) {
+				await deleteJob(jobId);
+			}
 			setMessage({
 				type: 'success',
-				text: __('Job deleted.', 'video-embed-thumbnail-generator'),
+				text:
+					ids.length === 1
+						? __(
+								'Job deleted.',
+								'video-embed-thumbnail-generator'
+						  )
+						: sprintf(
+								/* translators: %d: number of jobs deleted */
+								__(
+									'%d jobs deleted.',
+									'video-embed-thumbnail-generator'
+								),
+								ids.length
+						  ),
 			});
 			fetchQueue();
 		} catch (error) {
-			console.error('Error deleting job:', error);
+			console.error('Error deleting job(s):', error);
 			setMessage({
 				type: 'error',
 				text: sprintf(
 					/* translators: %s is an error message */
 					__(
-						'Error deleting job: %s',
+						'Error deleting job(s): %s',
 						'video-embed-thumbnail-generator'
 					),
 					error.message
 				),
 			});
 		} finally {
-			setDeletingJobId(null);
+			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
 		}
 	};
 
-	const handleRemoveJob = async (jobId) => {
-		setDeletingJobId(jobId);
+	const handleRemoveJobs = async (jobIds) => {
+		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+		setActingJobIds((prev) => [...prev, ...ids]);
 		try {
-			await removeJob(jobId);
+			for (const jobId of ids) {
+				await removeJob(jobId);
+			}
 			setMessage({
 				type: 'success',
-				text: __(
-					'Job removed from queue.',
+				text:
+					ids.length === 1
+						? __(
+								'Job removed from queue.',
+								'video-embed-thumbnail-generator'
+						  )
+						: sprintf(
+								/* translators: %d: number of jobs removed */
+								__(
+									'%d jobs removed from queue.',
+									'video-embed-thumbnail-generator'
+								),
+								ids.length
+						  ),
+			});
+			fetchQueue();
+		} catch (error) {
+			console.error('Error removing job(s):', error);
+			setMessage({
+				type: 'error',
+				text: sprintf(
+					/* translators: %s is an error message */
+					__(
+						'Error removing job(s): %s',
+						'video-embed-thumbnail-generator'
+					),
+					error.message
+				),
+			});
+		} finally {
+			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+		}
+	};
+
+	const handleRetryJobs = useCallback(async (jobIds) => {
+		const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+		setActingJobIds((prev) => [...prev, ...ids]);
+		try {
+			for (const jobId of ids) {
+				await retryJob(jobId);
+			}
+			setMessage({
+				type: 'success',
+				text:
+					ids.length === 1
+						? __(
+								'Job re-queued.',
+								'video-embed-thumbnail-generator'
+						  )
+						: sprintf(
+								/* translators: %d: number of jobs re-queued */
+								__(
+									'%d jobs re-queued.',
+									'video-embed-thumbnail-generator'
+								),
+								ids.length
+						  ),
+			});
+			fetchQueue();
+		} catch (error) {
+			console.error('Error retrying job(s):', error);
+			setMessage({
+				type: 'error',
+				text: sprintf(
+					/* translators: %s is an error message */
+					__(
+						'Error retrying job(s): %s',
+						'video-embed-thumbnail-generator'
+					),
+					error.message
+				),
+			});
+		} finally {
+			setActingJobIds((prev) => prev.filter((id) => !ids.includes(id)));
+		}
+	}, []);
+
+	const fields = useMemo(
+		() =>
+			[
+				{
+					id: 'poster',
+					label: __('Thumbnail', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) => item.poster_url,
+					render: ({ item }) =>
+						item.poster_url ? (
+							<img
+								src={item.poster_url}
+								alt={item.video_title}
+								className="videopack-queue-attachment-poster"
+							/>
+						) : (
+							<Icon icon="format-video" />
+						),
+					enableHiding: false,
+					enableSorting: false,
+				},
+				{
+					id: 'blog_name',
+					label: __('Site', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) => item.blog_name,
+					enableSorting: isMultisite,
+				},
+				{
+					id: 'user_name',
+					label: __('User', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) =>
+						item.user_name ||
+						__('N/A', 'video-embed-thumbnail-generator'),
+					enableSorting: true,
+				},
+				{
+					id: 'video_title',
+					label: __('File', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) => item.video_title,
+					render: ({ item }) =>
+						item.attachment_link ? (
+							<a href={decodeEntities(item.attachment_link)}>
+								{decodeEntities(item.video_title)}
+							</a>
+						) : (
+							decodeEntities(item.video_title)
+						),
+					enableSorting: true,
+				},
+				{
+					id: 'format_name',
+					label: __('Format', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) => item.format_name,
+					enableSorting: true,
+				},
+				{
+					id: 'status',
+					label: __('Status', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) => item.status_l10n,
+					render: ({ item }) => (
+						<div
+							className={`videopack-status-cell ${
+								[
+									'encoding',
+									'processing',
+									'needs_insert',
+									'pending_replacement',
+								].includes(item.status)
+									? 'videopack-job-running'
+									: ''
+							}`}
+						>
+							<ul className="videopack-format-list">
+								<EncodeFormatStatus
+									formatId={item.preset || item.format_id}
+									formatData={{
+										...item,
+										encoding_now: [
+											'encoding',
+											'processing',
+											'needs_insert',
+											'pending_replacement',
+										].includes(item.status),
+										job_id: item.id,
+										label: item.status_l10n,
+									}}
+									onCancelJob={() =>
+										openConfirmDialog('delete', {
+											jobIds: [item.id],
+										})
+									}
+									deleteInProgress={actingJobIds.includes(
+										item.id
+									)}
+									onRefresh={() => fetchQueue()}
+									showLabel={false}
+									hideCancel={true}
+								/>
+							</ul>
+						</div>
+					),
+					enableSorting: true,
+				},
+				{
+					id: 'created_at',
+					label: __('Created', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) =>
+						item.created_at ||
+						(item.started
+							? new Date(item.started * 1000).toISOString()
+							: ''),
+					render: ({ item }) => {
+						let date = null;
+						if (item.created_at) {
+							date = new Date(item.created_at);
+						} else if (item.started) {
+							date = new Date(item.started * 1000);
+						}
+						return date ? date.toLocaleString() : '';
+					},
+					enableSorting: true,
+				},
+			].filter((field) =>
+				field.id === 'blog_name' ? isMultisite : true
+			),
+		[actingJobIds, isMultisite]
+	);
+
+	const actions = useMemo(
+		() => [
+			{
+				id: 'clear',
+				label: __('Clear', 'video-embed-thumbnail-generator'),
+				isDestructive: true,
+				isPrimary: true,
+				supportsBulk: true,
+				isEligible: (item) =>
+					['completed', 'failed', 'canceled', 'queued'].includes(
+						item.status
+					),
+				callback: (items) => {
+					const eligibleItems = items.filter((item) =>
+						['completed', 'failed', 'canceled', 'queued'].includes(
+							item.status
+						)
+					);
+					if (eligibleItems.length > 0) {
+						openConfirmDialog('remove', {
+							jobIds: eligibleItems.map((i) => i.id),
+						});
+					}
+				},
+			},
+			{
+				id: 'cancel',
+				label: __('Cancel', 'video-embed-thumbnail-generator'),
+				isDestructive: true,
+				supportsBulk: true,
+				isEligible: (item) =>
+					[
+						'encoding',
+						'processing',
+						'needs_insert',
+						'pending_replacement',
+					].includes(item.status),
+				callback: (items) => {
+					const eligibleItems = items.filter((item) =>
+						[
+							'encoding',
+							'processing',
+							'needs_insert',
+							'pending_replacement',
+						].includes(item.status)
+					);
+					if (eligibleItems.length > 0) {
+						openConfirmDialog('delete', {
+							jobIds: eligibleItems.map((i) => i.id),
+						});
+					}
+				},
+			},
+			{
+				id: 'retry',
+				label: __('Retry', 'video-embed-thumbnail-generator'),
+				supportsBulk: true,
+				isEligible: (item) =>
+					['failed', 'canceled', 'deleted', 'error'].includes(
+						item.status
+					),
+				callback: (items) => {
+					const eligibleItems = items.filter((item) =>
+						['failed', 'canceled', 'deleted', 'error'].includes(
+							item.status
+						)
+					);
+					if (eligibleItems.length > 0) {
+						handleRetryJobs(eligibleItems.map((i) => i.id));
+					}
+				},
+			},
+			{
+				id: 'delete_permanently',
+				label: __(
+					'Delete Permanently',
 					'video-embed-thumbnail-generator'
 				),
-			});
-			fetchQueue();
-		} catch (error) {
-			console.error('Error removing job:', error);
-			setMessage({
-				type: 'error',
-				text: sprintf(
-					/* translators: %s is an error message */
-					__(
-						'Error removing job: %s',
-						'video-embed-thumbnail-generator'
-					),
-					error.message
-				),
-			});
-		} finally {
-			setDeletingJobId(null);
-		}
-	};
+				isDestructive: true,
+				supportsBulk: true,
+				isEligible: (item) =>
+					item.status === 'completed' && !!item.output_id,
+				callback: (items) => {
+					const eligibleItems = items.filter(
+						(item) => item.status === 'completed' && !!item.output_id
+					);
+					if (eligibleItems.length > 0) {
+						openConfirmDialog('delete_permanently', {
+							jobIds: eligibleItems.map((i) => i.id),
+						});
+					}
+				},
+			},
+		],
+		[handleRetryJobs]
+	);
 
-	const isMultisite =
-		videopack.isMultisite || videopack.encodeQueueData?.isNetwork;
+	// "processedData" and "paginationInfo" definition
+	const { data: processedData, paginationInfo } = useMemo(() => {
+		return filterSortAndPaginate(queueData, view, fields);
+	}, [queueData, view, fields]);
 
 	return (
 		<div className="wrap videopack-encode-queue">
@@ -458,79 +593,64 @@ const EncodeQueue = () => {
 						className="videopack-batch-progress-panel"
 					>
 						<div className="videopack-batch-progress-content">
-							{type === 'browser' ? (
-								<p>
+							<div className="videopack-batch-stats">
+								<span>
 									{sprintf(
-										/* translators: %d: number of videos waiting for browser-side processing */
+										/* translators: %d: number of pending items */
 										__(
-											'Waiting for processing: %d',
+											'Pending: %d',
 											'video-embed-thumbnail-generator'
 										),
 										progress.pending
 									)}
-								</p>
-							) : (
-								<>
-									<div className="videopack-batch-stats">
-										<span>
-											{sprintf(
-												/* translators: %d: number of pending items */
-												__(
-													'Pending: %d',
-													'video-embed-thumbnail-generator'
-												),
-												progress.pending
-											)}
-										</span>
-										<span>
-											{sprintf(
-												/* translators: %d: number of in-progress items */
-												__(
-													'In-Progress: %d',
-													'video-embed-thumbnail-generator'
-												),
-												progress['in-progress']
-											)}
-										</span>
-										<span>
-											{sprintf(
-												/* translators: %d: number of completed items */
-												__(
-													'Completed: %d',
-													'video-embed-thumbnail-generator'
-												),
-												progress.complete
-											)}
-										</span>
-										{progress.failed > 0 && (
-											<span className="videopack-failed-count">
-												{sprintf(
-													/* translators: %d: number of failed items */
-													__(
-														'Failed: %d',
-														'video-embed-thumbnail-generator'
-													),
-													progress.failed
-												)}
-											</span>
-										)}
-									</div>
-									{progress.total > 0 && (
-										<div className="videopack-meter">
-											<div
-												className="videopack-meter-bar"
-												style={{
-													width: `${Math.round(
-														((progress.complete +
-															progress.failed) /
-															progress.total) *
-														100
-													)}%`,
-												}}
-											></div>
-										</div>
+								</span>
+								<span>
+									{sprintf(
+										/* translators: %d: number of in-progress items */
+										__(
+											'In-Progress: %d',
+											'video-embed-thumbnail-generator'
+										),
+										progress['in-progress']
 									)}
-								</>
+								</span>
+								<span>
+									{sprintf(
+										/* translators: %d: number of completed items */
+										__(
+											'Completed: %d',
+											'video-embed-thumbnail-generator'
+										),
+										progress.complete
+									)}
+								</span>
+								{progress.failed > 0 && (
+									<span className="videopack-failed-count">
+										{sprintf(
+											/* translators: %d: number of failed items */
+											__(
+												'Failed: %d',
+												'video-embed-thumbnail-generator'
+											),
+											progress.failed
+										)}
+									</span>
+								)}
+							</div>
+							{progress.total > 0 && (
+								<div className="videopack-meter">
+									<div
+										className="videopack-meter-bar"
+										style={{
+											width: `${Math.round(
+												((progress.complete +
+													progress.failed) /
+													progress.total) *
+													100
+											)}%`,
+										}}
+									></div>
+								</div>
 							)}
 						</div>
 					</PanelBody>
@@ -543,26 +663,97 @@ const EncodeQueue = () => {
 				</Notice>
 			)}
 
-			<ConfirmDialog
-				isOpen={isConfirmOpen}
-				onConfirm={handleConfirm}
-				onCancel={() => setIsConfirmOpen(false)}
-				className="videopack-confirm-dialog"
-			>
-				{itemToActOn?.action === 'clear'
-					? sprintf(
-						/* translators: %s: jobs type ('completed' or 'all') */
-						__(
-							'Are you sure you want to clear %s jobs?',
+			{isConfirmOpen && (
+				<ConfirmDialog
+					isOpen={isConfirmOpen}
+					title={(() => {
+						if (itemToActOn?.action === 'delete_permanently') {
+							return __(
+								'Delete Attachment?',
+								'video-embed-thumbnail-generator'
+							);
+						}
+						return __(
+							'Confirm Action',
 							'video-embed-thumbnail-generator'
-						),
-						itemToActOn.type
-					)
-					: __(
-						'Are you sure you want to remove this job?',
-						'video-embed-thumbnail-generator'
-					)}
-			</ConfirmDialog>
+						);
+					})()}
+					confirmButtonText={(() => {
+						if (itemToActOn?.action === 'delete_permanently') {
+							return __(
+								'Delete',
+								'video-embed-thumbnail-generator'
+							);
+						}
+						return __('Confirm', 'video-embed-thumbnail-generator');
+					})()}
+					onConfirm={handleConfirm}
+					onCancel={() => setIsConfirmOpen(false)}
+				>
+					{(() => {
+						const count = itemToActOn?.jobIds?.length || 0;
+						if (itemToActOn?.action === 'delete_permanently') {
+							return count > 1
+								? sprintf(
+										/* translators: %d: number of items */
+										__(
+											'Are you sure you want to permanently delete these %d attachments? This action cannot be undone.',
+											'video-embed-thumbnail-generator'
+										),
+										count
+								  )
+								: __(
+										'Are you sure you want to permanently delete this attachment? This action cannot be undone.',
+										'video-embed-thumbnail-generator'
+								  );
+						}
+						if (itemToActOn?.action === 'remove') {
+							return count > 1
+								? sprintf(
+										/* translators: %d: number of items */
+										__(
+											'Are you sure you want to remove these %d job records? This will not delete any files.',
+											'video-embed-thumbnail-generator'
+										),
+										count
+								  )
+								: __(
+										'Are you sure you want to remove this job record? This will not delete any files.',
+										'video-embed-thumbnail-generator'
+								  );
+						}
+						if (itemToActOn?.action === 'delete') {
+							return count > 1
+								? sprintf(
+										/* translators: %d: number of items */
+										__(
+											'Are you sure you want to cancel these %d jobs?',
+											'video-embed-thumbnail-generator'
+										),
+										count
+								  )
+								: __(
+										'Are you sure you want to cancel this job?',
+										'video-embed-thumbnail-generator'
+								  );
+						}
+						if (itemToActOn?.action === 'clear') {
+							return sprintf(
+								/* translators: %s: jobs type ('completed' or 'all') */
+								__(
+									'Are you sure you want to clear %s jobs?',
+									'video-embed-thumbnail-generator'
+								),
+								itemToActOn.type
+							);
+						}
+						return __(
+							'Are you sure you want to perform this action?',
+							'video-embed-thumbnail-generator'
+						);
+					})()}
+				</ConfirmDialog>
+			)}
 
 			<PanelBody>
 				<div className="videopack-queue-controls">
@@ -613,95 +804,21 @@ const EncodeQueue = () => {
 					{isLoading && <Spinner />}
 				</div>
 				<Divider />
-				<table
-					className={`wp-list-table widefat striped table-view-list videopack-queue-table ${isMultisite ? 'is-multisite' : ''
-						}`}
-				>
-					<thead>
-						<tr>
-							<th>
-								{__('Order', 'video-embed-thumbnail-generator')}
-							</th>
-							{isMultisite && (
-								<th>
-									{__(
-										'Site',
-										'video-embed-thumbnail-generator'
-									)}
-								</th>
-							)}
-							<th>
-								{__('User', 'video-embed-thumbnail-generator')}
-							</th>
-							<th>
-								{__(
-									'Thumbnail',
-									'video-embed-thumbnail-generator'
-								)}
-							</th>
-							<th>
-								{__('File', 'video-embed-thumbnail-generator')}
-							</th>
-							<th>
-								{__(
-									'Format',
-									'video-embed-thumbnail-generator'
-								)}
-							</th>
-							<th>
-								{__(
-									'Status',
-									'video-embed-thumbnail-generator'
-								)}
-							</th>
-							<th>
-								{__(
-									'Actions',
-									'video-embed-thumbnail-generator'
-								)}
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						{isLoading && (
-							<tr className="videopack-queue-message-row">
-								<td colSpan={isMultisite ? 8 : 7}>
-									{__(
-										'Loading queue…',
-										'video-embed-thumbnail-generator'
-									)}
-								</td>
-							</tr>
-						)}
-						{!isLoading && queueData.length === 0 && (
-							<tr className="videopack-queue-message-row">
-								<td colSpan={isMultisite ? 8 : 7}>
-									{__(
-										'The encode queue is empty.',
-										'video-embed-thumbnail-generator'
-									)}
-								</td>
-							</tr>
-						)}
-						{!isLoading &&
-							queueData.map((job, index) => (
-								<JobRow
-									key={job.id}
-									job={job}
-									index={index}
-									isMultisite={isMultisite}
-									openConfirmDialog={openConfirmDialog}
-									deletingJobId={deletingJobId}
-									fetchQueue={fetchQueue}
-								/>
-							))}
-					</tbody>
-				</table>
+				<div className="videopack-dataviews-container">
+					<DataViews
+						data={processedData}
+						fields={fields}
+						view={view}
+						onChangeView={setView}
+						defaultLayouts={defaultLayouts}
+						actions={actions}
+						paginationInfo={paginationInfo}
+					/>
+				</div>
 			</PanelBody>
 		</div>
 	);
 };
-
 // Render the component
 document.addEventListener('DOMContentLoaded', function () {
 	const rootElement =
