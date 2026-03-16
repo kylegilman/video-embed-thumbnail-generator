@@ -103,65 +103,72 @@ export const VideoJS = (props) => {
 				});
 			}, 0);
 		} else if (player && !player.isDisposed()) {
-			// Update existing player options
-			player.autoplay(options.autoplay);
-			player.loop(options.loop);
-			player.muted(options.muted);
-			player.volume(options.volume);
-			player.poster(options.poster);
-			player.controls(options.controls);
-			player.playbackRates(
-				options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []
-			);
-			player.preload(options.preload);
-
-			if (previousSkinRef.current !== skin) {
-				if (previousSkinRef.current) {
-					player.removeClass(previousSkinRef.current);
-				}
-				if (skin) {
-					player.addClass(skin);
-				}
-				previousSkinRef.current = skin;
-			}
-
-			// Only update src if it has actually changed to prevent reloading
-			if (options.sources && options.sources.length > 0) {
-				const currentSrc = player.currentSrc();
-				const newSrc = options.sources[0].src;
-				if (currentSrc !== newSrc) {
-					player.src(options.sources);
-				}
-			}
-
-			// Update tracks if they changed
-			if (options.tracks) {
-				const remoteTracks = player.remoteTextTracks();
-				const currentTracks = [];
-				for (let i = 0; i < remoteTracks.length; i++) {
-					currentTracks.push({
-						src: remoteTracks[i].src,
-						kind: remoteTracks[i].kind,
-						srclang: remoteTracks[i].language,
-						label: remoteTracks[i].label,
-						default: remoteTracks[i].default,
-					});
+			player.ready(function () {
+				// Safeguard against missing tech (e.g. failed to load source)
+				if (!player.tech(true)) {
+					return;
 				}
 
-				if (
-					JSON.stringify(currentTracks) !==
-					JSON.stringify(options.tracks)
-				) {
-					// Remove old remote tracks
-					for (let i = remoteTracks.length - 1; i >= 0; i--) {
-						player.removeRemoteTextTrack(remoteTracks[i]);
+				// Update existing player options
+				player.autoplay(options.autoplay);
+				player.loop(options.loop);
+				player.muted(options.muted);
+				player.volume(options.volume);
+				player.poster(options.poster);
+				player.controls(options.controls);
+				player.playbackRates(
+					options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []
+				);
+				player.preload(options.preload);
+
+				if (previousSkinRef.current !== skin) {
+					if (previousSkinRef.current) {
+						player.removeClass(previousSkinRef.current);
 					}
-					// Add new ones
-					options.tracks.forEach((track) => {
-						player.addRemoteTextTrack(track, false);
-					});
+					if (skin) {
+						player.addClass(skin);
+					}
+					previousSkinRef.current = skin;
 				}
-			}
+
+				// Only update src if it has actually changed to prevent reloading
+				if (options.sources && options.sources.length > 0) {
+					const currentSrc = player.currentSrc();
+					const newSrc = options.sources[0].src;
+					if (currentSrc !== newSrc) {
+						player.src(options.sources);
+					}
+				}
+
+				// Update tracks if they changed
+				if (options.tracks) {
+					const remoteTracks = player.remoteTextTracks();
+					const currentTracks = [];
+					for (let i = 0; i < remoteTracks.length; i++) {
+						currentTracks.push({
+							src: remoteTracks[i].src,
+							kind: remoteTracks[i].kind,
+							srclang: remoteTracks[i].language,
+							label: remoteTracks[i].label,
+							default: remoteTracks[i].default,
+						});
+					}
+
+					if (
+						JSON.stringify(currentTracks) !==
+						JSON.stringify(options.tracks)
+					) {
+						// Remove old remote tracks
+						for (let i = remoteTracks.length - 1; i >= 0; i--) {
+							player.removeRemoteTextTrack(remoteTracks[i]);
+						}
+						// Add new ones
+						options.tracks.forEach((track) => {
+							player.addRemoteTextTrack(track, false);
+						});
+					}
+				}
+			});
 		}
 
 		return () => {
