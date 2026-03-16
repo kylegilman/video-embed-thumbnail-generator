@@ -3,7 +3,7 @@ Contributors: kylegilman
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kylegilman@gmail.com&item_name=Videopack%20Plugin%20Donation
 Tags: video, video player, video gallery, thumbnail, resolutions
 Requires at least: 6.2
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 7.3
 Stable tag: 4.10.5
 License: GPLv2 or later
@@ -105,16 +105,37 @@ Enter the username & password in the Videopack settings page, "FFmpeg Settings" 
 
 == Changelog ==
 
-= 5.0 - July XX, 2025 =
+= 5.0 - April XX, 2026 =
 * Substantially rewrote the entire plugin.
-* Added a Videopack Block for the block editor.
+* Added Videopack Video, Gallery, and List blocks for the block editor.
+* Added placeholder images and a GUI for editing shortcodes in the Classic Editor.
 * Added watermarks for video thumbnails without requiring FFmpeg.
 * Redesigned settings page.
-* Added REST API endpoints for thumbnail generation and video encoding.
+* Added many custom REST API endpoints.
 * Replaced Gallery Thumbnail Width with Gallery Columns and removed Gallery Aspect Ratio setting.
 * Changed custom 'kgvid_' filters and action hooks to 'videopack_'.
-* Removed LIBAV/AVCONV support.
+* Removed obsolete LIBAV/AVCONV support.
 * Changed capitalization of FFMPEG to FFmpeg.
+
+= 4.10.5 - January 24, 2026 =
+* Fixed bug that caused 404 errors when WordPress Default Player is selected.
+* Fixed bug that incorrectly formatted thumbnails when set to display when video ends.
+* Fixed bug that prevented disabling "Show Download Link" on the settings page.
+* Fixed bug that triggered _load_textdomain_just_in_time too early.
+* Updated dependencies Video.js, Freemius SDK, and Symfony/Process.
+
+= 4.10.4 - July 11, 2025 =
+* Security update to fix XSS vulnerability in popup video gallery.
+* Updated Freemius SDK to v2.12.1 and symfony/polyfill-php80 to v1.32.0
+
+= 4.10.3 - Januray 27, 2025 =
+* Fixed bug that left FFMPEG settings enabled when FFMPEG is not present on server.
+* Fixed bug that limited the list of users to email encoding errors to.
+* Updated Video.js to v8.20.0, Freemius SDK to v2.11.0, and Symfony/Process to v5.4.47
+
+= 4.10.2 - May 8, 2024 =
+* Fixed bug that prevented disabling the "Set all videos to expand to 100% of their containers" setting.
+* Better resizing for the settings page sample video.
 
 = 4.10.1 - April 7, 2024 =
 * Switched custom database query for looking up attachment IDs via URLs to the WordPress function attachment_url_to_postid() which could result in some video URLs no longer returning attachment IDs when the video player code is generated. That would prevent features like video play counting, and would only apply to shortcodes that don't include attachment IDs. Please let me know if this happens to you.
