@@ -9,9 +9,10 @@ import {
 	SelectControl,
 	TextControl,
 } from '@wordpress/components';
-import { captureVideoFrame } from '../../../utils/video-capture';
-import ChooseFromLibrary from './ChooseFromLibrary';
-import WatermarkPositioner from './WatermarkPositioner';
+import { captureVideoFrame } from '../../utils/video-capture';
+import SelectFromLibrary from '../../features/settings/components/SelectFromLibrary';
+import WatermarkPositioner from './components/WatermarkPositioner';
+import './WatermarkSettingsPanel.scss';
 
 const WatermarkSettingsPanel = ({
 	watermarkSettings,
@@ -66,9 +67,9 @@ const WatermarkSettingsPanel = ({
 
 	return (
 		<PanelBody {...panelProps}>
-			<ChooseFromLibrary
+			<SelectFromLibrary
 				label={__(
-					'Watermark image URL:',
+					'Watermark image URL',
 					'video-embed-thumbnail-generator'
 				)}
 				type="url"
@@ -119,9 +120,11 @@ const WatermarkSettingsPanel = ({
 							align="flex-end"
 							justify="flex-start"
 							style={{ marginBottom: '10px' }}
+							className="videopack-watermark-row"
 						>
 							<FlexItem className="videopack-alignment-control">
 								<SelectControl
+									__next40pxDefaultSize
 									label={__(
 										'Horizontal Alignment',
 										'video-embed-thumbnail-generator'
@@ -174,9 +177,15 @@ const WatermarkSettingsPanel = ({
 								/>
 							</FlexItem>
 						</Flex>
-						<Flex gap={4} align="flex-end" justify="flex-start">
+						<Flex
+							gap={4}
+							align="flex-end"
+							justify="flex-start"
+							className="videopack-watermark-row"
+						>
 							<FlexItem className="videopack-alignment-control">
 								<SelectControl
+									__next40pxDefaultSize
 									label={__(
 										'Vertical Alignment',
 										'video-embed-thumbnail-generator'
