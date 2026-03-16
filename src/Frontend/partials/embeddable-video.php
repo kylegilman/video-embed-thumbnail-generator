@@ -24,19 +24,19 @@ if ( ! $options_manager ) {
 
 $shortcode_handler = new \Videopack\Frontend\Shortcode( $options_manager );
 
-if ( ! isset( $kgvid_video_embed ) || ! is_array( $kgvid_video_embed ) ) {
+if ( ! isset( $videopack_query_var ) || ! is_array( $videopack_query_var ) ) {
 	$current_post         = get_post();
 	$metadata             = new \Videopack\Frontend\Metadata( $options_manager );
 	$first_embedded_video = $metadata->get_first_embedded_video( $current_post );
-	$kgvid_video_embed    = $first_embedded_video;
+	$videopack_query_var  = $first_embedded_video;
 
 	$shortcode = '[videopack';
-	if ( ! empty( $kgvid_video_embed['id'] ) ) {
-		$shortcode .= ' id="' . esc_attr( $kgvid_video_embed['id'] ) . '"';
+	if ( ! empty( $videopack_query_var['id'] ) ) {
+		$shortcode .= ' id="' . esc_attr( $videopack_query_var['id'] ) . '"';
 	}
-	$shortcode .= ' fullwidth="true" count_views="false" view_count="false"]' . esc_url( $kgvid_video_embed['url'] ) . '[/videopack]';
+	$shortcode .= ' fullwidth="true" count_views="false" view_count="false"]' . esc_url( $videopack_query_var['url'] ) . '[/videopack]';
 } else {
-	$shortcode = $shortcode_handler->generate_attachment_shortcode( $kgvid_video_embed );
+	$shortcode = $shortcode_handler->generate_attachment_shortcode( $videopack_query_var );
 }
 
 ?>
@@ -51,14 +51,14 @@ do_action( 'embed_head' );
 ?>
 <style>
 	body:before, body:after { content: none; }
-	.kgvid_wrapper { margin:0 !important; }
-	<?php if ( is_array( $kgvid_video_embed ) && array_key_exists( 'gallery', $kgvid_video_embed ) ) : ?>
-		.kgvid_below_video { color:white; }
-		.kgvid_below_video a { color:#aaa; }
+	.videopack-wrapper { margin:0 !important; }
+	<?php if ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) : ?>
+		.videopack-below-video { color:white; }
+		.videopack-below-video a { color:#aaa; }
 	<?php endif; ?>
 </style>
 </head>
-<body <?php body_class( 'content' ); ?> style="margin:0px; font-family: sans-serif; padding:0px; border:none; <?php echo ( is_array( $kgvid_video_embed ) && array_key_exists( 'gallery', $kgvid_video_embed ) ) ? 'background-color:black;' : 'background-color:transparent;'; ?>">
+<body <?php body_class( 'content' ); ?> style="margin:0px; font-family: sans-serif; padding:0px; border:none; <?php echo ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) ? 'background-color:black;' : 'background-color:transparent;'; ?>">
 <?php
 echo do_shortcode( $shortcode );
 wp_footer();

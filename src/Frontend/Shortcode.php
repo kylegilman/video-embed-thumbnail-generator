@@ -262,12 +262,12 @@ class Shortcode {
 
 		$query_atts = shortcode_atts( $default_atts, $atts, 'videopack' );
 
-		$kgvid_video_embed_query_var = get_query_var( 'videopack' ); // variables in URL
-		if ( empty( $kgvid_video_embed_query_var ) ) {
-			$kgvid_video_embed_query_var = get_query_var( 'kgvid_video_embed' ); // check the old query variable
+		$videopack_query_var = get_query_var( 'videopack' ); // variables in URL
+		if ( empty( $videopack_query_var ) ) {
+			$videopack_query_var = get_query_var( 'kgvid_video_embed' ); // check the old query variable
 		}
 
-		if ( ! empty( $kgvid_video_embed_query_var ) ) {
+		if ( ! empty( $videopack_query_var ) ) {
 
 			$allowed_query_var_atts = array( // attributes that can be changed via URL
 				'auto_res',
@@ -288,9 +288,9 @@ class Shortcode {
 				'width',
 			);
 
-			$allowed_query_var_atts = apply_filters( 'kgvid_allowed_query_var_atts', $allowed_query_var_atts );
+			$allowed_query_var_atts = apply_filters( 'videopack_allowed_query_var_atts', $allowed_query_var_atts );
 
-			foreach ( $kgvid_video_embed_query_var as $key => $value ) {
+			foreach ( $videopack_query_var as $key => $value ) {
 				if ( in_array( $key, $allowed_query_var_atts ) ) {
 					$query_atts[ $key ] = $value;
 				}
@@ -448,7 +448,7 @@ class Shortcode {
 				'playsinline'  => true,
 				'view_count'   => false,
 			);
-			$gifmode_atts = apply_filters( 'kgvid_gifmode_atts', $gifmode_atts ); // Consider updating filter name.
+			$gifmode_atts = apply_filters( 'videopack_gifmode_atts', $gifmode_atts );
 			$query_atts   = array_merge( $query_atts, $gifmode_atts );
 		}
 
@@ -637,15 +637,15 @@ class Shortcode {
 		return $qvars;
 	}
 
-	public function generate_attachment_shortcode( $videopack_video_embed ) {
+	public function generate_attachment_shortcode( $videopack_query_var ) {
 
 		$post      = get_post();
 		$shortcode = '';
 
-		if ( is_array( $videopack_video_embed )
-		&& array_key_exists( 'id', $videopack_video_embed )
+		if ( is_array( $videopack_query_var )
+		&& array_key_exists( 'id', $videopack_query_var )
 		) {
-			$post_id = $videopack_video_embed['id'];
+			$post_id = $videopack_query_var['id'];
 		} elseif ( $post && property_exists( $post, 'ID' ) ) {
 			$post_id = $post->ID;
 		} else {
@@ -654,16 +654,16 @@ class Shortcode {
 
 		$videopack_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options_manager ) )->get( $post_id );
 
-		if ( is_array( $videopack_video_embed )
-		&& array_key_exists( 'sample', $videopack_video_embed )
+		if ( is_array( $videopack_query_var )
+		&& array_key_exists( 'sample', $videopack_query_var )
 		) {
 			$url = plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ );
 		} else {
 			$url = wp_get_attachment_url( $post_id );
 		}
 
-		if ( is_array( $videopack_video_embed )
-		&& array_key_exists( 'gallery', $videopack_video_embed )
+		if ( is_array( $videopack_query_var )
+		&& array_key_exists( 'gallery', $videopack_query_var )
 		) {
 			$gallery = true;
 		} else {
@@ -671,22 +671,25 @@ class Shortcode {
 		}
 
 		$shortcode = '[videopack';
-		if ( is_array( $videopack_video_embed )
-		&& array_key_exists( 'enable', $videopack_video_embed )
-		&& $videopack_video_embed['enable'] == 'true'
+		if ( ! empty( $post_id ) ) {
+			$shortcode .= ' id="' . esc_attr( $post_id ) . '"';
+		}
+		if ( is_array( $videopack_query_var )
+		&& array_key_exists( 'enable', $videopack_query_var )
+		&& $videopack_query_var['enable'] == 'true'
 		) {
 			$shortcode .= ' fullwidth="true"';
 		}
 		if ( $videopack_postmeta['downloadlink'] == true ) {
 			$shortcode .= ' downloadlink="true"';
 		}
-		if ( is_array( $videopack_video_embed ) && array_key_exists( 'start', $videopack_video_embed ) ) {
-			$shortcode .= ' start="' . esc_attr( $videopack_video_embed['start'] ) . '"';
+		if ( is_array( $videopack_query_var ) && array_key_exists( 'start', $videopack_query_var ) ) {
+			$shortcode .= ' start="' . esc_attr( $videopack_query_var['start'] ) . '"';
 		}
-		if ( is_array( $videopack_video_embed ) && array_key_exists( 'gallery', $videopack_video_embed ) ) {
+		if ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) {
 			$shortcode .= ' autoplay="true"';
 		}
-		if ( is_array( $videopack_video_embed ) && array_key_exists( 'sample', $videopack_video_embed ) ) {
+		if ( is_array( $videopack_query_var ) && array_key_exists( 'sample', $videopack_query_var ) ) {
 			if ( $this->options['overlay_title'] == true ) {
 				$shortcode .= ' title="' . esc_attr_x( 'Sample Video', 'example video', 'video-embed-thumbnail-generator' ) . '"';
 			}
