@@ -181,7 +181,7 @@ const NetworkSettingsPage = () => {
 		return (
 			<PanelBody
 				title={__(
-					'User capabilities for new sites:',
+					'User capabilities for new sites',
 					'video-embed-thumbnail-generator'
 				)}
 				initialOpen={true}
@@ -301,7 +301,7 @@ const NetworkSettingsPage = () => {
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__(
-								'Path to FFmpeg folder on server:',
+								'Path to FFmpeg folder on server',
 								'video-embed-thumbnail-generator'
 							)}
 							value={settings.app_path}
@@ -325,7 +325,7 @@ const NetworkSettingsPage = () => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Only Super Admins can change FFmpeg Settings.',
+							'Only Super Admins can change FFmpeg Settings',
 							'video-embed-thumbnail-generator'
 						)}
 						checked={!!settings.superadmin_only_ffmpeg_settings}
@@ -343,7 +343,7 @@ const NetworkSettingsPage = () => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Simultaneous encodes:',
+							'Simultaneous encodes',
 							'video-embed-thumbnail-generator'
 						)}
 						value={settings.simultaneous_encodes}
@@ -359,7 +359,7 @@ const NetworkSettingsPage = () => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Threads:',
+							'Threads',
 							'video-embed-thumbnail-generator'
 						)}
 						value={settings.threads}
