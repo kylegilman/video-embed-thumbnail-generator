@@ -26,7 +26,7 @@ import {
 import { useEffect, useState } from '@wordpress/element';
 import TextControlOnBlur from './TextControlOnBlur';
 import PerCodecQualitySettings from './PerCodecQualitySettings';
-import WatermarkSettingsPanel from './WatermarkSettingsPanel';
+import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import VideopackTooltip from './VideopackTooltip';
 import useResolutions from '../../../hooks/useResolutions';
 
@@ -155,7 +155,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								label={resolution.name}
 								checked={
 									!!currentEncode?.[codec.id]?.resolutions?.[
-									resolution.id
+										resolution.id
 									]
 								}
 								onChange={(isChecked) =>
@@ -220,7 +220,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Codec:', 'video-embed-thumbnail-generator')}
+					label={__('Codec', 'video-embed-thumbnail-generator')}
 					value={sample_codec}
 					options={codecs}
 					onChange={changeHandlerFactory.sample_codec}
@@ -229,7 +229,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={__('Resolution:', 'video-embed-thumbnail-generator')}
+					label={__('Resolution', 'video-embed-thumbnail-generator')}
 					value={sample_resolution}
 					options={resolutions}
 					onChange={changeHandlerFactory.sample_resolution}
@@ -239,7 +239,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Test vertical video rotation.',
+							'Test vertical video rotation',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.sample_rotate}
@@ -298,7 +298,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Path to FFmpeg folder on server:',
+							'Path to FFmpeg folder on server',
 							'video-embed-thumbnail-generator'
 						)}
 						value={app_path}
@@ -306,20 +306,20 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						help={
 							isNetworkActive
 								? __(
-									'This setting is controlled at the network level.',
-									'video-embed-thumbnail-generator'
-								)
+										'This setting is controlled at the network level.',
+										'video-embed-thumbnail-generator'
+									)
 								: __(
-									'Leave blank if FFmpeg is in your system path.'
-								)
+										'Leave blank if FFmpeg is in your system path.'
+									)
 						}
 						disabled={isNetworkActive}
 						title={
 							isNetworkActive
 								? __(
-									'This setting is controlled by the network administrator.',
-									'video-embed-thumbnail-generator'
-								)
+										'This setting is controlled by the network administrator.',
+										'video-embed-thumbnail-generator'
+									)
 								: null
 						}
 					/>
@@ -343,7 +343,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 							<span className="videopack-label-with-tooltip">
 								<strong>
 									{__(
-										'About formats:',
+										'About formats',
 										'video-embed-thumbnail-generator'
 									)}
 								</strong>
@@ -377,7 +377,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__(
-									'Custom Resolution Height:',
+									'Custom Resolution Height',
 									'video-embed-thumbnail-generator'
 								)}
 								type="number"
@@ -395,7 +395,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={__(
-								'Show only default formats on admin pages.'
+								'Show only default formats on admin pages'
 							)}
 							onChange={changeHandlerFactory.hide_video_formats}
 							checked={hide_video_formats}
@@ -421,7 +421,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Encode default formats.',
+							'Encode default formats',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.auto_encode}
@@ -431,7 +431,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Convert animated GIFs to H.264.',
+							'Convert animated GIFs to H.264',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.auto_encode_gif}
@@ -443,7 +443,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							"Automatically publish video's parent post when encoding finishes."
+							"Automatically publish video's parent post when encoding finishes"
 						)}
 						onChange={changeHandlerFactory.auto_publish_post}
 						checked={auto_publish_post}
@@ -477,18 +477,18 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						>
 							{encodingBatch.isProcessing
 								? sprintf(
-									/* translators: 1: current count, 2: total count */
-									__(
-										'Processing %1$d / %2$d',
-										'video-embed-thumbnail-generator'
-									),
-									encodingBatch.progress.current,
-									encodingBatch.progress.total
-								)
+										/* translators: 1: current count, 2: total count */
+										__(
+											'Processing %1$d / %2$d',
+											'video-embed-thumbnail-generator'
+										),
+										encodingBatch.progress.current,
+										encodingBatch.progress.total
+									)
 								: __(
-									'Encode default formats',
-									'video-embed-thumbnail-generator'
-								)}
+										'Encode default formats',
+										'video-embed-thumbnail-generator'
+									)}
 						</Button>
 						<VideopackTooltip
 							text={__(
@@ -552,7 +552,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Audio bitrate:',
+							'Audio bitrate',
 							'video-embed-thumbnail-generator'
 						)}
 						value={audio_bitrate}
@@ -568,7 +568,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Always output stereo audio.',
+							'Always output stereo audio',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.audio_channels}
@@ -587,7 +587,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					label={
 						<span className="videopack-label-with-tooltip">
 							{__(
-								'Simultaneous encodes:',
+								'Simultaneous encodes',
 								'video-embed-thumbnail-generator'
 							)}
 							<VideopackTooltip
@@ -609,17 +609,17 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					title={
 						isNetworkActive
 							? __(
-								'This setting is controlled by the network administrator.',
-								'video-embed-thumbnail-generator'
-							)
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
 							: null
 					}
 					help={
 						isNetworkActive
 							? __(
-								'This setting is controlled at the network level.',
-								'video-embed-thumbnail-generator'
-							)
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
 							: null
 					}
 				/>
@@ -628,7 +628,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					__next40pxDefaultSize
 					label={
 						<span className="videopack-label-with-tooltip">
-							{__('Threads:', 'video-embed-thumbnail-generator')}
+							{__('Threads', 'video-embed-thumbnail-generator')}
 							<VideopackTooltip
 								text={__(
 									'Default is 1, which limits encoding speed but prevents encoding from using too many system resources. Selecting 0 will allow FFmpeg to optimize the number of threads or you can set the number manually. This may lead to FFmpeg monopolizing system resources.',
@@ -648,17 +648,17 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					title={
 						isNetworkActive
 							? __(
-								'This setting is controlled by the network administrator.',
-								'video-embed-thumbnail-generator'
-							)
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
 							: null
 					}
 					help={
 						isNetworkActive
 							? __(
-								'This setting is controlled at the network level.',
-								'video-embed-thumbnail-generator'
-							)
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
 							: null
 					}
 				/>
@@ -682,17 +682,17 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 					title={
 						isNetworkActive
 							? __(
-								'This setting is controlled by the network administrator.',
-								'video-embed-thumbnail-generator'
-							)
+									'This setting is controlled by the network administrator.',
+									'video-embed-thumbnail-generator'
+								)
 							: null
 					}
 					help={
 						isNetworkActive
 							? __(
-								'This setting is controlled at the network level.',
-								'video-embed-thumbnail-generator'
-							)
+									'This setting is controlled at the network level.',
+									'video-embed-thumbnail-generator'
+								)
 							: null
 					}
 				/>
@@ -707,7 +707,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<BaseControl
 					__nextHasNoMarginBottom
 					label={__(
-						'Test encode command:',
+						'Test encode command',
 						'video-embed-thumbnail-generator'
 					)}
 					id="sample-format-selects"
@@ -723,7 +723,7 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				<TextareaControl
 					__nextHasNoMarginBottom
 					label={__(
-						'FFmpeg test output:',
+						'FFmpeg test output',
 						'video-embed-thumbnail-generator'
 					)}
 					rows={20}

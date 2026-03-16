@@ -8,13 +8,10 @@ import {
 	ToggleControl,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import {
-	startBatchProcess,
-	getBatchProgress,
-} from '../../../utils/utils';
+import { startBatchProcess, getBatchProgress } from '../../../utils/utils';
 import useBatchProcess from '../../../hooks/useBatchProcess';
-import ChooseFromLibrary from './ChooseFromLibrary';
-import WatermarkSettingsPanel from './WatermarkSettingsPanel';
+import SelectFromLibrary from './SelectFromLibrary';
+import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import VideopackTooltip from './VideopackTooltip';
 
 const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
@@ -166,7 +163,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 						onChange={changeHandlerFactory.auto_thumb_position}
 					/>
 					{__(
-						'as the featured image.',
+						'as the featured image',
 						'video-embed-thumbnail-generator'
 					)}
 				</>
@@ -194,76 +191,81 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	return (
 		<>
 			<PanelBody>
-				<div className="videopack-setting-auto-width">
-					<TextControl
-						__nextHasNoMarginBottom
-						__next40pxDefaultSize
-						label={__(
-							'Number of thumbnails to generate manually:',
-							'video-embed-thumbnail-generator'
-						)}
-						type="number"
-						value={total_thumbnails}
-						onChange={changeHandlerFactory.total_thumbnails}
-					/>
-				</div>
-				<div className="videopack-setting-extra-margin">
-					<span className="videopack-settings-label">
-						{__(
-							'Auto-generate thumbnails on upload:',
-							'video-embed-thumbnail-generator'
-						)}
-					</span>
-					<ToggleControl
-						className="videopack-vertical-center"
-						__nextHasNoMarginBottom
-						label={autoThumbLabel()}
-						onChange={changeHandlerFactory.auto_thumb}
-						checked={!!auto_thumb}
-					/>
-				</div>
-				<div className="videopack-setting-extra-margin">
-					<div className="videopack-control-with-tooltip">
-						<Button
+				<PanelBody
+					title={__('Generating', 'video-embed-thumbnail-generator')}
+					initialOpen={true}
+				>
+					<div className="videopack-setting-auto-width">
+						<TextControl
+							__nextHasNoMarginBottom
 							__next40pxDefaultSize
-							variant="secondary"
-							onClick={handleGenerateAllThumbnails}
-							disabled={generationBatch.isProcessing}
-						>
-							{generationBatch.isProcessing
-								? sprintf(
-									/* translators: %1$d: current count, %2$d: total count */
-									__(
-										'Processing %1$d / %2$d',
-										'video-embed-thumbnail-generator'
-									),
-									generationBatch.progress.current,
-									generationBatch.progress.total
-								)
-								: __(
-									'Generate thumbnails for old videos',
-									'video-embed-thumbnail-generator'
-								)}
-						</Button>
-						<VideopackTooltip
-							text={__(
-								"Use FFmpeg to automatically generate thumbnails for every video in the Media Library that doesn't already have them. Uses the automatic thumbnail settings above. This could take a very long time if you have a lot of videos.",
+							label={__(
+								'Number of thumbnails to generate manually',
 								'video-embed-thumbnail-generator'
 							)}
+							type="number"
+							value={total_thumbnails}
+							onChange={changeHandlerFactory.total_thumbnails}
 						/>
 					</div>
-				</div>
-				{ffmpeg_exists === true && (
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__(
-							"When possible, use the browser's built-in video capabilities to make thumbnails instead of FFmpeg."
-						)}
-						value={browser_thumbnails}
-						checked={!!browser_thumbnails}
-						onChange={changeHandlerFactory.browser_thumbnails}
-					/>
-				)}
+					<div className="videopack-setting-extra-margin">
+						<span className="videopack-settings-label">
+							{__(
+								'Auto-generate thumbnails on upload',
+								'video-embed-thumbnail-generator'
+							)}
+						</span>
+						<ToggleControl
+							className="videopack-vertical-center"
+							__nextHasNoMarginBottom
+							label={autoThumbLabel()}
+							onChange={changeHandlerFactory.auto_thumb}
+							checked={!!auto_thumb}
+						/>
+					</div>
+					<div className="videopack-setting-extra-margin">
+						<div className="videopack-control-with-tooltip">
+							<Button
+								__next40pxDefaultSize
+								variant="secondary"
+								onClick={handleGenerateAllThumbnails}
+								disabled={generationBatch.isProcessing}
+							>
+								{generationBatch.isProcessing
+									? sprintf(
+										/* translators: %1$d: current count, %2$d: total count */
+										__(
+											'Processing %1$d / %2$d',
+											'video-embed-thumbnail-generator'
+										),
+										generationBatch.progress.current,
+										generationBatch.progress.total
+									)
+									: __(
+										'Generate thumbnails for old videos',
+										'video-embed-thumbnail-generator'
+									)}
+							</Button>
+							<VideopackTooltip
+								text={__(
+									"Automatically generate thumbnails for every video in the Media Library that doesn't already have them. Uses the automatic thumbnail settings above.",
+									'video-embed-thumbnail-generator'
+								)}
+							/>
+						</div>
+					</div>
+					{ffmpeg_exists === true && (
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								"When possible, use the browser's built-in video capabilities to make thumbnails instead of FFmpeg"
+							)}
+							value={browser_thumbnails}
+							checked={!!browser_thumbnails}
+							onChange={changeHandlerFactory.browser_thumbnails}
+						/>
+					)}
+				</PanelBody>
 				<PanelBody
 					title={__(
 						'Video player images',
@@ -271,9 +273,9 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					)}
 					initialOpen={true}
 				>
-					<ChooseFromLibrary
+					<SelectFromLibrary
 						label={__(
-							'Default thumbnail:',
+							'Default thumbnail',
 							'video-embed-thumbnail-generator'
 						)}
 						type="url"
@@ -283,30 +285,29 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Display thumbnail image again when video ends.',
+							'Display thumbnail image again when video ends',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.endofvideooverlaysame}
 						checked={!!endofvideooverlaysame}
 					/>
-					<div className="videopack-control-with-tooltip">
-						<ChooseFromLibrary
-							label={__(
-								'End of video image:',
-								'video-embed-thumbnail-generator'
-							)}
-							type="url"
-							value={endofvideooverlay}
-							onChange={changeHandlerFactory.endofvideooverlay}
-							disabled={endofvideooverlaysame}
-						/>
+					<SelectFromLibrary
+						label={__(
+							'End of video image',
+							'video-embed-thumbnail-generator'
+						)}
+						type="url"
+						value={endofvideooverlay}
+						onChange={changeHandlerFactory.endofvideooverlay}
+						disabled={endofvideooverlaysame}
+					>
 						<VideopackTooltip
 							text={__(
 								'Display alternate image when video ends.',
 								'video-embed-thumbnail-generator'
 							)}
 						/>
-					</div>
+					</SelectFromLibrary>
 				</PanelBody>
 				<WatermarkSettingsPanel
 					title={__(
@@ -317,16 +318,21 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 					onChange={changeHandlerFactory.ffmpeg_thumb_watermark}
 					initialOpen={true}
 				/>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__(
-						'Hide generated thumnbails from the Media Library.'
+				<PanelBody
+					title={__(
+						'Media Library',
+						'video-embed-thumbnail-generator'
 					)}
-					onChange={changeHandlerFactory.hide_thumbnails}
-					checked={!!hide_thumbnails}
-				/>
-				<div className="videopack-setting-extra-margin">
-					<div className="videopack-control-with-tooltip">
+				>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Hide generated thumnbails from the Media Library'
+						)}
+						onChange={changeHandlerFactory.hide_thumbnails}
+						checked={!!hide_thumbnails}
+					/>
+					<div className="videopack-setting-extra-margin">
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={__(
@@ -336,91 +342,88 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							onChange={changeHandlerFactory.featured}
 							checked={!!featured}
 						/>
-						<VideopackTooltip
-							text={__(
-								"If your theme uses the featured image meta tag, this will automatically set a video's parent post's featured image to the most recently saved thumbnail image.",
-								'video-embed-thumbnail-generator'
-							)}
-						/>
-					</div>
-					<div className="videopack-control-with-tooltip">
-						<Button
-							__next40pxDefaultSize
-							variant="secondary"
-							onClick={handleSetAllFeatured}
-							disabled={featuredBatch.isProcessing}
-						>
-							{featuredBatch.isProcessing
-								? sprintf(
-									/* translators: 1: current count, 2: total count */
-									__(
-										'Processing %1$d / %2$d',
-										'video-embed-thumbnail-generator'
-									),
-									featuredBatch.progress.current,
-									featuredBatch.progress.total
-								)
-								: __(
-									'Set all as featured',
-									'video-embed-thumbnail-generator'
-								)}
-						</Button>
-						<VideopackTooltip
-							text={__(
-								"If you've generated thumbnails before enabling this option, this will set all existing thumbnails as featured images. Be careful!",
-								'video-embed-thumbnail-generator'
-							)}
-						/>
-					</div>
-				</div>
-				<div className="videopack-setting-extra-margin">
-					<RadioControl
-						label={
-							<span className="videopack-label-with-tooltip">
-								{__('Attach thumbnails to:', 'video-embed-thumbnail-generator')}
-								<VideopackTooltip
-									text={__(
-										'This depends on your theme. Thumbnails generated by Videopack can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.',
+						<div className="videopack-control-with-tooltip">
+							<Button
+								__next40pxDefaultSize
+								variant="secondary"
+								onClick={handleSetAllFeatured}
+								disabled={featuredBatch.isProcessing}
+							>
+								{featuredBatch.isProcessing
+									? sprintf(
+										/* translators: 1: current count, 2: total count */
+										__(
+											'Processing %1$d / %2$d',
+											'video-embed-thumbnail-generator'
+										),
+										featuredBatch.progress.current,
+										featuredBatch.progress.total
+									)
+									: __(
+										'Set all as featured',
 										'video-embed-thumbnail-generator'
 									)}
-								/>
-							</span>
-						}
-						selected={thumb_parent}
-						options={thumbParentOptions}
-						onChange={changeHandlerFactory.thumb_parent}
-						className="videopack-setting-radio-group"
-					/>
-					<div className="videopack-control-with-tooltip">
-						<Button
-							__next40pxDefaultSize
-							variant="secondary"
-							onClick={handleSetAllParents}
-							disabled={parentsBatch.isProcessing}
-						>
-							{parentsBatch.isProcessing
-								? sprintf(
-									/* translators: 1: current count, 2: total count */
-									__(
-										'Processing %1$d / %2$d',
-										'video-embed-thumbnail-generator'
-									),
-									parentsBatch.progress.current,
-									parentsBatch.progress.total
-								)
-								: __(
-									'Set all parents',
+							</Button>
+							<VideopackTooltip
+								text={__(
+									"If you've generated thumbnails before enabling this option, this will set all existing thumbnails as featured images. Be careful!",
 									'video-embed-thumbnail-generator'
 								)}
-						</Button>
-						<VideopackTooltip
-							text={__(
-								"If you've generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.",
-								'video-embed-thumbnail-generator'
-							)}
-						/>
+							/>
+						</div>
 					</div>
-				</div>
+					<div className="videopack-setting-extra-margin">
+						<RadioControl
+							label={
+								<span className="videopack-label-with-tooltip">
+									{__(
+										'Attach thumbnails to',
+										'video-embed-thumbnail-generator'
+									)}
+									<VideopackTooltip
+										text={__(
+											'This depends on your theme. Thumbnails generated by Videopack can be saved as children of the video attachment or the post. Some themes use an image attached to a post instead of the built-in featured image meta tag. Version 3.x of this plugin saved all thumbnails as children of the video.',
+											'video-embed-thumbnail-generator'
+										)}
+									/>
+								</span>
+							}
+							selected={thumb_parent}
+							options={thumbParentOptions}
+							onChange={changeHandlerFactory.thumb_parent}
+							className="videopack-setting-radio-group"
+						/>
+						<div className="videopack-control-with-tooltip">
+							<Button
+								__next40pxDefaultSize
+								variant="secondary"
+								onClick={handleSetAllParents}
+								disabled={parentsBatch.isProcessing}
+							>
+								{parentsBatch.isProcessing
+									? sprintf(
+										/* translators: 1: current count, 2: total count */
+										__(
+											'Processing %1$d / %2$d',
+											'video-embed-thumbnail-generator'
+										),
+										parentsBatch.progress.current,
+										parentsBatch.progress.total
+									)
+									: __(
+										'Set all parents',
+										'video-embed-thumbnail-generator'
+									)}
+							</Button>
+							<VideopackTooltip
+								text={__(
+									"If you've generated thumbnails before changing this option, this will set all existing thumbnails as children of your currently selected option.",
+									'video-embed-thumbnail-generator'
+								)}
+							/>
+						</div>
+					</div>
+				</PanelBody>
 			</PanelBody>
 			{featuredBatch.confirmDialog.isOpen && (
 				<ConfirmDialog

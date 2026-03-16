@@ -89,7 +89,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={__(
-					'Paginate video galleries & lists.',
+					'Paginate',
 					'video-embed-thumbnail-generator'
 				)}
 				onChange={changeHandlerFactory.gallery_pagination}
@@ -115,7 +115,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Limit number of videos in galleries & lists.',
+							'Limit number of videos',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={(val) => {
@@ -136,7 +136,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__(
-									'Video Limit:',
+									'Video Limit',
 									'video-embed-thumbnail-generator'
 								)}
 								help={__(
@@ -211,7 +211,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Columns:',
+							'Columns',
 							'video-embed-thumbnail-generator'
 						)}
 						type="number"
@@ -222,7 +222,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
-						'Overlay video title thumbnails.',
+						'Overlay video title thumbnails',
 						'video-embed-thumbnail-generator'
 					)}
 					onChange={changeHandlerFactory.gallery_title}
@@ -233,7 +233,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'When current gallery video finishes:',
+							'When current gallery video finishes',
 							'video-embed-thumbnail-generator'
 						)}
 						value={gallery_end}
@@ -245,7 +245,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					<div className="videopack-sample-gallery">
 						<span className="videopack-settings-label">
 							{__(
-								'Sample Gallery:',
+								'Sample Gallery',
 								'video-embed-thumbnail-generator'
 							)}
 						</span>
