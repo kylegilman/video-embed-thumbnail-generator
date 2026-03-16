@@ -20,10 +20,14 @@
 	.components-flex {
 		align-items: flex-start;
 		margin-bottom: 16px;
+
+		&.videopack-player-settings-flex .components-flex-item {
+			flex: 1;
+		}
 	}
 
 	// Responsive layout: collapse to single column if less than 300px
-	@container videopack-settings (max-width: 300px) {
+	@container videopack-settings (max-width: 400px) {
 		.videopack-player-settings-flex {
 			flex-direction: column;
 			gap: 0;

@@ -16,7 +16,7 @@ import { useEffect, useState } from '@wordpress/element';
 
 import { volumeUp, volumeDown } from '../../assets/icon';
 import useVideoSettings from '../../hooks/useVideoSettings';
-import WatermarkSettingsPanel from '../../features/settings/components/WatermarkSettingsPanel';
+import WatermarkSettingsPanel from '../../components/WatermarkSettingsPanel/WatermarkSettingsPanel.js';
 import TextTracks from '../../components/TextTracks/TextTracks.js';
 import { normalizeOptions } from '../../utils/utils';
 import './VideoSettings.scss';
@@ -39,8 +39,6 @@ const VideoSettings = ({
 		if (options) {
 			const merged = { ...options, ...attributes };
 			const normalized = normalizeOptions(merged);
-			// eslint-disable-next-line no-console
-			console.log('VideoSettings Normalized:', normalized);
 			setDisplayAttributes(normalized);
 		}
 	}, [options, attributes]);
@@ -131,10 +129,10 @@ const VideoSettings = ({
 									checked={!!displayAttributes.autoplay}
 									help={
 										displayAttributes.autoplay &&
-											!displayAttributes.muted
+										!displayAttributes.muted
 											? __(
-												'Autoplay is disabled while editing unless muted.'
-											)
+													'Autoplay is disabled while editing unless muted.'
+												)
 											: null
 									}
 								/>
@@ -211,7 +209,7 @@ const VideoSettings = ({
 								<ToggleControl
 									__nextHasNoMarginBottom
 									label={__(
-										'Play inline',
+										'Play inline on iPhones',
 										'video-embed-thumbnail-generator'
 									)}
 									onChange={(value) =>
@@ -221,9 +219,6 @@ const VideoSettings = ({
 										)
 									}
 									checked={!!displayAttributes.playsinline}
-									help={__(
-										'Plays inline instead of fullscreen on iPhones.'
-									)}
 								/>
 								<SelectControl
 									__nextHasNoMarginBottom
@@ -238,40 +233,30 @@ const VideoSettings = ({
 									}
 									options={preloadOptions}
 								/>
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={__(
-										'Allow right-click on video',
-										'video-embed-thumbnail-generator'
-									)}
-									onChange={(value) =>
-										handleSettingChange(
-											'right_click',
-											value
-										)
-									}
-									checked={!!displayAttributes.right_click}
-								/>
 							</FlexItem>
 						</Flex>
 					</>
 				)}
-				<PanelRow>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__(
-							'GIF mode',
-							'video-embed-thumbnail-generator'
-						)}
-						onChange={(value) =>
-							handleSettingChange('gifmode', value)
-						}
-						checked={!!displayAttributes.gifmode}
-						help={__(
-							'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
-						)}
-					/>
-				</PanelRow>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__('GIF mode', 'video-embed-thumbnail-generator')}
+					onChange={(value) => handleSettingChange('gifmode', value)}
+					checked={!!displayAttributes.gifmode}
+					help={__(
+						'Video acts like an animated GIF. Enables autoplay, loop, mute, and disables controls.'
+					)}
+				/>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Allow right-click on video',
+						'video-embed-thumbnail-generator'
+					)}
+					onChange={(value) =>
+						handleSettingChange('right_click', value)
+					}
+					checked={!!displayAttributes.right_click}
+				/>
 			</PanelBody>
 			<PanelBody
 				title={__('Dimensions', 'video-embed-thumbnail-generator')}
@@ -295,33 +280,33 @@ const VideoSettings = ({
 									value: '',
 									label: videopack_config.contentSize
 										? sprintf(
-											/* translators: %s: Content size in pixels. */
-											__(
-												"None (use theme's default width: %s)",
+												/* translators: %s: Content size in pixels. */
+												__(
+													"None (use theme's default width: %s)",
+													'video-embed-thumbnail-generator'
+												),
+												videopack_config.contentSize
+											)
+										: __(
+												"None (use theme's default width)",
 												'video-embed-thumbnail-generator'
 											),
-											videopack_config.contentSize
-										)
-										: __(
-											"None (use theme's default width)",
-											'video-embed-thumbnail-generator'
-										),
 								},
 								{
 									value: 'wide',
 									label: videopack_config.wideSize
 										? sprintf(
-											/* translators: %s: Wide size in pixels. */
-											__(
-												"Wide (use theme's wide width: %s)",
+												/* translators: %s: Wide size in pixels. */
+												__(
+													"Wide (use theme's wide width: %s)",
+													'video-embed-thumbnail-generator'
+												),
+												videopack_config.wideSize
+											)
+										: __(
+												"Wide (use theme's wide width)",
 												'video-embed-thumbnail-generator'
 											),
-											videopack_config.wideSize
-										)
-										: __(
-											"Wide (use theme's wide width)",
-											'video-embed-thumbnail-generator'
-										),
 								},
 								{
 									value: 'full',
