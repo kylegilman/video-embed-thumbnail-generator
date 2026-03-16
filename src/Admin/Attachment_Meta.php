@@ -297,6 +297,63 @@ class Attachment_Meta {
 		return $meta;
 	}
 
+	/**
+	 * Sanitizes a meta value based on its key or type.
+	 *
+	 * @param mixed            $value   The value to sanitize.
+	 * @param \WP_REST_Request $request The REST request object (if called via REST API).
+	 * @param string           $param   The parameter name (if called via REST API).
+	 * @return mixed The sanitized value.
+	 */
+	public function sanitize_meta_value( $value, $request = null, $param = null ) {
+		$key = $param;
+
+		if ( empty( $key ) ) {
+			return $value;
+		}
+
+		$schema = $this->schema();
+
+		// If it's the main Videopack meta object
+		if ( '_videopack-meta' === $key && is_array( $value ) ) {
+			return $this->options_manager->sanitize_options_recursively( $value, $schema );
+		}
+
+		// If it's a legacy prefixed field
+		$field_name = str_replace( '_kgflashmediaplayer-', '', $key );
+
+		// Map individual field names to schema keys if they differ
+		$key_map = array(
+			'poster-id'         => 'poster_id',
+			'video-id'          => 'video_id',
+			'original-replaced' => 'original_replaced',
+			'externalurl'       => 'url',
+		);
+
+		$actual_schema_key = $key_map[ $field_name ] ?? $field_name;
+
+		// Add ad-hoc definitions for fields not in the main schema but registered individually
+		if ( ! isset( $schema[ $actual_schema_key ] ) ) {
+			$extra_defs = array(
+				'video_id' => array( 'type' => 'number' ),
+				'parent'   => array( 'type' => 'number' ),
+				'format'   => array( 'type' => 'string' ),
+			);
+			if ( isset( $extra_defs[ $actual_schema_key ] ) ) {
+				$schema[ $actual_schema_key ] = $extra_defs[ $actual_schema_key ];
+			}
+		}
+
+		if ( isset( $schema[ $actual_schema_key ] ) ) {
+			$sanitized = $this->options_manager->sanitize_options_recursively( array( $actual_schema_key => $value ), $schema );
+			return $sanitized[ $actual_schema_key ];
+		}
+
+		// Default fallback for unrecognized keys
+		return is_string( $value ) ? sanitize_text_field( $value ) : $value;
+	}
+
+
 	public function url_mime_type( $url, $post_id = false ) {
 
 		$mime_info = array(
@@ -449,6 +506,8 @@ class Attachment_Meta {
 			'_kgflashmediaplayer-pickedformat',
 			'_kgflashmediaplayer-video-id',
 			'_kgflashmediaplayer-externalurl',
+			'_kgflashmediaplayer-parent',
+			'_kgflashmediaplayer-original-replaced',
 		);
 
 		foreach ( $meta_keys_to_check as $key ) {
@@ -468,12 +527,14 @@ class Attachment_Meta {
 	public function register() {
 
 		$kgflashmedia_fields = array(
-			'poster'       => 'string',
-			'poster-id'    => 'number',
-			'format'       => 'string',
-			'pickedformat' => 'string',
-			'video-id'     => 'number',
-			'externalurl'  => 'string',
+			'poster'            => 'string',
+			'poster-id'         => 'number',
+			'format'            => 'string',
+			'pickedformat'      => 'string',
+			'video-id'          => 'number',
+			'externalurl'       => 'string',
+			'parent'            => 'number',
+			'original-replaced' => 'string',
 		);
 
 		foreach ( $kgflashmedia_fields as $field_name => $type ) {
@@ -491,6 +552,7 @@ class Attachment_Meta {
 				)
 			);
 		}
+		add_filter( 'update_post_metadata', array( $this, 'maybe_delete_empty_meta' ), 10, 5 );
 		register_post_meta(
 			'attachment',
 			'_kgvid-meta',
@@ -692,7 +754,8 @@ class Attachment_Meta {
 				), // Play count at 75%
 			),
 			'poster'              => array(
-				'type' => array( 'string', 'null' ), // URL to poster image
+				'type'   => array( 'string', 'null' ), // URL to poster image
+				'format' => 'uri',
 			),
 			'poster_id'           => array(
 				'type' => array( 'string', 'number', 'null' ), // Attachment ID for poster image
@@ -754,7 +817,8 @@ class Attachment_Meta {
 				),
 			),
 			'url'                 => array(
-				'type' => array( 'string', 'null' ), // URL of the video if external or specific format
+				'type'   => array( 'string', 'null' ), // URL of the video if external or specific format
+				'format' => 'uri',
 			),
 			'width'               => array(
 				'type' => array(
@@ -834,13 +898,13 @@ class Attachment_Meta {
 				'type' => array( 'string', 'null' ),
 			),
 			'watermark_url'       => array(
-				'type' => array( 'string', 'null' ),
+				'type'   => array( 'string', 'null' ),
+				'format' => 'uri',
 			),
 			'is_remote'           => array(
 				'type' => array( 'boolean' ),
 			),
 		);
-
 		// Get the authoritative list of keys from get_defaults()
 		$default_keys = array_keys( $this->get_defaults() );
 
@@ -854,5 +918,21 @@ class Attachment_Meta {
 		}
 
 		return apply_filters( 'videopack_post_meta_schema', $final_schema );
+	}
+
+	public function maybe_delete_empty_meta( $check, $object_id, $meta_key, $meta_value, $prev_value ) {
+		// Only handle our specific meta keys.
+		if ( 0 !== strpos( $meta_key, '_kgflashmediaplayer-' ) ) {
+			return $check;
+		}
+
+		// If value is empty (and not false, which we might use for booleans), delete it.
+		// empty() covers '', 0, '0', null, array(), etc.
+		if ( empty( $meta_value ) && ! is_bool( $meta_value ) ) {
+			delete_post_meta( $object_id, $meta_key );
+			return true; // Short-circuit the update process.
+		}
+
+		return $check;
 	}
 }

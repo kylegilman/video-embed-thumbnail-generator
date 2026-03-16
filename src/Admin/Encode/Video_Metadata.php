@@ -37,16 +37,16 @@ class Video_Metadata {
 
 		if ( $this->is_attachment ) {
 			$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $this->id );
-			$kgvid_postmeta           = $attachment_meta_instance->get(); // get() returns the array
+			$videopack_postmeta       = $attachment_meta_instance->get(); // get() returns the array
 
-			if ( isset( $kgvid_postmeta['worked'] ) && $kgvid_postmeta['worked']
+			if ( isset( $videopack_postmeta['worked'] ) && $videopack_postmeta['worked']
 			) {
 				$this->worked       = true;
-				$this->actualwidth  = $kgvid_postmeta['actualwidth'] ?? null;
-				$this->actualheight = $kgvid_postmeta['actualheight'] ?? null;
-				$this->duration     = $kgvid_postmeta['duration'] ?? null;
-				$this->codec        = $kgvid_postmeta['codec'] ?? null;
-				$this->rotate       = $kgvid_postmeta['rotate'] ?? '';
+				$this->actualwidth  = $videopack_postmeta['actualwidth'] ?? null;
+				$this->actualheight = $videopack_postmeta['actualheight'] ?? null;
+				$this->duration     = $videopack_postmeta['duration'] ?? null;
+				$this->codec        = $videopack_postmeta['codec'] ?? null;
+				$this->rotate       = $videopack_postmeta['rotate'] ?? '';
 				return;
 			}
 		}

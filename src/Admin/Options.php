@@ -878,7 +878,25 @@ class Options {
 			}
 
 			$property_schema = $schema_properties[ $key ];
-			$type            = is_array( $property_schema['type'] ) ? $property_schema['type'][0] : $property_schema['type'];
+			$allowed_types   = is_array( $property_schema['type'] ) ? $property_schema['type'] : array( $property_schema['type'] );
+
+			// Determine the most appropriate type to use based on the value.
+			$type = $allowed_types[0];
+			if ( count( $allowed_types ) > 1 ) {
+				if ( is_numeric( $value ) && in_array( 'number', $allowed_types, true ) ) {
+					$type = 'number';
+				} elseif ( is_bool( $value ) && in_array( 'boolean', $allowed_types, true ) ) {
+					$type = 'boolean';
+				} elseif ( is_array( $value ) && in_array( 'array', $allowed_types, true ) ) {
+					$type = 'array';
+				} elseif ( is_array( $value ) && in_array( 'object', $allowed_types, true ) ) {
+					$type = 'object';
+				} elseif ( is_null( $value ) && in_array( 'null', $allowed_types, true ) ) {
+					$type = 'null';
+				} elseif ( in_array( 'string', $allowed_types, true ) ) {
+					$type = 'string';
+				}
+			}
 
 			switch ( $type ) {
 				case 'object':
@@ -886,8 +904,24 @@ class Options {
 						$sub_properties          = $property_schema['properties'] ?? array();
 						$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value, $sub_properties );
 					} else {
-						// Value is not an array, but schema expects an object. Sanitize as text.
 						$sanitized_input[ $key ] = sanitize_text_field( $value );
+					}
+					break;
+				case 'array':
+					if ( is_array( $value ) ) {
+						$item_schema             = $property_schema['items'] ?? array();
+						$sanitized_input[ $key ] = array();
+						foreach ( $value as $item ) {
+							if ( isset( $item_schema['type'] ) ) {
+								// Wrap item in an array to use the existing recursive logic
+								$temp_sanitized          = $this->sanitize_options_recursively( array( 'item' => $item ), array( 'item' => $item_schema ) );
+								$sanitized_input[ $key ][] = $temp_sanitized['item'];
+							} else {
+								$sanitized_input[ $key ][] = is_array( $item ) ? $this->sanitize_options_recursively( $item ) : sanitize_text_field( $item );
+							}
+						}
+					} else {
+						$sanitized_input[ $key ] = array();
 					}
 					break;
 				case 'boolean':
@@ -901,24 +935,25 @@ class Options {
 							$sanitized_input[ $key ] = floatval( $value );
 						}
 					} else {
-						$sanitized_input[ $key ] = 0;
+						$sanitized_input[ $key ] = is_null( $value ) && in_array( 'null', $allowed_types, true ) ? null : 0;
 					}
 					break;
 				case 'string':
-					// The value could be an array from the form, so we can't just cast to string.
-					if ( is_string( $value ) ) {
-						$sanitized_input[ $key ] = sanitize_text_field( $value );
-					} elseif ( is_numeric( $value ) || is_bool( $value ) ) {
-						$sanitized_input[ $key ] = sanitize_text_field( (string) $value );
+					if ( is_string( $value ) || is_numeric( $value ) || is_bool( $value ) ) {
+						$str_value = (string) $value;
+						if ( isset( $property_schema['format'] ) && 'uri' === $property_schema['format'] ) {
+							$sanitized_input[ $key ] = esc_url_raw( $str_value );
+						} else {
+							$sanitized_input[ $key ] = sanitize_text_field( $str_value );
+						}
 					} else {
-						// It's some other type like an array that should be a string.
-						// We'll sanitize it as a text field, which will result in 'Array'.
-						// This is not ideal, but it's safe.
-						$sanitized_input[ $key ] = sanitize_text_field( $value );
+						$sanitized_input[ $key ] = is_null( $value ) && in_array( 'null', $allowed_types, true ) ? null : '';
 					}
 					break;
+				case 'null':
+					$sanitized_input[ $key ] = null;
+					break;
 				default:
-					// Fallback for unknown types.
 					if ( is_array( $value ) ) {
 						$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value );
 					} else {
@@ -1142,7 +1177,6 @@ class Options {
 					// The role should have the capability but doesn't.
 					$wp_roles->add_cap( $role, $capability );
 				} elseif ( ! $should_have_capability && $has_capability ) {
-					error_log( $role . ' should not have ' . $capability );
 					// The role shouldn't have the capability but does.
 					$wp_roles->remove_cap( $role, $capability );
 				}

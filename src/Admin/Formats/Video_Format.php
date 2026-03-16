@@ -209,6 +209,7 @@ class Video_Format {
 				'label'             => $resolution->get_label(),
 				'is_default_encode' => $resolution->is_default_encode(),
 			),
+			'enabled'           => $this->is_enabled(),
 		);
 	}
 }
