@@ -327,7 +327,7 @@ class FFmpeg_Thumbnails {
 	 * @param array  $file_info       The uploaded file data from $_FILES.
 	 * @return array An associative array with 'thumb_id' and 'thumb_url', or an error array.
 	 */
-	public function save_from_blob( $attachment_id, $post_name, $file_info ) {
+	public function save_from_blob( $attachment_id, $post_name, $file_info, $force_parent_id = 0, $force_featured = null ) {
 		if ( ! isset( $file_info['tmp_name'] ) || ! is_uploaded_file( $file_info['tmp_name'] ) ) {
 			return array(
 				'thumb_id' => false,
@@ -352,10 +352,10 @@ class FFmpeg_Thumbnails {
 
 		// Now we have a temp file, we can call the main save function.
 		// The thumbnail index is unknown here, so we pass false to let save() find the next available index.
-		return $this->save( $attachment_id, $post_name, $temp_file_url, false );
+		return $this->save( $attachment_id, $post_name, $temp_file_url, false, $force_parent_id, $force_featured );
 	}
 
-	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false ) {
+	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null ) {
 
 		$user_ID = get_current_user_id();
 		$uploads = wp_upload_dir();
@@ -427,7 +427,9 @@ class FFmpeg_Thumbnails {
 				$video     = get_post( $attachment_id );
 				$parent_id = $attachment_id; // The video is the parent by default.
 				if ( $this->options['thumb_parent'] === 'post' ) {
-					if ( ! empty( $video->post_parent ) ) {
+					if ( ! empty( $force_parent_id ) ) {
+						$parent_id = $force_parent_id;
+					} elseif ( ! empty( $video->post_parent ) ) {
 						$parent_id = $video->post_parent; // The parent post becomes the parent.
 					}
 				}
@@ -504,16 +506,23 @@ class FFmpeg_Thumbnails {
 
 		if ( $thumb_id && ! is_wp_error( $thumb_id ) ) {
 			if ( is_numeric( $attachment_id ) ) {
+				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
+				$current_meta             = $attachment_meta_instance->get();
+				$is_featured              = $force_featured !== null ? $force_featured : ( $current_meta['featured'] ?? $this->options['featured'] );
+
 				// 1. Set Featured Image (if enabled).
-				if ( $this->options['featured'] ) {
+				if ( $is_featured ) {
 					set_post_thumbnail( $attachment_id, $thumb_id );
+					if ( ! empty( $force_parent_id ) ) {
+						set_post_thumbnail( $force_parent_id, $thumb_id );
+					} elseif ( ! empty( $video->post_parent ) ) {
+						set_post_thumbnail( $video->post_parent, $thumb_id );
+					}
 				}
 				// 2. Set Legacy Meta.
 				update_post_meta( $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
 				update_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', $thumb_id );
 				// 3. Set _videopack-meta['poster'].
-				$attachment_meta_instance  = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
-				$current_meta              = $attachment_meta_instance->get();
 				$current_meta['poster']    = $final_poster_url;
 				$current_meta['poster_id'] = $thumb_id;
 				$attachment_meta_instance->save( $current_meta );
