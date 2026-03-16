@@ -4,6 +4,11 @@
 
 	button.is-secondary {
 		font-size: 12px;
+		margin-bottom: 10px;
+	}
+
+	.components-base-control.components-toggle-control:where(:not(:last-child)) {
+		margin-bottom: 16px;
 	}
 
 	.spinner-container {
@@ -102,14 +107,10 @@
 		}
 	}
 
-	.videopack-thumb-video-panel {
-		padding: 10px 0;
-
-		video {
-			display: block;
-			width: 100%;
-			margin-bottom: 10px;
-		}
+	.videopack-thumb-video-panel video {
+		display: block;
+		width: 100%;
+		margin-bottom: 10px;
 	}
 
 	.videopack-thumbnail.saving,
