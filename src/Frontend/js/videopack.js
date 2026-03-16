@@ -42,6 +42,16 @@
 					}
 					this.onMejsSuccess(mediaElement, domObject, player);
 				};
+
+				// WordPress specific settings hook
+				window._wpmejsSettings = window._wpmejsSettings || {};
+				const originalWpSuccess = window._wpmejsSettings.success;
+				window._wpmejsSettings.success = (mediaElement, domObject, player) => {
+					if (typeof originalWpSuccess === 'function') {
+						originalWpSuccess(mediaElement, domObject, player);
+					}
+					this.onMejsSuccess(mediaElement, domObject, player);
+				};
 			}
 		},
 
@@ -67,12 +77,26 @@
 			if (videoVars.embed_method.startsWith('Video.js')) {
 				this.loadVideoJS(playerWrapper, videoVars);
 			} else if (videoVars.embed_method === 'WordPress Default') {
-				// ME.js is often auto-initialized by WP. We'll set up our hooks after it's ready.
-				// The success callback hook in init() should handle this.
-				// If it's already initialized, we set it up now.
-				if (playerWrapper.querySelector('.mejs-container')) {
-					this.setupVideo(playerWrapper, videoVars);
-				}
+				const checkMejs = () => {
+					const container = playerWrapper.querySelector('.mejs-container');
+					
+					if (container) {
+						this.setupVideo(playerWrapper, videoVars);
+					} else {
+						// If still no container, MEJS hasn't initialized yet. 
+						// We rely on onMejsSuccess, but as a last resort, check again in 1s.
+						setTimeout(() => {
+							if (!playerWrapper.dataset.videopackInitialized) {
+								const secondCheck = playerWrapper.querySelector('.mejs-container');
+								if (secondCheck) {
+
+									this.setupVideo(playerWrapper, videoVars);
+								}
+							}
+						}, 1000);
+					}
+				};
+				checkMejs();
 			}
 		},
 
@@ -190,6 +214,7 @@
 		 * @param {object} videoVars The video variables.
 		 */
 		setupVideo: function (playerWrapper, videoVars) {
+
 			if (playerWrapper.dataset.videopackInitialized) {
 				return;
 			}
@@ -213,7 +238,7 @@
 			const shareIcon = playerWrapper.querySelector('.videopack-icons.share');
 			if (shareIcon) {
 				shareIcon.addEventListener('click', () => this.toggleShare(playerWrapper));
-				playerWrapper.querySelector('.click-trap').addEventListener('click', () => this.toggleShare(playerWrapper));
+				playerWrapper.querySelector('.videopack-click-trap').addEventListener('click', () => this.toggleShare(playerWrapper));
 			}
 
 			if (true !== videoVars.right_click) {
@@ -221,13 +246,13 @@
 			}
 
 			// Setup "start at" functionality.
-			const embedWrapper = playerWrapper.querySelector('.share-container');
+			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
 			if (embedWrapper) {
 				embedWrapper.querySelector('.videopack-start-at-enable').addEventListener('change', () => this.setStartAt(playerWrapper));
 				embedWrapper.querySelector('.videopack-start-at').addEventListener('change', () => this.changeStartAt(playerWrapper));
 			}
 
-			const downloadLink = playerWrapper.querySelector('.download-link');
+			const downloadLink = playerWrapper.querySelector('.videopack-download-link');
 			if (downloadLink && downloadLink.hasAttribute('download') && downloadLink.dataset.alt_link) {
 				downloadLink.addEventListener('click', (e) => {
 					e.preventDefault();
@@ -369,8 +394,6 @@
 					player.posterImage.el().style.display = 'none';
 				}
 
-				playerWrapper.parentElement.classList.remove('meta-bar-visible');
-
 				if (true === videoVars.pauseothervideos) {
 					const players = videojs.getPlayers();
 					for (const otherPlayerId in players) {
@@ -397,15 +420,14 @@
 						playerWrapper.dataset['75'] = true;
 						this.videoCounter(playerId, '75');
 					}
+					this.setStartAt(playerWrapper);
 				});
 			});
 
 			player.on('pause', () => {
-				playerWrapper.parentElement.classList.add('meta-bar-visible');
 				this.videoCounter(playerId, 'pause');
 			});
 			player.on('seeked', () => this.videoCounter(playerId, 'seek'));
-
 			player.on('ended', () => {
 				if (!playerWrapper.dataset.end) {
 					playerWrapper.dataset.end = true;
@@ -429,6 +451,49 @@
 			player.on('fullscreenchange', () => {
 				this.resizeVideo(playerId);
 			});
+
+			this.setupMetaBar(playerWrapper, player, videoVars);
+		},
+
+		/**
+		 * Setup meta bar visibility and hover behavior.
+		 *
+		 * @since 5.0.0
+		 * @param {HTMLElement} playerWrapper The player wrapper element.
+		 * @param {object}      player        The player instance (Video.js or MEJS).
+		 * @param {object}      videoVars     The video variables.
+		 */
+		setupMetaBar: function (playerWrapper, player, videoVars) {
+			const playerId = playerWrapper.dataset.id;
+			const wrapper = playerWrapper.closest('.videopack-wrapper');
+
+
+
+			if (!wrapper) {
+				return;
+			}
+
+			const isMejs = 'WordPress Default' === videoVars.embed_method;
+			const video = isMejs ? player.media : player.el().querySelector('video');
+
+
+
+			const showMeta = () => {
+				wrapper.classList.add('videopack-meta-bar-visible');
+			};
+			const hideMeta = () => {
+				wrapper.classList.remove('videopack-meta-bar-visible');
+			};
+
+			if (isMejs && video) {
+				video.addEventListener('play', hideMeta);
+				video.addEventListener('pause', showMeta);
+				video.addEventListener('ended', showMeta);
+			} else if (player && !isMejs) {
+				player.on('play', hideMeta);
+				player.on('pause', showMeta);
+				player.on('ended', showMeta);
+			}
 		},
 
 		/**
@@ -441,7 +506,10 @@
 		setupMEJSPlayer: function (playerWrapper, videoVars) {
 			const playerId = playerWrapper.dataset.id;
 			const video = playerWrapper.querySelector('video');
-			const mejsId = playerWrapper.querySelector('.mejs-container').id;
+			const mejsContainer = playerWrapper.querySelector('.mejs-container');
+			const mejsId = mejsContainer ? mejsContainer.id : null;
+
+
 
 			if (!video || !mejsId || !mejs.players[mejsId]) {
 				return;
@@ -495,7 +563,6 @@
 
 			video.addEventListener('play', () => {
 				document.getElementById(mejsId).focus();
-				playerWrapper.parentElement.classList.remove('meta-bar-visible');
 				this.videoCounter(playerId, 'play');
 
 				video.addEventListener('timeupdate', () => {
@@ -510,11 +577,11 @@
 						playerWrapper.dataset['75'] = true;
 						this.videoCounter(playerId, '75');
 					}
+					this.setStartAt(playerWrapper);
 				});
 			});
 
 			video.addEventListener('pause', () => {
-				playerWrapper.parentElement.classList.add('meta-bar-visible');
 				this.videoCounter(playerId, 'pause');
 			});
 			video.addEventListener('seeked', () => this.videoCounter(playerId, 'seek'));
@@ -539,6 +606,8 @@
 					}, { once: true });
 				}
 			});
+
+			this.setupMetaBar(playerWrapper, player, videoVars);
 		},
 
 		/**
@@ -744,7 +813,7 @@
 			}
 
 			const viewCountWrapper = playerWrapper.closest('.videopack-wrapper');
-			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector('.viewcount') : null;
+			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector('.videopack-viewcount') : null;
 
 			let changed = false;
 			const played = playerWrapper.dataset.played || 'not played';
@@ -858,8 +927,8 @@
 		toggleShare: function (playerWrapper) {
 			const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
 			const shareIcon = playerWrapper.querySelector('.videopack-icons.share, .videopack-icons.close');
-			const embedWrapper = playerWrapper.querySelector('.share-container');
-			const clickTrap = playerWrapper.querySelector('.click-trap');
+			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
+			const clickTrap = playerWrapper.querySelector('.videopack-click-trap');
 
 			const isShareActive = shareIcon.classList.contains('close');
 
@@ -873,6 +942,7 @@
 				shareIcon.classList.add('close');
 				embedWrapper.classList.add('is-visible');
 				clickTrap.classList.add('is-visible');
+				this.setStartAt(playerWrapper);
 			}
 
 			if (videoVars.embed_method.startsWith('Video.js')) {
@@ -937,8 +1007,12 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
 		setStartAt: function (playerWrapper) {
-			const embedWrapper = playerWrapper.querySelector('.share-container');
-			if (embedWrapper.querySelector('.videopack-start-at-enable').checked) {
+			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
+			if (!embedWrapper) {
+				return;
+			}
+			const checkbox = embedWrapper.querySelector('.videopack-start-at-enable');
+			if (checkbox && checkbox.checked && embedWrapper.classList.contains('is-visible')) {
 				const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
 				let currentTime = 0;
 
@@ -958,7 +1032,9 @@
 				embedWrapper.querySelector('.videopack-start-at').value = this.convertToTimecode(Math.floor(currentTime));
 			}
 
-			this.changeStartAt(playerWrapper);
+			if (embedWrapper.classList.contains('is-visible')) {
+				this.changeStartAt(playerWrapper);
+			}
 		},
 
 		/**
@@ -968,7 +1044,7 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
 		changeStartAt: function (playerWrapper) {
-			const embedWrapper = playerWrapper.querySelector('.share-container');
+			const embedWrapper = playerWrapper.querySelector('.videopack-share-container');
 			const embedCodeTextarea = embedWrapper.querySelector('.videopack-embed-code');
 			const embedCode = embedCodeTextarea.value;
 

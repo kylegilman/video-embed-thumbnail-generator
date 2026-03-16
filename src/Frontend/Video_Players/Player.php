@@ -382,14 +382,14 @@ class Player {
 		$no_title_class = $this->atts['overlay_title'] ? '' : ' no-title';
 
 		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
-		$meta_bar .= '<span class="meta-icons">';
+		$meta_bar .= '<span class="videopack-meta-icons">';
 
 		if ( $has_embed ) {
 			$meta_bar .= '<button type="button" class="videopack-icons share"></button>';
 		}
 
 		if ( $this->atts['downloadlink'] ) {
-			$download_attributes = 'class="download-link" href="' . esc_attr( $this->source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
+			$download_attributes = 'class="videopack-download-link" href="' . esc_attr( $this->source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
 
 			if ( ! empty( $this->options['click_download'] ) && $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local && $this->source->exists() ) {
 				$alt_link             = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[download]=true' );
@@ -401,29 +401,41 @@ class Player {
 		$meta_bar .= '</span>';
 
 		if ( $this->atts['overlay_title'] ) {
-			$meta_bar .= '<span class="title">' . esc_html( $this->atts['title'] ) . '</span>';
+			$meta_bar .= '<span class="videopack-title">' . esc_html( $this->atts['title'] ) . '</span>';
 		}
 		$meta_bar .= '</div>';
 
 		if ( $has_embed ) {
-			$meta_bar .= '<button class="click-trap"></button>';
-			$meta_bar .= '<div class="share-container' . esc_attr( $no_title_class ) . '">';
+			$meta_bar .= '<button class="videopack-click-trap"></button>';
+			$meta_bar .= '<div class="videopack-share-container' . esc_attr( $no_title_class ) . '">';
 
-			$embed_url = '';
-			if ( is_numeric( $this->source->get_id() ) ) {
-				$embed_url = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[enable]=true' );
+			$embed_id = $this->source->get_id();
+			if ( is_numeric( $embed_id ) ) {
+				$embed_url = add_query_arg( 'videopack[enable]', 'true', get_attachment_link( $embed_id ) );
 			} else {
 				$embed_url = $this->source->get_url();
 			}
 
-			$embed_code = '<iframe src="' . esc_url( $embed_url ) . '" width="' . esc_attr( $this->atts['width'] ) . '" height="' . esc_attr( $this->atts['height'] ) . '" frameborder="0" allowfullscreen></iframe>';
+			$iframe_title = sprintf(
+				/* translators: %s is the video title */
+				__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
+				$this->atts['title'] ? $this->atts['title'] : $this->source->get_title()
+			);
 
-			$meta_bar .= '<span class="embedcode-container"><span class="videopack-icons embed"></span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="embedcode videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
+			$embed_code = sprintf(
+				'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="%4$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
+				esc_url( $embed_url ),
+				esc_attr( $this->atts['width'] ),
+				esc_attr( $this->atts['height'] ),
+				esc_attr( $iframe_title )
+			);
+
+			$meta_bar .= '<span class="videopack-embedcode-container"><span class="videopack-icons embed"></span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
 
 			$start_at_id = 'videopack-start-at-enable-' . $this->get_id();
 			$meta_bar   .= '<span class="videopack-start-at-container">' .
-				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" /> ' .
-				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label> ' .
+				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' .
+				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' .
 				'<input type="text" class="videopack-start-at" value="00:00" />' .
 				'</span>';
 
@@ -448,7 +460,7 @@ class Player {
 			$alignclass .= ' videopack-wrapper-auto-left';
 		}
 
-		$meta_bar_class = $this->has_meta_bar() ? ' meta-bar-visible' : '';
+		$meta_bar_class = $this->has_meta_bar() ? ' videopack-meta-bar-visible' : '';
 		$style_attrs    = array();
 
 		if ( $this->is_fixed_aspect() ) {
@@ -608,11 +620,11 @@ class Player {
 			$view_count = $source ? $source->get_views() : '';
 			if ( ! empty( $view_count ) ) {
 				/* translators: %s is the number of times a video has been played */
-				$below_video .= '<span class="viewcount">' . esc_html( \Videopack\Common\I18n::format_view_count( $view_count ) ) . '</span>';
+				$below_video .= '<span class="videopack-viewcount">' . esc_html( \Videopack\Common\I18n::format_view_count( $view_count ) ) . '</span>';
 			}
 		}
 		if ( ! empty( $this->atts['caption'] ) ) {
-			$below_video .= '<p class="caption">' . esc_html( $this->atts['caption'] ) . '</p>';
+			$below_video .= '<p class="videopack-caption">' . esc_html( $this->atts['caption'] ) . '</p>';
 		}
 		$below_video .= '</div>';
 		return $below_video;
