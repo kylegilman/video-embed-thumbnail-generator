@@ -108,19 +108,19 @@ const MetaBar = ({ attributes, playerRef }) => {
 		return (
 			<>
 				<button
-					className={`click-trap${shareIsOpen ? ' is-visible' : ''}`}
+					className={`videopack-click-trap${shareIsOpen ? ' is-visible' : ''}`}
 					onClick={() => {
 						setShareIsOpen(!shareIsOpen);
 					}}
 				/>
 				<div
-					className={`share-container${
+					className={`videopack-share-container${
 						shareIsOpen ? ' is-visible' : ''
 					}${noTitleMeta}`}
 				>
 					{embedItems() && (
 						<>
-							<span className="embedcode-container">
+							<span className="videopack-embedcode-container">
 								<span className="videopack-icons embed"></span>
 								<span>
 									{__(
@@ -130,7 +130,7 @@ const MetaBar = ({ attributes, playerRef }) => {
 								</span>
 								<span>
 									<input
-										className="embedcode videopack-embed-code"
+										className="videopack-embed-code"
 										type="text"
 										value={currentEmbedCode}
 										onClick={(event) => {
@@ -155,7 +155,7 @@ const MetaBar = ({ attributes, playerRef }) => {
 										'Start at:',
 										'video-embed-thumbnail-generator'
 									)}
-								</label>{' '}
+								</label>
 								<input
 									type="text"
 									className="videopack-start-at"
@@ -176,7 +176,7 @@ const MetaBar = ({ attributes, playerRef }) => {
 		return (
 			<>
 				<div className={`videopack-meta-bar${noTitleMeta}`}>
-					<span className={'meta-icons'}>
+					<span className={'videopack-meta-icons'}>
 						{embedItems() && (
 							<button
 								type={'button'}
@@ -192,7 +192,7 @@ const MetaBar = ({ attributes, playerRef }) => {
 						)}
 						{downloadlink && (
 							<a
-								className="download-link"
+								className="videopack-download-link"
 								href={attributes.src}
 								download={true}
 								title={__(
@@ -204,7 +204,7 @@ const MetaBar = ({ attributes, playerRef }) => {
 							</a>
 						)}
 					</span>
-					{overlay_title && <span className="title">{title}</span>}
+					{overlay_title && <span className="videopack-title">{title}</span>}
 				</div>
 				{embedItems() && <EmbedElements />}
 			</>

@@ -1,3 +1,5 @@
+@use "@wordpress/base-styles/colors";
+
 .wp-block-videopack-videopack-video {
 
 	width: 100%;
@@ -196,32 +198,6 @@
 		display: none !important;
 	}
 
-	.videopack-title {
-		font-size: 10pt;
-		padding-left: 4px;
-		line-height: 20pt;
-	}
-
-	.videopack-meta-icons {
-		position: relative;
-		float: right;
-		margin: 3px 0;
-
-		a {
-			text-decoration: none;
-			border: none;
-			box-shadow: none !important;
-		}
-
-		span {
-			cursor: pointer;
-			color: white;
-			margin-right: 5px;
-			vertical-align: middle;
-			font-size: 13pt;
-		}
-	}
-
 	.no-title .videopack-meta-icons span {
 		font-size: 19pt;
 		text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
@@ -235,13 +211,13 @@
 		overflow: hidden;
 		font-size: medium;
 
-		.viewcount {
+		.videopack-viewcount {
 			float: right;
 			margin-left: 12px;
 			white-space: nowrap;
 		}
 
-		.caption {
+		.videopack-caption {
 			font-size: 0.85em;
 			line-height: 150%;
 			font-style: italic;
@@ -414,7 +390,7 @@
 	.mejs-captions-selector-label {
 		padding: 5px;
 		margin: 0px;
-		color: #fff;
+		color: colors.$white;
 		width: 100%;
 	}
 
@@ -422,7 +398,7 @@
 
 	.mejs-controls div.mejs-sourcechooser-button button {
 		background: none;
-		color: white;
+		color: colors.$white;
 		font-size: 11pt;
 	}
 
@@ -455,7 +431,7 @@
 			box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
 
 			span {
-				color: white;
+				color: colors.$white;
 				padding: 0px 10px 5px 10px;
 				display: block;
 				white-space: nowrap;
@@ -472,7 +448,7 @@
 
 				&:hover {
 					color: #111;
-					background-color: #ffffff;
+					background-color: colors.$white;
 					background-color: rgba(255, 255, 255, 0.75);
 				}
 
@@ -704,8 +680,12 @@
 		visibility: visible;
 	}
 
-	.share-container {
-		text-align: center;
+	.videopack-share-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 20px;
 		color: white;
 		top: 0;
 		padding-top: 46px;
@@ -718,6 +698,18 @@
 		visibility: hidden;
 		transition: opacity 0.3s, visibility 0.3s;
 
+		.videopack-embedcode-container,
+		.videopack-start-at-container {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+
+			span {
+				display: flex;
+				align-items: center;
+			}
+		}
+
 		&.no-title {
 			padding-top: 32px;
 		}
@@ -727,41 +719,34 @@
 			visibility: visible;
 		}
 
-		input[type="text"].embedcode {
-			width: 30%;
+		input {
+			height: 18px;
+			min-height: auto;
+			font-size: 13px;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+			background-color: colors.$white;
+			box-shadow: 0 0 0 transparent;
+			border-radius: 2px;
+			border: none;
+			margin: 0;
+			color: colors.$gray-800;
 		}
 
-		.social-icons {
-			margin-top: 16px;
-			font-size: 19pt;
+		input[type="text"] {
+			padding: 2px;
+		}
 
-			a {
-				text-decoration: none;
-				border: none;
-				box-shadow: none;
-			}
+		input[type="text"].videopack-embed-code {
+			width: 15rem;
+		}
 
-			span {
-				font-size: 13pt;
-				line-height: 29pt;
-				text-decoration: none;
-				margin: 0;
-				padding: 0;
-			}
-
-			.vjs-icon-twitter {
-				color: #55acee;
-				font-size: 32pt;
-			}
-
-			.vjs-icon-facebook {
-				color: #3b5998;
-				font-size: 32pt;
-			}
+		input[type="text"].videopack-start-at {
+			width: 3rem;
+			text-align: center;
 		}
 	}
 
-	.click-trap {
+	.videopack-click-trap {
 		width: 100%;
 		height: 100%;
 		background: none;
@@ -798,19 +783,19 @@
 		&.no-title {
 			background: none;
 
-			.meta-icons span {
+			.videopack-meta-icons span {
 				font-size: 19pt;
 				text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
 			}
 		}
 
-		.title {
+		.videopack-title {
 			font-size: 10pt;
 			padding-left: 4px;
 			line-height: 20pt;
 		}
 
-		.meta-icons {
+		.videopack-meta-icons {
 			position: relative;
 			float: right;
 			margin: 3px 0px 3px 0px;
@@ -843,7 +828,7 @@
 		}
 	}
 
-	&.meta-bar-visible .videopack-meta-bar,
+	&.videopack-meta-bar-visible .videopack-meta-bar,
 	&:hover .videopack-meta-bar {
 		opacity: 1;
 		visibility: visible;

@@ -12,7 +12,7 @@ const BelowVideo = ({ attributes }) => {
 			<>
 				<div className="videopack-below-video">
 					{view_count && viewStarts > 0 && (
-						<div className="viewcount">
+						<div className="videopack-viewcount">
 							{sprintf(
 								/* translators: %d is number of views */
 								_n(
@@ -25,7 +25,7 @@ const BelowVideo = ({ attributes }) => {
 							)}
 						</div>
 					)}
-					{caption && <div className="caption">{caption}</div>}
+					{caption && <div className="videopack-caption">{caption}</div>}
 				</div>
 			</>
 		);
