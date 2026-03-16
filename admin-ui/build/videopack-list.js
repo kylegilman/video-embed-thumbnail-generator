@@ -6454,11 +6454,11 @@ const BelowVideo = ({
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("div", {
         className: "videopack-below-video",
         children: [view_count && viewStarts > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-          className: "viewcount",
+          className: "videopack-viewcount",
           children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %d is number of views */
           (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__._n)('%d view', '%d views', viewStarts, 'video-embed-thumbnail-generator'), viewStarts)
         }), caption && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-          className: "caption",
+          className: "videopack-caption",
           children: caption
         })]
       })
@@ -6637,22 +6637,22 @@ const MetaBar = ({
   const EmbedElements = () => {
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
-        className: `click-trap${shareIsOpen ? ' is-visible' : ''}`,
+        className: `videopack-click-trap${shareIsOpen ? ' is-visible' : ''}`,
         onClick: () => {
           setShareIsOpen(!shareIsOpen);
         }
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
-        className: `share-container${shareIsOpen ? ' is-visible' : ''}${noTitleMeta}`,
+        className: `videopack-share-container${shareIsOpen ? ' is-visible' : ''}${noTitleMeta}`,
         children: embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
-            className: "embedcode-container",
+            className: "videopack-embedcode-container",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               className: "videopack-icons embed"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Embed:', 'video-embed-thumbnail-generator')
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
-                className: "embedcode videopack-embed-code",
+                className: "videopack-embed-code",
                 type: "text",
                 value: currentEmbedCode,
                 onClick: event => {
@@ -6672,7 +6672,7 @@ const MetaBar = ({
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("label", {
               htmlFor: `videopack-start-at-enable-block-${randomId}`,
               children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Start at:', 'video-embed-thumbnail-generator')
-            }), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
               type: "text",
               className: "videopack-start-at",
               value: startAtTime,
@@ -6688,7 +6688,7 @@ const MetaBar = ({
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("div", {
         className: `videopack-meta-bar${noTitleMeta}`,
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
-          className: 'meta-icons',
+          className: 'videopack-meta-icons',
           children: [embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
             type: 'button',
             className: shareIsOpen ? 'videopack-icons close' : 'videopack-icons share',
@@ -6696,7 +6696,7 @@ const MetaBar = ({
               setShareIsOpen(!shareIsOpen);
             }
           }), downloadlink && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("a", {
-            className: "download-link",
+            className: "videopack-download-link",
             href: attributes.src,
             download: true,
             title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Click to download', 'video-embed-thumbnail-generator'),
@@ -6705,7 +6705,7 @@ const MetaBar = ({
             })
           })]
         }), overlay_title && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
-          className: "title",
+          className: "videopack-title",
           children: title
         })]
       }), embedItems() && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(EmbedElements, {})]
@@ -6821,58 +6821,65 @@ const VideoJS = props => {
         });
       }, 0);
     } else if (player && !player.isDisposed()) {
-      // Update existing player options
-      player.autoplay(options.autoplay);
-      player.loop(options.loop);
-      player.muted(options.muted);
-      player.volume(options.volume);
-      player.poster(options.poster);
-      player.controls(options.controls);
-      player.playbackRates(options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []);
-      player.preload(options.preload);
-      if (previousSkinRef.current !== skin) {
-        if (previousSkinRef.current) {
-          player.removeClass(previousSkinRef.current);
+      player.ready(function () {
+        // Safeguard against missing tech (e.g. failed to load source)
+        if (!player.tech(true)) {
+          return;
         }
-        if (skin) {
-          player.addClass(skin);
-        }
-        previousSkinRef.current = skin;
-      }
 
-      // Only update src if it has actually changed to prevent reloading
-      if (options.sources && options.sources.length > 0) {
-        const currentSrc = player.currentSrc();
-        const newSrc = options.sources[0].src;
-        if (currentSrc !== newSrc) {
-          player.src(options.sources);
-        }
-      }
-
-      // Update tracks if they changed
-      if (options.tracks) {
-        const remoteTracks = player.remoteTextTracks();
-        const currentTracks = [];
-        for (let i = 0; i < remoteTracks.length; i++) {
-          currentTracks.push({
-            src: remoteTracks[i].src,
-            kind: remoteTracks[i].kind,
-            srclang: remoteTracks[i].language,
-            label: remoteTracks[i].label,
-            default: remoteTracks[i].default
-          });
-        }
-        if (JSON.stringify(currentTracks) !== JSON.stringify(options.tracks)) {
-          // Remove old remote tracks
-          for (let i = remoteTracks.length - 1; i >= 0; i--) {
-            player.removeRemoteTextTrack(remoteTracks[i]);
+        // Update existing player options
+        player.autoplay(options.autoplay);
+        player.loop(options.loop);
+        player.muted(options.muted);
+        player.volume(options.volume);
+        player.poster(options.poster);
+        player.controls(options.controls);
+        player.playbackRates(options.playback_rate ? [0.5, 1, 1.25, 1.5, 2] : []);
+        player.preload(options.preload);
+        if (previousSkinRef.current !== skin) {
+          if (previousSkinRef.current) {
+            player.removeClass(previousSkinRef.current);
           }
-          // Add new ones
-          options.tracks.forEach(track => {
-            player.addRemoteTextTrack(track, false);
-          });
+          if (skin) {
+            player.addClass(skin);
+          }
+          previousSkinRef.current = skin;
         }
-      }
+
+        // Only update src if it has actually changed to prevent reloading
+        if (options.sources && options.sources.length > 0) {
+          const currentSrc = player.currentSrc();
+          const newSrc = options.sources[0].src;
+          if (currentSrc !== newSrc) {
+            player.src(options.sources);
+          }
+        }
+
+        // Update tracks if they changed
+        if (options.tracks) {
+          const remoteTracks = player.remoteTextTracks();
+          const currentTracks = [];
+          for (let i = 0; i < remoteTracks.length; i++) {
+            currentTracks.push({
+              src: remoteTracks[i].src,
+              kind: remoteTracks[i].kind,
+              srclang: remoteTracks[i].language,
+              label: remoteTracks[i].label,
+              default: remoteTracks[i].default
+            });
+          }
+          if (JSON.stringify(currentTracks) !== JSON.stringify(options.tracks)) {
+            // Remove old remote tracks
+            for (let i = remoteTracks.length - 1; i >= 0; i--) {
+              player.removeRemoteTextTrack(remoteTracks[i]);
+            }
+            // Add new ones
+            options.tracks.forEach(track => {
+              player.addRemoteTextTrack(track, false);
+            });
+          }
+        }
+      });
     }
     return () => {
       clearTimeout(initTimer);
@@ -7042,12 +7049,12 @@ const VideoPlayer = ({
   const renderReady = allSources && allSources.length > 0 && allSources[0].src;
   const handlePlay = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     if (wrapperRef.current) {
-      wrapperRef.current.classList.remove('meta-bar-visible');
+      wrapperRef.current.classList.remove('videopack-meta-bar-visible');
     }
   }, []);
   const handlePause = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
     if (wrapperRef.current) {
-      wrapperRef.current.classList.add('meta-bar-visible');
+      wrapperRef.current.classList.add('videopack-meta-bar-visible');
     }
   }, []);
   const onReadyRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useRef)(onReady);
@@ -7125,7 +7132,7 @@ const VideoPlayer = ({
   };
   const watermarkStyle = getWatermarkStyle();
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
-    className: `videopack-wrapper meta-bar-visible`,
+    className: `videopack-wrapper videopack-meta-bar-visible`,
     ref: wrapperRef,
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("div", {
       className: `videopack-player ${skin || ''}`,
@@ -7530,6 +7537,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
 /* harmony export */   clearQueue: () => (/* binding */ clearQueue),
+/* harmony export */   createJob: () => (/* binding */ createJob),
 /* harmony export */   createThumbnailFromCanvas: () => (/* binding */ createThumbnailFromCanvas),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteJob: () => (/* binding */ deleteJob),
@@ -7538,17 +7546,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
+/* harmony export */   getJobStatus: () => (/* binding */ getJobStatus),
 /* harmony export */   getNetworkSettings: () => (/* binding */ getNetworkSettings),
+/* harmony export */   getPresets: () => (/* binding */ getPresets),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
 /* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
+/* harmony export */   listJobs: () => (/* binding */ listJobs),
 /* harmony export */   normalizeOptions: () => (/* binding */ normalizeOptions),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
 /* harmony export */   resetNetworkSettings: () => (/* binding */ resetNetworkSettings),
 /* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
+/* harmony export */   retryJob: () => (/* binding */ retryJob),
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
 /* harmony export */   saveNetworkSettings: () => (/* binding */ saveNetworkSettings),
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
@@ -7556,6 +7568,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   testEncodeCommand: () => (/* binding */ testEncodeCommand),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
+/* harmony export */   unassignFormat: () => (/* binding */ unassignFormat),
 /* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
 /* harmony export */ });
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
@@ -7574,9 +7587,7 @@ const getQueue = async () => {
     return pre;
   }
   try {
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/queue'
-    });
+    const response = await listJobs();
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getQueue', response || []);
   } catch (error) {
     console.error('Error fetching queue:', error);
@@ -7586,7 +7597,7 @@ const getQueue = async () => {
 const toggleQueue = async action => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/queue/control',
+      path: '/videopack/v1/jobs/control',
       method: 'POST',
       data: {
         action
@@ -7600,7 +7611,7 @@ const toggleQueue = async action => {
 const clearQueue = async type => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/queue/clear',
+      path: '/videopack/v1/jobs/clear',
       method: 'DELETE',
       data: {
         type
@@ -7614,7 +7625,7 @@ const clearQueue = async type => {
 const deleteJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/queue/${jobId}`,
+      path: `/videopack/v1/jobs/${jobId}`,
       method: 'DELETE'
     });
   } catch (error) {
@@ -7622,10 +7633,23 @@ const deleteJob = async jobId => {
     throw error;
   }
 };
+const retryJob = async jobId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/jobs/${jobId}`,
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error retrying job:', error);
+    throw error;
+  }
+};
 const removeJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/queue/remove/${jobId}`,
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/jobs/${jobId}`, {
+        force: false
+      }),
       method: 'DELETE'
     });
   } catch (error) {
@@ -7633,39 +7657,88 @@ const removeJob = async jobId => {
     throw error;
   }
 };
-const getVideoFormats = async (attachmentId, url = '') => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoFormats', undefined, attachmentId, url);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
+const getPresets = async (attachmentId = null, url = '') => {
   try {
-    const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/formats/${attachmentId}`, {
-      url
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/presets', {
+        attachment_id: attachmentId,
+        url
+      })
     });
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+  } catch (error) {
+    console.error('Error fetching presets:', error);
+    throw error;
+  }
+};
+const createJob = async (input, outputs, parentId = 0) => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/jobs',
+      method: 'POST',
+      data: {
+        input,
+        outputs,
+        parent_id: parentId
+      }
+    });
+  } catch (error) {
+    console.error('Error creating job:', error);
+    throw error;
+  }
+};
+const getJobStatus = async jobId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/jobs/${jobId}`
+    });
+  } catch (error) {
+    console.error('Error fetching job status:', error);
+    throw error;
+  }
+};
+const listJobs = async (input = null) => {
+  try {
+    const path = input ? (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/jobs', {
+      input
+    }) : '/videopack/v1/jobs';
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path
     });
-    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoFormats', response, attachmentId, url);
+  } catch (error) {
+    console.error('Error listing jobs:', error);
+    throw error;
+  }
+};
+const getVideoFormats = async (attachmentId, url = '') => {
+  try {
+    const presets = await getPresets(attachmentId, url);
+    const merged = {};
+    presets.forEach(preset => {
+      merged[preset.id] = {
+        ...preset,
+        format_id: preset.id,
+        // Preserve the status from the server directly
+        status: preset.status ? preset.status.toLowerCase() : 'not_encoded',
+        // The UI expects 'id' to be the WordPress attachment ID for deletion/metadata tracking
+        id: preset.attachment_id || null
+      };
+    });
+    return merged;
   } catch (error) {
     console.error('Error fetching video formats:', error);
     throw error;
   }
 };
 const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_enqueueJob', undefined, attachmentId, src, formats);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
+  // formats is an object { format_id: true, ... } from the UI
+  const outputIds = Object.keys(formats).filter(id => formats[id]);
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/queue/${attachmentId}`,
-      method: 'POST',
-      data: {
-        url: src,
-        formats,
-        parent_id: parentId
-      }
-    });
+    const response = await createJob(attachmentId || src, outputIds, parentId);
+    // The UI expects a certain shape for its message reporting
+    return {
+      ...response,
+      attachment_id: attachmentId
+    };
   } catch (error) {
     console.error('Error enqueuing job:', error);
     throw error;
@@ -7688,6 +7761,23 @@ const assignFormat = async (mediaId, formatId, parentId) => {
     throw error;
   }
 };
+const unassignFormat = async mediaId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/wp/v2/media/${mediaId}`,
+      method: 'POST',
+      data: {
+        meta: {
+          '_kgflashmediaplayer-format': '',
+          '_kgflashmediaplayer-parent': 0
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error unassigning format:', error);
+    throw error;
+  }
+};
 const deleteFile = async attachmentId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -7707,9 +7797,10 @@ const deleteFile = async attachmentId => {
  * @param {number}            attachmentId The ID of the video attachment.
  * @param {string}            videoSrc     The URL of the video (used for filename).
  * @param {number}            parentId     The ID of the parent post.
+ * @param {boolean|null}      featured     Whether to set as featured image (overrides default).
  * @return {Promise<Object>} The response from the upload endpoint.
  */
-const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0) => {
+const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0, featured = null) => {
   return new Promise((resolve, reject) => {
     canvas.toBlob(async blob => {
       if (!blob) {
@@ -7723,6 +7814,9 @@ const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0)
         formData.append('parent_id', parentId);
         formData.append('url', videoSrc);
         formData.append('post_name', (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.getFilename)(videoSrc));
+        if (featured !== null) {
+          formData.append('featured', featured);
+        }
         const response = await uploadThumbnail(formData);
         resolve(response);
       } catch (error) {
@@ -7743,7 +7837,7 @@ const uploadThumbnail = async formData => {
     throw error;
   }
 };
-const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '') => {
+const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/thumbs/save_all',
@@ -7752,7 +7846,8 @@ const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url =
         attachment_id,
         thumb_urls,
         parent_id,
-        url
+        url,
+        featured
       }
     });
   } catch (error) {
@@ -7888,7 +7983,7 @@ const resetVideopackSettings = async () => {
     throw error;
   }
 };
-const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '') => {
+const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/thumbs',
@@ -7897,7 +7992,8 @@ const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '')
         attachment_id,
         thumburl: thumb_url,
         parent_id,
-        url
+        url,
+        featured
       }
     });
   } catch (error) {
@@ -7905,7 +8001,7 @@ const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '')
     throw error;
   }
 };
-const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0) => {
+const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0, featured = null) => {
   try {
     const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', {
       url,
@@ -7913,7 +8009,8 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
       thumbnail_index,
       attachment_id,
       generate_button,
-      parent_id
+      parent_id,
+      featured
     });
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path

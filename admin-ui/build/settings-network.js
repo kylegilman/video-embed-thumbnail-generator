@@ -185,6 +185,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   assignFormat: () => (/* binding */ assignFormat),
 /* harmony export */   clearQueue: () => (/* binding */ clearQueue),
+/* harmony export */   createJob: () => (/* binding */ createJob),
 /* harmony export */   createThumbnailFromCanvas: () => (/* binding */ createThumbnailFromCanvas),
 /* harmony export */   deleteFile: () => (/* binding */ deleteFile),
 /* harmony export */   deleteJob: () => (/* binding */ deleteJob),
@@ -193,17 +194,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
 /* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
 /* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
+/* harmony export */   getJobStatus: () => (/* binding */ getJobStatus),
 /* harmony export */   getNetworkSettings: () => (/* binding */ getNetworkSettings),
+/* harmony export */   getPresets: () => (/* binding */ getPresets),
 /* harmony export */   getQueue: () => (/* binding */ getQueue),
 /* harmony export */   getSettings: () => (/* binding */ getSettings),
 /* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
 /* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
 /* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
 /* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
+/* harmony export */   listJobs: () => (/* binding */ listJobs),
 /* harmony export */   normalizeOptions: () => (/* binding */ normalizeOptions),
 /* harmony export */   removeJob: () => (/* binding */ removeJob),
 /* harmony export */   resetNetworkSettings: () => (/* binding */ resetNetworkSettings),
 /* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
+/* harmony export */   retryJob: () => (/* binding */ retryJob),
 /* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
 /* harmony export */   saveNetworkSettings: () => (/* binding */ saveNetworkSettings),
 /* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
@@ -211,6 +216,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
 /* harmony export */   testEncodeCommand: () => (/* binding */ testEncodeCommand),
 /* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
+/* harmony export */   unassignFormat: () => (/* binding */ unassignFormat),
 /* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
 /* harmony export */ });
 /* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
@@ -229,9 +235,7 @@ const getQueue = async () => {
     return pre;
   }
   try {
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/queue'
-    });
+    const response = await listJobs();
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getQueue', response || []);
   } catch (error) {
     console.error('Error fetching queue:', error);
@@ -241,7 +245,7 @@ const getQueue = async () => {
 const toggleQueue = async action => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/queue/control',
+      path: '/videopack/v1/jobs/control',
       method: 'POST',
       data: {
         action
@@ -255,7 +259,7 @@ const toggleQueue = async action => {
 const clearQueue = async type => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/queue/clear',
+      path: '/videopack/v1/jobs/clear',
       method: 'DELETE',
       data: {
         type
@@ -269,7 +273,7 @@ const clearQueue = async type => {
 const deleteJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/queue/${jobId}`,
+      path: `/videopack/v1/jobs/${jobId}`,
       method: 'DELETE'
     });
   } catch (error) {
@@ -277,10 +281,23 @@ const deleteJob = async jobId => {
     throw error;
   }
 };
+const retryJob = async jobId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/jobs/${jobId}`,
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error('Error retrying job:', error);
+    throw error;
+  }
+};
 const removeJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/queue/remove/${jobId}`,
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/jobs/${jobId}`, {
+        force: false
+      }),
       method: 'DELETE'
     });
   } catch (error) {
@@ -288,39 +305,88 @@ const removeJob = async jobId => {
     throw error;
   }
 };
-const getVideoFormats = async (attachmentId, url = '') => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoFormats', undefined, attachmentId, url);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
+const getPresets = async (attachmentId = null, url = '') => {
   try {
-    const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/formats/${attachmentId}`, {
-      url
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/presets', {
+        attachment_id: attachmentId,
+        url
+      })
     });
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+  } catch (error) {
+    console.error('Error fetching presets:', error);
+    throw error;
+  }
+};
+const createJob = async (input, outputs, parentId = 0) => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: '/videopack/v1/jobs',
+      method: 'POST',
+      data: {
+        input,
+        outputs,
+        parent_id: parentId
+      }
+    });
+  } catch (error) {
+    console.error('Error creating job:', error);
+    throw error;
+  }
+};
+const getJobStatus = async jobId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/videopack/v1/jobs/${jobId}`
+    });
+  } catch (error) {
+    console.error('Error fetching job status:', error);
+    throw error;
+  }
+};
+const listJobs = async (input = null) => {
+  try {
+    const path = input ? (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/jobs', {
+      input
+    }) : '/videopack/v1/jobs';
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path
     });
-    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoFormats', response, attachmentId, url);
+  } catch (error) {
+    console.error('Error listing jobs:', error);
+    throw error;
+  }
+};
+const getVideoFormats = async (attachmentId, url = '') => {
+  try {
+    const presets = await getPresets(attachmentId, url);
+    const merged = {};
+    presets.forEach(preset => {
+      merged[preset.id] = {
+        ...preset,
+        format_id: preset.id,
+        // Preserve the status from the server directly
+        status: preset.status ? preset.status.toLowerCase() : 'not_encoded',
+        // The UI expects 'id' to be the WordPress attachment ID for deletion/metadata tracking
+        id: preset.attachment_id || null
+      };
+    });
+    return merged;
   } catch (error) {
     console.error('Error fetching video formats:', error);
     throw error;
   }
 };
 const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_enqueueJob', undefined, attachmentId, src, formats);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
+  // formats is an object { format_id: true, ... } from the UI
+  const outputIds = Object.keys(formats).filter(id => formats[id]);
   try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/queue/${attachmentId}`,
-      method: 'POST',
-      data: {
-        url: src,
-        formats,
-        parent_id: parentId
-      }
-    });
+    const response = await createJob(attachmentId || src, outputIds, parentId);
+    // The UI expects a certain shape for its message reporting
+    return {
+      ...response,
+      attachment_id: attachmentId
+    };
   } catch (error) {
     console.error('Error enqueuing job:', error);
     throw error;
@@ -343,6 +409,23 @@ const assignFormat = async (mediaId, formatId, parentId) => {
     throw error;
   }
 };
+const unassignFormat = async mediaId => {
+  try {
+    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: `/wp/v2/media/${mediaId}`,
+      method: 'POST',
+      data: {
+        meta: {
+          '_kgflashmediaplayer-format': '',
+          '_kgflashmediaplayer-parent': 0
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error unassigning format:', error);
+    throw error;
+  }
+};
 const deleteFile = async attachmentId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -362,9 +445,10 @@ const deleteFile = async attachmentId => {
  * @param {number}            attachmentId The ID of the video attachment.
  * @param {string}            videoSrc     The URL of the video (used for filename).
  * @param {number}            parentId     The ID of the parent post.
+ * @param {boolean|null}      featured     Whether to set as featured image (overrides default).
  * @return {Promise<Object>} The response from the upload endpoint.
  */
-const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0) => {
+const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0, featured = null) => {
   return new Promise((resolve, reject) => {
     canvas.toBlob(async blob => {
       if (!blob) {
@@ -378,6 +462,9 @@ const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0)
         formData.append('parent_id', parentId);
         formData.append('url', videoSrc);
         formData.append('post_name', (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.getFilename)(videoSrc));
+        if (featured !== null) {
+          formData.append('featured', featured);
+        }
         const response = await uploadThumbnail(formData);
         resolve(response);
       } catch (error) {
@@ -398,7 +485,7 @@ const uploadThumbnail = async formData => {
     throw error;
   }
 };
-const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '') => {
+const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/thumbs/save_all',
@@ -407,7 +494,8 @@ const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url =
         attachment_id,
         thumb_urls,
         parent_id,
-        url
+        url,
+        featured
       }
     });
   } catch (error) {
@@ -543,7 +631,7 @@ const resetVideopackSettings = async () => {
     throw error;
   }
 };
-const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '') => {
+const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path: '/videopack/v1/thumbs',
@@ -552,7 +640,8 @@ const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '')
         attachment_id,
         thumburl: thumb_url,
         parent_id,
-        url
+        url,
+        featured
       }
     });
   } catch (error) {
@@ -560,7 +649,7 @@ const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '')
     throw error;
   }
 };
-const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0) => {
+const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0, featured = null) => {
   try {
     const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', {
       url,
@@ -568,7 +657,8 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
       thumbnail_index,
       attachment_id,
       generate_button,
-      parent_id
+      parent_id,
+      featured
     });
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
       path
@@ -1023,7 +1113,7 @@ const NetworkSettingsPage = () => {
       changeHandlerFactory.default_capabilities(updatedCapabilities);
     };
     return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('User capabilities for new sites:', 'video-embed-thumbnail-generator'),
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('User capabilities for new sites', 'video-embed-thumbnail-generator'),
       initialOpen: true,
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Flex, {
         direction: "row",
@@ -1081,7 +1171,7 @@ const NetworkSettingsPage = () => {
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_settings_components_TextControlOnBlur__WEBPACK_IMPORTED_MODULE_6__["default"], {
             __nextHasNoMarginBottom: true,
             __next40pxDefaultSize: true,
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Path to FFmpeg folder on server:', 'video-embed-thumbnail-generator'),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Path to FFmpeg folder on server', 'video-embed-thumbnail-generator'),
             value: settings.app_path,
             onChange: changeHandlerFactory.app_path,
             help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Leave blank if FFmpeg is in your system path.', 'video-embed-thumbnail-generator')
@@ -1095,7 +1185,7 @@ const NetworkSettingsPage = () => {
           })
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToggleControl, {
           __nextHasNoMarginBottom: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Only Super Admins can change FFmpeg Settings.', 'video-embed-thumbnail-generator'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Only Super Admins can change FFmpeg Settings', 'video-embed-thumbnail-generator'),
           checked: !!settings.superadmin_only_ffmpeg_settings,
           onChange: changeHandlerFactory.superadmin_only_ffmpeg_settings
         })]
@@ -1105,7 +1195,7 @@ const NetworkSettingsPage = () => {
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Simultaneous encodes:', 'video-embed-thumbnail-generator'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Simultaneous encodes', 'video-embed-thumbnail-generator'),
           value: settings.simultaneous_encodes,
           className: "videopack-settings-slider",
           onChange: changeHandlerFactory.simultaneous_encodes,
@@ -1117,7 +1207,7 @@ const NetworkSettingsPage = () => {
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.RangeControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
-          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Threads:', 'video-embed-thumbnail-generator'),
+          label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Threads', 'video-embed-thumbnail-generator'),
           value: settings.threads,
           className: "videopack-settings-slider",
           onChange: changeHandlerFactory.threads,
