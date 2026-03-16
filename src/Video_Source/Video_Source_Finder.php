@@ -30,13 +30,43 @@ class Video_Source_Finder {
 
 	public static function find_attachment_children( Source $source ): array {
 		if ( is_numeric( $source->get_source() ) ) {
-			$args = array(
-				'numberposts' => -1,
-				'post_parent' => $source->get_source(),
-				'post_type'   => 'attachment',
+			$parent_id = (int) $source->get_source();
+
+			// 1. Get direct children (attachments with post_parent set)
+			$direct_children = get_posts(
+				array(
+					'numberposts' => -1,
+					'post_parent' => $parent_id,
+					'post_type'   => 'attachment',
+					'fields'      => 'ids',
+				)
 			);
 
-			return get_posts( $args );
+			// 2. Get attachments linked via meta key (manual assignments)
+			$linked_children = get_posts(
+				array(
+					'numberposts' => -1,
+					'post_type'   => 'attachment',
+					'meta_key'    => '_kgflashmediaplayer-parent',
+					'meta_value'  => $parent_id,
+					'fields'      => 'ids',
+				)
+			);
+
+			$all_ids = array_unique( array_merge( (array) $direct_children, (array) $linked_children ) );
+
+			if ( empty( $all_ids ) ) {
+				return array();
+			}
+
+			return get_posts(
+				array(
+					'numberposts' => -1,
+					'post_type'   => 'attachment',
+					'post__in'    => $all_ids,
+					'orderby'     => 'post__in',
+				)
+			);
 		} else {
 			$args = array(
 				'numberposts' => -1,
