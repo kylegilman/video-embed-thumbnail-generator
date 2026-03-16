@@ -18,7 +18,7 @@ import {
 import { volumeUp, volumeDown } from '../../../assets/icon';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
 import VideopackTooltip from './VideopackTooltip';
-import WatermarkSettingsPanel from './WatermarkSettingsPanel';
+import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
 
 const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
@@ -59,6 +59,8 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		gifmode,
 		playback_rate,
 		encode,
+		right_click,
+		click_download,
 	} = settings;
 
 	const currentResolutions = useResolutions(
@@ -339,7 +341,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Video player:',
+							'Video player',
 							'video-embed-thumbnail-generator'
 						)}
 						value={embed_method}
@@ -460,6 +462,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					expanded={false}
 					gap={20}
 					justify="flex-start"
+					className="videopack-player-settings-flex"
 				>
 					<FlexItem>
 						<ToggleControl
@@ -478,7 +481,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={__(
-								'Pause other videos on page when starting a new video.',
+								'Pause other videos on page when starting a new video',
 								'video-embed-thumbnail-generator'
 							)}
 							onChange={changeHandlerFactory.pauseothervideos}
@@ -608,7 +611,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__(
-								'Skin:',
+								'Skin',
 								'video-embed-thumbnail-generator'
 							)}
 							value={skin}
@@ -627,7 +630,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Alignment / Width:',
+							'Alignment / Width',
 							'video-embed-thumbnail-generator'
 						)}
 						value={align}
@@ -658,7 +661,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
-						'Use legacy dimension settings.',
+						'Use legacy dimension settings',
 						'video-embed-thumbnail-generator'
 					)}
 					onChange={changeHandlerFactory.legacy_dimensions}
@@ -671,7 +674,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__(
-									'Width:',
+									'Width',
 									'video-embed-thumbnail-generator'
 								)}
 								type="number"
@@ -684,7 +687,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__(
-									'Height:',
+									'Height',
 									'video-embed-thumbnail-generator'
 								)}
 								type="number"
@@ -745,7 +748,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Default codec:',
+							'Default codec',
 							'video-embed-thumbnail-generator'
 						)}
 						value={auto_codec}
@@ -756,7 +759,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'Default resolution:',
+							'Default resolution',
 							'video-embed-thumbnail-generator'
 						)}
 						value={auto_res}
@@ -774,7 +777,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={__(
-							'Use device pixel ratio for resolution calculation.',
+							'Use device pixel ratio for resolution calculation',
 							'video-embed-thumbnail-generator'
 						)}
 						onChange={changeHandlerFactory.pixel_ratio}
@@ -783,6 +786,53 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					<VideopackTooltip
 						text={__(
 							'Most modern mobile devices and some very high-resolution desktop displays (what Apple calls a Retina display) use a pixel ratio to calculate the size of their viewport. Using the pixel ratio can result in a higher resolution being selected on mobile devices than on desktop devices. Because these devices actually have extremely high resolutions, and in a responsive design the video player usually takes up more of the screen than on a desktop browser, this is not a mistake, but your users might prefer to use less mobile data.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+			</PanelBody>
+						<PanelBody
+				title={__('Sharing', 'video-embed-thumbnail-generator')}
+				initialOpen={true}
+			>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Allow users to embed your videos on other sites'
+					)}
+					onChange={changeHandlerFactory.embeddable}
+					checked={!!embeddable}
+				/>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Allow right-clicking on videos',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.right_click}
+						checked={!!right_click}
+					/>
+					<VideopackTooltip
+						text={__(
+							"We can't prevent a user from simply saving the downloaded video file from the browser's cache, but disabling right-clicking will make it more difficult for casual users to save your videos.",
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Allow single-click download links',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.click_download}
+						checked={!!click_download}
+					/>
+					<VideopackTooltip
+						text={__(
+							"Videopack creates a one-click method for users who want to allow easy video downloading, but if some of your videos are hidden or private, depending on the methods you use, someone who guesses a video's WordPress database ID could potentially use the method to download videos they might not otherwise have access to.",
 							'video-embed-thumbnail-generator'
 						)}
 					/>
@@ -803,7 +853,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__(
-								'Link to:',
+								'Link to',
 								'video-embed-thumbnail-generator'
 							)}
 							value={watermark_link_to}
@@ -815,7 +865,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 								label={__(
-									'URL:',
+									'URL',
 									'video-embed-thumbnail-generator'
 								)}
 								type="url"
@@ -832,7 +882,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				<ToggleControl
 					__nextHasNoMarginBottom
 					label={__(
-						'Enable Custom Resolution',
+						'Enable custom resolution',
 						'video-embed-thumbnail-generator'
 					)}
 					onChange={changeHandlerFactory.enable_custom_resolution}
@@ -844,7 +894,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__(
-								'Custom Resolution Height:',
+								'Custom Resolution Height',
 								'video-embed-thumbnail-generator'
 							)}
 							type="number"
@@ -877,7 +927,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				</div>
 				<BaseControl
 					label={__(
-						'Available Formats:',
+						'Available Formats',
 						'video-embed-thumbnail-generator'
 					)}
 					id="videopack-find-formats-codecs"
