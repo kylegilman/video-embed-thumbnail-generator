@@ -114,15 +114,15 @@ class Screens {
 				echo '<a href="' . esc_url( $external_url ) . '" target="_blank" rel="noopener noreferrer" style="word-break: break-all;">' . esc_html( $external_url ) . '</a><br><br>';
 			}
 
-			$kgvid_postmeta = ( new Attachment_Meta( $this->options_manager ) )->get( $id );
-			if ( is_array( $kgvid_postmeta ) && array_key_exists( 'starts', $kgvid_postmeta ) && intval( $kgvid_postmeta['starts'] ) > 0 ) {
+			$videopack_postmeta = ( new Attachment_Meta( $this->options_manager ) )->get( $id );
+			if ( is_array( $videopack_postmeta ) && array_key_exists( 'starts', $videopack_postmeta ) && intval( $videopack_postmeta['starts'] ) > 0 ) {
 				/* translators: Start refers to the number of times a video has been started */
-				wp_kses_post( printf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval( $kgvid_postmeta['starts'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( intval( $kgvid_postmeta['starts'] ) ), '</strong>' ) );
-				echo '<br><strong>' . esc_html( intval( $kgvid_postmeta['play_25'] ) ) . '</strong> 25%' .
-				'<br><strong>' . esc_html( intval( $kgvid_postmeta['play_50'] ) ) . '</strong> 50%' .
-				'<br><strong>' . esc_html( intval( $kgvid_postmeta['play_75'] ) ) . '</strong> 75%<br>';
+				wp_kses_post( printf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', intval( $videopack_postmeta['starts'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( intval( $videopack_postmeta['starts'] ) ), '</strong>' ) );
+				echo '<br><strong>' . esc_html( intval( $videopack_postmeta['play_25'] ) ) . '</strong> 25%' .
+				'<br><strong>' . esc_html( intval( $videopack_postmeta['play_50'] ) ) . '</strong> 50%' .
+				'<br><strong>' . esc_html( intval( $videopack_postmeta['play_75'] ) ) . '</strong> 75%<br>';
 				/* translators: %1$s%2$d%3$s is '<strong>', a number, '</strong>' */
-				printf( esc_html( _n( '%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval( $kgvid_postmeta['completeviews'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( $kgvid_postmeta['completeviews'] ), '</strong>' );
+				printf( esc_html( _n( '%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', intval( $videopack_postmeta['completeviews'] ), 'video-embed-thumbnail-generator' ) ), '<strong>', esc_html( $videopack_postmeta['completeviews'] ), '</strong>' );
 
 			}
 		}
@@ -142,28 +142,30 @@ class Screens {
 			return;
 		}
 
-		$show_children      = false;
-		$show_only_children = false;
-		$show_only_remote   = false;
+		if ( ! empty( $wp_query_obj->get( 'post__in' ) ) ) {
+			return;
+		}
 
-		$filter = isset( $_GET['videopack_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['videopack_filter'] ) ) : '0';
-		if ( '0' === $filter && isset( $wp_query_obj->query_vars['videopack_filter'] ) ) {
+		$filter = '0';
+		if ( isset( $_GET['videopack_filter'] ) ) {
+			$filter = sanitize_text_field( wp_unslash( $_GET['videopack_filter'] ) );
+		} elseif ( isset( $_POST['query']['videopack_filter'] ) ) {
+			$filter = sanitize_text_field( wp_unslash( $_POST['query']['videopack_filter'] ) );
+		} elseif ( isset( $wp_query_obj->query_vars['videopack_filter'] ) ) {
 			$filter = $wp_query_obj->query_vars['videopack_filter'];
 		}
 
-		if ( 'show_children' === $filter ) {
-			$show_children = true;
-		} elseif ( 'only_remote' === $filter ) {
-			$show_only_remote = true;
-		} elseif ( 'only_children' === $filter ) {
-			$show_only_children = true;
+		$videopack_parent_id = $wp_query_obj->get( 'videopack_parent_id' );
+		if ( empty( $videopack_parent_id ) && isset( $_POST['query']['videopack_parent_id'] ) ) {
+			$videopack_parent_id = intval( $_POST['query']['videopack_parent_id'] );
 		}
 
-		if ( true === $show_only_children ) {
-			$meta_query = $wp_query_obj->get( 'meta_query' );
-			if ( ! is_array( $meta_query ) ) {
-				$meta_query = array();
-			}
+		$meta_query = $wp_query_obj->get( 'meta_query' );
+		if ( ! is_array( $meta_query ) ) {
+			$meta_query = array();
+		}
+
+		if ( 'only_children' === $filter ) {
 			$meta_query['relation'] = 'AND';
 			$meta_query[]           = array(
 				'key'     => '_kgflashmediaplayer-format',
@@ -173,46 +175,75 @@ class Screens {
 			return;
 		}
 
-		if ( true === $show_only_remote ) {
-			$meta_query = $wp_query_obj->get( 'meta_query' );
-			if ( ! is_array( $meta_query ) ) {
-				$meta_query = array();
-			}
+		if ( 'only_remote' === $filter ) {
 			$meta_query['relation'] = 'AND';
 			$meta_query[]           = array(
-				'key'     => '_kgflashmediaplayer-external-remote',
-				'compare' => 'EXISTS',
+				'relation' => 'OR',
+				array(
+					'key'     => '_kgflashmediaplayer-external-remote',
+					'value'   => 'true',
+					'compare' => '=',
+				),
+				array(
+					'key'     => '_kgflashmediaplayer-externalurl',
+					'compare' => 'EXISTS',
+				),
 			);
 			$wp_query_obj->set( 'meta_query', $meta_query );
 			return;
 		}
 
-		if ( true === $show_children ) {
+		// If we are looking for children, or just normal videos + this parent's children.
+		if ( 'show_children' === $filter || ! empty( $videopack_parent_id ) ) {
+
+			// If we are in the general Media Library (no parent ID), "show_children" means show EVERYTHING.
+			if ( empty( $videopack_parent_id ) && 'show_children' === $filter ) {
+				return;
+			}
+
+			// We want (NOT child format) OR (child of THIS parent)
+			$meta_query[] = array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_kgflashmediaplayer-format',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => '_kgflashmediaplayer-parent',
+					'value'   => intval( $videopack_parent_id ),
+					'compare' => '=',
+				),
+			);
+
+			// Add a filter to also allow visibility based on the post_parent column,
+			// which is the canonical WordPress relationship for attachments.
+			add_filter( 'posts_where', function ( $where, $query ) use ( $videopack_parent_id ) {
+				global $wpdb;
+				if ( ! empty( $videopack_parent_id ) && strpos( $where, "post_parent = $videopack_parent_id" ) === false ) {
+					$where .= $wpdb->prepare( " OR ({$wpdb->posts}.post_parent = %d AND {$wpdb->posts}.post_type = 'attachment')", $videopack_parent_id );
+				}
+				return $where;
+			}, 10, 2 );
+
+			$wp_query_obj->set( 'meta_query', $meta_query );
 			return;
 		}
 
-		if ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 // hide children only when showing paged content (makes sure that -1 will actually return all attachments)
-		) {
-
-			$meta_query = $wp_query_obj->get( 'meta_query' );
-			if ( ! is_array( $meta_query ) ) {
-				$meta_query = array();
-			}
+		// Otherwise, hide children only when showing paged content (makes sure that -1 will actually return all attachments).
+		if ( array_key_exists( 'posts_per_page', $wp_query_obj->query_vars ) && $wp_query_obj->query_vars['posts_per_page'] > 0 ) {
 			$meta_query['relation'] = 'AND';
 			$meta_query[]           = array(
 				'key'     => '_kgflashmediaplayer-format',
 				'compare' => 'NOT EXISTS',
 			);
+
 			if ( $this->options['hide_thumbnails'] === true ) {
 				$meta_query[] = array(
 					'key'     => '_kgflashmediaplayer-video-id',
 					'compare' => 'NOT EXISTS',
 				);
 			}
-			$wp_query_obj->set(
-				'meta_query',
-				$meta_query
-			);
+			$wp_query_obj->set( 'meta_query', $meta_query );
 		}
 	}
 
@@ -248,12 +279,6 @@ class Screens {
 		return $settings;
 	}
 
-	/**
-	 * Filters the AJAX query arguments for the Media Library grid view.
-	 *
-	 * @param array $query The query arguments.
-	 * @return array The filtered query arguments.
-	 */
 	public function filter_ajax_query_attachments( $query ) {
 		if ( isset( $query['post_mime_type'] ) ) {
 			if ( 'videopack_child_formats' === $query['post_mime_type'] ) {
@@ -264,7 +289,30 @@ class Screens {
 				$query['videopack_filter'] = 'only_remote';
 			}
 		}
+
+		if ( ! isset( $query['videopack_parent_id'] ) && isset( $_POST['query']['videopack_parent_id'] ) ) {
+			$query['videopack_parent_id'] = intval( $_POST['query']['videopack_parent_id'] );
+		}
+
+		if ( ! isset( $query['videopack_filter'] ) && isset( $_POST['query']['videopack_filter'] ) ) {
+			$query['videopack_filter'] = sanitize_text_field( $_POST['query']['videopack_filter'] );
+		}
+
+		if ( isset( $query['videopack_parent_id'] ) ) {
+			$query['videopack_parent_id'] = intval( $query['videopack_parent_id'] );
+		}
+
+		if ( isset( $query['videopack_filter'] ) ) {
+			$query['videopack_filter'] = sanitize_text_field( $query['videopack_filter'] );
+		}
+
 		return $query;
+	}
+
+	public function add_query_vars( $vars ) {
+		$vars[] = 'videopack_filter';
+		$vars[] = 'videopack_parent_id';
+		return $vars;
 	}
 
 	public function upload_page_change_thumbnail_parent( $location ) {
@@ -276,17 +324,20 @@ class Screens {
 		}
 
 		$current_screen = get_current_screen();
+		$media = array();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['media'] ) && is_array( $_GET['media'] ) ) {
+			$media = array_map( 'sanitize_text_field', wp_unslash( $_GET['media'] ) );
+		}
 
 		if ( is_object( $current_screen )
 		&& 'upload' === $current_screen->id
-		&& isset( $_GET['media'] )
-		&& is_array( $_GET['media'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		&& ! empty( $media )
 		&& $this->options['thumb_parent'] === 'post'
 		&& check_admin_referer( 'bulk-media' )
 		) {
-			$media = \Videopack\Common\Validate::text_field( wp_unslash( $_GET['media'] ) );
 			if ( isset( $_GET['found_post_id'] ) ) {
-				$parent_id = (int) \Videopack\Common\Validate::text_field( wp_unslash( $_GET['found_post_id'] ) );
+				$parent_id = (int) sanitize_text_field( wp_unslash( $_GET['found_post_id'] ) );
 			} else {
 				$parent_id = 0;
 			}
@@ -315,7 +366,7 @@ class Screens {
 		/* translators: %s is '<code>"false"</code>' */
 		get_current_screen()->add_help_tab(
 			array(
-				'id'      => 'kgvid-help-tab',
+				'id'      => 'videopack-help-tab',
 				'title'   => esc_html__( 'Videopack Shortcode Reference', 'video-embed-thumbnail-generator' ),
 				'content' => '<p><strong>' . esc_html__( 'Use these optional attributes in the [videopack] shortcode:', 'video-embed-thumbnail-generator' ) . '</strong></p>
 	<ul><li><code>id="xxx"</code> ' . esc_html__( 'video attachment ID (instead of using a URL).', 'video-embed-thumbnail-generator' ) . '</li>
@@ -408,7 +459,6 @@ class Screens {
 				$response['videopack_poster_src'] = $poster_src[0];
 			}
 		}
-
 		return $response;
 	}
 }
