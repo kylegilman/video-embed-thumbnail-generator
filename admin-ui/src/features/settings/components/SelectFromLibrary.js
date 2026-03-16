@@ -2,7 +2,7 @@ import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import TextControlOnBlur from './TextControlOnBlur';
 
-const ChooseFromLibrary = ({ value, onChange, label, ...props }) => {
+const SelectFromLibrary = ({ value, onChange, label, children, ...props }) => {
 	const openMediaLibrary = () => {
 		const frame = window.wp.media({
 			title: __('Select Image', 'video-embed-thumbnail-generator'),
@@ -33,17 +33,23 @@ const ChooseFromLibrary = ({ value, onChange, label, ...props }) => {
 				onChange={onChange}
 				{...props}
 			/>
-			<Button
-				__next40pxDefaultSize
-				className="videopack-library-button"
-				variant="secondary"
-				onClick={openMediaLibrary}
-				disabled={props.disabled}
-			>
-				{__('Choose from library', 'video-embed-thumbnail-generator')}
-			</Button>
+			<div className="videopack-library-button-wrapper">
+				<Button
+					__next40pxDefaultSize
+					className="videopack-library-button"
+					variant="secondary"
+					onClick={openMediaLibrary}
+					disabled={props.disabled}
+				>
+					{__(
+						'Select from library',
+						'video-embed-thumbnail-generator'
+					)}
+				</Button>
+				{children}
+			</div>
 		</div>
 	);
 };
 
-export default ChooseFromLibrary;
+export default SelectFromLibrary;
