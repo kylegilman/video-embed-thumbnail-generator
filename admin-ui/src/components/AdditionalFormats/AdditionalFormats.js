@@ -8,7 +8,7 @@ import {
 	Spinner,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
+import { useState, useEffect, useCallback } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import './AdditionalFormats.scss';
@@ -46,9 +46,10 @@ const AdditionalFormats = ({
 	setAttributes,
 	attributes,
 	options = {},
-	parentId = 0,
+	parentId: providedParentId,
 	src: propSrc, // Accept src as a separate prop
 }) => {
+	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
 	const { ffmpeg_exists } = options;
 	const [videoFormats, setVideoFormats] = useState({});
@@ -58,28 +59,24 @@ const AdditionalFormats = ({
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isEncoding, setIsEncoding] = useState(false);
-	const progressTimerRef = useRef(null);
 	const siteSettings = useSelect((select) => {
 		return select('core').getSite();
 	}, []);
 
-	const sanitizeError = useCallback(
-		(error) => {
-			let errorMessage = error?.data?.details
-				? error.data.details.join(', ')
-				: error.message || '';
+	const sanitizeError = useCallback((error) => {
+		let errorMessage = error?.data?.details
+			? error.data.details.join(', ')
+			: error.message || '';
 
-			// If the message contains HTML, it's likely a WordPress fatal error response
-			if (/<[a-z][\s\S]*>/i.test(errorMessage)) {
-				errorMessage = __(
-					'A server error occurred. Please check the PHP logs.',
-					'video-embed-thumbnail-generator'
-				);
-			}
-			return errorMessage;
-		},
-		[]
-	);
+		// If the message contains HTML, it's likely a WordPress fatal error response
+		if (/<[a-z][\s\S]*>/i.test(errorMessage)) {
+			errorMessage = __(
+				'A server error occurred. Please check the PHP logs.',
+				'video-embed-thumbnail-generator'
+			);
+		}
+		return errorMessage;
+	}, []);
 
 	// Auto-clear success messages after 30 seconds.
 	useEffect(() => {
@@ -107,33 +104,20 @@ const AdditionalFormats = ({
 					const oldFormat = currentVideoFormats?.[fId];
 
 					// Carry over UI-only 'checked' state or initialize it.
-					newFormat.checked = oldFormat
-						? !!oldFormat.checked
-						: !!newFormat.checked;
+					// If the status is one where encoding is already done or in progress, uncheck it.
+					const isBusyOrDone = [
+						'queued',
+						'encoding',
+						'processing',
+						'completed',
+						'needs_insert',
+						'pending_replacement',
+					].includes(newFormat.status);
 
-					// Special handling for progress interpolation
-					if (newFormat.encoding_now && newFormat.progress) {
-						if (
-							oldFormat &&
-							oldFormat.encoding_now &&
-							oldFormat.progress &&
-							newFormat.progress.percent <
-							oldFormat.progress.percent
-						) {
-							// Don't let progress jump backwards due to server polling lag
-							newFormat.progress = {
-								...newFormat.progress,
-								percent: oldFormat.progress.percent,
-								remaining: oldFormat.progress.remaining,
-							};
-						} else {
-							// If no old progress, ensure we don't start with a negative percent.
-							newFormat.progress.percent =
-								newFormat.progress.percent > 0
-									? newFormat.progress.percent
-									: 0;
-						}
-					}
+					newFormat.checked =
+						oldFormat && !isBusyOrDone
+							? !!oldFormat.checked
+							: false;
 				});
 
 				// Only update state if the formats have actually changed.
@@ -195,74 +179,11 @@ const AdditionalFormats = ({
 				format.status === 'queued' ||
 				format.status === 'encoding' ||
 				format.status === 'processing' ||
-				format.status === 'needs_insert'
+				format.status === 'needs_insert' ||
+				format.status === 'pending_replacement'
 		);
 	};
 
-	const incrementEncodeProgress = useCallback(() => {
-		setVideoFormats((currentVideoFormats) => {
-			if (!currentVideoFormats || !isEncoding) {
-				return currentVideoFormats;
-			}
-
-			const updatedVideoFormats = { ...currentVideoFormats };
-			Object.keys(updatedVideoFormats).forEach((fId) => {
-				const format = updatedVideoFormats[fId];
-				if (format.encoding_now && format.progress) {
-					const elapsed =
-						new Date().getTime() / 1000 - format.started;
-					let percent = format.progress.percent || 0;
-					let remaining = null;
-
-					// Only calculate remaining time if video_duration is available.
-					if (format.video_duration) {
-						const totalDurationInSeconds =
-							format.video_duration / 1000000;
-						const speedMatch = format.progress.speed
-							? String(format.progress.speed).match(/(\d*\.?\d+)/)
-							: null;
-						const speed = speedMatch
-							? parseFloat(speedMatch[0])
-							: 0;
-
-						// Increment percent based on speed. This function runs every second.
-						if (speed > 0) {
-							const increment =
-								(1 / totalDurationInSeconds) * 100 * speed;
-							percent += increment;
-						}
-
-						// Calculate remaining time based on current percent and speed
-						if (percent > 0 && speed > 0) {
-							const remainingPercent = 100 - percent;
-							remaining =
-								(totalDurationInSeconds *
-									(remainingPercent / 100)) /
-								speed;
-						} else {
-							remaining = totalDurationInSeconds - elapsed;
-						}
-					}
-
-					// Clamp values to be within expected ranges.
-					percent = Math.min(100, Math.max(0, percent));
-					remaining =
-						remaining !== null ? Math.max(0, remaining) : null;
-
-					updatedVideoFormats[fId] = {
-						...format,
-						progress: {
-							...format.progress,
-							elapsed,
-							remaining,
-							percent,
-						},
-					};
-				}
-			});
-			return updatedVideoFormats;
-		});
-	}, [isEncoding]);
 
 	useEffect(() => {
 		setIsEncoding(shouldPoll(videoFormats));
@@ -270,7 +191,7 @@ const AdditionalFormats = ({
 
 	useEffect(() => {
 		let pollTimer = null;
-		// Manage progress timer based on encoding state
+		// Manage polling logic based on isEncoding state
 		if (isEncoding) {
 			const runPoll = async () => {
 				const formats = await pollVideoFormats();
@@ -290,38 +211,23 @@ const AdditionalFormats = ({
 				pollTimer = setTimeout(runPoll, delay);
 			};
 			runPoll();
-
-			if (progressTimerRef.current === null) {
-				progressTimerRef.current = setInterval(
-					incrementEncodeProgress,
-					1000
-				);
-			}
 		} else {
-			// Clear all timers if not encoding
-			clearInterval(progressTimerRef.current);
-			progressTimerRef.current = null;
 			clearTimeout(pollTimer);
 			pollTimer = null;
 		}
 
 		return () => {
-			if (progressTimerRef.current !== null) {
-				clearInterval(progressTimerRef.current);
-				progressTimerRef.current = null;
-			}
 			if (pollTimer !== null) {
 				clearTimeout(pollTimer);
 				pollTimer = null;
 			}
 		};
-	}, [isEncoding, pollVideoFormats, incrementEncodeProgress]); // Depend on isEncoding state and stable callbacks
-
-	const handleFormatCheckbox = (event, formatId) => {
+	}, [isEncoding, pollVideoFormats]);
+	const handleFormatCheckbox = (formatId, isChecked) => {
 		setVideoFormats((prevVideoFormats) => {
 			const updatedFormats = { ...prevVideoFormats };
 			if (updatedFormats[formatId]) {
-				updatedFormats[formatId].checked = event;
+				updatedFormats[formatId].checked = isChecked;
 			}
 			return updatedFormats;
 		});
@@ -340,9 +246,15 @@ const AdditionalFormats = ({
 			.filter(
 				([, value]) =>
 					value.checked &&
-					value.status !== 'queued' &&
-					value.status !== 'processing' &&
-					value.status !== 'completed'
+					![
+						'queued',
+						'encoding',
+						'processing',
+						'completed',
+						'needs_insert',
+						'pending_replacement',
+					].includes(value.status) &&
+					!value.exists
 			)
 			.reduce((acc, [formatId]) => {
 				acc[formatId] = true; // Backend expects an object { format_id: true, ... }
@@ -572,10 +484,15 @@ const AdditionalFormats = ({
 			return Object.values(videoFormats).some(
 				(obj) =>
 					obj.checked &&
-					obj.status !== 'queued' &&
-					obj.status !== 'processing' &&
-					obj.status !== 'completed' &&
-					obj.status !== 'pending_replacement'
+					![
+						'queued',
+						'encoding',
+						'processing',
+						'completed',
+						'needs_insert',
+						'pending_replacement',
+					].includes(obj.status) &&
+					!obj.exists
 			);
 		}
 		return false;
@@ -605,23 +522,15 @@ const AdditionalFormats = ({
 			return '';
 		}
 		if (itemToDelete.type === 'file') {
-			/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
-			return sprintf(
-				__(
-					'You are about to permanently delete the encoded %s video file from your site. This action cannot be undone.',
-					'video-embed-thumbnail-generator'
-				),
-				itemToDelete.name
+			return __(
+				'Are you sure you want to permanently delete this attachment? This action cannot be undone.',
+				'video-embed-thumbnail-generator'
 			);
 		}
 		if (itemToDelete.type === 'job') {
-			/* translators: %s is the name of a video format (eg: H264 MP4 HD (720p) ) */
-			return sprintf(
-				__(
-					'You are about to permanently delete the encoding job for the %s video. This will also delete the encoded video file if it exists (if created by this job and not yet a separate attachment). This action cannot be undone.',
-					'video-embed-thumbnail-generator'
-				),
-				itemToDelete.name
+			return __(
+				'Are you sure you want to permanently delete this job record? This action cannot be undone.',
+				'video-embed-thumbnail-generator'
 			);
 		}
 	};
@@ -713,9 +622,8 @@ const AdditionalFormats = ({
 													return (
 														<EncodeFormatStatus
 															key={formatId}
-															formatId={
-																formatId
-															}
+															formatId={formatId}
+															parentId={parentId}
 															formatData={
 																formatData
 															}

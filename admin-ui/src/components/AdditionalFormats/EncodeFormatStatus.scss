@@ -1,0 +1,10 @@
+@use "@wordpress/base-styles/colors" as colors;
+
+.videopack-formats-list {
+
+	li.videopack-format-row:not(:last-child) {
+		border-bottom: 1px solid colors.$gray-300;
+		padding-bottom: 11px;
+		padding-top: 5px;
+	}
+}

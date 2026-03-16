@@ -1,4 +1,10 @@
 @use "@wordpress/base-styles/colors";
+@import "@wordpress/dataviews/build-style/style.css";
+
+// Prevent Gutenberg/Global Styles from leaking large font sizes into the admin UI
+body.tools_page_videopack_encode_queue {
+	font-size: 13px;
+}
 
 .videopack-encode-queue {
 	.videopack-queue-controls {
@@ -8,115 +14,29 @@
 		align-items: center;
 	}
 
-	.videopack-queue-attachment-poster {
-		max-width: 75px;
-	}
+	.videopack-dataviews-container {
 
-	.videopack-queue-table {
-		border: 1px solid colors.$gray-200;
-		border-radius: 8px;
-		overflow: hidden;
-		border-collapse: separate;
-		border-spacing: 0;
-		background: colors.$white;
-		box-shadow: 0 1px 3px rgba(colors.$black, 0.05);
-		width: 100%;
-		margin-top: 15px;
-
-		tr {
-			display: grid;
-			grid-template-columns: 80px 100px 100px 1fr 1fr 1.5fr 100px;
-			align-items: center;
-
-			@media (min-width: 1200px) {
-				grid-template-columns: 80px 120px 120px 1.5fr 1fr 2fr 120px;
-			}
-		}
-
-		// Adjust grid for multisite (extra column)
-		&.is-multisite tr {
-			grid-template-columns: 80px 100px 100px 100px 1.2fr 1fr 1.5fr 100px;
-
-			@media (min-width: 1400px) {
-				grid-template-columns: 80px 120px 120px 120px 1.5fr 1fr 2fr 120px;
-			}
-		}
-
-		thead {
-			background-color: colors.$gray-100;
-
-			tr {
-				th {
-					padding: 12px 15px;
-					font-weight: 600;
-					font-size: 13px;
-					color: colors.$gray-800;
-					border-bottom: 2px solid colors.$gray-200;
-					text-align: left;
-				}
-			}
-		}
-
-		tbody {
-			tr {
-				transition: all 0.2s ease;
-				border-bottom: 1px solid colors.$gray-200;
-
-				&:last-child {
-					border-bottom: none;
-				}
-
-				&:hover {
-					background-color: colors.$gray-100;
-					transform: translateY(-1px);
-					box-shadow: 0 4px 6px -1px rgba(colors.$black, 0.1);
-					z-index: 1;
-					position: relative;
-				}
-
-				td {
-					padding: 12px 15px;
-					vertical-align: middle;
-					line-height: 1.5;
-					overflow: hidden;
-					text-overflow: ellipsis;
-					white-space: nowrap;
-
-					&.videopack-status-cell {
-						white-space: normal;
-					}
-				}
-			}
-
-			tr.videopack-queue-message-row {
-				td {
-					grid-column: 1 / -1;
-					text-align: center;
-					padding: 40px !important;
-					font-style: italic;
-					color: colors.$gray-600;
-					white-space: normal;
-				}
-
-				&:hover {
-					transform: none;
-					box-shadow: none;
-					background-color: transparent;
-				}
-			}
+		img.videopack-queue-attachment-poster {
+			max-width: 60px;
+			border-radius: 4px;
+			display: block;
 		}
 	}
 
-	.videopack-job-encoding {
-		background-color: rgba(34, 113, 177, 0.05) !important;
-		border-left: 4px solid var(--wp-admin-theme-color, #2271b1) !important;
+	.videopack-status-cell {
+		min-width: 200px;
+	}
+
+	tr:has(.videopack-job-running) {
+		background-color: rgba(34, 113, 177, 0.05);
+		border-left: 5px solid var(--wp-admin-theme-color, #2271b1); // Simplified border for row
 
 		&:hover {
-			background-color: rgba(34, 113, 177, 0.1) !important;
+			background-color: rgba(34, 113, 177, 0.1);
 		}
 
-		td:first-child {
-			padding-left: 11px; // Compensate for border
+		td.dataviews-view-table__actions-column--sticky {
+			background-color: transparent;
 		}
 	}
 }

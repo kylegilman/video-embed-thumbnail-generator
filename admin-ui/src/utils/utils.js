@@ -9,9 +9,7 @@ export const getQueue = async () => {
 		return pre;
 	}
 	try {
-		const response = await apiFetch({
-			path: '/videopack/v1/queue',
-		});
+		const response = await listJobs();
 		return applyFilters('videopack.utils.getQueue', response || []);
 	} catch (error) {
 		console.error('Error fetching queue:', error);
@@ -22,7 +20,7 @@ export const getQueue = async () => {
 export const toggleQueue = async (action) => {
 	try {
 		return await apiFetch({
-			path: '/videopack/v1/queue/control',
+			path: '/videopack/v1/jobs/control',
 			method: 'POST',
 			data: { action },
 		});
@@ -35,7 +33,7 @@ export const toggleQueue = async (action) => {
 export const clearQueue = async (type) => {
 	try {
 		return await apiFetch({
-			path: '/videopack/v1/queue/clear',
+			path: '/videopack/v1/jobs/clear',
 			method: 'DELETE',
 			data: { type },
 		});
@@ -48,7 +46,7 @@ export const clearQueue = async (type) => {
 export const deleteJob = async (jobId) => {
 	try {
 		return await apiFetch({
-			path: `/videopack/v1/queue/${jobId}`,
+			path: `/videopack/v1/jobs/${jobId}`,
 			method: 'DELETE',
 		});
 	} catch (error) {
@@ -57,10 +55,22 @@ export const deleteJob = async (jobId) => {
 	}
 };
 
+export const retryJob = async (jobId) => {
+	try {
+		return await apiFetch({
+			path: `/videopack/v1/jobs/${jobId}`,
+			method: 'POST',
+		});
+	} catch (error) {
+		console.error('Error retrying job:', error);
+		throw error;
+	}
+};
+
 export const removeJob = async (jobId) => {
 	try {
 		return await apiFetch({
-			path: `/videopack/v1/queue/remove/${jobId}`,
+			path: addQueryArgs(`/videopack/v1/jobs/${jobId}`, { force: false }),
 			method: 'DELETE',
 		});
 	} catch (error) {
@@ -69,27 +79,79 @@ export const removeJob = async (jobId) => {
 	}
 };
 
-export const getVideoFormats = async (attachmentId, url = '') => {
-	const pre = applyFilters(
-		'videopack.utils.pre_getVideoFormats',
-		undefined,
-		attachmentId,
-		url
-	);
-	if (typeof pre !== 'undefined') {
-		return pre;
-	}
+export const getPresets = async (attachmentId = null, url = '') => {
 	try {
-		const path = addQueryArgs(`/videopack/v1/formats/${attachmentId}`, {
-			url,
+		return await apiFetch({
+			path: addQueryArgs('/videopack/v1/presets', {
+				attachment_id: attachmentId,
+				url,
+			}),
 		});
-		const response = await apiFetch({ path });
-		return applyFilters(
-			'videopack.utils.getVideoFormats',
-			response,
-			attachmentId,
-			url
-		);
+	} catch (error) {
+		console.error('Error fetching presets:', error);
+		throw error;
+	}
+};
+
+export const createJob = async (input, outputs, parentId = 0) => {
+	try {
+		return await apiFetch({
+			path: '/videopack/v1/jobs',
+			method: 'POST',
+			data: {
+				input,
+				outputs,
+				parent_id: parentId,
+			},
+		});
+	} catch (error) {
+		console.error('Error creating job:', error);
+		throw error;
+	}
+};
+
+export const getJobStatus = async (jobId) => {
+	try {
+		return await apiFetch({
+			path: `/videopack/v1/jobs/${jobId}`,
+		});
+	} catch (error) {
+		console.error('Error fetching job status:', error);
+		throw error;
+	}
+};
+
+export const listJobs = async (input = null) => {
+	try {
+		const path = input
+			? addQueryArgs('/videopack/v1/jobs', { input })
+			: '/videopack/v1/jobs';
+		return await apiFetch({ path });
+	} catch (error) {
+		console.error('Error listing jobs:', error);
+		throw error;
+	}
+};
+
+export const getVideoFormats = async (attachmentId, url = '') => {
+	try {
+		const presets = await getPresets(attachmentId, url);
+
+		const merged = {};
+		presets.forEach((preset) => {
+			merged[preset.id] = {
+				...preset,
+				format_id: preset.id,
+				// Preserve the status from the server directly
+				status: preset.status
+					? preset.status.toLowerCase()
+					: 'not_encoded',
+				// The UI expects 'id' to be the WordPress attachment ID for deletion/metadata tracking
+				id: preset.attachment_id || null,
+			};
+		});
+
+		return merged;
 	} catch (error) {
 		console.error('Error fetching video formats:', error);
 		throw error;
@@ -97,26 +159,19 @@ export const getVideoFormats = async (attachmentId, url = '') => {
 };
 
 export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
-	const pre = applyFilters(
-		'videopack.utils.pre_enqueueJob',
-		undefined,
-		attachmentId,
-		src,
-		formats
-	);
-	if (typeof pre !== 'undefined') {
-		return pre;
-	}
+	// formats is an object { format_id: true, ... } from the UI
+	const outputIds = Object.keys(formats).filter((id) => formats[id]);
 	try {
-		return await apiFetch({
-			path: `/videopack/v1/queue/${attachmentId}`,
-			method: 'POST',
-			data: {
-				url: src,
-				formats,
-				parent_id: parentId,
-			},
-		});
+		const response = await createJob(
+			attachmentId || src,
+			outputIds,
+			parentId
+		);
+		// The UI expects a certain shape for its message reporting
+		return {
+			...response,
+			attachment_id: attachmentId,
+		};
 	} catch (error) {
 		console.error('Error enqueuing job:', error);
 		throw error;
@@ -141,6 +196,24 @@ export const assignFormat = async (mediaId, formatId, parentId) => {
 	}
 };
 
+export const unassignFormat = async (mediaId) => {
+	try {
+		return await apiFetch({
+			path: `/wp/v2/media/${mediaId}`,
+			method: 'POST',
+			data: {
+				meta: {
+					'_kgflashmediaplayer-format': '',
+					'_kgflashmediaplayer-parent': 0,
+				},
+			},
+		});
+	} catch (error) {
+		console.error('Error unassigning format:', error);
+		throw error;
+	}
+};
+
 export const deleteFile = async (attachmentId) => {
 	try {
 		return await apiFetch({
@@ -160,13 +233,15 @@ export const deleteFile = async (attachmentId) => {
  * @param {number}            attachmentId The ID of the video attachment.
  * @param {string}            videoSrc     The URL of the video (used for filename).
  * @param {number}            parentId     The ID of the parent post.
+ * @param {boolean|null}      featured     Whether to set as featured image (overrides default).
  * @return {Promise<Object>} The response from the upload endpoint.
  */
 export const createThumbnailFromCanvas = (
 	canvas,
 	attachmentId,
 	videoSrc,
-	parentId = 0
+	parentId = 0,
+	featured = null
 ) => {
 	return new Promise((resolve, reject) => {
 		canvas.toBlob(async (blob) => {
@@ -181,6 +256,9 @@ export const createThumbnailFromCanvas = (
 				formData.append('parent_id', parentId);
 				formData.append('url', videoSrc);
 				formData.append('post_name', getFilename(videoSrc));
+				if (featured !== null) {
+					formData.append('featured', featured);
+				}
 
 				const response = await uploadThumbnail(formData);
 				resolve(response);
@@ -208,7 +286,8 @@ export const saveAllThumbnails = async (
 	attachment_id,
 	thumb_urls,
 	parent_id = 0,
-	url = ''
+	url = '',
+	featured = null
 ) => {
 	try {
 		return await apiFetch({
@@ -219,6 +298,7 @@ export const saveAllThumbnails = async (
 				thumb_urls,
 				parent_id,
 				url,
+				featured,
 			},
 		});
 	} catch (error) {
@@ -378,7 +458,8 @@ export const setPosterImage = async (
 	attachment_id,
 	thumb_url,
 	parent_id = 0,
-	url = ''
+	url = '',
+	featured = null
 ) => {
 	try {
 		return await apiFetch({
@@ -389,6 +470,7 @@ export const setPosterImage = async (
 				thumburl: thumb_url,
 				parent_id,
 				url,
+				featured,
 			},
 		});
 	} catch (error) {
@@ -403,7 +485,8 @@ export const generateThumbnail = async (
 	thumbnail_index,
 	attachment_id,
 	generate_button,
-	parent_id = 0
+	parent_id = 0,
+	featured = null
 ) => {
 	try {
 		const path = addQueryArgs('/videopack/v1/thumbs', {
@@ -413,6 +496,7 @@ export const generateThumbnail = async (
 			attachment_id,
 			generate_button,
 			parent_id,
+			featured,
 		});
 
 		return await apiFetch({ path });
