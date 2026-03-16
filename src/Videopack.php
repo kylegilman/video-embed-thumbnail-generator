@@ -178,7 +178,6 @@ class Videopack {
 		$this->loader->add_action( 'media_upload_embedurl', $edit_posts, 'embedurl_handle' );
 		$this->loader->add_action( 'media_upload_embedgallery', $edit_posts, 'embedurl_handle' );
 		$this->loader->add_action( 'media_upload_embedlist', $edit_posts, 'embedurl_handle' );
-		$this->loader->add_action( 'save_post', $edit_posts, 'render_post' );
 
 		if ( Admin\Multisite::is_videopack_active_for_network() ) {
 			$multisite = new Admin\Multisite( $this->options_manager );
@@ -210,6 +209,7 @@ class Videopack {
 		$this->loader->add_action( 'admin_head-post.php', $admin_screens, 'add_contextual_help_tab' );
 		$this->loader->add_action( 'admin_head-post-new.php', $admin_screens, 'add_contextual_help_tab' );
 		$this->loader->add_action( 'add_meta_boxes', $admin_screens, 'add_meta_boxes' );
+		$this->loader->add_filter( 'query_vars', $admin_screens, 'add_query_vars' );
 
 		// Admin UI (Block, React Settings, Media Library Enhancements) hooks.
 		$admin_ui = new Admin\Ui( $this->options_manager );
