@@ -161,13 +161,13 @@ const VideoPlayer = ({ attributes, onReady }) => {
 
 	const handlePlay = useCallback(() => {
 		if (wrapperRef.current) {
-			wrapperRef.current.classList.remove('meta-bar-visible');
+			wrapperRef.current.classList.remove('videopack-meta-bar-visible');
 		}
 	}, []);
 
 	const handlePause = useCallback(() => {
 		if (wrapperRef.current) {
-			wrapperRef.current.classList.add('meta-bar-visible');
+			wrapperRef.current.classList.add('videopack-meta-bar-visible');
 		}
 	}, []);
 
@@ -268,7 +268,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const watermarkStyle = getWatermarkStyle();
 
 	return (
-		<div className={`videopack-wrapper meta-bar-visible`} ref={wrapperRef}>
+		<div className={`videopack-wrapper videopack-meta-bar-visible`} ref={wrapperRef}>
 			<div className={`videopack-player ${skin || ''}`}>
 				<MetaBar
 					attributes={decodedAttributes}
