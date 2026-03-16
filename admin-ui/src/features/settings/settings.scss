@@ -5,6 +5,9 @@
 }
 
 .wrap.videopack-settings {
+	container-type: inline-size;
+	container-name: videopack-settings;
+
 
 	.components-radio-control {
 		margin-bottom: 20px;
@@ -107,7 +110,29 @@
 
 	.components-flex {
 		align-items: flex-start;
+
+		&.videopack-player-settings-flex .components-flex-item {
+			flex: 1;
+		}
 	}
+
+	// Responsive layout: collapse to single column if less than 500px
+	@container videopack-settings (max-width: 500px) {
+		.videopack-player-settings-flex {
+			flex-direction: column;
+			gap: 0;
+
+			.components-flex-item {
+				width: 100%;
+				margin-bottom: 16px;
+
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
 
 	.components-base-control.components-toggle-control,
 	.videopack-component-margin {
@@ -126,12 +151,24 @@
 
 	.videopack-setting-reduced-width {
 		margin-bottom: 10px;
+		display: flex;
+		align-items: flex-end;
 
 		.components-base-control {
 			width: 30rem;
 			display: inline-block;
 			vertical-align: text-bottom;
 			margin-right: 10px;
+			margin-bottom: 0; // Remove bottom margin to ensure bottom alignment
+		}
+
+		.videopack-library-button-wrapper {
+			display: inline-flex;
+			align-items: center;
+
+			.videopack-tooltip {
+				margin-left: 5px;
+			}
 		}
 	}
 
@@ -181,10 +218,6 @@
 		color: lightslategray;
 		display: flex;
 		justify-content: space-evenly;
-	}
-
-	.videopack-clear-button {
-		margin-bottom: 20px;
 	}
 
 	.videopack-sample-video-player {
@@ -284,59 +317,17 @@
 		}
 	}
 
-	.videopack-watermark-settings {
 
-		.videopack-alignment-control {
-			.components-select-control__input {
-				min-width: 180px;
-			}
-		}
-
-		.videopack-offset-control {
-			.components-text-control__input {
-				width: 100px;
-			}
-		}
-
-		.videopack-resize-handle {
-			position: absolute;
-			width: 10px;
-			height: 10px;
-			background-color: colors.$white;
-			border: 1px solid colors.$black;
-			z-index: 10;
-
-			&.nw {
-				top: -5px;
-				left: -5px;
-				cursor: nw-resize;
-			}
-
-			&.ne {
-				top: -5px;
-				right: -5px;
-				cursor: ne-resize;
-			}
-
-			&.sw {
-				bottom: -5px;
-				left: -5px;
-				cursor: sw-resize;
-			}
-
-			&.se {
-				bottom: -5px;
-				right: -5px;
-				cursor: se-resize;
-			}
-		}
-	}
 
 	.videopack-control-with-tooltip {
-		margin-top: 10px;
+		margin: 10px 0;
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
+
+		&.videopack-delete-children-tooltip {
+			align-items: flex-start;
+		}
 
 		.components-base-control {
 			margin-right: 5px;
