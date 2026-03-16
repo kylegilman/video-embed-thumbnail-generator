@@ -1,6 +1,5 @@
-/* global videopack_config */
-import { useEntityRecord } from '@wordpress/core-data';
 import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import VideoSettings from './VideoSettings.js';
 import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
@@ -13,46 +12,21 @@ const SingleVideoBlock = ({
 	options,
 	isSelected,
 	externalSourceGroups,
+	videoData,
 }) => {
-	const { id, src } = attributes;
+	const { src } = attributes;
 	const [showOverlay, setShowOverlay] = useState(!isSelected);
 
 	useEffect(() => {
 		setShowOverlay(!isSelected);
 	}, [isSelected]);
 
-	const videoData = useEntityRecord('postType', 'attachment', id);
-	const { record: attachment, hasResolved } = videoData;
+	const { record: attachment } = videoData;
+	const postId = useSelect(
+		(select) => select('core/editor')?.getCurrentPostId(),
+		[]
+	);
 
-	useEffect(() => {
-		if (id && hasResolved && attachment) {
-			const newAttributes = {
-				src: attachment.source_url,
-				title: attachment.title?.raw,
-				caption: attachment.caption?.raw,
-				embedlink: attachment.link + 'embed',
-				poster: attachment.meta?.['_videopack-meta']?.poster,
-			};
-
-			const updatedAttributes = Object.keys(newAttributes).reduce(
-				(acc, key) => {
-					// Only update if the new value is defined and different from the current attribute.
-					if (
-						newAttributes[key] !== undefined &&
-						newAttributes[key] !== attributes[key]
-					) {
-						acc[key] = newAttributes[key];
-					}
-					return acc;
-				},
-				{}
-			);
-
-			if (Object.keys(updatedAttributes).length > 0) {
-				setAttributes(updatedAttributes);
-			}
-		}
-	}, [id, attachment, hasResolved, setAttributes, attributes]);
 
 	const playerAttributes = useMemo(() => {
 		const newPlayerAttributes = { ...options, ...attributes };
@@ -70,7 +44,7 @@ const SingleVideoBlock = ({
 			}
 		}
 		return newPlayerAttributes;
-	}, [options, attributes, attachment, externalSourceGroups, id, src]);
+	}, [options, attributes, attachment, externalSourceGroups, src]);
 
 	return (
 		<>
@@ -80,6 +54,7 @@ const SingleVideoBlock = ({
 					attributes={attributes}
 					videoData={videoData}
 					options={options}
+					parentId={postId}
 				/>
 				<VideoSettings
 					setAttributes={setAttributes}
