@@ -10,7 +10,9 @@ import {
 	RangeControl,
 	Spinner,
 	TextControl,
+	ToggleControl,
 } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
 import { __ } from '@wordpress/i18n';
@@ -154,6 +156,22 @@ const Thumbnails = ({
 	const [thumbChoices, setThumbChoices] = useState([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const { editPost } = useDispatch('core/editor') || {};
+
+	const featured = (() => {
+		if (attributes.featured !== undefined) {
+			return attributes.featured;
+		}
+		if (videoData?.record?.featured !== undefined) {
+			return videoData.record.featured;
+		}
+		if (
+			videoData?.record?.meta?.['_videopack-meta']?.featured !== undefined
+		) {
+			return videoData.record.meta['_videopack-meta'].featured;
+		}
+		return options.featured;
+	})();
 
 	const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = ['image'];
 
@@ -198,7 +216,12 @@ const Thumbnails = ({
 			const newThumbImages = [];
 			let workingId = Number(id);
 			for (let i = 1; i <= Number(total_thumbnails); i++) {
-				const response = await generateThumb(i, type, workingId);
+				const response = await generateThumb(
+					i,
+					type,
+					workingId,
+					featured
+				);
 				if (response?.attachment_id && workingId === 0) {
 					workingId = parseInt(response.attachment_id, 10) || 0;
 					setAttributes({
@@ -258,7 +281,8 @@ const Thumbnails = ({
 						const response = await generateThumb(
 							index,
 							type,
-							workingId
+							workingId,
+							featured
 						);
 						if (response?.attachment_id && workingId === 0) {
 							workingId = parseInt(response.attachment_id, 10) || 0;
@@ -356,7 +380,8 @@ const Thumbnails = ({
 					thumb.canvasObject,
 					id,
 					src,
-					parentId
+					parentId,
+					featured
 				);
 			});
 
@@ -374,7 +399,8 @@ const Thumbnails = ({
 					id,
 					thumbUrls,
 					parentId,
-					src
+					src,
+					featured
 				);
 				const firstResult = response?.[0];
 				if (firstResult?.attachment_id && Number(id) === 0) {
@@ -398,7 +424,8 @@ const Thumbnails = ({
 				canvasObject,
 				id,
 				src,
-				parentId
+				parentId,
+				featured
 			);
 
 			setPosterData(response.thumb_url, response.thumb_id);
@@ -429,6 +456,9 @@ const Thumbnails = ({
 					poster: new_poster,
 					poster_id: Number(new_poster_id),
 				};
+				if (attributes.featured !== undefined) {
+					metaData['_videopack-meta'].featured = attributes.featured;
+				}
 			}
 
 			// If we just created the attachment, we need to update the attributes first.
@@ -453,6 +483,14 @@ const Thumbnails = ({
 					meta: metaData,
 				});
 				await videoData.save();
+			}
+
+			if (featured && parentId && editPost) {
+				editPost({
+					featured_media: new_poster_id
+						? Number(new_poster_id)
+						: null,
+				});
 			}
 
 			// Refresh the media library grid to show the updated thumbnail.
@@ -486,7 +524,13 @@ const Thumbnails = ({
 
 	const setImgAsPoster = async (thumb_url) => {
 		try {
-			const response = await setPosterImage(id, thumb_url, parentId, src);
+			const response = await setPosterImage(
+				id,
+				thumb_url,
+				parentId,
+				src,
+				featured
+			);
 			setPosterData(
 				response.thumb_url,
 				response.thumb_id,
@@ -497,7 +541,12 @@ const Thumbnails = ({
 		}
 	};
 
-	const generateThumb = async (i, type, forceId = null) => {
+	const generateThumb = async (
+		i,
+		type,
+		forceId = null,
+		forceFeatured = null
+	) => {
 		try {
 			const response = await generateThumbnail(
 				src,
@@ -505,7 +554,8 @@ const Thumbnails = ({
 				i,
 				forceId !== null ? forceId : id,
 				type,
-				parentId
+				parentId,
+				forceFeatured !== null ? forceFeatured : featured
 			);
 
 			return response;
@@ -660,7 +710,20 @@ const Thumbnails = ({
 						</Button>
 					)}
 				</BaseControl>
-				<TextControl // This is the UI control for total_thumbnails.
+				<ToggleControl
+					label={__(
+						"Set as post's featured image",
+						'video-embed-thumbnail-generator'
+					)}
+					checked={featured}
+					onChange={(value) => {
+						setAttributes({
+							...attributes,
+							featured: value,
+						});
+					}}
+				/>
+				<TextControl
 					value={total_thumbnails}
 					onChange={(value) => {
 						if (!value) {

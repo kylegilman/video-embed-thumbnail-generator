@@ -113,13 +113,13 @@ class Attachment {
 
 		$is_animated = false;
 		if ( 'image/gif' === $post->post_mime_type ) {
-			$moviefile      = get_attached_file( $post->ID );
-			$kgvid_postmeta = $this->attachment_meta->get( $post->ID );
-			if ( isset( $kgvid_postmeta['animated'] ) && $kgvid_postmeta['animated'] === 'notchecked' ) {
-				$kgvid_postmeta['animated'] = $this->is_animated_gif( $moviefile );
-				$this->attachment_meta->save( $post->ID, $kgvid_postmeta );
+			$moviefile          = get_attached_file( $post->ID );
+			$videopack_postmeta = $this->attachment_meta->get( $post->ID );
+			if ( isset( $videopack_postmeta['animated'] ) && $videopack_postmeta['animated'] === 'notchecked' ) {
+				$videopack_postmeta['animated'] = $this->is_animated_gif( $moviefile );
+				$this->attachment_meta->save( $post->ID, $videopack_postmeta );
 			}
-			$is_animated = ! empty( $kgvid_postmeta['animated'] );
+			$is_animated = ! empty( $videopack_postmeta['animated'] );
 		}
 
 		if ( $is_animated ) {
@@ -150,33 +150,6 @@ class Attachment {
 		return false;
 	}
 
-	public function generate_for_existing_attachments( $type ) {
-
-		$queue = get_option( 'kgvid_video_embed_cms_switch' );
-
-		if ( is_array( $queue )
-			&& array_key_exists( 'generating_old_' . $type, $queue )
-			&& is_array( $queue[ 'generating_old_' . $type ] )
-		) {
-
-			$x = 1;
-			foreach ( $queue[ 'generating_old_' . $type ] as $video_id ) {
-
-				$this->schedule_attachment_processing( $video_id, $type, $x );
-
-				unset( $queue[ 'generating_old_' . $type ][ $video_id ] );
-				update_option( 'kgvid_video_embed_cms_switch', $queue );
-				++$x;
-			}
-			unset( $queue[ 'generating_old_' . $type ] );
-			if ( empty( $queue ) ) {
-				delete_option( 'kgvid_video_embed_cms_switch' );
-			} else {
-				update_option( 'kgvid_video_embed_cms_switch', $queue );
-			}
-		}
-	}
-
 	public function delete_video_attachment( $video_id ) {
 
 		if ( strpos( get_post_mime_type( $video_id ), 'video' ) !== false
@@ -193,7 +166,7 @@ class Attachment {
 					$encoder       = new Encode\Encode_Attachment( $this->options_manager, $parent_id );
 					$encode_format = $encoder->get_encode_format( $format_id );
 					if ( $encode_format && $encode_format->get_job_id() ) {
-						$encode_queue->delete_job( $encode_format->get_job_id() );
+						$encode_queue->delete_job( $encode_format->get_job_id(), false );
 					}
 				}
 			} else { // This is a parent attachment, delete all its jobs.
@@ -201,7 +174,7 @@ class Attachment {
 				$formats = $encoder->get_formats();
 				foreach ( $formats as $format ) {
 					if ( $format->get_job_id() ) {
-						$encode_queue->delete_job( $format->get_job_id() );
+						$encode_queue->delete_job( $format->get_job_id(), false );
 					}
 				}
 			}
@@ -415,11 +388,11 @@ class Attachment {
 				$this->change_thumbnail_parent( $post_id, $post->post_parent );
 			}
 
-			$featured_id    = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
-			$kgvid_postmeta = $this->attachment_meta->get( $post_id );
+			$featured_id        = get_post_meta( $post_id, '_kgflashmediaplayer-poster-id', true );
+			$videopack_postmeta = $this->attachment_meta->get( $post_id );
 			//this doesn't always get set in the old Media Library view
 			set_post_thumbnail( $post_id, $featured_id );
-			if ( $kgvid_postmeta['featuredchanged'] === 'true'
+			if ( $videopack_postmeta['featuredchanged'] === 'true'
 				&& ! empty( $featured_id )
 			) {
 				set_post_thumbnail( $post->post_parent, $featured_id );
