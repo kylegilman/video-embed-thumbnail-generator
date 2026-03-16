@@ -187,14 +187,4 @@ class Edit_Posts {
 	public function embedurl_handle() {
 		return wp_iframe( array( $this, 'embedurl_page' ) );
 	}
-
-	public function render_post( $post_id ) {
-
-		if ( ! wp_is_post_revision( $post_id ) && ! wp_is_post_autosave( $post_id )
-			&& ( $this->options['open_graph'] == true )
-		) {
-			// render the post when it's saved in case there's a do_shortcode call in it so open graph metadata makes it into wp_head()
-			$response = wp_remote_get( get_permalink( $post_id ), array( 'blocking' => false ) );
-		}
-	}
 }
