@@ -1,6 +1,6 @@
 import { Spinner } from '@wordpress/components';
-import { useEntityRecord } from '@wordpress/core-data';
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import VideoSettings from '../../../blocks/videopack-video/VideoSettings.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
@@ -10,6 +10,8 @@ import useVideoSettings from '../../../hooks/useVideoSettings.js';
 const AttachmentDetails = ({ attachmentId, model }) => {
 	const [options, setOptions] = useState();
 	const [attributes, setRawAttributes] = useState();
+	const [record, setRecord] = useState(null);
+	const [hasResolved, setHasResolved] = useState(false);
 
 	// Sync local attributes state to Backbone model for integration with other scripts (like TinyMCE).
 	useEffect(() => {
@@ -17,10 +19,28 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 			model.set('videopack_attributes', attributes);
 		}
 	}, [model, attributes]);
-	const attachment = useEntityRecord(
-		'postType',
-		'attachment',
-		!isNaN(attachmentId) ? attachmentId : null
+
+	useEffect(() => {
+		if (!isNaN(attachmentId) && attachmentId > 0) {
+			setHasResolved(false);
+			apiFetch({ path: `/wp/v2/media/${attachmentId}` })
+				.then((data) => {
+					setRecord(data);
+					setHasResolved(true);
+				})
+				.catch(() => {
+					setRecord(null);
+					setHasResolved(true);
+				});
+		} else {
+			setRecord(null);
+			setHasResolved(false);
+		}
+	}, [attachmentId]);
+
+	const attachment = useMemo(
+		() => ({ record, hasResolved }),
+		[record, hasResolved]
 	);
 
 	// Merging wrapper that mirrors the block editor's setAttributes behavior.
@@ -109,6 +129,11 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 	);
 
 	if (attributes && attachment.hasResolved && options) {
+		// If this is a child format itself, don't show the Videopack controls.
+		if (attachment.record?.meta?.['_kgflashmediaplayer-format']) {
+			return null;
+		}
+
 		return (
 			<div className="videopack-attachment-details">
 				<Thumbnails
@@ -116,6 +141,7 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 					attributes={attributes}
 					videoData={attachment}
 					options={options}
+					parentId={attachment.record?.post}
 				/>
 				<VideoSettings
 					setAttributes={handleSettingChange}
