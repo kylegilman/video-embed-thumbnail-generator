@@ -1,8 +1,21 @@
 <?php
+/**
+ * AV1 Video Codec Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats\Codecs;
 
+/**
+ * Class Video_Codec_AV1
+ *
+ * Represents the AV1 video codec.
+ */
 class Video_Codec_AV1 extends Video_Codec {
+	/**
+	 * Video_Codec_AV1 constructor.
+	 */
 	public function __construct() {
 		$properties = array(
 			'name'           => 'AV1 MP4',

@@ -1,79 +1,111 @@
 <?php
+/**
+ * Admin multisite handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin;
 
-use Videopack\Common\Validate;
-
+/**
+ * Class Multisite
+ *
+ * Handles network-wide settings and operations for WordPress Multisite.
+ *
+ * This class manages network-specific options, overrides for site-specific
+ * settings, migration of legacy network options, and integration with the
+ * WordPress REST API for network management.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Admin
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Multisite {
 
 	/**
-	 * Videopack Options manager class instance
-	 * @var Options $options_manager
+	 * Videopack Options manager class instance.
+	 *
+	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+
 	/**
 	 * Holds the network-wide specific options.
+	 *
 	 * @var array $network_options
 	 */
 	protected $network_options;
+
 	/**
 	 * Holds the structure and default values for network-specific settings.
-	 * @var array $default_network_settings_structure
+	 *
+	 * @var array $default_network_options
 	 */
 	protected $default_network_options;
+
 	/**
 	 * Holds the plugin-wide default options.
+	 *
 	 * @var array $default_options
 	 */
 	protected $default_options;
 
-	public function __construct( Options $options_manager ) {
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 */
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager         = $options_manager;
-		$this->default_options         = $options_manager->get_default();
-		$this->default_network_options = $this->get_default_network_settings_structure();
-		$this->network_options         = get_site_option( 'videopack_network_options', array() );
+		$this->default_options         = (array) $options_manager->get_default();
+		$this->default_network_options = (array) $this->get_default_network_settings_structure();
+		$this->network_options         = (array) get_site_option( 'videopack_network_options', array() );
 
 		$this->init();
 	}
 
+	/**
+	 * Gets the default network settings structure.
+	 *
+	 * @return array Default network settings.
+	 */
 	public function get_default_network_settings_structure() {
-		$network_defaults = array(
-			'app_path'                        => $this->default_options['app_path'],
-			'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'],
-			'simultaneous_encodes'            => $this->default_options['simultaneous_encodes'],
-			'threads'                         => $this->default_options['threads'],
-			'nice'                            => $this->default_options['nice'],
-			'default_capabilities'            => $this->default_options['capabilities'],
+		return array(
+			'app_path'                        => (string) ( $this->default_options['app_path'] ?? '' ),
+			'ffmpeg_exists'                   => $this->default_options['ffmpeg_exists'] ?? 'notchecked',
+			'simultaneous_encodes'            => (int) ( $this->default_options['simultaneous_encodes'] ?? 1 ),
+			'threads'                         => (int) ( $this->default_options['threads'] ?? 1 ),
+			'nice'                            => (bool) ( $this->default_options['nice'] ?? true ),
+			'default_capabilities'            => (array) ( $this->default_options['capabilities'] ?? array() ),
 			'superadmin_only_ffmpeg_settings' => false,
-			'network_error_email'             => $this->default_options['error_email'],
-			'queue_control'                   => $this->default_options['queue_control'],
+			'network_error_email'             => (string) ( $this->default_options['error_email'] ?? '' ),
+			'queue_control'                   => (string) ( $this->default_options['queue_control'] ?? 'enabled' ),
 		);
-
-		return $network_defaults;
 	}
 
 	/**
 	 * Returns network options.
 	 *
-	 * @return array
+	 * @return array Network options.
 	 */
 	public function get_options() {
-		return $this->network_options;
+		return (array) $this->network_options;
 	}
 
 	/**
 	 * Returns network options statically.
 	 *
-	 * @return array
+	 * @return array Network options.
 	 */
 	public static function get_network_options() {
-		return get_site_option( 'videopack_network_options', array() );
+		return (array) get_site_option( 'videopack_network_options', array() );
 	}
 
 	/**
 	 * Saves network options.
 	 *
-	 * @param array|null $options_to_save Options to save.
+	 * @param array|null $options_to_save Optional. Options to save.
 	 */
 	public function save_options( array $options_to_save = null ) {
 		$options_to_save = $options_to_save ?? $this->network_options;
@@ -84,11 +116,14 @@ class Multisite {
 		}
 	}
 
+	/**
+	 * Initializes multisite hooks and performs migrations.
+	 */
 	public function init() {
-		// Apply capabilities to new sites
-		add_action( 'wpmu_new_blog', array( $this, 'on_new_blog' ) );
+		// Apply capabilities to new sites.
+		add_action( 'wpmu_new_blog', array( $this, 'add_new_blog' ) );
 
-		// Add filter to override site-specific options with network settings if network activated
+		// Add filter to override site-specific options with network settings if network activated.
 		if ( $this->is_network_active() ) {
 			add_filter( 'option_videopack_options', array( $this, 'override_local_options' ) );
 			add_filter( 'default_option_videopack_options', array( $this, 'override_local_options' ) );
@@ -99,85 +134,82 @@ class Multisite {
 
 		$current_network_options = get_site_option( $new_options_key, false );
 
-		if ( false === $current_network_options ) { // New key doesn't exist
+		if ( false === $current_network_options ) {
 			$old_network_options = get_site_option( $old_options_key, false );
 
-			if ( false !== $old_network_options && is_array( $old_network_options ) ) {
-				// Old key exists, migrate from it
+			if ( is_array( $old_network_options ) && ! empty( $old_network_options ) ) {
 				$network_options_to_save = $this->options_manager->merge_options_with_defaults( $old_network_options, $this->default_network_options );
-				// Ensure ffmpeg_exists is re-checked if it was 'notchecked' in old options
+
 				if ( ( $network_options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-					$ffmpeg_tester                            = new Encode\FFmpeg_Tester( $this->options_manager );
-					$ffmpeg_info                              = $ffmpeg_tester->check_ffmpeg_exists( $network_options_to_save['app_path'] ?? '' );
+					$ffmpeg_tester                            = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options_manager );
+					$ffmpeg_info                              = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $network_options_to_save['app_path'] ?? '' ) );
 					$network_options_to_save['ffmpeg_exists'] = $ffmpeg_info['ffmpeg_exists'] ? true : 'notinstalled';
-					$network_options_to_save['app_path']      = $ffmpeg_info['app_path'];
+					$network_options_to_save['app_path']      = (string) $ffmpeg_info['app_path'];
 				}
 				update_site_option( $new_options_key, $network_options_to_save );
-				delete_site_option( $old_options_key ); // Delete old key after successful migration
+				delete_site_option( $old_options_key );
 				$this->network_options = $network_options_to_save;
 			} else {
-				// Neither new nor old key exists (fresh install scenario for network options)
 				$network_options_to_save = $this->default_network_options;
 
-				// Try to get main site's single-site options for potential initial population
 				switch_to_blog( 1 );
 				$main_site_options = get_option( 'videopack_options', array() );
-				if ( empty( $main_site_options ) ) { // Fallback to old single-site key if new one is empty
+				if ( empty( $main_site_options ) ) {
 					$main_site_options = get_option( 'kgvid_video_embed_options', array() );
 				}
 				restore_current_blog();
 
 				if ( is_array( $main_site_options ) && ! empty( $main_site_options ) ) {
 					foreach ( $this->default_network_options as $key => $default_value ) {
-						if ( isset( $main_site_options[ $key ] ) ) {
-							$network_options_to_save[ $key ] = $main_site_options[ $key ];
+						if ( isset( $main_site_options[ (string) $key ] ) ) {
+							$network_options_to_save[ (string) $key ] = $main_site_options[ (string) $key ];
 						}
 					}
 					if ( isset( $main_site_options['capabilities'] ) ) {
-						$network_options_to_save['default_capabilities'] = $main_site_options['capabilities'];
+						$network_options_to_save['default_capabilities'] = (array) $main_site_options['capabilities'];
 					}
 				}
 
-				// Initial FFmpeg check
 				if ( ( $network_options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-					$ffmpeg_tester                            = new Encode\FFmpeg_Tester( $this->options_manager );
-					$ffmpeg_info                              = $ffmpeg_tester->check_ffmpeg_exists( $network_options_to_save['app_path'] ?? '' );
+					$ffmpeg_tester                            = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options_manager );
+					$ffmpeg_info                              = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $network_options_to_save['app_path'] ?? '' ) );
 					$network_options_to_save['ffmpeg_exists'] = $ffmpeg_info['ffmpeg_exists'] ? true : 'notinstalled';
-					$network_options_to_save['app_path']      = $ffmpeg_info['app_path'];
+					$network_options_to_save['app_path']      = (string) $ffmpeg_info['app_path'];
 				}
 				update_site_option( $new_options_key, $network_options_to_save );
 				$this->network_options = $network_options_to_save;
 			}
 		} else {
-			// Network options exist (under new key), merge them with current defaults to add any new settings
-			$updated_network_options = $this->options_manager->merge_options_with_defaults( $current_network_options, $this->default_network_options );
+			$updated_network_options = $this->options_manager->merge_options_with_defaults( (array) $current_network_options, $this->default_network_options );
 			if ( $updated_network_options !== $current_network_options ) {
 				update_site_option( $new_options_key, $updated_network_options );
 			}
 			$this->network_options = $updated_network_options;
 		}
 
-		// Initialize local options on the main site if they are empty
-		$local_options = get_option( 'videopack_options' ); // Use new single-site option key
+		// Initialize local options on the main site if they are empty.
+		$local_options = get_option( 'videopack_options' );
 
 		if ( empty( $local_options ) ) {
-			$main_site_defaults = $this->options_manager->get_default();
-			// Override the 'capabilities' in main_site_defaults with network's default_capabilities
+			$main_site_defaults = (array) $this->options_manager->get_default();
 			if ( isset( $this->network_options['default_capabilities'] ) ) {
-				$main_site_defaults['capabilities'] = $this->network_options['default_capabilities'];
+				$main_site_defaults['capabilities'] = (array) $this->network_options['default_capabilities'];
 			}
 			update_option( 'videopack_options', $main_site_defaults );
-			// Ensure capabilities are set on the main site based on network defaults
 			if ( isset( $this->network_options['default_capabilities'] ) ) {
-				$this->options_manager->set_capabilities( $this->network_options['default_capabilities'] );
+				$this->options_manager->set_capabilities( (array) $this->network_options['default_capabilities'] );
 			}
 		}
-		// Add hook for REST API routes
+
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 	}
 
+	/**
+	 * Checks if Videopack is active for the network.
+	 *
+	 * @return bool True if network active, false otherwise.
+	 */
 	public static function is_videopack_active_for_network() {
-
 		if ( ! is_multisite() ) {
 			return false;
 		}
@@ -190,41 +222,43 @@ class Multisite {
 		return false;
 	}
 
-	public function add_new_blog( $blog_id ) {
-
-		switch_to_blog( $blog_id );
-
-		$this->options_manager->set_capabilities( $this->network_options['default_capabilities'] ?? $this->default_network_options['default_capabilities'] );
-
-		restore_current_blog();
-	}
-
+	/**
+	 * Adds action links to the network admin plugins page.
+	 *
+	 * @param array $links The existing links.
+	 * @return array The updated links.
+	 */
 	public function network_admin_action_links( $links ) {
-
-		$links[] = '<a href="' . network_admin_url() . 'settings.php?page=video_embed_thumbnail_generator_settings">' . esc_html__( 'Network Settings', 'video-embed-thumbnail-generator' ) . '</a>';
-		return $links;
+		$links[] = '<a href="' . (string) network_admin_url( 'settings.php?page=video_embed_thumbnail_generator_settings' ) . '">' . (string) esc_html__( 'Network Settings', 'video-embed-thumbnail-generator' ) . '</a>';
+		return (array) $links;
 	}
 
+	/**
+	 * Adds the network settings page to the sidebar.
+	 */
 	public function add_network_settings_page() {
-		$page_hook_suffix = add_submenu_page(
+		$page_hook_suffix = (string) add_submenu_page(
 			'settings.php',
-			esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
-			esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
+			(string) esc_html_x( 'Videopack', 'Settings page title', 'video-embed-thumbnail-generator' ),
+			(string) esc_html_x( 'Videopack', 'Settings page title in admin sidebar', 'video-embed-thumbnail-generator' ),
 			'manage_network_options',
 			'video_embed_thumbnail_generator_settings',
-			array( $this, 'network_settings_page_react_root' ) // Changed callback
+			array( $this, 'network_settings_page_react_root' )
 		);
-		// Hook to enqueue assets for the React page
+
 		add_action( 'admin_print_styles-' . $page_hook_suffix, array( $this, 'enqueue_network_settings_assets' ) );
 		add_action( 'admin_print_scripts-' . $page_hook_suffix, array( $this, 'enqueue_network_settings_assets' ) );
 	}
 
+	/**
+	 * Adds the network queue page to the sidebar.
+	 */
 	public function add_network_queue_page() {
-		if ( $this->is_videopack_active_for_network() && ( $this->network_options['ffmpeg_exists'] ?? false ) === true ) {
-			$page_hook_suffix = add_submenu_page(
+		if ( $this->is_videopack_active_for_network() && true === ( $this->network_options['ffmpeg_exists'] ?? false ) ) {
+			$page_hook_suffix = (string) add_submenu_page(
 				'settings.php',
-				esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
-				esc_html_x( 'Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator' ),
+				(string) esc_html_x( 'Videopack Encoding Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
+				(string) esc_html_x( 'Network Video Encode Queue', 'Title in network admin sidebar', 'video-embed-thumbnail-generator' ),
 				'manage_network',
 				'kgvid_network_video_encoding_queue',
 				array( $this, 'network_queue_page_react_root' )
@@ -234,30 +268,34 @@ class Multisite {
 		}
 	}
 
+	/**
+	 * Validates network settings input.
+	 *
+	 * @param array $input The raw input.
+	 * @return array The validated input.
+	 */
 	public function validate_network_settings( $input ) {
+		$options = (array) $this->network_options;
+		$schema  = (array) $this->options_manager->settings_schema( (array) $this->get_default_network_settings_structure() );
+		$input   = (array) $this->options_manager->sanitize_options_recursively( (array) $input, $schema );
 
-		$options = $this->network_options; // Current network options
-		$schema  = $this->options_manager->settings_schema( $this->get_default_network_settings_structure() );
-		$input   = $this->options_manager->sanitize_options_recursively( $input, $schema );
-
-		if ( $input['app_path'] != $options['app_path'] ) {
-			$input = $this->options_manager->validate_ffmpeg_settings( $input, new Encode\FFmpeg_Tester( $this->options_manager ) );
+		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $options['app_path'] ?? '' ) ) {
+			$input = (array) $this->options_manager->validate_ffmpeg_settings( (array) $input, new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options_manager ) );
 		} else {
-			$input['ffmpeg_exists'] = $options['ffmpeg_exists'];
+			$input['ffmpeg_exists'] = $options['ffmpeg_exists'] ?? 'notchecked';
 		}
 
-		// load all settings and make sure they get a value of false if they weren't entered into the form
 		foreach ( $this->get_default_network_settings_structure() as $key => $value ) {
-			if ( ! array_key_exists( $key, $input ) ) {
-				$input[ $key ] = false;
+			if ( ! array_key_exists( (string) $key, $input ) ) {
+				$input[ (string) $key ] = false;
 			}
 		}
 
-		if ( ! $input['queue_control'] ) { // don't reset queue control when saving settings
-			$input['queue_control'] = $options['queue_control'];
+		if ( empty( $input['queue_control'] ) ) {
+			$input['queue_control'] = $options['queue_control'] ?? 'enabled';
 		}
 
-		return $input;
+		return (array) $input;
 	}
 
 	/**
@@ -280,7 +318,7 @@ class Multisite {
 	public function enqueue_network_settings_assets() {
 		wp_enqueue_script(
 			'videopack-settings-network',
-			plugins_url( '../admin-ui/build/settings-network.js', __DIR__ ),
+			(string) plugins_url( '../admin-ui/build/settings-network.js', __DIR__ ),
 			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element', 'wp-data' ),
 			VIDEOPACK_VERSION,
 			true
@@ -288,21 +326,20 @@ class Multisite {
 
 		wp_enqueue_style(
 			'videopack-settings-network-styles',
-			plugins_url( '../admin-ui/build/settings-network.css', __DIR__ ),
+			(string) plugins_url( '../admin-ui/build/settings-network.css', __DIR__ ),
 			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);
 
-		// Pass network settings and defaults to the script
 		wp_localize_script(
 			'videopack-settings-network',
 			'videopackNetworkSettings',
 			array(
-				'settings' => $this->network_options,
-				'defaults' => $this->get_default_network_settings_structure(),
-				'schema'   => $this->options_manager->settings_schema( $this->get_default_network_settings_structure() ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'rest_url' => rest_url( 'videopack/v1/network/settings' ),
+				'settings' => (array) $this->network_options,
+				'defaults' => (array) $this->get_default_network_settings_structure(),
+				'schema'   => (array) $this->options_manager->settings_schema( (array) $this->get_default_network_settings_structure() ),
+				'nonce'    => (string) wp_create_nonce( 'wp_rest' ),
+				'rest_url' => (string) rest_url( 'videopack/v1/network/settings' ),
 			)
 		);
 	}
@@ -313,7 +350,7 @@ class Multisite {
 	public function enqueue_network_queue_assets() {
 		wp_enqueue_script(
 			'videopack-encode-queue',
-			plugins_url( '../admin-ui/build/encode-queue.js', __DIR__ ),
+			(string) plugins_url( '../admin-ui/build/encode-queue.js', __DIR__ ),
 			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element', 'wp-data' ),
 			VIDEOPACK_VERSION,
 			true
@@ -321,16 +358,15 @@ class Multisite {
 
 		wp_enqueue_style(
 			'videopack-encode-queue-styles',
-			plugins_url( '../admin-ui/build/encode-queue.css', __DIR__ ),
+			(string) plugins_url( '../admin-ui/build/encode-queue.css', __DIR__ ),
 			array( 'wp-components' ),
 			VIDEOPACK_VERSION
 		);
 
-		// Pass initial data to the React app.
-		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . wp_json_encode(
+		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . (string) wp_json_encode(
 			array(
-				'initialQueueState' => $this->network_options['queue_control'],
-				'ffmpegExists'      => $this->network_options['ffmpeg_exists'],
+				'initialQueueState' => $this->network_options['queue_control'] ?? 'enabled',
+				'ffmpegExists'      => $this->network_options['ffmpeg_exists'] ?? false,
 				'isNetwork'         => true,
 			)
 		) . ';';
@@ -358,12 +394,12 @@ class Multisite {
 					},
 				),
 				array(
-					'methods'             => \WP_REST_Server::EDITABLE, // Handles POST, PUT, PATCH
+					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_network_settings_rest' ),
 					'permission_callback' => function () {
 						return current_user_can( 'manage_network_options' );
 					},
-					'args'                => $this->options_manager->settings_schema( $this->get_default_network_settings_structure() ),
+					'args'                => (array) $this->options_manager->settings_schema( (array) $this->get_default_network_settings_structure() ),
 				),
 			)
 		);
@@ -383,42 +419,41 @@ class Multisite {
 
 	/**
 	 * REST API callback to get network settings.
-	 * @return \WP_REST_Response
+	 *
+	 * @return \WP_REST_Response The REST response object.
 	 */
 	public function get_network_settings_rest() {
-		return new \WP_REST_Response( $this->network_options, 200 );
+		return new \WP_REST_Response( (array) $this->network_options, 200 );
 	}
 
 	/**
 	 * REST API callback to get default network settings.
-	 * @return \WP_REST_Response
+	 *
+	 * @return \WP_REST_Response The REST response object.
 	 */
 	public function get_default_network_settings_rest() {
-		return new \WP_REST_Response( $this->get_default_network_settings_structure(), 200 );
+		return new \WP_REST_Response( (array) $this->get_default_network_settings_structure(), 200 );
 	}
 
 	/**
 	 * REST API callback to update network settings.
-	 * @param \WP_REST_Request $request
-	 * @return \WP_REST_Response
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response The REST response object.
 	 */
 	public function update_network_settings_rest( \WP_REST_Request $request ) {
-		$params = $request->get_params();
-		// If 'kgvid_video_embed_options' is the key sent from React (matching the old form structure)
-		// or if settings are sent at the root of the params.
-		$input_settings = $params['videopack_network_settings'] ?? $params;
+		$params         = (array) $request->get_params();
+		$input_settings = (array) ( $params['videopack_network_settings'] ?? $params );
 
-		$validated_options = $this->validate_network_settings( $input_settings );
+		$validated_options = (array) $this->validate_network_settings( $input_settings );
 
-		// Merge with existing to ensure no settings are lost if not all are passed
-		$new_options = array_merge( $this->network_options, $validated_options );
+		$new_options = (array) array_merge( (array) $this->network_options, $validated_options );
 
 		update_site_option( 'videopack_network_options', $new_options );
-		$this->network_options = $new_options; // Update internal state
+		$this->network_options = $new_options;
 
-		// If default capabilities changed, update them for the main site.
 		if ( isset( $new_options['default_capabilities'] ) ) {
-			$this->options_manager->set_capabilities( $new_options['default_capabilities'] );
+			$this->options_manager->set_capabilities( (array) $new_options['default_capabilities'] );
 		}
 
 		return new \WP_REST_Response( $this->network_options, 200 );
@@ -429,22 +464,20 @@ class Multisite {
 	 *
 	 * @param int $blog_id The ID of the newly created blog.
 	 */
-	public function on_new_blog( $blog_id ) {
+	public function add_new_blog( $blog_id ) {
 		if ( empty( $this->network_options['default_capabilities'] ) ) {
 			return;
 		}
 
-		switch_to_blog( $blog_id );
+		switch_to_blog( (int) $blog_id );
 
-		// 1. Update WP Roles for the new site
-		$this->options_manager->set_capabilities( $this->network_options['default_capabilities'] );
+		$this->options_manager->set_capabilities( (array) $this->network_options['default_capabilities'] );
 
-		// 2. Persist in site-specific Videopack options
 		$site_options = get_option( 'videopack_options', array() );
 		if ( empty( $site_options ) ) {
-			$site_options = $this->options_manager->get_default();
+			$site_options = (array) $this->options_manager->get_default();
 		}
-		$site_options['capabilities'] = $this->network_options['default_capabilities'];
+		$site_options['capabilities'] = (array) $this->network_options['default_capabilities'];
 		update_option( 'videopack_options', $site_options );
 
 		restore_current_blog();
@@ -453,7 +486,7 @@ class Multisite {
 	/**
 	 * Checks if the plugin is active for the network.
 	 *
-	 * @return bool
+	 * @return bool True if network active.
 	 */
 	public function is_network_active() {
 		if ( ! is_multisite() ) {
@@ -464,7 +497,7 @@ class Multisite {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
-		return is_plugin_active_for_network( VIDEOPACK_BASENAME );
+		return (bool) is_plugin_active_for_network( VIDEOPACK_BASENAME );
 	}
 
 	/**
@@ -478,15 +511,13 @@ class Multisite {
 			return $options;
 		}
 
-		// Resource settings always take precedence when network-activated
-		$options['simultaneous_encodes'] = $this->network_options['simultaneous_encodes'] ?? $options['simultaneous_encodes'] ?? 1;
-		$options['threads']              = $this->network_options['threads'] ?? $options['threads'] ?? 1;
-		$options['nice']                 = $this->network_options['nice'] ?? $options['nice'] ?? true;
+		$options['simultaneous_encodes'] = (int) ( $this->network_options['simultaneous_encodes'] ?? $options['simultaneous_encodes'] ?? 1 );
+		$options['threads']              = (int) ( $this->network_options['threads'] ?? $options['threads'] ?? 1 );
+		$options['nice']                 = (bool) ( $this->network_options['nice'] ?? $options['nice'] ?? true );
 
-		// FFmpeg settings always take precedence when network-activated
-		$options['app_path']      = $this->network_options['app_path'] ?? $options['app_path'] ?? '';
+		$options['app_path']      = (string) ( $this->network_options['app_path'] ?? $options['app_path'] ?? '' );
 		$options['ffmpeg_exists'] = $this->network_options['ffmpeg_exists'] ?? $options['ffmpeg_exists'] ?? 'notchecked';
 
-		return $options;
+		return (array) $options;
 	}
 }

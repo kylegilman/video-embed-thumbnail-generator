@@ -1,35 +1,83 @@
 <?php
+/**
+ * Admin attachment meta handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin;
 
+/**
+ * Class Attachment_Meta
+ *
+ * Handles video-specific attachment metadata.
+ *
+ * This class manages the retrieval, storage, migration, and sanitization of
+ * custom metadata associated with video attachments. It supports legacy
+ * migrations from older versions of the plugin and integrates with the
+ * WordPress REST API.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Admin
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Attachment_Meta {
 
 	/**
-	 * Videopack Options manager class instance
-	 * @var Options $options_manager
+	 * Videopack Options manager class instance.
+	 *
+	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+
+	/**
+	 * Plugin options.
+	 *
+	 * @var array $options
+	 */
 	protected $options;
+
+	/**
+	 * Cached meta data for the current attachment.
+	 *
+	 * @var array $meta_data
+	 */
 	protected $meta_data = array();
+
+	/**
+	 * Current attachment ID.
+	 *
+	 * @var int|bool $post_id
+	 */
 	protected $post_id;
 
-	public function __construct( Options $options_manager, $post_id = false ) {
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param int|bool                 $post_id         Optional. Attachment ID.
+	 */
+	public function __construct( \Videopack\Admin\Options $options_manager, $post_id = false ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->post_id         = $post_id;
 		$this->meta_data       = $this->get();
 	}
 
+	/**
+	 * Gets default values for all meta fields.
+	 *
+	 * @return array Default meta values.
+	 */
 	public function get_defaults() {
-		// Default values for all meta fields
-		// Many will come from the global plugin options
 		return array(
-			'embed'             => $this->options['default_insert'] ?? 'Single Video',
-			'width'             => $this->options['width'] ?? null,
-			'height'            => $this->options['height'] ?? null,
+			'embed'             => (string) ( $this->options['default_insert'] ?? 'Single Video' ),
+			'width'             => (string) ( $this->options['width'] ?? '' ),
+			'height'            => (string) ( $this->options['height'] ?? '' ),
 			'actualwidth'       => null,
 			'actualheight'      => null,
-			'downloadlink'      => $this->options['downloadlink'] ?? false,
+			'downloadlink'      => (bool) ( $this->options['downloadlink'] ?? false ),
 			'track'             => array(),
 			'starts'            => 0,
 			'play_25'           => 0,
@@ -37,17 +85,17 @@ class Attachment_Meta {
 			'play_75'           => 0,
 			'completeviews'     => 0,
 			'pickedformat'      => null,
-			'encode'            => $this->options['encode'] ?? array(),
-			'rotate'            => null, // Rotation value for video.
+			'encode'            => (array) ( $this->options['encode'] ?? array() ),
+			'rotate'            => null,
 			'autothumb_error'   => null,
-			'total_thumbnails'  => $this->options['total_thumbnails'] ?? 4, // Default number of thumbnails to generate.
+			'total_thumbnails'  => (int) ( $this->options['total_thumbnails'] ?? 4 ),
 			'randomize'         => false,
 			'forcefirst'        => false,
-			'featured'          => $this->options['featured'] ?? true,
-			'thumbtime'         => null, // Timecode for a single thumbnail.
+			'featured'          => (bool) ( $this->options['featured'] ?? true ),
+			'thumbtime'         => null,
 			'lockaspect'        => true,
 			'showtitle'         => true,
-			'gallery_columns'   => $this->options['gallery_columns'] ?? 4,
+			'gallery_columns'   => (int) ( $this->options['gallery_columns'] ?? 4 ),
 			'gallery_exclude'   => null,
 			'gallery_include'   => null,
 			'gallery_orderby'   => 'menu_order ID',
@@ -57,7 +105,7 @@ class Attachment_Meta {
 			'aspect'            => null,
 			'original_replaced' => null,
 			'featuredchanged'   => false,
-			'url'               => null, // This is the URL of the original video, not the attachment URL.
+			'url'               => null,
 			'poster'            => null,
 			'poster_id'         => null,
 			'maxwidth'          => null,
@@ -66,73 +114,77 @@ class Attachment_Meta {
 			'frame_rate'        => null,
 			'codec'             => null,
 			'worked'            => false,
-			// Player settings — default from global options.
-			// Only stored in meta when the per-video value differs.
-			'autoplay'          => $this->options['autoplay'] ?? false,
-			'loop'              => $this->options['loop'] ?? false,
-			'muted'             => $this->options['muted'] ?? false,
-			'controls'          => $this->options['controls'] ?? true,
-			'volume'            => $this->options['volume'] ?? 1,
-			'preload'           => $this->options['preload'] ?? 'metadata',
-			'playback_rate'     => $this->options['playback_rate'] ?? false,
-			'playsinline'       => $this->options['playsinline'] ?? true,
-			'right_click'       => $this->options['right_click'] ?? true,
-			'gifmode'           => $this->options['gifmode'] ?? false,
-			'fixed_aspect'      => $this->options['fixed_aspect'] ?? 'vertical',
-			'align'             => $this->options['align'] ?? '',
-			'fullwidth'         => $this->options['fullwidth'] ?? false,
-			'resize'            => $this->options['resize'] ?? true,
-			'inline'            => $this->options['inline'] ?? false,
-			'embeddable'        => $this->options['embeddable'] ?? false,
-			'embedcode'         => $this->options['embedcode'] ?? false,
-			'overlay_title'     => $this->options['overlay_title'] ?? false,
-			'view_count'        => $this->options['view_count'] ?? false,
-			'watermark'         => $this->options['watermark'] ?? '',
-			'watermark_link_to' => $this->options['watermark_link_to'] ?? 'none',
-			'watermark_url'     => $this->options['watermark_url'] ?? '',
+			// Player settings.
+			'autoplay'          => (bool) ( $this->options['autoplay'] ?? false ),
+			'loop'              => (bool) ( $this->options['loop'] ?? false ),
+			'muted'             => (bool) ( $this->options['muted'] ?? false ),
+			'controls'          => (bool) ( $this->options['controls'] ?? true ),
+			'volume'            => (float) ( $this->options['volume'] ?? 1.0 ),
+			'preload'           => (string) ( $this->options['preload'] ?? 'metadata' ),
+			'playback_rate'     => (bool) ( $this->options['playback_rate'] ?? false ),
+			'playsinline'       => (bool) ( $this->options['playsinline'] ?? true ),
+			'right_click'       => (bool) ( $this->options['right_click'] ?? true ),
+			'gifmode'           => (bool) ( $this->options['gifmode'] ?? false ),
+			'fixed_aspect'      => (string) ( $this->options['fixed_aspect'] ?? 'vertical' ),
+			'align'             => (string) ( $this->options['align'] ?? '' ),
+			'fullwidth'         => (bool) ( $this->options['fullwidth'] ?? false ),
+			'resize'            => (bool) ( $this->options['resize'] ?? true ),
+			'inline'            => (bool) ( $this->options['inline'] ?? false ),
+			'embeddable'        => (bool) ( $this->options['embeddable'] ?? false ),
+			'embedcode'         => (bool) ( $this->options['embedcode'] ?? false ),
+			'overlay_title'     => (bool) ( $this->options['overlay_title'] ?? false ),
+			'view_count'        => (bool) ( $this->options['view_count'] ?? false ),
+			'watermark'         => (string) ( $this->options['watermark'] ?? '' ),
+			'watermark_link_to' => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
+			'watermark_url'     => (string) ( $this->options['watermark_url'] ?? '' ),
 			'is_remote'         => false,
 		);
 	}
 
+	/**
+	 * Retrieves and migrates attachment meta data.
+	 *
+	 * @return array The attachment meta data.
+	 */
 	public function get() {
-		$current_meta = get_post_meta( $this->post_id, '_videopack-meta', true );
+		if ( ! $this->post_id ) {
+			return $this->get_defaults();
+		}
+
+		$current_meta = get_post_meta( (int) $this->post_id, '_videopack-meta', true );
 		if ( ! is_array( $current_meta ) ) {
 			$current_meta = array();
 		}
 
 		$defaults = $this->get_defaults();
-		$migrated = false; // Flag to indicate if a migration happened
+		$migrated = false;
 
-		// Attempt to migrate from _kgvid-meta if _videopack-meta is empty
+		// Attempt to migrate from _kgvid-meta if _videopack-meta is empty.
 		if ( empty( $current_meta ) ) {
-			$legacy_kgvid_meta = get_post_meta( $this->post_id, '_kgvid-meta', true );
+			$legacy_kgvid_meta = get_post_meta( (int) $this->post_id, '_kgvid-meta', true );
 			if ( is_array( $legacy_kgvid_meta ) && ! empty( $legacy_kgvid_meta ) ) {
 				$current_meta = $legacy_kgvid_meta;
-				// Perform numberofthumbs migration
 				if ( isset( $current_meta['numberofthumbs'] ) && ! isset( $current_meta['total_thumbnails'] ) ) {
-					$current_meta['total_thumbnails'] = $current_meta['numberofthumbs'];
+					$current_meta['total_thumbnails'] = (int) $current_meta['numberofthumbs'];
 					unset( $current_meta['numberofthumbs'] );
 				}
 				$migrated = true;
-				// Delete old meta after successful migration
-				delete_post_meta( $this->post_id, '_kgvid-meta' );
+				delete_post_meta( (int) $this->post_id, '_kgvid-meta' );
 			}
 		}
 
-		// Attempt to migrate from _kgflashmediaplayer- if _videopack-meta AND _kgvid-meta are empty
+		// Attempt to migrate from individual keys if still empty.
 		if ( empty( $current_meta ) ) {
-			$embed_old = get_post_meta( $this->post_id, '_kgflashmediaplayer-embed', true );
-			if ( ! empty( $embed_old ) ) { // Old meta values exist
+			$embed_old = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-embed', true );
+			if ( ! empty( $embed_old ) ) {
 				$temp_migrated_meta = array();
 				foreach ( $defaults as $key => $default_value ) {
-					$old_meta_value = get_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key, true );
-					if ( $old_meta_value !== false && $old_meta_value !== null ) {
-						$temp_migrated_meta[ $key ] = ( $old_meta_value === 'checked' ) ? true : $old_meta_value;
-						// Delete old individual meta keys
-						delete_post_meta( $this->post_id, '_kgflashmediaplayer-' . $key );
+					$old_meta_value = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-' . (string) $key, true );
+					if ( false !== $old_meta_value && null !== $old_meta_value ) {
+						$temp_migrated_meta[ (string) $key ] = ( 'checked' === $old_meta_value ) ? true : $old_meta_value;
+						delete_post_meta( (int) $this->post_id, '_kgflashmediaplayer-' . (string) $key );
 					}
 				}
-				// Handle old encode keys
 				$old_meta_encode_keys         = array(
 					'encodefullres',
 					'encode1080',
@@ -145,15 +197,14 @@ class Attachment_Meta {
 				);
 				$temp_migrated_meta['encode'] = $temp_migrated_meta['encode'] ?? array();
 				foreach ( $old_meta_encode_keys as $old_key ) {
-					if ( array_key_exists( $old_key, $temp_migrated_meta ) ) {
-						$format                                  = str_replace( 'encode', '', $old_key );
-						$temp_migrated_meta['encode'][ $format ] = $temp_migrated_meta[ $old_key ];
-						unset( $temp_migrated_meta[ $old_key ] );
+					if ( array_key_exists( (string) $old_key, $temp_migrated_meta ) ) {
+						$format                                  = (string) str_replace( 'encode', '', (string) $old_key );
+						$temp_migrated_meta['encode'][ $format ] = $temp_migrated_meta[ (string) $old_key ];
+						unset( $temp_migrated_meta[ (string) $old_key ] );
 					}
 				}
-				// Perform numberofthumbs migration on this temp data
 				if ( isset( $temp_migrated_meta['numberofthumbs'] ) && ! isset( $temp_migrated_meta['total_thumbnails'] ) ) {
-					$temp_migrated_meta['total_thumbnails'] = $temp_migrated_meta['numberofthumbs'];
+					$temp_migrated_meta['total_thumbnails'] = (int) $temp_migrated_meta['numberofthumbs'];
 					unset( $temp_migrated_meta['numberofthumbs'] );
 				}
 				$current_meta = $temp_migrated_meta;
@@ -161,63 +212,60 @@ class Attachment_Meta {
 			}
 		}
 
-		// If any migration happened, save the current_meta to _videopack-meta
 		if ( $migrated ) {
-			$this->save( $current_meta ); // This will save to _videopack-meta
+			$this->save( $current_meta );
 		}
 
-		// Check for remote status from legacy meta
-		$current_meta['is_remote'] = ( get_post_meta( $this->post_id, '_kgflashmediaplayer-external-remote', true ) === 'true' );
+		$current_meta['is_remote'] = ( 'true' === get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-external-remote', true ) );
 
-		// Merge database meta with defaults to ensure all keys are present
 		$meta_data = array_merge( $defaults, $current_meta );
 
 		$get_from_wp_meta = array(
 			'actualwidth'  => 'width',
 			'actualheight' => 'height',
 			'duration'     => 'length',
-			'codec'        => 'videocodec', //  'videocodec' from wp_read_video_metadata
+			'codec'        => 'videocodec',
 			'frame_rate'   => 'frame_rate',
 		);
 
-		$video_meta = wp_get_attachment_metadata( $this->post_id );
+		$video_meta = wp_get_attachment_metadata( (int) $this->post_id );
 		$changed    = false;
 
-		foreach ( $get_from_wp_meta as $kgvid_key => $wp_key ) {
-			if ( empty( $meta_data[ $kgvid_key ] ) && ! empty( $video_meta[ $wp_key ] ) ) {
-				$meta_data[ $kgvid_key ] = $video_meta[ $wp_key ];
-				$changed                 = true;
+		if ( is_array( $video_meta ) ) {
+			foreach ( $get_from_wp_meta as $kgvid_key => $wp_key ) {
+				if ( empty( $meta_data[ $kgvid_key ] ) && ! empty( $video_meta[ $wp_key ] ) ) {
+					$meta_data[ $kgvid_key ] = $video_meta[ $wp_key ];
+					$changed                 = true;
+				}
 			}
 		}
 
-		// Fallback to wp_read_video_metadata if still missing codec or frame_rate
-		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) || ( empty( $meta_data['actualwidth'] ) && ! empty( get_attached_file( $this->post_id ) ) ) ) {
-			$video_path = get_attached_file( $this->post_id );
+		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) || ( empty( $meta_data['actualwidth'] ) && ! empty( get_attached_file( (int) $this->post_id ) ) ) ) {
+			$video_path = (string) get_attached_file( (int) $this->post_id );
 			if ( $video_path ) {
 				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/media.php';
 				}
 				$video_info = wp_read_video_metadata( $video_path );
-				if ( $video_info ) {
+				if ( is_array( $video_info ) ) {
 					if ( empty( $meta_data['codec'] ) && ! empty( $video_info['codec'] ) ) {
-						$meta_data['codec'] = $video_info['codec'];
+						$meta_data['codec'] = (string) $video_info['codec'];
 						$changed            = true;
 					}
-					if ( empty( $meta_data['codec'] ) && ! empty( $video_info['videocodec'] ) ) { // common key from wp_read_video_metadata
-						$meta_data['codec'] = $video_info['videocodec'];
+					if ( empty( $meta_data['codec'] ) && ! empty( $video_info['videocodec'] ) ) {
+						$meta_data['codec'] = (string) $video_info['videocodec'];
 						$changed            = true;
 					}
 					if ( empty( $meta_data['frame_rate'] ) && ! empty( $video_info['frame_rate'] ) ) {
-						$meta_data['frame_rate'] = $video_info['frame_rate'];
+						$meta_data['frame_rate'] = (string) $video_info['frame_rate'];
 						$changed                 = true;
 					}
 				}
 			} else {
-				// Check if it's a remote URL for hybrid attachment
-				$external_url = get_post_meta( $this->post_id, '_kgflashmediaplayer-externalurl', true );
+				$external_url = get_post_meta( (int) $this->post_id, '_kgflashmediaplayer-externalurl', true );
 				if ( $external_url && ( empty( $meta_data['actualwidth'] ) || empty( $meta_data['actualheight'] ) || empty( $meta_data['duration'] ) ) ) {
-					$remote_metadata = $this->fetch_remote_metadata( $external_url, $this->post_id );
-					if ( $remote_metadata ) {
+					$remote_metadata = $this->fetch_remote_metadata( (string) $external_url, (int) $this->post_id );
+					if ( is_array( $remote_metadata ) ) {
 						$meta_data = array_merge( $meta_data, $remote_metadata );
 						$changed   = true;
 					}
@@ -226,18 +274,18 @@ class Attachment_Meta {
 		}
 
 		if ( $changed ) {
-			$this->save( $meta_data ); // Save to _videopack-meta
+			$this->save( $meta_data );
 		}
 
-		/**
-		 * Filters the custom Videopack attachment meta array.
-		 * @param array $kgvid_postmeta The custom Videopack attachment meta array.
-		 * @param int   $post_id        The attachment ID.
-		 */
-		$this->meta_data = $meta_data; // Update instance property
-		return apply_filters( 'videopack_attachment_meta', $this->meta_data, $this->post_id );
+		$this->meta_data = (array) $meta_data;
+		return (array) apply_filters( 'videopack_attachment_meta', $this->meta_data, $this->post_id );
 	}
 
+	/**
+	 * Saves attachment meta data, only persisting non-default values.
+	 *
+	 * @param array $meta_to_save The meta data to save.
+	 */
 	public function save( array $meta_to_save ) {
 		if ( ! $this->post_id ) {
 			return;
@@ -247,30 +295,24 @@ class Attachment_Meta {
 		$meta_to_persist = array();
 
 		foreach ( $meta_to_save as $key => $value ) {
-			// Only save if the key is not in defaults (custom meta) or if the value differs from the default.
-			// Also, ensure empty arrays that are default as empty arrays are not saved unless they become non-empty.
 			if (
-			! array_key_exists( $key, $defaults )
-			|| ( $value !== $defaults[ $key ] )
-			|| ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ $key ] ) )
+			! array_key_exists( (string) $key, $defaults )
+			|| ( $value !== $defaults[ (string) $key ] )
+			|| ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ (string) $key ] ) )
 			) {
-				$meta_to_persist[ $key ] = $value;
+				$meta_to_persist[ (string) $key ] = $value;
 			}
 		}
 
-		if ( empty( $meta_to_persist ) ) { // If no custom meta to save, delete the meta key.
-			delete_post_meta( $this->post_id, '_videopack-meta' );
+		if ( empty( $meta_to_persist ) ) {
+			delete_post_meta( (int) $this->post_id, '_videopack-meta' );
 		} else {
-			update_post_meta( $this->post_id, '_videopack-meta', $meta_to_persist );
+			update_post_meta( (int) $this->post_id, '_videopack-meta', $meta_to_persist );
 		}
 	}
 
 	/**
 	 * Increments a specific video statistic based on the event.
-	 *
-	 * The client-side JavaScript determines which events to send based on the
-	 * 'count_views' setting. This method simply trusts the event and increments
-	 * the corresponding counter in the attachment's meta.
 	 *
 	 * @param string $video_event The event from the player (e.g., 'play', '25', 'end').
 	 * @return array The updated meta array.
@@ -288,25 +330,25 @@ class Attachment_Meta {
 
 		if ( isset( $key_map[ $video_event ] ) ) {
 			$key_to_increment = $key_map[ $video_event ];
-			if ( array_key_exists( $key_to_increment, $meta ) ) {
-				$meta[ $key_to_increment ] = (int) $meta[ $key_to_increment ] + 1;
+			if ( array_key_exists( (string) $key_to_increment, $meta ) ) {
+				$meta[ (string) $key_to_increment ] = (int) $meta[ (string) $key_to_increment ] + 1;
 				$this->save( $meta );
 			}
 		}
 
-		return $meta;
+		return (array) $meta;
 	}
 
 	/**
 	 * Sanitizes a meta value based on its key or type.
 	 *
 	 * @param mixed            $value   The value to sanitize.
-	 * @param \WP_REST_Request $request The REST request object (if called via REST API).
-	 * @param string           $param   The parameter name (if called via REST API).
+	 * @param \WP_REST_Request $request Optional. The REST request object.
+	 * @param string           $param   Optional. The parameter name.
 	 * @return mixed The sanitized value.
 	 */
 	public function sanitize_meta_value( $value, $request = null, $param = null ) {
-		$key = $param;
+		$key = (string) $param;
 
 		if ( empty( $key ) ) {
 			return $value;
@@ -314,15 +356,12 @@ class Attachment_Meta {
 
 		$schema = $this->schema();
 
-		// If it's the main Videopack meta object
 		if ( '_videopack-meta' === $key && is_array( $value ) ) {
 			return $this->options_manager->sanitize_options_recursively( $value, $schema );
 		}
 
-		// If it's a legacy prefixed field
-		$field_name = str_replace( '_kgflashmediaplayer-', '', $key );
+		$field_name = (string) str_replace( '_kgflashmediaplayer-', '', $key );
 
-		// Map individual field names to schema keys if they differ
 		$key_map = array(
 			'poster-id'         => 'poster_id',
 			'video-id'          => 'video_id',
@@ -332,7 +371,6 @@ class Attachment_Meta {
 
 		$actual_schema_key = $key_map[ $field_name ] ?? $field_name;
 
-		// Add ad-hoc definitions for fields not in the main schema but registered individually
 		if ( ! isset( $schema[ $actual_schema_key ] ) ) {
 			$extra_defs = array(
 				'video_id' => array( 'type' => 'number' ),
@@ -349,67 +387,69 @@ class Attachment_Meta {
 			return $sanitized[ $actual_schema_key ];
 		}
 
-		// Default fallback for unrecognized keys
 		return is_string( $value ) ? sanitize_text_field( $value ) : $value;
 	}
 
-
+	/**
+	 * Checks the mime type of a URL, optionally caching the result.
+	 *
+	 * @param string   $url     The URL to check.
+	 * @param int|bool $post_id Optional. Attachment ID for caching.
+	 * @return array Mime type and extension.
+	 */
 	public function url_mime_type( $url, $post_id = false ) {
-
 		$mime_info = array(
 			'type' => '',
 			'ext'  => '',
 		);
 
 		if ( empty( $url ) || ! is_string( $url ) ) {
-			return $mime_info; // Return early if URL is not valid
-		}
-
-		$mime_info = wp_check_filetype( strtok( $url, '?' ) );
-
-		if ( array_key_exists( 'type', $mime_info ) && ! empty( $mime_info['type'] ) ) {
 			return $mime_info;
 		}
 
-		if ( $post_id ) {
-			$sanitized_url = new Sanitize_Url( $url );
-			$mime_info     = get_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url->singleurl_id . '-mime', true );
+		$query_stripped_url = (string) strtok( (string) $url, '?' );
+		$mime_info          = wp_check_filetype( $query_stripped_url );
 
-			if ( ! empty( $mime_info ) ) {
-				return $mime_info;
+		if ( ! empty( $mime_info['type'] ) ) {
+			return (array) $mime_info;
+		}
+
+		if ( $post_id ) {
+			$sanitized_url = new \Videopack\Admin\Sanitize_Url( (string) $url );
+			$cached_info   = get_post_meta( (int) $post_id, '_kgflashmediaplayer-' . (string) $sanitized_url->singleurl_id . '-mime', true );
+			if ( is_array( $cached_info ) ) {
+				return $cached_info;
 			}
 		}
 
-		$args = array(
+		$args     = array(
 			'sslverify' => false,
 			'method'    => 'HEAD',
 		);
+		$response = wp_remote_head( (string) $url, $args );
 
-		$response = wp_remote_head( $url, $args );
+		if ( ! is_wp_error( $response ) ) {
+			$headers       = wp_remote_retrieve_headers( $response );
+			$mime_type     = (string) ( $headers['content-type'] ?? '' );
+			$url_extension = (string) array_search( $mime_type, wp_get_mime_types(), true );
+			$url_extension = (string) explode( '|', $url_extension )[0];
 
-		if ( is_wp_error( $response ) ) {
-			return $mime_info;
+			$mime_info = array(
+				'type' => $mime_type,
+				'ext'  => $url_extension,
+			);
+
+			if ( $post_id ) {
+				$sanitized_url = new \Videopack\Admin\Sanitize_Url( (string) $url );
+				update_post_meta( (int) $post_id, '_kgflashmediaplayer-' . (string) $sanitized_url->singleurl_id . '-mime', $mime_info );
+			}
 		}
 
-		$headers       = wp_remote_retrieve_headers( $response );
-		$mime_type     = $headers['content-type'] ?? '';
-		$url_extension = array_search( $mime_type, wp_get_mime_types() );
-		$url_extension = explode( '|', $url_extension )[0];
-
-		$mime_info = array(
-			'type' => $mime_type,
-			'ext'  => $url_extension,
-		);
-
-		if ( $post_id ) {
-			update_post_meta( $post_id, '_kgflashmediaplayer-' . $sanitized_url->singleurl_id . '-mime', $mime_info );
-		}
-
-		return $mime_info;
+		return (array) $mime_info;
 	}
 
 	/**
-	 * Fetches metadata from a remote video URL by downloading a small portion and analyzing it with getID3.
+	 * Fetches metadata from a remote video URL.
 	 *
 	 * @param string $url           The remote video URL.
 	 * @param int    $attachment_id The attachment ID.
@@ -420,21 +460,19 @@ class Attachment_Meta {
 			return false;
 		}
 
-		// Range request for 2MB
 		$args = array(
 			'timeout'   => 30,
 			'sslverify' => false,
 			'headers'   => array(
-				'Range' => 'bytes=0-2097151', // 2MB
+				'Range' => 'bytes=0-2097151',
 			),
 		);
 
-		$response = wp_remote_get( $url, $args );
+		$response = wp_remote_get( (string) $url, $args );
 
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
-			// Fallback to full request if Range is not supported or failed
 			unset( $args['headers']['Range'] );
-			$response = wp_remote_get( $url, $args );
+			$response = wp_remote_get( (string) $url, $args );
 			if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) > 299 ) {
 				return false;
 			}
@@ -445,42 +483,37 @@ class Attachment_Meta {
 			return false;
 		}
 
-		$temp_file = wp_tempnam( basename( $url ) );
+		$temp_file = (string) wp_tempnam( (string) basename( (string) $url ) );
 		if ( ! $temp_file ) {
 			return false;
 		}
 
-		if ( empty( $GLOBALS['wp_filesystem'] ) ) {
-			if ( ! function_exists( 'WP_Filesystem' ) ) {
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-			}
+		global $wp_filesystem;
+		if ( empty( $wp_filesystem ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
 			WP_Filesystem();
 		}
 
-		if ( ! empty( $GLOBALS['wp_filesystem'] ) ) {
-			$GLOBALS['wp_filesystem']->put_contents( $temp_file, $body );
+		if ( $wp_filesystem instanceof \WP_Filesystem_Base ) {
+			$wp_filesystem->put_contents( $temp_file, $body );
 		} else {
-			file_put_contents( $temp_file, $body ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
+			file_put_contents( $temp_file, $body );
 		}
 
 		if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/media.php';
 		}
 
-		// This will trigger the Videopack filter via Videopack\Admin\Attachment::add_extra_video_metadata
 		$metadata = wp_read_video_metadata( $temp_file );
-
 		wp_delete_file( $temp_file );
 
-		if ( ! $metadata ) {
+		if ( ! is_array( $metadata ) ) {
 			return false;
 		}
 
-		// Save to WordPress core metadata
-		wp_update_attachment_metadata( $attachment_id, $metadata );
+		wp_update_attachment_metadata( (int) $attachment_id, $metadata );
 
-		// Prepare Videopack meta
-		$videopack_meta = array(
+		return array(
 			'actualwidth'  => $metadata['width'] ?? null,
 			'actualheight' => $metadata['height'] ?? null,
 			'duration'     => $metadata['length'] ?? null,
@@ -488,14 +521,21 @@ class Attachment_Meta {
 			'frame_rate'   => $metadata['frame_rate'] ?? null,
 			'worked'       => true,
 		);
-
-		return $videopack_meta;
 	}
 
+	/**
+	 * Filters REST response meta to remove empty legacy fields.
+	 *
+	 * @param \WP_REST_Response $response The REST response.
+	 * @param \WP_Post          $post     Post object.
+	 * @param \WP_REST_Request  $request  The request object.
+	 * @return \WP_REST_Response The filtered response.
+	 */
 	public function filter_rest_response_meta( $response, $post, $request ) {
+		unset( $request );
 		$data = $response->get_data();
 
-		if ( ! isset( $data['meta'] ) ) {
+		if ( ! isset( $data['meta'] ) || ! is_array( $data['meta'] ) ) {
 			return $response;
 		}
 
@@ -512,7 +552,7 @@ class Attachment_Meta {
 
 		foreach ( $meta_keys_to_check as $key ) {
 			if ( isset( $data['meta'][ $key ] ) ) {
-				$db_value = get_post_meta( $post->ID, $key, true );
+				$db_value = get_post_meta( (int) $post->ID, $key, true );
 				if ( empty( $db_value ) ) {
 					unset( $data['meta'][ $key ] );
 				}
@@ -520,12 +560,13 @@ class Attachment_Meta {
 		}
 
 		$response->set_data( $data );
-
 		return $response;
 	}
 
+	/**
+	 * Registers custom Videopack post meta fields.
+	 */
 	public function register() {
-
 		$kgflashmedia_fields = array(
 			'poster'            => 'string',
 			'poster-id'         => 'number',
@@ -540,9 +581,9 @@ class Attachment_Meta {
 		foreach ( $kgflashmedia_fields as $field_name => $type ) {
 			register_post_meta(
 				'attachment',
-				'_kgflashmediaplayer-' . $field_name,
+				'_kgflashmediaplayer-' . (string) $field_name,
 				array(
-					'type'              => $type,
+					'type'              => (string) $type,
 					'single'            => true,
 					'show_in_rest'      => true,
 					'auth_callback'     => function () {
@@ -552,13 +593,15 @@ class Attachment_Meta {
 				)
 			);
 		}
+
 		add_filter( 'update_post_metadata', array( $this, 'maybe_delete_empty_meta' ), 10, 5 );
+
 		register_post_meta(
 			'attachment',
 			'_kgvid-meta',
-			array( // This is the old meta key, keep it registered for migration purposes but don't show in REST.
+			array(
 				'type'          => 'object',
-				'description'   => 'Videopack postmeta',
+				'description'   => (string) __( 'Videopack postmeta', 'video-embed-thumbnail-generator' ),
 				'single'        => true,
 				'show_in_rest'  => false,
 				'auth_callback' => function () {
@@ -566,12 +609,13 @@ class Attachment_Meta {
 				},
 			)
 		);
+
 		register_post_meta(
 			'attachment',
-			'_videopack-meta', // The new canonical meta key.
+			'_videopack-meta',
 			array(
 				'type'          => 'object',
-				'description'   => 'Videopack postmeta (new format)',
+				'description'   => (string) __( 'Videopack postmeta (new format)', 'video-embed-thumbnail-generator' ),
 				'single'        => true,
 				'show_in_rest'  => array(
 					'schema' => array(
@@ -586,351 +630,134 @@ class Attachment_Meta {
 		);
 	}
 
+	/**
+	 * Defines the schema for Videopack attachment metadata.
+	 *
+	 * @return array The JSON-LD inspired schema definition.
+	 */
 	public function schema() {
-
-		// Master list of all possible schema definitions
 		$full_schema_definitions = array(
-			'actualwidth'         => array(
-				'type' => array( 'string', 'number', 'null' ),
-			),
-			'actualheight'        => array(
-				'type' => array( 'string', 'number', 'null' ),
-			),
-			'aspect'              => array(
-				'type' => array( 'string', 'number', 'null' ),
-			),
-			'autothumb_error'     => array(
-				'type' => array( 'string', 'null' ),
-			),
-			'codec'               => array(
-				'type' => array( 'string', 'null' ), // Video codec name, e.g., "h264"
-			),
-			'completeviews'       => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Count of complete views
-			),
-			'downloadlink'        => array(
-				'type' => array(
-					'string',
-					'boolean',
-					'null',
-				), // Enable download link
-			),
-			'duration'            => array(
-				'type' => array( 'string', 'number', 'null' ), // Duration in seconds, can be string or number
-			),
-			'embed'               => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Embed type/method
-			),
+			'actualwidth'         => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'actualheight'        => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'aspect'              => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'autothumb_error'     => array( 'type' => array( 'string', 'null' ) ),
+			'codec'               => array( 'type' => array( 'string', 'null' ) ),
+			'completeviews'       => array( 'type' => array( 'string', 'number' ) ),
+			'downloadlink'        => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'duration'            => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'embed'               => array( 'type' => array( 'string', 'number' ) ),
 			'encode'              => array(
 				'type'                 => 'object',
 				'additionalProperties' => array(
-					// This allows for dynamic keys like 'h264', 'vp9' etc.
-					'type' => array(
-						'string',
-						'boolean',
-					),
-					'enum' => array(
-						true,
-						false,
-						'notchecked',
-					),
-				), // Encode settings object
-			),
-			'featured'            => array(
-				'type' => array(
-					'string',
-					'boolean',
-					'null',
-				), // Set as featured image
-			),
-			'featuredchanged'     => array(
-				'type' => array(
-					'string',
-					'boolean',
-					'null',
-				), // Internal flag for featured image changes
-			),
-			'forcefirst'          => array(
-				'type' => array(
-					'string',
-					'boolean',
-					'null',
-				), // Force first frame for thumbnail
-			),
-			'frame_rate'          => array(
-				'type' => array( 'string', 'number', 'null' ), // Frame rate, e.g., "29.97" or 25
-			),
-			'gallery_exclude'     => array(
-				'type' => array(
-					'string',
-					'number',
-				), // IDs to exclude from gallery
-			),
-			'gallery_id'          => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Post ID for gallery source
-			),
-			'gallery_include'     => array(
-				'type' => array(
-					'string',
-					'number',
-				), // IDs to include in gallery
-			),
-			'gallery_order'       => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Gallery order (ASC/DESC)
-			),
-			'gallery_orderby'     => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Gallery orderby field
-			),
-			'gallery_thumb_width' => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Gallery thumbnail width
-			),
-			'height'              => array(
-				'type' => array(
-					'string',
-					'number',
-					'null', // Player height
+					'type' => array( 'string', 'boolean' ),
+					'enum' => array( true, false, 'notchecked' ),
 				),
 			),
-			'lockaspect'          => array(
-				'type' => array(
-					'string',
-					'boolean',
-					'null',
-				), // Lock aspect ratio
-			),
-			'maxheight'           => array(
-				'type' => array( 'string', 'number', 'null' ), // Max height for player
-			),
-			'maxwidth'            => array(
-				'type' => array( 'string', 'number', 'null' ), // Max width for player
-			),
-			'total_thumbnails'    => array(
-				'type' => array(
-					'string',
-					'number',
-					'null',
-				), // Number of thumbnails
-			),
-			'original_replaced'   => array(
-				'type' => array( 'string', 'null' ), // ID of format that replaced original, or null
-			),
-			'pickedformat'        => array(
-				'type' => array( 'string', 'null' ), // ID of the format picked as primary
-			),
-			'play_25'             => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Play count at 25%
-			),
-			'play_50'             => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Play count at 50%
-			),
-			'play_75'             => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Play count at 75%
-			),
+			'featured'            => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'featuredchanged'     => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'forcefirst'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'frame_rate'          => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'gallery_exclude'     => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_id'          => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_include'     => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_order'       => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_orderby'     => array( 'type' => array( 'string', 'number' ) ),
+			'gallery_thumb_width' => array( 'type' => array( 'string', 'number' ) ),
+			'height'              => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'lockaspect'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'maxheight'           => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'maxwidth'            => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'total_thumbnails'    => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'original_replaced'   => array( 'type' => array( 'string', 'null' ) ),
+			'pickedformat'        => array( 'type' => array( 'string', 'null' ) ),
+			'play_25'             => array( 'type' => array( 'string', 'number' ) ),
+			'play_50'             => array( 'type' => array( 'string', 'number' ) ),
+			'play_75'             => array( 'type' => array( 'string', 'number' ) ),
 			'poster'              => array(
-				'type'   => array( 'string', 'null' ), // URL to poster image
+				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'poster_id'           => array(
-				'type' => array( 'string', 'number', 'null' ), // Attachment ID for poster image
-			),
-			'rotate'              => array(
-				'type' => array( 'string', 'number', 'null' ), // Rotation value
-			),
-			'showtitle'           => array(
-				'type' => array(
-					'string',
-					'boolean',
-				), // Show title overlay
-			),
-			'starts'              => array(
-				'type' => array(
-					'string',
-					'number',
-				), // Number of times video started
-			),
-			'thumbtime'           => array(
-				'type' => array( 'string', 'number', 'null' ), // Timestamp for thumbnail
-			),
+			'poster_id'           => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'rotate'              => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'showtitle'           => array( 'type' => array( 'string', 'boolean' ) ),
+			'starts'              => array( 'type' => array( 'string', 'number' ) ),
+			'thumbtime'           => array( 'type' => array( 'string', 'number', 'null' ) ),
 			'track'               => array(
 				'type'  => 'array',
 				'items' => array(
 					'type'       => 'object',
 					'properties' => array(
-						'src'     => array(
-							'type' => array(
-								'string',
-								'number',
-							),
-						),
-						'kind'    => array(
-							'type' => array(
-								'string',
-								'number',
-							),
-						),
-						'default' => array(
-							'type' => array(
-								'string',
-								'boolean',
-							),
-						),
-						'srclang' => array(
-							'type' => array(
-								'string',
-								'number',
-							),
-						),
-						'label'   => array(
-							'type' => array(
-								'string',
-								'number',
-							),
-						),
+						'src'     => array( 'type' => array( 'string', 'number' ) ),
+						'kind'    => array( 'type' => array( 'string', 'number' ) ),
+						'default' => array( 'type' => array( 'string', 'boolean' ) ),
+						'srclang' => array( 'type' => array( 'string', 'number' ) ),
+						'label'   => array( 'type' => array( 'string', 'number' ) ),
 					),
 				),
 			),
 			'url'                 => array(
-				'type'   => array( 'string', 'null' ), // URL of the video if external or specific format
+				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'width'               => array(
-				'type' => array(
-					'string',
-					'number',
-					'null', // Player width
-				),
-			),
-			'worked'              => array(
-				'type' => array(
-					'string',
-					'boolean',
-				), // Indicates if metadata retrieval worked
-			),
-			// Player settings (per-video overrides of global options)
-			'autoplay'            => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'loop'                => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'muted'               => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'controls'            => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'volume'              => array(
-				'type' => array( 'string', 'number', 'null' ),
-			),
-			'preload'             => array(
-				'type' => array( 'string', 'null' ),
-			),
-			'playback_rate'       => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'playsinline'         => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'right_click'         => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'gifmode'             => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'fixed_aspect'        => array(
-				'type' => array( 'string', 'null' ),
-			),
-			'align'               => array(
-				'type' => array( 'string', 'null' ),
-			),
-			'fullwidth'           => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'resize'              => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'inline'              => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'embeddable'          => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'embedcode'           => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'overlay_title'       => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'view_count'          => array(
-				'type' => array( 'string', 'boolean', 'null' ),
-			),
-			'watermark'           => array(
-				'type' => array( 'string', 'null' ),
-			),
-			'watermark_link_to'   => array(
-				'type' => array( 'string', 'null' ),
-			),
+			'width'               => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'worked'              => array( 'type' => array( 'string', 'boolean' ) ),
+			'autoplay'            => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'loop'                => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'muted'               => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'controls'            => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'volume'              => array( 'type' => array( 'string', 'number', 'null' ) ),
+			'preload'             => array( 'type' => array( 'string', 'null' ) ),
+			'playback_rate'       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'playsinline'         => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'right_click'         => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'gifmode'             => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'fixed_aspect'        => array( 'type' => array( 'string', 'null' ) ),
+			'align'               => array( 'type' => array( 'string', 'null' ) ),
+			'fullwidth'           => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'resize'              => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'inline'              => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'embeddable'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'embedcode'           => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'overlay_title'       => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'view_count'          => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'watermark'           => array( 'type' => array( 'string', 'null' ) ),
+			'watermark_link_to'   => array( 'type' => array( 'string', 'null' ) ),
 			'watermark_url'       => array(
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
-			'is_remote'           => array(
-				'type' => array( 'boolean' ),
-			),
+			'is_remote'           => array( 'type' => array( 'boolean' ) ),
 		);
-		// Get the authoritative list of keys from get_defaults()
+
 		$default_keys = array_keys( $this->get_defaults() );
-
-		// Filter the full schema definitions to include only those keys present in defaults
 		$final_schema = array_intersect_key( $full_schema_definitions, array_flip( $default_keys ) );
-
-		// Ensure all default keys have at least a basic schema if not defined in full_schema_definitions
 
 		foreach ( $final_schema as $key => $value ) {
 			$final_schema[ $key ]['sanitize_callback'] = array( $this, 'sanitize_meta_value' );
 		}
 
-		return apply_filters( 'videopack_post_meta_schema', $final_schema );
+		return (array) apply_filters( 'videopack_post_meta_schema', $final_schema );
 	}
 
+	/**
+	 * Conditionally deletes empty meta fields during saving.
+	 *
+	 * @param mixed  $check      Existing check value.
+	 * @param int    $object_id  Object ID.
+	 * @param string $meta_key   Meta key.
+	 * @param mixed  $meta_value Meta value.
+	 * @param mixed  $prev_value Previous value.
+	 * @return mixed Modified check value.
+	 */
 	public function maybe_delete_empty_meta( $check, $object_id, $meta_key, $meta_value, $prev_value ) {
-		// Only handle our specific meta keys.
-		if ( 0 !== strpos( $meta_key, '_kgflashmediaplayer-' ) ) {
+		unset( $prev_value );
+		if ( 0 !== strpos( (string) $meta_key, '_kgflashmediaplayer-' ) ) {
 			return $check;
 		}
 
-		// If value is empty (and not false, which we might use for booleans), delete it.
-		// empty() covers '', 0, '0', null, array(), etc.
 		if ( empty( $meta_value ) && ! is_bool( $meta_value ) ) {
-			delete_post_meta( $object_id, $meta_key );
-			return true; // Short-circuit the update process.
+			delete_post_meta( (int) $object_id, (string) $meta_key );
+			return true;
 		}
 
 		return $check;

@@ -1,22 +1,54 @@
 <?php
+/**
+ * Shortcode and block attribute handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Frontend;
 
+/**
+ * Class Shortcode
+ *
+ * Handles the registration and processing of the [videopack] shortcode and blocks.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Frontend
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Shortcode {
 
 
 	/**
-	 * Videopack Options manager class instance
+	 * Videopack Options manager class instance.
+	 *
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+
+	/**
+	 * Plugin options.
+	 *
+	 * @var array $options
+	 */
 	protected $options;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 */
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 	}
 
+	/**
+	 * Registers the shortcodes with WordPress.
+	 *
+	 * @return void
+	 */
 	public function add() {
 		add_shortcode( 'videopack', array( $this, 'do' ) );
 		add_shortcode( 'VIDEOPACK', array( $this, 'do' ) );
@@ -24,6 +56,11 @@ class Shortcode {
 		add_shortcode( 'KGVID', array( $this, 'do' ) );
 	}
 
+	/**
+	 * Returns the definitions for shortcode and block attributes.
+	 *
+	 * @return array The attribute definitions.
+	 */
 	private function get_attribute_definitions() {
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
@@ -36,7 +73,7 @@ class Shortcode {
 				'id'                            => null,
 				'orderby'                       => 'menu_order ID',
 				'order'                         => 'ASC',
-				'videos'                        => $this->options['collection_video_limit'],
+				'videos'                        => $this->options['collection_video_limit'] ?? -1,
 				'start'                         => '',
 				'gallery'                       => 'false',
 				'gallery_source'                => 'current',
@@ -50,7 +87,7 @@ class Shortcode {
 				'caption'                       => '',
 				'description'                   => '',
 				'track_kind'                    => 'subtitles',
-				'track_srclang'                 => substr( get_bloginfo( 'language' ), 0, 2 ),
+				'track_srclang'                 => substr( (string) get_bloginfo( 'language' ), 0, 2 ),
 				'track_src'                     => '',
 				'track_label'                   => get_bloginfo( 'language' ),
 				'track_default'                 => '',
@@ -138,11 +175,16 @@ class Shortcode {
 		);
 	}
 
-	public function get_block_attributes() {
-		$definitions     = $this->get_attribute_definitions();
-		$default_atts    = $definitions['default_atts'];
-		$options_atts    = $definitions['options_atts'];
-		$boolean_convert = $definitions['boolean_convert'];
+	/**
+	 * Returns the attributes configured for the block editor.
+	 *
+	 * @return array The block attributes.
+	 */
+	public function get_block_attributes(): array {
+		$definitions     = (array) $this->get_attribute_definitions();
+		$default_atts    = (array) $definitions['default_atts'];
+		$options_atts    = (array) $definitions['options_atts'];
+		$boolean_convert = (array) $definitions['boolean_convert'];
 
 		$attributes = array();
 
@@ -156,37 +198,37 @@ class Shortcode {
 			'default' => '',
 		);
 
-		foreach ( $default_atts as $key => $value ) {
+		foreach ( (array) $default_atts as $key => $value ) {
 			$type = 'string';
 			if ( is_bool( $value ) ) {
 				$type = 'boolean';
 			} elseif ( is_numeric( $value ) ) {
 				$type = 'number';
 			}
-			$attributes[ $key ] = array(
+			$attributes[ (string) $key ] = array(
 				'type'    => $type,
 				'default' => $value,
 			);
 		}
 
-		foreach ( $options_atts as $att ) {
-			if ( array_key_exists( $att, $this->options ) ) {
-				$attributes[ $att ] = array(
+		foreach ( (array) $options_atts as $att ) {
+			if ( array_key_exists( (string) $att, $this->options ) ) {
+				$attributes[ (string) $att ] = array(
 					'type'    => is_bool( $this->options[ $att ] ) ? 'boolean' : ( is_numeric( $this->options[ $att ] ) ? 'number' : 'string' ),
 					'default' => $this->options[ $att ],
 				);
 			} else {
-				$attributes[ $att ] = array(
+				$attributes[ (string) $att ] = array(
 					'type' => 'string',
 				);
 			}
 		}
 
-		foreach ( $boolean_convert as $key ) {
-			if ( isset( $attributes[ $key ] ) ) {
-				$attributes[ $key ]['type'] = 'boolean';
+		foreach ( (array) $boolean_convert as $key ) {
+			if ( isset( $attributes[ (string) $key ] ) ) {
+				$attributes[ (string) $key ]['type'] = 'boolean';
 			} else {
-				$attributes[ $key ] = array(
+				$attributes[ (string) $key ] = array(
 					'type' => 'boolean',
 				);
 			}
@@ -209,15 +251,26 @@ class Shortcode {
 			'default' => array(),
 		);
 
-		return apply_filters( 'videopack_block_attributes', $attributes );
+		/**
+		 * Filter the block attributes.
+		 *
+		 * @param array $attributes The block attributes.
+		 */
+		return (array) apply_filters( 'videopack_block_attributes', (array) $attributes );
 	}
 
-	public function atts( $atts ) {
+	/**
+	 * Sanitizes and prepares shortcode attributes.
+	 *
+	 * @param array|string $atts The user-provided attributes.
+	 * @return array The prepared attributes.
+	 */
+	public function atts( $atts ): array {
 
-		$definitions     = $this->get_attribute_definitions();
-		$default_atts    = $definitions['default_atts'];
-		$options_atts    = $definitions['options_atts'];
-		$boolean_convert = $definitions['boolean_convert'];
+		$definitions     = (array) $this->get_attribute_definitions();
+		$default_atts    = (array) $definitions['default_atts'];
+		$options_atts    = (array) $definitions['options_atts'];
+		$boolean_convert = (array) $definitions['boolean_convert'];
 
 		$deprecated_atts = array(
 			'controlbar'    => 'controls',
@@ -227,49 +280,54 @@ class Shortcode {
 
 		if ( is_array( $atts ) ) {
 
-			foreach ( $deprecated_atts as $deprecated_att => $new_att ) { // loop through old atts and convert to new ones
+			foreach ( (array) $deprecated_atts as $deprecated_att => $new_att ) { // Loop through old atts and convert to new ones.
 
-				if ( array_key_exists( $deprecated_att, $atts ) ) {
+				if ( array_key_exists( (string) $deprecated_att, $atts ) ) {
 
-					$atts[ $new_att ] = $atts[ $deprecated_att ];
+					$atts[ (string) $new_att ] = $atts[ (string) $deprecated_att ];
 
-					if ( $new_att == 'controls' ) {
+					if ( 'controls' === (string) $new_att ) {
 
-						if ( $atts['controls'] == 'none' ) {
+						if ( 'none' === (string) $atts['controls'] ) {
 							$atts['controls'] = 'false';
 						} else {
 							$atts['controls'] = 'true';
 						}
 					}
 
-					if ( $new_att === 'gallery_columns' ) {
-						//convert thumbnail width to columns per row based on arbitrary 1000px width window
-						$atts['gallery_columns'] = round( 1000 / intval( $atts['gallery_columns'] ) );
+					if ( 'gallery_columns' === (string) $new_att ) {
+						// Convert thumbnail width to columns per row based on arbitrary 1000px width window.
+						$atts['gallery_columns'] = (int) round( 1000 / (int) ( $atts['gallery_columns'] ?? 1 ) );
 					}
 				}
 			}
 		}
 
 		$option_defaults = array();
-		foreach ( $options_atts as $att ) {
-			if ( array_key_exists( $att, $this->options ) ) {
-				$option_defaults[ $att ] = $this->options[ $att ];
+		foreach ( (array) $options_atts as $att ) {
+			if ( array_key_exists( (string) $att, $this->options ) ) {
+				$option_defaults[ (string) $att ] = $this->options[ $att ];
 			}
 		}
 
-		$default_atts = array_merge( $default_atts, $option_defaults );
-		$default_atts = apply_filters( 'videopack_default_shortcode_atts', $default_atts );
+		$default_atts = (array) array_merge( (array) $default_atts, (array) $option_defaults );
+		/**
+		 * Filter the default shortcode attributes.
+		 *
+		 * @param array $default_atts The default attributes.
+		 */
+		$default_atts = (array) apply_filters( 'videopack_default_shortcode_atts', (array) $default_atts );
 
-		$query_atts = shortcode_atts( $default_atts, $atts, 'videopack' );
+		$query_atts = (array) shortcode_atts( (array) $default_atts, (array) $atts, 'videopack' );
 
-		$videopack_query_var = get_query_var( 'videopack' ); // variables in URL
+		$videopack_query_var = get_query_var( 'videopack' ); // Variables in URL.
 		if ( empty( $videopack_query_var ) ) {
-			$videopack_query_var = get_query_var( 'kgvid_video_embed' ); // check the old query variable
+			$videopack_query_var = get_query_var( 'kgvid_video_embed' ); // Check the old query variable.
 		}
 
-		if ( ! empty( $videopack_query_var ) ) {
+		if ( ! empty( $videopack_query_var ) && is_array( $videopack_query_var ) ) {
 
-			$allowed_query_var_atts = array( // attributes that can be changed via URL
+			$allowed_query_var_atts = array( // Attributes that can be changed via URL.
 				'auto_res',
 				'auto_codec',
 				'autoplay',
@@ -288,64 +346,74 @@ class Shortcode {
 				'width',
 			);
 
-			$allowed_query_var_atts = apply_filters( 'videopack_allowed_query_var_atts', $allowed_query_var_atts );
+			/**
+			 * Filter the allowed query variable attributes.
+			 *
+			 * @param array $allowed_query_var_atts The allowed attributes.
+			 */
+			$allowed_query_var_atts = (array) apply_filters( 'videopack_allowed_query_var_atts', (array) $allowed_query_var_atts );
 
-			foreach ( $videopack_query_var as $key => $value ) {
-				if ( in_array( $key, $allowed_query_var_atts ) ) {
-					$query_atts[ $key ] = $value;
+			foreach ( (array) $videopack_query_var as $key => $value ) {
+				if ( in_array( (string) $key, (array) $allowed_query_var_atts, true ) ) {
+					$query_atts[ (string) $key ] = $value;
 				}
 			}
 		}
 
-		// Convert boolean-like attributes to booleans
-		foreach ( $boolean_convert as $key ) {
-			if ( isset( $query_atts[ $key ] ) ) {
-				if ( $query_atts[ $key ] === 'true' || $query_atts[ $key ] === true || $query_atts[ $key ] === '1' || $query_atts[ $key ] === 1 ) {
-					$query_atts[ $key ] = true;
-				} elseif ( $query_atts[ $key ] === 'false' || $query_atts[ $key ] === false || $query_atts[ $key ] === '0' || $query_atts[ $key ] === 0 ) {
-					$query_atts[ $key ] = false;
-				} elseif ( is_string( $query_atts[ $key ] ) && strtolower( $query_atts[ $key ] ) === 'true' ) {
-					$query_atts[ $key ] = true;
+		// Convert boolean-like attributes to booleans.
+		foreach ( (array) $boolean_convert as $key ) {
+			if ( isset( $query_atts[ (string) $key ] ) ) {
+				if ( 'true' === (string) $query_atts[ $key ] || true === $query_atts[ $key ] || '1' === (string) $query_atts[ $key ] || 1 === $query_atts[ $key ] ) {
+					$query_atts[ (string) $key ] = true;
+				} elseif ( 'false' === (string) $query_atts[ $key ] || false === $query_atts[ $key ] || '0' === (string) $query_atts[ $key ] || 0 === $query_atts[ $key ] ) {
+					$query_atts[ (string) $key ] = false;
+				} elseif ( is_string( $query_atts[ $key ] ) && 'true' === strtolower( (string) $query_atts[ $key ] ) ) {
+					$query_atts[ (string) $key ] = true;
 				}
 			}
 		}
 
-		// Ensure gallery_thumb is always an integer
+		// Ensure gallery_thumb is always an integer.
 		if ( isset( $query_atts['gallery_thumb'] ) ) {
-			$query_atts['gallery_thumb'] = intval( $query_atts['gallery_thumb'] );
+			$query_atts['gallery_thumb'] = (int) $query_atts['gallery_thumb'];
 		}
 
-		// Map collection_video_limit -> videos only if it was passed explicitly (e.g. from the block)
+		// Map collection_video_limit -> videos only if it was passed explicitly (e.g. from the block).
 		if ( ! empty( $query_atts['enable_collection_video_limit'] ) ) {
-			$query_atts['videos'] = $query_atts['collection_video_limit'];
+			$query_atts['videos'] = (int) ( $query_atts['collection_video_limit'] ?? -1 );
 		} elseif ( is_array( $atts ) && array_key_exists( 'enable_collection_video_limit', $atts ) ) {
 			// This is a block instance where the toggle is explicitly OFF, so we override to no limit.
 			$query_atts['videos'] = -1;
 		} elseif ( is_array( $atts ) && isset( $atts['collection_video_limit'] ) ) {
 			// This handles legacy shortcodes where only the limit was passed.
-			$query_atts['videos'] = $atts['collection_video_limit'];
+			$query_atts['videos'] = (int) $atts['collection_video_limit'];
 		}
 
-		if ( $query_atts['auto_res'] == 'true' ) {
+		if ( (string) ( $query_atts['auto_res'] ?? '' ) === 'true' ) {
 			$query_atts['auto_res'] = 'automatic';
-		} //if anyone used auto_res in the shortcode before version 4.4.3
-		if ( $query_atts['auto_res'] == 'false' ) {
+		} // If anyone used auto_res in the shortcode before version 4.4.3.
+		if ( (string) ( $query_atts['auto_res'] ?? '' ) === 'false' ) {
 			$query_atts['auto_res'] = 'highest';
 		}
-		if ( $query_atts['orderby'] == 'menu_order' ) {
+		if ( (string) ( $query_atts['orderby'] ?? '' ) === 'menu_order' ) {
 			$query_atts['orderby'] = 'menu_order ID';
 		}
-		if ( $query_atts['gallery_orderby'] == 'menu_order' ) {
+		if ( (string) ( $query_atts['gallery_orderby'] ?? '' ) === 'menu_order' ) {
 			$query_atts['gallery_orderby'] = 'menu_order ID';
 		}
-		if ( $query_atts['track_default'] == 'true' ) {
+		if ( (string) ( $query_atts['track_default'] ?? '' ) === 'true' ) {
 			$query_atts['track_default'] = 'default';
 		}
-		if ( $query_atts['count_views'] == 'false' ) {
+		if ( (string) ( $query_atts['count_views'] ?? '' ) === 'false' ) {
 			$query_atts['view_count'] = 'false';
 		}
 
-		return apply_filters( 'videopack_shortcode_atts', $query_atts );
+		/**
+		 * Filter the sanitized shortcode attributes.
+		 *
+		 * @param array $query_atts The sanitized attributes.
+		 */
+		return (array) apply_filters( 'videopack_shortcode_atts', (array) $query_atts );
 	}
 
 	/**
@@ -354,28 +422,28 @@ class Shortcode {
 	 * This method consolidates the logic for determining the final attributes for a video,
 	 * merging defaults, user-provided attributes, and data from the video source itself.
 	 *
-	 * @param array                           $atts   The raw shortcode attributes.
+	 * @param array|string                   $atts   The raw shortcode attributes.
 	 * @param \Videopack\Video_Source\Source $source The video source object.
 	 * @return array The final, resolved attributes.
 	 */
-	public function get_final_atts( array $atts, \Videopack\Video_Source\Source $source ): array {
-		$query_atts = $this->atts( $atts );
+	public function get_final_atts( $atts, \Videopack\Video_Source\Source $source ): array {
+		$query_atts = (array) $this->atts( $atts );
 
 		// Apply per-video overrides from _videopack-meta.
 		// These override the global option defaults but NOT values explicitly
 		// set in the shortcode text (which are already in $atts).
-		$attachment_id = $source->get_id();
+		$attachment_id = (string) $source->get_id();
 		if ( is_numeric( $attachment_id ) ) {
-			$videopack_meta = get_post_meta( intval( $attachment_id ), '_videopack-meta', true );
+			$videopack_meta = get_post_meta( (int) $attachment_id, '_videopack-meta', true );
 			if ( is_array( $videopack_meta ) && ! empty( $videopack_meta ) ) {
-				foreach ( $videopack_meta as $key => $value ) {
+				foreach ( (array) $videopack_meta as $key => $value ) {
 					// Only apply if the key exists in $query_atts and was NOT
 					// explicitly provided in the shortcode text.
-					if ( array_key_exists( $key, $query_atts )
-						&& ( ! is_array( $atts ) || ! array_key_exists( $key, $atts ) )
+					if ( array_key_exists( (string) $key, (array) $query_atts )
+						&& ( ! is_array( $atts ) || ! array_key_exists( (string) $key, $atts ) )
 						&& $value !== null
 					) {
-						$query_atts[ $key ] = $value;
+						$query_atts[ (string) $key ] = $value;
 					}
 				}
 			}
@@ -383,60 +451,60 @@ class Shortcode {
 
 		// Populate shortcode attributes with data from the Source object, if not already set by the user.
 		if ( empty( $query_atts['poster'] ) ) {
-			$query_atts['poster'] = $source->get_poster();
+			$query_atts['poster'] = (string) $source->get_poster();
 		}
 		if ( empty( $query_atts['title'] ) ) {
-			$query_atts['title'] = $source->get_title();
+			$query_atts['title'] = (string) $source->get_title();
 		}
 		if ( empty( $query_atts['caption'] ) ) {
-			$query_atts['caption'] = $source->get_caption();
+			$query_atts['caption'] = (string) $source->get_caption();
 		}
 		if ( empty( $query_atts['description'] ) ) {
-			$query_atts['description'] = $source->get_description();
+			$query_atts['description'] = (string) $source->get_description();
 		}
 		// Handle text tracks.
 		if ( ! empty( $query_atts['text_tracks'] ) ) {
 			// If multiple tracks are defined (e.g., from the block editor), use them.
-			$query_atts['tracks'] = $query_atts['text_tracks'];
+			$query_atts['tracks'] = (array) $query_atts['text_tracks'];
 		} elseif ( ! empty( $query_atts['track_src'] ) ) {
 			// If a single track is defined by shortcode attributes, use it.
 			$query_atts['tracks'] = array(
 				array(
-					'kind'    => $query_atts['track_kind'],
-					'srclang' => $query_atts['track_srclang'],
-					'src'     => $query_atts['track_src'],
-					'label'   => $query_atts['track_label'],
-					'default' => $query_atts['track_default'],
+					'kind'    => (string) ( $query_atts['track_kind'] ?? 'subtitles' ),
+					'srclang' => (string) ( $query_atts['track_srclang'] ?? 'en' ),
+					'src'     => (string) ( $query_atts['track_src'] ?? '' ),
+					'label'   => (string) ( $query_atts['track_label'] ?? '' ),
+					'default' => (string) ( $query_atts['track_default'] ?? '' ),
 				),
 			);
 		} else {
 			// Otherwise, get all tracks from the source's metadata.
-			$query_atts['tracks'] = $source->get_tracks();
+			$query_atts['tracks'] = (array) $source->get_tracks();
 		}
 
-		$query_atts['starts'] = $source->get_views();
+		$query_atts['starts'] = (int) $source->get_views();
 
 		// Determine if the video is countable (i.e., an attachment).
-		$query_atts['countable'] = is_numeric( $source->get_id() );
+		$query_atts['countable'] = (bool) is_numeric( $source->get_id() );
 
 		// Set the title for statistics, using the attachment title or URL basename as a fallback.
 		if ( empty( $query_atts['stats_title'] ) ) {
-			$query_atts['stats_title'] = $source->get_title();
+			$query_atts['stats_title'] = (string) $source->get_title();
 			if ( empty( $query_atts['stats_title'] ) ) {
-				$query_atts['stats_title'] = basename( $source->get_url() );
+				$query_atts['stats_title'] = (string) basename( (string) $source->get_url() );
 			}
 		}
 
 		// Set default dimensions from source if not provided in shortcode.
-		if ( empty( $atts['width'] ) && $source->get_width() ) {
-			$query_atts['width'] = $source->get_width();
+		if ( empty( $atts['width'] ) && (int) $source->get_width() > 0 ) {
+			$query_atts['width'] = (int) $source->get_width();
 		}
-		if ( empty( $atts['height'] ) && $source->get_height() ) {
-			$query_atts['height'] = $source->get_height();
+		if ( empty( $atts['height'] ) && (int) $source->get_height() > 0 ) {
+			$query_atts['height'] = (int) $source->get_height();
 		}
 
 		// Apply GIF mode overrides if enabled.
-		if ( $query_atts['gifmode'] === true ) {
+		if ( (bool) ( $query_atts['gifmode'] ?? false ) === true ) {
 			$gifmode_atts = array(
 				'muted'        => true,
 				'autoplay'     => true,
@@ -448,54 +516,66 @@ class Shortcode {
 				'playsinline'  => true,
 				'view_count'   => false,
 			);
-			$gifmode_atts = apply_filters( 'videopack_gifmode_atts', $gifmode_atts );
-			$query_atts   = array_merge( $query_atts, $gifmode_atts );
+			/**
+			 * Filter the GIF mode attributes.
+			 *
+			 * @param array $gifmode_atts The attributes.
+			 */
+			$gifmode_atts = (array) apply_filters( 'videopack_gifmode_atts', (array) $gifmode_atts );
+			$query_atts   = (array) array_merge( (array) $query_atts, (array) $gifmode_atts );
 		}
 
 		// Handle endofvideooverlaysame logic.
-		if ( ! empty( $query_atts['endofvideooverlaysame'] ) && true === $query_atts['endofvideooverlaysame'] ) {
-			$query_atts['endofvideooverlay'] = $query_atts['poster'];
+		if ( ! empty( $query_atts['endofvideooverlaysame'] ) && true === (bool) $query_atts['endofvideooverlaysame'] ) {
+			$query_atts['endofvideooverlay'] = (string) ( $query_atts['poster'] ?? '' );
 		}
 
 		// Handle fixed_aspect logic.
-		if ( ( ! empty( $query_atts['fixed_aspect'] ) && 'vertical' === $query_atts['fixed_aspect'] && $query_atts['height'] > $query_atts['width'] )
-		|| ( ! empty( $query_atts['fixed_aspect'] ) && true === $query_atts['fixed_aspect'] )
+		if ( ( ! empty( $query_atts['fixed_aspect'] ) && 'vertical' === (string) $query_atts['fixed_aspect'] && (int) ( $query_atts['height'] ?? 0 ) > (int) ( $query_atts['width'] ?? 0 ) )
+		|| ( ! empty( $query_atts['fixed_aspect'] ) && true === (bool) $query_atts['fixed_aspect'] )
 		) {
-			$default_aspect_ratio = intval( $this->options['height'] ) / intval( $this->options['width'] );
-			$query_atts['height'] = round( $query_atts['width'] * $default_aspect_ratio );
+			$default_aspect_ratio = (float) ( (int) ( $this->options['height'] ?? 360 ) / (int) ( $this->options['width'] ?? 640 ) );
+			$query_atts['height'] = (int) round( (int) ( $query_atts['width'] ?? 640 ) * $default_aspect_ratio );
 		}
 
 		// Backward compatibility: if title is "false", disable overlay_title.
-		if ( 'false' === $query_atts['title'] ) {
+		if ( 'false' === (string) ( $query_atts['title'] ?? '' ) ) {
 			$query_atts['overlay_title'] = false;
 		}
 
 		// Handle responsive width/height and fixed aspect ratio.
-		if ( $query_atts['width'] === '100%' ) {
-			$query_atts['width']     = $this->options['width'];
-			$query_atts['height']    = $this->options['height'];
+		if ( '100%' === (string) ( $query_atts['width'] ?? '' ) ) {
+			$query_atts['width']     = (int) ( $this->options['width'] ?? 640 );
+			$query_atts['height']    = (int) ( $this->options['height'] ?? 360 );
 			$query_atts['fullwidth'] = 'true';
 		}
 
-		// Ensure gallery_thumb is always set and is an integer
+		// Ensure gallery_thumb is always set and is an integer.
 		if ( ! isset( $query_atts['gallery_thumb'] ) ) {
-			$query_atts['gallery_thumb'] = isset( $this->options['gallery_thumb'] ) ? intval( $this->options['gallery_thumb'] ) : 200;
+			$query_atts['gallery_thumb'] = isset( $this->options['gallery_thumb'] ) ? (int) $this->options['gallery_thumb'] : 200;
 		} else {
-			$query_atts['gallery_thumb'] = intval( $query_atts['gallery_thumb'] );
+			$query_atts['gallery_thumb'] = (int) $query_atts['gallery_thumb'];
 		}
 
-		return $query_atts;
+		return (array) $query_atts;
 	}
 
+	/**
+	 * Main shortcode handler.
+	 *
+	 * @param array|string $atts    The shortcode attributes.
+	 * @param string       $content The shortcode content (video URL).
+	 * @return string The rendered player or gallery HTML.
+	 */
 	public function do( $atts, $content = '' ) {
 
 		$query_atts = $this->atts( $atts );
 
-		// Handle gallery_source logic to ensure correct gallery_id
+		// Handle gallery_source logic to ensure correct gallery_id.
 		if ( isset( $query_atts['gallery_source'] ) ) {
 			if ( 'current' === $query_atts['gallery_source'] && empty( $query_atts['gallery_id'] ) ) {
 				$query_atts['gallery_id'] = get_the_ID();
-			} elseif ( in_array( $query_atts['gallery_source'], array( 'category', 'tag' ) ) && empty( $query_atts['gallery_id'] ) ) {
+			} elseif ( in_array( $query_atts['gallery_source'], array( 'category', 'tag' ), true ) && empty( $query_atts['gallery_id'] ) ) {
 				$query_atts['gallery_id'] = '';
 			}
 		}
@@ -506,10 +586,10 @@ class Shortcode {
 
 		if ( isset( $query_atts['gallery'] ) && true === $query_atts['gallery'] ) {
 			if ( isset( $query_atts['gallery_orderby'] ) && 'rand' === $query_atts['gallery_orderby'] ) {
-				$query_atts['gallery_orderby'] = 'RAND(' . rand() . ')';
+				$query_atts['gallery_orderby'] = 'RAND(' . (string) wp_rand() . ')';
 			}
 
-			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'], $this->options_manager );
+			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options_manager );
 			$player->enqueue_scripts();
 
 			$gallery = new Gallery( $this->options_manager );
@@ -520,28 +600,29 @@ class Shortcode {
 				$post_id = get_queried_object_id();
 			}
 
-			// Determine the video source based on shortcode attributes or content
+			// Determine the video source based on shortcode attributes or content.
 			$source_ids  = array();
 			$attachments = null;
 			$page        = 1;
 
 			if ( ! empty( $query_atts['id'] ) ) {
-				$ids = explode( ',', $query_atts['id'] );
+				$ids = explode( ',', (string) $query_atts['id'] );
 				foreach ( $ids as $id ) {
 					$source_ids[] = trim( $id );
 				}
 			} elseif ( ! empty( $content ) ) {
-				// Workaround for relative video URL
+				$content = (string) $content;
+				// Workaround for relative video URL.
 				if ( substr( $content, 0, 1 ) === '/' ) {
-					$content = get_bloginfo( 'url' ) . $content;
+					$content = (string) get_bloginfo( 'url' ) . $content;
 				}
 				$source_ids[] = trim( $content );
 			} else {
-				// We fallback to get_gallery_videos for multiple querying capabilities
+				// We fallback to get_gallery_videos for multiple querying capabilities.
 				if ( get_query_var( 'paged' ) ) {
-					$page = get_query_var( 'paged' );
+					$page = (int) get_query_var( 'paged' );
 				} elseif ( get_query_var( 'page' ) ) {
-					$page = get_query_var( 'page' );
+					$page = (int) get_query_var( 'page' );
 				}
 
 				$gallery     = new Gallery( $this->options_manager );
@@ -549,12 +630,12 @@ class Shortcode {
 
 				if ( $attachments->have_posts() ) {
 					foreach ( $attachments->posts as $post ) {
-						$source_ids[] = $post->ID;
+						$source_ids[] = (int) $post->ID;
 					}
 				}
 			}
 
-			$is_list = $attachments || count( $source_ids ) > 1;
+			$is_list = ( $attachments instanceof \WP_Query ) || count( $source_ids ) > 1;
 			$code    = '';
 
 			if ( $is_list ) {
@@ -562,8 +643,8 @@ class Shortcode {
 			}
 
 			foreach ( $source_ids as $source_input ) {
-				// Create the Source object
-				$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager, null, null, $post_id );
+				// Create the Source object.
+				$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager, null, null, (int) $post_id );
 
 				if ( ! $source || ! $source->exists() ) {
 					continue;
@@ -572,22 +653,22 @@ class Shortcode {
 				// Get the final, resolved attributes for the video.
 				$final_atts = $this->get_final_atts( $atts, $source );
 
-				// Determine the player type based on shortcode attribute or global option
+				// Determine the player type based on shortcode attribute or global option.
 				if ( isset( $final_atts['embed_method'] ) ) {
-					$player_type = $final_atts['embed_method'];
+					$player_type = (string) $final_atts['embed_method'];
 				} else {
-					$player_type = $this->options['embed_method'];
+					$player_type = (string) ( $this->options['embed_method'] ?? 'Video.js' );
 				}
 				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options_manager );
 
-				// Set the source and final attributes on the player instance
+				// Set the source and final attributes on the player instance.
 				$player->set_source( $source );
 				$player->set_atts( $final_atts );
 
-				// Enqueue player-specific scripts and styles
+				// Enqueue player-specific scripts and styles.
 				$player->enqueue_scripts();
 
-				// Get the generated HTML code for the video player
+				// Get the generated HTML code for the video player.
 				if ( $is_list ) {
 					$code .= '<div class="videopack-list-item">';
 				}
@@ -600,54 +681,80 @@ class Shortcode {
 			if ( $is_list ) {
 				$code .= '</div>';
 
-				if ( $attachments && ! empty( $query_atts['gallery_pagination'] ) ) {
+				if ( ( $attachments instanceof \WP_Query ) && ! empty( $query_atts['gallery_pagination'] ) ) {
 					$big        = 999999999;
 					$pagination = paginate_links(
 						array(
-							'base'    => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+							'base'    => str_replace( (string) $big, '%#%', (string) esc_url( get_pagenum_link( $big ) ) ),
 							'format'  => '?paged=%#%',
-							'current' => max( 1, $page ),
-							'total'   => $attachments->max_num_pages,
+							'current' => max( 1, (int) $page ),
+							'total'   => (int) $attachments->max_num_pages,
 						)
 					);
 					if ( $pagination ) {
-						$code .= '<div class="videopack-gallery-pagination">' . $pagination . '</div>';
+						$code .= '<div class="videopack-gallery-pagination">' . (string) $pagination . '</div>';
 					}
 				}
 			}
 		}
 
-		$code = wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
+		$code = (string) wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
 
-		return apply_filters( 'videopack_shortcode', $code, $query_atts, $content );
+		/**
+		 * Filter the rendered shortcode output.
+		 *
+		 * @param string $code       The rendered HTML.
+		 * @param array  $query_atts The sanitized attributes.
+		 * @param string $content    The shortcode content.
+		 */
+		return (string) apply_filters( 'videopack_shortcode', $code, $query_atts, $content );
 	}
 
-	public function no_texturize( $shortcodes ) {
+	/**
+	 * Prevents WordPress from texturizing the shortcodes (e.g., converting double quotes to smart quotes).
+	 *
+	 * @param array $shortcodes Existing shortcodes to skip texturizing.
+	 * @return array Modified list of shortcodes.
+	 */
+	public function no_texturize( $shortcodes ): array {
+		$shortcodes   = (array) $shortcodes;
 		$shortcodes[] = 'KGVID';
 		$shortcodes[] = 'FMP';
 		$shortcodes[] = 'videopack';
 		$shortcodes[] = 'VIDEOPACK';
-		return $shortcodes;
+		return (array) $shortcodes;
 	}
 
-	public function add_query_vars( $qvars ) {
-		// add videopack variable for passing information using URL queries
+	/**
+	 * Registers custom query variables.
+	 *
+	 * @param array $qvars Existing query variables.
+	 * @return array Modified list of query variables.
+	 */
+	public function add_query_vars( $qvars ): array {
+		$qvars   = (array) $qvars;
 		$qvars[] = 'videopack';
-		$qvars[] = 'kgvid_video_embed'; // old query variable
-		return $qvars;
+		$qvars[] = 'kgvid_video_embed'; // Old query variable.
+		return (array) $qvars;
 	}
 
+	/**
+	 * Generates a shortcode string for a video attachment.
+	 *
+	 * @param array|string $videopack_query_var The query variable data.
+	 * @return string The generated shortcode.
+	 */
 	public function generate_attachment_shortcode( $videopack_query_var ) {
 
-		$post      = get_post();
-		$shortcode = '';
+		$current_post = get_post();
+		$shortcode    = '';
 
 		if ( is_array( $videopack_query_var )
 		&& array_key_exists( 'id', $videopack_query_var )
 		) {
-			$post_id = $videopack_query_var['id'];
-		} elseif ( $post && property_exists( $post, 'ID' ) ) {
-			$post_id = $post->ID;
+			$post_id = (int) $videopack_query_var['id'];
+		} elseif ( $current_post instanceof \WP_Post ) {
+			$post_id = (int) $current_post->ID;
 		} else {
 			$post_id = 1;
 		}
@@ -657,82 +764,90 @@ class Shortcode {
 		if ( is_array( $videopack_query_var )
 		&& array_key_exists( 'sample', $videopack_query_var )
 		) {
-			$url = plugins_url( '/images/Adobestock_469037984.mp4', __DIR__ );
+			$url = (string) plugins_url( '/images/Adobestock_469037984.mp4', VIDEOPACK_PLUGIN_FILE );
 		} else {
-			$url = wp_get_attachment_url( $post_id );
-		}
-
-		if ( is_array( $videopack_query_var )
-		&& array_key_exists( 'gallery', $videopack_query_var )
-		) {
-			$gallery = true;
-		} else {
-			$gallery = false;
+			$url = (string) wp_get_attachment_url( $post_id );
 		}
 
 		$shortcode = '[videopack';
 		if ( ! empty( $post_id ) ) {
-			$shortcode .= ' id="' . esc_attr( $post_id ) . '"';
+			$shortcode .= ' id="' . esc_attr( (string) $post_id ) . '"';
 		}
 		if ( is_array( $videopack_query_var )
 		&& array_key_exists( 'enable', $videopack_query_var )
-		&& $videopack_query_var['enable'] == 'true'
+		&& 'true' === $videopack_query_var['enable']
 		) {
 			$shortcode .= ' fullwidth="true"';
 		}
-		if ( $videopack_postmeta['downloadlink'] == true ) {
+		if ( ! empty( $videopack_postmeta['downloadlink'] ) ) {
 			$shortcode .= ' downloadlink="true"';
 		}
 		if ( is_array( $videopack_query_var ) && array_key_exists( 'start', $videopack_query_var ) ) {
-			$shortcode .= ' start="' . esc_attr( $videopack_query_var['start'] ) . '"';
+			$shortcode .= ' start="' . esc_attr( (string) $videopack_query_var['start'] ) . '"';
 		}
 		if ( is_array( $videopack_query_var ) && array_key_exists( 'gallery', $videopack_query_var ) ) {
 			$shortcode .= ' autoplay="true"';
 		}
 		if ( is_array( $videopack_query_var ) && array_key_exists( 'sample', $videopack_query_var ) ) {
-			if ( $this->options['overlay_title'] == true ) {
+			if ( ! empty( $this->options['overlay_title'] ) ) {
 				$shortcode .= ' title="' . esc_attr_x( 'Sample Video', 'example video', 'video-embed-thumbnail-generator' ) . '"';
 			}
-			if ( $this->options['embedcode'] == true ) {
+			if ( ! empty( $this->options['embedcode'] ) ) {
 				$shortcode .= ' embedcode="' . esc_attr__( 'Sample Embed Code', 'video-embed-thumbnail-generator' ) . '"';
 			}
 			$shortcode .= ' caption="' . esc_attr__( "If text is entered in the attachment's caption field it is displayed here automatically.", 'video-embed-thumbnail-generator' ) . '"';
-			if ( $this->options['downloadlink'] == true ) {
+			if ( ! empty( $this->options['downloadlink'] ) ) {
 				$shortcode .= ' downloadlink="true"';
 			}
 		}
 
 		$shortcode .= ']' . esc_url( $url ) . '[/videopack]';
 
-		return $shortcode;
+		return (string) $shortcode;
 	}
 
+	/**
+	 * Retrieves the medium size thumbnail URL for an attachment.
+	 *
+	 * @param int $id The attachment ID.
+	 * @return string The medium thumbnail URL.
+	 */
 	public function get_attachment_medium_url( $id ) {
 
-		$medium_array = image_downsize( $id, 'medium' );
-		$medium_path  = $medium_array[0];
+		$medium_array = image_downsize( (int) $id, 'medium' );
+		$medium_path  = is_array( $medium_array ) ? (string) $medium_array[0] : '';
 
 		return $medium_path;
 	}
 
+	/**
+	 * Overwrites the default [video] shortcode if configured.
+	 */
 	public function overwrite_video_shortcode() {
 
-		if ( $this->options['replace_video_shortcode'] == true ) {
+		if ( ! empty( $this->options['replace_video_shortcode'] ) ) {
 			remove_shortcode( 'video' );
 			add_shortcode( 'video', array( $this, 'replace_video_shortcode' ) );
 		}
 	}
 
+	/**
+	 * Replaces the default [video] shortcode with Videopack's handler.
+	 *
+	 * @param array|string $atts    The shortcode attributes.
+	 * @param string       $content The shortcode content.
+	 * @return string The rendered player HTML.
+	 */
 	public function replace_video_shortcode( $atts, $content = '' ) {
 
 		$src_atts = array( 'src', 'mp4', 'm4v', 'webm', 'ogv', 'wmv', 'flv' );
 		foreach ( $src_atts as $src_key ) {
 			if ( is_array( $atts ) && array_key_exists( $src_key, $atts ) ) {
-				$content = $atts[ $src_key ];
+				$content = (string) $atts[ $src_key ];
 				break;
 			}
 		}
 
-		return $this->do( $atts, $content );
+		return (string) $this->do( $atts, (string) $content );
 	}
 }

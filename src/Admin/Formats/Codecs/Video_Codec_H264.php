@@ -1,8 +1,21 @@
 <?php
+/**
+ * H.264 Video Codec Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats\Codecs;
 
+/**
+ * Class Video_Codec_H264
+ *
+ * Represents the H.264 video codec.
+ */
 class Video_Codec_H264 extends Video_Codec {
+	/**
+	 * Video_Codec_H264 constructor.
+	 */
 	public function __construct() {
 		$properties = array(
 			'name'           => 'H.264 MP4',
@@ -33,6 +46,14 @@ class Video_Codec_H264 extends Video_Codec {
 		parent::__construct( $properties );
 	}
 
+	/**
+	 * Get codec-specific FFmpeg flags for H.264.
+	 *
+	 * @param array $plugin_options The global plugin options.
+	 * @param array $dimensions     Associative array with 'width' and 'height'.
+	 * @param array $codecs         Associative array of available FFmpeg encoders.
+	 * @return array An array of FFmpeg flags.
+	 */
 	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ): array {
 		$flags = parent::get_codec_ffmpeg_flags( $plugin_options, $dimensions, $codecs );
 

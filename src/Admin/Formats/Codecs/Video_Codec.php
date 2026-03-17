@@ -1,4 +1,9 @@
 <?php
+/**
+ * Video Codec Base Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats\Codecs;
 
@@ -207,16 +212,22 @@ class Video_Codec {
 		return $this->vcodec;
 	}
 
+	/**
+	 * Get the list of preferred AAC encoders.
+	 *
+	 * @return array List of AAC encoding libraries.
+	 */
 	protected function aac_encoders() {
 
 		$aac_array = array(
-			'libfdk_aac', // Generally highest quality
-			'aac',        // FFmpeg's native AAC encoder
+			'libfdk_aac', // Generally highest quality.
+			'aac',        // FFmpeg's native AAC encoder.
 			'libfaac',
 		);
 
 		/**
 		 * Filter the preferred FFMPEG AAC encoders.
+		 *
 		 * @param array $aac_array List of AAC encoding libraries.
 		 */
 		return apply_filters( 'videopack_aac_encoders', $aac_array );
@@ -225,6 +236,7 @@ class Video_Codec {
 	/**
 	 * Get the audio codec.
 	 *
+	 * @param array $codecs Optional. Associative array of available FFmpeg encoders.
 	 * @return string Audio codec.
 	 */
 	public function get_acodec( array $codecs = null ) {
@@ -297,8 +309,8 @@ class Video_Codec {
 	/**
 	 * Calculates and returns the bitrate based on width and height.
 	 *
-	 * @param float $width  The width of the video.
-	 * @param float $height The height of the video.
+	 * @param array $dimensions    Associative array with 'width' and 'height'.
+	 * @param float $rate_control  Optional. The rate control value.
 	 * @return float The calculated bitrate.
 	 */
 	public function get_bitrate( array $dimensions, $rate_control = null ) {
@@ -310,6 +322,12 @@ class Video_Codec {
 		);
 	}
 
+	/**
+	 * Get FFmpeg CRF flags for this codec.
+	 *
+	 * @param array $plugin_options The global plugin options.
+	 * @return array An array of FFmpeg flags.
+	 */
 	protected function get_ffmpeg_crf_flags( array $plugin_options ) {
 			$crf_flags   = array();
 			$crf_flags[] = '-crf';
@@ -317,6 +335,13 @@ class Video_Codec {
 			return $crf_flags;
 	}
 
+	/**
+	 * Get FFmpeg VBR flags for this codec.
+	 *
+	 * @param array $plugin_options The global plugin options.
+	 * @param array $dimensions     Associative array with 'width' and 'height'.
+	 * @return array An array of FFmpeg flags.
+	 */
 	protected function get_ffmpeg_vbr_flags( $plugin_options, array $dimensions ) {
 			$vbr_flags   = array();
 			$vbr_flags[] = '-b:v';
@@ -324,6 +349,13 @@ class Video_Codec {
 			return $vbr_flags;
 	}
 
+	/**
+	 * Get FFmpeg rate control flags (CRF or VBR) for this codec.
+	 *
+	 * @param array      $plugin_options The global plugin options.
+	 * @param array|null $dimensions     Optional. Associative array with 'width' and 'height'.
+	 * @return array An array of FFmpeg flags.
+	 */
 	protected function get_ffmpeg_rate_control_flags( array $plugin_options, array $dimensions = null ) {
 		$rate_control = $plugin_options['encode'][ $this->id ]['rate_control'] ?? $plugin_options['rate_control'];
 		if ( 'crf' === $rate_control ) {

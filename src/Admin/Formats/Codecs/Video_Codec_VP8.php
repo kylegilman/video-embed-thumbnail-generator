@@ -1,8 +1,21 @@
 <?php
+/**
+ * VP8 Video Codec Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats\Codecs;
 
+/**
+ * Class Video_Codec_VP8
+ *
+ * Represents the VP8 video codec.
+ */
 class Video_Codec_VP8 extends Video_Codec {
+	/**
+	 * Video_Codec_VP8 constructor.
+	 */
 	public function __construct() {
 		$properties = array(
 			'name'           => 'VP8 WEBM',

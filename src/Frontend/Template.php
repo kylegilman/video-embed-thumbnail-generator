@@ -1,85 +1,147 @@
 <?php
+/**
+ * Frontend template and embed handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Frontend;
 
+/**
+ * Class Template
+ *
+ * Handles custom templates, oEmbed data, and video attachment redirects.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Frontend
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Template {
 
 	/**
-	 * Videopack Options manager class instance
+	 * Videopack Options manager class instance.
+	 *
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+
+	/**
+	 * Plugin options.
+	 *
+	 * @var array $options
+	 */
 	protected $options;
+
+	/**
+	 * Metadata handler.
+	 *
+	 * @var \Videopack\Frontend\Metadata $metadata
+	 */
 	protected $metadata;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 */
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 		$this->metadata        = new \Videopack\Frontend\Metadata( $options_manager );
 	}
 
+	/**
+	 * Modifies oEmbed data to include Videopack video information.
+	 *
+	 * @param array         $data   The oEmbed data.
+	 * @param \WP_Post|null $post   The post object.
+	 * @param int           $width  The requested width.
+	 * @param int           $height The requested height.
+	 * @return array The modified oEmbed data.
+	 */
 	public function change_oembed_data( $data, $post, $width, $height ) {
 		$first_embedded_video = $this->metadata->get_first_embedded_video( $post );
 
 		if ( ! empty( $data )
 			&& ! empty( $first_embedded_video['url'] )
-			&& $this->options['oembed_provider'] === true
+			&& ! empty( $this->options['oembed_provider'] )
 		) {
 			$data['type']          = 'video';
 			$data['version']       = '1.0';
-			$data['provider_name'] = get_bloginfo( 'name' );
-			$data['provider_url']  = home_url();
+			$data['provider_name'] = (string) get_bloginfo( 'name' );
+			$data['provider_url']  = (string) home_url();
 
 			if ( ! empty( $first_embedded_video['poster'] ) ) {
-				$data['thumbnail_url']    = $first_embedded_video['poster'];
-				$data['thumbnail_width']  = $width;
-				$data['thumbnail_height'] = $height;
+				$data['thumbnail_url']    = (string) $first_embedded_video['poster'];
+				$data['thumbnail_width']  = (int) $width;
+				$data['thumbnail_height'] = (int) $height;
 			}
 
-			$embed_id = $first_embedded_video['id'] ?? ( is_object( $post ) ? $post->ID : $post );
-			if ( is_numeric( $embed_id ) ) {
-				$embed_url = add_query_arg( 'videopack[enable]', 'true', get_attachment_link( $embed_id ) );
+			$embed_id = $first_embedded_video['id'] ?? ( $post instanceof \WP_Post ? $post->ID : 0 );
+			if ( is_numeric( $embed_id ) && (int) $embed_id > 0 ) {
+				$embed_url = add_query_arg( 'videopack[enable]', 'true', (string) get_attachment_link( (int) $embed_id ) );
 			} else {
-				$embed_url = $first_embedded_video['url'];
+				$embed_url = (string) $first_embedded_video['url'];
 			}
 
 			$iframe_title = sprintf(
 				/* translators: %s is the video title */
 				__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
-				$first_embedded_video['title'] ?? ( is_object( $post ) ? $post->post_title : '' )
+				(string) ( $first_embedded_video['title'] ?? ( $post instanceof \WP_Post ? $post->post_title : '' ) )
 			);
 
 			$data['html'] = sprintf(
 				'<iframe src="%1$s" width="%2$d" height="%3$d" style="border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="%4$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
-				esc_url( $embed_url ),
-				esc_attr( $width ),
-				esc_attr( $height ),
-				esc_attr( $iframe_title )
+				esc_url( (string) $embed_url ),
+				(int) $width,
+				(int) $height,
+				esc_attr( (string) $iframe_title )
 			);
 		}
 
-		return apply_filters( 'videopack_change_oembed_data', $data, $post, $width, $height );
+		/**
+		 * Filters the modified oEmbed data.
+		 *
+		 * @param array         $data   The oEmbed data.
+		 * @param \WP_Post|null $post   The post object.
+		 * @param int           $width  The width.
+		 * @param int           $height The height.
+		 */
+		return (array) apply_filters( 'videopack_change_oembed_data', (array) $data, $post, $width, $height );
 	}
 
+	/**
+	 * Filters the path of the current template for embed requests.
+	 *
+	 * @param string $template The path to the template.
+	 * @return string The modified template path.
+	 */
 	public function change_embed_template( $template ) {
 
 		$current_post = get_post();
 
-		if ( $this->options['oembed_provider'] === true ) {
+		if ( ! empty( $this->options['oembed_provider'] ) ) {
 			$first_embedded_video = $this->metadata->get_first_embedded_video( $current_post );
-			if ( array_key_exists( 'id', $first_embedded_video ) ) {
+			if ( isset( $first_embedded_video['id'] ) ) {
 				$template = __DIR__ . '/partials/embeddable-video.php';
 			}
 		}
-		return $template;
+		return (string) $template;
 	}
 
+	/**
+	 * Filters the content of video attachments to display the Videopack player.
+	 *
+	 * @param string $content The attachment content.
+	 * @return string The modified content.
+	 */
 	public function filter_video_attachment_content( $content ) {
 
 		$post = get_post();
 
 		if ( isset( $post )
-			&& strpos( $post->post_mime_type, 'video' ) !== false
+			&& strpos( (string) $post->post_mime_type, 'video' ) !== false
 		) {
 			if ( doing_filter( 'get_the_excerpt' ) ) {
 				return $content;
@@ -88,13 +150,18 @@ class Template {
 			$content             = ( new Shortcode( $this->options_manager ) )->generate_attachment_shortcode( $videopack_query_var );
 			$content          .= '<p>' . $post->post_content . '</p>';
 		}
-		return $content;
+		return (string) $content;
 	}
 
+	/**
+	 * Checks if a redirect to a Videopack video should be enabled.
+	 *
+	 * @return array|bool The query variables if redirect is enabled, false otherwise.
+	 */
 	public function enable_redirect() {
 
 		$videopack_query_var = get_query_var( 'videopack' ) ? get_query_var( 'videopack' ) : get_query_var( 'kgvid_video_embed' );
-		$videopack_query_var = is_array( $videopack_query_var ) ? $videopack_query_var : array( 'enable' => $videopack_query_var );
+		$videopack_query_var = is_array( $videopack_query_var ) ? $videopack_query_var : array( 'enable' => (string) $videopack_query_var );
 
 		// Default values.
 		$videopack_query_var += array(
@@ -104,14 +171,14 @@ class Template {
 
 		$post     = get_post();
 		$is_video = is_attachment()
-			&& is_object( $post )
+			&& $post instanceof \WP_Post
 			&& property_exists( $post, 'post_mime_type' )
-			&& strpos( $post->post_mime_type, 'video' ) !== false;
+			&& strpos( (string) $post->post_mime_type, 'video' ) !== false;
 
 		if ( ( $is_video
 			&& (
 				$videopack_query_var['enable'] === 'true'
-				|| ( $videopack_query_var['download'] === 'true' && $this->options['click_download'] === true )
+				|| ( $videopack_query_var['download'] === 'true' && ! empty( $this->options['click_download'] ) )
 			) )
 			|| array_key_exists( 'sample', $videopack_query_var )
 		) {
@@ -121,20 +188,30 @@ class Template {
 		return false;
 	}
 
+	/**
+	 * Filters the canonical redirect for attachments.
+	 *
+	 * @param string $redirect_url  The redirect URL.
+	 * @param string $requested_url The requested URL.
+	 * @return string The modified redirect URL.
+	 */
 	public function redirect_canonical_attachment( $redirect_url, $requested_url ) {
 
 		if ( get_option( 'wp_attachment_pages_enabled' ) === '0'
-			&& is_attachment() // Keep original logic
+			&& is_attachment() // Keep original logic.
 			&& $this->enable_redirect() !== false
 		) {
 			// Return the original requested URL to cancel the redirect.
-			return $requested_url;
+			return (string) $requested_url;
 		}
 
 		// If the query vars are not set, continue with the default redirection.
-		return $redirect_url;
+		return (string) $redirect_url;
 	}
 
+	/**
+	 * Handles the video attachment templeting and downloads.
+	 */
 	public function attachment() {
 
 		$videopack_query_var = $this->enable_redirect();
@@ -143,14 +220,17 @@ class Template {
 			return;
 		}
 
-		if ( $videopack_query_var['enable'] === 'true' ) {
+		if ( is_array( $videopack_query_var ) && $videopack_query_var['enable'] === 'true' ) {
 			include __DIR__ . '/partials/embeddable-video.php';
 			exit;
 		}
 
-		if ( $videopack_query_var['download'] === 'true' ) {
+		if ( is_array( $videopack_query_var ) && $videopack_query_var['download'] === 'true' ) {
 
 			$filepath = get_attached_file( get_the_ID() );
+			if ( ! $filepath || ! file_exists( $filepath ) ) {
+				return;
+			}
 			$filetype = wp_check_filetype( $filepath );
 			if ( ! isset( $filetype['type'] ) ) {
 				$filetype['type'] = 'application/octet-stream';
@@ -158,25 +238,25 @@ class Template {
 			if ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
 				$user_agent = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 			} else {
-				$user_agent = 'Mozilla'; // let's assume it's not IE
+				$user_agent = 'Mozilla'; // Let's assume it's not IE.
 			}
 
-			// Generate the server headers
+			// Generate the server headers.
 			if ( strpos( $user_agent, 'MSIE' ) !== false ) {
 				header( 'Content-Type: "' . esc_attr( $filetype['type'] ) . '"' );
-				header( 'Content-Disposition: attachment; filename="' . esc_attr( basename( $filepath ) ) . '"' );
+				header( 'Content-Disposition: attachment; filename="' . esc_attr( basename( (string) $filepath ) ) . '"' );
 				header( 'Expires: 0' );
 				header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
 				header( 'Content-Transfer-Encoding: binary' );
 				header( 'Pragma: public' );
-				header( 'Content-Length: ' . esc_attr( filesize( $filepath ) ) );
+				header( 'Content-Length: ' . (string) filesize( $filepath ) );
 			} else {
 				header( 'Content-Type: "' . esc_attr( $filetype['type'] ) . '"' );
-				header( 'Content-Disposition: attachment; filename="' . esc_attr( basename( $filepath ) ) . '"' );
+				header( 'Content-Disposition: attachment; filename="' . esc_attr( basename( (string) $filepath ) ) . '"' );
 				header( 'Content-Transfer-Encoding: binary' );
 				header( 'Expires: 0' );
 				header( 'Pragma: no-cache' );
-				header( 'Content-Length: ' . esc_attr( filesize( $filepath ) ) );
+				header( 'Content-Length: ' . (string) filesize( $filepath ) );
 			}
 
 			$this->readfile_chunked( $filepath );
@@ -184,11 +264,15 @@ class Template {
 		}
 	}
 
+	/**
+	 * Sends large files in chunks so PHP doesn't timeout.
+	 *
+	 * @param string $file     The path to the file.
+	 * @param bool   $retbytes Optional. Whether to return the number of bytes sent. Default is true.
+	 * @return int|bool The number of bytes sent or success status.
+	 */
 	public function readfile_chunked( $file, $retbytes = true ) {
-		// sends large files in chunks so PHP doesn't timeout
-
 		$chunksize = 1 * ( 1024 * 1024 );
-		$buffer    = '';
 		$cnt       = 0;
 
 		$handle = fopen( $file, 'r' );
@@ -196,32 +280,48 @@ class Template {
 			return false;
 		}
 
-		$download_log = apply_filters( 'videopack_file_download_logger_start', false );
+		/**
+		 * Filter to start file download logging.
+		 *
+		 * @param bool   $log  Whether to log the download.
+		 * @param string $file The file path.
+		 */
+		$download_log = apply_filters( 'videopack_file_download_logger_start', false, $file );
 
 		$output_resource = fopen( 'php://output', 'w' );
 
-		while ( ! feof( $handle ) ) {
+		if ( $output_resource ) {
+			while ( ! feof( $handle ) ) {
+				$buffer = fread( $handle, $chunksize );
+				if ( $buffer ) {
+					fwrite( $output_resource, $buffer );
+					if ( ob_get_length() ) {
+						ob_flush();
+						flush();
+					}
 
-			$buffer = fread( $handle, $chunksize );
-			fwrite( $output_resource, $buffer );
-			if ( ob_get_length() ) {
-				ob_flush();
-				flush();
+					if ( $retbytes ) {
+						$cnt += strlen( $buffer );
+					}
+				}
 			}
-
-			if ( $retbytes ) {
-				$cnt += strlen( $buffer );
-			}
+			fclose( $output_resource );
 		}
 
 		$status = fclose( $handle );
 
 		if ( $download_log ) {
-			if ( $cnt == filesize( $file ) ) {
+			if ( (int) $cnt === (int) filesize( $file ) ) {
 				$complete = true;
 			} else {
 				$complete = false;
 			}
+			/**
+			 * Action to end file download logging.
+			 *
+			 * @param mixed $download_log The log identifier.
+			 * @param bool  $complete     Whether the download was complete.
+			 */
 			do_action( 'videopack_file_download_logger_end', $download_log, $complete );
 		}
 

@@ -1,9 +1,33 @@
 <?php
+/**
+ * Video source factory class.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Video_Source;
 
+/**
+ * Class Source_Factory
+ *
+ * Creates instances of Video Source subclasses based on the provided source data.
+ *
+ * @since 5.0.0
+ * @package Videopack\Video_Source
+ */
 class Source_Factory {
 
+	/**
+	 * Creates a Video Source instance.
+	 *
+	 * @param string|int|array         $source          The video source (URL, attachment ID, path, or array).
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param string|null              $format          Optional. Videopack video format ID.
+	 * @param bool|null                $exists          Optional. Whether the source exists.
+	 * @param int|null                 $parent_id       Optional. Parent ID (post ID, etc.).
+	 * @param string|null              $source_type     Optional. Explicitly specify the source type.
+	 * @return Source|null The video source instance or null if not found.
+	 */
 	public static function create(
 		$source,
 		\Videopack\Admin\Options $options_manager,
@@ -22,13 +46,14 @@ class Source_Factory {
 		/**
 		 * Allow modification of the source type or direct overriding of the instance creation
 		 * for custom source types.
-		 * @param Source|null               $video_source_instance
-		 * @param mixed                     $source                 attachment ID, file path, URL, etc.
-		 * @param \Videopack\Admin\Options $options_manager
-		 * @param string                    $format
-		 * @param bool                      $exists
-		 * @param int|null                  $parent_id
-		 * @param string                    $source_type            as determined by the factory
+		 *
+		 * @param Source|null               $video_source_instance The video source instance.
+		 * @param mixed                     $source                 The video source.
+		 * @param \Videopack\Admin\Options $options_manager        The options manager instance.
+		 * @param string                    $format                The video format.
+		 * @param bool                      $exists                Whether the source exists.
+		 * @param int|null                  $parent_id             The parent ID.
+		 * @param string                    $source_type            The source type.
 		 */
 		$video_source_instance = apply_filters( 'videopack_source_class', null, $source, $options_manager, $format, $exists, $parent_id, $source_type );
 
@@ -50,6 +75,16 @@ class Source_Factory {
 		return null;
 	}
 
+	/**
+	 * Determines the source type based on the provided source data.
+	 *
+	 * @param mixed                    $source          The video source.
+	 * @param \Videopack\Admin\Options $options_manager The options manager instance.
+	 * @return array {
+	 *     @type mixed  $instance_source The internal source representation.
+	 *     @type string $source_type     The determined source type.
+	 * }
+	 */
 	protected static function determine_source_type( $source, \Videopack\Admin\Options $options_manager ) {
 
 		if ( is_numeric( $source ) && get_post_type( $source ) === 'attachment' ) {

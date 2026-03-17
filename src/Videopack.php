@@ -1,9 +1,6 @@
 <?php
-
-namespace Videopack;
-
 /**
- * The file that defines the core plugin class
+ * The file that defines the core plugin class.
  *
  * A class definition that includes attributes and functions used across both the
  * public-facing side of the site and the admin area.
@@ -14,6 +11,8 @@ namespace Videopack;
  * @package    Videopack
  * @subpackage Videopack/includes
  */
+
+namespace Videopack;
 
 /**
  * The core plugin class.
@@ -115,14 +114,19 @@ class Videopack {
 		$options_manager = new Admin\Options();
 
 		/**
-		 * Allows replacement of the Options class
+		 * Allows replacement of the Options class.
+		 *
+		 * @param Admin\Options $options_manager The options manager instance.
 		 */
 		$this->options_manager = apply_filters( 'videopack_options_manager', $options_manager );
 	}
 
 	/**
 	 * Callback for the 'videopack_get_options_manager' filter.
+	 *
 	 * Returns the initialized Options manager instance.
+	 *
+	 * @return Admin\Options The initialized options manager.
 	 */
 	public function get_options_manager_instance() {
 		return $this->options_manager;
@@ -269,6 +273,7 @@ class Videopack {
 	}
 
 	/**
+	 * Returns the loader instance.
 	 *
 	 * @since     1.0.0
 	 * @return    Common\Loader    Orchestrates the hooks of the plugin.

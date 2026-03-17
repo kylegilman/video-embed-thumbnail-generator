@@ -26,7 +26,7 @@
 
     <rule ref="WordPress-Extra">
          <exclude name="WordPress.PHP.YodaConditions.NotYoda" />
-         <exclude name="WordPress.PHP.StrictInArray" />
+         <!-- <exclude name="WordPress.PHP.StrictInArray" /> -->
          <!-- <exclude name="WordPress.WP.l18n.MissingTranslatorsComment" /> -->
     </rule>
 
@@ -38,18 +38,6 @@
                 <element value="edit_others_video_encodes" />
             </property>
         </properties>
-    </rule>
-
-    <rule ref="Squiz.Commenting">
-        <!-- <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar" />
-        <exclude name="Squiz.Commenting.FunctionComment"/>
-        <exclude name="Squiz.Commenting.PostStatementComment"/> -->
-        <exclude name="Squiz.Commenting" />
-    </rule>
-
-    <rule ref="Generic.Commenting">
-        <!-- <exclude name="Generic.Commenting.DocComment" /> -->
-        <exclude name="Generic.Commenting" />
     </rule>
 
     <rule ref="Universal.Operators.StrictComparisons">

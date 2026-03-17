@@ -1,7 +1,19 @@
 <?php
+/**
+ * Video Format Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats;
 
+use Videopack\Admin\Formats\Codecs\Video_Codec;
+
+/**
+ * Class Video_Format
+ *
+ * Represents a specific combination of a video codec and a resolution.
+ */
 class Video_Format {
 	/**
 	 * Video format name.
@@ -27,7 +39,7 @@ class Video_Format {
 	/**
 	 * Video codec.
 	 *
-	 * @var \Videopack\Admin\Codec\Video_Codec $codec
+	 * @var \Videopack\Admin\Formats\Codecs\Video_Codec $codec
 	 */
 	protected $codec;
 
@@ -48,7 +60,9 @@ class Video_Format {
 	/**
 	 * Video_Format constructor.
 	 *
-	 * @param array $properties
+	 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec      Video codec object.
+	 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution Video resolution object.
+	 * @param bool                                        $enabled    Whether the format is enabled. Default true.
 	 */
 	public function __construct( Codecs\Video_Codec $codec, Video_Resolution $resolution, $enabled = true ) {
 		$this->codec      = $codec;
@@ -137,16 +151,17 @@ class Video_Format {
 	/**
 	 * Get the full string appended to the end of videos with this format.
 	 *
-	 * @return string
+	 * @return string The file suffix (e.g., -h264_1080p.mp4)
 	 */
 	public function get_suffix() {
 
 		$suffix = '-' . $this->get_id() . '.' . $this->codec->get_container();
 		/**
 		 * Filters video format file suffix. Used to determine the naming structure for video formats.
-		 * @param string $id    Video format id.
-		 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec     Video codec object.
-		 * @param \Videopack\Admin\Formats\Video_Resolution $resolution Video resolution object.
+		 *
+		 * @param string                                      $id         Video format id.
+		 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec      Video codec object.
+		 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution Video resolution object.
 		 */
 		return apply_filters( 'videopack_video_format_suffix', $suffix, $this->codec, $this->resolution );
 	}
@@ -180,14 +195,46 @@ class Video_Format {
 	}
 
 	/**
-	 * Convert the Video_Format object to an associative array.
+	 * Checks if this video format is enabled in the plugin settings.
 	 *
-	 * @return array An associative array representation of the object.
+	 * @return bool True if enabled, false otherwise.
 	 */
 	public function is_enabled() {
 		return $this->enabled;
 	}
 
+	/**
+	 * Convert the Video_Format object to an associative array for JSON responses.
+	 *
+	 * @return array{
+	 *     id: string,
+	 *     name: string,
+	 *     label: string,
+	 *     legacy_id: string|false,
+	 *     legacy_suffix: string|false,
+	 *     suffix: string,
+	 *     replaces_original: bool,
+	 *     codec: array{
+	 *         id: string,
+	 *         name: string,
+	 *         container: string,
+	 *         mime_type: string,
+	 *         vcodec: string|array,
+	 *         acodec: string,
+	 *         default_crf: float,
+	 *         default_vbr: float,
+	 *         is_default_encode: bool
+	 *     },
+	 *     resolution: array{
+	 *         id: string,
+	 *         height: int,
+	 *         name: string,
+	 *         label: string,
+	 *         is_default_encode: bool
+	 *     },
+	 *     enabled: bool
+	 * } An associative array representation of the object.
+	 */
 	public function to_array() {
 		$codec      = $this->get_codec();
 		$resolution = $this->get_resolution();
