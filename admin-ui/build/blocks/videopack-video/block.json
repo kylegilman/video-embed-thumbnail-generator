@@ -29,9 +29,9 @@
   },
   "textdomain": "video-embed-thumbnail-generator",
   "editorScript": [
-    "file:../../videopack-video.js"
+    "file:./videopack-video.js"
   ],
   "style": [
-    "file:../../videopack-video.css"
+    "file:./videopack-video.css"
   ]
 }

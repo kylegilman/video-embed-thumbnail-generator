@@ -49,9 +49,9 @@ class Ui {
 			)
 		);
 
-		$this->localize_block_settings( 'videopack-videopack-video-editor-script' );
-		$this->localize_block_settings( 'videopack-videopack-gallery-editor-script' );
-		$this->localize_block_settings( 'videopack-videopack-list-editor-script' );
+		$this->localize_block_settings( 'videopack-blocks-videopack-video-videopack-video-editor-script' );
+		$this->localize_block_settings( 'videopack-blocks-videopack-gallery-videopack-gallery-editor-script' );
+		$this->localize_block_settings( 'videopack-blocks-videopack-list-videopack-list-editor-script' );
 	}
 
 	public function conditionally_add_assets_to_block_metadata( $metadata ) {
