@@ -1,17 +1,50 @@
 <?php
+/**
+ * Frontend metadata handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Frontend;
 
+/**
+ * Class Metadata
+ *
+ * Handles the generation and display of metadata (Open Graph, etc.) for videos.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Frontend
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Metadata {
 
 	/**
-	 * Videopack Options manager class instance
+	 * Videopack Options manager class instance.
+	 *
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+
+	/**
+	 * Plugin options.
+	 *
+	 * @var array $options
+	 */
 	protected $options;
+
+	/**
+	 * Attachment meta handler.
+	 *
+	 * @var \Videopack\Admin\Attachment_Meta $attachment_meta
+	 */
 	protected $attachment_meta;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 */
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 
 		$this->options_manager = $options_manager;
@@ -22,7 +55,7 @@ class Metadata {
 	/**
 	 * Detects the first Videopack video in the post content (Block or Shortcode).
 	 *
-	 * @param \WP_Post $post The post object.
+	 * @param \WP_Post|null $post The post object.
 	 * @return array The video attributes and metadata.
 	 */
 	public function get_first_embedded_video( $post ) {
@@ -30,7 +63,7 @@ class Metadata {
 			return array( 'url' => '' );
 		}
 
-		$atts = Video_Finder::find_first( $post->post_content );
+		$atts = (array) Video_Finder::find_first( (string) $post->post_content );
 
 		if ( empty( $atts ) ) {
 			return array( 'url' => '' );
@@ -42,106 +75,133 @@ class Metadata {
 		}
 
 		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager );
-		if ( ! $source || ! $source->exists() ) {
+		if ( ! $source || ! (bool) $source->exists() ) {
 			return array( 'url' => '' );
 		}
 
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
-		$final_atts        = $shortcode_handler->get_final_atts( $atts, $source );
+		$final_atts        = (array) $shortcode_handler->get_final_atts( (array) $atts, $source );
 
-		$final_atts['url']         = $source->get_url();
-		$final_atts['id']          = $source->get_id();
-		$final_atts['mime_type']   = $source->get_mime_type();
-		$final_atts['description'] = $this->generate_video_description( $final_atts, $post );
+		$final_atts['url']         = (string) $source->get_url();
+		$final_atts['id']          = (string) $source->get_id();
+		$final_atts['mime_type']   = (string) $source->get_mime_type();
+		$final_atts['description'] = (string) $this->generate_video_description( (array) $final_atts, $post );
 
-		return $final_atts;
+		return (array) $final_atts;
 	}
 
 	/**
 	 * Prints Open Graph metadata to the head of the page.
+	 *
+	 * @return void
 	 */
 	public function print_scripts() {
-		if ( ! $this->options['open_graph'] ) {
+		if ( ! (bool) ( $this->options['open_graph'] ?? false ) ) {
 			return;
 		}
 
 		$post = get_post();
-		if ( ! $post ) {
+		if ( ! $post instanceof \WP_Post ) {
 			return;
 		}
 
-		$video = $this->get_first_embedded_video( $post );
+		$video = (array) $this->get_first_embedded_video( $post );
 		if ( empty( $video['url'] ) ) {
 			return;
 		}
 
-		// Disable Jetpack OG tags if present to prevent duplication
+		// Disable Jetpack OG tags if present to prevent duplication.
 		remove_action( 'wp_head', 'jetpack_og_tags' );
 
 		$og_tags = array(
 			'og:type'             => 'video.other',
-			'og:url'              => get_permalink( $post ),
-			'og:title'            => get_the_title( $post ),
-			'og:description'      => $video['description'],
-			'og:video'            => $video['url'],
-			'og:video:secure_url' => str_replace( 'http://', 'https://', $video['url'] ),
-			'og:video:type'       => $video['mime_type'],
+			'og:url'              => (string) get_permalink( $post ),
+			'og:title'            => (string) get_the_title( $post ),
+			'og:description'      => (string) ( $video['description'] ?? '' ),
+			'og:video'            => (string) $video['url'],
+			'og:video:secure_url' => (string) str_replace( 'http://', 'https://', (string) $video['url'] ),
+			'og:video:type'       => (string) ( $video['mime_type'] ?? '' ),
 		);
 
 		if ( ! empty( $video['width'] ) ) {
-			$og_tags['og:video:width'] = $video['width'];
+			$og_tags['og:video:width'] = (string) $video['width'];
 		}
 		if ( ! empty( $video['height'] ) ) {
-			$og_tags['og:video:height'] = $video['height'];
+			$og_tags['og:video:height'] = (string) $video['height'];
 		}
 
 		if ( ! empty( $video['poster'] ) ) {
-			$og_tags['og:image']        = $video['poster'];
-			$og_tags['og:image:width']  = $video['width'] ?? '';
-			$og_tags['og:image:height'] = $video['height'] ?? '';
+			$og_tags['og:image']        = (string) $video['poster'];
+			$og_tags['og:image:width']  = (string) ( $video['width'] ?? '' );
+			$og_tags['og:image:height'] = (string) ( $video['height'] ?? '' );
 		}
 
 		echo "\n<!-- Videopack Open Graph Meta Tags -->\n";
-		foreach ( $og_tags as $property => $content ) {
+		foreach ( (array) $og_tags as $property => $content ) {
 			if ( ! empty( $content ) ) {
-				printf( '<meta property="%s" content="%s" >' . "\n", esc_attr( $property ), esc_attr( $content ) );
+				printf( '<meta property="%s" content="%s" >' . "\n", esc_attr( (string) $property ), esc_attr( (string) $content ) );
 			}
 		}
 	}
 
+	/**
+	 * Builds paired attributes (key="value").
+	 *
+	 * @param string $value The attribute value.
+	 * @param string $key   The attribute key.
+	 * @return string The formatted attribute string.
+	 */
 	public function build_paired_attributes( $value, $key ) {
 		return $key . '="' . $value . '"';
 	}
 
-	public function generate_video_description( $query_atts, $post = false ) {
+	/**
+	 * Generates a description for a video.
+	 *
+	 * @param array         $query_atts The video attributes.
+	 * @param \WP_Post|bool $post       Optional. The post object.
+	 * @return string The generated description.
+	 */
+	public function generate_video_description( array $query_atts, $post = false ) {
 
-		if ( array_key_exists( 'description', $query_atts ) && ! empty( $query_atts['description'] ) && $query_atts['description'] != 'false' ) {
-			$description = $query_atts['description'];
-		} elseif ( array_key_exists( 'description', $query_atts ) && ! empty( $query_atts['caption'] ) && $query_atts['caption'] != 'false' ) {
-			$description = $query_atts['caption'];
-		} elseif ( $post != false || ( in_the_loop() && ! is_attachment() ) ) {
+		$description = '';
 
-			if ( $post == false ) {
+		if ( array_key_exists( 'description', $query_atts ) && ! empty( $query_atts['description'] ) && 'false' !== (string) $query_atts['description'] ) {
+			$description = (string) $query_atts['description'];
+		} elseif ( array_key_exists( 'caption', $query_atts ) && ! empty( $query_atts['caption'] ) && 'false' !== (string) $query_atts['caption'] ) {
+			$description = (string) $query_atts['caption'];
+		} elseif ( false !== $post || ( (bool) in_the_loop() && ! (bool) is_attachment() ) ) {
+
+			if ( false === $post ) {
 				$post = get_post();
 			}
 
-			$yoast_meta   = get_post_meta( $post->ID, '_yoast_wpseo_metadesc', true ); // try Yoast SEO meta description tag
-			$aioseop_meta = get_post_meta( $post->ID, '_aioseop_description', true ); // try All in one SEO Pack meta description tag
+			if ( $post instanceof \WP_Post ) {
+				$yoast_meta   = get_post_meta( (int) $post->ID, '_yoast_wpseo_metadesc', true ); // Try Yoast SEO meta description tag.
+				$aioseop_meta = get_post_meta( (int) $post->ID, '_aioseop_description', true );   // Try All in one SEO Pack meta description tag.
 
-			if ( ! empty( $yoast_meta ) ) {
-				$description = $yoast_meta;
-			} elseif ( ! empty( $aioseop_meta ) ) {
-				$description = $aioseop_meta;
-			} elseif ( ! empty( $post->post_excerpt ) ) {
-				$description = $post->post_excerpt;
-			} else {
-				$description = wp_trim_words( wp_strip_all_tags( strip_shortcodes( $post->post_content ), true ) );
+				if ( ! empty( $yoast_meta ) ) {
+					$description = (string) $yoast_meta;
+				} elseif ( ! empty( $aioseop_meta ) ) {
+					$description = (string) $aioseop_meta;
+				} elseif ( ! empty( $post->post_excerpt ) ) {
+					$description = (string) $post->post_excerpt;
+				} else {
+					$description = (string) wp_trim_words( (string) wp_strip_all_tags( (string) strip_shortcodes( (string) $post->post_content ), true ) );
+				}
 			}
 		}
+
 		if ( empty( $description ) ) {
-			$description = esc_html__( 'Video', 'video-embed-thumbnail-generator' );
+			$description = (string) esc_html__( 'Video', 'video-embed-thumbnail-generator' );
 		}
 
-		return apply_filters( 'videopack_generate_video_description', $description, $query_atts );
+		/**
+		 * Filters the generated video description.
+		 *
+		 * @param string $description The generated description.
+		 * @param array  $query_atts  The video attributes.
+		 */
+		return (string) apply_filters( 'videopack_generate_video_description', (string) $description, (array) $query_atts );
 	}
 }

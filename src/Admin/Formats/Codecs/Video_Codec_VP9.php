@@ -1,8 +1,21 @@
 <?php
+/**
+ * VP9 Video Codec Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats\Codecs;
 
+/**
+ * Class Video_Codec_VP9
+ *
+ * Represents the VP9 video codec.
+ */
 class Video_Codec_VP9 extends Video_Codec {
+	/**
+	 * Video_Codec_VP9 constructor.
+	 */
 	public function __construct() {
 		$properties = array(
 			'name'           => 'VP9 WEBM',
@@ -30,6 +43,13 @@ class Video_Codec_VP9 extends Video_Codec {
 		parent::__construct( $properties );
 	}
 
+	/**
+	 * Get FFmpeg VBR flags for VP9.
+	 *
+	 * @param array $plugin_options The global plugin options.
+	 * @param array $dimensions     Associative array with 'width' and 'height'.
+	 * @return array An array of FFmpeg flags.
+	 */
 	protected function get_ffmpeg_vbr_flags( $plugin_options, array $dimensions ) {
 		$average_bitrate = max( 100, $this->get_bitrate( $dimensions, $plugin_options['encode'][ $this->id ]['vbr'] ) );
 

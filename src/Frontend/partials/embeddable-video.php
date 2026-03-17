@@ -1,6 +1,6 @@
 <?php
 /**
- * Template for displaying a single embeddable video and nothing else
+ * Template for displaying a single embeddable video and nothing else.
  *
  * @package Videopack
  */
@@ -32,9 +32,9 @@ if ( ! isset( $videopack_query_var ) || ! is_array( $videopack_query_var ) ) {
 
 	$shortcode = '[videopack';
 	if ( ! empty( $videopack_query_var['id'] ) ) {
-		$shortcode .= ' id="' . esc_attr( $videopack_query_var['id'] ) . '"';
+		$shortcode .= ' id="' . esc_attr( (string) $videopack_query_var['id'] ) . '"';
 	}
-	$shortcode .= ' fullwidth="true" count_views="false" view_count="false"]' . esc_url( $videopack_query_var['url'] ) . '[/videopack]';
+	$shortcode .= ' fullwidth="true" count_views="false" view_count="false"]' . esc_url( (string) $videopack_query_var['url'] ) . '[/videopack]';
 } else {
 	$shortcode = $shortcode_handler->generate_attachment_shortcode( $videopack_query_var );
 }

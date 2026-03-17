@@ -1,129 +1,177 @@
 <?php
+/**
+ * Admin edit posts handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin;
 
+/**
+ * Class Edit_Posts
+ *
+ * Handles video insertion into the editor and custom media library tabs.
+ *
+ * This class provides functionality for modifying the HTML inserted into the
+ * editor when a video attachment is selected, adding custom tabs to the media
+ * library popup, and rendering the content for those tabs (Classic Editor support).
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Admin
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Edit_Posts {
 	/**
-	 * Videopack Options manager class instance
-	 * @var Options $options_manager
+	 * Videopack Options manager class instance.
+	 *
+	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
+
+	/**
+	 * Plugin options.
+	 *
+	 * @var array $options
+	 */
 	protected $options;
 
-	public function __construct( Options $options_manager ) {
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 */
+	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
 	}
 
-	public function modify_media_insert( $html, $attachment_id, $attachment ) {
-		$mime_type = get_post_mime_type( $attachment_id );
+	/**
+	 * Modifies the HTML inserted into the editor for video attachments.
+	 *
+	 * @param string $html          The HTML to insert.
+	 * @param int    $attachment_id The attachment ID.
+	 * @param array  $attachment    The attachment array.
+	 * @return string The modified HTML.
+	 */
+	public function modify_media_insert( $html, $attachment_id, $attachment ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		$mime_type = (string) get_post_mime_type( (int) $attachment_id );
 
-		if ( substr( $mime_type, 0, 5 ) == 'video' ) {
+		if ( 0 === strpos( $mime_type, 'video' ) ) {
 
-			$videopack_postmeta = ( new Attachment_Meta( $this->options_manager ) )->get( $attachment_id );
+			$videopack_postmeta = ( new Attachment_Meta( $this->options_manager, (int) $attachment_id ) )->get();
 
-			if ( $videopack_postmeta['embed'] == 'Single Video' ) {
+			if ( (string) ( $videopack_postmeta['embed'] ?? '' ) === 'Single Video' ) {
 
 				$source = new \Videopack\Video_Source\Source_Attachment_Local(
-					$attachment_id,
+					(int) $attachment_id,
 					$this->options_manager
 				);
-				$url    = $source->get_url();
+				$url    = (string) $source->get_url();
 
 				$shortcode_atts = array(
-					'id' => $attachment_id,
+					'id' => (int) $attachment_id,
 				);
 
 				// Include poster only if set but without a poster-id.
-				$poster    = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
-				$poster_id = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
+				$poster    = (string) get_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', true );
+				$poster_id = (int) get_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', true );
 				if ( ! empty( $poster ) && empty( $poster_id ) ) {
 					$shortcode_atts['poster'] = $poster;
 				}
 
 				// Only include legacy dimension attributes if enabled and different from defaults.
-				if ( $this->options['legacy_dimensions'] ) {
+				if ( ! empty( $this->options['legacy_dimensions'] ) ) {
 					if ( ! empty( $videopack_postmeta['width'] )
-						&& $videopack_postmeta['width'] != $this->options['width']
+						&& (string) $videopack_postmeta['width'] !== (string) ( $this->options['width'] ?? '' )
 					) {
-						$shortcode_atts['width'] = $videopack_postmeta['width'];
+						$shortcode_atts['width'] = (string) $videopack_postmeta['width'];
 					}
 					if ( ! empty( $videopack_postmeta['height'] )
-						&& $videopack_postmeta['height'] != $this->options['height']
+						&& (string) $videopack_postmeta['height'] !== (string) ( $this->options['height'] ?? '' )
 					) {
-						$shortcode_atts['height'] = $videopack_postmeta['height'];
+						$shortcode_atts['height'] = (string) $videopack_postmeta['height'];
 					}
 				}
 
 				/**
 				 * Filter the shortcode attributes before building the shortcode string.
 				 *
-				 * @param array $shortcode_atts Associative array of attribute name => value.
-				 * @param int   $attachment_id  The attachment ID.
+				 * @param array $shortcode_atts     Associative array of attribute name => value.
+				 * @param int   $attachment_id      The attachment ID.
 				 * @param array $videopack_postmeta The attachment's Videopack metadata.
 				 */
-				$shortcode_atts = apply_filters(
+				$shortcode_atts = (array) apply_filters(
 					'videopack_insert_shortcode_atts',
 					$shortcode_atts,
-					$attachment_id,
+					(int) $attachment_id,
 					$videopack_postmeta
 				);
 
 				$html = '[videopack';
 				foreach ( $shortcode_atts as $att_name => $att_value ) {
-					$html .= ' ' . esc_attr( $att_name ) . '="' . esc_attr( $att_value ) . '"';
+					$html .= ' ' . esc_attr( (string) $att_name ) . '="' . esc_attr( (string) $att_value ) . '"';
 				}
 				$html .= ']' . esc_url( $url ) . '[/videopack]<br />';
 
-			} //if embed code is enabled
+			}
 
-			if ( $videopack_postmeta['embed'] == 'Video Gallery' ) {
+			if ( (string) ( $videopack_postmeta['embed'] ?? '' ) === 'Video Gallery' ) {
 
-				$post      = get_post( $attachment_id );
-				$parent_id = $post->post_parent;
+				$post      = get_post( (int) $attachment_id );
+				$parent_id = $post instanceof \WP_Post ? (int) $post->post_parent : 0;
 
 				$html  = '';
 				$html .= '[videopack gallery="true"';
 				if ( ! empty( $videopack_postmeta['gallery_columns'] )
-					&& $videopack_postmeta['gallery_columns'] != $this->options['gallery_columns']
+					&& (int) $videopack_postmeta['gallery_columns'] !== (int) ( $this->options['gallery_columns'] ?? 4 )
 				) {
-					$html .= ' gallery_thumb="' . esc_attr( $videopack_postmeta['gallery_thumb'] ) . '"';
+					$html .= ' gallery_columns="' . esc_attr( (string) $videopack_postmeta['gallery_columns'] ) . '"';
 				}
 				if ( ! empty( $videopack_postmeta['gallery_exclude'] ) ) {
-					$html .= ' gallery_exclude="' . esc_attr( $videopack_postmeta['gallery_exclude'] ) . '"';
+					$html .= ' gallery_exclude="' . esc_attr( (string) $videopack_postmeta['gallery_exclude'] ) . '"';
 				}
 				if ( ! empty( $videopack_postmeta['gallery_include'] ) ) {
-					$html .= ' gallery_include="' . esc_attr( $videopack_postmeta['gallery_include'] ) . '"';
+					$html .= ' gallery_include="' . esc_attr( (string) $videopack_postmeta['gallery_include'] ) . '"';
 				}
 				if ( ! empty( $videopack_postmeta['gallery_orderby'] )
-					&& $videopack_postmeta['gallery_orderby'] != 'menu_order'
+					&& (string) $videopack_postmeta['gallery_orderby'] !== 'menu_order'
 				) {
-					$html .= ' gallery_orderby="' . esc_attr( $videopack_postmeta['gallery_orderby'] ) . '"';
+					$html .= ' gallery_orderby="' . esc_attr( (string) $videopack_postmeta['gallery_orderby'] ) . '"';
 				}
 				if ( ! empty( $videopack_postmeta['gallery_order'] )
-					&& $videopack_postmeta['gallery_order'] != 'ASC'
+					&& (string) $videopack_postmeta['gallery_order'] !== 'ASC'
 				) {
-					$html .= ' gallery_order="' . esc_attr( $videopack_postmeta['gallery_order'] ) . '"';
+					$html .= ' gallery_order="' . esc_attr( (string) $videopack_postmeta['gallery_order'] ) . '"';
 				}
 				if ( ! empty( $videopack_postmeta['gallery_id'] )
-					&& $videopack_postmeta['gallery_id'] != $parent_id
+					&& (int) $videopack_postmeta['gallery_id'] !== $parent_id
 				) {
-					$html .= ' gallery_id="' . esc_attr( $videopack_postmeta['gallery_id'] ) . '"';
+					$html .= ' gallery_id="' . esc_attr( (string) $videopack_postmeta['gallery_id'] ) . '"';
 				}
 				$html .= '][/videopack]';
 			}
 		}
 
-		return $html;
+		return (string) $html;
 	}
 
+	/**
+	 * Adds Videopack tabs to the media library popup.
+	 *
+	 * @param array $tabs The existing tabs.
+	 * @return array The updated tabs.
+	 */
 	public function add_embedurl_tab( $tabs ) {
-		$tabs['embedurl']     = esc_html_x( 'Videopack URL', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator' );
-		$tabs['embedgallery'] = esc_html_x( 'Videopack Gallery', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator' );
-		$tabs['embedlist']    = esc_html_x( 'Videopack Video List', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator' );
-		return $tabs;
+		$tabs['embedurl']     = (string) esc_html_x( 'Videopack URL', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator' );
+		$tabs['embedgallery'] = (string) esc_html_x( 'Videopack Gallery', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator' );
+		$tabs['embedlist']    = (string) esc_html_x( 'Videopack Video List', 'Title in "Add Media" popup sidebar', 'video-embed-thumbnail-generator' );
+		return (array) $tabs;
 	}
 
+	/**
+	 * Outputs the content for the Videopack URL/Gallery tabs.
+	 */
 	public function embedurl_page() {
 		wp_enqueue_media();
 		wp_enqueue_style( 'media-upload' );
@@ -132,27 +180,29 @@ class Edit_Posts {
 		( new Assets( $this->options_manager ) )->enqueue_videopack_scripts();
 
 		// Check if we have the new build asset for classic-embed.
-		$script_path = VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.js';
-		$asset_path  = VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.asset.php';
+		$script_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.js';
+		$asset_path  = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.asset.php';
+
 		if ( file_exists( $script_path ) && file_exists( $asset_path ) ) {
 			$asset = include $asset_path;
 			wp_enqueue_script(
 				'videopack-classic-embed',
-				plugins_url( '/admin-ui/build/classic-embed.js', VIDEOPACK_PLUGIN_FILE ),
-				$asset['dependencies'],
-				$asset['version'],
+				(string) plugins_url( '/admin-ui/build/classic-embed.js', (string) VIDEOPACK_PLUGIN_FILE ),
+				(array) ( $asset['dependencies'] ?? array() ),
+				(string) ( $asset['version'] ?? VIDEOPACK_VERSION ),
 				true
 			);
 
-			$post_id    = filter_input( INPUT_GET, 'post_id', FILTER_SANITIZE_NUMBER_INT );
-			$active_tab = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_SPECIAL_CHARS );
+			$post_id    = (int) filter_input( INPUT_GET, 'post_id', FILTER_SANITIZE_NUMBER_INT );
+			$active_tab = (string) filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_SPECIAL_CHARS );
 
 			// Extract attributes passed from TinyMCE plugin for editing.
 			$edit_attributes = array();
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			foreach ( $_GET as $key => $value ) {
-				if ( strpos( $key, 'videopack_' ) === 0 ) {
-					$clean_key                     = str_replace( 'videopack_', '', $key );
-					$edit_attributes[ $clean_key ] = sanitize_text_field( $value );
+				if ( 0 === strpos( (string) $key, 'videopack_' ) ) {
+					$clean_key                     = (string) str_replace( 'videopack_', '', (string) $key );
+					$edit_attributes[ $clean_key ] = (string) sanitize_text_field( (string) $value );
 				}
 			}
 
@@ -160,7 +210,7 @@ class Edit_Posts {
 				'videopack-classic-embed',
 				'videopack_classic_embed_config',
 				array(
-					'options'        => $this->options,
+					'options'        => (array) $this->options,
 					'postId'         => $post_id ? $post_id : 0,
 					'activeTab'      => ( 'embedgallery' === $active_tab ) ? 'gallery' : ( ( 'embedlist' === $active_tab ) ? 'list' : 'single' ),
 					'editAttributes' => $edit_attributes,
@@ -168,13 +218,13 @@ class Edit_Posts {
 			);
 
 			// Ensure videopack_config is also available for components that need it.
-			( new Ui( $this->options_manager ) )->localize_block_settings( 'videopack-classic-embed' );
+			( new \Videopack\Admin\Ui( $this->options_manager ) )->localize_block_settings( 'videopack-classic-embed' );
 
 			wp_enqueue_style(
 				'videopack-classic-embed',
-				plugins_url( '/admin-ui/build/classic-embed.css', VIDEOPACK_PLUGIN_FILE ),
+				(string) plugins_url( '/admin-ui/build/classic-embed.css', (string) VIDEOPACK_PLUGIN_FILE ),
 				array( 'wp-components' ),
-				$asset['version']
+				(string) ( $asset['version'] ?? VIDEOPACK_VERSION )
 			);
 		}
 
@@ -184,6 +234,11 @@ class Edit_Posts {
 		<?php
 	}
 
+	/**
+	 * Handles the iframe for the Videopack tabs.
+	 *
+	 * @return mixed Result of wp_iframe call.
+	 */
 	public function embedurl_handle() {
 		return wp_iframe( array( $this, 'embedurl_page' ) );
 	}

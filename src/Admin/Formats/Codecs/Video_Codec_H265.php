@@ -1,8 +1,21 @@
 <?php
+/**
+ * H.265/HEVC Video Codec Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats\Codecs;
 
+/**
+ * Class Video_Codec_H265
+ *
+ * Represents the H.265/HEVC video codec.
+ */
 class Video_Codec_H265 extends Video_Codec {
+	/**
+	 * Video_Codec_H265 constructor.
+	 */
 	public function __construct() {
 		$properties = array(
 			'name'           => 'H.265/HEVC MP4',
@@ -30,6 +43,14 @@ class Video_Codec_H265 extends Video_Codec {
 		parent::__construct( $properties );
 	}
 
+	/**
+	 * Get codec-specific FFmpeg flags for H.265.
+	 *
+	 * @param array $plugin_options The global plugin options.
+	 * @param array $dimensions     Associative array with 'width' and 'height'.
+	 * @param array $codecs         Associative array of available FFmpeg encoders.
+	 * @return array An array of FFmpeg flags.
+	 */
 	public function get_codec_ffmpeg_flags( array $plugin_options, array $dimensions, array $codecs ): array {
 		$flags = parent::get_codec_ffmpeg_flags( $plugin_options, $dimensions, $codecs );
 

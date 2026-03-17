@@ -1,47 +1,80 @@
 <?php
+/**
+ * Video player base class.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Frontend\Video_Players;
 
+/**
+ * Class Player
+ *
+ * Base class for all video player implementations in Videopack.
+ * Handles common functionality like script registration, attribute processing, and HTML generation.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Frontend/Video_Players
+ * @author     Kyle Gilman <kylegilman@gmail.com>
+ */
 class Player {
 
 
 	/**
+	 * Videopack Options manager instance.
+	 *
 	 * @var \Videopack\Admin\Options $options_manager
 	 */
 	protected $options_manager;
 
 	/**
+	 * Videopack options array.
+	 *
 	 * @var array $options
 	 */
 	protected $options;
 
 	/**
+	 * Video player attributes.
+	 *
 	 * @var array $atts
 	 */
 	protected $atts;
 
 	/**
+	 * Unique ID for this player instance.
+	 *
 	 * @var int $player_id
 	 */
 	protected $player_id;
 
 	/**
-	 * Full source object, including child sources
+	 * Full source object, including child sources.
+	 *
 	 * @var \Videopack\Video_Source\Source $source
 	 */
 	protected $source;
 
 	/**
-	 * Array of sources for the video player
+	 * Array of sources for the video player.
+	 *
 	 * @var array $sources
 	 */
 	protected $sources;
 
 	/**
+	 * Whether the frontend script has been localized.
+	 *
 	 * @var bool $script_localized
 	 */
 	private static $script_localized = false;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager instance.
+	 */
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $options_manager->get_options();
@@ -49,11 +82,17 @@ class Player {
 		$this->register_hooks();
 	}
 
+	/**
+	 * Registers WordPress hooks.
+	 */
 	public function register_hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 	}
 
+	/**
+	 * Registers frontend scripts and localizes data.
+	 */
 	public function register_scripts() {
 
 		wp_register_script(
@@ -89,29 +128,56 @@ class Player {
 		}
 	}
 
+	/**
+	 * Filters block metadata for the video player.
+	 *
+	 * @param array $metadata The block metadata.
+	 * @return array The filtered metadata.
+	 */
 	public function filter_block_metadata( $metadata ) {
 		return $metadata;
 	}
 
+	/**
+	 * Enqueues frontend styles.
+	 */
 	public function enqueue_styles() {
 		if ( ! has_block( 'videopack/videopack-video' ) ) {
 			wp_enqueue_style( 'videopack_styles', plugins_url( '/admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 		}
 	}
 
+	/**
+	 * Returns script dependencies for the frontend script.
+	 *
+	 * @return array Array of script handles.
+	 */
 	public function get_videopack_script_dependencies(): array {
 		return array( 'jquery' );
 	}
 
+	/**
+	 * Enqueues frontend scripts.
+	 */
 	public function enqueue_scripts(): void {
 		$this->enqueue_player_scripts();
 		wp_enqueue_script( 'videopack-frontend' );
 	}
 
+	/**
+	 * Enqueues player-specific scripts.
+	 *
+	 * This method is intended to be overridden by child classes.
+	 */
 	public function enqueue_player_scripts(): void {
 		// This method is intended to be overridden by child classes.
 	}
 
+	/**
+	 * Returns the main video source object.
+	 *
+	 * @return \Videopack\Video_Source\Source|null The source object or null.
+	 */
 	public function get_source(): ?\Videopack\Video_Source\Source {
 		if ( $this->source instanceof \Videopack\Video_Source\Source ) {
 			return $this->source;
@@ -119,12 +185,18 @@ class Player {
 		return null;
 	}
 
+	/**
+	 * Sets the main video source object.
+	 *
+	 * @param \Videopack\Video_Source\Source $source The source object.
+	 */
 	public function set_source( \Videopack\Video_Source\Source $source ) {
 		$this->source = $source;
 	}
 
 	/**
 	 * Initializes the video source object from attributes.
+	 *
 	 * It uses the Source_Factory to create the correct type of Source object.
 	 */
 	protected function init_source_from_atts(): void {
@@ -144,14 +216,29 @@ class Player {
 		}
 	}
 
+	/**
+	 * Sets the video player attributes.
+	 *
+	 * @param array $atts The attributes array.
+	 */
 	public function set_atts( array $atts ): void {
 		$this->atts = $atts;
 	}
 
+	/**
+	 * Returns the player ID.
+	 *
+	 * @return int The player ID.
+	 */
 	public function get_id(): int {
 		return $this->player_id;
 	}
 
+	/**
+	 * Returns the processed sources for the player.
+	 *
+	 * @return array|null The sources array or null.
+	 */
 	public function get_sources(): ?array {
 		if ( ! $this->sources && $this->get_source() ) {
 			$this->set_sources();
@@ -159,12 +246,15 @@ class Player {
 		return $this->sources;
 	}
 
+	/**
+	 * Processes and groups video sources.
+	 */
 	protected function set_sources(): void {
 		$grouped_sources = array();
 		$auto_codec      = $this->atts['auto_codec'] ?? 'h264';
 		$auto_res        = $this->atts['auto_res'] ?? 'automatic';
 
-		// Process the main source
+		// Process the main source.
 		$main_source = $this->get_source();
 
 		if ( $main_source && $main_source->exists() && $main_source->is_compatible() ) {
@@ -183,7 +273,7 @@ class Player {
 			}
 		}
 
-		// Process child sources
+		// Process child sources.
 		$child_sources = $main_source ? $main_source->get_child_sources() : array();
 		foreach ( $child_sources as $child_source ) {
 			if ( $child_source && $child_source->exists() && $child_source->is_compatible() ) {
@@ -213,18 +303,18 @@ class Player {
 			}
 		}
 
-		// Sort groups so the auto_codec comes first
+		// Sort groups so the auto_codec comes first.
 		if ( isset( $grouped_sources[ $auto_codec ] ) ) {
 			$preferred_group = $grouped_sources[ $auto_codec ];
 			unset( $grouped_sources[ $auto_codec ] );
 			$grouped_sources = array_merge( array( $auto_codec => $preferred_group ), $grouped_sources );
 		}
 
-		// Mark default resolution and sort sources within groups
+		// Mark default resolution and sort sources within groups.
 		foreach ( $grouped_sources as $codec_id => &$group ) {
 			$sources = $group['sources'];
 
-			// Sort sources by resolution (descending)
+			// Sort sources by resolution (descending).
 			usort(
 				$sources,
 				function ( $a, $b ) {
@@ -234,7 +324,7 @@ class Player {
 				}
 			);
 
-			// Mark default resolution
+			// Mark default resolution.
 			foreach ( $sources as &$source ) {
 				$is_default = false;
 				if ( $codec_id === $auto_codec ) {
@@ -258,6 +348,11 @@ class Player {
 		$this->sources = $grouped_sources;
 	}
 
+	/**
+	 * Returns a flat array of all sources.
+	 *
+	 * @return array Flat sources array.
+	 */
 	public function get_flat_sources(): array {
 		$flat_sources  = array();
 		$codec_sources = $this->get_sources();
@@ -272,6 +367,11 @@ class Player {
 		return $flat_sources;
 	}
 
+	/**
+	 * Returns the URL of the first source.
+	 *
+	 * @return string The main source URL.
+	 */
 	public function get_main_source_url(): string {
 		if ( ! $this->sources && $this->get_source() ) {
 			$this->set_sources();
@@ -283,10 +383,20 @@ class Player {
 		return '';
 	}
 
+	/**
+	 * Returns the poster image URL.
+	 *
+	 * @return string The poster URL.
+	 */
 	public function get_poster(): string {
-		return $this->atts['poster'];
+		return (string) ( $this->atts['poster'] ?? '' );
 	}
 
+	/**
+	 * Prepares data for the JavaScript player.
+	 *
+	 * @return array The video data array.
+	 */
 	public function prepare_video_vars(): array {
 
 		$video_variables = array(
@@ -321,6 +431,12 @@ class Player {
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
 	}
 
+	/**
+	 * Generates the full HTML code for the video player.
+	 *
+	 * @param array $atts The player attributes.
+	 * @return string The player HTML.
+	 */
 	public function get_player_code( $atts ): string {
 
 		$this->set_atts( $atts );
@@ -357,29 +473,44 @@ class Player {
 		return apply_filters( 'videopack_video_player_code', $player_code, $this->atts );
 	}
 
+	/**
+	 * Checks if the player should display the meta bar.
+	 *
+	 * @return bool True if meta bar should be visible, false otherwise.
+	 */
 	protected function has_meta_bar(): bool {
 		return apply_filters(
 			'videopack_video_player_has_meta_bar',
-			$this->atts['overlay_title']
-			|| ( $this->atts['embeddable'] && $this->atts['embedcode'] !== false )
-			|| $this->atts['downloadlink'] === true,
+			(bool) ( $this->atts['overlay_title'] ?? false )
+			|| ( ( $this->atts['embeddable'] ?? false ) && ( $this->atts['embedcode'] ?? false ) !== false )
+			|| ( $this->atts['downloadlink'] ?? false ) === true,
 			$this->atts
 		);
 	}
 
+	/**
+	 * Checks if the player has embed metadata.
+	 *
+	 * @return bool True if embed metadata is available, false otherwise.
+	 */
 	protected function has_embed_meta(): bool {
 		return apply_filters(
 			'videopack_video_player_has_embed_meta',
-			$this->atts['embeddable']
-			&& $this->atts['embedcode'] !== false,
+			(bool) ( $this->atts['embeddable'] ?? false )
+			&& ( $this->atts['embedcode'] ?? false ) !== false,
 			$this->atts
 		);
 	}
 
+	/**
+	 * Generates the HTML code for the meta bar.
+	 *
+	 * @return string The meta bar HTML.
+	 */
 	protected function get_meta_bar_code(): string {
 
 		$has_embed      = $this->has_embed_meta();
-		$no_title_class = $this->atts['overlay_title'] ? '' : ' no-title';
+		$no_title_class = ( $this->atts['overlay_title'] ?? false ) ? '' : ' no-title';
 
 		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
 		$meta_bar .= '<span class="videopack-meta-icons">';
@@ -401,7 +532,7 @@ class Player {
 		$meta_bar .= '</span>';
 
 		if ( $this->atts['overlay_title'] ) {
-			$meta_bar .= '<span class="videopack-title">' . esc_html( $this->atts['title'] ) . '</span>';
+			$meta_bar .= '<span class="videopack-title">' . esc_html( (string) $this->atts['title'] ) . '</span>';
 		}
 		$meta_bar .= '</div>';
 
@@ -419,14 +550,14 @@ class Player {
 			$iframe_title = sprintf(
 				/* translators: %s is the video title */
 				__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
-				$this->atts['title'] ? $this->atts['title'] : $this->source->get_title()
+				( $this->atts['title'] ?? '' ) ? $this->atts['title'] : $this->source->get_title()
 			);
 
 			$embed_code = sprintf(
 				'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="%4$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
 				esc_url( $embed_url ),
-				esc_attr( $this->atts['width'] ),
-				esc_attr( $this->atts['height'] ),
+				esc_attr( (string) $this->atts['width'] ),
+				esc_attr( (string) $this->atts['height'] ),
 				esc_attr( $iframe_title )
 			);
 
@@ -445,6 +576,11 @@ class Player {
 		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
 	}
 
+	/**
+	 * Generates the starting HTML for the player wrapper.
+	 *
+	 * @return string The starting wrapper HTML.
+	 */
 	protected function get_wrapper_start_html(): string {
 		$alignclass = '';
 		if ( $this->atts['inline'] ) {
@@ -472,7 +608,7 @@ class Player {
 			if ( $this->atts['fullwidth'] ) {
 				$style_attrs[] = 'width: 100%';
 			} elseif ( $this->atts['width'] ) {
-				$style_attrs[] = 'width: ' . esc_attr( $this->atts['width'] ) . ( is_numeric( $this->atts['width'] ) ? 'px' : '' );
+				$style_attrs[] = 'width: ' . esc_attr( (string) $this->atts['width'] ) . ( is_numeric( $this->atts['width'] ) ? 'px' : '' );
 				$style_attrs[] = 'max-width: 100%';
 			}
 		}
@@ -488,10 +624,20 @@ class Player {
 		return $html;
 	}
 
+	/**
+	 * Generates the ending HTML for the player wrapper.
+	 *
+	 * @return string The ending wrapper HTML.
+	 */
 	protected function get_wrapper_end_html(): string {
 		return '</div></div>';
 	}
 
+	/**
+	 * Generates the HTML code for the video element.
+	 *
+	 * @return string The video element HTML.
+	 */
 	protected function get_video_code(): string {
 
 		$video = '';
@@ -512,6 +658,11 @@ class Player {
 		return apply_filters( 'videopack_video_player_code', $video, $this->atts );
 	}
 
+	/**
+	 * Returns the HTML classes for the video element.
+	 *
+	 * @return array Array of HTML classes.
+	 */
 	protected function get_video_classes(): array {
 		$classes = array(
 			'videopack-video',
@@ -520,6 +671,11 @@ class Player {
 		return apply_filters( 'videopack_video_player_classes', $classes, $this->atts );
 	}
 
+	/**
+	 * Returns the boolean attributes for the video element.
+	 *
+	 * @return array Array of boolean attribute names.
+	 */
 	protected function get_boolean_video_attributes(): array {
 		$attribute_names = array(
 			'autoplay',
@@ -531,13 +687,18 @@ class Player {
 
 		$enabled_attributes = array();
 		foreach ( $attribute_names as $attribute_name ) {
-			if ( $this->atts[ $attribute_name ] === true ) {
+			if ( ( $this->atts[ $attribute_name ] ?? false ) === true ) {
 				$enabled_attributes[] = $attribute_name;
 			}
 		}
 		return $enabled_attributes;
 	}
 
+	/**
+	 * Returns the string attributes for the video element.
+	 *
+	 * @return array Array of string attribute key-value pairs.
+	 */
 	protected function get_string_video_attributes(): array {
 
 		$attribute_names = array(
@@ -550,12 +711,17 @@ class Player {
 		$string_video_atts = array();
 		foreach ( $attribute_names as $attribute_name ) {
 			if ( ! empty( $this->atts[ $attribute_name ] ) ) {
-				$string_video_atts[] = $attribute_name . '="' . esc_attr( $this->atts[ $attribute_name ] ) . '"';
+				$string_video_atts[] = $attribute_name . '="' . esc_attr( (string) $this->atts[ $attribute_name ] ) . '"';
 			}
 		}
 		return $string_video_atts;
 	}
 
+	/**
+	 * Generates HTML source elements for the video.
+	 *
+	 * @return string The source elements HTML.
+	 */
 	protected function get_source_elements(): string {
 		$source_elements = '';
 
@@ -574,6 +740,12 @@ class Player {
 		return apply_filters( 'videopack_video_player_sources', $source_elements, $this->atts );
 	}
 
+	/**
+	 * Returns additional attributes for a source element.
+	 *
+	 * @param array $source The source data.
+	 * @return string The source attributes HTML.
+	 */
 	protected function get_source_atts( array $source ): string {
 		$atts = '';
 		if ( ! empty( $source['resolution'] ) ) {
@@ -585,6 +757,11 @@ class Player {
 		return apply_filters( 'videopack_video_player_source_attributes', $atts, $source, $this->atts );
 	}
 
+	/**
+	 * Generates HTML track elements for the video.
+	 *
+	 * @return string The track elements HTML.
+	 */
 	protected function get_track_elements(): string {
 		$track_elements = '';
 		if ( ! empty( $this->atts['tracks'] ) && is_array( $this->atts['tracks'] ) ) {
@@ -603,16 +780,26 @@ class Player {
 		return apply_filters( 'videopack_video_player_tracks', $track_elements, $this->atts );
 	}
 
+	/**
+	 * Checks if the player should display content below the video.
+	 *
+	 * @return bool True if content should be visible, false otherwise.
+	 */
 	protected function has_below_video(): bool {
 		return apply_filters(
 			'videopack_video_player_has_below_video',
 			( ! empty( $this->atts['caption'] )
-			|| $this->atts['view_count']
+			|| (bool) ( $this->atts['view_count'] ?? false )
 			),
 			$this->atts
 		);
 	}
 
+	/**
+	 * Generates the HTML code for content below the video.
+	 *
+	 * @return string The below-video HTML.
+	 */
 	protected function get_below_video_code(): string {
 		$below_video = '<div class="videopack-below-video">';
 		if ( $this->atts['view_count'] ) {
@@ -624,12 +811,17 @@ class Player {
 			}
 		}
 		if ( ! empty( $this->atts['caption'] ) ) {
-			$below_video .= '<p class="videopack-caption">' . esc_html( $this->atts['caption'] ) . '</p>';
+			$below_video .= '<p class="videopack-caption">' . esc_html( (string) $this->atts['caption'] ) . '</p>';
 		}
 		$below_video .= '</div>';
 		return $below_video;
 	}
 
+	/**
+	 * Generates the HTML code for the watermark.
+	 *
+	 * @return string The watermark HTML.
+	 */
 	protected function get_watermark_code(): string {
 		if ( empty( $this->atts['watermark'] ) ) {
 			return '';
@@ -642,11 +834,11 @@ class Player {
 		$style  = '';
 
 		// Only apply inline styles if they differ from defaults.
-		if ( $styles['scale'] != $defaults['scale']
+		if ( (string) $styles['scale'] !== (string) $defaults['scale']
 		|| $styles['align'] !== $defaults['align']
 		|| $styles['valign'] !== $defaults['valign']
-		|| $styles['x'] != $defaults['x']
-		|| $styles['y'] != $defaults['y']
+		|| (string) $styles['x'] !== (string) $defaults['x']
+		|| (string) $styles['y'] !== (string) $defaults['y']
 		) {
 			$style = 'max-width: ' . $styles['scale'] . '%; width: 100%; height: auto; position: absolute;';
 
@@ -675,7 +867,7 @@ class Player {
 			$style = ' style="' . esc_attr( $style ) . '"';
 		}
 
-		$html = '<div id="video_' . esc_attr( $this->get_id() ) . '_watermark" class="videopack-watermark">';
+		$html = '<div id="video_' . esc_attr( (string) $this->get_id() ) . '_watermark" class="videopack-watermark">';
 
 		$link_to = $this->atts['watermark_link_to'] ?? 'false';
 		$url     = $this->atts['watermark_url'] ?? '';
@@ -706,10 +898,10 @@ class Player {
 					$href = $url;
 					break;
 			}
-			$html .= '<a target="_parent" href="' . esc_url( $href ) . '"' . ( 'download' === $link_to ? ' download' : '' ) . '>';
+			$html .= '<a target="_parent" href="' . esc_url( (string) $href ) . '"' . ( 'download' === $link_to ? ' download' : '' ) . '>';
 		}
 
-		$html .= '<img src="' . esc_url( $this->atts['watermark'] ) . '" alt="' . esc_attr__( 'watermark', 'video-embed-thumbnail-generator' ) . '"' . $style . '>';
+		$html .= '<img src="' . esc_url( (string) $this->atts['watermark'] ) . '" alt="' . esc_attr__( 'watermark', 'video-embed-thumbnail-generator' ) . '"' . $style . '>';
 
 		if ( 'false' !== $link_to ) {
 			$html .= '</a>';
@@ -720,6 +912,11 @@ class Player {
 		return $html;
 	}
 
+	/**
+	 * Checks if the player has a fixed aspect ratio.
+	 *
+	 * @return bool True if fixed aspect ratio is enabled, false otherwise.
+	 */
 	protected function is_fixed_aspect(): bool {
 		if ( empty( $this->atts['fixed_aspect'] ) || 'false' === $this->atts['fixed_aspect'] ) {
 			return false;
@@ -730,6 +927,11 @@ class Player {
 		return false;
 	}
 
+	/**
+	 * Returns the fixed aspect ratio string.
+	 *
+	 * @return string The aspect ratio (e.g., "16 / 9").
+	 */
 	protected function get_fixed_aspect_ratio(): string {
 		$width  = (int) $this->options['width'];
 		$height = (int) $this->options['height'];

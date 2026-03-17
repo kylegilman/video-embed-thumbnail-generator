@@ -1,8 +1,15 @@
 <?php
+/**
+ * Internationalization functionality for the plugin.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Common;
 
 /**
+ * Class I18n
+ *
  * Define the internationalization functionality.
  *
  * Loads and defines the internationalization files for this plugin
@@ -10,7 +17,7 @@ namespace Videopack\Common;
  *
  * @since      5.0.0
  * @package    Videopack
- * @subpackage Videopack/includes
+ * @subpackage Videopack/Common
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 class I18n {
@@ -19,26 +26,28 @@ class I18n {
 	 * Load the plugin text domain for translation.
 	 *
 	 * @since    5.0.0
+	 * @return void
 	 */
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
 			'video-embed-thumbnail-generator',
 			false,
-			VIDEOPACK_PLUGIN_DIR . '/languages/'
+			(string) ( VIDEOPACK_PLUGIN_DIR . '/languages/' )
 		);
 	}
 
 	/**
 	 * Format the view count with internationalization.
 	 *
-	 * @param int $view_count The number of views.
+	 * @param int|string $view_count The number of views.
 	 * @return string The formatted view count.
 	 */
 	public static function format_view_count( $view_count ) {
-		return sprintf(
-			_n( '%s view', '%s views', intval( $view_count ), 'video-embed-thumbnail-generator' ),
-			number_format_i18n( intval( $view_count ) )
+		return (string) sprintf(
+			/* translators: %s is the number of views. */
+			(string) _n( '%s view', '%s views', (int) $view_count, 'video-embed-thumbnail-generator' ),
+			(string) number_format_i18n( (int) $view_count )
 		);
 	}
 }

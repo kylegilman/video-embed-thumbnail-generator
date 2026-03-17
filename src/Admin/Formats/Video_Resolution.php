@@ -1,7 +1,17 @@
 <?php
+/**
+ * Video Resolution Class
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin\Formats;
 
+/**
+ * Class Video_Resolution
+ *
+ * Represents a video resolution (e.g., 1080p, 720p, etc.)
+ */
 class Video_Resolution {
 
 	/**
@@ -46,6 +56,18 @@ class Video_Resolution {
 	 */
 	protected $is_custom;
 
+	/**
+	 * Video_Resolution constructor.
+	 *
+	 * @param array $properties {
+	 *     height: int,
+	 *     name: string,
+	 *     default_encode: bool,
+	 *     is_custom?: bool,
+	 *     label?: string,
+	 *     id?: string
+	 * } Associative array of resolution properties.
+	 */
 	public function __construct( $properties ) {
 		$this->height         = $properties['height'];
 		$this->name           = $properties['name'];
@@ -104,10 +126,10 @@ class Video_Resolution {
 	/**
 	 * Get the video height.
 	 *
-	 * @return string
+	 * @return int The height in pixels.
 	 */
 	public function get_height() {
-		return $this->height;
+		return (int) $this->height;
 	}
 
 	/**
@@ -119,6 +141,11 @@ class Video_Resolution {
 		return $this->is_custom;
 	}
 
+	/**
+	 * Set the height of the resolution if not already set.
+	 *
+	 * @param int|string $height The height to set.
+	 */
 	public function set_height( $height ) {
 		if ( ! $this->height ) {
 			$this->height = intval( $height );

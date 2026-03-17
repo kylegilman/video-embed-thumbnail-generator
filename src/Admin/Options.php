@@ -1,14 +1,32 @@
 <?php
+/**
+ * Admin options handler.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Admin;
 
 /**
- * Loads and maintains all Videopack plugin settings
+ * Class Options
+ *
+ * Loads, maintains, and validates all Videopack plugin settings.
+ *
+ * This class serves as the central manager for plugin options, handling
+ * defaults, migrations from legacy versions, multisite overrides,
+ * capabilities management, and integration with the WordPress Settings API
+ * and REST API.
+ *
+ * @since      5.0.0
+ * @package    Videopack
+ * @subpackage Videopack/Admin
+ * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 class Options {
 
 	/**
 	 * Default capabilities required for Videopack functions.
+	 *
 	 * @var array $default_capabilities
 	 */
 	protected $default_capabilities = array(
@@ -23,6 +41,7 @@ class Options {
 	 * @var array $options
 	 */
 	protected $options = array();
+
 	/**
 	 * Merged Options array (local + network).
 	 *
@@ -44,195 +63,199 @@ class Options {
 	 */
 	protected $video_player_id = 0;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {}
 
 	/**
 	 * Returns default options.
 	 *
-	 * @return array
+	 * @return array Default options array.
 	 */
 	public function get_default() {
-
 		$default_options = array(
 			// General Settings.
-			'embed_method'                  => 'Video.js', // Video player to use.
-			'hide_video_formats'            => true, // List only enabled default video formats in the Admin area.
-			'hide_thumbnails'               => false, // Hide generated thumbnails in the Admin area.
-			'delete_child_thumbnails'       => false, // Delete associated thumbnails upon video deletion.
-			'delete_child_encoded'          => true, // Delete associated encoded videos upon video deletion.
-			'thumb_parent'                  => 'video', // Parent post type for video thumbnails ('video', 'post').
-			'transient_cache'               => false, // Enable transient caching for URL to Attachment ID lookups.
+			'embed_method'                  => 'Video.js',
+			'hide_video_formats'            => true,
+			'hide_thumbnails'               => false,
+			'delete_child_thumbnails'       => false,
+			'delete_child_encoded'          => true,
+			'thumb_parent'                  => 'video',
+			'transient_cache'               => false,
 
 			// FFmpeg & Encoding Settings.
-			'app_path'                      => '', // Path to the FFmpeg application.
-			'ffmpeg_exists'                 => 'notchecked', // Is FFmpeg installed and working ('notchecked', true, 'notinstalled').
-			'ffmpeg_error'                  => '', // User-friendly error message if FFmpeg isn't working.
-			'replace_format'                => 'h264', // Default video codec to replace the original video file if 'fullres' encode is enabled.
-			'enable_custom_resolution'      => false, // Enable custom video resolution.
-			'custom_resolution'             => 900, // Custom video resolution height in pixels.
-			'encode'                        => array(), // List of enabled video encode formats and settings (Populated dynamically).
-			'ffmpeg_watermark'              => array( // Watermark settings for video encoding with FFmpeg.
-				'url'    => '', // Watermark image URL.
-				'scale'  => '50', // Watermark scale (percentage of video height).
-				'align'  => 'center', // Horizontal alignment ('left', 'center', 'right').
-				'valign' => 'center', // Vertical alignment ('top', 'center', 'bottom').
-				'x'      => '0', // Horizontal offset (percentage).
-				'y'      => '0', // Vertical offset (percentage).
+			'app_path'                      => '',
+			'ffmpeg_exists'                 => 'notchecked',
+			'ffmpeg_error'                  => '',
+			'replace_format'                => 'h264',
+			'enable_custom_resolution'      => false,
+			'custom_resolution'             => 900,
+			'encode'                        => array(),
+			'ffmpeg_watermark'              => array(
+				'url'    => '',
+				'scale'  => '50',
+				'align'  => 'center',
+				'valign' => 'center',
+				'x'      => '0',
+				'y'      => '0',
 			),
-			'ffmpeg_thumb_watermark'        => array( // Watermark settings for thumbnail generation with FFmpeg.
-				'url'    => '', // Watermark image URL.
-				'scale'  => '50', // Watermark scale (percentage of video height).
-				'align'  => 'center', // Horizontal alignment ('left', 'center', 'right').
-				'valign' => 'center', // Vertical alignment ('top', 'center', 'bottom').
-				'x'      => '0', // Horizontal offset (percentage).
-				'y'      => '0', // Vertical offset (percentage).
+			'ffmpeg_thumb_watermark'        => array(
+				'url'    => '',
+				'scale'  => '50',
+				'align'  => 'center',
+				'valign' => 'center',
+				'x'      => '0',
+				'y'      => '0',
 			),
-			'audio_bitrate'                 => 160, // Audio bitrate for encoding in kbps.
-			'audio_channels'                => true, // Always encode stereo audio (if source is stereo or mono).
-			'threads'                       => 1, // Number of threads for video processing with FFmpeg.
-			'nice'                          => true, // Adjust process priority for video encoding (lower priority).
-			'h264_profile'                  => 'main', // H.264 profile for video encoding.
-			'h264_level'                    => '4.1', // H.264 level for video encoding.
-			'h265_profile'                  => 'none', // H.265 profile for video encoding.
-			'h265_level'                    => 'none', // H.265 level for video encoding.
-			'simultaneous_encodes'          => 1, // Maximum number of simultaneous video encoding processes.
-			'error_email'                   => 'nobody', // Email address to receive error notifications ('nobody', 'encoder', or user login).
-			'queue_control'                 => 'play', // Control behavior for video encoding queue ('play', 'pause').
+			'audio_bitrate'                 => 160,
+			'audio_channels'                => true,
+			'threads'                       => 1,
+			'nice'                          => true,
+			'h264_profile'                  => 'main',
+			'h264_level'                    => '4.1',
+			'h265_profile'                  => 'none',
+			'h265_level'                    => 'none',
+			'simultaneous_encodes'          => 1,
+			'error_email'                   => 'nobody',
+			'queue_control'                 => 'play',
 
 			// Thumbnail Settings.
-			'total_thumbnails'              => 4, // Default total_thumbnails to generate when manually creating.
-			'featured'                      => true, // Set generated thumbnail as post's featured thumbnail.
-			'browser_thumbnails'            => true, // Use browser technology to generate thumbnails instead of FFmpeg if FFmpeg is unavailable.
+			'total_thumbnails'              => 4,
+			'featured'                      => true,
+			'browser_thumbnails'            => true,
 
 			// Automation Settings.
-			'auto_encode'                   => false, // Automatically encode videos upon upload.
-			'auto_encode_gif'               => false, // Automatically convert animated GIFs to video upon upload.
-			'auto_thumb'                    => false, // Automatically generate thumbnails for videos upon upload.
-			'auto_thumb_number'             => 1, // Number of thumbnails to automatically generate.
-			'auto_thumb_position'           => 50, // Position within video for automatic thumbnail generation (percentage or frame number if auto_thumb_number > 1).
-			'auto_publish_post'             => false, // Automatically publish posts after video processing is complete.
+			'auto_encode'                   => false,
+			'auto_encode_gif'               => false,
+			'auto_thumb'                    => false,
+			'auto_thumb_number'             => 1,
+			'auto_thumb_position'           => 50,
+			'auto_publish_post'             => false,
 
 			// Player Appearance & Behavior.
-			'poster'                        => '', // Default poster image URL for videos.
-			'watermark'                     => '', // Player overlay watermark image URL.
-			'watermark_styles'              => array( // Watermark positioning and styling.
+			'poster'                        => '',
+			'watermark'                     => '',
+			'watermark_styles'              => array(
 				'scale'  => '10',
 				'align'  => 'right',
 				'valign' => 'bottom',
 				'x'      => '5',
 				'y'      => '7',
 			),
-			'watermark_link_to'             => 'home', // Link target for the player watermark ('home', 'parent', 'attachment', 'download', 'false', or custom URL).
-			'watermark_url'                 => '', // Custom link target URL for the player watermark (overrides watermark_link_to if set).
-			'overlay_title'                 => true, // Overlay video title on the player.
-			'embedcode'                     => false, // Enable embedding code overlay on the player.
-			'downloadlink'                  => false, // Enable a download link/icon for the video.
-			'click_download'                => true, // Enable single-click download methods (if downloadlink is true).
-			'view_count'                    => false, // Show view count below video.
-			'count_views'                   => 'start_complete', // Level of view count tracking ('start_complete', 'quarters', 'start', 'none').
-			'embeddable'                    => true, // Allow videos to be embedded on other sites.
-			'inline'                        => false, // Allow content on the left and right side of videos (CSS float).
-			'align'                         => '', // Default alignment for the video player ('', 'wide', 'full', 'left', 'center', 'right').
-			'width'                         => 960, // Default width for the video player in pixels.
-			'height'                        => 540, // Default height for the video player in pixels.
-			'legacy_dimensions'             => false, // Use legacy fixed dimensions.
-			'fullwidth'                     => true, // Expand video players to the full width of their container.
-			'fixed_aspect'                  => 'vertical', // Fixed aspect ratio setting for the video player (true, false, 'vertical').
-			'skin'                          => 'vjs-theme-videopack', // Skin class for the Video.js player.
-			'right_click'                   => true, // Enable right-click context menu on video player.
-			'resize'                        => true, // Enable responsive video resizing.
+			'watermark_link_to'             => 'home',
+			'watermark_url'                 => '',
+			'overlay_title'                 => true,
+			'embedcode'                     => false,
+			'downloadlink'                  => false,
+			'click_download'                => true,
+			'view_count'                    => false,
+			'count_views'                   => 'start_complete',
+			'embeddable'                    => true,
+			'inline'                        => false,
+			'align'                         => '',
+			'width'                         => 960,
+			'height'                        => 540,
+			'legacy_dimensions'             => false,
+			'fullwidth'                     => true,
+			'fixed_aspect'                  => 'vertical',
+			'skin'                          => 'vjs-theme-videopack',
+			'right_click'                   => true,
+			'resize'                        => true,
 
 			// Player Controls & Playback.
-			'nativecontrolsfortouch'        => false, // Use native browser controls for touch devices instead of custom player controls.
-			'controls'                      => true, // Show player controls.
-			'autoplay'                      => false, // Autoplay videos on load.
-			'pauseothervideos'              => true, // Pause other videos on the page when a new video is played.
-			'loop'                          => false, // Loop video playback.
-			'playsinline'                   => true, // Play videos inline on mobile devices (especially iOS).
-			'volume'                        => 1.0, // Initial volume of the video player (0.0 to 1.0).
-			'muted'                         => false, // Start videos in muted state.
-			'gifmode'                       => false, // Enable GIF-like behavior (autoplay, muted, loop, playsinline, no controls).
-			'preload'                       => 'metadata', // Preload setting for videos ('metadata', 'auto', 'none').
-			'playback_rate'                 => false, // Enable playback rate control in the player.
-			'skip_buttons'                  => false, // Enable skip forward/backward buttons in the player.
-			'skip_forward'                  => 10, // Time to skip forward in seconds.
-			'skip_backward'                 => 10, // Time to skip backward in seconds.
-			'endofvideooverlay'             => '', // Show an image overlay at the end of videos.
-			'endofvideooverlaysame'         => false, // Display the poster image at the end of videos.
-			'auto_res'                      => 'automatic', // Default video playback resolution ('automatic', 'highest', 'lowest', or specific like '1080p').
-			'auto_codec'                    => 'h264', // Default video codec ('h264', 'h265', 'vp9', 'av1').
-			'pixel_ratio'                   => true, // Enable adjustment for high DPI displays (retina) when auto_res is 'automatic'.
-			'find_formats'                  => false, // Automatically look for other codecs and resolutions based on the video filename.
+			'nativecontrolsfortouch'        => false,
+			'controls'                      => true,
+			'autoplay'                      => false,
+			'pauseothervideos'              => true,
+			'loop'                          => false,
+			'playsinline'                   => true,
+			'volume'                        => 1.0,
+			'muted'                         => false,
+			'gifmode'                       => false,
+			'preload'                       => 'metadata',
+			'playback_rate'                 => false,
+			'skip_buttons'                  => false,
+			'skip_forward'                  => 10,
+			'skip_backward'                 => 10,
+			'endofvideooverlay'             => '',
+			'endofvideooverlaysame'         => false,
+			'auto_res'                      => 'automatic',
+			'auto_codec'                    => 'h264',
+			'pixel_ratio'                   => true,
+			'find_formats'                  => false,
 
 			// Gallery Settings.
-			'gallery_orderby'               => 'menu_order', // Default sort order.
-			'enable_collection_video_limit' => false, // Enable maximum number of videos.
-			'collection_video_limit'        => -1, // Maximum number of videos in a collection when pagination is disabled. -1 for no limit.
-			'gallery_order'                 => 'ASC', // Default sort direction.
-			'gallery_columns'               => 4, // Number of columns in video galleries.
-			'gallery_end'                   => '', // Custom content to display at the end of video galleries ('close', 'next', or custom HTML).
-			'gallery_pagination'            => false, // Enable pagination for video galleries.
-			'gallery_per_page'              => 6, // Number of videos per page in galleries (false for no pagination, or integer).
-			'gallery_title'                 => true, // Display titles on video gallery thumbnails.
+			'gallery_orderby'               => 'menu_order',
+			'enable_collection_video_limit' => false,
+			'collection_video_limit'        => -1,
+			'gallery_order'                 => 'ASC',
+			'gallery_columns'               => 4,
+			'gallery_end'                   => '',
+			'gallery_pagination'            => false,
+			'gallery_per_page'              => 6,
+			'gallery_title'                 => true,
 
 			// Integration & Advanced.
-			'capabilities'                  => array(), // Enabled capabilities required for Videopack functions (Populated dynamically).
-			'open_graph'                    => false, // Enable Open Graph meta tags for videos.
-			'schema'                        => true, // Enable Schema.org (JSON-LD) markup for videos.
-			'oembed_provider'               => false, // Enable oEmbed provider functionality for Videopack videos.
-			'htaccess_login'                => '', // Login username for .htaccess protected directories (if FFmpeg needs to access files there).
-			'htaccess_password'             => '', // Login password for .htaccess protected directories.
-			'alwaysloadscripts'             => false, // Always load video player scripts, regardless of whether a video is detected on the page.
-			'replace_video_shortcode'       => false, // Replace the default WordPress [video] shortcode with the Videopack player.
-			'default_insert'                => 'Single Video', // Default method for inserting videos into posts from Media Library ('Single Video', 'Video Gallery', 'WordPress Default').
-			'rewrite_attachment_url'        => true, // Prefer the official WordPress attachment URL over the provided source URL (unless it's a CDN).
+			'capabilities'                  => array(),
+			'open_graph'                    => false,
+			'schema'                        => true,
+			'oembed_provider'               => false,
+			'htaccess_login'                => '',
+			'htaccess_password'             => '',
+			'alwaysloadscripts'             => false,
+			'replace_video_shortcode'       => false,
+			'default_insert'                => 'Single Video',
+			'rewrite_attachment_url'        => true,
 
 			// Testing & Debug.
-			'sample_codec'                  => 'h264', // Sample codec for FFmpeg testing on settings page.
-			'sample_resolution'             => 360, // Sample resolution (height) for FFmpeg testing on settings page.
-			'sample_rotate'                 => false, // Test FFmpeg encode settings on a sample vertical video.
+			'sample_codec'                  => 'h264',
+			'sample_resolution'             => 360,
+			'sample_rotate'                 => false,
 		);
 
 		foreach ( $this->default_capabilities as $videopack_capability => $wp_capability ) {
-			$enabled_roles = array_keys( $this->get_roles_with_capability( $wp_capability ) );
-			$default_options['capabilities'][ $videopack_capability ] = $this->get_all_roles_with_capability( $enabled_roles );
+			$enabled_roles = (array) array_keys( $this->get_roles_with_capability( (string) $wp_capability ) );
+			$default_options['capabilities'][ (string) $videopack_capability ] = (array) $this->get_all_roles_with_capability( $enabled_roles );
 		}
 
-		$video_codecs = $this->get_video_codecs();
-		$resolutions  = $this->get_video_resolutions();
+		$video_codecs = (array) $this->get_video_codecs();
+		$resolutions  = (array) $this->get_video_resolutions();
 		foreach ( $video_codecs as $codec ) {
-			$default_options['encode'][ $codec->get_id() ]['crf']          = $codec->get_default_crf();
-			$supported_rate_controls                                       = $codec->get_supported_rate_controls();
-			$default_options['encode'][ $codec->get_id() ]['rate_control'] = $supported_rate_controls[0];
-			$default_options['encode'][ $codec->get_id() ]['vbr']          = $codec->get_default_vbr();
-			$default_options['encode'][ $codec->get_id() ]['enabled']      = $codec->is_default_encode();
+			if ( ! $codec instanceof \Videopack\Admin\Formats\Codecs\Video_Codec ) {
+				continue;
+			}
+			$codec_id                                      = (string) $codec->get_id();
+			$default_options['encode'][ $codec_id ]['crf'] = (int) $codec->get_default_crf();
+			$supported_rate_controls                       = (array) $codec->get_supported_rate_controls();
+			$default_options['encode'][ $codec_id ]['rate_control'] = (string) ( $supported_rate_controls[0] ?? 'crf' );
+			$default_options['encode'][ $codec_id ]['vbr']          = (int) $codec->get_default_vbr();
+			$default_options['encode'][ $codec_id ]['enabled']      = (bool) $codec->is_default_encode();
+
 			foreach ( $resolutions as $resolution ) {
-				if ( $codec->is_default_encode() && $resolution->is_default_encode() ) {
-					$default_options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = true;
-				} else {
-					$default_options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] = false;
+				if ( ! $resolution instanceof \Videopack\Admin\Formats\Video_Resolution ) {
+					continue;
 				}
+				$res_id = (string) $resolution->get_id();
+				$default_options['encode'][ $codec_id ]['resolutions'][ $res_id ] = (bool) ( $codec->is_default_encode() && $resolution->is_default_encode() );
 			}
 		}
 
-		/**
-		 * Filters the default options.
-		 * @param array $default_options Array of default options.
-		 */
-		return apply_filters( 'videopack_default_options', $default_options );
+		return (array) apply_filters( 'videopack_default_options', $default_options );
 	}
 
+	/**
+	 * Loads options from the database and initializes them if necessary.
+	 */
 	public function load_options() {
+		$saved_options         = get_option( 'videopack_options' );
+		$this->default_options = (array) $this->get_default();
 
-		$saved_options         = get_option( 'videopack_options' ); // will be false if not set
-		$this->default_options = $this->get_default();
-
-		if ( false === $saved_options ) { // this is the first time the plugin has run, or they're reset to defaults
-			// Set the options to default before initializing to prevent recursion
+		if ( false === $saved_options ) {
 			$this->options = $this->default_options;
-			$options       = $this->init_options( $this->default_options );
+			$options       = (array) $this->init_options( $this->default_options );
 		} else {
-			$options = $this->merge_options_with_defaults( (array) $saved_options, $this->default_options );
+			$options = (array) $this->merge_options_with_defaults( (array) $saved_options, $this->default_options );
 		}
 
 		if ( $options !== $saved_options ) {
@@ -241,15 +264,15 @@ class Options {
 
 		$this->options = $options;
 
-		/**
-		 * Fires after the Videopack options have been loaded and processed.
-		 * The $this->options property and public properties are now populated.
-		 */
 		do_action( 'videopack_options_loaded', $this );
 	}
 
+	/**
+	 * Saves options to the database.
+	 *
+	 * @param array|null $options_to_save Optional. Options to save.
+	 */
 	public function save_options( array $options_to_save = null ) {
-		// Use the provided array if available, otherwise use the internal array
 		$options_to_save = $options_to_save ?? $this->options;
 
 		update_option( 'videopack_options', $options_to_save );
@@ -258,76 +281,62 @@ class Options {
 			$this->options = $options_to_save;
 		}
 
-		$this->merged_options = array(); // Clear merged options cache
+		$this->merged_options = array();
 	}
 
 	/**
 	 * Initialize the plugin options.
-	 * @param array $current_default_options The current set of default options (including from add-ons).
+	 *
+	 * @param array $current_default_options The current set of default options.
 	 * @return array The initialized options array.
 	 */
 	private function init_options( array $current_default_options ) {
-
 		$options_to_init = $current_default_options;
 		$old_options     = get_option( 'kgvid_video_embed_options', array() );
 
-		if ( $old_options ) {
-			// Unset obsolete keys
-			unset( $old_options['videojs_version'] );
-			unset( $old_options['twitter_button'] );
-			unset( $old_options['twitter_username'] );
-			unset( $old_options['facebook_button'] );
-			unset( $old_options['sample_format'] );
-			unset( $old_options['sample_rotate'] );
+		if ( is_array( $old_options ) && ! empty( $old_options ) ) {
+			unset( $old_options['videojs_version'], $old_options['twitter_button'], $old_options['twitter_username'], $old_options['facebook_button'], $old_options['sample_format'], $old_options['sample_rotate'] );
 
-			// Migrate generate_thumbs to total_thumbnails
 			if ( isset( $old_options['generate_thumbs'] ) ) {
-				$old_options['total_thumbnails'] = $old_options['generate_thumbs'];
+				$old_options['total_thumbnails'] = (int) $old_options['generate_thumbs'];
 				unset( $old_options['generate_thumbs'] );
 			}
 
-			// Migrate js_skin to skin
 			if ( isset( $old_options['js_skin'] ) ) {
-				$old_options['skin'] = $old_options['js_skin'];
+				$old_options['skin'] = (string) $old_options['js_skin'];
 				unset( $old_options['js_skin'] );
 			}
 
-			// Migrate embed_method
 			if ( isset( $old_options['embed_method'] ) && 'Video.js v8' === $old_options['embed_method'] ) {
 				$old_options['embed_method'] = 'Video.js';
 			}
 
-			// Migrate overlay_embedcode to embedcode
 			if ( isset( $old_options['overlay_embedcode'] ) ) {
-				$old_options['embedcode'] = $old_options['overlay_embedcode'];
+				$old_options['embedcode'] = (bool) $old_options['overlay_embedcode'];
 				unset( $old_options['overlay_embedcode'] );
 			}
 
-			// Add find_formats set to true to preserve behavior from the old version
 			$old_options['find_formats'] = true;
 
-			// Migrate custom_format to encode array
 			if ( isset( $old_options['custom_format']['format'] ) ) {
-				$format = $old_options['custom_format']['format'];
-				$height = $old_options['custom_format']['height'];
+				$format = (string) $old_options['custom_format']['format'];
+				$height = (string) $old_options['custom_format']['height'];
 				if ( ! isset( $options_to_init['encode'][ $format ] ) ) {
 					$options_to_init['encode'][ $format ] = array( 'resolutions' => array() );
 				}
 				$options_to_init['encode'][ $format ]['resolutions'][ $height ] = true;
 
-				// Also set as custom resolution to ensure it appears in lists if non-standard.
 				$options_to_init['enable_custom_resolution'] = true;
-				$options_to_init['custom_resolution']        = intval( $height );
+				$options_to_init['custom_resolution']        = (int) $height;
 				unset( $old_options['custom_format'] );
 			}
 
-			// Migrate global rate_control to per-codec settings
 			if ( isset( $old_options['rate_control'] ) ) {
-				$video_codecs = $this->get_video_codecs();
+				$video_codecs = (array) $this->get_video_codecs();
 				foreach ( $video_codecs as $codec ) {
-					$codec_id = $codec->get_id();
-					if ( in_array( $old_options['rate_control'], $codec->get_supported_rate_controls(), true ) ) {
-						$options_to_init['encode'][ $codec_id ]['rate_control'] = $old_options['rate_control'];
+					$codec_id = (string) $codec->get_id();
+					if ( in_array( (string) $old_options['rate_control'], (array) $codec->get_supported_rate_controls(), true ) ) {
+						$options_to_init['encode'][ $codec_id ]['rate_control'] = (string) $old_options['rate_control'];
 					}
 				}
 				unset( $old_options['rate_control'] );
@@ -335,84 +344,71 @@ class Options {
 
 			unset( $old_options['bitrate_multiplier'] );
 
-			// Migrate CRF values
 			if ( isset( $old_options['h264_CRF'] ) ) {
-				$options_to_init['encode']['h264']['crf'] = $old_options['h264_CRF'];
+				$options_to_init['encode']['h264']['crf'] = (int) $old_options['h264_CRF'];
 				unset( $old_options['h264_CRF'] );
 			}
 			if ( isset( $old_options['webm_CRF'] ) ) {
-				$options_to_init['encode']['vp8']['crf'] = $old_options['webm_CRF'];
+				$options_to_init['encode']['vp8']['crf'] = (int) $old_options['webm_CRF'];
 				unset( $old_options['webm_CRF'] );
 			}
-			if ( isset( $old_options['ogv_CRF'] ) ) {
-				// OGV is no longer supported, so we just unset it.
-				unset( $old_options['ogv_CRF'] );
-			}
+			unset( $old_options['ogv_CRF'] );
 
-			// Migrate delete_children
 			if ( isset( $old_options['delete_children'] ) ) {
-				if ( 'all' === $old_options['delete_children'] ) {
-					$options_to_init['delete_child_thumbnails'] = true;
-					$options_to_init['delete_child_encoded']    = true;
-				} elseif ( 'encoded videos only' === $old_options['delete_children'] ) {
-					$options_to_init['delete_child_thumbnails'] = false;
-					$options_to_init['delete_child_encoded']    = true;
-				} else {
-					$options_to_init['delete_child_thumbnails'] = false;
-					$options_to_init['delete_child_encoded']    = false;
-				}
+				$options_to_init['delete_child_thumbnails'] = ( 'all' === $old_options['delete_children'] );
+				$options_to_init['delete_child_encoded']    = ( 'all' === $old_options['delete_children'] || 'encoded videos only' === $old_options['delete_children'] );
 				unset( $old_options['delete_children'] );
 			}
 
-			// Migrate gallery_thumb to gallery_columns
 			if ( isset( $old_options['gallery_thumb'] ) ) {
-				$options_to_init['gallery_columns'] = round( 1500 / intval( $old_options['gallery_thumb'] ) );
+				$options_to_init['gallery_columns'] = (int) round( 1500 / (int) $old_options['gallery_thumb'] );
 				unset( $old_options['gallery_thumb'] );
 			}
 
 			$options_to_init['legacy_dimensions'] = true;
 
-			// Convert boolean-like strings to booleans
 			foreach ( $old_options as $key => &$value ) {
-				if ( $value === 'on' ) {
+				if ( 'on' === $value ) {
 					$value = true;
-				} elseif ( $value === 'off' || $value === '' ) {
+				} elseif ( 'off' === $value || '' === $value ) {
 					$value = false;
 				}
 			}
 
-			// Merge old options into the new structure, respecting new defaults for missing keys.
-			$options_to_init = $this->merge_options_with_defaults( (array) $old_options, $options_to_init );
+			$options_to_init = (array) $this->merge_options_with_defaults( (array) $old_options, $options_to_init );
 			delete_option( 'kgvid_video_embed_options' );
 		}
 
-		// Set capabilities based on the potentially merged old options or new defaults.
-		$this->set_capabilities( $options_to_init['capabilities'] );
+		$this->set_capabilities( (array) ( $options_to_init['capabilities'] ?? array() ) );
 
-		if ( $options_to_init['ffmpeg_exists'] === 'notchecked' ) {
-			$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
-			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( $options_to_init['app_path'] );
+		if ( ( $options_to_init['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
+			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this );
+			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $options_to_init['app_path'] ?? '' ) );
 			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_init['ffmpeg_exists'] = true;
-				$options_to_init['app_path']      = $ffmpeg_check['app_path'];
+				$options_to_init['app_path']      = (string) $ffmpeg_check['app_path'];
 				$options_to_init['ffmpeg_error']  = '';
 			} else {
 				$options_to_init['ffmpeg_exists'] = 'notinstalled';
-				$options_to_init['ffmpeg_error']  = $ffmpeg_check['ffmpeg_error'];
+				$options_to_init['ffmpeg_error']  = (string) $ffmpeg_check['ffmpeg_error'];
 			}
 		}
 
 		return $options_to_init;
 	}
 
+	/**
+	 * Filters options for REST API exposure, removing sensitive data for non-admins.
+	 *
+	 * @return array Filtered options.
+	 */
 	public function filter_options_for_rest() {
-		$all_options = $this->get_options();
+		$all_options = (array) $this->get_options();
 
 		if ( current_user_can( 'manage_options' ) ) {
 			return $all_options;
 		}
 
-		// Define keys that should not be exposed via this REST endpoint for non-admins.
 		$unsafe_keys = array(
 			'app_path',
 			'error_email',
@@ -424,16 +420,16 @@ class Options {
 
 		$safe_options = $all_options;
 		foreach ( $unsafe_keys as $key ) {
-			if ( isset( $safe_options[ $key ] ) ) {
-				unset( $safe_options[ $key ] );
-			}
+			unset( $safe_options[ $key ] );
 		}
 
 		return $safe_options;
 	}
 
+	/**
+	 * Registers Videopack settings with WordPress.
+	 */
 	public function register_videopack_options() {
-
 		register_setting(
 			'videopack_options',
 			'videopack_options',
@@ -443,7 +439,7 @@ class Options {
 				'show_in_rest'      => array(
 					'schema'       => array(
 						'type'       => 'object',
-						'properties' => $this->settings_schema( $this->get_default() ), // Schema based on all defaults.
+						'properties' => $this->settings_schema( (array) $this->get_default() ),
 					),
 					'get_callback' => array( $this, 'filter_options_for_rest' ),
 				),
@@ -451,55 +447,47 @@ class Options {
 		);
 	}
 
+	/**
+	 * Generates a JSON-LD inspired schema for settings.
+	 *
+	 * @param array $options Options array to generate schema for.
+	 * @return array The schema definition.
+	 */
 	public function settings_schema( array $options ) {
-
 		$schema = array();
 
 		foreach ( $options as $option => $value ) {
-			$att_type = 'string';
+			$option = (string) $option;
 
-			// Handle specific known object-like array structures first
-			if ( $option === 'ffmpeg_thumb_watermark' || $option === 'ffmpeg_watermark' || $option === 'watermark_styles' ) {
+			if ( in_array( $option, array( 'ffmpeg_thumb_watermark', 'ffmpeg_watermark', 'watermark_styles' ), true ) ) {
 				$schema[ $option ] = array(
 					'type'       => 'object',
 					'properties' => array(
 						'url'    => array( 'type' => 'string' ),
-						'scale'  => array( 'type' => array( 'string', 'number' ) ), // string because form values can be strings
+						'scale'  => array( 'type' => array( 'string', 'number' ) ),
 						'align'  => array( 'type' => 'string' ),
 						'valign' => array( 'type' => 'string' ),
 						'x'      => array( 'type' => array( 'string', 'number' ) ),
 						'y'      => array( 'type' => array( 'string', 'number' ) ),
 					),
-					'default'    => $value, // Default is the array itself
+					'default'    => $value,
 				);
 				continue;
 			}
 
-			if ( is_bool( $value )
-				|| $option === 'ffmpeg_exists' // ffmpeg_exists can be bool or string 'notchecked'/'notinstalled'
-			) {
+			$att_type = 'string';
+			if ( is_bool( $value ) || 'ffmpeg_exists' === $option ) {
 				$att_type = array( 'boolean', 'string' );
-			}
-			if ( is_numeric( $value ) ) {
-				if ( is_string( $value ) ) {
-					if ( filter_var( $value, FILTER_VALIDATE_INT )
-						|| $value === '0'
-					) {
-						$value = intval( $value );
-					} else {
-						$value = floatval( $value );
-					}
-				}
+			} elseif ( is_numeric( $value ) ) {
 				$att_type = array( 'number', 'string' );
 			}
 
-			if ( is_array( $value ) ) { // For other generic arrays/objects
+			if ( is_array( $value ) ) {
 				$schema[ $option ] = array(
 					'type'                 => 'object',
-					'properties'           => $this->settings_schema( $value ),
+					'properties'           => $this->settings_schema( (array) $value ),
 					'additionalProperties' => true,
 				);
-
 			} else {
 				$schema[ $option ] = array(
 					'type'    => $att_type,
@@ -510,135 +498,35 @@ class Options {
 		return $schema;
 	}
 
+	/**
+	 * Saves default options to the database.
+	 */
 	public function save_default_options() {
+		$options_to_save = (array) $this->get_default();
 
-		$options_to_save = $this->get_default(); // Get all defaults, including from add-ons
-
-		if ( $options_to_save['ffmpeg_exists'] === 'notchecked' ) {
-			$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
-			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( $options_to_save['app_path'] );
+		if ( ( $options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
+			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this );
+			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $options_to_save['app_path'] ?? '' ) );
 			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_save['ffmpeg_exists'] = true;
-				$options_to_save['app_path']      = $ffmpeg_check['app_path'];
+				$options_to_save['app_path']      = (string) $ffmpeg_check['app_path'];
 				$options_to_save['ffmpeg_error']  = '';
 			} else {
 				$options_to_save['ffmpeg_exists'] = 'notinstalled';
-				$options_to_save['ffmpeg_error']  = $ffmpeg_check['ffmpeg_error'];
+				$options_to_save['ffmpeg_error']  = (string) $ffmpeg_check['ffmpeg_error'];
 			}
 		}
 
 		update_option( 'videopack_options', $options_to_save );
-		$this->load_options(); // Reload options after saving defaults
+		$this->load_options();
 	}
 
 	/**
 	 * Returns all options.
 	 *
-	 * @return array{
-	 *   embed_method: string,
-	 *   hide_video_formats: bool,
-	 *   hide_thumbnails: bool,
-	 *   delete_child_thumbnails: bool,
-	 *   delete_child_encoded: bool,
-	 *   thumb_parent: string,
-	 *   transient_cache: bool,
-	 *   app_path: string,
-	 *   ffmpeg_exists: string|bool,
-	 *   ffmpeg_error: string,
-	 *   replace_format: string,
-	 *   enable_custom_resolution: bool,
-	 *   custom_resolution: int,
-	 *   encode: array<string, array{crf: int, vbr: int, resolutions: array<string|int, bool>}>,
-	 *   ffmpeg_watermark: array{url: string, scale: string|int, align: string, valign: string, x: string|int, y: string|int},
-	 *   ffmpeg_thumb_watermark: array{url: string, scale: string|int, align: string, valign: string, x: string|int, y: string|int},
-	 *   audio_bitrate: int,
-	 *   audio_channels: bool,
-	 *   threads: int,
-	 *   nice: bool,
-	 *   h264_profile: string,
-	 *   h264_level: string,
-	 *   h265_profile: string,
-	 *   h265_level: string,
-	 *   simultaneous_encodes: int,
-	 *   error_email: string,
-	 *   queue_control: string,
-	 *   total_thumbnails: int,
-	 *   featured: bool,
-	 *   browser_thumbnails: bool,
-	 *   auto_encode: bool,
-	 *   auto_encode_gif: bool,
-	 *   auto_thumb: bool,
-	 *   auto_thumb_number: int,
-	 *   auto_thumb_position: int,
-	 *   auto_publish_post: bool,
-	 *   poster: string,
-	 *   watermark: string,
-	 *   watermark_styles: array{scale: string|int, align: string, valign: string, x: string|int, y: string|int},
-	 *   watermark_link_to: string,
-	 *   watermark_url: string,
-	 *   overlay_title: bool,
-	 *   embedcode: bool,
-	 *   downloadlink: bool,
-	 *   click_download: bool,
-	 *   view_count: bool,
-	 *   count_views: string,
-	 *   embeddable: bool,
-	 *   inline: bool,
-	 *   align: string,
-	 *   width: int,
-	 *   height: int,
-	 *   legacy_dimensions: bool,
-	 *   fullwidth: bool,
-	 *   fixed_aspect: string|bool,
-	 *   skin: string,
-	 *   right_click: bool,
-	 *   resize: bool,
-	 *   nativecontrolsfortouch: bool,
-	 *   controls: bool,
-	 *   autoplay: bool,
-	 *   pauseothervideos: bool,
-	 *   loop: bool,
-	 *   playsinline: bool,
-	 *   volume: float,
-	 *   muted: bool,
-	 *   gifmode: bool,
-	 *   preload: string,
-	 *   playback_rate: bool,
-	 *   skip_buttons: bool,
-	 *   skip_forward: int,
-	 *   skip_backward: int,
-	 *   endofvideooverlay: string,
-	 *   endofvideooverlaysame: bool,
-	 *   auto_res: string,
-	 *   auto_codec: string,
-	 *   pixel_ratio: bool,
-	 *   find_formats: bool,
-	 *   gallery_orderby: string,
-	 *   enable_collection_video_limit: bool,
-	 *   collection_video_limit: int,
-	 *   gallery_order: string,
-	 *   gallery_columns: int,
-	 *   gallery_end: string,
-	 *   gallery_pagination: bool,
-	 *   gallery_per_page: int,
-	 *   gallery_title: bool,
-	 *   capabilities: array<string, array<string>>,
-	 *   open_graph: bool,
-	 *   schema: bool,
-	 *   oembed_provider: bool,
-	 *   htaccess_login: string,
-	 *   htaccess_password: string,
-	 *   alwaysloadscripts: bool,
-	 *   replace_video_shortcode: bool,
-	 *   default_insert: string,
-	 *   rewrite_attachment_url: bool,
-	 *   sample_codec: string,
-	 *   sample_resolution: int,
-	 *   sample_rotate: bool
-	 * } The associative array of all Videopack options.
+	 * @return array The associative array of all Videopack options.
 	 */
 	public function get_options() {
-		// Ensure options are loaded if accessed before 'init' hook (where load_options is typically called)
 		if ( empty( $this->options ) ) {
 			$this->load_options();
 		}
@@ -647,17 +535,16 @@ class Options {
 			return $this->merged_options;
 		}
 
-		$options = $this->options;
+		$options = (array) $this->options;
 
-		if ( Multisite::is_videopack_active_for_network() ) {
+		if ( \Videopack\Admin\Multisite::is_videopack_active_for_network() ) {
 			$network_options = get_site_option( 'videopack_network_options' );
 
 			if ( is_array( $network_options ) ) {
-				// Combine queue control logic: if network is play but local is pause, keep local as pause.
 				if ( ! is_network_admin() && ( $network_options['queue_control'] ?? 'play' ) === 'play' && ( $options['queue_control'] ?? 'play' ) === 'pause' ) {
 					$network_options['queue_control'] = 'pause';
 				}
-				$options = array_merge( $options, $network_options );
+				$options = (array) array_merge( $options, $network_options );
 			}
 		}
 
@@ -668,32 +555,26 @@ class Options {
 	/**
 	 * Returns available video codecs.
 	 *
-	 * @return array
+	 * @return \Videopack\Admin\Formats\Codecs\Video_Codec[] Array of codec objects.
 	 */
 	public function get_video_codecs() {
-
 		$codecs = array(
-			new Formats\Codecs\Video_Codec_H264(),
-			new Formats\Codecs\Video_Codec_H265(),
-			new Formats\Codecs\Video_Codec_VP8(),
-			new Formats\Codecs\Video_Codec_VP9(),
-			new Formats\Codecs\Video_Codec_AV1(),
+			new \Videopack\Admin\Formats\Codecs\Video_Codec_H264(),
+			new \Videopack\Admin\Formats\Codecs\Video_Codec_H265(),
+			new \Videopack\Admin\Formats\Codecs\Video_Codec_VP8(),
+			new \Videopack\Admin\Formats\Codecs\Video_Codec_VP9(),
+			new \Videopack\Admin\Formats\Codecs\Video_Codec_AV1(),
 		);
 
-		/**
-		 * Filters the available video codecs.
-		 * @param \Videopack\Admin\Formats\Codecs\Video_Codec[] $codecs Array of Videopack\Admin\Formats\Codecs\Video_Codec objects.
-		 */
-		return apply_filters( 'videopack_video_codecs', $codecs );
+		return (array) apply_filters( 'videopack_video_codecs', $codecs );
 	}
 
 	/**
 	 * Returns supported video resolutions.
 	 *
-	 * @return array
+	 * @return \Videopack\Admin\Formats\Video_Resolution[] Array of resolution objects.
 	 */
 	public function get_video_resolutions() {
-
 		$resolutions = array();
 
 		$resolution_properties = array(
@@ -747,12 +628,9 @@ class Options {
 		);
 
 		if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
-			$custom_height = $this->options['custom_resolution'];
-			if ( empty( $custom_height ) || ! is_numeric( $custom_height ) ) {
-				$custom_height = 900;
-			}
+			$custom_height           = (int) ( $this->options['custom_resolution'] ?? 900 );
 			$resolution_properties[] = array(
-				'height'         => intval( $custom_height ),
+				'height'         => $custom_height,
 				'name'           => 'Custom',
 				'default_encode' => false,
 				'is_custom'      => true,
@@ -760,10 +638,9 @@ class Options {
 		}
 
 		foreach ( $resolution_properties as $properties ) {
-			$resolutions[] = new Formats\Video_Resolution( $properties );
+			$resolutions[] = new \Videopack\Admin\Formats\Video_Resolution( (array) $properties );
 		}
 
-		//sort so highest resolution is first
 		usort(
 			$resolutions,
 			function ( $a, $b ) {
@@ -773,124 +650,117 @@ class Options {
 				if ( 'fullres' === $b->get_id() ) {
 					return 1;
 				}
-				if ( $a->get_height() == $b->get_height() ) {
+				if ( (int) $a->get_height() === (int) $b->get_height() ) {
 					return 0;
 				}
-				return ( $a->get_height() > $b->get_height() ) ? -1 : 1;
+				return ( (int) $a->get_height() > (int) $b->get_height() ) ? -1 : 1;
 			}
 		);
 
-		/**
-		 * Filters the available video resolutions.
-		 * @param \Videopack\Admin\Formats\Video_Resolution[] $resolutions Array of Videopack\Admin\Formats\Video_Resolution objects.
-		 */
-		return apply_filters( 'videopack_video_resolutions', $resolutions );
+		return (array) apply_filters( 'videopack_video_resolutions', $resolutions );
 	}
 
 	/**
 	 * Returns translated video resolution name.
 	 *
 	 * @param string $name The resolution name.
-	 * @return string
+	 * @return string Translated name.
 	 */
 	public function get_resolution_l10n( $name ) {
-		switch ( $name ) {
+		switch ( (string) $name ) {
 			case 'Full Resolution':
-				return esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' );
 			case 'Replace with full resolution':
-				return esc_html__( 'Replace with full resolution', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Replace with full resolution', 'video-embed-thumbnail-generator' );
 			case '4k UHD (2160p)':
-				return esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' );
 			case 'Quad HD (1440p)':
-				return esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' );
 			case 'Full HD (1080p)':
-				return esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' );
 			case 'HD (720p)':
-				return esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' );
 			case 'HD (540p)':
-				return esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' );
 			case 'SD (480p)':
-				return esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' );
 			case 'Low Definition (360p)':
-				return esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' );
 			case 'Ultra Low Definition (240p)':
-				return esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' );
 			case 'Custom':
 				if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
-					$custom_height = $this->options['custom_resolution'];
-					if ( empty( $custom_height ) || ! is_numeric( $custom_height ) ) {
-						$custom_height = 900;
-					}
-					/* translators: %s is the height of a custom video resolution. Example: 'Custom (4320p)' */
-					return sprintf( esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), strval( $custom_height ) );
+					$custom_height = (int) ( $this->options['custom_resolution'] ?? 900 );
+					return sprintf( /* translators: %s: Custom resolution height (e.g. 900). */ (string) esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), (string) $custom_height );
 				}
-				return esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
+				return (string) esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
 			default:
-				return apply_filters( 'videopack_resolution_l10n', $name );
+				return (string) apply_filters( 'videopack_resolution_l10n', $name );
 		}
 	}
 
+	/**
+	 * Gets all available video formats.
+	 *
+	 * @param bool $hide_formats Optional. Whether to hide disabled formats (default false).
+	 * @return \Videopack\Admin\Formats\Video_Format[] Available video formats.
+	 */
 	public function get_video_formats( $hide_formats = false ) {
-
 		$video_formats     = array();
-		$video_resolutions = $this->get_video_resolutions();
-		$video_codecs      = $this->get_video_codecs();
+		$video_resolutions = (array) $this->get_video_resolutions();
+		$video_codecs      = (array) $this->get_video_codecs();
 
 		foreach ( $video_codecs as $codec ) {
-			if ( $hide_formats && $this->options['hide_video_formats'] && ! $this->options['encode'][ $codec->get_id() ]['enabled'] ) {
+			if ( $hide_formats && ! empty( $this->options['hide_video_formats'] ) && empty( $this->options['encode'][ (string) $codec->get_id() ]['enabled'] ) ) {
 				continue;
 			}
 			foreach ( $video_resolutions as $resolution ) {
-				if ( is_array( $this->options )
-					&& isset( $this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ] )
-				) {
-					$enabled = $this->options['encode'][ $codec->get_id() ]['resolutions'][ $resolution->get_id() ];
-				} else {
-					$enabled = false;
-				}
-				$format                             = new Formats\Video_Format( $codec, $resolution, $enabled );
-				$video_formats[ $format->get_id() ] = $format;
+				$enabled                                     = (bool) ( $this->options['encode'][ (string) $codec->get_id() ]['resolutions'][ (string) $resolution->get_id() ] ?? false );
+				$format                                      = new \Videopack\Admin\Formats\Video_Format( $codec, $resolution, $enabled );
+				$video_formats[ (string) $format->get_id() ] = $format;
 			}
 		}
 
 		return $video_formats;
 	}
 
+	/**
+	 * Sanitizes options recursively based on schema.
+	 *
+	 * @param mixed $input             Input to sanitize.
+	 * @param array $schema_properties Optional. Schema properties for validation.
+	 * @return mixed Sanitized input.
+	 */
 	public function sanitize_options_recursively( $input, $schema_properties = array() ) {
 		if ( ! is_array( $input ) ) {
-			// For non-array values, sanitize as a string.
-			return sanitize_text_field( $input );
+			return sanitize_text_field( (string) $input );
 		}
 
 		$sanitized_input = array();
 
 		foreach ( $input as $key => $value ) {
+			$key = (string) $key;
+
 			if ( ! isset( $schema_properties[ $key ] ) ) {
-				// This option is not in the schema.
-				if ( is_array( $value ) ) {
-					// If it's an array, recurse into it without a schema.
-					$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value );
-				} else {
-					// Otherwise, sanitize it as a text field.
-					$sanitized_input[ $key ] = sanitize_text_field( $value );
-				}
+				$sanitized_input[ $key ] = is_array( $value ) ? $this->sanitize_options_recursively( $value ) : sanitize_text_field( (string) $value );
 				continue;
 			}
 
-			$property_schema = $schema_properties[ $key ];
-			$allowed_types   = is_array( $property_schema['type'] ) ? $property_schema['type'] : array( $property_schema['type'] );
+			$property_schema = (array) $schema_properties[ $key ];
+			$allowed_types   = (array) ( is_array( $property_schema['type'] ) ? $property_schema['type'] : array( $property_schema['type'] ) );
 
-			// Determine the most appropriate type to use based on the value.
-			$type = $allowed_types[0];
+			$type = (string) $allowed_types[0];
 			if ( count( $allowed_types ) > 1 ) {
 				if ( is_numeric( $value ) && in_array( 'number', $allowed_types, true ) ) {
 					$type = 'number';
 				} elseif ( is_bool( $value ) && in_array( 'boolean', $allowed_types, true ) ) {
 					$type = 'boolean';
-				} elseif ( is_array( $value ) && in_array( 'array', $allowed_types, true ) ) {
-					$type = 'array';
-				} elseif ( is_array( $value ) && in_array( 'object', $allowed_types, true ) ) {
-					$type = 'object';
+				} elseif ( is_array( $value ) ) {
+					if ( in_array( 'object', $allowed_types, true ) ) {
+						$type = 'object';
+					} elseif ( in_array( 'array', $allowed_types, true ) ) {
+						$type = 'array';
+					}
 				} elseif ( is_null( $value ) && in_array( 'null', $allowed_types, true ) ) {
 					$type = 'null';
 				} elseif ( in_array( 'string', $allowed_types, true ) ) {
@@ -900,262 +770,252 @@ class Options {
 
 			switch ( $type ) {
 				case 'object':
-					if ( is_array( $value ) ) {
-						$sub_properties          = $property_schema['properties'] ?? array();
-						$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value, $sub_properties );
-					} else {
-						$sanitized_input[ $key ] = sanitize_text_field( $value );
-					}
+					$sanitized_input[ $key ] = is_array( $value ) ? $this->sanitize_options_recursively( $value, (array) ( $property_schema['properties'] ?? array() ) ) : sanitize_text_field( (string) $value );
 					break;
 				case 'array':
+					$sanitized_input[ $key ] = array();
 					if ( is_array( $value ) ) {
-						$item_schema             = $property_schema['items'] ?? array();
-						$sanitized_input[ $key ] = array();
 						foreach ( $value as $item ) {
+							$item_schema = (array) ( $property_schema['items'] ?? array() );
 							if ( isset( $item_schema['type'] ) ) {
-								// Wrap item in an array to use the existing recursive logic
-								$temp_sanitized          = $this->sanitize_options_recursively( array( 'item' => $item ), array( 'item' => $item_schema ) );
+								$temp_sanitized            = $this->sanitize_options_recursively( array( 'item' => $item ), array( 'item' => $item_schema ) );
 								$sanitized_input[ $key ][] = $temp_sanitized['item'];
 							} else {
-								$sanitized_input[ $key ][] = is_array( $item ) ? $this->sanitize_options_recursively( $item ) : sanitize_text_field( $item );
+								$sanitized_input[ $key ][] = is_array( $item ) ? $this->sanitize_options_recursively( $item ) : sanitize_text_field( (string) $item );
 							}
 						}
-					} else {
-						$sanitized_input[ $key ] = array();
 					}
 					break;
 				case 'boolean':
-					$sanitized_input[ $key ] = rest_sanitize_boolean( $value );
+					$sanitized_input[ $key ] = (bool) rest_sanitize_boolean( $value );
 					break;
 				case 'number':
 					if ( is_numeric( $value ) ) {
-						if ( strpos( (string) $value, '.' ) === false ) {
-							$sanitized_input[ $key ] = intval( $value );
-						} else {
-							$sanitized_input[ $key ] = floatval( $value );
-						}
+						$sanitized_input[ $key ] = ( strpos( (string) $value, '.' ) === false ) ? (int) $value : (float) $value;
 					} else {
-						$sanitized_input[ $key ] = is_null( $value ) && in_array( 'null', $allowed_types, true ) ? null : 0;
+						$sanitized_input[ $key ] = ( is_null( $value ) && in_array( 'null', $allowed_types, true ) ) ? null : 0;
 					}
 					break;
 				case 'string':
-					if ( is_string( $value ) || is_numeric( $value ) || is_bool( $value ) ) {
-						$str_value = (string) $value;
-						if ( isset( $property_schema['format'] ) && 'uri' === $property_schema['format'] ) {
-							$sanitized_input[ $key ] = esc_url_raw( $str_value );
-						} else {
-							$sanitized_input[ $key ] = sanitize_text_field( $str_value );
-						}
+					$str_value = is_null( $value ) ? '' : (string) $value;
+					if ( isset( $property_schema['format'] ) && 'uri' === $property_schema['format'] ) {
+						$sanitized_input[ $key ] = (string) esc_url_raw( $str_value );
 					} else {
-						$sanitized_input[ $key ] = is_null( $value ) && in_array( 'null', $allowed_types, true ) ? null : '';
+						$sanitized_input[ $key ] = (string) sanitize_text_field( $str_value );
 					}
 					break;
 				case 'null':
 					$sanitized_input[ $key ] = null;
 					break;
 				default:
-					if ( is_array( $value ) ) {
-						$sanitized_input[ $key ] = $this->sanitize_options_recursively( $value );
-					} else {
-						$sanitized_input[ $key ] = sanitize_text_field( $value );
-					}
+					$sanitized_input[ $key ] = is_array( $value ) ? $this->sanitize_options_recursively( $value ) : sanitize_text_field( (string) $value );
 			}
 		}
 
 		return $sanitized_input;
 	}
 
+	/**
+	 * Validates options before saving them to the database.
+	 *
+	 * @param array $input The raw input options.
+	 * @return array The validated options.
+	 */
 	public function validate_options( $input ) {
-		// Enforce network overrides for permissions before processing
-		if ( is_multisite() && ! is_super_admin() && class_exists( '\Videopack\Admin\Multisite' ) ) {
-			if ( \Videopack\Admin\Multisite::is_videopack_active_for_network() ) {
-				$network_options = \Videopack\Admin\Multisite::get_network_options();
+		if ( is_multisite() && ! is_super_admin() && \Videopack\Admin\Multisite::is_videopack_active_for_network() ) {
+			$network_options = (array) \Videopack\Admin\Multisite::get_network_options();
 
-				// Always force resource and FFmpeg settings
-				$input['simultaneous_encodes'] = $network_options['simultaneous_encodes'] ?? $input['simultaneous_encodes'];
-				$input['threads']              = $network_options['threads'] ?? $input['threads'];
-				$input['nice']                 = $network_options['nice'] ?? $input['nice'];
-				$input['app_path']             = $network_options['app_path'] ?? $input['app_path'];
-				$input['ffmpeg_exists']        = $network_options['ffmpeg_exists'] ?? $input['ffmpeg_exists'];
+			$input['simultaneous_encodes'] = $network_options['simultaneous_encodes'] ?? $input['simultaneous_encodes'];
+			$input['threads']              = $network_options['threads'] ?? $input['threads'];
+			$input['nice']                 = $network_options['nice'] ?? $input['nice'];
+			$input['app_path']             = $network_options['app_path'] ?? $input['app_path'];
+			$input['ffmpeg_exists']        = $network_options['ffmpeg_exists'] ?? $input['ffmpeg_exists'];
 
-				// Lock the entire Encoding tab settings if superadmin only is set
-				if ( ! empty( $network_options['superadmin_only_ffmpeg_settings'] ) ) {
-					$encoding_keys = array( 'hide_video_formats', 'error_email', 'ffmpeg_watermark', 'audio_bitrate', 'audio_channels', 'auto_encode', 'auto_encode_gif', 'auto_publish_post' );
-					foreach ( $encoding_keys as $key ) {
-						if ( isset( $this->options[ $key ] ) ) {
-							$input[ $key ] = $this->options[ $key ];
-						}
+			if ( ! empty( $network_options['superadmin_only_ffmpeg_settings'] ) ) {
+				$encoding_keys = array( 'hide_video_formats', 'error_email', 'ffmpeg_watermark', 'audio_bitrate', 'audio_channels', 'auto_encode', 'auto_encode_gif', 'auto_publish_post' );
+				foreach ( $encoding_keys as $key ) {
+					if ( isset( $this->options[ (string) $key ] ) ) {
+						$input[ (string) $key ] = $this->options[ (string) $key ];
 					}
+				}
 
-					// For 'encode', restore all settings except 'enabled', which can be changed by non-superadmins.
-					if ( isset( $this->options['encode'] ) && is_array( $this->options['encode'] ) ) {
-						$sanitized_encode = $this->options['encode'];
-						if ( isset( $input['encode'] ) && is_array( $input['encode'] ) ) {
-							foreach ( $input['encode'] as $codec => $codec_settings ) {
-								if ( isset( $codec_settings['enabled'] ) ) {
-									$sanitized_encode[ $codec ]['enabled'] = $codec_settings['enabled'];
-								}
+				if ( isset( $this->options['encode'] ) && is_array( $this->options['encode'] ) ) {
+					$sanitized_encode = (array) $this->options['encode'];
+					if ( isset( $input['encode'] ) && is_array( $input['encode'] ) ) {
+						foreach ( $input['encode'] as $codec => $codec_settings ) {
+							if ( isset( $codec_settings['enabled'] ) ) {
+								$sanitized_encode[ (string) $codec ]['enabled'] = (bool) $codec_settings['enabled'];
 							}
 						}
-						$input['encode'] = $sanitized_encode;
 					}
+					$input['encode'] = $sanitized_encode;
 				}
 			}
 		}
 
-		// validate & sanitize input from settings API
-		$schema = $this->settings_schema( $this->get_default() );
-		$input  = $this->sanitize_options_recursively( $input, $schema );
+		$schema = (array) $this->settings_schema( (array) $this->get_default() );
+		$input  = (array) $this->sanitize_options_recursively( (array) $input, $schema );
 
-		$ffmpeg_tester = new Encode\FFmpeg_Tester( $this ); // Pass $this (Options instance) to the tester.
-		// Use $this->options for current values, not public properties.
-		if ( $input['app_path'] !== $this->options['app_path'] || ( isset( $input['ffmpeg_exists'] ) && 'notchecked' === $input['ffmpeg_exists'] ) ) {
-			$input = $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
+		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this );
+		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $this->options['app_path'] ?? '' ) || ( $input['ffmpeg_exists'] ?? '' ) === 'notchecked' ) {
+			$input = (array) $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
 		} else {
-			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'];
-			$input['ffmpeg_error']  = $this->options['ffmpeg_error'];
+			$input['ffmpeg_exists'] = $this->options['ffmpeg_exists'] ?? 'notchecked';
+			$input['ffmpeg_error']  = (string) ( $this->options['ffmpeg_error'] ?? '' );
 		}
 
-		if ( $input['ffmpeg_exists'] === 'notinstalled' ) {
-			$input['browser_thumbnails'] = true; // in case a user had FFmpeg installed and disabled it, they can't choose to disable browser thumbnails if it's no longer installed
+		if ( 'notinstalled' === ( $input['ffmpeg_exists'] ?? '' ) ) {
+			$input['browser_thumbnails'] = true;
 			$input['auto_encode']        = false;
 			$input['auto_encode_gif']    = false;
 		}
 
 		if ( empty( $input['width'] ) ) {
-			add_settings_error( 'video_embed_thumbnail_generator_settings', 'width-zero', esc_html__( 'You must enter a value for the maximum video width.', 'video-embed-thumbnail-generator' ) );
-			$input['width'] = $this->options['width'];
+			add_settings_error( 'video_embed_thumbnail_generator_settings', 'width-zero', (string) __( 'You must enter a value for the maximum video width.', 'video-embed-thumbnail-generator' ) );
+			$input['width'] = (int) ( $this->options['width'] ?? 960 );
 		}
 		if ( empty( $input['height'] ) ) {
-			add_settings_error( 'video_embed_thumbnail_generator_settings', 'height-zero', esc_html__( 'You must enter a value for the maximum video height.', 'video-embed-thumbnail-generator' ) );
-			$input['height'] = $this->options['height'];
+			add_settings_error( 'video_embed_thumbnail_generator_settings', 'height-zero', (string) __( 'You must enter a value for the maximum video height.', 'video-embed-thumbnail-generator' ) );
+			$input['height'] = (int) ( $this->options['height'] ?? 540 );
 		}
 
-		if ( array_key_exists( 'capabilities', $input ) && is_array( $input['capabilities'] ) ) {
-			if ( $input['capabilities'] !== $this->options['capabilities'] ) {
-				$input['capabilities'] = $this->set_capabilities( $input['capabilities'] );
+		if ( isset( $input['capabilities'] ) && is_array( $input['capabilities'] ) ) {
+			if ( $input['capabilities'] !== ( $this->options['capabilities'] ?? array() ) ) {
+				$input['capabilities'] = (array) $this->set_capabilities( $input['capabilities'] );
 			}
 		}
 
-		if ( ! array_key_exists( 'transient_cache', $input ) && $this->options['transient_cache'] == true ) {
-			( new Cleanup() )->delete_transients();
-		} //if user is turning off transient cache option
+		if ( ! array_key_exists( 'transient_cache', $input ) && ! empty( $this->options['transient_cache'] ) ) {
+			( new \Videopack\Admin\Cleanup() )->delete_transients();
+		}
 
-		if ( array_key_exists( 'auto_thumb_number', $input ) ) {
-			if ( intval( $this->options['auto_thumb_number'] ) == 1 && intval( $input['auto_thumb_number'] ) > 1 ) {
-				$input['auto_thumb_position'] = strval( round( intval( $input['auto_thumb_number'] ) * ( intval( $this->options['auto_thumb_position'] ) / 100 ) ) );
-				if ( $input['auto_thumb_position'] == '0' ) {
+		if ( isset( $input['auto_thumb_number'] ) ) {
+			$old_num = (int) ( $this->options['auto_thumb_number'] ?? 1 );
+			$new_num = (int) $input['auto_thumb_number'];
+			if ( 1 === $old_num && $new_num > 1 ) {
+				$input['auto_thumb_position'] = (string) round( $new_num * ( (int) ( $this->options['auto_thumb_position'] ?? 50 ) / 100 ) );
+				if ( '0' === $input['auto_thumb_position'] ) {
 					$input['auto_thumb_position'] = '1';
 				}
-			}
-			if ( intval( $this->options['auto_thumb_number'] ) > 1 && intval( $input['auto_thumb_number'] ) == 1 ) {
-				// round to the nearest 25 but not 100
-				$input['auto_thumb_position'] = strval( round( round( intval( $this->options['auto_thumb_position'] ) / intval( $this->options['auto_thumb_number'] ) * 4 ) / 4 * 100 ) );
-				if ( $input['auto_thumb_position'] == '100' ) {
+			} elseif ( $old_num > 1 && 1 === $new_num ) {
+				$input['auto_thumb_position'] = (string) round( round( (int) ( $this->options['auto_thumb_position'] ?? 1 ) / $old_num * 4 ) / 4 * 100 );
+				if ( '100' === $input['auto_thumb_position'] ) {
 					$input['auto_thumb_position'] = '75';
 				}
 			}
 
-			if ( intval( $input['auto_thumb_number'] ) > 1 && intval( $input['auto_thumb_position'] ) > intval( $input['auto_thumb_number'] ) ) {
-				$input['auto_thumb_position'] = $input['auto_thumb_number'];
+			if ( $new_num > 1 && (int) $input['auto_thumb_position'] > $new_num ) {
+				$input['auto_thumb_position'] = (string) $new_num;
 			}
-
-			if ( intval( $input['auto_thumb_number'] ) == 0 ) {
-				$input['auto_thumb_number'] = $this->options['auto_thumb_number'];
+			if ( 0 === $new_num ) {
+				$input['auto_thumb_number'] = $old_num;
 			}
 		}
 
-		// load all settings and make sure they get a value of false if they weren't entered into the form
 		foreach ( $this->default_options as $key => $value ) {
-			if ( ! array_key_exists( $key, $input ) ) {
-				$input[ $key ] = false;
+			if ( ! array_key_exists( (string) $key, $input ) ) {
+				$input[ (string) $key ] = false;
 			}
 		}
 
-		if ( $input['embeddable'] == false ) {
+		if ( empty( $input['embeddable'] ) ) {
 			$input['embedcode'] = false;
 		}
 
-		if ( isset( $input['collection_video_limit'] ) && intval( $input['collection_video_limit'] ) === 0 ) {
+		if ( isset( $input['collection_video_limit'] ) && 0 === (int) $input['collection_video_limit'] ) {
 			$input['collection_video_limit'] = -1;
 		}
 
-		if ( ! $input['queue_control'] ) { // don't reset queue control when saving settings
-			$input['queue_control'] = $this->options['queue_control'];
+		if ( empty( $input['queue_control'] ) ) {
+			$input['queue_control'] = (string) ( $this->options['queue_control'] ?? 'play' );
 		}
 
-		$this->options = $input;
-
+		$this->options = (array) $input;
 		return $input;
 	}
 
-	public function validate_ffmpeg_settings( array $input, Encode\FFmpeg_Tester $ffmpeg_tester ) {
-
-		$ffmpeg_info = $ffmpeg_tester->check_ffmpeg_exists( $input['app_path'] );
+	/**
+	 * Validates FFmpeg settings.
+	 *
+	 * @param array                                 $input         Raw input options.
+	 * @param \Videopack\Admin\Encode\FFmpeg_Tester $ffmpeg_tester FFmpeg tester instance.
+	 * @return array Validated input options.
+	 */
+	public function validate_ffmpeg_settings( array $input, \Videopack\Admin\Encode\FFmpeg_Tester $ffmpeg_tester ) {
+		$ffmpeg_info = (array) $ffmpeg_tester->check_ffmpeg_exists( (string) ( $input['app_path'] ?? '' ) );
 
 		if ( true === $ffmpeg_info['ffmpeg_exists'] ) {
 			$input['ffmpeg_exists'] = true;
-			$input['ffmpeg_error']  = ''; // Clear any previous error on success.
+			$input['ffmpeg_error']  = '';
 		} else {
 			$input['ffmpeg_exists'] = 'notinstalled';
-			$input['ffmpeg_error']  = $ffmpeg_info['ffmpeg_error'];
+			$input['ffmpeg_error']  = (string) $ffmpeg_info['ffmpeg_error'];
 		}
 
-		$input['app_path'] = $ffmpeg_info['app_path'];
+		$input['app_path'] = (string) $ffmpeg_info['app_path'];
 
-		return $input;
+		return (array) $input;
 	}
 
+	/**
+	 * Gets WordPress roles that have a specific capability.
+	 *
+	 * @param string $capability The capability to check.
+	 * @return array Roles with the capability.
+	 */
 	protected function get_roles_with_capability( $capability ) {
-
 		$roles_with_capability = array();
 		$wp_roles_instance     = wp_roles();
 
-		// Ensure wp_roles() returned a valid WP_Roles object.
 		if ( ! $wp_roles_instance instanceof \WP_Roles ) {
 			return $roles_with_capability;
 		}
 
-		// Iterate over all registered role names (slugs).
-		foreach ( $wp_roles_instance->get_names() as $role_slug => $role_name ) {
-			$role_object = $wp_roles_instance->get_role( $role_slug );
-			// Check if the role object exists and has the capability.
-			if ( $role_object instanceof \WP_Role && $role_object->has_cap( $capability ) ) {
-				$roles_with_capability[ $role_slug ] = true;
+		foreach ( (array) $wp_roles_instance->get_names() as $role_slug => $role_name ) {
+			$role_object = $wp_roles_instance->get_role( (string) $role_slug );
+			if ( $role_object instanceof \WP_Role && $role_object->has_cap( (string) $capability ) ) {
+				$roles_with_capability[ (string) $role_slug ] = true;
 			}
 		}
 
 		return $roles_with_capability;
 	}
 
+	/**
+	 * Gets all roles and whether they have a specific capability.
+	 *
+	 * @param array $enabled_roles Roles that should have the capability.
+	 * @return array All roles with boolean values indicating cap status.
+	 */
 	protected function get_all_roles_with_capability( $enabled_roles ) {
-
 		$all_roles         = array();
 		$wp_roles_instance = wp_roles();
 
-		// Ensure wp_roles() returned a valid WP_Roles object.
 		if ( ! $wp_roles_instance instanceof \WP_Roles ) {
 			return $all_roles;
 		}
 
-		// Iterate over all registered role names (slugs).
-		foreach ( $wp_roles_instance->get_names() as $role_slug => $role_name ) {
-			$all_roles[ $role_slug ] = in_array( $role_slug, $enabled_roles );
+		foreach ( (array) $wp_roles_instance->get_names() as $role_slug => $role_name ) {
+			$all_roles[ (string) $role_slug ] = in_array( (string) $role_slug, (array) $enabled_roles, true );
 		}
 
 		return $all_roles;
 	}
 
+	/**
+	 * Sets plugin capabilities for WordPress roles.
+	 *
+	 * @param array $capabilities The capabilities to set.
+	 * @return array The cleaned capabilities.
+	 */
 	public function set_capabilities( array $capabilities ): array {
-
 		$wp_roles               = wp_roles();
-		$plugin_capability_keys = array_keys( $this->default_capabilities );
+		$plugin_capability_keys = (array) array_keys( $this->default_capabilities );
 
-		// First, ensure the capabilities array is clean and only contains role slugs as keys.
 		$clean_capabilities = array();
 		foreach ( $capabilities as $capability => $roles ) {
 			if ( is_array( $roles ) ) {
-				$clean_capabilities[ $capability ] = array_filter(
+				$clean_capabilities[ (string) $capability ] = (array) array_filter(
 					$roles,
 					function ( $key ) {
 						return is_string( $key );
@@ -1165,62 +1025,69 @@ class Options {
 			}
 		}
 
-		// Iterate through each role and update its capabilities.
-		foreach ( $wp_roles->roles as $role => $role_info ) {
-			// Iterate over all plugin capabilities
-			foreach ( $plugin_capability_keys as $capability ) {
-				$enabled_roles          = $clean_capabilities[ $capability ] ?? array();
-				$has_capability         = isset( $role_info['capabilities'][ $capability ] ) && $role_info['capabilities'][ $capability ];
-				$should_have_capability = ! empty( $enabled_roles[ $role ] );
+		if ( $wp_roles instanceof \WP_Roles ) {
+			foreach ( (array) $wp_roles->roles as $role => $role_info ) {
+				foreach ( $plugin_capability_keys as $capability ) {
+					$enabled_roles          = (array) ( $clean_capabilities[ (string) $capability ] ?? array() );
+					$has_capability         = ! empty( $role_info['capabilities'][ (string) $capability ] );
+					$should_have_capability = ! empty( $enabled_roles[ (string) $role ] );
 
-				if ( $should_have_capability && ! $has_capability ) {
-					// The role should have the capability but doesn't.
-					$wp_roles->add_cap( $role, $capability );
-				} elseif ( ! $should_have_capability && $has_capability ) {
-					// The role shouldn't have the capability but does.
-					$wp_roles->remove_cap( $role, $capability );
+					if ( $should_have_capability && ! $has_capability ) {
+						$wp_roles->add_cap( (string) $role, (string) $capability );
+					} elseif ( ! $should_have_capability && $has_capability ) {
+						$wp_roles->remove_cap( (string) $role, (string) $capability );
+					}
 				}
 			}
 		}
 		return $clean_capabilities;
 	}
 
+	/**
+	 * Merges saved options with default options.
+	 *
+	 * @param array $options         Saved options.
+	 * @param array $default_options Default options.
+	 * @return array Merged options.
+	 */
 	public function merge_options_with_defaults( array $options, array $default_options ) {
-
-		// Remove obsolete options not present in the new defaults.
-		foreach ( array_keys( $options ) as $key ) {
-			if ( ! array_key_exists( $key, $default_options ) ) {
-				unset( $options[ $key ] );
+		foreach ( (array) array_keys( $options ) as $key ) {
+			if ( ! array_key_exists( (string) $key, $default_options ) ) {
+				unset( $options[ (string) $key ] );
 			}
 		}
 
 		foreach ( $default_options as $key => $value ) {
-			// Check if the key exists in $options. If not, set it to the default value
+			$key = (string) $key;
 			if ( ! array_key_exists( $key, $options ) ) {
-				$options[ $key ] = $value; // Add missing option with its default
-			} elseif ( is_array( $value ) ) { // If default is an array
+				$options[ $key ] = $value;
+			} elseif ( is_array( $value ) ) {
 				if ( ! isset( $options[ $key ] ) || ! is_array( $options[ $key ] ) ) {
-					// If saved option is not set, or is not an array (type mismatch),
-					// overwrite with the default array structure.
-					// This ensures that if a default expects an array (e.g., for 'encode' or 'capabilities'),
-					// it will be an array, preventing errors if a scalar was somehow saved previously.
 					$options[ $key ] = $value;
 				} else {
-					// Both are arrays, recurse.
-					$options[ $key ] = $this->merge_options_with_defaults( $options[ $key ], $value );
+					$options[ $key ] = (array) $this->merge_options_with_defaults( (array) $options[ $key ], $value );
 				}
 			}
-			// If default is not an array, and key exists in options, retain the existing value in $options (scalar or object).
 		}
-		return $options;
+		return (array) $options;
 	}
 
+	/**
+	 * Gets the current video player ID.
+	 *
+	 * @return int The player ID.
+	 */
 	public function get_video_player_id() {
-		return $this->video_player_id;
+		return (int) $this->video_player_id;
 	}
 
+	/**
+	 * Increments and returns the video player ID.
+	 *
+	 * @return int The new player ID.
+	 */
 	public function increment_video_player_id() {
 		++$this->video_player_id;
-		return $this->video_player_id;
+		return (int) $this->video_player_id;
 	}
 }

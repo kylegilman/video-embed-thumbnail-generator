@@ -1,11 +1,40 @@
 <?php
+/**
+ * Local attachment video source subclass.
+ *
+ * @package Videopack
+ */
 
 namespace Videopack\Video_Source;
 
+/**
+ * Class Source_Attachment_Local
+ *
+ * Handles video sources that are WordPress attachments stored locally (or on a cloud provider via hybrid attachment).
+ *
+ * @since 5.0.0
+ * @package Videopack\Video_Source
+ */
 class Source_Attachment_Local extends Source {
 
+	/**
+	 * Attachment metadata manager.
+	 *
+	 * @var \Videopack\Admin\Attachment_Meta $meta_manager
+	 */
 	protected $meta_manager = null;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string|int               $source          The attachment ID or an array with ID and URL.
+	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param string|null              $format          Optional. Videopack video format ID.
+	 * @param bool|null                $exists          Optional. Whether the source exists.
+	 * @param int|null                 $parent_id       Optional. Parent ID (post ID, etc.).
+	 *
+	 * @throws \Exception If the attachment ID is invalid.
+	 */
 	public function __construct(
 		$source,
 		\Videopack\Admin\Options $options_manager,
@@ -23,6 +52,12 @@ class Source_Attachment_Local extends Source {
 		}
 	}
 
+	/**
+	 * Validates the attachment ID.
+	 *
+	 * @param string|int $attachment_id The attachment ID.
+	 * @return bool True if valid, false otherwise.
+	 */
 	public function validate_source( $attachment_id ): bool {
 
 		if ( ! is_numeric( $attachment_id )
@@ -35,10 +70,18 @@ class Source_Attachment_Local extends Source {
 		return true;
 	}
 
+	/**
+	 * Sets the source ID.
+	 */
 	public function set_id(): void {
 		$this->id = is_array( $this->source ) ? $this->source['id'] : $this->source;
 	}
 
+	/**
+	 * Sets the video metadata.
+	 *
+	 * @param array|null $metadata Optional. The metadata array.
+	 */
 	public function set_metadata( ?array $metadata = null ): void {
 		if ( $metadata ) {
 			$this->metadata = $metadata;
@@ -51,18 +94,21 @@ class Source_Attachment_Local extends Source {
 		$this->metadata = $this->meta_manager->get();
 	}
 
+	/**
+	 * Sets the video URL.
+	 */
 	protected function set_url(): void {
 		$attachment_id = is_array( $this->source ) ? $this->source['id'] : $this->source;
 		$original_url  = is_array( $this->source ) ? $this->source['url'] : '';
 
-		// 1. Check for remote attachment URL (hybrid source)
+		// 1. Check for remote attachment URL (hybrid source).
 		$external_url = get_post_meta( $attachment_id, '_kgflashmediaplayer-externalurl', true );
 		if ( $external_url ) {
 			$this->url = $external_url;
 			return;
 		}
 
-		// 2. Fallback to standard attachment URL logic
+		// 2. Fallback to standard attachment URL logic.
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
 		if ( ! empty( $original_url ) ) {
@@ -77,8 +123,10 @@ class Source_Attachment_Local extends Source {
 					'limelight.com',
 					'digitaloceanspaces.com',
 				);
+
 				/**
 				 * Filter the list of CDN domains exempt from URL rewriting.
+				 *
 				 * @param array $exempt_cdns Array of CDN domains.
 				 */
 				$exempt_cdns = apply_filters( 'videopack_exempt_cdns', $exempt_cdns );
@@ -100,15 +148,21 @@ class Source_Attachment_Local extends Source {
 		$this->url = $attachment_url;
 	}
 
+	/**
+	 * Sets whether the video source exists.
+	 */
 	protected function set_exists(): void {
 		$external_url = get_post_meta( $this->id, '_kgflashmediaplayer-externalurl', true );
 		if ( $external_url ) {
-			$this->exists = true; // Assume it exists if it's a remote URL we've resolved
+			$this->exists = true; // Assume it exists if it's a remote URL we've resolved.
 			return;
 		}
 		$this->exists = file_exists( get_attached_file( $this->id ) );
 	}
 
+	/**
+	 * Sets the direct path to the video.
+	 */
 	protected function set_direct_path(): void {
 		$external_url = get_post_meta( $this->id, '_kgflashmediaplayer-externalurl', true );
 		if ( $external_url ) {
@@ -118,10 +172,16 @@ class Source_Attachment_Local extends Source {
 		$this->direct_path = get_attached_file( $this->id );
 	}
 
+	/**
+	 * Sets whether the video source is local.
+	 */
 	protected function set_local(): void {
 		$this->local = true;
 	}
 
+	/**
+	 * Sets the parent ID.
+	 */
 	protected function set_parent_id(): void {
 		$parent_id = wp_get_post_parent_id( $this->source );
 		if ( ! $parent_id ) {
@@ -130,10 +190,16 @@ class Source_Attachment_Local extends Source {
 		$this->parent_id = $parent_id;
 	}
 
+	/**
+	 * Sets the descriptive title of the video.
+	 */
 	protected function set_title(): void {
 		$this->title = get_the_title( $this->source );
 	}
 
+	/**
+	 * Sets the MIME type of the video.
+	 */
 	protected function set_mime_type(): void {
 		$this->mime_type = get_post_mime_type( $this->source );
 
@@ -153,21 +219,21 @@ class Source_Attachment_Local extends Source {
 	/**
 	 * Get the poster image URL for the video with fallbacks.
 	 *
-	 * @return string
+	 * @return string The poster image URL.
 	 */
 	public function get_poster(): string {
-		// 1. Check primary metadata (already merged from _videopack-meta)
+		// 1. Check primary metadata (already merged from _videopack-meta).
 		if ( ! empty( $this->metadata['poster'] ) ) {
 			return $this->metadata['poster'];
 		}
 
-		// 2. Fallback to legacy field if not already migrated
+		// 2. Fallback to legacy field if not already migrated.
 		$legacy_poster = get_post_meta( $this->id, '_kgflashmediaplayer-poster', true );
 		if ( ! empty( $legacy_poster ) ) {
 			return $legacy_poster;
 		}
 
-		// 3. Fallback to featured image (_thumbnail_id)
+		// 3. Fallback to featured image (_thumbnail_id).
 		$thumbnail_id = get_post_thumbnail_id( $this->id );
 		if ( $thumbnail_id ) {
 			$thumbnail_url = wp_get_attachment_url( $thumbnail_id );
@@ -179,6 +245,9 @@ class Source_Attachment_Local extends Source {
 		return '';
 	}
 
+	/**
+	 * Sets the child sources.
+	 */
 	protected function set_child_sources(): void {
 
 		$children = $this->find_attachment_children();

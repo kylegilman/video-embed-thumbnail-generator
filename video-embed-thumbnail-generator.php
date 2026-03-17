@@ -31,18 +31,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * 1) Includes code adapted from Joshua Eldridge's Flash Media Player Plugin
- *    Website: http://wordpress.org/extend/plugins/flash-video-player/
- * 2) Includes code adapted from Gary Cao's Make Shortcodes User-Friendly tutorial
- *    Website: http://www.wphardcore.com/2010/how-to-make-shortcodes-user-friendly/
- * 3) Includes code adapted from Justin Gable's "Modifying WordPress' Default Method for Inserting Media"
- *    Website: http://justingable.com/2008/10/03/modifying-wordpress-default-method-for-inserting-media/
- * 4) Includes Video-JS Player
+ * 1) Includes Video-JS Player
  * Website: http://www.videojs.com/
  * License: http://www.gnu.org/licenses/lgpl.html
- * 5) Includes code adapted from Kathy Darling's custom solution for saving thumbnails
- * Website: http://www.kathyisawesome.com/
- * 6) Includes Dominic's Video.js Resolution Selector
+ * 2) Includes an adaptation of Dominic's Video.js Resolution Selector
  * Website: https://github.com/dominic-p/videojs-resolution-selector
  *
  * =Translators=
@@ -86,7 +78,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	}
 
 	if ( VIDEOPACK_FREEMIUS_ENABLED && ! function_exists( 'videopack_fs' ) ) {
-		// Create a helper function for easy SDK access.
+		/**
+		 * Create a helper function for easy SDK access.
+		 *
+		 * @return \Freemius The Freemius SDK instance.
+		 */
 		function videopack_fs() {
 			global $videopack_fs;
 
@@ -130,8 +126,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 			return $videopack_fs;
 		}
 
+		/**
+		 * Add Freemius customizations after Freemius is loaded.
+		 */
 		function videopack_fs_loaded() {
-			// add Freemius customizations after Freemius is loaded
+			// Add Freemius customizations after Freemius is loaded.
 			if ( function_exists( 'videopack_fs' ) ) {
 				videopack_fs()->add_filter(
 					'hide_account_tabs',
@@ -139,7 +138,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						return true;
 					}
 				);
-				videopack_fs()->add_action( 'after_uninstall', 'videopack_uninstall_plugin' ); // add uninstall logic
+				videopack_fs()->add_action( 'after_uninstall', 'videopack_uninstall_plugin' ); // Add uninstall logic.
 			}
 		}
 		add_action( 'videopack_fs_loaded', 'videopack_fs_loaded' );
@@ -151,7 +150,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	}
 }
 
-
+/**
+ * Cleanup function for plugin deactivation and uninstallation.
+ *
+ * @since 5.0.0
+ */
 function videopack_cleanup_plugin() {
 
 	$options_manager = new \Videopack\Admin\Options();
@@ -161,9 +164,9 @@ function videopack_cleanup_plugin() {
 
 	wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) );
 	wp_clear_scheduled_hook( 'kgvid_cleanup_generated_thumbnails' );
-	$cleanup->cleanup_generated_thumbnails_handler(); //run this now because cron won't do it later
+	$cleanup->cleanup_generated_thumbnails_handler(); // Run this now because cron won't do it later.
 
-	$cleanup->delete_transients(); //clear URL cache
+	$cleanup->delete_transients(); // Clear URL cache.
 	delete_transient( 'kgvid_new_attachment_transient' );
 	delete_option( 'kgvid_video_embed_cms_switch' );
 
@@ -180,6 +183,12 @@ function videopack_cleanup_plugin() {
 	}
 }
 
+/**
+ * Handles plugin deactivation.
+ *
+ * @param bool $network_wide Whether the plugin is being deactivated network-wide.
+ * @since 1.0.0
+ */
 function videopack_deactivate_plugin( $network_wide ) {
 
 	if ( is_multisite() && $network_wide ) {
@@ -202,6 +211,11 @@ function videopack_deactivate_plugin( $network_wide ) {
 }
 register_deactivation_hook( __FILE__, 'videopack_deactivate_plugin' );
 
+/**
+ * Registers the uninstall hook.
+ *
+ * @since 5.0.0
+ */
 function videopack_register_uninstall_hook() {
 
 	if ( ! function_exists( 'videopack_fs' ) ) {
@@ -212,6 +226,11 @@ function videopack_register_uninstall_hook() {
 }
 add_action( 'admin_init', 'videopack_register_uninstall_hook' );
 
+/**
+ * Handles plugin uninstallation.
+ *
+ * @since 1.0.0
+ */
 function videopack_uninstall_plugin() {
 
 	if ( ! current_user_can( 'activate_plugins' ) ) {
@@ -226,14 +245,14 @@ function videopack_uninstall_plugin() {
 		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_name ) );
 	} else {
-		// Delete network-wide options
+		// Delete network-wide options.
 		delete_site_option( 'videopack_network_options' );
 
-		// Clean up options for the main site
+		// Clean up options for the main site.
 		$main_blog_id = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
 		delete_blog_option( $main_blog_id, 'videopack_options' );
 
-		// Drop the central queue table from the main site
+		// Drop the central queue table from the main site.
 		$original_blog_id = get_current_blog_id();
 		$switched         = false;
 		if ( $original_blog_id != $main_blog_id ) {
@@ -241,7 +260,7 @@ function videopack_uninstall_plugin() {
 			$switched = true;
 		}
 
-		$table_name = $wpdb->prefix . 'videopack_encoding_queue'; // $wpdb->prefix is now main site's
+		$table_name = $wpdb->prefix . 'videopack_encoding_queue'; // $wpdb->prefix is now main site's.
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_name ) );
 
 		if ( $switched ) {
