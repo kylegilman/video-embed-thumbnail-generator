@@ -57,7 +57,7 @@ class Video_Format {
 	}
 
 	/**
-	 * Get the video format name.
+	 * Get the video format name (H.264 MP4 Full HD (1080p)).
 	 *
 	 * @return string
 	 */
@@ -66,7 +66,16 @@ class Video_Format {
 	}
 
 	/**
-	 * Get the video format label.
+	 * Get a shorter version of the video format name (H.264 1080p).
+	 *
+	 * @return string
+	 */
+	public function get_short_name() {
+		return $this->codec->get_label() . ' ' . $this->resolution->get_label();
+	}
+
+	/**
+	 * Get the video format label (1080p).
 	 *
 	 * @return string
 	 */
