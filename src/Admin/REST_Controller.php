@@ -42,13 +42,6 @@ class REST_Controller extends \WP_REST_Controller {
 	protected $namespace;
 
 	/**
-	 * Cache for video durations during a request.
-	 *
-	 * @var array $video_durations
-	 */
-	protected $video_durations = array();
-
-	/**
 	 * REST_Controller constructor.
 	 *
 	 * @param Options $options_manager The options manager instance.
@@ -80,16 +73,6 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Permission check for getting settings.
-	 *
-	 * @return bool
-	 */
-	public function get_settings_permissions_check() {
-		$can = current_user_can( 'manage_options' );
-		return $can;
-	}
-
-	/**
 	 * Permission check for updating settings.
 	 *
 	 * @return bool
@@ -98,31 +81,6 @@ class REST_Controller extends \WP_REST_Controller {
 		$can = current_user_can( 'manage_options' );
 		return $can;
 	}
-
-	/**
-	 * REST callback to get plugin settings.
-	 *
-	 * @return \WP_REST_Response The settings.
-	 */
-	public function get_settings() {
-		return new \WP_REST_Response( $this->options, 200 );
-	}
-
-	/**
-	 * REST callback to update plugin settings.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return \WP_REST_Response The updated settings.
-	 */
-	public function update_settings( \WP_REST_Request $request ) {
-		$params  = $request->get_params();
-		$options = array_merge( $this->options, $params );
-		update_option( 'videopack_options', $options );
-		$this->options = $options;
-		return new \WP_REST_Response( $this->options, 200 );
-	}
-
-
 
 	/**
 	 * Initializes REST routes.
@@ -190,11 +148,6 @@ class REST_Controller extends \WP_REST_Controller {
 			'/settings',
 			array(
 				array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_settings' ),
-					'permission_callback' => array( $this, 'get_settings_permissions_check' ),
-				),
-				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'update_settings' ),
 					'permission_callback' => array( $this, 'update_settings_permissions_check' ),
@@ -206,12 +159,22 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/defaults',
+			'/settings/defaults',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'defaults' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/thumbs',
 			array(
 				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
 					'callback'            => array( $this, 'thumb_save' ),
-					'permission_callback' => array( $this, 'make_video_thumbnails_permissions_check' ),
+					'permission_callback' => array( $this, 'update_settings_permissions_check' ),
 
 					'args'                => array(
 						'attachment_id'   => array(
@@ -358,6 +321,28 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/thumbs/candidates',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_thumbnail_candidates' ),
+				'permission_callback' => array( $this, 'make_video_thumbnails_permissions_check' ),
+
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/thumbs/browser-candidates',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_browser_thumbnail_candidates' ),
+				'permission_callback' => array( $this, 'make_video_thumbnails_permissions_check' ),
+
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/sources',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -421,39 +406,6 @@ class REST_Controller extends \WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/wp-video',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'wp_video' ),
-				'permission_callback' => '__return_true',
-				'args'                => array(
-					'src'      => array(
-						'type' => 'string',
-					),
-					'poster'   => array(
-						'type' => 'string',
-					),
-					'loop'     => array(
-						'type' => array( 'string', 'boolean' ),
-					),
-					'autoplay' => array(
-						'type' => array( 'string', 'boolean' ),
-					),
-					'preload'  => array(
-						'type' => 'string',
-					),
-					'width'    => array(
-						'type' => array( 'string', 'number' ),
-					),
-					'height'   => array(
-						'type' => array( 'string', 'number' ),
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/render-shortcode',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -476,7 +428,7 @@ class REST_Controller extends \WP_REST_Controller {
 			$this->namespace,
 			'/count-play',
 			array(
-				'methods'             => \WP_REST_Server::CREATABLE, // Use CREATABLE for actions that modify data
+				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'count_play' ),
 				'permission_callback' => '__return_true', // Public endpoint for view counting
 				'args'                => array(
@@ -530,28 +482,6 @@ class REST_Controller extends \WP_REST_Controller {
 						'enum'     => array( 'featured', 'parents', 'thumbs', 'encoding', 'all', 'browser' ),
 					),
 				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			'/thumbs/candidates',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_thumbnail_candidates' ),
-				'permission_callback' => array( $this, 'make_video_thumbnails_permissions_check' ),
-
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			'/thumbs/browser-candidates',
-			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_browser_thumbnail_candidates' ),
-				'permission_callback' => array( $this, 'make_video_thumbnails_permissions_check' ),
-
 			)
 		);
 
@@ -704,40 +634,23 @@ class REST_Controller extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Recursively cleans an array for REST response.
+	 * REST callback to update plugin settings.
 	 *
-	 * Removes keys containing 'path', converts 'checked' or true to boolean true,
-	 * and sets NaN or infinite float values to null.
-	 *
-	 * @param array $dirty_array The array to clean.
-	 * @return array The cleaned array.
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return \WP_REST_Response The updated settings.
 	 */
-	public function clean_array( $dirty_array ) {
-		static $depth = 0;
-
-		// Add a depth limit to prevent infinite recursion
-		if ( $depth > 20 ) {
-			return '(recursion limit reached)';
-		}
-
-		++$depth;
-		foreach ( $dirty_array as $key => $value ) {
-			if ( is_array( $value ) ) {
-				$dirty_array[ $key ] = $this->clean_array( $value );
-			} elseif ( is_float( $value )
-			&& ( is_nan( $value )
-				|| is_infinite( $value )
-			)
-			) {
-				$dirty_array[ $key ] = null;
-			} elseif ( strpos( $key, 'path' ) !== false ) {
-				unset( $dirty_array[ $key ] );
-			} elseif ( $value === 'checked' || $value === true ) {
-				$dirty_array[ $key ] = true;
-			}
-		}
-		--$depth;
-		return $dirty_array;
+	public function update_settings( \WP_REST_Request $request ) {
+		$params  = $request->get_params();
+		$options = array_merge( $this->options, $params );
+		update_option( 'videopack_options', $options );
+		$this->options = $options;
+		/**
+		 * Filters the REST API response for updating settings.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_update_settings', new \WP_REST_Response( $this->options, 200 ), $request );
 	}
 
 	/**
@@ -745,9 +658,15 @@ class REST_Controller extends \WP_REST_Controller {
 	 *
 	 * @return array The default plugin settings.
 	 */
-	public function defaults() {
+	public function defaults( \WP_REST_Request $request ) {
 		$defaults = $this->options_manager->get_default();
-		return $defaults;
+		/**
+		 * Filters the REST API response for default settings.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_defaults', new \WP_REST_Response( $defaults, 200 ), $request );
 	}
 
 	/**
@@ -782,7 +701,13 @@ class REST_Controller extends \WP_REST_Controller {
 				return new \WP_Error( 'invalid_freemius_page', 'Invalid Freemius page requested.', array( 'status' => 404 ) );
 		}
 
-		return new \WP_REST_Response( array( 'html' => ob_get_clean() ), 200 );
+		/**
+		 * Filters the REST API response for Freemius page HTML.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_get_freemius_page_html', new \WP_REST_Response( array( 'html' => ob_get_clean() ), 200 ), $request );
 	}
 
 
@@ -812,12 +737,22 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		// The result is an array with 'path' and 'url'. The client only needs the URL.
-		return new \WP_REST_Response(
-			array(
-				'real_thumb_url' => $result['url'],
-				'attachment_id'  => $attachment_id,
+		/**
+		 * Filters the REST API response for thumbnail generation.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters(
+			'videopack_rest_thumb_generate',
+			new \WP_REST_Response(
+				array(
+					'real_thumb_url' => $result['url'],
+					'attachment_id'  => $attachment_id,
+				),
+				200
 			),
-			200
+			$request
 		);
 	}
 
@@ -856,7 +791,13 @@ class REST_Controller extends \WP_REST_Controller {
 			$results[]            = $res;
 		}
 
-		return new \WP_REST_Response( $results, 200 );
+		/**
+		 * Filters the REST API response for saving all thumbnails.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_thumb_save_all', new \WP_REST_Response( $results, 200 ), $request );
 	}
 
 	/**
@@ -891,7 +832,13 @@ class REST_Controller extends \WP_REST_Controller {
 			return new \WP_Error( 'upload_failed', $response['error'] ?? 'Could not save uploaded thumbnail.', array( 'status' => 500 ) );
 		}
 
-		return new \WP_REST_Response( $response, 200 );
+		/**
+		 * Filters the REST API response for saving an uploaded thumbnail.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_thumb_upload_save', new \WP_REST_Response( $response, 200 ), $request );
 	}
 
 	/**
@@ -935,7 +882,13 @@ class REST_Controller extends \WP_REST_Controller {
 			$params['featured'] ?? null
 		);
 
-		return $response;
+		/**
+		 * Filters the REST API response for saving a thumbnail.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_thumb_save', new \WP_REST_Response( $response, 200 ), $request );
 	}
 
 	/**
@@ -975,7 +928,13 @@ class REST_Controller extends \WP_REST_Controller {
 			'current_page'  => (int) $page,
 		);
 
-		return new \WP_REST_Response( $response, 200 );
+		/**
+		 * Filters the REST API response for video gallery data.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_video_gallery', new \WP_REST_Response( $response, 200 ), $request );
 	}
 
 	/**
@@ -1007,13 +966,14 @@ class REST_Controller extends \WP_REST_Controller {
 		$player->set_source( $source );
 		$source_info = $player->get_sources();
 
-		return $source_info;
+		/**
+		 * Filters the REST API response for video sources.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_video_sources', new \WP_REST_Response( $source_info, 200 ), $request );
 	}
-
-
-
-
-
 
 	/**
 	 * REST callback to run a test FFmpeg encode.
@@ -1036,19 +996,13 @@ class REST_Controller extends \WP_REST_Controller {
 			return new \WP_Error( 'rest_invalid_format', $result['output'], array( 'status' => 400 ) );
 		}
 
-		return $result;
-	}
-
-	/**
-	 * REST callback to render a video using the wp_video_shortcode function.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return string The HTML output of the video shortcode.
-	 */
-	public function wp_video( \WP_REST_Request $request ) {
-		$params   = $request->get_params();
-		$response = wp_video_shortcode( $params );
-		return $response;
+		/**
+		 * Filters the REST API response for FFmpeg test.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_ffmpeg_test', new \WP_REST_Response( $result, 200 ), $request );
 	}
 
 	/**
@@ -1069,7 +1023,13 @@ class REST_Controller extends \WP_REST_Controller {
 		$shortcode = new \Videopack\Frontend\Shortcode( $this->options_manager );
 		$response  = $shortcode->do( $atts, $content );
 
-		return new \WP_REST_Response( array( 'html' => $response ), 200 );
+		/**
+		 * Filters the REST API response for shortcode rendering.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_render_shortcode', new \WP_REST_Response( array( 'html' => $response ), 200 ), $request );
 	}
 
 	/**
@@ -1136,10 +1096,14 @@ class REST_Controller extends \WP_REST_Controller {
 			$response_data['view_count'] = \Videopack\Common\I18n::format_view_count( $updated_meta['starts'] );
 		}
 
-		return new \WP_REST_Response( $response_data, 200 );
+		/**
+		 * Filters the REST API response for counting video plays.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_count_play', new \WP_REST_Response( $response_data, 200 ), $request );
 	}
-
-
 
 	/**
 	 * Permission callback for batch operations.
@@ -1162,7 +1126,6 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 		return false;
 	}
-
 
 	/**
 	 * REST callback to start a batch process.
@@ -1211,7 +1174,13 @@ class REST_Controller extends \WP_REST_Controller {
 			return new \WP_Error( 'invalid_type', __( 'Invalid batch type.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
 
-		return new \WP_REST_Response( $result, 200 );
+		/**
+		 * Filters the REST API response for batch processing.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_batch_process', new \WP_REST_Response( $result, 200 ), $request );
 	}
 
 	/**
@@ -1222,7 +1191,13 @@ class REST_Controller extends \WP_REST_Controller {
 	public function get_thumbnail_candidates() {
 		$attachment = new Attachment( $this->options_manager );
 		$results    = $attachment->get_thumbnail_candidates();
-		return new \WP_REST_Response( $results, 200 );
+		/**
+		 * Filters the REST API response for thumbnail candidates.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_get_thumbnail_candidates', new \WP_REST_Response( $results, 200 ), null );
 	}
 
 	/**
@@ -1233,7 +1208,13 @@ class REST_Controller extends \WP_REST_Controller {
 	public function get_browser_thumbnail_candidates() {
 		$attachment = new Attachment( $this->options_manager );
 		$results    = $attachment->get_pending_browser_thumbnails();
-		return new \WP_REST_Response( $results, 200 );
+		/**
+		 * Filters the REST API response for browser thumbnail candidates.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_get_browser_thumbnail_candidates', new \WP_REST_Response( $results, 200 ), null );
 	}
 
 	/**
@@ -1289,7 +1270,13 @@ class REST_Controller extends \WP_REST_Controller {
 					set_transient( $cache_key, $response, 10 ); // Cache for 10 seconds
 				}
 
-				return $response;
+				/**
+				 * Filters the REST API response for batch progress.
+				 *
+				 * @param \WP_REST_Response $response The REST response object.
+				 * @param \WP_REST_Request  $request  The REST request object.
+				 */
+				return apply_filters( 'videopack_rest_batch_progress', new \WP_REST_Response( $response ? $response->get_data() : null, 200 ), $request );
 			}
 		);
 	}
@@ -1421,7 +1408,13 @@ class REST_Controller extends \WP_REST_Controller {
 			return $result;
 		}
 
-		return new \WP_REST_Response( array( 'attachment_id' => $result ), 200 );
+		/**
+		 * Filters the REST API response for resolving a URL to an attachment.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_resolve_url_to_attachment', new \WP_REST_Response( array( 'attachment_id' => $result ), 200 ), $request );
 	}
 
 	/**
@@ -1508,7 +1501,13 @@ class REST_Controller extends \WP_REST_Controller {
 			}
 		}
 
-		return new \WP_REST_Response( $presets, 200 );
+		/**
+		 * Filters the REST API response for encoding presets.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_presets_get', new \WP_REST_Response( $presets, 200 ), $request );
 	}
 
 	/**
@@ -1553,23 +1552,7 @@ class REST_Controller extends \WP_REST_Controller {
 			return new \WP_Error( 'enqueue_failed', __( 'Failed to enqueue any jobs.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
 		}
 
-		// Re-fetch created jobs because enqueue_encodes might not return everything we need in standard format
-		$attachment_or_url_refetch = 0;
-		if ( ! empty( $attachment_id ) ) {
-			$attachment_or_url_refetch = $attachment_id;
-		} else {
-			$attachment_or_url_refetch = $input_url;
-		}
-
-		$encoder = new Encode\Encode_Attachment( $this->options_manager, $attachment_or_url_refetch, $input_url );
-		$formats = $encoder->get_formats();
-
-		$created_jobs = array();
-		foreach ( $formats as $format_obj ) {
-			if ( in_array( $format_obj->get_format_id(), $outputs, true ) ) {
-				$created_jobs[] = $this->prepare_job_for_response( $format_obj );
-			}
-		}
+		$created_jobs = $queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $attachment_id ? $attachment_id : $input_url );
 
 		$response_data = array_merge(
 			$result,
@@ -1578,7 +1561,13 @@ class REST_Controller extends \WP_REST_Controller {
 				'jobs'          => $created_jobs,
 			)
 		);
-		return new \WP_REST_Response( $response_data, 201 );
+		/**
+		 * Filters the REST API response for creating encoding jobs.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_jobs_create', new \WP_REST_Response( $response_data, 201 ), $request );
 	}
 
 	/**
@@ -1590,19 +1579,15 @@ class REST_Controller extends \WP_REST_Controller {
 	public function jobs_list( \WP_REST_Request $request ) {
 		$input            = $request->get_param( 'input' );
 		$queue_controller = new Encode\Encode_Queue_Controller( $this->options_manager );
-		$all_items        = $queue_controller->get_queue_items( get_current_blog_id() );
+		$jobs             = $queue_controller->get_jobs_list_data( $queue_controller->get_queue_items( get_current_blog_id() ), $input );
 
-		$jobs = array();
-		foreach ( $all_items as $item ) {
-			if ( ! $input || $item['attachment_id'] == $input || $item['input_url'] === $input ) {
-				$created_job = $this->prepare_job_for_response( Encode\Encode_Format::from_array( $item ) );
-				if ( ! is_wp_error( $created_job ) ) {
-					$jobs[] = $created_job;
-				}
-			}
-		}
-
-		return new \WP_REST_Response( $jobs, 200 );
+		/**
+		 * Filters the REST API response for listing encoding jobs.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_jobs_list', new \WP_REST_Response( $jobs, 200 ), $request );
 	}
 
 	/**
@@ -1621,12 +1606,22 @@ class REST_Controller extends \WP_REST_Controller {
 			$queue_controller->pause();
 		}
 
-		return new \WP_REST_Response(
-			array(
-				'message'     => 'play' === $action ? __( 'Queue started.', 'video-embed-thumbnail-generator' ) : __( 'Queue paused.', 'video-embed-thumbnail-generator' ),
-				'queue_state' => $action,
+		/**
+		 * Filters the REST API response for job queue control.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters(
+			'videopack_rest_jobs_control',
+			new \WP_REST_Response(
+				array(
+					'message'     => 'play' === $action ? __( 'Queue started.', 'video-embed-thumbnail-generator' ) : __( 'Queue paused.', 'video-embed-thumbnail-generator' ),
+					'queue_state' => $action,
+				),
+				200
 			),
-			200
+			$request
 		);
 	}
 
@@ -1646,12 +1641,22 @@ class REST_Controller extends \WP_REST_Controller {
 			$queue_controller->clear_completed_queue( 'all' );
 		}
 
-		return new \WP_REST_Response(
-			array(
-				'message' => 'completed' === $type ? __( 'Completed jobs cleared.', 'video-embed-thumbnail-generator' ) : __( 'Queue cleared.', 'video-embed-thumbnail-generator' ),
-				'cleared' => true,
+		/**
+		 * Filters the REST API response for clearing encoding jobs.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters(
+			'videopack_rest_jobs_clear',
+			new \WP_REST_Response(
+				array(
+					'message' => 'completed' === $type ? __( 'Completed jobs cleared.', 'video-embed-thumbnail-generator' ) : __( 'Queue cleared.', 'video-embed-thumbnail-generator' ),
+					'cleared' => true,
+				),
+				200
 			),
-			200
+			$request
 		);
 	}
 
@@ -1662,23 +1667,21 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_REST_Response|\WP_Error The job data.
 	 */
 	public function job_get( \WP_REST_Request $request ) {
-		$id = (int) $request->get_param( 'id' );
-		global $wpdb;
-		$queue_table = $wpdb->prefix . 'videopack_encoding_queue';
-		if ( is_multisite() ) {
-			$main_site_id = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
-			$queue_table  = $wpdb->get_blog_prefix( $main_site_id ) . 'videopack_encoding_queue';
+		$id               = (int) $request->get_param( 'id' );
+		$queue_controller = new Encode\Encode_Queue_Controller( $this->options_manager );
+		$prepared         = $queue_controller->get_job_prepared( $id );
+
+		if ( is_wp_error( $prepared ) ) {
+			return $prepared;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$job_data = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM %i WHERE id = %d", $queue_table, $id ), ARRAY_A );
-
-		if ( ! $job_data ) {
-			return new \WP_Error( 'job_not_found', __( 'Job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
-		}
-
-		$job_obj = Encode\Encode_Format::from_array( $job_data );
-		return new \WP_REST_Response( $this->prepare_job_for_response( $job_obj ), 200 );
+		/**
+		 * Filters the REST API response for getting a single encoding job.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters( 'videopack_rest_job_get', new \WP_REST_Response( $prepared, 200 ), $request );
 	}
 
 	/**
@@ -1704,13 +1707,23 @@ class REST_Controller extends \WP_REST_Controller {
 			return $result;
 		}
 
-		return new \WP_REST_Response(
-			array(
-				'deleted' => true,
-				'job_id'  => $id,
-				'force'   => ( $force !== 'false' && $force !== false ),
+		/**
+		 * Filters the REST API response for deleting an encoding job.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters(
+			'videopack_rest_job_delete',
+			new \WP_REST_Response(
+				array(
+					'deleted' => true,
+					'job_id'  => $id,
+					'force'   => ( $force !== 'false' && $force !== false ),
+				),
+				200
 			),
-			200
+			$request
 		);
 	}
 
@@ -1730,106 +1743,23 @@ class REST_Controller extends \WP_REST_Controller {
 			return $result;
 		}
 
-		return new \WP_REST_Response(
-			array(
-				'retried' => true,
-				'job_id'  => $id,
+		/**
+		 * Filters the REST API response for retrying an encoding job.
+		 *
+		 * @param \WP_REST_Response $response The REST response object.
+		 * @param \WP_REST_Request  $request  The REST request object.
+		 */
+		return apply_filters(
+			'videopack_rest_job_retry',
+			new \WP_REST_Response(
+				array(
+					'retried' => true,
+					'job_id'  => $id,
+				),
+				200
 			),
-			200
+			$request
 		);
 	}
 
-	/**
-	 * Helper to prepare a job object for REST response.
-	 *
-	 * @param Encode\Encode_Format $job The job object.
-	 * @return array The prepared job data.
-	 */
-	protected function prepare_job_for_response( $job ) {
-		$internal_status = $job->get_status();
-		$status = $internal_status;
-
-		$attachment_id = $job->get_attachment_id();
-		$blog_id       = $job->get_blog_id();
-		if ( ! $blog_id ) {
-			$blog_id = get_current_blog_id();
-		}
-		$user_id       = $job->get_user_id();
-
-		$video_title     = '';
-		$poster_url      = '';
-		$user_name       = '';
-		$blog_name       = '';
-		$attachment_link = '';
-
-		if ( $attachment_id ) {
-			$video_title     = get_the_title( $attachment_id );
-			$poster_id       = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
-			$poster_url      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
-			$attachment_link = get_edit_post_link( $attachment_id );
-		} elseif ( $job->get_input_url() ) {
-			$video_title = basename( $job->get_input_url() );
-		}
-
-		// Ensure duration is set for progress calculation
-		if ( ! $job->get_video_duration() ) {
-			$attachment_key = ! empty( $attachment_id ) ? (string) $attachment_id : $job->get_input_url();
-			if ( $attachment_key ) {
-				if ( ! isset( $this->video_durations[ $attachment_key ] ) ) {
-					$encoder = new Encode\Encode_Attachment( $this->options_manager, $attachment_id ? $attachment_id : $job->get_input_url(), $job->get_input_url() );
-					$metadata = $encoder->get_video_metadata();
-					$this->video_durations[ $attachment_key ] = ( $metadata && $metadata->duration ) ? (int) round( $metadata->duration * 1000000 ) : 0;
-				}
-				if ( $this->video_durations[ $attachment_key ] ) {
-					$job->set_video_duration( $this->video_durations[ $attachment_key ] );
-				}
-			}
-		}
-
-		if ( $user_id ) {
-			$user_data = get_userdata( $user_id );
-			if ( $user_data ) {
-				$user_name = $user_data->display_name;
-			}
-		}
-
-		if ( is_multisite() ) {
-			$blog_details = get_blog_details( $blog_id );
-			if ( $blog_details ) {
-				$blog_name = $blog_details->blogname;
-			}
-		}
-
-		$video_formats = $this->options_manager->get_video_formats();
-		$format_name   = isset( $video_formats[ $job->get_format_id() ] ) ? $video_formats[ $job->get_format_id() ]->get_name() : $job->get_format_id();
-
-		$response = array(
-			'id'              => $job->get_job_id(),
-			'status'          => $status,
-			'status_l10n'     => Encode\Encode_Format::get_status_label( $internal_status ),
-			'preset'          => $job->get_format_id(),
-			'format_name'     => $format_name,
-			'output_url'      => $job->get_url(),
-			'output_id'       => $job->get_id(), // Attachment ID of the output
-			'error'           => $job->get_error(),
-			'created_at'      => $job->get_created_at(),
-			'started'         => $job->get_started(),
-			'video_title'     => $video_title,
-			'video_duration'  => $job->get_video_duration(),
-			'user_name'       => $user_name,
-			'blog_name'       => $blog_name,
-			'poster_url'      => $poster_url,
-			'attachment_link' => $attachment_link,
-			'attachment_id'   => $attachment_id,
-		);
-
-		if ( in_array( $status, array( Encode\Encode_Format::STATUS_PROCESSING, Encode\Encode_Format::STATUS_ENCODING, Encode\Encode_Format::STATUS_NEEDS_INSERT, Encode\Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
-			$progress = $job->get_progress();
-			if ( is_array( $progress ) ) {
-				$response['progress'] = $progress;
-			}
-		}
-
-		return $response;
-	}
 }
