@@ -776,7 +776,7 @@ const resetNetworkSettings = async () => {
 const resetVideopackSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/defaults'
+      path: '/videopack/v1/settings/defaults'
     });
   } catch (error) {
     console.error('Error resetting Videopack settings:', error);
@@ -25694,12 +25694,6 @@ var r={grad:.9,turn:360,rad:360/(2*Math.PI)},t=function(r){return"string"==typeo
 /******/ 		if (cachedModule !== undefined) {
 /******/ 			return cachedModule.exports;
 /******/ 		}
-/******/ 		// Check if module exists (development only)
-/******/ 		if (__webpack_modules__[moduleId] === undefined) {
-/******/ 			var e = new Error("Cannot find module '" + moduleId + "'");
-/******/ 			e.code = 'MODULE_NOT_FOUND';
-/******/ 			throw e;
-/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
 /******/ 			// no module.id needed
@@ -25708,6 +25702,12 @@ var r={grad:.9,turn:360,rad:360/(2*Math.PI)},t=function(r){return"string"==typeo
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
+/******/ 		if (!(moduleId in __webpack_modules__)) {
+/******/ 			delete __webpack_module_cache__[moduleId];
+/******/ 			var e = new Error("Cannot find module '" + moduleId + "'");
+/******/ 			e.code = 'MODULE_NOT_FOUND';
+/******/ 			throw e;
+/******/ 		}
 /******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
@@ -25818,11 +25818,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const primaryField = 'video_title';
 const defaultLayouts = {
   table: {
     layout: {
-      primaryField
+      density: 'compact'
     }
   }
 };
@@ -25842,7 +25841,11 @@ const EncodeQueue = () => {
     type: 'table',
     perPage: 10,
     page: 1,
-    fields: ['poster', 'blog_name', 'user_name', 'video_title', 'format_name', 'status'].filter(field => field === 'blog_name' ? isMultisite : true),
+    sort: {
+      field: 'queue_order',
+      direction: 'asc'
+    },
+    fields: ['queue_order', 'poster', 'blog_name', 'user_name', 'video_title', 'format_name', 'status'].filter(field => field === 'blog_name' ? isMultisite : true),
     layout: defaultLayouts.table.layout
   });
 
@@ -26020,6 +26023,14 @@ const EncodeQueue = () => {
     }
   }, []);
   const fields = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => [{
+    id: 'queue_order',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('#', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.queue_order,
+    enableSorting: true,
+    type: 'integer'
+  }, {
     id: 'poster',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Thumbnail', 'video-embed-thumbnail-generator'),
     getValue: ({
@@ -26126,9 +26137,9 @@ const EncodeQueue = () => {
     isDestructive: true,
     isPrimary: true,
     supportsBulk: true,
-    isEligible: item => ['completed', 'failed', 'canceled', 'queued'].includes(item.status),
+    isEligible: item => ['completed', 'failed', 'canceled', 'queued', 'deleted'].includes(item.status),
     callback: items => {
-      const eligibleItems = items.filter(item => ['completed', 'failed', 'canceled', 'queued'].includes(item.status));
+      const eligibleItems = items.filter(item => ['completed', 'failed', 'canceled', 'queued', 'deleted'].includes(item.status));
       if (eligibleItems.length > 0) {
         openConfirmDialog('remove', {
           jobIds: eligibleItems.map(i => i.id)
@@ -26260,7 +26271,7 @@ const EncodeQueue = () => {
         }
         if (itemToActOn?.action === 'remove') {
           return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
-          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove these %d job records? This will not delete any files.', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job record? This will not delete any files.', 'video-embed-thumbnail-generator');
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove these %d jobs? This will not delete any files.', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job? This will not delete any files.', 'video-embed-thumbnail-generator');
         }
         if (itemToActOn?.action === 'delete') {
           return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */

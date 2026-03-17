@@ -2188,6 +2188,10 @@ body.tools_page_videopack_encode_queue {
 .videopack-encode-queue tr:has(.videopack-job-running) td.dataviews-view-table__actions-column--sticky {
   background-color: transparent;
 }
+.videopack-encode-queue .dataviews-view-table__cell-content-wrapper:not(.dataviews-column-primary__media),
+.videopack-encode-queue .dataviews-view-table__primary-column-content:not(.dataviews-column-primary__media) {
+  min-width: unset;
+}
 .videopack-batch-progress-panel {
   margin-bottom: 20px;
   border: 1px solid #e0e0e0;

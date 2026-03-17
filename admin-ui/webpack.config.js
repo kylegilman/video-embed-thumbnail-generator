@@ -7,19 +7,19 @@ const { entry, ...config } = defaultConfig;
 module.exports = {
 	...config,
 	entry: {
-		'videopack-video': path.resolve(
+		'blocks/videopack-video/videopack-video': path.resolve(
 			process.cwd(),
 			'src',
 			'blocks',
 			'videopack-video'
 		),
-		'videopack-gallery': path.resolve(
+		'blocks/videopack-gallery/videopack-gallery': path.resolve(
 			process.cwd(),
 			'src',
 			'blocks',
 			'videopack-gallery'
 		),
-		'videopack-list': path.resolve(
+		'blocks/videopack-list/videopack-list': path.resolve(
 			process.cwd(),
 			'src',
 			'blocks',

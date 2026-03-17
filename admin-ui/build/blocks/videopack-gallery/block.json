@@ -93,9 +93,9 @@
   },
   "textdomain": "video-embed-thumbnail-generator",
   "editorScript": [
-    "file:../../videopack-gallery.js"
+    "file:./videopack-gallery.js"
   ],
   "style": [
-    "file:../../videopack-gallery.css"
+    "file:./videopack-gallery.css"
   ]
 }
