@@ -16,6 +16,13 @@ class Encode_Queue_Controller {
 	protected $queue_log;
 	protected $queue_table_name;
 
+	/**
+	 * Cache for video durations during a request.
+	 *
+	 * @var array $video_durations
+	 */
+	protected $video_durations = array();
+
 	public function __construct( \Videopack\Admin\Options $options_manager ) {
 		$this->options_manager = $options_manager;
 		$this->options         = $this->options_manager->get_options();
@@ -624,7 +631,6 @@ class Encode_Queue_Controller {
 		}
 
 		wp_cache_set( $cache_key, $all_items, 'videopack', 15 );
-
 		return $all_items;
 	}
 
@@ -914,156 +920,145 @@ class Encode_Queue_Controller {
 	}
 
 	/**
-	 * Get all queue items with details sanitized based on user permissions and context.
-	 * This is used for the main queue view page.
+	 * Helper to prepare a job object for REST response.
 	 *
-	 * @return array An array of all queue items.
+	 * @param Encode_Format $job The job object.
+	 * @return array The prepared job data.
 	 */
-	public function get_full_queue_array() {
+	public function prepare_job_for_response( $job ) {
+		$internal_status = $job->get_status();
+		$status          = $internal_status;
+
+		$attachment_id = $job->get_attachment_id();
+		$blog_id       = $job->get_blog_id();
+		if ( ! $blog_id ) {
+			$blog_id = get_current_blog_id();
+		}
+		$user_id = $job->get_user_id();
+
+		$video_title     = '';
+		$poster_url      = '';
+		$user_name       = '';
+		$blog_name       = '';
+		$attachment_link = '';
+
+		if ( $attachment_id ) {
+			$video_title     = get_the_title( $attachment_id );
+			$poster_id       = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
+			$poster_url      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
+			$attachment_link = get_edit_post_link( $attachment_id );
+		} elseif ( $job->get_input_url() ) {
+			$video_title = basename( $job->get_input_url() );
+		}
+
+		// Ensure duration is set for progress calculation
+		if ( ! $job->get_video_duration() ) {
+			$attachment_key = ! empty( $attachment_id ) ? (string) $attachment_id : $job->get_input_url();
+			if ( $attachment_key ) {
+				if ( ! isset( $this->video_durations[ $attachment_key ] ) ) {
+					$encoder                                  = new Encode_Attachment( $this->options_manager, $attachment_id ? $attachment_id : $job->get_input_url(), $job->get_input_url() );
+					$metadata                                 = $encoder->get_video_metadata();
+					$this->video_durations[ $attachment_key ] = ( $metadata && $metadata->duration ) ? (int) round( $metadata->duration * 1000000 ) : 0;
+				}
+				if ( $this->video_durations[ $attachment_key ] ) {
+					$job->set_video_duration( $this->video_durations[ $attachment_key ] );
+				}
+			}
+		}
+
+		if ( $user_id ) {
+			$user_data = get_userdata( $user_id );
+			if ( $user_data ) {
+				$user_name = $user_data->display_name;
+			}
+		}
+
+		if ( is_multisite() ) {
+			$blog_details = get_blog_details( $blog_id );
+			if ( $blog_details ) {
+				$blog_name = $blog_details->blogname;
+			}
+		}
+
+		$video_formats = $this->options_manager->get_video_formats();
+		$format_name   = isset( $video_formats[ $job->get_format_id() ] ) ? $video_formats[ $job->get_format_id() ]->get_short_name() : $job->get_format_id();
+
+		$response = array(
+			'id'              => $job->get_job_id(),
+			'status'          => $status,
+			'status_l10n'     => Encode_Format::get_status_label( $internal_status ),
+			'preset'          => $job->get_format_id(),
+			'format_name'     => $format_name,
+			'output_url'      => $job->get_url(),
+			'output_id'       => $job->get_id(), // Attachment ID of the output
+			'error'           => $job->get_error(),
+			'created_at'      => $job->get_created_at(),
+			'started'         => $job->get_started(),
+			'video_title'     => $video_title,
+			'video_duration'  => $job->get_video_duration(),
+			'user_name'       => $user_name,
+			'blog_name'       => $blog_name,
+			'poster_url'      => $poster_url,
+			'attachment_link' => $attachment_link,
+			'attachment_id'   => $attachment_id,
+		);
+
+		if ( in_array( $status, array( Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), true ) ) {
+			$progress = $job->get_progress();
+			if ( is_array( $progress ) ) {
+				$response['progress'] = $progress;
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Get all jobs prepared for REST response.
+	 *
+	 * @param array $all_items Raw items from get_queue_items.
+	 * @param mixed $input Optional filter by attachment ID or URL.
+	 * @return array Prepared jobs.
+	 */
+	public function get_jobs_list_data( array $all_items, $input = null ) {
 		// Active Check: Trigger the queue processor to fill any available capacity.
 		// This acts as a watchdog heartbeat whenever the queue is viewed.
 		$this->process_pending_jobs_action();
 
-		// Get all jobs, regardless of status.
-		$all_jobs = $this->get_queue_items( null );
+		$jobs  = array();
+		$order = 1;
 
-		if ( empty( $all_jobs ) ) {
-			return array();
-		}
-
-		// Pre-fetch user capabilities to avoid repeated calls in loop.
-		$current_user_id   = get_current_user_id();
-		$can_edit_others   = current_user_can( 'edit_others_video_encodes' );
-		$can_encode_videos = current_user_can( 'encode_videos' );
-		$all_formats       = $this->options_manager->get_video_formats();
-		$attachment_meta   = new \Videopack\Admin\Attachment_Meta( $this->options_manager );
-		$processed_jobs    = array();
-
-		foreach ( $all_jobs as $job ) {
-			// Determine if the current user can edit this specific job.
-			$is_own_job      = ( (int) $job['user_id'] === $current_user_id );
-			$job['can_edit'] = ( $can_edit_others || ( $can_encode_videos && $is_own_job ) );
-
-			// Add extra data for the React UI.
-			if ( ! empty( $job['user_id'] ) ) {
-				$user_data = get_userdata( $job['user_id'] );
-				if ( $user_data ) {
-					$job['user_name'] = $user_data->display_name;
+		foreach ( $all_items as $item ) {
+			if ( ! $input || $item['attachment_id'] == $input || $item['input_url'] === $input ) {
+				$job_format = Encode_Format::from_array( $item );
+				$prepared   = $this->prepare_job_for_response( $job_format );
+				if ( ! is_wp_error( $prepared ) ) {
+					$prepared['queue_order'] = $order++;
+					$jobs[]                  = $prepared;
 				}
-			}
-
-			if ( ! empty( $job['attachment_id'] ) ) {
-				$attachment_meta    = new \Videopack\Admin\Attachment_Meta( $this->options_manager, (int) $job['attachment_id'] );
-				$job['video_title'] = html_entity_decode( get_the_title( $job['attachment_id'] ), ENT_QUOTES, 'UTF-8' );
-				$poster_id          = get_post_thumbnail_id( $job['attachment_id'] );
-				if ( ! $poster_id ) {
-					$videopack_meta = $attachment_meta->get();
-					$poster_id      = $videopack_meta['poster_id'] ?? null;
-				}
-				$job['poster_url']      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : '';
-				$job['file_name']       = basename( get_attached_file( $job['attachment_id'] ) );
-				$job['attachment_link'] = get_edit_post_link( $job['attachment_id'] );
-			} else {
-				$job['video_title']     = basename( $job['input_url'] );
-				$job['poster_url']      = ''; // No poster for external URLs yet.
-				$job['file_name']       = basename( $job['input_url'] );
-				$job['attachment_link'] = '';
-			}
-
-			if ( is_multisite() && ! empty( $job['blog_id'] ) ) {
-				$blog_details = get_blog_details( $job['blog_id'] );
-				if ( $blog_details ) {
-					$job['blog_name'] = $blog_details->blogname;
-				}
-			}
-
-			if ( isset( $all_formats[ $job['format_id'] ] ) ) {
-				$job['format_name'] = $all_formats[ $job['format_id'] ]->get_name();
-			} else {
-				$job['format_name'] = $job['format_id'];
-			}
-
-			$job['status_l10n'] = $this->get_l10n_status( $job['status'] );
-
-			// Add real-time progress for active jobs
-			if ( in_array( $job['status'], array( 'encoding', 'processing' ), true ) ) {
-				$encode_format = Encode_Format::from_array( $job );
-				if ( ! empty( $job['attachment_id'] ) ) {
-					$v_meta = $attachment_meta->get();
-					if ( ! empty( $v_meta['duration'] ) ) {
-						// duration in meta is usually seconds, Encode_Format expects microseconds
-						$job['video_duration'] = (int) ( $v_meta['duration'] * 1000000 );
-						$encode_format->set_video_duration( $job['video_duration'] );
-					}
-				}
-				$job['progress'] = $encode_format->get_progress();
-
-				// Normalize progress to always be an object for the frontend
-				if ( ! is_array( $job['progress'] ) ) {
-					$job['progress'] = array(
-						'percent' => 0,
-					);
-				}
-
-				if ( ! empty( $job['started_at'] ) ) {
-					$job['started'] = strtotime( $job['started_at'] );
-				} elseif ( empty( $job['started'] ) ) {
-					$job['started'] = time(); // Fallback to now if not set but encoding
-				}
-
-				// Ensure percent is included
-				if ( ! isset( $job['progress']['percent'] ) ) {
-					$job['progress']['percent'] = 0;
-				}
-			}
-
-			$processed_jobs[] = $job;
-		}
-
-		// Super admins can see everything, always, regardless of context.
-		if ( current_user_can( 'manage_network' ) ) {
-			return $processed_jobs;
-		}
-
-		// For non-super-admins, we need to sanitize jobs from other blogs.
-		$current_blog_id = get_current_blog_id();
-		$sanitized_jobs  = array();
-
-		foreach ( $processed_jobs as $job ) {
-			if ( (int) $job['blog_id'] === $current_blog_id ) {
-				// This job belongs to the current site, show all details.
-				$sanitized_jobs[] = $job;
-			} else {
-				// This job is from another site, show only non-sensitive data.
-				$sanitized_jobs[] = array(
-					'id'                  => $job['id'],
-					'blog_id'             => $job['blog_id'],
-					'attachment_id'       => null,
-					'input_url'           => __( 'Job from another site', 'video-embed-thumbnail-generator' ),
-					'format_id'           => $job['format_id'],
-					'status'              => $job['status'],
-					'output_path'         => null,
-					'output_url'          => null,
-					'user_id'             => null,
-					'pid'                 => null,
-					'logfile_path'        => null,
-					'action_id'           => null,
-					'created_at'          => $job['created_at'],
-					'updated_at'          => $job['updated_at'],
-					'started_at'          => $job['started_at'],
-					'completed_at'        => $job['completed_at'],
-					'failed_at'           => $job['failed_at'],
-					'error_message'       => null,
-					'temp_watermark_path' => null,
-					'retry_count'         => $job['retry_count'],
-					'mailed'              => $job['mailed'] ?? 0,
-					'encode_options_hash' => null,
-					'can_edit'            => false, // Non-super-admins can never edit jobs on other sites.
-				);
 			}
 		}
 
-		return $sanitized_jobs;
+		return $jobs;
+	}
+
+	/**
+	 * Get a single job prepared for REST response.
+	 *
+	 * @param int $job_id The job ID.
+	 * @return array|\WP_Error Prepared job data or WP_Error.
+	 */
+	public function get_job_prepared( int $job_id ) {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$job_data = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
+
+		if ( ! $job_data ) {
+			return new \WP_Error( 'videopack_job_not_found', __( 'Job not found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
+		}
+
+		$job_obj = Encode_Format::from_array( $job_data );
+		return $this->prepare_job_for_response( $job_obj );
 	}
 
 	/**

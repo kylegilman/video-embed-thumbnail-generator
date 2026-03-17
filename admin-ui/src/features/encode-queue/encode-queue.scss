@@ -39,6 +39,11 @@ body.tools_page_videopack_encode_queue {
 			background-color: transparent;
 		}
 	}
+
+	.dataviews-view-table__cell-content-wrapper:not(.dataviews-column-primary__media),
+	.dataviews-view-table__primary-column-content:not(.dataviews-column-primary__media) {
+		min-width: unset;
+	}
 }
 
 .videopack-batch-progress-panel {

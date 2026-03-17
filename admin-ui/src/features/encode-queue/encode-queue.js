@@ -29,11 +29,10 @@ import {
 	getBatchProgress,
 } from '../../utils/utils';
 
-const primaryField = 'video_title';
 const defaultLayouts = {
 	table: {
 		layout: {
-			primaryField,
+			density: 'compact',
 		},
 	},
 };
@@ -60,7 +59,12 @@ const EncodeQueue = () => {
 		type: 'table',
 		perPage: 10,
 		page: 1,
+		sort: {
+			field: 'queue_order',
+			direction: 'asc',
+		},
 		fields: [
+			'queue_order',
 			'poster',
 			'blog_name',
 			'user_name',
@@ -115,7 +119,6 @@ const EncodeQueue = () => {
 		const interval = setInterval(fetchQueue, 15000); // Poll every 15 seconds
 		return () => clearInterval(interval);
 	}, []);
-
 
 	const handleToggleQueue = async () => {
 		setIsTogglingQueue(true);
@@ -201,10 +204,7 @@ const EncodeQueue = () => {
 				type: 'success',
 				text:
 					ids.length === 1
-						? __(
-								'Job deleted.',
-								'video-embed-thumbnail-generator'
-						  )
+						? __('Job deleted.', 'video-embed-thumbnail-generator')
 						: sprintf(
 								/* translators: %d: number of jobs deleted */
 								__(
@@ -212,7 +212,7 @@ const EncodeQueue = () => {
 									'video-embed-thumbnail-generator'
 								),
 								ids.length
-						  ),
+							),
 			});
 			fetchQueue();
 		} catch (error) {
@@ -247,7 +247,7 @@ const EncodeQueue = () => {
 						? __(
 								'Job removed from queue.',
 								'video-embed-thumbnail-generator'
-						  )
+							)
 						: sprintf(
 								/* translators: %d: number of jobs removed */
 								__(
@@ -255,7 +255,7 @@ const EncodeQueue = () => {
 									'video-embed-thumbnail-generator'
 								),
 								ids.length
-						  ),
+							),
 			});
 			fetchQueue();
 		} catch (error) {
@@ -290,7 +290,7 @@ const EncodeQueue = () => {
 						? __(
 								'Job re-queued.',
 								'video-embed-thumbnail-generator'
-						  )
+							)
 						: sprintf(
 								/* translators: %d: number of jobs re-queued */
 								__(
@@ -298,7 +298,7 @@ const EncodeQueue = () => {
 									'video-embed-thumbnail-generator'
 								),
 								ids.length
-						  ),
+							),
 			});
 			fetchQueue();
 		} catch (error) {
@@ -322,6 +322,13 @@ const EncodeQueue = () => {
 	const fields = useMemo(
 		() =>
 			[
+				{
+					id: 'queue_order',
+					label: __('#', 'video-embed-thumbnail-generator'),
+					getValue: ({ item }) => item.queue_order,
+					enableSorting: true,
+					type: 'integer',
+				},
 				{
 					id: 'poster',
 					label: __('Thumbnail', 'video-embed-thumbnail-generator'),
@@ -455,14 +462,22 @@ const EncodeQueue = () => {
 				isPrimary: true,
 				supportsBulk: true,
 				isEligible: (item) =>
-					['completed', 'failed', 'canceled', 'queued'].includes(
-						item.status
-					),
+					[
+						'completed',
+						'failed',
+						'canceled',
+						'queued',
+						'deleted',
+					].includes(item.status),
 				callback: (items) => {
 					const eligibleItems = items.filter((item) =>
-						['completed', 'failed', 'canceled', 'queued'].includes(
-							item.status
-						)
+						[
+							'completed',
+							'failed',
+							'canceled',
+							'queued',
+							'deleted',
+						].includes(item.status)
 					);
 					if (eligibleItems.length > 0) {
 						openConfirmDialog('remove', {
@@ -530,7 +545,8 @@ const EncodeQueue = () => {
 					item.status === 'completed' && !!item.output_id,
 				callback: (items) => {
 					const eligibleItems = items.filter(
-						(item) => item.status === 'completed' && !!item.output_id
+						(item) =>
+							item.status === 'completed' && !!item.output_id
 					);
 					if (eligibleItems.length > 0) {
 						openConfirmDialog('delete_permanently', {
@@ -701,26 +717,26 @@ const EncodeQueue = () => {
 											'video-embed-thumbnail-generator'
 										),
 										count
-								  )
+									)
 								: __(
 										'Are you sure you want to permanently delete this attachment? This action cannot be undone.',
 										'video-embed-thumbnail-generator'
-								  );
+									);
 						}
 						if (itemToActOn?.action === 'remove') {
 							return count > 1
 								? sprintf(
 										/* translators: %d: number of items */
 										__(
-											'Are you sure you want to remove these %d job records? This will not delete any files.',
+											'Are you sure you want to remove these %d jobs? This will not delete any files.',
 											'video-embed-thumbnail-generator'
 										),
 										count
-								  )
+									)
 								: __(
-										'Are you sure you want to remove this job record? This will not delete any files.',
+										'Are you sure you want to remove this job? This will not delete any files.',
 										'video-embed-thumbnail-generator'
-								  );
+									);
 						}
 						if (itemToActOn?.action === 'delete') {
 							return count > 1
@@ -731,11 +747,11 @@ const EncodeQueue = () => {
 											'video-embed-thumbnail-generator'
 										),
 										count
-								  )
+									)
 								: __(
 										'Are you sure you want to cancel this job?',
 										'video-embed-thumbnail-generator'
-								  );
+									);
 						}
 						if (itemToActOn?.action === 'clear') {
 							return sprintf(
@@ -771,13 +787,13 @@ const EncodeQueue = () => {
 						/>
 						{isQueuePaused
 							? __(
-								'Play Queue',
-								'video-embed-thumbnail-generator'
-							)
+									'Play Queue',
+									'video-embed-thumbnail-generator'
+								)
 							: __(
-								'Pause Queue',
-								'video-embed-thumbnail-generator'
-							)}
+									'Pause Queue',
+									'video-embed-thumbnail-generator'
+								)}
 					</Button>
 					<Button
 						variant="secondary"
