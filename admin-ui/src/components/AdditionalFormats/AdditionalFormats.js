@@ -184,7 +184,6 @@ const AdditionalFormats = ({
 		);
 	};
 
-
 	useEffect(() => {
 		setIsEncoding(shouldPoll(videoFormats));
 	}, [videoFormats]);
@@ -283,9 +282,9 @@ const AdditionalFormats = ({
 					response?.log?.length > 0
 						? response.log.join(' ')
 						: __(
-							'No formats were added to the queue.',
-							'video-embed-thumbnail-generator'
-						);
+								'No formats were added to the queue.',
+								'video-embed-thumbnail-generator'
+							);
 				setEncodeMessage(emptyMsg);
 			} else {
 				const queuePosition = response?.new_queue_position;
@@ -431,13 +430,7 @@ const AdditionalFormats = ({
 			const errorMessage = sanitizeError(error);
 			setEncodeMessage(
 				/* translators: %s is an error message */
-				sprintf(
-					__(
-						'Error deleting job: %s',
-						'video-embed-thumbnail-generator'
-					),
-					errorMessage
-				)
+				sprintf( __('Error deleting job: %s', 'video-embed-thumbnail-generator'), errorMessage )
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
 		} finally {
@@ -503,9 +496,9 @@ const AdditionalFormats = ({
 			return isLoading
 				? __('Loading…', 'video-embed-thumbnail-generator')
 				: __(
-					'Encode selected formats',
-					'video-embed-thumbnail-generator'
-				);
+						'Encode selected formats',
+						'video-embed-thumbnail-generator'
+					);
 		}
 
 		return __(
@@ -598,15 +591,13 @@ const AdditionalFormats = ({
 				{videoFormats ? (
 					<div className="videopack-formats-container">
 						<ul
-							className={`videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'
-								}`}
+							className={`videopack-formats-list${
+								ffmpeg_exists === true ? '' : ' no-ffmpeg'
+							}`}
 						>
 							{Object.keys(groupedFormats).map((codecId) => {
 								const codecGroup = groupedFormats[codecId];
-								if (
-									options.encode[codecId]?.enabled !==
-									true
-								) {
+								if (options.encode[codecId]?.enabled !== true) {
 									return null;
 								}
 								return (
