@@ -446,7 +446,7 @@ export const resetNetworkSettings = async () => {
 export const resetVideopackSettings = async () => {
 	try {
 		return await apiFetch({
-			path: '/videopack/v1/defaults',
+			path: '/videopack/v1/settings/defaults',
 		});
 	} catch (error) {
 		console.error('Error resetting Videopack settings:', error);
