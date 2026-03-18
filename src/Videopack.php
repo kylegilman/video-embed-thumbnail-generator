@@ -171,10 +171,16 @@ class Videopack {
 		$this->loader->add_action( 'videopack_generate_thumbnail', $plugin_attachment, 'generate_thumbnails_with_ffmpeg', 10, 1 );
 		$this->loader->add_action( 'videopack_batch_enqueue_video', $plugin_attachment, 'execute_batch_enqueue_action', 10, 1 );
 
+		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager );
+		$this->loader->add_action( 'rest_api_init', $encode_queue_controller, 'start_queue' );
+		$this->loader->add_action( 'videopack_process_pending_jobs', $encode_queue_controller, 'process_pending_jobs_action' );
+		$this->loader->add_action( 'videopack_handle_job', $encode_queue_controller, 'handle_job_action' );
+		$this->loader->add_action( 'videopack_cleanup_queue', $encode_queue_controller, 'clear_completed_queue', 10, 2 );
+
 		$plugin_cleanup = new Admin\Cleanup();
-		$this->loader->add_action( 'videopack_cleanup_generated_logfiles', $plugin_cleanup, 'cleanup_generated_logfiles_handler' );
+		$this->loader->add_action( 'init', $plugin_cleanup, 'schedule_weekly_cleanup' );
+
 		$this->loader->add_action( 'videopack_cleanup_generated_thumbnails', $plugin_cleanup, 'cleanup_generated_thumbnails_handler' );
-		$this->loader->add_action( 'videopack_cleanup_queue', $plugin_cleanup, 'clear_completed_queue', 10, 2 );
 
 		$edit_posts = new Admin\Edit_Posts( $this->options_manager );
 		$this->loader->add_filter( 'media_send_to_editor', $edit_posts, 'modify_media_insert', 10, 3 );
