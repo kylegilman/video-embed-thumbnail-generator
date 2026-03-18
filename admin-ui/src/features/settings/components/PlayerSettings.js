@@ -791,7 +791,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 					/>
 				</div>
 			</PanelBody>
-						<PanelBody
+			<PanelBody
 				title={__('Sharing', 'video-embed-thumbnail-generator')}
 				initialOpen={true}
 			>

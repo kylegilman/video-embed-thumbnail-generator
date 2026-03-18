@@ -1,3 +1,7 @@
+/**
+ * Features for managing plugin settings.
+ */
+
 /* global videopack_config */
 
 import { __ } from '@wordpress/i18n';
@@ -34,6 +38,11 @@ import AdminSettings from './components/AdminSettings';
 import FreemiusPage from './components/FreemiusPage';
 import './settings.scss';
 
+/**
+ * VideopackSettingsPage component.
+ *
+ * @return {Object} The rendered component.
+ */
 const VideopackSettingsPage = () => {
 	const [settings, setSettings] = useState({});
 	const [ffmpegTest, setFfmpegTest] = useState({});

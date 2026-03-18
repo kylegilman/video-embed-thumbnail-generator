@@ -1,8 +1,17 @@
+/**
+ * Utility functions for interacting with the Videopack REST API and managing video jobs.
+ */
+
 /* global videopack_config */
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs, getFilename } from '@wordpress/url';
 import { applyFilters } from '@wordpress/hooks';
 
+/**
+ * Fetches the current video encoding queue.
+ *
+ * @return {Promise<Array>} List of jobs in the queue.
+ */
 export const getQueue = async () => {
 	const pre = applyFilters('videopack.utils.pre_getQueue', undefined);
 	if (typeof pre !== 'undefined') {
@@ -17,6 +26,12 @@ export const getQueue = async () => {
 	}
 };
 
+/**
+ * Controls the queue (start, stop, etc.).
+ *
+ * @param {string} action Control action to perform.
+ * @return {Promise<Object>} API response.
+ */
 export const toggleQueue = async (action) => {
 	try {
 		return await apiFetch({
@@ -30,6 +45,12 @@ export const toggleQueue = async (action) => {
 	}
 };
 
+/**
+ * Clears jobs from the queue.
+ *
+ * @param {string} type Type of jobs to clear.
+ * @return {Promise<Object>} API response.
+ */
 export const clearQueue = async (type) => {
 	try {
 		return await apiFetch({
@@ -43,6 +64,12 @@ export const clearQueue = async (type) => {
 	}
 };
 
+/**
+ * Deletes a specific job.
+ *
+ * @param {number|string} jobId ID of the job to delete.
+ * @return {Promise<Object>} API response.
+ */
 export const deleteJob = async (jobId) => {
 	try {
 		return await apiFetch({
@@ -55,6 +82,12 @@ export const deleteJob = async (jobId) => {
 	}
 };
 
+/**
+ * Retries a specific job.
+ *
+ * @param {number|string} jobId ID of the job to retry.
+ * @return {Promise<Object>} API response.
+ */
 export const retryJob = async (jobId) => {
 	try {
 		return await apiFetch({
@@ -67,6 +100,12 @@ export const retryJob = async (jobId) => {
 	}
 };
 
+/**
+ * Removes a job from the queue without force.
+ *
+ * @param {number|string} jobId ID of the job to remove.
+ * @return {Promise<Object>} API response.
+ */
 export const removeJob = async (jobId) => {
 	try {
 		return await apiFetch({
@@ -79,6 +118,13 @@ export const removeJob = async (jobId) => {
 	}
 };
 
+/**
+ * Fetches encoding presets.
+ *
+ * @param {number|null} attachmentId Optional attachment ID to filter presets.
+ * @param {string}      url          Optional URL to filter presets.
+ * @return {Promise<Array>} List of presets.
+ */
 export const getPresets = async (attachmentId = null, url = '') => {
 	try {
 		return await apiFetch({
@@ -93,6 +139,14 @@ export const getPresets = async (attachmentId = null, url = '') => {
 	}
 };
 
+/**
+ * Creates a new encoding job.
+ *
+ * @param {number|string} input    Attachment ID or source URL.
+ * @param {Array}         outputs  List of format IDs to encode.
+ * @param {number}        parentId ID of the parent post.
+ * @return {Promise<Object>} API response.
+ */
 export const createJob = async (input, outputs, parentId = 0) => {
 	try {
 		return await apiFetch({
@@ -110,6 +164,12 @@ export const createJob = async (input, outputs, parentId = 0) => {
 	}
 };
 
+/**
+ * Fetches the status of a specific job.
+ *
+ * @param {number|string} jobId ID of the job to check.
+ * @return {Promise<Object>} Job status data.
+ */
 export const getJobStatus = async (jobId) => {
 	try {
 		return await apiFetch({
@@ -121,6 +181,12 @@ export const getJobStatus = async (jobId) => {
 	}
 };
 
+/**
+ * Lists jobs, optionally filtered by input.
+ *
+ * @param {number|string|null} input Optional attachment ID or URL to filter.
+ * @return {Promise<Array>} List of jobs.
+ */
 export const listJobs = async (input = null) => {
 	try {
 		const path = input
@@ -133,6 +199,13 @@ export const listJobs = async (input = null) => {
 	}
 };
 
+/**
+ * Fetches available video formats and their encoding status for an attachment.
+ *
+ * @param {number} attachmentId The attachment ID.
+ * @param {string} url          Optional source URL.
+ * @return {Promise<Object>} Map of format IDs to format objects.
+ */
 export const getVideoFormats = async (attachmentId, url = '') => {
 	try {
 		const presets = await getPresets(attachmentId, url);
@@ -158,6 +231,15 @@ export const getVideoFormats = async (attachmentId, url = '') => {
 	}
 };
 
+/**
+ * Enqueues a job for multiple video formats.
+ *
+ * @param {number} attachmentId The attachment ID.
+ * @param {string} src          Source URL.
+ * @param {Object} formats      Object mapping format IDs to boolean selection state.
+ * @param {number} parentId     ID of the parent post.
+ * @return {Promise<Object>} The response from the job creation.
+ */
 export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 	// formats is an object { format_id: true, ... } from the UI
 	const outputIds = Object.keys(formats).filter((id) => formats[id]);
@@ -178,6 +260,14 @@ export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 	}
 };
 
+/**
+ * Assigns an encoded file to a specific format on a parent video.
+ *
+ * @param {number} mediaId  ID of the encoded media attachment.
+ * @param {string} formatId ID of the format to assign.
+ * @param {number} parentId ID of the parent video attachment.
+ * @return {Promise<Object>} API response.
+ */
 export const assignFormat = async (mediaId, formatId, parentId) => {
 	try {
 		return await apiFetch({
@@ -196,6 +286,12 @@ export const assignFormat = async (mediaId, formatId, parentId) => {
 	}
 };
 
+/**
+ * Unassigns a media attachment from its video format role.
+ *
+ * @param {number} mediaId ID of the media attachment.
+ * @return {Promise<Object>} API response.
+ */
 export const unassignFormat = async (mediaId) => {
 	try {
 		return await apiFetch({
@@ -214,6 +310,12 @@ export const unassignFormat = async (mediaId) => {
 	}
 };
 
+/**
+ * Deletes a media attachment file permanently.
+ *
+ * @param {number} attachmentId ID of the attachment to delete.
+ * @return {Promise<Object>} API response.
+ */
 export const deleteFile = async (attachmentId) => {
 	try {
 		return await apiFetch({
@@ -269,6 +371,12 @@ export const createThumbnailFromCanvas = (
 	});
 };
 
+/**
+ * Uploads a thumbnail to the server.
+ *
+ * @param {FormData} formData Thumbnail data and metadata.
+ * @return {Promise<Object>} API response.
+ */
 export const uploadThumbnail = async (formData) => {
 	try {
 		return await apiFetch({
@@ -282,6 +390,16 @@ export const uploadThumbnail = async (formData) => {
 	}
 };
 
+/**
+ * Saves all thumbnails selected for a video.
+ *
+ * @param {number}  attachment_id ID of the video attachment.
+ * @param {Array}   thumb_urls    List of thumbnail URLs to save.
+ * @param {number}  parent_id     ID of the parent post.
+ * @param {string}  url           Video source URL.
+ * @param {boolean} featured      Whether to set one as featured.
+ * @return {Promise<Object>} API response.
+ */
 export const saveAllThumbnails = async (
 	attachment_id,
 	thumb_urls,
@@ -307,6 +425,12 @@ export const saveAllThumbnails = async (
 	}
 };
 
+/**
+ * Fetches the video gallery content based on provided arguments.
+ *
+ * @param {Object} args Gallery query arguments.
+ * @return {Promise<Array>} List of videos in the gallery.
+ */
 export const getVideoGallery = async (args) => {
 	const pre = applyFilters(
 		'videopack.utils.pre_getVideoGallery',
@@ -328,6 +452,12 @@ export const getVideoGallery = async (args) => {
 	}
 };
 
+/**
+ * Fetches users who have a specific capability.
+ *
+ * @param {string} capability The capability to check for.
+ * @return {Promise<Array>} List of users.
+ */
 export const getUsersWithCapability = async (capability) => {
 	try {
 		return await apiFetch({
@@ -340,6 +470,12 @@ export const getUsersWithCapability = async (capability) => {
 	}
 };
 
+/**
+ * Fetches settings content for a specific Freemius page.
+ *
+ * @param {string} page The Freemius page name.
+ * @return {Promise<Object>} Page data.
+ */
 export const getFreemiusPage = async (page) => {
 	try {
 		let path = `/videopack/v1/freemius/${page}`;
@@ -358,6 +494,14 @@ export const getFreemiusPage = async (page) => {
 	}
 };
 
+/**
+ * Tests an FFmpeg encoding command with specific parameters.
+ *
+ * @param {string} codec      The codec to test.
+ * @param {string} resolution The resolution to test.
+ * @param {number} rotate     The rotation angle.
+ * @return {Promise<Object>} Test results.
+ */
 export const testEncodeCommand = async (codec, resolution, rotate) => {
 	const pre = applyFilters(
 		'videopack.utils.pre_testEncodeCommand',
@@ -379,6 +523,11 @@ export const testEncodeCommand = async (codec, resolution, rotate) => {
 	}
 };
 
+/**
+ * Fetches global Videopack settings.
+ *
+ * @return {Promise<Object>} Videopack settings.
+ */
 export const getSettings = async () => {
 	const pre = applyFilters('videopack.utils.pre_getSettings', undefined);
 	if (typeof pre !== 'undefined') {
@@ -394,6 +543,12 @@ export const getSettings = async () => {
 	}
 };
 
+/**
+ * Saves global Videopack settings to the WordPress options.
+ *
+ * @param {Object} newSettings The new settings to save.
+ * @return {Promise<Object>} Updated settings.
+ */
 export const saveWPSettings = async (newSettings) => {
 	try {
 		const response = await apiFetch({
@@ -410,6 +565,11 @@ export const saveWPSettings = async (newSettings) => {
 	}
 };
 
+/**
+ * Fetches network-wide Videopack settings (Multisite).
+ *
+ * @return {Promise<Object>} Network settings.
+ */
 export const getNetworkSettings = async () => {
 	try {
 		return await apiFetch({ path: '/videopack/v1/network/settings' });
@@ -419,6 +579,12 @@ export const getNetworkSettings = async () => {
 	}
 };
 
+/**
+ * Saves network-wide Videopack settings (Multisite).
+ *
+ * @param {Object} newSettings The network settings to save.
+ * @return {Promise<Object>} Updated network settings.
+ */
 export const saveNetworkSettings = async (newSettings) => {
 	try {
 		return await apiFetch({
@@ -432,6 +598,11 @@ export const saveNetworkSettings = async (newSettings) => {
 	}
 };
 
+/**
+ * Resets network settings to their default values.
+ *
+ * @return {Promise<Object>} Default settings.
+ */
 export const resetNetworkSettings = async () => {
 	try {
 		return await apiFetch({
@@ -443,6 +614,11 @@ export const resetNetworkSettings = async () => {
 	}
 };
 
+/**
+ * Resets site-specific Videopack settings to their default values.
+ *
+ * @return {Promise<Object>} Default settings.
+ */
 export const resetVideopackSettings = async () => {
 	try {
 		return await apiFetch({
@@ -454,6 +630,16 @@ export const resetVideopackSettings = async () => {
 	}
 };
 
+/**
+ * Sets a specific image as the poster for a video.
+ *
+ * @param {number}  attachment_id ID of the video attachment.
+ * @param {string}  thumb_url     URL of the thumbnail image.
+ * @param {number}  parent_id     ID of the parent post.
+ * @param {string}  url           Original video source URL.
+ * @param {boolean} featured      Whether to set as featured image.
+ * @return {Promise<Object>} API response.
+ */
 export const setPosterImage = async (
 	attachment_id,
 	thumb_url,
@@ -479,6 +665,18 @@ export const setPosterImage = async (
 	}
 };
 
+/**
+ * Generates a thumbnail for a video.
+ *
+ * @param {string}  url              Video source URL.
+ * @param {number}  total_thumbnails Total number of thumbnails to generate.
+ * @param {number}  thumbnail_index  Index of the thumbnail to generate.
+ * @param {number}  attachment_id    ID of the video attachment.
+ * @param {boolean} generate_button  Whether this was triggered by a manual button.
+ * @param {number}  parent_id        ID of the parent post.
+ * @param {boolean} featured         Whether to set as featured image.
+ * @return {Promise<Object>} API response.
+ */
 export const generateThumbnail = async (
 	url,
 	total_thumbnails,
@@ -506,6 +704,13 @@ export const generateThumbnail = async (
 	}
 };
 
+/**
+ * Starts a batch process of a particular type.
+ *
+ * @param {string} type           Type of batch process.
+ * @param {Object} additionalData Extra data for the process.
+ * @return {Promise<Object>} API response with process ID/status.
+ */
 export const startBatchProcess = async (type, additionalData = {}) => {
 	const pre = applyFilters(
 		'videopack.utils.pre_startBatchProcess',
@@ -528,6 +733,12 @@ export const startBatchProcess = async (type, additionalData = {}) => {
 	}
 };
 
+/**
+ * Fetches the progress of a running batch process.
+ *
+ * @param {string} type Type of batch process.
+ * @return {Promise<Object>} Progress data.
+ */
 export const getBatchProgress = async (type) => {
 	try {
 		return await apiFetch({
@@ -540,6 +751,11 @@ export const getBatchProgress = async (type) => {
 	}
 };
 
+/**
+ * Fetches candidate thumbnails for a video.
+ *
+ * @return {Promise<Array>} List of thumbnail candidates.
+ */
 export const getThumbnailCandidates = async () => {
 	try {
 		return await apiFetch({

@@ -1,3 +1,7 @@
+/**
+ * Main entry point for the attachment details feature, handling React root injection and auto-generation logic.
+ */
+
 import { createRoot } from '@wordpress/element';
 import AttachmentDetails from './components/AttachmentDetails';
 import {
@@ -9,7 +13,7 @@ import { createThumbnailFromCanvas, setPosterImage } from '../../utils/utils';
 import { __, sprintf } from '@wordpress/i18n';
 import './attachment-details.scss';
 
-// render on edit media screen
+// Render on edit media screen.
 const editMediaContainer = document.getElementById(
 	'videopack-attachment-details-root'
 );
@@ -102,7 +106,10 @@ if (
 					// Create a new React root and render the component.
 					this.videopackReactRoot = createRoot(reactRootDiv);
 					this.videopackReactRoot.render(
-						<AttachmentDetails attachmentId={attachmentId} model={this.model} />
+						<AttachmentDetails
+							attachmentId={attachmentId}
+							model={this.model}
+						/>
 					);
 					this.renderedAttachmentId = attachmentId;
 				});
@@ -150,8 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		) {
 			const originalAdd = media.model.Attachments.prototype.add;
 
-			media.model.Attachments.prototype.add = function (_models, _options) {
-				const added = originalAdd.apply(this, arguments);
+			media.model.Attachments.prototype.add = function (models, options) {
+				const added = originalAdd.apply(this, [models, options]);
 
 				if (!added) {
 					return added;

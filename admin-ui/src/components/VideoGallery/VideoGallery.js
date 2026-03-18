@@ -1,3 +1,7 @@
+/**
+ * A gallery component that manages a collection of videos with drag-and-drop support.
+ */
+
 import { getVideoGallery } from '../../utils/utils';
 import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -20,6 +24,17 @@ import GalleryItem from './GalleryItem';
 import VideoPlayer from '../VideoPlayer/VideoPlayer';
 import './VideoGallery.scss';
 
+/**
+ * VideoGallery component.
+ *
+ * @param {Object}   props              Component props.
+ * @param {Object}   props.attributes   Block attributes.
+ * @param {Function} props.setAttributes Function to update block attributes.
+ * @param {boolean}  props.isEditing    Whether the gallery is in editing mode.
+ * @param {Function} props.onRemoveItem Callback to remove a video item.
+ * @param {Function} props.onEditItem   Callback to edit a video item.
+ * @return {Object} The VideoGallery component.
+ */
 const VideoGallery = ({
 	attributes,
 	setAttributes,

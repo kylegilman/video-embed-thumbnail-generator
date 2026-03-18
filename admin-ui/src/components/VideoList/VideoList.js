@@ -1,3 +1,7 @@
+/**
+ * A vertical list component for managing a collection of videos.
+ */
+
 import { getVideoGallery } from '../../utils/utils';
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -19,6 +23,19 @@ import {
 import VideoListItem from './VideoListItem';
 import './VideoList.scss';
 
+/**
+ * VideoList component.
+ *
+ * @param {Object}   props              Component props.
+ * @param {Object}   props.attributes   Block attributes.
+ * @param {Function} props.setAttributes Function to update block attributes.
+ * @param {boolean}  props.isEditing    Whether the list is in editing mode.
+ * @param {Object}   props.options      Global player options.
+ * @param {boolean}  props.isSelected   Whether the block is selected in the editor.
+ * @param {Function} props.onRemoveItem Callback to remove a video item.
+ * @param {Function} props.onEditItem   Callback to edit a video item.
+ * @return {Object} The VideoList component.
+ */
 const VideoList = ({
 	attributes,
 	setAttributes,

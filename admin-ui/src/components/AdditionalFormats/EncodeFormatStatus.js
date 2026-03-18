@@ -1,8 +1,31 @@
+/**
+ * Component to display the status and controls for a single video format.
+ */
+
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, CheckboxControl, Spinner } from '@wordpress/components';
 import EncodeProgress from './EncodeProgress';
 import './EncodeFormatStatus.scss';
 
+/**
+ * EncodeFormatStatus component.
+ *
+ * @param {Object}   props                  Component props.
+ * @param {string}   props.formatId         The format identifier.
+ * @param {Object}   props.formatData       Data for the specific format.
+ * @param {boolean}  props.ffmpegExists     Whether FFmpeg is available on the server.
+ * @param {Function} props.onCheckboxChange Callback for checkbox toggles.
+ * @param {Function} props.onSelectFormat   Callback for manual file selection.
+ * @param {Function} props.onDeleteFile     Callback for file deletion.
+ * @param {Function} props.onRemoveFormat   Callback for removing manual assignment.
+ * @param {Function} props.onCancelJob      Callback for canceling an encoding job.
+ * @param {string}   props.deleteInProgress The ID/JobId currently being deleted.
+ * @param {Function} props.onRefresh        Callback to refresh format data.
+ * @param {number}   props.parentId         ID of the parent video attachment.
+ * @param {boolean}  props.showLabel        Whether to show the format label.
+ * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
+ * @return {Element} The rendered component.
+ */
 const EncodeFormatStatus = ({
 	formatId,
 	formatData,

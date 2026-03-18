@@ -11,6 +11,14 @@ import {
 } from '@wordpress/components';
 import VideopackTooltip from './VideopackTooltip';
 
+/**
+ * AdminSettings component.
+ *
+ * @param {Object} props                      Component props.
+ * @param {Object} props.settings             Plugin settings.
+ * @param {Object} props.changeHandlerFactory Factory for creating change handlers.
+ * @return {Object} The rendered component.
+ */
 const AdminSettings = ({ settings, changeHandlerFactory }) => {
 	const {
 		capabilities,

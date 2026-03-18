@@ -2,6 +2,13 @@ import { useState, useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { useDebounce } from '@wordpress/compose';
 
+/**
+ * Hook to query and search for videos or other content types in the WordPress database.
+ *
+ * @param {Object} attributes    Block attributes.
+ * @param {number} previewPostId The ID of the post being previewed.
+ * @return {Object} Query results including search results, categories, and tags.
+ */
 export default function useVideoQuery(attributes, previewPostId) {
 	const { gallery_id, gallery_source, gallery_exclude } = attributes;
 

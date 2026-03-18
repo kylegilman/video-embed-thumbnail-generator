@@ -6,6 +6,18 @@ import Thumbnails from '../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../components/AdditionalFormats/AdditionalFormats.js';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer.js';
 
+/**
+ * SingleVideoBlock component for rendering a single video within the editor.
+ *
+ * @param {Object}   props                      Component props.
+ * @param {Function} props.setAttributes        Function to update block attributes.
+ * @param {Object}   props.attributes           Block attributes.
+ * @param {Object}   props.options              Global plugin options.
+ * @param {boolean}  props.isSelected           Whether the block is selected.
+ * @param {Object}   props.externalSourceGroups External video sources if not in library.
+ * @param {Object}   props.videoData            Video attachment data and state.
+ * @return {Object}                             The rendered component.
+ */
 const SingleVideoBlock = ({
 	setAttributes,
 	attributes,

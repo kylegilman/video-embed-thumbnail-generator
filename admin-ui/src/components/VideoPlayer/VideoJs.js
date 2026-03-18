@@ -1,3 +1,7 @@
+/**
+ * A React wrapper for the Video.js player library.
+ */
+
 /* global videojs */
 
 import { useRef, useEffect } from '@wordpress/element';
@@ -27,9 +31,6 @@ export const VideoJS = (props) => {
 	useEffect(() => {
 		let initTimer;
 		const player = playerRef.current;
-
-
-
 		// When plugins change (e.g. resolution selector added after entity
 		// record resolves), initialize the plugin on the existing player
 		// rather than disposing. Disposing triggers a setTimeout reinit,
@@ -172,7 +173,6 @@ export const VideoJS = (props) => {
 		}
 
 		return () => {
-
 			clearTimeout(initTimer);
 		};
 	}, [options, skin, onPlay, onPause, onReady]);
@@ -187,7 +187,7 @@ export const VideoJS = (props) => {
 				playerRef.current = null;
 			}
 		};
-	}, []);
+	}, [onPause, onPlay]);
 
 	return (
 		<div

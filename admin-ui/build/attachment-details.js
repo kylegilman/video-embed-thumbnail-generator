@@ -489,6 +489,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__);
+/**
+ * Component to manage additional video formats, including encoding and file management.
+ */
+
 /* global videopack_config */
 
 
@@ -499,6 +503,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+/**
+ * Helper to get the ordinal string for a number.
+ *
+ * @param {number} n      The number.
+ * @param {string} locale The locale string.
+ * @return {string} Ordinal string (e.g., "1st", "2nd").
+ */
 
 const getOrdinal = (n, locale = 'en-US') => {
   const pr = new Intl.PluralRules(locale.replace('_', '-'), {
@@ -520,6 +532,18 @@ const getOrdinal = (n, locale = 'en-US') => {
       return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('%dth', 'video-embed-thumbnail-generator'), n);
   }
 };
+
+/**
+ * AdditionalFormats component for managing alternative video files.
+ *
+ * @param {Object}   props                  Component props.
+ * @param {Function} props.setAttributes    Function to update block attributes.
+ * @param {Object}   props.attributes       Block attributes.
+ * @param {Object}   props.options          Global Videopack options.
+ * @param {number}   props.parentId         ID of the parent attachment.
+ * @param {string}   props.src              Video source URL.
+ * @return {Element} The rendered component.
+ */
 const AdditionalFormats = ({
   setAttributes,
   attributes,
@@ -749,8 +773,8 @@ const AdditionalFormats = ({
     } catch (error) {
       console.error('File delete failed:', error);
       const errorMessage = sanitizeError(error);
-      setEncodeMessage(/* translators: %s is an error message */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting file: %s', 'video-embed-thumbnail-generator'), errorMessage));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is an error message */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting file: %s', 'video-embed-thumbnail-generator'), errorMessage));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } finally {
       setDeleteInProgress(null);
@@ -772,8 +796,8 @@ const AdditionalFormats = ({
     } catch (error) {
       console.error('Job delete failed:', error);
       const errorMessage = sanitizeError(error);
-      setEncodeMessage(/* translators: %s is an error message */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting job: %s', 'video-embed-thumbnail-generator'), errorMessage));
+      setEncodeMessage((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is an error message */
+      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error deleting job: %s', 'video-embed-thumbnail-generator'), errorMessage));
       fetchVideoFormats(); // Re-fetch to get the latest status
     } finally {
       setDeleteInProgress(null);
@@ -861,15 +885,22 @@ const AdditionalFormats = ({
     acc[codecId].formats.push(format);
     // sort formats by height
     acc[codecId].formats.sort((a, b) => {
-      // Prioritize formats that replace the original video.
+      // Prioritize the replacement format to be at the top of its codec.
       if (a.replaces_original && !b.replaces_original) {
         return -1;
       }
       if (!a.replaces_original && b.replaces_original) {
         return 1;
       }
+      // Prioritize the fullres format.
+      if (a.resolution.id === 'fullres' && b.resolution.id !== 'fullres') {
+        return -1;
+      }
+      if (a.resolution.id !== 'fullres' && b.resolution.id === 'fullres') {
+        return 1;
+      }
       // Otherwise, sort by resolution height in descending order.
-      return b.resolution.height - a.resolution.height;
+      return (b.resolution.height || 0) - (a.resolution.height || 0);
     });
     return acc;
   }, {});
@@ -882,7 +913,7 @@ const AdditionalFormats = ({
           className: `videopack-formats-list${ffmpeg_exists === true ? '' : ' no-ffmpeg'}`,
           children: Object.keys(groupedFormats).map(codecId => {
             const codecGroup = groupedFormats[codecId];
-            if (options.encode[codecId]?.enabled !== true) {
+            if (codecGroup.formats.length === 0) {
               return null;
             }
             return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsxs)("li", {
@@ -953,10 +984,34 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EncodeFormatStatus_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./EncodeFormatStatus.scss */ "./src/components/AdditionalFormats/EncodeFormatStatus.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+/**
+ * Component to display the status and controls for a single video format.
+ */
 
 
 
 
+
+
+/**
+ * EncodeFormatStatus component.
+ *
+ * @param {Object}   props                  Component props.
+ * @param {string}   props.formatId         The format identifier.
+ * @param {Object}   props.formatData       Data for the specific format.
+ * @param {boolean}  props.ffmpegExists     Whether FFmpeg is available on the server.
+ * @param {Function} props.onCheckboxChange Callback for checkbox toggles.
+ * @param {Function} props.onSelectFormat   Callback for manual file selection.
+ * @param {Function} props.onDeleteFile     Callback for file deletion.
+ * @param {Function} props.onRemoveFormat   Callback for removing manual assignment.
+ * @param {Function} props.onCancelJob      Callback for canceling an encoding job.
+ * @param {string}   props.deleteInProgress The ID/JobId currently being deleted.
+ * @param {Function} props.onRefresh        Callback to refresh format data.
+ * @param {number}   props.parentId         ID of the parent video attachment.
+ * @param {boolean}  props.showLabel        Whether to show the format label.
+ * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
+ * @return {Element} The rendered component.
+ */
 
 const EncodeFormatStatus = ({
   formatId,
@@ -1094,10 +1149,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EncodeProgress_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./EncodeProgress.scss */ "./src/components/AdditionalFormats/EncodeProgress.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+/**
+ * Component to display and interpolate encoding progress for a video job.
+ */
 
 
 
 
+
+
+/**
+ * EncodeProgress component.
+ *
+ * @param {Object}   props                  Component props.
+ * @param {Object}   props.formatData       Data for the format being encoded.
+ * @param {Function} props.onCancelJob      Callback to cancel the job.
+ * @param {string}   props.deleteInProgress The ID/JobId currently being deleted.
+ * @param {Function} props.onRefresh        Callback to refresh data.
+ * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
+ * @return {Element} The rendered component.
+ */
 
 const EncodeProgress = ({
   formatData,
@@ -2837,6 +2908,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _hooks_useVideoSettings_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../hooks/useVideoSettings.js */ "./src/hooks/useVideoSettings.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__);
+/**
+ * Component to display attachment details and settings for a video.
+ */
 
 
 
@@ -2845,6 +2919,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+/**
+ * AttachmentDetails component.
+ *
+ * @param {Object} props              Component props.
+ * @param {number} props.attachmentId The ID of the attachment.
+ * @param {Object} props.model        Backbone model for the attachment.
+ * @return {Object} The rendered component.
+ */
 
 const AttachmentDetails = ({
   attachmentId,
@@ -3118,6 +3202,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_compose__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_3__);
+/**
+ * Custom React hook for managing video settings.
+ */
+
 
 
 
@@ -3125,6 +3213,15 @@ __webpack_require__.r(__webpack_exports__);
 
 // Settings that can be stored per-video in _videopack-meta.
 const metaKeys = ['width', 'height', 'downloadlink', 'autoplay', 'loop', 'muted', 'controls', 'volume', 'preload', 'playback_rate', 'playsinline', 'right_click', 'gifmode', 'fixed_aspect', 'align', 'legacy_dimensions', 'resize', 'fullwidth', 'embeddable', 'embedcode', 'overlay_title', 'view_count', 'watermark', 'watermark_link_to', 'watermark_url', 'poster', 'poster_id', 'total_thumbnails', 'track'];
+
+/**
+ * Hook to manage video settings and synchronize them with attachment metadata.
+ *
+ * @param {Object}   attributes    Block attributes.
+ * @param {Function} setAttributes Function to update block attributes.
+ * @param {Object}   options       Global options/settings.
+ * @return {Object} Setting change handlers and options.
+ */
 const useVideoSettings = (attributes, setAttributes, options = {}) => {
   const {
     id,
@@ -3139,7 +3236,7 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
         controls: false
       });
     }
-  }, [gifmode]);
+  }, [gifmode, setAttributes]);
   const updateAttachmentCallback = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useCallback)((key, value) => {
     if (id) {
       _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
@@ -3292,10 +3389,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__);
+/**
+ * Utility functions for interacting with the Videopack REST API and managing video jobs.
+ */
+
 /* global videopack_config */
 
 
 
+
+/**
+ * Fetches the current video encoding queue.
+ *
+ * @return {Promise<Array>} List of jobs in the queue.
+ */
 const getQueue = async () => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getQueue', undefined);
   if (typeof pre !== 'undefined') {
@@ -3309,6 +3416,13 @@ const getQueue = async () => {
     throw error;
   }
 };
+
+/**
+ * Controls the queue (start, stop, etc.).
+ *
+ * @param {string} action Control action to perform.
+ * @return {Promise<Object>} API response.
+ */
 const toggleQueue = async action => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3323,6 +3437,13 @@ const toggleQueue = async action => {
     throw error;
   }
 };
+
+/**
+ * Clears jobs from the queue.
+ *
+ * @param {string} type Type of jobs to clear.
+ * @return {Promise<Object>} API response.
+ */
 const clearQueue = async type => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3337,6 +3458,13 @@ const clearQueue = async type => {
     throw error;
   }
 };
+
+/**
+ * Deletes a specific job.
+ *
+ * @param {number|string} jobId ID of the job to delete.
+ * @return {Promise<Object>} API response.
+ */
 const deleteJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3348,6 +3476,13 @@ const deleteJob = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Retries a specific job.
+ *
+ * @param {number|string} jobId ID of the job to retry.
+ * @return {Promise<Object>} API response.
+ */
 const retryJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3359,6 +3494,13 @@ const retryJob = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Removes a job from the queue without force.
+ *
+ * @param {number|string} jobId ID of the job to remove.
+ * @return {Promise<Object>} API response.
+ */
 const removeJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3372,6 +3514,14 @@ const removeJob = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Fetches encoding presets.
+ *
+ * @param {number|null} attachmentId Optional attachment ID to filter presets.
+ * @param {string}      url          Optional URL to filter presets.
+ * @return {Promise<Array>} List of presets.
+ */
 const getPresets = async (attachmentId = null, url = '') => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3385,6 +3535,15 @@ const getPresets = async (attachmentId = null, url = '') => {
     throw error;
   }
 };
+
+/**
+ * Creates a new encoding job.
+ *
+ * @param {number|string} input    Attachment ID or source URL.
+ * @param {Array}         outputs  List of format IDs to encode.
+ * @param {number}        parentId ID of the parent post.
+ * @return {Promise<Object>} API response.
+ */
 const createJob = async (input, outputs, parentId = 0) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3401,6 +3560,13 @@ const createJob = async (input, outputs, parentId = 0) => {
     throw error;
   }
 };
+
+/**
+ * Fetches the status of a specific job.
+ *
+ * @param {number|string} jobId ID of the job to check.
+ * @return {Promise<Object>} Job status data.
+ */
 const getJobStatus = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3411,6 +3577,13 @@ const getJobStatus = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Lists jobs, optionally filtered by input.
+ *
+ * @param {number|string|null} input Optional attachment ID or URL to filter.
+ * @return {Promise<Array>} List of jobs.
+ */
 const listJobs = async (input = null) => {
   try {
     const path = input ? (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/jobs', {
@@ -3424,6 +3597,14 @@ const listJobs = async (input = null) => {
     throw error;
   }
 };
+
+/**
+ * Fetches available video formats and their encoding status for an attachment.
+ *
+ * @param {number} attachmentId The attachment ID.
+ * @param {string} url          Optional source URL.
+ * @return {Promise<Object>} Map of format IDs to format objects.
+ */
 const getVideoFormats = async (attachmentId, url = '') => {
   try {
     const presets = await getPresets(attachmentId, url);
@@ -3444,6 +3625,16 @@ const getVideoFormats = async (attachmentId, url = '') => {
     throw error;
   }
 };
+
+/**
+ * Enqueues a job for multiple video formats.
+ *
+ * @param {number} attachmentId The attachment ID.
+ * @param {string} src          Source URL.
+ * @param {Object} formats      Object mapping format IDs to boolean selection state.
+ * @param {number} parentId     ID of the parent post.
+ * @return {Promise<Object>} The response from the job creation.
+ */
 const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
   // formats is an object { format_id: true, ... } from the UI
   const outputIds = Object.keys(formats).filter(id => formats[id]);
@@ -3459,6 +3650,15 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
     throw error;
   }
 };
+
+/**
+ * Assigns an encoded file to a specific format on a parent video.
+ *
+ * @param {number} mediaId  ID of the encoded media attachment.
+ * @param {string} formatId ID of the format to assign.
+ * @param {number} parentId ID of the parent video attachment.
+ * @return {Promise<Object>} API response.
+ */
 const assignFormat = async (mediaId, formatId, parentId) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3476,6 +3676,13 @@ const assignFormat = async (mediaId, formatId, parentId) => {
     throw error;
   }
 };
+
+/**
+ * Unassigns a media attachment from its video format role.
+ *
+ * @param {number} mediaId ID of the media attachment.
+ * @return {Promise<Object>} API response.
+ */
 const unassignFormat = async mediaId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3493,6 +3700,13 @@ const unassignFormat = async mediaId => {
     throw error;
   }
 };
+
+/**
+ * Deletes a media attachment file permanently.
+ *
+ * @param {number} attachmentId ID of the attachment to delete.
+ * @return {Promise<Object>} API response.
+ */
 const deleteFile = async attachmentId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3540,6 +3754,13 @@ const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0,
     }, 'image/jpeg');
   });
 };
+
+/**
+ * Uploads a thumbnail to the server.
+ *
+ * @param {FormData} formData Thumbnail data and metadata.
+ * @return {Promise<Object>} API response.
+ */
 const uploadThumbnail = async formData => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3552,6 +3773,17 @@ const uploadThumbnail = async formData => {
     throw error;
   }
 };
+
+/**
+ * Saves all thumbnails selected for a video.
+ *
+ * @param {number}  attachment_id ID of the video attachment.
+ * @param {Array}   thumb_urls    List of thumbnail URLs to save.
+ * @param {number}  parent_id     ID of the parent post.
+ * @param {string}  url           Video source URL.
+ * @param {boolean} featured      Whether to set one as featured.
+ * @return {Promise<Object>} API response.
+ */
 const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3570,6 +3802,13 @@ const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url =
     throw error;
   }
 };
+
+/**
+ * Fetches the video gallery content based on provided arguments.
+ *
+ * @param {Object} args Gallery query arguments.
+ * @return {Promise<Array>} List of videos in the gallery.
+ */
 const getVideoGallery = async args => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
   if (typeof pre !== 'undefined') {
@@ -3586,6 +3825,13 @@ const getVideoGallery = async args => {
     throw error;
   }
 };
+
+/**
+ * Fetches users who have a specific capability.
+ *
+ * @param {string} capability The capability to check for.
+ * @return {Promise<Array>} List of users.
+ */
 const getUsersWithCapability = async capability => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3597,6 +3843,13 @@ const getUsersWithCapability = async capability => {
     throw error;
   }
 };
+
+/**
+ * Fetches settings content for a specific Freemius page.
+ *
+ * @param {string} page The Freemius page name.
+ * @return {Promise<Object>} Page data.
+ */
 const getFreemiusPage = async page => {
   try {
     let path = `/videopack/v1/freemius/${page}`;
@@ -3611,6 +3864,15 @@ const getFreemiusPage = async page => {
     throw error;
   }
 };
+
+/**
+ * Tests an FFmpeg encoding command with specific parameters.
+ *
+ * @param {string} codec      The codec to test.
+ * @param {string} resolution The resolution to test.
+ * @param {number} rotate     The rotation angle.
+ * @return {Promise<Object>} Test results.
+ */
 const testEncodeCommand = async (codec, resolution, rotate) => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
   if (typeof pre !== 'undefined') {
@@ -3625,6 +3887,12 @@ const testEncodeCommand = async (codec, resolution, rotate) => {
     throw error;
   }
 };
+
+/**
+ * Fetches global Videopack settings.
+ *
+ * @return {Promise<Object>} Videopack settings.
+ */
 const getSettings = async () => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getSettings', undefined);
   if (typeof pre !== 'undefined') {
@@ -3641,6 +3909,13 @@ const getSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Saves global Videopack settings to the WordPress options.
+ *
+ * @param {Object} newSettings The new settings to save.
+ * @return {Promise<Object>} Updated settings.
+ */
 const saveWPSettings = async newSettings => {
   try {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3656,6 +3931,12 @@ const saveWPSettings = async newSettings => {
     throw error;
   }
 };
+
+/**
+ * Fetches network-wide Videopack settings (Multisite).
+ *
+ * @return {Promise<Object>} Network settings.
+ */
 const getNetworkSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3666,6 +3947,13 @@ const getNetworkSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Saves network-wide Videopack settings (Multisite).
+ *
+ * @param {Object} newSettings The network settings to save.
+ * @return {Promise<Object>} Updated network settings.
+ */
 const saveNetworkSettings = async newSettings => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3678,6 +3966,12 @@ const saveNetworkSettings = async newSettings => {
     throw error;
   }
 };
+
+/**
+ * Resets network settings to their default values.
+ *
+ * @return {Promise<Object>} Default settings.
+ */
 const resetNetworkSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3688,6 +3982,12 @@ const resetNetworkSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Resets site-specific Videopack settings to their default values.
+ *
+ * @return {Promise<Object>} Default settings.
+ */
 const resetVideopackSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3698,6 +3998,17 @@ const resetVideopackSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Sets a specific image as the poster for a video.
+ *
+ * @param {number}  attachment_id ID of the video attachment.
+ * @param {string}  thumb_url     URL of the thumbnail image.
+ * @param {number}  parent_id     ID of the parent post.
+ * @param {string}  url           Original video source URL.
+ * @param {boolean} featured      Whether to set as featured image.
+ * @return {Promise<Object>} API response.
+ */
 const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3716,6 +4027,19 @@ const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '',
     throw error;
   }
 };
+
+/**
+ * Generates a thumbnail for a video.
+ *
+ * @param {string}  url              Video source URL.
+ * @param {number}  total_thumbnails Total number of thumbnails to generate.
+ * @param {number}  thumbnail_index  Index of the thumbnail to generate.
+ * @param {number}  attachment_id    ID of the video attachment.
+ * @param {boolean} generate_button  Whether this was triggered by a manual button.
+ * @param {number}  parent_id        ID of the parent post.
+ * @param {boolean} featured         Whether to set as featured image.
+ * @return {Promise<Object>} API response.
+ */
 const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0, featured = null) => {
   try {
     const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', {
@@ -3735,6 +4059,14 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     throw error;
   }
 };
+
+/**
+ * Starts a batch process of a particular type.
+ *
+ * @param {string} type           Type of batch process.
+ * @param {Object} additionalData Extra data for the process.
+ * @return {Promise<Object>} API response with process ID/status.
+ */
 const startBatchProcess = async (type, additionalData = {}) => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_startBatchProcess', undefined, type, additionalData);
   if (typeof pre !== 'undefined') {
@@ -3754,6 +4086,13 @@ const startBatchProcess = async (type, additionalData = {}) => {
     throw error;
   }
 };
+
+/**
+ * Fetches the progress of a running batch process.
+ *
+ * @param {string} type Type of batch process.
+ * @return {Promise<Object>} Progress data.
+ */
 const getBatchProgress = async type => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3765,6 +4104,12 @@ const getBatchProgress = async type => {
     throw error;
   }
 };
+
+/**
+ * Fetches candidate thumbnails for a video.
+ *
+ * @return {Promise<Array>} List of thumbnail candidates.
+ */
 const getThumbnailCandidates = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -3871,6 +4216,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
+/**
+ * Utility functions for capturing video frames and processing thumbnails.
+ */
+
 /* global Image */
 
 
@@ -4503,6 +4852,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _attachment_details_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./attachment-details.scss */ "./src/features/attachment-details/attachment-details.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+/**
+ * Main entry point for the attachment details feature, handling React root injection and auto-generation logic.
+ */
 
 
 
@@ -4510,7 +4862,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// render on edit media screen
+
+// Render on edit media screen.
 
 const editMediaContainer = document.getElementById('videopack-attachment-details-root');
 if (editMediaContainer) {
@@ -4622,8 +4975,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } = wp;
     if (media.model && media.model.Attachments && media.model.Attachments.prototype.add) {
       const originalAdd = media.model.Attachments.prototype.add;
-      media.model.Attachments.prototype.add = function (_models, _options) {
-        const added = originalAdd.apply(this, arguments);
+      media.model.Attachments.prototype.add = function (models, options) {
+        const added = originalAdd.apply(this, [models, options]);
         if (!added) {
           return added;
         }

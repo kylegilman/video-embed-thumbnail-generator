@@ -1,3 +1,7 @@
+/**
+ * Features for managing network-wide settings.
+ */
+
 import { __ } from '@wordpress/i18n';
 import {
 	saveNetworkSettings,
@@ -31,6 +35,11 @@ import { videopack } from '../../assets/icon';
 import TextControlOnBlur from '../settings/components/TextControlOnBlur';
 import './settings-network.scss';
 
+/**
+ * NetworkSettingsPage component.
+ *
+ * @return {Object} The rendered component.
+ */
 const NetworkSettingsPage = () => {
 	const [settings, setSettings] = useState(null);
 	const [users, setUsers] = useState(null);
@@ -358,10 +367,7 @@ const NetworkSettingsPage = () => {
 					<RangeControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__(
-							'Threads',
-							'video-embed-thumbnail-generator'
-						)}
+						label={__('Threads', 'video-embed-thumbnail-generator')}
 						value={settings.threads}
 						className="videopack-settings-slider"
 						onChange={changeHandlerFactory.threads}

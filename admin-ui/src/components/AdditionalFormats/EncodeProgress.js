@@ -1,8 +1,23 @@
+/**
+ * Component to display and interpolate encoding progress for a video job.
+ */
+
 import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import './EncodeProgress.scss';
 
+/**
+ * EncodeProgress component.
+ *
+ * @param {Object}   props                  Component props.
+ * @param {Object}   props.formatData       Data for the format being encoded.
+ * @param {Function} props.onCancelJob      Callback to cancel the job.
+ * @param {string}   props.deleteInProgress The ID/JobId currently being deleted.
+ * @param {Function} props.onRefresh        Callback to refresh data.
+ * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
+ * @return {Element} The rendered component.
+ */
 const EncodeProgress = ({
 	formatData,
 	onCancelJob,

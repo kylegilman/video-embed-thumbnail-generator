@@ -1,3 +1,7 @@
+/**
+ * Component to handle classic embed logic and UI.
+ */
+
 import { TextControl, Button, PanelBody } from '@wordpress/components';
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -10,6 +14,15 @@ import useVideoQuery from '../../../hooks/useVideoQuery';
 import { useVideoData } from '../../../hooks/useVideoData';
 import { generateShortcode, normalizeOptions } from '../../../utils/utils';
 
+/**
+ * ClassicEmbed component.
+ *
+ * @param {Object} props           Component props.
+ * @param {Object} props.options   Plugin options.
+ * @param {number} props.postId    The ID of the current post.
+ * @param {string} props.activeTab Initial active tab.
+ * @return {Object} The rendered component.
+ */
 export default function ClassicEmbed({ options, postId, activeTab }) {
 	const normalizedOptions = normalizeOptions(options);
 

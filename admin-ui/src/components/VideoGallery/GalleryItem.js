@@ -1,3 +1,7 @@
+/**
+ * A single item within the video gallery, displaying a thumbnail and overlay.
+ */
+
 /* global videopack_config, ResizeObserver */
 
 import { useEffect, useState, useRef } from '@wordpress/element';
@@ -8,6 +12,23 @@ import { decodeEntities } from '@wordpress/html-entities';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+/**
+ * GalleryItem component.
+ *
+ * @param {Object}   props                      Component props.
+ * @param {Object}   props.attributes           Block attributes.
+ * @param {Object}   props.videoRecord          Video data record.
+ * @param {Function} props.setOpenVideo         Function to open a video in the modal.
+ * @param {number}   props.videoIndex           Index of the video in the gallery.
+ * @param {Function} props.setCurrentVideoIndex Function to set the current video index.
+ * @param {boolean}  props.isEditing            Whether the gallery is in editing mode.
+ * @param {Function} props.onRemove             Callback to remove a video.
+ * @param {Function} props.onEdit               Callback to edit a video's metadata.
+ * @param {boolean}  props.isLastItem           Whether this is the last item in the gallery.
+ * @param {Function} props.onAddVideo           Callback to add a new video.
+ * @param {boolean}  props.isHoveringGallery    Whether the gallery is being hovered.
+ * @return {Object} The GalleryItem component.
+ */
 const GalleryItem = ({
 	attributes,
 	videoRecord,
@@ -132,10 +153,18 @@ const GalleryItem = ({
 			<div
 				className="gallery-item-clickable-area"
 				ref={buttonContainerRef}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						setOpenVideo(videoRecord);
+						setCurrentVideoIndex(videoIndex);
+					}
+				}}
 				onClick={() => {
 					setOpenVideo(videoRecord);
 					setCurrentVideoIndex(videoIndex);
 				}}
+				tabIndex="0"
+				role="button"
 			>
 				<img
 					src={thumbnailUrl}
@@ -208,10 +237,18 @@ const GalleryItem = ({
 					</button>
 					<div
 						className="gallery-item-edit"
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.stopPropagation();
+								openMediaModal();
+							}
+						}}
 						onClick={(e) => {
 							e.stopPropagation();
 							openMediaModal();
 						}}
+						tabIndex="0"
+						role="button"
 						title={__('Edit', 'video-embed-thumbnail-generator')}
 					>
 						<button type="button" className="videopack-edit-item">
@@ -220,10 +257,18 @@ const GalleryItem = ({
 					</div>
 					<div
 						className="gallery-item-remove"
+						onKeyDown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.stopPropagation();
+								onRemove(videoRecord.attachment_id);
+							}
+						}}
 						onClick={(e) => {
 							e.stopPropagation();
 							onRemove(videoRecord.attachment_id);
 						}}
+						tabIndex="0"
+						role="button"
 						title={__('Remove', 'video-embed-thumbnail-generator')}
 					>
 						<button type="button" className="videopack-remove-item">

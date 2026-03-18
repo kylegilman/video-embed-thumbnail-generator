@@ -1,3 +1,7 @@
+/**
+ * Main entry point for the classic embed feature.
+ */
+
 import { createRoot } from '@wordpress/element';
 import ClassicEmbed from './components/ClassicEmbed';
 import './classic-embed.scss';

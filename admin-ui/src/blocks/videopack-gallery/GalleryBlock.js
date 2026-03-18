@@ -5,6 +5,17 @@ import VideoGallery from '../../components/VideoGallery/VideoGallery';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
 
+/**
+ * GalleryBlock component for rendering a video gallery within the editor.
+ *
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Function to update block attributes.
+ * @param {Array}    props.videoChildren List of video attachment records.
+ * @param {Object}   props.options       Global plugin options.
+ * @param {number}   props.previewPostId ID of the post being previewed.
+ * @return {Object} The rendered component.
+ */
 const GalleryBlock = ({
 	attributes,
 	setAttributes,

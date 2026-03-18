@@ -1,6 +1,18 @@
-import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useMemo } from '@wordpress/element';
+/**
+ * Component to display the interactive meta bar on top of the video player.
+ */
 
+import { __ } from '@wordpress/i18n';
+import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
+
+/**
+ * MetaBar component.
+ *
+ * @param {Object}    props            Component props.
+ * @param {Object}    props.attributes Block attributes.
+ * @param {React.Ref} props.playerRef  Reference to the active video player instance.
+ * @return {Object|null} The rendered component.
+ */
 const MetaBar = ({ attributes, playerRef }) => {
 	const {
 		overlay_title,
@@ -33,12 +45,13 @@ const MetaBar = ({ attributes, playerRef }) => {
 		return false;
 	};
 
-	const embedLink = () => {
+	const embedLink = useCallback(() => {
 		if (attributes?.embedlink) {
 			return String(attributes?.embedlink);
 		}
 		return '';
-	};
+	}, [attributes?.embedlink]);
+
 	const [currentEmbedCode, setCurrentEmbedCode] = useState(embedLink());
 
 	const convertToTimecode = (time) => {
@@ -102,7 +115,7 @@ const MetaBar = ({ attributes, playerRef }) => {
 
 		iframe.setAttribute('src', src);
 		setCurrentEmbedCode(iframe.outerHTML);
-	}, [startAtEnabled, startAtTime, attributes.embedlink]);
+	}, [startAtEnabled, startAtTime, attributes.embedlink, embedLink]);
 
 	const EmbedElements = () => {
 		return (
@@ -204,7 +217,9 @@ const MetaBar = ({ attributes, playerRef }) => {
 							</a>
 						)}
 					</span>
-					{overlay_title && <span className="videopack-title">{title}</span>}
+					{overlay_title && (
+						<span className="videopack-title">{title}</span>
+					)}
 				</div>
 				{embedItems() && <EmbedElements />}
 			</>

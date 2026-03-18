@@ -1,3 +1,7 @@
+/**
+ * Features for managing the video encoding queue.
+ */
+
 import './encode-queue.scss';
 import { __, sprintf } from '@wordpress/i18n';
 import {
@@ -37,6 +41,11 @@ const defaultLayouts = {
 	},
 };
 
+/**
+ * EncodeQueue component.
+ *
+ * @return {Object} The rendered component.
+ */
 const EncodeQueue = () => {
 	const [queueData, setQueueData] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);

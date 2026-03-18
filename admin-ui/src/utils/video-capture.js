@@ -1,3 +1,7 @@
+/**
+ * Utility functions for capturing video frames and processing thumbnails.
+ */
+
 /* global Image */
 
 import { __ } from '@wordpress/i18n';
