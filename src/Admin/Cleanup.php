@@ -24,35 +24,6 @@ namespace Videopack\Admin;
 class Cleanup {
 
 	/**
-	 * Handler for cleaning up generated log files.
-	 *
-	 * @param string $logfile Path to the log file.
-	 */
-	public function cleanup_generated_logfiles_handler( $logfile ) {
-		$logfile      = (string) $logfile;
-		$lastmodified = false;
-
-		if ( strpos( $logfile, '_encode.txt' ) !== false
-			&& file_exists( $logfile )
-		) {
-			$lastmodified = filemtime( $logfile );
-		}
-
-		if ( false !== $lastmodified ) {
-			if ( time() - $lastmodified > 120 ) {
-				wp_delete_file( $logfile );
-			} else {
-				$timestamp = wp_next_scheduled( 'videopack_cleanup_generated_logfiles' );
-				if ( $timestamp ) {
-					wp_unschedule_event( $timestamp, 'videopack_cleanup_generated_logfiles' );
-				}
-				$args = array( 'logfile' => $logfile );
-				wp_schedule_single_event( time() + 600, 'videopack_cleanup_generated_logfiles', $args );
-			}
-		}
-	}
-
-	/**
 	 * Handler for cleaning up generated temporary thumbnails.
 	 */
 	public function cleanup_generated_thumbnails_handler() {
@@ -67,9 +38,9 @@ class Cleanup {
 	}
 
 	/**
-	 * Schedules a cleanup event.
+	 * Schedules a cleanup event for temporary thumbnails.
 	 *
-	 * @param string $arg The type of cleanup ('thumbs' or a logfile path).
+	 * @param string $arg The type of cleanup (only 'thumbs' is supported).
 	 */
 	public function schedule( $arg ) {
 		$arg = (string) $arg;
@@ -80,13 +51,35 @@ class Cleanup {
 				wp_unschedule_event( $timestamp, 'videopack_cleanup_generated_thumbnails' );
 			}
 			wp_schedule_single_event( time() + 3600, 'videopack_cleanup_generated_thumbnails' );
-		} else {
-			$timestamp = wp_next_scheduled( 'videopack_cleanup_generated_logfiles' );
-			if ( $timestamp ) {
-				wp_unschedule_event( $timestamp, 'videopack_cleanup_generated_logfiles' );
-			}
-			$args = array( 'logfile' => $arg );
-			wp_schedule_single_event( time() + 600, 'videopack_cleanup_generated_logfiles', $args );
+		}
+	}
+
+	/**
+	 * Schedules the weekly cleanup action if not already scheduled.
+	 * Fires on the 'init' hook to ensure Action Scheduler is loaded.
+	 *
+	 * @since 5.0.0
+	 */
+	public function schedule_weekly_cleanup() {
+		if ( ! class_exists( 'ActionScheduler' ) ) {
+			return;
+		}
+
+		if ( ! \ActionScheduler::store()->query_actions(
+			array(
+				'hook'   => 'videopack_cleanup_queue',
+				'status' => \ActionScheduler_Store::STATUS_PENDING,
+			)
+		) ) {
+			as_schedule_recurring_action(
+				time(),
+				WEEK_IN_SECONDS,
+				'videopack_cleanup_queue',
+				array(
+					'type' => 'weekly',
+				),
+				'videopack_queue_management'
+			);
 		}
 	}
 
