@@ -1,3 +1,7 @@
+/**
+ * Main entry point for the Videopack Gallery block.
+ */
+
 import { registerBlockType } from '@wordpress/blocks';
 import edit from './edit';
 import save from './save';

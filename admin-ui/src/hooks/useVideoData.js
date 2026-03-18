@@ -1,7 +1,19 @@
+/**
+ * Custom React hook for fetching video data.
+ */
+
 import { useState, useEffect } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Hook to fetch and manage video attachment data from the WordPress core data store.
+ *
+ * @param {number}  id         The attachment ID.
+ * @param {string}  src        The video source URL.
+ * @param {boolean} isExternal Whether the video is from an external source.
+ * @return {Object} Video data including poster, total thumbnails, and loading state.
+ */
 export const useVideoData = (id, src, isExternal) => {
 	const [videoData, setVideoData] = useState({
 		poster: undefined,

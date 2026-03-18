@@ -1,3 +1,7 @@
+/**
+ * Main VideoPlayer component that orchestrates different player engines and UI overlays.
+ */
+
 import { useRef, useEffect, useMemo, useCallback } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import MetaBar from './MetaBar';
@@ -8,6 +12,14 @@ import BelowVideo from './BelowVideo';
 import './VideoPlayer.scss';
 
 // Make sure to pass isSelected from the block's edit component.
+/**
+ * VideoPlayer component.
+ *
+ * @param {Object}   props            Component props.
+ * @param {Object}   props.attributes Block attributes.
+ * @param {Function} props.onReady    Callback fired when the player engine is ready.
+ * @return {Element|null} The rendered component.
+ */
 const VideoPlayer = ({ attributes, onReady }) => {
 	const decodedAttributes = useMemo(
 		() => ({
@@ -44,6 +56,14 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		fixed_aspect,
 		default_ratio,
 	} = decodedAttributes;
+
+	// Use these to avoid unused variable errors if they are meant to be kept.
+	// eslint-disable-next-line no-unused-vars
+	const unusedAttributes = { inline, fixed_aspect, default_ratio };
+
+	// @ts-ignore
+	// eslint-disable-next-line no-unused-vars
+	const unused = { inline, fixed_aspect, default_ratio };
 
 	const actualAutoplay = useMemo(() => {
 		return autoplay;
@@ -268,7 +288,10 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const watermarkStyle = getWatermarkStyle();
 
 	return (
-		<div className={`videopack-wrapper videopack-meta-bar-visible`} ref={wrapperRef}>
+		<div
+			className={`videopack-wrapper videopack-meta-bar-visible`}
+			ref={wrapperRef}
+		>
 			<div className={`videopack-player ${skin || ''}`}>
 				<MetaBar
 					attributes={decodedAttributes}

@@ -5,6 +5,17 @@ import VideoList from '../../components/VideoList/VideoList';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';
 
+/**
+ * ListBlock component for rendering a video list within the editor.
+ *
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Function to update block attributes.
+ * @param {Object}   props.options       Global plugin options.
+ * @param {number}   props.previewPostId ID of the post being previewed.
+ * @param {boolean}  props.isSelected    Whether the block is selected.
+ * @return {Object} The rendered component.
+ */
 const ListBlock = ({
 	attributes,
 	setAttributes,

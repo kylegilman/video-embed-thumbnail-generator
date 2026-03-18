@@ -1,3 +1,7 @@
+/**
+ * Custom React hook for managing video settings.
+ */
+
 import { __, _x } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDebounce } from '@wordpress/compose';
@@ -36,6 +40,14 @@ const metaKeys = [
 	'track',
 ];
 
+/**
+ * Hook to manage video settings and synchronize them with attachment metadata.
+ *
+ * @param {Object}   attributes    Block attributes.
+ * @param {Function} setAttributes Function to update block attributes.
+ * @param {Object}   options       Global options/settings.
+ * @return {Object} Setting change handlers and options.
+ */
 const useVideoSettings = (attributes, setAttributes, options = {}) => {
 	const { id, gifmode } = attributes;
 
@@ -48,7 +60,7 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 				controls: false,
 			});
 		}
-	}, [gifmode]);
+	}, [gifmode, setAttributes]);
 
 	const updateAttachmentCallback = useCallback(
 		(key, value) => {
@@ -165,4 +177,3 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 };
 
 export default useVideoSettings;
-

@@ -29,6 +29,15 @@ import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = ['video'];
 
+/**
+ * Edit component for the Videopack Video block.
+ *
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Function to update block attributes.
+ * @param {boolean}  props.isSelected    Whether the block is currently selected.
+ * @return {Object}                      The rendered component.
+ */
 const Edit = ({ attributes, setAttributes, isSelected }) => {
 	const { id, src } = attributes;
 	const [options, setOptions] = useState();
@@ -66,9 +75,9 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				featured:
 					attachmentObject.meta?.['_videopack-meta']?.featured,
 				title:
-					typeof attachmentObject.title === 'string'
-						? attachmentObject.title
-						: (attachmentObject.title?.raw ??
+					typeof attachmentObject.title === 'string' ?
+						attachmentObject.title :
+						(attachmentObject.title?.raw ??
 							attachmentObject.title?.rendered),
 				caption:
 					typeof attachmentObject.caption === 'string'

@@ -1,5 +1,16 @@
+/**
+ * Component to display metadata below the video player, such as view counts and captions.
+ */
+
 import { _n, sprintf } from '@wordpress/i18n';
 
+/**
+ * BelowVideo component.
+ *
+ * @param {Object} props            Component props.
+ * @param {Object} props.attributes Block attributes.
+ * @return {Element|null} The rendered component.
+ */
 const BelowVideo = ({ attributes }) => {
 	const { view_count, caption } = attributes;
 
@@ -25,7 +36,9 @@ const BelowVideo = ({ attributes }) => {
 							)}
 						</div>
 					)}
-					{caption && <div className="videopack-caption">{caption}</div>}
+					{caption && (
+						<div className="videopack-caption">{caption}</div>
+					)}
 				</div>
 			</>
 		);

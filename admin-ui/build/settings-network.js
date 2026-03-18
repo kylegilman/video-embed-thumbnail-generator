@@ -225,10 +225,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
 /* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__);
+/**
+ * Utility functions for interacting with the Videopack REST API and managing video jobs.
+ */
+
 /* global videopack_config */
 
 
 
+
+/**
+ * Fetches the current video encoding queue.
+ *
+ * @return {Promise<Array>} List of jobs in the queue.
+ */
 const getQueue = async () => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getQueue', undefined);
   if (typeof pre !== 'undefined') {
@@ -242,6 +252,13 @@ const getQueue = async () => {
     throw error;
   }
 };
+
+/**
+ * Controls the queue (start, stop, etc.).
+ *
+ * @param {string} action Control action to perform.
+ * @return {Promise<Object>} API response.
+ */
 const toggleQueue = async action => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -256,6 +273,13 @@ const toggleQueue = async action => {
     throw error;
   }
 };
+
+/**
+ * Clears jobs from the queue.
+ *
+ * @param {string} type Type of jobs to clear.
+ * @return {Promise<Object>} API response.
+ */
 const clearQueue = async type => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -270,6 +294,13 @@ const clearQueue = async type => {
     throw error;
   }
 };
+
+/**
+ * Deletes a specific job.
+ *
+ * @param {number|string} jobId ID of the job to delete.
+ * @return {Promise<Object>} API response.
+ */
 const deleteJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -281,6 +312,13 @@ const deleteJob = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Retries a specific job.
+ *
+ * @param {number|string} jobId ID of the job to retry.
+ * @return {Promise<Object>} API response.
+ */
 const retryJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -292,6 +330,13 @@ const retryJob = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Removes a job from the queue without force.
+ *
+ * @param {number|string} jobId ID of the job to remove.
+ * @return {Promise<Object>} API response.
+ */
 const removeJob = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -305,6 +350,14 @@ const removeJob = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Fetches encoding presets.
+ *
+ * @param {number|null} attachmentId Optional attachment ID to filter presets.
+ * @param {string}      url          Optional URL to filter presets.
+ * @return {Promise<Array>} List of presets.
+ */
 const getPresets = async (attachmentId = null, url = '') => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -318,6 +371,15 @@ const getPresets = async (attachmentId = null, url = '') => {
     throw error;
   }
 };
+
+/**
+ * Creates a new encoding job.
+ *
+ * @param {number|string} input    Attachment ID or source URL.
+ * @param {Array}         outputs  List of format IDs to encode.
+ * @param {number}        parentId ID of the parent post.
+ * @return {Promise<Object>} API response.
+ */
 const createJob = async (input, outputs, parentId = 0) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -334,6 +396,13 @@ const createJob = async (input, outputs, parentId = 0) => {
     throw error;
   }
 };
+
+/**
+ * Fetches the status of a specific job.
+ *
+ * @param {number|string} jobId ID of the job to check.
+ * @return {Promise<Object>} Job status data.
+ */
 const getJobStatus = async jobId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -344,6 +413,13 @@ const getJobStatus = async jobId => {
     throw error;
   }
 };
+
+/**
+ * Lists jobs, optionally filtered by input.
+ *
+ * @param {number|string|null} input Optional attachment ID or URL to filter.
+ * @return {Promise<Array>} List of jobs.
+ */
 const listJobs = async (input = null) => {
   try {
     const path = input ? (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/jobs', {
@@ -357,6 +433,14 @@ const listJobs = async (input = null) => {
     throw error;
   }
 };
+
+/**
+ * Fetches available video formats and their encoding status for an attachment.
+ *
+ * @param {number} attachmentId The attachment ID.
+ * @param {string} url          Optional source URL.
+ * @return {Promise<Object>} Map of format IDs to format objects.
+ */
 const getVideoFormats = async (attachmentId, url = '') => {
   try {
     const presets = await getPresets(attachmentId, url);
@@ -377,6 +461,16 @@ const getVideoFormats = async (attachmentId, url = '') => {
     throw error;
   }
 };
+
+/**
+ * Enqueues a job for multiple video formats.
+ *
+ * @param {number} attachmentId The attachment ID.
+ * @param {string} src          Source URL.
+ * @param {Object} formats      Object mapping format IDs to boolean selection state.
+ * @param {number} parentId     ID of the parent post.
+ * @return {Promise<Object>} The response from the job creation.
+ */
 const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
   // formats is an object { format_id: true, ... } from the UI
   const outputIds = Object.keys(formats).filter(id => formats[id]);
@@ -392,6 +486,15 @@ const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
     throw error;
   }
 };
+
+/**
+ * Assigns an encoded file to a specific format on a parent video.
+ *
+ * @param {number} mediaId  ID of the encoded media attachment.
+ * @param {string} formatId ID of the format to assign.
+ * @param {number} parentId ID of the parent video attachment.
+ * @return {Promise<Object>} API response.
+ */
 const assignFormat = async (mediaId, formatId, parentId) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -409,6 +512,13 @@ const assignFormat = async (mediaId, formatId, parentId) => {
     throw error;
   }
 };
+
+/**
+ * Unassigns a media attachment from its video format role.
+ *
+ * @param {number} mediaId ID of the media attachment.
+ * @return {Promise<Object>} API response.
+ */
 const unassignFormat = async mediaId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -426,6 +536,13 @@ const unassignFormat = async mediaId => {
     throw error;
   }
 };
+
+/**
+ * Deletes a media attachment file permanently.
+ *
+ * @param {number} attachmentId ID of the attachment to delete.
+ * @return {Promise<Object>} API response.
+ */
 const deleteFile = async attachmentId => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -473,6 +590,13 @@ const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0,
     }, 'image/jpeg');
   });
 };
+
+/**
+ * Uploads a thumbnail to the server.
+ *
+ * @param {FormData} formData Thumbnail data and metadata.
+ * @return {Promise<Object>} API response.
+ */
 const uploadThumbnail = async formData => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -485,6 +609,17 @@ const uploadThumbnail = async formData => {
     throw error;
   }
 };
+
+/**
+ * Saves all thumbnails selected for a video.
+ *
+ * @param {number}  attachment_id ID of the video attachment.
+ * @param {Array}   thumb_urls    List of thumbnail URLs to save.
+ * @param {number}  parent_id     ID of the parent post.
+ * @param {string}  url           Video source URL.
+ * @param {boolean} featured      Whether to set one as featured.
+ * @return {Promise<Object>} API response.
+ */
 const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -503,6 +638,13 @@ const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url =
     throw error;
   }
 };
+
+/**
+ * Fetches the video gallery content based on provided arguments.
+ *
+ * @param {Object} args Gallery query arguments.
+ * @return {Promise<Array>} List of videos in the gallery.
+ */
 const getVideoGallery = async args => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
   if (typeof pre !== 'undefined') {
@@ -519,6 +661,13 @@ const getVideoGallery = async args => {
     throw error;
   }
 };
+
+/**
+ * Fetches users who have a specific capability.
+ *
+ * @param {string} capability The capability to check for.
+ * @return {Promise<Array>} List of users.
+ */
 const getUsersWithCapability = async capability => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -530,6 +679,13 @@ const getUsersWithCapability = async capability => {
     throw error;
   }
 };
+
+/**
+ * Fetches settings content for a specific Freemius page.
+ *
+ * @param {string} page The Freemius page name.
+ * @return {Promise<Object>} Page data.
+ */
 const getFreemiusPage = async page => {
   try {
     let path = `/videopack/v1/freemius/${page}`;
@@ -544,6 +700,15 @@ const getFreemiusPage = async page => {
     throw error;
   }
 };
+
+/**
+ * Tests an FFmpeg encoding command with specific parameters.
+ *
+ * @param {string} codec      The codec to test.
+ * @param {string} resolution The resolution to test.
+ * @param {number} rotate     The rotation angle.
+ * @return {Promise<Object>} Test results.
+ */
 const testEncodeCommand = async (codec, resolution, rotate) => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
   if (typeof pre !== 'undefined') {
@@ -558,6 +723,12 @@ const testEncodeCommand = async (codec, resolution, rotate) => {
     throw error;
   }
 };
+
+/**
+ * Fetches global Videopack settings.
+ *
+ * @return {Promise<Object>} Videopack settings.
+ */
 const getSettings = async () => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getSettings', undefined);
   if (typeof pre !== 'undefined') {
@@ -574,6 +745,13 @@ const getSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Saves global Videopack settings to the WordPress options.
+ *
+ * @param {Object} newSettings The new settings to save.
+ * @return {Promise<Object>} Updated settings.
+ */
 const saveWPSettings = async newSettings => {
   try {
     const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -589,6 +767,12 @@ const saveWPSettings = async newSettings => {
     throw error;
   }
 };
+
+/**
+ * Fetches network-wide Videopack settings (Multisite).
+ *
+ * @return {Promise<Object>} Network settings.
+ */
 const getNetworkSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -599,6 +783,13 @@ const getNetworkSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Saves network-wide Videopack settings (Multisite).
+ *
+ * @param {Object} newSettings The network settings to save.
+ * @return {Promise<Object>} Updated network settings.
+ */
 const saveNetworkSettings = async newSettings => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -611,6 +802,12 @@ const saveNetworkSettings = async newSettings => {
     throw error;
   }
 };
+
+/**
+ * Resets network settings to their default values.
+ *
+ * @return {Promise<Object>} Default settings.
+ */
 const resetNetworkSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -621,6 +818,12 @@ const resetNetworkSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Resets site-specific Videopack settings to their default values.
+ *
+ * @return {Promise<Object>} Default settings.
+ */
 const resetVideopackSettings = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -631,6 +834,17 @@ const resetVideopackSettings = async () => {
     throw error;
   }
 };
+
+/**
+ * Sets a specific image as the poster for a video.
+ *
+ * @param {number}  attachment_id ID of the video attachment.
+ * @param {string}  thumb_url     URL of the thumbnail image.
+ * @param {number}  parent_id     ID of the parent post.
+ * @param {string}  url           Original video source URL.
+ * @param {boolean} featured      Whether to set as featured image.
+ * @return {Promise<Object>} API response.
+ */
 const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '', featured = null) => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -649,6 +863,19 @@ const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '',
     throw error;
   }
 };
+
+/**
+ * Generates a thumbnail for a video.
+ *
+ * @param {string}  url              Video source URL.
+ * @param {number}  total_thumbnails Total number of thumbnails to generate.
+ * @param {number}  thumbnail_index  Index of the thumbnail to generate.
+ * @param {number}  attachment_id    ID of the video attachment.
+ * @param {boolean} generate_button  Whether this was triggered by a manual button.
+ * @param {number}  parent_id        ID of the parent post.
+ * @param {boolean} featured         Whether to set as featured image.
+ * @return {Promise<Object>} API response.
+ */
 const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0, featured = null) => {
   try {
     const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', {
@@ -668,6 +895,14 @@ const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachm
     throw error;
   }
 };
+
+/**
+ * Starts a batch process of a particular type.
+ *
+ * @param {string} type           Type of batch process.
+ * @param {Object} additionalData Extra data for the process.
+ * @return {Promise<Object>} API response with process ID/status.
+ */
 const startBatchProcess = async (type, additionalData = {}) => {
   const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_startBatchProcess', undefined, type, additionalData);
   if (typeof pre !== 'undefined') {
@@ -687,6 +922,13 @@ const startBatchProcess = async (type, additionalData = {}) => {
     throw error;
   }
 };
+
+/**
+ * Fetches the progress of a running batch process.
+ *
+ * @param {string} type Type of batch process.
+ * @return {Promise<Object>} Progress data.
+ */
 const getBatchProgress = async type => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -698,6 +940,12 @@ const getBatchProgress = async type => {
     throw error;
   }
 };
+
+/**
+ * Fetches candidate thumbnails for a video.
+ *
+ * @return {Promise<Array>} List of thumbnail candidates.
+ */
 const getThumbnailCandidates = async () => {
   try {
     return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
@@ -976,6 +1224,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _settings_network_scss__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./settings-network.scss */ "./src/features/settings-network/settings-network.scss");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__);
+/**
+ * Features for managing network-wide settings.
+ */
 
 
 
@@ -984,6 +1235,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+/**
+ * NetworkSettingsPage component.
+ *
+ * @return {Object} The rendered component.
+ */
 
 const NetworkSettingsPage = () => {
   const [settings, setSettings] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_4__.useState)(null);

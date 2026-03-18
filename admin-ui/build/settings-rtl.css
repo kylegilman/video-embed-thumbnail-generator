@@ -1386,68 +1386,86 @@
   margin-left: auto;
 }
 .wrap.videopack-settings .videopack-encode-grid .videopack-encode-column {
-  flex: 0 1 auto;
+  flex: 0 1 250px;
   margin: 0.5rem;
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell {
-  text-align: center;
-  font-weight: 600;
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-row {
+  border-bottom: 2px solid #ccc;
   margin-bottom: 0.5rem;
 }
-.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell .components-base-control {
-  display: inline-block;
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-row .videopack-encode-grid-header-cell {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #949494;
+  letter-spacing: 0.5px;
 }
 .wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 80px;
   align-items: center;
   padding: 0.25rem 0;
+  border-bottom: 1px solid #e0e0e0;
 }
-.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-label {
-  text-align: right;
-  margin-left: 10px;
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-row:last-child {
+  border-bottom: none;
 }
-.wrap.videopack-settings .videopack-sort-settings {
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-row .components-checkbox-control {
+  margin-bottom: 0;
+  justify-content: center;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-row .components-checkbox-control .components-base-control__field {
+  margin-bottom: 0;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-header-cell,
+.wrap.videopack-settings .videopack-encode-grid .videopack-encode-grid-cell {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+.wrap.videopack-settings .videopack-encode-grid .videopack-replace-radio-input {
+  margin: 0;
+  cursor: pointer;
+}
+.videopack-sort-settings {
   margin-bottom: 20px;
 }
-.wrap.videopack-settings .videopack-sort-settings .videopack-sort-controls {
+.videopack-sort-settings .videopack-sort-controls {
   display: inline-flex;
   justify-content: flex-start;
   align-items: flex-end;
 }
-.wrap.videopack-settings .videopack-sort-settings .components-base-control {
+.videopack-sort-settings .components-base-control {
   width: 15rem;
   margin-left: 10px;
   margin-bottom: 0;
 }
-.wrap.videopack-settings .videopack-sort-settings button.components-button.is-secondary.has-icon {
+.videopack-sort-settings button.components-button.is-secondary.has-icon {
   box-shadow: none;
   border: 1px solid #949494;
 }
-.wrap.videopack-settings .videopack-sample-gallery {
+.videopack-sample-gallery {
   margin-top: 20px;
 }
-.wrap.videopack-settings .components-flex.videopack-setting-sample-formats {
+.components-flex.videopack-setting-sample-formats {
   justify-content: flex-start;
   align-items: flex-end;
   margin-bottom: 10px;
 }
-.wrap.videopack-settings .components-flex.videopack-setting-sample-formats div {
+.components-flex.videopack-setting-sample-formats div {
   margin-left: 5px;
 }
-.wrap.videopack-settings .videopack-control-with-tooltip {
-  margin: 10px 0;
+.videopack-control-with-tooltip {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 }
-.wrap.videopack-settings .videopack-control-with-tooltip.videopack-delete-children-tooltip {
+.videopack-control-with-tooltip.videopack-delete-children-tooltip {
   align-items: flex-start;
 }
-.wrap.videopack-settings .videopack-control-with-tooltip .components-base-control {
+.videopack-control-with-tooltip .components-base-control {
   margin-left: 5px;
   margin-top: 0;
   margin-bottom: 0;

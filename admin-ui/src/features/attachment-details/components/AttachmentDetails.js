@@ -1,3 +1,7 @@
+/**
+ * Component to display attachment details and settings for a video.
+ */
+
 import { Spinner } from '@wordpress/components';
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -7,6 +11,14 @@ import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalF
 import { getSettings } from '../../../utils/utils.js';
 import useVideoSettings from '../../../hooks/useVideoSettings.js';
 
+/**
+ * AttachmentDetails component.
+ *
+ * @param {Object} props              Component props.
+ * @param {number} props.attachmentId The ID of the attachment.
+ * @param {Object} props.model        Backbone model for the attachment.
+ * @return {Object} The rendered component.
+ */
 const AttachmentDetails = ({ attachmentId, model }) => {
 	const [options, setOptions] = useState();
 	const [attributes, setRawAttributes] = useState();

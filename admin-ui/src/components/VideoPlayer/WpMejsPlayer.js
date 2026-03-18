@@ -5,6 +5,18 @@ import { useEffect, useRef } from '@wordpress/element';
  * Isolated MediaElement.js Player component.
  * Manually manages the video element to prevent DOM conflicts with React.
  */
+/**
+ * WpMejsPlayer component.
+ *
+ * @param {Object}   props                Component props.
+ * @param {Object}   props.options        Player options (sources, tracks, poster, etc.).
+ * @param {boolean}  props.controls       Whether to enable native controls.
+ * @param {boolean}  props.actualAutoplay Whether to autoplay the video.
+ * @param {Function} props.onReady        Callback fired when MEJS is ready.
+ * @param {Function} props.onPlay         Callback fired on play event.
+ * @param {boolean}  props.playback_rate  Whether to enable playback rate controls.
+ * @return {Element} The rendered component.
+ */
 const WpMejsPlayer = (props) => {
 	const {
 		options,

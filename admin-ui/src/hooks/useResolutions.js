@@ -1,7 +1,18 @@
+/**
+ * Custom React hook for calculating video resolutions.
+ */
+
 /* global videopack_config */
 import { useMemo } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
+/**
+ * Hook to manage and calculate video resolutions, including a custom resolution option.
+ *
+ * @param {boolean}       enable_custom_resolution Whether to include the custom resolution in the list.
+ * @param {string|number} custom_resolution        The height of the custom resolution.
+ * @return {Array} List of resolution objects.
+ */
 const useResolutions = (enable_custom_resolution, custom_resolution) => {
 	return useMemo(() => {
 		// Filter out the custom resolution from the static list, as it will be re-added if enabled.

@@ -252,34 +252,59 @@
 		margin-right: auto;
 
 		.videopack-encode-column {
-			flex: 0 1 auto;
+			flex: 0 1 250px;
 			margin: 0.5rem;
 			padding: 0.5rem;
 			border: 1px solid colors.$gray-400;
 			border-radius: 4px;
 		}
 
-		.videopack-encode-grid-header-cell {
-			text-align: center;
-			font-weight: 600;
+		.videopack-encode-grid-header-row {
+			border-bottom: 2px solid colors.$gray-400;
 			margin-bottom: 0.5rem;
 
-			.components-base-control {
-				display: inline-block;
+			.videopack-encode-grid-header-cell {
+				font-size: 11px;
+				text-transform: uppercase;
+				color: colors.$gray-600;
+				letter-spacing: 0.5px;
 			}
 		}
 
 		.videopack-encode-grid-row {
-			display: flex;
-			justify-content: space-between;
+			display: grid;
+			grid-template-columns: 1fr 80px;
 			align-items: center;
 			padding: 0.25rem 0;
+			border-bottom: 1px solid colors.$gray-200;
+
+			&:last-child {
+				border-bottom: none;
+			}
+
+			.components-checkbox-control {
+				margin-bottom: 0;
+				justify-content: center;
+
+				.components-base-control__field {
+					margin-bottom: 0;
+				}
+			}
 		}
 
-		.videopack-encode-grid-label {
-			text-align: left;
-			margin-right: 10px;
+		.videopack-encode-grid-header-cell,
+		.videopack-encode-grid-cell {
+			text-align: center;
+			display: flex;
+			justify-content: center;
 		}
+
+		.videopack-replace-radio-input {
+			margin: 0;
+			cursor: pointer;
+		}
+	}
+
 	}
 
 	.videopack-sort-settings {
@@ -317,10 +342,7 @@
 		}
 	}
 
-
-
 	.videopack-control-with-tooltip {
-		margin: 10px 0;
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
@@ -334,7 +356,6 @@
 			margin-top: 0;
 			margin-bottom: 0;
 		}
-	}
 
 }
 

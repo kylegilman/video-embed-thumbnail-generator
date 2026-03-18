@@ -1,5 +1,27 @@
+/**
+ * A generic HTML5 video player component.
+ */
+
 import { forwardRef } from '@wordpress/element';
 
+/**
+ * GenericPlayer component.
+ *
+ * @param {Object}      props             Component props.
+ * @param {string}      props.poster      URL for the video poster image.
+ * @param {boolean}     props.loop        Whether the video should loop.
+ * @param {boolean}     props.autoPlay    Whether the video should autoplay.
+ * @param {string}      props.preload     Preload setting (auto, metadata, none).
+ * @param {boolean}     props.controls    Whether to show video controls.
+ * @param {boolean}     props.muted       Whether the video is muted.
+ * @param {boolean}     props.playsInline Whether the video should play inline on mobile.
+ * @param {string}      props.className   Additional CSS classes.
+ * @param {Array}       props.sources     List of video source objects.
+ * @param {string}      props.src         Primary video source URL.
+ * @param {Array}       props.tracks      List of text track (label, src, kind, etc.) objects.
+ * @param {React.Ref}   ref               Reference to the video element.
+ * @return {Element} The rendered component.
+ */
 const GenericPlayer = forwardRef(
 	(
 		{

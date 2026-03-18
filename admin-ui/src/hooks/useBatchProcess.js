@@ -1,6 +1,15 @@
+/**
+ * Custom React hook for managing batch processes.
+ */
+
 import { useState, useCallback, useRef, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Hook to manage batch processing of items with progress tracking and confirmation dialogs.
+ *
+ * @return {Object} Batch process state and controls.
+ */
 const useBatchProcess = () => {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [progress, setProgress] = useState({

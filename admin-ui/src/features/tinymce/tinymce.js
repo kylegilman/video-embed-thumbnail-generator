@@ -1,4 +1,8 @@
 /**
+ * Features for integrating Videopack with the TinyMCE editor.
+ */
+
+/**
  * Videopack TinyMCE integration for visual shortcode previews.
  */
 import { __ } from '@wordpress/i18n';
