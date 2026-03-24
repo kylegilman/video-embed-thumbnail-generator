@@ -1,10 +1,16 @@
 <?php
 /**
- * Standardize encoding progress data.
+ * Encode Progress class file.
+ *
+ * @package Videopack
+ * @subpackage Admin/Encode
  */
 
 namespace Videopack\Admin\Encode;
 
+/**
+ * Standardizes encoding progress data and provides calculation and parsing methods.
+ */
 class Encode_Progress {
 
 	/**
@@ -61,7 +67,7 @@ class Encode_Progress {
 				fseek( $handle, -$read_len, SEEK_END );
 				$content = fread( $handle, $read_len );
 				$lines   = explode( "\n", $content );
-				// Skip the first partial line if we didn't read from the start
+				// Skip the first partial line if we didn't read from the start.
 				if ( $fsize > $read_len ) {
 					array_shift( $lines );
 				}
@@ -133,20 +139,20 @@ class Encode_Progress {
 	 * Perform calculations for percent, elapsed, and remaining time.
 	 */
 	public function calculate() {
-		// Percent
+		// Percent.
 		if ( $this->data['video_duration'] > 0 && isset( $this->data['out_time_us'] ) ) {
 			$out_time_us           = (int) $this->data['out_time_us'];
 			$this->data['percent'] = min( 100, round( ( $out_time_us / $this->data['video_duration'] ) * 100, 2 ) );
 		}
 
-		// Elapsed
+		// Elapsed.
 		$elapsed = 0;
 		if ( $this->data['started'] ) {
 			$elapsed = time() - $this->data['started'];
 		}
 		$this->data['elapsed'] = $elapsed;
 
-		// Remaining
+		// Remaining.
 		$this->data['remaining'] = null;
 		if ( $this->data['percent'] > 0 && $elapsed > 0 ) {
 			$total_estimated_time    = $elapsed / ( $this->data['percent'] / 100 );
@@ -154,23 +160,47 @@ class Encode_Progress {
 		}
 	}
 
-	// Setters for metadata
+	/**
+	 * Set the total video duration.
+	 *
+	 * @param int $duration Total video duration in microseconds.
+	 */
 	public function set_video_duration( int $duration ) {
 		$this->data['video_duration'] = $duration;
 	}
 
+	/**
+	 * Set the start timestamp.
+	 *
+	 * @param int $started Start timestamp.
+	 */
 	public function set_started( int $started ) {
 		$this->data['started'] = $started;
 	}
 
+	/**
+	 * Set the job ID.
+	 *
+	 * @param int $job_id Job ID.
+	 */
 	public function set_job_id( int $job_id ) {
 		$this->data['job_id'] = $job_id;
 	}
 
+	/**
+	 * Set the completion percentage.
+	 *
+	 * @param float $percent Percentage value.
+	 */
 	public function set_percent( float $percent ) {
 		$this->data['percent'] = $percent;
 	}
 
+	/**
+	 * Set the progress text.
+	 *
+	 * @param string $text Progress status text (e.g., 'end').
+	 */
 	public function set_progress_text( string $text ) {
 		$this->data['progress'] = $text;
 	}
