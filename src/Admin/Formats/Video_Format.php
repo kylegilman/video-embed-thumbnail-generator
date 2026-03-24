@@ -58,16 +58,25 @@ class Video_Format {
 	protected $enabled;
 
 	/**
+	 * Does this video format replace the original?
+	 *
+	 * @var bool
+	 */
+	protected $replaces_original;
+
+	/**
 	 * Video_Format constructor.
 	 *
-	 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec      Video codec object.
-	 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution Video resolution object.
-	 * @param bool                                        $enabled    Whether the format is enabled. Default true.
+	 * @param \Videopack\Admin\Formats\Codecs\Video_Codec $codec             Video codec object.
+	 * @param \Videopack\Admin\Formats\Video_Resolution   $resolution        Video resolution object.
+	 * @param bool                                        $enabled           Whether the format is enabled. Default true.
+	 * @param bool                                        $replaces_original Whether the format replaces the original. Default false.
 	 */
-	public function __construct( Codecs\Video_Codec $codec, Video_Resolution $resolution, $enabled = true ) {
-		$this->codec      = $codec;
-		$this->resolution = $resolution;
-		$this->enabled    = $enabled;
+	public function __construct( Codecs\Video_Codec $codec, Video_Resolution $resolution, $enabled = true, $replaces_original = false ) {
+		$this->codec             = $codec;
+		$this->resolution        = $resolution;
+		$this->enabled           = $enabled;
+		$this->replaces_original = $replaces_original;
 	}
 
 	/**
@@ -76,7 +85,9 @@ class Video_Format {
 	 * @return string
 	 */
 	public function get_name() {
-		return $this->codec->get_name() . ' ' . $this->resolution->get_name();
+		$name = $this->codec->get_name() . ' ' . $this->resolution->get_name();
+		/* translators: %s is the video format name (ex. H.264 1080p). */
+		return $this->replaces_original ? sprintf( (string) __( 'Replace original (%s)', 'video-embed-thumbnail-generator' ), $name ) : $name;
 	}
 
 	/**
@@ -85,7 +96,9 @@ class Video_Format {
 	 * @return string
 	 */
 	public function get_short_name() {
-		return $this->codec->get_label() . ' ' . $this->resolution->get_label();
+		$name = $this->codec->get_label() . ' ' . $this->resolution->get_label();
+		/* translators: %s is the video format label (ex. H.264 1080p). */
+		return $this->replaces_original ? sprintf( (string) __( 'Replace original (%s)', 'video-embed-thumbnail-generator' ), $name ) : $name;
 	}
 
 	/**
@@ -190,8 +203,7 @@ class Video_Format {
 	 * @return bool True if the format replaces the original, false otherwise.
 	 */
 	public function get_replaces_original() {
-		// A format replaces the original if its resolution ID is 'fullres'.
-		return $this->resolution->get_id() === 'fullres';
+		return $this->replaces_original;
 	}
 
 	/**

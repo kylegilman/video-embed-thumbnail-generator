@@ -20,24 +20,26 @@ class Source_Placeholder_Local extends Source {
 	/**
 	 * Constructor.
 	 *
-	 * @param string                   $source          The placeholder file path.
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
-	 * @param string|null              $format          Optional. Videopack video format ID.
-	 * @param bool                     $exists          Optional. Whether the source exists. Defaults to false.
-	 * @param int|null                 $parent_id       Optional. Parent ID (post ID, etc.).
+	 * @param string                                 $source    The placeholder file path.
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
+	 * @param string|null                            $format          Optional. Videopack video format ID.
+	 * @param bool                                   $exists          Optional. Whether the source exists. Defaults to false.
+	 * @param int|null                               $parent_id       Optional. Parent ID (post ID, etc.).
 	 *
 	 * @throws \Exception If the source path is empty.
 	 */
 	public function __construct(
 		string $source,
-		\Videopack\Admin\Options $options_manager,
+		array $options,
+		\Videopack\Admin\Formats\Registry $format_registry = null,
 		$format = null,
 		$exists = false,
 		$parent_id = null
 	) {
 
 		if ( $this->validate_source( $source ) ) {
-			parent::__construct( $source, 'placeholder_local', $options_manager, $format, $exists, $parent_id );
+			parent::__construct( $source, 'placeholder_local', $options, $format_registry, $format, $exists, $parent_id );
 		} else {
 			throw new \Exception( esc_html__( 'Source is empty.', 'video-embed-thumbnail-generator' ) );
 		}

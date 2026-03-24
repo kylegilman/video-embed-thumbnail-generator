@@ -1,4 +1,10 @@
 <?php
+/**
+ * Encode Info class file.
+ *
+ * @package Videopack
+ * @subpackage Admin/Encode
+ */
 
 namespace Videopack\Admin\Encode;
 
@@ -7,38 +13,156 @@ use Videopack\Video_Source\Video_Source_Finder;
 use Videopack\Video_Source\Source_Factory;
 use Videopack\Admin\Formats\Video_Format;
 
+/**
+ * Class Encode_Info
+ *
+ * Handles information about a video file to be encoded, including its path, URL,
+ * and potential locations on the server.
+ */
 class Encode_Info {
 
+	/**
+	 * Output URL.
+	 *
+	 * @var string $url
+	 */
 	public $url;
+
+	/**
+	 * File basename.
+	 *
+	 * @var string $basename
+	 */
 	public $basename;
+
+	/**
+	 * File path.
+	 *
+	 * @var string $path
+	 */
 	public $path;
-	public $exists     = false;
-	public $writable   = false;
+
+	/**
+	 * Whether the file exists.
+	 *
+	 * @var bool $exists
+	 */
+	public $exists = false;
+
+	/**
+	 * Whether the file is writable.
+	 *
+	 * @var bool $writable
+	 */
+	public $writable = false;
+
+	/**
+	 * Whether the file is on the same server.
+	 *
+	 * @var bool $sameserver
+	 */
 	public $sameserver = false;
-	public $deletable  = false;
+
+	/**
+	 * Whether the file is deletable.
+	 *
+	 * @var bool $deletable
+	 */
+	public $deletable = false;
+
+	/**
+	 * Video width.
+	 *
+	 * @var int|null $width
+	 */
 	public $width;
+
+	/**
+	 * Video height.
+	 *
+	 * @var int|null $height
+	 */
 	public $height;
+
+	/**
+	 * Attachment ID.
+	 *
+	 * @var int $id
+	 */
 	public $id;
 
+	/**
+	 * Whether the source is an attachment.
+	 *
+	 * @var bool $is_attachment
+	 */
 	protected $is_attachment = false;
-	protected $format;
-	protected $uploads;
-	protected $sanitized_url;
-	protected $source;
-	protected $options_manager;
 
+	/**
+	 * Video format.
+	 *
+	 * @var Video_Format $format
+	 */
+	protected $format;
+
+	/**
+	 * Upload directory info.
+	 *
+	 * @var array $uploads
+	 */
+	protected $uploads;
+
+	/**
+	 * Sanitized URL object.
+	 *
+	 * @var Sanitize_Url $sanitized_url
+	 */
+	protected $sanitized_url;
+
+	/**
+	 * Video source object.
+	 *
+	 * @var \Videopack\Video_Source\Source $source
+	 */
+	protected $source;
+
+	/**
+	 * Plugin options.
+	 *
+	 * @var array $options
+	 */
+	protected $options;
+
+	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
+	 */
+	protected $format_registry;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param int                               $id              Attachment ID.
+	 * @param string                            $input_url       Input URL.
+	 * @param Video_Format                      $format          Video format.
+	 * @param array                             $options         Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
+	 */
 	public function __construct(
 		$id,
 		string $input_url,
 		Video_Format $format,
-		\Videopack\Admin\Options $options_manager
+		array $options,
+		\Videopack\Admin\Formats\Registry $format_registry
 	) {
 		$this->id              = $id;
 		$this->format          = $format;
 		$this->url             = $input_url;
-		$this->options_manager = $options_manager;
+		$this->options         = $options;
+		$this->format_registry = $format_registry;
 
-		$this->source = Source_Factory::create( ! empty( $this->id ) ? $this->id : $this->url, $this->options_manager );
+		$this->source = Source_Factory::create( ! empty( $this->id ) ? $this->id : $this->url, $this->options, $this->format_registry );
 
 		$this->sanitized_url = new Sanitize_Url( $this->url );
 		$this->basename      = $this->sanitized_url->basename;
@@ -49,6 +173,9 @@ class Encode_Info {
 		$this->set_encode_info();
 	}
 
+	/**
+	 * Set encoding information by checking children and potential locations.
+	 */
 	protected function set_encode_info() {
 
 		$children = Video_Source_Finder::find_attachment_children( $this->source );
@@ -65,6 +192,11 @@ class Encode_Info {
 		}
 	}
 
+	/**
+	 * Process attachment children to find matches for the requested format.
+	 *
+	 * @param array $children Array of child attachment objects.
+	 */
 	protected function process_children( array $children ) {
 
 		foreach ( $children as $child ) {
@@ -106,6 +238,9 @@ class Encode_Info {
 		}
 	}
 
+	/**
+	 * Check potential server locations for the encoded file.
+	 */
 	protected function check_potential_locations() {
 		$potential_locations = array();
 
@@ -143,6 +278,11 @@ class Encode_Info {
 		}
 	}
 
+	/**
+	 * Check if a URL exists, with transient caching.
+	 *
+	 * @param string $url The URL to check.
+	 */
 	protected function check_url_exists( $url ) {
 		$cache_key = 'videopack_url_exists_' . md5( $url );
 		$exists    = get_transient( $cache_key );
@@ -163,6 +303,9 @@ class Encode_Info {
 		}
 	}
 
+	/**
+	 * Set default URL and path for a new encode.
+	 */
 	protected function set_default_url_and_path() {
 
 		$moviefilename = $this->basename . $this->format->get_suffix();

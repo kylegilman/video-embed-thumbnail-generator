@@ -109,9 +109,9 @@ class Video_Source_Finder {
 	/**
 	 * Finds a specific video format in a list of posts and adds it to the source as a child.
 	 *
-	 * @param array                               $posts  Array of attachment post objects.
+	 * @param array                                 $posts  Array of attachment post objects.
 	 * @param \Videopack\Admin\Formats\Video_Format $format The video format to find.
-	 * @param Source                               $source The video source instance.
+	 * @param Source                                $source The video source instance.
 	 * @return bool True if found and added, false otherwise.
 	 */
 	public static function find_format_in_posts( $posts, \Videopack\Admin\Formats\Video_Format $format, Source $source ): bool {
@@ -141,7 +141,7 @@ class Video_Source_Finder {
 	 * Finds a video format file in the same directory as the source.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format The video format to find.
-	 * @param Source                               $source The video source instance.
+	 * @param Source                                $source The video source instance.
 	 * @return bool True if found and added, false otherwise.
 	 */
 	public static function find_format_in_same_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source ) {
@@ -158,7 +158,7 @@ class Video_Source_Finder {
 
 			if ( file_exists( $file ) ) {
 
-				$attachment_manager = new \Videopack\Admin\Attachment( $source->get_options_manager() );
+				$attachment_manager = new \Videopack\Admin\Attachment( $source->get_options(), $source->get_registry(), new \Videopack\Admin\Attachment_Meta( $source->get_options() ) );
 				$attachment_id      = $attachment_manager->url_to_id( $file );
 
 				if ( $attachment_id ) {
@@ -188,7 +188,7 @@ class Video_Source_Finder {
 	 * Finds a video format URL in the same directory as the source URL.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format The video format to find.
-	 * @param Source                               $source The video source instance.
+	 * @param Source                                $source The video source instance.
 	 * @return bool True if found and added, false otherwise.
 	 */
 	public static function find_format_in_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source ) {
@@ -213,13 +213,14 @@ class Video_Source_Finder {
 	/**
 	 * Returns a Source instance for a specific format from a list of posts.
 	 *
-	 * @param array                               $posts           Array of attachment post objects.
+	 * @param array                                 $posts           Array of attachment post objects.
 	 * @param \Videopack\Admin\Formats\Video_Format $format          The video format to find.
-	 * @param \Videopack\Admin\Options            $options_manager The options manager instance.
-	 * @param int                                 $parent_id       The parent ID.
+	 * @param array                                 $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry     $format_registry        Videopack video formats registry.
+	 * @param int                                   $parent_id       The parent ID.
 	 * @return Source|null The found Source instance or null.
 	 */
-	public static function get_source_from_posts( $posts, \Videopack\Admin\Formats\Video_Format $format, \Videopack\Admin\Options $options_manager, $parent_id ): ?Source {
+	public static function get_source_from_posts( $posts, \Videopack\Admin\Formats\Video_Format $format, array $options, \Videopack\Admin\Formats\Registry $format_registry, $parent_id ): ?Source {
 		if ( $posts ) {
 			foreach ( $posts as $post ) {
 				if ( is_a( $post, 'WP_Post' ) ) {
@@ -227,7 +228,8 @@ class Video_Source_Finder {
 					if ( $meta_format === $format->get_id() || $meta_format === $format->get_legacy_id() ) {
 						return Source_Factory::create(
 							$post->ID,
-							$options_manager,
+							$options,
+							$format_registry,
 							$format->get_id(),
 							true,
 							$parent_id,
@@ -244,7 +246,7 @@ class Video_Source_Finder {
 	 * Returns a Source instance for a specific format found in the same directory as the source.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format     The video format to find.
-	 * @param Source                               $source_obj The video source instance.
+	 * @param Source                                $source_obj The video source instance.
 	 * @return Source|null The found Source instance or null.
 	 */
 	public static function get_source_from_same_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
@@ -259,13 +261,14 @@ class Video_Source_Finder {
 			}
 
 			if ( file_exists( $file ) ) {
-				$attachment_manager = new \Videopack\Admin\Attachment( $source_obj->get_options_manager() );
+				$attachment_manager = new \Videopack\Admin\Attachment( $source_obj->get_options(), $source_obj->get_registry(), new \Videopack\Admin\Attachment_Meta( $source_obj->get_options() ) );
 				$attachment_id      = $attachment_manager->url_to_id( $file );
 
 				if ( $attachment_id ) {
 					return Source_Factory::create(
 						$attachment_id,
-						$source_obj->get_options_manager(),
+						$source_obj->get_options(),
+						$source_obj->get_registry(),
 						$format->get_id(),
 						true,
 						$source_obj->get_parent_id(),
@@ -275,7 +278,8 @@ class Video_Source_Finder {
 
 				return Source_Factory::create(
 					$file,
-					$source_obj->get_options_manager(),
+					$source_obj->get_options(),
+					$source_obj->get_registry(),
 					$format->get_id(),
 					true,
 					$source_obj->get_parent_id(),
@@ -290,7 +294,7 @@ class Video_Source_Finder {
 	 * Returns a Source instance for a specific format found in the same URL directory as the source.
 	 *
 	 * @param \Videopack\Admin\Formats\Video_Format $format     The video format to find.
-	 * @param Source                               $source_obj The video source instance.
+	 * @param Source                                $source_obj The video source instance.
 	 * @return Source|null The found Source instance or null.
 	 */
 	public static function get_source_from_same_url_directory( \Videopack\Admin\Formats\Video_Format $format, Source $source_obj ): ?Source {
@@ -302,7 +306,8 @@ class Video_Source_Finder {
 			if ( self::url_exists( esc_url_raw( str_replace( ' ', '%20', $potential_url ) ) ) ) {
 				return Source_Factory::create(
 					$potential_url,
-					$source_obj->get_options_manager(),
+					$source_obj->get_options(),
+					$source_obj->get_registry(),
 					$format->get_id(),
 					true,
 					$source_obj->get_parent_id(),

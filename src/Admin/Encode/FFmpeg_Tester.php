@@ -1,8 +1,12 @@
 <?php
+/**
+ * FFmpeg Tester class file.
+ *
+ * @package Videopack
+ * @subpackage Admin/Encode
+ */
 
 namespace Videopack\Admin\Encode;
-
-use Videopack\Admin\Options;
 
 /**
  * Handles running diagnostic FFmpeg encoding tests.
@@ -10,18 +14,28 @@ use Videopack\Admin\Options;
 class FFmpeg_Tester {
 
 	/**
-	 * Videopack Options manager class instance
-	 * @var Options $options_manager
+	 * Plugin options.
+	 *
+	 * @var array $options
 	 */
-	protected $options_manager;
+	protected $options;
+
+	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
+	 */
+	protected $format_registry;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Options $options_manager The Videopack Options manager instance.
+	 * @param array                             $options  Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
 	 */
-	public function __construct( Options $options_manager ) {
-		$this->options_manager = $options_manager;
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options         = $options;
+		$this->format_registry = $format_registry ? $format_registry : new \Videopack\Admin\Formats\Registry( $options );
 	}
 
 	/**
@@ -33,6 +47,7 @@ class FFmpeg_Tester {
 	 *               and 'output' (the FFmpeg process output), or an error message if the format is invalid.
 	 */
 	public function run_test_encode( string $format_id, bool $rotate ): array {
+
 		$sample_video_path = VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4';
 		if ( $rotate === true ) {
 			$sample_video_path = VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984-rotated.mp4';
@@ -40,10 +55,10 @@ class FFmpeg_Tester {
 
 		// Create an Encode_Attachment instance for the sample video.
 		// The 'sample_test_id' is an arbitrary ID for this test, as it's not a real attachment.
-		$encoder = new Encode_Attachment( $this->options_manager, 'sample_test_id', $sample_video_path );
+		$encoder = new Encode_Attachment( $this->options, $this->format_registry, 'sample_test_id', $sample_video_path );
 
 		// Get the video format configuration from options manager to determine output container.
-		$video_formats_config = $this->options_manager->get_video_formats();
+		$video_formats_config = $this->format_registry->get_video_formats();
 		$video_format_obj     = $video_formats_config[ $format_id ] ?? null;
 
 		if ( ! $video_format_obj ) {
@@ -109,7 +124,7 @@ class FFmpeg_Tester {
 		$output            = array();
 		$uploads           = wp_upload_dir();
 		$test_path         = rtrim( (string) $app_path, '/' );
-		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options );
 
 		if ( ! $proc_open_enabled ) {
 			$ffmpeg_error = __( 'The `proc_open` function is disabled in your PHP configuration. FFmpeg cannot be executed. Please contact your hosting provider or system administrator to enable it.', 'video-embed-thumbnail-generator' );
@@ -126,7 +141,7 @@ class FFmpeg_Tester {
 
 			// If the test failed with the initial path, try without the 'ffmpeg' suffix.
 			if ( ! file_exists( $test_image_path ) && substr( $test_path, -6 ) === 'ffmpeg' ) {
-				$test_path          = substr( $test_path, 0, -7 ); // Remove '/ffmpeg'
+				$test_path          = substr( $test_path, 0, -7 ); // Remove '/ffmpeg'.
 				$ffmpeg_test_output = $ffmpeg_thumbnails->process_thumb(
 					VIDEOPACK_PLUGIN_DIR . 'src/images/Adobestock_469037984.mp4',
 					$test_image_path,

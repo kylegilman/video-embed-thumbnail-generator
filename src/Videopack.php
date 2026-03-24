@@ -50,6 +50,13 @@ class Videopack {
 	protected $options_manager;
 
 	/**
+	 * Unique ID counter for video player instances.
+	 *
+	 * @var int $video_player_id
+	 */
+	protected static $video_player_id = 0;
+
+	/**
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
@@ -65,6 +72,7 @@ class Videopack {
 		$this->define_admin_hooks();
 		$this->define_frontend_hooks();
 	}
+
 
 	/**
 	 * Load the required dependencies for this plugin.
@@ -146,15 +154,15 @@ class Videopack {
 		$this->loader->add_action( 'admin_init', $this->options_manager, 'register_videopack_options' );
 		$this->loader->add_action( 'rest_api_init', $this->options_manager, 'register_videopack_options' );
 
-		$admin_assets = new Admin\Assets( $this->options_manager );
+		$admin_assets = new Admin\Assets( $this->options_manager->get_options() );
 		$this->loader->add_action( 'wp_enqueue_media', $admin_assets, 'enqueue_videopack_scripts' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin_assets, 'maybe_enqueue_videopack_scripts' );
 
-		$attachment_meta = new Admin\Attachment_Meta( $this->options_manager );
+		$attachment_meta = new Admin\Attachment_Meta( $this->options_manager->get_options() );
 		$this->loader->add_action( 'init', $attachment_meta, 'register' );
 		$this->loader->add_filter( 'rest_prepare_attachment', $attachment_meta, 'filter_rest_response_meta', 10, 3 );
 
-		$plugin_attachment = new Admin\Attachment( $this->options_manager );
+		$plugin_attachment = new Admin\Attachment( $this->options_manager->get_options(), $this->options_manager->get_formats_registry(), $attachment_meta );
 		$this->loader->add_action( 'delete_attachment', $plugin_attachment, 'delete_video_attachment' );
 		$this->loader->add_action( 'add_attachment', $plugin_attachment, 'add_attachment_handler' );
 		$this->loader->add_action( 'videopack_process_new_attachment', $plugin_attachment, 'process_new_attachment_action', 10, 1 );
@@ -171,7 +179,7 @@ class Videopack {
 		$this->loader->add_action( 'videopack_generate_thumbnail', $plugin_attachment, 'generate_thumbnails_with_ffmpeg', 10, 1 );
 		$this->loader->add_action( 'videopack_batch_enqueue_video', $plugin_attachment, 'execute_batch_enqueue_action', 10, 1 );
 
-		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager );
+		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager->get_options(), $this->options_manager->get_formats_registry() );
 		$this->loader->add_action( 'rest_api_init', $encode_queue_controller, 'start_queue' );
 		$this->loader->add_action( 'videopack_process_pending_jobs', $encode_queue_controller, 'process_pending_jobs_action' );
 		$this->loader->add_action( 'videopack_handle_job', $encode_queue_controller, 'handle_job_action' );
@@ -182,7 +190,7 @@ class Videopack {
 
 		$this->loader->add_action( 'videopack_cleanup_generated_thumbnails', $plugin_cleanup, 'cleanup_generated_thumbnails_handler' );
 
-		$edit_posts = new Admin\Edit_Posts( $this->options_manager );
+		$edit_posts = new Admin\Edit_Posts( $this->options_manager->get_options(), $this->options_manager->get_formats_registry() );
 		$this->loader->add_filter( 'media_send_to_editor', $edit_posts, 'modify_media_insert', 10, 3 );
 		$this->loader->add_action( 'media_upload_tabs', $edit_posts, 'add_embedurl_tab' );
 		$this->loader->add_action( 'media_upload_embedurl', $edit_posts, 'embedurl_handle' );
@@ -190,7 +198,7 @@ class Videopack {
 		$this->loader->add_action( 'media_upload_embedlist', $edit_posts, 'embedurl_handle' );
 
 		if ( Admin\Multisite::is_videopack_active_for_network() ) {
-			$multisite = new Admin\Multisite( $this->options_manager );
+			$multisite = new Admin\Multisite( $this->options_manager->get_options() );
 			$this->loader->add_action( 'init', $multisite, 'init' );
 			$this->loader->add_action( 'wpmu_new_blog', $multisite, 'add_new_blog' );
 			$this->loader->add_filter( 'network_admin_plugin_action_links_' . VIDEOPACK_BASENAME, $multisite, 'network_admin_action_links' );
@@ -198,11 +206,11 @@ class Videopack {
 			$this->loader->add_action( 'network_admin_menu', $multisite, 'add_network_queue_page' );
 		}
 
-		$rest_controller = new Admin\REST_Controller( $this->options_manager );
+		$rest_controller = new Admin\REST_Controller( $this->options_manager->get_options(), $this->options_manager->get_formats_registry() );
 		$this->loader->add_action( 'rest_api_init', $rest_controller, 'add_rest_routes' );
 		$this->loader->add_filter( 'rest_post_dispatch', $rest_controller, 'log_rest_api_errors', 10, 3 );
 
-		$admin_screens = new Admin\Screens( $this->options_manager );
+		$admin_screens = new Admin\Screens( $this->options_manager->get_options(), $this->options_manager->get_formats_registry() );
 		$this->loader->add_filter( 'plugin_action_links_' . VIDEOPACK_BASENAME, $admin_screens, 'plugin_action_links' );
 		$this->loader->add_filter( 'plugin_row_meta', $admin_screens, 'plugin_meta_links', 10, 2 );
 		$this->loader->add_action( 'in_plugin_update_message-' . VIDEOPACK_BASENAME, $admin_screens, 'upgrade_notification' );
@@ -222,22 +230,19 @@ class Videopack {
 		$this->loader->add_filter( 'query_vars', $admin_screens, 'add_query_vars' );
 
 		// Admin UI (Block, React Settings, Media Library Enhancements) hooks.
-		$admin_ui = new Admin\Ui( $this->options_manager );
+		$admin_ui = new Admin\Ui( $this->options_manager->get_options(), $this->options_manager->get_formats_registry() );
 		$this->loader->add_action( 'init', $admin_ui, 'register_scripts' );
 		$this->loader->add_action( 'init', $admin_ui, 'block_init' );
+		$this->loader->add_action( 'enqueue_block_assets', $admin_ui, 'enqueue_block_assets' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_page_assets' );
 		$this->loader->add_action( 'wp_enqueue_media', $admin_ui, 'enqueue_attachment_details' );
+		$this->loader->add_action( 'edit_attachment', $admin_screens, 'save_meta_box_data' );
 
 		// TinyMCE Classic Editor integration hooks.
 		$this->loader->add_filter( 'mce_external_plugins', $admin_ui, 'register_tinymce_plugin' );
 		$this->loader->add_action( 'admin_footer-post.php', $admin_ui, 'print_tinymce_template' );
 		$this->loader->add_action( 'admin_footer-post-new.php', $admin_ui, 'print_tinymce_template' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin_ui, 'enqueue_tinymce_assets' );
-
-		// Action Scheduler hooks for encoding queue.
-		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager );
-		$this->loader->add_action( 'videopack_handle_job', $encode_queue_controller, 'handle_job_action' );
-		$this->loader->add_action( 'videopack_process_pending_jobs', $encode_queue_controller, 'process_pending_jobs_action' );
 	}
 
 	/**
@@ -249,19 +254,23 @@ class Videopack {
 	 */
 	private function define_frontend_hooks() {
 
-		$frontend_metadata = new Frontend\Metadata( $this->options_manager );
+		$options_array   = $this->options_manager->get_options();
+		$format_registry = $this->options_manager->get_formats_registry();
+
+		$frontend_metadata = new Frontend\Metadata( $options_array, $format_registry );
 		$this->loader->add_action( 'wp_head', $frontend_metadata, 'print_scripts' );
 
-		$frontend_shortcode = new Frontend\Shortcode( $this->options_manager );
+		$frontend_shortcode = new Frontend\Shortcode( $options_array, $format_registry );
 		$this->loader->add_action( 'wp_loaded', $frontend_shortcode, 'overwrite_video_shortcode' );
 		$this->loader->add_action( 'init', $frontend_shortcode, 'add' );
+		$this->loader->add_filter( 'render_block', $frontend_shortcode, 'replace_video_block', 10, 2 );
 		$this->loader->add_filter( 'no_texturize_shortcodes', $frontend_shortcode, 'no_texturize' );
 		$this->loader->add_filter( 'query_vars', $frontend_shortcode, 'add_query_vars' );
 
-		$frontend_schema = new Frontend\Schema( $this->options_manager );
+		$frontend_schema = new Frontend\Schema( $options_array, $format_registry );
 		$this->loader->add_action( 'template_redirect', $frontend_schema, 'init' );
 
-		$frontend_template = new Frontend\Template( $this->options_manager );
+		$frontend_template = new Frontend\Template( $options_array, $format_registry );
 		$this->loader->add_filter( 'oembed_response_data', $frontend_template, 'change_oembed_data', 11, 4 );
 		$this->loader->add_filter( 'embed_template', $frontend_template, 'change_embed_template' );
 		$this->loader->add_filter( 'the_content', $frontend_template, 'filter_video_attachment_content' );

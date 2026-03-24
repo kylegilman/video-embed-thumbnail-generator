@@ -24,11 +24,11 @@ namespace Videopack\Admin;
 class FFmpeg_Thumbnails {
 
 	/**
-	 * Videopack Options manager class instance.
+	 * Video formats registry.
 	 *
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
 	 */
-	protected $options_manager;
+	protected $format_registry;
 
 	/**
 	 * Plugin options.
@@ -40,11 +40,12 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                             $options         Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options         = $options;
+		$this->format_registry = $format_registry ? $format_registry : new \Videopack\Admin\Formats\Registry( $options );
 	}
 
 	/**
@@ -133,14 +134,14 @@ class FFmpeg_Thumbnails {
 	 * @return array|\WP_Error An array with 'path' and 'url' on success, or WP_Error on failure.
 	 */
 	public function generate_single_thumbnail_data( int $attachment_id, int $total_thumbnails, int $thumbnail_index, bool $is_random ) {
-		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options_manager );
+		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options, $this->format_registry );
 		if ( ! $source || ! $source->exists() ) {
 			return new \WP_Error( 'file_not_found', (string) __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
 
 		$input_path     = (string) $source->get_direct_path();
 		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $attachment_id, $input_path, true, (string) $ffmpeg_path, $this->options_manager );
+		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $attachment_id, $input_path, true, (string) $ffmpeg_path, $this->options );
 
 		if ( ! $video_metadata->worked || ! $video_metadata->duration ) {
 			return new \WP_Error( 'metadata_failed', (string) __( 'Could not read video metadata.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
@@ -166,14 +167,14 @@ class FFmpeg_Thumbnails {
 	 * @return array|\WP_Error An array with 'path' and 'url' on success, or WP_Error on failure.
 	 */
 	public function generate_thumbnail_at_timecode( int $attachment_id, float $timecode ) {
-		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options_manager );
+		$source = \Videopack\Video_Source\Source_Factory::create( $attachment_id, $this->options, $this->format_registry );
 		if ( ! $source || ! $source->exists() ) {
 			return new \WP_Error( 'file_not_found', (string) __( 'Video file not found for this attachment.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
 
 		$input_path     = (string) $source->get_direct_path();
 		$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $attachment_id, $input_path, true, (string) $ffmpeg_path, $this->options_manager );
+		$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $attachment_id, $input_path, true, (string) $ffmpeg_path, $this->options );
 
 		if ( ! $video_metadata->worked ) {
 			return new \WP_Error( 'metadata_failed', (string) __( 'Could not read video metadata.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
@@ -185,8 +186,8 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Generates a single thumbnail image from a video at a specific timecode into a temporary directory.
 	 *
-	 * @param string                               $input_path     The full path to the input video file.
-	 * @param float                                $timecode       The time in seconds to capture the thumbnail from.
+	 * @param string                                 $input_path     The full path to the input video file.
+	 * @param float                                  $timecode       The time in seconds to capture the thumbnail from.
 	 * @param \Videopack\Admin\Encode\Video_Metadata $video_metadata The metadata object for the video.
 	 * @return array|\WP_Error An array with 'path' and 'url' on success, or WP_Error on failure.
 	 */
@@ -331,7 +332,8 @@ class FFmpeg_Thumbnails {
 
 			$watermark_url = (string) $ffmpeg_watermark['url'];
 			if ( \Videopack\Common\Validate::filter_validate_url( $watermark_url ) ) {
-				$watermark_id = (int) ( new \Videopack\Admin\Attachment( $this->options_manager ) )->url_to_id( $watermark_url );
+				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options );
+				$watermark_id    = (int) ( new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta ) )->url_to_id( $watermark_url );
 				if ( $watermark_id ) {
 					$watermark_file = (string) get_attached_file( $watermark_id );
 					if ( file_exists( $watermark_file ) ) {
@@ -351,12 +353,10 @@ class FFmpeg_Thumbnails {
 			$filter_complex['input']  = $watermark_url;
 			$filter_complex['filter'] = $watermark_filters . $scale_main_video . $overlay_watermark;
 
-		} else {
-			if ( $thumb ) {
+		} elseif ( $thumb ) {
 				$filter_complex['filter'] = '[0:v]scale=iw*sar:ih';
-			} else {
-				$filter_complex['filter'] = '[0:v]scale=-2:' . (int) $movie_height;
-			}
+		} else {
+			$filter_complex['filter'] = '[0:v]scale=-2:' . (int) $movie_height;
 		}
 
 		return $filter_complex;
@@ -401,12 +401,12 @@ class FFmpeg_Thumbnails {
 	/**
 	 * Saves a thumbnail image to the Media Library.
 	 *
-	 * @param int        $attachment_id   Video attachment ID.
-	 * @param string     $post_name       Video post name.
-	 * @param string     $thumb_url       Thumbnail URL (local temp or remote).
-	 * @param int|bool   $thumbnail_index Optional. Index for the thumbnail filename.
-	 * @param int        $force_parent_id Optional. Parent ID to set.
-	 * @param bool|null  $force_featured  Optional. Flag to force featured status.
+	 * @param int       $attachment_id   Video attachment ID.
+	 * @param string    $post_name       Video post name.
+	 * @param string    $thumb_url       Thumbnail URL (local temp or remote).
+	 * @param int|bool  $thumbnail_index Optional. Index for the thumbnail filename.
+	 * @param int       $force_parent_id Optional. Parent ID to set.
+	 * @param bool|null $force_featured  Optional. Flag to force featured status.
 	 * @return array Result of the save operation.
 	 */
 	public function save( $attachment_id, $post_name, $thumb_url, $thumbnail_index = false, $force_parent_id = 0, $force_featured = null ) {
@@ -420,7 +420,7 @@ class FFmpeg_Thumbnails {
 		if ( $existing_attachment_id ) {
 			$thumb_id = $existing_attachment_id;
 		} else {
-			$tmp_prefix = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/';
+			$tmp_prefix         = trailingslashit( (string) $uploads['url'] ) . 'thumb_tmp/';
 			$is_local_temp_file = ( 0 === strpos( (string) $thumb_url, $tmp_prefix ) );
 
 			$video_post_title = (string) html_entity_decode( (string) get_the_title( (int) $attachment_id ), ENT_QUOTES, 'UTF-8' );
@@ -542,7 +542,7 @@ class FFmpeg_Thumbnails {
 
 		if ( $thumb_id && ! is_wp_error( $thumb_id ) ) {
 			if ( is_numeric( $attachment_id ) ) {
-				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options_manager, (int) $attachment_id );
+				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
 				$current_meta             = $attachment_meta_instance->get();
 				$is_featured              = $force_featured !== null ? (bool) $force_featured : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
 

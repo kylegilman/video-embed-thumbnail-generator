@@ -20,11 +20,11 @@ namespace Videopack\Frontend;
 class Template {
 
 	/**
-	 * Videopack Options manager class instance.
+	 * Video formats registry.
 	 *
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var \Videopack\Admin\Formats\Registry|null $format_registry
 	 */
-	protected $options_manager;
+	protected $format_registry;
 
 	/**
 	 * Plugin options.
@@ -43,12 +43,16 @@ class Template {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
-		$this->metadata        = new \Videopack\Frontend\Metadata( $options_manager );
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options = $options;
+		if ( ! $format_registry ) {
+			$format_registry = new \Videopack\Admin\Formats\Registry( $options );
+		}
+		$this->format_registry = $format_registry;
+		$this->metadata        = new \Videopack\Frontend\Metadata( $options, $format_registry );
 	}
 
 	/**
@@ -146,9 +150,9 @@ class Template {
 			if ( doing_filter( 'get_the_excerpt' ) ) {
 				return $content;
 			}
-			$videopack_query_var = array(); // No query set.
-			$content             = ( new Shortcode( $this->options_manager ) )->generate_attachment_shortcode( $videopack_query_var );
-			$content          .= '<p>' . $post->post_content . '</p>';
+			$videopack_query_var = get_query_var( 'videopack' ) ? get_query_var( 'videopack' ) : array();
+			$content             = ( new Shortcode( $this->options ) )->generate_attachment_shortcode( $videopack_query_var );
+			$content            .= '<p>' . $post->post_content . '</p>';
 		}
 		return (string) $content;
 	}
