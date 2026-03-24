@@ -24,13 +24,6 @@ namespace Videopack\Admin;
 class Attachment {
 
 	/**
-	 * Videopack Options manager class instance.
-	 *
-	 * @var \Videopack\Admin\Options $options_manager
-	 */
-	protected $options_manager;
-
-	/**
 	 * Plugin options.
 	 *
 	 * @var array $options
@@ -45,6 +38,13 @@ class Attachment {
 	protected $video_formats;
 
 	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
+	 */
+	protected $format_registry;
+
+	/**
 	 * Attachment meta handler.
 	 *
 	 * @var \Videopack\Admin\Attachment_Meta $attachment_meta
@@ -52,16 +52,31 @@ class Attachment {
 	protected $attachment_meta;
 
 	/**
+	 * Flag to prevent recursion during deletion.
+	 *
+	 * @var bool $deleting_attachment
+	 */
+	private static $deleting_attachment = false;
+
+	/**
+	 * Flag to prevent recursion during update.
+	 *
+	 * @var bool $processing_update
+	 */
+	private static $processing_update = false;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                             $options  Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
+	 * @param \Videopack\Admin\Attachment_Meta  $attachment_meta  Attachment meta handler.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
-		$this->video_formats   = $options_manager->get_video_formats();
-		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry, Attachment_Meta $attachment_meta ) {
+		$this->options         = $options;
+		$this->format_registry = $format_registry;
+		$this->attachment_meta = $attachment_meta;
+		$this->video_formats   = (array) $format_registry->get_video_formats();
 	}
 
 	/**
@@ -75,21 +90,15 @@ class Attachment {
 		$post_id    = false;
 		$search_url = $this->get_transient_name( (string) $url );
 
-		if ( ! empty( $this->options['transient_cache'] ) ) {
-			$post_id = get_transient( 'videopack_url_cache_' . md5( $search_url ) );
-		}
-
+		$post_id = get_transient( 'videopack_url_cache_' . md5( $search_url ) );
 		if ( false === $post_id ) {
-
 			$post_id = attachment_url_to_postid( $search_url );
 
-			if ( ! empty( $this->options['transient_cache'] ) ) {
-				if ( ! $post_id ) {
-					$post_id = 'not found'; // Don't save a transient value that could evaluate as false.
-				}
-
-				set_transient( 'videopack_url_cache_' . md5( $search_url ), $post_id, MONTH_IN_SECONDS );
+			if ( ! $post_id ) {
+				$post_id = 'not found'; // Don't save a transient value that could evaluate as false.
 			}
+
+			set_transient( 'videopack_url_cache_' . md5( $search_url ), $post_id, MONTH_IN_SECONDS );
 		}
 
 		if ( 'not found' === $post_id ) {
@@ -223,26 +232,25 @@ class Attachment {
 	 */
 	public function delete_video_attachment( $video_id ) {
 		$mime_type = get_post_mime_type( (int) $video_id );
+		$format_id = get_post_meta( (int) $video_id, '_kgflashmediaplayer-format', true );
 
-		if ( ( $mime_type && strpos( (string) $mime_type, 'video' ) !== false )
-			|| get_post_meta( (int) $video_id, '_kgflashmediaplayer-format', true )
-		) { // Only do this for videos or other child formats.
+		if ( ( $mime_type && strpos( (string) $mime_type, 'video' ) !== false ) || $format_id ) {
 
-			$encode_queue = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options_manager );
+			$encode_queue = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 
-			// If this is a child attachment, find the corresponding job and delete it.
-			$parent_id = wp_get_post_parent_id( (int) $video_id );
-			if ( $parent_id ) {
-				$format_id = get_post_meta( (int) $video_id, '_kgflashmediaplayer-format', true );
-				if ( $format_id ) {
-					$encoder       = new \Videopack\Admin\Encode\Encode_Attachment( $this->options_manager, (int) $parent_id );
+			// If this is a child format attachment, find the corresponding job and delete it.
+			if ( $format_id ) {
+				$parent_id = wp_get_post_parent_id( (int) $video_id );
+				if ( $parent_id ) {
+					$encoder       = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, (int) $parent_id );
 					$encode_format = $encoder->get_encode_format( (string) $format_id );
 					if ( $encode_format && $encode_format->get_job_id() ) {
 						$encode_queue->delete_job( (int) $encode_format->get_job_id(), false );
 					}
 				}
-			} else { // This is a parent attachment, delete all its jobs.
-				$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options_manager, (int) $video_id );
+			} else {
+				// This is a parent/master video attachment, delete all its jobs.
+				$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, (int) $video_id );
 				$formats = $encoder->get_formats();
 				foreach ( $formats as $format ) {
 					if ( $format->get_job_id() ) {
@@ -285,7 +293,7 @@ class Attachment {
 					}
 				}//end loop
 				if ( ! empty( $formats ) ) { // Find a child to be the new master video.
-					$video_formats = $this->options_manager->get_video_formats();
+					$video_formats = $this->format_registry->get_video_formats();
 					foreach ( $video_formats as $format_key => $format_obj ) {
 						if ( array_key_exists( (string) $format_key, $formats ) ) {
 							$new_master = $formats[ (string) $format_key ];
@@ -331,6 +339,7 @@ class Attachment {
 
 		$transient_name = $this->get_transient_name( (string) wp_get_attachment_url( (int) $video_id ) );
 		delete_transient( 'kgvid_' . (string) $transient_name );
+		delete_transient( 'videopack_url_cache_' . md5( $transient_name ) );
 	}
 
 	/**
@@ -375,11 +384,11 @@ class Attachment {
 		if ( ! empty( $this->options['auto_encode'] ) ) {
 			$is_animated = ( 'image/gif' === $post->post_mime_type ) ? $this->is_animated_gif( (string) get_attached_file( (int) $post_id ) ) : false;
 			if ( ( ! $is_animated || ! empty( $this->options['auto_encode_gif'] ) ) && $this->is_video( $post ) ) {
-				$encode_queue      = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options_manager );
+				$encode_queue      = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 				$movieurl          = (string) wp_get_attachment_url( (int) $post_id );
-				$encode_attachment = new \Videopack\Admin\Encode\Encode_Attachment( $this->options_manager, (int) $post_id, $movieurl );
+				$encode_attachment = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, (int) $post_id, $movieurl );
 
-				$all_formats       = $this->options_manager->get_video_formats();
+				$all_formats       = $this->format_registry->get_video_formats();
 				$formats_to_encode = array();
 
 				foreach ( $all_formats as $format_key => $format_object ) {
@@ -449,6 +458,10 @@ class Attachment {
 	 * @param int $parent_id The new parent post ID.
 	 */
 	public function change_thumbnail_parent( $post_id, $parent_id ) {
+		if ( self::$processing_update ) {
+			return;
+		}
+		self::$processing_update = true;
 
 		$args       = array(
 			'post_type'      => 'attachment',
@@ -475,6 +488,7 @@ class Attachment {
 				}
 			}//end loop through thumbnails
 		}//end if thumbnails
+		self::$processing_update = false;
 	}
 
 	/**
@@ -483,11 +497,15 @@ class Attachment {
 	 * @param int $post_id The attachment ID.
 	 */
 	public function validate_attachment_updated( $post_id ) {
+		if ( self::$processing_update ) {
+			return;
+		}
 
 		$post     = get_post( (int) $post_id );
 		$is_video = $this->is_video( $post );
 
 		if ( $is_video && $post instanceof \WP_Post ) {
+			self::$processing_update = true;
 			if ( ( $this->options['thumb_parent'] ?? 'post' ) === 'post' ) {
 				$this->change_thumbnail_parent( (int) $post_id, (int) $post->post_parent );
 			}
@@ -502,6 +520,7 @@ class Attachment {
 			) {
 				set_post_thumbnail( (int) $post->post_parent, (int) $featured_id );
 			}
+			self::$processing_update = false;
 		}
 	}
 
@@ -603,7 +622,7 @@ class Attachment {
 	 * @param int $post_id The ID of the video attachment.
 	 */
 	public function execute_batch_enqueue_action( $post_id ) {
-		$options           = $this->options_manager->get_options();
+		$options           = $this->options;
 		$formats_to_encode = array();
 
 		if ( ! empty( $options['encode'] ) && is_array( $options['encode'] ) ) {
@@ -623,7 +642,7 @@ class Attachment {
 			return;
 		}
 
-		$encode_attachment = new \Videopack\Admin\Encode\Encode_Attachment( $this->options_manager, (int) $post_id, $url );
+		$encode_attachment = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, (int) $post_id, $url );
 		$valid_formats     = array();
 
 		foreach ( $formats_to_encode as $format_key ) {
@@ -634,7 +653,7 @@ class Attachment {
 		}
 
 		if ( ! empty( $valid_formats ) ) {
-			$controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options_manager );
+			$controller = new \Videopack\Admin\Encode\Encode_Queue_Controller( $this->options, $this->format_registry );
 			$controller->enqueue_encodes(
 				array(
 					'id'      => (int) $post_id,
@@ -663,14 +682,14 @@ class Attachment {
 			return;
 		}
 
-		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options_manager );
+		$ffmpeg_thumbnails = new \Videopack\Admin\FFmpeg_Thumbnails( $this->options, $this->format_registry );
 		$filepath          = (string) get_attached_file( (int) $post_id );
 		$thumb_ids         = array();
 		$total_thumbs      = intval( $this->options['auto_thumb_number'] ?? 1 );
 
 		if ( 1 === $total_thumbs ) {
 			$ffmpeg_path    = ! empty( $this->options['app_path'] ) ? (string) $this->options['app_path'] . '/ffmpeg' : 'ffmpeg';
-			$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $post_id, $filepath, true, $ffmpeg_path, $this->options_manager );
+			$video_metadata = new \Videopack\Admin\Encode\Video_Metadata( (int) $post_id, $filepath, true, $ffmpeg_path, $this->options );
 
 			if ( $video_metadata->worked && ! empty( $video_metadata->duration ) ) {
 				$position = intval( $this->options['auto_thumb_position'] ?? 0 );
