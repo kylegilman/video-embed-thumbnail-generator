@@ -22,11 +22,11 @@ class Player {
 
 
 	/**
-	 * Videopack Options manager instance.
+	 * Unique ID counter for video player instances.
 	 *
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var int $video_player_id_counter
 	 */
-	protected $options_manager;
+	protected static $video_player_id_counter = 0;
 
 	/**
 	 * Videopack options array.
@@ -34,6 +34,13 @@ class Player {
 	 * @var array $options
 	 */
 	protected $options;
+
+	/**
+	 * Videopack video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry|null $format_registry
+	 */
+	protected $format_registry;
 
 	/**
 	 * Video player attributes.
@@ -45,7 +52,7 @@ class Player {
 	/**
 	 * Unique ID for this player instance.
 	 *
-	 * @var int $player_id
+	 * @var int|string $player_id
 	 */
 	protected $player_id;
 
@@ -73,12 +80,19 @@ class Player {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager instance.
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
-		$this->player_id       = $options_manager->increment_video_player_id();
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options = $options;
+		if ( ! $format_registry ) {
+			$format_registry = new \Videopack\Admin\Formats\Registry( $options );
+		}
+		$this->format_registry = $format_registry;
+
+		++self::$video_player_id_counter;
+		$this->player_id = self::$video_player_id_counter;
+
 		$this->register_hooks();
 	}
 
@@ -139,11 +153,44 @@ class Player {
 	}
 
 	/**
+	 * Ensures a metadata field is an array and appends a value.
+	 *
+	 * @param array  $metadata The block metadata.
+	 * @param string $key      The key to check ('script' or 'style').
+	 * @param string $value    The value to append.
+	 * @return array The modified metadata.
+	 */
+	protected function ensure_array_and_append( $metadata, $key, $value ) {
+		if ( ! isset( $metadata[ $key ] ) ) {
+			$metadata[ $key ] = array( $value );
+		} elseif ( is_array( $metadata[ $key ] ) ) {
+			$metadata[ $key ][] = $value;
+		} else {
+			$metadata[ $key ] = array( (string) $metadata[ $key ], $value );
+		}
+		return (array) $metadata;
+	}
+
+	/**
+	 * Returns the player attributes.
+	 *
+	 * @return array The player attributes.
+	 */
+	public function get_atts(): array {
+		return (array) $this->atts;
+	}
+
+	/**
 	 * Enqueues frontend styles.
 	 */
 	public function enqueue_styles() {
-		if ( ! has_block( 'videopack/videopack-video' ) ) {
-			wp_enqueue_style( 'videopack_styles', plugins_url( '/admin-ui/build/frontend-styles.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
+		wp_enqueue_style( 'videopack-videoplayer' );
+
+		if ( ! has_block( 'videopack/videopack-video' ) || has_block( 'videopack/videopack-grid' ) ) {
+			wp_enqueue_style( 'videopack-videogallery' );
+			wp_enqueue_style( 'videopack-videopack-gallery-style', plugins_url( '/admin-ui/build/blocks/videopack-gallery/videopack-gallery.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
+			wp_enqueue_style( 'videopack-videopack-list-style', plugins_url( '/admin-ui/build/blocks/videopack-list/videopack-list.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
+			wp_enqueue_style( 'videopack-videopack-grid-style', plugins_url( '/admin-ui/build/blocks/videopack-grid/videopack-grid.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 		}
 	}
 
@@ -208,7 +255,8 @@ class Player {
 
 		$source_object = \Videopack\Video_Source\Source_Factory::create(
 			$source_identifier,
-			$this->options_manager
+			$this->options,
+			$this->format_registry
 		);
 
 		if ( $source_object ) {
@@ -228,10 +276,19 @@ class Player {
 	/**
 	 * Returns the player ID.
 	 *
-	 * @return int The player ID.
+	 * @return int|string The player ID.
 	 */
-	public function get_id(): int {
+	public function get_id() {
 		return $this->player_id;
+	}
+
+	/**
+	 * Sets the player ID manually.
+	 *
+	 * @param int|string $id The player ID.
+	 */
+	public function set_id( $id ) {
+		$this->player_id = $id;
 	}
 
 	/**
@@ -400,32 +457,45 @@ class Player {
 	public function prepare_video_vars(): array {
 
 		$video_variables = array(
-			'id'                => 'videopack_player_' . $this->get_id(),
-			'attachment_id'     => $this->get_source() ? $this->get_source()->get_id() : 0,
-			'embed_method'      => $this->options['embed_method'],
-			'width'             => $this->atts['width'],
-			'height'            => $this->atts['height'],
-			'fullwidth'         => $this->atts['fullwidth'],
-			'countable'         => $this->atts['countable'],
-			'count_views'       => $this->atts['count_views'],
-			'start'             => $this->atts['start'],
-			'autoplay'          => $this->atts['autoplay'],
-			'pauseothervideos'  => $this->atts['pauseothervideos'],
-			'set_volume'        => $this->atts['volume'],
-			'muted'             => $this->atts['muted'],
-			'endofvideooverlay' => $this->atts['endofvideooverlay'],
-			'auto_res'          => $this->atts['auto_res'],
-			'auto_codec'        => $this->atts['auto_codec'],
-			'pixel_ratio'       => $this->atts['pixel_ratio'],
-			'right_click'       => $this->atts['right_click'],
-			'playback_rate'     => $this->atts['playback_rate'],
-			'title'             => $this->atts['stats_title'],
-			'source_groups'     => $this->get_sources(),
-			'fixed_aspect'      => $this->atts['fixed_aspect'],
-			'default_ratio'     => $this->get_fixed_aspect_ratio(),
-			'tracks'            => $this->atts['tracks'] ?? array(),
-			'legacy_dimensions' => $this->atts['legacy_dimensions'],
-			'resize'            => $this->atts['resize'],
+			'id'                          => 'videopack_player_' . $this->get_id(),
+			'attachment_id'               => $this->get_source() ? $this->get_source()->get_id() : 0,
+			'embed_method'                => $this->options['embed_method'],
+			'width'                       => $this->atts['width'],
+			'height'                      => $this->atts['height'],
+			'fullwidth'                   => $this->atts['fullwidth'],
+			'countable'                   => $this->atts['countable'],
+			'count_views'                 => $this->atts['count_views'],
+			'start'                       => $this->atts['start'],
+			'autoplay'                    => $this->atts['autoplay'],
+			'pauseothervideos'            => $this->atts['pauseothervideos'],
+			'set_volume'                  => $this->atts['volume'],
+			'muted'                       => $this->atts['muted'],
+			'endofvideooverlay'           => $this->atts['endofvideooverlay'],
+			'auto_res'                    => $this->atts['auto_res'],
+			'auto_codec'                  => $this->atts['auto_codec'],
+			'pixel_ratio'                 => $this->atts['pixel_ratio'],
+			'right_click'                 => $this->atts['right_click'],
+			'playback_rate'               => $this->atts['playback_rate'],
+			'title'                       => $this->atts['stats_title'],
+			'source_groups'               => $this->get_sources(),
+			'fixed_aspect'                => $this->atts['fixed_aspect'],
+			'default_ratio'               => $this->get_fixed_aspect_ratio(),
+			'tracks'                      => $this->atts['tracks'] ?? array(),
+			'legacy_dimensions'           => $this->atts['legacy_dimensions'],
+			'resize'                      => $this->atts['resize'],
+			'title_color'                 => $this->atts['title_color'] ?? '',
+			'title_background_color'      => $this->atts['title_background_color'] ?? '',
+			'play_button_color'           => $this->atts['play_button_color'] ?? '',
+			'play_button_icon_color'      => $this->atts['play_button_icon_color'] ?? '',
+			'control_bar_bg_color'        => $this->atts['control_bar_bg_color'] ?? '',
+			'control_bar_color'           => $this->atts['control_bar_color'] ?? '',
+			'pagination_color'            => $this->atts['pagination_color'] ?? '',
+			'pagination_background_color' => $this->atts['pagination_background_color'] ?? '',
+			'pagination_active_bg_color'  => $this->atts['pagination_active_bg_color'] ?? '',
+			'caption'                     => $this->atts['caption'] ?? '',
+			'view_count'                  => (bool) ( $this->atts['view_count'] ?? false ),
+			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
+			'below_video_html'            => $this->has_below_video() ? $this->get_below_video_code() : '',
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
@@ -459,12 +529,16 @@ class Player {
 		wp_add_inline_script( 'videopack-frontend', $script );
 
 		$player_code = $this->get_wrapper_start_html();
+		$player_code .= $this->get_player_start_html();
 
 		if ( $this->has_meta_bar() ) {
 			$player_code .= $this->get_meta_bar_code();
 		}
 		$player_code .= $this->get_video_code();
 		$player_code .= $this->get_watermark_code();
+
+		$player_code .= $this->get_player_end_html();
+
 		if ( $this->has_below_video() ) {
 			$player_code .= $this->get_below_video_code();
 		}
@@ -613,15 +687,54 @@ class Player {
 			}
 		}
 
+		$colors = array(
+			'title-color'                 => 'title_color',
+			'title-background-color'      => 'title_background_color',
+			'pagination-color'            => 'pagination_color',
+			'pagination-background-color' => 'pagination_background_color',
+			'pagination-active-bg-color'  => 'pagination_active_bg_color',
+			'pagination-active-color'     => 'pagination_active_color',
+			'play-button-color'           => 'play_button_color',
+			'play-button-icon-color'      => 'play_button_icon_color',
+			'control-bar-bg-color'        => 'control_bar_bg_color',
+			'control-bar-color'           => 'control_bar_color',
+		);
+
+		foreach ( $colors as $variable => $attribute ) {
+			if ( ! empty( $this->atts[ $attribute ] ) ) {
+				$style_attrs[] = '--videopack-' . $variable . ': ' . $this->atts[ $attribute ];
+				$alignclass   .= ' videopack-has-' . $variable;
+			}
+		}
+
+		// Inject MEJS controls SVG URL as a CSS variable to avoid SCSS build issues
+		$style_attrs[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
+
 		$style = '';
 		if ( ! empty( $style_attrs ) ) {
 			$style = ' style="' . implode( '; ', $style_attrs ) . ';"';
 		}
 
-		$html           = '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '"' . $style . '>';
+		return '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '"' . $style . '>';
+	}
+
+	/**
+	 * Generates the HTML for the player div start tag.
+	 *
+	 * @return string The player div start HTML.
+	 */
+	protected function get_player_start_html(): string {
 		$player_classes = apply_filters( 'videopack_player_div_classes', array( 'videopack-player' ), $this->atts );
-		$html          .= '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
-		return $html;
+		return '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
+	}
+
+	/**
+	 * Generates the HTML for the player div end tag.
+	 *
+	 * @return string The player div end HTML.
+	 */
+	protected function get_player_end_html(): string {
+		return '</div>';
 	}
 
 	/**
@@ -630,7 +743,7 @@ class Player {
 	 * @return string The ending wrapper HTML.
 	 */
 	protected function get_wrapper_end_html(): string {
-		return '</div></div>';
+		return '</div>';
 	}
 
 	/**
@@ -827,8 +940,13 @@ class Player {
 			return '';
 		}
 
-		$all_defaults = $this->options_manager->get_default();
-		$defaults     = $all_defaults['watermark_styles'];
+		$defaults = array(
+			'scale'  => '10',
+			'align'  => 'right',
+			'valign' => 'bottom',
+			'x'      => '5',
+			'y'      => '7',
+		);
 
 		$styles = array_merge( $defaults, $this->options['watermark_styles'] ?? array() );
 		$style  = '';
