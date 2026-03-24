@@ -1,4 +1,29 @@
 @use "@wordpress/base-styles/colors";
+@use "@wordpress/base-styles/colors.native" as native;
+@use "../common/PlayButton.scss" as *;
+
+.wp-block-videopack-videopack-gallery {
+
+	width: 100%;
+	max-width: var(--wp--style--global--content-size);
+
+	&.alignwide {
+		max-width: var(--wp--style--global--wide-size);
+	}
+
+	&.alignfull {
+		max-width: none;
+	}
+
+	&.aligncenter {
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.videopack-wrapper {
+		margin: 0;
+	}
+}
 
 /* Gallery container */
 .videopack-gallery-wrapper {
@@ -25,7 +50,6 @@
 		cursor: pointer;
 		overflow: hidden;
 		border: none;
-		border-radius: 2%;
 		box-sizing: border-box;
 		background: none;
 		container-type: inline-size;
@@ -49,17 +73,8 @@
 			height: 100%;
 		}
 
-		.mejs-overlay-button {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			width: 80px;
-			height: 80px;
-			/* Let JS handle the transform for scaling, overriding default margin-based centering */
-			margin: 0;
-			transform: translate(-50%, -50%);
-			background-size: auto;
-		}
+		/* Shared styles from PlayButton.scss handle .mejs-overlay-button */
+
 
 		.play-button-container {
 			position: absolute;
@@ -75,6 +90,7 @@
 				transform: translate(-50%, -50%);
 				margin: 0;
 				font-size: clamp(8px, 8cqi, 30px);
+				/* Shared styles from PlayButton.scss handle background */
 			}
 
 			&.kg-video-js-skin svg {
@@ -87,14 +103,15 @@
 
 				.play-button-circle {
 					fill-opacity: 0.75;
-					fill: colors.$gray-800;
-					stroke: colors.$white;
+					fill: var(--videopack-play-button-bg-color-alpha, colors.$gray-800);
+					stroke: var(--videopack-play-button-color, colors.$white);
 					stroke-width: 20;
 					stroke-miterlimit: 10;
+					transition: fill-opacity 0.15s ease;
 				}
 
 				.play-button-triangle {
-					fill: colors.$white;
+					fill: var(--videopack-play-button-color, colors.$white);
 				}
 			}
 		}
@@ -112,7 +129,7 @@
 
 			.video-title-text {
 				position: relative;
-				color: var(--wp--preset--color--tertiary, white);
+				color: var(--videopack-title-color, inherit);
 				font-size: 14px;
 				line-height: 1.5em;
 				z-index: 4;
@@ -125,7 +142,7 @@
 				right: 0;
 				bottom: 0;
 				left: 0;
-				background-color: var(--wp--preset--color--primary, black);
+				background-color: var(--videopack-title-background-color, var(--wp--preset--color--primary, black));
 				opacity: 0.4;
 				z-index: 2;
 			}
@@ -136,11 +153,8 @@
 				opacity: 0.8;
 			}
 
-			.video-title-text {
-				color: var(--wp--preset--color--base, white);
-			}
-
 			.play-button-container svg .play-button-circle {
+				fill: var(--videopack-play-button-bg-color-alpha-hover, colors.$gray-800);
 				fill-opacity: 0.4;
 			}
 		}
@@ -163,7 +177,7 @@
 		}
 
 		&.vjs-theme-sea .video-title-background::before {
-			background-color: rgba(65, 118, 188);
+			background-color: rgba(65, 118, 188, 0.4); // #4176bc
 		}
 	}
 
@@ -174,7 +188,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(colors.$gray-900, 0.7);
 		width: 100vw;
 		height: 100vh;
 		z-index: 10000;
@@ -189,15 +203,20 @@
 
 		.videopack-modal-container {
 			position: relative;
-			color: black;
-			background-color: #000;
+			color: colors.$gray-900;
+			background-color: colors.$gray-900;
 			width: 80vw;
 			max-height: 90vh;
 			z-index: 10002;
 
+			.modal-content {
+				color: colors.$white;
+				position: relative;
+				padding: 5px;
+			}
+
 			.videopack-wrapper {
 				margin: 0;
-				padding: 5px;
 			}
 
 			.modal-navigation {
@@ -205,42 +224,46 @@
 				z-index: 10003;
 				position: absolute;
 				text-decoration: none;
-				top: -26px;
 				background-color: transparent;
 				border: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0;
+				color: colors.$white;
+
+				&:hover {
+					color: colors.$gray-300;
+				}
+
+				svg {
+					fill: currentColor;
+				}
 
 				&.modal-close {
 					right: -10px;
 					top: -26px;
-					height: 17px;
 				}
 
 				&.modal-previous {
 					right: 59px;
+					top: -26px;
 				}
 
 				&.modal-next {
 					right: 25px;
+					top: -26px;
+				}
+
+				&.is-hidden {
+					visibility: hidden;
+					pointer-events: none;
 				}
 			}
 
 			.wp-video {
 				margin-bottom: 0;
 			}
-		}
-	}
-
-	.videopack-icons {
-		&.cross {
-			background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Ecross%3C/title%3E %3Cpath d='M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z'%3E%3C/path%3E %3C/svg%3E");
-		}
-
-		&.left-arrow {
-			background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Earrow-left%3C/title%3E %3Cpath d='M1 16l15 15v-9h16v-12h-16v-9z'%3E%3C/path%3E %3C/svg%3E ");
-		}
-
-		&.right-arrow {
-			background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32' fill='white'%3E %3Ctitle%3Earrow-right%3C/title%3E %3Cpath d='M31 16l-15-15v9h-16v12h16v9z'%3E%3C/path%3E %3C/svg%3E ");
 		}
 	}
 
@@ -329,7 +352,7 @@
 			height: 1.75em;
 			margin: 2px;
 			background-color: transparent;
-			color: var(--wp--preset--color--primary, black);
+			color: var(--wp--preset--color--primary, colors.$gray-900);
 			border-radius: 50%;
 			font-size: .75em;
 			border: none;
@@ -339,8 +362,8 @@
 
 			&.current-page,
 			&:hover {
-				background-color: var(--wp--preset--color--primary, #555);
-				color: var(--wp--preset--color--white, white);
+				background-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--primary, currentColor));
+				color: var(--videopack-pagination-active-color, var(--wp--preset--color--white, white));
 
 				span {
 					cursor: default;

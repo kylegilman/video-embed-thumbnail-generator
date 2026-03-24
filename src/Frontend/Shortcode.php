@@ -21,13 +21,6 @@ class Shortcode {
 
 
 	/**
-	 * Videopack Options manager class instance.
-	 *
-	 * @var \Videopack\Admin\Options $options_manager
-	 */
-	protected $options_manager;
-
-	/**
 	 * Plugin options.
 	 *
 	 * @var array $options
@@ -35,13 +28,21 @@ class Shortcode {
 	protected $options;
 
 	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry|null $format_registry
+	 */
+	protected $format_registry;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                                  $options         Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options         = $options;
+		$this->format_registry = $format_registry;
 	}
 
 	/**
@@ -65,7 +66,7 @@ class Shortcode {
 		if ( in_the_loop() ) {
 			$post_id = get_the_ID();
 		} else {
-			$post_id = 1;
+			$post_id = 0;
 		}
 
 		return array(
@@ -95,6 +96,10 @@ class Shortcode {
 				'text_tracks'                   => array(),
 				'enable_collection_video_limit' => false,
 				'collection_video_limit'        => -1,
+				'layout'                        => 'player',
+				'grid_metadata'                 => 'thumbnail,duration,title,views,date',
+				'grid_link_to'                  => 'post',
+				'grid_columns'                  => 3,
 			),
 			'options_atts'    => array(
 				'width',
@@ -115,7 +120,16 @@ class Shortcode {
 				'gifmode',
 				'pauseothervideos',
 				'playsinline',
-				'skin',
+				'title_color',
+				'title_background_color',
+				'play_button_color',
+				'play_button_icon_color',
+				'control_bar_bg_color',
+				'control_bar_color',
+				'pagination_color',
+				'pagination_background_color',
+				'pagination_active_bg_color',
+				'pagination_active_color',
 				'gallery_pagination',
 				'gallery_per_page',
 				'gallery_columns',
@@ -143,6 +157,14 @@ class Shortcode {
 				'gallery_thumb',
 				'gallery_orderby',
 				'gallery_order',
+				'gallery_source',
+				'gallery_include',
+				'gallery_exclude',
+				'gallery_id',
+				'gallery_category',
+				'gallery_tag',
+				'collection_video_limit',
+				'skin',
 			),
 			'boolean_convert' => array(
 				'endofvideooverlaysame',
@@ -575,6 +597,9 @@ class Shortcode {
 		if ( isset( $query_atts['gallery_source'] ) ) {
 			if ( 'current' === $query_atts['gallery_source'] && empty( $query_atts['gallery_id'] ) ) {
 				$query_atts['gallery_id'] = get_the_ID();
+				if ( ! $query_atts['gallery_id'] && ! is_admin() ) {
+					$query_atts['gallery_id'] = get_queried_object_id();
+				}
 			} elseif ( in_array( $query_atts['gallery_source'], array( 'category', 'tag' ), true ) && empty( $query_atts['gallery_id'] ) ) {
 				$query_atts['gallery_id'] = '';
 			}
@@ -583,16 +608,20 @@ class Shortcode {
 		if ( is_feed() ) {
 			return '';
 		}
+		if ( isset( $query_atts['layout'] ) && 'grid' === $query_atts['layout'] ) {
+			$grid = new Grid( $this->options, $this->format_registry );
+			return $grid->render( $query_atts );
+		}
 
 		if ( isset( $query_atts['gallery'] ) && true === $query_atts['gallery'] ) {
 			if ( isset( $query_atts['gallery_orderby'] ) && 'rand' === $query_atts['gallery_orderby'] ) {
 				$query_atts['gallery_orderby'] = 'RAND(' . (string) wp_rand() . ')';
 			}
 
-			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options_manager );
+			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options );
 			$player->enqueue_scripts();
 
-			$gallery = new Gallery( $this->options_manager );
+			$gallery = new Gallery( $this->options );
 			$code    = $gallery->gallery_page( 1, $query_atts );
 		} else {
 			$post_id = get_the_ID();
@@ -625,7 +654,7 @@ class Shortcode {
 					$page = (int) get_query_var( 'page' );
 				}
 
-				$gallery     = new Gallery( $this->options_manager );
+				$gallery     = new Gallery( $this->options );
 				$attachments = $gallery->get_gallery_videos( $page, $query_atts );
 
 				if ( $attachments->have_posts() ) {
@@ -639,12 +668,53 @@ class Shortcode {
 			$code    = '';
 
 			if ( $is_list ) {
+				$style_vars  = array();
+				$title_color = ! empty( $query_atts['title_color'] ) ? $query_atts['title_color'] : ( $this->options['title_color'] ?? '' );
+				if ( ! empty( $title_color ) ) {
+					$style_vars[] = '--videopack-title-color: ' . esc_attr( (string) $title_color );
+				}
+
+				$title_bg_color = ! empty( $query_atts['title_background_color'] ) ? $query_atts['title_background_color'] : ( $this->options['title_background_color'] ?? '' );
+				if ( ! empty( $title_bg_color ) ) {
+					$style_vars[] = '--videopack-title-background-color: ' . esc_attr( (string) $title_bg_color );
+				}
+
+				$pagination_color = ! empty( $query_atts['pagination_color'] ) ? $query_atts['pagination_color'] : ( $this->options['pagination_color'] ?? '' );
+				if ( ! empty( $pagination_color ) ) {
+					$style_vars[] = '--videopack-pagination-color: ' . esc_attr( (string) $pagination_color );
+				}
+
+				$pagination_bg_color = ! empty( $query_atts['pagination_background_color'] ) ? $query_atts['pagination_background_color'] : ( $this->options['pagination_background_color'] ?? '' );
+				if ( ! empty( $pagination_bg_color ) ) {
+					$style_vars[] = '--videopack-pagination-bg: ' . esc_attr( (string) $pagination_bg_color );
+				}
+
+				$pagination_active_bg_color = ! empty( $query_atts['pagination_active_bg_color'] ) ? $query_atts['pagination_active_bg_color'] : ( $this->options['pagination_active_bg_color'] ?? '' );
+				if ( ! empty( $pagination_active_bg_color ) ) {
+					$style_vars[] = '--videopack-pagination-active-bg: ' . esc_attr( (string) $pagination_active_bg_color );
+				}
+
+				$pagination_active_color = ! empty( $query_atts['pagination_active_color'] ) ? $query_atts['pagination_active_color'] : ( $this->options['pagination_active_color'] ?? '' );
+				if ( ! empty( $pagination_active_color ) ) {
+					$style_vars[] = '--videopack-pagination-active-color: ' . esc_attr( (string) $pagination_active_color );
+				}
+
+				$code .= '<div class="videopack-list-wrapper videopack-collection-wrapper" ';
+				if ( ! empty( $style_vars ) ) {
+					$code .= 'style="' . esc_attr( (string) implode( '; ', $style_vars ) ) . '" ';
+				}
+				$code .= 'data-videopack-ajax-collection="true" ';
+				$code .= 'data-layout="list" ';
+				$code .= 'data-settings="' . esc_attr( (string) wp_json_encode( $query_atts ) ) . '" ';
+				$code .= 'data-settings-cache="' . esc_attr( (string) wp_json_encode( $query_atts ) ) . '" ';
+				$code .= 'data-current-page="' . esc_attr( (string) $page ) . '" ';
+				$code .= 'data-total-pages="' . esc_attr( (string) ( $attachments->max_num_pages ?? 1 ) ) . '">';
 				$code .= '<div class="videopack-video-list">';
 			}
 
 			foreach ( $source_ids as $source_input ) {
 				// Create the Source object.
-				$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager, null, null, (int) $post_id );
+				$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options );
 
 				if ( ! $source || ! $source->exists() ) {
 					continue;
@@ -659,7 +729,7 @@ class Shortcode {
 				} else {
 					$player_type = (string) ( $this->options['embed_method'] ?? 'Video.js' );
 				}
-				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options_manager );
+				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options );
 
 				// Set the source and final attributes on the player instance.
 				$player->set_source( $source );
@@ -679,22 +749,13 @@ class Shortcode {
 			}
 
 			if ( $is_list ) {
-				$code .= '</div>';
+				$code .= '</div>'; // End videopack-video-list.
 
-				if ( ( $attachments instanceof \WP_Query ) && ! empty( $query_atts['gallery_pagination'] ) ) {
-					$big        = 999999999;
-					$pagination = paginate_links(
-						array(
-							'base'    => str_replace( (string) $big, '%#%', (string) esc_url( get_pagenum_link( $big ) ) ),
-							'format'  => '?paged=%#%',
-							'current' => max( 1, (int) $page ),
-							'total'   => (int) $attachments->max_num_pages,
-						)
-					);
-					if ( $pagination ) {
-						$code .= '<div class="videopack-gallery-pagination">' . (string) $pagination . '</div>';
-					}
+				if ( ( $attachments instanceof \WP_Query ) && ! empty( $query_atts['gallery_pagination'] ) && (int) ( $attachments->max_num_pages ?? 1 ) > 1 ) {
+					$gallery = new Gallery( $this->options, $this->format_registry );
+					$code   .= $gallery->render_pagination_html( (int) $attachments->max_num_pages, (int) $page );
 				}
+				$code .= '</div>'; // End videopack-list-wrapper.
 			}
 		}
 
@@ -759,7 +820,7 @@ class Shortcode {
 			$post_id = 1;
 		}
 
-		$videopack_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options_manager ) )->get( $post_id );
+		$videopack_postmeta = ( new \Videopack\Admin\Attachment_Meta( $this->options ) )->get( $post_id );
 
 		if ( is_array( $videopack_query_var )
 		&& array_key_exists( 'sample', $videopack_query_var )
@@ -849,5 +910,85 @@ class Shortcode {
 		}
 
 		return (string) $this->do( $atts, (string) $content );
+	}
+
+	/**
+	 * Replaces the default core/video block with Videopack's handler.
+	 *
+	 * @param string $block_content The block content.
+	 * @param array  $block         The full block, including name and attributes.
+	 * @return string The rendered player HTML.
+	 */
+	public function replace_video_block( $block_content, $block ) {
+
+		if ( 'core/video' === (string) ( $block['blockName'] ?? '' ) && ! empty( $this->options['replace_video_block'] ) ) {
+			$atts = (array) ( $block['attrs'] ?? array() );
+
+			$id      = $atts['id'] ?? null;
+			$content = $atts['src'] ?? '';
+
+			if ( ! empty( $id ) ) {
+				$atts['id'] = (int) $id;
+			}
+
+			// Fallback: Parse attributes from the original HTML if they are missing from the block attrs array.
+			// This is useful for core/video blocks which might not have all attributes in the comment delimiter.
+			foreach ( array( 'autoplay', 'muted', 'loop', 'controls', 'playsInline' ) as $attr ) {
+				if ( ! isset( $atts[ $attr ] ) && preg_match( '/\s' . $attr . '(?:\s|>|=)/i', $block_content ) ) {
+					$atts[ $attr ] = true;
+				}
+			}
+
+			// Map common core attributes to Videopack equivalents.
+			$mapping = array(
+				'autoPlay'    => 'autoplay',
+				'playsInline' => 'playsinline',
+				'mute'        => 'muted',
+			);
+
+			foreach ( $mapping as $core_key => $videopack_key ) {
+				if ( isset( $atts[ $core_key ] ) && ! isset( $atts[ $videopack_key ] ) ) {
+					$atts[ $videopack_key ] = $atts[ $core_key ];
+				}
+			}
+
+			// Map core 'tracks' to Videopack 'text_tracks'.
+			if ( ! empty( $atts['tracks'] ) ) {
+				$atts['text_tracks'] = (array) $atts['tracks'];
+				unset( $atts['tracks'] );
+			}
+
+			// Ensure boolean attributes are actually booleans or mapped strings for the shortcode handler.
+			$boolean_atts = array( 'autoplay', 'muted', 'loop', 'controls', 'playsinline' );
+			foreach ( $boolean_atts as $att ) {
+				if ( array_key_exists( $att, $atts ) ) {
+					$atts[ $att ] = (bool) $atts[ $att ] ? 'true' : 'false';
+				}
+			}
+
+			$player_code = (string) $this->do( $atts, (string) $content );
+
+			// Preserve the caption if it exists, matching the core block structure.
+			if ( ! empty( $atts['caption'] ) ) {
+				$figure_classes = 'wp-block-video';
+				if ( ! empty( $atts['align'] ) ) {
+					$figure_classes .= ' align' . (string) $atts['align'];
+				}
+				if ( ! empty( $atts['className'] ) ) {
+					$figure_classes .= ' ' . (string) $atts['className'];
+				}
+
+				$player_code = sprintf(
+					'<figure class="%1$s">%2$s<figcaption class="wp-element-caption">%3$s</figcaption></figure>',
+					esc_attr( $figure_classes ),
+					$player_code,
+					(string) $atts['caption']
+				);
+			}
+
+			return $player_code;
+		}
+
+		return (string) $block_content;
 	}
 }

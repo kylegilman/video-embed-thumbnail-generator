@@ -1,4 +1,6 @@
 @use "@wordpress/base-styles/colors";
+@use "../common/PlayButton.scss" as *;
+
 
 .wp-block-videopack-videopack-video {
 
@@ -28,38 +30,9 @@
 	margin: 1em 0;
 	position: relative;
 	container-type: inline-size;
+	width: 100%;
 
-	@container (max-width: 499px) {
 
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.9);
-		}
-	}
-
-	@container (max-width: 399px) {
-
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.8);
-		}
-	}
-
-	@container (max-width: 359px) {
-
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.7);
-		}
-	}
-
-	@container (max-width: 260px) {
-
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.6);
-		}
-	}
 
 	&.videopack-wrapper-auto-left {
 		margin-left: auto;
@@ -96,17 +69,15 @@
 		text-align: center;
 	}
 
-	/* Fixed Aspect Ratio */
-	&.videopack-fixed-aspect {
+	/* Aspect Ratio Handling */
+	&.videopack-has-aspect-ratio {
 		width: 100%;
 		max-width: 100%;
 
 		.videopack-player {
 			width: 100%;
-			height: 100%;
-			position: absolute;
-			top: 0;
-			left: 0;
+			/* height will be determined by aspect-ratio from inline styles */
+			position: relative; 
 
 			video,
 			.video-js,
@@ -117,8 +88,13 @@
 			}
 
 			/* Override Video.js fluid padding if it gets applied */
-			.video-js.vjs-fluid {
-				padding-top: 0 !important;
+			.video-js {
+
+				&.vjs-fluid,
+				&.vjs-16-9,
+				&.vjs-4-3 {
+					padding-top: 0 !important;
+				}
 			}
 		}
 
@@ -130,6 +106,7 @@
 	/* Video container */
 	.videopack-player {
 		position: relative;
+		width: 100%;
 
 		/* Skin-specific MetaBar styles */
 		&.default .videopack-meta-bar {
@@ -210,6 +187,7 @@
 		clear: both;
 		overflow: hidden;
 		font-size: medium;
+		color: inherit;
 
 		.videopack-viewcount {
 			float: right;
@@ -354,10 +332,6 @@
 		max-height: 100%;
 		margin: 0;
 		padding: 0;
-	}
-
-	.mejs-overlay-button {
-		z-index: 2;
 	}
 
 	.wp-video-shortcode {
@@ -871,3 +845,162 @@
 		margin: 0;
 	}
 }
+
+/* Custom Theming Overrides */
+.videopack-wrapper {
+	/* Pre-calculate alpha versions if colors are set. Wrap in unquote for safe build. */
+	--videopack-control-bar-bg-color-alpha: #{unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color), transparent 30%)")};
+
+	&.videopack-has-title-background-color .videopack-meta-bar {
+		background-color: var(--videopack-title-background-color) !important;
+	}
+
+	&.videopack-has-title-color .videopack-meta-bar {
+		.videopack-title,
+		.videopack-meta-icons button,
+		.videopack-meta-icons span {
+			color: var(--videopack-title-color) !important;
+		}
+	}
+
+	/* Video.js Overrides */
+	&.videopack-has-control-bar-color .video-js {
+		color: var(--videopack-control-bar-color) !important;
+
+		.vjs-play-progress {
+			background-color: var(--videopack-control-bar-color) !important;
+		}
+
+		&:not(.vjs-theme-city):not(.vjs-theme-forest) .vjs-volume-level {
+			background-color: var(--videopack-control-bar-color) !important;
+		}
+
+		&.vjs-theme-city,
+		&.vjs-theme-forest {
+			.vjs-volume-level {
+				background-color: transparent !important;
+				&::before {
+					border-bottom-color: var(--videopack-control-bar-color) !important;
+				}
+			}
+		}
+
+		&.vjs-theme-forest .vjs-play-control .vjs-icon-placeholder::before {
+			background-color: var(--videopack-control-bar-color) !important;
+		}
+
+		&.vjs-theme-fantasy .vjs-play-control .vjs-icon-placeholder::before {
+			border-color: var(--videopack-control-bar-color) !important;
+		}
+
+		&.vjs-theme-fantasy .vjs-play-progress::before {
+			background-color: var(--videopack-control-bar-color) !important;
+		}
+
+		.vjs-load-progress {
+			/* ensure load progress isn't overwritten by the slider-bar rule */
+			background: rgba(115, 133, 159, 0.5) !important;
+		}
+	}
+
+
+	&.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack {
+		.vjs-control:not(.vjs-volume-panel):not(.vjs-progress-control),
+		.vjs-time-control,
+		.vjs-big-play-button,
+		.vjs-menu-button .vjs-menu-content {
+			background-color: var(--videopack-control-bar-bg-color-alpha) !important;
+		}
+	}
+
+	&.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button {
+		background-color: var(--videopack-play-button-bg-color-alpha) !important;
+	}
+
+	&.videopack-has-control-bar-bg-color .video-js {
+		&:not(.vjs-theme-videopack):not(.vjs-theme-city) .vjs-control-bar {
+			background-color: var(--videopack-control-bar-bg-color-alpha) !important;
+		}
+
+		&.vjs-theme-city .vjs-control-bar {
+			background-image: linear-gradient(0deg, var(--videopack-control-bar-bg-color-alpha), transparent) !important;
+		}
+	}
+
+	.video-js.vjs-theme-videopack {
+		.vjs-volume-panel button,
+		.vjs-volume-panel .vjs-volume-control,
+		.vjs-progress-control,
+		.vjs-custom-control-spacer {
+			background-color: transparent !important;
+		}
+	}
+
+	/* MEJS Overrides */
+
+	&.videopack-has-control-bar-bg-color .mejs-controls {
+		background-color: var(--videopack-control-bar-bg-color-alpha) !important;
+	}
+
+	&.videopack-has-control-bar-color .mejs-controls {
+		.mejs-button button {
+			background-image: none !important;
+			background-color: var(--videopack-control-bar-color) !important;
+			mask-image: var(--videopack-mejs-controls-svg);
+			-webkit-mask-image: var(--videopack-mejs-controls-svg);
+			mask-repeat: no-repeat;
+			-webkit-mask-repeat: no-repeat;
+		}
+
+		.mejs-play button {
+			mask-position: 0 0;
+			-webkit-mask-position: 0 0;
+		}
+		.mejs-pause button {
+			mask-position: -20px 0;
+			-webkit-mask-position: -20px 0;
+		}
+		.mejs-replay button {
+			mask-position: -160px 0;
+			-webkit-mask-position: -160px 0;
+		}
+		.mejs-fullscreen-button button {
+			mask-position: -80px 0;
+			-webkit-mask-position: -80px 0;
+		}
+		.mejs-unfullscreen button {
+			mask-position: -100px 0;
+			-webkit-mask-position: -100px 0;
+		}
+		.mejs-mute button {
+			mask-position: -60px 0;
+			-webkit-mask-position: -60px 0;
+		}
+		.mejs-unmute button {
+			mask-position: -40px 0;
+			-webkit-mask-position: -40px 0;
+		}
+		.mejs-captions-button button {
+			mask-position: -140px 0;
+			-webkit-mask-position: -140px 0;
+		}
+		.mejs-chapters-button button {
+			mask-position: -180px 0;
+			-webkit-mask-position: -180px 0;
+		}
+
+		.mejs-time {
+			color: var(--videopack-control-bar-color) !important;
+		}
+
+		.mejs-time-current,
+		.mejs-time-handle-content {
+			background: var(--videopack-control-bar-color) !important;
+		}
+
+		.mejs-horizontal-volume-current {
+			background: var(--videopack-control-bar-color) !important;
+		}
+	}
+}
+
