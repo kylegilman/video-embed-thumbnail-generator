@@ -75,16 +75,19 @@ class Player_Video_Js extends Player {
 	 */
 	public function filter_block_metadata( $metadata ) {
 		// Add script dependencies.
-		$metadata['script'][] = 'video-js';
-		$metadata['script'][] = 'video-js-quality-selector';
+		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'video-js' );
+		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'video-js-quality-selector' );
 
 		// Add style dependencies.
-		$metadata['style'][] = 'video-js';
+		$metadata = $this->ensure_array_and_append( $metadata, 'style', 'video-js' );
+
 		if ( ! empty( $this->options['skin'] ) && 'default' !== $this->options['skin'] ) {
-			$metadata['style'][] = $this->options['skin'];
+			$metadata = $this->ensure_array_and_append( $metadata, 'style', (string) $this->options['skin'] );
 		}
-		return $metadata;
+
+		return (array) $metadata;
 	}
+
 
 	/**
 	 * Enqueues Video.js player-specific scripts and styles.

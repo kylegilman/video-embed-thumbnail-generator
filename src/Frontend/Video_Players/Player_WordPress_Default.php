@@ -50,10 +50,10 @@ class Player_WordPress_Default extends Player {
 	 * @return array The filtered metadata.
 	 */
 	public function filter_block_metadata( $metadata ) {
-		$metadata['script'][] = 'wp-mediaelement';
-		$metadata['script'][] = 'videopack-mejs';
-		$metadata['style'][]  = 'wp-mediaelement';
-		return $metadata;
+		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'wp-mediaelement' );
+		$metadata = $this->ensure_array_and_append( $metadata, 'script', 'videopack-mejs' );
+		$metadata = $this->ensure_array_and_append( $metadata, 'style', 'wp-mediaelement' );
+		return (array) $metadata;
 	}
 
 	/**
