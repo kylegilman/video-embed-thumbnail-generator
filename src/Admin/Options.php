@@ -64,6 +64,13 @@ class Options {
 	protected $video_player_id = 0;
 
 	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $formats_registry
+	 */
+	protected $formats_registry;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {}
@@ -82,7 +89,6 @@ class Options {
 			'delete_child_thumbnails'       => false,
 			'delete_child_encoded'          => true,
 			'thumb_parent'                  => 'video',
-			'transient_cache'               => false,
 
 			// FFmpeg & Encoding Settings.
 			'app_path'                      => '',
@@ -162,6 +168,10 @@ class Options {
 			'skin'                          => 'vjs-theme-videopack',
 			'right_click'                   => true,
 			'resize'                        => true,
+			'play_button_color'             => '',
+			'play_button_icon_color'        => '',
+			'control_bar_bg_color'          => '',
+			'control_bar_color'             => '',
 
 			// Player Controls & Playback.
 			'nativecontrolsfortouch'        => false,
@@ -190,11 +200,18 @@ class Options {
 			'enable_collection_video_limit' => false,
 			'collection_video_limit'        => -1,
 			'gallery_order'                 => 'ASC',
-			'gallery_columns'               => 4,
+			'gallery_columns'               => 3,
 			'gallery_end'                   => '',
 			'gallery_pagination'            => false,
 			'gallery_per_page'              => 6,
 			'gallery_title'                 => true,
+			'gallery_align'                 => '',
+			'title_color'                   => '',
+			'title_background_color'        => '',
+			'pagination_color'              => '',
+			'pagination_background_color'   => '',
+			'pagination_active_bg_color'    => '',
+			'pagination_active_color'       => '',
 
 			// Integration & Advanced.
 			'capabilities'                  => array(),
@@ -205,6 +222,8 @@ class Options {
 			'htaccess_password'             => '',
 			'alwaysloadscripts'             => false,
 			'replace_video_shortcode'       => false,
+			'replace_video_block'           => false,
+			'replace_preview_video'         => true,
 			'default_insert'                => 'Single Video',
 			'rewrite_attachment_url'        => true,
 
@@ -219,8 +238,9 @@ class Options {
 			$default_options['capabilities'][ (string) $videopack_capability ] = (array) $this->get_all_roles_with_capability( $enabled_roles );
 		}
 
-		$video_codecs = (array) $this->get_video_codecs();
-		$resolutions  = (array) $this->get_video_resolutions();
+		$registry     = new Formats\Registry( array() );
+		$video_codecs = (array) $registry->get_video_codecs();
+		$resolutions  = (array) $registry->get_video_resolutions();
 		foreach ( $video_codecs as $codec ) {
 			if ( ! $codec instanceof \Videopack\Admin\Formats\Codecs\Video_Codec ) {
 				continue;
@@ -250,10 +270,10 @@ class Options {
 	public function load_options() {
 		$saved_options         = get_option( 'videopack_options' );
 		$this->default_options = (array) $this->get_default();
+		$this->options         = $this->default_options; // Prevent recursion if child objects call back into get_options().
 
 		if ( false === $saved_options ) {
-			$this->options = $this->default_options;
-			$options       = (array) $this->init_options( $this->default_options );
+			$options = (array) $this->init_options( $this->default_options );
 		} else {
 			$options = (array) $this->merge_options_with_defaults( (array) $saved_options, $this->default_options );
 		}
@@ -263,6 +283,8 @@ class Options {
 		}
 
 		$this->options = $options;
+
+		$this->formats_registry = new Formats\Registry( $this->options );
 
 		do_action( 'videopack_options_loaded', $this );
 	}
@@ -279,6 +301,9 @@ class Options {
 
 		if ( $options_to_save !== $this->options ) {
 			$this->options = $options_to_save;
+			if ( $this->formats_registry ) {
+				$this->formats_registry = new Formats\Registry( $this->options );
+			}
 		}
 
 		$this->merged_options = array();
@@ -332,7 +357,8 @@ class Options {
 			}
 
 			if ( isset( $old_options['rate_control'] ) ) {
-				$video_codecs = (array) $this->get_video_codecs();
+				$registry     = new Formats\Registry( array() );
+				$video_codecs = (array) $registry->get_video_codecs();
 				foreach ( $video_codecs as $codec ) {
 					$codec_id = (string) $codec->get_id();
 					if ( in_array( (string) $old_options['rate_control'], (array) $codec->get_supported_rate_controls(), true ) ) {
@@ -382,7 +408,7 @@ class Options {
 		$this->set_capabilities( (array) ( $options_to_init['capabilities'] ?? array() ) );
 
 		if ( ( $options_to_init['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this );
+			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $options_to_init );
 			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $options_to_init['app_path'] ?? '' ) );
 			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_init['ffmpeg_exists'] = true;
@@ -505,7 +531,7 @@ class Options {
 		$options_to_save = (array) $this->get_default();
 
 		if ( ( $options_to_save['ffmpeg_exists'] ?? 'notchecked' ) === 'notchecked' ) {
-			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this );
+			$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $options_to_save );
 			$ffmpeg_check  = $ffmpeg_tester->check_ffmpeg_exists( (string) ( $options_to_save['app_path'] ?? '' ) );
 			if ( true === $ffmpeg_check['ffmpeg_exists'] ) {
 				$options_to_save['ffmpeg_exists'] = true;
@@ -549,7 +575,25 @@ class Options {
 		}
 
 		$this->merged_options = $options;
+
+		// Ensure registry is using merged options.
+		if ( $this->formats_registry ) {
+			$this->formats_registry = new Formats\Registry( $this->merged_options );
+		}
+
 		return $options;
+	}
+
+	/**
+	 * Returns the video formats registry instance.
+	 *
+	 * @return \Videopack\Admin\Formats\Registry
+	 */
+	public function get_formats_registry() {
+		if ( ! $this->formats_registry ) {
+			$this->formats_registry = new Formats\Registry( $this->get_options() );
+		}
+		return $this->formats_registry;
 	}
 
 	/**
@@ -558,15 +602,7 @@ class Options {
 	 * @return \Videopack\Admin\Formats\Codecs\Video_Codec[] Array of codec objects.
 	 */
 	public function get_video_codecs() {
-		$codecs = array(
-			new \Videopack\Admin\Formats\Codecs\Video_Codec_H264(),
-			new \Videopack\Admin\Formats\Codecs\Video_Codec_H265(),
-			new \Videopack\Admin\Formats\Codecs\Video_Codec_VP8(),
-			new \Videopack\Admin\Formats\Codecs\Video_Codec_VP9(),
-			new \Videopack\Admin\Formats\Codecs\Video_Codec_AV1(),
-		);
-
-		return (array) apply_filters( 'videopack_video_codecs', $codecs );
+		return $this->get_formats_registry()->get_video_codecs();
 	}
 
 	/**
@@ -575,89 +611,7 @@ class Options {
 	 * @return \Videopack\Admin\Formats\Video_Resolution[] Array of resolution objects.
 	 */
 	public function get_video_resolutions() {
-		$resolutions = array();
-
-		$resolution_properties = array(
-			array(
-				'id'             => 'fullres',
-				'height'         => false,
-				'name'           => 'Full Resolution',
-				'label'          => 'Replace with full resolution',
-				'default_encode' => false,
-			),
-			array(
-				'height'         => 2160,
-				'name'           => '4k UHD (2160p)',
-				'default_encode' => true,
-			),
-			array(
-				'height'         => 1440,
-				'name'           => 'Quad HD (1440p)',
-				'default_encode' => false,
-			),
-			array(
-				'height'         => 1080,
-				'name'           => 'Full HD (1080p)',
-				'default_encode' => true,
-			),
-			array(
-				'height'         => 720,
-				'name'           => 'HD (720p)',
-				'default_encode' => true,
-			),
-			array(
-				'height'         => 540,
-				'name'           => 'HD (540p)',
-				'default_encode' => false,
-			),
-			array(
-				'height'         => 480,
-				'name'           => 'SD (480p)',
-				'default_encode' => true,
-			),
-			array(
-				'height'         => 360,
-				'name'           => 'Low Definition (360p)',
-				'default_encode' => true,
-			),
-			array(
-				'height'         => 240,
-				'name'           => 'Ultra Low Definition (240p)',
-				'default_encode' => false,
-			),
-		);
-
-		if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
-			$custom_height           = (int) ( $this->options['custom_resolution'] ?? 900 );
-			$resolution_properties[] = array(
-				'height'         => $custom_height,
-				'name'           => 'Custom',
-				'default_encode' => false,
-				'is_custom'      => true,
-			);
-		}
-
-		foreach ( $resolution_properties as $properties ) {
-			$resolutions[] = new \Videopack\Admin\Formats\Video_Resolution( (array) $properties );
-		}
-
-		usort(
-			$resolutions,
-			function ( $a, $b ) {
-				if ( 'fullres' === $a->get_id() ) {
-					return -1;
-				}
-				if ( 'fullres' === $b->get_id() ) {
-					return 1;
-				}
-				if ( (int) $a->get_height() === (int) $b->get_height() ) {
-					return 0;
-				}
-				return ( (int) $a->get_height() > (int) $b->get_height() ) ? -1 : 1;
-			}
-		);
-
-		return (array) apply_filters( 'videopack_video_resolutions', $resolutions );
+		return $this->get_formats_registry()->get_video_resolutions();
 	}
 
 	/**
@@ -667,36 +621,7 @@ class Options {
 	 * @return string Translated name.
 	 */
 	public function get_resolution_l10n( $name ) {
-		switch ( (string) $name ) {
-			case 'Full Resolution':
-				return (string) esc_html__( 'Full Resolution', 'video-embed-thumbnail-generator' );
-			case 'Replace with full resolution':
-				return (string) esc_html__( 'Replace with full resolution', 'video-embed-thumbnail-generator' );
-			case '4k UHD (2160p)':
-				return (string) esc_html__( '4K UHD (2160p)', 'video-embed-thumbnail-generator' );
-			case 'Quad HD (1440p)':
-				return (string) esc_html__( 'Quad HD (1440p)', 'video-embed-thumbnail-generator' );
-			case 'Full HD (1080p)':
-				return (string) esc_html__( 'Full HD (1080p)', 'video-embed-thumbnail-generator' );
-			case 'HD (720p)':
-				return (string) esc_html__( 'HD (720p)', 'video-embed-thumbnail-generator' );
-			case 'HD (540p)':
-				return (string) esc_html__( 'HD (540p)', 'video-embed-thumbnail-generator' );
-			case 'SD (480p)':
-				return (string) esc_html__( 'SD (480p)', 'video-embed-thumbnail-generator' );
-			case 'Low Definition (360p)':
-				return (string) esc_html__( 'Low Definition (360p)', 'video-embed-thumbnail-generator' );
-			case 'Ultra Low Definition (240p)':
-				return (string) esc_html__( 'Ultra Low Definition (240p)', 'video-embed-thumbnail-generator' );
-			case 'Custom':
-				if ( ! empty( $this->options['enable_custom_resolution'] ) ) {
-					$custom_height = (int) ( $this->options['custom_resolution'] ?? 900 );
-					return sprintf( /* translators: %s: Custom resolution height (e.g. 900). */ (string) esc_html__( 'Custom (%sp)', 'video-embed-thumbnail-generator' ), (string) $custom_height );
-				}
-				return (string) esc_html__( 'Custom', 'video-embed-thumbnail-generator' );
-			default:
-				return (string) apply_filters( 'videopack_resolution_l10n', $name );
-		}
+		return $this->get_formats_registry()->get_resolution_l10n( $name );
 	}
 
 	/**
@@ -706,22 +631,7 @@ class Options {
 	 * @return \Videopack\Admin\Formats\Video_Format[] Available video formats.
 	 */
 	public function get_video_formats( $hide_formats = false ) {
-		$video_formats     = array();
-		$video_resolutions = (array) $this->get_video_resolutions();
-		$video_codecs      = (array) $this->get_video_codecs();
-
-		foreach ( $video_codecs as $codec ) {
-			if ( $hide_formats && ! empty( $this->options['hide_video_formats'] ) && empty( $this->options['encode'][ (string) $codec->get_id() ]['enabled'] ) ) {
-				continue;
-			}
-			foreach ( $video_resolutions as $resolution ) {
-				$enabled                                     = (bool) ( $this->options['encode'][ (string) $codec->get_id() ]['resolutions'][ (string) $resolution->get_id() ] ?? false );
-				$format                                      = new \Videopack\Admin\Formats\Video_Format( $codec, $resolution, $enabled );
-				$video_formats[ (string) $format->get_id() ] = $format;
-			}
-		}
-
-		return $video_formats;
+		return $this->get_formats_registry()->get_video_formats( $hide_formats );
 	}
 
 	/**
@@ -732,87 +642,7 @@ class Options {
 	 * @return mixed Sanitized input.
 	 */
 	public function sanitize_options_recursively( $input, $schema_properties = array() ) {
-		if ( ! is_array( $input ) ) {
-			return sanitize_text_field( (string) $input );
-		}
-
-		$sanitized_input = array();
-
-		foreach ( $input as $key => $value ) {
-			$key = (string) $key;
-
-			if ( ! isset( $schema_properties[ $key ] ) ) {
-				$sanitized_input[ $key ] = is_array( $value ) ? $this->sanitize_options_recursively( $value ) : sanitize_text_field( (string) $value );
-				continue;
-			}
-
-			$property_schema = (array) $schema_properties[ $key ];
-			$allowed_types   = (array) ( is_array( $property_schema['type'] ) ? $property_schema['type'] : array( $property_schema['type'] ) );
-
-			$type = (string) $allowed_types[0];
-			if ( count( $allowed_types ) > 1 ) {
-				if ( is_numeric( $value ) && in_array( 'number', $allowed_types, true ) ) {
-					$type = 'number';
-				} elseif ( is_bool( $value ) && in_array( 'boolean', $allowed_types, true ) ) {
-					$type = 'boolean';
-				} elseif ( is_array( $value ) ) {
-					if ( in_array( 'object', $allowed_types, true ) ) {
-						$type = 'object';
-					} elseif ( in_array( 'array', $allowed_types, true ) ) {
-						$type = 'array';
-					}
-				} elseif ( is_null( $value ) && in_array( 'null', $allowed_types, true ) ) {
-					$type = 'null';
-				} elseif ( in_array( 'string', $allowed_types, true ) ) {
-					$type = 'string';
-				}
-			}
-
-			switch ( $type ) {
-				case 'object':
-					$sanitized_input[ $key ] = is_array( $value ) ? $this->sanitize_options_recursively( $value, (array) ( $property_schema['properties'] ?? array() ) ) : sanitize_text_field( (string) $value );
-					break;
-				case 'array':
-					$sanitized_input[ $key ] = array();
-					if ( is_array( $value ) ) {
-						foreach ( $value as $item ) {
-							$item_schema = (array) ( $property_schema['items'] ?? array() );
-							if ( isset( $item_schema['type'] ) ) {
-								$temp_sanitized            = $this->sanitize_options_recursively( array( 'item' => $item ), array( 'item' => $item_schema ) );
-								$sanitized_input[ $key ][] = $temp_sanitized['item'];
-							} else {
-								$sanitized_input[ $key ][] = is_array( $item ) ? $this->sanitize_options_recursively( $item ) : sanitize_text_field( (string) $item );
-							}
-						}
-					}
-					break;
-				case 'boolean':
-					$sanitized_input[ $key ] = (bool) rest_sanitize_boolean( $value );
-					break;
-				case 'number':
-					if ( is_numeric( $value ) ) {
-						$sanitized_input[ $key ] = ( strpos( (string) $value, '.' ) === false ) ? (int) $value : (float) $value;
-					} else {
-						$sanitized_input[ $key ] = ( is_null( $value ) && in_array( 'null', $allowed_types, true ) ) ? null : 0;
-					}
-					break;
-				case 'string':
-					$str_value = is_null( $value ) ? '' : (string) $value;
-					if ( isset( $property_schema['format'] ) && 'uri' === $property_schema['format'] ) {
-						$sanitized_input[ $key ] = (string) esc_url_raw( $str_value );
-					} else {
-						$sanitized_input[ $key ] = (string) sanitize_text_field( $str_value );
-					}
-					break;
-				case 'null':
-					$sanitized_input[ $key ] = null;
-					break;
-				default:
-					$sanitized_input[ $key ] = is_array( $value ) ? $this->sanitize_options_recursively( $value ) : sanitize_text_field( (string) $value );
-			}
-		}
-
-		return $sanitized_input;
+		return \Videopack\Common\Sanitizer::sanitize_options_recursively( $input, $schema_properties );
 	}
 
 	/**
@@ -854,9 +684,9 @@ class Options {
 		}
 
 		$schema = (array) $this->settings_schema( (array) $this->get_default() );
-		$input  = (array) $this->sanitize_options_recursively( (array) $input, $schema );
+		$input  = (array) \Videopack\Common\Sanitizer::sanitize_options_recursively( (array) $input, $schema );
 
-		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this );
+		$ffmpeg_tester = new \Videopack\Admin\Encode\FFmpeg_Tester( $this->options, $this->get_formats_registry() );
 		if ( (string) ( $input['app_path'] ?? '' ) !== (string) ( $this->options['app_path'] ?? '' ) || ( $input['ffmpeg_exists'] ?? '' ) === 'notchecked' ) {
 			$input = (array) $this->validate_ffmpeg_settings( $input, $ffmpeg_tester );
 		} else {
@@ -883,10 +713,6 @@ class Options {
 			if ( $input['capabilities'] !== ( $this->options['capabilities'] ?? array() ) ) {
 				$input['capabilities'] = (array) $this->set_capabilities( $input['capabilities'] );
 			}
-		}
-
-		if ( ! array_key_exists( 'transient_cache', $input ) && ! empty( $this->options['transient_cache'] ) ) {
-			( new \Videopack\Admin\Cleanup() )->delete_transients();
 		}
 
 		if ( isset( $input['auto_thumb_number'] ) ) {
@@ -928,6 +754,10 @@ class Options {
 
 		if ( empty( $input['queue_control'] ) ) {
 			$input['queue_control'] = (string) ( $this->options['queue_control'] ?? 'play' );
+		}
+
+		if ( isset( $input['embed_method'] ) && 'WordPress Default' === $input['embed_method'] ) {
+			$input['skin'] = 'vjs-theme-videopack';
 		}
 
 		$this->options = (array) $input;
