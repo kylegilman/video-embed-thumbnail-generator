@@ -20,15 +20,25 @@ namespace Videopack\Frontend\Video_Players;
 class Player_Video_Js extends Player {
 
 	/**
+	 * Whether the hooks for Video.js have been registered.
+	 *
+	 * @var bool $hooks_registered
+	 */
+	private static $hooks_registered = false;
+
+	/**
 	 * Registers WordPress hooks for Video.js.
 	 */
 	public function register_hooks() {
 
 		parent::register_hooks();
 
-		add_filter( 'videopack_video_player_data', array( $this, 'filter_video_vars' ), 10, 2 );
-		add_filter( 'videopack_video_player_classes', array( $this, 'filter_video_classes' ), 10, 2 );
-		add_filter( 'videopack_player_div_classes', array( $this, 'filter_player_div_classes' ), 10, 2 );
+		if ( ! self::$hooks_registered ) {
+			add_filter( 'videopack_video_player_data', array( __CLASS__, 'filter_video_vars' ), 10, 2 );
+			add_filter( 'videopack_video_player_classes', array( __CLASS__, 'filter_video_classes' ), 10, 2 );
+			add_filter( 'videopack_player_div_classes', array( __CLASS__, 'filter_player_div_classes' ), 10, 2 );
+			self::$hooks_registered = true;
+		}
 	}
 
 	/**
@@ -40,12 +50,12 @@ class Player_Video_Js extends Player {
 		wp_register_script( 'video-js', plugins_url( 'video-js/video.min.js', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VIDEOJS_VERSION, true );
 		wp_register_script( 'video-js-quality-selector', plugins_url( 'video-js/video-quality-selector.js', VIDEOPACK_PLUGIN_FILE ), array( 'video-js' ), VIDEOPACK_VERSION, true );
 
-		$locale         = $this->get_videojs_locale();
+		$locale         = self::get_videojs_locale();
 		$translations   = array(
 			'Quality' => esc_html_x( 'Quality', 'text above list of video resolutions', 'video-embed-thumbnail-generator' ),
 			'Full'    => esc_html_x( 'Full', 'Full resolution', 'video-embed-thumbnail-generator' ),
 		);
-		$inline_script  = sprintf(
+		$inline_script = sprintf(
 			'videojs.addLanguage(\'%s\', %s);',
 			$locale,
 			wp_json_encode( $translations )
@@ -111,7 +121,7 @@ class Player_Video_Js extends Player {
 	 *
 	 * @return string The locale code.
 	 */
-	protected function get_videojs_locale() {
+	protected static function get_videojs_locale() {
 
 		$locale = get_locale();
 
@@ -139,10 +149,10 @@ class Player_Video_Js extends Player {
 	 * @param array $atts            The video player attributes.
 	 * @return array The modified video variables.
 	 */
-	public function filter_video_vars( $video_variables, $atts ) {
+	public static function filter_video_vars( $video_variables, $atts ) {
 
 		$video_variables['nativecontrolsfortouch'] = (bool) ( $atts['nativecontrolsfortouch'] ?? false );
-		$video_variables['locale']                 = $this->get_videojs_locale();
+		$video_variables['locale']                 = self::get_videojs_locale();
 
 		return $video_variables;
 	}
@@ -154,18 +164,22 @@ class Player_Video_Js extends Player {
 	 * @param array $atts    The video player attributes.
 	 * @return array Modified classes.
 	 */
-	public function filter_video_classes( $classes, $atts ): array {
+	public static function filter_video_classes( $classes, $atts ): array {
 
 		$classes[] = 'video-js';
-		$skin      = $this->options['skin'] ?? 'vjs-default-skin';
+		$skin      = $atts['skin'] ?? 'vjs-default-skin';
 		if ( empty( $skin ) ) {
 			$skin = 'vjs-default-skin';
 		}
 
 		// Allow user to set skin for individual videos using the skin="" attribute.
-		$classes[] = $atts['skin'] ?? $skin;
+		$classes[] = $skin;
 
-		if ( $this->is_fixed_aspect() ) {
+		// Note: is_fixed_aspect() check removed here because it's an instance method.
+		// However, fixed aspect handling is already done in Player::get_wrapper_start_html()
+		// and Player::prepare_video_vars(). If vjs-fill is needed, it can be added here
+		// if we can determine fixed_aspect from $atts.
+		if ( ! empty( $atts['fixed_aspect'] ) ) {
 			$classes[] = 'vjs-fill';
 		}
 
@@ -179,9 +193,8 @@ class Player_Video_Js extends Player {
 	 * @param array $atts    The video player attributes.
 	 * @return array Modified classes.
 	 */
-	public function filter_player_div_classes( $classes, $atts ): array {
-		$default_skin = $this->options['skin'] ?? '';
-		$skin         = $atts['skin'] ?? $default_skin;
+	public static function filter_player_div_classes( $classes, $atts ): array {
+		$skin = $atts['skin'] ?? '';
 
 		if ( ! empty( $skin ) ) {
 			$classes[] = $skin;

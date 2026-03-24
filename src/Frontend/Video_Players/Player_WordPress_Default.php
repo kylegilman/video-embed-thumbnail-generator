@@ -20,11 +20,22 @@ namespace Videopack\Frontend\Video_Players;
 class Player_WordPress_Default extends Player {
 
 	/**
+	 * Whether the hooks for MediaElement.js have been registered.
+	 *
+	 * @var bool $hooks_registered
+	 */
+	private static $hooks_registered = false;
+
+	/**
 	 * Registers WordPress hooks for MediaElement.js.
 	 */
 	public function register_hooks() {
 		parent::register_hooks();
-		add_filter( 'videopack_video_player_data', array( $this, 'filter_video_vars' ), 10, 2 );
+
+		if ( ! self::$hooks_registered ) {
+			add_filter( 'videopack_video_player_data', array( __CLASS__, 'filter_video_vars' ), 10, 2 );
+			self::$hooks_registered = true;
+		}
 	}
 
 	/**
@@ -72,7 +83,7 @@ class Player_WordPress_Default extends Player {
 	 * @param array $atts            The video player attributes.
 	 * @return array The modified video variables.
 	 */
-	public function filter_video_vars( array $video_variables, array $atts ): array {
+	public static function filter_video_vars( array $video_variables, array $atts ): array {
 		$mejs_settings = array(
 			'features'              => array( 'playpause', 'progress', 'volume', 'tracks', 'sourcechooser' ),
 			'classPrefix'           => 'mejs-',

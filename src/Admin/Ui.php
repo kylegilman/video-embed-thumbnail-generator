@@ -38,13 +38,7 @@ class Ui {
 	 * @var \Videopack\Admin\Formats\Registry $format_registry
 	 */
 	protected $format_registry;
-	
-	/**
-	 * Rendered duotone slugs to avoid duplicates.
-	 *
-	 * @var array $rendered_duotones
-	 */
-	protected static $rendered_duotones = array();
+
 
 	/**
 	 * Initialize the class.
@@ -282,15 +276,10 @@ class Ui {
 			'color' => 'transparent',
 		);
 
-		$duotone_theme   = $global_settings['color']['duotone']['theme'] ?? array();
-		$duotone_default = $global_settings['color']['duotone']['default'] ?? array();
-
 		return array(
 			'url'                    => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 			'codecs'                 => $codecs_data,
 			'resolutions'            => $resolutions_data,
-			'duotoneTheme'           => $duotone_theme,
-			'duotoneDefault'         => $duotone_default,
 			'ffmpeg_exists'          => $options['ffmpeg_exists'] ?? 'notchecked',
 			'browser_thumbnails'     => (bool) ( $options['browser_thumbnails'] ?? true ),
 			'auto_thumb'             => (bool) ( $options['auto_thumb'] ?? false ),
@@ -544,148 +533,12 @@ class Ui {
 	}
 
 	/**
-	 * Prints the Underscore template used by TinyMCE.
+	 * Output the TinyMCE templates.
 	 *
 	 * @return void
 	 */
 	public function print_tinymce_template() {
 		include (string) VIDEOPACK_PLUGIN_DIR . 'src/Admin/partials/tinymce-template.php';
 	}
-
-	/**
-	 * Enqueues a duotone filter SVG to be rendered in the footer.
-	 *
-	 * @param string $slug The duotone preset slug.
-	 * @return void
-	 */
-	public static function enqueue_duotone_filter( $slug ) {
-		if ( empty( $slug ) ) {
-			return;
-		}
-
-		add_action(
-			'wp_footer',
-			function () use ( $slug ) {
-				echo self::get_duotone_filter_html( $slug ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-		);
-	}
-
-	/**
-	 * Returns the HTML (SVG + CSS) for a duotone filter.
-	 *
-	 * @param string $slug The duotone preset slug.
-	 * @return string The HTML string.
-	 */
-	public static function get_duotone_filter_html( $slug ) {
-		if ( empty( $slug ) ) {
-			return '';
-		}
-
-		// Normalize slug (remove -filter suffix if present) to avoid wp-duotone-slug-filter-filter logic.
-		$base_slug = preg_replace( '/-filter$/', '', $slug );
-
-		if ( in_array( $base_slug, self::$rendered_duotones, true ) ) {
-			return '';
-		}
-
-		$duotone_settings = wp_get_global_settings( array( 'color', 'duotone' ) );
-		$presets          = array_merge(
-			$duotone_settings['theme'] ?? array(),
-			$duotone_settings['default'] ?? array()
-		);
-
-		$found_preset = null;
-		foreach ( $presets as $preset ) {
-			$preset_slug = preg_replace( '/-filter$/', '', $preset['slug'] ?? '' );
-			if ( $preset_slug === $base_slug ) {
-				$found_preset = $preset;
-				break;
-			}
-		}
-
-		if ( ! $found_preset ) {
-			return '';
-		}
-
-		self::$rendered_duotones[] = $base_slug;
-
-		$filter_id    = 'wp-duotone-' . $base_slug;
-		$filter_class = 'wp-duotone-' . $base_slug . '-filter';
-
-		$html  = self::get_duotone_svg_filter( $found_preset, $filter_id );
-		$html .= '<style>.' . esc_attr( $filter_class ) . ' { filter: url(#' . esc_attr( $filter_id ) . '); }</style>';
-
-		return $html;
-	}
-
-	/**
-	 * Generates the SVG filter string for a duotone preset.
-	 *
-	 * @param array  $preset    The duotone preset array.
-	 * @param string $filter_id The ID to use for the filter element.
-	 * @return string The SVG filter string.
-	 */
-	private static function get_duotone_svg_filter( $preset, $filter_id ) {
-		$colors = $preset['colors'] ?? array();
-
-		if ( count( $colors ) < 2 ) {
-			return '';
-		}
-
-		// Instead of using deprecated WP_Duotone methods which might have platform-specific issues,
-		// we use our manual generation to ensure a consistent, non-escaped output.
-		$c1 = self::hex_to_rgb( $colors[0] );
-		$c2 = self::hex_to_rgb( $colors[1] );
-
-		$r1 = round( $c1['r'] / 255, 3 );
-		$r2 = round( $c2['r'] / 255, 3 );
-		$g1 = round( $c1['g'] / 255, 3 );
-		$g2 = round( $c2['g'] / 255, 3 );
-		$b1 = round( $c1['b'] / 255, 3 );
-		$b2 = round( $c2['b'] / 255, 3 );
-
-		$output  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 0 0" width="0" height="0" focusable="false" role="none" style="visibility: hidden; position: absolute; left: -9999px; top: -9999px;">';
-		$output .= '<defs>';
-		$output .= '<filter id="' . esc_attr( $filter_id ) . '">';
-		$output .= '<feColorMatrix color-interpolation-filters="sRGB" type="matrix" values=".299 .587 .114 0 0 .299 .587 .114 0 0 .299 .587 .114 0 0 .299 .587 .114 0 0" />';
-		$output .= '<feComponentTransfer color-interpolation-filters="sRGB">';
-		$output .= '<feFuncR type="table" tableValues="' . esc_attr( "$r1 $r2" ) . '" />';
-		$output .= '<feFuncG type="table" tableValues="' . esc_attr( "$g1 $g2" ) . '" />';
-		$output .= '<feFuncB type="table" tableValues="' . esc_attr( "$b1 $b2" ) . '" />';
-		$output .= '<feFuncA type="identity" />';
-		$output .= '</feComponentTransfer>';
-		$output .= '<feComposite operator="in" in2="SourceGraphic" />';
-		$output .= '</filter>';
-		$output .= '</defs>';
-		$output .= '</svg>';
-
-		return $output;
-	}
-
-	/**
-	 * Converts hex color to RGB.
-	 *
-	 * @param string $hex The hex color string.
-	 * @return array The RGB array.
-	 */
-	private static function hex_to_rgb( $hex ) {
-		$hex = str_replace( '#', '', $hex );
-
-		if ( 3 === strlen( $hex ) ) {
-			$r = hexdec( substr( $hex, 0, 1 ) . substr( $hex, 0, 1 ) );
-			$g = hexdec( substr( $hex, 1, 1 ) . substr( $hex, 1, 1 ) );
-			$b = hexdec( substr( $hex, 2, 1 ) . substr( $hex, 2, 1 ) );
-		} else {
-			$r = hexdec( substr( $hex, 0, 2 ) );
-			$g = hexdec( substr( $hex, 2, 2 ) );
-			$b = hexdec( substr( $hex, 4, 2 ) );
-		}
-
-		return array(
-			'r' => $r,
-			'g' => $g,
-			'b' => $b,
-		);
-	}
 }
+
