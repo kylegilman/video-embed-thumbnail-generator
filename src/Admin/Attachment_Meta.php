@@ -25,13 +25,6 @@ namespace Videopack\Admin;
 class Attachment_Meta {
 
 	/**
-	 * Videopack Options manager class instance.
-	 *
-	 * @var \Videopack\Admin\Options $options_manager
-	 */
-	protected $options_manager;
-
-	/**
 	 * Plugin options.
 	 *
 	 * @var array $options
@@ -55,14 +48,13 @@ class Attachment_Meta {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
-	 * @param int|bool                 $post_id         Optional. Attachment ID.
+	 * @param array    $options Plugin options.
+	 * @param int|bool $post_id Optional. Attachment ID.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager, $post_id = false ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
-		$this->post_id         = $post_id;
-		$this->meta_data       = $this->get();
+	public function __construct( array $options, $post_id = false ) {
+		$this->options = $options;
+		$this->post_id = $post_id;
+		$this->meta_data = $this->get();
 	}
 
 	/**
@@ -137,7 +129,11 @@ class Attachment_Meta {
 			'watermark'         => (string) ( $this->options['watermark'] ?? '' ),
 			'watermark_link_to' => (string) ( $this->options['watermark_link_to'] ?? 'none' ),
 			'watermark_url'     => (string) ( $this->options['watermark_url'] ?? '' ),
+			'ffmpeg_watermark_url' => null,
 			'is_remote'         => false,
+			'title'             => null,
+			'caption'           => null,
+			'legacy_dimensions' => null,
 		);
 	}
 
@@ -357,7 +353,7 @@ class Attachment_Meta {
 		$schema = $this->schema();
 
 		if ( '_videopack-meta' === $key && is_array( $value ) ) {
-			return $this->options_manager->sanitize_options_recursively( $value, $schema );
+			return \Videopack\Common\Sanitizer::sanitize_options_recursively( $value, $schema );
 		}
 
 		$field_name = (string) str_replace( '_kgflashmediaplayer-', '', $key );
@@ -383,7 +379,7 @@ class Attachment_Meta {
 		}
 
 		if ( isset( $schema[ $actual_schema_key ] ) ) {
-			$sanitized = $this->options_manager->sanitize_options_recursively( array( $actual_schema_key => $value ), $schema );
+			$sanitized = \Videopack\Common\Sanitizer::sanitize_options_recursively( array( $actual_schema_key => $value ), $schema );
 			return $sanitized[ $actual_schema_key ];
 		}
 
@@ -726,7 +722,14 @@ class Attachment_Meta {
 				'type'   => array( 'string', 'null' ),
 				'format' => 'uri',
 			),
+			'ffmpeg_watermark_url' => array(
+				'type'   => array( 'string', 'null' ),
+				'format' => 'uri',
+			),
 			'is_remote'           => array( 'type' => array( 'boolean' ) ),
+			'title'               => array( 'type' => array( 'string', 'null' ) ),
+			'caption'             => array( 'type' => array( 'string', 'null' ) ),
+			'legacy_dimensions'   => array( 'type' => array( 'string', 'boolean', 'null' ) ),
 		);
 
 		$default_keys = array_keys( $this->get_defaults() );

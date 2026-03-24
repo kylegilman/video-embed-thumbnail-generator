@@ -23,13 +23,6 @@ namespace Videopack\Admin;
  */
 class Edit_Posts {
 	/**
-	 * Videopack Options manager class instance.
-	 *
-	 * @var \Videopack\Admin\Options $options_manager
-	 */
-	protected $options_manager;
-
-	/**
 	 * Plugin options.
 	 *
 	 * @var array $options
@@ -37,13 +30,21 @@ class Edit_Posts {
 	protected $options;
 
 	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
+	 */
+	protected $format_registry;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                             $options         Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options         = $options;
+		$this->format_registry = $format_registry;
 	}
 
 	/**
@@ -59,13 +60,14 @@ class Edit_Posts {
 
 		if ( 0 === strpos( $mime_type, 'video' ) ) {
 
-			$videopack_postmeta = ( new Attachment_Meta( $this->options_manager, (int) $attachment_id ) )->get();
+			$videopack_postmeta = ( new Attachment_Meta( $this->options, (int) $attachment_id ) )->get();
 
 			if ( (string) ( $videopack_postmeta['embed'] ?? '' ) === 'Single Video' ) {
 
 				$source = new \Videopack\Video_Source\Source_Attachment_Local(
 					(int) $attachment_id,
-					$this->options_manager
+					$this->options,
+					$this->format_registry
 				);
 				$url    = (string) $source->get_url();
 
@@ -177,7 +179,7 @@ class Edit_Posts {
 		wp_enqueue_style( 'media-upload' );
 		wp_enqueue_style( 'deprecated-media' );
 
-		( new Assets( $this->options_manager ) )->enqueue_videopack_scripts();
+		( new Assets( $this->options ) )->enqueue_videopack_scripts();
 
 		// Check if we have the new build asset for classic-embed.
 		$script_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.js';
@@ -218,7 +220,7 @@ class Edit_Posts {
 			);
 
 			// Ensure videopack_config is also available for components that need it.
-			( new \Videopack\Admin\Ui( $this->options_manager ) )->localize_block_settings( 'videopack-classic-embed' );
+			( new \Videopack\Admin\Ui( $this->options, $this->format_registry ) )->localize_block_settings( 'videopack-classic-embed' );
 
 			wp_enqueue_style(
 				'videopack-classic-embed',

@@ -20,42 +20,48 @@ class Source_Factory {
 	/**
 	 * Creates a Video Source instance.
 	 *
-	 * @param string|int|array         $source          The video source (URL, attachment ID, path, or array).
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
-	 * @param string|null              $format          Optional. Videopack video format ID.
-	 * @param bool|null                $exists          Optional. Whether the source exists.
-	 * @param int|null                 $parent_id       Optional. Parent ID (post ID, etc.).
-	 * @param string|null              $source_type     Optional. Explicitly specify the source type.
+	 * @param string|int|array                       $source      The video source (URL, attachment ID, path, or array).
+	 * @param array                                  $options     Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
+	 * @param string|null                            $format          Optional. Videopack video format ID.
+	 * @param bool|null                              $exists          Optional. Whether the source exists.
+	 * @param int|null                               $parent_id       Optional. Parent ID (post ID, etc.).
+	 * @param string|null                            $source_type     Optional. Explicitly specify the source type.
 	 * @return Source|null The video source instance or null if not found.
 	 */
 	public static function create(
 		$source,
-		\Videopack\Admin\Options $options_manager,
+		array $options,
+		\Videopack\Admin\Formats\Registry $format_registry = null,
 		$format = null,
 		$exists = null,
 		$parent_id = null,
 		?string $source_type = null
 	) {
-
 		$instance_source = $source;
 
+		if ( ! $format_registry ) {
+			$format_registry = new \Videopack\Admin\Formats\Registry( $options );
+		}
+
 		if ( ! $source_type ) {
-			list( $instance_source, $source_type ) = self::determine_source_type( $source, $options_manager );
+			list( $instance_source, $source_type ) = self::determine_source_type( $source, $options, $format_registry );
 		}
 
 		/**
 		 * Allow modification of the source type or direct overriding of the instance creation
 		 * for custom source types.
 		 *
-		 * @param Source|null               $video_source_instance The video source instance.
-		 * @param mixed                     $source                 The video source.
-		 * @param \Videopack\Admin\Options $options_manager        The options manager instance.
-		 * @param string                    $format                The video format.
-		 * @param bool                      $exists                Whether the source exists.
-		 * @param int|null                  $parent_id             The parent ID.
-		 * @param string                    $source_type            The source type.
+		 * @param Source|null                                $video_source_instance The video source instance.
+		 * @param mixed                                      $source                The video source.
+		 * @param array                                      $options               The options array.
+		 * @param \Videopack\Admin\Formats\Registry|null $format_registry              The video formats registry.
+		 * @param string                                     $format                The video format.
+		 * @param bool                                       $exists                Whether the source exists.
+		 * @param int|null                                   $parent_id             The parent ID.
+		 * @param string                                     $source_type           The source type.
 		 */
-		$video_source_instance = apply_filters( 'videopack_source_class', null, $source, $options_manager, $format, $exists, $parent_id, $source_type );
+		$video_source_instance = apply_filters( 'videopack_source_class', null, $source, $options, $format_registry, $format, $exists, $parent_id, $source_type );
 
 		if ( null !== $video_source_instance ) {
 			return $video_source_instance;
@@ -63,13 +69,13 @@ class Source_Factory {
 
 		switch ( $source_type ) {
 			case 'attachment_local':
-				return new Source_Attachment_Local( $instance_source, $options_manager, $format, $exists, $parent_id );
+				return new Source_Attachment_Local( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
 			case 'file_local':
-				return new Source_File_Local( $instance_source, $options_manager, $format, $exists, $parent_id );
+				return new Source_File_Local( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
 			case 'url':
-				return new Source_Url( $instance_source, $options_manager, $format, $exists, $parent_id );
+				return new Source_Url( $instance_source, $options, $format_registry, $format, $exists, $parent_id );
 			case 'placeholder':
-				return new Source_Placeholder_Local( $instance_source, $options_manager, $format, false, $parent_id );
+				return new Source_Placeholder_Local( $instance_source, $options, $format_registry, $format, false, $parent_id );
 		}
 
 		return null;
@@ -78,14 +84,15 @@ class Source_Factory {
 	/**
 	 * Determines the source type based on the provided source data.
 	 *
-	 * @param mixed                    $source          The video source.
-	 * @param \Videopack\Admin\Options $options_manager The options manager instance.
+	 * @param mixed                             $source   The video source.
+	 * @param array                             $options  The options array.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry The format registry.
 	 * @return array {
 	 *     @type mixed  $instance_source The internal source representation.
 	 *     @type string $source_type     The determined source type.
 	 * }
 	 */
-	protected static function determine_source_type( $source, \Videopack\Admin\Options $options_manager ) {
+	protected static function determine_source_type( $source, array $options, \Videopack\Admin\Formats\Registry $format_registry ) {
 
 		if ( is_numeric( $source ) && get_post_type( $source ) === 'attachment' ) {
 			return array( $source, 'attachment_local' );
@@ -93,7 +100,8 @@ class Source_Factory {
 
 		if ( \Videopack\Common\Validate::filter_validate_url( $source ) ) {
 			// First, try to resolve it to an attachment ID. This is the most specific case.
-			$attachment_id = ( new \Videopack\Admin\Attachment( $options_manager ) )->url_to_id( $source );
+			$attachment_manager = new \Videopack\Admin\Attachment( $options, $format_registry, new \Videopack\Admin\Attachment_Meta( $options ) );
+			$attachment_id      = $attachment_manager->url_to_id( $source );
 			if ( $attachment_id ) {
 				return array(
 					array(

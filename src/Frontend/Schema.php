@@ -23,11 +23,11 @@ namespace Videopack\Frontend;
 class Schema {
 
 	/**
-	 * Videopack Options manager class instance.
+	 * Video formats registry.
 	 *
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var \Videopack\Admin\Formats\Registry|null $format_registry
 	 */
-	protected $options_manager;
+	protected $format_registry;
 
 	/**
 	 * Plugin options.
@@ -46,11 +46,15 @@ class Schema {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager The options manager instance.
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options = $options;
+		if ( ! $format_registry ) {
+			$format_registry = new \Videopack\Admin\Formats\Registry( $options );
+		}
+		$this->format_registry = $format_registry;
 	}
 
 	/**
@@ -115,12 +119,12 @@ class Schema {
 			return;
 		}
 
-		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager );
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
 		if ( ! $source || ! (bool) $source->exists() ) {
 			return;
 		}
 
-		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
 		$final_atts        = (array) $shortcode_handler->get_final_atts( (array) $atts, $source );
 
 		$upload_date = (string) ( is_numeric( $source->get_id() ) ? get_the_date( 'c', (int) $source->get_id() ) : ( get_post() instanceof \WP_Post ? get_the_date( 'c', (int) get_the_ID() ) : gmdate( 'c' ) ) );

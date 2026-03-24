@@ -22,11 +22,11 @@ if ( ! $options_manager ) {
 	$options_manager->load_options();
 }
 
-$shortcode_handler = new \Videopack\Frontend\Shortcode( $options_manager );
+$shortcode_handler = new \Videopack\Frontend\Shortcode( $options_manager->get_options() );
 
 if ( ! isset( $videopack_query_var ) || ! is_array( $videopack_query_var ) ) {
 	$current_post         = get_post();
-	$metadata             = new \Videopack\Frontend\Metadata( $options_manager );
+	$metadata             = new \Videopack\Frontend\Metadata( $options_manager->get_options(), $options_manager->get_formats_registry() );
 	$first_embedded_video = $metadata->get_first_embedded_video( $current_post );
 	$videopack_query_var  = $first_embedded_video;
 

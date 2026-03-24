@@ -22,14 +22,6 @@ namespace Videopack\Admin;
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
 class Assets {
-
-	/**
-	 * Videopack Options manager class instance.
-	 *
-	 * @var \Videopack\Admin\Options $options_manager
-	 */
-	protected $options_manager;
-
 	/**
 	 * Plugin options.
 	 *
@@ -40,12 +32,11 @@ class Assets {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array $options Plugin options.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
+	public function __construct( array $options ) {
 
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
+		$this->options = $options;
 	}
 
 	/**

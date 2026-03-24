@@ -35,11 +35,11 @@ abstract class Source {
 	protected $id;
 
 	/**
-	 * Videopack Options manager class instance.
+	 * Video formats registry.
 	 *
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var \Videopack\Admin\Formats\Registry|null $format_registry
 	 */
-	protected $options_manager;
+	protected $format_registry;
 
 	/**
 	 * Plugin options.
@@ -199,26 +199,28 @@ abstract class Source {
 	/**
 	 * Constructor.
 	 *
-	 * @param string|int               $source          Primary source of the video (URL, attachment ID, etc.).
-	 * @param string                   $type            Video type (e.g., 'attachment_local', 'url').
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
-	 * @param string|null              $format          Optional. Videopack video format ID.
-	 * @param bool|null                $exists          Optional. Whether the source exists.
-	 * @param int|null                 $parent_id       Optional. Parent ID (post ID, etc.).
+	 * @param string|int                             $source          Primary source of the video (URL, attachment ID, etc.).
+	 * @param string                                 $type            Video type (e.g., 'attachment_local', 'url').
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
+	 * @param string|null                            $format          Optional. Videopack video format ID.
+	 * @param bool|null                              $exists          Optional. Whether the source exists.
+	 * @param int|null                               $parent_id       Optional. Parent ID (post ID, etc.).
 	 */
 	public function __construct(
 		$source,
 		string $type,
-		\Videopack\Admin\Options $options_manager,
+		array $options,
+		\Videopack\Admin\Formats\Registry $format_registry = null,
 		$format = null,
 		$exists = null,
 		$parent_id = null
 	) {
 		$this->source          = $source;
 		$this->type            = $type;
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
-		$this->video_formats   = $this->options_manager->get_video_formats();
+		$this->options         = $options;
+		$this->format_registry = $format_registry ? $format_registry : new \Videopack\Admin\Formats\Registry( $options );
+		$this->video_formats   = $this->format_registry->get_video_formats();
 		$this->format          = $format;
 		$this->exists          = $exists;
 		$this->parent_id       = $parent_id;
@@ -234,12 +236,12 @@ abstract class Source {
 	}
 
 	/**
-	 * Returns the Options manager instance.
+	 * Returns the video formats registry instance.
 	 *
-	 * @return \Videopack\Admin\Options The options manager instance.
+	 * @return \Videopack\Admin\Formats\Registry The video formats registry instance.
 	 */
-	public function get_options_manager(): \Videopack\Admin\Options {
-		return $this->options_manager;
+	public function get_registry(): \Videopack\Admin\Formats\Registry {
+		return $this->format_registry;
 	}
 
 	/**
@@ -648,7 +650,7 @@ abstract class Source {
 		$codec = $this->get_codec();
 
 		if ( $codec && $this->resolution ) {
-			$formats = $this->options_manager->get_video_formats();
+			$formats = $this->format_registry->get_video_formats();
 			foreach ( $formats as $format ) {
 				if ( $format->get_codec() === $codec && $format->get_resolution() === $this->resolution ) {
 					$this->format = $format->get_id();
@@ -692,7 +694,7 @@ abstract class Source {
 	protected function get_codec_by_mime_type() {
 
 		if ( $this->get_mime_type() ) {
-			$codecs         = $this->options_manager->get_video_codecs();
+			$codecs         = $this->format_registry->get_video_codecs();
 			$same_mime_type = array();
 			foreach ( $codecs as $codec ) {
 				if ( $codec->get_mime_type() === $this->get_mime_type() ) {
@@ -755,10 +757,10 @@ abstract class Source {
 	 */
 	protected function set_codec(): void {
 
-		$codecs = $this->options_manager->get_video_codecs();
+		$codecs = $this->format_registry->get_video_codecs();
 
 		if ( $this->format ) {
-			$formats = $this->options_manager->get_video_formats();
+			$formats = $this->format_registry->get_video_formats();
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$this->codec = $formats[ $this->format ]->get_codec();
 			}
@@ -799,7 +801,7 @@ abstract class Source {
 	protected function set_resolution(): void {
 
 		if ( $this->format ) {
-			$formats = $this->options_manager->get_video_formats();
+			$formats = $this->format_registry->get_video_formats();
 			if ( array_key_exists( $this->format, $formats ) ) {
 				$resolution_object = $formats[ $this->format ]->get_resolution();
 				if ( $resolution_object ) {
@@ -807,7 +809,7 @@ abstract class Source {
 				}
 			}
 		} elseif ( $this->get_height() ) {
-			$resolutions = $this->options_manager->get_video_resolutions();
+			$resolutions = $this->format_registry->get_video_resolutions();
 			foreach ( $resolutions as $resolution ) {
 				if ( $resolution->get_height() === $this->get_height() ) {
 					$this->resolution = $resolution->get_height();
@@ -1065,7 +1067,8 @@ abstract class Source {
 	public function set_child_source( string $format_id, $source, bool $exists, string $source_type ): void {
 		$this->child_sources[ $format_id ] = Source_Factory::create(
 			$source,
-			$this->options_manager,
+			$this->options,
+			$this->format_registry,
 			$format_id,
 			$exists,
 			$this->get_parent_id(),

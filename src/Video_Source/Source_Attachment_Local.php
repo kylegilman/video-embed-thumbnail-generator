@@ -27,24 +27,26 @@ class Source_Attachment_Local extends Source {
 	/**
 	 * Constructor.
 	 *
-	 * @param string|int               $source          The attachment ID or an array with ID and URL.
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
-	 * @param string|null              $format          Optional. Videopack video format ID.
-	 * @param bool|null                $exists          Optional. Whether the source exists.
-	 * @param int|null                 $parent_id       Optional. Parent ID (post ID, etc.).
+	 * @param string|int                             $source    The attachment ID or an array with ID and URL.
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
+	 * @param string|null                            $format          Optional. Videopack video format ID.
+	 * @param bool|null                              $exists          Optional. Whether the source exists.
+	 * @param int|null                               $parent_id       Optional. Parent ID (post ID, etc.).
 	 *
 	 * @throws \Exception If the attachment ID is invalid.
 	 */
 	public function __construct(
 		$source,
-		\Videopack\Admin\Options $options_manager,
+		array $options,
+		\Videopack\Admin\Formats\Registry $format_registry = null,
 		$format = null,
 		$exists = null,
 		$parent_id = null
 	) {
 		$attachment_id = is_array( $source ) ? $source['id'] : $source;
 		if ( $this->validate_source( $attachment_id ) ) {
-			parent::__construct( $source, 'attachment_local', $options_manager, $format, $exists, $parent_id );
+			parent::__construct( $source, 'attachment_local', $options, $format_registry, $format, $exists, $parent_id );
 			$this->set_id();
 			$this->set_metadata();
 		} else {
@@ -89,7 +91,7 @@ class Source_Attachment_Local extends Source {
 		}
 		$attachment_id = $this->get_id();
 		if ( ! $this->meta_manager ) {
-			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options_manager, $attachment_id );
+			$this->meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $attachment_id );
 		}
 		$this->metadata = $this->meta_manager->get();
 	}

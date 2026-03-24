@@ -20,11 +20,11 @@ namespace Videopack\Frontend;
 class Metadata {
 
 	/**
-	 * Videopack Options manager class instance.
+	 * Video formats registry.
 	 *
-	 * @var \Videopack\Admin\Options $options_manager
+	 * @var \Videopack\Admin\Formats\Registry|null $format_registry
 	 */
-	protected $options_manager;
+	protected $format_registry;
 
 	/**
 	 * Plugin options.
@@ -43,13 +43,17 @@ class Metadata {
 	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                                  $options         Videopack options array.
+	 * @param \Videopack\Admin\Formats\Registry|null $format_registry Optional. Videopack video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
 
-		$this->options_manager = $options_manager;
-		$this->options         = $options_manager->get_options();
-		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options_manager );
+		$this->options = $options;
+		if ( ! $format_registry ) {
+			$format_registry = new \Videopack\Admin\Formats\Registry( $options );
+		}
+		$this->format_registry = $format_registry;
+		$this->attachment_meta = new \Videopack\Admin\Attachment_Meta( $options );
 	}
 
 	/**
@@ -74,12 +78,12 @@ class Metadata {
 			return array( 'url' => '' );
 		}
 
-		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options_manager );
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
 		if ( ! $source || ! (bool) $source->exists() ) {
 			return array( 'url' => '' );
 		}
 
-		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options_manager );
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
 		$final_atts        = (array) $shortcode_handler->get_final_atts( (array) $atts, $source );
 
 		$final_atts['url']         = (string) $source->get_url();
