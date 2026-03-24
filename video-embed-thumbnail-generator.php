@@ -162,13 +162,16 @@ function videopack_cleanup_plugin() {
 	$current_options = $options_manager->get_options();
 	$cleanup         = new \Videopack\Admin\Cleanup();
 
-	wp_clear_scheduled_hook( 'kgvid_cleanup_queue', array( 'scheduled' ) );
-	wp_clear_scheduled_hook( 'kgvid_cleanup_generated_thumbnails' );
-	$cleanup->cleanup_generated_thumbnails_handler(); // Run this now because cron won't do it later.
+	// Clear Action Scheduler actions if available.
+	if ( function_exists( 'as_unschedule_all_actions' ) ) {
+		as_unschedule_all_actions( '', array(), 'videopack_queue_management' );
+		as_unschedule_all_actions( '', array(), 'videopack_encode_jobs' );
+	}
 
+	wp_clear_scheduled_hook( 'videopack_cleanup_queue' );
+	wp_clear_scheduled_hook( 'videopack_cleanup_generated_thumbnails' );
+	$cleanup->cleanup_generated_thumbnails_handler(); // Run this now because cron won't do it later.
 	$cleanup->delete_transients(); // Clear URL cache.
-	delete_transient( 'kgvid_new_attachment_transient' );
-	delete_option( 'kgvid_video_embed_cms_switch' );
 
 	$wp_roles = wp_roles();
 	if ( is_object( $wp_roles )
@@ -182,6 +185,40 @@ function videopack_cleanup_plugin() {
 		}
 	}
 }
+
+/**
+ * Handles plugin activation.
+ *
+ * @since 5.0.0
+ */
+function videopack_activate_plugin( $network_wide ) {
+	if ( is_multisite() && $network_wide ) {
+		$sites = get_sites( array( 'fields' => 'ids' ) );
+		foreach ( $sites as $blog_id ) {
+			switch_to_blog( $blog_id );
+			videopack_activate_plugin_handler();
+			restore_current_blog();
+		}
+	} else {
+		videopack_activate_plugin_handler();
+	}
+}
+
+/**
+ * Internal handler for plugin activation on a single site.
+ *
+ * @since 5.0.0
+ */
+function videopack_activate_plugin_handler() {
+	$options_manager = new \Videopack\Admin\Options();
+	$options_manager->load_options();
+	$current_options = $options_manager->get_options();
+
+	if ( isset( $current_options['capabilities'] ) && is_array( $current_options['capabilities'] ) ) {
+		$options_manager->set_capabilities( $current_options['capabilities'] );
+	}
+}
+register_activation_hook( __FILE__, 'videopack_activate_plugin' );
 
 /**
  * Handles plugin deactivation.
@@ -248,11 +285,18 @@ function videopack_uninstall_plugin() {
 		// Delete network-wide options.
 		delete_site_option( 'videopack_network_options' );
 
-		// Clean up options for the main site.
-		$main_blog_id = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
-		delete_blog_option( $main_blog_id, 'videopack_options' );
+		$sites = get_sites( array( 'fields' => 'ids' ) );
+
+		if ( is_array( $sites ) ) {
+			foreach ( $sites as $blog_id ) {
+				switch_to_blog( $blog_id );
+				delete_option( 'videopack_options' );
+				restore_current_blog();
+			}
+		}
 
 		// Drop the central queue table from the main site.
+		$main_blog_id     = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
 		$original_blog_id = get_current_blog_id();
 		$switched         = false;
 		if ( $original_blog_id != $main_blog_id ) {
@@ -260,7 +304,7 @@ function videopack_uninstall_plugin() {
 			$switched = true;
 		}
 
-		$table_name = $wpdb->prefix . 'videopack_encoding_queue'; // $wpdb->prefix is now main site's.
+		$table_name = $wpdb->prefix . 'videopack_encoding_queue';
 		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_name ) );
 
 		if ( $switched ) {
