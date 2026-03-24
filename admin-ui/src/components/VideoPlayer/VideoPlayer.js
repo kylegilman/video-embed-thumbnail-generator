@@ -48,22 +48,134 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		sources = [],
 		source_groups = {},
 		text_tracks = [],
-		inline,
 		playback_rate,
 		watermark,
 		watermark_styles,
 		watermark_link_to,
 		fixed_aspect,
 		default_ratio,
+		play_button_color,
+		play_button_icon_color,
+		control_bar_bg_color,
+		control_bar_color,
+		title_color,
+		title_background_color,
 	} = decodedAttributes;
 
-	// Use these to avoid unused variable errors if they are meant to be kept.
-	// eslint-disable-next-line no-unused-vars
-	const unusedAttributes = { inline, fixed_aspect, default_ratio };
+	const isFixedAspect = useMemo(() => {
+		if (fixed_aspect === 'true' || fixed_aspect === true) {
+			return true;
+		}
+		if (
+			fixed_aspect === 'vertical' &&
+			decodedAttributes.height > decodedAttributes.width
+		) {
+			return true;
+		}
+		return false;
+	}, [fixed_aspect, decodedAttributes.width, decodedAttributes.height]);
 
-	// @ts-ignore
-	// eslint-disable-next-line no-unused-vars
-	const unused = { inline, fixed_aspect, default_ratio };
+	const aspectRatio = useMemo(() => {
+		if (isFixedAspect) {
+			return (default_ratio || '16 / 9').replace(/\s\/\s/g, ':');
+		}
+		if (decodedAttributes.width && decodedAttributes.height) {
+			return `${decodedAttributes.width}:${decodedAttributes.height}`;
+		}
+		return undefined;
+	}, [
+		isFixedAspect,
+		default_ratio,
+		decodedAttributes.width,
+		decodedAttributes.height,
+	]);
+
+	const playerStyles = useMemo(() => {
+		const styles = {};
+		const config = window.videopack_config || {};
+		if (config.mejs_controls_svg) {
+			styles['--videopack-mejs-controls-svg'] =
+				`url(${config.mejs_controls_svg})`;
+		}
+		if (play_button_color) {
+			styles['--videopack-play-button-color'] = play_button_color;
+		}
+		if (play_button_icon_color) {
+			styles['--videopack-play-button-icon-color'] =
+				play_button_icon_color;
+		}
+		if (control_bar_bg_color) {
+			styles['--videopack-control-bar-bg-color'] = control_bar_bg_color;
+		}
+		if (control_bar_color) {
+			styles['--videopack-control-bar-color'] = control_bar_color;
+		}
+		if (title_color) {
+			styles['--videopack-title-color'] = title_color;
+		}
+		if (title_background_color) {
+			styles['--videopack-title-background-color'] =
+				title_background_color;
+		}
+
+		return styles;
+	}, [
+		play_button_color,
+		play_button_icon_color,
+		control_bar_bg_color,
+		control_bar_color,
+		title_color,
+		title_background_color,
+	]);
+
+	const innerPlayerStyles = useMemo(() => {
+		const styles = {};
+		// Apply aspect ratio to the inner player if we know it (fixed or native)
+		if (isFixedAspect) {
+			styles.aspectRatio = default_ratio || '16 / 9';
+		} else if (aspectRatio) {
+			styles.aspectRatio = aspectRatio.replace(':', ' / ');
+		}
+		return styles;
+	}, [isFixedAspect, default_ratio, aspectRatio]);
+
+	const wrapperClasses = useMemo(() => {
+		const classes = ['videopack-wrapper', 'videopack-meta-bar-visible'];
+		if (isFixedAspect || aspectRatio) {
+			classes.push('videopack-has-aspect-ratio');
+			if (isFixedAspect) {
+				classes.push('videopack-fixed-aspect');
+			}
+		}
+		if (play_button_color) {
+			classes.push('videopack-has-play-button-color');
+		}
+		if (play_button_icon_color) {
+			classes.push('videopack-has-play-button-icon-color');
+		}
+		if (control_bar_bg_color) {
+			classes.push('videopack-has-control-bar-bg-color');
+		}
+		if (control_bar_color) {
+			classes.push('videopack-has-control-bar-color');
+		}
+		if (title_color) {
+			classes.push('videopack-has-title-color');
+		}
+		if (title_background_color) {
+			classes.push('videopack-has-title-background-color');
+		}
+		return classes.join(' ');
+	}, [
+		play_button_color,
+		play_button_icon_color,
+		control_bar_bg_color,
+		control_bar_color,
+		title_color,
+		title_background_color,
+		isFixedAspect,
+		aspectRatio,
+	]);
 
 	const actualAutoplay = useMemo(() => {
 		return autoplay;
@@ -94,6 +206,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			sources: allSources,
 			src,
 			tracks: text_tracks,
+			volume,
 			autoPlay:
 				embed_method === 'WordPress Default' ? false : actualAutoplay,
 		}),
@@ -104,6 +217,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 			preload,
 			controls,
 			muted,
+			volume,
 			playsinline,
 			src,
 			allSources,
@@ -120,8 +234,10 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		const options = {
 			autoplay: actualAutoplay,
 			controls,
-			fluid: true,
+			fluid: !aspectRatio, // Use fluid if no ratio specified
+			fill: !!aspectRatio, // Use fill if we have a ratio (handled by CSS)
 			responsive: true,
+			aspectRatio,
 			muted,
 			preload,
 			poster,
@@ -174,6 +290,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 		allSources,
 		source_groups,
 		text_tracks,
+		aspectRatio,
 	]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const renderReady =
@@ -288,11 +405,11 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	const watermarkStyle = getWatermarkStyle();
 
 	return (
-		<div
-			className={`videopack-wrapper videopack-meta-bar-visible`}
-			ref={wrapperRef}
-		>
-			<div className={`videopack-player ${skin || ''}`}>
+		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
+			<div
+				className={`videopack-player ${skin || ''}`}
+				style={innerPlayerStyles}
+			>
 				<MetaBar
 					attributes={decodedAttributes}
 					playerRef={playerInstanceRef}
@@ -316,6 +433,7 @@ const VideoPlayer = ({ attributes, onReady }) => {
 						onReady={handleMejsReady}
 						onPlay={handlePlay}
 						playback_rate={playback_rate}
+						aspectRatio={aspectRatio}
 					/>
 				)}
 				{embed_method === 'None' && (
@@ -324,8 +442,8 @@ const VideoPlayer = ({ attributes, onReady }) => {
 				{watermark && (
 					<div className="videopack-watermark">
 						{watermark_link_to &&
-							watermark_link_to !== 'false' &&
-							watermark_link_to !== 'None' ? (
+						watermark_link_to !== 'false' &&
+						watermark_link_to !== 'None' ? (
 							<a
 								href="#videopack-watermark-link"
 								className="videopack-watermark-link"

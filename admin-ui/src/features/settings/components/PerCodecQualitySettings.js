@@ -314,7 +314,10 @@ const PerCodecQualitySettings = ({ codec, settings, changeHandlerFactory }) => {
 				<RadioControl
 					label={
 						<span className="videopack-label-with-tooltip">
-							{__('Primary rate control:', 'video-embed-thumbnail-generator')}
+							{__(
+								'Primary rate control:',
+								'video-embed-thumbnail-generator'
+							)}
 							<VideopackTooltip
 								text={__(
 									'CRF prioritizes a consistent level of quality over consistent file sizes. Lower numbers are better quality. ABR prioritizes consistent file sizes. If you choose ABR, Videopack will automatically calculate bitrates for different resolutions based on the relative quality you select.',
