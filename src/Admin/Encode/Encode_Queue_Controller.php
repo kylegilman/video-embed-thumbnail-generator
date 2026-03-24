@@ -1,19 +1,57 @@
 <?php
+/**
+ * Manages the video encoding queue.
+ *
+ * @link       https://www.videopack.video
+ * @since      5.0.0
+ *
+ * @package    Videopack
+ * @subpackage Videopack/Admin/Encode
+ */
 
 namespace Videopack\Admin\Encode;
 
 use ActionScheduler;
 use Videopack\Common\Debug_Logger;
 
+/**
+ * Class Encode_Queue_Controller
+ *
+ * Manages the video encoding queue, including job dispatching, status tracking,
+ * and cleanup of temporary files. It utilizes ActionScheduler for background
+ * processing of encoding tasks.
+ *
+ * @package Videopack
+ * @subpackage Videopack/Admin/Encode
+ */
 class Encode_Queue_Controller {
 
 	/**
-	 * Videopack Options manager class instance
-	 * @var \Videopack\Admin\Options $options_manager
+	 * Local options for the current blog.
+	 *
+	 * @var array $options
 	 */
-	protected $options_manager;
 	protected $options;
+
+	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
+	 */
+	protected $format_registry;
+
+	/**
+	 * Encode queue log instance.
+	 *
+	 * @var Encode_Queue_Log $queue_log
+	 */
 	protected $queue_log;
+
+	/**
+	 * The name of the database table for the encoding queue.
+	 *
+	 * @var string $queue_table_name
+	 */
 	protected $queue_table_name;
 
 	/**
@@ -23,22 +61,52 @@ class Encode_Queue_Controller {
 	 */
 	protected $video_durations = array();
 
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = $this->options_manager->get_options();
-		$this->queue_log       = new Encode_Queue_Log( $this->options_manager ); // Pass options_manager
+	/**
+	 * Constructor.
+	 *
+	 * Initializes the controller, sets up the database table name, and loads options.
+	 *
+	 * @param array                             $options  Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
+	 */
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options         = (array) $options;
+		$this->format_registry = $format_registry ? $format_registry : new \Videopack\Admin\Formats\Registry( $this->options );
+		$this->queue_log       = new Encode_Queue_Log( $this->format_registry );
 
 		global $wpdb;
-		if ( is_multisite() ) {
-			$main_site_id           = defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1;
-			$this->queue_table_name = $wpdb->get_blog_prefix( $main_site_id ) . 'videopack_encoding_queue';
+		if ( is_multisite() && \Videopack\Admin\Multisite::is_videopack_active_for_network() ) {
+			$main_site_id           = (int) ( defined( 'BLOG_ID_CURRENT_SITE' ) ? BLOG_ID_CURRENT_SITE : 1 );
+			$this->queue_table_name = (string) ( $wpdb->get_blog_prefix( $main_site_id ) . 'videopack_encoding_queue' );
 		} else {
-			$this->queue_table_name = $wpdb->prefix . 'videopack_encoding_queue';
+			$this->queue_table_name = (string) ( $wpdb->prefix . 'videopack_encoding_queue' );
 		}
-		$this->add_table();
 	}
 
-	private function add_table() {
+	/**
+	 * Ensures the database table exists.
+	 */
+	public function ensure_table_exists() {
+		static $checked = false;
+		if ( $checked ) {
+			return;
+		}
+
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $this->queue_table_name ) ) === $this->queue_table_name ) {
+			$checked = true;
+			return;
+		}
+
+		$this->add_table();
+		$checked = true;
+	}
+
+	/**
+	 * Creates or updates the encoding queue database table.
+	 */
+	public function add_table() {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 
@@ -56,6 +124,8 @@ class Encode_Queue_Controller {
 			pid INT NULL,
 			logfile_path VARCHAR(1024) NULL,
 			action_id BIGINT UNSIGNED NULL,
+			video_title VARCHAR(255) NULL,
+			video_duration BIGINT UNSIGNED NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			started_at DATETIME NULL,
@@ -72,29 +142,36 @@ class Encode_Queue_Controller {
 			KEY idx_input_url_blog_id (input_url(191), blog_id),
 			KEY idx_format_id (format_id),
 			KEY idx_status_blog_id (status, blog_id),
-			KEY idx_action_id (action_id)
+			KEY idx_action_id (action_id),
+			KEY idx_video_title (video_title(191))
 		) $charset_collate;";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 	}
 
+	/**
+	 * Starts the encoding queue and schedules the heartbeat action.
+	 */
 	public function start_queue() {
 		global $wpdb;
 		$this->options['queue_control'] = 'play';
-		$this->options_manager->save_options( $this->options );
-		// Optionally, trigger a one-off action to process any 'queued' items.
-		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
-		// Ensure a recurring heartbeat is scheduled every 5 minutes.
-		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array(), 'videopack_queue_management' ) ) {
-			as_schedule_recurring_action( time() + 120, 120, 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		update_option( 'videopack_options', $this->options );
+		// Trigger a one-off action to process any 'queued' items immediately.
+		$this->schedule_immediate_heartbeat();
+		// Ensure a recurring heartbeat is scheduled every 2 minutes.
+		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' ) ) {
+			as_schedule_recurring_action( time() + 120, 120, 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' );
 		}
 	}
 
+	/**
+	 * Pauses the encoding queue.
+	 */
 	public function pause_queue() {
 		global $wpdb;
 		$this->options['queue_control'] = 'pause';
-		$this->options_manager->save_options( $this->options );
+		update_option( 'videopack_options', $this->options );
 	}
 
 	/**
@@ -125,17 +202,19 @@ class Encode_Queue_Controller {
 			);
 		}
 
-		$attachment_identifier = sanitize_text_field( $args['id'] );
-		$input_url             = esc_url_raw( $args['url'] );
-		$user_id               = get_current_user_id();
-		$current_blog_id       = get_current_blog_id();
+		$this->ensure_table_exists();
 
-		$encoder                   = new Encode_Attachment( $this->options_manager, $attachment_identifier, $input_url );
+		$attachment_identifier     = sanitize_text_field( $args['id'] );
+		$input_url                 = esc_url_raw( $args['url'] );
+		$user_id                   = get_current_user_id();
+		$current_blog_id           = get_current_blog_id();
+		$encoder                   = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $input_url );
+		$formats_to_encode         = (array) $this->resolve_replacement_formats( $args['formats'], $encoder );
 		$results                   = array();
 		$successfully_queued_names = array();
-		$video_formats_objects     = $this->options_manager->get_video_formats();
+		$video_formats_objects     = $this->format_registry->get_video_formats();
 
-		foreach ( $args['formats'] as $format_to_encode ) {
+		foreach ( $formats_to_encode as $format_to_encode ) {
 			$format_id    = sanitize_text_field( $format_to_encode );
 			$queue_result = $encoder->queue_format( $format_id, $user_id, $current_blog_id );
 			$this->queue_log->add_to_log( $queue_result['reason'] ?? $queue_result['status'], $format_id );
@@ -148,10 +227,10 @@ class Encode_Queue_Controller {
 			}
 		}
 		// After enqueuing, trigger the queue processor to check for jobs.
-		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
-		// Ensure a recurring heartbeat is scheduled every 5 minutes.
-		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array(), 'videopack_queue_management' ) ) {
-			as_schedule_recurring_action( time() + 120, 120, 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		$this->schedule_immediate_heartbeat();
+		// Ensure a recurring heartbeat is scheduled every 2 minutes.
+		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' ) ) {
+			as_schedule_recurring_action( time() + 120, 120, 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' );
 		}
 
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
@@ -170,11 +249,19 @@ class Encode_Queue_Controller {
 	 * @return integer Number of jobs that are queued or processing.
 	 */
 	public function get_queue_size() {
+		$this->ensure_table_exists();
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE status IN (%s, %s, %s)", $this->queue_table_name, Encode_Format::STATUS_QUEUED, Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ) );
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE status IN (%s, %s, %s)', $this->queue_table_name, Encode_Format::STATUS_QUEUED, Encode_Format::STATUS_PROCESSING, Encode_Format::STATUS_ENCODING ) );
 	}
 
+	/**
+	 * Checks if all required keys are present in an array.
+	 *
+	 * @param array $args     The array to check.
+	 * @param array $required The list of required keys.
+	 * @return bool True if all keys are present, false otherwise.
+	 */
 	protected function required_keys( array $args, array $required ) {
 		foreach ( $required as $key ) {
 			if ( ! array_key_exists( $key, $args ) ) {
@@ -185,11 +272,12 @@ class Encode_Queue_Controller {
 	}
 
 	/**
-	 * ActionScheduler callback to handle a specific encoding job.
+	 * ActionScheduler callback to handle a specific encoding job based on its current status.
 	 *
-	 * @param int $job_id The ID of the job from the custom DB table.
+	 * @param int $job_id The ID of the job in the encoding queue table.
 	 */
 	public function handle_job_action( $job_id ) {
+		$this->ensure_table_exists();
 		return Debug_Logger::measure(
 			"AS Job Handle: $job_id",
 			function () use ( $job_id ) {
@@ -198,7 +286,7 @@ class Encode_Queue_Controller {
 				$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
 
 				if ( ! $job ) {
-					// Log error: job not found
+					// Log error: job not found.
 					return;
 				}
 
@@ -210,19 +298,19 @@ class Encode_Queue_Controller {
 					}
 				}
 
-				// Re-fetch options in case they changed since constructor
-				// Options should be fetched for the context of $job['blog_id']
-				$this->options = $this->options_manager->get_options(); // Options manager loads for current blog context
+				// Re-fetch options in case they changed since constructor.
+				// Options should be fetched for the context of $job['blog_id'].
+				$this->options = (array) ( new \Videopack\Admin\Options() )->get_options();
 
 				$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
 
-				$encoder = new Encode_Attachment( $this->options_manager, $attachment_id_or_url, $job['input_url'] );
+				$encoder = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
 
 				switch ( $job['status'] ) {
 					case Encode_Format::STATUS_QUEUED:
-						// The gatekeeper (process_pending_jobs_action) should prevent this from running if paused, but as a safeguard:
+						// The gatekeeper (process_pending_jobs_action) should prevent this from running if paused, but as a safeguard.
 						if ( $this->options['queue_control'] !== 'play' ) {
-							as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if paused
+							as_schedule_single_action( time() + 300, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' ); // Reschedule if paused.
 							return;
 						}
 
@@ -251,13 +339,13 @@ class Encode_Queue_Controller {
 						$encode_format_obj->set_url( $job['output_url'] );
 						$encode_format_obj->set_job_id( $job_id );
 
-						$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID
+						$started_format = $encoder->start_encode( $encode_format_obj ); // This starts FFmpeg and updates $encode_format_obj with PID.
 
 						if ( $started_format->get_pid() && $started_format->get_status() === Encode_Format::STATUS_ENCODING ) {
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 							$wpdb->update(
 								$this->queue_table_name,
-								array( // Store PID and logfile path
+								array( // Store PID and logfile path.
 									'status'       => Encode_Format::STATUS_ENCODING,
 									'pid'          => $started_format->get_pid(),
 									'logfile_path' => $started_format->get_logfile(),
@@ -269,7 +357,7 @@ class Encode_Queue_Controller {
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 							$wpdb->update(
 								$this->queue_table_name,
-								array( // Mark as failed if FFmpeg didn't start
+								array( // Mark as failed if FFmpeg didn't start.
 									'status'        => Encode_Format::STATUS_FAILED,
 									'error_message' => 'Failed to start FFmpeg: ' . $started_format->get_error(),
 									'failed_at'     => current_time( 'mysql', true ),
@@ -283,24 +371,24 @@ class Encode_Queue_Controller {
 					case Encode_Format::STATUS_ENCODING:
 					case Encode_Format::STATUS_PROCESSING:
 						$encode_format_obj = Encode_Format::from_array( $job );
-						$encode_format_obj->set_status( Encode_Format::STATUS_ENCODING ); // status must be encoding for progress check
+						$encode_format_obj->set_status( Encode_Format::STATUS_ENCODING ); // status must be encoding for progress check.
 
-						$progress_status = $encode_format_obj->get_progress(); // This calls set_progress() which updates status
+						$progress_status = $encode_format_obj->get_progress(); // This calls set_progress() which updates status.
 
 						if ( $encode_format_obj->get_status() === Encode_Format::STATUS_NEEDS_INSERT ) {
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 							$wpdb->update(
 								$this->queue_table_name,
-								array( // Update status to needs_insert
+								array( // Update status to needs_insert.
 									'status'       => Encode_Format::STATUS_NEEDS_INSERT,
 									'completed_at' => current_time( 'mysql', true ),
 								),
 								array( 'id' => $job_id )
 							);
 
-							// The encoding finish has freed up a slot! 
+							// The encoding finish has freed up a slot!
 							// Trigger the gatekeeper to start the next job immediately.
-							as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+							$this->schedule_immediate_heartbeat();
 
 							// Instead of rescheduling, just handle the insertion now.
 							$inserted = $encoder->insert_attachment( $encode_format_obj );
@@ -345,7 +433,7 @@ class Encode_Queue_Controller {
 							// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 							$wpdb->update(
 								$this->queue_table_name,
-								array( // Mark as failed if error during encoding
+								array( // Mark as failed if error during encoding.
 									'status'        => Encode_Format::STATUS_FAILED,
 									'error_message' => $encode_format_obj->get_error(),
 									'failed_at'     => current_time( 'mysql', true ),
@@ -354,13 +442,13 @@ class Encode_Queue_Controller {
 							);
 							$this->send_error_email( $job_id );
 							// Freed up an encoding slot!
-							as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+							$this->schedule_immediate_heartbeat();
 						} elseif ( $progress_status === 'recheck' || $encode_format_obj->get_status() === 'encoding' ) {
 							// If logfile not found yet, or still encoding, recheck.
 							as_schedule_single_action( time() + 30, 'videopack_handle_job', array( 'job_id' => $job_id ), 'videopack_encode_jobs' );
 						}
 
-						// Terminal state or finishing check
+						// Terminal state or finishing check.
 						if ( in_array( $encode_format_obj->get_status(), array( Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_FAILED, Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_CANCELED ), true ) ) {
 							$this->cleanup_temp_files( $job_id );
 						}
@@ -426,7 +514,7 @@ class Encode_Queue_Controller {
 
 				// After handling a job, if it reached a terminal state, try to process the next pending job from the queue.
 				if ( $updated_job && in_array( $updated_job['status'], array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_FAILED, Encode_Format::STATUS_CANCELED ), true ) ) {
-					as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+					$this->schedule_immediate_heartbeat();
 				}
 				wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 				wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
@@ -434,23 +522,45 @@ class Encode_Queue_Controller {
 		);
 	}
 
+	/**
+	 * Starts the queue and triggers the heartbeat processing.
+	 */
 	public function play() {
 		$this->options['queue_control'] = 'play';
 		update_option( 'videopack_options', $this->options );
 		$this->process_pending_jobs_action();
 	}
 
+	/**
+	 * Pauses the queue.
+	 */
 	public function pause() {
 		$this->options['queue_control'] = 'pause';
 		update_option( 'videopack_options', $this->options );
 	}
 
-	public function process_pending_jobs_action() {
+	/**
+	 * AS Heartbeat: Checks for finished jobs, stuck jobs, and enqueues new jobs if capacity allows.
+	 *
+	 * This is the core worker that manages the flow of the encoding queue.
+	 *
+	 * @param array $args Optional arguments passed from ActionScheduler.
+	 */
+	public function process_pending_jobs_action( $args = array() ) {
+		static $last_run = 0;
+		if ( time() - $last_run < 2 ) {
+			// Throttle slightly to prevent multiple rapid executions in the same batch or during rapid polling.
+			return;
+		}
+		$last_run = time();
+
+		$this->ensure_table_exists();
+
 		Debug_Logger::log( 'AS Heartbeat: process_pending_jobs_action' );
 		global $wpdb;
 
 		if ( $this->options['queue_control'] !== 'play' ) {
-			return; // Queue is paused
+			return; // Queue is paused.
 		}
 
 		// 1. Check active encoding jobs to see if they finished.
@@ -465,9 +575,9 @@ class Encode_Queue_Controller {
 			foreach ( $active_encodes as $job_data ) {
 				$job_id                = $job_data['id'];
 				$attachment_identifier = ! empty( $job_data['attachment_id'] ) ? $job_data['attachment_id'] : $job_data['input_url'];
-				$encoder               = new Encode_Attachment( $this->options_manager, $attachment_identifier, $job_data['input_url'] );
+				$encoder               = new Encode_Attachment( $this->options, $this->format_registry, $attachment_identifier, $job_data['input_url'] );
 				$encode_format         = Encode_Format::from_array( $job_data );
-				$encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out
+				$encode_format->get_progress(); // Updates internal status if log says 'end' or if it timed out.
 
 				if ( $encode_format->get_status() !== $job_data['status'] ) {
 					$new_status  = $encode_format->get_status();
@@ -501,8 +611,6 @@ class Encode_Queue_Controller {
 			}
 		}
 
-		Debug_Logger::log( 'Hearthbeat: process_pending_jobs_action' );
-
 		// 2. Stuck Job Watchdog: Handle jobs that have been in transition states for too long.
 		// Transition states: 'processing', 'encoding', 'needs_insert', 'pending_replacement'.
 		// If a job hasn't updated in 5 minutes, something is likely wrong (process crash, server hiccup).
@@ -510,7 +618,7 @@ class Encode_Queue_Controller {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$stuck_jobs = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, status FROM %i WHERE status IN (%s, %s, %s, %s) AND updated_at < DATE_SUB(NOW(), INTERVAL 5 MINUTE)",
+				'SELECT id, status FROM %i WHERE status IN (%s, %s, %s, %s) AND updated_at < DATE_SUB(NOW(), INTERVAL 5 MINUTE)',
 				$this->queue_table_name,
 				Encode_Format::STATUS_PROCESSING,
 				Encode_Format::STATUS_ENCODING,
@@ -522,7 +630,13 @@ class Encode_Queue_Controller {
 
 		if ( ! empty( $stuck_jobs ) ) {
 			foreach ( $stuck_jobs as $stuck_job ) {
-				Debug_Logger::log( 'Watchdog: Found stuck job', array( 'job_id' => $stuck_job['id'], 'status' => $stuck_job['status'] ) );
+				Debug_Logger::log(
+					'Watchdog: Found stuck job',
+					array(
+						'job_id' => $stuck_job['id'],
+						'status' => $stuck_job['status'],
+					)
+				);
 				// Reschedule the job. The handle_job action will check the status and decide how to proceed.
 				as_schedule_single_action( time(), 'videopack_handle_job', array( 'job_id' => (int) $stuck_job['id'] ), 'videopack_encode_jobs' );
 
@@ -532,10 +646,10 @@ class Encode_Queue_Controller {
 			}
 		}
 
-		// 3. Watchdog: Ensure non-terminal jobs that aren't currently encoding/processing
+		// 3. Watchdog: Ensure non-terminal jobs that aren't currently encoding/processing.
 		// but aren't 'queued' or 'completed' are still being handled.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$pending_system_jobs = $wpdb->get_results( $wpdb->prepare( "SELECT id FROM %i WHERE status IN (%s, %s)", $this->queue_table_name, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), ARRAY_A );
+		$pending_system_jobs = $wpdb->get_results( $wpdb->prepare( 'SELECT id FROM %i WHERE status IN (%s, %s)', $this->queue_table_name, Encode_Format::STATUS_NEEDS_INSERT, Encode_Format::STATUS_PENDING_REPLACEMENT ), ARRAY_A );
 		if ( ! empty( $pending_system_jobs ) ) {
 			foreach ( $pending_system_jobs as $job_row ) {
 				$job_id = $job_row['id'];
@@ -556,7 +670,7 @@ class Encode_Queue_Controller {
 		$capacity       = (int) ( $this->options['simultaneous_encodes'] ?? 1 );
 
 		if ( $encoding_count >= $capacity ) {
-			return; // Max concurrent encodes reached
+			return; // Max concurrent encodes reached.
 		}
 
 		$needed = $capacity - $encoding_count;
@@ -585,20 +699,44 @@ class Encode_Queue_Controller {
 		}
 	}
 
+	/**
+	 * Schedules the heartbeat action if it's not already scheduled for immediate execution.
+	 * This ensures we don't flood the queue with redundant processing actions.
+	 */
+	public function schedule_immediate_heartbeat() {
+		// Use empty array for arguments to distinguish it from the recurring heartbeat.
+		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array(), 'videopack_queue_management' ) ) {
+			as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		}
+	}
+
+	/**
+	 * Helper to get the arguments of a scheduled action by its ID.
+	 *
+	 * @param int $action_id The ID of the scheduled action.
+	 * @return array The action arguments.
+	 */
 	protected function get_action_args_by_id( int $action_id ) {
 		$action_args = array();
 
-		// Get the scheduled action by ID
+		// Get the scheduled action by ID.
 		$actions = ActionScheduler::store()->fetch_action( $action_id );
 
 		if ( $actions ) {
-			// Get the action arguments
+			// Get the action arguments.
 			$action_args = $actions->get_args();
 		}
 
 		return $action_args;
 	}
 
+	/**
+	 * Retrieves all queue items, optionally filtered by blog ID.
+	 * Uses internal caching to minimize database queries.
+	 *
+	 * @param int|null $blog_id Optional blog ID to filter by.
+	 * @return array List of queue items.
+	 */
 	public function get_queue_items( $blog_id = null ) {
 		global $wpdb;
 
@@ -615,6 +753,7 @@ class Encode_Queue_Controller {
 		}
 
 		$table = $this->queue_table_name;
+		$this->ensure_table_exists();
 
 		if ( null !== $blog_id ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -634,12 +773,23 @@ class Encode_Queue_Controller {
 		return $all_items;
 	}
 
+	/**
+	 * Retrieves queue items specifically for a single blog.
+	 *
+	 * @param int $blog_id The blog ID.
+	 * @return array List of queue items.
+	 */
 	public function get_queue_for_blog( int $blog_id ) {
 		return $this->get_queue_items( $blog_id );
 	}
 
+	/**
+	 * Retrieves all queue items for the entire network.
+	 *
+	 * @return array List of all queue items.
+	 */
 	public function get_queue_for_network() {
-		// Gets non-terminal jobs for all blogs
+		// Gets non-terminal jobs for all blogs.
 		return $this->get_queue_items( null );
 	}
 
@@ -648,12 +798,14 @@ class Encode_Queue_Controller {
 	 * This method handles the logic for finding the job, switching blog context (if multisite),
 	 * delegating to Encode_Attachment for actual deletion, and returning the final status.
 	 *
-	 * @param int $job_id The ID of the job to delete.
+	 * @param int  $job_id             The ID of the job to delete.
+	 * @param bool $delete_attachment Whether to delete the attachment.
 	 * @return array|\WP_Error An array representing the deleted job's final state on success,
 	 * or a WP_Error object on failure (e.g., job not found, permission denied).
 	 */
 	public function delete_job( int $job_id, bool $delete_attachment = true ) {
 		global $wpdb;
+		$this->ensure_table_exists();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
@@ -675,7 +827,7 @@ class Encode_Queue_Controller {
 			$input_url            = $job['input_url']; // Use input_url from job data.
 
 			// Instantiate Encode_Attachment for the source related to this job.
-			$encoder = new Encode_Attachment( $this->options_manager, $attachment_id_or_url, $input_url );
+			$encoder = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $input_url );
 
 			// If the job is currently encoding or processing, cancel it first to kill any active processes.
 			if ( in_array( $job['status'], array( Encode_Format::STATUS_ENCODING, Encode_Format::STATUS_PROCESSING ), true ) ) {
@@ -709,7 +861,7 @@ class Encode_Queue_Controller {
 			}
 			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 			wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
-			as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+			$this->schedule_immediate_heartbeat();
 		}
 	}
 
@@ -767,10 +919,17 @@ class Encode_Queue_Controller {
 			}
 			wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 			wp_cache_delete( 'videopack_queue_items_all', 'videopack' );
-			as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+			$this->schedule_immediate_heartbeat();
 		}
 	}
 
+	/**
+	 * Clears jobs from the encoding queue database table.
+	 * Supports clearing all jobs, completed jobs, or jobs older than a week.
+	 *
+	 * @param string $type  The type of clearing to perform ('all', 'completed', or 'weekly').
+	 * @param string $scope The scope of the cleanup ('site' or 'network'). Default 'site'.
+	 */
 	public function clear_completed_queue( $type, $scope = 'site' ) {
 		global $wpdb;
 		$user_ID         = get_current_user_id();
@@ -827,10 +986,18 @@ class Encode_Queue_Controller {
 						$should_delete = true;
 					}
 				}
+			} elseif ( $type === 'weekly' ) {
+				// Clear jobs that were completed more than one week ago.
+				if ( in_array( $job_status, array( Encode_Format::STATUS_COMPLETED, Encode_Format::STATUS_FAILED, Encode_Format::STATUS_CANCELED, Encode_Format::STATUS_DELETED ), true ) ) {
+					$completed_at = strtotime( $job['completed_at'] ?? $job['updated_at'] );
+					if ( $completed_at && ( time() - $completed_at > WEEK_IN_SECONDS ) ) {
+						$should_delete = true;
+					}
+				}
 			}
 
 			if ( $should_delete ) {
-				// Use remove_job to clear from DB without deleting video files, as per the original intent of 'clear_completed_queue'
+				// Use remove_job to clear from DB without deleting video files, as per the original intent of 'clear_completed_queue'.
 				// which was to clear the queue, not necessarily delete the output files.
 				// The 'all' type in the original code did delete files for 'encoding' jobs,
 				// but for 'completed' it just removed from queue.
@@ -867,31 +1034,61 @@ class Encode_Queue_Controller {
 			return new \WP_Error( 'videopack_job_not_retryable', __( 'Only failed, canceled, or deleted jobs can be retried.', 'video-embed-thumbnail-generator' ), array( 'status' => 400 ) );
 		}
 
-		// Permission check
+		// Permission check.
 		$is_own_job = ( (int) $job['user_id'] === get_current_user_id() );
 		if ( ! current_user_can( 'edit_others_video_encodes' ) && ! ( current_user_can( 'encode_videos' ) && $is_own_job ) ) {
 			return new \WP_Error( 'videopack_permission_denied', __( 'You do not have permission to retry this job.', 'video-embed-thumbnail-generator' ), array( 'status' => 403 ) );
 		}
 
+		$original_blog_id = false;
+		if ( is_multisite() ) {
+			$original_blog_id = get_current_blog_id();
+			if ( (int) $job['blog_id'] !== $original_blog_id ) {
+				switch_to_blog( (int) $job['blog_id'] );
+			}
+		}
+
+		$update_data = array(
+			'status'        => 'queued',
+			'error_message' => null,
+			'failed_at'     => null,
+			'pid'           => null,
+			'retry_count'   => (int) $job['retry_count'] + 1,
+		);
+ 
+		// If the job was deleted, paths were cleared. We need to restore them.
+		if ( empty( $job['output_path'] ) ) {
+			$attachment_id_or_url = ! empty( $job['attachment_id'] ) ? $job['attachment_id'] : $job['input_url'];
+			$encoder             = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id_or_url, $job['input_url'] );
+			$video_formats       = $this->format_registry->get_video_formats();
+			$format_id           = $job['format_id'];
+ 
+			if ( isset( $video_formats[ $format_id ] ) ) {
+				$video_format_obj    = $video_formats[ $format_id ];
+				$attachment_id       = ! empty( $job['attachment_id'] ) ? (int) $job['attachment_id'] : null;
+				$encode_info_obj     = new Encode_Info( $attachment_id, (string) $job['input_url'], $video_format_obj, $this->options, $this->format_registry );
+				$update_data['output_path'] = (string) $encode_info_obj->path;
+				$update_data['output_url']  = (string) $encode_info_obj->url;
+			}
+		}
+ 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$update_result = $wpdb->update(
 			$this->queue_table_name,
-			array(
-				'status'        => 'queued',
-				'error_message' => null,
-				'failed_at'     => null,
-				'pid'           => null,
-				'retry_count'   => (int) $job['retry_count'] + 1,
-			),
+			$update_data,
 			array( 'id' => $job_id )
 		);
-
+ 
+		if ( $original_blog_id && (int) $job['blog_id'] !== $original_blog_id ) {
+			restore_current_blog();
+		}
+ 
 		if ( false === $update_result ) {
 			return new \WP_Error( 'videopack_db_error', __( 'Could not update job status to retry.', 'video-embed-thumbnail-generator' ), array( 'status' => 500 ) );
 		}
 
 		// Trigger a one-off action to process any 'queued' items immediately.
-		as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+		$this->schedule_immediate_heartbeat();
 		wp_cache_delete( 'videopack_queue_items_' . $job['blog_id'], 'videopack' );
 		return true;
 	}
@@ -936,35 +1133,35 @@ class Encode_Queue_Controller {
 		}
 		$user_id = $job->get_user_id();
 
-		$video_title     = '';
+		$video_title     = $job->get_video_title();
+		$video_duration  = (int) $job->get_video_duration();
 		$poster_url      = '';
 		$user_name       = '';
 		$blog_name       = '';
 		$attachment_link = '';
-
+ 
 		if ( $attachment_id ) {
-			$video_title     = get_the_title( $attachment_id );
 			$poster_id       = get_post_meta( $attachment_id, '_kgflashmediaplayer-poster-id', true );
 			$poster_url      = $poster_id ? wp_get_attachment_image_url( $poster_id, 'thumbnail' ) : get_post_meta( $attachment_id, '_kgflashmediaplayer-poster', true );
 			$attachment_link = get_edit_post_link( $attachment_id );
-		} elseif ( $job->get_input_url() ) {
-			$video_title = basename( $job->get_input_url() );
 		}
-
-		// Ensure duration is set for progress calculation
-		if ( ! $job->get_video_duration() ) {
+ 
+		// Ensure duration is set for progress calculation.
+		if ( ! $video_duration ) {
 			$attachment_key = ! empty( $attachment_id ) ? (string) $attachment_id : $job->get_input_url();
 			if ( $attachment_key ) {
 				if ( ! isset( $this->video_durations[ $attachment_key ] ) ) {
-					$encoder                                  = new Encode_Attachment( $this->options_manager, $attachment_id ? $attachment_id : $job->get_input_url(), $job->get_input_url() );
+					$encoder                                  = new Encode_Attachment( $this->options, $this->format_registry, $attachment_id ? $attachment_id : $job->get_input_url(), $job->get_input_url() );
 					$metadata                                 = $encoder->get_video_metadata();
 					$this->video_durations[ $attachment_key ] = ( $metadata && $metadata->duration ) ? (int) round( $metadata->duration * 1000000 ) : 0;
 				}
 				if ( $this->video_durations[ $attachment_key ] ) {
-					$job->set_video_duration( $this->video_durations[ $attachment_key ] );
+					$video_duration = (int) $this->video_durations[ $attachment_key ];
+					$job->set_video_duration( $video_duration );
 				}
 			}
 		}
+
 
 		if ( $user_id ) {
 			$user_data = get_userdata( $user_id );
@@ -980,7 +1177,7 @@ class Encode_Queue_Controller {
 			}
 		}
 
-		$video_formats = $this->options_manager->get_video_formats();
+		$video_formats = $this->format_registry->get_video_formats();
 		$format_name   = isset( $video_formats[ $job->get_format_id() ] ) ? $video_formats[ $job->get_format_id() ]->get_short_name() : $job->get_format_id();
 
 		$response = array(
@@ -990,7 +1187,7 @@ class Encode_Queue_Controller {
 			'preset'          => $job->get_format_id(),
 			'format_name'     => $format_name,
 			'output_url'      => $job->get_url(),
-			'output_id'       => $job->get_id(), // Attachment ID of the output
+			'output_id'       => $job->get_id(), // Attachment ID of the output.
 			'error'           => $job->get_error(),
 			'created_at'      => $job->get_created_at(),
 			'started'         => $job->get_started(),
@@ -1014,6 +1211,55 @@ class Encode_Queue_Controller {
 	}
 
 	/**
+	 * Filters the list of formats to ensure only one replacement format is enqueued.
+	 *
+	 * @param array             $format_ids List of format IDs requested.
+	 * @param Encode_Attachment $encoder    The encoder instance for source context.
+	 * @return array Filtered list of format IDs.
+	 */
+	private function resolve_replacement_formats( array $format_ids, Encode_Attachment $encoder ) {
+		$ideal_id              = $encoder->get_ideal_replacement_id();
+		$replacement_requested = false;
+		$replacement_ids       = array();
+		$additional_ids        = array();
+
+		$replace_setting = (string) ( $this->options['replace_format'] ?? 'none' );
+
+		foreach ( $format_ids as $id ) {
+			if ( $encoder->is_replacement_format( $id ) ) {
+				$replacement_ids[]     = (string) $id;
+				$replacement_requested = true;
+			} elseif ( $id === $replace_setting || ( strpos( $replace_setting, 'same_' ) === 0 && strpos( $id, substr( $replace_setting, 5 ) ) !== false ) ) {
+				// If a format was requested that matches the replacement setting resolution but is an upscale.
+				$replacement_requested = true;
+			} else {
+				$additional_ids[] = (string) $id;
+			}
+		}
+
+		if ( ! $replacement_requested ) {
+			return $format_ids;
+		}
+
+		// A replacement was requested. Enforce exactly one replacement format.
+		$chosen_replacement = null;
+
+		// 1. Prioritize the ideal replacement format (e.g., 'h264_fullres' if 'h264_1080p' was requested but it's an upscale).
+		if ( $ideal_id ) {
+			$chosen_replacement = $ideal_id;
+		} elseif ( count( $replacement_ids ) > 0 ) {
+			// Fallback: Use the first explicitly requested replacement format.
+			$chosen_replacement = $replacement_ids[0];
+		}
+
+		if ( $chosen_replacement ) {
+			return array_merge( $additional_ids, array( $chosen_replacement ) );
+		}
+
+		return $additional_ids;
+	}
+
+	/**
 	 * Get all jobs prepared for REST response.
 	 *
 	 * @param array $all_items Raw items from get_queue_items.
@@ -1023,7 +1269,8 @@ class Encode_Queue_Controller {
 	public function get_jobs_list_data( array $all_items, $input = null ) {
 		// Active Check: Trigger the queue processor to fill any available capacity.
 		// This acts as a watchdog heartbeat whenever the queue is viewed.
-		$this->process_pending_jobs_action();
+		// We call it via ActionScheduler instead of directly to prevent flooding logs during rapid polling.
+		$this->schedule_immediate_heartbeat();
 
 		$jobs  = array();
 		$order = 1;
@@ -1078,8 +1325,8 @@ class Encode_Queue_Controller {
 			return;
 		}
 
-		$options = $this->options_manager->get_options();
-		// In multisite, network options are stored in site_option 'videopack_network_options'
+		$options = (array) $this->options;
+		// In multisite, network options are stored in site_option 'videopack_network_options'.
 		$network_options = \Videopack\Admin\Multisite::get_network_options();
 
 		$error_email         = $options['error_email'] ?? 'nobody';
@@ -1105,7 +1352,7 @@ class Encode_Queue_Controller {
 		$user       = null;
 		$super_user = null;
 
-		// Determine site-level recipient
+		// Determine site-level recipient.
 		if ( $error_email === 'encoder' ) {
 			if ( ! empty( $job['user_id'] ) ) {
 				$user = get_userdata( $job['user_id'] );
@@ -1114,7 +1361,7 @@ class Encode_Queue_Controller {
 			$user = get_userdata( (int) $error_email );
 		}
 
-		// Determine network-level recipient
+		// Determine network-level recipient.
 		if ( is_multisite() && $network_error_email !== 'nobody' ) {
 			if ( $network_error_email === 'encoder' ) {
 				if ( ! empty( $job['user_id'] ) ) {
@@ -1155,12 +1402,12 @@ class Encode_Queue_Controller {
 	 */
 	protected function maybe_auto_publish_post( $attachment_id, $blog_id ) {
 		if ( empty( $this->options['auto_publish_post'] ) || empty( $attachment_id ) ) {
-			return; // Only proceed if auto_publish_post is turned on and we have an attachment id
+			return; // Only proceed if auto_publish_post is turned on and we have an attachment id.
 		}
 
 		$video_attachment = get_post( $attachment_id );
 		if ( ! $video_attachment || empty( $video_attachment->post_parent ) ) {
-			return; // No parent post to publish
+			return; // No parent post to publish.
 		}
 
 		$parent_id = $video_attachment->post_parent;
@@ -1182,7 +1429,7 @@ class Encode_Queue_Controller {
 		);
 
 		if ( ! empty( $incomplete_job_attachment_ids ) ) {
-			// Determine if any of these incomplete jobs belong to attachments that share the same parent_id
+			// Determine if any of these incomplete jobs belong to attachments that share the same parent_id.
 			$ids_string = implode( ',', array_map( 'intval', $incomplete_job_attachment_ids ) );
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -1197,7 +1444,7 @@ class Encode_Queue_Controller {
 		// All jobs for all attachments on this parent post have completed.
 		$parent_post = get_post( $parent_id );
 		if ( $parent_post && $parent_post->post_status !== 'publish' ) {
-			// Update the post status to 'publish'
+			// Update the post status to 'publish'.
 			wp_update_post(
 				array(
 					'ID'          => $parent_id,
@@ -1207,8 +1454,14 @@ class Encode_Queue_Controller {
 		}
 	}
 
+	/**
+	 * Cleans up temporary files (log files and watermarks) associated with a job.
+	 *
+	 * @param int $job_id The ID of the job whose temp files should be cleaned up.
+	 */
 	public function cleanup_temp_files( $job_id ) {
 		global $wpdb;
+		$this->ensure_table_exists();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$job = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $this->queue_table_name, $job_id ), ARRAY_A );
@@ -1219,13 +1472,13 @@ class Encode_Queue_Controller {
 
 		$update_data = array();
 
-		// Cleanup FFmpeg log file
+		// Cleanup FFmpeg log file.
 		if ( ! empty( $job['logfile_path'] ) && file_exists( $job['logfile_path'] ) ) {
 			wp_delete_file( $job['logfile_path'] );
 			$update_data['logfile_path'] = null;
 		}
 
-		// Cleanup temporary watermark
+		// Cleanup temporary watermark.
 		if ( ! empty( $job['temp_watermark_path'] ) && file_exists( $job['temp_watermark_path'] ) ) {
 			wp_delete_file( $job['temp_watermark_path'] );
 			$update_data['temp_watermark_path'] = null;
