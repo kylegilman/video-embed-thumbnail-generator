@@ -4,6 +4,13 @@
 
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
+import { Icon } from '@wordpress/components';
+import {
+	share as shareIcon,
+	download as downloadIcon,
+	close as closeIcon,
+	code as embedIcon,
+} from '@wordpress/icons';
 
 /**
  * MetaBar component.
@@ -134,7 +141,9 @@ const MetaBar = ({ attributes, playerRef }) => {
 					{embedItems() && (
 						<>
 							<span className="videopack-embedcode-container">
-								<span className="videopack-icons embed"></span>
+								<span className="videopack-icons embed">
+									<Icon icon={embedIcon} className="embed-icon" />
+								</span>
 								<span>
 									{__(
 										'Embed:',
@@ -192,16 +201,40 @@ const MetaBar = ({ attributes, playerRef }) => {
 					<span className={'videopack-meta-icons'}>
 						{embedItems() && (
 							<button
-								type={'button'}
-								className={
-									shareIsOpen
-										? 'videopack-icons close'
-										: 'videopack-icons share'
-								}
+								type="button"
+								className="videopack-meta-bar-button"
 								onClick={() => {
 									setShareIsOpen(!shareIsOpen);
 								}}
-							/>
+								title={
+									shareIsOpen
+										? __(
+												'Close',
+												'video-embed-thumbnail-generator'
+										  )
+										: __(
+												'Share',
+												'video-embed-thumbnail-generator'
+										  )
+								}
+							>
+								<span
+									className={`videopack-icons ${
+										shareIsOpen ? 'close' : 'share'
+									}`}
+								>
+									<Icon
+										icon={
+											shareIsOpen ? closeIcon : shareIcon
+										}
+										className={
+											shareIsOpen
+												? 'close-icon'
+												: 'share-icon'
+										}
+									/>
+								</span>
+							</button>
 						)}
 						{downloadlink && (
 							<a
@@ -213,7 +246,9 @@ const MetaBar = ({ attributes, playerRef }) => {
 									'video-embed-thumbnail-generator'
 								)}
 							>
-								<span className="videopack-icons download"></span>
+								<span className="videopack-icons download">
+									<Icon icon={downloadIcon} className="download-icon" />
+								</span>
 							</a>
 						)}
 					</span>

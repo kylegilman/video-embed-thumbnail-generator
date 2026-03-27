@@ -1,3 +1,4 @@
+@use "sass:string";
 @use "@wordpress/base-styles/colors";
 @use "../common/PlayButton.scss" as *;
 
@@ -77,14 +78,14 @@
 		.videopack-player {
 			width: 100%;
 			/* height will be determined by aspect-ratio from inline styles */
-			position: relative; 
+			position: relative;
 
 			video,
 			.video-js,
 			.mejs-container,
 			.wp-video {
-				width: 100% !important;
-				height: 100% !important;
+				width: 100%;
+				height: 100%;
 			}
 
 			/* Override Video.js fluid padding if it gets applied */
@@ -93,7 +94,7 @@
 				&.vjs-fluid,
 				&.vjs-16-9,
 				&.vjs-4-3 {
-					padding-top: 0 !important;
+					padding-top: 0;
 				}
 			}
 		}
@@ -108,37 +109,39 @@
 		position: relative;
 		width: 100%;
 
-		/* Skin-specific MetaBar styles */
-		&.default .videopack-meta-bar {
-			background-color: #2b333f;
-		}
-
-		&.vjs-theme-city .videopack-meta-bar {
-			background-color: var(--vjs-theme-city--primary);
-		}
-
-		&.vjs-theme-fantasy .videopack-meta-bar {
-			background-color: var(--vjs-theme-fantasy--primary);
-		}
-
-		&.vjs-theme-forest .videopack-meta-bar {
-			background-color: var(--vjs-theme-forest--primary);
-		}
-
-		&.vjs-theme-sea {
-			.videopack-meta-bar {
-				background-color: rgba(65, 118, 188);
+		/* Skin-specific MetaBar styles (only if no custom background color) */
+		.videopack-wrapper:not(.videopack-has-title-background-color) & {
+			&.default .videopack-meta-bar:not(.no-title) {
+				background-color: #2b333f;
 			}
 
-			.vjs-menu-button .vjs-menu-content {
-				background-color: hsla(0, 0%, 100%, .4);
+			&.vjs-theme-city .videopack-meta-bar:not(.no-title) {
+				background-color: var(--vjs-theme-city--primary);
 			}
 
-			.vjs-button:hover li {
-				color: white;
+			&.vjs-theme-fantasy .videopack-meta-bar:not(.no-title) {
+				background-color: var(--vjs-theme-fantasy--primary);
+			}
 
-				&.vjs-selected {
-					color: rgba(65, 118, 188);
+			&.vjs-theme-forest .videopack-meta-bar:not(.no-title) {
+				background-color: var(--vjs-theme-forest--primary);
+			}
+
+			&.vjs-theme-sea {
+				.videopack-meta-bar:not(.no-title) {
+					background-color: rgba(65, 118, 188);
+				}
+
+				.vjs-menu-button .vjs-menu-content {
+					background-color: hsla(0, 0%, 100%, .4);
+				}
+
+				.vjs-button:hover li {
+					color: white;
+
+					&.vjs-selected {
+						color: rgba(65, 118, 188);
+					}
 				}
 			}
 		}
@@ -159,7 +162,7 @@
 
 		a {
 			display: block;
-			position: inherit !important;
+			position: inherit;
 			/* Maintain link behavior */
 		}
 	}
@@ -172,7 +175,7 @@
 	}
 
 	.videopack-no-controls .mejs-controls {
-		display: none !important;
+		display: none;
 	}
 
 	.no-title .videopack-meta-icons span {
@@ -458,7 +461,7 @@
 	.mejs__sourcechooser-selector ul,
 	.mejs-sourcechooser-selector ul {
 		display: block;
-		list-style-type: none !important;
+		list-style-type: none;
 		margin: 0;
 		overflow: visible;
 		padding: 0;
@@ -468,7 +471,7 @@
 	.mejs-sourcechooser-selector li {
 		color: #fff;
 		display: block;
-		list-style-type: none !important;
+		list-style-type: none;
 		margin: 0;
 		overflow: hidden;
 		padding: 5px 10px 5px 0px;
@@ -539,7 +542,7 @@
 			padding: 0;
 			margin: 0;
 			min-width: 100px;
-			list-style-type: none !important;
+			list-style-type: none;
 
 			li {
 				width: 100%;
@@ -597,7 +600,7 @@
 	.mejs__speed-selector-list,
 	.mejs-speed-selector-list {
 		display: block;
-		list-style-type: none !important;
+		list-style-type: none;
 		margin: 0;
 		overflow: hidden;
 		padding: 0;
@@ -607,7 +610,7 @@
 	.mejs-speed-selector-list-item {
 		color: #fff;
 		display: block;
-		list-style-type: none !important;
+		list-style-type: none;
 		margin: 0 0 6px;
 		overflow: hidden;
 		padding: 0 10px;
@@ -615,8 +618,8 @@
 
 	.mejs__speed-selector-list-item:hover,
 	.mejs-speed-selector-list-item:hover {
-		background-color: rgb(200, 200, 200) !important;
-		background-color: rgba(255, 255, 255, 0.4) !important;
+		background-color: rgb(200, 200, 200);
+		background-color: rgba(255, 255, 255, 0.4);
 	}
 
 	.mejs__speed-selector-input,
@@ -659,10 +662,10 @@
 		align-items: center;
 		justify-content: center;
 		flex-wrap: wrap;
-		gap: 20px;
+		gap: 2em;
 		color: white;
 		top: 0;
-		padding-top: 46px;
+		padding-top: 3.5em;
 		padding-bottom: 9%;
 		width: 100%;
 		z-index: 102;
@@ -682,10 +685,6 @@
 				display: flex;
 				align-items: center;
 			}
-		}
-
-		&.no-title {
-			padding-top: 32px;
 		}
 
 		&.is-visible {
@@ -729,6 +728,8 @@
 		z-index: 102;
 		opacity: 0;
 		visibility: hidden;
+		border: none;
+		padding: 0;
 		transition: opacity 0.3s, visibility 0.3s;
 
 		&.is-visible {
@@ -738,65 +739,99 @@
 	}
 
 	.videopack-meta-bar {
-		line-height: 15pt;
-		color: white;
+		color: var(--videopack-title-color, white);
+		font-size: 0.9em;
 		display: block;
 		position: absolute;
 		top: 0px;
 		z-index: 103;
 		box-sizing: border-box;
 		margin: 0px;
-		padding: 3px;
+		padding: 0.2em;
 		width: 100%;
 		overflow: hidden;
-		background-color: rgba(40, 40, 40, 0.95);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		background-color: var(--videopack-title-background-color, rgba(40, 40, 40, 0.95));
 		visibility: hidden;
 		opacity: 0;
 		transition: visibility 0.3s linear, opacity 0.3s linear;
 
 		&.no-title {
-			background: none;
+			background: transparent;
 
-			.videopack-meta-icons span {
-				font-size: 19pt;
-				text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
+			.videopack-meta-icons {
+
+				button,
+				a {
+					width: 1.8em;
+					height: 1.8em;
+				}
+
+				.videopack-icons {
+					text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
+				}
 			}
 		}
 
 		.videopack-title {
-			font-size: 10pt;
 			padding-left: 4px;
-			line-height: 20pt;
 		}
 
 		.videopack-meta-icons {
 			position: relative;
 			float: right;
-			margin: 3px 0px 3px 0px;
+			margin: 0;
+			display: flex;
+			align-items: center;
 
+			button,
 			a {
-				text-decoration: none;
+				background: transparent;
 				border: none;
 				box-shadow: none;
-			}
-
-			span {
+				padding: 0;
+				margin: 0 0.1em;
+				color: inherit;
 				cursor: pointer;
-				color: white;
-				margin-right: 5px;
-				vertical-align: middle;
-				font-size: 13pt;
-			}
-
-			button {
-				background-color: unset;
-				border: none;
-				color: white;
-				vertical-align: middle;
-				cursor: pointer;
+				text-decoration: none;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 1.5em;
+				height: 1.5em;
+				transition: opacity 0.15s ease;
+				font-size: 1em;
 
 				&:focus {
-					outline-width: 0;
+					outline: none;
+				}
+
+				&:hover {
+					opacity: 0.8;
+				}
+			}
+
+			.videopack-icons {
+				display: block;
+				width: 100%;
+				height: 100%;
+				text-align: center;
+
+				svg {
+					display: block;
+					fill: currentColor;
+					width: 100%;
+					height: 100%;
+				}
+
+				&.share svg.close-icon,
+				&.close svg.share-icon {
+					display: none;
+				}
+
+				&.embed {
+					margin-right: 5px;
 				}
 			}
 		}
@@ -807,145 +842,137 @@
 		opacity: 1;
 		visibility: visible;
 	}
-}
 
-.videopack-icons {
-	display: inline-block;
-	line-height: 1;
-	text-decoration: inherit;
-	text-transform: none;
-	width: 20px;
-	height: 20px;
-	vertical-align: middle;
-	text-align: center;
-	background-size: contain;
-	background-repeat: no-repeat;
-	margin-left: 5px;
+	/* Custom Theming Overrides */
+	/* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
+	--videopack-control-bar-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color), transparent 30%)")};
 
-	&.embed {
-		background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='32' height='32' preserveAspectRatio='none' fill='white'%3E %3Ctitle%3Eembed%3C/title%3E %3Cpath d='M18 23l3 3 10-10-10-10-3 3 7 7z'%3E%3C/path%3E %3Cpath d='M14 9l-3-3-10 10 10 10 3-3-7-7z'%3E%3C/path%3E %3C/svg%3E");
-		margin-right: 5px;
+	&.videopack-has-title-background-color {
+		.videopack-meta-bar:not(.no-title) {
+			background-color: var(--videopack-title-background-color);
+		}
+
+		.videopack-share-container {
+			background: linear-gradient(to bottom,
+				var(--videopack-title-background-color) 0%,
+				#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color), transparent 50%)")} 60%,
+				#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color), transparent 100%)")} 100%);
+		}
 	}
 
-	&.download {
-		background-image: url("data:image/svg+xml,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' fill='white'%3E %3Ctitle%3Efile_download%3C/title%3E %3Cpath d='M5.016 18h13.969v2.016h-13.969v-2.016zM18.984 9l-6.984 6.984-6.984-6.984h3.984v-6h6v6h3.984z'%3E%3C/path%3E %3C/svg%3E");
-	}
-
-	&.share {
-		background-image: url("data:image/svg+xml,%3Csvg%20fill%3D%22%23fff%22%20height%3D%2224%22%20width%3D%2224%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20458.624%20458.624%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20d%3D%22M339.588%20314.529a71.7%2071.7%200%200%200-38.621%2011.239l-112.682-78.67a72%2072%200%200%200%202.798-19.871c0-6.896-.989-13.557-2.798-19.871l109.64-76.547c11.764%208.356%2026.133%2013.286%2041.662%2013.286%2039.79%200%2072.047-32.257%2072.047-72.047S379.378%200%20339.588%200s-72.047%2032.257-72.047%2072.047c0%205.255.578%2010.373%201.646%2015.308l-112.424%2078.491c-10.974-6.759-23.892-10.666-37.727-10.666-39.79%200-72.047%2032.257-72.047%2072.047s32.256%2072.047%2072.047%2072.047c13.834%200%2026.753-3.907%2037.727-10.666l113.292%2079.097a72%2072%200%200%200-2.514%2018.872c0%2039.79%2032.257%2072.047%2072.047%2072.047s72.047-32.257%2072.047-72.047-32.257-72.048-72.047-72.048%22%2F%3E%3C%2Fsvg%3E");
-		height: 18px;
-	}
-
-	&.close {
-		background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2016%2016%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M8%200C3.6%200%200%203.6%200%208s3.6%208%208%208%208-3.6%208-8-3.6-8-8-8m4.2%2010.8-1.4%201.4L8%209.4l-2.8%202.8-1.4-1.4L6.6%208%203.8%205.2l1.4-1.4L8%206.6l2.8-2.8%201.4%201.4L9.4%208z%22%2F%3E%3C%2Fsvg%3E");
-	}
-
-	&.gear {
-		background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ctitle%3Eicon%2F24%2Ficon-settings%3C%2Ftitle%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M18.113%2013.03a6%206%200%200%200%20.057-.806c0-.28-.025-.542-.057-.806l1.735-1.357a.415.415%200%200%200%20.099-.526l-1.645-2.846a.41.41%200%200%200-.502-.18l-2.048.822a6%206%200%200%200-1.39-.806l-.312-2.18A.4.4%200%200%200%2013.647%204h-3.29a.4.4%200%200%200-.403.345l-.313%202.18a6.3%206.3%200%200%200-1.39.806l-2.047-.823a.4.4%200%200%200-.502.181L4.057%209.535a.405.405%200%200%200%20.099.526l1.735%201.357a7%207%200%200%200-.058.806c0%20.272.025.543.058.806l-1.735%201.357a.415.415%200%200%200-.099.527l1.645%202.845c.099.181.32.247.502.181l2.047-.822q.64.495%201.39.806l.313%202.18a.4.4%200%200%200%20.403.345h3.29a.4.4%200%200%200%20.403-.346l.312-2.179a6.3%206.3%200%200%200%201.39-.806l2.048.822c.19.074.403%200%20.502-.18l1.645-2.846a.415.415%200%200%200-.1-.527zm-6.111%202.073a2.88%202.88%200%200%201-2.879-2.879%202.88%202.88%200%200%201%202.879-2.878%202.88%202.88%200%200%201%202.878%202.878%202.88%202.88%200%200%201-2.878%202.879%22%20fill-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
-		margin: 0;
-	}
-}
-
-/* Custom Theming Overrides */
-.videopack-wrapper {
-	/* Pre-calculate alpha versions if colors are set. Wrap in unquote for safe build. */
-	--videopack-control-bar-bg-color-alpha: #{unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color), transparent 30%)")};
-
-	&.videopack-has-title-background-color .videopack-meta-bar {
-		background-color: var(--videopack-title-background-color) !important;
-	}
-
-	&.videopack-has-title-color .videopack-meta-bar {
-		.videopack-title,
-		.videopack-meta-icons button,
-		.videopack-meta-icons span {
-			color: var(--videopack-title-color) !important;
+	&.videopack-has-title-color {
+		.videopack-share-container {
+			color: var(--videopack-title-color);
 		}
 	}
 
 	/* Video.js Overrides */
 	&.videopack-has-control-bar-color .video-js {
-		color: var(--videopack-control-bar-color) !important;
+		color: var(--videopack-control-bar-color);
 
-		.vjs-play-progress {
-			background-color: var(--videopack-control-bar-color) !important;
+		.vjs-play-progress, .vjs-button:hover .vjs-menu {
+			background-color: var(--videopack-control-bar-color);
 		}
 
 		&:not(.vjs-theme-city):not(.vjs-theme-forest) .vjs-volume-level {
-			background-color: var(--videopack-control-bar-color) !important;
+			background-color: var(--videopack-control-bar-color);
 		}
 
 		&.vjs-theme-city,
 		&.vjs-theme-forest {
 			.vjs-volume-level {
-				background-color: transparent !important;
+				background-color: transparent;
+
 				&::before {
-					border-bottom-color: var(--videopack-control-bar-color) !important;
+					border-bottom-color: var(--videopack-control-bar-color);
 				}
 			}
 		}
 
 		&.vjs-theme-forest .vjs-play-control .vjs-icon-placeholder::before {
-			background-color: var(--videopack-control-bar-color) !important;
+			background-color: var(--videopack-control-bar-color);
 		}
 
 		&.vjs-theme-fantasy .vjs-play-control .vjs-icon-placeholder::before {
-			border-color: var(--videopack-control-bar-color) !important;
+			border-color: var(--videopack-control-bar-color);
 		}
 
 		&.vjs-theme-fantasy .vjs-play-progress::before {
-			background-color: var(--videopack-control-bar-color) !important;
+			background-color: var(--videopack-control-bar-color);
 		}
 
 		.vjs-load-progress {
 			/* ensure load progress isn't overwritten by the slider-bar rule */
-			background: rgba(115, 133, 159, 0.5) !important;
+			background: rgba(115, 133, 159, 0.5);
 		}
 	}
 
 
-	&.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack {
-		.vjs-control:not(.vjs-volume-panel):not(.vjs-progress-control),
-		.vjs-time-control,
-		.vjs-big-play-button,
-		.vjs-menu-button .vjs-menu-content {
-			background-color: var(--videopack-control-bar-bg-color-alpha) !important;
+	&.videopack-has-control-bar-bg-color .video-js {
+
+		.vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+			background-color: var(--videopack-control-bar-bg-color-alpha);
+		}
+
+		&.vjs-theme-videopack {
+			.vjs-control:not(.vjs-progress-control),
+			.vjs-time-control,
+			.vjs-big-play-button,
+			.vjs-menu-button .vjs-menu-content {
+				background-color: var(--videopack-control-bar-bg-color-alpha);
+			}
+
+			.vjs-control.vjs-volume-panel-horizontal {
+				.vjs-mute-control,
+				.vjs-volume-control {
+					background-color: transparent;
+				}
+			}
 		}
 	}
 
-	&.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button {
-		background-color: var(--videopack-play-button-bg-color-alpha) !important;
+	&.videopack-has-play-button-color .video-js.vjs-theme-videopack {
+		.vjs-big-play-button {
+			background-color: var(--videopack-play-button-bg-color-alpha);
+		}
+
+		&:hover .vjs-big-play-button,
+		.vjs-big-play-button:hover,
+		.vjs-big-play-button:focus {
+			background-color: var(--videopack-play-button-bg-color-alpha-hover);
+		}
 	}
 
 	&.videopack-has-control-bar-bg-color .video-js {
 		&:not(.vjs-theme-videopack):not(.vjs-theme-city) .vjs-control-bar {
-			background-color: var(--videopack-control-bar-bg-color-alpha) !important;
+			background-color: var(--videopack-control-bar-bg-color-alpha);
 		}
 
 		&.vjs-theme-city .vjs-control-bar {
-			background-image: linear-gradient(0deg, var(--videopack-control-bar-bg-color-alpha), transparent) !important;
+			background-image: linear-gradient(0deg, var(--videopack-control-bar-bg-color-alpha), transparent);
 		}
 	}
 
 	.video-js.vjs-theme-videopack {
+
 		.vjs-volume-panel button,
 		.vjs-volume-panel .vjs-volume-control,
 		.vjs-progress-control,
 		.vjs-custom-control-spacer {
-			background-color: transparent !important;
+			background-color: transparent;
 		}
 	}
 
 	/* MEJS Overrides */
 
 	&.videopack-has-control-bar-bg-color .mejs-controls {
-		background-color: var(--videopack-control-bar-bg-color-alpha) !important;
+		background-color: var(--videopack-control-bar-bg-color-alpha);
 	}
 
 	&.videopack-has-control-bar-color .mejs-controls {
 		.mejs-button button {
-			background-image: none !important;
-			background-color: var(--videopack-control-bar-color) !important;
+			background-image: none;
+			background-color: var(--videopack-control-bar-color);
 			mask-image: var(--videopack-mejs-controls-svg);
 			-webkit-mask-image: var(--videopack-mejs-controls-svg);
 			mask-repeat: no-repeat;
@@ -956,51 +983,63 @@
 			mask-position: 0 0;
 			-webkit-mask-position: 0 0;
 		}
+
 		.mejs-pause button {
 			mask-position: -20px 0;
 			-webkit-mask-position: -20px 0;
 		}
+
 		.mejs-replay button {
 			mask-position: -160px 0;
 			-webkit-mask-position: -160px 0;
 		}
+
 		.mejs-fullscreen-button button {
 			mask-position: -80px 0;
 			-webkit-mask-position: -80px 0;
 		}
+
 		.mejs-unfullscreen button {
 			mask-position: -100px 0;
 			-webkit-mask-position: -100px 0;
 		}
+
 		.mejs-mute button {
 			mask-position: -60px 0;
 			-webkit-mask-position: -60px 0;
 		}
+
 		.mejs-unmute button {
 			mask-position: -40px 0;
 			-webkit-mask-position: -40px 0;
 		}
+
 		.mejs-captions-button button {
 			mask-position: -140px 0;
 			-webkit-mask-position: -140px 0;
 		}
+
 		.mejs-chapters-button button {
 			mask-position: -180px 0;
 			-webkit-mask-position: -180px 0;
 		}
 
 		.mejs-time {
-			color: var(--videopack-control-bar-color) !important;
+			color: var(--videopack-control-bar-color);
 		}
 
 		.mejs-time-current,
 		.mejs-time-handle-content {
-			background: var(--videopack-control-bar-color) !important;
+			background: var(--videopack-control-bar-color);
 		}
 
 		.mejs-horizontal-volume-current {
-			background: var(--videopack-control-bar-color) !important;
+			background: var(--videopack-control-bar-color);
+		}
+
+		.mejs-volume-current,
+		.mejs-volume-handle {
+			background: var(--videopack-control-bar-color);
 		}
 	}
 }
-
