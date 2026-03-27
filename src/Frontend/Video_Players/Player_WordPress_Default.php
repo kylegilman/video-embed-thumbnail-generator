@@ -39,6 +39,15 @@ class Player_WordPress_Default extends Player {
 	}
 
 	/**
+	 * Returns the handles for MediaElement.js specific styles.
+	 *
+	 * @return array The style handles.
+	 */
+	public function get_player_style_handles(): array {
+		return array_merge( parent::get_player_style_handles(), array( 'wp-mediaelement' ) );
+	}
+
+	/**
 	 * Registers frontend scripts for MediaElement.js.
 	 */
 	public function register_scripts() {

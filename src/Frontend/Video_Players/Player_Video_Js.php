@@ -42,6 +42,19 @@ class Player_Video_Js extends Player {
 	}
 
 	/**
+	 * Returns the handles for Video.js specific styles.
+	 *
+	 * @return array The style handles.
+	 */
+	public function get_player_style_handles(): array {
+		$handles = array_merge( parent::get_player_style_handles(), array( 'video-js' ) );
+		if ( ! empty( $this->options['skin'] ) && 'default' !== $this->options['skin'] ) {
+			$handles[] = (string) $this->options['skin'];
+		}
+		return $handles;
+	}
+
+	/**
 	 * Registers frontend scripts and styles for Video.js.
 	 */
 	public function register_scripts() {
