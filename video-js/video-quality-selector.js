@@ -36,7 +36,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 				this.codec = options.codec;
 				this.on(['click', 'tap'], this.onClick);
 
-				player.on('changeRes', () => {
+				this.on(player, 'changeRes', () => {
 					const is_current_res = this.resolution.toString() === player.getCurrentRes().toString();
 					let is_selected_now = is_current_res;
 					const has_multiple_codecs = player.source_groups && Object.keys(player.source_groups).length > 1;
@@ -135,6 +135,7 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 			constructor(player, options) {
 				player.availableRes = options.available_res;
 				player.source_groups = options.source_groups;
+				options.name = 'resolutionSelector';
 				super(player, options);
 				this.on('mouseenter', this.updateMenuAlignment);
 				this.on('click', this.updateMenuAlignment);
@@ -238,12 +239,36 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 		}
 
 		videojs.registerPlugin('resolutionSelector', function (options) {
-			if (!this.el().firstChild.canPlayType) {
+			const player = this;
+
+			// Cleanup existing button if it exists
+			const controlBar = player.getChild('controlBar');
+			if (controlBar) {
+				const existing = controlBar.getChild('resolutionSelector');
+				if (existing) {
+					controlBar.removeChild(existing);
+					existing.dispose();
+				}
+			}
+
+			// Reset player data
+			player.currentRes = '';
+			player.currentCodec = '';
+
+			const sources = this.options_.sources || [];
+
+			player.getCurrentRes = function () {
+				return player.currentRes || (sources[0] ? (sources[0].resolution || sources[0]['data-res']) : '') || '';
+			};
+
+			player.getCurrentCodec = function () {
+				return player.currentCodec || '';
+			};
+
+			if (!this.el().firstChild || !this.el().firstChild.canPlayType) {
 				return;
 			}
 
-			const player = this;
-			const sources = this.options_.sources;
 			const available_res = { length: 0 };
 			const source_groups = options.source_groups || {};
 			const has_multiple_codecs = source_groups && Object.keys(source_groups).length > 1;
@@ -266,7 +291,8 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					available_res[current_res] = source;
 
 					if (current_res === player.localize('Full')) {
-						player.on('loadedmetadata', function () {
+						player.off('loadedmetadata', player.updateFullResLabel);
+						player.updateFullResLabel = function () {
 							if (!Number.isNaN(player.videoHeight())) {
 								const resMenu = player.controlBar && player.controlBar.getChild('resolutionSelector');
 								if (resMenu) {
@@ -276,7 +302,8 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 									}
 								}
 							}
-						});
+						};
+						player.on('loadedmetadata', player.updateFullResLabel);
 					}
 				}
 			}
@@ -295,14 +322,6 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 					}
 				}
 			}
-
-			player.getCurrentRes = function () {
-				return player.currentRes || (sources[0] ? (sources[0].resolution || sources[0]['data-res']) : '') || '';
-			};
-
-			player.getCurrentCodec = function () {
-				return player.currentCodec || '';
-			};
 
 			player.changeRes = function (target_resolution, target_codec_id) {
 				const current_res = player.getCurrentRes();
