@@ -2,319 +2,344 @@
  * Features for integrating Videopack with the TinyMCE editor.
  */
 
-/**
- * Videopack TinyMCE integration for visual shortcode previews.
- */
+import {
+	createRoot,
+	useState,
+	useEffect,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
+import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
+import VideoGallery from '../../components/VideoGallery/VideoGallery';
+import VideoList from '../../components/VideoList/VideoList';
+import Pagination from '../../components/Pagination/Pagination';
+/* global videopack_config, tinymce, MutationObserver */
 import './tinymce.scss';
 
 (function () {
-	/* global tinymce, videopack_config */
+	const PlaceHolderWrapper = ({ type, attributes, mountNode }) => {
+		const [fullAttributes, setFullAttributes] = useState(attributes);
+		const [isLoading, setIsLoading] = useState(type === 'Video');
+		const [galleryPage, setGalleryPage] = useState(1);
+		const [totalPages, setTotalPages] = useState(1);
+		const [isSelected, setIsSelected] = useState(false);
 
-	const decodeEntities = (text) => {
-		if (typeof text !== 'string') {
-			return text;
+		// Watch for selection changes on the wpview container
+		useEffect(() => {
+			const wpView = mountNode.closest('.wpview');
+			if (!wpView) {
+				return;
+			}
+
+			const updateSelection = () => {
+				const selected = wpView.getAttribute('data-mce-selected');
+				setIsSelected(selected === '1' || selected === '2');
+			};
+
+			updateSelection();
+
+			const observer = new MutationObserver(updateSelection);
+			observer.observe(wpView, {
+				attributes: true,
+				attributeFilter: ['data-mce-selected'],
+			});
+
+			return () => observer.disconnect();
+		}, [mountNode]);
+
+		// Fetch metadata for galleries/lists to get total pages
+		useEffect(() => {
+			if (type === 'Video') {
+				return;
+			}
+
+			const args = {
+				...attributes,
+				gallery_pagination: true,
+				gallery_per_page: attributes.gallery_per_page || 10,
+				page_number: galleryPage,
+			};
+
+			apiFetch({
+				path: `/videopack/v1/video_gallery?${new URLSearchParams(
+					args
+				).toString()}`,
+			})
+				.then((response) => {
+					setFullAttributes((prev) => ({
+						...prev,
+						...(response.attributes || {}),
+					}));
+					setTotalPages(response.max_num_pages || 1);
+				})
+				.finally(() => setIsLoading(false));
+		}, [type, attributes, galleryPage]);
+
+		// Fetch metadata for single videos if only ID is provided
+		useEffect(() => {
+			if (type !== 'Video' || !attributes.id || attributes.url) {
+				setIsLoading(false);
+				return;
+			}
+
+			apiFetch({
+				path: `/videopack/v1/video_gallery?gallery_include=${attributes.id}`,
+			})
+				.then((response) => {
+					if (response.videos && response.videos.length > 0) {
+						const video = response.videos[0];
+						setFullAttributes({
+							...video.player_vars,
+							...attributes,
+							title: attributes.title || video.title,
+							poster: attributes.poster || video.player_vars.poster,
+						});
+					}
+				})
+				.finally(() => setIsLoading(false));
+		}, [type, attributes]);
+
+		if (isLoading) {
+			return (
+				<div className="loading-placeholder">
+					<div className="dashicons dashicons-admin-media"></div>
+					<div className="wpview-loading">
+						<ins></ins>
+					</div>
+				</div>
+			);
 		}
-		const textarea = document.createElement('textarea');
-		textarea.innerHTML = text;
-		return textarea.value;
+
+		let Component = VideoPlayer;
+		if (type === 'Gallery') {
+			Component = VideoGallery;
+		} else if (type === 'List') {
+			Component = VideoList;
+		}
+
+		const commonProps = {
+			attributes: {
+				...(videopack_config?.options || {}),
+				...(videopack_config?.defaults || {}),
+				...fullAttributes,
+				autoplay: false, // Never autoplay in TinyMCE preview
+			},
+			isEditing: false,
+			isSelected,
+		};
+
+		const galleryProps =
+			type !== 'Video'
+				? {
+						galleryPage,
+						setGalleryPage,
+						totalPages,
+						setTotalPages,
+				  }
+				: {};
+
+		return (
+			<div className="videopack-tinymce-wrapper">
+				<Component {...commonProps} {...galleryProps} />
+				{fullAttributes.gallery_pagination && totalPages > 1 && (
+					<Pagination
+						currentPage={galleryPage}
+						totalPages={totalPages}
+						onPageChange={setGalleryPage}
+					/>
+				)}
+				{!isSelected && <div className="videopack-block-overlay" />}
+			</div>
+		);
 	};
+
+	/**
+	 * Mounts a React component to a specific mount node within a container.
+	 *
+	 * @param {HTMLElement} container The container element (usually a WP View).
+	 * @param {Object}      shortcode The shortcode object.
+	 */
+	function mountReactToNode(container, shortcode) {
+		if (!container || typeof container.querySelector !== 'function') {
+			return;
+		}
+		const mountNode = container.querySelector('.videopack-tinymce-mount');
+		if (!mountNode || mountNode.dataset.videopackMounted) {
+			return;
+		}
+
+		const attrs = shortcode.attrs.named;
+		const tag = shortcode.tag;
+
+		let type = 'Video';
+		if (tag === 'videopack_gallery') {
+			type = 'Gallery';
+		} else if (tag === 'videopack_list') {
+			type = 'List';
+		} else {
+			// [videopack] or legacy aliases
+			const isGallery = attrs.gallery === 'true' || attrs.gallery === true;
+			if (isGallery) {
+				type = 'Gallery';
+			} else {
+				// Detect if it should be a list
+				const hasMultipleIds = attrs.id && attrs.id.includes(',');
+				const hasQuerySource =
+					attrs.gallery_source ||
+					attrs.gallery_category ||
+					attrs.gallery_tag;
+				const isEmptyAndNotUrl = !attrs.id && !attrs.url && !shortcode.content;
+				const hasGalleryIdOnly =
+					attrs.gallery_id &&
+					!attrs.id &&
+					!attrs.url &&
+					!shortcode.content;
+
+				if (
+					hasMultipleIds ||
+					hasQuerySource ||
+					isEmptyAndNotUrl ||
+					hasGalleryIdOnly
+				) {
+					type = 'List';
+				} else {
+					type = 'Video';
+				}
+			}
+		}
+
+		try {
+			// Use createRoot for React 18+ compatibility
+			if (!mountNode.__reactRoot) {
+				mountNode.__reactRoot = createRoot(mountNode);
+			}
+
+			mountNode.__reactRoot.render(
+				<PlaceHolderWrapper
+					type={type}
+					attributes={attrs}
+					mountNode={mountNode}
+				/>
+			);
+			mountNode.dataset.videopackMounted = 'true';
+		} catch (e) {
+			console.error('Videopack TinyMCE React render error:', e);
+			mountNode.innerHTML =
+				'<div class="videopack-render-error">Error rendering preview</div>';
+		}
+	}
+
+	/**
+	 * Scans all TinyMCE editors for Videopack mount points and mounts them.
+	 */
+	function scanAndMountAll() {
+		if (
+			typeof tinymce === 'undefined' ||
+			!tinymce.editors ||
+			typeof window.wp === 'undefined'
+		) {
+			return;
+		}
+
+		tinymce.editors.forEach((editor) => {
+			const $doc = editor.getDoc();
+			if (!$doc) {
+				return;
+			}
+
+			// Find all WP Views for Videopack in this editor
+			const views = editor.dom.select(
+				'.wpview-wrap[data-wpview-type="videopack"], .wpview-wrap[data-wpview-type="KGVID"], .wpview-wrap[data-wpview-type="VIDEOPACK"], .wpview-wrap[data-wpview-type="FMP"], .wpview-wrap[data-wpview-type="videopack_gallery"], .wpview-wrap[data-wpview-type="videopack_list"]'
+			);
+
+			views.forEach((container) => {
+				const viewText = container.getAttribute('data-wpview-text');
+				if (!viewText) {
+					return;
+				}
+
+				const shortcodeText = decodeURIComponent(viewText);
+				const shortcodeMatch =
+					window.wp.shortcode.next('videopack', shortcodeText) ||
+					window.wp.shortcode.next('KGVID', shortcodeText) ||
+					window.wp.shortcode.next('VIDEOPACK', shortcodeText) ||
+					window.wp.shortcode.next('FMP', shortcodeText) ||
+					window.wp.shortcode.next('videopack_gallery', shortcodeText) ||
+					window.wp.shortcode.next('videopack_list', shortcodeText);
+
+				if (shortcodeMatch && shortcodeMatch.shortcode) {
+					mountReactToNode(container, shortcodeMatch.shortcode);
+				}
+			});
+		});
+	}
 
 	/**
 	 * Registers the Videopack views with TinyMCE.
 	 */
 	function registerVideopackViews() {
-		// Ensure we have access to wp.mce.views
-		if (typeof wp === 'undefined' || !wp.mce || !wp.mce.views) {
-			return false;
+		// Prevent multiple registrations
+		if (window.videopack_tinymce_registered) {
+			return;
 		}
 
-		let mediaFrame;
+		// Register Videopack views
 
-		const wrapPlaceholder = (html, isGallery = false) => {
-			const className =
-				'videopack-tinymce-container' +
-				(isGallery ? ' videopack-tinymce-gallery' : '');
-			const title = __(
-				'This is a placeholder. It will look different on the front end.',
-				'video-embed-thumbnail-generator'
-			);
-			return `<div class="${className}" title="${title}">${html}</div>`;
-		};
+		// Ensure we have access to wp.mce.views
+		if (
+			typeof window.wp === 'undefined' ||
+			!window.wp.mce ||
+			!window.wp.mce.views
+		) {
+			return;
+		}
 
 		const videopackViewConfig = {
 			/**
-			 * The template used to render the preview.
+			 * The template used to render the preview shell.
 			 *
-			 * @param {Object} data Template data.
 			 * @return {string} Template HTML.
 			 */
-			template(data) {
-				try {
-					const tmpl = wp.template('videopack-tinymce-view');
-					return tmpl(data);
-				} catch (e) {
-					console.error('Videopack TinyMCE template error:', e);
-					const posterHtml = data.poster
-						? '<img src="' +
-							data.poster +
-							'" style="max-width:100%; height:auto;" />'
-						: '<span>' +
-							__(
-								'Videopack Video',
-								'video-embed-thumbnail-generator'
-							) +
-							'</span>';
-					return wrapPlaceholder(posterHtml, data.isGallery);
-				}
+			template() {
+				return '<div class="videopack-tinymce-mount"></div>';
 			},
 
 			/**
 			 * Called when the view is initialized.
-			 * We handle the data fetching and rendering here.
+			 * We trigger the render process here.
 			 */
 			initialize() {
-				const self = this;
-				const attrs = this.shortcode.attrs.named;
-				const isGallery = attrs.gallery === 'true';
+				this.render(this.template());
+			},
 
-				const data = {
-					poster: attrs.poster || '',
-					title: decodeEntities(attrs.title || ''),
-					isGallery,
-					shortcodeContent: this.shortcode.content || '',
-					// Default to showing title unless explicitly disabled
-					showTitle: attrs.overlay_title !== 'false',
-				};
+			/**
+			 * Called after the view is inserted into the editor.
+			 * We mount the React component here.
+			 *
+			 * @param {HTMLElement} container The container element.
+			 */
+			bind(container) {
+				mountReactToNode(container, this.shortcode);
+			},
 
-				// Simple wrapper to call render
-				const finalizeRender = (renderData) => {
-					self.render(self.template(renderData));
-				};
-
-				// If it's a gallery, try to fetch the actual HTML from the server
-				if (isGallery && typeof wp !== 'undefined' && wp.apiFetch) {
-					const params = {
-						attrs,
-						content: this.shortcode.content || '',
-					};
-
-					wp.apiFetch({
-						path:
-							'/videopack/v1/render-shortcode' +
-							wp.url.addQueryArgs('', params),
-						method: 'GET',
-					})
-						.then((result) => {
-							if (result && result.html) {
-								const wrappedHtml =
-									'<div class="videopack-tinymce-container videopack-tinymce-gallery" title="' +
-									__(
-										'This is a placeholder. It will look different on the front end.',
-										'video-embed-thumbnail-generator'
-									) +
-									'">' +
-									result.html +
-									'</div>';
-								self.render(wrappedHtml);
-							} else {
-								finalizeRender(data);
-							}
-						})
-						.catch(() => {
-							finalizeRender(data);
-						});
+			/**
+			 * Called when the view is removed from the editor.
+			 * We unmount the React component here for cleanup.
+			 *
+			 * @param {HTMLElement} container The container element.
+			 */
+			unbind(container) {
+				if (!container || typeof container.querySelector !== 'function') {
 					return;
 				}
-
-				const isList =
-					!isGallery &&
-					((attrs.id && attrs.id.indexOf(',') !== -1) ||
-						(this.shortcode.content &&
-							this.shortcode.content.indexOf(',') !== -1) ||
-						attrs.gallery_source ||
-						attrs.gallery_category ||
-						attrs.gallery_tag ||
-						(!attrs.id && !attrs.url && !this.shortcode.content) ||
-						(attrs.gallery_id &&
-							!attrs.id &&
-							!attrs.url &&
-							!this.shortcode.content));
-
-				// If it's a list (not a gallery), fetch data for all IDs
-				if (isList && typeof wp.media !== 'undefined') {
-					const idString = attrs.id || this.shortcode.content || '';
-					const ids = idString
-						.split(',')
-						.map((id) => id.trim())
-						.filter((id) => id.length > 0);
-
-					// Dynamic list (based on source/category/tag/parent)
-					if (
-						ids.length === 0 &&
-						typeof wp !== 'undefined' &&
-						wp.apiFetch
-					) {
-						const fetchParams = { ...attrs };
-						// Fallback to current post ID if no gallery_id is set and no source is specified
-						if (
-							!fetchParams.gallery_id &&
-							!fetchParams.gallery_source &&
-							typeof videopack_config !== 'undefined' &&
-							videopack_config.postId
-						) {
-							fetchParams.gallery_id = videopack_config.postId;
-						}
-
-						wp.apiFetch({
-							path: wp.url.addQueryArgs(
-								'/videopack/v1/video_gallery',
-								fetchParams
-							),
-							method: 'GET',
-						})
-							.then((response) => {
-								const videos = (response.videos || []).map(
-									(v) => {
-										return {
-											id: v.attachment_id,
-											poster: v.poster_url,
-											title: decodeEntities(v.title),
-											showTitle:
-												attrs.overlay_title !== 'false',
-										};
-									}
-								);
-								finalizeRender({ ...data, videos });
-							})
-							.catch((err) => {
-								console.error(
-									'Videopack TinyMCE dynamic list fetch failed:',
-									err
-								);
-								finalizeRender(data);
-							});
-						return;
-					}
-
-					const videoDataList = [];
-					let pending = ids.length;
-
-					if (pending === 0) {
-						finalizeRender({ ...data, videos: [] });
-						return;
-					}
-
-					const listTimeout = setTimeout(() => {
-						if (pending > 0) {
-							pending = 0; // Force stop
-							finalizeRender({
-								...data,
-								videos: videoDataList.filter((v) => !!v),
-							});
-						}
-					}, 5000);
-
-					const getPosterSrc = (attach) => {
-						return (
-							(attach.get('image') && attach.get('image').src) ||
-							attach.get('videopack_poster_src') ||
-							(attach.get('thumb') && attach.get('thumb').src) ||
-							''
-						);
-					};
-
-					ids.forEach((id, index) => {
-						const attachment = wp.media.attachment(id);
-						const updateItem = (attach) => {
-							videoDataList[index] = {
-								id,
-								poster: getPosterSrc(attach) || '',
-								title: decodeEntities(
-									attach.get('title') || ''
-								),
-								showTitle: attrs.overlay_title !== 'false',
-							};
-							pending--;
-							if (pending === 0) {
-								clearTimeout(listTimeout);
-								finalizeRender({
-									...data,
-									videos: videoDataList,
-								});
-							}
-						};
-
-						if (
-							attachment.get('title') ||
-							attachment.get('image')
-						) {
-							updateItem(attachment);
-						} else {
-							attachment
-								.fetch()
-								.always(() => updateItem(attachment));
-						}
-					});
-					return;
-				}
-
-				// If we have an ID, try to enrich data from the attachment (title and poster)
-				if (attrs.id && !isGallery && typeof wp.media !== 'undefined') {
-					const attachment = wp.media.attachment(attrs.id);
-
-					const getPosterSrc = (attach) => {
-						// Full size first, then specific poster meta, then thumb
-						return (
-							(attach.get('image') && attach.get('image').src) ||
-							attach.get('videopack_poster_src') ||
-							(attach.get('thumb') && attach.get('thumb').src) ||
-							''
-						);
-					};
-
-					const enrichData = (attach) => {
-						if (!data.poster) {
-							data.poster = getPosterSrc(attach);
-						}
-						if (!data.title) {
-							data.title = attach.get('title');
-						}
-						finalizeRender(data);
-					};
-
-					// Check cache
-					if (attachment.get('title') || attachment.get('image')) {
-						enrichData(attachment);
-						return;
-					}
-
-					// Fetch from server
-					let timeoutFired = false;
-					const timeout = setTimeout(() => {
-						timeoutFired = true;
-						finalizeRender(data); // Render fallback
-					}, 3000);
-
-					attachment
-						.fetch()
-						.done(() => {
-							if (timeoutFired) {
-								return;
-							}
-							clearTimeout(timeout);
-							enrichData(attachment);
-						})
-						.fail(() => {
-							if (timeoutFired) {
-								return;
-							}
-							clearTimeout(timeout);
-							finalizeRender(data);
-						});
-				} else {
-					// No attachment ID or not a video shortcode
-					setTimeout(() => finalizeRender(data), 0);
+				const mountNode = container.querySelector(
+					'.videopack-tinymce-mount'
+				);
+				if (mountNode && mountNode.__reactRoot) {
+					try {
+						mountNode.__reactRoot.unmount();
+						delete mountNode.__reactRoot;
+					} catch (e) {}
 				}
 			},
 
@@ -322,25 +347,25 @@ import './tinymce.scss';
 			 * Handles clicking the "Edit" button on the view.
 			 *
 			 * @param {string}   text           Shortcode text.
-			 * @param {Function} updateCallback Callback to update the shortcode with new content.
+			 * @param {Function} updateCallback Callback to update the shortcode.
 			 */
 			edit(text, updateCallback) {
-				const shortcode = wp.shortcode.next(this.shortcode.tag, text);
+				if (typeof window.wp === 'undefined') {
+					return;
+				}
+				const shortcode = window.wp.shortcode.next(
+					this.shortcode.tag,
+					text
+				);
 				const values = shortcode ? shortcode.shortcode.attrs.named : {};
 
-				if (typeof wp.media === 'undefined') {
+				if (typeof window.wp.media === 'undefined') {
 					return;
 				}
 
-				if (values && values.id) {
-					if (mediaFrame) {
-						try {
-							mediaFrame.dispose();
-						} catch (e) {}
-						mediaFrame = null;
-					}
-
-					mediaFrame = wp.media({
+				// If it's a single video with an ID, use the enhanced media modal
+				if (values && values.id && values.id.indexOf(',') === -1) {
+					const mediaFrame = window.wp.media({
 						frame: 'select',
 						title: __(
 							'Edit Videopack Shortcode',
@@ -362,8 +387,9 @@ import './tinymce.scss';
 
 					mediaFrame.on('open', function () {
 						const selection = mediaFrame.state().get('selection');
-						const attachment = wp.media.attachment(values.id);
-						// Pass the current shortcode attributes to the media model so the React sidebar can use them
+						const attachment = window.wp.media.attachment(
+							values.id
+						);
 						attachment.set('videopack_attributes', values);
 						attachment.fetch().then(() => {
 							selection.add([attachment]);
@@ -382,12 +408,9 @@ import './tinymce.scss';
 						const selectedId = selection.get('id');
 						const videopackAttrs =
 							selection.get('videopack_attributes') || {};
-						const config = window.videopack_config || {};
+						const config = videopack_config || {};
 
-						// Build shortcode attributes
 						const finalAttrs = { id: selectedId };
-
-						// List of keys we might want to include in the shortcode if they differ from global config
 						const possibleKeys = [
 							'width',
 							'height',
@@ -402,40 +425,41 @@ import './tinymce.scss';
 							'poster',
 							'downloadlink',
 							'overlay_title',
+							'play_button_color',
+							'play_button_icon_color',
+							'title_color',
+							'title_background_color',
 						];
 
 						possibleKeys.forEach((key) => {
 							const value = videopackAttrs[key];
 							if (value !== undefined && value !== null) {
-								const defaultValue = config[key];
-								// Only add to shortcode if it differs from global default
+								const defaultValue = config.defaults?.[key];
 								if (value !== defaultValue) {
 									finalAttrs[key] = value;
 								}
 							}
 						});
 
-						// Generate new shortcode string
-						const newShortcode = new wp.shortcode({
+						const newShortcode = new window.wp.shortcode({
 							tag: shortcodeTag,
 							attrs: finalAttrs,
 							type: 'closed',
 						});
 
-						const newShortcodeString = newShortcode.string();
-						if (typeof updateCallback === 'function') {
-							updateCallback(newShortcodeString);
-						}
+						updateCallback(newShortcode.string());
 					});
 
 					mediaFrame.open();
 				} else {
-					// Open ClassicEmbed Thickbox
+					// Fallback to the Thickbox-based UI for galleries, lists, or non-attachment URLs
 					const params = new URLSearchParams();
 					params.append('videopack_tinymce_edit', '1');
 
-					const urlValue = shortcode.shortcode.content
-						? shortcode.shortcode.content.trim()
+					const urlValue = shortcode
+						? (shortcode.shortcode.content
+							? shortcode.shortcode.content.trim()
+							: '')
 						: '';
 
 					for (const key in values) {
@@ -446,6 +470,12 @@ import './tinymce.scss';
 
 					if (values.url) {
 						params.append('videopack_url', values.url);
+					} else if (
+						urlValue &&
+						values.id &&
+						values.id.indexOf(',') !== -1
+					) {
+						params.append('videopack_id', values.id);
 					} else if (urlValue && !values.id) {
 						params.append('videopack_url', urlValue);
 					}
@@ -455,18 +485,33 @@ import './tinymce.scss';
 						'video-embed-thumbnail-generator'
 					);
 					const isGallery = values.gallery === 'true';
-					const isList =
-						!isGallery &&
-						((values.id && values.id.indexOf(',') !== -1) ||
-							(urlValue && urlValue.indexOf(',') !== -1) ||
+					const urlValueToCheck = urlValue || '';
+					let isListInEdit = false;
+					if (!isGallery) {
+						const hasMultipleIds =
+							values.id && values.id.indexOf(',') !== -1;
+						const hasMultipleContentElements =
+							urlValueToCheck &&
+							urlValueToCheck.indexOf(',') !== -1;
+						const hasQuerySource =
 							values.gallery_source ||
 							values.gallery_category ||
-							values.gallery_tag ||
-							(!values.id && !values.url && !urlValue) ||
-							(values.gallery_id &&
-								!values.id &&
-								!values.url &&
-								!urlValue));
+							values.gallery_tag;
+						const isEmptyAndNotUrl =
+							!values.id && !values.url && !urlValueToCheck;
+						const hasGalleryIdOnly =
+							values.gallery_id &&
+							!values.id &&
+							!values.url &&
+							!urlValueToCheck;
+
+						isListInEdit =
+							hasMultipleIds ||
+							hasMultipleContentElements ||
+							hasQuerySource ||
+							isEmptyAndNotUrl ||
+							hasGalleryIdOnly;
+					}
 
 					if (isGallery) {
 						thickboxTitle = __(
@@ -474,7 +519,7 @@ import './tinymce.scss';
 							'video-embed-thumbnail-generator'
 						);
 						params.set('tab', 'embedgallery');
-					} else if (isList) {
+					} else if (isListInEdit) {
 						thickboxTitle = __(
 							'Edit Video List',
 							'video-embed-thumbnail-generator'
@@ -493,12 +538,8 @@ import './tinymce.scss';
 					window.videopack_tinymce_update_shortcode = (
 						newShortcodeString
 					) => {
-						if (typeof updateCallback === 'function') {
-							updateCallback(newShortcodeString);
-						}
-						// Clear the callback to avoid accidental reuse in new popups
+						updateCallback(newShortcodeString);
 						window.videopack_tinymce_update_shortcode = null;
-
 						if (typeof window.tb_remove === 'function') {
 							window.tb_remove();
 						}
@@ -511,27 +552,92 @@ import './tinymce.scss';
 			},
 		};
 
-		const tags = ['videopack', 'VIDEOPACK', 'KGVID', 'FMP'];
+		const tags = [
+			'videopack',
+			'VIDEOPACK',
+			'KGVID',
+			'FMP',
+			'videopack_gallery',
+			'videopack_list',
+		];
 		tags.forEach((tag) => {
-			if (wp.mce.views.get(tag)) {
-				wp.mce.views.unregister(tag);
+			if (window.wp.mce.views.get(tag)) {
+				window.wp.mce.views.unregister(tag);
 			}
-			wp.mce.views.register(tag, videopackViewConfig);
+			window.wp.mce.views.register(tag, videopackViewConfig);
 		});
 
-		return true;
+		window.videopack_tinymce_registered = true;
 	}
 
-	// Register as a TinyMCE plugin
+	// Register views initially if ready
 	if (
-		typeof tinymce !== 'undefined' &&
-		typeof tinymce.PluginManager !== 'undefined'
+		typeof window.wp !== 'undefined' &&
+		window.wp.mce &&
+		window.wp.mce.views
 	) {
-		tinymce.PluginManager.add('videopack-tinymce', function () {
-			registerVideopackViews();
-		});
+		registerVideopackViews();
+	} else {
+		document.addEventListener('DOMContentLoaded', registerVideopackViews);
 	}
 
-	// Initial registration attempt
-	registerVideopackViews();
+	/**
+	 * Setup observers for TinyMCE editors to handle React mounting.
+	 */
+	function setupEditorObservers() {
+		if (typeof tinymce === 'undefined') {
+			return;
+		}
+
+
+		const initEditor = (editor) => {
+			editor.on('init', () => {
+				if (videopack_config?.globalStyles) {
+					editor.dom.addStyle(videopack_config.globalStyles);
+				}
+				// Share videopack_config with the iframe window just in case
+				editor.getWin().videopack_config = videopack_config;
+			});
+
+			editor.on('init setContent NodeChange', () => {
+				setTimeout(scanAndMountAll, 100);
+			});
+
+			// Setup MutationObserver for the editor body
+			const body = editor.getDoc()?.body;
+			if (body) {
+				const observer = new MutationObserver((mutations) => {
+					let shouldScan = false;
+					mutations.forEach((mutation) => {
+						if (mutation.addedNodes.length > 0) {
+							shouldScan = true;
+						}
+					});
+					if (shouldScan) {
+						scanAndMountAll();
+					}
+				});
+				observer.observe(body, { childList: true, subtree: true });
+			}
+		};
+
+		tinymce.on('AddEditor', (e) => {
+			initEditor(e.editor);
+		});
+
+		// Initialize existing editors
+		tinymce.editors.forEach((editor) => {
+			initEditor(editor);
+		});
+
+		// Initial scan
+		setTimeout(scanAndMountAll, 500);
+	}
+
+	// Wait for TinyMCE to be fully loaded
+	if (typeof tinymce !== 'undefined') {
+		setupEditorObservers();
+	} else {
+		document.addEventListener('DOMContentLoaded', setupEditorObservers);
+	}
 })();

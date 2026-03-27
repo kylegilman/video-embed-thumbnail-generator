@@ -6,7 +6,7 @@ import { TextControl, Button, PanelBody } from '@wordpress/components';
 import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import VideoSettings from '../../../blocks/videopack-video/VideoSettings';
+import VideoSettings from '../../../components/VideoSettings/VideoSettings';
 import CollectionSettingsPanel from '../../../components/InspectorControls/CollectionSettingsPanel';
 import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
@@ -186,10 +186,12 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 	useEffect(() => {
 		if (videoData.attachment && resolvedId) {
 			setSingleAttributes((prev) => {
-				// Avoid unnecessary updates if poster is already correct
+				// Avoid unnecessary updates
 				if (
 					prev.poster === videoData.poster &&
-					prev.poster_id === videoData.poster_id
+					prev.poster_id === videoData.poster_id &&
+					prev.title === videoData.title &&
+					prev.caption === videoData.caption
 				) {
 					return prev;
 				}
@@ -197,6 +199,8 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 					...prev,
 					poster: videoData.poster || prev.poster,
 					poster_id: videoData.poster_id || prev.poster_id,
+					title: videoData.title || prev.title,
+					caption: videoData.caption || prev.caption,
 				};
 			});
 		}
@@ -204,6 +208,8 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		videoData.attachment,
 		videoData.poster,
 		videoData.poster_id,
+		videoData.title,
+		videoData.caption,
 		resolvedId,
 	]);
 
@@ -298,17 +304,6 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 						</PanelBody>
 						{videoUrl && isValidUrl(videoUrl) && (
 							<>
-								<VideoSettings
-									attributes={singleAttributes}
-									setAttributes={(newAttrs) =>
-										setSingleAttributes((prev) => ({
-											...prev,
-											...newAttrs,
-										}))
-									}
-									options={options}
-									initialOpen={!!videoUrl}
-								/>
 								<Thumbnails
 									attributes={singleAttributes}
 									src={videoUrl}
@@ -320,7 +315,18 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 									}
 									videoData={videoData}
 									options={options}
-									parentId={postId}
+									parentId={postId || 0}
+								/>
+								<VideoSettings
+									attributes={singleAttributes}
+									setAttributes={(newAttrs) =>
+										setSingleAttributes((prev) => ({
+											...prev,
+											...newAttrs,
+										}))
+									}
+									options={options}
+									initialOpen={!!videoUrl}
 								/>
 								<AdditionalFormats
 									attributes={singleAttributes}
@@ -332,7 +338,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 										}))
 									}
 									options={options}
-									parentId={postId}
+									parentId={postId || 0}
 								/>
 							</>
 						)}
