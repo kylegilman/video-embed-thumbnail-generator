@@ -31,8 +31,8 @@ $center-big-play-button: true; // true default
 .vjs-theme-videopack {
   /* The base font size controls the size of everything, not just text.
      All dimensions use em-based sizes so that the scale along with the font size.
-     Try increasing it to 15px and see what happens. */
-  font-size: 10px;
+     Try increasing it to 15px and see what happens.
+  font-size: 0.7em; */
 
   /* The main font color changes the ICON COLORS as well as the text */
   color: $primary-foreground-color;

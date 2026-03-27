@@ -181,16 +181,24 @@ class Player {
 	}
 
 	/**
+	 * Returns the handles for player-specific styles.
+	 *
+	 * @return array The style handles.
+	 */
+	public function get_player_style_handles(): array {
+		return array( 'videopack-frontend' );
+	}
+
+	/**
 	 * Enqueues frontend styles.
 	 */
 	public function enqueue_styles() {
 		wp_enqueue_style( 'videopack-videoplayer' );
 
-		if ( ! has_block( 'videopack/videopack-video' ) || has_block( 'videopack/videopack-grid' ) ) {
+		if ( ! has_block( 'videopack/videopack-video' ) ) {
 			wp_enqueue_style( 'videopack-videogallery' );
 			wp_enqueue_style( 'videopack-videopack-gallery-style', plugins_url( '/admin-ui/build/blocks/videopack-gallery/videopack-gallery.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 			wp_enqueue_style( 'videopack-videopack-list-style', plugins_url( '/admin-ui/build/blocks/videopack-list/videopack-list.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
-			wp_enqueue_style( 'videopack-videopack-grid-style', plugins_url( '/admin-ui/build/blocks/videopack-grid/videopack-grid.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
 		}
 	}
 
@@ -582,15 +590,21 @@ class Player {
 	 * @return string The meta bar HTML.
 	 */
 	protected function get_meta_bar_code(): string {
-
 		$has_embed      = $this->has_embed_meta();
 		$no_title_class = ( $this->atts['overlay_title'] ?? false ) ? '' : ' no-title';
+
+		$share_svg    = '<svg class="videopack-icon-svg share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" /></svg>';
+		$close_svg    = '<svg class="videopack-icon-svg close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" /></svg>';
+		$download_svg = '<svg class="videopack-icon-svg download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" /></svg>';
+		$embed_svg    = '<svg class="videopack-icon-svg embed-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z" /></svg>';
 
 		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
 		$meta_bar .= '<span class="videopack-meta-icons">';
 
 		if ( $has_embed ) {
-			$meta_bar .= '<button type="button" class="videopack-icons share"></button>';
+			$meta_bar .= '<button type="button" class="videopack-meta-bar-button" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">';
+			$meta_bar .= '<span class="videopack-icons share">' . $share_svg . $close_svg . '</span>';
+			$meta_bar .= '</button>';
 		}
 
 		if ( $this->atts['downloadlink'] ) {
@@ -601,7 +615,7 @@ class Player {
 				$download_attributes .= ' data-alt_link="' . esc_attr( $alt_link ) . '"';
 			}
 
-			$meta_bar .= '<a ' . $download_attributes . '><span class="videopack-icons download"></span></a>';
+			$meta_bar .= '<a ' . $download_attributes . '><span class="videopack-icons download">' . $download_svg . '</span></a>';
 		}
 		$meta_bar .= '</span>';
 
@@ -635,7 +649,7 @@ class Player {
 				esc_attr( $iframe_title )
 			);
 
-			$meta_bar .= '<span class="videopack-embedcode-container"><span class="videopack-icons embed"></span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
+			$meta_bar .= '<span class="videopack-embedcode-container"><span class="videopack-icons embed">' . $embed_svg . '</span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
 
 			$start_at_id = 'videopack-start-at-enable-' . $this->get_id();
 			$meta_bar   .= '<span class="videopack-start-at-container">' .
