@@ -12,6 +12,7 @@ import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
 import useVideoQuery from '../../../hooks/useVideoQuery';
 import { useVideoData } from '../../../hooks/useVideoData';
+import useVideoProbe from '../../../hooks/useVideoProbe';
 import { generateShortcode, normalizeOptions } from '../../../utils/utils';
 
 /**
@@ -78,7 +79,24 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 	const initialVideoUrl = editAttributes.url || '';
 
 	const [videoUrl, setVideoUrl] = useState(initialVideoUrl);
+	const [debouncedVideoUrl, setDebouncedVideoUrl] = useState(initialVideoUrl);
 	const [resolvedId, setResolvedId] = useState(null);
+	const [isResolving, setIsResolving] = useState(false);
+	const { isProbing, probedMetadata } = useVideoProbe(debouncedVideoUrl);
+	const [probedMetadataOverride, setProbedMetadataOverride] = useState(null);
+
+	// Debounce the video URL for all downstream logic and rendering
+	useEffect(() => {
+		if (videoUrl === debouncedVideoUrl) {
+			return;
+		}
+
+		const timeoutId = setTimeout(() => {
+			setIsResolving(true);
+			setDebouncedVideoUrl(videoUrl);
+		}, 1000);
+		return () => clearTimeout(timeoutId);
+	}, [videoUrl, debouncedVideoUrl]);
 
 	const [singleAttributes, setSingleAttributes] = useState({
 		autoplay: !!normalizedOptions.autoplay,
@@ -123,7 +141,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 	const activeAttributes =
 		activeTab === 'gallery' ? galleryAttributes : listAttributes;
 	const queryData = useVideoQuery(activeAttributes, postId);
-	const videoData = useVideoData(resolvedId, videoUrl, !resolvedId);
+	const videoData = useVideoData(resolvedId, debouncedVideoUrl, !resolvedId);
 	const [urlError, setUrlError] = useState('');
 
 	// Validate URL
@@ -138,49 +156,69 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 
 	// Resolve URL to Attachment ID
 	useEffect(() => {
-		if (!videoUrl) {
+		const controller = new AbortController();
+
+		if (!debouncedVideoUrl || !isValidUrl(debouncedVideoUrl)) {
 			setResolvedId(null);
+			setIsResolving(false);
 			setUrlError('');
 			return;
 		}
 
-		if (!isValidUrl(videoUrl)) {
-			setResolvedId(null);
-			setUrlError(
-				__(
-					'Please enter a valid URL.',
-					'video-embed-thumbnail-generator'
-				)
-			);
-			return;
-		}
-
 		setUrlError('');
+		setIsResolving(true);
+		// Note: We no longer setResolvedId(null) immediately.
+		// This keeps the previous settings/thumbnails visible (though potentially stale)
+		// until the new URL is resolved, preventing a jarring UI disappearance.
 
-		const timeoutId = setTimeout(() => {
-			apiFetch({
-				path: '/videopack/v1/resolve-url',
-				method: 'POST',
-				data: { url: videoUrl, parent_id: postId },
-			})
-				.then((response) => {
-					if (response.attachment_id) {
-						setResolvedId(response.attachment_id);
-						setSingleAttributes((prev) => ({
-							...prev,
-							id: response.attachment_id,
-						}));
-					}
-				})
-				.catch((error) => {
-					// eslint-disable-next-line no-console
-					console.error('Error resolving video URL:', error);
+		apiFetch({
+			path: '/videopack/v1/resolve-url',
+			method: 'POST',
+			data: { url: debouncedVideoUrl, post_id: postId },
+			signal: controller.signal,
+		})
+			.then((response) => {
+				if (response.attachment_id) {
+					setResolvedId(response.attachment_id);
+					setSingleAttributes((prev) => ({
+						...prev,
+						id: response.attachment_id,
+					}));
+				} else {
 					setResolvedId(null);
-				});
-		}, 1000); // 1s Debounce resolution
+				}
+			})
+			.catch((error) => {
+				if (error.name === 'AbortError') {
+					return;
+				}
+				// eslint-disable-next-line no-console
+				console.error('Error resolving video URL:', error);
+				setResolvedId(null);
+			})
+			.finally(() => {
+				setIsResolving(false);
+			});
 
-		return () => clearTimeout(timeoutId);
-	}, [videoUrl, postId]);
+		return () => controller.abort();
+	}, [debouncedVideoUrl, postId]);
+
+	// Sync metadata from videoData when it loads
+	useEffect(() => {
+		if (videoData?.record?.media_details && !probedMetadata) {
+			const { width, height, duration } = videoData.record.media_details;
+			setProbedMetadataOverride({
+				width,
+				height,
+				duration,
+				isTainted: false, // Internal media is never tainted
+			});
+		} else if (!debouncedVideoUrl) {
+			setProbedMetadataOverride(null);
+		}
+	}, [videoData, probedMetadata, debouncedVideoUrl]);
+
+	const effectiveMetadata = probedMetadataOverride || probedMetadata;
 
 	// Sync metadata from videoData when it loads
 	useEffect(() => {
@@ -197,10 +235,10 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 				}
 				return {
 					...prev,
-					poster: videoData.poster || prev.poster,
-					poster_id: videoData.poster_id || prev.poster_id,
-					title: videoData.title || prev.title,
-					caption: videoData.caption || prev.caption,
+					poster: videoData.poster !== undefined ? videoData.poster : prev.poster,
+					poster_id: videoData.poster_id !== undefined ? videoData.poster_id : prev.poster_id,
+					title: videoData.title !== undefined ? videoData.title : prev.title,
+					caption: videoData.caption !== undefined ? videoData.caption : prev.caption,
 				};
 			});
 		}
@@ -283,6 +321,8 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 										id: 0,
 										poster: undefined,
 										poster_id: undefined,
+										title: undefined,
+										caption: undefined,
 									}));
 								}}
 								help={__(
@@ -302,46 +342,53 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 								</div>
 							)}
 						</PanelBody>
-						{videoUrl && isValidUrl(videoUrl) && (
-							<>
-								<Thumbnails
-									attributes={singleAttributes}
-									src={videoUrl}
-									setAttributes={(newAttrs) =>
-										setSingleAttributes((prev) => ({
-											...prev,
-											...newAttrs,
-										}))
-									}
-									videoData={videoData}
-									options={options}
-									parentId={postId || 0}
-								/>
-								<VideoSettings
-									attributes={singleAttributes}
-									setAttributes={(newAttrs) =>
-										setSingleAttributes((prev) => ({
-											...prev,
-											...newAttrs,
-										}))
-									}
-									options={options}
-									initialOpen={!!videoUrl}
-								/>
-								<AdditionalFormats
-									attributes={singleAttributes}
-									src={videoUrl}
-									setAttributes={(newAttrs) =>
-										setSingleAttributes((prev) => ({
-											...prev,
-											...newAttrs,
-										}))
-									}
-									options={options}
-									parentId={postId || 0}
-								/>
-							</>
-						)}
+						{debouncedVideoUrl &&
+							isValidUrl(debouncedVideoUrl) &&
+							!isResolving && (
+								<>
+									<Thumbnails
+										attributes={singleAttributes}
+										src={debouncedVideoUrl}
+										setAttributes={(newAttrs) =>
+											setSingleAttributes((prev) => ({
+												...prev,
+												...newAttrs,
+											}))
+										}
+										videoData={videoData}
+										options={options}
+										parentId={postId || 0}
+										isProbing={isProbing}
+										probedMetadata={effectiveMetadata}
+									/>
+									<VideoSettings
+										attributes={singleAttributes}
+										setAttributes={(newAttrs) =>
+											setSingleAttributes((prev) => ({
+												...prev,
+												...newAttrs,
+											}))
+										}
+										options={options}
+										isProbing={isProbing}
+										probedMetadata={effectiveMetadata}
+									/>
+									<AdditionalFormats
+										attributes={singleAttributes}
+										src={debouncedVideoUrl}
+										setAttributes={(newAttrs) =>
+											setSingleAttributes((prev) => ({
+												...prev,
+												...newAttrs,
+											}))
+										}
+										options={options}
+										parentId={postId || 0}
+										probedMetadata={effectiveMetadata}
+										isProbing={isProbing}
+									/>
+								</>
+							)}
 						<div className="videopack-insert-button-wrapper">
 							<Button
 								variant="primary"
@@ -372,6 +419,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 								}))
 							}
 							queryData={queryData}
+							options={normalizedOptions}
 							showGalleryOptions={true}
 						/>
 						<div className="videopack-insert-button-wrapper">
@@ -403,6 +451,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 								}))
 							}
 							queryData={queryData}
+							options={normalizedOptions}
 							showGalleryOptions={false}
 						/>
 						<div className="videopack-insert-button-wrapper">

@@ -62,7 +62,8 @@ export default function CollectionSettingsPanel({
 	} = attributes;
 
 	const { excludedVideos } = queryData;
-	const THEME_COLORS = videopack_config.themeColors;
+	const THEME_COLORS =
+		videopack_config?.themeColors || options?.themeColors;
 	const baseGalleryOrderbyOptions = [
 		{
 			value: 'menu_order',
@@ -199,7 +200,7 @@ export default function CollectionSettingsPanel({
 							'video-embed-thumbnail-generator'
 						)}
 						type="number"
-						value={gallery_per_page}
+						value={gallery_per_page ?? ''}
 						onChange={attributeChangeFactory(
 							'gallery_per_page',
 							true
@@ -244,7 +245,7 @@ export default function CollectionSettingsPanel({
 								value={
 									Number(collection_video_limit) === -1
 										? 12
-										: collection_video_limit
+										: (collection_video_limit ?? '')
 								}
 								onChange={attributeChangeFactory(
 									'collection_video_limit',
@@ -258,11 +259,11 @@ export default function CollectionSettingsPanel({
 					<>
 						<TextControl
 							label={__(
-								'Columns',
+								'Max Columns',
 								'video-embed-thumbnail-generator'
 							)}
 							type="number"
-							value={gallery_columns}
+							value={gallery_columns ?? ''}
 							onChange={attributeChangeFactory(
 								'gallery_columns',
 								true
@@ -271,7 +272,7 @@ export default function CollectionSettingsPanel({
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={__(
-								'Overlay video title on thumbnails',
+								'Title',
 								'video-embed-thumbnail-generator'
 							)}
 							onChange={attributeChangeFactory('gallery_title')}
@@ -281,7 +282,7 @@ export default function CollectionSettingsPanel({
 							__nextHasNoMarginBottom
 							__next40pxDefaultSize
 							label={__(
-								'When gallery video finishes',
+								'When current video ends',
 								'video-embed-thumbnail-generator'
 							)}
 							value={gallery_end}
@@ -567,7 +568,6 @@ export default function CollectionSettingsPanel({
 						</div>
 					</div>
 				</div>
-
 			</PanelBody>
 		</>
 	);

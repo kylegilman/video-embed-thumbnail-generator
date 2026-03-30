@@ -29,6 +29,7 @@ class Encode_Format {
 	const STATUS_DELETED             = 'deleted';
 	const STATUS_ERROR               = 'error';
 	const STATUS_NOT_ENCODED         = 'not_encoded';
+	const STATUS_REMOTE_EXISTS       = 'remote_exists';
 
 	/**
 	 * Format ID.
@@ -778,6 +779,8 @@ class Encode_Format {
 			case self::STATUS_NEEDS_INSERT:
 			case self::STATUS_PENDING_REPLACEMENT:
 				return __( 'Finishing', 'video-embed-thumbnail-generator' );
+			case self::STATUS_REMOTE_EXISTS:
+				return __( 'On external server', 'video-embed-thumbnail-generator' );
 			default:
 				return $status;
 		}

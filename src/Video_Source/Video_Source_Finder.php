@@ -42,7 +42,17 @@ class Video_Source_Finder {
 		}
 
 		$response_code = wp_remote_retrieve_response_code( $response );
-		$is_ok         = ( $response_code >= 200 && $response_code < 300 );
+		$is_ok         = false;
+		error_log( $url );
+		if ( $response_code >= 200 && $response_code < 300 ) {
+			$content_type = wp_remote_retrieve_header( $response, 'content-type' );
+			$is_ok        = true;
+
+			// Detect soft-404s where the server returns a 200 OK HTML page instead of a video
+			if ( ! empty( $content_type ) && strpos( $content_type, 'text/html' ) !== false ) {
+				$is_ok = false;
+			}
+		}
 
 		set_transient( $transient_key, $is_ok ? 'yes' : 'no', DAY_IN_SECONDS );
 

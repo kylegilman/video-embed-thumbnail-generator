@@ -200,6 +200,9 @@ class Encode_Info {
 	protected function process_children( array $children ) {
 
 		foreach ( $children as $child ) {
+			if ( ! empty( $this->id ) && (int) $child->ID === (int) $this->id ) {
+				continue;
+			}
 			$wp_attached_file = get_attached_file( $child->ID );
 			$video_meta       = wp_get_attachment_metadata( $child->ID );
 			$meta_format      = get_post_meta( $child->ID, '_kgflashmediaplayer-format', true );
@@ -208,8 +211,8 @@ class Encode_Info {
 			if ( $meta_format == $this->format->get_id()
 				|| ( $legacy_id_exists && $meta_format == $this->format->get_legacy_id() )
 				|| ( $meta_format == false
-					&& ( substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix()
-						|| ( $legacy_id_exists && substr( $wp_attached_file, -strlen( $this->format->get_legacy_suffix() ) ) === $this->format->get_legacy_suffix()
+					&& ( ! empty( $wp_attached_file ) && substr( $wp_attached_file, -strlen( $this->format->get_suffix() ) ) === $this->format->get_suffix()
+						|| ( $legacy_id_exists && ! empty( $wp_attached_file ) && substr( $wp_attached_file, -strlen( $this->format->get_legacy_suffix() ) ) === $this->format->get_legacy_suffix()
 						)
 					)
 				)
@@ -244,7 +247,7 @@ class Encode_Info {
 	protected function check_potential_locations() {
 		$potential_locations = array();
 
-		if ( $this->source instanceof \Videopack\Video_Source\Source_File_Local || $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local ) {
+		if ( $this->source instanceof \Videopack\Video_Source\Source_File_Local || $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local || $this->source instanceof \Videopack\Video_Source\Source_Url ) {
 			$potential_locations['same_directory'] = array(
 				'url'  => $this->sanitized_url->noextension . $this->format->get_suffix(),
 				'path' => $this->source->get_dirname() . '/' . $this->basename . $this->format->get_suffix(),
@@ -264,15 +267,16 @@ class Encode_Info {
 
 		foreach ( $potential_locations as $name => $location ) {
 			if ( file_exists( $location['path'] ) ) {
-				$this->exists = true;
-				$this->url    = $location['url'];
-				$this->path   = $location['path'];
+				$this->exists     = true;
+				$this->sameserver = true;
+				$this->url        = $location['url'];
+				$this->path       = $location['path'];
 				require_once ABSPATH . 'wp-admin/includes/file.php';
 				if ( get_filesystem_method( array(), $location['path'], true ) === 'direct' ) {
 					$this->writable = true;
 				}
 				break;
-			} elseif ( $this->source instanceof \Videopack\Video_Source\Source_Url ) {
+			} elseif ( ( $this->source instanceof \Videopack\Video_Source\Source_Url || ! $this->source->is_local() || ! empty( get_post_meta( $this->source->get_id(), '_kgflashmediaplayer-externalurl', true ) ) ) && $this->format->is_enabled() ) {
 				$this->check_url_exists( $location['url'] );
 			}
 		}
@@ -284,20 +288,7 @@ class Encode_Info {
 	 * @param string $url The URL to check.
 	 */
 	protected function check_url_exists( $url ) {
-		$cache_key = 'videopack_url_exists_' . md5( $url );
-		$exists    = get_transient( $cache_key );
-
-		if ( false === $exists ) {
-			if ( $this->source->url_exists( $url ) ) {
-				$exists = 'yes';
-				set_transient( $cache_key, $exists, HOUR_IN_SECONDS );
-			} else {
-				$exists = 'no';
-				set_transient( $cache_key, $exists, HOUR_IN_SECONDS );
-			}
-		}
-
-		if ( 'yes' === $exists ) {
+		if ( $this->source->url_exists( $url ) ) {
 			$this->exists = true;
 			$this->url    = $url;
 		}
