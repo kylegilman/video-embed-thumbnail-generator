@@ -1,3 +1,7 @@
+/**
+ * Component to manage additional video formats, including encoding and file management.
+ */
+
 /* global videopack_config */
 
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -8,7 +12,7 @@ import {
 	Spinner,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import './AdditionalFormats.scss';
@@ -21,6 +25,13 @@ import {
 	deleteJob,
 } from '../../utils/utils';
 
+/**
+ * Helper to get the ordinal string for a number.
+ *
+ * @param {number} n      The number.
+ * @param {string} locale The locale string.
+ * @return {string} Ordinal string (e.g., "1st", "2nd").
+ */
 const getOrdinal = (n, locale = 'en-US') => {
 	const pr = new Intl.PluralRules(locale.replace('_', '-'), {
 		type: 'ordinal',
@@ -42,17 +53,47 @@ const getOrdinal = (n, locale = 'en-US') => {
 	}
 };
 
+/**
+ * AdditionalFormats component for managing alternative video files.
+ *
+ * @param {Object}   props                Component props.
+ * @param {Function} props.setAttributes  Function to update block attributes.
+ * @param {Object}   props.attributes     Block attributes.
+ * @param {Object}   props.options        Global Videopack options.
+ * @param {number}   props.parentId       ID of the parent attachment.
+ * @param {string}   props.src            Video source URL.
+ * @param {Object}   props.probedMetadata Metadata from video probing.
+ * @param {boolean}  props.isProbing      Whether the video is currently being probed.
+ * @return {Element} The rendered component.
+ */
 const AdditionalFormats = ({
 	setAttributes,
 	attributes,
 	options = {},
 	parentId: providedParentId,
 	src: propSrc, // Accept src as a separate prop
+	probedMetadata,
+	isProbing,
 }) => {
 	const parentId = providedParentId || attributes.id || 0;
 	const src = propSrc || attributes.src;
 	const { ffmpeg_exists } = options;
-	const [videoFormats, setVideoFormats] = useState({});
+	const [videoFormats, setVideoFormats] = useState(null);
+	const isExternal = useMemo(() => {
+		let isSrcExternal = false;
+		if (src) {
+			try {
+				isSrcExternal = new URL(src).origin !== window.location.origin;
+			} catch (e) {
+				// Relative URLs or invalid URLs are considered internal
+			}
+		}
+		return !attributes.id || isSrcExternal;
+	}, [attributes.id, src]);
+
+	const [isOpen, setIsOpen] = useState(
+		isExternal ? false : ffmpeg_exists === true
+	);
 	const [encodeMessage, setEncodeMessage] = useState();
 	const [itemToDelete, setItemToDelete] = useState(null); // { type: 'file'/'job', formatId: string, jobId?: int, id?: int, name?: string }
 	const [deleteInProgress, setDeleteInProgress] = useState(null); // Stores formatId or jobId being deleted
@@ -112,6 +153,7 @@ const AdditionalFormats = ({
 						'completed',
 						'needs_insert',
 						'pending_replacement',
+						'remote_exists',
 					].includes(newFormat.status);
 
 					newFormat.checked =
@@ -138,36 +180,66 @@ const AdditionalFormats = ({
 		});
 	}, []);
 
-	const fetchVideoFormats = useCallback(async () => {
-		const activeId = attributes.id || 0;
-		if (!activeId && !src) {
-			return;
-		} // Don't fetch if no ID and no URL.
-		try {
-			const formats = await getVideoFormats(activeId, src);
-			updateVideoFormats(formats);
-		} catch (error) {
-			console.error('Error fetching video formats:', error);
-		}
-	}, [attributes.id, src, updateVideoFormats]);
-
-	const pollVideoFormats = useCallback(async () => {
-		const activeId = attributes.id || 0;
-		if (src) {
+	const fetchVideoFormats = useCallback(
+		async (signal = null) => {
+			const activeId = attributes.id || 0;
+			if (!activeId && !src) {
+				return;
+			} // Don't fetch if no ID and no URL.
+			setIsLoading(true);
 			try {
-				const formats = await getVideoFormats(activeId, src);
+				const formats = await getVideoFormats(
+					activeId,
+					src,
+					probedMetadata,
+					signal
+				);
 				updateVideoFormats(formats);
-				return formats;
 			} catch (error) {
-				console.error('Error polling video formats:', error);
+				if (error.name === 'AbortError') {
+					return;
+				}
+				console.error('Error fetching video formats:', error);
+			} finally {
+				setIsLoading(false);
 			}
-		}
-		return null;
-	}, [src, attributes.id, updateVideoFormats]);
+		},
+		[attributes.id, src, probedMetadata, updateVideoFormats]
+	);
+
+	const pollVideoFormats = useCallback(
+		async (signal = null) => {
+			const activeId = attributes.id || 0;
+			if (src) {
+				try {
+					const formats = await getVideoFormats(
+						activeId,
+						src,
+						probedMetadata,
+						signal
+					);
+					updateVideoFormats(formats);
+					return formats;
+				} catch (error) {
+					if (error.name === 'AbortError') {
+						return null;
+					}
+					console.error('Error polling video formats:', error);
+				}
+			}
+			return null;
+		},
+		[src, attributes.id, probedMetadata, updateVideoFormats]
+	);
 
 	useEffect(() => {
-		fetchVideoFormats();
-	}, [fetchVideoFormats]); // Fetch formats when the attachment ID changes
+		if (isProbing || !isOpen) {
+			return;
+		}
+		const controller = new AbortController();
+		fetchVideoFormats(controller.signal);
+		return () => controller.abort();
+	}, [fetchVideoFormats, isProbing, isOpen]); // Fetch formats when the attachment ID changes or panel is opened
 
 	const shouldPoll = (formats) => {
 		if (!formats) {
@@ -226,7 +298,25 @@ const AdditionalFormats = ({
 		setVideoFormats((prevVideoFormats) => {
 			const updatedFormats = { ...prevVideoFormats };
 			if (updatedFormats[formatId]) {
-				updatedFormats[formatId].checked = isChecked;
+				// If a replacement format is checked, uncheck all other replacement formats.
+				if (isChecked && updatedFormats[formatId].replaces_original) {
+					Object.keys(updatedFormats).forEach((id) => {
+						if (
+							id !== formatId &&
+							updatedFormats[id].replaces_original
+						) {
+							updatedFormats[id] = {
+								...updatedFormats[id],
+								checked: false,
+							};
+						}
+					});
+				}
+
+				updatedFormats[formatId] = {
+					...updatedFormats[formatId],
+					checked: isChecked,
+				};
 			}
 			return updatedFormats;
 		});
@@ -252,6 +342,7 @@ const AdditionalFormats = ({
 						'completed',
 						'needs_insert',
 						'pending_replacement',
+						'remote_exists',
 					].includes(value.status) &&
 					!value.exists
 			)
@@ -388,8 +479,8 @@ const AdditionalFormats = ({
 			console.error('File delete failed:', error);
 			const errorMessage = sanitizeError(error);
 			setEncodeMessage(
-				/* translators: %s is an error message */
 				sprintf(
+					/* translators: %s is an error message */
 					__(
 						'Error deleting file: %s',
 						'video-embed-thumbnail-generator'
@@ -429,8 +520,14 @@ const AdditionalFormats = ({
 			console.error('Job delete failed:', error);
 			const errorMessage = sanitizeError(error);
 			setEncodeMessage(
-				/* translators: %s is an error message */
-				sprintf( __('Error deleting job: %s', 'video-embed-thumbnail-generator'), errorMessage )
+				sprintf(
+					/* translators: %s is an error message */
+					__(
+						'Error deleting job: %s',
+						'video-embed-thumbnail-generator'
+					),
+					errorMessage
+				)
 			);
 			fetchVideoFormats(); // Re-fetch to get the latest status
 		} finally {
@@ -553,32 +650,49 @@ const AdditionalFormats = ({
 		[attributes.id]
 	);
 
-	const groupedFormats = Object.values(videoFormats).reduce((acc, format) => {
-		if (!format.codec || !format.codec.id) {
-			return acc;
-		}
-		const codecId = format.codec.id;
-		if (!acc[codecId]) {
-			acc[codecId] = {
-				name: format.codec.name,
-				formats: [],
-			};
-		}
-		acc[codecId].formats.push(format);
-		// sort formats by height
-		acc[codecId].formats.sort((a, b) => {
-			// Prioritize formats that replace the original video.
-			if (a.replaces_original && !b.replaces_original) {
-				return -1;
-			}
-			if (!a.replaces_original && b.replaces_original) {
-				return 1;
-			}
-			// Otherwise, sort by resolution height in descending order.
-			return b.resolution.height - a.resolution.height;
-		});
-		return acc;
-	}, {});
+	const groupedFormats = videoFormats
+		? Object.values(videoFormats).reduce((acc, format) => {
+				if (!format.codec || !format.codec.id) {
+					return acc;
+				}
+				const codecId = format.codec.id;
+				if (!acc[codecId]) {
+					acc[codecId] = {
+						name: format.codec.name,
+						formats: [],
+					};
+				}
+				acc[codecId].formats.push(format);
+				// sort formats by height
+				acc[codecId].formats.sort((a, b) => {
+					// Prioritize the replacement format to be at the top of its codec.
+					if (a.replaces_original && !b.replaces_original) {
+						return -1;
+					}
+					if (!a.replaces_original && b.replaces_original) {
+						return 1;
+					}
+					// Prioritize the fullres format.
+					if (
+						a.resolution.id === 'fullres' &&
+						b.resolution.id !== 'fullres'
+					) {
+						return -1;
+					}
+					if (
+						a.resolution.id !== 'fullres' &&
+						b.resolution.id === 'fullres'
+					) {
+						return 1;
+					}
+					// Otherwise, sort by resolution height in descending order.
+					return (
+						(b.resolution.height || 0) - (a.resolution.height || 0)
+					);
+				});
+				return acc;
+		  }, {})
+		: {};
 
 	return (
 		<>
@@ -587,8 +701,22 @@ const AdditionalFormats = ({
 					'Additional Formats',
 					'video-embed-thumbnail-generator'
 				)}
+				opened={isOpen}
+				onToggle={() => setIsOpen(!isOpen)}
 			>
-				{videoFormats ? (
+				{isLoading || !videoFormats ? (
+					<div className="videopack-formats-loading">
+						<Spinner />
+						{isLoading && isExternal && (
+							<span className="videopack-external-check-notice">
+								{__(
+									'Checking URLs on external server…',
+									'video-embed-thumbnail-generator'
+								)}
+							</span>
+						)}
+					</div>
+				) : (
 					<div className="videopack-formats-container">
 						<ul
 							className={`videopack-formats-list${
@@ -597,7 +725,7 @@ const AdditionalFormats = ({
 						>
 							{Object.keys(groupedFormats).map((codecId) => {
 								const codecGroup = groupedFormats[codecId];
-								if (options.encode[codecId]?.enabled !== true) {
+								if (codecGroup.formats.length === 0) {
 									return null;
 								}
 								return (
@@ -663,8 +791,6 @@ const AdditionalFormats = ({
 							{confirmDialogMessage()}
 						</ConfirmDialog>
 					</div>
-				) : (
-					<Spinner />
 				)}
 				{ffmpeg_exists === true && videoFormats && canUploadFiles && (
 					<PanelRow className="videopack-encode-button-row">

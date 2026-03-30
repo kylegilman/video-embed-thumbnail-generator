@@ -155,6 +155,13 @@ class Encode_Attachment {
 	protected $current_temp_watermark_path = null;
 
 	/**
+	 * Browser-provided metadata used as a fallback if FFmpeg is unavailable.
+	 *
+	 * @var array $browser_metadata
+	 */
+	protected $browser_metadata = array();
+
+	/**
 	 * Flag to prevent recursion during deletion.
 	 *
 	 * @var bool
@@ -173,12 +180,14 @@ class Encode_Attachment {
 		array $options,
 		\Videopack\Admin\Formats\Registry $format_registry,
 		$id,
-		string $url = null
+		string $url = null,
+		array $browser_metadata = array()
 	) {
-		$this->options            = $options;
-		$this->format_registry    = $format_registry;
-		$this->id                 = $id;
-		$this->url                = $url;
+		$this->options          = $options;
+		$this->format_registry  = $format_registry;
+		$this->id               = $id;
+		$this->url              = $url;
+		$this->browser_metadata = $browser_metadata;
 		$attachment_meta          = new Attachment_Meta( $this->options );
 		$this->attachment_manager = new Attachment( $this->options, $format_registry, $attachment_meta );
 		$this->uploads            = (array) wp_upload_dir();
@@ -523,15 +532,22 @@ class Encode_Attachment {
 			$format_array['status']     = Encode_Format::STATUS_NOT_ENCODED;
 			$format_array['was_picked'] = false;
 
-			if ( $file_exists && $encode_info->id ) {
-				$format_array['status'] = Encode_Format::STATUS_COMPLETED;
-				$format_array['url']    = (string) $encode_info->url;
-				$format_array['id']     = (int) $encode_info->id;
+			if ( $file_exists ) {
+				$format_array['url'] = (string) $encode_info->url;
 
-				$parent_id = (int) get_post_meta( (int) $encode_info->id, '_kgflashmediaplayer-parent', true );
+				if ( $encode_info->id && (int) $encode_info->id !== (int) $this->id ) {
+					$format_array['status'] = Encode_Format::STATUS_COMPLETED;
+					$format_array['id']     = (int) $encode_info->id;
 
-				if ( $parent_id > 0 && $parent_id === (int) $this->id ) {
-					$format_array['was_picked'] = true;
+					$parent_id = (int) get_post_meta( (int) $encode_info->id, '_kgflashmediaplayer-parent', true );
+
+					if ( $parent_id > 0 && $parent_id === (int) $this->id ) {
+						$format_array['was_picked'] = true;
+					}
+				} elseif ( ! $encode_info->sameserver ) {
+					$format_array['status'] = Encode_Format::STATUS_REMOTE_EXISTS;
+				} else {
+					$format_array['status'] = Encode_Format::STATUS_COMPLETED;
 				}
 			}
 
@@ -1213,7 +1229,7 @@ class Encode_Attachment {
 	 * @return void
 	 */
 	protected function set_video_metadata() {
-		$this->video_metadata = new Video_Metadata( $this->id, (string) $this->encode_input, (bool) $this->is_attachment, (string) $this->ffmpeg_path, $this->options );
+		$this->video_metadata = new Video_Metadata( $this->id, (string) $this->encode_input, (bool) $this->is_attachment, (string) $this->ffmpeg_path, $this->options, $this->browser_metadata );
 	}
 
 	/**

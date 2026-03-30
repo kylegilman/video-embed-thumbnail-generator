@@ -12,7 +12,7 @@
 	}
 
 	.components-button.has-icon {
-		margin-bottom: 4px;
+		margin-bottom: 14px;
 	}
 }
 
@@ -84,6 +84,8 @@
 	}
 }
 
+.components-base-control:has(.components-text-control__input),
+.components-base-control:has(.components-select-control__input),
 .components-base-control.components-toggle-control:where(:not(:last-child)) {
 	margin-bottom: 16px;
 }

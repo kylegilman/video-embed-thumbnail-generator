@@ -93,15 +93,11 @@ class Cleanup {
 			delete_expired_transients();
 		}
 
-		$search_pattern = esc_sql( '_transient_timeout_kgvid%' );
-
 		$transients = $wpdb->get_col(
-			$wpdb->prepare(
-				"SELECT option_name
-				FROM $wpdb->options
-				WHERE option_name LIKE %s",
-				$search_pattern
-			)
+			"SELECT option_name
+			FROM $wpdb->options
+			WHERE option_name LIKE '_transient_timeout_kgvid%'
+			OR option_name LIKE '_transient_timeout_videopack%'"
 		);
 
 		if ( is_array( $transients ) ) {

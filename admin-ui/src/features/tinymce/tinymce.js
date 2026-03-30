@@ -77,27 +77,30 @@ import './tinymce.scss';
 
 		// Fetch metadata for single videos if only ID is provided
 		useEffect(() => {
-			if (type !== 'Video' || !attributes.id || attributes.url) {
+			if (type !== 'Video' || !attributes.id) {
 				setIsLoading(false);
 				return;
 			}
 
+			// If we have an ID, we almost always want to fetch its metadata to get sources/poster
 			apiFetch({
 				path: `/videopack/v1/video_gallery?gallery_include=${attributes.id}`,
 			})
 				.then((response) => {
 					if (response.videos && response.videos.length > 0) {
 						const video = response.videos[0];
-						setFullAttributes({
+						setFullAttributes((prev) => ({
 							...video.player_vars,
-							...attributes,
-							title: attributes.title || video.title,
-							poster: attributes.poster || video.player_vars.poster,
-						});
+							...prev,
+							title: prev.title || video.title,
+							poster: prev.poster || video.player_vars.poster,
+							// Ensure the URL provided in the shortcode content (if any) takes precedence
+							src: prev.url || prev.src || video.player_vars.src,
+						}));
 					}
 				})
 				.finally(() => setIsLoading(false));
-		}, [type, attributes]);
+		}, [type, attributes.id]);
 
 		if (isLoading) {
 			return (
@@ -117,13 +120,26 @@ import './tinymce.scss';
 			Component = VideoList;
 		}
 
+		const finalAttributes = {
+			...(videopack_config?.options || {}),
+			...(videopack_config?.defaults || {}),
+			...fullAttributes,
+			autoplay: false, // Never autoplay in TinyMCE preview
+		};
+
+		// If we only have a URL but no sources array, create a default one for the player
+		if (
+			finalAttributes.url &&
+			(!finalAttributes.sources || finalAttributes.sources.length === 0)
+		) {
+			finalAttributes.src = finalAttributes.url;
+			finalAttributes.sources = [
+				{ src: finalAttributes.url, type: 'video/mp4' },
+			];
+		}
+
 		const commonProps = {
-			attributes: {
-				...(videopack_config?.options || {}),
-				...(videopack_config?.defaults || {}),
-				...fullAttributes,
-				autoplay: false, // Never autoplay in TinyMCE preview
-			},
+			attributes: finalAttributes,
 			isEditing: false,
 			isSelected,
 		};
@@ -168,8 +184,13 @@ import './tinymce.scss';
 			return;
 		}
 
-		const attrs = shortcode.attrs.named;
+		const attrs = { ...shortcode.attrs.named };
 		const tag = shortcode.tag;
+
+		// If the shortcode has content (e.g. [videopack]URL[/videopack]), map it to the url attribute
+		if (shortcode.content && !attrs.url && !attrs.src) {
+			attrs.url = shortcode.content.trim();
+		}
 
 		let type = 'Video';
 		if (tag === 'videopack_gallery') {
@@ -455,6 +476,12 @@ import './tinymce.scss';
 					// Fallback to the Thickbox-based UI for galleries, lists, or non-attachment URLs
 					const params = new URLSearchParams();
 					params.append('videopack_tinymce_edit', '1');
+					if (videopack_config?.classic_embed_nonce) {
+						params.append(
+							'videopack_nonce',
+							videopack_config.classic_embed_nonce
+						);
+					}
 
 					const urlValue = shortcode
 						? (shortcode.shortcode.content

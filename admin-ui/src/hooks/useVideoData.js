@@ -17,6 +17,9 @@ import { __ } from '@wordpress/i18n';
 export const useVideoData = (id, src, isExternal) => {
 	const [videoData, setVideoData] = useState({
 		poster: undefined,
+		poster_id: undefined,
+		title: undefined,
+		caption: undefined,
 		total_thumbnails: undefined,
 		attachment: undefined,
 		error: null,
@@ -61,6 +64,33 @@ export const useVideoData = (id, src, isExternal) => {
 			setVideoData({
 				poster: attachment?.meta?.['_videopack-meta']?.poster,
 				poster_id: attachment?.meta?.['_videopack-meta']?.poster_id,
+				title:
+					attachment?.meta?.['_videopack-meta']?.title ||
+					attachment?.title?.rendered ||
+					attachment?.title ||
+					'',
+				caption: (() => {
+					const metaCaption = attachment?.meta?.['_videopack-meta']?.caption;
+					if (metaCaption) {
+						return metaCaption;
+					}
+					const rendered =
+						attachment?.caption?.rendered ||
+						attachment?.caption ||
+						'';
+					const externalUrl =
+						attachment?.meta?.['_kgflashmediaplayer-externalurl'];
+					if (
+						externalUrl &&
+						rendered
+							.trim()
+							.replace(/<\/?[^>]+(>|$)/g, '')
+							.trim() === externalUrl.trim()
+					) {
+						return '';
+					}
+					return rendered;
+				})(),
 				total_thumbnails:
 					attachment?.meta?.['_videopack-meta']?.total_thumbnails,
 				attachment,
@@ -72,6 +102,8 @@ export const useVideoData = (id, src, isExternal) => {
 			setVideoData({
 				poster: undefined,
 				poster_id: undefined,
+				title: undefined,
+				caption: undefined,
 				total_thumbnails: undefined,
 				attachment: null,
 				error: null,

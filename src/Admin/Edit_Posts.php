@@ -55,7 +55,8 @@ class Edit_Posts {
 	 * @param array  $attachment    The attachment array.
 	 * @return string The modified HTML.
 	 */
-	public function modify_media_insert( $html, $attachment_id, $attachment ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function modify_media_insert( $html, $attachment_id, $attachment ) {
+		unset( $attachment );
 		$mime_type = (string) get_post_mime_type( (int) $attachment_id );
 
 		if ( 0 === strpos( $mime_type, 'video' ) ) {
@@ -200,11 +201,24 @@ class Edit_Posts {
 
 			// Extract attributes passed from TinyMCE plugin for editing.
 			$edit_attributes = array();
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			// Detect if editing parameters are present.
+			$has_edit_attributes = false;
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checking keys to determine if nonce verification is required for TinyMCE edit.
 			foreach ( $_GET as $key => $value ) {
-				if ( 0 === strpos( (string) $key, 'videopack_' ) ) {
-					$clean_key                     = (string) str_replace( 'videopack_', '', (string) $key );
-					$edit_attributes[ $clean_key ] = (string) sanitize_text_field( (string) $value );
+				if ( 0 === strpos( (string) $key, 'videopack_' ) && 'videopack_nonce' !== $key ) {
+					$has_edit_attributes = true;
+					break;
+				}
+			}
+
+			if ( $has_edit_attributes ) {
+				check_admin_referer( 'videopack_classic_embed', 'videopack_nonce' );
+				foreach ( $_GET as $key => $value ) {
+					if ( 0 === strpos( (string) $key, 'videopack_' ) && 'videopack_nonce' !== $key ) {
+						$clean_key                     = (string) str_replace( 'videopack_', '', (string) $key );
+						$edit_attributes[ $clean_key ] = (string) sanitize_text_field( (string) $value );
+					}
 				}
 			}
 
@@ -234,6 +248,9 @@ class Edit_Posts {
 		?>
 		<div id="videopack-classic-embed-root"></div>
 		<?php
+		if ( function_exists( 'wp_print_media_templates' ) ) {
+			wp_print_media_templates();
+		}
 	}
 
 	/**
