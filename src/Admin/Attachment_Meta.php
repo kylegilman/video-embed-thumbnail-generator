@@ -131,9 +131,17 @@ class Attachment_Meta {
 			'watermark_url'     => (string) ( $this->options['watermark_url'] ?? '' ),
 			'ffmpeg_watermark_url' => null,
 			'is_remote'         => false,
-			'title'             => null,
-			'caption'           => null,
 			'legacy_dimensions' => null,
+			'title_color'                 => null,
+			'title_background_color'      => null,
+			'pagination_color'            => null,
+			'pagination_background_color' => null,
+			'pagination_active_bg_color'  => null,
+			'pagination_active_color'     => null,
+			'play_button_color'           => null,
+			'play_button_icon_color'      => null,
+			'control_bar_bg_color'        => null,
+			'control_bar_color'           => null,
 		);
 	}
 
@@ -238,7 +246,7 @@ class Attachment_Meta {
 
 		if ( empty( $meta_data['codec'] ) || empty( $meta_data['frame_rate'] ) || ( empty( $meta_data['actualwidth'] ) && ! empty( get_attached_file( (int) $this->post_id ) ) ) ) {
 			$video_path = (string) get_attached_file( (int) $this->post_id );
-			if ( $video_path ) {
+			if ( $video_path && ! preg_match( '/^(https?:)?\/\//i', $video_path ) ) {
 				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 					require_once ABSPATH . 'wp-admin/includes/media.php';
 				}
@@ -727,9 +735,17 @@ class Attachment_Meta {
 				'format' => 'uri',
 			),
 			'is_remote'           => array( 'type' => array( 'boolean' ) ),
-			'title'               => array( 'type' => array( 'string', 'null' ) ),
-			'caption'             => array( 'type' => array( 'string', 'null' ) ),
 			'legacy_dimensions'   => array( 'type' => array( 'string', 'boolean', 'null' ) ),
+			'title_color'                 => array( 'type' => array( 'string', 'null' ) ),
+			'title_background_color'      => array( 'type' => array( 'string', 'null' ) ),
+			'pagination_color'            => array( 'type' => array( 'string', 'null' ) ),
+			'pagination_background_color' => array( 'type' => array( 'string', 'null' ) ),
+			'pagination_active_bg_color'  => array( 'type' => array( 'string', 'null' ) ),
+			'pagination_active_color'     => array( 'type' => array( 'string', 'null' ) ),
+			'play_button_color'           => array( 'type' => array( 'string', 'null' ) ),
+			'play_button_icon_color'      => array( 'type' => array( 'string', 'null' ) ),
+			'control_bar_bg_color'        => array( 'type' => array( 'string', 'null' ) ),
+			'control_bar_color'           => array( 'type' => array( 'string', 'null' ) ),
 		);
 
 		$default_keys = array_keys( $this->get_defaults() );

@@ -22,13 +22,11 @@
 		 * @since 5.0.0
 		 */
 		init: function () {
-			document.querySelectorAll('.videopack-player').forEach((element) => {
-				this.initPlayer(element);
-			});
+			this.initPlayers();
 
-			// Initialize galleries
-			document.querySelectorAll('.videopack-gallery-wrapper').forEach((element) => {
-				this.initGallery(element);
+			// Initialize collections (Gallery, Grid, List) with pagination
+			document.querySelectorAll('.videopack-collection-wrapper').forEach((element) => {
+				this.initCollection(element);
 			});
 
 
@@ -56,6 +54,18 @@
 		},
 
 		/**
+		 * Initialize players within a container.
+		 *
+		 * @since 5.0.0
+		 * @param {HTMLElement|Document} container The container to search for players.
+		 */
+		initPlayers: function (container = document) {
+			container.querySelectorAll('.videopack-player').forEach((element) => {
+				this.initPlayer(element);
+			});
+		},
+
+		/**
 		 * Initialize a single player.
 		 *
 		 * @since 5.0.0
@@ -74,16 +84,16 @@
 				return;
 			}
 
-			if (videoVars.embed_method.startsWith('Video.js')) {
+			if (videoVars.embed_method === 'Video.js') {
 				this.loadVideoJS(playerWrapper, videoVars);
 			} else if (videoVars.embed_method === 'WordPress Default') {
 				const checkMejs = () => {
 					const container = playerWrapper.querySelector('.mejs-container');
-					
+
 					if (container) {
 						this.setupVideo(playerWrapper, videoVars);
 					} else {
-						// If still no container, MEJS hasn't initialized yet. 
+						// If still no container, MEJS hasn't initialized yet.
 						// We rely on onMejsSuccess, but as a last resort, check again in 1s.
 						setTimeout(() => {
 							if (!playerWrapper.dataset.videopackInitialized) {
@@ -277,7 +287,7 @@
 				}
 			}
 
-			if (videoVars.embed_method.startsWith('Video.js')) {
+			if (videoVars.embed_method === 'Video.js') {
 				this.setupVideoJSPlayer(playerWrapper, videoVars);
 			} else if (videoVars.embed_method === 'WordPress Default') {
 				this.setupMEJSPlayer(playerWrapper, videoVars);
@@ -303,7 +313,7 @@
 				resizeObserver.observe(target);
 
 				// Cleanup observer on player disposal.
-				if (videoVars.embed_method.startsWith('Video.js')) {
+				if (videoVars.embed_method === 'Video.js') {
 					const player = videojs.getPlayer('videopack_video_' + playerId);
 					if (player) {
 						player.on('dispose', () => {
@@ -547,7 +557,7 @@
 				if (videoVars.set_volume) {
 					video.volume = videoVars.set_volume;
 				}
-				if (true === videoVars.mute) {
+				if (true === videoVars.muted) {
 					video.setMuted(true);
 				}
 				if (false === videoVars.pauseothervideos) {
@@ -692,7 +702,7 @@
 			let player = null;
 
 			// Determine current codec and player instance
-			if (videoVars.embed_method.startsWith('Video.js') && typeof videojs !== 'undefined') {
+			if (videoVars.embed_method === 'Video.js' && typeof videojs !== 'undefined') {
 				player = videojs.getPlayer(`videopack_video_${playerId}`);
 				if (player && player.getCurrentCodec) {
 					const detectedCodec = player.getCurrentCodec();
@@ -768,7 +778,7 @@
 			}
 
 			// Switch resolution if needed
-			if (videoVars.embed_method.startsWith('Video.js') && player && player.changeRes) {
+			if (videoVars.embed_method === 'Video.js' && player && player.changeRes) {
 				const targetRes = bestSource.resolution || bestSource['data-res'];
 				if (player.getCurrentRes() !== targetRes) {
 					player.changeRes(targetRes, currentCodec);
@@ -806,6 +816,9 @@
 		 */
 		videoCounter: function (playerId, event) {
 			const playerWrapper = document.querySelector(`.videopack-player[data-id="${playerId}"]`);
+			if (!playerWrapper) {
+				return;
+			}
 			const videoVars = this.player_data[`videopack_player_${playerId}`];
 
 			if (!videoVars) {
@@ -945,7 +958,7 @@
 				this.setStartAt(playerWrapper);
 			}
 
-			if (videoVars.embed_method.startsWith('Video.js')) {
+			if (videoVars.embed_method === 'Video.js') {
 				const playerId = playerWrapper.dataset.id;
 				const player = videojs.getPlayer(`videopack_video_${playerId}`);
 				if (player) {
@@ -1016,7 +1029,7 @@
 				const videoVars = this.player_data[`videopack_player_${playerWrapper.dataset.id}`];
 				let currentTime = 0;
 
-				if (videoVars.embed_method.startsWith('Video.js')) {
+				if (videoVars.embed_method === 'Video.js') {
 					const playerId = playerWrapper.dataset.id;
 					const player = videojs.getPlayer(`videopack_video_${playerId}`);
 					if (player) {
@@ -1115,56 +1128,73 @@
 		},
 
 		/**
-		 * Initialize a single gallery.
-		 * @param {HTMLElement} galleryWrapper The gallery wrapper element.
+		 * Initialize a single collection (Gallery, Grid, or List).
+		 * @param {HTMLElement} collectionWrapper The collection wrapper element.
 		 */
-		initGallery: function (galleryWrapper) {
-			if (galleryWrapper.dataset.videopackGalleryInitialized) {
+		initCollection: function (collectionWrapper) {
+			if (collectionWrapper.dataset.videopackCollectionInitialized) {
 				return;
 			}
 
-			const gallerySettings = JSON.parse(galleryWrapper.dataset.gallerySettings || '{}');
-			// A better approach than setting data on the element would be a WeakMap, but for now this is fine.
-			galleryWrapper.dataset.gallerySettingsCache = JSON.stringify(gallerySettings);
+			const settings = JSON.parse(collectionWrapper.dataset.settings || '{}');
+			collectionWrapper.dataset.settingsCache = JSON.stringify(settings);
 
-			// Store initial video data order for navigation.
-			const initialVideoOrder = [];
-			galleryWrapper.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
-				initialVideoOrder.push(String(thumb.dataset.attachmentId));
-			});
-			// See above note about WeakMap.
-			galleryWrapper.dataset.currentVideosOrder = JSON.stringify(initialVideoOrder);
-			galleryWrapper.dataset.currentPage = '1';
-			const totalPages = galleryWrapper.querySelector('.videopack-gallery-pagination') ? galleryWrapper.querySelectorAll('.videopack-page-number-div').length : 1;
-			galleryWrapper.dataset.totalPages = totalPages;
+			if (collectionWrapper.classList.contains('videopack-gallery-wrapper')) {
+				// Store initial video data order for navigation.
+				const initialVideoOrder = [];
+				collectionWrapper.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
+					initialVideoOrder.push(String(thumb.dataset.attachmentId));
+				});
+				collectionWrapper.dataset.currentVideosOrder = JSON.stringify(initialVideoOrder);
+				this.setupGalleryItemScaling(collectionWrapper);
+			}
 
-			this.setupGalleryItemScaling(galleryWrapper);
+			if (collectionWrapper.dataset.videopackInitialized) {
+				return;
+			}
+			collectionWrapper.dataset.videopackInitialized = 'true';
+
+			const pagination = collectionWrapper.querySelector('.videopack-pagination');
+			if (pagination && !collectionWrapper.dataset.totalPages) {
+				const pageButtons = pagination.querySelectorAll('.videopack-pagination-button:not([aria-label])');
+				if (pageButtons.length > 0) {
+					collectionWrapper.dataset.totalPages = pageButtons.length;
+				}
+			}
 
 			// Event Listeners
-			galleryWrapper.addEventListener('click', (e) => {
-				const clickableArea = e.target.closest('.gallery-item-clickable-area');
-				if (clickableArea) {
-					this.handleGalleryThumbnailClick(e, galleryWrapper);
+			collectionWrapper.addEventListener('click', (e) => {
+				if (collectionWrapper.classList.contains('videopack-gallery-wrapper')) {
+					const clickableArea = e.target.closest('.gallery-item-clickable-area');
+					if (clickableArea) {
+						this.handleGalleryThumbnailClick(e, collectionWrapper);
+					}
 				}
 
-				const pageButton = e.target.closest('.videopack-gallery-pagination button');
-				if (pageButton && !pageButton.disabled) {
-					this.handleGalleryPaginationClick(e, galleryWrapper);
-				}
-			});
-
-			const popup = galleryWrapper.querySelector('.videopack-modal-overlay');
-			popup.addEventListener('click', (e) => {
-				if (e.target.matches('.modal-close, .videopack-modal-overlay')) {
-					this.closeGalleryPopup(popup);
-				} else if (e.target.matches('.modal-next')) {
-					this.navigateGalleryPopup(1, galleryWrapper);
-				} else if (e.target.matches('.modal-previous')) {
-					this.navigateGalleryPopup(-1, galleryWrapper);
+				const pageLink = e.target.closest('.videopack-pagination a.page-numbers, .videopack-pagination button');
+				if (pageLink && !pageLink.disabled && !pageLink.classList.contains('current') && !pageLink.classList.contains('current-page')) {
+					this.handleCollectionPaginationClick(e, collectionWrapper, pageLink);
 				}
 			});
 
-			galleryWrapper.dataset.videopackGalleryInitialized = true;
+			const popup = collectionWrapper.querySelector('.videopack-modal-overlay');
+			if (popup) {
+				popup.addEventListener('click', (e) => {
+					if (e.target.closest('.modal-close') || e.target === popup) {
+						this.closeGalleryPopup(popup);
+					} else if (e.target.closest('.modal-next')) {
+						this.navigateGalleryPopup(1, collectionWrapper);
+					} else if (e.target.closest('.modal-previous')) {
+						this.navigateGalleryPopup(-1, collectionWrapper);
+					}
+				});
+			}
+
+			collectionWrapper.dataset.videopackCollectionInitialized = true;
+		},
+
+		initGallery: function (galleryWrapper) {
+			this.initCollection(galleryWrapper);
 		},
 
 		handleGalleryThumbnailClick: function (e, galleryWrapper) {
@@ -1184,7 +1214,7 @@
 		openGalleryPopup: function (videoData, galleryWrapper, videoIndex) {
 			const popup = galleryWrapper.querySelector('.videopack-modal-overlay');
 			const playerContainer = popup.querySelector('.modal-content');
-			const gallerySettings = JSON.parse(galleryWrapper.dataset.gallerySettingsCache || '{}');
+			const gallerySettings = JSON.parse(galleryWrapper.dataset.settingsCache || '{}');
 			let skinClass = gallerySettings.skin || 'vjs-default-skin';
 			if (skinClass === 'default') {
 				skinClass = 'vjs-default-skin';
@@ -1201,27 +1231,19 @@
 			// Force autoplay for gallery popup.
 			videoData.autoplay = true;
 
-			// Create player HTML
-			const playerHtml = `
-				<div class="videopack-wrapper">
-					<div class="videopack-player" data-id="gallery_${attachmentId}">
-						<video id="${playerId}" class="videopack-video video-js ${skinClass}" controls autoplay preload="auto" width="${videoData.width}" height="${videoData.height}" ${posterAttr}>
-							${videoData.sources.map((source) => `
-								<source src="${source.src}" type="${source.type}" ${source.resolution ? `data-res="${source.resolution}"` : ''} />
-							` ).join('')}
-						</video>
-					</div>
-				</div>
-			`;
+			// Use pre-rendered player HTML from PHP to ensure consistency
+			const playerHtml = videoData.full_player_html || videoData.player_html;
 			playerContainer.innerHTML = playerHtml;
 
 			const playerWrapper = playerContainer.querySelector('.videopack-player');
+			const videoElement = playerWrapper.querySelector('video');
+			const videoElementId = videoElement ? videoElement.id : playerId;
 
 			if (videoData.embed_method && videoData.embed_method.startsWith('Video.js')) {
 				this.initPlayer(playerWrapper);
 
 				const checkPlayer = setInterval(() => {
-					const player = videojs.getPlayer(playerId);
+					const player = videojs.getPlayer(videoElementId);
 					if (player) {
 						clearInterval(checkPlayer);
 						this.currentGalleryPlayer = player;
@@ -1253,10 +1275,9 @@
 						}
 					});
 				};
-				new MediaElementPlayer(playerId, settings);
+				new MediaElementPlayer(videoElement, settings);
 			} else {
 				this.setupVideo(playerWrapper, videoData);
-				const videoElement = document.getElementById(playerId);
 				if (videoElement) {
 					this.currentGalleryPlayer = videoElement;
 					videoElement.addEventListener('ended', () => {
@@ -1308,6 +1329,10 @@
 
 			// For Video.js players
 			if (typeof this.currentGalleryPlayer.dispose === 'function') {
+				// Prevent events from firing during disposal
+				if (typeof this.currentGalleryPlayer.off === 'function') {
+					this.currentGalleryPlayer.off();
+				}
 				this.currentGalleryPlayer.dispose();
 			} else if (typeof this.currentGalleryPlayer.remove === 'function') {
 				// For MediaElement.js players
@@ -1386,148 +1411,151 @@
 			}
 		},
 
-		handleGalleryPaginationClick: function (e, galleryWrapper) {
+		handleCollectionPaginationClick: function (e, collectionWrapper, pageLink) {
 			e.preventDefault();
-			const page = e.target.closest('button').dataset.page;
-			this.loadGalleryPage(page, galleryWrapper);
+			let page = 1;
+			if (pageLink) {
+				if (pageLink.dataset.page) {
+					page = pageLink.dataset.page;
+				} else if (pageLink.href) {
+					// Extract page from standard WordPress pagination URL
+					const url = new URL(pageLink.href, window.location.origin);
+					if (url.searchParams.has('paged')) {
+						page = url.searchParams.get('paged');
+					} else {
+						const match = url.pathname.match(/\/page\/(\d+)/);
+						if (match) {
+							page = match[1];
+						}
+					}
+				}
+			} else {
+				// Fallback if pageLink isn't explicitly passed
+				const target = e.target.closest('button, a.page-numbers');
+				if (target && target.dataset.page) {
+					page = target.dataset.page;
+				}
+			}
+			
+			if (page) {
+				this.loadCollectionPage(page, collectionWrapper);
+			}
 		},
 
-		loadGalleryPage: function (page, galleryWrapper, openVideoAtIndex = null) {
-			const gallerySettings = JSON.parse(galleryWrapper.dataset.gallerySettingsCache);
-			const grid = galleryWrapper.querySelector('.videopack-gallery-items');
-			const pagination = galleryWrapper.querySelector('.videopack-gallery-pagination');
+		handleGalleryPaginationClick: function (e, galleryWrapper) {
+			this.handleCollectionPaginationClick(e, galleryWrapper);
+		},
 
-			grid.style.opacity = 0.5; // Loading indicator
+		loadCollectionPage: function (page, collectionWrapper, openVideoAtIndex = null) {
+			const settings = JSON.parse(collectionWrapper.dataset.settingsCache);
+			const layout = collectionWrapper.dataset.layout;
+			const grid = collectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+			const pagination = collectionWrapper.querySelector('.videopack-pagination');
+
+			if (grid) {
+				grid.style.opacity = 0.5;
+			}
 
 			const restUrl = new URL(videopack_l10n.rest_url + 'videopack/v1/video_gallery');
 
-			// Append gallery settings and page to URL params
-			Object.keys(gallerySettings).forEach((key) => {
-				if (gallerySettings[key] !== null && gallerySettings[key] !== false && gallerySettings[key] !== '') {
-					restUrl.searchParams.append(key, gallerySettings[key]);
+			Object.keys(settings).forEach((key) => {
+				if (settings[key] !== null && settings[key] !== false && settings[key] !== '') {
+					restUrl.searchParams.append(key, settings[key]);
 				}
 			});
 			restUrl.searchParams.append('page_number', page);
+			restUrl.searchParams.append('layout', layout);
 
 			fetch(restUrl)
 				.then((response) => response.json())
 				.then((data) => {
-					if (data && data.videos) {
-						// Update caches
-						const newVideoOrder = [];
-						data.videos.forEach((video) => {
-							// Add data to global object for initPlayer
-							window.videopack.player_data[video.player_vars.id] = video.player_vars;
-							newVideoOrder.push(String(video.attachment_id));
-						});
-						galleryWrapper.dataset.currentVideosOrder = JSON.stringify(newVideoOrder);
-						galleryWrapper.dataset.currentPage = data.current_page;
-						galleryWrapper.dataset.totalPages = data.max_num_pages;
+					if (data.html) {
+						if (data.videos && window.videopack) {
+							window.videopack.player_data = window.videopack.player_data || {};
+							data.videos.forEach((video) => {
+								if (video.player_vars && video.player_vars.id) {
+									window.videopack.player_data[video.player_vars.id] = video.player_vars;
+								}
+							});
+						}
+						const tempDiv = document.createElement('div');
+						tempDiv.innerHTML = data.html;
 
-						// Render new content
-						this.renderGalleryThumbnails(data.videos, grid, gallerySettings);
-						this.renderGalleryPagination(data.max_num_pages, data.current_page, pagination);
+						const newCollectionWrapper = tempDiv.querySelector('.videopack-collection-wrapper');
+						if (newCollectionWrapper) {
+							const newGrid = newCollectionWrapper.querySelector('.videopack-gallery-items, .videopack-grid-items, .videopack-video-list');
+							const newPagination = newCollectionWrapper.querySelector('.videopack-pagination');
 
-						this.setupGalleryItemScaling(grid);
-
-						if (openVideoAtIndex !== null) {
-							let indexToOpen = openVideoAtIndex;
-							if (indexToOpen === -1) { // -1 means open the last one
-								indexToOpen = data.videos.length - 1;
+							if (grid && newGrid) {
+								grid.innerHTML = newGrid.innerHTML;
 							}
-							const videoToOpen = data.videos[indexToOpen];
-							if (videoToOpen) {
-								this.openGalleryPopup(videoToOpen.player_vars, galleryWrapper, indexToOpen);
+							if (pagination && newPagination) {
+								pagination.innerHTML = newPagination.innerHTML;
+							} else if (pagination) {
+								// Fallback: look for pagination in the returned HTML if not in the wrapper
+								const altNewPagination = tempDiv.querySelector('.videopack-pagination');
+								if (altNewPagination) {
+									pagination.innerHTML = altNewPagination.innerHTML;
+								} else {
+									pagination.innerHTML = '';
+								}
+							}
+
+							collectionWrapper.dataset.currentPage = page;
+							if (data.max_num_pages) {
+								collectionWrapper.dataset.totalPages = data.max_num_pages;
+							}
+							this.initPlayers(collectionWrapper); // Initialize any new players
+							this.initCollection(collectionWrapper); // Re-initialize elements and listeners
+
+							// Update global state if it's a gallery
+							if (layout === 'gallery') {
+								const newVideoOrder = [];
+								newGrid.querySelectorAll('.videopack-gallery-item').forEach((thumb) => {
+									newVideoOrder.push(String(thumb.dataset.attachmentId));
+								});
+								collectionWrapper.dataset.currentVideosOrder = JSON.stringify(newVideoOrder);
+
+								if (data.videos) {
+									data.videos.forEach((video) => {
+										if (video.player_vars && video.player_vars.id) {
+											window.videopack.player_data[video.player_vars.id] = video.player_vars;
+										}
+									});
+								}
+
+								if (openVideoAtIndex !== null) {
+									const actualIndex = openVideoAtIndex === -1 ? newVideoOrder.length - 1 : openVideoAtIndex;
+									const nextAttachmentId = newVideoOrder[actualIndex];
+									const videoToOpen = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${nextAttachmentId}`];
+									if (videoToOpen) {
+										this.openGalleryPopup(videoToOpen, collectionWrapper, actualIndex);
+									}
+								}
 							}
 						}
 					}
-					grid.style.opacity = 1;
+					if (grid) {
+						grid.style.opacity = 1;
+					}
 				})
 				.catch((error) => {
-					console.error('Error loading gallery page:', error);
-					grid.style.opacity = 1;
+					console.error('Error loading collection page:', error);
+					if (grid) {
+						grid.style.opacity = 1;
+					}
 				});
 		},
 
-		renderGalleryThumbnails: function (videos, grid, settings) {
-			grid.innerHTML = '';
-			let html = '';
-			videos.forEach((video) => {
-				html += `
-					<div class="gallery-thumbnail videopack-gallery-item ${settings.skin || ''}" data-attachment-id="${video.attachment_id}">
-						<div class="gallery-item-clickable-area">
-							<img src="${video.poster_url}"
-								 ${video.poster_srcset ? `srcset="${video.poster_srcset}"` : ''}
-								 alt="${video.title}">
-				`;
-				if (settings.embed_method === 'WordPress Default') {
-					html += `
-						<div class="mejs-overlay mejs-layer mejs-overlay-play">
-							<div class="mejs-overlay-button" role="button" tabindex="0" aria-label="Play" aria-pressed="false"></div>
-						</div>
-					`;
-				} else {
-					html += `
-						<div class="play-button-container video-js ${settings.skin || 'kg-video-js-skin'} vjs-big-play-centered vjs-paused vjs-controls-enabled">
-							<button class="vjs-big-play-button" type="button" title="Play Video" aria-disabled="false">
-								<span class="vjs-icon-placeholder" aria-hidden="true"></span>
-								<span class="vjs-control-text" aria-live="polite">Play Video</span>
-							</button>
-						</div>
-					`;
-				}
-				html += `
-							${settings.gallery_title ? `
-								<div class="video-title">
-									<div class="video-title-background"></div>
-									<span class="video-title-text">${video.title}</span>
-								</div>
-							` : ''}
-						</div>
-					</div>
-				`;
-			});
-			grid.innerHTML = html;
+		loadGalleryPage: function (page, galleryWrapper, openVideoAtIndex = null) {
+			this.loadCollectionPage(page, galleryWrapper, openVideoAtIndex);
 		},
 
 		renderGalleryPagination: function (maxPages, currentPage, pagination) {
-			pagination.innerHTML = '';
-			if (maxPages <= 1) {
+			if (!pagination) {
 				return;
 			}
-			let html = `
-				<button
-					class="videopack-pagination-arrow${currentPage > 1 ? '' : ' videopack-hidden'}"
-					data-page="${currentPage - 1}"
-				>
-					<span>&laquo;</span>
-				</button>
-			`;
-			for (let i = 1; i <= maxPages; i++) {
-				html += `
-					<div class="videopack-page-number-div">
-						<button
-							data-page="${i}"
-							class="videopack-page-number${i === currentPage ? ' current-page' : ''}"
-							${i === currentPage ? 'disabled' : ''}
-						>
-							<span>${i}</span>
-						</button>
-						<span class="videopack-pagination-separator">
-							${i === maxPages ? '' : '|'}
-						</span>
-					</div>
-				`;
-			}
-			html += `
-				<button
-					class="videopack-pagination-arrow${currentPage < maxPages ? '' : ' videopack-hidden'}"
-					data-page="${currentPage + 1}"
-				>
-					<span>&raquo;</span>
-				</button>
-			`;
-			pagination.innerHTML = html;
+			pagination.innerHTML = '';
 		},
 
 	};

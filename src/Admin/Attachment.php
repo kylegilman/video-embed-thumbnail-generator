@@ -371,11 +371,8 @@ class Attachment {
 		if ( ! empty( $this->options['auto_thumb'] ) && $this->is_video( $post ) && 'image/gif' !== $post->post_mime_type ) {
 			// If a thumbnail already exists, the frontend script probably succeeded.
 			if ( ! has_post_thumbnail( (int) $post_id ) ) {
-				if ( ! empty( $this->options['ffmpeg_exists'] ) && true === $this->options['ffmpeg_exists'] ) {
+				if ( (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' ) ) {
 					$this->generate_thumbnails_with_ffmpeg( (int) $post_id );
-				} elseif ( ! empty( $this->options['browser_thumbnails'] ) && true === $this->options['browser_thumbnails'] ) {
-					// FFmpeg is not available. Flag for deferred browser-based generation.
-					update_post_meta( (int) $post_id, '_videopack_needs_browser_thumb', true );
 				}
 			}
 		}
@@ -670,10 +667,7 @@ class Attachment {
 	 * @param int $post_id The ID of the video attachment.
 	 */
 	public function generate_thumbnails_with_ffmpeg( $post_id ) {
-		if ( empty( $this->options['ffmpeg_exists'] ) || true !== $this->options['ffmpeg_exists'] ) {
-			if ( ! empty( $this->options['browser_thumbnails'] ) && true === $this->options['browser_thumbnails'] ) {
-				update_post_meta( (int) $post_id, '_videopack_needs_browser_thumb', 1 );
-			}
+		if ( ! (bool) ( $this->options['ffmpeg_exists'] ?? false ) || 'notinstalled' === ( $this->options['ffmpeg_exists'] ?? '' ) ) {
 			return;
 		}
 
@@ -906,46 +900,6 @@ class Attachment {
 		return $results;
 	}
 
-	/**
-	 * Retrieves a list of attachments that need browser-based thumbnail generation.
-	 *
-	 * @return array List of attachments with 'id' and 'url'.
-	 */
-	public function get_pending_browser_thumbnails() {
-		// Only proceed if browser thumbnails are enabled and user has capability.
-		if ( empty( $this->options['browser_thumbnails'] ) || ! current_user_can( 'make_video_thumbnails' ) ) {
-			return array();
-		}
-
-		$query = new \WP_Query(
-			array(
-				'post_type'      => 'attachment',
-				'post_status'    => 'inherit',
-				'posts_per_page' => 20, // Limit to avoid performance issues.
-				'meta_query'     => array(
-					array(
-						'key'   => '_videopack_needs_browser_thumb',
-						'value' => '1',
-					),
-				),
-				'fields'         => 'ids',
-			)
-		);
-
-		$attachments = array();
-		if ( is_array( $query->posts ) ) {
-			foreach ( $query->posts as $post_id ) {
-				$url = (string) wp_get_attachment_url( (int) $post_id );
-				if ( $url ) {
-					$attachments[] = array(
-						'id'  => (int) $post_id,
-						'url' => $url,
-					);
-				}
-			}
-		}
-		return $attachments;
-	}
 
 	/**
 	 * Helper to process thumbnail generation batch.
@@ -956,6 +910,12 @@ class Attachment {
 		$args   = $this->get_thumbnail_candidate_args();
 		$videos = get_posts( $args );
 		$count  = 0;
+
+		$ffmpeg_exists = ! empty( $this->options['ffmpeg_exists'] ) && true === $this->options['ffmpeg_exists'];
+
+		if ( ! $ffmpeg_exists ) {
+			return array( 'total' => 0 );
+		}
 
 		foreach ( $videos as $video_id ) {
 			as_enqueue_async_action(
@@ -1072,7 +1032,8 @@ class Attachment {
 			'post_status'    => 'inherit',
 			'post_parent'    => (int) $parent_id,
 			'post_mime_type' => $mime,
-			'post_content'   => $url, // Store the URL in the description for easy searching.
+			'post_content'   => '',
+			'post_excerpt'   => '',
 		);
 
 		$attachment_id = wp_insert_post( $attachment_data );
@@ -1084,6 +1045,8 @@ class Attachment {
 		update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-externalurl', $url );
 		// Flag to easily identify these for hiding from media library.
 		update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-external-remote', 'true' );
+		// Trigger initial probe to generate _wp_attachment_metadata (duration, dimensions).
+		$this->attachment_meta->get( (int) $attachment_id );
 
 		return (int) $attachment_id;
 	}

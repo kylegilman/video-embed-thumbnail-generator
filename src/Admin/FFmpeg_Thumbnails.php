@@ -544,7 +544,16 @@ class FFmpeg_Thumbnails {
 			if ( is_numeric( $attachment_id ) ) {
 				$attachment_meta_instance = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $attachment_id );
 				$current_meta             = $attachment_meta_instance->get();
-				$is_featured              = $force_featured !== null ? (bool) $force_featured : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
+				$force_featured_bool      = null;
+				if ( $force_featured !== null ) {
+					if ( is_string( $force_featured ) ) {
+						$force_featured_bool = ( 'false' !== strtolower( $force_featured ) && '0' !== $force_featured && '' !== $force_featured );
+					} else {
+						$force_featured_bool = (bool) $force_featured;
+					}
+				}
+
+				$is_featured              = $force_featured_bool !== null ? $force_featured_bool : (bool) ( $current_meta['featured'] ?? ( $this->options['featured'] ?? true ) );
 
 				if ( $is_featured ) {
 					set_post_thumbnail( (int) $attachment_id, (int) $thumb_id );
@@ -558,6 +567,7 @@ class FFmpeg_Thumbnails {
 				update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster', $final_poster_url );
 				update_post_meta( (int) $attachment_id, '_kgflashmediaplayer-poster-id', (int) $thumb_id );
 
+				$current_meta['featured']  = $is_featured;
 				$current_meta['poster']    = (string) $final_poster_url;
 				$current_meta['poster_id'] = (int) $thumb_id;
 				$attachment_meta_instance->save( $current_meta );

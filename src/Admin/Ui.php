@@ -49,6 +49,40 @@ class Ui {
 	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry ) {
 		$this->options         = $options;
 		$this->format_registry = $format_registry;
+
+		// Handle false positive ActionScheduler "missing tables" warning caused by case-sensitivity mismatches on some systems (e.g., Windows).
+		add_filter(
+			'action_scheduler_enable_recreate_data_store',
+			function ( $enable ) {
+				global $wpdb;
+				$table_list = array(
+					'actionscheduler_actions',
+					'actionscheduler_logs',
+					'actionscheduler_groups',
+					'actionscheduler_claims',
+				);
+
+				$found_tables       = (array) $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'actionscheduler%' ) );
+				$found_tables_lower = array_map( 'strtolower', $found_tables );
+
+				$all_exist = true;
+				foreach ( $table_list as $table_name ) {
+					if ( ! in_array( strtolower( $wpdb->prefix . $table_name ), $found_tables_lower, true ) ) {
+						$all_exist = false;
+						break;
+					}
+				}
+
+				if ( $all_exist ) {
+					if ( class_exists( 'ActionScheduler_DataController' ) && ! \ActionScheduler_DataController::is_migration_complete() ) {
+						\ActionScheduler_DataController::mark_migration_complete();
+					}
+					return false; // Tables exist (case-insensitively), so suppress the warning.
+				}
+
+				return $enable; // Tables are truly missing, let ActionScheduler handle it.
+			}
+		);
 	}
 
 	/**
@@ -352,7 +386,7 @@ class Ui {
 				'url'                    => (string) plugins_url( '', VIDEOPACK_PLUGIN_FILE ),
 				'codecs'                 => $codecs_data,
 				'resolutions'            => $resolutions_data,
-				'ffmpeg_exists'          => $options['ffmpeg_exists'] ?? 'notchecked',
+				'ffmpeg_exists'          => is_bool( $options['ffmpeg_exists'] ?? null ) ? $options['ffmpeg_exists'] : ( ( 'true' === ( $options['ffmpeg_exists'] ?? '' ) || 1 === (int) ( $options['ffmpeg_exists'] ?? 0 ) ) ? true : ( $options['ffmpeg_exists'] ?? 'notchecked' ) ),
 				'browser_thumbnails'     => (bool) ( $options['browser_thumbnails'] ?? true ),
 				'auto_thumb'             => (bool) ( $options['auto_thumb'] ?? false ),
 				'auto_thumb_number'      => (int) ( $options['auto_thumb_number'] ?? 1 ),
@@ -407,6 +441,7 @@ class Ui {
 					'auto_codec'                  => (bool) ( $options['auto_codec'] ?? true ),
 					'skin'                        => (string) ( $options['skin'] ?? 'vjs-theme-videopack' ),
 				),
+				'classic_embed_nonce'    => wp_create_nonce( 'videopack_classic_embed' ),
 			)
 		);
 	}
@@ -503,7 +538,7 @@ class Ui {
 			wp_enqueue_script(
 				'videopack-encode-queue',
 				(string) plugins_url( 'admin-ui/build/encode-queue.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) $script_asset['dependencies'],
+				array_merge( (array) $script_asset['dependencies'], array( 'videopack-shared' ) ),
 				(string) $script_asset['version'],
 				true
 			);
@@ -525,6 +560,7 @@ class Ui {
 
 			wp_add_inline_script( 'videopack-encode-queue', $inline_script, 'before' );
 			$this->localize_block_settings( 'videopack-encode-queue' );
+			do_action( 'videopack_trigger_queue_heartbeat' );
 		}
 	}
 
@@ -653,7 +689,6 @@ class Ui {
 		add_editor_style( (string) plugins_url( 'admin-ui/build/videopack-videolist.css', VIDEOPACK_PLUGIN_FILE ) );
 		add_editor_style( (string) plugins_url( 'admin-ui/build/videopack-shared.css', VIDEOPACK_PLUGIN_FILE ) );
 	}
-
 	/**
 	 * Output the TinyMCE templates.
 	 *
