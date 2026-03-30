@@ -114,18 +114,37 @@ class Video_Metadata {
 	 * @param string $ffmpeg_path   Path to FFmpeg.
 	 * @param array  $options       Plugin options.
 	 */
+	/**
+	 * Browser-detected metadata (width, height, duration).
+	 *
+	 * @var array $browser_metadata
+	 */
+	protected $browser_metadata = array();
+
+	/**
+	 * Constructor.
+	 *
+	 * @param int    $id            Attachment ID.
+	 * @param string $encode_input  Input URL or path.
+	 * @param bool   $is_attachment Whether it's an attachment.
+	 * @param string $ffmpeg_path   Path to FFmpeg.
+	 * @param array  $options       Plugin options.
+	 * @param array  $browser_metadata Optional browser metadata.
+	 */
 	public function __construct(
 		$id,
 		string $encode_input,
 		bool $is_attachment,
 		string $ffmpeg_path,
-		array $options
+		array $options,
+		array $browser_metadata = array()
 	) {
 		$this->id            = $id;
 		$this->encode_input  = $encode_input;
-		$this->is_attachment = $is_attachment;
-		$this->ffmpeg_path   = $ffmpeg_path;
-		$this->options       = $options;
+		$this->is_attachment    = $is_attachment;
+		$this->ffmpeg_path      = $ffmpeg_path;
+		$this->options          = $options;
+		$this->browser_metadata = $browser_metadata;
 		$this->set_video_metadata();
 	}
 
@@ -144,12 +163,15 @@ class Video_Metadata {
 			if ( isset( $videopack_postmeta['worked'] ) && $videopack_postmeta['worked']
 			) {
 				$this->worked       = true;
-				$this->actualwidth  = $videopack_postmeta['actualwidth'] ?? null;
-				$this->actualheight = $videopack_postmeta['actualheight'] ?? null;
-				$this->duration     = $videopack_postmeta['duration'] ?? null;
+				$this->actualwidth  = $videopack_postmeta['actualwidth'] ?? ( $this->browser_metadata['actualwidth'] ?? null );
+				$this->actualheight = $videopack_postmeta['actualheight'] ?? ( $this->browser_metadata['actualheight'] ?? null );
+				$this->duration     = $videopack_postmeta['duration'] ?? ( $this->browser_metadata['duration'] ?? null );
 				$this->codec        = $videopack_postmeta['codec'] ?? null;
 				$this->rotate       = $videopack_postmeta['rotate'] ?? '';
-				return;
+
+				if ( $this->actualwidth && $this->actualheight ) {
+					return;
+				}
 			}
 		}
 
@@ -236,6 +258,15 @@ class Video_Metadata {
 						$this->duration = $wp_meta['length'];
 					}
 				}
+			}
+		}
+
+		if ( empty( $this->actualwidth ) && ! empty( $this->browser_metadata['actualwidth'] ) && ! empty( $this->browser_metadata['actualheight'] ) ) {
+			$this->worked       = true;
+			$this->actualwidth  = $this->browser_metadata['actualwidth'];
+			$this->actualheight = $this->browser_metadata['actualheight'];
+			if ( ! empty( $this->browser_metadata['duration'] ) ) {
+				$this->duration = $this->browser_metadata['duration'];
 			}
 		}
 

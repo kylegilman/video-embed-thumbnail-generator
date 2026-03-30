@@ -590,7 +590,6 @@ class Shortcode {
 	 * @return string The rendered player or gallery HTML.
 	 */
 	public function do( $atts, $content = '' ) {
-
 		$query_atts = $this->atts( $atts );
 
 		// Handle gallery_source logic to ensure correct gallery_id.
@@ -608,21 +607,32 @@ class Shortcode {
 		if ( is_feed() ) {
 			return '';
 		}
-		if ( isset( $query_atts['layout'] ) && 'grid' === $query_atts['layout'] ) {
-			$grid = new Grid( $this->options, $this->format_registry );
-			return $grid->render( $query_atts );
-		}
 
-		if ( isset( $query_atts['gallery'] ) && true === $query_atts['gallery'] ) {
-			if ( isset( $query_atts['gallery_orderby'] ) && 'rand' === $query_atts['gallery_orderby'] ) {
+		$is_gallery = isset( $query_atts['gallery'] ) && true === $query_atts['gallery'];
+		$is_list    = ! $is_gallery && ( ! empty( $query_atts['id'] ) && strpos( (string) $query_atts['id'], ',' ) !== false );
+		$is_query   = ! $is_gallery && empty( $query_atts['id'] ) && empty( $content );
+
+		if ( $is_gallery || $is_list || $is_query ) {
+			if ( $is_gallery && isset( $query_atts['gallery_orderby'] ) && 'rand' === (string) $query_atts['gallery_orderby'] ) {
 				$query_atts['gallery_orderby'] = 'RAND(' . (string) wp_rand() . ')';
 			}
 
-			$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options );
-			$player->enqueue_scripts();
+			// If it's a list based on 'id', we map it to 'gallery_include' for the Gallery class.
+			if ( $is_list ) {
+				$query_atts['gallery_include'] = $query_atts['id'];
+			}
 
-			$gallery = new Gallery( $this->options );
-			$code    = $gallery->gallery_page( 1, $query_atts );
+			$gallery = new Gallery( $this->options, $this->format_registry );
+			$layout  = $is_gallery ? 'gallery' : 'list';
+			$page    = 1;
+			if ( get_query_var( 'paged' ) ) {
+				$page = (int) get_query_var( 'paged' );
+			} elseif ( get_query_var( 'page' ) ) {
+				$page = (int) get_query_var( 'page' );
+			}
+
+			$result = (array) $gallery->collection_page( $page, $query_atts, $layout );
+			$code   = (string) $result['html'];
 		} else {
 			$post_id = get_the_ID();
 			if ( ! $post_id && ! is_admin() ) {
@@ -630,137 +640,43 @@ class Shortcode {
 			}
 
 			// Determine the video source based on shortcode attributes or content.
-			$source_ids  = array();
-			$attachments = null;
-			$page        = 1;
-
+			$source_input = '';
 			if ( ! empty( $query_atts['id'] ) ) {
-				$ids = explode( ',', (string) $query_atts['id'] );
-				foreach ( $ids as $id ) {
-					$source_ids[] = trim( $id );
-				}
+				$source_input = trim( (string) $query_atts['id'] );
 			} elseif ( ! empty( $content ) ) {
-				$content = (string) $content;
+				$source_input = trim( (string) $content );
 				// Workaround for relative video URL.
-				if ( substr( $content, 0, 1 ) === '/' ) {
-					$content = (string) get_bloginfo( 'url' ) . $content;
-				}
-				$source_ids[] = trim( $content );
-			} else {
-				// We fallback to get_gallery_videos for multiple querying capabilities.
-				if ( get_query_var( 'paged' ) ) {
-					$page = (int) get_query_var( 'paged' );
-				} elseif ( get_query_var( 'page' ) ) {
-					$page = (int) get_query_var( 'page' );
-				}
-
-				$gallery     = new Gallery( $this->options );
-				$attachments = $gallery->get_gallery_videos( $page, $query_atts );
-
-				if ( $attachments->have_posts() ) {
-					foreach ( $attachments->posts as $post ) {
-						$source_ids[] = (int) $post->ID;
-					}
+				if ( substr( $source_input, 0, 1 ) === '/' ) {
+					$source_input = (string) get_bloginfo( 'url' ) . $source_input;
 				}
 			}
 
-			$is_list = ( $attachments instanceof \WP_Query ) || count( $source_ids ) > 1;
-			$code    = '';
+			// Create the Source object.
+			$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options );
 
-			if ( $is_list ) {
-				$style_vars  = array();
-				$title_color = ! empty( $query_atts['title_color'] ) ? $query_atts['title_color'] : ( $this->options['title_color'] ?? '' );
-				if ( ! empty( $title_color ) ) {
-					$style_vars[] = '--videopack-title-color: ' . esc_attr( (string) $title_color );
-				}
-
-				$title_bg_color = ! empty( $query_atts['title_background_color'] ) ? $query_atts['title_background_color'] : ( $this->options['title_background_color'] ?? '' );
-				if ( ! empty( $title_bg_color ) ) {
-					$style_vars[] = '--videopack-title-background-color: ' . esc_attr( (string) $title_bg_color );
-				}
-
-				$pagination_color = ! empty( $query_atts['pagination_color'] ) ? $query_atts['pagination_color'] : ( $this->options['pagination_color'] ?? '' );
-				if ( ! empty( $pagination_color ) ) {
-					$style_vars[] = '--videopack-pagination-color: ' . esc_attr( (string) $pagination_color );
-				}
-
-				$pagination_bg_color = ! empty( $query_atts['pagination_background_color'] ) ? $query_atts['pagination_background_color'] : ( $this->options['pagination_background_color'] ?? '' );
-				if ( ! empty( $pagination_bg_color ) ) {
-					$style_vars[] = '--videopack-pagination-bg: ' . esc_attr( (string) $pagination_bg_color );
-				}
-
-				$pagination_active_bg_color = ! empty( $query_atts['pagination_active_bg_color'] ) ? $query_atts['pagination_active_bg_color'] : ( $this->options['pagination_active_bg_color'] ?? '' );
-				if ( ! empty( $pagination_active_bg_color ) ) {
-					$style_vars[] = '--videopack-pagination-active-bg: ' . esc_attr( (string) $pagination_active_bg_color );
-				}
-
-				$pagination_active_color = ! empty( $query_atts['pagination_active_color'] ) ? $query_atts['pagination_active_color'] : ( $this->options['pagination_active_color'] ?? '' );
-				if ( ! empty( $pagination_active_color ) ) {
-					$style_vars[] = '--videopack-pagination-active-color: ' . esc_attr( (string) $pagination_active_color );
-				}
-
-				$code .= '<div class="videopack-list-wrapper videopack-collection-wrapper" ';
-				if ( ! empty( $style_vars ) ) {
-					$code .= 'style="' . esc_attr( (string) implode( '; ', $style_vars ) ) . '" ';
-				}
-				$code .= 'data-videopack-ajax-collection="true" ';
-				$code .= 'data-layout="list" ';
-				$code .= 'data-settings="' . esc_attr( (string) wp_json_encode( $query_atts ) ) . '" ';
-				$code .= 'data-settings-cache="' . esc_attr( (string) wp_json_encode( $query_atts ) ) . '" ';
-				$code .= 'data-current-page="' . esc_attr( (string) $page ) . '" ';
-				$code .= 'data-total-pages="' . esc_attr( (string) ( $attachments->max_num_pages ?? 1 ) ) . '">';
-				$code .= '<div class="videopack-video-list">';
+			if ( ! $source || ! $source->exists() ) {
+				return '';
 			}
 
-			foreach ( $source_ids as $source_input ) {
-				// Create the Source object.
-				$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options );
+			// Get the final, resolved attributes for the video.
+			$final_atts = $this->get_final_atts( $atts, $source );
 
-				if ( ! $source || ! $source->exists() ) {
-					continue;
-				}
+			// Determine the player type based on shortcode attribute or global option.
+			$player_type = (string) ( $final_atts['embed_method'] ?? ( $this->options['embed_method'] ?? 'Video.js' ) );
+			$player      = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options );
 
-				// Get the final, resolved attributes for the video.
-				$final_atts = $this->get_final_atts( $atts, $source );
+			// Set the source and final attributes on the player instance.
+			$player->set_source( $source );
+			$player->set_atts( $final_atts );
 
-				// Determine the player type based on shortcode attribute or global option.
-				if ( isset( $final_atts['embed_method'] ) ) {
-					$player_type = (string) $final_atts['embed_method'];
-				} else {
-					$player_type = (string) ( $this->options['embed_method'] ?? 'Video.js' );
-				}
-				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options );
+			// Enqueue player-specific scripts and styles.
+			$player->enqueue_scripts();
 
-				// Set the source and final attributes on the player instance.
-				$player->set_source( $source );
-				$player->set_atts( $final_atts );
-
-				// Enqueue player-specific scripts and styles.
-				$player->enqueue_scripts();
-
-				// Get the generated HTML code for the video player.
-				if ( $is_list ) {
-					$code .= '<div class="videopack-list-item">';
-				}
-				$code .= $player->get_player_code( $final_atts );
-				if ( $is_list ) {
-					$code .= '</div>';
-				}
-			}
-
-			if ( $is_list ) {
-				$code .= '</div>'; // End videopack-video-list.
-
-				if ( ( $attachments instanceof \WP_Query ) && ! empty( $query_atts['gallery_pagination'] ) && (int) ( $attachments->max_num_pages ?? 1 ) > 1 ) {
-					$gallery = new Gallery( $this->options, $this->format_registry );
-					$code   .= $gallery->render_pagination_html( (int) $attachments->max_num_pages, (int) $page );
-				}
-				$code .= '</div>'; // End videopack-list-wrapper.
-			}
+			// Get the generated HTML code for the video player.
+			$code = (string) $player->get_player_code( $final_atts );
 		}
 
 		$code = (string) wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
-
 		/**
 		 * Filter the rendered shortcode output.
 		 *

@@ -465,42 +465,42 @@ class Player {
 	public function prepare_video_vars(): array {
 
 		$video_variables = array(
-			'id'                          => 'videopack_player_' . $this->get_id(),
-			'attachment_id'               => $this->get_source() ? $this->get_source()->get_id() : 0,
-			'embed_method'                => $this->options['embed_method'],
-			'width'                       => $this->atts['width'],
-			'height'                      => $this->atts['height'],
-			'fullwidth'                   => $this->atts['fullwidth'],
-			'countable'                   => $this->atts['countable'],
-			'count_views'                 => $this->atts['count_views'],
-			'start'                       => $this->atts['start'],
-			'autoplay'                    => $this->atts['autoplay'],
-			'pauseothervideos'            => $this->atts['pauseothervideos'],
-			'set_volume'                  => $this->atts['volume'],
-			'muted'                       => $this->atts['muted'],
-			'endofvideooverlay'           => $this->atts['endofvideooverlay'],
-			'auto_res'                    => $this->atts['auto_res'],
-			'auto_codec'                  => $this->atts['auto_codec'],
-			'pixel_ratio'                 => $this->atts['pixel_ratio'],
-			'right_click'                 => $this->atts['right_click'],
-			'playback_rate'               => $this->atts['playback_rate'],
-			'title'                       => $this->atts['stats_title'],
-			'source_groups'               => $this->get_sources(),
-			'fixed_aspect'                => $this->atts['fixed_aspect'],
-			'default_ratio'               => $this->get_fixed_aspect_ratio(),
-			'tracks'                      => $this->atts['tracks'] ?? array(),
-			'legacy_dimensions'           => $this->atts['legacy_dimensions'],
-			'resize'                      => $this->atts['resize'],
-			'title_color'                 => $this->atts['title_color'] ?? '',
-			'title_background_color'      => $this->atts['title_background_color'] ?? '',
-			'play_button_color'           => $this->atts['play_button_color'] ?? '',
-			'play_button_icon_color'      => $this->atts['play_button_icon_color'] ?? '',
-			'control_bar_bg_color'        => $this->atts['control_bar_bg_color'] ?? '',
-			'control_bar_color'           => $this->atts['control_bar_color'] ?? '',
-			'pagination_color'            => $this->atts['pagination_color'] ?? '',
-			'pagination_background_color' => $this->atts['pagination_background_color'] ?? '',
-			'pagination_active_bg_color'  => $this->atts['pagination_active_bg_color'] ?? '',
-			'caption'                     => $this->atts['caption'] ?? '',
+			'id'                          => (string) ( 'videopack_player_' . $this->get_id() ),
+			'attachment_id'               => (int) ( $this->get_source() ? $this->get_source()->get_id() : 0 ),
+			'embed_method'                => (string) ( $this->options['embed_method'] ?? 'Video.js' ),
+			'width'                       => (int) ( $this->atts['width'] ?? 640 ),
+			'height'                      => (int) ( $this->atts['height'] ?? 360 ),
+			'fullwidth'                   => (bool) ( $this->atts['fullwidth'] ?? false ),
+			'countable'                   => (bool) ( $this->atts['countable'] ?? false ),
+			'count_views'                 => (bool) ( $this->atts['count_views'] ?? false ),
+			'start'                       => (int) ( $this->atts['start'] ?? 0 ),
+			'autoplay'                    => (bool) ( $this->atts['autoplay'] ?? false ),
+			'pauseothervideos'            => (bool) ( $this->atts['pauseothervideos'] ?? true ),
+			'set_volume'                  => (float) ( $this->atts['volume'] ?? 1.0 ),
+			'muted'                       => (bool) ( $this->atts['muted'] ?? false ),
+			'endofvideooverlay'           => (string) ( $this->atts['endofvideooverlay'] ?? '' ),
+			'auto_res'                    => (string) ( $this->atts['auto_res'] ?? 'automatic' ),
+			'auto_codec'                  => (bool) ( $this->atts['auto_codec'] ?? true ),
+			'pixel_ratio'                 => (bool) ( $this->atts['pixel_ratio'] ?? false ),
+			'right_click'                 => (bool) ( $this->atts['right_click'] ?? false ),
+			'playback_rate'               => (bool) ( $this->atts['playback_rate'] ?? false ),
+			'title'                       => (string) ( $this->atts['stats_title'] ?? '' ),
+			'source_groups'               => (array) $this->get_sources(),
+			'fixed_aspect'                => (string) ( $this->atts['fixed_aspect'] ?? 'vertical' ),
+			'default_ratio'               => (string) $this->get_fixed_aspect_ratio(),
+			'tracks'                      => (array) ( $this->atts['tracks'] ?? array() ),
+			'legacy_dimensions'           => (bool) ( $this->atts['legacy_dimensions'] ?? false ),
+			'resize'                      => (bool) ( $this->atts['resize'] ?? true ),
+			'title_color'                 => (string) ( $this->atts['title_color'] ?? '' ),
+			'title_background_color'      => (string) ( $this->atts['title_background_color'] ?? '' ),
+			'play_button_color'           => (string) ( $this->atts['play_button_color'] ?? '' ),
+			'play_button_icon_color'      => (string) ( $this->atts['play_button_icon_color'] ?? '' ),
+			'control_bar_bg_color'        => (string) ( $this->atts['control_bar_bg_color'] ?? '' ),
+			'control_bar_color'           => (string) ( $this->atts['control_bar_color'] ?? '' ),
+			'pagination_color'            => (string) ( $this->atts['pagination_color'] ?? '' ),
+			'pagination_background_color' => (string) ( $this->atts['pagination_background_color'] ?? '' ),
+			'pagination_active_bg_color'  => (string) ( $this->atts['pagination_active_bg_color'] ?? '' ),
+			'caption'                     => (string) ( $this->atts['caption'] ?? '' ),
 			'view_count'                  => (bool) ( $this->atts['view_count'] ?? false ),
 			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
 			'below_video_html'            => $this->has_below_video() ? $this->get_below_video_code() : '',
@@ -671,16 +671,17 @@ class Player {
 	 */
 	protected function get_wrapper_start_html(): string {
 		$alignclass = '';
-		if ( $this->atts['inline'] ) {
+		if ( (bool) ( $this->atts['inline'] ?? false ) ) {
 			$alignclass .= ' videopack-wrapper-inline';
-			if ( in_array( $this->atts['align'], array( 'left', 'right' ), true ) ) {
-				$alignclass .= ' videopack-wrapper-inline-' . $this->atts['align'];
-			} elseif ( 'center' === $this->atts['align'] ) {
+			$align       = (string) ( $this->atts['align'] ?? '' );
+			if ( in_array( $align, array( 'left', 'right' ), true ) ) {
+				$alignclass .= ' videopack-wrapper-inline-' . $align;
+			} elseif ( 'center' === $align ) {
 				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
 			}
-		} elseif ( 'center' === $this->atts['align'] ) {
+		} elseif ( 'center' === (string) ( $this->atts['align'] ?? '' ) ) {
 				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
-		} elseif ( 'right' === $this->atts['align'] ) {
+		} elseif ( 'right' === (string) ( $this->atts['align'] ?? '' ) ) {
 			$alignclass .= ' videopack-wrapper-auto-left';
 		}
 
@@ -692,10 +693,10 @@ class Player {
 			$style_attrs[] = 'aspect-ratio: ' . esc_attr( $this->get_fixed_aspect_ratio() );
 		}
 
-		if ( $this->atts['legacy_dimensions'] ) {
-			if ( $this->atts['fullwidth'] ) {
+		if ( (bool) ( $this->atts['legacy_dimensions'] ?? false ) ) {
+			if ( (bool) ( $this->atts['fullwidth'] ?? false ) ) {
 				$style_attrs[] = 'width: 100%';
-			} elseif ( $this->atts['width'] ) {
+			} elseif ( ! empty( $this->atts['width'] ) ) {
 				$style_attrs[] = 'width: ' . esc_attr( (string) $this->atts['width'] ) . ( is_numeric( $this->atts['width'] ) ? 'px' : '' );
 				$style_attrs[] = 'max-width: 100%';
 			}

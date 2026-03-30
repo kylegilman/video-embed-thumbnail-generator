@@ -320,7 +320,7 @@ class Options {
 		$old_options     = get_option( 'kgvid_video_embed_options', array() );
 
 		if ( is_array( $old_options ) && ! empty( $old_options ) ) {
-			unset( $old_options['videojs_version'], $old_options['twitter_button'], $old_options['twitter_username'], $old_options['facebook_button'], $old_options['sample_format'], $old_options['sample_rotate'] );
+			unset( $old_options['videojs_version'], $old_options['twitter_button'], $old_options['twitter_username'], $old_options['facebook_button'], $old_options['sample_format'] );
 
 			if ( isset( $old_options['generate_thumbs'] ) ) {
 				$old_options['total_thumbnails'] = (int) $old_options['generate_thumbs'];
@@ -334,6 +334,10 @@ class Options {
 
 			if ( isset( $old_options['embed_method'] ) && 'Video.js v8' === $old_options['embed_method'] ) {
 				$old_options['embed_method'] = 'Video.js';
+			}
+
+			if ( isset( $old_options['align'] ) && 'left' === $old_options['align'] ) {
+				$old_options['align'] = 'none';
 			}
 
 			if ( isset( $old_options['overlay_embedcode'] ) ) {

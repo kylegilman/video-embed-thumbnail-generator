@@ -157,11 +157,11 @@ class Encode_Queue_Controller {
 		global $wpdb;
 		$this->options['queue_control'] = 'play';
 		update_option( 'videopack_options', $this->options );
-		// Trigger a one-off action to process any 'queued' items immediately.
+		// Trigger a one-off action to process any 'queued' items with a short delay to allow batching.
 		$this->schedule_immediate_heartbeat();
-		// Ensure a recurring heartbeat is scheduled every 2 minutes.
-		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' ) ) {
-			as_schedule_recurring_action( time() + 120, 120, 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' );
+		// Ensure a recurring heartbeat is scheduled every 5 minutes.
+		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 300 ), 'videopack_queue_management' ) ) {
+			as_schedule_recurring_action( time() + 300, 300, 'videopack_process_pending_jobs', array( 'interval' => 300 ), 'videopack_queue_management' );
 		}
 	}
 
@@ -226,11 +226,11 @@ class Encode_Queue_Controller {
 				$successfully_queued_names[] = $name;
 			}
 		}
-		// After enqueuing, trigger the queue processor to check for jobs.
+		// After enqueuing, trigger the queue processor with a short delay.
 		$this->schedule_immediate_heartbeat();
-		// Ensure a recurring heartbeat is scheduled every 2 minutes.
-		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' ) ) {
-			as_schedule_recurring_action( time() + 120, 120, 'videopack_process_pending_jobs', array( 'interval' => 120 ), 'videopack_queue_management' );
+		// Ensure a recurring heartbeat is scheduled every 5 minutes.
+		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array( 'interval' => 300 ), 'videopack_queue_management' ) ) {
+			as_schedule_recurring_action( time() + 300, 300, 'videopack_process_pending_jobs', array( 'interval' => 300 ), 'videopack_queue_management' );
 		}
 
 		wp_cache_delete( 'videopack_queue_items_' . $current_blog_id, 'videopack' );
@@ -705,8 +705,9 @@ class Encode_Queue_Controller {
 	 */
 	public function schedule_immediate_heartbeat() {
 		// Use empty array for arguments to distinguish it from the recurring heartbeat.
+		// Schedule for 5 seconds from now to prevent flood when multiple jobs update simultaneously.
 		if ( ! as_has_scheduled_action( 'videopack_process_pending_jobs', array(), 'videopack_queue_management' ) ) {
-			as_schedule_single_action( time(), 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
+			as_schedule_single_action( time() + 5, 'videopack_process_pending_jobs', array(), 'videopack_queue_management' );
 		}
 	}
 

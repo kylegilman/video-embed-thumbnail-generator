@@ -111,8 +111,16 @@ class Validate {
 				'type'     => true,
 			),
 			'svg'     => array(
-				'xmlns'   => true,
-				'viewbox' => true,
+				'class'       => true,
+				'xmlns'       => true,
+				'viewbox'     => true,
+				'width'       => true,
+				'height'      => true,
+				'aria-hidden' => true,
+				'focusable'   => true,
+			),
+			'path'    => array(
+				'd' => true,
 			),
 			'circle'  => array(
 				'class' => true,
@@ -123,6 +131,15 @@ class Validate {
 			'polygon' => array(
 				'class'  => true,
 				'points' => true,
+			),
+			'video-player' => array(
+				'features' => true,
+			),
+			'video-skin' => array(
+				'features' => true,
+			),
+			'video-minimal-skin' => array(
+				'features' => true,
 			),
 		);
 

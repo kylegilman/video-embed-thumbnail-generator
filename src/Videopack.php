@@ -182,6 +182,7 @@ class Videopack {
 		$encode_queue_controller = new Admin\Encode\Encode_Queue_Controller( $this->options_manager->get_options(), $this->options_manager->get_formats_registry() );
 		$this->loader->add_action( 'rest_api_init', $encode_queue_controller, 'start_queue' );
 		$this->loader->add_action( 'videopack_process_pending_jobs', $encode_queue_controller, 'process_pending_jobs_action' );
+		$this->loader->add_action( 'videopack_trigger_queue_heartbeat', $encode_queue_controller, 'schedule_immediate_heartbeat' );
 		$this->loader->add_action( 'videopack_handle_job', $encode_queue_controller, 'handle_job_action' );
 		$this->loader->add_action( 'videopack_cleanup_queue', $encode_queue_controller, 'clear_completed_queue', 10, 2 );
 

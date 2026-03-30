@@ -25,13 +25,6 @@ namespace Videopack\Admin;
 class Screens {
 
 	/**
-	 * Videopack Options manager class instance.
-	 *
-	 * @var \Videopack\Admin\Options $options_manager
-	 */
-	protected $options_manager;
-
-	/**
 	 * Plugin options.
 	 *
 	 * @var array $options
@@ -39,13 +32,21 @@ class Screens {
 	protected $options;
 
 	/**
+	 * Video formats registry.
+	 *
+	 * @var \Videopack\Admin\Formats\Registry $format_registry
+	 */
+	protected $format_registry;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param \Videopack\Admin\Options $options_manager Videopack Options manager class instance.
+	 * @param array                             $options         Plugin options.
+	 * @param \Videopack\Admin\Formats\Registry $format_registry Video formats registry.
 	 */
-	public function __construct( \Videopack\Admin\Options $options_manager ) {
-		$this->options_manager = $options_manager;
-		$this->options         = (array) $options_manager->get_options();
+	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
+		$this->options         = $options;
+		$this->format_registry = $format_registry;
 	}
 
 	/**
@@ -114,7 +115,6 @@ class Screens {
 	 */
 	public function output_settings_page() {
 		wp_enqueue_media();
-		wp_enqueue_global_styles();
 
 		echo '<div id="videopack-settings-root"></div>';
 	}
@@ -125,7 +125,7 @@ class Screens {
 	 * @return void
 	 */
 	public function add_encode_queue_page() {
-		if ( true === ( $this->options['ffmpeg_exists'] ?? false ) ) {
+		if ( (bool) ( $this->options['ffmpeg_exists'] ?? false ) && 'notinstalled' !== ( $this->options['ffmpeg_exists'] ?? '' ) ) {
 			add_submenu_page(
 				'tools.php',
 				(string) esc_html_x( 'Videopack Queue', 'Tools page title', 'video-embed-thumbnail-generator' ),
@@ -143,8 +143,6 @@ class Screens {
 	 * @return void
 	 */
 	public function output_encode_queue_page() {
-		wp_enqueue_media();
-		wp_enqueue_global_styles();
 		echo '<div id="videopack-queue-root"></div>';
 	}
 
@@ -182,9 +180,43 @@ class Screens {
 	 * @return void
 	 */
 	public function render_meta_box( $post ) {
-		$attachment = new \Videopack\Admin\Attachment( $this->options_manager );
+		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $post->ID );
+		$attachment      = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
 		if ( $attachment->is_video( $post ) ) {
 			echo '<div id="videopack-attachment-details-root"></div>';
+			echo '<input type="hidden" name="videopack_meta_json" id="videopack_meta_json" value="' . (string) esc_attr( (string) wp_json_encode( (array) $attachment_meta->get() ) ) . '">';
+			wp_nonce_field( 'videopack_save_meta_box', 'videopack_meta_box_nonce' );
+		}
+	}
+
+	/**
+	 * Saves Videopack metadata from the standalone attachment details meta box.
+	 *
+	 * @param int $post_id The attachment ID.
+	 * @return void
+	 */
+	public function save_meta_box_data( $post_id ) {
+		// Verify nonce.
+		if ( ! isset( $_POST['videopack_meta_box_nonce'] ) || ! wp_verify_nonce( (string) $_POST['videopack_meta_box_nonce'], 'videopack_save_meta_box' ) ) {
+			return;
+		}
+
+		// Don't save on autosave.
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+
+		// Check permissions.
+		if ( ! current_user_can( 'edit_post', (int) $post_id ) ) {
+			return;
+		}
+
+		if ( isset( $_POST['videopack_meta_json'] ) ) {
+			$meta = (array) json_decode( (string) wp_unslash( (string) $_POST['videopack_meta_json'] ), true );
+			if ( is_array( $meta ) ) {
+				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $post_id );
+				$attachment_meta->save( (array) $meta );
+			}
 		}
 	}
 
@@ -203,7 +235,7 @@ class Screens {
 				echo '<a href="' . esc_url( $external_url ) . '" target="_blank" rel="noopener noreferrer" style="word-break: break-all;">' . esc_html( $external_url ) . '</a><br><br>';
 			}
 
-			$videopack_postmeta = (array) ( new \Videopack\Admin\Attachment_Meta( $this->options_manager ) )->get( (int) $id );
+			$videopack_postmeta = (array) ( new \Videopack\Admin\Attachment_Meta( $this->options ) )->get( (int) $id );
 			if ( ! empty( $videopack_postmeta ) && array_key_exists( 'starts', $videopack_postmeta ) && (int) $videopack_postmeta['starts'] > 0 ) {
 				/* translators: Start refers to the number of times a video has been started */
 				wp_kses_post( printf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', (int) $videopack_postmeta['starts'], 'video-embed-thumbnail-generator' ) ), '<strong>', (int) $videopack_postmeta['starts'], '</strong>' ) );
@@ -376,10 +408,11 @@ class Screens {
 	 */
 	public function filter_ajax_query_attachments( $query ) {
 		if ( isset( $query['post_mime_type'] ) ) {
-			if ( 'videopack_child_formats' === (string) $query['post_mime_type'] ) {
+			$mime_type = is_array( $query['post_mime_type'] ) ? (string) reset( $query['post_mime_type'] ) : (string) $query['post_mime_type'];
+			if ( 'videopack_child_formats' === $mime_type ) {
 				$query['post_mime_type']   = 'video';
 				$query['videopack_filter'] = 'only_children';
-			} elseif ( 'videopack_remote_videos' === (string) $query['post_mime_type'] ) {
+			} elseif ( 'videopack_remote_videos' === $mime_type ) {
 				$query['post_mime_type']   = 'video';
 				$query['videopack_filter'] = 'only_remote';
 			}
@@ -444,7 +477,8 @@ class Screens {
 			$parent_id = isset( $_GET['found_post_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['found_post_id'] ) ) : 0;
 
 			foreach ( $media as $post_id ) {
-				( new \Videopack\Admin\Attachment( $this->options_manager ) )->change_thumbnail_parent( (int) $post_id, $parent_id );
+				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $post_id );
+				( new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta ) )->change_thumbnail_parent( (int) $post_id, $parent_id );
 
 				if ( true === ( $this->options['featured'] ?? false ) && ! has_post_thumbnail( $parent_id ) ) {
 					$featured_id = (int) get_post_meta( (int) $post_id, '_kgflashmediaplayer-poster-id', true );
