@@ -1,0 +1,75 @@
+@use "@wordpress/base-styles/colors";
+
+.videopack-pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin: 1em 0;
+	user-select: none;
+
+	.videopack-pagination-button,
+	.page-numbers {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 36px;
+		height: 36px;
+		padding: 0 8px;
+		border: 1px solid var(--videopack-pagination-color, colors.$gray-300);
+		border-radius: 4px;
+		background: var(--videopack-pagination-bg, colors.$white);
+		color: var(--videopack-pagination-color, colors.$gray-900);
+		cursor: pointer;
+		font-size: 14px;
+		font-weight: 500;
+		transition: all 0.2s ease;
+
+		&:hover:not(:disabled) {
+			border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
+			color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
+			background: colors.$gray-100;
+		}
+
+		&:disabled,
+		&.disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+			background: colors.$gray-100;
+		}
+
+		&.is-active,
+		&.current {
+			background: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
+			border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, colors.$gray-600));
+			color: var(--videopack-pagination-active-color, colors.$white);
+			cursor: default;
+		}
+
+		&.is-ellipsis,
+		&.dots {
+			border: none;
+			background: transparent;
+			cursor: default;
+			min-width: 24px;
+			padding: 0;
+
+			&:hover {
+				color: #333;
+				background: transparent;
+			}
+		}
+
+		&.is-hidden,
+		&.videopack-hidden {
+			visibility: hidden;
+			pointer-events: none;
+		}
+	}
+
+	.videopack-pagination-arrow {
+		font-weight: bold;
+		font-family: monospace;
+		font-size: 18px;
+	}
+}
