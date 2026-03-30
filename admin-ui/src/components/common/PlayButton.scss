@@ -1,12 +1,13 @@
+@use "sass:string";
 @use "@wordpress/base-styles/colors";
 
 /* Shared Play Button Styles and Alpha Calculations */
 
 .videopack-wrapper,
 .videopack-gallery-wrapper {
-	/* Pre-calculate alpha versions if colors are set. Wrap in unquote for safe build. */
-	--videopack-play-button-bg-color-alpha: #{unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%)")};
-	--videopack-play-button-bg-color-alpha-hover: #{unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
+	/* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
+	--videopack-play-button-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%)")};
+	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
 	/* Combined Foreground Color: Icon color takes precedence over Accent color for symbols */
 	--videopack-play-button-foreground-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-color));
 }
@@ -26,80 +27,84 @@
 }
 
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
-
-:is(.videopack-has-play-button-color, .videopack-has-play-button-icon-color) {
-	/* The symbol (icon) should always use the foreground color (Icon || Accent) */
-	.vjs-big-play-button::before,
-	.vjs-big-play-button .vjs-icon-placeholder::before {
-		color: var(--videopack-play-button-foreground-color) !important;
-	}
-
-	/* The border should always use the accent color if set */
-	.vjs-big-play-button {
-		border-color: var(--videopack-play-button-color, inherit) !important;
-		transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
-	}
-
-	/* Forest theme special handling (Uses solid mask instead of standard symbol) */
-	:is(.vjs-theme-forest, .forest) .vjs-big-play-button {
-		background: none !important;
-		background-color: var(--videopack-play-button-foreground-color) !important;
-		mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' fill='%23000'%3E%3Cpath fill-rule='evenodd' d='M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z'/%3E%3C/svg%3E");
-		-webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' fill='%23000'%3E%3Cpath fill-rule='evenodd' d='M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z'/%3E%3C/svg%3E");
-		mask-size: contain;
-		-webkit-mask-size: contain;
-		mask-repeat: no-repeat;
-		-webkit-mask-repeat: no-repeat;
-		mask-position: center;
-		-webkit-mask-position: center;
-
-		&:hover,
-		&:focus {
-			background-color: var(--videopack-play-button-foreground-color) !important;
-			opacity: 0.8;
+:is(.videopack-wrapper, .videopack-gallery-wrapper) {
+	&.videopack-has-play-button-color,
+	&.videopack-has-play-button-icon-color {
+		/* The symbol (icon) should always use the foreground color (Icon || Accent) */
+		.vjs-big-play-button::before,
+		.vjs-big-play-button .vjs-icon-placeholder::before {
+			color: var(--videopack-play-button-foreground-color);
 		}
-	}
-}
 
-/* 2. Accent Color Only Logic: Semi-transparent backgrounds for traditional skins */
-
-.videopack-has-play-button-color {
-	/* Standard skins expect a semi-transparent background circle/square behind the symbol */
-	:is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button {
-		background-color: var(--videopack-play-button-bg-color-alpha) !important;
-
-		&:hover,
-		&:focus {
-			background-color: var(--videopack-play-button-bg-color-alpha-hover) !important;
+		/* The border should always use the accent color if set */
+		.vjs-big-play-button {
+			border-color: var(--videopack-play-button-color, inherit);
+			transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 		}
-	}
 
-	/* MEJS Overlay Button Color/Mask */
-	.mejs-overlay-button {
-		background-image: none !important;
-
-		&::after {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background-color: var(--videopack-play-button-color, transparent);
-			mask-image: var(--videopack-mejs-controls-svg);
-			-webkit-mask-image: var(--videopack-mejs-controls-svg);
-			mask-position: 0 -39px;
-			-webkit-mask-position: 0 -39px;
+		/* Forest theme special handling (Uses solid mask instead of standard symbol) */
+		/* Increased specificity to override skin defaults in players and galleries without !important */
+		.vjs-theme-forest .vjs-big-play-button {
+			background: none;
+			background-color: var(--videopack-play-button-foreground-color);
+			mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' fill='%23000'%3E%3Cpath fill-rule='evenodd' d='M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z'/%3E%3C/svg%3E");
+			-webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' fill='%23000'%3E%3Cpath fill-rule='evenodd' d='M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z'/%3E%3C/svg%3E");
+			mask-size: contain;
+			-webkit-mask-size: contain;
 			mask-repeat: no-repeat;
 			-webkit-mask-repeat: no-repeat;
-			pointer-events: none;
-			transition: background-color 0.15s ease;
+			mask-position: center;
+			-webkit-mask-position: center;
+
+			&:hover,
+			&:focus {
+				background-color: var(--videopack-play-button-color);
+				opacity: 0.8;
+			}
+		}
+	}
+
+	&.videopack-has-play-button-color {
+		/* 2. Accent Color Only Logic: Semi-transparent backgrounds for traditional skins */
+		:is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) {
+			.vjs-big-play-button {
+				background-color: var(--videopack-play-button-bg-color-alpha);
+			}
+
+			&:hover .vjs-big-play-button,
+			.vjs-big-play-button:hover,
+			.vjs-big-play-button:focus {
+				background-color: var(--videopack-play-button-bg-color-alpha-hover);
+			}
 		}
 
-		&:hover::after {
-			background-color: var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color));
-			mask-position: -80px -39px;
-			-webkit-mask-position: -80px -39px;
+		/* MEJS Overlay Button Color/Mask */
+		.mejs-overlay-button {
+			background-image: none;
+
+			&::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				background-color: var(--videopack-play-button-color, transparent);
+				mask-image: var(--videopack-mejs-controls-svg);
+				-webkit-mask-image: var(--videopack-mejs-controls-svg);
+				mask-position: 0 -39px;
+				-webkit-mask-position: 0 -39px;
+				mask-repeat: no-repeat;
+				-webkit-mask-repeat: no-repeat;
+				pointer-events: none;
+				transition: background-color 0.15s ease;
+			}
+
+			&:hover::after {
+				background-color: var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color));
+				mask-position: -80px -39px;
+				-webkit-mask-position: -80px -39px;
+			}
 		}
 	}
 }
@@ -111,28 +116,28 @@
 	@container (max-width: 499px) {
 		.vjs-big-play-button,
 		.mejs-overlay-button {
-			transform: translate(-50%, -50%) scale(0.9);
+			transform: scale(0.9);
 		}
 	}
 
 	@container (max-width: 399px) {
 		.vjs-big-play-button,
 		.mejs-overlay-button {
-			transform: translate(-50%, -50%) scale(0.8);
+			transform: scale(0.8);
 		}
 	}
 
 	@container (max-width: 359px) {
 		.vjs-big-play-button,
 		.mejs-overlay-button {
-			transform: translate(-50%, -50%) scale(0.7);
+			transform: scale(0.7);
 		}
 	}
 
 	@container (max-width: 260px) {
 		.vjs-big-play-button,
 		.mejs-overlay-button {
-			transform: translate(-50%, -50%) scale(0.6);
+			transform: scale(0.6);
 		}
 	}
 }

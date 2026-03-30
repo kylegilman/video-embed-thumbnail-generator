@@ -45,7 +45,8 @@ const VideoSettings = ({
 		[displayAttributes]
 	);
 
-	const THEME_COLORS = videopack_config.themeColors;
+	const THEME_COLORS =
+		videopack_config?.themeColors || options?.themeColors;
 
 	return (
 		<div className="videopack-video-settings">

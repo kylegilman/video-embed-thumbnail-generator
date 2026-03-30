@@ -6,6 +6,7 @@ export default function QuerySettings({
 	attributes,
 	setAttributes,
 	queryData,
+	showArchiveSource = true,
 }) {
 	const { gallery_source, gallery_id, gallery_category, gallery_tag } =
 		attributes;
@@ -85,7 +86,21 @@ export default function QuerySettings({
 						label: __('Tag', 'video-embed-thumbnail-generator'),
 						value: 'tag',
 					},
-				]}
+					showArchiveSource && {
+						label: __(
+							'Archive Query',
+							'video-embed-thumbnail-generator'
+						),
+						value: 'archive',
+					},
+					{
+						label: __(
+							'Manual',
+							'video-embed-thumbnail-generator'
+						),
+						value: 'manual',
+					},
+				].filter(Boolean)}
 				onChange={(value) => {
 					const newAttributes = { gallery_source: value };
 					if (value !== 'custom') {

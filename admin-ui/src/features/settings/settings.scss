@@ -8,6 +8,13 @@
 	container-type: inline-size;
 	container-name: videopack-settings;
 
+	h1 {
+		margin-bottom: 20px;
+	}
+
+	label {
+		color: colors.$gray-900;
+	}
 
 	.components-radio-control {
 		margin-bottom: 20px;
@@ -113,6 +120,7 @@
 
 		&.videopack-player-settings-flex .components-flex-item {
 			flex: 1;
+			max-width: 350px;
 		}
 	}
 
@@ -132,7 +140,6 @@
 			}
 		}
 	}
-
 
 	.components-base-control.components-toggle-control,
 	.videopack-component-margin {
@@ -189,7 +196,7 @@
 	}
 
 	.videopack-setting-extra-margin {
-		margin-top: 25px;
+		margin: 20px 0;
 	}
 
 	.videopack-vertical-center .components-form-toggle {
@@ -220,9 +227,25 @@
 		justify-content: space-evenly;
 	}
 
-	.videopack-sample-video-player {
+	.videopack-sample-video-player,
+	.videopack-sample-gallery-wrapper {
+		clear: both;
+		display: flow-root;
 		width: 100%;
-		display: inline-block;
+		max-width: calc(var(--wp--style--global--content-size, 800px) + 40px);
+
+		&.alignwide {
+			max-width: calc(var(--wp--style--global--wide-size, 1000px) + 40px);
+		}
+
+		&.alignfull {
+			max-width: none;
+		}
+
+		&.aligncenter {
+			margin-left: auto;
+			margin-right: auto;
+		}
 	}
 
 	.videopack-setting-capabilities {
@@ -246,17 +269,16 @@
 	}
 
 	.videopack-encode-grid {
-		display: flex;
-		flex-wrap: wrap;
-		margin-left: auto;
-		margin-right: auto;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 0.5rem;
+		margin-bottom: 20px;
 
 		.videopack-encode-column {
-			flex: 0 1 250px;
-			margin: 0.5rem;
 			padding: 0.5rem;
 			border: 1px solid colors.$gray-400;
 			border-radius: 4px;
+			box-sizing: border-box;
 		}
 
 		.videopack-encode-grid-header-row {
@@ -272,9 +294,6 @@
 		}
 
 		.videopack-encode-grid-row {
-			display: grid;
-			grid-template-columns: 1fr 80px;
-			align-items: center;
 			padding: 0.25rem 0;
 			border-bottom: 1px solid colors.$gray-200;
 
@@ -284,7 +303,6 @@
 
 			.components-checkbox-control {
 				margin-bottom: 0;
-				justify-content: center;
 
 				.components-base-control__field {
 					margin-bottom: 0;
@@ -298,13 +316,6 @@
 			display: flex;
 			justify-content: center;
 		}
-
-		.videopack-replace-radio-input {
-			margin: 0;
-			cursor: pointer;
-		}
-	}
-
 	}
 
 	.videopack-sort-settings {
@@ -356,17 +367,23 @@
 			margin-top: 0;
 			margin-bottom: 0;
 		}
+	}
 
+	.freemius-page-container {
+		margin: 0 20px;
+
+		#fs_addons .fs-cards-list {
+			display: inline-block;
+		}
+	}
 }
 
 .components-tooltip {
-	color: colors.$black;
+	color: colors.$white;
 	white-space: normal;
+	padding: 10px;
 	max-width: 400px;
-	background: var(--wp--preset--color--accent-5);
-	box-shadow: 2px 2px 2px 1px rgba(colors.$black, 0.2);
-}
-
-#fs_addons .fs-cards-list {
-	display: inline-block;
+	background: var(--wp-admin-theme-color-darker-20);
+	box-shadow: 2px 2px 2px 1px rgba(colors.$gray-900, 0.2);
+	border-radius: 4px;
 }

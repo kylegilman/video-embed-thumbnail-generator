@@ -2,6 +2,7 @@
 
 .videopack-watermark-settings {
 	container-type: inline-size;
+	max-width: 1200px;
 
 	.videopack-watermark-row {
 		@container (max-width: 600px) {
@@ -43,7 +44,7 @@
 		width: 10px;
 		height: 10px;
 		background-color: colors.$white;
-		border: 1px solid colors.$black;
+		border: 1px solid colors.$gray-900;
 		z-index: 10;
 
 		@container (max-width: 600px) {

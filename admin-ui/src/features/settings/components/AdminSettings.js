@@ -9,7 +9,9 @@ import {
 	RadioControl,
 	ToggleControl,
 } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import VideopackTooltip from './VideopackTooltip';
+import { clearUrlCache } from '../../../utils/utils';
 
 /**
  * AdminSettings component.
@@ -31,9 +33,24 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 		count_views,
 		alwaysloadscripts,
 		replace_video_shortcode,
-		transient_cache,
+		replace_video_block,
+		replace_preview_video,
 		rewrite_attachment_url,
 	} = settings;
+
+	const [isClearingCache, setIsClearingCache] = useState(false);
+
+	const handleClearCache = () => {
+		setIsClearingCache(true);
+		clearUrlCache()
+			.then(() => {
+				setIsClearingCache(false);
+			})
+			.catch((error) => {
+				console.error(error);
+				setIsClearingCache(false);
+			});
+	};
 
 	const countViewsOptions = [
 		{
@@ -246,26 +263,12 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					/>
 				</div>
 				<div className="videopack-control-with-tooltip">
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__(
-							'Use URL cache',
-							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.transient_cache}
-						checked={!!transient_cache}
-					/>
-					<VideopackTooltip
-						text={__(
-							'Videopack uses an uncached query to convert URLs to WordPress post IDs which can signficantly slow down sites with large numbers of videos. Caching the results of the query as a transient in the database can speed up loading time significantly, but will also add a lot of entries to your database. All transients are deleted on plugin deactivation.',
-							'video-embed-thumbnail-generator'
-						)}
-					/>
-				</div>
-				<div className="videopack-control-with-tooltip">
 					<Button
 						className="videopack-clear-button"
 						variant="secondary"
+						onClick={handleClearCache}
+						isBusy={isClearingCache}
+						disabled={isClearingCache}
 					>
 						{__(
 							'Clear URL cache',
@@ -317,6 +320,40 @@ const AdminSettings = ({ settings, changeHandlerFactory }) => {
 					<VideopackTooltip
 						text={__(
 							"If you have posts or theme files that make use of the built-in WordPress video shortcode, Videopack can override them with this plugin's embedded video player.",
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Override any existing Video blocks',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.replace_video_block}
+						checked={!!replace_video_block}
+					/>
+					<VideopackTooltip
+						text={__(
+							"If you have posts that make use of the built-in WordPress Video block, Videopack can override them with this plugin's embedded video player on the frontend.",
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__(
+							'Replace media library video preview with Videopack player',
+							'video-embed-thumbnail-generator'
+						)}
+						onChange={changeHandlerFactory.replace_preview_video}
+						checked={!!replace_preview_video}
+					/>
+					<VideopackTooltip
+						text={__(
+							"Enhance the default WordPress video preview in the media library with Videopack's features and player settings.",
 							'video-embed-thumbnail-generator'
 						)}
 					/>

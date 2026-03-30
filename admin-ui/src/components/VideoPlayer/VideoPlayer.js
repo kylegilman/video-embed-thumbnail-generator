@@ -4,14 +4,23 @@
 
 import { useRef, useEffect, useMemo, useCallback } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
+import { applyFilters } from '@wordpress/hooks';
 import MetaBar from './MetaBar';
 import GenericPlayer from './GenericPlayer';
 import VideoJS from './VideoJs';
 import WpMejsPlayer from './WpMejsPlayer';
 import BelowVideo from './BelowVideo';
+
+const DEFAULT_PLAYERS = {
+	'Video.js': VideoJS,
+	'WordPress Default': WpMejsPlayer,
+	None: GenericPlayer,
+};
 import './VideoPlayer.scss';
 
 // Make sure to pass isSelected from the block's edit component.
+const noop = () => {};
+
 /**
  * VideoPlayer component.
  *
@@ -20,7 +29,7 @@ import './VideoPlayer.scss';
  * @param {Function} props.onReady    Callback fired when the player engine is ready.
  * @return {Element|null} The rendered component.
  */
-const VideoPlayer = ({ attributes, onReady }) => {
+const VideoPlayer = ({ attributes, onReady = noop }) => {
 	const decodedAttributes = useMemo(
 		() => ({
 			...attributes,
@@ -227,7 +236,12 @@ const VideoPlayer = ({ attributes, onReady }) => {
 	);
 
 	const videoJsOptions = useMemo(() => {
-		if (embed_method !== 'Video.js') {
+		const isVjs = applyFilters(
+			'videopack_is_videojs_player',
+			embed_method === 'Video.js',
+			embed_method
+		);
+		if (!isVjs) {
 			return null;
 		}
 
@@ -414,31 +428,73 @@ const VideoPlayer = ({ attributes, onReady }) => {
 					attributes={decodedAttributes}
 					playerRef={playerInstanceRef}
 				/>
-				{embed_method === 'Video.js' && videoJsOptions && (
-					<VideoJS
-						key={`videojs-${src}`}
-						options={videoJsOptions}
-						skin={skin}
-						onPlay={handlePlay}
-						onPause={handlePause}
-						onReady={handleVideoPlayerReady}
-					/>
-				)}
-				{embed_method === 'WordPress Default' && (
-					<WpMejsPlayer
-						key={`wpvideo-${src}`}
-						options={genericPlayerOptions}
-						controls={controls}
-						actualAutoplay={actualAutoplay}
-						onReady={handleMejsReady}
-						onPlay={handlePlay}
-						playback_rate={playback_rate}
-						aspectRatio={aspectRatio}
-					/>
-				)}
-				{embed_method === 'None' && (
-					<GenericPlayer {...genericPlayerOptions} ref={videoRef} />
-				)}
+				{(() => {
+					const players = applyFilters(
+						'videopack_admin_players',
+						DEFAULT_PLAYERS
+					);
+					const PlayerComponent =
+						players[embed_method] || players.None;
+
+					if (embed_method === 'Video.js' && videoJsOptions) {
+						return (
+							<PlayerComponent
+								key={`videojs-${src}`}
+								options={videoJsOptions}
+								skin={skin}
+								onPlay={handlePlay}
+								onPause={handlePause}
+								onReady={handleVideoPlayerReady}
+							/>
+						);
+					}
+
+					if (embed_method === 'WordPress Default') {
+						return (
+							<PlayerComponent
+								key={`wpvideo-${src}`}
+								options={genericPlayerOptions}
+								controls={controls}
+								actualAutoplay={actualAutoplay}
+								onReady={handleMejsReady}
+								onPlay={handlePlay}
+								playback_rate={playback_rate}
+								aspectRatio={aspectRatio}
+							/>
+						);
+					}
+
+					if (embed_method === 'None') {
+						return (
+							<PlayerComponent
+								{...genericPlayerOptions}
+								ref={videoRef}
+							/>
+						);
+					}
+
+					// Fallback for custom players
+					if (PlayerComponent === GenericPlayer) {
+						return (
+							<PlayerComponent
+								key={`${embed_method}-fallback-${src}`}
+								{...genericPlayerOptions}
+								ref={videoRef}
+							/>
+						);
+					}
+					return (
+						<PlayerComponent
+							key={`${embed_method}-${src}`}
+							options={videoJsOptions || genericPlayerOptions}
+							skin={skin}
+							attributes={decodedAttributes}
+							onPlay={handlePlay}
+							onPause={handlePause}
+							onReady={handleVideoPlayerReady}
+						/>
+					);
+				})()}
 				{watermark && (
 					<div className="videopack-watermark">
 						{watermark_link_to &&

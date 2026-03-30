@@ -5,19 +5,19 @@ import {
 	useState,
 	useCallback,
 	useEffect,
-	useRef,
 	useMemo,
+	useRef,
 } from '@wordpress/element';
 
 /**
  * PreviewIframe component to isolate frontend styles from the admin UI.
  *
- * @param {Object} props                    Component props.
- * @param {Node}   props.children              Children to render inside the iframe.
- * @param {string} props.title                 Iframe title for accessibility.
- * @param {string} props.className             Optional class name for the iframe.
- * @param {Array}  props.resizeDependencies    Optional array of dependencies that trigger a resize when changed.
- * @param {boolean} props.fullScreen           Whether the iframe should occupy the full screen.
+ * @param {Object}  props                    Component props.
+ * @param {Node}    props.children           Children to render inside the iframe.
+ * @param {string}  props.title              Iframe title for accessibility.
+ * @param {string}  props.className          Optional class name for the iframe.
+ * @param {Array}   props.resizeDependencies Optional array of dependencies that trigger a resize when changed.
+ * @param {boolean} props.fullScreen         Whether the iframe should occupy the full screen.
  */
 const PreviewIframe = ({
 	children,
@@ -28,39 +28,41 @@ const PreviewIframe = ({
 }) => {
 	const [contentRef, setContentRef] = useState(null);
 	const mountNode = contentRef?.contentWindow?.document?.body;
-
-	const isResizingRef = useRef(false);
+	const observerRef = useRef(null);
 
 	/**
 	 * Measure and apply the correct iframe height.
 	 */
 	const resizeIframe = useCallback(() => {
-		if (!contentRef || !mountNode || fullScreen || isResizingRef.current) {
+		if (!contentRef || !mountNode || fullScreen) {
 			return;
 		}
 
-		isResizingRef.current = true;
-
+		// Use requestAnimationFrame to ensure we measure after layout.
 		window.requestAnimationFrame(() => {
 			if (!contentRef || !mountNode || fullScreen) {
-				isResizingRef.current = false;
 				return;
 			}
 
-			// Measure the natural height of the content wrapper.
-			const wrapper = mountNode.querySelector('.videopack-iframe-content-wrapper');
-			if (wrapper) {
-				const naturalHeight = wrapper.offsetHeight;
-				console.log(`PreviewIframe: natural height = ${naturalHeight}px`);
+			// Measure the content wrapper directly.
+			const wrapper = mountNode.querySelector(
+				'.videopack-iframe-content-wrapper'
+			);
+			const height = wrapper
+				? wrapper.offsetHeight
+				: mountNode.scrollHeight;
 
-				if (naturalHeight > 50) {
-					contentRef.style.height = `${naturalHeight}px`;
+			if (height && height > 50) {
+				const currentHeight = parseInt(contentRef.style.height, 10);
+				if (
+					!currentHeight ||
+					(Math.abs(height - currentHeight) > 5 &&
+						Math.abs(height - currentHeight) < 2000) ||
+					height < currentHeight
+				) {
+					contentRef.style.height = `${height}px`;
 				}
 			}
-
-			setTimeout(() => {
-				isResizingRef.current = false;
-			}, 100);
 		});
 	}, [contentRef, mountNode, fullScreen]);
 
@@ -75,17 +77,30 @@ const PreviewIframe = ({
 			const head = doc.head;
 
 			// Clear existing mirrored styles to prevent duplicates on reload.
-			head.querySelectorAll('.videopack-mirrored-style').forEach(el => el.remove());
+			head.querySelectorAll('.videopack-mirrored-style').forEach((el) =>
+				el.remove()
+			);
 
 			// Mirror plugin and block styles into the iframe.
 			document
 				.querySelectorAll('link[rel="stylesheet"], style')
 				.forEach((style) => {
 					// Skip our own internal iframe styles to avoid conflicts.
+					// Also skip common WordPress admin styles that interfere with the preview.
 					if (
 						style.id !== 'videopack-isolated-global-styles' &&
 						style.id !== 'videopack-iframe-reset' &&
-						style.id !== 'videopack-global-styles'
+						style.id !== 'videopack-global-styles' &&
+						!style.id?.startsWith('colors-css') &&
+						!style.id?.startsWith('common-css') &&
+						!style.id?.startsWith('admin-bar-css') &&
+						!style.id?.startsWith('wp-admin-css') &&
+						!style.id?.startsWith('buttons-css') &&
+						!style.id?.startsWith('dashicons-css') &&
+						!style.id?.startsWith('list-tables-css') &&
+						!style.id?.startsWith('edit-css') &&
+						!style.id?.startsWith('media-views-css') &&
+						!style.id?.startsWith('wp-color-picker-css')
 					) {
 						const clone = style.cloneNode(true);
 						clone.classList.add('videopack-mirrored-style');
@@ -101,8 +116,6 @@ const PreviewIframe = ({
 					html, body {
 						margin: 0 !important;
 						padding: 0 !important;
-						font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-						background: transparent !important;
 						overflow: hidden !important;
 						height: auto !important;
 					}
@@ -110,19 +123,21 @@ const PreviewIframe = ({
 						display: flow-root;
 						width: 100%;
 						height: auto !important;
+						padding: 20px !important;
+						box-sizing: border-box !important;
 					}
 					/* Ensure some common block editor wrapper behaviors */
 					.wp-block-videopack-videopack-gallery,
 					.wp-block-videopack-videopack-video {
 						max-width: 100% !important;
 					}
-					/* Prevent player children with 100% height from inflating height during measurement */
+					/* Prevent player children from inflating height during measurement */
 					.videopack-video-player,
 					.videopack-generic-player,
 					.mejs-container,
-					.video-js {
-						height: auto !important;
-						aspect-ratio: 16 / 9;
+					.video-js,
+					video-player {
+						max-width: 100% !important;
 					}
 					/* Specific to gallery modal overlay inside iframe */
 					.videopack-modal-overlay {
@@ -160,9 +175,11 @@ const PreviewIframe = ({
 		}
 
 		handleIframeLoad();
-		
+
 		// Watch for height changes within the content wrapper.
-		const wrapper = mountNode.querySelector('.videopack-iframe-content-wrapper');
+		const wrapper = mountNode.querySelector(
+			'.videopack-iframe-content-wrapper'
+		);
 		if (!wrapper) {
 			return;
 		}
@@ -172,20 +189,20 @@ const PreviewIframe = ({
 		// Second measurement — catches any deferred rendering (like MEJS).
 		const t2 = setTimeout(resizeIframe, 1500);
 
-		const containerObserver = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				const { width, height } = entry.contentRect;
-				if (width > 0 || height > 0) {
-					resizeIframe();
-				}
-			}
-		});
-		containerObserver.observe(wrapper);
+		if (!observerRef.current) {
+			observerRef.current = new ResizeObserver(() => {
+				resizeIframe();
+			});
+		}
+
+		observerRef.current.observe(wrapper);
 
 		return () => {
 			clearTimeout(t1);
 			clearTimeout(t2);
-			containerObserver.disconnect();
+			if (observerRef.current) {
+				observerRef.current.disconnect();
+			}
 		};
 	}, [contentRef, mountNode, handleIframeLoad, resizeIframe, fullScreen]);
 
@@ -205,7 +222,7 @@ const PreviewIframe = ({
 		return {
 			width: '100%',
 			border: 'none',
-			background: '#fff',
+			background: 'transparent',
 		};
 	}, [fullScreen]);
 

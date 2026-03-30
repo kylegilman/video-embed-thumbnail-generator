@@ -93,7 +93,6 @@
 .dataviews-wrapper,
 .dataviews-picker-wrapper {
   height: 100%;
-  overflow: auto;
   box-sizing: border-box;
   scroll-padding-bottom: 64px;
   /* stylelint-disable-next-line property-no-unknown -- '@container' not globally permitted */
@@ -224,6 +223,14 @@
 .dataviews-bulk-actions-footer__container {
   margin-right: auto;
   min-height: 32px;
+}
+.dataviews-layout__container {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: inherit;
 }
 .dataviews-filters__button {
   position: relative;
@@ -876,7 +883,7 @@
 .dataviews-view-grid-items {
   margin-bottom: auto;
   display: grid;
-  gap: 32px;
+  gap: 24px;
   grid-template-rows: max-content;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   padding: 0 24px 24px;
@@ -887,11 +894,17 @@
     transition: padding ease-out 0.1s;
   }
 }
+.dataviews-view-grid-items.has-compact-density {
+  gap: 16px;
+}
+.dataviews-view-grid-items.has-comfortable-density {
+  gap: 32px;
+}
 .dataviews-view-grid {
   padding: 0 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
   container-type: inline-size;
   margin-bottom: auto;
 }
@@ -900,9 +913,21 @@
     transition: padding ease-out 0.1s;
   }
 }
+.dataviews-view-grid.has-compact-density {
+  gap: 16px;
+}
+.dataviews-view-grid.has-compact-density .dataviews-view-grid__row {
+  gap: 16px;
+}
+.dataviews-view-grid.has-comfortable-density {
+  gap: 32px;
+}
+.dataviews-view-grid.has-comfortable-density .dataviews-view-grid__row {
+  gap: 32px;
+}
 .dataviews-view-grid .dataviews-view-grid__row {
   display: grid;
-  gap: 32px;
+  gap: 24px;
 }
 .dataviews-view-grid .dataviews-view-grid__row .dataviews-view-grid__row__gridcell {
   border-radius: 4px;
@@ -1448,6 +1473,16 @@ div.dataviews-view-list {
   z-index: 1;
   background-color: inherit;
 }
+.dataviews-view-table thead.dataviews-view-table__thead--stuck::after {
+  display: block;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #f0f0f0;
+}
 .dataviews-view-table thead tr {
   border: 0;
 }
@@ -1589,6 +1624,12 @@ div.dataviews-view-list {
     opacity: 1;
     animation: dataviews-pulse 1s ease-in-out infinite;
   }
+}
+.dataviews-view-picker-grid.has-compact-density .dataviews-view-grid-items {
+  gap: 16px;
+}
+.dataviews-view-picker-grid.has-comfortable-density .dataviews-view-grid-items {
+  gap: 32px;
 }
 .dataviews-view-picker-grid .dataviews-view-picker-grid__card {
   height: 100%;
@@ -2077,7 +2118,7 @@ div.dataviews-view-list {
   grid-column: 2;
 }
 .dataforms-layouts-panel__field-dropdown .components-popover__content {
-  min-width: 320px;
+  min-width: 256px;
   padding: 16px;
 }
 .dataforms-layouts-panel__dropdown-header {
@@ -2178,6 +2219,9 @@ body.tools_page_videopack_encode_queue {
 .videopack-encode-queue .videopack-status-cell {
   min-width: 200px;
 }
+.videopack-encode-queue ul.videopack-format-list {
+  margin-top: 7px;
+}
 .videopack-encode-queue tr:has(.videopack-job-running) {
   background-color: rgba(34, 113, 177, 0.05);
   border-left: 5px solid var(--wp-admin-theme-color, #2271b1);
@@ -2236,113 +2280,6 @@ body.tools_page_videopack_encode_queue {
   height: 100%;
   background: var(--wp-admin-theme-color, #2271b1);
   transition: width 0.3s ease;
-}
-/*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeProgress.scss ***!
-  \*****************************************************************************************************************************************************************************************************************************************************************************/
-/**
- * Colors
- */
-.videopack-meter {
-  background-color: #f0f0f0;
-  width: 100%;
-  border-radius: 4px;
-  height: 22px;
-  overflow: hidden;
-  position: relative;
-  vertical-align: middle;
-}
-.videopack-meter .videopack-meter-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--wp-admin-theme-color, #2271b1), var(--wp-admin-theme-color-darker-10, #135e96));
-  border-radius: inherit;
-  min-width: 1px;
-  transition: width 0.3s ease;
-}
-.videopack-meter .videopack-meter-text {
-  color: #fff;
-  text-align: right;
-  margin-right: 5px;
-  line-height: 22px;
-  font-size: 10px;
-}
-.videopack-encode-progress {
-  margin-top: 4px;
-  width: 100%;
-  container-type: inline-size;
-}
-.videopack-encode-progress .videopack-encode-progress-row {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 4px;
-}
-.videopack-encode-progress .videopack-meter {
-  flex: 1;
-  min-width: 40px;
-  margin-right: 0;
-}
-.videopack-encode-progress .videopack-cancel-job {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  padding: 0 12px;
-  height: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.videopack-encode-progress .videopack-cancel-job .videopack-button-text {
-  padding: 9px;
-}
-.videopack-encode-progress .videopack-cancel-job .dashicon {
-  display: none;
-}
-@container (max-width: 200px) {
-  .videopack-encode-progress .videopack-cancel-job {
-    padding: 0 !important;
-    min-width: 20px !important;
-    width: 20px !important;
-    height: 20px !important;
-    border-radius: 50% !important;
-  }
-  .videopack-encode-progress .videopack-cancel-job .dashicon {
-    display: inline-block;
-    font-size: 16px;
-    line-height: 20px;
-  }
-  .videopack-encode-progress .videopack-cancel-job .videopack-button-text {
-    display: none;
-  }
-  .videopack-encode-progress .videopack-cancel-job .components-button__icon {
-    margin: 0 !important;
-  }
-}
-.videopack-encode-progress-small-text {
-  width: 100%;
-  flex: 0 0 100%;
-  font-size: 10px;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2px;
-  color: #949494;
-}
-.videopack-encode-progress-small-text span {
-  margin-right: 10px;
-}
-/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/AdditionalFormats/EncodeFormatStatus.scss ***!
-  \*********************************************************************************************************************************************************************************************************************************************************************************/
-/**
- * Colors
- */
-.videopack-formats-list li.videopack-format-row:not(:last-child) {
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 11px;
-  padding-top: 5px;
 }
 
 /*# sourceMappingURL=encode-queue.css.map*/

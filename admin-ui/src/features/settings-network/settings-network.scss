@@ -39,9 +39,9 @@
 }
 
 .components-tooltip {
-	color: colors.$black;
+	color: colors.$gray-900;
 	white-space: normal;
 	max-width: 400px;
 	background: var(--wp--preset--color--accent-5);
-	box-shadow: 2px 2px 2px 1px rgba(colors.$black, 0.2);
+	box-shadow: 2px 2px 2px 1px rgba(colors.$gray-900, 0.2);
 }

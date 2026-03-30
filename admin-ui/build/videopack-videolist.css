@@ -1,0 +1,37 @@
+/*!****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoList/VideoList.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************/
+.videopack-video-list-wrapper .videopack-loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+.videopack-video-list-wrapper .videopack-list-item {
+  margin-bottom: 20px;
+  position: relative;
+}
+.videopack-video-list-wrapper .videopack-list-item .videopack-block-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.videopack-video-list-wrapper .videopack-list-item .videopack-list-item-controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 200;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s;
+}
+.videopack-video-list-wrapper .videopack-list-item:hover .videopack-list-item-controls {
+  opacity: 1;
+  visibility: visible;
+}
+
+/*# sourceMappingURL=videopack-videolist.css.map*/

@@ -1,89 +1,67 @@
 @use '@wordpress/base-styles/colors';
 @use '@wordpress/base-styles/variables';
 
-// Provide special styling for the placeholder.
-// @todo: this particular minimal style of placeholder could be componentized further.
-.wp-block-videopack-videopack-gallery {
+.wp-block-videopack-videopack-list {
+	// Root container
+	position: relative;
+	width: 100%;
 
-	// Show Placeholder style on-select.
-	&.is-selected .components-placeholder {
-		// Block UI appearance.
-		color: colors.$gray-900;
-		background-color: colors.$white;
-		box-shadow: inset 0 0 0 variables.$border-width colors.$gray-900;
-		border: none;
-
-		// @todo: this should eventually be overridden by a custom border-radius set in the inspector.
-		border-radius: variables.$radius-block-ui;
-
-		>svg {
-			opacity: 0;
-		}
-
-		.components-placeholder__illustration {
-			display: none;
-		}
-
-		&::before {
-			opacity: 0;
-		}
+	// Standard Placeholder styling
+	.components-placeholder {
+		min-height: 200px;
 	}
 
-	// Remove the transition while we still have a legacy placeholder style.
-	// Otherwise the content jumps between the 1px placeholder border, and any inherited custom
-	// parent border that may get applied when you deselect.
-	.components-placeholder__label,
-	.components-placeholder__instructions,
-	.components-button {
-		transition: none;
+	&.is-selected .components-placeholder {
+		border-color: var(--wp-admin-theme-color);
 	}
 }
 
-
-// Shared styles for overlay buttons in both List and Gallery views
+// Overlay buttons for List and Gallery views
 .videopack-video-list-wrapper,
 .videopack-gallery-wrapper {
-
 	.videopack-remove-item,
 	.videopack-edit-item,
 	.videopack-drag-handle,
 	.gallery-add-button {
 		cursor: pointer;
-		background-color: rgba(0, 0, 0, 0.7);
+		background-color: rgba(0, 0, 0, 0.5);
 		color: white;
-		border-radius: 50%;
-		width: 24px;
-		height: 24px;
+		border-radius: 4px;
+		width: 32px;
+		height: 32px;
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		font-size: 16px;
-		font-weight: bold;
 		z-index: 10;
-		transition: background-color 0.2s ease-in-out;
 		border: none;
 		padding: 0;
 
 		svg {
-			width: 16px;
-			height: 16px;
+			width: 20px;
+			height: 20px;
 			fill: currentColor;
+		}
+
+		&:hover {
+			background-color: var(--wp-admin-theme-color, #2271b1);
 		}
 	}
 
 	.videopack-remove-item:hover {
-		background-color: rgba(255, 0, 0, 0.8);
-		color: white;
-	}
-
-	.videopack-edit-item:hover,
-	.gallery-add-button:hover,
-	.videopack-drag-handle:hover {
-		background-color: rgba(0, 124, 255, 0.8);
-		color: white;
+		background-color: #cc1818;
 	}
 
 	.videopack-drag-handle {
 		cursor: move;
 	}
+}
+
+.videopack-block-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 10;
+	background: transparent;
 }

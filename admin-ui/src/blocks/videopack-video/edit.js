@@ -45,10 +45,15 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	const blockProps = useBlockProps();
 	const hasAttemptedInitialUpload = useRef(false);
 	const { createErrorNotice } = useDispatch(noticesStore);
-	const mediaUpload = useSelect(
-		(select) => select(blockEditorStore).getSettings().mediaUpload,
-		[]
-	);
+	const { mediaUpload, isSiteEditor } = useSelect( (select) => {
+		const editorStore = select(blockEditorStore);
+		const editor = select('core/editor');
+		const postType = editor?.getCurrentPostType();
+		return {
+			mediaUpload: editorStore.getSettings()?.mediaUpload,
+			isSiteEditor: postType === 'wp_template' || postType === 'wp_template_part',
+		};
+	}, [] );
 
 	const [attachment, setAttachment] = useState(null);
 	const [hasResolved, setHasResolved] = useState(false);
@@ -75,15 +80,11 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				featured:
 					attachmentObject.meta?.['_videopack-meta']?.featured,
 				title:
-					typeof attachmentObject.title === 'string' ?
-						attachmentObject.title :
-						(attachmentObject.title?.raw ??
-							attachmentObject.title?.rendered),
+					attachmentObject.title?.raw ??
+					attachmentObject.title?.rendered,
 				caption:
-					typeof attachmentObject.caption === 'string'
-						? attachmentObject.caption
-						: (attachmentObject.caption?.raw ??
-							attachmentObject.caption?.rendered),
+					attachmentObject.caption?.raw ??
+					attachmentObject.caption?.rendered,
 				starts: attachmentObject.meta?.['_videopack-meta']?.starts,
 				text_tracks:
 					attachmentObject.meta?.['_videopack-meta']?.track ||
@@ -94,6 +95,8 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 				embedlink: attachmentObject.link
 					? attachmentObject.link + 'embed'
 					: undefined,
+				width: attachmentObject.media_details?.width,
+				height: attachmentObject.media_details?.height,
 			};
 
 			const updatedAttributes = Object.keys(media_attributes).reduce(
@@ -273,16 +276,49 @@ const Edit = ({ attributes, setAttributes, isSelected }) => {
 	if (!src && !id) {
 		return (
 			<div {...blockProps}>
-				<MediaPlaceholder
-					icon={<BlockIcon icon={icon} />}
-					onSelect={onSelectVideo}
-					onSelectURL={onSelectURL}
-					accept="video/*"
-					allowedTypes={ALLOWED_MEDIA_TYPES}
-					value={attributes}
-					onError={onUploadError}
-					placeholder={placeholder}
-				/>
+				{isSiteEditor ? (
+					<>
+						<SingleVideoBlock
+							setAttributes={setAttributes}
+							attributes={attributes}
+							options={options}
+							isSelected={isSelected}
+							externalSourceGroups={externalSourceGroups}
+							videoData={videoData}
+						/>
+						<Placeholder
+							icon={icon}
+							label={__(
+								'Dynamic Videopack Video',
+								'video-embed-thumbnail-generator'
+							)}
+							instructions={__(
+								'This block is currently configured to show the most recent video from the current post. To select a specific video instead, use the options below.',
+								'video-embed-thumbnail-generator'
+							)}
+						>
+							<MediaPlaceholder
+								onSelect={onSelectVideo}
+								onSelectURL={onSelectURL}
+								accept="video/*"
+								allowedTypes={ALLOWED_MEDIA_TYPES}
+								value={attributes}
+								onError={onUploadError}
+							/>
+						</Placeholder>
+					</>
+				) : (
+					<MediaPlaceholder
+						icon={<BlockIcon icon={icon} />}
+						onSelect={onSelectVideo}
+						onSelectURL={onSelectURL}
+						accept="video/*"
+						allowedTypes={ALLOWED_MEDIA_TYPES}
+						value={attributes}
+						onError={onUploadError}
+						placeholder={placeholder}
+					/>
+				)}
 			</div>
 		);
 	}

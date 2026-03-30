@@ -3,7 +3,7 @@
  */
 
 import { getVideoGallery } from '../../utils/utils';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Placeholder, Spinner } from '@wordpress/components';
 import {
@@ -23,27 +23,31 @@ import {
 import VideoListItem from './VideoListItem';
 import './VideoList.scss';
 
+const noop = () => {};
+
 /**
  * VideoList component.
  *
- * @param {Object}   props              Component props.
- * @param {Object}   props.attributes   Block attributes.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {boolean}  props.isEditing    Whether the list is in editing mode.
- * @param {Object}   props.options      Global player options.
- * @param {boolean}  props.isSelected   Whether the block is selected in the editor.
- * @param {Function} props.onRemoveItem Callback to remove a video item.
- * @param {Function} props.onEditItem   Callback to edit a video item.
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Callback to update attributes.
+ * @param {boolean}  props.isEditing     Whether the list is in editing mode.
+ * @param {Object}   props.options       Plugin options.
+ * @param {boolean}  props.isSelected    Whether the list is selected.
+ * @param {Function} props.onRemoveItem  Callback to remove a video item.
+ * @param {Function} props.onEditItem    Callback to edit a video item.
+ * @param {number}   props.currentPage   The current page number.
  * @return {Object} The VideoList component.
  */
 const VideoList = ({
 	attributes,
-	setAttributes,
-	isEditing,
-	options,
-	isSelected,
-	onRemoveItem,
-	onEditItem,
+	setAttributes = noop,
+	isEditing = false,
+	options = {},
+	isSelected = false,
+	onRemoveItem = noop,
+	onEditItem = noop,
+	currentPage = 1,
 }) => {
 	const {
 		gallery_id,
@@ -58,11 +62,11 @@ const VideoList = ({
 		gallery_tag,
 		videos,
 		collection_video_limit,
+		title_color,
+		title_background_color,
 	} = attributes;
 
 	const [listVideos, setListVideos] = useState([]);
-	const [totalPages, setTotalPages] = useState(1);
-	const [listPage, setListPage] = useState(1);
 	const [isLoading, setIsLoading] = useState(true);
 	const [showOverlay, setShowOverlay] = useState(!isSelected);
 	const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -116,11 +120,12 @@ const VideoList = ({
 		const args = {
 			gallery_orderby: new_gallery_orderby,
 			gallery_order,
+			gallery_pagination,
 			gallery_per_page:
-				gallery_pagination !== true || isNaN(gallery_per_page)
+				!gallery_pagination || isNaN(gallery_per_page)
 					? -1
 					: gallery_per_page,
-			page_number: listPage,
+			page_number: currentPage,
 			gallery_id,
 			gallery_include,
 			gallery_exclude,
@@ -133,7 +138,6 @@ const VideoList = ({
 		setIsLoading(true);
 		getVideoGallery(args)
 			.then((response) => {
-				setTotalPages(response.max_num_pages);
 				setListVideos(response.videos);
 			})
 			.catch((error) => {
@@ -141,7 +145,6 @@ const VideoList = ({
 					error.status === 404 ||
 					(error.data && error.data.status === 404)
 				) {
-					setTotalPages(0);
 					setListVideos([]);
 				} else {
 					console.error('Error fetching videos:', error);
@@ -163,16 +166,9 @@ const VideoList = ({
 		gallery_tag,
 		videos,
 		collection_video_limit,
-		listPage,
+		currentPage,
 		refreshTrigger,
 	]);
-
-	useEffect(() => {
-		if (!gallery_pagination) {
-			setTotalPages(1);
-			setListPage(1);
-		}
-	}, [gallery_pagination]);
 
 	const openMediaModal = (video) => {
 		const frame = window.wp.media({
@@ -214,53 +210,20 @@ const VideoList = ({
 		frame.open();
 	};
 
-	const Pagination = () => {
-		const buttons = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-		return (
-			<div className="videopack-gallery-pagination">
-				<button
-					className={`videopack-pagination-arrow${
-						listPage > 1 ? '' : ' videopack-hidden'
-					}`}
-					onClick={() => {
-						setListPage(listPage - 1);
-					}}
-				>
-					<span>{'«'}</span>
-				</button>
-				{buttons.map((pageNumber) => (
-					<div key={pageNumber} className="videopack-page-number-div">
-						<button
-							onClick={() => setListPage(pageNumber)}
-							className={`videopack-page-number${
-								pageNumber === listPage ? ' current-page' : ''
-							}`}
-							disabled={pageNumber === listPage}
-						>
-							<span>{pageNumber}</span>
-						</button>
-						<span className="videopack-pagination-separator">
-							{pageNumber === totalPages ? '' : '|'}
-						</span>
-					</div>
-				))}
-				<button
-					className={`videopack-pagination-arrow${
-						listPage < totalPages ? '' : ' videopack-hidden'
-					}`}
-					onClick={() => {
-						setListPage(listPage + 1);
-					}}
-				>
-					<span>{'»'}</span>
-				</button>
-			</div>
-		);
-	};
+	const listStyles = useMemo(() => {
+		const styles = {};
+		if (title_color) {
+			styles['--videopack-title-color'] = title_color;
+		}
+		if (title_background_color) {
+			styles['--videopack-title-background-color'] =
+				title_background_color;
+		}
+		return styles;
+	}, [title_color, title_background_color]);
 
 	return (
-		<div className="videopack-video-list-wrapper">
+		<div className="videopack-video-list-wrapper" style={listStyles}>
 			<div className="videopack-video-list">
 				{isLoading && (
 					<div className="videopack-loading-container">
@@ -310,7 +273,6 @@ const VideoList = ({
 						/>
 					)}
 			</div>
-			{totalPages > 1 && <Pagination />}
 		</div>
 	);
 };

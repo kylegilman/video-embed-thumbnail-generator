@@ -1,6 +1,8 @@
 /* global videopack_config */
 
+import { useMemo } from '@wordpress/element';
 import { __, _x, sprintf } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
 import {
 	BaseControl,
 	CheckboxControl,
@@ -17,6 +19,9 @@ import {
 } from '@wordpress/components';
 import { volumeUp, volumeDown } from '../../../assets/icon';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer';
+import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe';
+import CompactColorPicker from '../../../components/CompactColorPicker/CompactColorPicker';
+import { getColorFallbacks } from '../../../utils/colors';
 import VideopackTooltip from './VideopackTooltip';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
 import useResolutions from '../../../hooks/useResolutions';
@@ -61,6 +66,12 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		encode,
 		right_click,
 		click_download,
+		play_button_color,
+		play_button_icon_color,
+		control_bar_bg_color,
+		control_bar_color,
+		title_color,
+		title_background_color,
 	} = settings;
 
 	const currentResolutions = useResolutions(
@@ -126,7 +137,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		changeHandlerFactory.encode(newEncode);
 	};
 
-	const embedMethodOptions = [
+	const embedMethodOptions = applyFilters('videopack_embed_method_options', [
 		{
 			value: 'Video.js',
 			label: __('Video.js', 'video-embed-thumbnail-generator'),
@@ -139,7 +150,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 			value: 'None',
 			label: __('None', 'video-embed-thumbnail-generator'),
 		},
-	];
+	]);
 
 	const preloadOptions = [
 		{
@@ -201,36 +212,50 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		},
 	];
 
-	const skinOptions = [
-		{
-			value: 'vjs-theme-videopack',
-			label: __('Videopack', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'kg-video-js-skin',
-			label: __('Videopack Classic', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'default',
-			label: __('Video.js default', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'vjs-theme-city',
-			label: __('City', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'vjs-theme-fantasy',
-			label: __('Fantasy', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'vjs-theme-forest',
-			label: __('Forest', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'vjs-theme-sea',
-			label: __('Sea', 'video-embed-thumbnail-generator'),
-		},
-	];
+	const skinOptions = useMemo(() => {
+		const options = [
+			{
+				value: 'vjs-theme-videopack',
+				label: __('Videopack', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'kg-video-js-skin',
+				label: __(
+					'Videopack Classic',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			{
+				value: 'default',
+				label: __(
+					'Video.js default',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			{
+				value: 'vjs-theme-city',
+				label: __('City', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'vjs-theme-fantasy',
+				label: __('Fantasy', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'vjs-theme-forest',
+				label: __('Forest', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'vjs-theme-sea',
+				label: __('Sea', 'video-embed-thumbnail-generator'),
+			},
+		];
+
+		return applyFilters(
+			'videopack_player_skin_options',
+			options,
+			embed_method
+		);
+	}, [embed_method]);
 
 	const alignOptions = [
 		{
@@ -333,6 +358,11 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 		changeHandlerFactory.watermark_styles(styles);
 	};
 
+	const PLAYER_COLOR_FALLBACKS = useMemo(
+		() => getColorFallbacks(settings),
+		[settings]
+	);
+
 	return (
 		<>
 			<PanelBody>
@@ -345,7 +375,19 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 							'video-embed-thumbnail-generator'
 						)}
 						value={embed_method}
-						onChange={changeHandlerFactory.embed_method}
+						onChange={(value) => {
+							changeHandlerFactory.embed_method(value);
+							const defaultSkin = applyFilters(
+								'videopack_default_skin',
+								value === 'WordPress Default'
+									? 'vjs-theme-videopack'
+									: undefined,
+								value
+							);
+							if (defaultSkin) {
+								changeHandlerFactory.skin(defaultSkin);
+							}
+						}}
 						options={embedMethodOptions}
 					/>
 					<VideopackTooltip
@@ -357,95 +399,238 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 				</div>
 			</PanelBody>
 			<PanelBody>
-				<div className={'videopack-sample-video-player'}>
-					<div
-						className={`wp-block-videopack-videopack-video${
-							align ? ` align${align}` : ''
-						}`}
+				<div
+					className={`videopack-sample-video-player align${
+						align || 'none'
+					}`}
+					style={{
+						'--wp--style--global--content-size':
+							videopack_config.contentSize || '800px',
+						'--wp--style--global--wide-size':
+							videopack_config.wideSize || '1000px',
+					}}
+				>
+					<PanelRow>
+						<Flex className="videopack-flex-bottom">
+							<FlexBlock>
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={__(
+										'Title',
+										'video-embed-thumbnail-generator'
+									)}
+									onChange={
+										changeHandlerFactory.overlay_title
+									}
+									checked={!!overlay_title}
+								/>
+							</FlexBlock>
+							<FlexBlock>
+								<ToggleControl
+									__nextHasNoMarginBottom
+									label={__(
+										'Download link',
+										'video-embed-thumbnail-generator'
+									)}
+									onChange={changeHandlerFactory.downloadlink}
+									checked={!!downloadlink}
+								/>
+							</FlexBlock>
+							<FlexBlock>
+								<FlexItem>
+									<ToggleControl
+										__nextHasNoMarginBottom
+										label={__(
+											'Embed code',
+											'video-embed-thumbnail-generator'
+										)}
+										onChange={
+											changeHandlerFactory.embedcode
+										}
+										checked={!!embedcode}
+										disabled={!embeddable}
+									/>
+								</FlexItem>
+							</FlexBlock>
+						</Flex>
+					</PanelRow>
+
+					<PreviewIframe
+						title={__(
+							'Video Player Preview',
+							'video-embed-thumbnail-generator'
+						)}
+						resizeDependencies={[align]}
 					>
-						<PanelRow>
-							<Flex className="videopack-flex-bottom">
-								<FlexBlock>
-									<ToggleControl
-										__nextHasNoMarginBottom
-										label={__(
-											'Overlay title',
-											'video-embed-thumbnail-generator'
-										)}
-										onChange={
-											changeHandlerFactory.overlay_title
-										}
-										checked={!!overlay_title}
-									/>
-								</FlexBlock>
-								<FlexBlock>
-									<ToggleControl
-										__nextHasNoMarginBottom
-										label={__(
-											'Download link',
-											'video-embed-thumbnail-generator'
-										)}
-										onChange={
-											changeHandlerFactory.downloadlink
-										}
-										checked={!!downloadlink}
-									/>
-								</FlexBlock>
-								<FlexBlock>
-									<FlexItem>
-										<ToggleControl
-											__nextHasNoMarginBottom
-											label={__(
-												'Embed code',
-												'video-embed-thumbnail-generator'
-											)}
-											onChange={
-												changeHandlerFactory.embedcode
-											}
-											checked={!!embedcode}
-											disabled={!embeddable}
-										/>
-									</FlexItem>
-								</FlexBlock>
-							</Flex>
-						</PanelRow>
+						<div
+							className={`wp-block-videopack-videopack-video${
+								align ? ` align${align}` : ''
+							}`}
+						>
+							<VideoPlayer
+								attributes={{
+									...settings,
+									sources: [
+										{
+											src:
+												videopack_config.url +
+												'/src/images/Adobestock_469037984.mp4',
+											type: 'video/mp4',
+										},
+									],
+									id: 'sample-video',
+									title: 'Sample Video',
+									overlay_title,
+									width: undefined,
+									height: undefined,
+									starts: 23,
+									embedlink: 'https://www.website.com/embed/',
+									caption: __(
+										"If text is entered in the attachment's caption field it is displayed here automatically."
+									),
+								}}
+								onReady={handleVideoPlayerReady}
+							/>
+						</div>
+					</PreviewIframe>
 
-						<VideoPlayer
-							attributes={{
-								...settings,
-								sources: [
-									{
-										src:
-											videopack_config.url +
-											'/src/images/Adobestock_469037984.mp4',
-										type: 'video/mp4',
-									},
-								],
-								id: 'sample-video',
-								title: 'Sample Video',
-								overlay_title,
-								width: undefined,
-								height: undefined,
-								starts: 23,
-								embedlink: 'https://www.website.com/embed/',
-								caption: __(
-									"If text is entered in the attachment's caption field it is displayed here automatically."
-								),
-							}}
-							onReady={handleVideoPlayerReady}
+					<PanelRow className="videopack-flex-right">
+						<ToggleControl
+							__nextHasNoMarginBottom
+							label={__(
+								'View count',
+								'video-embed-thumbnail-generator'
+							)}
+							onChange={changeHandlerFactory.view_count}
+							checked={!!view_count}
 						/>
+					</PanelRow>
+				</div>
+			</PanelBody>
+			<PanelBody title={__('Colors', 'video-embed-thumbnail-generator')}>
+				{embed_method.startsWith('Video.js') && (
+					<div className="videopack-setting-reduced-width">
+						<SelectControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'Skin',
+								'video-embed-thumbnail-generator'
+							)}
+							value={skin}
+							onChange={changeHandlerFactory.skin}
+							options={skinOptions}
+						/>
+					</div>
+				)}
 
-						<PanelRow className="videopack-flex-right">
-							<ToggleControl
-								__nextHasNoMarginBottom
+				<div className="videopack-color-section">
+					<p className="videopack-settings-section-title">
+						{__('Title overlay', 'video-embed-thumbnail-generator')}
+					</p>
+					<div className="videopack-color-flex-row">
+						<div className="videopack-color-flex-item">
+							<CompactColorPicker
 								label={__(
-									'View count',
+									'Text',
 									'video-embed-thumbnail-generator'
 								)}
-								onChange={changeHandlerFactory.view_count}
-								checked={!!view_count}
+								value={title_color}
+								onChange={changeHandlerFactory.title_color}
+								colors={videopack_config.themeColors}
+								fallbackValue={
+									PLAYER_COLOR_FALLBACKS.title_color
+								}
 							/>
-						</PanelRow>
+						</div>
+						<div className="videopack-color-flex-item">
+							<CompactColorPicker
+								label={__(
+									'Background',
+									'video-embed-thumbnail-generator'
+								)}
+								value={title_background_color}
+								onChange={
+									changeHandlerFactory.title_background_color
+								}
+								colors={videopack_config.themeColors}
+								fallbackValue={
+									PLAYER_COLOR_FALLBACKS.title_background_color
+								}
+							/>
+						</div>
+					</div>
+				</div>
+
+				<div className="videopack-color-section">
+					<p className="videopack-settings-section-title">
+						{__('Player', 'video-embed-thumbnail-generator')}
+					</p>
+					<div className="videopack-color-flex-row">
+						<div className="videopack-color-flex-item">
+							<CompactColorPicker
+								label={__(
+									'Play Button (Accent)',
+									'video-embed-thumbnail-generator'
+								)}
+								value={play_button_color}
+								onChange={
+									changeHandlerFactory.play_button_color
+								}
+								colors={videopack_config.themeColors}
+								fallbackValue={
+									PLAYER_COLOR_FALLBACKS.play_button_color
+								}
+							/>
+						</div>
+						<div className="videopack-color-flex-item">
+							<CompactColorPicker
+								label={__(
+									'Play Button Icon',
+									'video-embed-thumbnail-generator'
+								)}
+								value={play_button_icon_color}
+								onChange={
+									changeHandlerFactory.play_button_icon_color
+								}
+								colors={videopack_config.themeColors}
+								fallbackValue={
+									PLAYER_COLOR_FALLBACKS.play_button_icon_color
+								}
+							/>
+						</div>
+						<div className="videopack-color-flex-item">
+							<CompactColorPicker
+								label={__(
+									'Control Bar Background',
+									'video-embed-thumbnail-generator'
+								)}
+								value={control_bar_bg_color}
+								onChange={
+									changeHandlerFactory.control_bar_bg_color
+								}
+								colors={videopack_config.themeColors}
+								fallbackValue={
+									PLAYER_COLOR_FALLBACKS.control_bar_bg_color
+								}
+							/>
+						</div>
+						<div className="videopack-color-flex-item">
+							<CompactColorPicker
+								label={__(
+									'Control Bar Icons',
+									'video-embed-thumbnail-generator'
+								)}
+								value={control_bar_color}
+								onChange={
+									changeHandlerFactory.control_bar_color
+								}
+								colors={videopack_config.themeColors}
+								fallbackValue={
+									PLAYER_COLOR_FALLBACKS.control_bar_color
+								}
+							/>
+						</div>
 					</div>
 				</div>
 			</PanelBody>
@@ -605,21 +790,6 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						)}
 					/>
 				</div>
-				{embed_method.startsWith('Video.js') && (
-					<div className="videopack-setting-reduced-width">
-						<SelectControl
-							__nextHasNoMarginBottom
-							__next40pxDefaultSize
-							label={__(
-								'Skin',
-								'video-embed-thumbnail-generator'
-							)}
-							value={skin}
-							onChange={changeHandlerFactory.skin}
-							options={skinOptions}
-						/>
-					</div>
-				)}
 			</PanelBody>
 			<PanelBody
 				title={__('Dimensions', 'video-embed-thumbnail-generator')}
@@ -931,7 +1101,7 @@ const PlayerSettings = ({ settings, setSettings, changeHandlerFactory }) => {
 						'video-embed-thumbnail-generator'
 					)}
 					id="videopack-find-formats-codecs"
-					className="videopack-setting-checkbox-group"
+					className="videopack-setting-checkbox-group videopack-setting-extra-margin"
 				>
 					<div>
 						{videopack_config.codecs.map((codec) => (

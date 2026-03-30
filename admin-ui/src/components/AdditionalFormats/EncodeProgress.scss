@@ -61,32 +61,22 @@
 			padding: 9px;
 		}
 
-		.dashicon {
-			display: none;
-		}
+			// When the container is narrow, switch to icon only and make it a circle
+			@container (max-width: 200px) {
+				padding: 0 !important;
+				min-width: 20px !important;
+				width: 20px !important;
+				height: 20px !important;
+				border-radius: 50% !important;
 
-		// When the container is narrow, switch to icon only and make it a circle
-		@container (max-width: 200px) {
-			padding: 0 !important;
-			min-width: 20px !important;
-			width: 20px !important;
-			height: 20px !important;
-			border-radius: 50% !important;
+				.videopack-button-text {
+					display: none;
+				}
 
-			.dashicon {
-				display: inline-block;
-				font-size: 16px;
-				line-height: 20px;
+				.components-button__icon {
+					margin: 0 !important;
+				}
 			}
-
-			.videopack-button-text {
-				display: none;
-			}
-
-			.components-button__icon {
-				margin: 0 !important;
-			}
-		}
 	}
 }
 

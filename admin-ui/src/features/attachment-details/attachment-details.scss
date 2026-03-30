@@ -1,3 +1,50 @@
 #videopack-attachment-details-root {
 	clear: both;
 }
+
+#videopack-attachment-preview-root {
+	width: 100%;
+	height: auto;
+	display: block; // Changed from flex to block to avoid flex-box sizing oddities with Video.js
+	position: relative;
+	overflow: hidden;
+	margin: 0 auto;
+
+	.videopack-attachment-preview,
+	.videopack-wrapper {
+		width: 100% !important;
+		display: block;
+		margin: 0;
+	}
+
+	.videopack-player {
+		width: 100% !important;
+		display: block;
+	}
+
+	// Force the Video.js container to be 100% wide
+	.video-js {
+		width: 100% !important;
+	}
+}
+
+// Ensure WordPress's thumbnail container doesn't collapse our custom content
+.attachment-details .attachment-media-view .thumbnail {
+	width: 100%;
+	display: block;
+}
+
+#videopack-auto-gen-notice {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	background: #fff;
+	border-left: 4px solid #00a32a;
+	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+	padding: 10px 20px;
+	z-index: 99999;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 13px;
+	display: none;
+}

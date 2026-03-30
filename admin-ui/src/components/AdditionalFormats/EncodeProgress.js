@@ -5,6 +5,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
+import { cancelCircleFilled } from '@wordpress/icons';
 import './EncodeProgress.scss';
 
 /**
@@ -204,7 +205,7 @@ const EncodeProgress = ({
 									(formatData.progress?.job_id ||
 										formatData.job_id)
 								}
-								icon="no-alt"
+								icon={cancelCircleFilled}
 								title={__(
 									'Cancel',
 									'video-embed-thumbnail-generator'

@@ -207,7 +207,7 @@ const ListBlock = ({
 							'video-embed-thumbnail-generator'
 						)}
 						instructions={__(
-							'This list is currently configured to show videos dynamically based on the current post or archive. To select specific videos instead, use the options in the sidebar.',
+							'This list is automatically populated with videos. Use the sidebar to filter by category, tag, or specific IDs.',
 							'video-embed-thumbnail-generator'
 						)}
 					/>
