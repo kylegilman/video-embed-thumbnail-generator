@@ -19,6 +19,7 @@ import {
 	PanelRow,
 	Spinner,
 	TabPanel,
+	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
 import { useDebounce } from '@wordpress/compose';
 import {
@@ -30,8 +31,8 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import { videopack } from '../../assets/icon';
-import PlayerSettings from './components/PlayerSettings';
 import VideoCollectionSettings from './components/VideoCollectionSettings';
+import PlayerSettings from './components/PlayerSettings';
 import ThumbnailSettings from './components/ThumbnailSettings';
 import EncodingSettings from './components/EncodingSettings';
 import AdminSettings from './components/AdminSettings';
@@ -49,6 +50,7 @@ const VideopackSettingsPage = () => {
 	const [isSettingsChanged, setIsSettingsChanged] = useState(false);
 	const defaultTab = window.location.hash.substring(1) || 'player';
 	const [activeTab, setActiveTab] = useState(defaultTab);
+	const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 	const settingsRef = useRef(settings);
 
 	useEffect(() => {
@@ -245,6 +247,10 @@ const VideopackSettingsPage = () => {
 	};
 
 	const resetSettings = () => {
+		setIsResetModalOpen(true);
+	};
+
+	const handleConfirmReset = () => {
 		resetVideopackSettings()
 			.then((response) => {
 				setSettings(response);
@@ -252,6 +258,9 @@ const VideopackSettingsPage = () => {
 			})
 			.catch((error) => {
 				console.error(error);
+			})
+			.finally(() => {
+				setIsResetModalOpen(false);
 			});
 	};
 
@@ -288,6 +297,25 @@ const VideopackSettingsPage = () => {
 					</Button>
 				</PanelRow>
 			</Panel>
+			<ConfirmDialog
+				isOpen={isResetModalOpen}
+				title={__('Reset Settings?', 'video-embed-thumbnail-generator')}
+				onConfirm={handleConfirmReset}
+				onCancel={() => setIsResetModalOpen(false)}
+				confirmButtonText={__(
+					'Reset Settings',
+					'video-embed-thumbnail-generator'
+				)}
+				cancelButtonText={__(
+					'Cancel',
+					'video-embed-thumbnail-generator'
+				)}
+			>
+				{__(
+					'Are you sure you want to reset all settings to their defaults? This action cannot be undone.',
+					'video-embed-thumbnail-generator'
+				)}
+			</ConfirmDialog>
 		</div>
 	);
 };
