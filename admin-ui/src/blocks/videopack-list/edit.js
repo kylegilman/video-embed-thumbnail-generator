@@ -1,9 +1,10 @@
-import { Button, Placeholder } from '@wordpress/components';
+import { Button, Placeholder, ToolbarGroup, ToolbarButton } from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
 	MediaPlaceholder,
-	MediaReplaceFlow,
+	MediaUpload,
+	MediaUploadCheck,
 	useBlockProps,
 } from '@wordpress/block-editor';
 
@@ -11,6 +12,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
+import { media as mediaIcon, pencil } from '@wordpress/icons';
 
 import { getSettings } from '../../utils/utils';
 import { videopack as icon } from '../../assets/icon';
@@ -24,67 +26,131 @@ export default function Edit({
 	isSelected,
 }) {
 	const ALLOWED_MEDIA_TYPES = ['video'];
-	const { gallery_include, gallery_id } = attributes;
+	const {
+		gallery_include,
+		gallery_id,
+		gallery_source,
+		gallery_order,
+		gallery_orderby,
+		gallery_pagination,
+		gallery_per_page,
+		collection_video_limit,
+		enable_collection_video_limit,
+		gallery_category,
+		gallery_tag,
+	} = attributes;
+
 	const [options, setOptions] = useState();
+	const [currentPage, setCurrentPage] = useState(1);
 	const blockProps = useBlockProps();
 	const { createErrorNotice } = useDispatch(noticesStore);
 
-	const { editorPostId } = useSelect(
-		(select) => ({
-			editorPostId: select('core/editor')?.getCurrentPostId(),
-		}),
-		[]
-	);
+	const { editorPostId, isArchiveTemplate } = useSelect((select) => {
+		const editor = select('core/editor');
+		const post = editor?.getCurrentPost();
+		return {
+			editorPostId: editor?.getCurrentPostId(),
+			isArchiveTemplate:
+				post?.type === 'wp_template' &&
+				(post?.slug?.includes('archive') ||
+					post?.slug?.includes('category') ||
+					post?.slug?.includes('tag') ||
+					post?.slug?.includes('taxonomy')),
+		};
+	}, []);
 
 	const postId = context.postId || editorPostId;
 
+	useEffect(() => {
+		if (isArchiveTemplate && gallery_source === 'current') {
+			setAttributes({ gallery_source: 'archive' });
+		}
+	}, [isArchiveTemplate, gallery_source, setAttributes]);
+
 	const videoChildren = useSelect(
 		(select) => {
-			if (!postId) {
+			const query = {
+				media_type: 'video',
+				order: gallery_order,
+				status: 'inherit',
+			};
+
+			if (gallery_orderby && gallery_orderby !== 'menu_order') {
+				query.orderby = gallery_orderby;
+			}
+
+			if (gallery_pagination) {
+				query.page = currentPage;
+				query.per_page = gallery_per_page || 10;
+			} else if (enable_collection_video_limit) {
+				query.per_page =
+					collection_video_limit && collection_video_limit !== -1
+						? collection_video_limit
+						: 10;
+			} else {
+				query.per_page = 10;
+			}
+
+			if (gallery_source === 'manual' && gallery_include) {
+				query.include = gallery_include.split(',').map(Number);
+			} else if (gallery_source === 'category' && gallery_category) {
+				query.categories = gallery_category.split(',').map(Number);
+			} else if (gallery_source === 'tag' && gallery_tag) {
+				query.tags = gallery_tag.split(',').map(Number);
+			} else if (
+				(gallery_source === 'current' || gallery_source === 'archive') &&
+				postId &&
+				!isNaN(Number(postId))
+			) {
+				query.parent = postId;
+			} else if (gallery_id && !isNaN(Number(gallery_id))) {
+				query.parent = gallery_id;
+			} else if (gallery_source === 'manual') {
 				return null;
 			}
-			return select('core').getEntityRecords('postType', 'attachment', {
-				parent: postId,
-				media_type: 'video',
-			});
+
+			if (gallery_pagination) {
+				query.page = currentPage;
+			}
+
+			const records = select('core').getEntityRecords(
+				'postType',
+				'attachment',
+				query
+			);
+
+			return {
+				videoChildren: records,
+				totalPages:
+					select('core').getEntityRecordsTotalPages(
+						'postType',
+						'attachment',
+						query
+					) || 0,
+			};
 		},
-		[postId]
+		[
+			postId,
+			gallery_include,
+			gallery_id,
+			gallery_source,
+			gallery_order,
+			gallery_orderby,
+			gallery_pagination,
+			gallery_per_page,
+			collection_video_limit,
+			enable_collection_video_limit,
+			gallery_category,
+			gallery_tag,
+			currentPage,
+		]
 	);
 
 	useEffect(() => {
 		getSettings().then((response) => {
 			setOptions(response);
 		});
-	}, [videoChildren]);
-
-	useEffect(() => {
-		if (options) {
-			const newAttributes = {};
-			const settingsToSync = [
-				'gallery_columns',
-				'gallery_order',
-				'gallery_orderby',
-				'gallery_pagination',
-				'gallery_per_page',
-				'gallery_title',
-				'gallery_end',
-				'skin',
-			];
-
-			settingsToSync.forEach((setting) => {
-				if (
-					attributes[setting] === undefined &&
-					options[setting] !== undefined
-				) {
-					newAttributes[setting] = options[setting];
-				}
-			});
-
-			if (Object.keys(newAttributes).length > 0) {
-				setAttributes(newAttributes);
-			}
-		}
-	}, [options]);
+	}, []);
 
 	function setAttributesFromMedia(media) {
 		const includeIds = media.map((item) => item.id).join(',');
@@ -111,6 +177,39 @@ export default function Edit({
 		setAttributesFromMedia(mediaArray);
 	}
 
+	function onAddVideos(media) {
+		const mediaArray = Array.isArray(media) ? media : [media];
+		const newIncludeIds = mediaArray.map((item) => item.id.toString());
+
+		let currentInclude = [];
+		if (gallery_include) {
+			currentInclude = gallery_include.split(',');
+		} else if (videoChildren) {
+			currentInclude = videoChildren.map((video) => video.id.toString());
+		}
+
+		const combinedInclude = [
+			...new Set([...currentInclude, ...newIncludeIds]),
+		].join(',');
+
+		setAttributes({
+			gallery: true,
+			gallery_include: combinedInclude,
+			gallery_source: 'manual',
+		});
+	}
+
+	function onEditGallery(media) {
+		const mediaArray = Array.isArray(media) ? media : [media];
+		const newIncludeIds = mediaArray
+			.map((item) => item.id.toString())
+			.join(',');
+
+		setAttributes({
+			gallery_include: newIncludeIds,
+		});
+	}
+
 	function onInsertCollection() {
 		setAttributes({
 			gallery: true,
@@ -124,27 +223,20 @@ export default function Edit({
 	const placeholder = (content) => {
 		return (
 			<Placeholder
-				className="block-editor-media-placeholder"
-				withIllustration={true}
-				icon={icon}
+				icon={<BlockIcon icon={icon} />}
 				label={__(
 					'Videopack Video List',
 					'video-embed-thumbnail-generator'
 				)}
 				instructions={__(
-					'Select video files to create a list.',
+					"Select from your library or upload new videos to create a list.",
 					'video-embed-thumbnail-generator'
 				)}
 			>
 				{content}
 				<Button
 					__next40pxDefaultSize
-					className="videopack-placeholder-gallery-button"
 					variant="secondary"
-					label={__(
-						'Insert a collection of all videos uploaded to this post'
-					)}
-					showTooltip
 					onClick={onInsertCollection}
 				>
 					{__(
@@ -176,24 +268,62 @@ export default function Edit({
 	return (
 		<>
 			<BlockControls group="other">
-				<MediaReplaceFlow
-					mediaId={gallery_id}
-					mediaURL={gallery_include}
-					allowedTypes={ALLOWED_MEDIA_TYPES}
-					accept="video/*"
-					onSelect={onSelectVideo}
-					onError={onUploadError}
-					multiple={true}
-				/>
+				<ToolbarGroup>
+					<MediaUploadCheck>
+						{gallery_source === 'manual' ? (
+							<MediaUpload
+								onSelect={onEditGallery}
+								allowedTypes={ALLOWED_MEDIA_TYPES}
+								multiple="add"
+								value={
+									gallery_include
+										? gallery_include
+												.split(',')
+												.map(Number)
+										: []
+								}
+								render={({ open }) => (
+									<ToolbarButton
+										icon={pencil}
+										label={__(
+											'Edit Gallery',
+											'video-embed-thumbnail-generator'
+										)}
+										onClick={open}
+									/>
+								)}
+							/>
+						) : (
+							<MediaUpload
+								onSelect={onAddVideos}
+								allowedTypes={ALLOWED_MEDIA_TYPES}
+								multiple="add"
+								render={({ open }) => (
+									<ToolbarButton
+										icon={mediaIcon}
+										label={__(
+											'Media Library',
+											'video-embed-thumbnail-generator'
+										)}
+										onClick={open}
+									/>
+								)}
+							/>
+						)}
+					</MediaUploadCheck>
+				</ToolbarGroup>
 			</BlockControls>
 
 			<ListBlock
 				setAttributes={setAttributes}
 				attributes={attributes}
 				options={options}
-				videoChildren={videoChildren}
+				videoChildren={videoChildren?.videoChildren}
 				previewPostId={postId}
 				isSelected={isSelected}
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
+				totalPages={videoChildren?.totalPages}
 			/>
 		</>
 	);

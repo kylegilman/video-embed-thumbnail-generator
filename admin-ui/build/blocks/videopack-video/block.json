@@ -18,6 +18,14 @@
     "spacing": {
       "margin": true,
       "padding": true
+    },
+    "filter": {
+      "duotone": true
+    }
+  },
+  "selectors": {
+    "filter": {
+      "duotone": ".wp-block-videopack-videopack-video .videopack-wrapper .vjs-poster img, .wp-block-videopack-videopack-video .videopack-wrapper .mejs-poster"
     }
   },
   "example": {

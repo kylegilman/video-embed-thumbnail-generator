@@ -2,6 +2,7 @@
  * A single item within the video list, displaying a player and controls.
  */
 
+/* global videopack_config, JSX */
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Icon } from '@wordpress/components';
@@ -88,9 +89,14 @@ const VideoListItem = ({
 			)}
 			<VideoPlayer
 				attributes={{
+					...(videopack_config?.options || {}),
+					...(videopack_config?.defaults || {}),
 					...options,
 					...video.player_vars,
 					...attributes,
+					// Ensure video-specific metadata wins if shortcode attributes are empty
+					poster: attributes.poster || video.player_vars.poster,
+					title: attributes.title || video.title || video.player_vars.title,
 					autoplay: false,
 				}}
 				onReady={() => {}}

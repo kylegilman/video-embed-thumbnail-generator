@@ -30,6 +30,15 @@ import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/W
 import VideopackTooltip from './VideopackTooltip';
 import useResolutions from '../../../hooks/useResolutions';
 
+/**
+ * EncodingSettings component.
+ *
+ * @param {Object} props                      Component props.
+ * @param {Object} props.settings             Plugin settings.
+ * @param {Object} props.changeHandlerFactory Factory for creating change handlers.
+ * @param {Object} props.ffmpegTest           Results of the FFmpeg test.
+ * @return {Object} The rendered component.
+ */
 const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 	const { isNetworkActive } = videopack_config;
 	const {
@@ -98,6 +107,18 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			}
 
 			newEncode[codecId].resolutions[resolutionId] = !!isChecked;
+
+			// If we're disabling the format that is currently the replacement format,
+			// we should probably unset it or keep it enabled.
+			// The backend ENSURES it is enabled if it's the replace_format,
+			// but for UI consistency, let's keep it checked if it's selected as replacement.
+			const formatId = `${codecId}_${resolutionId}`;
+			if (!isChecked && settings.replace_format === formatId) {
+				// Don't allow disabling the replacement format checkbox.
+				// (Or we can allow it, but the backend will override).
+				// Let's just make it enabled if it's the replacement.
+			}
+
 			changeHandlerFactory.encode(newEncode);
 		};
 
@@ -133,6 +154,8 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			changeHandlerFactory.encode(newEncode);
 		};
 
+		const filteredResolutions = currentResolutions;
+
 		return (
 			<div className="videopack-encode-grid">
 				{codecs.map((codec) => (
@@ -148,29 +171,38 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 								disabled={ffmpegExists !== true}
 							/>
 						</div>
-						{currentResolutions.map((resolution) => (
-							<CheckboxControl
-								key={`${codec.id}-${resolution.id}`}
-								__nextHasNoMarginBottom
-								label={resolution.name}
-								checked={
-									!!currentEncode?.[codec.id]?.resolutions?.[
-										resolution.id
-									]
-								}
-								onChange={(isChecked) =>
-									handleCheckboxChange(
-										codec.id,
-										resolution.id,
-										isChecked
-									)
-								}
-								disabled={
-									ffmpegExists !== true ||
-									!currentEncode?.[codec.id]?.enabled
-								}
-							/>
-						))}
+						{filteredResolutions.map((resolution) => {
+							const formatId = `${codec.id}_${resolution.id}`;
+							const isReplacement =
+								settings.replace_format === formatId;
+							return (
+								<div
+									key={formatId}
+									className="videopack-encode-grid-row"
+								>
+									<CheckboxControl
+										__nextHasNoMarginBottom
+										label={resolution.name}
+										checked={
+											isReplacement ||
+											!!currentEncode?.[codec.id]
+												?.resolutions?.[resolution.id]
+										}
+										onChange={(isChecked) =>
+											handleCheckboxChange(
+												codec.id,
+												resolution.id,
+												isChecked
+											)
+										}
+										disabled={
+											ffmpegExists !== true ||
+											!currentEncode?.[codec.id]?.enabled
+										}
+									/>
+								</div>
+							);
+						})}
 					</div>
 				))}
 			</div>
@@ -200,6 +232,96 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 			});
 		}
 		return authorizedUsers;
+	};
+
+	const VideoReplacementSettings = () => {
+		const { replace_format } = settings;
+		const { codecs } = videopack_config;
+
+		// Extract current codec and resolution
+		let currentCodecId = 'none';
+		let currentResolutionId = 'fullres';
+
+		if (replace_format && replace_format !== 'none') {
+			const parts = replace_format.split('_');
+			if (parts.length >= 2) {
+				currentCodecId = parts[0];
+				currentResolutionId = parts.slice(1).join('_');
+			}
+		}
+
+		const codecOptions = [
+			{
+				value: 'none',
+				label: __('None', 'video-embed-thumbnail-generator'),
+			},
+			{
+				value: 'same',
+				label: __(
+					'Same format as original',
+					'video-embed-thumbnail-generator'
+				),
+			},
+			...codecs.map((codec) => ({ value: codec.id, label: codec.name })),
+		];
+
+		const resolutionOptions = currentResolutions.map((res) => ({
+			value: res.id,
+			label: res.name,
+		}));
+
+		const handleCodecChange = (newCodecId) => {
+			if (newCodecId === 'none') {
+				changeHandlerFactory.replace_format('none');
+			} else {
+				changeHandlerFactory.replace_format(
+					`${newCodecId}_${currentResolutionId}`
+				);
+			}
+		};
+
+		const handleResolutionChange = (newResolutionId) => {
+			if (currentCodecId !== 'none') {
+				changeHandlerFactory.replace_format(
+					`${currentCodecId}_${newResolutionId}`
+				);
+			}
+		};
+
+		return (
+			<div className="videopack-setting-reduced-width videopack-replacement-controls">
+				<SelectControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={__(
+						'Replace original video with',
+						'video-embed-thumbnail-generator'
+					)}
+					value={currentCodecId}
+					options={codecOptions}
+					onChange={handleCodecChange}
+				/>
+				{currentCodecId !== 'none' && (
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={__(
+							'Resolution',
+							'video-embed-thumbnail-generator'
+						)}
+						value={currentResolutionId}
+						options={resolutionOptions}
+						onChange={handleResolutionChange}
+					/>
+				)}
+				<VideopackTooltip
+					text={__(
+						'Choose a format to replace the original uploaded video. If "None" is selected, the original video will be kept and additional formats will be created alongside it.',
+						'video-embed-thumbnail-generator'
+					)}
+				/>
+			</div>
+		);
 	};
 
 	const SampleFormatSelects = () => {
@@ -337,78 +459,68 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				)}
 				initialOpen={ffmpeg_exists === true}
 			>
-				<Flex direction="column">
-					<FlexItem>
-						<div>
-							<span className="videopack-label-with-tooltip">
-								<strong>
-									{__(
-										'About formats',
-										'video-embed-thumbnail-generator'
-									)}
-								</strong>
-								<VideopackTooltip
-									text={__(
-										'If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.',
-										'video-embed-thumbnail-generator'
-									)}
-								/>
-							</span>
-						</div>
-						<BaseControl
-							__nextHasNoMarginBottom
-							id="default-video-encode-formats"
-						>
-							<EncodeFormatGrid />
-						</BaseControl>
-					</FlexItem>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__(
-							'Enable Custom Resolution',
-							'video-embed-thumbnail-generator'
-						)}
-						onChange={changeHandlerFactory.enable_custom_resolution}
-						checked={!!enable_custom_resolution}
-					/>
-					{enable_custom_resolution && (
-						<div className="videopack-setting-auto-width">
-							<TextControl
-								__nextHasNoMarginBottom
-								__next40pxDefaultSize
-								label={__(
-									'Custom Resolution Height',
-									'video-embed-thumbnail-generator'
-								)}
-								type="number"
-								value={custom_resolution || ''}
-								onChange={(value) =>
-									changeHandlerFactory.custom_resolution(
-										value === '' ? 0 : parseInt(value, 10)
-									)
-								}
-							/>
-						</div>
-					)}
-
-					<div className="videopack-control-with-tooltip">
-						<ToggleControl
-							__nextHasNoMarginBottom
-							label={__(
-								'Show only default formats on admin pages'
+				<div>
+					<span className="videopack-label-with-tooltip">
+						<strong>
+							{__(
+								'About formats',
+								'video-embed-thumbnail-generator'
 							)}
-							onChange={changeHandlerFactory.hide_video_formats}
-							checked={hide_video_formats}
-							disabled={ffmpeg_exists !== true}
-						/>
+						</strong>
 						<VideopackTooltip
 							text={__(
-								'To avoid cluttering the admin interface with too many options, you can choose to list only the default formats on WordPress admin pages.',
+								'If you have FFmpeg and the proper libraries installed, you can choose to replace your uploaded video with your preferred format, and also transcode into several additional formats depending on the resolution of your original source. Videopack will not upconvert your video, so if you upload a 720p video, it will not waste your time creating a 1080p version. Different browsers have different playback capabilities. All browsers on all devices can play H.264. VP8 is an open-source codec supported by most devices, but not as effecient as the newer codecs H.265, VP9, and AV1, which are not as universally supported. AV1 can also be extremely CPU intensive to encode. If you must use AV1, make sure you have the libsvtav1 FFmpeg library installed. The reference libaom-av1 encoder is more commonly available in FFmpeg builds, but is much slower.',
 								'video-embed-thumbnail-generator'
 							)}
 						/>
+					</span>
+				</div>
+				<EncodeFormatGrid />
+				<VideoReplacementSettings />
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={__(
+						'Enable Custom Resolution',
+						'video-embed-thumbnail-generator'
+					)}
+					onChange={changeHandlerFactory.enable_custom_resolution}
+					checked={!!enable_custom_resolution}
+				/>
+				{enable_custom_resolution && (
+					<div className="videopack-setting-auto-width">
+						<TextControl
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
+							label={__(
+								'Custom Resolution Height',
+								'video-embed-thumbnail-generator'
+							)}
+							type="number"
+							value={custom_resolution || ''}
+							onChange={(value) =>
+								changeHandlerFactory.custom_resolution(
+									value === '' ? 0 : parseInt(value, 10)
+								)
+							}
+						/>
 					</div>
-				</Flex>
+				)}
+
+				<div className="videopack-control-with-tooltip">
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__('Show only default formats on admin pages')}
+						onChange={changeHandlerFactory.hide_video_formats}
+						checked={hide_video_formats}
+						disabled={ffmpeg_exists !== true}
+					/>
+					<VideopackTooltip
+						text={__(
+							'To avoid cluttering the admin interface with too many options, you can choose to list only the default formats on WordPress admin pages.',
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
 			</PanelBody>
 			<PanelBody
 				title={__(
@@ -464,40 +576,37 @@ const EncodingSettings = ({ settings, changeHandlerFactory, ffmpegTest }) => {
 				)}
 				initialOpen={ffmpeg_exists === true}
 			>
-				<BaseControl __nextHasNoMarginBottom id="previouslyUploaded">
-					<div className="videopack-control-with-tooltip">
-						<Button
-							__next40pxDefaultSize
-							variant="secondary"
-							disabled={
-								ffmpeg_exists !== true ||
-								encodingBatch.isProcessing
-							}
-							onClick={handleEncodeAllVideos}
-						>
-							{encodingBatch.isProcessing
-								? sprintf(
-										/* translators: 1: current count, 2: total count */
-										__(
-											'Processing %1$d / %2$d',
-											'video-embed-thumbnail-generator'
-										),
-										encodingBatch.progress.current,
-										encodingBatch.progress.total
-									)
-								: __(
-										'Encode default formats',
+				<div className="videopack-control-with-tooltip">
+					<Button
+						__next40pxDefaultSize
+						variant="secondary"
+						disabled={
+							ffmpeg_exists !== true || encodingBatch.isProcessing
+						}
+						onClick={handleEncodeAllVideos}
+					>
+						{encodingBatch.isProcessing
+							? sprintf(
+									/* translators: 1: current count, 2: total count */
+									__(
+										'Processing %1$d / %2$d',
 										'video-embed-thumbnail-generator'
-									)}
-						</Button>
-						<VideopackTooltip
-							text={__(
-								"Add every video in the Media Library to the encode queue if it hasn't already been encoded. Uses the default encode formats chosen above.",
-								'video-embed-thumbnail-generator'
-							)}
-						/>
-					</div>
-				</BaseControl>
+									),
+									encodingBatch.progress.current,
+									encodingBatch.progress.total
+								)
+							: __(
+									'Encode default formats',
+									'video-embed-thumbnail-generator'
+								)}
+					</Button>
+					<VideopackTooltip
+						text={__(
+							"Add every video in the Media Library to the encode queue if it hasn't already been encoded. Uses the default encode formats chosen above.",
+							'video-embed-thumbnail-generator'
+						)}
+					/>
+				</div>
 			</PanelBody>
 			<WatermarkSettingsPanel
 				title={__(

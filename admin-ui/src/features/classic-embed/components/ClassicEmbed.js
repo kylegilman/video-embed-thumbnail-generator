@@ -235,10 +235,22 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 				}
 				return {
 					...prev,
-					poster: videoData.poster !== undefined ? videoData.poster : prev.poster,
-					poster_id: videoData.poster_id !== undefined ? videoData.poster_id : prev.poster_id,
-					title: videoData.title !== undefined ? videoData.title : prev.title,
-					caption: videoData.caption !== undefined ? videoData.caption : prev.caption,
+					poster:
+						videoData.poster !== undefined
+							? videoData.poster
+							: prev.poster,
+					poster_id:
+						videoData.poster_id !== undefined
+							? videoData.poster_id
+							: prev.poster_id,
+					title:
+						videoData.title !== undefined
+							? videoData.title
+							: prev.title,
+					caption:
+						videoData.caption !== undefined
+							? videoData.caption
+							: prev.caption,
 				};
 			});
 		}
@@ -262,8 +274,25 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		(type) => {
 			let shortcode = '';
 			if (type === 'single') {
+				const finalAttributes = { ...singleAttributes };
+
+				if (resolvedId && videoData) {
+					if (finalAttributes.poster === videoData.poster) {
+						delete finalAttributes.poster;
+					}
+					if (finalAttributes.poster_id === videoData.poster_id) {
+						delete finalAttributes.poster_id;
+					}
+					if (finalAttributes.title === videoData.title) {
+						delete finalAttributes.title;
+					}
+					if (finalAttributes.caption === videoData.caption) {
+						delete finalAttributes.caption;
+					}
+				}
+
 				shortcode = generateShortcode(
-					singleAttributes,
+					finalAttributes,
 					videoUrl,
 					options
 				);
@@ -292,6 +321,8 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 			listAttributes,
 			options,
 			editAttributes,
+			resolvedId,
+			videoData,
 		]
 	);
 

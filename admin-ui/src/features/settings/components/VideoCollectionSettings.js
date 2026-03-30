@@ -50,7 +50,6 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 		pagination_active_color,
 	} = settings;
 
-
 	const limit = useMemo(() => {
 		const parsedLimit = parseInt(collection_video_limit, 10);
 		if (isNaN(parsedLimit) || parsedLimit <= 0) {
@@ -317,7 +316,10 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					<TextControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={__('Columns', 'video-embed-thumbnail-generator')}
+						label={__(
+							'Max Columns',
+							'video-embed-thumbnail-generator'
+						)}
 						type="number"
 						value={gallery_columns}
 						onChange={changeHandlerFactory.gallery_columns}
@@ -325,19 +327,15 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 				</div>
 				<ToggleControl
 					__nextHasNoMarginBottom
-					label={__(
-						'Overlay video title thumbnails',
-						'video-embed-thumbnail-generator'
-					)}
+					label={__('Title', 'video-embed-thumbnail-generator')}
 					onChange={changeHandlerFactory.gallery_title}
 					checked={!!gallery_title}
 				/>
-				<div className="videopack-setting-auto-width">
+				<div className="videopack-setting-auto-width videopack-setting-extra-margin">
 					<SelectControl
-						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 						label={__(
-							'When current gallery video finishes',
+							'When current video ends',
 							'video-embed-thumbnail-generator'
 						)}
 						value={gallery_end}
@@ -347,7 +345,6 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 				</div>
 				<PanelBody
 					title={__('Colors', 'video-embed-thumbnail-generator')}
-					initialOpen={false}
 				>
 					<div className="videopack-color-section">
 						<p className="videopack-settings-section-title">

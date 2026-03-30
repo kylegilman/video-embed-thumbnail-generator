@@ -110,6 +110,22 @@
 	justify-content: flex-start;
 }
 
+.videopack-formats-loading {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 40px 0;
+	width: 100%;
+
+	.videopack-external-check-notice {
+		margin-top: 10px;
+		font-style: italic;
+		color: colors.$gray-600;
+		font-size: 13px;
+	}
+}
+
 .videopack-confirm-dialog .components-modal__frame {
 	max-width: 500px;
 }

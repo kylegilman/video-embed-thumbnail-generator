@@ -2,7 +2,7 @@
  * A React wrapper for the Video.js player library.
  */
 
-/* global videojs */
+/* global videojs, ResizeObserver */
 
 import { useRef, useEffect } from '@wordpress/element';
 
@@ -39,7 +39,7 @@ export const VideoJS = (props) => {
 			player &&
 			!player.isDisposed() &&
 			JSON.stringify(previousPluginsRef.current) !==
-			JSON.stringify(options.plugins)
+				JSON.stringify(options.plugins)
 		) {
 			previousPluginsRef.current = options.plugins;
 
@@ -69,9 +69,8 @@ export const VideoJS = (props) => {
 		if (!player) {
 			// Wrap initialization in a timeout to handle React Strict Mode double-mounts.
 			// This ensures we don't init a player if the component is immediately unmounted.
-
+			// We use a short delay (100ms) to allow layouts (like the WordPress Media Library modal)
 			initTimer = setTimeout(() => {
-
 				if (
 					!options ||
 					!options.sources ||
@@ -102,7 +101,7 @@ export const VideoJS = (props) => {
 					this.on('play', onPlay);
 					this.on('pause', onPause);
 				});
-			}, 0);
+			}, 250);
 		} else if (player && !player.isDisposed()) {
 			player.ready(function () {
 				// Safeguard against missing tech (e.g. failed to load source)
@@ -139,6 +138,14 @@ export const VideoJS = (props) => {
 					if (currentSrc !== newSrc) {
 						player.src(options.sources);
 					}
+				}
+
+				// Update aspect ratio if it changed
+				if (
+					options.aspectRatio &&
+					options.aspectRatio !== player.aspectRatio()
+				) {
+					player.aspectRatio(options.aspectRatio);
 				}
 
 				// Update tracks if they changed
@@ -189,11 +196,39 @@ export const VideoJS = (props) => {
 		};
 	}, [onPause, onPlay]);
 
+	// Trigger a resize event on the player when the container's dimensions change.
+	useEffect(() => {
+		const container = videoRef.current;
+		if (!container || typeof ResizeObserver === 'undefined') {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(() => {
+			if (playerRef.current && !playerRef.current.isDisposed()) {
+				playerRef.current.trigger('resize');
+			}
+		});
+
+		resizeObserver.observe(container);
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	}, []);
+
+	// Normalize aspect ratio from options (e.g. '16:9' -> '16 / 9') or fallback to width/height.
+	let ratio = '16 / 9';
+	if (options.aspectRatio) {
+		ratio = options.aspectRatio.replace(':', ' / ');
+	} else if (options.width && options.height) {
+		ratio = `${options.width} / ${options.height}`;
+	}
+
 	return (
 		<div
 			data-vjs-player
 			ref={videoRef}
-			style={{ width: '100%', height: '100%' }}
+			style={{ width: '100%', aspectRatio: ratio, overflow: 'hidden' }}
 		/>
 	);
 };

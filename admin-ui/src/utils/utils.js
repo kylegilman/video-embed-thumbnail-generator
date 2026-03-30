@@ -121,19 +121,42 @@ export const removeJob = async (jobId) => {
 /**
  * Fetches encoding presets.
  *
- * @param {number|null} attachmentId Optional attachment ID to filter presets.
- * @param {string}      url          Optional URL to filter presets.
+ * @param {number|null} attachmentId   Optional attachment ID to filter presets.
+ * @param {string}      url            Optional URL to filter presets.
+ * @param {Object}      probedMetadata Optional metadata from the browser probe.
+ * @param {AbortSignal} signal         Optional AbortSignal to cancel the request.
  * @return {Promise<Array>} List of presets.
  */
-export const getPresets = async (attachmentId = null, url = '') => {
+export const getPresets = async (
+	attachmentId = null,
+	url = '',
+	probedMetadata = null,
+	signal = null
+) => {
 	try {
+		const query = {
+			attachment_id: attachmentId,
+			url,
+		};
+		if (probedMetadata) {
+			if (probedMetadata.width) {
+				query.width = probedMetadata.width;
+			}
+			if (probedMetadata.height) {
+				query.height = probedMetadata.height;
+			}
+			if (probedMetadata.duration) {
+				query.duration = probedMetadata.duration;
+			}
+		}
 		return await apiFetch({
-			path: addQueryArgs('/videopack/v1/presets', {
-				attachment_id: attachmentId,
-				url,
-			}),
+			path: addQueryArgs('/videopack/v1/presets', query),
+			signal,
 		});
 	} catch (error) {
+		if (error.name === 'AbortError') {
+			throw error;
+		}
 		console.error('Error fetching presets:', error);
 		throw error;
 	}
@@ -155,7 +178,7 @@ export const createJob = async (input, outputs, parentId = 0) => {
 			data: {
 				input,
 				outputs,
-				parent_id: parentId,
+				parent_id: Number(parentId) || 0,
 			},
 		});
 	} catch (error) {
@@ -202,13 +225,25 @@ export const listJobs = async (input = null) => {
 /**
  * Fetches available video formats and their encoding status for an attachment.
  *
- * @param {number} attachmentId The attachment ID.
- * @param {string} url          Optional source URL.
+ * @param {number}      attachmentId   The attachment ID.
+ * @param {string}      url            Optional source URL.
+ * @param {Object}      probedMetadata Optional metadata from the browser probe.
+ * @param {AbortSignal} signal         Optional AbortSignal to cancel the request.
  * @return {Promise<Object>} Map of format IDs to format objects.
  */
-export const getVideoFormats = async (attachmentId, url = '') => {
+export const getVideoFormats = async (
+	attachmentId,
+	url = '',
+	probedMetadata = null,
+	signal = null
+) => {
 	try {
-		const presets = await getPresets(attachmentId, url);
+		const presets = await getPresets(
+			attachmentId,
+			url,
+			probedMetadata,
+			signal
+		);
 
 		const merged = {};
 		presets.forEach((preset) => {
@@ -226,6 +261,9 @@ export const getVideoFormats = async (attachmentId, url = '') => {
 
 		return merged;
 	} catch (error) {
+		if (error.name === 'AbortError') {
+			throw error;
+		}
 		console.error('Error fetching video formats:', error);
 		throw error;
 	}
@@ -247,7 +285,7 @@ export const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
 		const response = await createJob(
 			attachmentId || src,
 			outputIds,
-			parentId
+			Number(parentId) || 0
 		);
 		// The UI expects a certain shape for its message reporting
 		return {
@@ -355,7 +393,7 @@ export const createThumbnailFromCanvas = (
 				const formData = new FormData();
 				formData.append('file', blob, 'thumbnail.jpg');
 				formData.append('attachment_id', attachmentId);
-				formData.append('parent_id', parentId);
+				formData.append('parent_id', Number(parentId) || 0);
 				formData.append('url', videoSrc);
 				formData.append('post_name', getFilename(videoSrc));
 				if (featured !== null) {
@@ -414,7 +452,7 @@ export const saveAllThumbnails = async (
 			data: {
 				attachment_id,
 				thumb_urls,
-				parent_id,
+				parent_id: Number(parent_id) || 0,
 				url,
 				featured,
 			},
@@ -523,6 +561,7 @@ export const testEncodeCommand = async (codec, resolution, rotate) => {
 	}
 };
 
+let cachedSettings = null;
 /**
  * Fetches global Videopack settings.
  *
@@ -533,10 +572,15 @@ export const getSettings = async () => {
 	if (typeof pre !== 'undefined') {
 		return pre;
 	}
+
+	if (cachedSettings) {
+		return cachedSettings;
+	}
+
 	try {
 		const allSettings = await apiFetch({ path: '/wp/v2/settings' });
-		const settings = allSettings.videopack_options || {};
-		return applyFilters('videopack.utils.getSettings', settings);
+		cachedSettings = allSettings.videopack_options || {};
+		return applyFilters('videopack.utils.getSettings', cachedSettings);
 	} catch (error) {
 		console.error('Error fetching settings:', error);
 		throw error;
@@ -631,6 +675,23 @@ export const resetVideopackSettings = async () => {
 };
 
 /**
+ * Clears the URL to attachment ID cache.
+ *
+ * @return {Promise<Object>} API response.
+ */
+export const clearUrlCache = async () => {
+	try {
+		return await apiFetch({
+			path: '/videopack/v1/settings/cache',
+			method: 'DELETE',
+		});
+	} catch (error) {
+		console.error('Error clearing URL cache:', error);
+		throw error;
+	}
+};
+
+/**
  * Sets a specific image as the poster for a video.
  *
  * @param {number}  attachment_id ID of the video attachment.
@@ -654,7 +715,7 @@ export const setPosterImage = async (
 			data: {
 				attachment_id,
 				thumburl: thumb_url,
-				parent_id,
+				parent_id: Number(parent_id) || 0,
 				url,
 				featured,
 			},
@@ -675,6 +736,7 @@ export const setPosterImage = async (
  * @param {boolean} generate_button  Whether this was triggered by a manual button.
  * @param {number}  parent_id        ID of the parent post.
  * @param {boolean} featured         Whether to set as featured image.
+ * @param {number}  time             The specific time (in seconds) to capture.
  * @return {Promise<Object>} API response.
  */
 export const generateThumbnail = async (
@@ -684,18 +746,25 @@ export const generateThumbnail = async (
 	attachment_id,
 	generate_button,
 	parent_id = 0,
-	featured = null
+	featured = null,
+	time = null
 ) => {
 	try {
-		const path = addQueryArgs('/videopack/v1/thumbs', {
+		const query = {
 			url,
 			total_thumbnails,
 			thumbnail_index,
 			attachment_id,
 			generate_button,
-			parent_id,
+			parent_id: Number(parent_id) || 0,
 			featured,
-		});
+		};
+
+		if (time !== null && time !== '' && !isNaN(time)) {
+			query.time = Number(time);
+		}
+
+		const path = addQueryArgs('/videopack/v1/thumbs', query);
 
 		return await apiFetch({ path });
 	} catch (error) {

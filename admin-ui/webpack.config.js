@@ -53,13 +53,7 @@ module.exports = {
 			'encode-queue',
 			'encode-queue.js'
 		),
-		'frontend-styles': path.resolve(
-			process.cwd(),
-			'src',
-			'features',
-			'frontend-styles',
-			'frontend-styles.js'
-		),
+
 		'classic-embed': path.resolve(
 			process.cwd(),
 			'src',
@@ -74,12 +68,47 @@ module.exports = {
 			'tinymce',
 			'tinymce.js'
 		),
+		videopack: path.resolve(process.cwd(), 'src', 'videopack-admin.js'),
 	},
 	optimization: {
 		...config.optimization,
 		minimize: false,
-	},
-	externals: {
-		videopack: 'videopack',
+		splitChunks: {
+			cacheGroups: {
+				videoplayer: {
+					name: 'videopack-videoplayer',
+					test: /[\\/]src[\\/]components[\\/]VideoPlayer[\\/]/,
+					chunks: 'all',
+					enforce: true,
+				},
+				videogallery: {
+					name: 'videopack-videogallery',
+					test: /[\\/]src[\\/]components[\\/]VideoGallery[\\/]/,
+					chunks: 'all',
+					enforce: true,
+				},
+				videolist: {
+					name: 'videopack-videolist',
+					test: /[\\/]src[\\/]components[\\/]VideoList[\\/]/,
+					chunks: 'all',
+					enforce: true,
+				},
+				dndkit: {
+					name: 'videopack-dndkit',
+					test: /[\\/]node_modules[\\/]@dnd-kit[\\/]/,
+					chunks: 'all',
+					enforce: true,
+					priority: 10,
+				},
+				shared: {
+					name: 'videopack-shared',
+					chunks: 'all',
+					minChunks: 2,
+					priority: -20,
+					reuseExistingChunk: true,
+					enforce: true,
+				},
+			},
+		},
 	},
 };

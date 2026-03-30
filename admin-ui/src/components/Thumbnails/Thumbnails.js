@@ -1,15 +1,13 @@
-/* global Image, videopack_config */
+/* global videopack_config */
 
 import {
 	BaseControl,
 	Button,
-	Dashicon,
 	Icon,
 	Modal,
+	__experimentalNumberControl as NumberControl,
 	PanelBody,
-	RangeControl,
 	Spinner,
-	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
@@ -27,118 +25,19 @@ import {
 	calculateTimecodes,
 } from '../../utils/video-capture';
 
-import { chevronUp, chevronDown, external } from '@wordpress/icons';
+import { chevronUp, chevronDown } from '@wordpress/icons';
 import './Thumbnails.scss';
-
-const VideoPlayerInner = ({
-	videoRef,
-	panelRef,
-	src,
-	isPlaying,
-	currentTime,
-	isSaving,
-	togglePlayback,
-	handleSliderChange,
-	handleUseThisFrame,
-	onPopOut,
-	onKeyDown,
-	isModal = false,
-}) => {
-	const localPanelRef = useRef();
-	const containerRef = panelRef || localPanelRef;
-	const [duration, setDuration] = useState(videoRef.current?.duration || 0);
-
-	const onLoadedMetadata = (event) => {
-		setDuration(event.target.duration);
-	};
-
-	useEffect(() => {
-		if (videoRef.current?.duration) {
-			setDuration(videoRef.current.duration);
-		}
-	}, [videoRef.current?.duration]);
-
-	useEffect(() => {
-		if ((isModal || containerRef === panelRef) && containerRef?.current) {
-			// Trigger a small delay to ensure the panel is visible/ready before focusing
-			const timer = setTimeout(() => {
-				containerRef.current?.focus();
-			}, 100);
-			return () => clearTimeout(timer);
-		}
-	}, [isModal, panelRef]);
-
-	return (
-		<div
-			className={`videopack-thumb-video-panel spinner-container${isSaving ? ' saving' : ''
-				} ${isModal ? 'is-modal' : ''}`}
-			tabIndex={0}
-			ref={containerRef}
-			onKeyDown={onKeyDown}
-		>
-			<video
-				src={src}
-				ref={videoRef}
-				muted={true}
-				preload="metadata"
-				onClick={() => togglePlayback(videoRef)}
-				onLoadedMetadata={onLoadedMetadata}
-			/>
-			<div className="videopack-thumb-video-controls">
-				<Button
-					className="videopack-play-pause"
-					onClick={() => togglePlayback(videoRef)}
-				>
-					<Dashicon
-						icon={isPlaying ? 'controls-pause' : 'controls-play'}
-					/>
-				</Button>
-				{duration > 0 && (
-					<RangeControl
-						__nextHasNoMarginBottom
-						min={0}
-						max={duration}
-						step="any"
-						initialPosition={0}
-						value={currentTime || 0}
-						onChange={(val) => handleSliderChange(val, videoRef)}
-						className="videopack-thumbvideo-slider"
-						type="slider"
-					/>
-				)}
-				{!isModal && onPopOut && (
-					<Button
-						className="videopack-popout"
-						onClick={onPopOut}
-						icon={external}
-						label={__(
-							'Open in larger window',
-							'video-embed-thumbnail-generator'
-						)}
-						showTooltip={true}
-					/>
-				)}
-			</div>
-			<Button
-				variant="secondary"
-				onClick={() => handleUseThisFrame(videoRef)}
-				className="videopack-use-this-frame"
-				disabled={isSaving}
-			>
-				{__('Use this frame', 'video-embed-thumbnail-generator')}
-			</Button>
-			{isSaving && <Spinner />}
-		</div>
-	);
-};
+import VideoPlayerInner from './VideoPlayerInner';
 
 const Thumbnails = ({
 	setAttributes,
 	attributes,
-	videoData, // Changed from attachment
+	videoData,
 	options = {},
 	parentId = 0,
-	src: propSrc, // Accept src as a separate prop
+	src: propSrc,
+	isProbing,
+	probedMetadata,
 }) => {
 	const { id, poster } = attributes;
 	const src = propSrc || attributes.src;
@@ -156,6 +55,9 @@ const Thumbnails = ({
 	const [thumbChoices, setThumbChoices] = useState([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const ffmpegExists =
+		!!videopack_config.ffmpeg_exists &&
+		videopack_config.ffmpeg_exists !== 'notinstalled';
 	const { editPost } = useDispatch('core/editor') || {};
 
 	const featured = (() => {
@@ -208,10 +110,14 @@ const Thumbnails = ({
 
 	const handleGenerate = async (type = 'generate') => {
 		setIsSaving(true);
-		const ffmpegExists = videopack_config.ffmpeg_exists;
+		setThumbChoices([]);
 		const browserThumbnailsEnabled = videopack_config.browser_thumbnails;
 
-		if (!browserThumbnailsEnabled && ffmpegExists) {
+		if (
+			!browserThumbnailsEnabled &&
+			!!ffmpegExists &&
+			ffmpegExists !== 'notinstalled'
+		) {
 			// Browser thumbnails explicitly disabled, use FFmpeg directly
 			const newThumbImages = [];
 			let workingId = Number(id);
@@ -245,68 +151,135 @@ const Thumbnails = ({
 		}
 	};
 
-	const generateThumbCanvases = useCallback(async (type) => {
-		const thumbsInt = Number(total_thumbnails);
-		const newThumbCanvases = [];
-		const ffmpegExists = videopack_config.ffmpeg_exists;
-		let workingId = parseInt(id, 10) || 0;
+	const srcIsExternal = (() => {
+		try {
+			const url = new URL(src, window.location.origin);
+			return url.origin !== window.location.origin;
+		} catch (e) {
+			return false;
+		}
+	})();
 
-		const timePoints = calculateTimecodes(
-			videoRef.current.duration,
-			thumbsInt,
-			{ random: type === 'random' }
-		);
+	const canvasTainted =
+		probedMetadata?.isTainted ||
+		(srcIsExternal && !isProbing && !probedMetadata);
 
-		for (let i = 0; i < timePoints.length; i++) {
-			const time = timePoints[i];
-			const index = i + 1;
-			let thumb;
+	const generateThumb = useCallback(
+		async (i, type, forceId = null, forceFeatured = null, time = null) => {
 			try {
-				const canvas = await captureVideoFrame(
-					videoRef.current,
-					time,
-					options?.ffmpeg_thumb_watermark || {}
+				const response = await generateThumbnail(
+					src,
+					total_thumbnails,
+					i,
+					forceId !== null ? forceId : id,
+					type,
+					parentId,
+					forceFeatured !== null ? forceFeatured : featured,
+					time
 				);
-				thumb = {
-					src: canvas.toDataURL(),
-					type: 'canvas',
-					canvasObject: canvas,
-				};
-				newThumbCanvases.push(thumb);
-				setThumbChoices([...newThumbCanvases]); // Update incrementally
+
+				return response;
 			} catch (error) {
-				console.error('Error generating canvas thumbnail:', error);
-				if (ffmpegExists) {
-					try {
-						const response = await generateThumb(
-							index,
-							type,
-							workingId,
-							featured
+				console.error(error);
+			}
+		},
+		[src, total_thumbnails, id, parentId, featured]
+	);
+
+	const generateThumbCanvases = useCallback(
+		async (type) => {
+			const thumbsInt = Number(total_thumbnails);
+			const newThumbCanvases = [];
+			let workingId = parseInt(id, 10) || 0;
+
+			const timePoints = calculateTimecodes(
+				videoRef.current.duration,
+				thumbsInt,
+				{ random: type === 'random' }
+			);
+
+			for (let i = 0; i < timePoints.length; i++) {
+				const time = timePoints[i];
+				const index = i + 1;
+				let thumb;
+				try {
+					let canvas;
+					if (!canvasTainted) {
+						canvas = await captureVideoFrame(
+							src,
+							time,
+							options?.ffmpeg_thumb_watermark || {}
 						);
-						if (response?.attachment_id && workingId === 0) {
-							workingId = parseInt(response.attachment_id, 10) || 0;
-							setAttributes({
-								...attributes,
-								id: workingId,
-							});
+					} else {
+						throw new Error(
+							'Canvas tainted, skipping browser capture.'
+						);
+					}
+					thumb = {
+						src: canvas.toDataURL(),
+						type: 'canvas',
+						canvasObject: canvas,
+					};
+					newThumbCanvases.push(thumb);
+					setThumbChoices([...newThumbCanvases]); // Update incrementally
+				} catch (error) {
+					if (!canvasTainted) {
+						console.error(
+							'Error generating canvas thumbnail:',
+							error
+						);
+					}
+					if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
+						console.log(
+							'Videopack: Falling back to server-side FFmpeg for thumbnail generation...'
+						);
+						try {
+							const response = await generateThumb(
+								index,
+								type,
+								workingId,
+								featured
+							);
+							if (response?.attachment_id && workingId === 0) {
+								workingId =
+									parseInt(response.attachment_id, 10) || 0;
+								setAttributes({
+									...attributes,
+									id: workingId,
+								});
+							}
+							if (response?.real_thumb_url) {
+								thumb = {
+									src: response.real_thumb_url,
+									type: 'ffmpeg',
+								};
+								newThumbCanvases.push(thumb);
+								setThumbChoices([...newThumbCanvases]);
+							}
+						} catch (ffmpegError) {
+							console.log(
+								'Error in FFmpeg fallback:',
+								ffmpegError
+							);
 						}
-						if (response?.real_thumb_url) {
-							thumb = {
-								src: response.real_thumb_url,
-								type: 'ffmpeg',
-							};
-							newThumbCanvases.push(thumb);
-							setThumbChoices([...newThumbCanvases]);
-						}
-					} catch (ffmpegError) {
-						console.error('Error in FFmpeg fallback:', ffmpegError);
 					}
 				}
 			}
-		}
-		setIsSaving(false);
-	});
+			setIsSaving(false);
+		},
+		[
+			attributes,
+			featured,
+			id,
+			options.ffmpeg_thumb_watermark,
+			setAttributes,
+			total_thumbnails,
+			generateThumb,
+			ffmpegExists,
+			src,
+			canvasTainted,
+		]
+	);
 
 	// function to toggle video playback
 	const togglePlayback = (ref = videoRef) => {
@@ -428,9 +401,14 @@ const Thumbnails = ({
 				featured
 			);
 
-			setPosterData(response.thumb_url, response.thumb_id);
+			setPosterData(
+				response.thumb_url,
+				response.thumb_id,
+				response.attachment_id
+			);
 		} catch (error) {
 			console.error('Error uploading thumbnail:', error);
+			throw error;
 		} finally {
 			setIsSaving(false);
 		}
@@ -459,20 +437,6 @@ const Thumbnails = ({
 				if (attributes.featured !== undefined) {
 					metaData['_videopack-meta'].featured = attributes.featured;
 				}
-			}
-
-			// If we just created the attachment, we need to update the attributes first.
-			if (new_attachment_id && Number(id) === 0) {
-				setAttributes({
-					id: Number(new_attachment_id),
-					poster: new_poster,
-					poster_id: Number(new_poster_id),
-				});
-			} else if (new_poster) {
-				setAttributes({
-					poster: new_poster,
-					poster_id: Number(new_poster_id),
-				});
 			}
 
 			if (videoData?.edit) {
@@ -509,11 +473,20 @@ const Thumbnails = ({
 				}
 			}
 
-			setAttributes({
+			const finalAttributes = {
 				...attributes,
 				poster: new_poster,
-				poster_id: new_poster_id,
-			});
+				poster_id: Number(new_poster_id),
+			};
+
+			// If we just created the attachment, ensure the ID is included
+			if (new_attachment_id && Number(id) === 0) {
+				finalAttributes.id = Number(new_attachment_id);
+			}
+
+			if (new_poster) {
+				setAttributes(finalAttributes);
+			}
 			setThumbChoices([]);
 			setIsSaving(false);
 		} catch (error) {
@@ -536,29 +509,6 @@ const Thumbnails = ({
 				response.thumb_id,
 				response.attachment_id
 			);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	const generateThumb = async (
-		i,
-		type,
-		forceId = null,
-		forceFeatured = null
-	) => {
-		try {
-			const response = await generateThumbnail(
-				src,
-				total_thumbnails,
-				i,
-				forceId !== null ? forceId : id,
-				type,
-				parentId,
-				forceFeatured !== null ? forceFeatured : featured
-			);
-
-			return response;
 		} catch (error) {
 			console.error(error);
 		}
@@ -617,18 +567,62 @@ const Thumbnails = ({
 				break;
 
 			default:
-				return; // exit this handler for other keys
+			// exit this handler for other keys
 		}
 	};
 
 	const handleUseThisFrame = async (ref = videoRef) => {
 		setIsSaving(true);
-		const canvas = await captureVideoFrame(
-			ref.current,
-			ref.current.currentTime,
-			options?.ffmpeg_thumb_watermark || {}
-		);
-		setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
+
+		const runFfmpegFallback = async () => {
+			if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
+				try {
+					const response = await generateThumb(
+						1,
+						'generate',
+						null,
+						null,
+						ref.current.currentTime
+					);
+					if (response?.real_thumb_url) {
+						await setImgAsPoster(response.real_thumb_url);
+					} else {
+						setIsSaving(false);
+					}
+				} catch (ffmpegError) {
+					console.error(
+						'FFmpeg pinpoint capture failed:',
+						ffmpegError
+					);
+					setIsSaving(false);
+				}
+			} else {
+				setIsSaving(false);
+			}
+		};
+
+		if (canvasTainted) {
+			console.log(
+				'Canvas detected as tainted, using FFmpeg fallback directly.'
+			);
+			await runFfmpegFallback();
+			return;
+		}
+
+		try {
+			const canvas = await captureVideoFrame(
+				ref.current,
+				ref.current.currentTime,
+				options?.ffmpeg_thumb_watermark || {}
+			);
+			await setCanvasAsPoster(canvas); // Pass the canvas object directly, index will be null
+		} catch (error) {
+			console.warn(
+				'Canvas capture failed, attempting FFmpeg fallback:',
+				error
+			);
+			await runFfmpegFallback();
+		}
 	};
 
 	const handlePopOut = (event) => {
@@ -694,13 +688,13 @@ const Thumbnails = ({
 							>
 								{!poster
 									? __(
-										'Select',
-										'video-embed-thumbnail-generator'
-									)
+											'Select',
+											'video-embed-thumbnail-generator'
+										)
 									: __(
-										'Replace',
-										'video-embed-thumbnail-generator'
-									)}
+											'Replace',
+											'video-embed-thumbnail-generator'
+										)}
 							</Button>
 						)}
 					/>
@@ -723,7 +717,11 @@ const Thumbnails = ({
 						});
 					}}
 				/>
-				<TextControl
+				<NumberControl
+					__next40pxDefaultSize
+					min={1}
+					max={99}
+					required={true}
 					value={total_thumbnails}
 					onChange={(value) => {
 						if (!value) {
@@ -739,13 +737,19 @@ const Thumbnails = ({
 						}
 					}}
 					className="videopack-total-thumbnails"
-					disabled={isSaving}
+					disabled={
+						isSaving ||
+						((canvasTainted || isProbing) && !ffmpegExists)
+					}
 				/>
 				<Button
 					variant="secondary"
 					onClick={() => handleGenerate('generate')}
 					className="videopack-generate"
-					disabled={isSaving}
+					disabled={
+						isSaving ||
+						((canvasTainted || isProbing) && !ffmpegExists)
+					}
 				>
 					{__('Generate', 'video-embed-thumbnail-generator')}
 				</Button>
@@ -753,10 +757,21 @@ const Thumbnails = ({
 					variant="secondary"
 					onClick={() => handleGenerate('random')}
 					className="videopack-generate"
-					disabled={isSaving}
+					disabled={
+						isSaving ||
+						((canvasTainted || isProbing) && !ffmpegExists)
+					}
 				>
 					{__('Random', 'video-embed-thumbnail-generator')}
 				</Button>
+				{canvasTainted && !isProbing && !ffmpegExists && (
+					<div className="videopack-security-error-notice">
+						{__(
+							'Cross-origin resource sharing (CORS) policy on the external server is preventing thumbnail generation.',
+							'video-embed-thumbnail-generator'
+						)}
+					</div>
+				)}
 				{thumbChoices.length > 0 && (
 					<Button
 						variant="primary"
@@ -803,6 +818,9 @@ const Thumbnails = ({
 							type="button"
 							onClick={handleToggleVideoPlayer}
 							aria-expanded={isOpened}
+							disabled={
+								(canvasTainted || isProbing) && !ffmpegExists
+							}
 						>
 							<span aria-hidden="true">
 								<Icon
@@ -814,10 +832,16 @@ const Thumbnails = ({
 								'Choose From Video',
 								'video-embed-thumbnail-generator'
 							)}
+							{canvasTainted && !isProbing && !ffmpegExists && (
+								<Icon
+									icon={chevronUp}
+									style={{ display: 'none' }}
+								/>
+							)}
 						</button>
 					</h2>
 					<div
-						className={`videopack-thumb-video-container ${isOpened ? 'is-opened' : ''}`}
+						className={`videopack-thumb-video-container ${isOpened ? 'is-opened' : ''} ${(canvasTainted || isProbing) && !ffmpegExists ? 'disabled' : ''}`}
 					>
 						<VideoPlayerInner
 							videoRef={videoRef}
@@ -825,13 +849,19 @@ const Thumbnails = ({
 							src={src}
 							isPlaying={isPlaying}
 							currentTime={currentTime}
-							isSaving={isSaving}
+							isSaving={
+								isSaving ||
+								((canvasTainted || isProbing) && !ffmpegExists)
+							}
 							togglePlayback={togglePlayback}
 							handleSliderChange={handleSliderChange}
 							handleUseThisFrame={handleUseThisFrame}
 							onPopOut={handlePopOut}
 							onKeyDown={(e) =>
 								handleVideoKeyboardControl(e, videoRef)
+							}
+							disabled={
+								(canvasTainted || isProbing) && !ffmpegExists
 							}
 						/>
 					</div>
@@ -857,6 +887,9 @@ const Thumbnails = ({
 							handleUseThisFrame={handleUseThisFrame}
 							onKeyDown={(e) =>
 								handleVideoKeyboardControl(e, modalVideoRef)
+							}
+							disabled={
+								(canvasTainted || isProbing) && !ffmpegExists
 							}
 							isModal={true}
 						/>

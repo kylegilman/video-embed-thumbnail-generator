@@ -38,6 +38,12 @@ const metaKeys = [
 	'poster_id',
 	'total_thumbnails',
 	'track',
+	'title_color',
+	'title_background_color',
+	'play_button_color',
+	'play_button_icon_color',
+	'control_bar_bg_color',
+	'control_bar_color',
 ];
 
 /**
@@ -46,9 +52,16 @@ const metaKeys = [
  * @param {Object}   attributes    Block attributes.
  * @param {Function} setAttributes Function to update block attributes.
  * @param {Object}   options       Global options/settings.
+ * @param {Object}   hookOptions   Hook options.
+ * @param {boolean}  hookOptions.autoSave Whether to automatically save to the REST API.
  * @return {Object} Setting change handlers and options.
  */
-const useVideoSettings = (attributes, setAttributes, options = {}) => {
+const useVideoSettings = (
+	attributes,
+	setAttributes,
+	options = {},
+	{ autoSave = true } = {}
+) => {
 	const { id, gifmode } = attributes;
 
 	useEffect(() => {
@@ -64,7 +77,7 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 
 	const updateAttachmentCallback = useCallback(
 		(key, value) => {
-			if (id) {
+			if (id && autoSave) {
 				apiFetch({
 					path: `/wp/v2/media/${id}`,
 					method: 'POST',
@@ -75,7 +88,7 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 				});
 			}
 		},
-		[id]
+		[id, autoSave]
 	);
 
 	const updateAttachment = useDebounce(updateAttachmentCallback, 1000);
@@ -85,11 +98,17 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 	// we must send the full set of desired overrides ogni volta.
 	const updateMetaCallback = useCallback(
 		(currentAttrs) => {
-			if (id) {
+			if (id && autoSave) {
 				const metaToSave = {};
 				metaKeys.forEach((key) => {
 					const value = currentAttrs[key];
 					if (value !== undefined && value !== null) {
+						// Skip empty strings for the title key to allow fallback to attachment title.
+						if (key === 'title' && value === '') {
+							metaToSave[key] = null;
+							return;
+						}
+
 						// Only store if it differs from the global option.
 						if (
 							options[key] !== undefined &&
@@ -118,7 +137,7 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 				});
 			}
 		},
-		[id, options]
+		[id, options, autoSave]
 	);
 
 	const updateMeta = useDebounce(updateMetaCallback, 1000);
@@ -126,22 +145,29 @@ const useVideoSettings = (attributes, setAttributes, options = {}) => {
 	const handleSettingChange = (key, value) => {
 		let updatedAttrs;
 		if (typeof key === 'object' && key !== null) {
-			updatedAttrs = { ...attributes, ...key };
+			const processedKey = { ...key };
+			if ('title' in processedKey && processedKey.title === '') {
+				processedKey.title = undefined;
+			}
+			updatedAttrs = { ...attributes, ...processedKey };
 		} else {
-			updatedAttrs = { ...attributes, [key]: value };
+			const processedValue =
+				key === 'title' && value === '' ? undefined : value;
+			updatedAttrs = { ...attributes, [key]: processedValue };
 		}
+
 		setAttributes(updatedAttrs);
 
 		if (id) {
-			// Handle title/caption updates for the attachment record.
+			// Handle caption updates for the attachment record.
 			if (typeof key === 'object' && key !== null) {
-				if ('title' in key) {
-					updateAttachment('title', key.title);
-				}
 				if ('caption' in key) {
 					updateAttachment('caption', key.caption);
 				}
-			} else if ('title' === key || 'caption' === key) {
+				if ('title' in key) {
+					updateAttachment('title', key.title);
+				}
+			} else if ('caption' === key || 'title' === key) {
 				updateAttachment(key, value);
 			}
 

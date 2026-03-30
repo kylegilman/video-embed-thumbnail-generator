@@ -14,7 +14,15 @@
 			"center",
 			"wide",
 			"full"
-		]
+		],
+		"filter": {
+			"duotone": true
+		}
+	},
+	"selectors": {
+		"filter": {
+			"duotone": ".wp-block-videopack-videopack-list .videopack-wrapper .vjs-poster img, .wp-block-videopack-videopack-list .videopack-wrapper .mejs-poster"
+		}
 	},
 	"attributes": {
 		"gallery": {
@@ -43,7 +51,7 @@
 		},
 		"gallery_order": {
 			"type": "string",
-			"default": "ASC"
+			"default": "asc"
 		},
 		"gallery_include": {
 			"type": "string",
@@ -80,6 +88,36 @@
 		"enable_collection_video_limit": {
 			"type": "boolean",
 			"default": false
+		},
+		"pagination_color": {
+			"type": "string"
+		},
+		"pagination_background_color": {
+			"type": "string"
+		},
+		"pagination_active_bg_color": {
+			"type": "string"
+		},
+		"pagination_active_color": {
+			"type": "string"
+		},
+		"title_color": {
+			"type": "string"
+		},
+		"title_background_color": {
+			"type": "string"
+		},
+		"play_button_color": {
+			"type": "string"
+		},
+		"play_button_icon_color": {
+			"type": "string"
+		},
+		"control_bar_bg_color": {
+			"type": "string"
+		},
+		"control_bar_color": {
+			"type": "string"
 		}
 	},
 	"usesContext": [

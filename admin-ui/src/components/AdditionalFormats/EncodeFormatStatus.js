@@ -109,6 +109,7 @@ const EncodeFormatStatus = ({
 				'completed',
 				'needs_insert',
 				'pending_replacement',
+				'remote_exists',
 			].includes(data.status)
 		);
 	};
@@ -116,7 +117,7 @@ const EncodeFormatStatus = ({
 	return (
 		<li key={formatId} className="videopack-format-row">
 			{showLabel &&
-				(ffmpegExists === true ? (
+				(!!ffmpegExists && ffmpegExists !== 'notinstalled' ? (
 					<CheckboxControl
 						__nextHasNoMarginBottom
 						className="videopack-format"

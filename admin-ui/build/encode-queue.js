@@ -1,27 +1,31 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/components/AdditionalFormats/EncodeFormatStatus.js"
-/*!****************************************************************!*\
-  !*** ./src/components/AdditionalFormats/EncodeFormatStatus.js ***!
-  \****************************************************************/
+/***/ "./src/features/encode-queue/encode-queue.js"
+/*!***************************************************!*\
+  !*** ./src/features/encode-queue/encode-queue.js ***!
+  \***************************************************/
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _EncodeProgress__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./EncodeProgress */ "./src/components/AdditionalFormats/EncodeProgress.js");
-/* harmony import */ var _EncodeFormatStatus_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./EncodeFormatStatus.scss */ "./src/components/AdditionalFormats/EncodeFormatStatus.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _encode_queue_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./encode-queue.scss */ "./src/features/encode-queue/encode-queue.scss");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _wordpress_dataviews__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/dataviews */ "./node_modules/@wordpress/dataviews/build-module/dataviews/index.mjs");
+/* harmony import */ var _wordpress_dataviews__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/dataviews */ "./node_modules/@wordpress/dataviews/build-module/utils/filter-sort-and-paginate.mjs");
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
+/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _components_AdditionalFormats_EncodeFormatStatus__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../components/AdditionalFormats/EncodeFormatStatus */ "./src/components/AdditionalFormats/EncodeFormatStatus.js");
+/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
 /**
- * Component to display the status and controls for a single video format.
+ * Features for managing the video encoding queue.
  */
 
 
@@ -29,1203 +33,530 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/**
- * EncodeFormatStatus component.
- *
- * @param {Object}   props                  Component props.
- * @param {string}   props.formatId         The format identifier.
- * @param {Object}   props.formatData       Data for the specific format.
- * @param {boolean}  props.ffmpegExists     Whether FFmpeg is available on the server.
- * @param {Function} props.onCheckboxChange Callback for checkbox toggles.
- * @param {Function} props.onSelectFormat   Callback for manual file selection.
- * @param {Function} props.onDeleteFile     Callback for file deletion.
- * @param {Function} props.onRemoveFormat   Callback for removing manual assignment.
- * @param {Function} props.onCancelJob      Callback for canceling an encoding job.
- * @param {string}   props.deleteInProgress The ID/JobId currently being deleted.
- * @param {Function} props.onRefresh        Callback to refresh format data.
- * @param {number}   props.parentId         ID of the parent video attachment.
- * @param {boolean}  props.showLabel        Whether to show the format label.
- * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
- * @return {Element} The rendered component.
- */
 
-const EncodeFormatStatus = ({
-  formatId,
-  formatData,
-  ffmpegExists,
-  onCheckboxChange,
-  onSelectFormat,
-  onDeleteFile,
-  onRemoveFormat,
-  onCancelJob,
-  deleteInProgress,
-  onRefresh,
-  parentId,
-  showLabel = true,
-  hideCancel = false
-}) => {
-  const openMediaLibrary = (currentId = null) => {
-    if (typeof window.wp === 'undefined' || !window.wp.media) {
-      return;
+
+
+
+const defaultLayouts = {
+  table: {
+    layout: {
+      density: 'compact'
     }
-    const frame = window.wp.media({
-      title: currentId ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is the label of a video resolution (eg: 720p ) */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Replace %s', 'video-embed-thumbnail-generator'), formatData.label) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select existing file', 'video-embed-thumbnail-generator'),
-      button: {
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select', 'video-embed-thumbnail-generator')
-      },
-      multiple: false,
-      library: {
-        type: 'video',
-        videopack_parent_id: parentId,
-        videopack_filter: 'show_children'
-      }
-    });
-    frame.on('select', () => {
-      const attachment = frame.state().get('selection').first().toJSON();
-      onSelectFormat(formatId)(attachment);
-    });
-    frame.on('open', () => {
-      const library = frame.state().get('library');
-      if (library) {
-        library.props.set({
-          videopack_parent_id: parentId,
-          videopack_filter: 'show_children'
-        });
-      }
-      if (currentId) {
-        const selection = frame.state().get('selection');
-        const attachment = window.wp.media.attachment(currentId);
-        attachment.fetch().then(() => {
-          selection.add(attachment);
-        });
-      }
-    });
-    frame.open();
-  };
-  if (!formatData) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {});
   }
-  const getCheckboxCheckedState = data => {
-    return !!data.checked;
-  };
-  const getCheckboxDisabledState = data => {
-    return data.exists && data.status !== 'error' || ['queued', 'encoding', 'processing', 'completed', 'needs_insert', 'pending_replacement'].includes(data.status);
-  };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
-    className: "videopack-format-row",
-    children: [showLabel && (ffmpegExists === true ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.CheckboxControl, {
-      __nextHasNoMarginBottom: true,
-      className: "videopack-format",
-      label: formatData.label,
-      checked: getCheckboxCheckedState(formatData),
-      disabled: getCheckboxDisabledState(formatData),
-      onChange: value => onCheckboxChange(formatId, value)
-    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-      className: "videopack-format",
-      children: formatData.label
-    })), formatData.status !== 'not_encoded' && (formatData.status_l10n !== formatData.label || !showLabel) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-      className: "videopack-format-status",
-      children: formatData.status_l10n
-    }), formatData.status === 'not_encoded' && !formatData.exists && !formatData.replaces_original && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-      variant: "secondary",
-      onClick: () => openMediaLibrary(),
-      className: "videopack-format-button",
-      size: "small",
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Open the Media Library', 'video-embed-thumbnail-generator'),
-      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Choose', 'video-embed-thumbnail-generator')
-    }), formatData.exists && !formatData.encoding_now && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-      variant: "secondary",
-      onClick: () => openMediaLibrary(formatData.id),
-      className: "videopack-format-button",
-      size: "small",
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Open the Media Library', 'video-embed-thumbnail-generator'),
-      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Change', 'video-embed-thumbnail-generator')
-    }), formatData.is_manual && formatData.id && !formatData.encoding_now && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-      onClick: onRemoveFormat,
-      variant: "secondary",
-      size: "small",
-      text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remove', 'video-embed-thumbnail-generator'),
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Removes manual selection. It will not be deleted.', 'video-embed-thumbnail-generator')
-    }), formatData.deletable && formatData.id && !formatData.encoding_now && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Button, {
-      isBusy: deleteInProgress === formatId,
-      onClick: onDeleteFile,
-      variant: "link",
-      text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete permanently', 'video-embed-thumbnail-generator'),
-      isDestructive: true
-    }), (formatData.encoding_now || formatData.status === 'error') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_EncodeProgress__WEBPACK_IMPORTED_MODULE_2__["default"], {
-      formatData: formatData,
-      onCancelJob: onCancelJob,
-      deleteInProgress: deleteInProgress,
-      onRefresh: onRefresh,
-      hideCancel: hideCancel
-    })]
-  }, formatId);
 };
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (EncodeFormatStatus);
-
-/***/ },
-
-/***/ "./src/components/AdditionalFormats/EncodeProgress.js"
-/*!************************************************************!*\
-  !*** ./src/components/AdditionalFormats/EncodeProgress.js ***!
-  \************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _EncodeProgress_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./EncodeProgress.scss */ "./src/components/AdditionalFormats/EncodeProgress.scss");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
-/**
- * Component to display and interpolate encoding progress for a video job.
- */
-
-
-
-
-
 
 /**
- * EncodeProgress component.
+ * EncodeQueue component.
  *
- * @param {Object}   props                  Component props.
- * @param {Object}   props.formatData       Data for the format being encoded.
- * @param {Function} props.onCancelJob      Callback to cancel the job.
- * @param {string}   props.deleteInProgress The ID/JobId currently being deleted.
- * @param {Function} props.onRefresh        Callback to refresh data.
- * @param {boolean}  props.hideCancel       Whether to hide the cancel button.
- * @return {Element} The rendered component.
+ * @return {Object} The rendered component.
  */
-
-const EncodeProgress = ({
-  formatData,
-  onCancelJob,
-  deleteInProgress,
-  onRefresh,
-  hideCancel = false
-}) => {
-  const hasTriggeredRefresh = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(false);
-  const [interpolatedProgress, setInterpolatedProgress] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)({
-    percent: 0,
-    elapsed: 0,
-    remaining: null
+const EncodeQueue = () => {
+  const [queueData, setQueueData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+  const [isLoading, setIsLoading] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(true);
+  const [isQueuePaused, setIsQueuePaused] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(window.videopack?.encodeQueueData?.initialQueueState === 'pause');
+  const [message, setMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null);
+  const [isClearing, setIsClearing] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
+  const [isTogglingQueue, setIsTogglingQueue] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
+  const [isConfirmOpen, setIsConfirmOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
+  const [itemToActOn, setItemToActOn] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobIds: [] }
+  const [actingJobIds, setActingJobIds] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
+  const [batchProgress, setBatchProgress] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({});
+  const isMultisite = window.videopack?.isMultisite || window.videopack?.encodeQueueData?.isNetwork;
+  const [view, setView] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({
+    type: 'table',
+    perPage: 10,
+    page: 1,
+    sort: {
+      field: 'queue_order',
+      direction: 'asc'
+    },
+    fields: ['queue_order', 'poster', 'blog_name', 'user_name', 'video_title', 'format_name', 'status'].filter(field => field === 'blog_name' ? isMultisite : true),
+    layout: defaultLayouts.table.layout
   });
-  const convertToTimecode = time => {
-    if (time === null || time === undefined || isNaN(time)) {
-      return '--:--';
+
+  // Auto-clear success messages after 30 seconds.
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    if (message && message.type === 'success') {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 30000);
+      return () => clearTimeout(timer);
     }
-    const padZero = num => Math.floor(num).toString().padStart(2, '0');
-    const h = Math.floor(time / 3600);
-    const m = Math.floor(time % 3600 / 60);
-    const s = Math.floor(time % 60);
-    const hh = h > 0 ? padZero(h) + ':' : '';
-    const mm = padZero(m);
-    const ss = padZero(s);
-    return hh + mm + ':' + ss;
+  }, [message]);
+  const fetchQueue = async () => {
+    try {
+      const newData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.getQueue)();
+      setQueueData(prevData => {
+        if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
+          return newData;
+        }
+        return prevData;
+      });
+      const progressData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.getBatchProgress)('all');
+      setBatchProgress(progressData);
+    } catch (error) {
+      console.error('Error fetching queue:', error);
+      setMessage({
+        type: 'error',
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to load queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  // Sync local state when server data updates
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    if (formatData?.progress && typeof formatData.progress === 'object' && formatData.progress !== 'recheck') {
-      setInterpolatedProgress(prev => {
-        // Don't let progress jump backwards due to server polling lag
-        if (formatData.progress.percent < prev.percent) {
-          return prev;
-        }
-        return {
-          percent: formatData.progress.percent || 0,
-          elapsed: formatData.progress.elapsed || 0,
-          remaining: formatData.progress.remaining
-        };
-      });
-    }
-  }, [formatData?.progress]);
-
-  // Internal interpolation timer
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    const isRunning = ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(formatData?.status);
-    if (!isRunning || !formatData?.progress || typeof formatData.progress !== 'object') {
-      return;
-    }
-    const interval = setInterval(() => {
-      setInterpolatedProgress(prev => {
-        const now = new Date().getTime() / 1000;
-        const started = formatData.progress?.started || formatData.started;
-        const elapsed = started ? Math.max(0, now - started) : prev.elapsed + 1;
-        let percent = parseFloat(prev.percent) || 0;
-        let remaining = prev.remaining;
-        const video_duration = formatData.progress?.video_duration || formatData.video_duration;
-        if (video_duration && video_duration > 0) {
-          const totalDurationInSeconds = video_duration / 1000000;
-          const speedMatch = formatData.progress?.speed ? String(formatData.progress.speed).match(/(\d*\.?\d+)/) : null;
-          const speed = speedMatch ? parseFloat(speedMatch[0]) : 0;
-          if (speed > 0) {
-            percent = elapsed * speed * 100 / totalDurationInSeconds;
-          }
-          if (percent > 0 && speed > 0) {
-            remaining = totalDurationInSeconds * (100 - percent) / 100 / speed;
-          } else {
-            remaining = Math.max(0, totalDurationInSeconds - elapsed);
-          }
-        }
-        if (percent >= 100) {
-          remaining = 0;
-        }
-        return {
-          percent: Math.min(100, Math.max(0, percent)),
-          elapsed,
-          remaining: remaining !== null ? Math.max(0, remaining) : null
-        };
-      });
-    }, 1000);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+    fetchQueue();
+    const interval = setInterval(fetchQueue, 15000); // Poll every 15 seconds
     return () => clearInterval(interval);
-  }, [formatData?.status, formatData?.progress, formatData?.started, formatData?.video_duration]);
-
-  // Auto-refresh when finished
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    const percent = interpolatedProgress.percent;
-    const isFinished = percent >= 100;
-    if (isFinished && onRefresh && !hasTriggeredRefresh.current && formatData?.encoding_now) {
-      hasTriggeredRefresh.current = true;
-      onRefresh();
-    } else if (!isFinished) {
-      hasTriggeredRefresh.current = false;
+  }, []);
+  const handleToggleQueue = async () => {
+    setIsTogglingQueue(true);
+    const action = isQueuePaused ? 'play' : 'pause';
+    try {
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.toggleQueue)(action);
+      setIsQueuePaused(response.queue_state === 'pause');
+      setMessage({
+        type: 'success',
+        text: response.message
+      });
+      fetchQueue(); // Refresh queue data after state change
+    } catch (error) {
+      console.error('Error toggling queue:', error);
+      setMessage({
+        type: 'error',
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to toggle queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
+      });
+    } finally {
+      setIsTogglingQueue(false);
     }
-  }, [interpolatedProgress.percent, onRefresh, formatData?.encoding_now]);
-  if (formatData?.encoding_now && formatData?.progress && typeof formatData.progress === 'object') {
-    const percent = Math.round(interpolatedProgress.percent);
-    const percentText = (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)('%d%%', percent);
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-      className: "videopack-encode-progress",
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-        className: "videopack-encode-progress-row",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-          className: "videopack-meter",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-            className: "videopack-meter-bar",
-            style: {
-              width: percentText
-            },
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-              className: "videopack-meter-text",
-              children: percentText
-            })
-          })
-        }), !hideCancel && (formatData.progress?.job_id || formatData.job_id) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
-          onClick: () => onCancelJob(formatData.progress?.job_id || formatData.job_id),
-          variant: "secondary",
-          isDestructive: true,
-          size: "small",
-          className: "videopack-cancel-job",
-          isBusy: deleteInProgress === (formatData.progress?.job_id || formatData.job_id),
-          icon: "no-alt",
-          title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator'),
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-            className: "videopack-button-text",
-            children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Cancel', 'video-embed-thumbnail-generator')
-          })
-        })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-        className: "videopack-encode-progress-small-text",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Elapsed:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(interpolatedProgress.elapsed)
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Remaining:', 'video-embed-thumbnail-generator') + ' ' + convertToTimecode(interpolatedProgress.remaining)
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('fps:', 'video-embed-thumbnail-generator') + ' ' + (formatData.progress.fps || '--')
-        })]
-      })]
+  };
+  const openConfirmDialog = (action, details) => {
+    setItemToActOn({
+      action,
+      ...details
     });
-  }
-  if (formatData?.status === 'failed' && formatData?.error_message) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
-      className: "videopack-encode-error",
-      children: [(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.sprintf)(/* translators: %s is an error message */
-      (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Error: %s.', 'video-embed-thumbnail-generator'), formatData.error_message), ' ', hideCancel === false && formatData.job_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
-        onClick: () => onCancelJob(formatData.job_id),
-        variant: "link",
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delete Job', 'video-embed-thumbnail-generator'),
-        isDestructive: true,
-        isBusy: deleteInProgress === formatData.job_id
-      })]
-    });
-  }
-  return null;
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (EncodeProgress);
-
-/***/ },
-
-/***/ "./src/utils/utils.js"
-/*!****************************!*\
-  !*** ./src/utils/utils.js ***!
-  \****************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   assignFormat: () => (/* binding */ assignFormat),
-/* harmony export */   clearQueue: () => (/* binding */ clearQueue),
-/* harmony export */   createJob: () => (/* binding */ createJob),
-/* harmony export */   createThumbnailFromCanvas: () => (/* binding */ createThumbnailFromCanvas),
-/* harmony export */   deleteFile: () => (/* binding */ deleteFile),
-/* harmony export */   deleteJob: () => (/* binding */ deleteJob),
-/* harmony export */   enqueueJob: () => (/* binding */ enqueueJob),
-/* harmony export */   generateShortcode: () => (/* binding */ generateShortcode),
-/* harmony export */   generateThumbnail: () => (/* binding */ generateThumbnail),
-/* harmony export */   getBatchProgress: () => (/* binding */ getBatchProgress),
-/* harmony export */   getFreemiusPage: () => (/* binding */ getFreemiusPage),
-/* harmony export */   getJobStatus: () => (/* binding */ getJobStatus),
-/* harmony export */   getNetworkSettings: () => (/* binding */ getNetworkSettings),
-/* harmony export */   getPresets: () => (/* binding */ getPresets),
-/* harmony export */   getQueue: () => (/* binding */ getQueue),
-/* harmony export */   getSettings: () => (/* binding */ getSettings),
-/* harmony export */   getThumbnailCandidates: () => (/* binding */ getThumbnailCandidates),
-/* harmony export */   getUsersWithCapability: () => (/* binding */ getUsersWithCapability),
-/* harmony export */   getVideoFormats: () => (/* binding */ getVideoFormats),
-/* harmony export */   getVideoGallery: () => (/* binding */ getVideoGallery),
-/* harmony export */   listJobs: () => (/* binding */ listJobs),
-/* harmony export */   normalizeOptions: () => (/* binding */ normalizeOptions),
-/* harmony export */   removeJob: () => (/* binding */ removeJob),
-/* harmony export */   resetNetworkSettings: () => (/* binding */ resetNetworkSettings),
-/* harmony export */   resetVideopackSettings: () => (/* binding */ resetVideopackSettings),
-/* harmony export */   retryJob: () => (/* binding */ retryJob),
-/* harmony export */   saveAllThumbnails: () => (/* binding */ saveAllThumbnails),
-/* harmony export */   saveNetworkSettings: () => (/* binding */ saveNetworkSettings),
-/* harmony export */   saveWPSettings: () => (/* binding */ saveWPSettings),
-/* harmony export */   setPosterImage: () => (/* binding */ setPosterImage),
-/* harmony export */   startBatchProcess: () => (/* binding */ startBatchProcess),
-/* harmony export */   testEncodeCommand: () => (/* binding */ testEncodeCommand),
-/* harmony export */   toggleQueue: () => (/* binding */ toggleQueue),
-/* harmony export */   unassignFormat: () => (/* binding */ unassignFormat),
-/* harmony export */   uploadThumbnail: () => (/* binding */ uploadThumbnail)
-/* harmony export */ });
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/url */ "@wordpress/url");
-/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/hooks */ "@wordpress/hooks");
-/* harmony import */ var _wordpress_hooks__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__);
-/**
- * Utility functions for interacting with the Videopack REST API and managing video jobs.
- */
-
-/* global videopack_config */
-
-
-
-
-/**
- * Fetches the current video encoding queue.
- *
- * @return {Promise<Array>} List of jobs in the queue.
- */
-const getQueue = async () => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getQueue', undefined);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    const response = await listJobs();
-    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getQueue', response || []);
-  } catch (error) {
-    console.error('Error fetching queue:', error);
-    throw error;
-  }
-};
-
-/**
- * Controls the queue (start, stop, etc.).
- *
- * @param {string} action Control action to perform.
- * @return {Promise<Object>} API response.
- */
-const toggleQueue = async action => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/jobs/control',
-      method: 'POST',
-      data: {
-        action
+    setIsConfirmOpen(true);
+  };
+  const handleConfirm = () => {
+    if (!itemToActOn) {
+      return;
+    }
+    if (itemToActOn.action === 'clear') {
+      handleClearQueue(itemToActOn.type);
+    } else if (itemToActOn.action === 'delete') {
+      handleDeleteJobs(itemToActOn.jobIds);
+    } else if (itemToActOn.action === 'remove') {
+      handleRemoveJobs(itemToActOn.jobIds);
+    } else if (itemToActOn.action === 'delete_permanently') {
+      handleDeleteJobs(itemToActOn.jobIds);
+    }
+    setIsConfirmOpen(false);
+    setItemToActOn(null);
+  };
+  const handleClearQueue = async type => {
+    setIsClearing(true);
+    try {
+      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.clearQueue)(type);
+      setMessage({
+        type: 'success',
+        text: response.message
+      });
+      fetchQueue(); // Refresh queue data
+    } catch (error) {
+      console.error('Error clearing queue:', error);
+      setMessage({
+        type: 'error',
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to clear queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+  const handleDeleteJobs = async jobIds => {
+    const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+    setActingJobIds(prev => [...prev, ...ids]);
+    try {
+      for (const jobId of ids) {
+        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.deleteJob)(jobId);
       }
-    });
-  } catch (error) {
-    console.error('Error toggling queue:', error);
-    throw error;
-  }
-};
-
-/**
- * Clears jobs from the queue.
- *
- * @param {string} type Type of jobs to clear.
- * @return {Promise<Object>} API response.
- */
-const clearQueue = async type => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/jobs/clear',
-      method: 'DELETE',
-      data: {
-        type
+      setMessage({
+        type: 'success',
+        text: ids.length === 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job deleted.', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of jobs deleted */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('%d jobs deleted.', 'video-embed-thumbnail-generator'), ids.length)
+      });
+      fetchQueue();
+    } catch (error) {
+      console.error('Error deleting job(s):', error);
+      setMessage({
+        type: 'error',
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error deleting job(s): %s', 'video-embed-thumbnail-generator'), error.message)
+      });
+    } finally {
+      setActingJobIds(prev => prev.filter(id => !ids.includes(id)));
+    }
+  };
+  const handleRemoveJobs = async jobIds => {
+    const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+    setActingJobIds(prev => [...prev, ...ids]);
+    try {
+      for (const jobId of ids) {
+        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.removeJob)(jobId);
       }
-    });
-  } catch (error) {
-    console.error('Error clearing queue:', error);
-    throw error;
-  }
-};
-
-/**
- * Deletes a specific job.
- *
- * @param {number|string} jobId ID of the job to delete.
- * @return {Promise<Object>} API response.
- */
-const deleteJob = async jobId => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/jobs/${jobId}`,
-      method: 'DELETE'
-    });
-  } catch (error) {
-    console.error('Error deleting job:', error);
-    throw error;
-  }
-};
-
-/**
- * Retries a specific job.
- *
- * @param {number|string} jobId ID of the job to retry.
- * @return {Promise<Object>} API response.
- */
-const retryJob = async jobId => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/jobs/${jobId}`,
-      method: 'POST'
-    });
-  } catch (error) {
-    console.error('Error retrying job:', error);
-    throw error;
-  }
-};
-
-/**
- * Removes a job from the queue without force.
- *
- * @param {number|string} jobId ID of the job to remove.
- * @return {Promise<Object>} API response.
- */
-const removeJob = async jobId => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(`/videopack/v1/jobs/${jobId}`, {
-        force: false
-      }),
-      method: 'DELETE'
-    });
-  } catch (error) {
-    console.error('Error removing job:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches encoding presets.
- *
- * @param {number|null} attachmentId Optional attachment ID to filter presets.
- * @param {string}      url          Optional URL to filter presets.
- * @return {Promise<Array>} List of presets.
- */
-const getPresets = async (attachmentId = null, url = '') => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/presets', {
-        attachment_id: attachmentId,
-        url
+      setMessage({
+        type: 'success',
+        text: ids.length === 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job removed from queue.', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of jobs removed */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('%d jobs removed from queue.', 'video-embed-thumbnail-generator'), ids.length)
+      });
+      fetchQueue();
+    } catch (error) {
+      console.error('Error removing job(s):', error);
+      setMessage({
+        type: 'error',
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error removing job(s): %s', 'video-embed-thumbnail-generator'), error.message)
+      });
+    } finally {
+      setActingJobIds(prev => prev.filter(id => !ids.includes(id)));
+    }
+  };
+  const handleRetryJobs = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(async jobIds => {
+    const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
+    setActingJobIds(prev => [...prev, ...ids]);
+    try {
+      for (const jobId of ids) {
+        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.retryJob)(jobId);
+      }
+      setMessage({
+        type: 'success',
+        text: ids.length === 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job re-queued.', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of jobs re-queued */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('%d jobs re-queued.', 'video-embed-thumbnail-generator'), ids.length)
+      });
+      fetchQueue();
+    } catch (error) {
+      console.error('Error retrying job(s):', error);
+      setMessage({
+        type: 'error',
+        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
+        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error retrying job(s): %s', 'video-embed-thumbnail-generator'), error.message)
+      });
+    } finally {
+      setActingJobIds(prev => prev.filter(id => !ids.includes(id)));
+    }
+  }, []);
+  const fields = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => [{
+    id: 'queue_order',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('#', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.queue_order,
+    enableSorting: true,
+    type: 'integer'
+  }, {
+    id: 'poster',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Thumbnail', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.poster_url,
+    render: ({
+      item
+    }) => item.poster_url ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("img", {
+      src: item.poster_url,
+      alt: item.video_title,
+      className: "videopack-queue-attachment-poster"
+    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
+      icon: "format-video"
+    }),
+    enableHiding: false,
+    enableSorting: false
+  }, {
+    id: 'blog_name',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Site', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.blog_name,
+    enableSorting: isMultisite
+  }, {
+    id: 'user_name',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('User', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.user_name || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('N/A', 'video-embed-thumbnail-generator'),
+    enableSorting: true
+  }, {
+    id: 'video_title',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('File', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.video_title,
+    render: ({
+      item
+    }) => item.attachment_link ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("a", {
+      href: (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(item.attachment_link),
+      children: (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(item.video_title)
+    }) : (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(item.video_title),
+    enableSorting: true
+  }, {
+    id: 'format_name',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Format', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.format_name,
+    enableSorting: true
+  }, {
+    id: 'status',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Status', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.status_l10n,
+    render: ({
+      item
+    }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+      className: `videopack-status-cell ${['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status) ? 'videopack-job-running' : ''}`,
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("ul", {
+        className: "videopack-format-list",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_AdditionalFormats_EncodeFormatStatus__WEBPACK_IMPORTED_MODULE_7__["default"], {
+          formatId: item.preset || item.format_id,
+          formatData: {
+            ...item,
+            encoding_now: ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status),
+            job_id: item.id,
+            label: item.status_l10n
+          },
+          onCancelJob: () => openConfirmDialog('delete', {
+            jobIds: [item.id]
+          }),
+          deleteInProgress: actingJobIds.includes(item.id),
+          onRefresh: () => fetchQueue(),
+          showLabel: false,
+          hideCancel: true
+        })
       })
-    });
-  } catch (error) {
-    console.error('Error fetching presets:', error);
-    throw error;
-  }
-};
-
-/**
- * Creates a new encoding job.
- *
- * @param {number|string} input    Attachment ID or source URL.
- * @param {Array}         outputs  List of format IDs to encode.
- * @param {number}        parentId ID of the parent post.
- * @return {Promise<Object>} API response.
- */
-const createJob = async (input, outputs, parentId = 0) => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/jobs',
-      method: 'POST',
-      data: {
-        input,
-        outputs,
-        parent_id: parentId
+    }),
+    enableSorting: true
+  }, {
+    id: 'created_at',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Created', 'video-embed-thumbnail-generator'),
+    getValue: ({
+      item
+    }) => item.created_at || (item.started ? new Date(item.started * 1000).toISOString() : ''),
+    render: ({
+      item
+    }) => {
+      let date = null;
+      if (item.created_at) {
+        date = new Date(item.created_at);
+      } else if (item.started) {
+        date = new Date(item.started * 1000);
       }
-    });
-  } catch (error) {
-    console.error('Error creating job:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches the status of a specific job.
- *
- * @param {number|string} jobId ID of the job to check.
- * @return {Promise<Object>} Job status data.
- */
-const getJobStatus = async jobId => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/jobs/${jobId}`
-    });
-  } catch (error) {
-    console.error('Error fetching job status:', error);
-    throw error;
-  }
-};
-
-/**
- * Lists jobs, optionally filtered by input.
- *
- * @param {number|string|null} input Optional attachment ID or URL to filter.
- * @return {Promise<Array>} List of jobs.
- */
-const listJobs = async (input = null) => {
-  try {
-    const path = input ? (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/jobs', {
-      input
-    }) : '/videopack/v1/jobs';
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path
-    });
-  } catch (error) {
-    console.error('Error listing jobs:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches available video formats and their encoding status for an attachment.
- *
- * @param {number} attachmentId The attachment ID.
- * @param {string} url          Optional source URL.
- * @return {Promise<Object>} Map of format IDs to format objects.
- */
-const getVideoFormats = async (attachmentId, url = '') => {
-  try {
-    const presets = await getPresets(attachmentId, url);
-    const merged = {};
-    presets.forEach(preset => {
-      merged[preset.id] = {
-        ...preset,
-        format_id: preset.id,
-        // Preserve the status from the server directly
-        status: preset.status ? preset.status.toLowerCase() : 'not_encoded',
-        // The UI expects 'id' to be the WordPress attachment ID for deletion/metadata tracking
-        id: preset.attachment_id || null
-      };
-    });
-    return merged;
-  } catch (error) {
-    console.error('Error fetching video formats:', error);
-    throw error;
-  }
-};
-
-/**
- * Enqueues a job for multiple video formats.
- *
- * @param {number} attachmentId The attachment ID.
- * @param {string} src          Source URL.
- * @param {Object} formats      Object mapping format IDs to boolean selection state.
- * @param {number} parentId     ID of the parent post.
- * @return {Promise<Object>} The response from the job creation.
- */
-const enqueueJob = async (attachmentId, src, formats, parentId = 0) => {
-  // formats is an object { format_id: true, ... } from the UI
-  const outputIds = Object.keys(formats).filter(id => formats[id]);
-  try {
-    const response = await createJob(attachmentId || src, outputIds, parentId);
-    // The UI expects a certain shape for its message reporting
-    return {
-      ...response,
-      attachment_id: attachmentId
-    };
-  } catch (error) {
-    console.error('Error enqueuing job:', error);
-    throw error;
-  }
-};
-
-/**
- * Assigns an encoded file to a specific format on a parent video.
- *
- * @param {number} mediaId  ID of the encoded media attachment.
- * @param {string} formatId ID of the format to assign.
- * @param {number} parentId ID of the parent video attachment.
- * @return {Promise<Object>} API response.
- */
-const assignFormat = async (mediaId, formatId, parentId) => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/wp/v2/media/${mediaId}`,
-      method: 'POST',
-      data: {
-        meta: {
-          '_kgflashmediaplayer-format': formatId,
-          '_kgflashmediaplayer-parent': parentId
-        }
+      return date ? date.toLocaleString() : '';
+    },
+    enableSorting: true
+  }].filter(field => field.id === 'blog_name' ? isMultisite : true), [actingJobIds, isMultisite]);
+  const actions = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => [{
+    id: 'clear',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear', 'video-embed-thumbnail-generator'),
+    isDestructive: true,
+    isPrimary: true,
+    supportsBulk: true,
+    isEligible: item => ['completed', 'failed', 'canceled', 'queued', 'deleted'].includes(item.status),
+    callback: items => {
+      const eligibleItems = items.filter(item => ['completed', 'failed', 'canceled', 'queued', 'deleted'].includes(item.status));
+      if (eligibleItems.length > 0) {
+        openConfirmDialog('remove', {
+          jobIds: eligibleItems.map(i => i.id)
+        });
       }
-    });
-  } catch (error) {
-    console.error('Error assigning format:', error);
-    throw error;
-  }
-};
-
-/**
- * Unassigns a media attachment from its video format role.
- *
- * @param {number} mediaId ID of the media attachment.
- * @return {Promise<Object>} API response.
- */
-const unassignFormat = async mediaId => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/wp/v2/media/${mediaId}`,
-      method: 'POST',
-      data: {
-        meta: {
-          '_kgflashmediaplayer-format': '',
-          '_kgflashmediaplayer-parent': 0
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error unassigning format:', error);
-    throw error;
-  }
-};
-
-/**
- * Deletes a media attachment file permanently.
- *
- * @param {number} attachmentId ID of the attachment to delete.
- * @return {Promise<Object>} API response.
- */
-const deleteFile = async attachmentId => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/wp/v2/media/${attachmentId}?force=true`,
-      method: 'DELETE'
-    });
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    throw error;
-  }
-};
-
-/**
- * Converts a canvas to a blob and uploads it as a thumbnail.
- *
- * @param {HTMLCanvasElement} canvas       The canvas element to upload.
- * @param {number}            attachmentId The ID of the video attachment.
- * @param {string}            videoSrc     The URL of the video (used for filename).
- * @param {number}            parentId     The ID of the parent post.
- * @param {boolean|null}      featured     Whether to set as featured image (overrides default).
- * @return {Promise<Object>} The response from the upload endpoint.
- */
-const createThumbnailFromCanvas = (canvas, attachmentId, videoSrc, parentId = 0, featured = null) => {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(async blob => {
-      if (!blob) {
-        reject(new Error('Canvas is empty'));
-        return;
-      }
-      try {
-        const formData = new FormData();
-        formData.append('file', blob, 'thumbnail.jpg');
-        formData.append('attachment_id', attachmentId);
-        formData.append('parent_id', parentId);
-        formData.append('url', videoSrc);
-        formData.append('post_name', (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.getFilename)(videoSrc));
-        if (featured !== null) {
-          formData.append('featured', featured);
-        }
-        const response = await uploadThumbnail(formData);
-        resolve(response);
-      } catch (error) {
-        reject(error);
-      }
-    }, 'image/jpeg');
-  });
-};
-
-/**
- * Uploads a thumbnail to the server.
- *
- * @param {FormData} formData Thumbnail data and metadata.
- * @return {Promise<Object>} API response.
- */
-const uploadThumbnail = async formData => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/thumbs/upload',
-      method: 'POST',
-      body: formData
-    });
-  } catch (error) {
-    console.error('Error uploading thumbnail:', error);
-    throw error;
-  }
-};
-
-/**
- * Saves all thumbnails selected for a video.
- *
- * @param {number}  attachment_id ID of the video attachment.
- * @param {Array}   thumb_urls    List of thumbnail URLs to save.
- * @param {number}  parent_id     ID of the parent post.
- * @param {string}  url           Video source URL.
- * @param {boolean} featured      Whether to set one as featured.
- * @return {Promise<Object>} API response.
- */
-const saveAllThumbnails = async (attachment_id, thumb_urls, parent_id = 0, url = '', featured = null) => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/thumbs/save_all',
-      method: 'POST',
-      data: {
-        attachment_id,
-        thumb_urls,
-        parent_id,
-        url,
-        featured
-      }
-    });
-  } catch (error) {
-    console.error('Error saving all thumbnails:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches the video gallery content based on provided arguments.
- *
- * @param {Object} args Gallery query arguments.
- * @return {Promise<Array>} List of videos in the gallery.
- */
-const getVideoGallery = async args => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getVideoGallery', undefined, args);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/video_gallery', args),
-      method: 'GET'
-    });
-    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getVideoGallery', response, args);
-  } catch (error) {
-    console.error('Error fetching video gallery:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches users who have a specific capability.
- *
- * @param {string} capability The capability to check for.
- * @return {Promise<Array>} List of users.
- */
-const getUsersWithCapability = async capability => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/wp/v2/users?capability=${capability}`,
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches settings content for a specific Freemius page.
- *
- * @param {string} page The Freemius page name.
- * @return {Promise<Object>} Page data.
- */
-const getFreemiusPage = async page => {
-  try {
-    let path = `/videopack/v1/freemius/${page}`;
-    if (videopack_config.isNetworkAdmin || videopack_config.isNetworkActive) {
-      path += '?_fs_network_admin=true';
     }
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path
-    });
-  } catch (error) {
-    console.error(`Error fetching Freemius page '${page}':`, error);
-    throw error;
-  }
-};
-
-/**
- * Tests an FFmpeg encoding command with specific parameters.
- *
- * @param {string} codec      The codec to test.
- * @param {string} resolution The resolution to test.
- * @param {number} rotate     The rotation angle.
- * @return {Promise<Object>} Test results.
- */
-const testEncodeCommand = async (codec, resolution, rotate) => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_testEncodeCommand', undefined, codec, resolution, rotate);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/ffmpeg-test/?codec=${codec}&resolution=${resolution}&rotate=${rotate}`
-    });
-  } catch (error) {
-    console.error('Error testing encode command:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches global Videopack settings.
- *
- * @return {Promise<Object>} Videopack settings.
- */
-const getSettings = async () => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_getSettings', undefined);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    const allSettings = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/wp/v2/settings'
-    });
-    const settings = allSettings.videopack_options || {};
-    return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.getSettings', settings);
-  } catch (error) {
-    console.error('Error fetching settings:', error);
-    throw error;
-  }
-};
-
-/**
- * Saves global Videopack settings to the WordPress options.
- *
- * @param {Object} newSettings The new settings to save.
- * @return {Promise<Object>} Updated settings.
- */
-const saveWPSettings = async newSettings => {
-  try {
-    const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/wp/v2/settings',
-      method: 'POST',
-      data: {
-        videopack_options: newSettings
+  }, {
+    id: 'cancel',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Cancel', 'video-embed-thumbnail-generator'),
+    isDestructive: true,
+    supportsBulk: true,
+    isEligible: item => ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status),
+    callback: items => {
+      const eligibleItems = items.filter(item => ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status));
+      if (eligibleItems.length > 0) {
+        openConfirmDialog('delete', {
+          jobIds: eligibleItems.map(i => i.id)
+        });
       }
-    });
-    return response.videopack_options || {};
-  } catch (error) {
-    console.error('Error saving WP settings:', error);
-    throw error;
-  }
-};
-
-/**
- * Fetches network-wide Videopack settings (Multisite).
- *
- * @return {Promise<Object>} Network settings.
- */
-const getNetworkSettings = async () => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/network/settings'
-    });
-  } catch (error) {
-    console.error('Error fetching network settings:', error);
-    throw error;
-  }
-};
-
-/**
- * Saves network-wide Videopack settings (Multisite).
- *
- * @param {Object} newSettings The network settings to save.
- * @return {Promise<Object>} Updated network settings.
- */
-const saveNetworkSettings = async newSettings => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/network/settings',
-      method: 'POST',
-      data: newSettings
-    });
-  } catch (error) {
-    console.error('Error saving network settings:', error);
-    throw error;
-  }
-};
-
-/**
- * Resets network settings to their default values.
- *
- * @return {Promise<Object>} Default settings.
- */
-const resetNetworkSettings = async () => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/network/settings/defaults'
-    });
-  } catch (error) {
-    console.error('Error resetting network settings:', error);
-    throw error;
-  }
-};
-
-/**
- * Resets site-specific Videopack settings to their default values.
- *
- * @return {Promise<Object>} Default settings.
- */
-const resetVideopackSettings = async () => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/settings/defaults'
-    });
-  } catch (error) {
-    console.error('Error resetting Videopack settings:', error);
-    throw error;
-  }
-};
-
-/**
- * Sets a specific image as the poster for a video.
- *
- * @param {number}  attachment_id ID of the video attachment.
- * @param {string}  thumb_url     URL of the thumbnail image.
- * @param {number}  parent_id     ID of the parent post.
- * @param {string}  url           Original video source URL.
- * @param {boolean} featured      Whether to set as featured image.
- * @return {Promise<Object>} API response.
- */
-const setPosterImage = async (attachment_id, thumb_url, parent_id = 0, url = '', featured = null) => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/thumbs',
-      method: 'PUT',
-      data: {
-        attachment_id,
-        thumburl: thumb_url,
-        parent_id,
-        url,
-        featured
-      }
-    });
-  } catch (error) {
-    console.error('Error setting poster image:', error);
-    throw error;
-  }
-};
-
-/**
- * Generates a thumbnail for a video.
- *
- * @param {string}  url              Video source URL.
- * @param {number}  total_thumbnails Total number of thumbnails to generate.
- * @param {number}  thumbnail_index  Index of the thumbnail to generate.
- * @param {number}  attachment_id    ID of the video attachment.
- * @param {boolean} generate_button  Whether this was triggered by a manual button.
- * @param {number}  parent_id        ID of the parent post.
- * @param {boolean} featured         Whether to set as featured image.
- * @return {Promise<Object>} API response.
- */
-const generateThumbnail = async (url, total_thumbnails, thumbnail_index, attachment_id, generate_button, parent_id = 0, featured = null) => {
-  try {
-    const path = (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)('/videopack/v1/thumbs', {
-      url,
-      total_thumbnails,
-      thumbnail_index,
-      attachment_id,
-      generate_button,
-      parent_id,
-      featured
-    });
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path
-    });
-  } catch (error) {
-    console.error('Error generating thumbnail:', error);
-    throw error;
-  }
-};
-
-/**
- * Starts a batch process of a particular type.
- *
- * @param {string} type           Type of batch process.
- * @param {Object} additionalData Extra data for the process.
- * @return {Promise<Object>} API response with process ID/status.
- */
-const startBatchProcess = async (type, additionalData = {}) => {
-  const pre = (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_2__.applyFilters)('videopack.utils.pre_startBatchProcess', undefined, type, additionalData);
-  if (typeof pre !== 'undefined') {
-    return pre;
-  }
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/batch/process',
-      method: 'POST',
-      data: {
-        type,
-        ...additionalData
-      }
-    });
-  } catch (error) {
-    console.error(`Error starting ${type} batch processing:`, error);
-    throw error;
-  }
-};
-
-/**
- * Fetches the progress of a running batch process.
- *
- * @param {string} type Type of batch process.
- * @return {Promise<Object>} Progress data.
- */
-const getBatchProgress = async type => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: `/videopack/v1/batch/progress?type=${type}`,
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error(`Error fetching ${type} batch progress:`, error);
-    throw error;
-  }
-};
-
-/**
- * Fetches candidate thumbnails for a video.
- *
- * @return {Promise<Array>} List of thumbnail candidates.
- */
-const getThumbnailCandidates = async () => {
-  try {
-    return await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/videopack/v1/thumbs/candidates',
-      method: 'GET'
-    });
-  } catch (error) {
-    console.error('Error fetching thumbnail candidates:', error);
-    throw error;
-  }
-};
-
-/**
- * Normalizes options/attributes to ensure booleans are actual booleans
- * and not 'on'/'off' strings.
- *
- * @param {Object} data The object to normalize.
- * @return {Object} Normalized object.
- */
-const normalizeOptions = data => {
-  if (!data) {
-    return {};
-  }
-  const normalized = {};
-  Object.entries(data).forEach(([key, value]) => {
-    if (value === 'on') {
-      normalized[key] = true;
-    } else if (value === 'off') {
-      normalized[key] = false;
-    } else {
-      normalized[key] = value;
     }
-  });
-  return normalized;
-};
+  }, {
+    id: 'retry',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Retry', 'video-embed-thumbnail-generator'),
+    supportsBulk: true,
+    isEligible: item => ['failed', 'canceled', 'deleted', 'error'].includes(item.status),
+    callback: items => {
+      const eligibleItems = items.filter(item => ['failed', 'canceled', 'deleted', 'error'].includes(item.status));
+      if (eligibleItems.length > 0) {
+        handleRetryJobs(eligibleItems.map(i => i.id));
+      }
+    }
+  }, {
+    id: 'delete_permanently',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Delete Permanently', 'video-embed-thumbnail-generator'),
+    isDestructive: true,
+    supportsBulk: true,
+    isEligible: item => item.status === 'completed' && !!item.output_id,
+    callback: items => {
+      const eligibleItems = items.filter(item => item.status === 'completed' && !!item.output_id);
+      if (eligibleItems.length > 0) {
+        openConfirmDialog('delete_permanently', {
+          jobIds: eligibleItems.map(i => i.id)
+        });
+      }
+    }
+  }], [handleRetryJobs]);
 
-/**
- * Generates the [videopack] shortcode string based on attributes.
- *
- * @param {Object} attributes The attributes to include in the shortcode.
- * @param {string} url        Optional URL for the video source.
- * @param {Object} options    Optional global options to compare against for defaults.
- * @return {string} The generated shortcode.
- */
-const generateShortcode = (attributes, url = '', options = null) => {
+  // "processedData" and "paginationInfo" definition
   const {
-    id,
-    gallery,
-    ...rest
-  } = attributes;
-  let shortcode = '[videopack';
-  const normalizedOptions = options ? normalizeOptions(options) : null;
-  if (gallery) {
-    shortcode += ' gallery="true"';
-  } else if (id) {
-    shortcode += ` id="${id}"`;
-  }
-  Object.entries(rest).forEach(([key, value]) => {
-    // Only include if value is set and not null/undefined
-    if (value !== undefined && value !== null && value !== '') {
-      // Skip if value matches global option (default)
-      if (normalizedOptions && normalizedOptions[key] !== undefined) {
-        if (value === normalizedOptions[key]) {
-          return;
+    data: processedData,
+    paginationInfo
+  } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
+    return (0,_wordpress_dataviews__WEBPACK_IMPORTED_MODULE_5__["default"])(queueData, view, fields);
+  }, [queueData, view, fields]);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+    className: "wrap videopack-encode-queue",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("h1", {
+      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Queue', 'video-embed-thumbnail-generator')
+    }), Object.entries(batchProgress).map(([type, progress]) => {
+      if (!progress || progress.pending === 0 && progress['in-progress'] === 0) {
+        return null;
+      }
+      const labels = {
+        featured: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Setting Featured Images', 'video-embed-thumbnail-generator'),
+        parents: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Updating Parents', 'video-embed-thumbnail-generator'),
+        thumbs: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Generating Thumbnails (FFmpeg)', 'video-embed-thumbnail-generator'),
+        encoding: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Bulk Encoding', 'video-embed-thumbnail-generator'),
+        browser: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pending In-Browser Thumbnails', 'video-embed-thumbnail-generator')
+      };
+      const label = labels[type] || type;
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+        title: label,
+        initialOpen: true,
+        className: "videopack-batch-progress-panel",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+          className: "videopack-batch-progress-content",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+            className: "videopack-batch-stats",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of pending items */
+              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pending: %d', 'video-embed-thumbnail-generator'), progress.pending)
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of in-progress items */
+              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('In-Progress: %d', 'video-embed-thumbnail-generator'), progress['in-progress'])
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of completed items */
+              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Completed: %d', 'video-embed-thumbnail-generator'), progress.complete)
+            }), progress.failed > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              className: "videopack-failed-count",
+              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of failed items */
+              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed: %d', 'video-embed-thumbnail-generator'), progress.failed)
+            })]
+          }), progress.total > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+            className: "videopack-meter",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+              className: "videopack-meter-bar",
+              style: {
+                width: `${Math.round((progress.complete + progress.failed) / progress.total * 100)}%`
+              }
+            })
+          })]
+        })
+      }, type);
+    }), message && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Notice, {
+      status: message.type,
+      onRemove: () => setMessage(null),
+      children: message.text
+    }), isConfirmOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalConfirmDialog, {
+      isOpen: isConfirmOpen,
+      title: (() => {
+        if (itemToActOn?.action === 'delete_permanently') {
+          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Delete Attachment?', 'video-embed-thumbnail-generator');
         }
-      }
-
-      // Skip temporary UI-only attributes
-      if (key === 'tinymce_edit') {
-        return;
-      }
-
-      // Skip src attribute if we have an attachment id
-      if (id && key === 'src') {
-        return;
-      }
-      shortcode += ` ${key}="${value}"`;
-    }
+        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Confirm Action', 'video-embed-thumbnail-generator');
+      })(),
+      confirmButtonText: (() => {
+        if (itemToActOn?.action === 'delete_permanently') {
+          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Delete', 'video-embed-thumbnail-generator');
+        }
+        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Confirm', 'video-embed-thumbnail-generator');
+      })(),
+      onConfirm: handleConfirm,
+      onCancel: () => setIsConfirmOpen(false),
+      children: (() => {
+        const count = itemToActOn?.jobIds?.length || 0;
+        if (itemToActOn?.action === 'delete_permanently') {
+          return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to permanently delete these %d attachments? This action cannot be undone.', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to permanently delete this attachment? This action cannot be undone.', 'video-embed-thumbnail-generator');
+        }
+        if (itemToActOn?.action === 'remove') {
+          return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove these %d jobs? This will not delete any files.', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job? This will not delete any files.', 'video-embed-thumbnail-generator');
+        }
+        if (itemToActOn?.action === 'delete') {
+          return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to cancel these %d jobs?', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to cancel this job?', 'video-embed-thumbnail-generator');
+        }
+        if (itemToActOn?.action === 'clear') {
+          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s: jobs type ('completed' or 'all') */
+          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to clear %s jobs?', 'video-embed-thumbnail-generator'), itemToActOn.type);
+        }
+        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to perform this action?', 'video-embed-thumbnail-generator');
+      })()
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+        className: "videopack-queue-controls",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+          variant: "primary",
+          onClick: handleToggleQueue,
+          isBusy: isTogglingQueue,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
+            icon: isQueuePaused ? 'controls-play' : 'controls-pause'
+          }), isQueuePaused ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Queue', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pause Queue', 'video-embed-thumbnail-generator')]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+          variant: "secondary",
+          onClick: () => openConfirmDialog('clear', {
+            type: 'completed'
+          }),
+          isBusy: isClearing,
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear Completed', 'video-embed-thumbnail-generator')
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
+          variant: "tertiary",
+          isDestructive: true,
+          onClick: () => openConfirmDialog('clear', {
+            type: 'all'
+          }),
+          isBusy: isClearing,
+          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear All', 'video-embed-thumbnail-generator')
+        }), isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {})]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalDivider, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+        className: "videopack-dataviews-container",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_dataviews__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          data: processedData,
+          fields: fields,
+          view: view,
+          onChangeView: setView,
+          defaultLayouts: defaultLayouts,
+          actions: actions,
+          paginationInfo: paginationInfo
+        })
+      })]
+    })]
   });
-  shortcode += ']';
-
-  // Include URL content for clarity, even if we have an attachment id
-  if (url && !gallery) {
-    shortcode += url;
-  }
-  shortcode += '[/videopack]';
-  return shortcode;
 };
+// Render the component
+document.addEventListener('DOMContentLoaded', function () {
+  const rootElement = document.getElementById('videopack-queue-root') || document.getElementById('videopack-network-queue-root');
+  if (rootElement) {
+    const root = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.createRoot)(rootElement);
+    root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(EncodeQueue, {}));
+  }
+});
 
 /***/ },
 
@@ -1308,32 +639,6 @@ module.exports = function equal(a, b) {
   // true if both NaN, false otherwise
   return a!==a && b!==b;
 };
-
-
-/***/ },
-
-/***/ "./src/components/AdditionalFormats/EncodeFormatStatus.scss"
-/*!******************************************************************!*\
-  !*** ./src/components/AdditionalFormats/EncodeFormatStatus.scss ***!
-  \******************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-
-/***/ },
-
-/***/ "./src/components/AdditionalFormats/EncodeProgress.scss"
-/*!**************************************************************!*\
-  !*** ./src/components/AdditionalFormats/EncodeProgress.scss ***!
-  \**************************************************************/
-(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
 
 
 /***/ },
@@ -4087,112 +3392,41 @@ function focusIntoView(element, options) {
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/2G6YEJT4.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/2P26HHWN.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/2G6YEJT4.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/2P26HHWN.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ComboboxList: () => (/* binding */ ComboboxList),
-/* harmony export */   useComboboxList: () => (/* binding */ useComboboxList)
+/* harmony export */   DisclosureContextProvider: () => (/* binding */ DisclosureContextProvider),
+/* harmony export */   DisclosureScopedContextProvider: () => (/* binding */ DisclosureScopedContextProvider),
+/* harmony export */   useDisclosureContext: () => (/* binding */ useDisclosureContext),
+/* harmony export */   useDisclosureProviderContext: () => (/* binding */ useDisclosureProviderContext),
+/* harmony export */   useDisclosureScopedContext: () => (/* binding */ useDisclosureScopedContext)
 /* harmony export */ });
-/* harmony import */ var _6B3RXHKP_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./6B3RXHKP.js */ "./node_modules/@ariakit/react-core/esm/__chunks/6B3RXHKP.js");
-/* harmony import */ var _CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CVCFNOHX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
 "use client";
 
 
-
-
-
-// src/combobox/combobox-list.tsx
-
-
-
-var TagName = "div";
-var useComboboxList = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.createHook)(
-  function useComboboxList2({ store, alwaysVisible, ...props }) {
-    const scopedContext = (0,_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__.useComboboxScopedContext)(true);
-    const context = (0,_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__.useComboboxContext)();
-    store = store || context;
-    const scopedContextSameStore = !!store && store === scopedContext;
-    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_4__.invariant)(
-      store,
-       true && "ComboboxList must receive a `store` prop or be wrapped in a ComboboxProvider component."
-    );
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_5__.useRef)(null);
-    const id = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_3__.useId)(props.id);
-    const mounted = store.useState("mounted");
-    const hidden = (0,_6B3RXHKP_js__WEBPACK_IMPORTED_MODULE_0__.isHidden)(mounted, props.hidden, alwaysVisible);
-    const style = hidden ? { ...props.style, display: "none" } : props.style;
-    const multiSelectable = store.useState(
-      (state) => Array.isArray(state.selectedValue)
-    );
-    const role = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_3__.useAttribute)(ref, "role", props.role);
-    const isCompositeRole = role === "listbox" || role === "tree" || role === "grid";
-    const ariaMultiSelectable = isCompositeRole ? multiSelectable || void 0 : void 0;
-    const [hasListboxInside, setHasListboxInside] = (0,react__WEBPACK_IMPORTED_MODULE_5__.useState)(false);
-    const contentElement = store.useState("contentElement");
-    (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_3__.useSafeLayoutEffect)(() => {
-      if (!mounted) return;
-      const element = ref.current;
-      if (!element) return;
-      if (contentElement !== element) return;
-      const callback = () => {
-        setHasListboxInside(!!element.querySelector("[role='listbox']"));
-      };
-      const observer = new MutationObserver(callback);
-      observer.observe(element, {
-        subtree: true,
-        childList: true,
-        attributeFilter: ["role"]
-      });
-      callback();
-      return () => observer.disconnect();
-    }, [mounted, contentElement]);
-    if (!hasListboxInside) {
-      props = {
-        role: "listbox",
-        "aria-multiselectable": ariaMultiSelectable,
-        ...props
-      };
-    }
-    props = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_3__.useWrapElement)(
-      props,
-      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__.ComboboxScopedContextProvider, { value: store, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__.ComboboxListRoleContext.Provider, { value: role, children: element }) }),
-      [store, role]
-    );
-    const setContentElement = id && (!scopedContext || !scopedContextSameStore) ? store.setContentElement : null;
-    props = {
-      id,
-      hidden,
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_3__.useMergeRefs)(setContentElement, ref, props.ref),
-      style
-    };
-    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_4__.removeUndefinedValues)(props);
-  }
-);
-var ComboboxList = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.forwardRef)(function ComboboxList2(props) {
-  const htmlProps = useComboboxList(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.createElement)(TagName, htmlProps);
-});
+// src/disclosure/disclosure-context.tsx
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_0__.createStoreContext)();
+var useDisclosureContext = ctx.useContext;
+var useDisclosureScopedContext = ctx.useScopedContext;
+var useDisclosureProviderContext = ctx.useProviderContext;
+var DisclosureContextProvider = ctx.ContextProvider;
+var DisclosureScopedContextProvider = ctx.ScopedContextProvider;
 
 
 
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/4NYSH4UO.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/3MLRVWUK.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/4NYSH4UO.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/3MLRVWUK.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -4202,8 +3436,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   useDialogStore: () => (/* binding */ useDialogStore),
 /* harmony export */   useDialogStoreProps: () => (/* binding */ useDialogStoreProps)
 /* harmony export */ });
-/* harmony import */ var _WLZ6H5FH_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./WLZ6H5FH.js */ "./node_modules/@ariakit/react-core/esm/__chunks/WLZ6H5FH.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
+/* harmony import */ var _YXMTOJME_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./YXMTOJME.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXMTOJME.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
 /* harmony import */ var _ariakit_core_dialog_dialog_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/dialog/dialog-store */ "./node_modules/@ariakit/core/esm/__chunks/KMAUV3TY.js");
 "use client";
 
@@ -4212,10 +3446,10 @@ __webpack_require__.r(__webpack_exports__);
 // src/dialog/dialog-store.ts
 
 function useDialogStoreProps(store, update, props) {
-  return (0,_WLZ6H5FH_js__WEBPACK_IMPORTED_MODULE_0__.useDisclosureStoreProps)(store, update, props);
+  return (0,_YXMTOJME_js__WEBPACK_IMPORTED_MODULE_0__.useDisclosureStoreProps)(store, update, props);
 }
 function useDialogStore(props = {}) {
-  const [store, update] = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStore)(_ariakit_core_dialog_dialog_store__WEBPACK_IMPORTED_MODULE_2__.createDialogStore, props);
+  const [store, update] = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStore)(_ariakit_core_dialog_dialog_store__WEBPACK_IMPORTED_MODULE_2__.createDialogStore, props);
   return useDialogStoreProps(store, update, props);
 }
 
@@ -4224,52 +3458,614 @@ function useDialogStore(props = {}) {
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/4POTBZ2J.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/3X3QYQCU.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/4POTBZ2J.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/3X3QYQCU.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   PopoverAnchor: () => (/* binding */ PopoverAnchor),
-/* harmony export */   usePopoverAnchor: () => (/* binding */ usePopoverAnchor)
+/* harmony export */   TagContextProvider: () => (/* binding */ TagContextProvider),
+/* harmony export */   TagRemoveIdContext: () => (/* binding */ TagRemoveIdContext),
+/* harmony export */   TagScopedContextProvider: () => (/* binding */ TagScopedContextProvider),
+/* harmony export */   TagValueContext: () => (/* binding */ TagValueContext),
+/* harmony export */   useTagContext: () => (/* binding */ useTagContext),
+/* harmony export */   useTagProviderContext: () => (/* binding */ useTagProviderContext),
+/* harmony export */   useTagScopedContext: () => (/* binding */ useTagScopedContext)
 /* harmony export */ });
-/* harmony import */ var _JMU4N4M5_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./JMU4N4M5.js */ "./node_modules/@ariakit/react-core/esm/__chunks/JMU4N4M5.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
+/* harmony import */ var _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./57GJCRRF.js */ "./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
 "use client";
 
 
 
+// src/tag/tag-context.tsx
 
-// src/popover/popover-anchor.tsx
-var TagName = "div";
-var usePopoverAnchor = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
-  function usePopoverAnchor2({ store, ...props }) {
-    const context = (0,_JMU4N4M5_js__WEBPACK_IMPORTED_MODULE_0__.usePopoverProviderContext)();
-    store = store || context;
-    props = {
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(store == null ? void 0 : store.setAnchorElement, props.ref)
-    };
-    return props;
-  }
+var TagValueContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(null);
+var TagRemoveIdContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(
+  null
 );
-var PopoverAnchor = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function PopoverAnchor2(props) {
-  const htmlProps = usePopoverAnchor(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
-});
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
+  [_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_0__.CompositeContextProvider],
+  [_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_0__.CompositeScopedContextProvider]
+);
+var useTagContext = ctx.useContext;
+var useTagScopedContext = ctx.useScopedContext;
+var useTagProviderContext = ctx.useProviderContext;
+var TagContextProvider = ctx.ContextProvider;
+var TagScopedContextProvider = ctx.ScopedContextProvider;
 
 
 
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/5VQZOHHZ.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/4ODJH2Y5.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/5VQZOHHZ.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/4ODJH2Y5.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CollectionContextProvider: () => (/* binding */ CollectionContextProvider),
+/* harmony export */   CollectionScopedContextProvider: () => (/* binding */ CollectionScopedContextProvider),
+/* harmony export */   useCollectionContext: () => (/* binding */ useCollectionContext),
+/* harmony export */   useCollectionProviderContext: () => (/* binding */ useCollectionProviderContext),
+/* harmony export */   useCollectionScopedContext: () => (/* binding */ useCollectionScopedContext)
+/* harmony export */ });
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+"use client";
+
+
+// src/collection/collection-context.tsx
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_0__.createStoreContext)();
+var useCollectionContext = ctx.useContext;
+var useCollectionScopedContext = ctx.useScopedContext;
+var useCollectionProviderContext = ctx.useProviderContext;
+var CollectionContextProvider = ctx.ContextProvider;
+var CollectionScopedContextProvider = ctx.ScopedContextProvider;
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CompositeContextProvider: () => (/* binding */ CompositeContextProvider),
+/* harmony export */   CompositeItemContext: () => (/* binding */ CompositeItemContext),
+/* harmony export */   CompositeRowContext: () => (/* binding */ CompositeRowContext),
+/* harmony export */   CompositeScopedContextProvider: () => (/* binding */ CompositeScopedContextProvider),
+/* harmony export */   useCompositeContext: () => (/* binding */ useCompositeContext),
+/* harmony export */   useCompositeProviderContext: () => (/* binding */ useCompositeProviderContext),
+/* harmony export */   useCompositeScopedContext: () => (/* binding */ useCompositeScopedContext)
+/* harmony export */ });
+/* harmony import */ var _4ODJH2Y5_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./4ODJH2Y5.js */ "./node_modules/@ariakit/react-core/esm/__chunks/4ODJH2Y5.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+"use client";
+
+
+
+// src/composite/composite-context.tsx
+
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
+  [_4ODJH2Y5_js__WEBPACK_IMPORTED_MODULE_0__.CollectionContextProvider],
+  [_4ODJH2Y5_js__WEBPACK_IMPORTED_MODULE_0__.CollectionScopedContextProvider]
+);
+var useCompositeContext = ctx.useContext;
+var useCompositeScopedContext = ctx.useScopedContext;
+var useCompositeProviderContext = ctx.useProviderContext;
+var CompositeContextProvider = ctx.ContextProvider;
+var CompositeScopedContextProvider = ctx.ScopedContextProvider;
+var CompositeItemContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(
+  void 0
+);
+var CompositeRowContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(
+  void 0
+);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/67C4K2ZC.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/67C4K2ZC.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DialogContextProvider: () => (/* binding */ DialogContextProvider),
+/* harmony export */   DialogDescriptionContext: () => (/* binding */ DialogDescriptionContext),
+/* harmony export */   DialogHeadingContext: () => (/* binding */ DialogHeadingContext),
+/* harmony export */   DialogScopedContextProvider: () => (/* binding */ DialogScopedContextProvider),
+/* harmony export */   useDialogContext: () => (/* binding */ useDialogContext),
+/* harmony export */   useDialogProviderContext: () => (/* binding */ useDialogProviderContext),
+/* harmony export */   useDialogScopedContext: () => (/* binding */ useDialogScopedContext)
+/* harmony export */ });
+/* harmony import */ var _2P26HHWN_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./2P26HHWN.js */ "./node_modules/@ariakit/react-core/esm/__chunks/2P26HHWN.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+"use client";
+
+
+
+// src/dialog/dialog-context.tsx
+
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
+  [_2P26HHWN_js__WEBPACK_IMPORTED_MODULE_0__.DisclosureContextProvider],
+  [_2P26HHWN_js__WEBPACK_IMPORTED_MODULE_0__.DisclosureScopedContextProvider]
+);
+var useDialogContext = ctx.useContext;
+var useDialogScopedContext = ctx.useScopedContext;
+var useDialogProviderContext = ctx.useProviderContext;
+var DialogContextProvider = ctx.ContextProvider;
+var DialogScopedContextProvider = ctx.ScopedContextProvider;
+var DialogHeadingContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(void 0);
+var DialogDescriptionContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(void 0);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/6AOPHM6J.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/6AOPHM6J.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   usePopoverStore: () => (/* binding */ usePopoverStore),
+/* harmony export */   usePopoverStoreProps: () => (/* binding */ usePopoverStoreProps)
+/* harmony export */ });
+/* harmony import */ var _3MLRVWUK_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./3MLRVWUK.js */ "./node_modules/@ariakit/react-core/esm/__chunks/3MLRVWUK.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_popover_popover_store__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/popover/popover-store */ "./node_modules/@ariakit/core/esm/__chunks/BFGNM53A.js");
+"use client";
+
+
+
+
+// src/popover/popover-store.ts
+
+function usePopoverStoreProps(store, update, props) {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useUpdateEffect)(update, [props.popover]);
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "placement");
+  return (0,_3MLRVWUK_js__WEBPACK_IMPORTED_MODULE_0__.useDialogStoreProps)(store, update, props);
+}
+function usePopoverStore(props = {}) {
+  const [store, update] = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStore)(_ariakit_core_popover_popover_store__WEBPACK_IMPORTED_MODULE_3__.createPopoverStore, props);
+  return usePopoverStoreProps(store, update, props);
+}
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/6T5FLGQD.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/6T5FLGQD.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useComboboxStore: () => (/* binding */ useComboboxStore),
+/* harmony export */   useComboboxStoreOptions: () => (/* binding */ useComboboxStoreOptions),
+/* harmony export */   useComboboxStoreProps: () => (/* binding */ useComboboxStoreProps)
+/* harmony export */ });
+/* harmony import */ var _3X3QYQCU_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./3X3QYQCU.js */ "./node_modules/@ariakit/react-core/esm/__chunks/3X3QYQCU.js");
+/* harmony import */ var _6AOPHM6J_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./6AOPHM6J.js */ "./node_modules/@ariakit/react-core/esm/__chunks/6AOPHM6J.js");
+/* harmony import */ var _AFNZIDBX_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./AFNZIDBX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/AFNZIDBX.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_combobox_combobox_store__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/combobox/combobox-store */ "./node_modules/@ariakit/core/esm/combobox/combobox-store.js");
+"use client";
+
+
+
+
+
+
+// src/combobox/combobox-store.ts
+
+function useComboboxStoreOptions(props) {
+  const tag = (0,_3X3QYQCU_js__WEBPACK_IMPORTED_MODULE_0__.useTagContext)();
+  props = {
+    ...props,
+    tag: props.tag !== void 0 ? props.tag : tag
+  };
+  return (0,_AFNZIDBX_js__WEBPACK_IMPORTED_MODULE_2__.useCompositeStoreOptions)(props);
+}
+function useComboboxStoreProps(store, update, props) {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useUpdateEffect)(update, [props.tag]);
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "value", "setValue");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "selectedValue", "setSelectedValue");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "resetValueOnHide");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "resetValueOnSelect");
+  return Object.assign(
+    (0,_AFNZIDBX_js__WEBPACK_IMPORTED_MODULE_2__.useCompositeStoreProps)(
+      (0,_6AOPHM6J_js__WEBPACK_IMPORTED_MODULE_1__.usePopoverStoreProps)(store, update, props),
+      update,
+      props
+    ),
+    { tag: props.tag }
+  );
+}
+function useComboboxStore(props = {}) {
+  props = useComboboxStoreOptions(props);
+  const [store, update] = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStore)(_ariakit_core_combobox_combobox_store__WEBPACK_IMPORTED_MODULE_5__.createComboboxStore, props);
+  return useComboboxStoreProps(store, update, props);
+}
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/7CGHQ3Z6.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/7CGHQ3Z6.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CompositeItem: () => (/* binding */ CompositeItem),
+/* harmony export */   useCompositeItem: () => (/* binding */ useCompositeItem)
+/* harmony export */ });
+/* harmony import */ var _7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./7NJRHOSP.js */ "./node_modules/@ariakit/react-core/esm/__chunks/7NJRHOSP.js");
+/* harmony import */ var _HFFZYOO5_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HFFZYOO5.js */ "./node_modules/@ariakit/react-core/esm/__chunks/HFFZYOO5.js");
+/* harmony import */ var _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./57GJCRRF.js */ "./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js");
+/* harmony import */ var _GROIW2U2_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./GROIW2U2.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GROIW2U2.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
+/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var _ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @ariakit/core/utils/platform */ "./node_modules/@ariakit/core/esm/__chunks/SNHYQNEZ.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+"use client";
+
+
+
+
+
+
+
+
+// src/composite/composite-item.tsx
+
+
+
+
+
+
+var TagName = "button";
+function isEditableElement(element) {
+  if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextbox)(element)) return true;
+  return element.tagName === "INPUT" && !(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isButton)(element);
+}
+function getNextPageOffset(scrollingElement, pageUp = false) {
+  const height = scrollingElement.clientHeight;
+  const { top } = scrollingElement.getBoundingClientRect();
+  const pageSize = Math.max(height * 0.875, height - 40) * 1.5;
+  const pageOffset = pageUp ? height - pageSize + top : pageSize + top;
+  if (scrollingElement.tagName === "HTML") {
+    return pageOffset + scrollingElement.scrollTop;
+  }
+  return pageOffset;
+}
+function getItemOffset(itemElement, pageUp = false) {
+  const { top } = itemElement.getBoundingClientRect();
+  if (pageUp) {
+    return top + itemElement.clientHeight;
+  }
+  return top;
+}
+function findNextPageItemId(element, store, next, pageUp = false) {
+  var _a;
+  if (!store) return;
+  if (!next) return;
+  const { renderedItems } = store.getState();
+  const scrollingElement = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getScrollingElement)(element);
+  if (!scrollingElement) return;
+  const nextPageOffset = getNextPageOffset(scrollingElement, pageUp);
+  let id;
+  let prevDifference;
+  for (let i = 0; i < renderedItems.length; i += 1) {
+    const previousId = id;
+    id = next(i);
+    if (!id) break;
+    if (id === previousId) continue;
+    const itemElement = (_a = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, id)) == null ? void 0 : _a.element;
+    if (!itemElement) continue;
+    const itemOffset = getItemOffset(itemElement, pageUp);
+    const difference = itemOffset - nextPageOffset;
+    const absDifference = Math.abs(difference);
+    if (pageUp && difference <= 0 || !pageUp && difference >= 0) {
+      if (prevDifference !== void 0 && prevDifference < absDifference) {
+        id = previousId;
+      }
+      break;
+    }
+    prevDifference = absDifference;
+  }
+  return id;
+}
+function targetIsAnotherItem(event, store) {
+  if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return false;
+  return (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, event.target);
+}
+var useCompositeItem = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_5__.createHook)(
+  function useCompositeItem2({
+    store,
+    rowId: rowIdProp,
+    preventScrollOnKeyDown = false,
+    moveOnKeyPress = true,
+    tabbable = false,
+    getItem: getItemProp,
+    "aria-setsize": ariaSetSizeProp,
+    "aria-posinset": ariaPosInSetProp,
+    ...props
+  }) {
+    const context = (0,_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_2__.useCompositeContext)();
+    store = store || context;
+    const id = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useId)(props.id);
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
+    const row = (0,react__WEBPACK_IMPORTED_MODULE_11__.useContext)(_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_2__.CompositeRowContext);
+    const disabled = (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.disabledFromProps)(props);
+    const trulyDisabled = disabled && !props.accessibleWhenDisabled;
+    const {
+      rowId,
+      baseElement,
+      isActiveItem,
+      ariaSetSize,
+      ariaPosInSet,
+      isTabbable
+    } = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_4__.useStoreStateObject)(store, {
+      rowId(state) {
+        if (rowIdProp) return rowIdProp;
+        if (!state) return;
+        if (!(row == null ? void 0 : row.baseElement)) return;
+        if (row.baseElement !== state.baseElement) return;
+        return row.id;
+      },
+      baseElement(state) {
+        return (state == null ? void 0 : state.baseElement) || void 0;
+      },
+      isActiveItem(state) {
+        return !!state && state.activeId === id;
+      },
+      ariaSetSize(state) {
+        if (ariaSetSizeProp != null) return ariaSetSizeProp;
+        if (!state) return;
+        if (!(row == null ? void 0 : row.ariaSetSize)) return;
+        if (row.baseElement !== state.baseElement) return;
+        return row.ariaSetSize;
+      },
+      ariaPosInSet(state) {
+        if (ariaPosInSetProp != null) return ariaPosInSetProp;
+        if (!state) return;
+        if (!(row == null ? void 0 : row.ariaPosInSet)) return;
+        if (row.baseElement !== state.baseElement) return;
+        const itemsInRow = state.renderedItems.filter(
+          (item) => item.rowId === rowId
+        );
+        return row.ariaPosInSet + itemsInRow.findIndex((item) => item.id === id);
+      },
+      isTabbable(state) {
+        if (!(state == null ? void 0 : state.renderedItems.length)) return true;
+        if (state.virtualFocus) return false;
+        if (tabbable) return true;
+        if (state.activeId === null) return false;
+        const item = store == null ? void 0 : store.item(state.activeId);
+        if (item == null ? void 0 : item.disabled) return true;
+        if (!(item == null ? void 0 : item.element)) return true;
+        return state.activeId === id;
+      }
+    });
+    const getItem = (0,react__WEBPACK_IMPORTED_MODULE_11__.useCallback)(
+      (item) => {
+        var _a;
+        const nextItem = {
+          ...item,
+          id: id || item.id,
+          rowId,
+          disabled: !!trulyDisabled,
+          children: (_a = item.element) == null ? void 0 : _a.textContent
+        };
+        if (getItemProp) {
+          return getItemProp(nextItem);
+        }
+        return nextItem;
+      },
+      [id, rowId, trulyDisabled, getItemProp]
+    );
+    const onFocusProp = props.onFocus;
+    const hasFocusedComposite = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(false);
+    const onFocus = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useEvent)((event) => {
+      onFocusProp == null ? void 0 : onFocusProp(event);
+      if (event.defaultPrevented) return;
+      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isPortalEvent)(event)) return;
+      if (!id) return;
+      if (!store) return;
+      if (targetIsAnotherItem(event, store)) return;
+      const { virtualFocus, baseElement: baseElement2 } = store.getState();
+      store.setActiveId(id);
+      if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextbox)(event.currentTarget)) {
+        (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.selectTextField)(event.currentTarget);
+      }
+      if (!virtualFocus) return;
+      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return;
+      if (isEditableElement(event.currentTarget)) return;
+      if (!(baseElement2 == null ? void 0 : baseElement2.isConnected)) return;
+      if ((0,_ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_10__.isSafari)() && event.currentTarget.hasAttribute("data-autofocus")) {
+        event.currentTarget.scrollIntoView({
+          block: "nearest",
+          inline: "nearest"
+        });
+      }
+      hasFocusedComposite.current = true;
+      const fromComposite = event.relatedTarget === baseElement2 || (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, event.relatedTarget);
+      if (fromComposite) {
+        (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.focusSilently)(baseElement2);
+      } else {
+        baseElement2.focus();
+      }
+    });
+    const onBlurCaptureProp = props.onBlurCapture;
+    const onBlurCapture = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useEvent)((event) => {
+      onBlurCaptureProp == null ? void 0 : onBlurCaptureProp(event);
+      if (event.defaultPrevented) return;
+      const state = store == null ? void 0 : store.getState();
+      if ((state == null ? void 0 : state.virtualFocus) && hasFocusedComposite.current) {
+        hasFocusedComposite.current = false;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+    const onKeyDownProp = props.onKeyDown;
+    const preventScrollOnKeyDownProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useBooleanEvent)(preventScrollOnKeyDown);
+    const moveOnKeyPressProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useBooleanEvent)(moveOnKeyPress);
+    const onKeyDown = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useEvent)((event) => {
+      onKeyDownProp == null ? void 0 : onKeyDownProp(event);
+      if (event.defaultPrevented) return;
+      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return;
+      if (!store) return;
+      const { currentTarget } = event;
+      const state = store.getState();
+      const item = store.item(id);
+      const isGrid = !!(item == null ? void 0 : item.rowId);
+      const isVertical = state.orientation !== "horizontal";
+      const isHorizontal = state.orientation !== "vertical";
+      const canHomeEnd = () => {
+        if (isGrid) return true;
+        if (isHorizontal) return true;
+        if (!state.baseElement) return true;
+        if (!(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextField)(state.baseElement)) return true;
+        return false;
+      };
+      const keyMap = {
+        ArrowUp: (isGrid || isVertical) && store.up,
+        ArrowRight: (isGrid || isHorizontal) && store.next,
+        ArrowDown: (isGrid || isVertical) && store.down,
+        ArrowLeft: (isGrid || isHorizontal) && store.previous,
+        Home: () => {
+          if (!canHomeEnd()) return;
+          if (!isGrid || event.ctrlKey) {
+            return store == null ? void 0 : store.first();
+          }
+          return store == null ? void 0 : store.previous(-1);
+        },
+        End: () => {
+          if (!canHomeEnd()) return;
+          if (!isGrid || event.ctrlKey) {
+            return store == null ? void 0 : store.last();
+          }
+          return store == null ? void 0 : store.next(-1);
+        },
+        PageUp: () => {
+          return findNextPageItemId(currentTarget, store, store == null ? void 0 : store.up, true);
+        },
+        PageDown: () => {
+          return findNextPageItemId(currentTarget, store, store == null ? void 0 : store.down);
+        }
+      };
+      const action = keyMap[event.key];
+      if (action) {
+        if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextbox)(currentTarget)) {
+          const selection = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getTextboxSelection)(currentTarget);
+          const isLeft = isHorizontal && event.key === "ArrowLeft";
+          const isRight = isHorizontal && event.key === "ArrowRight";
+          const isUp = isVertical && event.key === "ArrowUp";
+          const isDown = isVertical && event.key === "ArrowDown";
+          if (isRight || isDown) {
+            const { length: valueLength } = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getTextboxValue)(currentTarget);
+            if (selection.end !== valueLength) return;
+          } else if ((isLeft || isUp) && selection.start !== 0) return;
+        }
+        const nextId = action();
+        if (preventScrollOnKeyDownProp(event) || nextId !== void 0) {
+          if (!moveOnKeyPressProp(event)) return;
+          event.preventDefault();
+          store.move(nextId);
+        }
+      }
+    });
+    const providerValue = (0,react__WEBPACK_IMPORTED_MODULE_11__.useMemo)(
+      () => ({ id, baseElement }),
+      [id, baseElement]
+    );
+    props = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useWrapElement)(
+      props,
+      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_2__.CompositeItemContext.Provider, { value: providerValue, children: element }),
+      [providerValue]
+    );
+    props = {
+      "data-active-item": isActiveItem || void 0,
+      ...props,
+      id,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_6__.useMergeRefs)(ref, props.ref),
+      tabIndex: isTabbable ? props.tabIndex : -1,
+      onFocus,
+      onBlurCapture,
+      onKeyDown
+    };
+    props = (0,_GROIW2U2_js__WEBPACK_IMPORTED_MODULE_3__.useCommand)(props);
+    props = (0,_HFFZYOO5_js__WEBPACK_IMPORTED_MODULE_1__.useCollectionItem)({
+      store,
+      ...props,
+      getItem,
+      shouldRegisterItem: id ? props.shouldRegisterItem : false
+    });
+    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.removeUndefinedValues)({
+      ...props,
+      "aria-setsize": ariaSetSize,
+      "aria-posinset": ariaPosInSet
+    });
+  }
+);
+var CompositeItem = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_5__.memo)(
+  (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_5__.forwardRef)(function CompositeItem2(props) {
+    const htmlProps = useCompositeItem(props);
+    return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_5__.createElement)(TagName, htmlProps);
+  })
+);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/7NJRHOSP.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/7NJRHOSP.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -4340,7 +4136,7 @@ function selectTextField(element, collapseToEnd = false) {
     }
   }
 }
-var FOCUS_SILENTLY = Symbol("FOCUS_SILENTLY");
+var FOCUS_SILENTLY = /* @__PURE__ */ Symbol("FOCUS_SILENTLY");
 function focusSilently(element) {
   element[FOCUS_SILENTLY] = true;
   element.focus({ preventScroll: true });
@@ -4364,9 +4160,60 @@ function isItem(store, element, exclude) {
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/6B3RXHKP.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/AFNZIDBX.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/6B3RXHKP.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/AFNZIDBX.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useCompositeStore: () => (/* binding */ useCompositeStore),
+/* harmony export */   useCompositeStoreOptions: () => (/* binding */ useCompositeStoreOptions),
+/* harmony export */   useCompositeStoreProps: () => (/* binding */ useCompositeStoreProps)
+/* harmony export */ });
+/* harmony import */ var _EV7SAVXM_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./EV7SAVXM.js */ "./node_modules/@ariakit/react-core/esm/__chunks/EV7SAVXM.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_composite_composite_store__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/composite/composite-store */ "./node_modules/@ariakit/core/esm/__chunks/RVTIKFRL.js");
+"use client";
+
+
+
+
+// src/composite/composite-store.ts
+
+function useCompositeStoreOptions(props) {
+  const id = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useId)(props.id);
+  return { id, ...props };
+}
+function useCompositeStoreProps(store, update, props) {
+  store = (0,_EV7SAVXM_js__WEBPACK_IMPORTED_MODULE_0__.useCollectionStoreProps)(store, update, props);
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "activeId", "setActiveId");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "includesBaseElement");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "virtualFocus");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "orientation");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "rtl");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "focusLoop");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "focusWrap");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "focusShift");
+  return store;
+}
+function useCompositeStore(props = {}) {
+  props = useCompositeStoreOptions(props);
+  const [store, update] = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStore)(_ariakit_core_composite_composite_store__WEBPACK_IMPORTED_MODULE_3__.createCompositeStore, props);
+  return useCompositeStoreProps(store, update, props);
+}
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/BDQ7RGF6.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/BDQ7RGF6.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -4377,11 +4224,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isHidden: () => (/* binding */ isHidden),
 /* harmony export */   useDisclosureContent: () => (/* binding */ useDisclosureContent)
 /* harmony export */ });
-/* harmony import */ var _A62MDFCW_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./A62MDFCW.js */ "./node_modules/@ariakit/react-core/esm/__chunks/A62MDFCW.js");
-/* harmony import */ var _LVDQFHCH_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./LVDQFHCH.js */ "./node_modules/@ariakit/react-core/esm/__chunks/LVDQFHCH.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
+/* harmony import */ var _67C4K2ZC_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./67C4K2ZC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/67C4K2ZC.js");
+/* harmony import */ var _2P26HHWN_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./2P26HHWN.js */ "./node_modules/@ariakit/react-core/esm/__chunks/2P26HHWN.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
 /* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-dom */ "react-dom");
@@ -4420,26 +4267,26 @@ function parseCSSTime(...times) {
 function isHidden(mounted, hidden, alwaysVisible) {
   return !alwaysVisible && hidden !== false && (!mounted || !!hidden);
 }
-var useDisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook)(function useDisclosureContent2({ store, alwaysVisible, ...props }) {
-  const context = (0,_LVDQFHCH_js__WEBPACK_IMPORTED_MODULE_1__.useDisclosureProviderContext)();
+var useDisclosureContent = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.createHook)(function useDisclosureContent2({ store, alwaysVisible, ...props }) {
+  const context = (0,_2P26HHWN_js__WEBPACK_IMPORTED_MODULE_1__.useDisclosureProviderContext)();
   store = store || context;
   (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.invariant)(
     store,
      true && "DisclosureContent must receive a `store` prop or be wrapped in a DisclosureProvider component."
   );
   const ref = (0,react__WEBPACK_IMPORTED_MODULE_6__.useRef)(null);
-  const id = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useId)(props.id);
+  const id = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useId)(props.id);
   const [transition, setTransition] = (0,react__WEBPACK_IMPORTED_MODULE_6__.useState)(null);
-  const open = store.useState("open");
-  const mounted = store.useState("mounted");
-  const animated = store.useState("animated");
-  const contentElement = store.useState("contentElement");
-  const otherElement = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store.disclosure, "contentElement");
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+  const open = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store, "open");
+  const mounted = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store, "mounted");
+  const animated = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store, "animated");
+  const contentElement = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store, "contentElement");
+  const otherElement = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store.disclosure, "contentElement");
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
     if (!ref.current) return;
     store == null ? void 0 : store.setContentElement(ref.current);
   }, [store]);
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
     let previousAnimated;
     store == null ? void 0 : store.setState("animated", (animated2) => {
       previousAnimated = animated2;
@@ -4450,7 +4297,7 @@ var useDisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHo
       store == null ? void 0 : store.setState("animated", previousAnimated);
     };
   }, [store]);
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
     if (!animated) return;
     if (!(contentElement == null ? void 0 : contentElement.isConnected)) {
       setTransition(null);
@@ -4460,7 +4307,7 @@ var useDisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHo
       setTransition(open ? "enter" : mounted ? "leave" : null);
     });
   }, [animated, contentElement, open, mounted]);
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
     if (!store) return;
     if (!animated) return;
     if (!transition) return;
@@ -4509,9 +4356,9 @@ var useDisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHo
     const maxTimeout = Math.max(timeout - frameRate, 0);
     return afterTimeout(maxTimeout, stopAnimationSync);
   }, [store, animated, contentElement, otherElement, open, transition]);
-  props = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useWrapElement)(
+  props = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useWrapElement)(
     props,
-    (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_A62MDFCW_js__WEBPACK_IMPORTED_MODULE_0__.DialogScopedContextProvider, { value: store, children: element }),
+    (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_8__.jsx)(_67C4K2ZC_js__WEBPACK_IMPORTED_MODULE_0__.DialogScopedContextProvider, { value: store, children: element }),
     [store]
   );
   const hidden = isHidden(mounted, props.hidden, alwaysVisible);
@@ -4523,28 +4370,28 @@ var useDisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHo
     return styleProp;
   }, [hidden, styleProp]);
   props = {
-    id,
     "data-open": open || void 0,
     "data-enter": transition === "enter" || void 0,
     "data-leave": transition === "leave" || void 0,
     hidden,
     ...props,
-    ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useMergeRefs)(id ? store.setContentElement : null, ref, props.ref),
+    id,
+    ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useMergeRefs)(id ? store.setContentElement : null, ref, props.ref),
     style
   };
   return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.removeUndefinedValues)(props);
 });
-var DisclosureContentImpl = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function DisclosureContentImpl2(props) {
+var DisclosureContentImpl = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function DisclosureContentImpl2(props) {
   const htmlProps = useDisclosureContent(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createElement)(TagName, htmlProps);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.createElement)(TagName, htmlProps);
 });
-var DisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function DisclosureContent2({
+var DisclosureContent = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function DisclosureContent2({
   unmountOnHide,
   ...props
 }) {
-  const context = (0,_LVDQFHCH_js__WEBPACK_IMPORTED_MODULE_1__.useDisclosureProviderContext)();
+  const context = (0,_2P26HHWN_js__WEBPACK_IMPORTED_MODULE_1__.useDisclosureProviderContext)();
   const store = props.store || context;
-  const mounted = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(
+  const mounted = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(
     store,
     (state) => !unmountOnHide || (state == null ? void 0 : state.mounted)
   );
@@ -4557,363 +4404,34 @@ var DisclosureContent = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/A62MDFCW.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/C7ZLNJMM.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/A62MDFCW.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/C7ZLNJMM.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   DialogContextProvider: () => (/* binding */ DialogContextProvider),
-/* harmony export */   DialogDescriptionContext: () => (/* binding */ DialogDescriptionContext),
-/* harmony export */   DialogHeadingContext: () => (/* binding */ DialogHeadingContext),
-/* harmony export */   DialogScopedContextProvider: () => (/* binding */ DialogScopedContextProvider),
-/* harmony export */   useDialogContext: () => (/* binding */ useDialogContext),
-/* harmony export */   useDialogProviderContext: () => (/* binding */ useDialogProviderContext),
-/* harmony export */   useDialogScopedContext: () => (/* binding */ useDialogScopedContext)
+/* harmony export */   Focusable: () => (/* binding */ Focusable),
+/* harmony export */   isSafariFocusAncestor: () => (/* binding */ isSafariFocusAncestor),
+/* harmony export */   useFocusable: () => (/* binding */ useFocusable)
 /* harmony export */ });
-/* harmony import */ var _LVDQFHCH_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./LVDQFHCH.js */ "./node_modules/@ariakit/react-core/esm/__chunks/LVDQFHCH.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-
-
-// src/dialog/dialog-context.tsx
-
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
-  [_LVDQFHCH_js__WEBPACK_IMPORTED_MODULE_0__.DisclosureContextProvider],
-  [_LVDQFHCH_js__WEBPACK_IMPORTED_MODULE_0__.DisclosureScopedContextProvider]
-);
-var useDialogContext = ctx.useContext;
-var useDialogScopedContext = ctx.useScopedContext;
-var useDialogProviderContext = ctx.useProviderContext;
-var DialogContextProvider = ctx.ContextProvider;
-var DialogScopedContextProvider = ctx.ScopedContextProvider;
-var DialogHeadingContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(void 0);
-var DialogDescriptionContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(void 0);
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   CompositeContextProvider: () => (/* binding */ CompositeContextProvider),
-/* harmony export */   CompositeItemContext: () => (/* binding */ CompositeItemContext),
-/* harmony export */   CompositeRowContext: () => (/* binding */ CompositeRowContext),
-/* harmony export */   CompositeScopedContextProvider: () => (/* binding */ CompositeScopedContextProvider),
-/* harmony export */   useCompositeContext: () => (/* binding */ useCompositeContext),
-/* harmony export */   useCompositeProviderContext: () => (/* binding */ useCompositeProviderContext),
-/* harmony export */   useCompositeScopedContext: () => (/* binding */ useCompositeScopedContext)
-/* harmony export */ });
-/* harmony import */ var _SMPCIMZM_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./SMPCIMZM.js */ "./node_modules/@ariakit/react-core/esm/__chunks/SMPCIMZM.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-
-
-// src/composite/composite-context.tsx
-
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
-  [_SMPCIMZM_js__WEBPACK_IMPORTED_MODULE_0__.CollectionContextProvider],
-  [_SMPCIMZM_js__WEBPACK_IMPORTED_MODULE_0__.CollectionScopedContextProvider]
-);
-var useCompositeContext = ctx.useContext;
-var useCompositeScopedContext = ctx.useScopedContext;
-var useCompositeProviderContext = ctx.useProviderContext;
-var CompositeContextProvider = ctx.ContextProvider;
-var CompositeScopedContextProvider = ctx.ScopedContextProvider;
-var CompositeItemContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(
-  void 0
-);
-var CompositeRowContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(
-  void 0
-);
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/B6FLPFJM.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/B6FLPFJM.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   usePopoverStore: () => (/* binding */ usePopoverStore),
-/* harmony export */   usePopoverStoreProps: () => (/* binding */ usePopoverStoreProps)
-/* harmony export */ });
-/* harmony import */ var _4NYSH4UO_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./4NYSH4UO.js */ "./node_modules/@ariakit/react-core/esm/__chunks/4NYSH4UO.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_popover_popover_store__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/popover/popover-store */ "./node_modules/@ariakit/core/esm/__chunks/BFGNM53A.js");
+/* harmony import */ var _SWN3JYXT_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./SWN3JYXT.js */ "./node_modules/@ariakit/react-core/esm/__chunks/SWN3JYXT.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
+/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
+/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var _ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/platform */ "./node_modules/@ariakit/core/esm/__chunks/SNHYQNEZ.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react */ "react");
 "use client";
 
 
 
 
-// src/popover/popover-store.ts
-
-function usePopoverStoreProps(store, update, props) {
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useUpdateEffect)(update, [props.popover]);
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "placement");
-  return (0,_4NYSH4UO_js__WEBPACK_IMPORTED_MODULE_0__.useDialogStoreProps)(store, update, props);
-}
-function usePopoverStore(props = {}) {
-  const [store, update] = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStore)(_ariakit_core_popover_popover_store__WEBPACK_IMPORTED_MODULE_3__.createPopoverStore, props);
-  return usePopoverStoreProps(store, update, props);
-}
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ComboboxContextProvider: () => (/* binding */ ComboboxContextProvider),
-/* harmony export */   ComboboxItemCheckedContext: () => (/* binding */ ComboboxItemCheckedContext),
-/* harmony export */   ComboboxItemValueContext: () => (/* binding */ ComboboxItemValueContext),
-/* harmony export */   ComboboxListRoleContext: () => (/* binding */ ComboboxListRoleContext),
-/* harmony export */   ComboboxScopedContextProvider: () => (/* binding */ ComboboxScopedContextProvider),
-/* harmony export */   useComboboxContext: () => (/* binding */ useComboboxContext),
-/* harmony export */   useComboboxProviderContext: () => (/* binding */ useComboboxProviderContext),
-/* harmony export */   useComboboxScopedContext: () => (/* binding */ useComboboxScopedContext)
-/* harmony export */ });
-/* harmony import */ var _JMU4N4M5_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./JMU4N4M5.js */ "./node_modules/@ariakit/react-core/esm/__chunks/JMU4N4M5.js");
-/* harmony import */ var _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AVVXDJMZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-
-
-
-// src/combobox/combobox-context.tsx
-
-var ComboboxListRoleContext = (0,react__WEBPACK_IMPORTED_MODULE_3__.createContext)(
-  void 0
-);
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.createStoreContext)(
-  [_JMU4N4M5_js__WEBPACK_IMPORTED_MODULE_0__.PopoverContextProvider, _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_1__.CompositeContextProvider],
-  [_JMU4N4M5_js__WEBPACK_IMPORTED_MODULE_0__.PopoverScopedContextProvider, _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_1__.CompositeScopedContextProvider]
-);
-var useComboboxContext = ctx.useContext;
-var useComboboxScopedContext = ctx.useScopedContext;
-var useComboboxProviderContext = ctx.useProviderContext;
-var ComboboxContextProvider = ctx.ContextProvider;
-var ComboboxScopedContextProvider = ctx.ScopedContextProvider;
-var ComboboxItemValueContext = (0,react__WEBPACK_IMPORTED_MODULE_3__.createContext)(
-  void 0
-);
-var ComboboxItemCheckedContext = (0,react__WEBPACK_IMPORTED_MODULE_3__.createContext)(false);
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/GVAFFF2B.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/GVAFFF2B.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useCollectionStore: () => (/* binding */ useCollectionStore),
-/* harmony export */   useCollectionStoreProps: () => (/* binding */ useCollectionStoreProps)
-/* harmony export */ });
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_collection_collection_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/collection/collection-store */ "./node_modules/@ariakit/core/esm/__chunks/N5XGANPW.js");
-"use client";
-
-
-
-// src/collection/collection-store.ts
-
-function useCollectionStoreProps(store, update, props) {
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_1__.useUpdateEffect)(update, [props.store]);
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "items", "setItems");
-  return store;
-}
-function useCollectionStore(props = {}) {
-  const [store, update] = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__.useStore)(_ariakit_core_collection_collection_store__WEBPACK_IMPORTED_MODULE_2__.createCollectionStore, props);
-  return useCollectionStoreProps(store, update, props);
-}
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   createElement: () => (/* binding */ createElement),
-/* harmony export */   createHook: () => (/* binding */ createHook),
-/* harmony export */   createStoreContext: () => (/* binding */ createStoreContext),
-/* harmony export */   forwardRef: () => (/* binding */ forwardRef2),
-/* harmony export */   memo: () => (/* binding */ memo2)
-/* harmony export */ });
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _YXGXYGQX_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./YXGXYGQX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXGXYGQX.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-"use client";
-
-
-
-// src/utils/system.tsx
-
-
-function forwardRef2(render) {
-  const Role = react__WEBPACK_IMPORTED_MODULE_2__.forwardRef(
-    // @ts-ignore Incompatible with React 19 types. Ignore for now.
-    (props, ref) => render({ ...props, ref })
-  );
-  Role.displayName = render.displayName || render.name;
-  return Role;
-}
-function memo2(Component, propsAreEqual) {
-  return react__WEBPACK_IMPORTED_MODULE_2__.memo(Component, propsAreEqual);
-}
-function createElement(Type, props) {
-  const { wrapElement, render, ...rest } = props;
-  const mergedRef = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__.useMergeRefs)(props.ref, (0,_YXGXYGQX_js__WEBPACK_IMPORTED_MODULE_1__.getRefProperty)(render));
-  let element;
-  if (react__WEBPACK_IMPORTED_MODULE_2__.isValidElement(render)) {
-    const renderProps = {
-      // @ts-ignore Incompatible with React 19 types. Ignore for now.
-      ...render.props,
-      ref: mergedRef
-    };
-    element = react__WEBPACK_IMPORTED_MODULE_2__.cloneElement(render, (0,_YXGXYGQX_js__WEBPACK_IMPORTED_MODULE_1__.mergeProps)(rest, renderProps));
-  } else if (render) {
-    element = render(rest);
-  } else {
-    element = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(Type, { ...rest });
-  }
-  if (wrapElement) {
-    return wrapElement(element);
-  }
-  return element;
-}
-function createHook(useProps) {
-  const useRole = (props = {}) => {
-    return useProps(props);
-  };
-  useRole.displayName = useProps.name;
-  return useRole;
-}
-function createStoreContext(providers = [], scopedProviders = []) {
-  const context = react__WEBPACK_IMPORTED_MODULE_2__.createContext(void 0);
-  const scopedContext = react__WEBPACK_IMPORTED_MODULE_2__.createContext(void 0);
-  const useContext2 = () => react__WEBPACK_IMPORTED_MODULE_2__.useContext(context);
-  const useScopedContext = (onlyScoped = false) => {
-    const scoped = react__WEBPACK_IMPORTED_MODULE_2__.useContext(scopedContext);
-    const store = useContext2();
-    if (onlyScoped) return scoped;
-    return scoped || store;
-  };
-  const useProviderContext = () => {
-    const scoped = react__WEBPACK_IMPORTED_MODULE_2__.useContext(scopedContext);
-    const store = useContext2();
-    if (scoped && scoped === store) return;
-    return store;
-  };
-  const ContextProvider = (props) => {
-    return providers.reduceRight(
-      (children, Provider) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(Provider, { ...props, children }),
-      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(context.Provider, { ...props })
-    );
-  };
-  const ScopedContextProvider = (props) => {
-    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(ContextProvider, { ...props, children: scopedProviders.reduceRight(
-      (children, Provider) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(Provider, { ...props, children }),
-      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(scopedContext.Provider, { ...props })
-    ) });
-  };
-  return {
-    context,
-    scopedContext,
-    useContext: useContext2,
-    useScopedContext,
-    useProviderContext,
-    ContextProvider,
-    ScopedContextProvider
-  };
-}
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/IBXZ2LQC.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/IBXZ2LQC.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ComboboxItem: () => (/* binding */ ComboboxItem),
-/* harmony export */   useComboboxItem: () => (/* binding */ useComboboxItem)
-/* harmony export */ });
-/* harmony import */ var _X6LNAU2F_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./X6LNAU2F.js */ "./node_modules/@ariakit/react-core/esm/__chunks/X6LNAU2F.js");
-/* harmony import */ var _WZWDIE3S_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./WZWDIE3S.js */ "./node_modules/@ariakit/react-core/esm/__chunks/WZWDIE3S.js");
-/* harmony import */ var _CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./CVCFNOHX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
-/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
-/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-"use client";
-
-
-
-
-
-
-
-// src/combobox/combobox-item.tsx
+// src/focusable/focusable.tsx
 
 
 
@@ -4921,218 +4439,313 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TagName = "div";
-function isSelected(storeValue, itemValue) {
-  if (itemValue == null) return;
-  if (storeValue == null) return false;
-  if (Array.isArray(storeValue)) {
-    return storeValue.includes(itemValue);
+var isSafariBrowser = (0,_ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_7__.isSafari)();
+var alwaysFocusVisibleInputTypes = [
+  "text",
+  "search",
+  "url",
+  "tel",
+  "email",
+  "password",
+  "number",
+  "date",
+  "month",
+  "week",
+  "time",
+  "datetime",
+  "datetime-local"
+];
+var safariFocusAncestorSymbol = /* @__PURE__ */ Symbol("safariFocusAncestor");
+function isSafariFocusAncestor(element) {
+  if (!element) return false;
+  return !!element[safariFocusAncestorSymbol];
+}
+function markSafariFocusAncestor(element, value) {
+  if (!element) return;
+  element[safariFocusAncestorSymbol] = value;
+}
+function isAlwaysFocusVisible(element) {
+  const { tagName, readOnly, type } = element;
+  if (tagName === "TEXTAREA" && !readOnly) return true;
+  if (tagName === "SELECT" && !readOnly) return true;
+  if (tagName === "INPUT" && !readOnly) {
+    return alwaysFocusVisibleInputTypes.includes(type);
   }
-  return storeValue === itemValue;
+  if (element.isContentEditable) return true;
+  const role = element.getAttribute("role");
+  if (role === "combobox" && element.dataset.name) {
+    return true;
+  }
+  return false;
 }
-function getItemRole(popupRole) {
-  var _a;
-  const itemRoleByPopupRole = {
-    menu: "menuitem",
-    listbox: "option",
-    tree: "treeitem"
-  };
-  const key = popupRole;
-  return (_a = itemRoleByPopupRole[key]) != null ? _a : "option";
+function getLabels(element) {
+  if ("labels" in element) {
+    return element.labels;
+  }
+  return null;
 }
-var useComboboxItem = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_4__.createHook)(
-  function useComboboxItem2({
-    store,
-    value,
-    hideOnClick,
-    setValueOnClick,
-    selectValueOnClick = true,
-    resetValueOnSelect,
-    focusOnHover = false,
-    moveOnKeyPress = true,
-    getItem: getItemProp,
+function isNativeCheckboxOrRadio(element) {
+  const tagName = element.tagName.toLowerCase();
+  if (tagName === "input" && element.type) {
+    return element.type === "radio" || element.type === "checkbox";
+  }
+  return false;
+}
+function isNativeTabbable(tagName) {
+  if (!tagName) return true;
+  return tagName === "button" || tagName === "summary" || tagName === "input" || tagName === "select" || tagName === "textarea" || tagName === "a";
+}
+function supportsDisabledAttribute(tagName) {
+  if (!tagName) return true;
+  return tagName === "button" || tagName === "input" || tagName === "select" || tagName === "textarea";
+}
+function getTabIndex(focusable, trulyDisabled, nativeTabbable, supportsDisabled, tabIndexProp) {
+  if (!focusable) {
+    return tabIndexProp;
+  }
+  if (trulyDisabled) {
+    if (nativeTabbable && !supportsDisabled) {
+      return -1;
+    }
+    return;
+  }
+  if (nativeTabbable) {
+    return tabIndexProp;
+  }
+  return tabIndexProp || 0;
+}
+function useDisableEvent(onEvent, disabled) {
+  return (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+    onEvent == null ? void 0 : onEvent(event);
+    if (event.defaultPrevented) return;
+    if (disabled) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  });
+}
+var hasInstalledGlobalEventListeners = false;
+var isKeyboardModality = true;
+function onGlobalMouseDown(event) {
+  const target = event.target;
+  if (target && "hasAttribute" in target) {
+    if (!target.hasAttribute("data-focus-visible")) {
+      isKeyboardModality = false;
+    }
+  }
+}
+function onGlobalKeyDown(event) {
+  if (event.metaKey) return;
+  if (event.ctrlKey) return;
+  if (event.altKey) return;
+  isKeyboardModality = true;
+}
+var useFocusable = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
+  function useFocusable2({
+    focusable = true,
+    accessibleWhenDisabled,
+    autoFocus,
+    onFocusVisible,
     ...props
   }) {
-    var _a;
-    const context = (0,_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__.useComboboxScopedContext)();
-    store = store || context;
-    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.invariant)(
-      store,
-       true && "ComboboxItem must be wrapped in a ComboboxList or ComboboxPopover component."
-    );
-    const { resetValueOnSelectState, multiSelectable, selected } = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__.useStoreStateObject)(store, {
-      resetValueOnSelectState: "resetValueOnSelect",
-      multiSelectable(state) {
-        return Array.isArray(state.selectedValue);
-      },
-      selected(state) {
-        return isSelected(state.selectedValue, value);
-      }
-    });
-    const getItem = (0,react__WEBPACK_IMPORTED_MODULE_10__.useCallback)(
-      (item) => {
-        const nextItem = { ...item, value };
-        if (getItemProp) {
-          return getItemProp(nextItem);
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_8__.useRef)(null);
+    (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
+      if (!focusable) return;
+      if (hasInstalledGlobalEventListeners) return;
+      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.addGlobalEventListener)("mousedown", onGlobalMouseDown, true);
+      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.addGlobalEventListener)("keydown", onGlobalKeyDown, true);
+      hasInstalledGlobalEventListeners = true;
+    }, [focusable]);
+    if (isSafariBrowser) {
+      (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
+        if (!focusable) return;
+        const element = ref.current;
+        if (!element) return;
+        if (!isNativeCheckboxOrRadio(element)) return;
+        const labels = getLabels(element);
+        if (!labels) return;
+        const onMouseUp = () => queueMicrotask(() => element.focus());
+        for (const label of labels) {
+          label.addEventListener("mouseup", onMouseUp);
         }
-        return nextItem;
-      },
-      [value, getItemProp]
-    );
-    setValueOnClick = setValueOnClick != null ? setValueOnClick : !multiSelectable;
-    hideOnClick = hideOnClick != null ? hideOnClick : value != null && !multiSelectable;
-    const onClickProp = props.onClick;
-    const setValueOnClickProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(setValueOnClick);
-    const selectValueOnClickProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(selectValueOnClick);
-    const resetValueOnSelectProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(
-      (_a = resetValueOnSelect != null ? resetValueOnSelect : resetValueOnSelectState) != null ? _a : multiSelectable
-    );
-    const hideOnClickProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(hideOnClick);
-    const onClick = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
-      onClickProp == null ? void 0 : onClickProp(event);
-      if (event.defaultPrevented) return;
-      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isDownloading)(event)) return;
-      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isOpeningInNewTab)(event)) return;
-      if (value != null) {
-        if (selectValueOnClickProp(event)) {
-          if (resetValueOnSelectProp(event)) {
-            store == null ? void 0 : store.resetValue();
+        return () => {
+          for (const label of labels) {
+            label.removeEventListener("mouseup", onMouseUp);
           }
-          store == null ? void 0 : store.setSelectedValue((prevValue) => {
-            if (!Array.isArray(prevValue)) return value;
-            if (prevValue.includes(value)) {
-              return prevValue.filter((v) => v !== value);
-            }
-            return [...prevValue, value];
-          });
-        }
-        if (setValueOnClickProp(event)) {
-          store == null ? void 0 : store.setValue(value);
-        }
-      }
-      if (hideOnClickProp(event)) {
-        store == null ? void 0 : store.hide();
-      }
-    });
-    const onKeyDownProp = props.onKeyDown;
-    const onKeyDown = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
-      onKeyDownProp == null ? void 0 : onKeyDownProp(event);
-      if (event.defaultPrevented) return;
-      const baseElement = store == null ? void 0 : store.getState().baseElement;
-      if (!baseElement) return;
-      if ((0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__.hasFocus)(baseElement)) return;
-      const printable = event.key.length === 1;
-      if (printable || event.key === "Backspace" || event.key === "Delete") {
-        queueMicrotask(() => baseElement.focus());
-        if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.isTextField)(baseElement)) {
-          store == null ? void 0 : store.setValue(baseElement.value);
-        }
-      }
-    });
-    if (multiSelectable && selected != null) {
-      props = {
-        "aria-selected": selected,
-        ...props
-      };
+        };
+      }, [focusable]);
     }
-    props = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useWrapElement)(
-      props,
-      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__.ComboboxItemValueContext.Provider, { value, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__.ComboboxItemCheckedContext.Provider, { value: selected != null ? selected : false, children: element }) }),
-      [value, selected]
+    const disabled = focusable && (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_6__.disabledFromProps)(props);
+    const trulyDisabled = !!disabled && !accessibleWhenDisabled;
+    const [focusVisible, setFocusVisible] = (0,react__WEBPACK_IMPORTED_MODULE_8__.useState)(false);
+    (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
+      if (!focusable) return;
+      if (trulyDisabled && focusVisible) {
+        setFocusVisible(false);
+      }
+    }, [focusable, trulyDisabled, focusVisible]);
+    (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
+      if (!focusable) return;
+      if (!focusVisible) return;
+      const element = ref.current;
+      if (!element) return;
+      if (typeof IntersectionObserver === "undefined") return;
+      const observer = new IntersectionObserver(() => {
+        if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.isFocusable)(element)) {
+          setFocusVisible(false);
+        }
+      });
+      observer.observe(element);
+      return () => observer.disconnect();
+    }, [focusable, focusVisible]);
+    const onKeyPressCapture = useDisableEvent(
+      props.onKeyPressCapture,
+      disabled
     );
-    const popupRole = (0,react__WEBPACK_IMPORTED_MODULE_10__.useContext)(_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__.ComboboxListRoleContext);
-    props = {
-      role: getItemRole(popupRole),
-      children: value,
-      ...props,
-      onClick,
-      onKeyDown
+    const onMouseDownCapture = useDisableEvent(
+      props.onMouseDownCapture,
+      disabled
+    );
+    const onClickCapture = useDisableEvent(props.onClickCapture, disabled);
+    const onMouseDownProp = props.onMouseDown;
+    const onMouseDown = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+      onMouseDownProp == null ? void 0 : onMouseDownProp(event);
+      if (event.defaultPrevented) return;
+      if (!focusable) return;
+      const element = event.currentTarget;
+      if (!isSafariBrowser) return;
+      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isPortalEvent)(event)) return;
+      if (!(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__.isButton)(element) && !isNativeCheckboxOrRadio(element)) return;
+      let receivedFocus = false;
+      const onFocus = () => {
+        receivedFocus = true;
+      };
+      const options = { capture: true, once: true };
+      element.addEventListener("focusin", onFocus, options);
+      const focusableContainer = (0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.getClosestFocusable)(element.parentElement);
+      markSafariFocusAncestor(focusableContainer, true);
+      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.queueBeforeEvent)(element, "mouseup", () => {
+        element.removeEventListener("focusin", onFocus, true);
+        markSafariFocusAncestor(focusableContainer, false);
+        if (receivedFocus) return;
+        (0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.focusIfNeeded)(element);
+      });
+    });
+    const handleFocusVisible = (event, currentTarget) => {
+      if (currentTarget) {
+        event.currentTarget = currentTarget;
+      }
+      if (!focusable) return;
+      const element = event.currentTarget;
+      if (!element) return;
+      if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.hasFocus)(element)) return;
+      onFocusVisible == null ? void 0 : onFocusVisible(event);
+      if (event.defaultPrevented) return;
+      element.dataset.focusVisible = "true";
+      setFocusVisible(true);
     };
-    const moveOnKeyPressProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(moveOnKeyPress);
-    props = (0,_WZWDIE3S_js__WEBPACK_IMPORTED_MODULE_1__.useCompositeItem)({
-      store,
-      ...props,
-      getItem,
-      // Dispatch a custom event on the combobox input when moving to an item
-      // with the keyboard so the Combobox component can enable inline
-      // autocompletion.
-      moveOnKeyPress: (event) => {
-        if (!moveOnKeyPressProp(event)) return false;
-        const moveEvent = new Event("combobox-item-move");
-        const baseElement = store == null ? void 0 : store.getState().baseElement;
-        baseElement == null ? void 0 : baseElement.dispatchEvent(moveEvent);
-        return true;
+    const onKeyDownCaptureProp = props.onKeyDownCapture;
+    const onKeyDownCapture = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+      onKeyDownCaptureProp == null ? void 0 : onKeyDownCaptureProp(event);
+      if (event.defaultPrevented) return;
+      if (!focusable) return;
+      if (focusVisible) return;
+      if (event.metaKey) return;
+      if (event.altKey) return;
+      if (event.ctrlKey) return;
+      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isSelfTarget)(event)) return;
+      const element = event.currentTarget;
+      const applyFocusVisible = () => handleFocusVisible(event, element);
+      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.queueBeforeEvent)(element, "focusout", applyFocusVisible);
+    });
+    const onFocusCaptureProp = props.onFocusCapture;
+    const onFocusCapture = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+      onFocusCaptureProp == null ? void 0 : onFocusCaptureProp(event);
+      if (event.defaultPrevented) return;
+      if (!focusable) return;
+      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isSelfTarget)(event)) {
+        setFocusVisible(false);
+        return;
+      }
+      const element = event.currentTarget;
+      const applyFocusVisible = () => handleFocusVisible(event, element);
+      if (isKeyboardModality || isAlwaysFocusVisible(event.target)) {
+        (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.queueBeforeEvent)(event.target, "focusout", applyFocusVisible);
+      } else {
+        setFocusVisible(false);
       }
     });
-    props = (0,_X6LNAU2F_js__WEBPACK_IMPORTED_MODULE_0__.useCompositeHover)({ store, focusOnHover, ...props });
-    return props;
+    const onBlurProp = props.onBlur;
+    const onBlur = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+      onBlurProp == null ? void 0 : onBlurProp(event);
+      if (!focusable) return;
+      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isFocusEventOutside)(event)) return;
+      event.currentTarget.removeAttribute("data-focus-visible");
+      setFocusVisible(false);
+    });
+    const autoFocusOnShow = (0,react__WEBPACK_IMPORTED_MODULE_8__.useContext)(_SWN3JYXT_js__WEBPACK_IMPORTED_MODULE_0__.FocusableContext);
+    const autoFocusRef = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((element) => {
+      if (!focusable) return;
+      if (!autoFocus) return;
+      if (!element) return;
+      if (!autoFocusOnShow) return;
+      queueMicrotask(() => {
+        if ((0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.hasFocus)(element)) return;
+        if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.isFocusable)(element)) return;
+        element.focus();
+      });
+    });
+    const tagName = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useTagName)(ref);
+    const nativeTabbable = focusable && isNativeTabbable(tagName);
+    const supportsDisabled = focusable && supportsDisabledAttribute(tagName);
+    const styleProp = props.style;
+    const style = (0,react__WEBPACK_IMPORTED_MODULE_8__.useMemo)(() => {
+      if (trulyDisabled) {
+        return { pointerEvents: "none", ...styleProp };
+      }
+      return styleProp;
+    }, [trulyDisabled, styleProp]);
+    props = {
+      "data-focus-visible": focusable && focusVisible || void 0,
+      "data-autofocus": autoFocus || void 0,
+      "aria-disabled": disabled || void 0,
+      ...props,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, autoFocusRef, props.ref),
+      style,
+      tabIndex: getTabIndex(
+        focusable,
+        trulyDisabled,
+        nativeTabbable,
+        supportsDisabled,
+        props.tabIndex
+      ),
+      disabled: supportsDisabled && trulyDisabled ? true : void 0,
+      // TODO: Test Focusable contentEditable.
+      contentEditable: disabled ? void 0 : props.contentEditable,
+      onKeyPressCapture,
+      onClickCapture,
+      onMouseDownCapture,
+      onMouseDown,
+      onKeyDownCapture,
+      onFocusCapture,
+      onBlur
+    };
+    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_6__.removeUndefinedValues)(props);
   }
 );
-var ComboboxItem = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_4__.memo)(
-  (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_4__.forwardRef)(function ComboboxItem2(props) {
-    const htmlProps = useComboboxItem(props);
-    return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_4__.createElement)(TagName, htmlProps);
-  })
-);
+var Focusable = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function Focusable2(props) {
+  const htmlProps = useFocusable(props);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
+});
 
 
 
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/IQYAUKXT.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/E5E7U2B6.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/IQYAUKXT.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useCompositeStore: () => (/* binding */ useCompositeStore),
-/* harmony export */   useCompositeStoreOptions: () => (/* binding */ useCompositeStoreOptions),
-/* harmony export */   useCompositeStoreProps: () => (/* binding */ useCompositeStoreProps)
-/* harmony export */ });
-/* harmony import */ var _GVAFFF2B_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GVAFFF2B.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GVAFFF2B.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_composite_composite_store__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/composite/composite-store */ "./node_modules/@ariakit/core/esm/__chunks/RVTIKFRL.js");
-"use client";
-
-
-
-
-// src/composite/composite-store.ts
-
-function useCompositeStoreOptions(props) {
-  const id = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useId)(props.id);
-  return { id, ...props };
-}
-function useCompositeStoreProps(store, update, props) {
-  store = (0,_GVAFFF2B_js__WEBPACK_IMPORTED_MODULE_0__.useCollectionStoreProps)(store, update, props);
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "activeId", "setActiveId");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "includesBaseElement");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "virtualFocus");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "orientation");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "rtl");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "focusLoop");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "focusWrap");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreProps)(store, props, "focusShift");
-  return store;
-}
-function useCompositeStore(props = {}) {
-  props = useCompositeStoreOptions(props);
-  const [store, update] = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStore)(_ariakit_core_composite_composite_store__WEBPACK_IMPORTED_MODULE_3__.createCompositeStore, props);
-  return useCompositeStoreProps(store, update, props);
-}
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/JMU4N4M5.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/JMU4N4M5.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/E5E7U2B6.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -5145,16 +4758,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   usePopoverProviderContext: () => (/* binding */ usePopoverProviderContext),
 /* harmony export */   usePopoverScopedContext: () => (/* binding */ usePopoverScopedContext)
 /* harmony export */ });
-/* harmony import */ var _A62MDFCW_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./A62MDFCW.js */ "./node_modules/@ariakit/react-core/esm/__chunks/A62MDFCW.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
+/* harmony import */ var _67C4K2ZC_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./67C4K2ZC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/67C4K2ZC.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
 "use client";
 
 
 
 // src/popover/popover-context.tsx
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
-  [_A62MDFCW_js__WEBPACK_IMPORTED_MODULE_0__.DialogContextProvider],
-  [_A62MDFCW_js__WEBPACK_IMPORTED_MODULE_0__.DialogScopedContextProvider]
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
+  [_67C4K2ZC_js__WEBPACK_IMPORTED_MODULE_0__.DialogContextProvider],
+  [_67C4K2ZC_js__WEBPACK_IMPORTED_MODULE_0__.DialogScopedContextProvider]
 );
 var usePopoverContext = ctx.useContext;
 var usePopoverScopedContext = ctx.useScopedContext;
@@ -5167,9 +4780,45 @@ var PopoverScopedContextProvider = ctx.ScopedContextProvider;
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/EV7SAVXM.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/EV7SAVXM.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useCollectionStore: () => (/* binding */ useCollectionStore),
+/* harmony export */   useCollectionStoreProps: () => (/* binding */ useCollectionStoreProps)
+/* harmony export */ });
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_collection_collection_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/collection/collection-store */ "./node_modules/@ariakit/core/esm/__chunks/N5XGANPW.js");
+"use client";
+
+
+
+// src/collection/collection-store.ts
+
+function useCollectionStoreProps(store, update, props) {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_1__.useUpdateEffect)(update, [props.store]);
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "items", "setItems");
+  return store;
+}
+function useCollectionStore(props = {}) {
+  const [store, update] = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__.useStore)(_ariakit_core_collection_collection_store__WEBPACK_IMPORTED_MODULE_2__.createCollectionStore, props);
+  return useCollectionStoreProps(store, update, props);
+}
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -5382,6 +5031,7 @@ function useWrapElement(props, callback, deps = []) {
       }
       return callback(element);
     },
+    // oxlint-disable-next-line exhaustive-deps
     [...deps, props.wrapElement]
   );
   return { ...props, wrapElement };
@@ -5396,7 +5046,7 @@ function useMetadataProps(props, key, value) {
   const parent = props.onLoadedMetadataCapture;
   const onLoadedMetadataCapture = (0,react__WEBPACK_IMPORTED_MODULE_3__.useMemo)(() => {
     return Object.assign(() => {
-    }, { ...parent, [key]: value });
+    }, parent, { [key]: value });
   }, [parent, key, value]);
   return [parent == null ? void 0 : parent[key], { onLoadedMetadataCapture }];
 }
@@ -5437,41 +5087,9 @@ function resetMouseMoving() {
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/LVDQFHCH.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/GROIW2U2.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/LVDQFHCH.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   DisclosureContextProvider: () => (/* binding */ DisclosureContextProvider),
-/* harmony export */   DisclosureScopedContextProvider: () => (/* binding */ DisclosureScopedContextProvider),
-/* harmony export */   useDisclosureContext: () => (/* binding */ useDisclosureContext),
-/* harmony export */   useDisclosureProviderContext: () => (/* binding */ useDisclosureProviderContext),
-/* harmony export */   useDisclosureScopedContext: () => (/* binding */ useDisclosureScopedContext)
-/* harmony export */ });
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-"use client";
-
-
-// src/disclosure/disclosure-context.tsx
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_0__.createStoreContext)();
-var useDisclosureContext = ctx.useContext;
-var useDisclosureScopedContext = ctx.useScopedContext;
-var useDisclosureProviderContext = ctx.useProviderContext;
-var DisclosureContextProvider = ctx.ContextProvider;
-var DisclosureScopedContextProvider = ctx.ScopedContextProvider;
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/PZ3OL7I2.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/PZ3OL7I2.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/GROIW2U2.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -5481,9 +5099,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Command: () => (/* binding */ Command),
 /* harmony export */   useCommand: () => (/* binding */ useCommand)
 /* harmony export */ });
-/* harmony import */ var _U6HHPQDW_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./U6HHPQDW.js */ "./node_modules/@ariakit/react-core/esm/__chunks/U6HHPQDW.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
+/* harmony import */ var _C7ZLNJMM_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./C7ZLNJMM.js */ "./node_modules/@ariakit/react-core/esm/__chunks/C7ZLNJMM.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
 /* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
 /* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
 /* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
@@ -5512,8 +5130,8 @@ function isNativeClick(event) {
   }
   return false;
 }
-var symbol = Symbol("command");
-var useCommand = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
+var symbol = /* @__PURE__ */ Symbol("command");
+var useCommand = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
   function useCommand2({ clickOnEnter = true, clickOnSpace = true, ...props }) {
     const ref = (0,react__WEBPACK_IMPORTED_MODULE_7__.useRef)(null);
     const [isNativeButton, setIsNativeButton] = (0,react__WEBPACK_IMPORTED_MODULE_7__.useState)(false);
@@ -5524,9 +5142,9 @@ var useCommand = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
     const [active, setActive] = (0,react__WEBPACK_IMPORTED_MODULE_7__.useState)(false);
     const activeRef = (0,react__WEBPACK_IMPORTED_MODULE_7__.useRef)(false);
     const disabled = (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.disabledFromProps)(props);
-    const [isDuplicate, metadataProps] = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useMetadataProps)(props, symbol, true);
+    const [isDuplicate, metadataProps] = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useMetadataProps)(props, symbol, true);
     const onKeyDownProp = props.onKeyDown;
-    const onKeyDown = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+    const onKeyDown = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
       onKeyDownProp == null ? void 0 : onKeyDownProp(event);
       const element = event.currentTarget;
       if (event.defaultPrevented) return;
@@ -5566,7 +5184,7 @@ var useCommand = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
       }
     });
     const onKeyUpProp = props.onKeyUp;
-    const onKeyUp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+    const onKeyUp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
       onKeyUpProp == null ? void 0 : onKeyUpProp(event);
       if (event.defaultPrevented) return;
       if (isDuplicate) return;
@@ -5589,17 +5207,17 @@ var useCommand = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
       type: isNativeButton ? "button" : void 0,
       ...metadataProps,
       ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, props.ref),
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, props.ref),
       onKeyDown,
       onKeyUp
     };
-    props = (0,_U6HHPQDW_js__WEBPACK_IMPORTED_MODULE_0__.useFocusable)(props);
+    props = (0,_C7ZLNJMM_js__WEBPACK_IMPORTED_MODULE_0__.useFocusable)(props);
     return props;
   }
 );
-var Command = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function Command2(props) {
+var Command = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function Command2(props) {
   const htmlProps = useCommand(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
 });
 
 
@@ -5607,9 +5225,896 @@ var Command = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function 
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/HFFZYOO5.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/HFFZYOO5.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CollectionItem: () => (/* binding */ CollectionItem),
+/* harmony export */   useCollectionItem: () => (/* binding */ useCollectionItem)
+/* harmony export */ });
+/* harmony import */ var _4ODJH2Y5_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./4ODJH2Y5.js */ "./node_modules/@ariakit/react-core/esm/__chunks/4ODJH2Y5.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "react");
+"use client";
+
+
+
+
+// src/collection/collection-item.tsx
+
+
+var TagName = "div";
+var useCollectionItem = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
+  function useCollectionItem2({
+    store,
+    shouldRegisterItem = true,
+    getItem = _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__.identity,
+    // @ts-expect-error This prop may come from a collection renderer.
+    element,
+    ...props
+  }) {
+    const context = (0,_4ODJH2Y5_js__WEBPACK_IMPORTED_MODULE_0__.useCollectionContext)();
+    store = store || context;
+    const id = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useId)(props.id);
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_4__.useRef)(element);
+    (0,react__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
+      const element2 = ref.current;
+      if (!id) return;
+      if (!element2) return;
+      if (!shouldRegisterItem) return;
+      const item = getItem({ id, element: element2 });
+      return store == null ? void 0 : store.renderItem(item);
+    }, [id, shouldRegisterItem, getItem, store]);
+    props = {
+      ...props,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, props.ref)
+    };
+    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__.removeUndefinedValues)(props);
+  }
+);
+var CollectionItem = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function CollectionItem2(props) {
+  const htmlProps = useCollectionItem(props);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
+});
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/L3FYE3QX.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/L3FYE3QX.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CompositeHover: () => (/* binding */ CompositeHover),
+/* harmony export */   useCompositeHover: () => (/* binding */ useCompositeHover)
+/* harmony export */ });
+/* harmony import */ var _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./57GJCRRF.js */ "./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
+/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "react");
+"use client";
+
+
+
+
+// src/composite/composite-hover.tsx
+
+
+
+
+var TagName = "div";
+function getMouseDestination(event) {
+  const relatedTarget = event.relatedTarget;
+  if ((relatedTarget == null ? void 0 : relatedTarget.nodeType) === Node.ELEMENT_NODE) {
+    return relatedTarget;
+  }
+  return null;
+}
+function hoveringInside(event) {
+  const nextElement = getMouseDestination(event);
+  if (!nextElement) return false;
+  return (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__.contains)(event.currentTarget, nextElement);
+}
+var symbol = /* @__PURE__ */ Symbol("composite-hover");
+function movingToAnotherItem(event) {
+  let dest = getMouseDestination(event);
+  if (!dest) return false;
+  do {
+    if ((0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.hasOwnProperty)(dest, symbol) && dest[symbol]) return true;
+    dest = dest.parentElement;
+  } while (dest);
+  return false;
+}
+var useCompositeHover = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
+  function useCompositeHover2({
+    store,
+    focusOnHover = true,
+    blurOnHoverEnd = !!focusOnHover,
+    ...props
+  }) {
+    const context = (0,_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_0__.useCompositeContext)();
+    store = store || context;
+    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.invariant)(
+      store,
+       true && "CompositeHover must be wrapped in a Composite component."
+    );
+    const isMouseMoving = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useIsMouseMoving)();
+    const onMouseMoveProp = props.onMouseMove;
+    const focusOnHoverProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useBooleanEvent)(focusOnHover);
+    const onMouseMove = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+      onMouseMoveProp == null ? void 0 : onMouseMoveProp(event);
+      if (event.defaultPrevented) return;
+      if (!isMouseMoving()) return;
+      if (!focusOnHoverProp(event)) return;
+      if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_4__.hasFocusWithin)(event.currentTarget)) {
+        const baseElement = store == null ? void 0 : store.getState().baseElement;
+        if (baseElement && !(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_4__.hasFocus)(baseElement)) {
+          baseElement.focus();
+        }
+      }
+      store == null ? void 0 : store.setActiveId(event.currentTarget.id);
+    });
+    const onMouseLeaveProp = props.onMouseLeave;
+    const blurOnHoverEndProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useBooleanEvent)(blurOnHoverEnd);
+    const onMouseLeave = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
+      var _a;
+      onMouseLeaveProp == null ? void 0 : onMouseLeaveProp(event);
+      if (event.defaultPrevented) return;
+      if (!isMouseMoving()) return;
+      if (hoveringInside(event)) return;
+      if (movingToAnotherItem(event)) return;
+      if (!focusOnHoverProp(event)) return;
+      if (!blurOnHoverEndProp(event)) return;
+      store == null ? void 0 : store.setActiveId(null);
+      (_a = store == null ? void 0 : store.getState().baseElement) == null ? void 0 : _a.focus();
+    });
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_6__.useCallback)((element) => {
+      if (!element) return;
+      element[symbol] = true;
+    }, []);
+    props = {
+      ...props,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, props.ref),
+      onMouseMove,
+      onMouseLeave
+    };
+    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.removeUndefinedValues)(props);
+  }
+);
+var CompositeHover = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.memo)(
+  (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function CompositeHover2(props) {
+    const htmlProps = useCompositeHover(props);
+    return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
+  })
+);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/LZLJ4GWW.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/LZLJ4GWW.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ComboboxList: () => (/* binding */ ComboboxList),
+/* harmony export */   useComboboxList: () => (/* binding */ useComboboxList)
+/* harmony export */ });
+/* harmony import */ var _BDQ7RGF6_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./BDQ7RGF6.js */ "./node_modules/@ariakit/react-core/esm/__chunks/BDQ7RGF6.js");
+/* harmony import */ var _YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./YXOTZ32N.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+"use client";
+
+
+
+
+
+
+// src/combobox/combobox-list.tsx
+
+
+
+var TagName = "div";
+var useComboboxList = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.createHook)(
+  function useComboboxList2({ store, alwaysVisible, ...props }) {
+    const scopedContext = (0,_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__.useComboboxScopedContext)(true);
+    const context = (0,_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__.useComboboxContext)();
+    store = store || context;
+    const scopedContextSameStore = !!store && store === scopedContext;
+    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.invariant)(
+      store,
+       true && "ComboboxList must receive a `store` prop or be wrapped in a ComboboxProvider component."
+    );
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_6__.useRef)(null);
+    const id = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useId)(props.id);
+    const mounted = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store, "mounted");
+    const hidden = (0,_BDQ7RGF6_js__WEBPACK_IMPORTED_MODULE_0__.isHidden)(mounted, props.hidden, alwaysVisible);
+    const style = hidden ? { ...props.style, display: "none" } : props.style;
+    const multiSelectable = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(
+      store,
+      (state) => Array.isArray(state.selectedValue)
+    );
+    const role = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useAttribute)(ref, "role", props.role);
+    const isCompositeRole = role === "listbox" || role === "tree" || role === "grid";
+    const ariaMultiSelectable = isCompositeRole ? multiSelectable || void 0 : void 0;
+    const [hasListboxInside, setHasListboxInside] = (0,react__WEBPACK_IMPORTED_MODULE_6__.useState)(false);
+    const contentElement = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_2__.useStoreState)(store, "contentElement");
+    (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+      if (!mounted) return;
+      const element = ref.current;
+      if (!element) return;
+      if (contentElement !== element) return;
+      const callback = () => {
+        setHasListboxInside(!!element.querySelector("[role='listbox']"));
+      };
+      const observer = new MutationObserver(callback);
+      observer.observe(element, {
+        subtree: true,
+        childList: true,
+        attributeFilter: ["role"]
+      });
+      callback();
+      return () => observer.disconnect();
+    }, [mounted, contentElement]);
+    if (!hasListboxInside) {
+      props = {
+        role: "listbox",
+        "aria-multiselectable": ariaMultiSelectable,
+        ...props
+      };
+    }
+    props = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useWrapElement)(
+      props,
+      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__.ComboboxScopedContextProvider, { value: store, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__.ComboboxListRoleContext.Provider, { value: role, children: element }) }),
+      [store, role]
+    );
+    const setContentElement = id && (!scopedContext || !scopedContextSameStore) ? store.setContentElement : null;
+    props = {
+      hidden,
+      ...props,
+      id,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_4__.useMergeRefs)(setContentElement, ref, props.ref),
+      style
+    };
+    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.removeUndefinedValues)(props);
+  }
+);
+var ComboboxList = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function ComboboxList2(props) {
+  const htmlProps = useComboboxList(props);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_3__.createElement)(TagName, htmlProps);
+});
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/MXN4ZWI7.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/MXN4ZWI7.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ComboboxItem: () => (/* binding */ ComboboxItem),
+/* harmony export */   useComboboxItem: () => (/* binding */ useComboboxItem)
+/* harmony export */ });
+/* harmony import */ var _L3FYE3QX_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./L3FYE3QX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/L3FYE3QX.js");
+/* harmony import */ var _7CGHQ3Z6_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./7CGHQ3Z6.js */ "./node_modules/@ariakit/react-core/esm/__chunks/7CGHQ3Z6.js");
+/* harmony import */ var _YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./YXOTZ32N.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
+/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
+/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+"use client";
+
+
+
+
+
+
+
+// src/combobox/combobox-item.tsx
+
+
+
+
+
+
+var TagName = "div";
+function isSelected(storeValue, itemValue) {
+  if (itemValue == null) return;
+  if (storeValue == null) return false;
+  if (Array.isArray(storeValue)) {
+    return storeValue.includes(itemValue);
+  }
+  return storeValue === itemValue;
+}
+function getItemRole(popupRole) {
+  var _a;
+  const itemRoleByPopupRole = {
+    menu: "menuitem",
+    listbox: "option",
+    tree: "treeitem"
+  };
+  const key = popupRole;
+  return (_a = itemRoleByPopupRole[key]) != null ? _a : "option";
+}
+var useComboboxItem = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.createHook)(
+  function useComboboxItem2({
+    store,
+    value,
+    hideOnClick,
+    setValueOnClick,
+    selectValueOnClick = true,
+    resetValueOnSelect,
+    focusOnHover = false,
+    moveOnKeyPress = true,
+    getItem: getItemProp,
+    ...props
+  }) {
+    var _a;
+    const context = (0,_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__.useComboboxScopedContext)();
+    store = store || context;
+    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.invariant)(
+      store,
+       true && "ComboboxItem must be wrapped in a ComboboxList or ComboboxPopover component."
+    );
+    const { resetValueOnSelectState, multiSelectable, selected } = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreStateObject)(store, {
+      resetValueOnSelectState: "resetValueOnSelect",
+      multiSelectable(state) {
+        return Array.isArray(state.selectedValue);
+      },
+      selected(state) {
+        return isSelected(state.selectedValue, value);
+      }
+    });
+    const getItem = (0,react__WEBPACK_IMPORTED_MODULE_10__.useCallback)(
+      (item) => {
+        const nextItem = { ...item, value };
+        if (getItemProp) {
+          return getItemProp(nextItem);
+        }
+        return nextItem;
+      },
+      [value, getItemProp]
+    );
+    setValueOnClick = setValueOnClick != null ? setValueOnClick : !multiSelectable;
+    hideOnClick = hideOnClick != null ? hideOnClick : value != null && !multiSelectable;
+    const onClickProp = props.onClick;
+    const setValueOnClickProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(setValueOnClick);
+    const selectValueOnClickProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(selectValueOnClick);
+    const resetValueOnSelectProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(
+      (_a = resetValueOnSelect != null ? resetValueOnSelect : resetValueOnSelectState) != null ? _a : multiSelectable
+    );
+    const hideOnClickProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(hideOnClick);
+    const onClick = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+      onClickProp == null ? void 0 : onClickProp(event);
+      if (event.defaultPrevented) return;
+      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isDownloading)(event)) return;
+      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isOpeningInNewTab)(event)) return;
+      if (value != null) {
+        if (selectValueOnClickProp(event)) {
+          if (resetValueOnSelectProp(event)) {
+            store == null ? void 0 : store.resetValue();
+          }
+          store == null ? void 0 : store.setSelectedValue((prevValue) => {
+            if (!Array.isArray(prevValue)) return value;
+            if (prevValue.includes(value)) {
+              return prevValue.filter((v) => v !== value);
+            }
+            return [...prevValue, value];
+          });
+        }
+        if (setValueOnClickProp(event)) {
+          store == null ? void 0 : store.setValue(value);
+        }
+      }
+      if (hideOnClickProp(event)) {
+        store == null ? void 0 : store.hide();
+      }
+    });
+    const onKeyDownProp = props.onKeyDown;
+    const onKeyDown = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+      onKeyDownProp == null ? void 0 : onKeyDownProp(event);
+      if (event.defaultPrevented) return;
+      const baseElement = store == null ? void 0 : store.getState().baseElement;
+      if (!baseElement) return;
+      if ((0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__.hasFocus)(baseElement)) return;
+      const printable = event.key.length === 1;
+      if (printable || event.key === "Backspace" || event.key === "Delete") {
+        queueMicrotask(() => baseElement.focus());
+        if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.isTextField)(baseElement)) {
+          store == null ? void 0 : store.setValue(baseElement.value);
+        }
+      }
+    });
+    if (multiSelectable && selected != null) {
+      props = {
+        "aria-selected": selected,
+        ...props
+      };
+    }
+    props = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useWrapElement)(
+      props,
+      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__.ComboboxItemValueContext.Provider, { value, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__.ComboboxItemCheckedContext.Provider, { value: selected != null ? selected : false, children: element }) }),
+      [value, selected]
+    );
+    const popupRole = (0,react__WEBPACK_IMPORTED_MODULE_10__.useContext)(_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__.ComboboxListRoleContext);
+    props = {
+      role: getItemRole(popupRole),
+      children: value,
+      ...props,
+      onClick,
+      onKeyDown
+    };
+    const moveOnKeyPressProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(moveOnKeyPress);
+    props = (0,_7CGHQ3Z6_js__WEBPACK_IMPORTED_MODULE_1__.useCompositeItem)({
+      store,
+      ...props,
+      getItem,
+      // Dispatch a custom event on the combobox input when moving to an item
+      // with the keyboard so the Combobox component can enable inline
+      // autocompletion.
+      moveOnKeyPress: (event) => {
+        if (!moveOnKeyPressProp(event)) return false;
+        const moveEvent = new Event("combobox-item-move");
+        const baseElement = store == null ? void 0 : store.getState().baseElement;
+        baseElement == null ? void 0 : baseElement.dispatchEvent(moveEvent);
+        return true;
+      }
+    });
+    props = (0,_L3FYE3QX_js__WEBPACK_IMPORTED_MODULE_0__.useCompositeHover)({ store, focusOnHover, ...props });
+    return props;
+  }
+);
+var ComboboxItem = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.memo)(
+  (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.forwardRef)(function ComboboxItem2(props) {
+    const htmlProps = useComboboxItem(props);
+    return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.createElement)(TagName, htmlProps);
+  })
+);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/Q62CGBNE.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/Q62CGBNE.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PopoverAnchor: () => (/* binding */ PopoverAnchor),
+/* harmony export */   usePopoverAnchor: () => (/* binding */ usePopoverAnchor)
+/* harmony export */ });
+/* harmony import */ var _E5E7U2B6_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./E5E7U2B6.js */ "./node_modules/@ariakit/react-core/esm/__chunks/E5E7U2B6.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+"use client";
+
+
+
+
+// src/popover/popover-anchor.tsx
+var TagName = "div";
+var usePopoverAnchor = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
+  function usePopoverAnchor2({ store, ...props }) {
+    const context = (0,_E5E7U2B6_js__WEBPACK_IMPORTED_MODULE_0__.usePopoverProviderContext)();
+    store = store || context;
+    props = {
+      ...props,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(store == null ? void 0 : store.setAnchorElement, props.ref)
+    };
+    return props;
+  }
+);
+var PopoverAnchor = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function PopoverAnchor2(props) {
+  const htmlProps = usePopoverAnchor(props);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
+});
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/SWN3JYXT.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/SWN3JYXT.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   FocusableContext: () => (/* binding */ FocusableContext)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+"use client";
+
+// src/focusable/focusable-context.tsx
+
+var FocusableContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.createContext)(true);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/TQQOMENK.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/TQQOMENK.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Composite: () => (/* binding */ Composite),
+/* harmony export */   useComposite: () => (/* binding */ useComposite)
+/* harmony export */ });
+/* harmony import */ var _7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./7NJRHOSP.js */ "./node_modules/@ariakit/react-core/esm/__chunks/7NJRHOSP.js");
+/* harmony import */ var _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./57GJCRRF.js */ "./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js");
+/* harmony import */ var _C7ZLNJMM_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./C7ZLNJMM.js */ "./node_modules/@ariakit/react-core/esm/__chunks/C7ZLNJMM.js");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/array */ "./node_modules/@ariakit/core/esm/__chunks/7PRQYBBV.js");
+/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
+/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
+/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+"use client";
+
+
+
+
+
+
+
+// src/composite/composite.tsx
+
+
+
+
+
+
+
+var TagName = "div";
+function isGrid(items) {
+  return items.some((item) => !!item.rowId);
+}
+function isPrintableKey(event) {
+  const target = event.target;
+  if (target && !(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextField)(target)) return false;
+  return event.key.length === 1 && !event.ctrlKey && !event.metaKey;
+}
+function isModifierKey(event) {
+  return event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "Meta";
+}
+function useKeyboardEventProxy(store, onKeyboardEvent, previousElementRef) {
+  return (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+    var _a;
+    onKeyboardEvent == null ? void 0 : onKeyboardEvent(event);
+    if (event.defaultPrevented) return;
+    if (event.isPropagationStopped()) return;
+    if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return;
+    if (isModifierKey(event)) return;
+    if (isPrintableKey(event)) return;
+    const state = store.getState();
+    const activeElement = (_a = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, state.activeId)) == null ? void 0 : _a.element;
+    if (!activeElement) return;
+    const { view, ...eventInit } = event;
+    const previousElement = previousElementRef == null ? void 0 : previousElementRef.current;
+    if (activeElement !== previousElement) {
+      activeElement.focus();
+    }
+    if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireKeyboardEvent)(activeElement, event.type, eventInit)) {
+      event.preventDefault();
+    }
+    if (event.currentTarget.contains(activeElement)) {
+      event.stopPropagation();
+    }
+  });
+}
+function findFirstEnabledItemInTheLastRow(items) {
+  return (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.findFirstEnabledItem)(
+    (0,_ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_6__.flatten2DArray)((0,_ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_6__.reverseArray)((0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.groupItemsByRows)(items)))
+  );
+}
+function withBaseScrollPreserved(store, callback) {
+  const { virtualFocus, baseElement } = store.getState();
+  if (!virtualFocus || !baseElement || !(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextField)(baseElement)) {
+    callback();
+    return;
+  }
+  const savedScrollLeft = baseElement.scrollLeft;
+  const savedScrollTop = baseElement.scrollTop;
+  callback();
+  baseElement.scrollLeft = savedScrollLeft;
+  baseElement.scrollTop = savedScrollTop;
+}
+function useScheduleFocus(store) {
+  const [scheduled, setScheduled] = (0,react__WEBPACK_IMPORTED_MODULE_11__.useState)(false);
+  const schedule = (0,react__WEBPACK_IMPORTED_MODULE_11__.useCallback)(() => setScheduled(true), []);
+  const activeItem = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(
+    store,
+    (state) => (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, state.activeId)
+  );
+  (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
+    const activeElement = activeItem == null ? void 0 : activeItem.element;
+    if (!scheduled) return;
+    if (!activeElement) return;
+    setScheduled(false);
+    withBaseScrollPreserved(store, () => {
+      activeElement.focus({ preventScroll: true });
+    });
+  }, [store, activeItem, scheduled]);
+  return schedule;
+}
+var useComposite = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.createHook)(
+  function useComposite2({
+    store,
+    composite = true,
+    focusOnMove = composite,
+    moveOnKeyPress = true,
+    ...props
+  }) {
+    const context = (0,_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_1__.useCompositeProviderContext)();
+    store = store || context;
+    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_10__.invariant)(
+      store,
+       true && "Composite must receive a `store` prop or be wrapped in a CompositeProvider component."
+    );
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
+    const previousElementRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
+    const scheduleFocus = useScheduleFocus(store);
+    const moves = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "moves");
+    const [, setBaseElement] = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useTransactionState)(
+      composite ? store.setBaseElement : null
+    );
+    (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
+      var _a;
+      if (!store) return;
+      if (!moves) return;
+      if (!composite) return;
+      if (!focusOnMove) return;
+      const { activeId: activeId2 } = store.getState();
+      const itemElement = (_a = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId2)) == null ? void 0 : _a.element;
+      if (!itemElement) return;
+      withBaseScrollPreserved(store, () => (0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_9__.focusIntoView)(itemElement));
+    }, [store, moves, composite, focusOnMove]);
+    (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useSafeLayoutEffect)(() => {
+      if (!store) return;
+      if (!moves) return;
+      if (!composite) return;
+      const { baseElement, activeId: activeId2 } = store.getState();
+      const isSelfAcive = activeId2 === null;
+      if (!isSelfAcive) return;
+      if (!baseElement) return;
+      const previousElement = previousElementRef.current;
+      previousElementRef.current = null;
+      if (previousElement) {
+        (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireBlurEvent)(previousElement, { relatedTarget: baseElement });
+      }
+      if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_9__.hasFocus)(baseElement)) {
+        baseElement.focus();
+      }
+    }, [store, moves, composite]);
+    const activeId = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "activeId");
+    const virtualFocus = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "virtualFocus");
+    (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useSafeLayoutEffect)(() => {
+      var _a;
+      if (!store) return;
+      if (!composite) return;
+      if (!virtualFocus) return;
+      const previousElement = previousElementRef.current;
+      previousElementRef.current = null;
+      if (!previousElement) return;
+      const activeElement = (_a = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId)) == null ? void 0 : _a.element;
+      const relatedTarget = activeElement || (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getActiveElement)(previousElement);
+      if (relatedTarget === previousElement) return;
+      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireBlurEvent)(previousElement, { relatedTarget });
+    }, [store, activeId, virtualFocus, composite]);
+    const onKeyDownCapture = useKeyboardEventProxy(
+      store,
+      props.onKeyDownCapture,
+      previousElementRef
+    );
+    const onKeyUpCapture = useKeyboardEventProxy(
+      store,
+      props.onKeyUpCapture,
+      previousElementRef
+    );
+    const onFocusCaptureProp = props.onFocusCapture;
+    const onFocusCapture = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+      onFocusCaptureProp == null ? void 0 : onFocusCaptureProp(event);
+      if (event.defaultPrevented) return;
+      if (!store) return;
+      const { virtualFocus: virtualFocus2 } = store.getState();
+      if (!virtualFocus2) return;
+      const previousActiveElement = event.relatedTarget;
+      const isSilentlyFocused = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.silentlyFocused)(event.currentTarget);
+      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event) && isSilentlyFocused) {
+        event.stopPropagation();
+        previousElementRef.current = previousActiveElement;
+      }
+    });
+    const onFocusProp = props.onFocus;
+    const onFocus = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+      onFocusProp == null ? void 0 : onFocusProp(event);
+      if (event.defaultPrevented) return;
+      if (!composite) return;
+      if (!store) return;
+      const { relatedTarget } = event;
+      const { virtualFocus: virtualFocus2 } = store.getState();
+      if (virtualFocus2) {
+        if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event) && !(0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, relatedTarget)) {
+          queueMicrotask(scheduleFocus);
+        }
+      } else if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) {
+        store.setActiveId(null);
+      }
+    });
+    const onBlurCaptureProp = props.onBlurCapture;
+    const onBlurCapture = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+      var _a;
+      onBlurCaptureProp == null ? void 0 : onBlurCaptureProp(event);
+      if (event.defaultPrevented) return;
+      if (!store) return;
+      const { virtualFocus: virtualFocus2, activeId: activeId2 } = store.getState();
+      if (!virtualFocus2) return;
+      const activeElement = (_a = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId2)) == null ? void 0 : _a.element;
+      const nextActiveElement = event.relatedTarget;
+      const nextActiveElementIsItem = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, nextActiveElement);
+      const previousElement = previousElementRef.current;
+      previousElementRef.current = null;
+      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event) && nextActiveElementIsItem) {
+        if (nextActiveElement === activeElement) {
+          if (previousElement && previousElement !== nextActiveElement) {
+            (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireBlurEvent)(previousElement, event);
+          }
+        } else if (activeElement) {
+          (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireBlurEvent)(activeElement, event);
+        } else if (previousElement) {
+          (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireBlurEvent)(previousElement, event);
+        }
+        event.stopPropagation();
+      } else {
+        const targetIsItem = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, event.target);
+        if (!targetIsItem && activeElement) {
+          (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.fireBlurEvent)(activeElement, event);
+        }
+      }
+    });
+    const onKeyDownProp = props.onKeyDown;
+    const moveOnKeyPressProp = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(moveOnKeyPress);
+    const onKeyDown = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
+      var _a;
+      onKeyDownProp == null ? void 0 : onKeyDownProp(event);
+      if (event.nativeEvent.isComposing) return;
+      if (event.defaultPrevented) return;
+      if (!store) return;
+      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return;
+      const { orientation, renderedItems, activeId: activeId2 } = store.getState();
+      const activeItem = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId2);
+      if ((_a = activeItem == null ? void 0 : activeItem.element) == null ? void 0 : _a.isConnected) return;
+      const isVertical = orientation !== "horizontal";
+      const isHorizontal = orientation !== "vertical";
+      const grid = isGrid(renderedItems);
+      const isHorizontalKey = event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "Home" || event.key === "End";
+      if (isHorizontalKey && (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextField)(event.currentTarget)) return;
+      const up = () => {
+        if (grid) {
+          const item = findFirstEnabledItemInTheLastRow(renderedItems);
+          return item == null ? void 0 : item.id;
+        }
+        return store == null ? void 0 : store.last();
+      };
+      const keyMap = {
+        ArrowUp: (grid || isVertical) && up,
+        ArrowRight: (grid || isHorizontal) && store.first,
+        ArrowDown: (grid || isVertical) && store.first,
+        ArrowLeft: (grid || isHorizontal) && store.last,
+        Home: store.first,
+        End: store.last,
+        PageUp: store.first,
+        PageDown: store.last
+      };
+      const action = keyMap[event.key];
+      if (action) {
+        const id = action();
+        if (id !== void 0) {
+          if (!moveOnKeyPressProp(event)) return;
+          event.preventDefault();
+          store.move(id);
+        }
+      }
+    });
+    props = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useWrapElement)(
+      props,
+      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_57GJCRRF_js__WEBPACK_IMPORTED_MODULE_1__.CompositeContextProvider, { value: store, children: element }),
+      [store]
+    );
+    const activeDescendant = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, (state) => {
+      var _a;
+      if (!store) return;
+      if (!composite) return;
+      if (!state.virtualFocus) return;
+      return (_a = (0,_7NJRHOSP_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, state.activeId)) == null ? void 0 : _a.id;
+    });
+    props = {
+      "aria-activedescendant": activeDescendant,
+      ...props,
+      ref: (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useMergeRefs)(ref, setBaseElement, props.ref),
+      onKeyDownCapture,
+      onKeyUpCapture,
+      onFocusCapture,
+      onFocus,
+      onBlurCapture,
+      onKeyDown
+    };
+    const focusable = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(
+      store,
+      (state) => composite && (state.virtualFocus || state.activeId === null)
+    );
+    props = (0,_C7ZLNJMM_js__WEBPACK_IMPORTED_MODULE_2__.useFocusable)({ focusable, ...props });
+    return props;
+  }
+);
+var Composite = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.forwardRef)(function Composite2(props) {
+  const htmlProps = useComposite(props);
+  return (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.createElement)(TagName, htmlProps);
+});
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
@@ -5621,7 +6126,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   useStoreState: () => (/* binding */ useStoreState),
 /* harmony export */   useStoreStateObject: () => (/* binding */ useStoreStateObject)
 /* harmony export */ });
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
 /* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
 /* harmony import */ var _ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/utils/store */ "./node_modules/@ariakit/core/esm/__chunks/SXKM4CGU.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "react");
@@ -5701,8 +6206,8 @@ function useStoreStateObject(store, object) {
 function useStoreProps(store, props, key, setKey) {
   const value = (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_1__.hasOwnProperty)(props, key) ? props[key] : void 0;
   const setValue = setKey ? props[setKey] : void 0;
-  const propsRef = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__.useLiveRef)({ value, setValue });
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__.useSafeLayoutEffect)(() => {
+  const propsRef = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__.useLiveRef)({ value, setValue });
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__.useSafeLayoutEffect)(() => {
     return (0,_ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_2__.sync)(store, [key], (state, prev) => {
       const { value: value2, setValue: setValue2 } = propsRef.current;
       if (!setValue2) return;
@@ -5711,7 +6216,7 @@ function useStoreProps(store, props, key, setKey) {
       setValue2(state[key]);
     });
   }, [store, key]);
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__.useSafeLayoutEffect)(() => {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__.useSafeLayoutEffect)(() => {
     if (value === void 0) return;
     store.setState(key, value);
     return (0,_ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_2__.batch)(store, [key], () => {
@@ -5722,7 +6227,7 @@ function useStoreProps(store, props, key, setKey) {
 }
 function useStore(createStore, props) {
   const [store, setStore] = react__WEBPACK_IMPORTED_MODULE_3__.useState(() => createStore(props));
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__.useSafeLayoutEffect)(() => (0,_ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_2__.init)(store), [store]);
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__.useSafeLayoutEffect)(() => (0,_ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_2__.init)(store), [store]);
   const useState2 = react__WEBPACK_IMPORTED_MODULE_3__.useCallback(
     (keyOrSelector) => useStoreState(store, keyOrSelector),
     [store]
@@ -5731,1008 +6236,11 @@ function useStore(createStore, props) {
     () => ({ ...store, useState: useState2 }),
     [store, useState2]
   );
-  const updateStore = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_0__.useEvent)(() => {
+  const updateStore = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__.useEvent)(() => {
     setStore((store2) => createStore({ ...props, ...store2.getState() }));
   });
   return [memoizedStore, updateStore];
 }
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/SMPCIMZM.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/SMPCIMZM.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   CollectionContextProvider: () => (/* binding */ CollectionContextProvider),
-/* harmony export */   CollectionScopedContextProvider: () => (/* binding */ CollectionScopedContextProvider),
-/* harmony export */   useCollectionContext: () => (/* binding */ useCollectionContext),
-/* harmony export */   useCollectionProviderContext: () => (/* binding */ useCollectionProviderContext),
-/* harmony export */   useCollectionScopedContext: () => (/* binding */ useCollectionScopedContext)
-/* harmony export */ });
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-"use client";
-
-
-// src/collection/collection-context.tsx
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_0__.createStoreContext)();
-var useCollectionContext = ctx.useContext;
-var useCollectionScopedContext = ctx.useScopedContext;
-var useCollectionProviderContext = ctx.useProviderContext;
-var CollectionContextProvider = ctx.ContextProvider;
-var CollectionScopedContextProvider = ctx.ScopedContextProvider;
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/SVN33SY6.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/SVN33SY6.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useComboboxStore: () => (/* binding */ useComboboxStore),
-/* harmony export */   useComboboxStoreOptions: () => (/* binding */ useComboboxStoreOptions),
-/* harmony export */   useComboboxStoreProps: () => (/* binding */ useComboboxStoreProps)
-/* harmony export */ });
-/* harmony import */ var _XSIEPKGA_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./XSIEPKGA.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XSIEPKGA.js");
-/* harmony import */ var _B6FLPFJM_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./B6FLPFJM.js */ "./node_modules/@ariakit/react-core/esm/__chunks/B6FLPFJM.js");
-/* harmony import */ var _IQYAUKXT_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./IQYAUKXT.js */ "./node_modules/@ariakit/react-core/esm/__chunks/IQYAUKXT.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_combobox_combobox_store__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/combobox/combobox-store */ "./node_modules/@ariakit/core/esm/combobox/combobox-store.js");
-"use client";
-
-
-
-
-
-
-// src/combobox/combobox-store.ts
-
-function useComboboxStoreOptions(props) {
-  const tag = (0,_XSIEPKGA_js__WEBPACK_IMPORTED_MODULE_0__.useTagContext)();
-  props = {
-    ...props,
-    tag: props.tag !== void 0 ? props.tag : tag
-  };
-  return (0,_IQYAUKXT_js__WEBPACK_IMPORTED_MODULE_2__.useCompositeStoreOptions)(props);
-}
-function useComboboxStoreProps(store, update, props) {
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useUpdateEffect)(update, [props.tag]);
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "value", "setValue");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "selectedValue", "setSelectedValue");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "resetValueOnHide");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__.useStoreProps)(store, props, "resetValueOnSelect");
-  return Object.assign(
-    (0,_IQYAUKXT_js__WEBPACK_IMPORTED_MODULE_2__.useCompositeStoreProps)(
-      (0,_B6FLPFJM_js__WEBPACK_IMPORTED_MODULE_1__.usePopoverStoreProps)(store, update, props),
-      update,
-      props
-    ),
-    { tag: props.tag }
-  );
-}
-function useComboboxStore(props = {}) {
-  props = useComboboxStoreOptions(props);
-  const [store, update] = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_3__.useStore)(_ariakit_core_combobox_combobox_store__WEBPACK_IMPORTED_MODULE_5__.createComboboxStore, props);
-  return useComboboxStoreProps(store, update, props);
-}
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/SWN3JYXT.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/SWN3JYXT.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   FocusableContext: () => (/* binding */ FocusableContext)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-// src/focusable/focusable-context.tsx
-
-var FocusableContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.createContext)(true);
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/U6HHPQDW.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/U6HHPQDW.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Focusable: () => (/* binding */ Focusable),
-/* harmony export */   isSafariFocusAncestor: () => (/* binding */ isSafariFocusAncestor),
-/* harmony export */   useFocusable: () => (/* binding */ useFocusable)
-/* harmony export */ });
-/* harmony import */ var _SWN3JYXT_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./SWN3JYXT.js */ "./node_modules/@ariakit/react-core/esm/__chunks/SWN3JYXT.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
-/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
-/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var _ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/platform */ "./node_modules/@ariakit/core/esm/__chunks/SNHYQNEZ.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-
-
-
-// src/focusable/focusable.tsx
-
-
-
-
-
-
-var TagName = "div";
-var isSafariBrowser = (0,_ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_7__.isSafari)();
-var alwaysFocusVisibleInputTypes = [
-  "text",
-  "search",
-  "url",
-  "tel",
-  "email",
-  "password",
-  "number",
-  "date",
-  "month",
-  "week",
-  "time",
-  "datetime",
-  "datetime-local"
-];
-var safariFocusAncestorSymbol = Symbol("safariFocusAncestor");
-function isSafariFocusAncestor(element) {
-  if (!element) return false;
-  return !!element[safariFocusAncestorSymbol];
-}
-function markSafariFocusAncestor(element, value) {
-  if (!element) return;
-  element[safariFocusAncestorSymbol] = value;
-}
-function isAlwaysFocusVisible(element) {
-  const { tagName, readOnly, type } = element;
-  if (tagName === "TEXTAREA" && !readOnly) return true;
-  if (tagName === "SELECT" && !readOnly) return true;
-  if (tagName === "INPUT" && !readOnly) {
-    return alwaysFocusVisibleInputTypes.includes(type);
-  }
-  if (element.isContentEditable) return true;
-  const role = element.getAttribute("role");
-  if (role === "combobox" && element.dataset.name) {
-    return true;
-  }
-  return false;
-}
-function getLabels(element) {
-  if ("labels" in element) {
-    return element.labels;
-  }
-  return null;
-}
-function isNativeCheckboxOrRadio(element) {
-  const tagName = element.tagName.toLowerCase();
-  if (tagName === "input" && element.type) {
-    return element.type === "radio" || element.type === "checkbox";
-  }
-  return false;
-}
-function isNativeTabbable(tagName) {
-  if (!tagName) return true;
-  return tagName === "button" || tagName === "summary" || tagName === "input" || tagName === "select" || tagName === "textarea" || tagName === "a";
-}
-function supportsDisabledAttribute(tagName) {
-  if (!tagName) return true;
-  return tagName === "button" || tagName === "input" || tagName === "select" || tagName === "textarea";
-}
-function getTabIndex(focusable, trulyDisabled, nativeTabbable, supportsDisabled, tabIndexProp) {
-  if (!focusable) {
-    return tabIndexProp;
-  }
-  if (trulyDisabled) {
-    if (nativeTabbable && !supportsDisabled) {
-      return -1;
-    }
-    return;
-  }
-  if (nativeTabbable) {
-    return tabIndexProp;
-  }
-  return tabIndexProp || 0;
-}
-function useDisableEvent(onEvent, disabled) {
-  return (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-    onEvent == null ? void 0 : onEvent(event);
-    if (event.defaultPrevented) return;
-    if (disabled) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  });
-}
-var hasInstalledGlobalEventListeners = false;
-var isKeyboardModality = true;
-function onGlobalMouseDown(event) {
-  const target = event.target;
-  if (target && "hasAttribute" in target) {
-    if (!target.hasAttribute("data-focus-visible")) {
-      isKeyboardModality = false;
-    }
-  }
-}
-function onGlobalKeyDown(event) {
-  if (event.metaKey) return;
-  if (event.ctrlKey) return;
-  if (event.altKey) return;
-  isKeyboardModality = true;
-}
-var useFocusable = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
-  function useFocusable2({
-    focusable = true,
-    accessibleWhenDisabled,
-    autoFocus,
-    onFocusVisible,
-    ...props
-  }) {
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_8__.useRef)(null);
-    (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
-      if (!focusable) return;
-      if (hasInstalledGlobalEventListeners) return;
-      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.addGlobalEventListener)("mousedown", onGlobalMouseDown, true);
-      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.addGlobalEventListener)("keydown", onGlobalKeyDown, true);
-      hasInstalledGlobalEventListeners = true;
-    }, [focusable]);
-    if (isSafariBrowser) {
-      (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
-        if (!focusable) return;
-        const element = ref.current;
-        if (!element) return;
-        if (!isNativeCheckboxOrRadio(element)) return;
-        const labels = getLabels(element);
-        if (!labels) return;
-        const onMouseUp = () => queueMicrotask(() => element.focus());
-        for (const label of labels) {
-          label.addEventListener("mouseup", onMouseUp);
-        }
-        return () => {
-          for (const label of labels) {
-            label.removeEventListener("mouseup", onMouseUp);
-          }
-        };
-      }, [focusable]);
-    }
-    const disabled = focusable && (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_6__.disabledFromProps)(props);
-    const trulyDisabled = !!disabled && !accessibleWhenDisabled;
-    const [focusVisible, setFocusVisible] = (0,react__WEBPACK_IMPORTED_MODULE_8__.useState)(false);
-    (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
-      if (!focusable) return;
-      if (trulyDisabled && focusVisible) {
-        setFocusVisible(false);
-      }
-    }, [focusable, trulyDisabled, focusVisible]);
-    (0,react__WEBPACK_IMPORTED_MODULE_8__.useEffect)(() => {
-      if (!focusable) return;
-      if (!focusVisible) return;
-      const element = ref.current;
-      if (!element) return;
-      if (typeof IntersectionObserver === "undefined") return;
-      const observer = new IntersectionObserver(() => {
-        if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.isFocusable)(element)) {
-          setFocusVisible(false);
-        }
-      });
-      observer.observe(element);
-      return () => observer.disconnect();
-    }, [focusable, focusVisible]);
-    const onKeyPressCapture = useDisableEvent(
-      props.onKeyPressCapture,
-      disabled
-    );
-    const onMouseDownCapture = useDisableEvent(
-      props.onMouseDownCapture,
-      disabled
-    );
-    const onClickCapture = useDisableEvent(props.onClickCapture, disabled);
-    const onMouseDownProp = props.onMouseDown;
-    const onMouseDown = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-      onMouseDownProp == null ? void 0 : onMouseDownProp(event);
-      if (event.defaultPrevented) return;
-      if (!focusable) return;
-      const element = event.currentTarget;
-      if (!isSafariBrowser) return;
-      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isPortalEvent)(event)) return;
-      if (!(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__.isButton)(element) && !isNativeCheckboxOrRadio(element)) return;
-      let receivedFocus = false;
-      const onFocus = () => {
-        receivedFocus = true;
-      };
-      const options = { capture: true, once: true };
-      element.addEventListener("focusin", onFocus, options);
-      const focusableContainer = (0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.getClosestFocusable)(element.parentElement);
-      markSafariFocusAncestor(focusableContainer, true);
-      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.queueBeforeEvent)(element, "mouseup", () => {
-        element.removeEventListener("focusin", onFocus, true);
-        markSafariFocusAncestor(focusableContainer, false);
-        if (receivedFocus) return;
-        (0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.focusIfNeeded)(element);
-      });
-    });
-    const handleFocusVisible = (event, currentTarget) => {
-      if (currentTarget) {
-        event.currentTarget = currentTarget;
-      }
-      if (!focusable) return;
-      const element = event.currentTarget;
-      if (!element) return;
-      if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.hasFocus)(element)) return;
-      onFocusVisible == null ? void 0 : onFocusVisible(event);
-      if (event.defaultPrevented) return;
-      element.dataset.focusVisible = "true";
-      setFocusVisible(true);
-    };
-    const onKeyDownCaptureProp = props.onKeyDownCapture;
-    const onKeyDownCapture = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-      onKeyDownCaptureProp == null ? void 0 : onKeyDownCaptureProp(event);
-      if (event.defaultPrevented) return;
-      if (!focusable) return;
-      if (focusVisible) return;
-      if (event.metaKey) return;
-      if (event.altKey) return;
-      if (event.ctrlKey) return;
-      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isSelfTarget)(event)) return;
-      const element = event.currentTarget;
-      const applyFocusVisible = () => handleFocusVisible(event, element);
-      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.queueBeforeEvent)(element, "focusout", applyFocusVisible);
-    });
-    const onFocusCaptureProp = props.onFocusCapture;
-    const onFocusCapture = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-      onFocusCaptureProp == null ? void 0 : onFocusCaptureProp(event);
-      if (event.defaultPrevented) return;
-      if (!focusable) return;
-      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isSelfTarget)(event)) {
-        setFocusVisible(false);
-        return;
-      }
-      const element = event.currentTarget;
-      const applyFocusVisible = () => handleFocusVisible(event, element);
-      if (isKeyboardModality || isAlwaysFocusVisible(event.target)) {
-        (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.queueBeforeEvent)(event.target, "focusout", applyFocusVisible);
-      } else {
-        setFocusVisible(false);
-      }
-    });
-    const onBlurProp = props.onBlur;
-    const onBlur = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-      onBlurProp == null ? void 0 : onBlurProp(event);
-      if (!focusable) return;
-      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_4__.isFocusEventOutside)(event)) return;
-      event.currentTarget.removeAttribute("data-focus-visible");
-      setFocusVisible(false);
-    });
-    const autoFocusOnShow = (0,react__WEBPACK_IMPORTED_MODULE_8__.useContext)(_SWN3JYXT_js__WEBPACK_IMPORTED_MODULE_0__.FocusableContext);
-    const autoFocusRef = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((element) => {
-      if (!focusable) return;
-      if (!autoFocus) return;
-      if (!element) return;
-      if (!autoFocusOnShow) return;
-      queueMicrotask(() => {
-        if ((0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.hasFocus)(element)) return;
-        if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_5__.isFocusable)(element)) return;
-        element.focus();
-      });
-    });
-    const tagName = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useTagName)(ref);
-    const nativeTabbable = focusable && isNativeTabbable(tagName);
-    const supportsDisabled = focusable && supportsDisabledAttribute(tagName);
-    const styleProp = props.style;
-    const style = (0,react__WEBPACK_IMPORTED_MODULE_8__.useMemo)(() => {
-      if (trulyDisabled) {
-        return { pointerEvents: "none", ...styleProp };
-      }
-      return styleProp;
-    }, [trulyDisabled, styleProp]);
-    props = {
-      "data-focus-visible": focusable && focusVisible || void 0,
-      "data-autofocus": autoFocus || void 0,
-      "aria-disabled": disabled || void 0,
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, autoFocusRef, props.ref),
-      style,
-      tabIndex: getTabIndex(
-        focusable,
-        trulyDisabled,
-        nativeTabbable,
-        supportsDisabled,
-        props.tabIndex
-      ),
-      disabled: supportsDisabled && trulyDisabled ? true : void 0,
-      // TODO: Test Focusable contentEditable.
-      contentEditable: disabled ? void 0 : props.contentEditable,
-      onKeyPressCapture,
-      onClickCapture,
-      onMouseDownCapture,
-      onMouseDown,
-      onKeyDownCapture,
-      onFocusCapture,
-      onBlur
-    };
-    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_6__.removeUndefinedValues)(props);
-  }
-);
-var Focusable = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function Focusable2(props) {
-  const htmlProps = useFocusable(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
-});
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/WLZ6H5FH.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/WLZ6H5FH.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useDisclosureStore: () => (/* binding */ useDisclosureStore),
-/* harmony export */   useDisclosureStoreProps: () => (/* binding */ useDisclosureStoreProps)
-/* harmony export */ });
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_disclosure_disclosure_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/disclosure/disclosure-store */ "./node_modules/@ariakit/core/esm/__chunks/75BJEVSH.js");
-"use client";
-
-
-
-// src/disclosure/disclosure-store.ts
-
-function useDisclosureStoreProps(store, update, props) {
-  (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_1__.useUpdateEffect)(update, [props.store, props.disclosure]);
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "open", "setOpen");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "mounted", "setMounted");
-  (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "animated");
-  return Object.assign(store, { disclosure: props.disclosure });
-}
-function useDisclosureStore(props = {}) {
-  const [store, update] = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_0__.useStore)(_ariakit_core_disclosure_disclosure_store__WEBPACK_IMPORTED_MODULE_2__.createDisclosureStore, props);
-  return useDisclosureStoreProps(store, update, props);
-}
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/WZWDIE3S.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/WZWDIE3S.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   CompositeItem: () => (/* binding */ CompositeItem),
-/* harmony export */   useCompositeItem: () => (/* binding */ useCompositeItem)
-/* harmony export */ });
-/* harmony import */ var _5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./5VQZOHHZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/5VQZOHHZ.js");
-/* harmony import */ var _Z2O3VLAQ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Z2O3VLAQ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Z2O3VLAQ.js");
-/* harmony import */ var _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./AVVXDJMZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js");
-/* harmony import */ var _PZ3OL7I2_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./PZ3OL7I2.js */ "./node_modules/@ariakit/react-core/esm/__chunks/PZ3OL7I2.js");
-/* harmony import */ var _Q5W46E73_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
-/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var _ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @ariakit/core/utils/platform */ "./node_modules/@ariakit/core/esm/__chunks/SNHYQNEZ.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-"use client";
-
-
-
-
-
-
-
-
-// src/composite/composite-item.tsx
-
-
-
-
-
-
-var TagName = "button";
-function isEditableElement(element) {
-  if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextbox)(element)) return true;
-  return element.tagName === "INPUT" && !(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isButton)(element);
-}
-function getNextPageOffset(scrollingElement, pageUp = false) {
-  const height = scrollingElement.clientHeight;
-  const { top } = scrollingElement.getBoundingClientRect();
-  const pageSize = Math.max(height * 0.875, height - 40) * 1.5;
-  const pageOffset = pageUp ? height - pageSize + top : pageSize + top;
-  if (scrollingElement.tagName === "HTML") {
-    return pageOffset + scrollingElement.scrollTop;
-  }
-  return pageOffset;
-}
-function getItemOffset(itemElement, pageUp = false) {
-  const { top } = itemElement.getBoundingClientRect();
-  if (pageUp) {
-    return top + itemElement.clientHeight;
-  }
-  return top;
-}
-function findNextPageItemId(element, store, next, pageUp = false) {
-  var _a;
-  if (!store) return;
-  if (!next) return;
-  const { renderedItems } = store.getState();
-  const scrollingElement = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getScrollingElement)(element);
-  if (!scrollingElement) return;
-  const nextPageOffset = getNextPageOffset(scrollingElement, pageUp);
-  let id;
-  let prevDifference;
-  for (let i = 0; i < renderedItems.length; i += 1) {
-    const previousId = id;
-    id = next(i);
-    if (!id) break;
-    if (id === previousId) continue;
-    const itemElement = (_a = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, id)) == null ? void 0 : _a.element;
-    if (!itemElement) continue;
-    const itemOffset = getItemOffset(itemElement, pageUp);
-    const difference = itemOffset - nextPageOffset;
-    const absDifference = Math.abs(difference);
-    if (pageUp && difference <= 0 || !pageUp && difference >= 0) {
-      if (prevDifference !== void 0 && prevDifference < absDifference) {
-        id = previousId;
-      }
-      break;
-    }
-    prevDifference = absDifference;
-  }
-  return id;
-}
-function targetIsAnotherItem(event, store) {
-  if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return false;
-  return (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, event.target);
-}
-var useCompositeItem = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_5__.createHook)(
-  function useCompositeItem2({
-    store,
-    rowId: rowIdProp,
-    preventScrollOnKeyDown = false,
-    moveOnKeyPress = true,
-    tabbable = false,
-    getItem: getItemProp,
-    "aria-setsize": ariaSetSizeProp,
-    "aria-posinset": ariaPosInSetProp,
-    ...props
-  }) {
-    const context = (0,_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_2__.useCompositeContext)();
-    store = store || context;
-    const id = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useId)(props.id);
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
-    const row = (0,react__WEBPACK_IMPORTED_MODULE_11__.useContext)(_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_2__.CompositeRowContext);
-    const disabled = (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.disabledFromProps)(props);
-    const trulyDisabled = disabled && !props.accessibleWhenDisabled;
-    const {
-      rowId,
-      baseElement,
-      isActiveItem,
-      ariaSetSize,
-      ariaPosInSet,
-      isTabbable
-    } = (0,_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_4__.useStoreStateObject)(store, {
-      rowId(state) {
-        if (rowIdProp) return rowIdProp;
-        if (!state) return;
-        if (!(row == null ? void 0 : row.baseElement)) return;
-        if (row.baseElement !== state.baseElement) return;
-        return row.id;
-      },
-      baseElement(state) {
-        return (state == null ? void 0 : state.baseElement) || void 0;
-      },
-      isActiveItem(state) {
-        return !!state && state.activeId === id;
-      },
-      ariaSetSize(state) {
-        if (ariaSetSizeProp != null) return ariaSetSizeProp;
-        if (!state) return;
-        if (!(row == null ? void 0 : row.ariaSetSize)) return;
-        if (row.baseElement !== state.baseElement) return;
-        return row.ariaSetSize;
-      },
-      ariaPosInSet(state) {
-        if (ariaPosInSetProp != null) return ariaPosInSetProp;
-        if (!state) return;
-        if (!(row == null ? void 0 : row.ariaPosInSet)) return;
-        if (row.baseElement !== state.baseElement) return;
-        const itemsInRow = state.renderedItems.filter(
-          (item) => item.rowId === rowId
-        );
-        return row.ariaPosInSet + itemsInRow.findIndex((item) => item.id === id);
-      },
-      isTabbable(state) {
-        if (!(state == null ? void 0 : state.renderedItems.length)) return true;
-        if (state.virtualFocus) return false;
-        if (tabbable) return true;
-        if (state.activeId === null) return false;
-        const item = store == null ? void 0 : store.item(state.activeId);
-        if (item == null ? void 0 : item.disabled) return true;
-        if (!(item == null ? void 0 : item.element)) return true;
-        return state.activeId === id;
-      }
-    });
-    const getItem = (0,react__WEBPACK_IMPORTED_MODULE_11__.useCallback)(
-      (item) => {
-        var _a;
-        const nextItem = {
-          ...item,
-          id: id || item.id,
-          rowId,
-          disabled: !!trulyDisabled,
-          children: (_a = item.element) == null ? void 0 : _a.textContent
-        };
-        if (getItemProp) {
-          return getItemProp(nextItem);
-        }
-        return nextItem;
-      },
-      [id, rowId, trulyDisabled, getItemProp]
-    );
-    const onFocusProp = props.onFocus;
-    const hasFocusedComposite = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(false);
-    const onFocus = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useEvent)((event) => {
-      onFocusProp == null ? void 0 : onFocusProp(event);
-      if (event.defaultPrevented) return;
-      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isPortalEvent)(event)) return;
-      if (!id) return;
-      if (!store) return;
-      if (targetIsAnotherItem(event, store)) return;
-      const { virtualFocus, baseElement: baseElement2 } = store.getState();
-      store.setActiveId(id);
-      if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextbox)(event.currentTarget)) {
-        (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.selectTextField)(event.currentTarget);
-      }
-      if (!virtualFocus) return;
-      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return;
-      if (isEditableElement(event.currentTarget)) return;
-      if (!(baseElement2 == null ? void 0 : baseElement2.isConnected)) return;
-      if ((0,_ariakit_core_utils_platform__WEBPACK_IMPORTED_MODULE_10__.isSafari)() && event.currentTarget.hasAttribute("data-autofocus")) {
-        event.currentTarget.scrollIntoView({
-          block: "nearest",
-          inline: "nearest"
-        });
-      }
-      hasFocusedComposite.current = true;
-      const fromComposite = event.relatedTarget === baseElement2 || (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, event.relatedTarget);
-      if (fromComposite) {
-        (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.focusSilently)(baseElement2);
-      } else {
-        baseElement2.focus();
-      }
-    });
-    const onBlurCaptureProp = props.onBlurCapture;
-    const onBlurCapture = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useEvent)((event) => {
-      onBlurCaptureProp == null ? void 0 : onBlurCaptureProp(event);
-      if (event.defaultPrevented) return;
-      const state = store == null ? void 0 : store.getState();
-      if ((state == null ? void 0 : state.virtualFocus) && hasFocusedComposite.current) {
-        hasFocusedComposite.current = false;
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    });
-    const onKeyDownProp = props.onKeyDown;
-    const preventScrollOnKeyDownProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useBooleanEvent)(preventScrollOnKeyDown);
-    const moveOnKeyPressProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useBooleanEvent)(moveOnKeyPress);
-    const onKeyDown = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useEvent)((event) => {
-      onKeyDownProp == null ? void 0 : onKeyDownProp(event);
-      if (event.defaultPrevented) return;
-      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_8__.isSelfTarget)(event)) return;
-      if (!store) return;
-      const { currentTarget } = event;
-      const state = store.getState();
-      const item = store.item(id);
-      const isGrid = !!(item == null ? void 0 : item.rowId);
-      const isVertical = state.orientation !== "horizontal";
-      const isHorizontal = state.orientation !== "vertical";
-      const canHomeEnd = () => {
-        if (isGrid) return true;
-        if (isHorizontal) return true;
-        if (!state.baseElement) return true;
-        if (!(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextField)(state.baseElement)) return true;
-        return false;
-      };
-      const keyMap = {
-        ArrowUp: (isGrid || isVertical) && store.up,
-        ArrowRight: (isGrid || isHorizontal) && store.next,
-        ArrowDown: (isGrid || isVertical) && store.down,
-        ArrowLeft: (isGrid || isHorizontal) && store.previous,
-        Home: () => {
-          if (!canHomeEnd()) return;
-          if (!isGrid || event.ctrlKey) {
-            return store == null ? void 0 : store.first();
-          }
-          return store == null ? void 0 : store.previous(-1);
-        },
-        End: () => {
-          if (!canHomeEnd()) return;
-          if (!isGrid || event.ctrlKey) {
-            return store == null ? void 0 : store.last();
-          }
-          return store == null ? void 0 : store.next(-1);
-        },
-        PageUp: () => {
-          return findNextPageItemId(currentTarget, store, store == null ? void 0 : store.up, true);
-        },
-        PageDown: () => {
-          return findNextPageItemId(currentTarget, store, store == null ? void 0 : store.down);
-        }
-      };
-      const action = keyMap[event.key];
-      if (action) {
-        if ((0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.isTextbox)(currentTarget)) {
-          const selection = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getTextboxSelection)(currentTarget);
-          const isLeft = isHorizontal && event.key === "ArrowLeft";
-          const isRight = isHorizontal && event.key === "ArrowRight";
-          const isUp = isVertical && event.key === "ArrowUp";
-          const isDown = isVertical && event.key === "ArrowDown";
-          if (isRight || isDown) {
-            const { length: valueLength } = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_7__.getTextboxValue)(currentTarget);
-            if (selection.end !== valueLength) return;
-          } else if ((isLeft || isUp) && selection.start !== 0) return;
-        }
-        const nextId = action();
-        if (preventScrollOnKeyDownProp(event) || nextId !== void 0) {
-          if (!moveOnKeyPressProp(event)) return;
-          event.preventDefault();
-          store.move(nextId);
-        }
-      }
-    });
-    const providerValue = (0,react__WEBPACK_IMPORTED_MODULE_11__.useMemo)(
-      () => ({ id, baseElement }),
-      [id, baseElement]
-    );
-    props = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useWrapElement)(
-      props,
-      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_2__.CompositeItemContext.Provider, { value: providerValue, children: element }),
-      [providerValue]
-    );
-    props = {
-      id,
-      "data-active-item": isActiveItem || void 0,
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_6__.useMergeRefs)(ref, props.ref),
-      tabIndex: isTabbable ? props.tabIndex : -1,
-      onFocus,
-      onBlurCapture,
-      onKeyDown
-    };
-    props = (0,_PZ3OL7I2_js__WEBPACK_IMPORTED_MODULE_3__.useCommand)(props);
-    props = (0,_Z2O3VLAQ_js__WEBPACK_IMPORTED_MODULE_1__.useCollectionItem)({
-      store,
-      ...props,
-      getItem,
-      shouldRegisterItem: id ? props.shouldRegisterItem : false
-    });
-    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.removeUndefinedValues)({
-      ...props,
-      "aria-setsize": ariaSetSize,
-      "aria-posinset": ariaPosInSet
-    });
-  }
-);
-var CompositeItem = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_5__.memo)(
-  (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_5__.forwardRef)(function CompositeItem2(props) {
-    const htmlProps = useCompositeItem(props);
-    return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_5__.createElement)(TagName, htmlProps);
-  })
-);
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/X6LNAU2F.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/X6LNAU2F.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   CompositeHover: () => (/* binding */ CompositeHover),
-/* harmony export */   useCompositeHover: () => (/* binding */ useCompositeHover)
-/* harmony export */ });
-/* harmony import */ var _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AVVXDJMZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
-/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-
-
-
-// src/composite/composite-hover.tsx
-
-
-
-
-var TagName = "div";
-function getMouseDestination(event) {
-  const relatedTarget = event.relatedTarget;
-  if ((relatedTarget == null ? void 0 : relatedTarget.nodeType) === Node.ELEMENT_NODE) {
-    return relatedTarget;
-  }
-  return null;
-}
-function hoveringInside(event) {
-  const nextElement = getMouseDestination(event);
-  if (!nextElement) return false;
-  return (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_3__.contains)(event.currentTarget, nextElement);
-}
-var symbol = Symbol("composite-hover");
-function movingToAnotherItem(event) {
-  let dest = getMouseDestination(event);
-  if (!dest) return false;
-  do {
-    if ((0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.hasOwnProperty)(dest, symbol) && dest[symbol]) return true;
-    dest = dest.parentElement;
-  } while (dest);
-  return false;
-}
-var useCompositeHover = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
-  function useCompositeHover2({
-    store,
-    focusOnHover = true,
-    blurOnHoverEnd = !!focusOnHover,
-    ...props
-  }) {
-    const context = (0,_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_0__.useCompositeContext)();
-    store = store || context;
-    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.invariant)(
-      store,
-       true && "CompositeHover must be wrapped in a Composite component."
-    );
-    const isMouseMoving = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useIsMouseMoving)();
-    const onMouseMoveProp = props.onMouseMove;
-    const focusOnHoverProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useBooleanEvent)(focusOnHover);
-    const onMouseMove = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-      onMouseMoveProp == null ? void 0 : onMouseMoveProp(event);
-      if (event.defaultPrevented) return;
-      if (!isMouseMoving()) return;
-      if (!focusOnHoverProp(event)) return;
-      if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_4__.hasFocusWithin)(event.currentTarget)) {
-        const baseElement = store == null ? void 0 : store.getState().baseElement;
-        if (baseElement && !(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_4__.hasFocus)(baseElement)) {
-          baseElement.focus();
-        }
-      }
-      store == null ? void 0 : store.setActiveId(event.currentTarget.id);
-    });
-    const onMouseLeaveProp = props.onMouseLeave;
-    const blurOnHoverEndProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useBooleanEvent)(blurOnHoverEnd);
-    const onMouseLeave = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useEvent)((event) => {
-      var _a;
-      onMouseLeaveProp == null ? void 0 : onMouseLeaveProp(event);
-      if (event.defaultPrevented) return;
-      if (!isMouseMoving()) return;
-      if (hoveringInside(event)) return;
-      if (movingToAnotherItem(event)) return;
-      if (!focusOnHoverProp(event)) return;
-      if (!blurOnHoverEndProp(event)) return;
-      store == null ? void 0 : store.setActiveId(null);
-      (_a = store == null ? void 0 : store.getState().baseElement) == null ? void 0 : _a.focus();
-    });
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_6__.useCallback)((element) => {
-      if (!element) return;
-      element[symbol] = true;
-    }, []);
-    props = {
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, props.ref),
-      onMouseMove,
-      onMouseLeave
-    };
-    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_5__.removeUndefinedValues)(props);
-  }
-);
-var CompositeHover = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.memo)(
-  (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function CompositeHover2(props) {
-    const htmlProps = useCompositeHover(props);
-    return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
-  })
-);
-
-
-
-
-/***/ },
-
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/XSIEPKGA.js"
-/*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/XSIEPKGA.js ***!
-  \*******************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   TagContextProvider: () => (/* binding */ TagContextProvider),
-/* harmony export */   TagRemoveIdContext: () => (/* binding */ TagRemoveIdContext),
-/* harmony export */   TagScopedContextProvider: () => (/* binding */ TagScopedContextProvider),
-/* harmony export */   TagValueContext: () => (/* binding */ TagValueContext),
-/* harmony export */   useTagContext: () => (/* binding */ useTagContext),
-/* harmony export */   useTagProviderContext: () => (/* binding */ useTagProviderContext),
-/* harmony export */   useTagScopedContext: () => (/* binding */ useTagScopedContext)
-/* harmony export */ });
-/* harmony import */ var _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AVVXDJMZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
-"use client";
-
-
-
-// src/tag/tag-context.tsx
-
-var TagValueContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(null);
-var TagRemoveIdContext = (0,react__WEBPACK_IMPORTED_MODULE_2__.createContext)(
-  null
-);
-var ctx = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createStoreContext)(
-  [_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_0__.CompositeContextProvider],
-  [_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_0__.CompositeScopedContextProvider]
-);
-var useTagContext = ctx.useContext;
-var useTagScopedContext = ctx.useScopedContext;
-var useTagProviderContext = ctx.useProviderContext;
-var TagContextProvider = ctx.ContextProvider;
-var TagScopedContextProvider = ctx.ScopedContextProvider;
 
 
 
@@ -6814,379 +6322,198 @@ function mergeProps(base, overrides) {
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/Z2O3VLAQ.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/YXMTOJME.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/Z2O3VLAQ.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/YXMTOJME.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   CollectionItem: () => (/* binding */ CollectionItem),
-/* harmony export */   useCollectionItem: () => (/* binding */ useCollectionItem)
+/* harmony export */   useDisclosureStore: () => (/* binding */ useDisclosureStore),
+/* harmony export */   useDisclosureStoreProps: () => (/* binding */ useDisclosureStoreProps)
 /* harmony export */ });
-/* harmony import */ var _SMPCIMZM_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./SMPCIMZM.js */ "./node_modules/@ariakit/react-core/esm/__chunks/SMPCIMZM.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_disclosure_disclosure_store__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/disclosure/disclosure-store */ "./node_modules/@ariakit/core/esm/__chunks/75BJEVSH.js");
 "use client";
 
 
 
+// src/disclosure/disclosure-store.ts
 
-// src/collection/collection-item.tsx
-
-
-var TagName = "div";
-var useCollectionItem = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
-  function useCollectionItem2({
-    store,
-    shouldRegisterItem = true,
-    getItem = _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__.identity,
-    // @ts-expect-error This prop may come from a collection renderer.
-    element,
-    ...props
-  }) {
-    const context = (0,_SMPCIMZM_js__WEBPACK_IMPORTED_MODULE_0__.useCollectionContext)();
-    store = store || context;
-    const id = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useId)(props.id);
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_4__.useRef)(element);
-    (0,react__WEBPACK_IMPORTED_MODULE_4__.useEffect)(() => {
-      const element2 = ref.current;
-      if (!id) return;
-      if (!element2) return;
-      if (!shouldRegisterItem) return;
-      const item = getItem({ id, element: element2 });
-      return store == null ? void 0 : store.renderItem(item);
-    }, [id, shouldRegisterItem, getItem, store]);
-    props = {
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_2__.useMergeRefs)(ref, props.ref)
-    };
-    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__.removeUndefinedValues)(props);
-  }
-);
-var CollectionItem = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function CollectionItem2(props) {
-  const htmlProps = useCollectionItem(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
-});
+function useDisclosureStoreProps(store, update, props) {
+  (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_1__.useUpdateEffect)(update, [props.store, props.disclosure]);
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "open", "setOpen");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "mounted", "setMounted");
+  (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__.useStoreProps)(store, props, "animated");
+  return Object.assign(store, { disclosure: props.disclosure });
+}
+function useDisclosureStore(props = {}) {
+  const [store, update] = (0,_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_0__.useStore)(_ariakit_core_disclosure_disclosure_store__WEBPACK_IMPORTED_MODULE_2__.createDisclosureStore, props);
+  return useDisclosureStoreProps(store, update, props);
+}
 
 
 
 
 /***/ },
 
-/***/ "./node_modules/@ariakit/react-core/esm/__chunks/ZMWF7ASR.js"
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js"
 /*!*******************************************************************!*\
-  !*** ./node_modules/@ariakit/react-core/esm/__chunks/ZMWF7ASR.js ***!
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js ***!
   \*******************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Composite: () => (/* binding */ Composite),
-/* harmony export */   useComposite: () => (/* binding */ useComposite)
+/* harmony export */   ComboboxContextProvider: () => (/* binding */ ComboboxContextProvider),
+/* harmony export */   ComboboxItemCheckedContext: () => (/* binding */ ComboboxItemCheckedContext),
+/* harmony export */   ComboboxItemValueContext: () => (/* binding */ ComboboxItemValueContext),
+/* harmony export */   ComboboxListRoleContext: () => (/* binding */ ComboboxListRoleContext),
+/* harmony export */   ComboboxScopedContextProvider: () => (/* binding */ ComboboxScopedContextProvider),
+/* harmony export */   useComboboxContext: () => (/* binding */ useComboboxContext),
+/* harmony export */   useComboboxProviderContext: () => (/* binding */ useComboboxProviderContext),
+/* harmony export */   useComboboxScopedContext: () => (/* binding */ useComboboxScopedContext)
 /* harmony export */ });
-/* harmony import */ var _5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./5VQZOHHZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/5VQZOHHZ.js");
-/* harmony import */ var _AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AVVXDJMZ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/AVVXDJMZ.js");
-/* harmony import */ var _U6HHPQDW_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./U6HHPQDW.js */ "./node_modules/@ariakit/react-core/esm/__chunks/U6HHPQDW.js");
-/* harmony import */ var _GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/array */ "./node_modules/@ariakit/core/esm/__chunks/7PRQYBBV.js");
-/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
-/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
-/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _E5E7U2B6_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./E5E7U2B6.js */ "./node_modules/@ariakit/react-core/esm/__chunks/E5E7U2B6.js");
+/* harmony import */ var _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./57GJCRRF.js */ "./node_modules/@ariakit/react-core/esm/__chunks/57GJCRRF.js");
+/* harmony import */ var _ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react */ "react");
 "use client";
 
 
 
 
+// src/combobox/combobox-context.tsx
 
-
-// src/composite/composite.tsx
-
-
-
-
-
-
-
-var TagName = "div";
-function isGrid(items) {
-  return items.some((item) => !!item.rowId);
-}
-function isPrintableKey(event) {
-  const target = event.target;
-  if (target && !(0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.isTextField)(target)) return false;
-  return event.key.length === 1 && !event.ctrlKey && !event.metaKey;
-}
-function isModifierKey(event) {
-  return event.key === "Shift" || event.key === "Control" || event.key === "Alt" || event.key === "Meta";
-}
-function useKeyboardEventProxy(store, onKeyboardEvent, previousElementRef) {
-  return (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
-    var _a;
-    onKeyboardEvent == null ? void 0 : onKeyboardEvent(event);
-    if (event.defaultPrevented) return;
-    if (event.isPropagationStopped()) return;
-    if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isSelfTarget)(event)) return;
-    if (isModifierKey(event)) return;
-    if (isPrintableKey(event)) return;
-    const state = store.getState();
-    const activeElement = (_a = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, state.activeId)) == null ? void 0 : _a.element;
-    if (!activeElement) return;
-    const { view, ...eventInit } = event;
-    const previousElement = previousElementRef == null ? void 0 : previousElementRef.current;
-    if (activeElement !== previousElement) {
-      activeElement.focus();
-    }
-    if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireKeyboardEvent)(activeElement, event.type, eventInit)) {
-      event.preventDefault();
-    }
-    if (event.currentTarget.contains(activeElement)) {
-      event.stopPropagation();
-    }
-  });
-}
-function findFirstEnabledItemInTheLastRow(items) {
-  return (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.findFirstEnabledItem)(
-    (0,_ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_5__.flatten2DArray)((0,_ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_5__.reverseArray)((0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.groupItemsByRows)(items)))
-  );
-}
-function useScheduleFocus(store) {
-  const [scheduled, setScheduled] = (0,react__WEBPACK_IMPORTED_MODULE_10__.useState)(false);
-  const schedule = (0,react__WEBPACK_IMPORTED_MODULE_10__.useCallback)(() => setScheduled(true), []);
-  const activeItem = store.useState(
-    (state) => (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, state.activeId)
-  );
-  (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
-    const activeElement = activeItem == null ? void 0 : activeItem.element;
-    if (!scheduled) return;
-    if (!activeElement) return;
-    setScheduled(false);
-    activeElement.focus({ preventScroll: true });
-  }, [activeItem, scheduled]);
-  return schedule;
-}
-var useComposite = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook)(
-  function useComposite2({
-    store,
-    composite = true,
-    focusOnMove = composite,
-    moveOnKeyPress = true,
-    ...props
-  }) {
-    const context = (0,_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_1__.useCompositeProviderContext)();
-    store = store || context;
-    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.invariant)(
-      store,
-       true && "Composite must receive a `store` prop or be wrapped in a CompositeProvider component."
-    );
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(null);
-    const previousElementRef = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(null);
-    const scheduleFocus = useScheduleFocus(store);
-    const moves = store.useState("moves");
-    const [, setBaseElement] = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useTransactionState)(
-      composite ? store.setBaseElement : null
-    );
-    (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
-      var _a;
-      if (!store) return;
-      if (!moves) return;
-      if (!composite) return;
-      if (!focusOnMove) return;
-      const { activeId: activeId2 } = store.getState();
-      const itemElement = (_a = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId2)) == null ? void 0 : _a.element;
-      if (!itemElement) return;
-      (0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__.focusIntoView)(itemElement);
-    }, [store, moves, composite, focusOnMove]);
-    (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
-      if (!store) return;
-      if (!moves) return;
-      if (!composite) return;
-      const { baseElement, activeId: activeId2 } = store.getState();
-      const isSelfAcive = activeId2 === null;
-      if (!isSelfAcive) return;
-      if (!baseElement) return;
-      const previousElement = previousElementRef.current;
-      previousElementRef.current = null;
-      if (previousElement) {
-        (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireBlurEvent)(previousElement, { relatedTarget: baseElement });
-      }
-      if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__.hasFocus)(baseElement)) {
-        baseElement.focus();
-      }
-    }, [store, moves, composite]);
-    const activeId = store.useState("activeId");
-    const virtualFocus = store.useState("virtualFocus");
-    (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
-      var _a;
-      if (!store) return;
-      if (!composite) return;
-      if (!virtualFocus) return;
-      const previousElement = previousElementRef.current;
-      previousElementRef.current = null;
-      if (!previousElement) return;
-      const activeElement = (_a = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId)) == null ? void 0 : _a.element;
-      const relatedTarget = activeElement || (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.getActiveElement)(previousElement);
-      if (relatedTarget === previousElement) return;
-      (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireBlurEvent)(previousElement, { relatedTarget });
-    }, [store, activeId, virtualFocus, composite]);
-    const onKeyDownCapture = useKeyboardEventProxy(
-      store,
-      props.onKeyDownCapture,
-      previousElementRef
-    );
-    const onKeyUpCapture = useKeyboardEventProxy(
-      store,
-      props.onKeyUpCapture,
-      previousElementRef
-    );
-    const onFocusCaptureProp = props.onFocusCapture;
-    const onFocusCapture = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
-      onFocusCaptureProp == null ? void 0 : onFocusCaptureProp(event);
-      if (event.defaultPrevented) return;
-      if (!store) return;
-      const { virtualFocus: virtualFocus2 } = store.getState();
-      if (!virtualFocus2) return;
-      const previousActiveElement = event.relatedTarget;
-      const isSilentlyFocused = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.silentlyFocused)(event.currentTarget);
-      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isSelfTarget)(event) && isSilentlyFocused) {
-        event.stopPropagation();
-        previousElementRef.current = previousActiveElement;
-      }
-    });
-    const onFocusProp = props.onFocus;
-    const onFocus = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
-      onFocusProp == null ? void 0 : onFocusProp(event);
-      if (event.defaultPrevented) return;
-      if (!composite) return;
-      if (!store) return;
-      const { relatedTarget } = event;
-      const { virtualFocus: virtualFocus2 } = store.getState();
-      if (virtualFocus2) {
-        if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isSelfTarget)(event) && !(0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, relatedTarget)) {
-          queueMicrotask(scheduleFocus);
-        }
-      } else if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isSelfTarget)(event)) {
-        store.setActiveId(null);
-      }
-    });
-    const onBlurCaptureProp = props.onBlurCapture;
-    const onBlurCapture = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
-      var _a;
-      onBlurCaptureProp == null ? void 0 : onBlurCaptureProp(event);
-      if (event.defaultPrevented) return;
-      if (!store) return;
-      const { virtualFocus: virtualFocus2, activeId: activeId2 } = store.getState();
-      if (!virtualFocus2) return;
-      const activeElement = (_a = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId2)) == null ? void 0 : _a.element;
-      const nextActiveElement = event.relatedTarget;
-      const nextActiveElementIsItem = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, nextActiveElement);
-      const previousElement = previousElementRef.current;
-      previousElementRef.current = null;
-      if ((0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isSelfTarget)(event) && nextActiveElementIsItem) {
-        if (nextActiveElement === activeElement) {
-          if (previousElement && previousElement !== nextActiveElement) {
-            (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireBlurEvent)(previousElement, event);
-          }
-        } else if (activeElement) {
-          (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireBlurEvent)(activeElement, event);
-        } else if (previousElement) {
-          (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireBlurEvent)(previousElement, event);
-        }
-        event.stopPropagation();
-      } else {
-        const targetIsItem = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.isItem)(store, event.target);
-        if (!targetIsItem && activeElement) {
-          (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.fireBlurEvent)(activeElement, event);
-        }
-      }
-    });
-    const onKeyDownProp = props.onKeyDown;
-    const moveOnKeyPressProp = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(moveOnKeyPress);
-    const onKeyDown = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
-      var _a;
-      onKeyDownProp == null ? void 0 : onKeyDownProp(event);
-      if (event.nativeEvent.isComposing) return;
-      if (event.defaultPrevented) return;
-      if (!store) return;
-      if (!(0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isSelfTarget)(event)) return;
-      const { orientation, renderedItems, activeId: activeId2 } = store.getState();
-      const activeItem = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, activeId2);
-      if ((_a = activeItem == null ? void 0 : activeItem.element) == null ? void 0 : _a.isConnected) return;
-      const isVertical = orientation !== "horizontal";
-      const isHorizontal = orientation !== "vertical";
-      const grid = isGrid(renderedItems);
-      const isHorizontalKey = event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "Home" || event.key === "End";
-      if (isHorizontalKey && (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.isTextField)(event.currentTarget)) return;
-      const up = () => {
-        if (grid) {
-          const item = findFirstEnabledItemInTheLastRow(renderedItems);
-          return item == null ? void 0 : item.id;
-        }
-        return store == null ? void 0 : store.last();
-      };
-      const keyMap = {
-        ArrowUp: (grid || isVertical) && up,
-        ArrowRight: (grid || isHorizontal) && store.first,
-        ArrowDown: (grid || isVertical) && store.first,
-        ArrowLeft: (grid || isHorizontal) && store.last,
-        Home: store.first,
-        End: store.last,
-        PageUp: store.first,
-        PageDown: store.last
-      };
-      const action = keyMap[event.key];
-      if (action) {
-        const id = action();
-        if (id !== void 0) {
-          if (!moveOnKeyPressProp(event)) return;
-          event.preventDefault();
-          store.move(id);
-        }
-      }
-    });
-    props = (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useWrapElement)(
-      props,
-      (element) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_AVVXDJMZ_js__WEBPACK_IMPORTED_MODULE_1__.CompositeContextProvider, { value: store, children: element }),
-      [store]
-    );
-    const activeDescendant = store.useState((state) => {
-      var _a;
-      if (!store) return;
-      if (!composite) return;
-      if (!state.virtualFocus) return;
-      return (_a = (0,_5VQZOHHZ_js__WEBPACK_IMPORTED_MODULE_0__.getEnabledItem)(store, state.activeId)) == null ? void 0 : _a.id;
-    });
-    props = {
-      "aria-activedescendant": activeDescendant,
-      ...props,
-      ref: (0,_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useMergeRefs)(ref, setBaseElement, props.ref),
-      onKeyDownCapture,
-      onKeyUpCapture,
-      onFocusCapture,
-      onFocus,
-      onBlurCapture,
-      onKeyDown
-    };
-    const focusable = store.useState(
-      (state) => composite && (state.virtualFocus || state.activeId === null)
-    );
-    props = (0,_U6HHPQDW_js__WEBPACK_IMPORTED_MODULE_2__.useFocusable)({ focusable, ...props });
-    return props;
-  }
+var ComboboxListRoleContext = (0,react__WEBPACK_IMPORTED_MODULE_3__.createContext)(
+  void 0
 );
-var Composite = (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function Composite2(props) {
-  const htmlProps = useComposite(props);
-  return (0,_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createElement)(TagName, htmlProps);
-});
+var ctx = (0,_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.createStoreContext)(
+  [_E5E7U2B6_js__WEBPACK_IMPORTED_MODULE_0__.PopoverContextProvider, _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_1__.CompositeContextProvider],
+  [_E5E7U2B6_js__WEBPACK_IMPORTED_MODULE_0__.PopoverScopedContextProvider, _57GJCRRF_js__WEBPACK_IMPORTED_MODULE_1__.CompositeScopedContextProvider]
+);
+var useComboboxContext = ctx.useContext;
+var useComboboxScopedContext = ctx.useScopedContext;
+var useComboboxProviderContext = ctx.useProviderContext;
+var ComboboxContextProvider = ctx.ContextProvider;
+var ComboboxScopedContextProvider = ctx.ScopedContextProvider;
+var ComboboxItemValueContext = (0,react__WEBPACK_IMPORTED_MODULE_3__.createContext)(
+  void 0
+);
+var ComboboxItemCheckedContext = (0,react__WEBPACK_IMPORTED_MODULE_3__.createContext)(false);
+
+
+
+
+/***/ },
+
+/***/ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js"
+/*!*******************************************************************!*\
+  !*** ./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js ***!
+  \*******************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createElement: () => (/* binding */ createElement),
+/* harmony export */   createHook: () => (/* binding */ createHook),
+/* harmony export */   createStoreContext: () => (/* binding */ createStoreContext),
+/* harmony export */   forwardRef: () => (/* binding */ forwardRef2),
+/* harmony export */   memo: () => (/* binding */ memo2)
+/* harmony export */ });
+/* harmony import */ var _G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _YXGXYGQX_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./YXGXYGQX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXGXYGQX.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+"use client";
+
+
+
+// src/utils/system.tsx
+
+
+function forwardRef2(render) {
+  const Role = react__WEBPACK_IMPORTED_MODULE_2__.forwardRef(
+    // @ts-ignore Incompatible with React 19 types. Ignore for now.
+    (props, ref) => render({ ...props, ref })
+  );
+  Role.displayName = render.displayName || render.name;
+  return Role;
+}
+function memo2(Component, propsAreEqual) {
+  return react__WEBPACK_IMPORTED_MODULE_2__.memo(Component, propsAreEqual);
+}
+function createElement(Type, props) {
+  const { wrapElement, render, ...rest } = props;
+  const mergedRef = (0,_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_0__.useMergeRefs)(props.ref, (0,_YXGXYGQX_js__WEBPACK_IMPORTED_MODULE_1__.getRefProperty)(render));
+  let element;
+  if (react__WEBPACK_IMPORTED_MODULE_2__.isValidElement(render)) {
+    const renderProps = {
+      // @ts-ignore Incompatible with React 19 types. Ignore for now.
+      ...render.props,
+      ref: mergedRef
+    };
+    element = react__WEBPACK_IMPORTED_MODULE_2__.cloneElement(render, (0,_YXGXYGQX_js__WEBPACK_IMPORTED_MODULE_1__.mergeProps)(rest, renderProps));
+  } else if (render) {
+    element = render(rest);
+  } else {
+    element = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(Type, { ...rest });
+  }
+  if (wrapElement) {
+    return wrapElement(element);
+  }
+  return element;
+}
+function createHook(useProps) {
+  const useRole = (props = {}) => {
+    return useProps(props);
+  };
+  useRole.displayName = useProps.name;
+  return useRole;
+}
+function createStoreContext(providers = [], scopedProviders = []) {
+  const context = react__WEBPACK_IMPORTED_MODULE_2__.createContext(void 0);
+  const scopedContext = react__WEBPACK_IMPORTED_MODULE_2__.createContext(void 0);
+  const useContext2 = () => react__WEBPACK_IMPORTED_MODULE_2__.useContext(context);
+  const useScopedContext = (onlyScoped = false) => {
+    const scoped = react__WEBPACK_IMPORTED_MODULE_2__.useContext(scopedContext);
+    const store = useContext2();
+    if (onlyScoped) return scoped;
+    return scoped || store;
+  };
+  const useProviderContext = () => {
+    const scoped = react__WEBPACK_IMPORTED_MODULE_2__.useContext(scopedContext);
+    const store = useContext2();
+    if (scoped && scoped === store) return;
+    return store;
+  };
+  const ContextProvider = (props) => {
+    return providers.reduceRight(
+      (children, Provider) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(Provider, { ...props, children }),
+      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(context.Provider, { ...props })
+    );
+  };
+  const ScopedContextProvider = (props) => {
+    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(ContextProvider, { ...props, children: scopedProviders.reduceRight(
+      (children, Provider) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(Provider, { ...props, children }),
+      /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(scopedContext.Provider, { ...props })
+    ) });
+  };
+  return {
+    context,
+    scopedContext,
+    useContext: useContext2,
+    useScopedContext,
+    useProviderContext,
+    ContextProvider,
+    ScopedContextProvider
+  };
+}
 
 
 
@@ -7205,9 +6532,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ComboboxItemValue: () => (/* binding */ ComboboxItemValue),
 /* harmony export */   useComboboxItemValue: () => (/* binding */ useComboboxItemValue)
 /* harmony export */ });
-/* harmony import */ var _chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/CVCFNOHX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js");
-/* harmony import */ var _chunks_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/Q5W46E73.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q5W46E73.js");
-/* harmony import */ var _chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../__chunks/GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
+/* harmony import */ var _chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/YXOTZ32N.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js");
+/* harmony import */ var _chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../__chunks/ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
 /* harmony import */ var _ariakit_core_utils_array__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/array */ "./node_modules/@ariakit/core/esm/__chunks/7PRQYBBV.js");
 /* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react */ "react");
@@ -7299,12 +6626,12 @@ function splitValue(itemValue, userValue) {
   });
   return parts;
 }
-var useComboboxItemValue = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.createHook)(function useComboboxItemValue2({ store, value, userValue, ...props }) {
-  const context = (0,_chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_0__.useComboboxScopedContext)();
+var useComboboxItemValue = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.createHook)(function useComboboxItemValue2({ store, value, userValue, ...props }) {
+  const context = (0,_chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_0__.useComboboxScopedContext)();
   store = store || context;
-  const itemContext = (0,react__WEBPACK_IMPORTED_MODULE_5__.useContext)(_chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_0__.ComboboxItemValueContext);
+  const itemContext = (0,react__WEBPACK_IMPORTED_MODULE_5__.useContext)(_chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_0__.ComboboxItemValueContext);
   const itemValue = value != null ? value : itemContext;
-  const inputValue = (0,_chunks_Q5W46E73_js__WEBPACK_IMPORTED_MODULE_1__.useStoreState)(store, (state) => userValue != null ? userValue : state == null ? void 0 : state.value);
+  const inputValue = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreState)(store, (state) => userValue != null ? userValue : state == null ? void 0 : state.value);
   const children = (0,react__WEBPACK_IMPORTED_MODULE_5__.useMemo)(() => {
     if (!itemValue) return;
     if (!inputValue) return itemValue;
@@ -7316,9 +6643,9 @@ var useComboboxItemValue = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.c
   };
   return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_4__.removeUndefinedValues)(props);
 });
-var ComboboxItemValue = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.forwardRef)(function ComboboxItemValue2(props) {
+var ComboboxItemValue = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.forwardRef)(function ComboboxItemValue2(props) {
   const htmlProps = useComboboxItemValue(props);
-  return (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_2__.createElement)(TagName, htmlProps);
+  return (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.createElement)(TagName, htmlProps);
 });
 
 
@@ -7337,10 +6664,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ComboboxLabel: () => (/* binding */ ComboboxLabel),
 /* harmony export */   useComboboxLabel: () => (/* binding */ useComboboxLabel)
 /* harmony export */ });
-/* harmony import */ var _chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/CVCFNOHX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js");
-/* harmony import */ var _chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var _chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/YXOTZ32N.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js");
+/* harmony import */ var _chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../__chunks/ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
 "use client";
+
 
 
 
@@ -7354,15 +6683,15 @@ __webpack_require__.r(__webpack_exports__);
 // src/combobox/combobox-label.tsx
 
 var TagName = "label";
-var useComboboxLabel = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createHook)(
+var useComboboxLabel = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.createHook)(
   function useComboboxLabel2({ store, ...props }) {
-    const context = (0,_chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_0__.useComboboxProviderContext)();
+    const context = (0,_chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_0__.useComboboxProviderContext)();
     store = store || context;
-    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_2__.invariant)(
+    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__.invariant)(
       store,
        true && "ComboboxLabel must receive a `store` prop or be wrapped in a ComboboxProvider component."
     );
-    const comboboxId = store.useState((state) => {
+    const comboboxId = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_1__.useStoreState)(store, (state) => {
       var _a;
       return (_a = state.baseElement) == null ? void 0 : _a.id;
     });
@@ -7370,13 +6699,13 @@ var useComboboxLabel = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.creat
       htmlFor: comboboxId,
       ...props
     };
-    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_2__.removeUndefinedValues)(props);
+    return (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_3__.removeUndefinedValues)(props);
   }
 );
-var ComboboxLabel = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.memo)(
-  (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.forwardRef)(function ComboboxLabel2(props) {
+var ComboboxLabel = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.memo)(
+  (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.forwardRef)(function ComboboxLabel2(props) {
     const htmlProps = useComboboxLabel(props);
-    return (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_1__.createElement)(TagName, htmlProps);
+    return (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_2__.createElement)(TagName, htmlProps);
   })
 );
 
@@ -7395,8 +6724,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ComboboxProvider: () => (/* binding */ ComboboxProvider)
 /* harmony export */ });
-/* harmony import */ var _chunks_SVN33SY6_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/SVN33SY6.js */ "./node_modules/@ariakit/react-core/esm/__chunks/SVN33SY6.js");
-/* harmony import */ var _chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/CVCFNOHX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js");
+/* harmony import */ var _chunks_6T5FLGQD_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/6T5FLGQD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/6T5FLGQD.js");
+/* harmony import */ var _chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/YXOTZ32N.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 "use client";
 
@@ -7420,8 +6749,8 @@ __webpack_require__.r(__webpack_exports__);
 // src/combobox/combobox-provider.tsx
 
 function ComboboxProvider(props = {}) {
-  const store = (0,_chunks_SVN33SY6_js__WEBPACK_IMPORTED_MODULE_0__.useComboboxStore)(props);
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_1__.ComboboxContextProvider, { value: store, children: props.children });
+  const store = (0,_chunks_6T5FLGQD_js__WEBPACK_IMPORTED_MODULE_0__.useComboboxStore)(props);
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_1__.ComboboxContextProvider, { value: store, children: props.children });
 }
 
 
@@ -7440,18 +6769,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Combobox: () => (/* binding */ Combobox),
 /* harmony export */   useCombobox: () => (/* binding */ useCombobox)
 /* harmony export */ });
-/* harmony import */ var _chunks_ZMWF7ASR_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/ZMWF7ASR.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZMWF7ASR.js");
-/* harmony import */ var _chunks_4POTBZ2J_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/4POTBZ2J.js */ "./node_modules/@ariakit/react-core/esm/__chunks/4POTBZ2J.js");
-/* harmony import */ var _chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../__chunks/CVCFNOHX.js */ "./node_modules/@ariakit/react-core/esm/__chunks/CVCFNOHX.js");
-/* harmony import */ var _chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../__chunks/GWSL6KNJ.js */ "./node_modules/@ariakit/react-core/esm/__chunks/GWSL6KNJ.js");
-/* harmony import */ var _chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../__chunks/KPHZR4MB.js */ "./node_modules/@ariakit/react-core/esm/__chunks/KPHZR4MB.js");
-/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
-/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
-/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
-/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
-/* harmony import */ var _ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/store */ "./node_modules/@ariakit/core/esm/__chunks/SXKM4CGU.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _chunks_TQQOMENK_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../__chunks/TQQOMENK.js */ "./node_modules/@ariakit/react-core/esm/__chunks/TQQOMENK.js");
+/* harmony import */ var _chunks_Q62CGBNE_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../__chunks/Q62CGBNE.js */ "./node_modules/@ariakit/react-core/esm/__chunks/Q62CGBNE.js");
+/* harmony import */ var _chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../__chunks/YXOTZ32N.js */ "./node_modules/@ariakit/react-core/esm/__chunks/YXOTZ32N.js");
+/* harmony import */ var _chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../__chunks/XYGGOF6W.js */ "./node_modules/@ariakit/react-core/esm/__chunks/XYGGOF6W.js");
+/* harmony import */ var _chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../__chunks/ZNLX6YSC.js */ "./node_modules/@ariakit/react-core/esm/__chunks/ZNLX6YSC.js");
+/* harmony import */ var _chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../__chunks/G47ZC7SD.js */ "./node_modules/@ariakit/react-core/esm/__chunks/G47ZC7SD.js");
+/* harmony import */ var _ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @ariakit/core/utils/dom */ "./node_modules/@ariakit/core/esm/__chunks/3DNM6L6E.js");
+/* harmony import */ var _ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @ariakit/core/utils/events */ "./node_modules/@ariakit/core/esm/utils/events.js");
+/* harmony import */ var _ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @ariakit/core/utils/focus */ "./node_modules/@ariakit/core/esm/utils/focus.js");
+/* harmony import */ var _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @ariakit/core/utils/misc */ "./node_modules/@ariakit/core/esm/__chunks/XMCVU3LR.js");
+/* harmony import */ var _ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @ariakit/core/utils/store */ "./node_modules/@ariakit/core/esm/__chunks/SXKM4CGU.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react */ "react");
 "use client";
+
 
 
 
@@ -7483,7 +6814,7 @@ function isFirstItemAutoSelected(items, activeValue, autoSelect) {
 function hasCompletionString(value, activeValue) {
   if (!activeValue) return false;
   if (value == null) return false;
-  value = (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_8__.normalizeString)(value);
+  value = (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.normalizeString)(value);
   return activeValue.length > value.length && activeValue.toLowerCase().indexOf(value.toLowerCase()) === 0;
 }
 function isInputEvent(event) {
@@ -7500,7 +6831,7 @@ function getDefaultAutoSelectId(items) {
   });
   return item == null ? void 0 : item.id;
 }
-var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook)(
+var useCombobox = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.createHook)(
   function useCombobox2({
     store,
     focusable = true,
@@ -7519,33 +6850,34 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
     autoComplete = "list",
     ...props
   }) {
-    const context = (0,_chunks_CVCFNOHX_js__WEBPACK_IMPORTED_MODULE_2__.useComboboxProviderContext)();
+    const context = (0,_chunks_YXOTZ32N_js__WEBPACK_IMPORTED_MODULE_2__.useComboboxProviderContext)();
     store = store || context;
-    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_8__.invariant)(
+    (0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.invariant)(
       store,
        true && "Combobox must receive a `store` prop or be wrapped in a ComboboxProvider component."
     );
-    const ref = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(null);
-    const [valueUpdated, forceValueUpdate] = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useForceUpdate)();
-    const canAutoSelectRef = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(false);
-    const composingRef = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(false);
-    const autoSelect = store.useState(
+    const ref = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
+    const [valueUpdated, forceValueUpdate] = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useForceUpdate)();
+    const canAutoSelectRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(false);
+    const composingRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(false);
+    const autoSelect = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(
+      store,
       (state) => state.virtualFocus && autoSelectProp
     );
     const inline = autoComplete === "inline" || autoComplete === "both";
-    const [canInline, setCanInline] = (0,react__WEBPACK_IMPORTED_MODULE_10__.useState)(inline);
-    (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useUpdateLayoutEffect)(() => {
+    const [canInline, setCanInline] = (0,react__WEBPACK_IMPORTED_MODULE_11__.useState)(inline);
+    (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useUpdateLayoutEffect)(() => {
       if (!inline) return;
       setCanInline(true);
     }, [inline]);
-    const storeValue = store.useState("value");
-    const prevSelectedValueRef = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(void 0);
-    (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
-      return (0,_ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_9__.sync)(store, ["selectedValue", "activeId"], (_, prev) => {
+    const storeValue = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "value");
+    const prevSelectedValueRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(void 0);
+    (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
+      return (0,_ariakit_core_utils_store__WEBPACK_IMPORTED_MODULE_10__.sync)(store, ["selectedValue", "activeId"], (_, prev) => {
         prevSelectedValueRef.current = prev.selectedValue;
       });
-    }, []);
-    const inlineActiveValue = store.useState((state) => {
+    }, [store]);
+    const inlineActiveValue = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, (state) => {
       var _a;
       if (!inline) return;
       if (!canInline) return;
@@ -7555,10 +6887,10 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       }
       return state.activeValue;
     });
-    const items = store.useState("renderedItems");
-    const open = store.useState("open");
-    const contentElement = store.useState("contentElement");
-    const value = (0,react__WEBPACK_IMPORTED_MODULE_10__.useMemo)(() => {
+    const items = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "renderedItems");
+    const open = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "open");
+    const contentElement = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "contentElement");
+    const value = (0,react__WEBPACK_IMPORTED_MODULE_11__.useMemo)(() => {
       if (!inline) return storeValue;
       if (!canInline) return storeValue;
       const firstItemAutoSelected = isFirstItemAutoSelected(
@@ -7575,7 +6907,7 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       }
       return inlineActiveValue || storeValue;
     }, [inline, canInline, items, inlineActiveValue, autoSelect, storeValue]);
-    (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
+    (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
       const element = ref.current;
       if (!element) return;
       const onCompositeItemMove = () => setCanInline(true);
@@ -7584,7 +6916,7 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
         element.removeEventListener("combobox-item-move", onCompositeItemMove);
       };
     }, []);
-    (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
+    (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
       if (!inline) return;
       if (!canInline) return;
       if (!inlineActiveValue) return;
@@ -7595,20 +6927,20 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       );
       if (!firstItemAutoSelected) return;
       if (!hasCompletionString(storeValue, inlineActiveValue)) return;
-      let cleanup = _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_8__.noop;
+      let cleanup = _ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.noop;
       queueMicrotask(() => {
         const element = ref.current;
         if (!element) return;
-        const { start: prevStart, end: prevEnd } = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.getTextboxSelection)(element);
+        const { start: prevStart, end: prevEnd } = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.getTextboxSelection)(element);
         const nextStart = storeValue.length;
         const nextEnd = inlineActiveValue.length;
-        (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.setSelectionRange)(element, nextStart, nextEnd);
+        (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.setSelectionRange)(element, nextStart, nextEnd);
         cleanup = () => {
-          if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_7__.hasFocus)(element)) return;
-          const { start, end } = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.getTextboxSelection)(element);
+          if (!(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__.hasFocus)(element)) return;
+          const { start, end } = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.getTextboxSelection)(element);
           if (start !== nextStart) return;
           if (end !== nextEnd) return;
-          (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.setSelectionRange)(element, prevStart, prevEnd);
+          (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.setSelectionRange)(element, prevStart, prevEnd);
         };
       });
       return () => cleanup();
@@ -7621,19 +6953,25 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       autoSelect,
       storeValue
     ]);
-    const scrollingElementRef = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(null);
-    const getAutoSelectIdProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)(getAutoSelectId);
-    const autoSelectIdRef = (0,react__WEBPACK_IMPORTED_MODULE_10__.useRef)(null);
-    (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
+    const scrollingElementRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
+    const getAutoSelectIdProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)(getAutoSelectId);
+    const autoSelectIdRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(null);
+    const userScrolledRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(false);
+    const isAutoScrollingRef = (0,react__WEBPACK_IMPORTED_MODULE_11__.useRef)(false);
+    (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
       if (!open) return;
       if (!contentElement) return;
-      const scrollingElement = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.getScrollingElement)(contentElement);
+      const scrollingElement = (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.getScrollingElement)(contentElement);
       if (!scrollingElement) return;
       scrollingElementRef.current = scrollingElement;
       const onUserScroll = () => {
         canAutoSelectRef.current = false;
+        userScrolledRef.current = true;
       };
       const onScroll = () => {
+        if (!isAutoScrollingRef.current) {
+          userScrolledRef.current = true;
+        }
         if (!store) return;
         if (!canAutoSelectRef.current) return;
         const { activeId } = store.getState();
@@ -7651,24 +6989,26 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
         scrollingElement.removeEventListener("scroll", onScroll, true);
       };
     }, [open, contentElement, store]);
-    (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+    (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useSafeLayoutEffect)(() => {
+      userScrolledRef.current = false;
       if (!storeValue) return;
       if (composingRef.current) return;
       canAutoSelectRef.current = true;
     }, [storeValue]);
-    (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useSafeLayoutEffect)(() => {
+    (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useSafeLayoutEffect)(() => {
       if (autoSelect !== "always" && open) return;
       canAutoSelectRef.current = open;
     }, [autoSelect, open]);
-    const resetValueOnSelect = store.useState("resetValueOnSelect");
-    (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useUpdateEffect)(() => {
+    const resetValueOnSelect = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(store, "resetValueOnSelect");
+    (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useUpdateEffect)(() => {
       var _a, _b;
       const canAutoSelect = canAutoSelectRef.current;
       if (!store) return;
       if (!open) return;
-      if (!canAutoSelect && !resetValueOnSelect) return;
+      if (!canAutoSelect && (!resetValueOnSelect || userScrolledRef.current))
+        return;
       const { baseElement, contentElement: contentElement2, activeId } = store.getState();
-      if (baseElement && !(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_7__.hasFocus)(baseElement)) return;
+      if (baseElement && !(0,_ariakit_core_utils_focus__WEBPACK_IMPORTED_MODULE_8__.hasFocus)(baseElement)) return;
       if (contentElement2 == null ? void 0 : contentElement2.hasAttribute("data-placing")) {
         const observer = new MutationObserver(forceValueUpdate);
         observer.observe(contentElement2, { attributeFilter: ["data-placing"] });
@@ -7682,7 +7022,11 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       } else {
         const element = (_b = store.item(activeId || store.first())) == null ? void 0 : _b.element;
         if (element && "scrollIntoView" in element) {
+          isAutoScrollingRef.current = true;
           element.scrollIntoView({ block: "nearest", inline: "nearest" });
+          requestAnimationFrame(() => {
+            isAutoScrollingRef.current = false;
+          });
         }
       }
       return;
@@ -7696,7 +7040,7 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       getAutoSelectIdProp,
       items
     ]);
-    (0,react__WEBPACK_IMPORTED_MODULE_10__.useEffect)(() => {
+    (0,react__WEBPACK_IMPORTED_MODULE_11__.useEffect)(() => {
       if (!inline) return;
       const combobox = ref.current;
       if (!combobox) return;
@@ -7704,7 +7048,7 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
         (value2) => !!value2
       );
       const onBlur2 = (event) => {
-        if (elements.every((el) => (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_6__.isFocusEventOutside)(event, el))) {
+        if (elements.every((el) => (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.isFocusEventOutside)(event, el))) {
           store == null ? void 0 : store.setValue(value);
         }
       };
@@ -7722,13 +7066,13 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       return currentTarget.value.length >= showMinLength;
     };
     const onChangeProp = props.onChange;
-    const showOnChangeProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(showOnChange != null ? showOnChange : canShow);
-    const setValueOnChangeProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(
+    const showOnChangeProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(showOnChange != null ? showOnChange : canShow);
+    const setValueOnChangeProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(
       // If the combobox is combined with tags, the value will be set by the tag
       // input component.
       setValueOnChange != null ? setValueOnChange : !store.tag
     );
-    const onChange = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
+    const onChange = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
       onChangeProp == null ? void 0 : onChangeProp(event);
       if (event.defaultPrevented) return;
       if (!store) return;
@@ -7751,7 +7095,7 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
         const isSameValue = value2 === store.getState().value;
         store.setValue(value2);
         queueMicrotask(() => {
-          (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.setSelectionRange)(currentTarget, selectionStart, selectionEnd);
+          (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.setSelectionRange)(currentTarget, selectionStart, selectionEnd);
         });
         if (inline && autoSelect && isSameValue) {
           forceValueUpdate();
@@ -7765,7 +7109,7 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       }
     });
     const onCompositionEndProp = props.onCompositionEnd;
-    const onCompositionEnd = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
+    const onCompositionEnd = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
       canAutoSelectRef.current = true;
       composingRef.current = false;
       onCompositionEndProp == null ? void 0 : onCompositionEndProp(event);
@@ -7774,12 +7118,12 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       forceValueUpdate();
     });
     const onMouseDownProp = props.onMouseDown;
-    const blurActiveItemOnClickProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(
+    const blurActiveItemOnClickProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(
       blurActiveItemOnClick != null ? blurActiveItemOnClick : (() => !!(store == null ? void 0 : store.getState().includesBaseElement))
     );
-    const setValueOnClickProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(setValueOnClick);
-    const showOnClickProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(showOnClick != null ? showOnClick : canShow);
-    const onMouseDown = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
+    const setValueOnClickProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(setValueOnClick);
+    const showOnClickProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(showOnClick != null ? showOnClick : canShow);
+    const onMouseDown = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
       onMouseDownProp == null ? void 0 : onMouseDownProp(event);
       if (event.defaultPrevented) return;
       if (event.button) return;
@@ -7792,12 +7136,12 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
         store.setValue(value);
       }
       if (showOnClickProp(event)) {
-        (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_6__.queueBeforeEvent)(event.currentTarget, "mouseup", store.show);
+        (0,_ariakit_core_utils_events__WEBPACK_IMPORTED_MODULE_7__.queueBeforeEvent)(event.currentTarget, "mouseup", store.show);
       }
     });
     const onKeyDownProp = props.onKeyDown;
-    const showOnKeyPressProp = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useBooleanEvent)(showOnKeyPress != null ? showOnKeyPress : canShow);
-    const onKeyDown = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
+    const showOnKeyPressProp = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useBooleanEvent)(showOnKeyPress != null ? showOnKeyPress : canShow);
+    const onKeyDown = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
       onKeyDownProp == null ? void 0 : onKeyDownProp(event);
       if (!event.repeat) {
         canAutoSelectRef.current = false;
@@ -7818,50 +7162,53 @@ var useCombobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createHook
       }
     });
     const onBlurProp = props.onBlur;
-    const onBlur = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useEvent)((event) => {
+    const onBlur = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useEvent)((event) => {
       canAutoSelectRef.current = false;
       onBlurProp == null ? void 0 : onBlurProp(event);
       if (event.defaultPrevented) return;
     });
-    const id = (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useId)(props.id);
+    const id = (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useId)(props.id);
     const ariaAutoComplete = isAriaAutoCompleteValue(autoComplete) ? autoComplete : void 0;
-    const isActiveItem = store.useState((state) => state.activeId === null);
+    const isActiveItem = (0,_chunks_XYGGOF6W_js__WEBPACK_IMPORTED_MODULE_3__.useStoreState)(
+      store,
+      (state) => state.activeId === null
+    );
     props = {
-      id,
       role: "combobox",
       "aria-autocomplete": ariaAutoComplete,
-      "aria-haspopup": (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_5__.getPopupRole)(contentElement, "listbox"),
+      "aria-haspopup": (0,_ariakit_core_utils_dom__WEBPACK_IMPORTED_MODULE_6__.getPopupRole)(contentElement, "listbox"),
       "aria-expanded": open,
       "aria-controls": contentElement == null ? void 0 : contentElement.id,
       "data-active-item": isActiveItem || void 0,
       value,
       ...props,
-      ref: (0,_chunks_KPHZR4MB_js__WEBPACK_IMPORTED_MODULE_4__.useMergeRefs)(ref, props.ref),
+      id,
+      ref: (0,_chunks_G47ZC7SD_js__WEBPACK_IMPORTED_MODULE_5__.useMergeRefs)(ref, props.ref),
       onChange,
       onCompositionEnd,
       onMouseDown,
       onKeyDown,
       onBlur
     };
-    props = (0,_chunks_ZMWF7ASR_js__WEBPACK_IMPORTED_MODULE_0__.useComposite)({
+    props = (0,_chunks_TQQOMENK_js__WEBPACK_IMPORTED_MODULE_0__.useComposite)({
       store,
       focusable,
       ...props,
       // Enable inline autocomplete when the user moves from the combobox input
       // to an item.
       moveOnKeyPress: (event) => {
-        if ((0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_8__.isFalsyBooleanCallback)(moveOnKeyPress, event)) return false;
+        if ((0,_ariakit_core_utils_misc__WEBPACK_IMPORTED_MODULE_9__.isFalsyBooleanCallback)(moveOnKeyPress, event)) return false;
         if (inline) setCanInline(true);
         return true;
       }
     });
-    props = (0,_chunks_4POTBZ2J_js__WEBPACK_IMPORTED_MODULE_1__.usePopoverAnchor)({ store, ...props });
+    props = (0,_chunks_Q62CGBNE_js__WEBPACK_IMPORTED_MODULE_1__.usePopoverAnchor)({ store, ...props });
     return { autoComplete: "off", ...props };
   }
 );
-var Combobox = (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.forwardRef)(function Combobox2(props) {
+var Combobox = (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.forwardRef)(function Combobox2(props) {
   const htmlProps = useCombobox(props);
-  return (0,_chunks_GWSL6KNJ_js__WEBPACK_IMPORTED_MODULE_3__.createElement)(TagName, htmlProps);
+  return (0,_chunks_ZNLX6YSC_js__WEBPACK_IMPORTED_MODULE_4__.createElement)(TagName, htmlProps);
 });
 
 
@@ -9258,6 +8605,7 @@ function CalendarDateControl({
   const {
     id,
     label,
+    description,
     setValue,
     getValue,
     isValid,
@@ -9336,6 +8684,7 @@ function CalendarDateControl({
           id,
           className: "dataviews-controls__date",
           label: displayLabel,
+          help: description,
           hideLabelFromVision,
           children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_13__.Stack, { direction: "column", gap: "lg", children: [
             /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)(
@@ -9415,7 +8764,14 @@ function CalendarDateRangeControl({
   markWhenOptional,
   validity
 }) {
-  const { id, label, getValue, setValue, format: fieldFormat } = field;
+  const {
+    id,
+    label,
+    description,
+    getValue,
+    setValue,
+    format: fieldFormat
+  } = field;
   let value;
   const fieldValue = getValue({ item: data });
   if (Array.isArray(fieldValue) && fieldValue.length === 2 && fieldValue.every((date) => typeof date === "string")) {
@@ -9524,6 +8880,7 @@ function CalendarDateRangeControl({
           id,
           className: "dataviews-controls__date",
           label: displayLabel,
+          help: description,
           hideLabelFromVision,
           children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_13__.Stack, { direction: "column", gap: "lg", children: [
             /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)(
@@ -9683,18 +9040,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ DateTime)
 /* harmony export */ });
-/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! date-fns */ "./node_modules/@wordpress/dataviews/node_modules/date-fns/format.js");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_date__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/date */ "@wordpress/date");
-/* harmony import */ var _wordpress_ui__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/ui */ "./node_modules/@wordpress/ui/build-module/stack/stack.mjs");
-/* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../constants.mjs */ "./node_modules/@wordpress/dataviews/build-module/constants.mjs");
-/* harmony import */ var _utils_relative_date_control_mjs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./utils/relative-date-control.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/utils/relative-date-control.mjs");
-/* harmony import */ var _utils_get_custom_validity_mjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./utils/get-custom-validity.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/utils/get-custom-validity.mjs");
-/* harmony import */ var _field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../field-types/utils/parse-date-time.mjs */ "./node_modules/@wordpress/dataviews/build-module/field-types/utils/parse-date-time.mjs");
-/* harmony import */ var _lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../lock-unlock.mjs */ "./node_modules/@wordpress/dataviews/build-module/lock-unlock.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _wordpress_date__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/date */ "@wordpress/date");
+/* harmony import */ var _wordpress_ui__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/ui */ "./node_modules/@wordpress/ui/build-module/stack/stack.mjs");
+/* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../constants.mjs */ "./node_modules/@wordpress/dataviews/build-module/constants.mjs");
+/* harmony import */ var _utils_relative_date_control_mjs__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./utils/relative-date-control.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/utils/relative-date-control.mjs");
+/* harmony import */ var _utils_get_custom_validity_mjs__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./utils/get-custom-validity.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataform-controls/utils/get-custom-validity.mjs");
+/* harmony import */ var _field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../field-types/utils/parse-date-time.mjs */ "./node_modules/@wordpress/dataviews/build-module/field-types/utils/parse-date-time.mjs");
+/* harmony import */ var _lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../lock-unlock.mjs */ "./node_modules/@wordpress/dataviews/build-module/lock-unlock.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/components/dataform-controls/datetime.tsx
 
 
@@ -9707,16 +9063,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-var { DateCalendar, ValidatedInputControl } = (0,_lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_10__.unlock)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.privateApis);
-var formatDateTime = (date) => {
-  if (!date) {
+var { DateCalendar, ValidatedInputControl } = (0,_lock_unlock_mjs__WEBPACK_IMPORTED_MODULE_9__.unlock)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.privateApis);
+var formatDateTime = (value) => {
+  if (!value) {
     return "";
   }
-  if (typeof date === "string") {
-    return date;
-  }
-  return (0,date_fns__WEBPACK_IMPORTED_MODULE_0__.format)(date, "yyyy-MM-dd'T'HH:mm");
+  return (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.dateI18n)("Y-m-d\\TH:i", (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.getDate)(value));
 };
 function CalendarDateTimeControl({
   data,
@@ -9729,39 +9081,36 @@ function CalendarDateTimeControl({
   const { id, label, description, setValue, getValue, isValid } = field;
   const fieldValue = getValue({ item: data });
   const value = typeof fieldValue === "string" ? fieldValue : void 0;
-  const [calendarMonth, setCalendarMonth] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(() => {
-    const parsedDate = (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_9__["default"])(value);
+  const [calendarMonth, setCalendarMonth] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(() => {
+    const parsedDate = (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_8__["default"])(value);
     return parsedDate || /* @__PURE__ */ new Date();
   });
-  const inputControlRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useRef)(null);
-  const validationTimeoutRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useRef)(void 0);
-  const previousFocusRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useRef)(null);
-  const onChangeCallback = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(
+  const inputControlRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  const validationTimeoutRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(void 0);
+  const previousFocusRef = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  const onChangeCallback = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(
     (newValue) => onChange(setValue({ item: data, value: newValue })),
     [data, onChange, setValue]
   );
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
     return () => {
       if (validationTimeoutRef.current) {
         clearTimeout(validationTimeoutRef.current);
       }
     };
   }, []);
-  const onSelectDate = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(
+  const onSelectDate = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(
     (newDate) => {
       let dateTimeValue;
       if (newDate) {
-        let finalDateTime = newDate;
+        const wpDate = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.dateI18n)("Y-m-d", newDate);
+        let wpTime;
         if (value) {
-          const currentDateTime = (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_9__["default"])(value);
-          if (currentDateTime) {
-            finalDateTime = new Date(newDate);
-            finalDateTime.setHours(currentDateTime.getHours());
-            finalDateTime.setMinutes(
-              currentDateTime.getMinutes()
-            );
-          }
+          wpTime = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.dateI18n)("H:i", (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.getDate)(value));
+        } else {
+          wpTime = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.dateI18n)("H:i", newDate);
         }
+        const finalDateTime = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.getDate)(`${wpDate}T${wpTime}`);
         dateTimeValue = finalDateTime.toISOString();
         onChangeCallback(dateTimeValue);
         if (validationTimeoutRef.current) {
@@ -9784,12 +9133,12 @@ function CalendarDateTimeControl({
     },
     [onChangeCallback, value]
   );
-  const handleManualDateTimeChange = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(
+  const handleManualDateTimeChange = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(
     (newValue) => {
       if (newValue) {
-        const dateTime = new Date(newValue);
+        const dateTime = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.getDate)(newValue);
         onChangeCallback(dateTime.toISOString());
-        const parsedDate = (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_9__["default"])(dateTime.toISOString());
+        const parsedDate = (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_8__["default"])(dateTime.toISOString());
         if (parsedDate) {
           setCalendarMonth(parsedDate);
         }
@@ -9800,50 +9149,48 @@ function CalendarDateTimeControl({
     [onChangeCallback]
   );
   const { format: fieldFormat } = field;
-  const weekStartsOn = fieldFormat.weekStartsOn ?? (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_4__.getSettings)().l10n.startOfWeek;
+  const weekStartsOn = fieldFormat.weekStartsOn ?? (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.getSettings)().l10n.startOfWeek;
   const {
     timezone: { string: timezoneString }
-  } = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_4__.getSettings)();
+  } = (0,_wordpress_date__WEBPACK_IMPORTED_MODULE_3__.getSettings)();
   let displayLabel = label;
   if (isValid?.required && !markWhenOptional && !hideLabelFromVision) {
-    displayLabel = `${label} (${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Required")})`;
+    displayLabel = `${label} (${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)("Required")})`;
   } else if (!isValid?.required && markWhenOptional && !hideLabelFromVision) {
-    displayLabel = `${label} (${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Optional")})`;
+    displayLabel = `${label} (${(0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)("Optional")})`;
   }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(
-    _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.BaseControl,
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
+    _wordpress_components__WEBPACK_IMPORTED_MODULE_0__.BaseControl,
     {
       id,
       label: displayLabel,
       help: description,
       hideLabelFromVision,
-      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_5__.Stack, { direction: "column", gap: "lg", children: [
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(
-          DateCalendar,
-          {
-            style: { width: "100%" },
-            selected: value ? (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_9__["default"])(value) || void 0 : void 0,
-            onSelect: onSelectDate,
-            month: calendarMonth,
-            onMonthChange: setCalendarMonth,
-            timeZone: timezoneString || void 0,
-            weekStartsOn
-          }
-        ),
-        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(
+      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_4__.Stack, { direction: "column", gap: "lg", children: [
+        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
           ValidatedInputControl,
           {
             ref: inputControlRef,
             __next40pxDefaultSize: true,
             required: !!isValid?.required,
-            customValidity: (0,_utils_get_custom_validity_mjs__WEBPACK_IMPORTED_MODULE_8__["default"])(isValid, validity),
+            customValidity: (0,_utils_get_custom_validity_mjs__WEBPACK_IMPORTED_MODULE_7__["default"])(isValid, validity),
             type: "datetime-local",
-            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_3__.__)("Date time"),
+            label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)("Date time"),
             hideLabelFromVision: true,
-            value: value ? formatDateTime(
-              (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_9__["default"])(value) || void 0
-            ) : "",
+            value: formatDateTime(value),
             onChange: handleManualDateTimeChange
+          }
+        ),
+        /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
+          DateCalendar,
+          {
+            style: { width: "100%" },
+            selected: value ? (0,_field_types_utils_parse_date_time_mjs__WEBPACK_IMPORTED_MODULE_8__["default"])(value) || void 0 : void 0,
+            onSelect: onSelectDate,
+            month: calendarMonth,
+            onMonthChange: setCalendarMonth,
+            timeZone: timezoneString || void 0,
+            weekStartsOn
           }
         )
       ] })
@@ -9859,9 +9206,9 @@ function DateTime({
   operator,
   validity
 }) {
-  if (operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_6__.OPERATOR_IN_THE_PAST || operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_6__.OPERATOR_OVER) {
-    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(
-      _utils_relative_date_control_mjs__WEBPACK_IMPORTED_MODULE_7__["default"],
+  if (operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_5__.OPERATOR_IN_THE_PAST || operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_5__.OPERATOR_OVER) {
+    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
+      _utils_relative_date_control_mjs__WEBPACK_IMPORTED_MODULE_6__["default"],
       {
         className: "dataviews-controls__datetime",
         data,
@@ -9872,7 +9219,7 @@ function DateTime({
       }
     );
   }
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(
     CalendarDateTimeControl,
     {
       data,
@@ -10752,7 +10099,7 @@ function RelativeDateControl({
   operator
 }) {
   const options = TIME_UNITS_OPTIONS[operator === _constants_mjs__WEBPACK_IMPORTED_MODULE_5__.OPERATOR_IN_THE_PAST ? "inThePast" : "over"];
-  const { id, label, getValue, setValue } = field;
+  const { id, label, description, getValue, setValue } = field;
   const fieldValue = getValue({ item: data });
   const { value: relValue = "", unit = options[0].value } = fieldValue && typeof fieldValue === "object" ? fieldValue : {};
   const onChangeValue = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(
@@ -10780,6 +10127,7 @@ function RelativeDateControl({
       className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(className, "dataviews-controls__relative-date"),
       label,
       hideLabelFromVision,
+      help: description,
       children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)(_wordpress_ui__WEBPACK_IMPORTED_MODULE_4__.Stack, { direction: "row", gap: "sm", children: [
         /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(
           _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalNumberControl,
@@ -12178,8 +11526,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ SearchWidget)
 /* harmony export */ });
 /* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/combobox/combobox.js");
-/* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/__chunks/2G6YEJT4.js");
-/* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/__chunks/IBXZ2LQC.js");
+/* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/__chunks/LZLJ4GWW.js");
+/* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/__chunks/MXN4ZWI7.js");
 /* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/combobox/combobox-item-value.js");
 /* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/combobox/combobox-label.js");
 /* harmony import */ var _ariakit_react__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @ariakit/react */ "./node_modules/@ariakit/react-core/esm/combobox/combobox-provider.js");
@@ -13099,11 +12447,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ DataViewsLayout)
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
-/* harmony import */ var _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../dataviews-layouts/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/index.mjs");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+/* harmony import */ var _dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../dataviews-context/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-context/index.mjs");
+/* harmony import */ var _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../dataviews-layouts/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/index.mjs");
+/* harmony import */ var _hooks_use_delayed_loading_mjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../hooks/use-delayed-loading.mjs */ "./node_modules/@wordpress/dataviews/build-module/hooks/use-delayed-loading.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
 // packages/dataviews/src/components/dataviews-layout/index.tsx
+
+
 
 
 
@@ -13127,15 +12479,22 @@ function DataViewsLayout({ className }) {
     isItemClickable,
     renderItemLink,
     defaultLayouts,
-    empty = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", { children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("No results") })
-  } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_2__["default"]);
+    containerRef,
+    empty = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", { children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.__)("No results") })
+  } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useContext)(_dataviews_context_index_mjs__WEBPACK_IMPORTED_MODULE_3__["default"]);
+  const isDelayedInitialLoading = (0,_hooks_use_delayed_loading_mjs__WEBPACK_IMPORTED_MODULE_5__.useDelayedLoading)(!hasInitiallyLoaded, {
+    delay: 200
+  });
   if (!hasInitiallyLoaded) {
-    return null;
+    if (!isDelayedInitialLoading) {
+      return null;
+    }
+    return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", { className: "dataviews-loading", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", { children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Spinner, {}) }) });
   }
-  const ViewComponent = _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_3__.VIEW_LAYOUTS.find(
+  const ViewComponent = _dataviews_layouts_index_mjs__WEBPACK_IMPORTED_MODULE_4__.VIEW_LAYOUTS.find(
     (v) => v.type === view.type && defaultLayouts[v.type]
   )?.component;
-  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", { className: "dataviews-layout__container", ref: containerRef, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(
     ViewComponent,
     {
       className,
@@ -13155,7 +12514,7 @@ function DataViewsLayout({ className }) {
       view,
       empty
     }
-  );
+  ) });
 }
 
 //# sourceMappingURL=index.mjs.map
@@ -13871,7 +13230,11 @@ function CompositeGrid({
     _wordpress_components__WEBPACK_IMPORTED_MODULE_1__.Composite,
     {
       role: isInfiniteScroll ? "feed" : "grid",
-      className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-grid", className),
+      className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])("dataviews-view-grid", className, {
+        [`has-${view.layout?.density}-density`]: view.layout?.density && ["compact", "comfortable"].includes(
+          view.layout.density
+        )
+      }),
       focusWrap: true,
       "aria-busy": isLoading,
       "aria-rowcount": isInfiniteScroll ? void 0 : totalRows,
@@ -14201,8 +13564,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _picker_grid_index_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./picker-grid/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/picker-grid/index.mjs");
 /* harmony import */ var _picker_table_index_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./picker-table/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/picker-table/index.mjs");
 /* harmony import */ var _constants_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../constants.mjs */ "./node_modules/@wordpress/dataviews/build-module/constants.mjs");
-/* harmony import */ var _utils_preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./utils/preview-size-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/preview-size-picker.mjs");
-/* harmony import */ var _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./utils/density-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/density-picker.mjs");
+/* harmony import */ var _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./utils/density-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/density-picker.mjs");
+/* harmony import */ var _utils_grid_config_options_mjs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./utils/grid-config-options.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/grid-config-options.mjs");
 // packages/dataviews/src/components/dataviews-layouts/index.ts
 
 
@@ -14221,35 +13584,35 @@ var VIEW_LAYOUTS = [
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Table"),
     component: _table_index_mjs__WEBPACK_IMPORTED_MODULE_6__["default"],
     icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_1__["default"],
-    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_14__["default"]
+    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_13__["default"]
   },
   {
     type: _constants_mjs__WEBPACK_IMPORTED_MODULE_12__.LAYOUT_GRID,
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Grid"),
     component: _grid_index_mjs__WEBPACK_IMPORTED_MODULE_7__["default"],
     icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_2__["default"],
-    viewConfigOptions: _utils_preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_13__["default"]
+    viewConfigOptions: _utils_grid_config_options_mjs__WEBPACK_IMPORTED_MODULE_14__["default"]
   },
   {
     type: _constants_mjs__WEBPACK_IMPORTED_MODULE_12__.LAYOUT_LIST,
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("List"),
     component: _list_index_mjs__WEBPACK_IMPORTED_MODULE_8__["default"],
     icon: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.isRTL)() ? _wordpress_icons__WEBPACK_IMPORTED_MODULE_3__["default"] : _wordpress_icons__WEBPACK_IMPORTED_MODULE_4__["default"],
-    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_14__["default"]
+    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_13__["default"]
   },
   {
     type: _constants_mjs__WEBPACK_IMPORTED_MODULE_12__.LAYOUT_ACTIVITY,
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Activity"),
     component: _activity_index_mjs__WEBPACK_IMPORTED_MODULE_9__["default"],
     icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_5__["default"],
-    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_14__["default"]
+    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_13__["default"]
   },
   {
     type: _constants_mjs__WEBPACK_IMPORTED_MODULE_12__.LAYOUT_PICKER_GRID,
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Grid"),
     component: _picker_grid_index_mjs__WEBPACK_IMPORTED_MODULE_10__["default"],
     icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_2__["default"],
-    viewConfigOptions: _utils_preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_13__["default"],
+    viewConfigOptions: _utils_grid_config_options_mjs__WEBPACK_IMPORTED_MODULE_14__["default"],
     isPicker: true
   },
   {
@@ -14257,7 +13620,7 @@ var VIEW_LAYOUTS = [
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)("Table"),
     component: _picker_table_index_mjs__WEBPACK_IMPORTED_MODULE_11__["default"],
     icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_1__["default"],
-    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_14__["default"],
+    viewConfigOptions: _utils_density_picker_mjs__WEBPACK_IMPORTED_MODULE_13__["default"],
     isPicker: true
   }
 ];
@@ -15133,7 +14496,12 @@ function ViewPickerGrid({
           "aria-multiselectable": isMultiselect,
           className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
             "dataviews-view-picker-grid",
-            className
+            className,
+            {
+              [`has-${view.layout?.density}-density`]: view.layout?.density && ["compact", "comfortable"].includes(
+                view.layout.density
+              )
+            }
           ),
           "aria-label": itemListLabel,
           render: ({ children, ...props }) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_12__.jsx)(
@@ -15203,7 +14571,13 @@ function ViewPickerGrid({
             {
               className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
                 "dataviews-view-picker-grid",
-                className
+                className,
+                {
+                  [`has-${view.layout?.density}-density`]: view.layout?.density && [
+                    "compact",
+                    "comfortable"
+                  ].includes(view.layout.density)
+                }
               ),
               previewSize: usedPreviewSize,
               "aria-busy": isLoading,
@@ -16076,7 +15450,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dataviews-bulk-actions/index.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-bulk-actions/index.mjs");
 /* harmony import */ var _column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./column-header-menu.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/column-header-menu.mjs");
 /* harmony import */ var _column_primary_mjs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./column-primary.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/column-primary.mjs");
-/* harmony import */ var _use_is_horizontal_scroll_end_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./use-is-horizontal-scroll-end.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/use-is-horizontal-scroll-end.mjs");
+/* harmony import */ var _use_scroll_state_mjs__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./use-scroll-state.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/use-scroll-state.mjs");
 /* harmony import */ var _utils_get_data_by_group_mjs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../utils/get-data-by-group.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/get-data-by-group.mjs");
 /* harmony import */ var _dataviews_view_config_properties_section_mjs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../dataviews-view-config/properties-section.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-view-config/properties-section.mjs");
 /* harmony import */ var _hooks_use_delayed_loading_mjs__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../hooks/use-delayed-loading.mjs */ "./node_modules/@wordpress/dataviews/build-module/hooks/use-delayed-loading.mjs");
@@ -16288,9 +15662,9 @@ function ViewTable({
     }
   });
   const tableNoticeId = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_3__.useId)();
-  const isHorizontalScrollEnd = (0,_use_is_horizontal_scroll_end_mjs__WEBPACK_IMPORTED_MODULE_12__.useIsHorizontalScrollEnd)({
+  const { isHorizontalScrollEnd, isVerticallyScrolled } = (0,_use_scroll_state_mjs__WEBPACK_IMPORTED_MODULE_12__.useScrollState)({
     scrollContainerRef: containerRef,
-    enabled: !!actions?.length
+    enabledHorizontal: !!actions?.length
   });
   const hasBulkActions = (0,_dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_9__.useSomeItemHasAPossibleBulkAction)(actions, data);
   if (nextHeaderMenuToFocus) {
@@ -16383,7 +15757,7 @@ function ViewTable({
                 className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
                   `dataviews-view-table__col-${column}`,
                   {
-                    "dataviews-view-table__col-first-expand": !hasPrimaryColumn && index === columns.length - 1
+                    "dataviews-view-table__col-expand": !hasPrimaryColumn && index === columns.length - 1
                   }
                 )
               },
@@ -16400,97 +15774,106 @@ function ViewTable({
               children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(_dataviews_view_config_properties_section_mjs__WEBPACK_IMPORTED_MODULE_14__.PropertiesSection, { showLabel: false })
             }
           ),
-          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("thead", { onContextMenu: handleHeaderContextMenu, children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)("tr", { className: "dataviews-view-table__row", children: [
-            hasBulkActions && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
-              "th",
-              {
-                className: "dataviews-view-table__checkbox-column",
-                scope: "col",
-                onContextMenu: handleHeaderContextMenu,
-                children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
-                  _dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_9__.BulkSelectionCheckbox,
+          /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+            "thead",
+            {
+              className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])({
+                "dataviews-view-table__thead--stuck": isVerticallyScrolled
+              }),
+              onContextMenu: handleHeaderContextMenu,
+              children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)("tr", { className: "dataviews-view-table__row", children: [
+                hasBulkActions && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                  "th",
                   {
-                    selection,
-                    onChangeSelection,
-                    data,
-                    actions,
-                    getItemId
+                    className: "dataviews-view-table__checkbox-column",
+                    scope: "col",
+                    onContextMenu: handleHeaderContextMenu,
+                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                      _dataviews_bulk_actions_index_mjs__WEBPACK_IMPORTED_MODULE_9__.BulkSelectionCheckbox,
+                      {
+                        selection,
+                        onChangeSelection,
+                        data,
+                        actions,
+                        getItemId
+                      }
+                    )
+                  }
+                ),
+                hasPrimaryColumn && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("th", { scope: "col", children: titleField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                  _column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_10__["default"],
+                  {
+                    ref: headerMenuRef(
+                      titleField.id,
+                      0
+                    ),
+                    fieldId: titleField.id,
+                    view,
+                    fields,
+                    onChangeView,
+                    onHide,
+                    setOpenedFilter,
+                    canMove: false,
+                    canInsertLeft: isRtl ? view.layout?.enableMoving ?? true : false,
+                    canInsertRight: isRtl ? false : view.layout?.enableMoving ?? true
+                  }
+                ) }),
+                columns.map((column, index) => {
+                  const { width, maxWidth, minWidth, align } = view.layout?.styles?.[column] ?? {};
+                  const field = fields.find(
+                    (f) => f.id === column
+                  );
+                  const effectiveAlign = getEffectiveAlign(
+                    align,
+                    field?.type
+                  );
+                  const canInsertOrMove = view.layout?.enableMoving ?? true;
+                  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                    "th",
+                    {
+                      style: {
+                        width,
+                        maxWidth,
+                        minWidth,
+                        textAlign: effectiveAlign
+                      },
+                      "aria-sort": view.sort?.direction && view.sort?.field === column ? _constants_mjs__WEBPACK_IMPORTED_MODULE_8__.sortValues[view.sort.direction] : void 0,
+                      scope: "col",
+                      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                        _column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_10__["default"],
+                        {
+                          ref: headerMenuRef(column, index),
+                          fieldId: column,
+                          view,
+                          fields,
+                          onChangeView,
+                          onHide,
+                          setOpenedFilter,
+                          canMove: canInsertOrMove,
+                          canInsertLeft: canInsertOrMove,
+                          canInsertRight: canInsertOrMove
+                        }
+                      )
+                    },
+                    column
+                  );
+                }),
+                !!actions?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
+                  "th",
+                  {
+                    className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
+                      "dataviews-view-table__actions-column",
+                      {
+                        "dataviews-view-table__actions-column--sticky": true,
+                        "dataviews-view-table__actions-column--stuck": !isHorizontalScrollEnd
+                      }
+                    ),
+                    children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("span", { className: "dataviews-view-table-header", children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("Actions") })
                   }
                 )
-              }
-            ),
-            hasPrimaryColumn && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("th", { scope: "col", children: titleField && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
-              _column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_10__["default"],
-              {
-                ref: headerMenuRef(
-                  titleField.id,
-                  0
-                ),
-                fieldId: titleField.id,
-                view,
-                fields,
-                onChangeView,
-                onHide,
-                setOpenedFilter,
-                canMove: false,
-                canInsertLeft: isRtl ? view.layout?.enableMoving ?? true : false,
-                canInsertRight: isRtl ? false : view.layout?.enableMoving ?? true
-              }
-            ) }),
-            columns.map((column, index) => {
-              const { width, maxWidth, minWidth, align } = view.layout?.styles?.[column] ?? {};
-              const field = fields.find(
-                (f) => f.id === column
-              );
-              const effectiveAlign = getEffectiveAlign(
-                align,
-                field?.type
-              );
-              const canInsertOrMove = view.layout?.enableMoving ?? true;
-              return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
-                "th",
-                {
-                  style: {
-                    width,
-                    maxWidth,
-                    minWidth,
-                    textAlign: effectiveAlign
-                  },
-                  "aria-sort": view.sort?.direction && view.sort?.field === column ? _constants_mjs__WEBPACK_IMPORTED_MODULE_8__.sortValues[view.sort.direction] : void 0,
-                  scope: "col",
-                  children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
-                    _column_header_menu_mjs__WEBPACK_IMPORTED_MODULE_10__["default"],
-                    {
-                      ref: headerMenuRef(column, index),
-                      fieldId: column,
-                      view,
-                      fields,
-                      onChangeView,
-                      onHide,
-                      setOpenedFilter,
-                      canMove: canInsertOrMove,
-                      canInsertLeft: canInsertOrMove,
-                      canInsertRight: canInsertOrMove
-                    }
-                  )
-                },
-                column
-              );
-            }),
-            !!actions?.length && /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
-              "th",
-              {
-                className: (0,clsx__WEBPACK_IMPORTED_MODULE_0__["default"])(
-                  "dataviews-view-table__actions-column",
-                  {
-                    "dataviews-view-table__actions-column--sticky": true,
-                    "dataviews-view-table__actions-column--stuck": !isHorizontalScrollEnd
-                  }
-                ),
-                children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("span", { className: "dataviews-view-table-header", children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)("Actions") })
-              }
-            )
-          ] }) }),
+              ] })
+            }
+          ),
           hasData && groupField && dataByGroup ? Array.from(dataByGroup.entries()).map(
             ([groupName, groupItems]) => /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsxs)("tbody", { children: [
               /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)("tr", { className: "dataviews-view-table__group-header-row", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_16__.jsx)(
@@ -16567,68 +15950,63 @@ var table_default = ViewTable;
 
 /***/ },
 
-/***/ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/use-is-horizontal-scroll-end.mjs"
-/*!****************************************************************************************************************************!*\
-  !*** ./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/use-is-horizontal-scroll-end.mjs ***!
-  \****************************************************************************************************************************/
+/***/ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/use-scroll-state.mjs"
+/*!****************************************************************************************************************!*\
+  !*** ./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/table/use-scroll-state.mjs ***!
+  \****************************************************************************************************************/
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   useIsHorizontalScrollEnd: () => (/* binding */ useIsHorizontalScrollEnd)
+/* harmony export */   useScrollState: () => (/* binding */ useScrollState)
 /* harmony export */ });
-/* harmony import */ var _wordpress_compose__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/compose */ "@wordpress/compose");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-// packages/dataviews/src/components/dataviews-layouts/table/use-is-horizontal-scroll-end.ts
-
+/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
+/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
+// packages/dataviews/src/components/dataviews-layouts/table/use-scroll-state.ts
 
 
 var isScrolledToEnd = (element) => {
-  if ((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_2__.isRTL)()) {
+  if ((0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.isRTL)()) {
     const scrollLeft = Math.abs(element.scrollLeft);
     return scrollLeft <= 1;
   }
   return element.scrollLeft + element.clientWidth >= element.scrollWidth - 1;
 };
-function useIsHorizontalScrollEnd({
+function useScrollState({
   scrollContainerRef,
-  enabled = false
+  enabledHorizontal = false
 }) {
-  const [isHorizontalScrollEnd, setIsHorizontalScrollEnd] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(false);
-  const handleIsHorizontalScrollEnd = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_0__.useDebounce)(
-    (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useCallback)(() => {
-      const scrollContainer = scrollContainerRef.current;
-      if (scrollContainer) {
-        setIsHorizontalScrollEnd(isScrolledToEnd(scrollContainer));
-      }
-    }, [scrollContainerRef, setIsHorizontalScrollEnd]),
-    200
-  );
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
-    if (typeof window === "undefined" || !enabled || !scrollContainerRef.current) {
+  const [isHorizontalScrollEnd, setIsHorizontalScrollEnd] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [isVerticallyScrolled, setIsVerticallyScrolled] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const handleScroll = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useCallback)(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) {
+      return;
+    }
+    if (enabledHorizontal) {
+      setIsHorizontalScrollEnd(isScrolledToEnd(scrollContainer));
+    }
+    setIsVerticallyScrolled(scrollContainer.scrollTop > 0);
+  }, [scrollContainerRef, enabledHorizontal]);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (typeof window === "undefined" || !scrollContainerRef.current) {
       return () => {
       };
     }
-    handleIsHorizontalScrollEnd();
-    scrollContainerRef.current.addEventListener(
-      "scroll",
-      handleIsHorizontalScrollEnd
-    );
-    window.addEventListener("resize", handleIsHorizontalScrollEnd);
+    const scrollContainer = scrollContainerRef.current;
+    handleScroll();
+    scrollContainer.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
     return () => {
-      scrollContainerRef.current?.removeEventListener(
-        "scroll",
-        handleIsHorizontalScrollEnd
-      );
-      window.removeEventListener("resize", handleIsHorizontalScrollEnd);
+      scrollContainer.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
     };
-  }, [scrollContainerRef, enabled]);
-  return isHorizontalScrollEnd;
+  }, [scrollContainerRef, enabledHorizontal, handleScroll]);
+  return { isHorizontalScrollEnd, isVerticallyScrolled };
 }
 
-//# sourceMappingURL=use-is-horizontal-scroll-end.mjs.map
+//# sourceMappingURL=use-scroll-state.mjs.map
 
 
 /***/ },
@@ -16736,6 +16114,36 @@ function getDataByGroup(data, groupByField) {
 }
 
 //# sourceMappingURL=get-data-by-group.mjs.map
+
+
+/***/ },
+
+/***/ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/grid-config-options.mjs"
+/*!*******************************************************************************************************************!*\
+  !*** ./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/grid-config-options.mjs ***!
+  \*******************************************************************************************************************/
+(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ GridConfigOptions)
+/* harmony export */ });
+/* harmony import */ var _density_picker_mjs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./density-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/density-picker.mjs");
+/* harmony import */ var _preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./preview-size-picker.mjs */ "./node_modules/@wordpress/dataviews/build-module/components/dataviews-layouts/utils/preview-size-picker.mjs");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+// packages/dataviews/src/components/dataviews-layouts/utils/grid-config-options.tsx
+
+
+
+function GridConfigOptions() {
+  return /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, { children: [
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_density_picker_mjs__WEBPACK_IMPORTED_MODULE_0__["default"], {}),
+    /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_preview_size_picker_mjs__WEBPACK_IMPORTED_MODULE_1__["default"], {})
+  ] });
+}
+
+//# sourceMappingURL=grid-config-options.mjs.map
 
 
 /***/ },
@@ -18216,8 +17624,13 @@ function DataViews({
       setIsShowingFilter(true);
     }
   }, [hasPrimaryOrLockedFilters, isShowingFilter]);
+  const {
+    data: displayData,
+    paginationInfo: displayPaginationInfo,
+    hasInitiallyLoaded
+  } = (0,_hooks_use_data_mjs__WEBPACK_IMPORTED_MODULE_16__["default"])(data, isLoading, paginationInfo);
   (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    if (!view.infiniteScrollEnabled || !containerRef.current) {
+    if (!hasInitiallyLoaded || !view.infiniteScrollEnabled || !containerRef.current) {
       return;
     }
     const handleScroll = (0,_wordpress_compose__WEBPACK_IMPORTED_MODULE_1__.throttle)((event) => {
@@ -18235,7 +17648,11 @@ function DataViews({
       container.removeEventListener("scroll", handleScroll);
       handleScroll.cancel();
     };
-  }, [infiniteScrollHandler, view.infiniteScrollEnabled]);
+  }, [
+    hasInitiallyLoaded,
+    infiniteScrollHandler,
+    view.infiniteScrollEnabled
+  ]);
   const defaultLayouts = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useMemo)(
     () => Object.fromEntries(
       Object.entries(defaultLayoutsProperty).filter(
@@ -18248,11 +17665,6 @@ function DataViews({
     ),
     [defaultLayoutsProperty]
   );
-  const {
-    data: displayData,
-    paginationInfo: displayPaginationInfo,
-    hasInitiallyLoaded
-  } = (0,_hooks_use_data_mjs__WEBPACK_IMPORTED_MODULE_16__["default"])(data, isLoading, paginationInfo);
   if (!defaultLayouts[view.type]) {
     return null;
   }
@@ -18289,7 +17701,7 @@ function DataViews({
         hasInfiniteScrollHandler: !!infiniteScrollHandler,
         onReset
       },
-      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", { className: "dataviews-wrapper", ref: containerRef, children: children ?? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(
+      children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", { className: "dataviews-wrapper", children: children ?? /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(
         DefaultUI,
         {
           header,
@@ -25362,52 +24774,6 @@ var arrow_down_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_
 
 /***/ },
 
-/***/ "./node_modules/@wordpress/icons/build-module/library/arrow-left.mjs"
-/*!***************************************************************************!*\
-  !*** ./node_modules/@wordpress/icons/build-module/library/arrow-left.mjs ***!
-  \***************************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ arrow_left_default)
-/* harmony export */ });
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/primitives */ "@wordpress/primitives");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-// packages/icons/src/library/arrow-left.tsx
-
-
-var arrow_left_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, { d: "M20 11.2H6.8l3.7-3.7-1-1L3.9 12l5.6 5.5 1-1-3.7-3.7H20z" }) });
-
-//# sourceMappingURL=arrow-left.mjs.map
-
-
-/***/ },
-
-/***/ "./node_modules/@wordpress/icons/build-module/library/arrow-right.mjs"
-/*!****************************************************************************!*\
-  !*** ./node_modules/@wordpress/icons/build-module/library/arrow-right.mjs ***!
-  \****************************************************************************/
-(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ arrow_right_default)
-/* harmony export */ });
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/primitives */ "@wordpress/primitives");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-// packages/icons/src/library/arrow-right.tsx
-
-
-var arrow_right_default = /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.SVG, { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_0__.Path, { d: "m14.5 6.5-1 1 3.7 3.7H4v1.6h13.2l-3.7 3.7 1 1 5.6-5.5z" }) });
-
-//# sourceMappingURL=arrow-right.mjs.map
-
-
-/***/ },
-
 /***/ "./node_modules/@wordpress/icons/build-module/library/arrow-up.mjs"
 /*!*************************************************************************!*\
   !*** ./node_modules/@wordpress/icons/build-module/library/arrow-up.mjs ***!
@@ -26002,7 +25368,42 @@ var r={grad:.9,turn:360,rad:360/(2*Math.PI)},t=function(r){return"string"==typeo
 /******/ 		return module.exports;
 /******/ 	}
 /******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/chunk loaded */
+/******/ 	(() => {
+/******/ 		var deferred = [];
+/******/ 		__webpack_require__.O = (result, chunkIds, fn, priority) => {
+/******/ 			if(chunkIds) {
+/******/ 				priority = priority || 0;
+/******/ 				for(var i = deferred.length; i > 0 && deferred[i - 1][2] > priority; i--) deferred[i] = deferred[i - 1];
+/******/ 				deferred[i] = [chunkIds, fn, priority];
+/******/ 				return;
+/******/ 			}
+/******/ 			var notFulfilled = Infinity;
+/******/ 			for (var i = 0; i < deferred.length; i++) {
+/******/ 				var [chunkIds, fn, priority] = deferred[i];
+/******/ 				var fulfilled = true;
+/******/ 				for (var j = 0; j < chunkIds.length; j++) {
+/******/ 					if ((priority & 1 === 0 || notFulfilled >= priority) && Object.keys(__webpack_require__.O).every((key) => (__webpack_require__.O[key](chunkIds[j])))) {
+/******/ 						chunkIds.splice(j--, 1);
+/******/ 					} else {
+/******/ 						fulfilled = false;
+/******/ 						if(priority < notFulfilled) notFulfilled = priority;
+/******/ 					}
+/******/ 				}
+/******/ 				if(fulfilled) {
+/******/ 					deferred.splice(i--, 1)
+/******/ 					var r = fn();
+/******/ 					if (r !== undefined) result = r;
+/******/ 				}
+/******/ 			}
+/******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
@@ -26073,565 +25474,67 @@ var r={grad:.9,turn:360,rad:360/(2*Math.PI)},t=function(r){return"string"==typeo
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"encode-queue": 0
+/******/ 		};
+/******/ 		
+/******/ 		// no chunk on demand loading
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		__webpack_require__.O.j = (chunkId) => (installedChunks[chunkId] === 0);
+/******/ 		
+/******/ 		// install a JSONP callback for chunk loading
+/******/ 		var webpackJsonpCallback = (parentChunkLoadingFunction, data) => {
+/******/ 			var [chunkIds, moreModules, runtime] = data;
+/******/ 			// add "moreModules" to the modules object,
+/******/ 			// then flag all "chunkIds" as loaded and fire callback
+/******/ 			var moduleId, chunkId, i = 0;
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
+/******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
+/******/ 			}
+/******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
+/******/ 			for(;i < chunkIds.length; i++) {
+/******/ 				chunkId = chunkIds[i];
+/******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 					installedChunks[chunkId][0]();
+/******/ 				}
+/******/ 				installedChunks[chunkId] = 0;
+/******/ 			}
+/******/ 			return __webpack_require__.O(result);
+/******/ 		}
+/******/ 		
+/******/ 		var chunkLoadingGlobal = globalThis["webpackChunkvideopack_admin"] = globalThis["webpackChunkvideopack_admin"] || [];
+/******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
+/******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
-(() => {
-"use strict";
-/*!***************************************************!*\
-  !*** ./src/features/encode-queue/encode-queue.js ***!
-  \***************************************************/
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _encode_queue_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./encode-queue.scss */ "./src/features/encode-queue/encode-queue.scss");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/i18n */ "@wordpress/i18n");
-/* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_dataviews__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/dataviews */ "./node_modules/@wordpress/dataviews/build-module/dataviews/index.mjs");
-/* harmony import */ var _wordpress_dataviews__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @wordpress/dataviews */ "./node_modules/@wordpress/dataviews/build-module/utils/filter-sort-and-paginate.mjs");
-/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @wordpress/html-entities */ "@wordpress/html-entities");
-/* harmony import */ var _wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _components_AdditionalFormats_EncodeFormatStatus__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../components/AdditionalFormats/EncodeFormatStatus */ "./src/components/AdditionalFormats/EncodeFormatStatus.js");
-/* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils/utils */ "./src/utils/utils.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
-/**
- * Features for managing the video encoding queue.
- */
-
-
-
-
-
-
-
-
-
-
-const defaultLayouts = {
-  table: {
-    layout: {
-      density: 'compact'
-    }
-  }
-};
-
-/**
- * EncodeQueue component.
- *
- * @return {Object} The rendered component.
- */
-const EncodeQueue = () => {
-  const [queueData, setQueueData] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
-  const [isLoading, setIsLoading] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(true);
-  const [isQueuePaused, setIsQueuePaused] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(window.videopack?.encodeQueueData?.initialQueueState === 'pause');
-  const [message, setMessage] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null);
-  const [isClearing, setIsClearing] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
-  const [isTogglingQueue, setIsTogglingQueue] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
-  const [isConfirmOpen, setIsConfirmOpen] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(false);
-  const [itemToActOn, setItemToActOn] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)(null); // { action: 'clear'/'delete'/'remove', type: 'completed'/'all', jobIds: [] }
-  const [actingJobIds, setActingJobIds] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)([]);
-  const [batchProgress, setBatchProgress] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({});
-  const isMultisite = window.videopack?.isMultisite || window.videopack?.encodeQueueData?.isNetwork;
-  const [view, setView] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useState)({
-    type: 'table',
-    perPage: 10,
-    page: 1,
-    sort: {
-      field: 'queue_order',
-      direction: 'asc'
-    },
-    fields: ['queue_order', 'poster', 'blog_name', 'user_name', 'video_title', 'format_name', 'status'].filter(field => field === 'blog_name' ? isMultisite : true),
-    layout: defaultLayouts.table.layout
-  });
-
-  // Auto-clear success messages after 30 seconds.
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    if (message && message.type === 'success') {
-      const timer = setTimeout(() => {
-        setMessage(null);
-      }, 30000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-  const fetchQueue = async () => {
-    try {
-      const newData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.getQueue)();
-      setQueueData(prevData => {
-        if (JSON.stringify(prevData) !== JSON.stringify(newData)) {
-          return newData;
-        }
-        return prevData;
-      });
-      const progressData = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.getBatchProgress)('all');
-      setBatchProgress(progressData);
-    } catch (error) {
-      console.error('Error fetching queue:', error);
-      setMessage({
-        type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to load queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useEffect)(() => {
-    fetchQueue();
-    const interval = setInterval(fetchQueue, 15000); // Poll every 15 seconds
-    return () => clearInterval(interval);
-  }, []);
-  const handleToggleQueue = async () => {
-    setIsTogglingQueue(true);
-    const action = isQueuePaused ? 'play' : 'pause';
-    try {
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.toggleQueue)(action);
-      setIsQueuePaused(response.queue_state === 'pause');
-      setMessage({
-        type: 'success',
-        text: response.message
-      });
-      fetchQueue(); // Refresh queue data after state change
-    } catch (error) {
-      console.error('Error toggling queue:', error);
-      setMessage({
-        type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to toggle queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
-      });
-    } finally {
-      setIsTogglingQueue(false);
-    }
-  };
-  const openConfirmDialog = (action, details) => {
-    setItemToActOn({
-      action,
-      ...details
-    });
-    setIsConfirmOpen(true);
-  };
-  const handleConfirm = () => {
-    if (!itemToActOn) {
-      return;
-    }
-    if (itemToActOn.action === 'clear') {
-      handleClearQueue(itemToActOn.type);
-    } else if (itemToActOn.action === 'delete') {
-      handleDeleteJobs(itemToActOn.jobIds);
-    } else if (itemToActOn.action === 'remove') {
-      handleRemoveJobs(itemToActOn.jobIds);
-    } else if (itemToActOn.action === 'delete_permanently') {
-      handleDeleteJobs(itemToActOn.jobIds);
-    }
-    setIsConfirmOpen(false);
-    setItemToActOn(null);
-  };
-  const handleClearQueue = async type => {
-    setIsClearing(true);
-    try {
-      const response = await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.clearQueue)(type);
-      setMessage({
-        type: 'success',
-        text: response.message
-      });
-      fetchQueue(); // Refresh queue data
-    } catch (error) {
-      console.error('Error clearing queue:', error);
-      setMessage({
-        type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed to clear queue: %s', 'video-embed-thumbnail-generator'), error.message || error.code)
-      });
-    } finally {
-      setIsClearing(false);
-    }
-  };
-  const handleDeleteJobs = async jobIds => {
-    const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-    setActingJobIds(prev => [...prev, ...ids]);
-    try {
-      for (const jobId of ids) {
-        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.deleteJob)(jobId);
-      }
-      setMessage({
-        type: 'success',
-        text: ids.length === 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job deleted.', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of jobs deleted */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('%d jobs deleted.', 'video-embed-thumbnail-generator'), ids.length)
-      });
-      fetchQueue();
-    } catch (error) {
-      console.error('Error deleting job(s):', error);
-      setMessage({
-        type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error deleting job(s): %s', 'video-embed-thumbnail-generator'), error.message)
-      });
-    } finally {
-      setActingJobIds(prev => prev.filter(id => !ids.includes(id)));
-    }
-  };
-  const handleRemoveJobs = async jobIds => {
-    const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-    setActingJobIds(prev => [...prev, ...ids]);
-    try {
-      for (const jobId of ids) {
-        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.removeJob)(jobId);
-      }
-      setMessage({
-        type: 'success',
-        text: ids.length === 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job removed from queue.', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of jobs removed */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('%d jobs removed from queue.', 'video-embed-thumbnail-generator'), ids.length)
-      });
-      fetchQueue();
-    } catch (error) {
-      console.error('Error removing job(s):', error);
-      setMessage({
-        type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error removing job(s): %s', 'video-embed-thumbnail-generator'), error.message)
-      });
-    } finally {
-      setActingJobIds(prev => prev.filter(id => !ids.includes(id)));
-    }
-  };
-  const handleRetryJobs = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useCallback)(async jobIds => {
-    const ids = Array.isArray(jobIds) ? jobIds : [jobIds];
-    setActingJobIds(prev => [...prev, ...ids]);
-    try {
-      for (const jobId of ids) {
-        await (0,_utils_utils__WEBPACK_IMPORTED_MODULE_8__.retryJob)(jobId);
-      }
-      setMessage({
-        type: 'success',
-        text: ids.length === 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Job re-queued.', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of jobs re-queued */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('%d jobs re-queued.', 'video-embed-thumbnail-generator'), ids.length)
-      });
-      fetchQueue();
-    } catch (error) {
-      console.error('Error retrying job(s):', error);
-      setMessage({
-        type: 'error',
-        text: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s is an error message */
-        (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Error retrying job(s): %s', 'video-embed-thumbnail-generator'), error.message)
-      });
-    } finally {
-      setActingJobIds(prev => prev.filter(id => !ids.includes(id)));
-    }
-  }, []);
-  const fields = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => [{
-    id: 'queue_order',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('#', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.queue_order,
-    enableSorting: true,
-    type: 'integer'
-  }, {
-    id: 'poster',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Thumbnail', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.poster_url,
-    render: ({
-      item
-    }) => item.poster_url ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("img", {
-      src: item.poster_url,
-      alt: item.video_title,
-      className: "videopack-queue-attachment-poster"
-    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
-      icon: "format-video"
-    }),
-    enableHiding: false,
-    enableSorting: false
-  }, {
-    id: 'blog_name',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Site', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.blog_name,
-    enableSorting: isMultisite
-  }, {
-    id: 'user_name',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('User', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.user_name || (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('N/A', 'video-embed-thumbnail-generator'),
-    enableSorting: true
-  }, {
-    id: 'video_title',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('File', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.video_title,
-    render: ({
-      item
-    }) => item.attachment_link ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("a", {
-      href: (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(item.attachment_link),
-      children: (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(item.video_title)
-    }) : (0,_wordpress_html_entities__WEBPACK_IMPORTED_MODULE_6__.decodeEntities)(item.video_title),
-    enableSorting: true
-  }, {
-    id: 'format_name',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Format', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.format_name,
-    enableSorting: true
-  }, {
-    id: 'status',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Status', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.status_l10n,
-    render: ({
-      item
-    }) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
-      className: `videopack-status-cell ${['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status) ? 'videopack-job-running' : ''}`,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("ul", {
-        className: "videopack-format-list",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_components_AdditionalFormats_EncodeFormatStatus__WEBPACK_IMPORTED_MODULE_7__["default"], {
-          formatId: item.preset || item.format_id,
-          formatData: {
-            ...item,
-            encoding_now: ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status),
-            job_id: item.id,
-            label: item.status_l10n
-          },
-          onCancelJob: () => openConfirmDialog('delete', {
-            jobIds: [item.id]
-          }),
-          deleteInProgress: actingJobIds.includes(item.id),
-          onRefresh: () => fetchQueue(),
-          showLabel: false,
-          hideCancel: true
-        })
-      })
-    }),
-    enableSorting: true
-  }, {
-    id: 'created_at',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Created', 'video-embed-thumbnail-generator'),
-    getValue: ({
-      item
-    }) => item.created_at || (item.started ? new Date(item.started * 1000).toISOString() : ''),
-    render: ({
-      item
-    }) => {
-      let date = null;
-      if (item.created_at) {
-        date = new Date(item.created_at);
-      } else if (item.started) {
-        date = new Date(item.started * 1000);
-      }
-      return date ? date.toLocaleString() : '';
-    },
-    enableSorting: true
-  }].filter(field => field.id === 'blog_name' ? isMultisite : true), [actingJobIds, isMultisite]);
-  const actions = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => [{
-    id: 'clear',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear', 'video-embed-thumbnail-generator'),
-    isDestructive: true,
-    isPrimary: true,
-    supportsBulk: true,
-    isEligible: item => ['completed', 'failed', 'canceled', 'queued', 'deleted'].includes(item.status),
-    callback: items => {
-      const eligibleItems = items.filter(item => ['completed', 'failed', 'canceled', 'queued', 'deleted'].includes(item.status));
-      if (eligibleItems.length > 0) {
-        openConfirmDialog('remove', {
-          jobIds: eligibleItems.map(i => i.id)
-        });
-      }
-    }
-  }, {
-    id: 'cancel',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Cancel', 'video-embed-thumbnail-generator'),
-    isDestructive: true,
-    supportsBulk: true,
-    isEligible: item => ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status),
-    callback: items => {
-      const eligibleItems = items.filter(item => ['encoding', 'processing', 'needs_insert', 'pending_replacement'].includes(item.status));
-      if (eligibleItems.length > 0) {
-        openConfirmDialog('delete', {
-          jobIds: eligibleItems.map(i => i.id)
-        });
-      }
-    }
-  }, {
-    id: 'retry',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Retry', 'video-embed-thumbnail-generator'),
-    supportsBulk: true,
-    isEligible: item => ['failed', 'canceled', 'deleted', 'error'].includes(item.status),
-    callback: items => {
-      const eligibleItems = items.filter(item => ['failed', 'canceled', 'deleted', 'error'].includes(item.status));
-      if (eligibleItems.length > 0) {
-        handleRetryJobs(eligibleItems.map(i => i.id));
-      }
-    }
-  }, {
-    id: 'delete_permanently',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Delete Permanently', 'video-embed-thumbnail-generator'),
-    isDestructive: true,
-    supportsBulk: true,
-    isEligible: item => item.status === 'completed' && !!item.output_id,
-    callback: items => {
-      const eligibleItems = items.filter(item => item.status === 'completed' && !!item.output_id);
-      if (eligibleItems.length > 0) {
-        openConfirmDialog('delete_permanently', {
-          jobIds: eligibleItems.map(i => i.id)
-        });
-      }
-    }
-  }], [handleRetryJobs]);
-
-  // "processedData" and "paginationInfo" definition
-  const {
-    data: processedData,
-    paginationInfo
-  } = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => {
-    return (0,_wordpress_dataviews__WEBPACK_IMPORTED_MODULE_5__["default"])(queueData, view, fields);
-  }, [queueData, view, fields]);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
-    className: "wrap videopack-encode-queue",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("h1", {
-      children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack Queue', 'video-embed-thumbnail-generator')
-    }), Object.entries(batchProgress).map(([type, progress]) => {
-      if (!progress || progress.pending === 0 && progress['in-progress'] === 0) {
-        return null;
-      }
-      const labels = {
-        featured: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Setting Featured Images', 'video-embed-thumbnail-generator'),
-        parents: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Updating Parents', 'video-embed-thumbnail-generator'),
-        thumbs: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Generating Thumbnails (FFmpeg)', 'video-embed-thumbnail-generator'),
-        encoding: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Bulk Encoding', 'video-embed-thumbnail-generator'),
-        browser: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pending In-Browser Thumbnails', 'video-embed-thumbnail-generator')
-      };
-      const label = labels[type] || type;
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-        title: label,
-        initialOpen: true,
-        className: "videopack-batch-progress-panel",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
-          className: "videopack-batch-progress-content",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
-            className: "videopack-batch-stats",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of pending items */
-              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pending: %d', 'video-embed-thumbnail-generator'), progress.pending)
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of in-progress items */
-              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('In-Progress: %d', 'video-embed-thumbnail-generator'), progress['in-progress'])
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of completed items */
-              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Completed: %d', 'video-embed-thumbnail-generator'), progress.complete)
-            }), progress.failed > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
-              className: "videopack-failed-count",
-              children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of failed items */
-              (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Failed: %d', 'video-embed-thumbnail-generator'), progress.failed)
-            })]
-          }), progress.total > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
-            className: "videopack-meter",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
-              className: "videopack-meter-bar",
-              style: {
-                width: `${Math.round((progress.complete + progress.failed) / progress.total * 100)}%`
-              }
-            })
-          })]
-        })
-      }, type);
-    }), message && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Notice, {
-      status: message.type,
-      onRemove: () => setMessage(null),
-      children: message.text
-    }), isConfirmOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalConfirmDialog, {
-      isOpen: isConfirmOpen,
-      title: (() => {
-        if (itemToActOn?.action === 'delete_permanently') {
-          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Delete Attachment?', 'video-embed-thumbnail-generator');
-        }
-        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Confirm Action', 'video-embed-thumbnail-generator');
-      })(),
-      confirmButtonText: (() => {
-        if (itemToActOn?.action === 'delete_permanently') {
-          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Delete', 'video-embed-thumbnail-generator');
-        }
-        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Confirm', 'video-embed-thumbnail-generator');
-      })(),
-      onConfirm: handleConfirm,
-      onCancel: () => setIsConfirmOpen(false),
-      children: (() => {
-        const count = itemToActOn?.jobIds?.length || 0;
-        if (itemToActOn?.action === 'delete_permanently') {
-          return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
-          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to permanently delete these %d attachments? This action cannot be undone.', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to permanently delete this attachment? This action cannot be undone.', 'video-embed-thumbnail-generator');
-        }
-        if (itemToActOn?.action === 'remove') {
-          return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
-          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove these %d jobs? This will not delete any files.', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to remove this job? This will not delete any files.', 'video-embed-thumbnail-generator');
-        }
-        if (itemToActOn?.action === 'delete') {
-          return count > 1 ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %d: number of items */
-          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to cancel these %d jobs?', 'video-embed-thumbnail-generator'), count) : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to cancel this job?', 'video-embed-thumbnail-generator');
-        }
-        if (itemToActOn?.action === 'clear') {
-          return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.sprintf)(/* translators: %s: jobs type ('completed' or 'all') */
-          (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to clear %s jobs?', 'video-embed-thumbnail-generator'), itemToActOn.type);
-        }
-        return (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Are you sure you want to perform this action?', 'video-embed-thumbnail-generator');
-      })()
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.PanelBody, {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
-        className: "videopack-queue-controls",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-          variant: "primary",
-          onClick: handleToggleQueue,
-          isBusy: isTogglingQueue,
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Icon, {
-            icon: isQueuePaused ? 'controls-play' : 'controls-pause'
-          }), isQueuePaused ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Play Queue', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Pause Queue', 'video-embed-thumbnail-generator')]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-          variant: "secondary",
-          onClick: () => openConfirmDialog('clear', {
-            type: 'completed'
-          }),
-          isBusy: isClearing,
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear Completed', 'video-embed-thumbnail-generator')
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Button, {
-          variant: "tertiary",
-          isDestructive: true,
-          onClick: () => openConfirmDialog('clear', {
-            type: 'all'
-          }),
-          isBusy: isClearing,
-          children: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Clear All', 'video-embed-thumbnail-generator')
-        }), isLoading && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.Spinner, {})]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.__experimentalDivider, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
-        className: "videopack-dataviews-container",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_dataviews__WEBPACK_IMPORTED_MODULE_4__["default"], {
-          data: processedData,
-          fields: fields,
-          view: view,
-          onChangeView: setView,
-          defaultLayouts: defaultLayouts,
-          actions: actions,
-          paginationInfo: paginationInfo
-        })
-      })]
-    })]
-  });
-};
-// Render the component
-document.addEventListener('DOMContentLoaded', function () {
-  const rootElement = document.getElementById('videopack-queue-root') || document.getElementById('videopack-network-queue-root');
-  if (rootElement) {
-    const root = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.createRoot)(rootElement);
-    root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(EncodeQueue, {}));
-  }
-});
-})();
-
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["videopack-shared"], () => (__webpack_require__("./src/features/encode-queue/encode-queue.js")))
+/******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
+/******/ 	
 /******/ })()
 ;
 //# sourceMappingURL=encode-queue.js.map

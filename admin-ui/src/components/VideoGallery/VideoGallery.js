@@ -5,7 +5,8 @@
 import { getVideoGallery } from '../../utils/utils';
 import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Placeholder, Spinner } from '@wordpress/components';
+import { Placeholder, Spinner, Icon } from '@wordpress/components';
+import { arrowLeft, arrowRight, close } from '@wordpress/icons';
 import {
 	DndContext,
 	closestCenter,
@@ -24,23 +25,35 @@ import GalleryItem from './GalleryItem';
 import VideoPlayer from '../VideoPlayer/VideoPlayer';
 import './VideoGallery.scss';
 
+const noop = () => {};
+
 /**
  * VideoGallery component.
  *
- * @param {Object}   props              Component props.
- * @param {Object}   props.attributes   Block attributes.
- * @param {Function} props.setAttributes Function to update block attributes.
- * @param {boolean}  props.isEditing    Whether the gallery is in editing mode.
- * @param {Function} props.onRemoveItem Callback to remove a video item.
- * @param {Function} props.onEditItem   Callback to edit a video item.
+ * @param {Object}   props                Component props.
+ * @param {Object}   props.attributes     Block attributes.
+ * @param {Function} props.setAttributes  Function to update block attributes.
+ * @param {boolean}  props.isEditing      Whether the gallery is in editing mode.
+ * @param {Function} props.onRemoveItem   Callback to remove a video item.
+ * @param {Function} props.onEditItem     Callback to edit a video item.
+ * @param {number}   props.galleryPage    Current gallery page.
+ * @param {Function} props.setGalleryPage Function to update gallery page.
+ * @param {number}   props.totalPages     Total number of gallery pages.
+ * @param {Function} props.setTotalPages  Function to update total gallery pages.
+ * @param {Function} props.onModalToggle  Callback when the modal state changes.
  * @return {Object} The VideoGallery component.
  */
 const VideoGallery = ({
 	attributes,
-	setAttributes,
-	isEditing,
-	onRemoveItem,
-	onEditItem,
+	setAttributes = noop,
+	isEditing = false,
+	onRemoveItem = noop,
+	onEditItem = noop,
+	galleryPage = 1,
+	setGalleryPage = noop,
+	totalPages = 1,
+	setTotalPages = noop,
+	onModalToggle = noop,
 }) => {
 	const {
 		gallery_id,
@@ -57,11 +70,13 @@ const VideoGallery = ({
 		gallery_tag,
 		videos,
 		collection_video_limit,
+		play_button_color,
+		play_button_icon_color,
+		title_color,
+		title_background_color,
 	} = attributes;
 
 	const [galleryVideos, setGalleryVideos] = useState([]);
-	const [totalPages, setTotalPages] = useState(1);
-	const [galleryPage, setGalleryPage] = useState(1);
 	const [openVideo, setOpenVideo] = useState(null);
 	const [currentVideoIndex, setCurrentVideoIndex] = useState(null);
 
@@ -127,7 +142,7 @@ const VideoGallery = ({
 			gallery_orderby: new_gallery_orderby,
 			gallery_order,
 			gallery_per_page:
-				gallery_pagination !== true || isNaN(gallery_per_page)
+				!gallery_pagination || isNaN(gallery_per_page)
 					? -1
 					: gallery_per_page,
 			page_number: galleryPage,
@@ -176,14 +191,17 @@ const VideoGallery = ({
 		collection_video_limit,
 		galleryPage,
 		galleryVersion,
+		setTotalPages,
 	]);
 
 	useEffect(() => {
 		if (!gallery_pagination) {
-			setTotalPages(1);
+			if (setTotalPages) {
+				setTotalPages(1);
+			}
 			setGalleryPage(1);
 		}
-	}, [gallery_pagination]);
+	}, [gallery_pagination, setTotalPages, setGalleryPage]);
 
 	useEffect(() => {
 		if (currentVideoIndex !== null && galleryVideos.length > 0) {
@@ -195,6 +213,10 @@ const VideoGallery = ({
 		setOpenVideo(null);
 		setCurrentVideoIndex(null);
 	}, []);
+
+	useEffect(() => {
+		onModalToggle(!!openVideo);
+	}, [openVideo, onModalToggle]);
 
 	const handleNavigationArrowClick = useCallback(
 		(videoIndex) => {
@@ -213,7 +235,7 @@ const VideoGallery = ({
 				setCurrentVideoIndex(videoIndex);
 			}
 		},
-		[isPlayerReady, galleryVideos, totalPages, galleryPage]
+		[isPlayerReady, galleryVideos, totalPages, galleryPage, setGalleryPage]
 	);
 
 	useEffect(() => {
@@ -297,64 +319,30 @@ const VideoGallery = ({
 
 		frame.on('select', () => {
 			const selection = frame.state().get('selection');
-			const newAttachmentIds = selection.map(
-				(attachment) => attachment.id
+			const newAttachmentIds = selection.map((attachment) =>
+				attachment.id.toString()
 			);
-			const currentInclude = gallery_include
-				? gallery_include.split(',')
-				: [];
+
+			let currentInclude = [];
+			if (gallery_include) {
+				currentInclude = gallery_include.split(',');
+			} else if (galleryVideos) {
+				currentInclude = galleryVideos.map((video) =>
+					video.attachment_id.toString()
+				);
+			}
+
 			const newGalleryInclude = [
-				...currentInclude,
-				...newAttachmentIds,
+				...new Set([...currentInclude, ...newAttachmentIds]),
 			].join(',');
-			setAttributes({ gallery_include: newGalleryInclude });
+
+			setAttributes({
+				gallery_include: newGalleryInclude,
+				gallery_source: 'manual',
+			});
 		});
 
 		frame.open();
-	};
-
-	const GalleryPagination = () => {
-		const buttons = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-		return (
-			<div className="videopack-gallery-pagination">
-				<button
-					className={`videopack-pagination-arrow${galleryPage > 1 ? '' : ' videopack-hidden'
-						}`}
-					onClick={() => {
-						setGalleryPage(galleryPage - 1);
-					}}
-				>
-					<span>{'«'}</span>
-				</button>
-				{buttons.map((pageNumber) => (
-					<div key={pageNumber} className="videopack-page-number-div">
-						<button
-							onClick={() => setGalleryPage(pageNumber)}
-							className={`videopack-page-number${pageNumber === galleryPage
-								? ' current-page'
-								: ''
-								}`}
-							disabled={pageNumber === galleryPage}
-						>
-							<span>{pageNumber}</span>
-						</button>
-						<span className="videopack-pagination-separator">
-							{pageNumber === totalPages ? '' : '|'}
-						</span>
-					</div>
-				))}
-				<button
-					className={`videopack-pagination-arrow${galleryPage < totalPages ? '' : ' videopack-hidden'
-						}`}
-					onClick={() => {
-						setGalleryPage(galleryPage + 1);
-					}}
-				>
-					<span>{'»'}</span>
-				</button>
-			</div>
-		);
 	};
 
 	const renderGalleryContent = () => {
@@ -409,18 +397,70 @@ const VideoGallery = ({
 				</div>
 			);
 		}
-
 		return null;
 	};
 
+	const wrapperClasses = useMemo(() => {
+		const classes = ['videopack-gallery-wrapper'];
+		if (play_button_color) {
+			classes.push('videopack-has-play-button-color');
+		}
+		if (play_button_icon_color) {
+			classes.push('videopack-has-play-button-icon-color');
+		}
+		if (title_color) {
+			classes.push('videopack-has-title-color');
+		}
+		if (title_background_color) {
+			classes.push('videopack-has-title-background-color');
+		}
+		return classes.join(' ');
+	}, [
+		play_button_color,
+		play_button_icon_color,
+		title_color,
+		title_background_color,
+	]);
+
+	const galleryStyles = useMemo(() => {
+		const styles = {};
+		const config = window.videopack_config || {};
+
+		if (config.mejs_controls_svg) {
+			styles['--videopack-mejs-controls-svg'] =
+				`url(${config.mejs_controls_svg})`;
+		}
+
+		if (gallery_columns > 0) {
+			styles['--gallery-columns'] = gallery_columns;
+		}
+		if (play_button_color) {
+			styles['--videopack-play-button-color'] = play_button_color;
+		}
+		if (play_button_icon_color) {
+			styles['--videopack-play-button-icon-color'] =
+				play_button_icon_color;
+		}
+		if (title_color) {
+			styles['--videopack-title-color'] = title_color;
+		}
+		if (title_background_color) {
+			styles['--videopack-title-background-color'] =
+				title_background_color;
+		}
+		return styles;
+	}, [
+		gallery_columns,
+		play_button_color,
+		play_button_icon_color,
+		title_color,
+		title_background_color,
+	]);
+
 	return (
 		<div
-			className="videopack-gallery-wrapper"
-			style={
-				gallery_columns > 0
-					? { '--gallery-columns': gallery_columns }
-					: {}
-			}
+			className={wrapperClasses}
+			style={galleryStyles}
 			onMouseEnter={() => !openVideo && setIsHovering(true)}
 			onMouseLeave={() => !openVideo && setIsHovering(false)}
 		>
@@ -445,56 +485,78 @@ const VideoGallery = ({
 					</div>
 				</SortableContext>
 			</DndContext>
-			{totalPages > 1 && <GalleryPagination />}
 			{openVideo && (
 				<div
 					className="videopack-modal-overlay is-visible"
 					onClick={closeVideo}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							closeVideo();
+						}
+					}}
+					role="button"
+					tabIndex={0}
+					aria-label={__(
+						'Close Overlay',
+						'video-embed-thumbnail-generator'
+					)}
 				>
 					<div
 						className="videopack-modal-container"
 						onClick={handleVideoClick}
+						onKeyDown={(e) => e.stopPropagation()}
+						role="presentation"
 					>
 						<button
 							type="button"
-							className="modal-navigation modal-close videopack-icons cross"
+							className="modal-navigation modal-close"
 							title={__(
 								'Close',
 								'video-embed-thumbnail-generator'
 							)}
 							onClick={closeVideo}
-						/>
-						{(currentVideoIndex < galleryVideos.length - 1 ||
-							totalPages > galleryPage) && (
-								<button
-									type="button"
-									className="modal-navigation modal-next videopack-icons right-arrow"
-									title={__(
-										'Next',
-										'video-embed-thumbnail-generator'
-									)}
-									onClick={() => {
-										handleNavigationArrowClick(
-											currentVideoIndex + 1
-										);
-									}}
-								/>
+						>
+							<Icon icon={close} />
+						</button>
+						<button
+							type="button"
+							className={`modal-navigation modal-next ${
+								currentVideoIndex < galleryVideos.length - 1 ||
+								totalPages > galleryPage
+									? ''
+									: 'is-hidden'
+							}`}
+							title={__(
+								'Next',
+								'video-embed-thumbnail-generator'
 							)}
-						{(currentVideoIndex > 0 || galleryPage > 1) && (
-							<button
-								type="button"
-								className="modal-navigation modal-previous videopack-icons left-arrow"
-								title={__(
-									'Previous',
-									'video-embed-thumbnail-generator'
-								)}
-								onClick={() => {
-									handleNavigationArrowClick(
-										currentVideoIndex - 1
-									);
-								}}
-							/>
-						)}
+							onClick={() => {
+								handleNavigationArrowClick(
+									currentVideoIndex + 1
+								);
+							}}
+						>
+							<Icon icon={arrowRight} />
+						</button>
+						<button
+							type="button"
+							className={`modal-navigation modal-previous ${
+								currentVideoIndex > 0 || galleryPage > 1
+									? ''
+									: 'is-hidden'
+							}`}
+							title={__(
+								'Previous',
+								'video-embed-thumbnail-generator'
+							)}
+							onClick={() => {
+								handleNavigationArrowClick(
+									currentVideoIndex - 1
+								);
+							}}
+						>
+							<Icon icon={arrowLeft} />
+						</button>
 						<div className="modal-content">
 							{openVideoAttributes && (
 								<VideoPlayer

@@ -7,7 +7,7 @@
 import { useEffect, useState, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
-import { pencil, close, dragHandle } from '@wordpress/icons';
+import { pencil, close, dragHandle, create } from '@wordpress/icons';
 import { decodeEntities } from '@wordpress/html-entities';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -283,7 +283,7 @@ const GalleryItem = ({
 					onClick={onAddVideo}
 					title={__('Add video', 'video-embed-thumbnail-generator')}
 				>
-					<span className="dashicons dashicons-plus-alt" />
+					<Icon icon={create} />
 				</button>
 			)}
 		</div>

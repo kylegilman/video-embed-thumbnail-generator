@@ -25,6 +25,14 @@
 			z-index: 200;
 			display: flex;
 			gap: 5px;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.2s ease-in-out, visibility 0.2s;
+		}
+
+		&:hover .videopack-list-item-controls {
+			opacity: 1;
+			visibility: visible;
 		}
 	}
 }

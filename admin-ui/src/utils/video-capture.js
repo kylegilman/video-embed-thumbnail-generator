@@ -184,14 +184,17 @@ export const drawWatermark = (canvas, options) => {
 /**
  * Loads video metadata from a source.
  *
- * @param {string} source Video URL.
- * @return {Promise<HTMLVideoElement>} The video element with loaded metadata.
+ * @param {string}      source Video URL.
+ * @param {AbortSignal} signal Optional AbortSignal to cancel the request.
+ * @return {Promise<Object>} Object containing video metadata (width, height, duration).
  */
-export const getVideoMetadata = (source) => {
+export const getVideoMetadata = (source, signal = null) => {
 	return new Promise((resolve, reject) => {
 		const video = document.createElement('video');
 		video.preload = 'metadata';
-		video.crossOrigin = 'anonymous';
+		// We don't set crossOrigin here because video dimensions and duration
+		// are accessible even for cross-origin videos without CORS headers.
+		// Detailed frame capture (canvas) will still require CORS checks elsewhere.
 		video.src = source;
 		video.muted = true;
 
@@ -199,15 +202,106 @@ export const getVideoMetadata = (source) => {
 			reject(new Error('Video load timeout'));
 		}, 30000);
 
-		video.onloadedmetadata = () => {
+		const cleanup = () => {
 			clearTimeout(timeout);
-			resolve(video);
+			video.onloadedmetadata = null;
+			video.onerror = null;
+			video.src = '';
+			// We don't call video.load() here as it can trigger unnecessary errors in some browsers when src is empty.
+		};
+
+		if (signal) {
+			if (signal.aborted) {
+				cleanup();
+				reject(new Error('AbortError'));
+				return;
+			}
+			signal.addEventListener('abort', () => {
+				cleanup();
+				reject(new Error('AbortError'));
+			});
+		}
+
+		video.onloadedmetadata = () => {
+			const metadata = {
+				width: video.videoWidth,
+				height: video.videoHeight,
+				duration: video.duration,
+			};
+			cleanup();
+			resolve(metadata);
 		};
 
 		video.onerror = (e) => {
-			clearTimeout(timeout);
-			reject(e);
+			const error = video.error;
+			cleanup();
+			reject(error || e);
 		};
+	});
+};
+
+/**
+ * Checks if a video's frames can be exported from a canvas without tainting it.
+ *
+ * @param {string}      source Video URL.
+ * @param {AbortSignal} signal Optional AbortSignal to cancel the check.
+ * @return {Promise<boolean>} True if tainted (cannot export), false if clean.
+ */
+export const checkCanvasTaint = (source, signal = null) => {
+	return new Promise((resolve) => {
+		const video = document.createElement('video');
+		video.crossOrigin = 'anonymous';
+		video.preload = 'metadata';
+		video.src = source;
+		video.muted = true;
+
+		const timeout = setTimeout(() => {
+			cleanup();
+			resolve(true); // Assume tainted if it times out
+		}, 10000);
+
+		const cleanup = () => {
+			clearTimeout(timeout);
+			video.onloadedmetadata = null;
+			video.onseeked = null;
+			video.onerror = null;
+			video.src = '';
+			video.load();
+		};
+
+		if (signal) {
+			signal.addEventListener('abort', () => {
+				cleanup();
+				resolve(true); // Treat as tainted if aborted
+			});
+		}
+
+		const onSeeked = () => {
+			const canvas = document.createElement('canvas');
+			canvas.width = 1;
+			canvas.height = 1;
+			const ctx = canvas.getContext('2d');
+			try {
+				ctx.drawImage(video, 0, 0, 1, 1);
+				canvas.toDataURL(); // This throws SecurityError if tainted
+				cleanup();
+				resolve(false);
+			} catch (e) {
+				cleanup();
+				resolve(true);
+			}
+		};
+
+		const onError = () => {
+			cleanup();
+			resolve(true);
+		};
+
+		video.onloadedmetadata = () => {
+			video.currentTime = 0.1;
+		};
+		video.onseeked = onSeeked;
+		video.onerror = onError;
 	});
 };
 

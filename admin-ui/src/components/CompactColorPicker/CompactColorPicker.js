@@ -41,7 +41,8 @@ const CompactColorPicker = ({
 	};
 
 	const hexValue = resolveValueToHex(value);
-	const displayColor = hexValue || fallbackValue || 'transparent';
+	const displayColor =
+		hexValue || resolveValueToHex(fallbackValue) || 'transparent';
 
 	const handleOnChange = (val) => {
 		if (val === undefined) {

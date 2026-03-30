@@ -31,12 +31,18 @@
 
 	.videopack-gallery-items {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
 		gap: 15px;
 		margin: 0 auto;
 
-		&[style] {
-			grid-template-columns: repeat(var(--gallery-columns), 1fr);
+		&[style*="--gallery-columns"] {
+			grid-template-columns: repeat(
+				auto-fill,
+				minmax(
+					min(100%, max(250px, calc((100% - (var(--gallery-columns) - 1) * 15px) / var(--gallery-columns)))),
+					1fr
+				)
+			);
 		}
 	}
 
@@ -143,7 +149,7 @@
 				bottom: 0;
 				left: 0;
 				background-color: var(--videopack-title-background-color, var(--wp--preset--color--primary, black));
-				opacity: 0.4;
+				opacity: 0.5;
 				z-index: 2;
 			}
 		}
@@ -159,7 +165,10 @@
 			}
 		}
 
-		/* Skin-specific title background styles */
+	}
+
+	/* Skin-specific title background styles (only if no custom background color) */
+	&:not(.videopack-has-title-background-color) .gallery-thumbnail {
 		&.default .video-title-background::before {
 			background-color: colors.$gray-900;
 		}
@@ -297,12 +306,6 @@
 		.gallery-add-button {
 			bottom: 5px;
 			right: 5px;
-
-			.dashicons {
-				font-size: 20px;
-				line-height: 1;
-				vertical-align: middle;
-			}
 		}
 
 		.gallery-item-remove {
