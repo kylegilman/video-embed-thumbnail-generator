@@ -7,6 +7,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Edit_Posts
  *
@@ -21,7 +23,7 @@ namespace Videopack\Admin;
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Edit_Posts {
+class Edit_Posts implements Hook_Subscriber {
 	/**
 	 * Plugin options.
 	 *
@@ -45,6 +47,48 @@ class Edit_Posts {
 	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
 		$this->options         = $options;
 		$this->format_registry = $format_registry;
+	}
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'media_upload_tabs',
+				'callback' => 'add_embedurl_tab',
+			),
+			array(
+				'hook'     => 'media_upload_embedurl',
+				'callback' => 'embedurl_handle',
+			),
+			array(
+				'hook'     => 'media_upload_embedgallery',
+				'callback' => 'embedurl_handle',
+			),
+			array(
+				'hook'     => 'media_upload_embedlist',
+				'callback' => 'embedurl_handle',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'          => 'media_send_to_editor',
+				'callback'      => 'modify_media_insert',
+				'priority'      => 10,
+				'accepted_args' => 3,
+			),
+		);
 	}
 
 	/**
@@ -180,69 +224,49 @@ class Edit_Posts {
 		wp_enqueue_style( 'media-upload' );
 		wp_enqueue_style( 'deprecated-media' );
 
-		( new Assets( $this->options ) )->enqueue_videopack_scripts();
+		$assets = new Assets( $this->options );
+		$assets->enqueue_videopack_scripts();
+		$assets->enqueue_classic_editor_assets();
 
-		// Check if we have the new build asset for classic-embed.
-		$script_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.js';
-		$asset_path  = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/classic-embed.asset.php';
+		$post_id    = (int) filter_input( INPUT_GET, 'post_id', FILTER_SANITIZE_NUMBER_INT );
+		$active_tab = (string) filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_SPECIAL_CHARS );
 
-		if ( file_exists( $script_path ) && file_exists( $asset_path ) ) {
-			$asset = include $asset_path;
-			wp_enqueue_script(
-				'videopack-classic-embed',
-				(string) plugins_url( '/admin-ui/build/classic-embed.js', (string) VIDEOPACK_PLUGIN_FILE ),
-				(array) ( $asset['dependencies'] ?? array() ),
-				(string) ( $asset['version'] ?? VIDEOPACK_VERSION ),
-				true
-			);
+		// Extract attributes passed from TinyMCE plugin for editing.
+		$edit_attributes = array();
 
-			$post_id    = (int) filter_input( INPUT_GET, 'post_id', FILTER_SANITIZE_NUMBER_INT );
-			$active_tab = (string) filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_SPECIAL_CHARS );
+		// Detect if editing parameters are present.
+		$has_edit_attributes = false;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checking keys to determine if nonce verification is required for TinyMCE edit.
+		foreach ( $_GET as $key => $value ) {
+			if ( 0 === strpos( (string) $key, 'videopack_' ) && 'videopack_nonce' !== $key ) {
+				$has_edit_attributes = true;
+				break;
+			}
+		}
 
-			// Extract attributes passed from TinyMCE plugin for editing.
-			$edit_attributes = array();
-
-			// Detect if editing parameters are present.
-			$has_edit_attributes = false;
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Only checking keys to determine if nonce verification is required for TinyMCE edit.
+		if ( $has_edit_attributes ) {
+			check_admin_referer( 'videopack_classic_embed', 'videopack_nonce' );
 			foreach ( $_GET as $key => $value ) {
 				if ( 0 === strpos( (string) $key, 'videopack_' ) && 'videopack_nonce' !== $key ) {
-					$has_edit_attributes = true;
-					break;
+					$clean_key                     = (string) str_replace( 'videopack_', '', (string) $key );
+					$edit_attributes[ $clean_key ] = (string) sanitize_text_field( (string) $value );
 				}
 			}
-
-			if ( $has_edit_attributes ) {
-				check_admin_referer( 'videopack_classic_embed', 'videopack_nonce' );
-				foreach ( $_GET as $key => $value ) {
-					if ( 0 === strpos( (string) $key, 'videopack_' ) && 'videopack_nonce' !== $key ) {
-						$clean_key                     = (string) str_replace( 'videopack_', '', (string) $key );
-						$edit_attributes[ $clean_key ] = (string) sanitize_text_field( (string) $value );
-					}
-				}
-			}
-
-			wp_localize_script(
-				'videopack-classic-embed',
-				'videopack_classic_embed_config',
-				array(
-					'options'        => (array) $this->options,
-					'postId'         => $post_id ? $post_id : 0,
-					'activeTab'      => ( 'embedgallery' === $active_tab ) ? 'gallery' : ( ( 'embedlist' === $active_tab ) ? 'list' : 'single' ),
-					'editAttributes' => $edit_attributes,
-				)
-			);
-
-			// Ensure videopack_config is also available for components that need it.
-			( new \Videopack\Admin\Ui( $this->options, $this->format_registry ) )->localize_block_settings( 'videopack-classic-embed' );
-
-			wp_enqueue_style(
-				'videopack-classic-embed',
-				(string) plugins_url( '/admin-ui/build/classic-embed.css', (string) VIDEOPACK_PLUGIN_FILE ),
-				array( 'wp-components' ),
-				(string) ( $asset['version'] ?? VIDEOPACK_VERSION )
-			);
 		}
+
+		wp_localize_script(
+			'videopack-classic-editor',
+			'videopack_classic_editor_config',
+			array(
+				'options'        => (array) $this->options,
+				'postId'         => $post_id ? $post_id : 0,
+				'activeTab'      => ( 'embedgallery' === $active_tab ) ? 'gallery' : ( ( 'embedlist' === $active_tab ) ? 'list' : 'single' ),
+				'editAttributes' => $edit_attributes,
+			)
+		);
+
+		// Ensure videopack_config is also available for components that need it.
+		( new \Videopack\Admin\Ui( $this->options, $this->format_registry ) )->localize_block_settings( 'videopack-classic-editor' );
 
 		media_upload_header();
 		?>

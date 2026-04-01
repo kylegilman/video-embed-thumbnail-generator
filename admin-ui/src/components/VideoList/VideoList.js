@@ -2,7 +2,7 @@
  * A vertical list component for managing a collection of videos.
  */
 
-import { getVideoGallery } from '../../utils/utils';
+import { getVideoGallery } from '../../api/gallery';
 import { useEffect, useState, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Placeholder, Spinner } from '@wordpress/components';
@@ -134,6 +134,45 @@ const VideoList = ({
 			gallery_tag,
 			videos: videos !== undefined ? videos : collection_video_limit,
 		};
+
+		// Last minute safety check for "current" source in TinyMCE/REST context.
+		if (
+			args.gallery_source === 'current' &&
+			(!args.gallery_id ||
+				args.gallery_id === '0' ||
+				parseInt(args.gallery_id, 10) === 0)
+		) {
+			// Try to detect the post ID if it's missing.
+			const detectedId =
+				window.videopack_config?.postId ||
+				window.wp?.media?.view?.settings?.post?.id ||
+				document.getElementById('post_ID')?.value ||
+				new URLSearchParams(window.location.search).get('post');
+
+			if (detectedId) {
+				args.gallery_id = detectedId;
+			}
+		}
+
+		if (gallery_source === 'manual' && !gallery_include) {
+			setIsLoading(false);
+			return;
+		}
+		if (gallery_source === 'category' && !gallery_category) {
+			setIsLoading(false);
+			return;
+		}
+		if (gallery_source === 'tag' && !gallery_tag) {
+			setIsLoading(false);
+			return;
+		}
+		if (gallery_source === 'custom' && !gallery_id) {
+			setIsLoading(false);
+			return;
+		}
+
+		// eslint-disable-next-line no-console
+		console.log('Videopack VideoList Query:', args);
 
 		setIsLoading(true);
 		getVideoGallery(args)

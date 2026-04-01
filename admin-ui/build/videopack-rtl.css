@@ -1,0 +1,439 @@
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/Pagination/Pagination.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 1em 0;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.videopack-pagination .videopack-pagination-button,
+.videopack-pagination .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--videopack-pagination-color, #ddd);
+  border-radius: 4px;
+  background: var(--videopack-pagination-bg, #fff);
+  color: var(--videopack-pagination-color, #1e1e1e);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.videopack-pagination .videopack-pagination-button:hover:not(:disabled),
+.videopack-pagination .page-numbers:hover:not(:disabled) {
+  border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  background: #f0f0f0;
+}
+.videopack-pagination .videopack-pagination-button:disabled, .videopack-pagination .videopack-pagination-button.disabled,
+.videopack-pagination .page-numbers:disabled,
+.videopack-pagination .page-numbers.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+.videopack-pagination .videopack-pagination-button.is-active, .videopack-pagination .videopack-pagination-button.current,
+.videopack-pagination .page-numbers.is-active,
+.videopack-pagination .page-numbers.current {
+  background: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  color: var(--videopack-pagination-active-color, #fff);
+  cursor: default;
+}
+.videopack-pagination .videopack-pagination-button.is-ellipsis, .videopack-pagination .videopack-pagination-button.dots,
+.videopack-pagination .page-numbers.is-ellipsis,
+.videopack-pagination .page-numbers.dots {
+  border: none;
+  background: transparent;
+  cursor: default;
+  min-width: 24px;
+  padding: 0;
+}
+.videopack-pagination .videopack-pagination-button.is-ellipsis:hover, .videopack-pagination .videopack-pagination-button.dots:hover,
+.videopack-pagination .page-numbers.is-ellipsis:hover,
+.videopack-pagination .page-numbers.dots:hover {
+  color: #333;
+  background: transparent;
+}
+.videopack-pagination .videopack-pagination-button.is-hidden, .videopack-pagination .videopack-pagination-button.videopack-hidden,
+.videopack-pagination .page-numbers.is-hidden,
+.videopack-pagination .page-numbers.videopack-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+.videopack-pagination .videopack-pagination-arrow {
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 18px;
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/CompactColorPicker/CompactColorPicker.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************/
+.videopack-settings-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #757575;
+  margin: 0 0 12px 0 !important;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 4px;
+}
+
+.videopack-color-section {
+  margin-bottom: 24px;
+}
+
+.videopack-color-section:last-child {
+  margin-bottom: 0;
+}
+
+.videopack-color-flex-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.videopack-color-flex-row.is-pagination {
+  justify-content: space-between;
+}
+
+.videopack-color-flex-row.is-pagination .videopack-color-flex-item {
+  flex: 1;
+  width: auto;
+}
+
+.videopack-color-flex-item {
+  width: 22%;
+}
+
+.videopack-color-picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.videopack-color-picker-label {
+  font-size: 10.5px;
+  color: #1e1e1e;
+  text-align: center;
+  line-height: 1.2;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videopack-color-picker-button {
+  padding: 4px !important;
+  min-width: unset !important;
+  height: auto !important;
+  border-radius: 50% !important;
+}
+
+.videopack-color-picker-palette-wrapper {
+  padding: 12px;
+  width: 280px;
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/InspectorControls/CollectionSettingsPanel.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-sort-control-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.videopack-sort-control-wrapper .components-base-control {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-sort-control-wrapper .components-button.has-icon {
+  margin-bottom: 14px;
+}
+.videopack-excluded-videos {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+.videopack-excluded-videos p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.videopack-excluded-videos .videopack-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.videopack-excluded-videos .videopack-excluded-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail {
+  width: 60px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
+  width: 16px;
+  height: 16px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title {
+  flex-grow: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item {
+  min-width: 24px;
+  padding: 0;
+  color: #949494;
+  background: transparent;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover {
+  color: #cc1818;
+  background: #e0e0e0;
+}
+.components-base-control:has(.components-text-control__input),
+.components-base-control:has(.components-select-control__input),
+.components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
+}
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/Thumbnails/Thumbnails.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-thumbnail-generator button.is-secondary {
+  font-size: 12px;
+  margin-bottom: 10px;
+  padding: 7px;
+}
+.videopack-thumbnail-generator .components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
+}
+.videopack-thumbnail-generator .spinner-container {
+  position: relative;
+}
+.videopack-thumbnail-generator .spinner-container svg.components-spinner {
+  position: absolute;
+  margin: 0;
+  text-align: center;
+  width: 33%;
+  height: 33%;
+  right: 50%;
+  margin-right: -16%;
+  top: 50%;
+  margin-top: -11%;
+  display: none;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-right: auto;
+  margin-left: auto;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-play-pause {
+  color: var(--wp-admin-theme-color);
+  flex-shrink: 0;
+  padding: 0;
+  margin-left: 8px;
+  border: none;
+  background: none;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-thumbvideo-slider {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-thumbvideo-slider .components-range-control__root {
+  margin-bottom: 0;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-popout {
+  color: var(--wp-admin-theme-color);
+  flex-shrink: 0;
+  padding: 0;
+  margin-right: 8px;
+  border: none;
+  background: none;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-popout:hover {
+  color: var(--wp-admin-theme-color-darker);
+}
+.videopack-thumbnail-generator .videopack-thumb-video-controls .videopack-popout svg {
+  fill: currentColor;
+}
+.videopack-thumbnail-generator .videopack-thumbnail-holder.disabled img {
+  opacity: 20%;
+  pointer-events: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail {
+  border: 5px transparent solid;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+.videopack-thumbnail-generator .videopack-thumbnail:hover {
+  border-color: var(--wp-admin-theme-color);
+}
+.videopack-thumbnail-generator .videopack-thumbnail img {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+.videopack-thumbnail-generator .videopack-placeholder-gallery-button {
+  margin-right: 12px;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-container {
+  display: none;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-container.is-opened {
+  display: block;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-panel video {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.videopack-thumbnail-generator .videopack-thumbnail.saving,
+.videopack-thumbnail-generator .videopack-thumb-video-panel.saving {
+  opacity: 20%;
+  pointer-events: none;
+}
+.videopack-thumbnail-generator .videopack-thumbnail.saving svg.components-spinner,
+.videopack-thumbnail-generator .videopack-thumb-video-panel.saving svg.components-spinner {
+  display: inline-block;
+}
+.videopack-thumbnail-generator .videopack-thumbnail-holder {
+  position: relative;
+}
+.videopack-thumbnail-generator .videopack-saving-overlay {
+  position: absolute;
+  z-index: 20;
+  width: 100%;
+  height: 100%;
+  padding-top: 50%;
+  font-size: 18pt;
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+.videopack-thumbnail-generator .components-panel__body.videopack-thumb-video.is-opened .videopack-thumb-video-container {
+  display: block;
+}
+.videopack-thumbnail-generator .components-base-control.videopack-total-thumbnails {
+  display: inline-block;
+  max-width: 27%;
+  margin: 0 0px 0 10px;
+}
+.videopack-thumbnail-generator .components-base-control.videopack-total-thumbnails .components-text-control__input:disabled {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(220, 220, 222, 0.75);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: rgba(44, 51, 56, 0.5);
+}
+.videopack-thumbnail-generator button.components-button.videopack-use-this-frame.is-secondary {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+}
+.videopack-thumbnail-generator .videopack-security-error-notice {
+  padding: 12px;
+  background-color: #fcf0f1;
+  border-right: 4px solid #d94f4f;
+  margin: 12px 0;
+  color: #1e1e1e;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.videopack-thumbnail-generator .videopack-thumb-video-container.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+.editor-video-poster-control .components-base-control__label {
+  display: block;
+}
+.editor-video-poster-control .components-button {
+  margin-left: 10px;
+}
+picture.vjs-poster {
+  pointer-events: none;
+}
+.videopack-current-thumbnail {
+  width: var(--wp--style--global--content-size);
+  width: 640px;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 1em;
+}
+.videopack-generate {
+  margin-left: 10px;
+}
+.videopack-video-modal-overlay {
+  z-index: 1000001 !important;
+}
+.videopack-video-modal .components-modal__content {
+  width: 800px;
+  max-width: 90vw;
+  padding: 24px;
+}
+.videopack-video-modal .videopack-thumb-video-panel {
+  display: block;
+  padding: 0;
+}
+.videopack-video-modal .videopack-thumb-video-panel video {
+  max-height: 65vh;
+  background: #1e1e1e;
+  border-radius: 4px;
+}
+.videopack-video-modal .videopack-thumb-video-panel .videopack-thumb-video-controls {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.videopack-video-modal .videopack-thumb-video-panel .videopack-thumb-video-controls .videopack-thumbvideo-slider {
+  width: 85%;
+}
+.videopack-video-modal .videopack-thumb-video-panel button.components-button.videopack-use-this-frame.is-secondary {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  height: auto;
+}

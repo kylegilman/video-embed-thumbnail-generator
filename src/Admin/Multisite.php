@@ -7,21 +7,19 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Multisite
  *
  * Handles network-wide settings and operations for WordPress Multisite.
- *
- * This class manages network-specific options, overrides for site-specific
- * settings, migration of legacy network options, and integration with the
- * WordPress REST API for network management.
  *
  * @since      5.0.0
  * @package    Videopack
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Multisite {
+class Multisite implements Hook_Subscriber {
 
 	/**
 	 * Plugin options.
@@ -69,8 +67,71 @@ class Multisite {
 		$this->default_options         = (array) ( new Options() )->get_default();
 		$this->default_network_options = (array) $this->get_default_network_settings_structure();
 		$this->network_options         = (array) get_site_option( 'videopack_network_options', array() );
+	}
 
-		$this->init();
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		if ( ! is_multisite() ) {
+			return array();
+		}
+
+		return array(
+			array(
+				'hook'     => 'init',
+				'callback' => 'init',
+			),
+			array(
+				'hook'     => 'wpmu_new_blog',
+				'callback' => 'add_new_blog',
+			),
+			array(
+				'hook'     => 'network_admin_menu',
+				'callback' => 'add_network_settings_page',
+			),
+			array(
+				'hook'     => 'network_admin_menu',
+				'callback' => 'add_network_queue_page',
+			),
+			array(
+				'hook'     => 'rest_api_init',
+				'callback' => 'register_rest_routes',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		if ( ! is_multisite() ) {
+			return array();
+		}
+
+		$filters = array(
+			array(
+				'hook'     => 'network_admin_plugin_action_links_' . VIDEOPACK_BASENAME,
+				'callback' => 'network_admin_action_links',
+			),
+		);
+
+		if ( $this->is_network_active() ) {
+			$filters[] = array(
+				'hook'     => 'option_videopack_options',
+				'callback' => 'override_local_options',
+			);
+			$filters[] = array(
+				'hook'     => 'default_option_videopack_options',
+				'callback' => 'override_local_options',
+			);
+		}
+
+		return $filters;
 	}
 
 	/**
@@ -128,15 +189,6 @@ class Multisite {
 	 * Initializes multisite hooks and performs migrations.
 	 */
 	public function init() {
-		// Apply capabilities to new sites.
-		add_action( 'wpmu_new_blog', array( $this, 'add_new_blog' ) );
-
-		// Add filter to override site-specific options with network settings if network activated.
-		if ( $this->is_network_active() ) {
-			add_filter( 'option_videopack_options', array( $this, 'override_local_options' ) );
-			add_filter( 'default_option_videopack_options', array( $this, 'override_local_options' ) );
-		}
-
 		$new_options_key = 'videopack_network_options';
 		$old_options_key = 'kgvid_video_embed_network_options';
 
@@ -210,8 +262,6 @@ class Multisite {
 				( new Options() )->set_capabilities( (array) $this->network_options['default_capabilities'] );
 			}
 		}
-
-		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 	}
 
 	/**
@@ -326,23 +376,10 @@ class Multisite {
 	 * Enqueues assets for the React Network Settings page.
 	 */
 	public function enqueue_network_settings_assets() {
-		wp_enqueue_script(
-			'videopack-settings-network',
-			(string) plugins_url( '../admin-ui/build/settings-network.js', __DIR__ ),
-			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element', 'wp-data' ),
-			VIDEOPACK_VERSION,
-			true
-		);
-
-		wp_enqueue_style(
-			'videopack-settings-network-styles',
-			(string) plugins_url( '../admin-ui/build/settings-network.css', __DIR__ ),
-			array( 'wp-components' ),
-			VIDEOPACK_VERSION
-		);
+		( new Assets( $this->options ) )->enqueue_admin_screens_assets();
 
 		wp_localize_script(
-			'videopack-settings-network',
+			'videopack-admin-screens',
 			'videopackNetworkSettings',
 			array(
 				'settings' => (array) $this->network_options,
@@ -358,20 +395,7 @@ class Multisite {
 	 * Enqueues assets for the React Network Queue page.
 	 */
 	public function enqueue_network_queue_assets() {
-		wp_enqueue_script(
-			'videopack-encode-queue',
-			(string) plugins_url( '../admin-ui/build/encode-queue.js', __DIR__ ),
-			array( 'wp-api', 'wp-i18n', 'wp-components', 'wp-element', 'wp-data' ),
-			VIDEOPACK_VERSION,
-			true
-		);
-
-		wp_enqueue_style(
-			'videopack-encode-queue-styles',
-			(string) plugins_url( '../admin-ui/build/encode-queue.css', __DIR__ ),
-			array( 'wp-components' ),
-			VIDEOPACK_VERSION
-		);
+		( new Assets( $this->options ) )->enqueue_admin_screens_assets();
 
 		$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . (string) wp_json_encode(
 			array(
@@ -382,7 +406,7 @@ class Multisite {
 		) . ';';
 
 		wp_add_inline_script(
-			'videopack-encode-queue',
+			'videopack-admin-screens',
 			$inline_script,
 			'before'
 		);

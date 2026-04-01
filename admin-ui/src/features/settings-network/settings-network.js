@@ -7,8 +7,8 @@ import {
 	saveNetworkSettings,
 	getNetworkSettings,
 	resetNetworkSettings,
-	getUsersWithCapability,
-} from '../../utils/utils';
+} from '../../api/settings';
+import { getUsersWithCapability } from '../../api/gallery';
 import {
 	Icon,
 	Panel,
@@ -433,7 +433,6 @@ const NetworkSettingsPage = () => {
 		</div>
 	);
 };
-
 const el = document.getElementById('videopack-network-settings-root');
 if (el) {
 	const root = createRoot(el);

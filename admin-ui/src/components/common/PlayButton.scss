@@ -136,8 +136,40 @@
 
 	@container (max-width: 260px) {
 		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.6);
+		.mejs-overlay-button,
+		.videopack-none-play-button {
+			transform: translate(-50%, -50%) scale(0.6);
 		}
+	}
+}
+
+/* None Player SVG Play Button */
+.videopack-none-play-button {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 80px;
+	height: 80px;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+	transition: transform 0.15s ease, opacity 0.15s ease;
+	z-index: 2;
+
+	.play-button-circle {
+		fill: var(--videopack-play-button-bg-color-alpha, colors.$gray-800);
+		fill-opacity: 0.7;
+		transition: fill-opacity 0.15s ease;
+	}
+
+	.play-button-triangle {
+		fill: var(--videopack-play-button-foreground-color, colors.$white);
+	}
+}
+
+:is(.videopack-wrapper, .gallery-thumbnail):hover .videopack-none-play-button {
+
+	.play-button-circle {
+		fill-opacity: 0.9;
+		fill: var(--videopack-play-button-bg-color-alpha-hover, colors.$gray-800);
 	}
 }

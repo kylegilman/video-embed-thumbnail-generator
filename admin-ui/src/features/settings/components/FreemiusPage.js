@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { getFreemiusPage } from '../../../utils/utils';
+import { getFreemiusPage } from '../../../api/gallery';
 import { Spinner } from '@wordpress/components';
 
 /**

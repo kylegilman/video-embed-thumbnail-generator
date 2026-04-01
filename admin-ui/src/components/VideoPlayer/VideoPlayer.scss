@@ -33,8 +33,6 @@
 	container-type: inline-size;
 	width: 100%;
 
-
-
 	&.videopack-wrapper-auto-left {
 		margin-left: auto;
 	}
@@ -110,7 +108,7 @@
 		width: 100%;
 
 		/* Skin-specific MetaBar styles (only if no custom background color) */
-		.videopack-wrapper:not(.videopack-has-title-background-color) & {
+		@at-root .videopack-wrapper:not(.videopack-has-title-background-color) .videopack-player {
 			&.default .videopack-meta-bar:not(.no-title) {
 				background-color: #2b333f;
 			}
@@ -337,8 +335,19 @@
 		padding: 0;
 	}
 
-	.wp-video-shortcode {
-		max-height: 100%;
+	.wp-video-shortcode,
+	.videopack-video {
+		max-width: 100%;
+		height: auto;
+	}
+
+	.videopack-fixed-aspect {
+		.videopack-video {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			background: black;
+		}
 	}
 
 	/* fix iPhone play button */

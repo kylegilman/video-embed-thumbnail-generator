@@ -126,11 +126,5 @@
       "gallery_pagination": false
     }
   },
-  "textdomain": "video-embed-thumbnail-generator",
-  "editorScript": [
-    "file:./videopack-gallery.js"
-  ],
-  "style": [
-    "file:./videopack-gallery.css"
-  ]
+  "textdomain": "video-embed-thumbnail-generator"
 }

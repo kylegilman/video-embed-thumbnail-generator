@@ -1,17 +1,10 @@
 /**
  * Main entry point for the attachment details feature, handling React root injection and auto-generation logic.
  */
-
 import { createRoot } from '@wordpress/element';
 import AttachmentDetails from './components/AttachmentDetails';
 import AttachmentPreview from './components/AttachmentPreview';
-import {
-	captureVideoFrame,
-	getVideoMetadata,
-	calculateTimecodes,
-} from '../../utils/video-capture';
-import { createThumbnailFromCanvas, setPosterImage } from '../../utils/utils';
-import { __, sprintf } from '@wordpress/i18n';
+// No unused imports here now.
 import './attachment-details.scss';
 
 const config = window.videopack_config || {};
@@ -95,17 +88,34 @@ if (editMediaContainer) {
 	}
 }
 
-// Ensure wp.media is loaded.
-if (
-	typeof wp === 'undefined' ||
-	!wp.media ||
-	!wp.media.view ||
-	!wp.media.view.Attachment.Details
-) {
-	console.error(
-		'Videopack: wp.media.view.Attachment.Details is not available.'
-	);
-} else {
+// --- Media Library (Modal/Grid) Extension ---
+
+/**
+ * Robustly extends wp.media.view.Attachment.Details with Videopack components.
+ * Retries if wp.media core objects are not yet initialized.
+ *
+ * @param {number} attempts Number of attempts already made.
+ */
+function initVideopackMediaExtension(attempts = 0) {
+	if (
+		typeof wp === 'undefined' ||
+		!wp.media ||
+		!wp.media.view ||
+		!wp.media.view.Attachment.Details
+	) {
+		if (attempts < 10) {
+			window.requestAnimationFrame(() =>
+				initVideopackMediaExtension(attempts + 1)
+			);
+		} else {
+			// eslint-disable-next-line no-console
+			console.error(
+				'Videopack: wp.media.view.Attachment.Details is not available after multiple attempts.'
+			);
+		}
+		return;
+	}
+
 	const originalAttachmentDetails = wp.media.view.Attachment.Details;
 
 	const extendedAttachmentDetails = originalAttachmentDetails.extend({
@@ -150,7 +160,14 @@ if (
 						return;
 					}
 
+					// Try different selectors for the settings sidebar.
 					let settingsSection = this.$el.find('.settings');
+					if (settingsSection.length === 0) {
+						settingsSection = this.$el.find('.attachment-details');
+					}
+					if (settingsSection.length === 0) {
+						settingsSection = this.$el.find('.attachment-info');
+					}
 					if (settingsSection.length === 0) {
 						if (this.$el.hasClass('attachment-details')) {
 							settingsSection = this.$el;
@@ -246,6 +263,9 @@ if (
 	// Replace the original view with our extended one.
 	wp.media.view.Attachment.Details = extendedAttachmentDetails;
 }
+
+// Start the extension initialization.
+initVideopackMediaExtension();
 
 // --- Auto-Generation Logic ---
 // Moved to Videopack Pro.

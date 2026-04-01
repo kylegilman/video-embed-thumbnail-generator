@@ -26,6 +26,7 @@ export default function CollectionSettingsPanel({
 	showGalleryOptions = false,
 	isSiteEditor = false,
 	blockType = 'gallery', // 'gallery', 'grid', or 'list'
+	showManualSource = true,
 }) {
 	const displayAttributes = useMemo(
 		() => ({ ...options, ...attributes }),
@@ -62,8 +63,7 @@ export default function CollectionSettingsPanel({
 	} = attributes;
 
 	const { excludedVideos } = queryData;
-	const THEME_COLORS =
-		videopack_config?.themeColors || options?.themeColors;
+	const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
 	const baseGalleryOrderbyOptions = [
 		{
 			value: 'menu_order',
@@ -153,6 +153,7 @@ export default function CollectionSettingsPanel({
 					setAttributes={setAttributes}
 					queryData={queryData}
 					showArchiveSource={isSiteEditor}
+					showManualSource={showManualSource}
 				/>
 				<div className="videopack-sort-control-wrapper">
 					<SelectControl

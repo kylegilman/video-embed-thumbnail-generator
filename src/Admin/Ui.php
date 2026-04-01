@@ -8,6 +8,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Ui
  *
@@ -23,7 +25,7 @@ namespace Videopack\Admin;
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Ui {
+class Ui implements Hook_Subscriber {
 
 	/**
 	 * Plugin options.
@@ -49,60 +51,90 @@ class Ui {
 	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry ) {
 		$this->options         = $options;
 		$this->format_registry = $format_registry;
+	}
 
-		// Handle false positive ActionScheduler "missing tables" warning caused by case-sensitivity mismatches on some systems (e.g., Windows).
-		add_filter(
-			'action_scheduler_enable_recreate_data_store',
-			function ( $enable ) {
-				global $wpdb;
-				$table_list = array(
-					'actionscheduler_actions',
-					'actionscheduler_logs',
-					'actionscheduler_groups',
-					'actionscheduler_claims',
-				);
-
-				$found_tables       = (array) $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'actionscheduler%' ) );
-				$found_tables_lower = array_map( 'strtolower', $found_tables );
-
-				$all_exist = true;
-				foreach ( $table_list as $table_name ) {
-					if ( ! in_array( strtolower( $wpdb->prefix . $table_name ), $found_tables_lower, true ) ) {
-						$all_exist = false;
-						break;
-					}
-				}
-
-				if ( $all_exist ) {
-					if ( class_exists( 'ActionScheduler_DataController' ) && ! \ActionScheduler_DataController::is_migration_complete() ) {
-						\ActionScheduler_DataController::mark_migration_complete();
-					}
-					return false; // Tables exist (case-insensitively), so suppress the warning.
-				}
-
-				return $enable; // Tables are truly missing, let ActionScheduler handle it.
-			}
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'init',
+				'callback' => 'block_init',
+			),
+			array(
+				'hook'     => 'admin_print_footer_scripts',
+				'callback' => 'print_tinymce_template',
+			),
 		);
 	}
 
 	/**
-	 * Registers scripts for the selected video player.
+	 * Returns an array of filters to subscribe to.
 	 *
-	 * @return void
+	 * @return array
 	 */
-	public function register_scripts() {
-		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
-		$player->register_scripts();
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'     => 'action_scheduler_enable_recreate_data_store',
+				'callback' => 'suppress_action_scheduler_warning',
+			),
+			array(
+				'hook'     => 'block_type_metadata',
+				'callback' => 'conditionally_add_assets_to_block_metadata',
+			),
+			array(
+				'hook'     => 'mce_external_plugins',
+				'callback' => 'register_tinymce_plugin',
+			),
+		);
 	}
 
 	/**
-	 * Initializes Videopack blocks and localizes settings.
+	 * Handle false positive ActionScheduler "missing tables" warning caused by case-sensitivity mismatches on some systems (e.g., Windows).
+	 *
+	 * @param bool $enable Whether to enable recreation of data store.
+	 * @return bool
+	 */
+	public function suppress_action_scheduler_warning( $enable ) {
+		global $wpdb;
+		$table_list = array(
+			'actionscheduler_actions',
+			'actionscheduler_logs',
+			'actionscheduler_groups',
+			'actionscheduler_claims',
+		);
+
+		$found_tables       = (array) $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'actionscheduler%' ) );
+		$found_tables_lower = array_map( 'strtolower', $found_tables );
+
+		$all_exist = true;
+		foreach ( $table_list as $table_name ) {
+			if ( ! in_array( strtolower( $wpdb->prefix . $table_name ), $found_tables_lower, true ) ) {
+				$all_exist = false;
+				break;
+			}
+		}
+
+		if ( $all_exist ) {
+			if ( class_exists( 'ActionScheduler_DataController' ) && ! \ActionScheduler_DataController::is_migration_complete() ) {
+				\ActionScheduler_DataController::mark_migration_complete();
+			}
+			return false; // Tables exist (case-insensitively), so suppress the warning.
+		}
+
+		return $enable; // Tables are truly missing, let ActionScheduler handle it.
+	}
+
+	/**
+	 * Initializes Videopack blocks.
 	 *
 	 * @return void
 	 */
 	public function block_init() {
-
-		add_filter( 'block_type_metadata', array( $this, 'conditionally_add_assets_to_block_metadata' ) );
 
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
 		$block_attributes  = (array) $shortcode_handler->get_block_attributes();
@@ -112,6 +144,8 @@ class Ui {
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
 				'attributes'      => $block_attributes,
+				'editor_script'   => 'videopack-blocks',
+				'editor_style'    => 'videopack-blocks',
 			)
 		);
 
@@ -119,6 +153,8 @@ class Ui {
 			(string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-gallery',
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
+				'editor_script'   => 'videopack-blocks',
+				'editor_style'    => 'videopack-blocks',
 			)
 		);
 
@@ -126,122 +162,10 @@ class Ui {
 			(string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-list',
 			array(
 				'render_callback' => array( $this, 'render_videopack_block' ),
+				'editor_script'   => 'videopack-blocks',
+				'editor_style'    => 'videopack-blocks',
 			)
 		);
-
-		$shared_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/videopack-shared.asset.php';
-		if ( file_exists( $shared_asset_path ) ) {
-			$shared_asset = (array) require $shared_asset_path;
-			wp_register_script(
-				'videopack-shared',
-				(string) plugins_url( 'admin-ui/build/videopack-shared.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) $shared_asset['dependencies'],
-				(string) $shared_asset['version'],
-				true
-			);
-			wp_register_style(
-				'videopack-shared',
-				(string) plugins_url( 'admin-ui/build/videopack-shared.css', VIDEOPACK_PLUGIN_FILE ),
-				array(),
-				(string) $shared_asset['version']
-			);
-		}
-
-		$videopack_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/videopack.asset.php';
-		if ( file_exists( $videopack_asset_path ) ) {
-			$videopack_asset = (array) require $videopack_asset_path;
-			wp_register_script(
-				'videopack-admin',
-				(string) plugins_url( 'admin-ui/build/videopack.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) array_merge( (array) $videopack_asset['dependencies'], array( 'videopack-shared' ) ),
-				(string) $videopack_asset['version'],
-				true
-			);
-			wp_set_script_translations( 'videopack-admin', 'video-embed-thumbnail-generator' );
-		}
-
-		$this->localize_block_settings( 'videopack-blocks-videopack-video-videopack-video-editor-script' );
-		$this->localize_block_settings( 'videopack-blocks-videopack-gallery-videopack-gallery-editor-script' );
-		$this->localize_block_settings( 'videopack-blocks-videopack-list-videopack-list-editor-script' );
-
-		$player_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/videopack-videoplayer.asset.php';
-		if ( file_exists( $player_asset_path ) ) {
-			$player_asset = (array) require $player_asset_path;
-			wp_register_script(
-				'videopack-videoplayer',
-				(string) plugins_url( 'admin-ui/build/videopack-videoplayer.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) array_merge( (array) $player_asset['dependencies'], array( 'videopack-shared' ) ),
-				(string) $player_asset['version'],
-				true
-			);
-			wp_set_script_translations( 'videopack-videoplayer', 'video-embed-thumbnail-generator' );
-			wp_register_style(
-				'videopack-videoplayer',
-				(string) plugins_url( 'admin-ui/build/videopack-videoplayer.css', VIDEOPACK_PLUGIN_FILE ),
-				array(),
-				(string) $player_asset['version']
-			);
-		}
-
-		$gallery_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/videopack-videogallery.asset.php';
-		if ( file_exists( $gallery_asset_path ) ) {
-			$gallery_asset = (array) require $gallery_asset_path;
-			wp_register_script(
-				'videopack-videogallery',
-				(string) plugins_url( 'admin-ui/build/videopack-videogallery.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) array_merge( (array) $gallery_asset['dependencies'], array( 'videopack-shared', 'videopack-videoplayer', 'videopack-dndkit' ) ),
-				(string) $gallery_asset['version'],
-				true
-			);
-			wp_set_script_translations( 'videopack-videogallery', 'video-embed-thumbnail-generator' );
-			wp_register_style(
-				'videopack-videogallery',
-				(string) plugins_url( 'admin-ui/build/videopack-videogallery.css', VIDEOPACK_PLUGIN_FILE ),
-				array(),
-				(string) $gallery_asset['version']
-			);
-		}
-
-		$videolist_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/videopack-videolist.asset.php';
-		if ( file_exists( $videolist_asset_path ) ) {
-			$videolist_asset = (array) require $videolist_asset_path;
-			wp_register_script(
-				'videopack-videolist',
-				(string) plugins_url( 'admin-ui/build/videopack-videolist.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) array_merge( (array) $videolist_asset['dependencies'], array( 'videopack-shared', 'videopack-dndkit' ) ),
-				(string) $videolist_asset['version'],
-				true
-			);
-			wp_set_script_translations( 'videopack-videolist', 'video-embed-thumbnail-generator' );
-			wp_register_style(
-				'videopack-videolist',
-				(string) plugins_url( 'admin-ui/build/videopack-videolist.css', VIDEOPACK_PLUGIN_FILE ),
-				array(),
-				(string) $videolist_asset['version']
-			);
-		}
-
-		$dndkit_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/videopack-dndkit.asset.php';
-		if ( file_exists( $dndkit_asset_path ) ) {
-			$dndkit_asset = (array) require $dndkit_asset_path;
-			wp_register_script(
-				'videopack-dndkit',
-				(string) plugins_url( 'admin-ui/build/videopack-dndkit.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) $dndkit_asset['dependencies'],
-				(string) $dndkit_asset['version'],
-				true
-			);
-		}
-	}
-
-	/**
-	 * Enqueues assets for blocks (frontend and editor).
-	 *
-	 * @return void
-	 */
-	public function enqueue_block_assets() {
-		wp_enqueue_script( 'videopack-videoplayer' );
-		wp_enqueue_style( 'videopack-videoplayer' );
 	}
 
 	/**
@@ -256,46 +180,6 @@ class Ui {
 		) {
 			$player   = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
 			$metadata = (array) $player->filter_block_metadata( (array) $metadata );
-
-			if ( ! isset( $metadata['editorScript'] ) ) {
-				$metadata['editorScript'] = array();
-			} elseif ( ! is_array( $metadata['editorScript'] ) ) {
-				$metadata['editorScript'] = array( (string) $metadata['editorScript'] );
-			}
-			$metadata['editorScript'][] = 'videopack-shared';
-
-			if ( ! isset( $metadata['editorStyle'] ) ) {
-				$metadata['editorStyle'] = array();
-			} elseif ( ! is_array( $metadata['editorStyle'] ) ) {
-				$metadata['editorStyle'] = array( (string) $metadata['editorStyle'] );
-			}
-			$metadata['editorStyle'][] = 'videopack-shared';
-
-			if ( (string) $metadata['name'] === 'videopack/videopack-gallery' ) {
-				$metadata['editorScript'][] = 'videopack-videogallery';
-				$metadata['editorScript'][] = 'videopack-dndkit';
-				$metadata['editorStyle'][]  = 'videopack-videogallery';
-
-				if ( ! isset( $metadata['style'] ) ) {
-					$metadata['style'] = array();
-				} elseif ( ! is_array( $metadata['style'] ) ) {
-					$metadata['style'] = array( (string) $metadata['style'] );
-				}
-				$metadata['style'][] = 'videopack-videogallery';
-			}
-
-			if ( (string) $metadata['name'] === 'videopack/videopack-list' ) {
-				$metadata['editorScript'][] = 'videopack-videolist';
-				$metadata['editorScript'][] = 'videopack-dndkit';
-				$metadata['editorStyle'][]  = 'videopack-videolist';
-
-				if ( ! isset( $metadata['style'] ) ) {
-					$metadata['style'] = array();
-				} elseif ( ! is_array( $metadata['style'] ) ) {
-					$metadata['style'] = array( (string) $metadata['style'] );
-				}
-				$metadata['style'][] = 'videopack-videolist';
-			}
 
 			return (array) $metadata;
 		}
@@ -405,7 +289,7 @@ class Ui {
 				'rest_url_render'        => (string) get_rest_url( null, 'videopack/v1/render-shortcode' ),
 				'replace_preview_video'  => (bool) ( $options['replace_preview_video'] ?? true ),
 				'align'                  => (string) ( $options['align'] ?? '' ),
-				'postId'                 => (int) get_the_ID(),
+				'postId'                 => (int) ( is_admin() ? ( $_GET['post'] ?? get_queried_object_id() ?: get_the_ID() ) : get_the_ID() ),
 				'themeColors'            => $theme_colors,
 				'globalStyles'           => function_exists( 'wp_get_global_stylesheet' ) ? wp_get_global_stylesheet() : '',
 				'mejs_controls_svg'      => (string) includes_url( 'js/mediaelement/mejs-controls.svg' ),
@@ -437,8 +321,8 @@ class Ui {
 					'nativecontrolsfortouch'      => (bool) ( $options['nativecontrolsfortouch'] ?? false ),
 					'pauseothervideos'            => (bool) ( $options['pauseothervideos'] ?? true ),
 					'right_click'                 => (bool) ( $options['right_click'] ?? false ),
-					'auto_res'                    => (bool) ( $options['auto_res'] ?? true ),
-					'auto_codec'                  => (bool) ( $options['auto_codec'] ?? true ),
+					'auto_res'                    => (string) ( $options['auto_res'] ?? 'automatic' ),
+					'auto_codec'                  => (string) ( $options['auto_codec'] ?? 'h264' ),
 					'skin'                        => (string) ( $options['skin'] ?? 'vjs-theme-videopack' ),
 				),
 				'classic_embed_nonce'    => wp_create_nonce( 'videopack_classic_embed' ),
@@ -463,146 +347,6 @@ class Ui {
 	}
 
 	/**
-	 * Enqueues assets for specific admin pages.
-	 *
-	 * @param string $hook_suffix The current page hook suffix.
-	 * @return void
-	 */
-	public function enqueue_page_assets( $hook_suffix ) {
-
-		if ( 'settings_page_video_embed_thumbnail_generator_settings' === (string) $hook_suffix ) {
-			$script_asset_path = (string) plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/settings.asset.php';
-
-			if ( ! file_exists( $script_asset_path ) ) {
-				return;
-			}
-
-			$script_asset = (array) ( require $script_asset_path );
-
-			$fs               = function_exists( 'videopack_fs' ) ? videopack_fs() : null;
-			$freemius_enabled = ( null !== $fs ) && ( (bool) $fs->is_registered() || (bool) $fs->is_pending_activation() );
-
-			$freemius_dependencies       = array();
-			$freemius_style_dependencies = array();
-			if ( $freemius_enabled ) {
-				fs_enqueue_local_style( 'fs-common', '/admin/common.css' );
-				fs_enqueue_local_style( 'fs-addons', '/admin/add-ons.css', array( 'fs-common' ) );
-				fs_enqueue_local_style( 'fs-account', '/admin/account.css', array( 'fs-common' ) );
-				fs_enqueue_local_style( 'fs_dialog_boxes', '/admin/dialog-boxes.css' );
-
-				fs_enqueue_local_script( 'fs-form', 'jquery.form.js', array( 'jquery' ) );
-
-				$freemius_dependencies       = array( 'fs-form' );
-				$freemius_style_dependencies = array( 'fs-addons', 'fs-account', 'fs_dialog_boxes' );
-			}
-
-			$video_js_player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'Video.js', $this->options, $this->format_registry );
-			$video_js_player->register_scripts();
-			$video_js_player->enqueue_player_scripts();
-			$video_js_player->enqueue_styles();
-
-			$wp_player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'WordPress Default', $this->options, $this->format_registry );
-			$wp_player->register_scripts();
-			$wp_player->enqueue_player_scripts();
-			$wp_player->enqueue_styles();
-
-			wp_enqueue_script(
-				'videopack-settings',
-				(string) plugins_url( 'admin-ui/build/settings.js', VIDEOPACK_PLUGIN_FILE ),
-				(array) array_merge( (array) $script_asset['dependencies'], $freemius_dependencies, array( 'videopack-shared', 'videopack-videoplayer', 'videopack-videogallery', 'videopack-admin' ) ),
-				(string) $script_asset['version'],
-				true
-			);
-			wp_set_script_translations( 'videopack-settings', 'video-embed-thumbnail-generator' );
-
-			$this->localize_block_settings( 'videopack-settings' );
-
-			$settings_css_dependencies = (array) array_merge( array( 'wp-components' ), $freemius_style_dependencies );
-
-			wp_enqueue_style(
-				'videopack-settings',
-				(string) plugins_url( 'admin-ui/build/settings.css', VIDEOPACK_PLUGIN_FILE ),
-				array_merge( $settings_css_dependencies, array( 'videopack-shared' ) ),
-				(string) $script_asset['version']
-			);
-		}
-
-		if ( 'tools_page_videopack_encode_queue' === (string) $hook_suffix ) {
-			$options           = $this->options;
-			$script_asset_path = (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/encode-queue.asset.php';
-			$script_asset      = (array) ( file_exists( $script_asset_path ) ? require $script_asset_path : array(
-				'dependencies' => array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-data' ),
-				'version'      => VIDEOPACK_VERSION,
-			) );
-
-			wp_enqueue_script(
-				'videopack-encode-queue',
-				(string) plugins_url( 'admin-ui/build/encode-queue.js', VIDEOPACK_PLUGIN_FILE ),
-				array_merge( (array) $script_asset['dependencies'], array( 'videopack-shared' ) ),
-				(string) $script_asset['version'],
-				true
-			);
-			wp_set_script_translations( 'videopack-encode-queue', 'video-embed-thumbnail-generator' );
-
-			wp_enqueue_style(
-				'videopack-encode-queue-styles',
-				(string) plugins_url( 'admin-ui/build/encode-queue.css', VIDEOPACK_PLUGIN_FILE ),
-				array(),
-				(string) $script_asset['version']
-			);
-
-			$inline_script = 'if (typeof videopack === "undefined") { videopack = {}; } videopack.encodeQueueData = ' . (string) wp_json_encode(
-				array(
-					'initialQueueState' => (string) ( $options['queue_control'] ?? 'play' ),
-					'ffmpegExists'      => $options['ffmpeg_exists'] ?? 'notchecked',
-				)
-			) . ';';
-
-			wp_add_inline_script( 'videopack-encode-queue', $inline_script, 'before' );
-			$this->localize_block_settings( 'videopack-encode-queue' );
-			do_action( 'videopack_trigger_queue_heartbeat' );
-		}
-	}
-
-	/**
-	 * Enqueues assets for the attachment details screen (meta boxes).
-	 *
-	 * @return void
-	 */
-	public function enqueue_attachment_details() {
-		$script_asset_path = (string) plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/attachment-details.asset.php';
-
-		if ( ! file_exists( $script_asset_path ) ) {
-			return;
-		}
-
-		$script_asset = (array) ( require $script_asset_path );
-
-		wp_enqueue_script(
-			'videopack-attachment-details',
-			(string) plugins_url( 'admin-ui/build/attachment-details.js', VIDEOPACK_PLUGIN_FILE ),
-			(array) array_merge( (array) $script_asset['dependencies'], array( 'wp-api-fetch', 'wp-url', 'videopack-shared', 'videopack-videoplayer' ) ),
-			(string) $script_asset['version'],
-			true
-		);
-		wp_set_script_translations( 'videopack-attachment-details', 'video-embed-thumbnail-generator' );
-		$this->localize_block_settings( 'videopack-attachment-details' );
-
-		$embed_method = (string) ( $this->options['embed_method'] ?? 'Video.js' );
-		$player       = \Videopack\Frontend\Video_Players\Player_Factory::create( $embed_method, $this->options, $this->format_registry );
-		$player->register_scripts();
-		$player->enqueue_player_scripts();
-		$player->enqueue_styles();
-
-		wp_enqueue_style(
-			'videopack-attachment-details',
-			(string) plugins_url( 'admin-ui/build/attachment-details.css', VIDEOPACK_PLUGIN_FILE ),
-			array( 'wp-components', 'videopack-shared', 'videopack-videoplayer' ),
-			(string) VIDEOPACK_VERSION
-		);
-	}
-
-	/**
 	 * Registers the TinyMCE plugin for Videopack.
 	 *
 	 * @param array $plugin_array Existing TinyMCE plugins.
@@ -610,85 +354,10 @@ class Ui {
 	 */
 	public function register_tinymce_plugin( $plugin_array ) {
 		// We no longer load tinymce.js as a TinyMCE plugin because it has complex React dependencies.
-		// Instead, we enqueue it as a standard WordPress script in enqueue_tinymce_assets.
+		// Instead, we enqueue it as a standard WordPress script in Assets.php.
 		return (array) $plugin_array;
 	}
 
-	/**
-	 * Enqueues assets for TinyMCE visual editor integration.
-	 *
-	 * @param string $hook_suffix The current page hook suffix.
-	 * @return void
-	 */
-	public function enqueue_tinymce_assets( $hook_suffix ) {
-		if ( ! in_array( (string) $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
-			return;
-		}
-
-		if ( function_exists( 'use_block_editor_for_post' ) && use_block_editor_for_post( get_post() ) ) {
-			return;
-		}
-
-		wp_enqueue_script( 'mce-view' );
-		wp_enqueue_script( 'wp-util' );
-		wp_enqueue_script( 'wp-shortcode' );
-		wp_enqueue_media();
-		wp_enqueue_script( 'wp-api-fetch' );
-		wp_enqueue_script( 'wp-url' );
-
-		// Load dependencies from the asset file if it exists.
-		$asset_path   = (string) plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/tinymce.asset.php';
-		$dependencies = array( 'mce-view', 'wp-util', 'wp-shortcode', 'wp-element', 'wp-i18n', 'wp-api-fetch', 'wp-components', 'videopack-shared', 'videopack-videoplayer', 'videopack-videogallery', 'videopack-videolist', 'videopack-dndkit' );
-		if ( file_exists( $asset_path ) ) {
-			$asset        = (array) require $asset_path;
-			$dependencies = array_merge( $dependencies, (array) $asset['dependencies'] );
-		}
-		$dependencies = array_unique( $dependencies );
-
-		wp_enqueue_script(
-			'videopack-tinymce',
-			(string) plugins_url( 'admin-ui/build/tinymce.js', VIDEOPACK_PLUGIN_FILE ),
-			$dependencies,
-			(string) VIDEOPACK_VERSION,
-			true
-		);
-
-		$this->localize_block_settings( 'videopack-tinymce' );
-
-		add_editor_style( (string) includes_url( 'css/media-views.css' ) );
-		add_editor_style( (string) includes_url( 'js/mediaelement/mediaelementplayer-legacy.min.css' ) );
-		add_editor_style( (string) includes_url( 'js/mediaelement/wp-mediaelement.css' ) );
-
-		$css_url  = (string) plugins_url( 'admin-ui/build/tinymce.css', VIDEOPACK_PLUGIN_FILE );
-		$css_path = (string) plugin_dir_path( VIDEOPACK_PLUGIN_FILE ) . 'admin-ui/build/tinymce.css';
-		if ( file_exists( $css_path ) ) {
-			wp_enqueue_style( 'videopack-tinymce', $css_url, array(), (string) VIDEOPACK_VERSION );
-			add_editor_style( $css_url );
-		}
-
-
-		// Enqueue player-specific styles for the editor iframe.
-		$embed_method = (string) ( $this->options['embed_method'] ?? 'Video.js' );
-		$player       = \Videopack\Frontend\Video_Players\Player_Factory::create( $embed_method, $this->options, $this->format_registry );
-		$player->register_scripts();
-
-		$handles = $player->get_player_style_handles();
-		global $wp_styles;
-		foreach ( $handles as $handle ) {
-			if ( isset( $wp_styles->registered[ $handle ] ) ) {
-				$src = $wp_styles->registered[ $handle ]->src;
-				if ( $src ) {
-					add_editor_style( $src );
-				}
-			}
-		}
-
-		// Enqueue the component styles for the editor iframe.
-		add_editor_style( (string) plugins_url( 'admin-ui/build/videopack-videoplayer.css', VIDEOPACK_PLUGIN_FILE ) );
-		add_editor_style( (string) plugins_url( 'admin-ui/build/videopack-videogallery.css', VIDEOPACK_PLUGIN_FILE ) );
-		add_editor_style( (string) plugins_url( 'admin-ui/build/videopack-videolist.css', VIDEOPACK_PLUGIN_FILE ) );
-		add_editor_style( (string) plugins_url( 'admin-ui/build/videopack-shared.css', VIDEOPACK_PLUGIN_FILE ) );
-	}
 	/**
 	 * Output the TinyMCE templates.
 	 *

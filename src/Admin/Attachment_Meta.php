@@ -7,6 +7,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Attachment_Meta
  *
@@ -22,7 +24,7 @@ namespace Videopack\Admin;
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Attachment_Meta {
+class Attachment_Meta implements Hook_Subscriber {
 
 	/**
 	 * Plugin options.
@@ -55,6 +57,42 @@ class Attachment_Meta {
 		$this->options = $options;
 		$this->post_id = $post_id;
 		$this->meta_data = $this->get();
+	}
+
+	/**
+	 * Returns an array of actions to register.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'init',
+				'callback' => 'register',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to register.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'          => 'rest_prepare_attachment',
+				'callback'      => 'filter_rest_response_meta',
+				'priority'      => 10,
+				'accepted_args' => 3,
+			),
+			array(
+				'hook'          => 'update_post_metadata',
+				'callback'      => 'maybe_delete_empty_meta',
+				'priority'      => 10,
+				'accepted_args' => 5,
+			),
+		);
 	}
 
 	/**
@@ -598,7 +636,6 @@ class Attachment_Meta {
 			);
 		}
 
-		add_filter( 'update_post_metadata', array( $this, 'maybe_delete_empty_meta' ), 10, 5 );
 
 		register_post_meta(
 			'attachment',

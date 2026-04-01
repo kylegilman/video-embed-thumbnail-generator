@@ -10,8 +10,8 @@ import {
 	getSettings,
 	saveWPSettings,
 	resetVideopackSettings,
-	testEncodeCommand,
-} from '../../utils/utils';
+} from '../../api/settings';
+import { testEncodeCommand } from '../../api/gallery';
 import {
 	Button,
 	Icon,
@@ -321,5 +321,7 @@ const VideopackSettingsPage = () => {
 };
 
 const el = document.getElementById('videopack-settings-root');
-const root = createRoot(el);
-root.render(<VideopackSettingsPage />);
+if (el) {
+	const root = createRoot(el);
+	root.render(<VideopackSettingsPage />);
+}

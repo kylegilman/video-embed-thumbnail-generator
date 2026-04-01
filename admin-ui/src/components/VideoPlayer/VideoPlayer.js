@@ -2,7 +2,13 @@
  * Main VideoPlayer component that orchestrates different player engines and UI overlays.
  */
 
-import { useRef, useEffect, useMemo, useCallback } from '@wordpress/element';
+import {
+	useRef,
+	useEffect,
+	useMemo,
+	useCallback,
+	useState,
+} from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import { applyFilters } from '@wordpress/hooks';
 import MetaBar from './MetaBar';
@@ -30,6 +36,41 @@ const noop = () => {};
  * @return {Element|null} The rendered component.
  */
 const VideoPlayer = ({ attributes, onReady = noop }) => {
+	const [detectedDimensions, setDetectedDimensions] = useState({
+		width: null,
+		height: null,
+		src: null, // Track which src these dimensions are for
+	});
+
+	// Reset dimensions when src changes
+	useEffect(() => {
+		const { src } = attributes || {};
+		if (src !== detectedDimensions.src) {
+			setDetectedDimensions({
+				width: null,
+				height: null,
+				src,
+			});
+		}
+	}, [attributes, detectedDimensions.src]);
+
+	const onMetadataLoaded = useCallback(
+		(dimensions) => {
+			if (
+				dimensions.width === detectedDimensions.width &&
+				dimensions.height === detectedDimensions.height &&
+				attributes.src === detectedDimensions.src
+			) {
+				return;
+			}
+			setDetectedDimensions({
+				...dimensions,
+				src: attributes.src,
+			});
+		},
+		[detectedDimensions, attributes.src, setDetectedDimensions]
+	);
+
 	const decodedAttributes = useMemo(
 		() => ({
 			...attributes,
@@ -61,7 +102,6 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		watermark,
 		watermark_styles,
 		watermark_link_to,
-		fixed_aspect,
 		default_ratio,
 		play_button_color,
 		play_button_icon_color,
@@ -71,30 +111,67 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		title_background_color,
 	} = decodedAttributes;
 
+	const players = useMemo(
+		() => applyFilters('videopack_admin_players', DEFAULT_PLAYERS),
+		[]
+	);
+
+	const isVertical = useMemo(() => {
+		let vertical = false;
+		// Use browser-detected dimensions if available
+		if (detectedDimensions.width && detectedDimensions.height) {
+			vertical = detectedDimensions.height > detectedDimensions.width;
+		} else {
+			// Fallback to database metadata
+			vertical =
+				Number(decodedAttributes.height) >
+					Number(decodedAttributes.width) ||
+				[90, 270].includes(Number(decodedAttributes.rotate));
+		}
+
+		return vertical;
+	}, [
+		detectedDimensions.width,
+		detectedDimensions.height,
+		decodedAttributes.width,
+		decodedAttributes.height,
+		decodedAttributes.rotate,
+		decodedAttributes.fixed_aspect,
+		decodedAttributes.fullwidth,
+	]);
+
 	const isFixedAspect = useMemo(() => {
-		if (fixed_aspect === 'true' || fixed_aspect === true) {
-			return true;
-		}
-		if (
-			fixed_aspect === 'vertical' &&
-			decodedAttributes.height > decodedAttributes.width
-		) {
-			return true;
-		}
-		return false;
-	}, [fixed_aspect, decodedAttributes.width, decodedAttributes.height]);
+		const verticalFixed =
+			decodedAttributes.fixed_aspect === 'vertical' && isVertical;
+		const alwaysFixed = decodedAttributes.fixed_aspect === 'always';
+
+		return (
+			(alwaysFixed || verticalFixed) &&
+			(decodedAttributes.fullwidth !== true || verticalFixed)
+		);
+	}, [
+		decodedAttributes.fixed_aspect,
+		decodedAttributes.fullwidth,
+		isVertical,
+	]);
 
 	const aspectRatio = useMemo(() => {
+		let ratio;
 		if (isFixedAspect) {
-			return (default_ratio || '16 / 9').replace(/\s\/\s/g, ':');
+			ratio = (default_ratio || '16 / 9').replace(/\s\/\s/g, ':');
+		} else if (detectedDimensions.width && detectedDimensions.height) {
+			// If we have browser-detected dimensions and they aren't forced to fixed, use them
+			ratio = `${detectedDimensions.width}:${detectedDimensions.height}`;
+		} else if (decodedAttributes.width && decodedAttributes.height) {
+			ratio = `${decodedAttributes.width}:${decodedAttributes.height}`;
 		}
-		if (decodedAttributes.width && decodedAttributes.height) {
-			return `${decodedAttributes.width}:${decodedAttributes.height}`;
-		}
-		return undefined;
+
+		return ratio;
 	}, [
 		isFixedAspect,
 		default_ratio,
+		detectedDimensions.width,
+		detectedDimensions.height,
 		decodedAttributes.width,
 		decodedAttributes.height,
 	]);
@@ -153,7 +230,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		if (isFixedAspect || aspectRatio) {
 			classes.push('videopack-has-aspect-ratio');
 			if (isFixedAspect) {
-				classes.push('videopack-fixed-aspect');
+				classes.push('videopack-is-fixed-aspect');
 			}
 		}
 		if (play_button_color) {
@@ -331,11 +408,11 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		(player) => {
 			playerInstanceRef.current = player;
 			player.on('loadedmetadata', () => {
-				if (onReady) {
+				if (onReadyRef.current) {
 					if (embed_method === 'Video.js') {
-						onReady(player.el().firstChild);
+						onReadyRef.current(player.el().firstChild);
 					} else {
-						onReady(player);
+						onReadyRef.current(player);
 					}
 				}
 				if (actualAutoplay) {
@@ -343,18 +420,15 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 				}
 			});
 		},
-		[embed_method, actualAutoplay, onReady, handlePlay]
+		[embed_method, actualAutoplay, handlePlay]
 	);
 
-	const handleMejsReady = useCallback(
-		(player) => {
-			playerInstanceRef.current = player;
-			if (onReady) {
-				onReady(player);
-			}
-		},
-		[onReady]
-	);
+	const handleMejsReady = useCallback((player) => {
+		playerInstanceRef.current = player;
+		if (onReadyRef.current) {
+			onReadyRef.current(player);
+		}
+	}, []);
 
 	if (!renderReady) {
 		return null; // Or a loading spinner
@@ -429,10 +503,6 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 					playerRef={playerInstanceRef}
 				/>
 				{(() => {
-					const players = applyFilters(
-						'videopack_admin_players',
-						DEFAULT_PLAYERS
-					);
 					const PlayerComponent =
 						players[embed_method] || players.None;
 
@@ -445,6 +515,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 								onPlay={handlePlay}
 								onPause={handlePause}
 								onReady={handleVideoPlayerReady}
+								onMetadataLoaded={onMetadataLoaded}
 							/>
 						);
 					}
@@ -460,6 +531,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 								onPlay={handlePlay}
 								playback_rate={playback_rate}
 								aspectRatio={aspectRatio}
+								onMetadataLoaded={onMetadataLoaded}
 							/>
 						);
 					}
@@ -492,6 +564,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 							onPlay={handlePlay}
 							onPause={handlePause}
 							onReady={handleVideoPlayerReady}
+							onMetadataLoaded={onMetadataLoaded}
 						/>
 					);
 				})()}

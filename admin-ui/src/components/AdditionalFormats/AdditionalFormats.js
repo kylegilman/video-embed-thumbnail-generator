@@ -17,13 +17,9 @@ import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import './AdditionalFormats.scss';
 import EncodeFormatStatus from './EncodeFormatStatus';
-import {
-	getVideoFormats,
-	enqueueJob,
-	assignFormat,
-	deleteFile,
-	deleteJob,
-} from '../../utils/utils';
+import { getVideoFormats } from '../../api/gallery';
+import { enqueueJob, deleteJob } from '../../api/jobs';
+import { deleteFile, assignFormat } from '../../api/media';
 
 /**
  * Helper to get the ordinal string for a number.

@@ -19,7 +19,7 @@ import useVideoSettings from '../../hooks/useVideoSettings';
 import CompactColorPicker from '../CompactColorPicker/CompactColorPicker';
 import WatermarkSettingsPanel from '../WatermarkSettingsPanel/WatermarkSettingsPanel.js';
 import TextTracks from '../TextTracks/TextTracks.js';
-import { normalizeOptions } from '../../utils/utils';
+import { normalizeOptions } from '../../utils/helpers';
 import { getColorFallbacks } from '../../utils/colors';
 import './VideoSettings.scss';
 

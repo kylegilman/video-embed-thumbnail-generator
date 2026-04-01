@@ -14,7 +14,7 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { media as mediaIcon, pencil } from '@wordpress/icons';
 
-import { getSettings } from '../../utils/utils';
+import { getSettings } from '../../api/settings';
 import { videopack as icon } from '../../assets/icon';
 import GalleryBlock from './GalleryBlock';
 import './editor.scss';
@@ -85,22 +85,36 @@ export default function Edit({
 				query.per_page = 10;
 			}
 
-			if (gallery_source === 'manual' && gallery_include) {
-				query.include = gallery_include.split(',').map(Number);
-			} else if (gallery_source === 'category' && gallery_category) {
-				query.categories = gallery_category.split(',').map(Number);
-			} else if (gallery_source === 'tag' && gallery_tag) {
-				query.tags = gallery_tag.split(',').map(Number);
+			if (gallery_source === 'manual') {
+				if (gallery_include) {
+					query.include = gallery_include.split(',').map(Number);
+				} else {
+					return null;
+				}
+			} else if (gallery_source === 'category') {
+				if (gallery_category) {
+					query.categories = gallery_category.split(',').map(Number);
+				} else {
+					return null; // Don't fetch all videos if category is selected but empty
+				}
+			} else if (gallery_source === 'tag') {
+				if (gallery_tag) {
+					query.tags = gallery_tag.split(',').map(Number);
+				} else {
+					return null; // Don't fetch all videos if tag is selected but empty
+				}
+			} else if (gallery_source === 'custom') {
+				if (gallery_id && !isNaN(Number(gallery_id))) {
+					query.parent = gallery_id;
+				} else {
+					return null; // Don't fetch all videos if "Other Post" is selected but empty
+				}
 			} else if (
 				(gallery_source === 'current' || gallery_source === 'archive') &&
 				postId &&
 				!isNaN(Number(postId))
 			) {
 				query.parent = postId;
-			} else if (gallery_id && !isNaN(Number(gallery_id))) {
-				query.parent = gallery_id;
-			} else if (gallery_source === 'manual') {
-				return null;
 			}
 
 			if (gallery_pagination) {

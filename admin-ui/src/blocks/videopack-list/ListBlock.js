@@ -4,7 +4,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import Pagination from '../../components/Pagination/Pagination';
-import { getSettings } from '../../utils/utils';
+import { getSettings } from '../../api/settings';
 import VideoList from '../../components/VideoList/VideoList';
 import useVideoQuery from '../../hooks/useVideoQuery';
 import CollectionSettingsPanel from '../../components/InspectorControls/CollectionSettingsPanel';

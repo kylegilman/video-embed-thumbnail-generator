@@ -2,7 +2,7 @@
  * A gallery component that manages a collection of videos with drag-and-drop support.
  */
 
-import { getVideoGallery } from '../../utils/utils';
+import { getVideoGallery } from '../../api/gallery';
 import { useEffect, useState, useCallback, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Placeholder, Spinner, Icon } from '@wordpress/components';
@@ -155,6 +155,23 @@ const VideoGallery = ({
 			gallery_pagination,
 			videos: videos !== undefined ? videos : collection_video_limit,
 		};
+
+		if (gallery_source === 'manual' && !gallery_include) {
+			setIsLoading(false);
+			return;
+		}
+		if (gallery_source === 'category' && !gallery_category) {
+			setIsLoading(false);
+			return;
+		}
+		if (gallery_source === 'tag' && !gallery_tag) {
+			setIsLoading(false);
+			return;
+		}
+		if (gallery_source === 'custom' && !gallery_id) {
+			setIsLoading(false);
+			return;
+		}
 
 		setIsLoading(true);
 		getVideoGallery(args)

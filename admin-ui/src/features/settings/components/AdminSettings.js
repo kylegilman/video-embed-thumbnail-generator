@@ -11,7 +11,7 @@ import {
 } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import VideopackTooltip from './VideopackTooltip';
-import { clearUrlCache } from '../../../utils/utils';
+import { clearUrlCache } from '../../../api/settings';
 
 /**
  * AdminSettings component.

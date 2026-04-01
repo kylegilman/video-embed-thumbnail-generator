@@ -35,11 +35,5 @@
 			"overlay_title": true
 		}
 	},
-	"textdomain": "video-embed-thumbnail-generator",
-	"editorScript": [
-		"file:./videopack-video.js"
-	],
-	"style": [
-		"file:./videopack-video.css"
-	]
+	"textdomain": "video-embed-thumbnail-generator"
 }

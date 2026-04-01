@@ -48,6 +48,16 @@ class Player_WordPress_Default extends Player {
 	}
 
 	/**
+	 * Returns the handles for MediaElement.js specific scripts.
+	 *
+	 * @return array The script handles.
+	 */
+	public function get_player_script_handles(): array {
+		return array( 'wp-mediaelement', 'videopack-mejs' );
+	}
+
+
+	/**
 	 * Registers frontend scripts for MediaElement.js.
 	 */
 	public function register_scripts() {

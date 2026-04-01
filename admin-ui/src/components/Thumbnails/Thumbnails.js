@@ -15,11 +15,11 @@ import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
 import { __ } from '@wordpress/i18n';
 import {
+	generateThumbnail,
 	saveAllThumbnails,
 	setPosterImage,
-	generateThumbnail,
 	createThumbnailFromCanvas,
-} from '../../utils/utils';
+} from '../../api/thumbnails';
 import {
 	captureVideoFrame,
 	calculateTimecodes,

@@ -37,7 +37,7 @@ const BelowVideo = ({ attributes }) => {
 						</div>
 					)}
 					{caption && (
-						<div className="videopack-caption">{caption}</div>
+						<div className="wp-element-caption">{caption}</div>
 					)}
 				</div>
 			</>

@@ -22,7 +22,7 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import apiFetch from '@wordpress/api-fetch';
 
-import { getSettings } from '../../utils/utils';
+import { getSettings } from '../../api/settings';
 import { videopack as icon } from '../../assets/icon';
 import SingleVideoBlock from './SingleVideoBlock';
 import './editor.scss';

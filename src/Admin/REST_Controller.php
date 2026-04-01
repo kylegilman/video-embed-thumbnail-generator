@@ -109,7 +109,7 @@ class REST_Controller extends \WP_REST_Controller {
 				'callback'            => array( $this, 'video_gallery' ),
 				'permission_callback' => '__return_true',
 				'args'                => array(
-					'page'               => array( 'type' => 'number' ),
+					'page_number'        => array( 'type' => 'number' ),
 					'gallery_orderby'    => array( 'type' => 'string' ),
 					'gallery_order'      => array( 'type' => 'string' ),
 					'gallery_per_page'   => array( 'type' => 'number' ),
@@ -834,7 +834,10 @@ class REST_Controller extends \WP_REST_Controller {
 		$gallery      = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
 		$gallery_atts = (array) $shortcode->atts( (array) $request->get_params() );
 		$page         = (int) ( $request->get_param( 'page_number' ) ? $request->get_param( 'page_number' ) : 1 );
-		$layout       = (string) ( $request->get_param( 'layout' ) ? $request->get_param( 'layout' ) : 'gallery' );
+		$layout = (string) $request->get_param( 'layout' );
+		if ( ! $layout ) {
+			$layout = ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list';
+		}
 
 		if ( in_array( (string) $gallery_atts['gallery_source'], array( 'category', 'tag' ), true ) && ! $request->get_param( 'gallery_id' ) ) {
 			$gallery_atts['gallery_id'] = '';
