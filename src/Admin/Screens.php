@@ -8,6 +8,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Screens
  *
@@ -22,7 +24,7 @@ namespace Videopack\Admin;
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Screens {
+class Screens implements Hook_Subscriber {
 
 	/**
 	 * Plugin options.
@@ -47,6 +49,105 @@ class Screens {
 	public function __construct( array $options, \Videopack\Admin\Formats\Registry $format_registry = null ) {
 		$this->options         = $options;
 		$this->format_registry = $format_registry;
+	}
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'admin_menu',
+				'callback' => 'add_settings_page',
+			),
+			array(
+				'hook'     => 'admin_menu',
+				'callback' => 'add_encode_queue_page',
+			),
+			array(
+				'hook'     => 'manage_media_columns',
+				'callback' => 'add_video_columns',
+			),
+			array(
+				'hook'          => 'manage_media_custom_column',
+				'callback'      => 'add_video_column_content',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'     => 'pre_get_posts',
+				'callback' => 'hide_video_children',
+			),
+			array(
+				'hook'     => 'restrict_manage_posts',
+				'callback' => 'add_media_filter_dropdown',
+			),
+			array(
+				'hook'     => 'wp_redirect',
+				'callback' => 'upload_page_change_thumbnail_parent',
+			),
+			array(
+				'hook'     => 'admin_head-post.php',
+				'callback' => 'add_contextual_help_tab',
+			),
+			array(
+				'hook'     => 'admin_head-post-new.php',
+				'callback' => 'add_contextual_help_tab',
+			),
+			array(
+				'hook'     => 'add_meta_boxes',
+				'callback' => 'add_meta_boxes',
+			),
+			array(
+				'hook'          => 'in_plugin_update_message-' . VIDEOPACK_BASENAME,
+				'callback'      => 'upgrade_notification',
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'     => 'edit_attachment',
+				'callback' => 'save_meta_box_data',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'     => 'plugin_action_links_' . VIDEOPACK_BASENAME,
+				'callback' => 'plugin_action_links',
+			),
+			array(
+				'hook'          => 'plugin_row_meta',
+				'callback'      => 'plugin_meta_links',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'          => 'wp_prepare_attachment_for_js',
+				'callback'      => 'prepare_attachment_for_js',
+				'priority'      => 10,
+				'accepted_args' => 3,
+			),
+			array(
+				'hook'     => 'media_view_settings',
+				'callback' => 'add_grid_media_filter',
+			),
+			array(
+				'hook'     => 'ajax_query_attachments_args',
+				'callback' => 'filter_ajax_query_attachments',
+			),
+			array(
+				'hook'     => 'query_vars',
+				'callback' => 'add_query_vars',
+			),
+		);
 	}
 
 	/**
@@ -235,15 +336,23 @@ class Screens {
 				echo '<a href="' . esc_url( $external_url ) . '" target="_blank" rel="noopener noreferrer" style="word-break: break-all;">' . esc_html( $external_url ) . '</a><br><br>';
 			}
 
-			$videopack_postmeta = (array) ( new \Videopack\Admin\Attachment_Meta( $this->options ) )->get( (int) $id );
-			if ( ! empty( $videopack_postmeta ) && array_key_exists( 'starts', $videopack_postmeta ) && (int) $videopack_postmeta['starts'] > 0 ) {
-				/* translators: Start refers to the number of times a video has been started */
-				wp_kses_post( printf( esc_html( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', (int) $videopack_postmeta['starts'], 'video-embed-thumbnail-generator' ) ), '<strong>', (int) $videopack_postmeta['starts'], '</strong>' ) );
-				echo '<br><strong>' . (int) ( $videopack_postmeta['play_25'] ?? 0 ) . '</strong> 25%' .
-				'<br><strong>' . (int) ( $videopack_postmeta['play_50'] ?? 0 ) . '</strong> 50%' .
-				'<br><strong>' . (int) ( $videopack_postmeta['play_75'] ?? 0 ) . '</strong> 75%<br>';
-				/* translators: %1$s%2$d%3$s is '<strong>', a number, '</strong>' */
-				printf( esc_html( _n( '%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', (int) ( $videopack_postmeta['completeviews'] ?? 0 ), 'video-embed-thumbnail-generator' ) ), '<strong>', (int) ( $videopack_postmeta['completeviews'] ?? 0 ), '</strong>' );
+			$videopack_postmeta = (array) ( new \Videopack\Admin\Attachment_Meta( $this->options, (int) $id ) )->get();
+			if ( ! empty( $videopack_postmeta ) && (int) ( $videopack_postmeta['starts'] ?? 0 ) > 0 ) {
+				echo wp_kses_post( sprintf( _n( '%1$s%2$d%3$s Play', '%1$s%2$d%3$s Plays', (int) $videopack_postmeta['starts'], 'video-embed-thumbnail-generator' ), '<strong>', (int) $videopack_postmeta['starts'], '</strong>' ) );
+
+				if ( (int) ( $videopack_postmeta['play_25'] ?? 0 ) > 0 ) {
+					echo '<br><strong>' . (int) $videopack_postmeta['play_25'] . '</strong> 25%';
+				}
+				if ( (int) ( $videopack_postmeta['play_50'] ?? 0 ) > 0 ) {
+					echo '<br><strong>' . (int) $videopack_postmeta['play_50'] . '</strong> 50%';
+				}
+				if ( (int) ( $videopack_postmeta['play_75'] ?? 0 ) > 0 ) {
+					echo '<br><strong>' . (int) $videopack_postmeta['play_75'] . '</strong> 75%';
+				}
+
+				echo '<br>';
+				/* translators: %1$s: opening <strong> tag, %2$d: number of complete views, %3$s: closing </strong> tag */
+				echo wp_kses_post( sprintf( _n( '%1$s%2$d%3$s Complete View', '%1$s%2$d%3$s Complete Views', (int) ( $videopack_postmeta['completeviews'] ?? 0 ), 'video-embed-thumbnail-generator' ), '<strong>', (int) ( $videopack_postmeta['completeviews'] ?? 0 ), '</strong>' ) );
 			}
 		}
 	}
@@ -478,7 +587,7 @@ class Screens {
 
 			foreach ( $media as $post_id ) {
 				$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options, (int) $post_id );
-				( new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta ) )->change_thumbnail_parent( (int) $post_id, $parent_id );
+				( new \Videopack\Admin\Attachment_Media_Library( $this->options ) )->change_thumbnail_parent( (int) $post_id, $parent_id );
 
 				if ( true === ( $this->options['featured'] ?? false ) && ! has_post_thumbnail( $parent_id ) ) {
 					$featured_id = (int) get_post_meta( (int) $post_id, '_kgflashmediaplayer-poster-id', true );

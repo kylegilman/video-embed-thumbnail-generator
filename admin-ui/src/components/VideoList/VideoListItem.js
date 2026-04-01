@@ -92,11 +92,14 @@ const VideoListItem = ({
 					...(videopack_config?.options || {}),
 					...(videopack_config?.defaults || {}),
 					...options,
-					...video.player_vars,
 					...attributes,
-					// Ensure video-specific metadata wins if shortcode attributes are empty
+					...video.player_vars,
+					// Ensure video-specific metadata wins if shortcode attributes are empty.
 					poster: attributes.poster || video.player_vars.poster,
-					title: attributes.title || video.title || video.player_vars.title,
+					title:
+						attributes.title ||
+						video.title ||
+						video.player_vars.title,
 					autoplay: false,
 				}}
 				onReady={() => {}}

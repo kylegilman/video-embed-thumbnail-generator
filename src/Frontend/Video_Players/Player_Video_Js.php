@@ -55,6 +55,16 @@ class Player_Video_Js extends Player {
 	}
 
 	/**
+	 * Returns the handles for Video.js specific scripts.
+	 *
+	 * @return array The script handles.
+	 */
+	public function get_player_script_handles(): array {
+		return array( 'video-js', 'video-js-quality-selector' );
+	}
+
+
+	/**
 	 * Registers frontend scripts and styles for Video.js.
 	 */
 	public function register_scripts() {
@@ -126,6 +136,26 @@ class Player_Video_Js extends Player {
 
 		if ( wp_script_is( 'videojs-l10n', 'registered' ) ) {
 			wp_enqueue_script( 'videojs-l10n' );
+		}
+	}
+
+	/**
+	 * Enqueues all available skins for Video.js.
+	 *
+	 * This is used primarily in the admin setting page to support live previews
+	 * when different skins are selected by the user.
+	 */
+	public function enqueue_all_skins(): void {
+		$js_skins = array(
+			'vjs-theme-videopack',
+			'kg-video-js-skin',
+			'vjs-theme-city',
+			'vjs-theme-fantasy',
+			'vjs-theme-forest',
+			'vjs-theme-sea',
+		);
+		foreach ( $js_skins as $skin ) {
+			wp_enqueue_style( $skin );
 		}
 	}
 

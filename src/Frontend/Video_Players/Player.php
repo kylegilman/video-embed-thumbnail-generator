@@ -71,6 +71,20 @@ class Player {
 	protected $sources;
 
 	/**
+	 * Default resolution value for initial load.
+	 *
+	 * @var string $default_res
+	 */
+	protected $default_res = '';
+
+	/**
+	 * Default codec group ID for initial load.
+	 *
+	 * @var string $default_codec
+	 */
+	protected $default_codec = '';
+
+	/**
 	 * Whether the frontend script has been localized.
 	 *
 	 * @var bool $script_localized
@@ -190,17 +204,22 @@ class Player {
 	}
 
 	/**
+	 * Returns the handles for player-specific scripts.
+	 *
+	 * @return array The script handles.
+	 */
+	public function get_player_script_handles(): array {
+		return array();
+	}
+
+
+	/**
 	 * Enqueues frontend styles.
 	 */
 	public function enqueue_styles() {
-		wp_enqueue_style( 'videopack-videoplayer' );
-
-		if ( ! has_block( 'videopack/videopack-video' ) ) {
-			wp_enqueue_style( 'videopack-videogallery' );
-			wp_enqueue_style( 'videopack-videopack-gallery-style', plugins_url( '/admin-ui/build/blocks/videopack-gallery/videopack-gallery.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
-			wp_enqueue_style( 'videopack-videopack-list-style', plugins_url( '/admin-ui/build/blocks/videopack-list/videopack-list.css', VIDEOPACK_PLUGIN_FILE ), array(), VIDEOPACK_VERSION );
-		}
+		wp_enqueue_style( 'videopack-frontend' );
 	}
+
 
 	/**
 	 * Returns script dependencies for the frontend script.
@@ -316,8 +335,8 @@ class Player {
 	 */
 	protected function set_sources(): void {
 		$grouped_sources = array();
-		$auto_codec      = $this->atts['auto_codec'] ?? 'h264';
-		$auto_res        = $this->atts['auto_res'] ?? 'automatic';
+		$auto_codec      = (string) ( $this->atts['auto_codec'] ?? 'h264' );
+		$auto_res        = (string) ( $this->atts['auto_res'] ?? 'automatic' );
 
 		// Process the main source.
 		$main_source = $this->get_source();
@@ -390,20 +409,30 @@ class Player {
 			);
 
 			// Mark default resolution.
-			foreach ( $sources as &$source ) {
-				$is_default = false;
-				if ( $codec_id === $auto_codec ) {
-					if ( 'highest' === $auto_res && $source === $sources[0] ) {
-						$is_default = true;
-					} elseif ( 'lowest' === $auto_res && $source === $sources[ count( $sources ) - 1 ] ) {
-						$is_default = true;
-					} elseif ( isset( $source['resolution'] ) && (string) $source['resolution'] === (string) $auto_res ) {
-						$is_default = true;
-					}
-				}
+			if ( $codec_id === $auto_codec ) {
+				$target_val = (int) preg_replace( '/[^0-9]/', '', (string) $auto_res );
 
-				if ( $is_default ) {
-					$source['default_res'] = '1';
+				if ( 'highest' === $auto_res ) {
+					$sources[0]['default_res'] = '1';
+					$this->default_res         = (string) ( $sources[0]['resolution'] ?? '' );
+					$this->default_codec       = (string) $codec_id;
+				} elseif ( 'lowest' === $auto_res ) {
+					$sources[ count( $sources ) - 1 ]['default_res'] = '1';
+					$this->default_res                               = (string) ( $sources[ count( $sources ) - 1 ]['resolution'] ?? '' );
+					$this->default_codec                             = (string) $codec_id;
+				} elseif ( $target_val > 0 ) {
+					// Find best fit: smallest resolution >= target.
+					// Since sources are sorted DESC, we find the last one that is >= target.
+					$best_fit_index = 0;
+					foreach ( $sources as $index => $s ) {
+						$s_val = (int) preg_replace( '/[^0-9]/', '', (string) ( $s['resolution'] ?? '' ) );
+						if ( $s_val >= $target_val ) {
+							$best_fit_index = $index;
+						}
+					}
+					$sources[ $best_fit_index ]['default_res'] = '1';
+					$this->default_res                         = (string) ( $sources[ $best_fit_index ]['resolution'] ?? '' );
+					$this->default_codec                       = (string) $codec_id;
 				}
 			}
 
@@ -468,11 +497,11 @@ class Player {
 			'id'                          => (string) ( 'videopack_player_' . $this->get_id() ),
 			'attachment_id'               => (int) ( $this->get_source() ? $this->get_source()->get_id() : 0 ),
 			'embed_method'                => (string) ( $this->options['embed_method'] ?? 'Video.js' ),
-			'width'                       => (int) ( $this->atts['width'] ?? 640 ),
-			'height'                      => (int) ( $this->atts['height'] ?? 360 ),
+			'width'                       => (int) $this->get_final_width(),
+			'height'                      => (int) $this->get_final_height(),
 			'fullwidth'                   => (bool) ( $this->atts['fullwidth'] ?? false ),
 			'countable'                   => (bool) ( $this->atts['countable'] ?? false ),
-			'count_views'                 => (bool) ( $this->atts['count_views'] ?? false ),
+			'count_views'                 => $this->atts['count_views'] ?? false,
 			'start'                       => (int) ( $this->atts['start'] ?? 0 ),
 			'autoplay'                    => (bool) ( $this->atts['autoplay'] ?? false ),
 			'pauseothervideos'            => (bool) ( $this->atts['pauseothervideos'] ?? true ),
@@ -480,12 +509,14 @@ class Player {
 			'muted'                       => (bool) ( $this->atts['muted'] ?? false ),
 			'endofvideooverlay'           => (string) ( $this->atts['endofvideooverlay'] ?? '' ),
 			'auto_res'                    => (string) ( $this->atts['auto_res'] ?? 'automatic' ),
-			'auto_codec'                  => (bool) ( $this->atts['auto_codec'] ?? true ),
+			'auto_codec'                  => (string) ( $this->atts['auto_codec'] ?? 'h264' ),
 			'pixel_ratio'                 => (bool) ( $this->atts['pixel_ratio'] ?? false ),
 			'right_click'                 => (bool) ( $this->atts['right_click'] ?? false ),
 			'playback_rate'               => (bool) ( $this->atts['playback_rate'] ?? false ),
 			'title'                       => (string) ( $this->atts['stats_title'] ?? '' ),
 			'source_groups'               => (array) $this->get_sources(),
+			'default_res'                 => (string) $this->default_res,
+			'default_codec'               => (string) $this->default_codec,
 			'fixed_aspect'                => (string) ( $this->atts['fixed_aspect'] ?? 'vertical' ),
 			'default_ratio'               => (string) $this->get_fixed_aspect_ratio(),
 			'tracks'                      => (array) ( $this->atts['tracks'] ?? array() ),
@@ -504,6 +535,7 @@ class Player {
 			'view_count'                  => (bool) ( $this->atts['view_count'] ?? false ),
 			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
 			'below_video_html'            => $this->has_below_video() ? $this->get_below_video_code() : '',
+			'rotate'                      => (int) ( $this->get_source() ? $this->get_source()->get_rotate() : 0 ),
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
@@ -536,21 +568,25 @@ class Player {
 		// The 'videopack' script is already registered, so we can add our instance-specific data to it.
 		wp_add_inline_script( 'videopack-frontend', $script );
 
-		$player_code = $this->get_wrapper_start_html();
-		$player_code .= $this->get_player_start_html();
+		$player_code  = $this->get_wrapper_start_html() . "\n";
+		$player_code .= $this->get_player_start_html() . "\n";
 
 		if ( $this->has_meta_bar() ) {
-			$player_code .= $this->get_meta_bar_code();
+			$player_code .= $this->get_meta_bar_code() . "\n";
 		}
-		$player_code .= $this->get_video_code();
-		$player_code .= $this->get_watermark_code();
+		$player_code .= $this->get_video_code() . "\n";
+		$player_code .= $this->get_watermark_code() . "\n";
 
-		$player_code .= $this->get_player_end_html();
+		if ( ! empty( $this->atts['endofvideooverlay'] ) ) {
+			$player_code .= '<div class="videopack-end-overlay"></div>' . "\n";
+		}
+
+		$player_code .= $this->get_player_end_html() . "\n";
 
 		if ( $this->has_below_video() ) {
-			$player_code .= $this->get_below_video_code();
+			$player_code .= $this->get_below_video_code() . "\n";
 		}
-		$player_code .= $this->get_wrapper_end_html();
+		$player_code .= $this->get_wrapper_end_html() . "\n";
 
 		return apply_filters( 'videopack_video_player_code', $player_code, $this->atts );
 	}
@@ -598,13 +634,13 @@ class Player {
 		$download_svg = '<svg class="videopack-icon-svg download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" /></svg>';
 		$embed_svg    = '<svg class="videopack-icon-svg embed-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z" /></svg>';
 
-		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">';
+		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">' . "\n";
 		$meta_bar .= '<span class="videopack-meta-icons">';
 
 		if ( $has_embed ) {
-			$meta_bar .= '<button type="button" class="videopack-meta-bar-button" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">';
-			$meta_bar .= '<span class="videopack-icons share">' . $share_svg . $close_svg . '</span>';
-			$meta_bar .= '</button>';
+			$meta_bar .= '<button type="button" class="videopack-meta-bar-button" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
+			$meta_bar .= '<span class="videopack-icons share">' . "\n" . $share_svg . "\n" . $close_svg . "\n" . '</span>' . "\n";
+			$meta_bar .= '</button>' . "\n";
 		}
 
 		if ( $this->atts['downloadlink'] ) {
@@ -615,18 +651,20 @@ class Player {
 				$download_attributes .= ' data-alt_link="' . esc_attr( $alt_link ) . '"';
 			}
 
-			$meta_bar .= '<a ' . $download_attributes . '><span class="videopack-icons download">' . $download_svg . '</span></a>';
+			$meta_bar .= '<a ' . $download_attributes . '>' . "\n";
+			$meta_bar .= '<span class="videopack-icons download">' . "\n" . $download_svg . "\n" . '</span>' . "\n";
+			$meta_bar .= '</a>' . "\n";
 		}
-		$meta_bar .= '</span>';
+		$meta_bar .= '</span>' . "\n";
 
 		if ( $this->atts['overlay_title'] ) {
-			$meta_bar .= '<span class="videopack-title">' . esc_html( (string) $this->atts['title'] ) . '</span>';
+			$meta_bar .= '<span class="videopack-title">' . esc_html( (string) $this->atts['title'] ) . '</span>' . "\n";
 		}
-		$meta_bar .= '</div>';
+		$meta_bar .= '</div>' . "\n";
 
 		if ( $has_embed ) {
-			$meta_bar .= '<button class="videopack-click-trap"></button>';
-			$meta_bar .= '<div class="videopack-share-container' . esc_attr( $no_title_class ) . '">';
+			$meta_bar .= '<button class="videopack-click-trap"></button>' . "\n";
+			$meta_bar .= '<div class="videopack-share-container' . esc_attr( $no_title_class ) . '">' . "\n";
 
 			$embed_id = $this->source->get_id();
 			if ( is_numeric( $embed_id ) ) {
@@ -649,16 +687,20 @@ class Player {
 				esc_attr( $iframe_title )
 			);
 
-			$meta_bar .= '<span class="videopack-embedcode-container"><span class="videopack-icons embed">' . $embed_svg . '</span><span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span><span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span></span>';
+			$meta_bar .= '<span class="videopack-embedcode-container">' . "\n" .
+				'<span class="videopack-icons embed">' . "\n" . $embed_svg . "\n" . '</span>' . "\n" .
+				'<span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span>' . "\n" .
+				'<span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span>' . "\n" .
+				'</span>' . "\n";
 
 			$start_at_id = 'videopack-start-at-enable-' . $this->get_id();
-			$meta_bar   .= '<span class="videopack-start-at-container">' .
-				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' .
-				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' .
-				'<input type="text" class="videopack-start-at" value="00:00" />' .
-				'</span>';
+			$meta_bar   .= '<span class="videopack-start-at-container">' . "\n" .
+				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' . "\n" .
+				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' . "\n" .
+				'<input type="text" class="videopack-start-at" value="00:00" />' . "\n" .
+				'</span>' . "\n";
 
-			$meta_bar .= '</div>';
+			$meta_bar .= '</div>' . "\n";
 		}
 
 		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
@@ -722,7 +764,7 @@ class Player {
 			}
 		}
 
-		// Inject MEJS controls SVG URL as a CSS variable to avoid SCSS build issues
+		// Inject MEJS controls SVG URL as a CSS variable to avoid SCSS build issues.
 		$style_attrs[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
 
 		$style = '';
@@ -773,9 +815,9 @@ class Player {
 		if ( $this->get_source() ) {
 			$video .= '<video id="videopack_video_' . $this->get_id() . '" ';
 			$video .= 'class="' . esc_attr( implode( ' ', $this->get_video_classes() ) ) . '" ';
-			$video .= esc_attr( implode( ' ', $this->get_boolean_video_attributes() ) ) . ' ';
-			$video .= implode( ' ', $this->get_string_video_attributes() ) . ' ';
-			$video .= '" >';
+			$video .= implode( ' ', $this->get_boolean_video_attributes() ) . ' ';
+			$video .= implode( ' ', $this->get_string_video_attributes() );
+			$video .= ' >' . "\n";
 
 			$video .= $this->get_source_elements();
 			$video .= $this->get_track_elements();
@@ -862,7 +904,7 @@ class Player {
 			}
 			$source_elements .= '"';
 			$source_elements .= $this->get_source_atts( $source );
-			$source_elements .= ' >';
+			$source_elements .= ' >' . "\n";
 		}
 
 		return apply_filters( 'videopack_video_player_sources', $source_elements, $this->atts );
@@ -901,7 +943,7 @@ class Player {
 				foreach ( $track_attributes as $key => $value ) {
 					$track_elements .= esc_attr( $key ) . '="' . esc_attr( $value ) . '" ';
 				}
-				$track_elements .= '>';
+				$track_elements .= '>' . "\n";
 			}
 		}
 
@@ -939,7 +981,7 @@ class Player {
 			}
 		}
 		if ( ! empty( $this->atts['caption'] ) ) {
-			$below_video .= '<p class="videopack-caption">' . esc_html( (string) $this->atts['caption'] ) . '</p>';
+			$below_video .= '<p class="wp-element-caption">' . esc_html( (string) $this->atts['caption'] ) . '</p>';
 		}
 		$below_video .= '</div>';
 		return $below_video;
@@ -1051,13 +1093,70 @@ class Player {
 	 * @return bool True if fixed aspect ratio is enabled, false otherwise.
 	 */
 	protected function is_fixed_aspect(): bool {
-		if ( empty( $this->atts['fixed_aspect'] ) || 'false' === $this->atts['fixed_aspect'] ) {
+		$fixed_aspect = (string) ( $this->atts['fixed_aspect'] ?? 'false' );
+
+		if ( 'false' === $fixed_aspect || 'none' === $fixed_aspect ) {
 			return false;
 		}
-		if ( 'true' === $this->atts['fixed_aspect'] || true === $this->atts['fixed_aspect'] ) {
+
+		if ( 'true' === $fixed_aspect || true === ( $this->atts['fixed_aspect'] ?? false ) ) {
 			return true;
 		}
+
+		if ( 'vertical' === $fixed_aspect ) {
+			$source = $this->get_source();
+			if ( $source ) {
+				return $source->get_height() > $source->get_width();
+			}
+		}
+
 		return false;
+	}
+
+	/**
+	 * Returns the final resolved width for the video player.
+	 *
+	 * @return int The resolved width.
+	 */
+	protected function get_final_width(): int {
+		$width = (int) ( $this->atts['width'] ?? 0 );
+		if ( $width <= 0 ) {
+			$width = (int) ( $this->options['width'] ?? 960 );
+		}
+
+		$source = $this->get_source();
+		if ( $source ) {
+			$native_width = (int) $source->get_width();
+			// If the current width is the global default, and the source has real native dimensions, use them.
+			if ( $width === (int) ( $this->options['width'] ?? 960 ) && $native_width > 0 ) {
+				$width = $native_width;
+			}
+		}
+
+		return $width;
+	}
+
+	/**
+	 * Returns the final resolved height for the video player.
+	 *
+	 * @return int The resolved height.
+	 */
+	protected function get_final_height(): int {
+		$height = (int) ( $this->atts['height'] ?? 0 );
+		if ( $height <= 0 ) {
+			$height = (int) ( $this->options['height'] ?? 540 );
+		}
+
+		$source = $this->get_source();
+		if ( $source ) {
+			$native_height = (int) $source->get_height();
+			// If the current height is the global default, and the source has real native dimensions, use them.
+			if ( $height === (int) ( $this->options['height'] ?? 540 ) && $native_height > 0 ) {
+				$height = $native_height;
+			}
+		}
+
+		return $height;
 	}
 
 	/**

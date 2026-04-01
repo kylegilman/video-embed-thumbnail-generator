@@ -120,6 +120,11 @@
 					fill: var(--videopack-play-button-color, colors.$white);
 				}
 			}
+
+			&.videopack-none {
+				pointer-events: none;
+				z-index: 2;
+			}
 		}
 
 		.video-title {
@@ -135,7 +140,7 @@
 
 			.video-title-text {
 				position: relative;
-				color: var(--videopack-title-color, inherit);
+				color: var(--videopack-title-color, colors.$white);
 				font-size: 14px;
 				line-height: 1.5em;
 				z-index: 4;
@@ -148,7 +153,7 @@
 				right: 0;
 				bottom: 0;
 				left: 0;
-				background-color: var(--videopack-title-background-color, var(--wp--preset--color--primary, black));
+				background-color: var(--videopack-title-background-color, var(--wp--preset--color--primary, colors.$gray-900));
 				opacity: 0.5;
 				z-index: 2;
 			}

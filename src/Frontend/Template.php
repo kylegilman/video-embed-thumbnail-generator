@@ -7,6 +7,8 @@
 
 namespace Videopack\Frontend;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Template
  *
@@ -17,7 +19,51 @@ namespace Videopack\Frontend;
  * @subpackage Videopack/Frontend
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Template {
+class Template implements Hook_Subscriber {
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'template_redirect',
+				'callback' => 'attachment',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'          => 'oembed_response_data',
+				'callback'      => 'change_oembed_data',
+				'priority'      => 10,
+				'accepted_args' => 4,
+			),
+			array(
+				'hook'     => 'embed_template',
+				'callback' => 'change_embed_template',
+			),
+			array(
+				'hook'     => 'the_content',
+				'callback' => 'filter_video_attachment_content',
+			),
+			array(
+				'hook'          => 'redirect_canonical',
+				'callback'      => 'redirect_canonical_attachment',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+		);
+	}
 
 	/**
 	 * Video formats registry.
@@ -64,7 +110,7 @@ class Template {
 	 * @param int           $height The requested height.
 	 * @return array The modified oEmbed data.
 	 */
-	public function change_oembed_data( $data, $post, $width, $height ) {
+	public function change_oembed_data( $data, $post = null, $width = 0, $height = 0 ) {
 		$first_embedded_video = $this->metadata->get_first_embedded_video( $post );
 
 		if ( ! empty( $data )

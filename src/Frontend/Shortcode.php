@@ -7,6 +7,8 @@
 
 namespace Videopack\Frontend;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Shortcode
  *
@@ -17,7 +19,49 @@ namespace Videopack\Frontend;
  * @subpackage Videopack/Frontend
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Shortcode {
+class Shortcode implements Hook_Subscriber {
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'wp_loaded',
+				'callback' => 'overwrite_video_shortcode',
+			),
+			array(
+				'hook'     => 'init',
+				'callback' => 'add',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'          => 'render_block',
+				'callback'      => 'replace_video_block',
+				'priority'      => 10,
+				'accepted_args' => 2,
+			),
+			array(
+				'hook'     => 'no_texturize_shortcodes',
+				'callback' => 'no_texturize',
+			),
+			array(
+				'hook'     => 'query_vars',
+				'callback' => 'add_query_vars',
+			),
+		);
+	}
 
 
 	/**
@@ -236,9 +280,12 @@ class Shortcode {
 		foreach ( (array) $options_atts as $att ) {
 			if ( array_key_exists( (string) $att, $this->options ) ) {
 				$attributes[ (string) $att ] = array(
-					'type'    => is_bool( $this->options[ $att ] ) ? 'boolean' : ( is_numeric( $this->options[ $att ] ) ? 'number' : 'string' ),
-					'default' => $this->options[ $att ],
+					'type' => is_bool( $this->options[ $att ] ) ? 'boolean' : ( is_numeric( $this->options[ $att ] ) ? 'number' : 'string' ),
 				);
+				// Exclude width and height from defaults so they can be resolved dynamically.
+				if ( 'width' !== $att && 'height' !== $att ) {
+					$attributes[ (string) $att ]['default'] = $this->options[ $att ];
+				}
 			} else {
 				$attributes[ (string) $att ] = array(
 					'type' => 'string',
@@ -517,11 +564,14 @@ class Shortcode {
 			}
 		}
 
-		// Set default dimensions from source if not provided in shortcode.
-		if ( empty( $atts['width'] ) && (int) $source->get_width() > 0 ) {
+		// Set default dimensions from source if not provided in shortcode or if using global defaults.
+		$width  = (int) ( $atts['width'] ?? 0 );
+		$height = (int) ( $atts['height'] ?? 0 );
+
+		if ( ( empty( $width ) || $width === (int) ( $this->options['width'] ?? 960 ) ) && (int) $source->get_width() > 0 ) {
 			$query_atts['width'] = (int) $source->get_width();
 		}
-		if ( empty( $atts['height'] ) && (int) $source->get_height() > 0 ) {
+		if ( ( empty( $height ) || $height === (int) ( $this->options['height'] ?? 540 ) ) && (int) $source->get_height() > 0 ) {
 			$query_atts['height'] = (int) $source->get_height();
 		}
 
@@ -612,6 +662,10 @@ class Shortcode {
 		$is_list    = ! $is_gallery && ( ! empty( $query_atts['id'] ) && strpos( (string) $query_atts['id'], ',' ) !== false );
 		$is_query   = ! $is_gallery && empty( $query_atts['id'] ) && empty( $content );
 
+		if ( $is_list || $is_query ) {
+			$query_atts['gallery'] = false;
+		}
+
 		if ( $is_gallery || $is_list || $is_query ) {
 			if ( $is_gallery && isset( $query_atts['gallery_orderby'] ) && 'rand' === (string) $query_atts['gallery_orderby'] ) {
 				$query_atts['gallery_orderby'] = 'RAND(' . (string) wp_rand() . ')';
@@ -623,7 +677,7 @@ class Shortcode {
 			}
 
 			$gallery = new Gallery( $this->options, $this->format_registry );
-			$layout  = $is_gallery ? 'gallery' : 'list';
+			$layout  = ( $is_gallery && true === $query_atts['gallery'] ) ? 'gallery' : 'list';
 			$page    = 1;
 			if ( get_query_var( 'paged' ) ) {
 				$page = (int) get_query_var( 'paged' );

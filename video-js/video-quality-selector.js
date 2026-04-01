@@ -335,13 +335,15 @@ if ('undefined' !== typeof window.videojs && 'undefined' === typeof window.video
 
 				if (has_multiple_codecs && target_codec_id) {
 					if (player.source_groups[target_codec_id]) {
-						target_source = player.source_groups[target_codec_id].sources.find(
-							(s) => (s.resolution || s['data-res']) === target_resolution
-						);
+						target_source = player.source_groups[target_codec_id].sources.find((s) => {
+							const res = s.resolution || s['data-res'];
+							return res && res.toString() === target_resolution.toString();
+						});
 					}
 				} else {
-					target_source = player.availableRes[target_resolution];
+					target_source = player.availableRes[target_resolution] || player.availableRes[target_resolution.toString()];
 				}
+
 
 				if (!target_source) {
 					return;

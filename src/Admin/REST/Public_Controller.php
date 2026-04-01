@@ -1,0 +1,314 @@
+<?php
+/**
+ * REST Controller for Videopack public-facing endpoints.
+ *
+ * @package Videopack
+ */
+
+namespace Videopack\Admin\REST;
+
+/**
+ * Class Public_Controller
+ *
+ * Manages REST API endpoints for galleries, sources, and shortcodes.
+ */
+class Public_Controller extends Controller {
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array(
+			array(
+				'hook'          => 'rest_post_dispatch',
+				'callback'      => 'log_rest_api_errors',
+				'priority'      => 10,
+				'accepted_args' => 3,
+			),
+		);
+	}
+
+	/**
+	 * Registers REST API routes.
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/video_gallery',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'video_gallery' ),
+				'permission_callback' => '__return_true',
+				'args'                => $this->get_gallery_args(),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/sources',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'video_sources' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'url'           => array( 'type' => 'string' ),
+					'attachment_id' => array( 'type' => array( 'number', 'string' ) ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/render-shortcode',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'render_shortcode' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'attrs'   => array( 'type' => 'object', 'required' => false ),
+					'content' => array( 'type' => 'string', 'required' => false ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/count-play',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'count_play' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'attachment_id' => array( 'type' => 'integer', 'required' => true, 'sanitize_callback' => 'absint' ),
+					'video_event'   => array( 'type' => 'string', 'required' => true, 'sanitize_callback' => 'sanitize_text_field' ),
+					'show_views'    => array( 'type' => 'boolean', 'default' => false, 'sanitize_callback' => 'rest_sanitize_boolean' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/resolve-url',
+			array(
+				'methods'             => \WP_REST_Server::EDITABLE,
+				'callback'            => array( $this, 'resolve_url_to_attachment_api' ),
+				'permission_callback' => function () {
+					return current_user_can( 'upload_files' );
+				},
+				'args'                => array(
+					'url'       => array( 'type' => 'string', 'required' => true, 'format' => 'uri' ),
+					'parent_id' => array( 'type' => 'number', 'required' => false, 'default' => 0 ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/presets',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'presets_get' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'attachment_id' => array( 'type' => array( 'number', 'string' ) ),
+					'url'           => array( 'type' => 'string', 'format' => 'uri' ),
+				),
+			)
+		);
+
+		$this->add_data_to_rest_response();
+	}
+
+	/**
+	 * REST callback for video gallery.
+	 */
+	public function video_gallery( \WP_REST_Request $request ) {
+		$shortcode    = new \Videopack\Frontend\Shortcode( $this->options, $this->format_registry );
+		$gallery      = new \Videopack\Frontend\Gallery( $this->options, $this->format_registry );
+		$gallery_atts = (array) $shortcode->atts( $request->get_params() );
+		$page         = (int) ( $request->get_param( 'page_number' ) ?: 1 );
+		$layout = (string) $request->get_param( 'layout' );
+		if ( ! $layout ) {
+			$layout = ( isset( $gallery_atts['gallery'] ) && true === $gallery_atts['gallery'] ) ? 'gallery' : 'list';
+		}
+
+		$result   = $gallery->collection_page( $page, $gallery_atts, $layout );
+		return apply_filters( 'videopack_rest_video_gallery', new \WP_REST_Response( $result, 200 ), $request );
+	}
+
+	/**
+	 * REST callback for video sources.
+	 */
+	public function video_sources( \WP_REST_Request $request ) {
+		$url           = (string) $request->get_param( 'url' );
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$source_input  = is_numeric( $attachment_id ) ? (int) $attachment_id : $url;
+
+		if ( ! $source_input ) {
+			return new \WP_Error( 'rest_invalid_param', 'Missing Video URL or ID.', array( 'status' => 400 ) );
+		}
+
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
+		if ( ! $source || ! $source->exists() ) {
+			return new \WP_Error( 'rest_source_not_found', 'Video source could not be found.', array( 'status' => 404 ) );
+		}
+
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'] ?? 'Video.js', $this->options, $this->format_registry );
+		$player->set_source( $source );
+		return apply_filters( 'videopack_rest_video_sources', new \WP_REST_Response( $player->get_sources(), 200 ), $request );
+	}
+
+	/**
+	 * REST callback to render shortcode.
+	 */
+	public function render_shortcode( \WP_REST_Request $request ) {
+		$atts      = (array) $request->get_param( 'attrs' );
+		$content   = (string) $request->get_param( 'content' );
+		$shortcode = new \Videopack\Frontend\Shortcode( $this->options );
+		return apply_filters( 'videopack_rest_render_shortcode', new \WP_REST_Response( array( 'html' => $shortcode->do( $atts, $content ) ), 200 ), $request );
+	}
+
+	/**
+	 * REST callback to count play.
+	 */
+	public function count_play( \WP_REST_Request $request ) {
+		$attachment_id = (int) $request->get_param( 'attachment_id' );
+		if ( ! $attachment_id || 'attachment' !== get_post_type( $attachment_id ) ) {
+			return new \WP_Error( 'rest_invalid_attachment_id', 'Invalid attachment ID.', array( 'status' => 400 ) );
+		}
+
+		$video_event = (string) $request->get_param( 'video_event' );
+		$show_views  = (bool) $request->get_param( 'show_views' );
+
+		$meta_manager = new \Videopack\Admin\Attachment_Meta( $this->options, $attachment_id );
+		$updated_meta = $meta_manager->increment_video_stat( $video_event );
+
+		$response = array( 'status' => 'success' );
+		if ( $show_views && isset( $updated_meta['starts'] ) ) {
+			$response['view_count'] = \Videopack\Common\I18n::format_view_count( (int) $updated_meta['starts'] );
+		}
+		return apply_filters( 'videopack_rest_count_play', new \WP_REST_Response( $response, 200 ), $request );
+	}
+
+	/**
+	 * REST callback to resolve URL to attachment.
+	 */
+	public function resolve_url_to_attachment_api( \WP_REST_Request $request ) {
+		$url       = (string) $request->get_param( 'url' );
+		$parent_id = (int) $request->get_param( 'parent_id' );
+		$create    = (bool) $request->get_param( 'create' );
+
+		$attachment_meta = new \Videopack\Admin\Attachment_Meta( $this->options );
+		$attachment      = new \Videopack\Admin\Attachment( $this->options, $this->format_registry, $attachment_meta );
+		$result          = $attachment->resolve_url_to_attachment( $url, $parent_id, $create );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return apply_filters( 'videopack_rest_resolve_url_to_attachment', new \WP_REST_Response( array( 'attachment_id' => (int) $result ), 200 ), $request );
+	}
+
+	/**
+	 * REST callback to get presets.
+	 */
+	public function presets_get( \WP_REST_Request $request ) {
+		$attachment_id = $request->get_param( 'attachment_id' );
+		$url           = (string) $request->get_param( 'url' );
+		$presets       = array();
+
+		if ( ! empty( $attachment_id ) || ! empty( $url ) ) {
+			$browser_metadata = array();
+			if ( $request->get_param( 'width' ) && $request->get_param( 'height' ) ) {
+				$browser_metadata['actualwidth']  = (int) $request->get_param( 'width' );
+				$browser_metadata['actualheight'] = (int) $request->get_param( 'height' );
+			}
+			if ( $request->get_param( 'duration' ) ) {
+				$browser_metadata['duration'] = (float) $request->get_param( 'duration' );
+			}
+
+			$encoder = new \Videopack\Admin\Encode\Encode_Attachment( $this->options, $this->format_registry, $attachment_id, $url, $browser_metadata );
+			$video_formats_data = (array) $encoder->get_all_formats_with_status();
+			foreach ( $video_formats_data as $id => $data ) {
+				$presets[] = array_merge( $data, array( 'id' => (string) $id ) );
+			}
+		} else {
+			$all_formats = $this->format_registry->get_video_formats( $this->options['hide_video_formats'] ?? false );
+			foreach ( $all_formats as $id => $obj ) {
+				$presets[] = array_merge( $obj->to_array(), array( 'id' => (string) $id ) );
+			}
+		}
+		return apply_filters( 'videopack_rest_presets_get', new \WP_REST_Response( $presets, 200 ), $request );
+	}
+
+	/**
+	 * Adds data to REST response for attachments.
+	 */
+	public function add_data_to_rest_response() {
+		register_rest_field(
+			'attachment',
+			'videopack',
+			array(
+				'get_callback' => function ( $post ) {
+					return $this->prepare_data_for_rest_response( (array) $post );
+				},
+				'update_callback' => null,
+				'schema'          => null,
+			)
+		);
+	}
+
+	/**
+	 * Prepares Videopack data for REST response.
+	 */
+	protected function prepare_data_for_rest_response( $post ) {
+		$post_id = (int) $post['id'];
+		$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
+		if ( ! $source || ! $source->exists() ) {
+			return array( 'srcset' => (string) wp_get_attachment_image_srcset( $post_id ), 'sources' => array(), 'source_groups' => new \stdClass() );
+		}
+
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'] ?? 'Video.js', $this->options, $this->format_registry );
+		$player->set_source( $source );
+		return array(
+			'srcset'        => (string) wp_get_attachment_image_srcset( $post_id ),
+			'sources'       => $player->get_flat_sources(),
+			'source_groups' => $player->get_sources(),
+		);
+	}
+
+	/**
+	 * Logs REST API errors.
+	 */
+	public function log_rest_api_errors( $result, $server, $request ) {
+		$is_error = ( is_wp_error( $result ) || ( $result instanceof \WP_REST_Response && $result->is_error() ) );
+		if ( $is_error ) {
+			$error_details = is_wp_error( $result ) ? wp_json_encode( $result->get_error_data() ) : wp_json_encode( $result->get_data() );
+			error_log( sprintf( 'REST API Error: Route: %s, Method: %s, Params: %s, Error: %s', $request->get_route(), $request->get_method(), wp_json_encode( $request->get_params() ), $error_details ) );
+		}
+		return $result;
+	}
+
+	/**
+	 * Helper to get gallery arguments.
+	 */
+	private function get_gallery_args() {
+		return array(
+			'page_number'        => array( 'type' => 'number' ),
+			'gallery_orderby'    => array( 'type' => 'string' ),
+			'gallery_order'      => array( 'type' => 'string' ),
+			'gallery_per_page'   => array( 'type' => 'number' ),
+			'gallery_pagination' => array( 'type' => 'boolean' ),
+			'gallery_id'         => array( 'type' => array( 'number', 'string' ) ),
+			'gallery_include'    => array( 'type' => 'string' ),
+			'gallery_exclude'    => array( 'type' => 'string' ),
+			'gallery_title'      => array( 'type' => 'string' ),
+			'gallery_thumb'      => array( 'type' => 'number' ),
+			'gallery_source'     => array( 'type' => 'string' ),
+			'gallery_category'   => array( 'type' => 'string' ),
+			'gallery_tag'        => array( 'type' => 'string' ),
+			'layout'             => array( 'type' => 'string' ),
+		);
+	}
+}

@@ -7,6 +7,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Cleanup
  *
@@ -21,7 +23,34 @@ namespace Videopack\Admin;
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Cleanup {
+class Cleanup implements Hook_Subscriber {
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'videopack_cleanup_generated_thumbnails',
+				'callback' => 'cleanup_generated_thumbnails_handler',
+			),
+			array(
+				'hook'     => 'init',
+				'callback' => 'schedule_weekly_cleanup',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array();
+	}
 
 	/**
 	 * Handler for cleaning up generated temporary thumbnails.

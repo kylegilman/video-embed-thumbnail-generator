@@ -35,23 +35,26 @@ export default function useVideoQuery(attributes, previewPostId) {
 	const [searchString, setSearchString] = useState('');
 	const debouncedSetSearchString = useDebounce(setSearchString, 500);
 
+	const postTypes = useSelect(
+		(select) => select('core').getPostTypes({ per_page: -1 }),
+		[]
+	);
+
+	const searchableTypes = useMemo(() => {
+		if (!postTypes) {
+			return ['post', 'page'];
+		}
+		return postTypes
+			.filter((type) => type.viewable && type.slug !== 'attachment')
+			.map((type) => type.slug);
+	}, [postTypes]);
+
 	const { searchResults, currentPost, isResolving } = useSelect(
 		(select) => {
-			const { getEntityRecords, getPostTypes, isResolving: checkResolving } =
+			const { getEntityRecords, isResolving: checkResolving } =
 				select('core');
 			const results = [];
 			let resolving = false;
-
-			const postTypes = getPostTypes({ per_page: -1 });
-			let searchableTypes = ['post', 'page'];
-
-			if (postTypes) {
-				searchableTypes = postTypes
-					.filter(
-						(type) => type.viewable && type.slug !== 'attachment'
-					)
-					.map((type) => type.slug);
-			}
 
 			if (searchString) {
 				const query = {
@@ -112,7 +115,7 @@ export default function useVideoQuery(attributes, previewPostId) {
 				isResolving: resolving,
 			};
 		},
-		[searchString, gallery_id]
+		[searchString, gallery_id, searchableTypes]
 	);
 
 	const excludedIds = useMemo(() => {
@@ -123,7 +126,9 @@ export default function useVideoQuery(attributes, previewPostId) {
 
 	const excludedVideos = useSelect(
 		(select) => {
-			if (excludedIds.length === 0) return [];
+			if (excludedIds.length === 0) {
+				return [];
+			}
 			return select('core').getEntityRecords('postType', 'attachment', {
 				include: excludedIds,
 				per_page: -1,

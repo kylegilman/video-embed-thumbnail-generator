@@ -7,6 +7,7 @@ export default function QuerySettings({
 	setAttributes,
 	queryData,
 	showArchiveSource = true,
+	showManualSource = true,
 }) {
 	const { gallery_source, gallery_id, gallery_category, gallery_tag } =
 		attributes;
@@ -93,11 +94,8 @@ export default function QuerySettings({
 						),
 						value: 'archive',
 					},
-					{
-						label: __(
-							'Manual',
-							'video-embed-thumbnail-generator'
-						),
+					showManualSource && {
+						label: __('Manual', 'video-embed-thumbnail-generator'),
 						value: 'manual',
 					},
 				].filter(Boolean)}

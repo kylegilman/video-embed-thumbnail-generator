@@ -72,12 +72,10 @@
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 */
 		initPlayer: function (playerWrapper) {
-			let playerId = playerWrapper.dataset.id;
-
-			// Handle gallery player IDs which have a prefix.
-			if (String(playerId).startsWith('gallery_')) {
-				playerId = `gallery_${playerId.split('_')[1]}`;
+			if (playerWrapper.dataset.videopackInitialized) {
+				return;
 			}
+			let playerId = playerWrapper.dataset.id;
 			const videoVars = window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`];
 
 			if (!videoVars) {
@@ -107,6 +105,8 @@
 					}
 				};
 				checkMejs();
+			} else if (videoVars.embed_method === 'None') {
+				this.setupVideo(playerWrapper, videoVars);
 			}
 		},
 
@@ -192,8 +192,15 @@
 						source_groups: source_groups,
 					};
 					const defaultResSource = sources.find((s) => '1' === s.dataset.default_res);
-					if (defaultResSource) {
+					if (videoVars.default_res) {
+						videojsOptions.plugins.resolutionSelector.default_res = videoVars.default_res;
+					} else if (defaultResSource) {
 						videojsOptions.plugins.resolutionSelector.default_res = defaultResSource.dataset.res;
+					}
+
+					if (videoVars.default_codec) {
+						videojsOptions.plugins.resolutionSelector.default_codec = videoVars.default_codec;
+					} else if (defaultResSource) {
 						for (const groupId in source_groups) {
 							if (source_groups[groupId].sources.some((s) => s.src === defaultResSource.src)) {
 								videojsOptions.plugins.resolutionSelector.default_codec = groupId;
@@ -208,7 +215,8 @@
 			}
 
 			if (videojs.getPlayer(videoElementId)) {
-				videojs.getPlayer(videoElementId).dispose();
+				this.setupVideo(playerWrapper, videoVars);
+				return;
 			}
 
 			videojs(videoElement, videojsOptions).ready(() => {
@@ -274,14 +282,38 @@
 				const videoElement = playerWrapper.querySelector('video');
 				if (videoElement) {
 					const checkVertical = () => {
-						if (videoElement.videoHeight > videoElement.videoWidth) {
-							playerWrapper.parentElement.classList.add('videopack-fixed-aspect');
-							playerWrapper.parentElement.style.aspectRatio = videoVars.default_ratio;
+						let isVertical = false;
+
+						if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+							// Filter out the 100x100 placeholder browsers sometimes report before metadata is ready.
+							if (videoElement.videoWidth === 100 && videoElement.videoHeight === 100 && videoElement.readyState < 1) {
+								return;
+							}
+							isVertical = videoElement.videoHeight > videoElement.videoWidth;
+						} else {
+							// Fallback to database metadata or rotation data.
+							isVertical =
+								Number(videoVars.height) > Number(videoVars.width) ||
+								[90, 270].includes(Number(videoVars.rotate));
+						}
+
+						if (isVertical) {
+							const ratio = videoVars.default_ratio ? videoVars.default_ratio.replace(':', ' / ') : '16 / 9';
+
+							playerWrapper.classList.add('videopack-fixed-aspect');
+							playerWrapper.style.aspectRatio = ratio;
+
+							// Important: Apply directly to the video container so MEJS respects the constraint.
+							const mejsContainer = playerWrapper.querySelector('.wp-video-container');
+							if (mejsContainer) {
+								mejsContainer.style.aspectRatio = ratio;
+							}
 						}
 					};
-					if (videoElement.readyState >= 1) {
-						checkVertical();
-					} else {
+
+					// Check immediately with fallbacks, then re-check when metadata arrives.
+					checkVertical();
+					if (videoElement.readyState < 1) {
 						videoElement.addEventListener('loadedmetadata', checkVertical, { once: true });
 					}
 				}
@@ -395,13 +427,22 @@
 						});
 					}
 				}
+
+				if ('vertical' === videoVars.fixed_aspect && player.videoHeight() > player.videoWidth()) {
+					const ratio = videoVars.default_ratio ? videoVars.default_ratio.replace(/\s\/\s/g, ':') : '16:9';
+					player.aspectRatio(ratio);
+					playerWrapper.classList.add('videopack-fixed-aspect');
+				}
 			});
 
 			player.on('play', () => {
 				player.focus();
 
 				if (videoVars.endofvideooverlay) {
-					player.posterImage.el().style.display = 'none';
+					const overlay = playerWrapper.querySelector('.videopack-end-overlay');
+					if (overlay) {
+						overlay.classList.remove('is-visible');
+					}
 				}
 
 				if (true === videoVars.pauseothervideos) {
@@ -450,10 +491,10 @@
 				}, 250);
 
 				if (videoVars.endofvideooverlay) {
-					const posterImage = player.posterImage.el();
-					if (posterImage) {
-						posterImage.style.backgroundImage = `url(${videoVars.endofvideooverlay})`;
-						posterImage.style.display = 'block';
+					const overlay = playerWrapper.querySelector('.videopack-end-overlay');
+					if (overlay) {
+						overlay.style.backgroundImage = `url(${videoVars.endofvideooverlay})`;
+						overlay.classList.add('is-visible');
 					}
 				}
 			});
@@ -602,15 +643,16 @@
 					this.videoCounter(playerId, 'end');
 				}
 				if (videoVars.endofvideooverlay) {
-					const poster = playerWrapper.querySelector('.mejs-poster');
-					if (poster) {
-						poster.style.backgroundImage = `url(${videoVars.endofvideooverlay})`;
-						poster.style.display = 'block';
+					const overlay = playerWrapper.querySelector('.videopack-end-overlay');
+					if (overlay) {
+						overlay.style.backgroundImage = `url(${videoVars.endofvideooverlay})`;
+						overlay.classList.add('is-visible');
 					}
 					video.addEventListener('seeking', () => {
 						if (0 !== video.currentTime) {
-							if (poster) {
-								poster.style.display = 'none';
+							const currentOverlay = playerWrapper.querySelector('.videopack-end-overlay');
+							if (currentOverlay) {
+								currentOverlay.classList.remove('is-visible');
 							}
 						}
 					}, { once: true });
@@ -704,6 +746,17 @@
 			// Determine current codec and player instance
 			if (videoVars.embed_method === 'Video.js' && typeof videojs !== 'undefined') {
 				player = videojs.getPlayer(`videopack_video_${playerId}`);
+				if (player && player.options) {
+					const options = player.options();
+					const default_res = options.default_res;
+					const default_codec = options.default_codec;
+					console.log('Quality Plugin Debug: default_res', default_res);
+					console.log('Quality Plugin Debug: default_codec', default_codec);
+					if (default_res) {
+						console.log('Quality Plugin Debug: Triggering initial changeRes', default_res, default_codec);
+						player.changeRes(default_res, default_codec);
+					}
+				}
 				if (player && player.getCurrentCodec) {
 					const detectedCodec = player.getCurrentCodec();
 					if (detectedCodec) {
@@ -1201,10 +1254,11 @@
 			e.preventDefault();
 			const galleryItem = e.target.closest('.videopack-gallery-item');
 			const attachmentId = galleryItem.dataset.attachmentId;
+			const videoOrderId = galleryItem.dataset.videopackId ? `videopack_player_${galleryItem.dataset.videopackId}` : `videopack_player_gallery_${attachmentId}`;
 			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
 			const videoIndex = videoOrder.indexOf(String(attachmentId));
 
-			const videoData = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${attachmentId}`];
+			const videoData = window.videopack.player_data && window.videopack.player_data[videoOrderId];
 
 			if (videoData) {
 				this.openGalleryPopup(videoData, galleryWrapper, videoIndex);

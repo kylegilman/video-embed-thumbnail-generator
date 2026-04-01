@@ -1,4 +1,4 @@
-/* global MediaElementPlayer */
+/* global jQuery */
 import { useEffect, useRef } from '@wordpress/element';
 
 /**
@@ -18,23 +18,19 @@ import { useEffect, useRef } from '@wordpress/element';
  * @return {Element} The rendered component.
  */
 const WpMejsPlayer = (props) => {
-	const {
-		options,
+	const { options, controls, actualAutoplay, aspectRatio } = props;
+
+	const playerRef = useRef(null);
+	const containerRef = useRef(null);
+	const propsRef = useRef(props);
+	const reportedSrcRef = useRef(null);
+	const uniqueKey = JSON.stringify({
+		src: options.src,
+		poster: options.poster,
+		sources: options.sources,
+		tracks: options.tracks,
 		controls,
 		actualAutoplay,
-		onReady,
-		onPlay,
-		playback_rate,
-		aspectRatio,
-	} = props;
-
-	const containerRef = useRef(null);
-	const playerRef = useRef(null);
-	const propsRef = useRef(props);
-
-	// Keep propsRef current so the effect always reads the latest callbacks.
-	useEffect(() => {
-		propsRef.current = props;
 	});
 
 	useEffect(() => {
@@ -45,6 +41,14 @@ const WpMejsPlayer = (props) => {
 			if (playerRef.current) {
 				try {
 					if (typeof playerRef.current.remove === 'function') {
+						// Neuter sizing methods before removal to prevent async crashes
+						// during the destruction process (mediaelement-and-player.js:4416).
+						if (typeof playerRef.current.setPlayerSize === 'function') {
+							playerRef.current.setPlayerSize = () => {};
+						}
+						if (typeof playerRef.current.setControlsSize === 'function') {
+							playerRef.current.setControlsSize = () => {};
+						}
 						playerRef.current.remove();
 					}
 				} catch (e) {
@@ -59,8 +63,8 @@ const WpMejsPlayer = (props) => {
 		timeoutId = setTimeout(() => {
 			const container = containerRef.current;
 			if (
-				!container ||
 				!isMounted ||
+				!container ||
 				!container.ownerDocument.body.contains(container)
 			) {
 				return;
@@ -87,11 +91,12 @@ const WpMejsPlayer = (props) => {
 			}
 
 			try {
-				const videoElement = container.ownerDocument.createElement(
-					'video'
-				);
+				const videoElement =
+					container.ownerDocument.createElement('video');
 				videoElement.className = 'wp-video-shortcode videopack-video';
 				videoElement.setAttribute('playsinline', '');
+				videoElement.setAttribute('width', '100%');
+				videoElement.setAttribute('height', '100%');
 
 				if (curOptions.poster) {
 					videoElement.setAttribute('poster', curOptions.poster);
@@ -103,14 +108,16 @@ const WpMejsPlayer = (props) => {
 					videoElement.setAttribute('preload', curOptions.preload);
 				}
 
-				const shouldBeMuted = !!curOptions.muted || !!curAutoplay;
+				const shouldBeMuted =
+					!!curOptions.muted || !!curOptions.actualAutoplay;
 				if (shouldBeMuted) {
 					videoElement.setAttribute('muted', 'muted');
 					videoElement.muted = true;
 				}
 
 				curOptions.sources.forEach((s) => {
-					const source = container.ownerDocument.createElement('source');
+					const source =
+						container.ownerDocument.createElement('source');
 					source.src = s.src;
 					source.type = s.type;
 					videoElement.appendChild(source);
@@ -118,7 +125,8 @@ const WpMejsPlayer = (props) => {
 
 				if (curOptions.tracks) {
 					curOptions.tracks.forEach((t) => {
-						const track = container.ownerDocument.createElement('track');
+						const track =
+							container.ownerDocument.createElement('track');
 						track.src = t.src;
 						track.kind = t.kind;
 						track.srclang = t.srclang;
@@ -157,6 +165,8 @@ const WpMejsPlayer = (props) => {
 				if (!mejsOptions.stretching) {
 					mejsOptions.stretching = 'responsive';
 				}
+				mejsOptions.videoWidth = '100%';
+				mejsOptions.videoHeight = '100%';
 
 				mejsOptions.startVolume =
 					curOptions.volume !== undefined && curOptions.volume !== null
@@ -164,84 +174,230 @@ const WpMejsPlayer = (props) => {
 						: 0.8;
 				mejsOptions.startMuted = shouldBeMuted;
 
-				mejsOptions.success = (media) => {
-					if (!isMounted) {
-						return;
-					}
-
-					playerRef.current = media;
-
-					if (curOnReady) {
-						if (typeof curOnReady === 'function') {
-							curOnReady(media);
-						} else if (curOnReady.current) {
-							curOnReady.current(media);
-						}
-					}
-
-					// Small delay to allow DOM normalization before sizing.
-					setTimeout(() => {
-						if (
-							isMounted &&
-							media.container &&
-							typeof media.setPlayerSize === 'function'
-						) {
-							media.setPlayerSize();
-							media.setControlsSize();
-						}
-					}, 100);
-
-					if (curAutoplay) {
-						const autoPlayHandler = () => {
-							const playPromise = media.play();
-							if (
-								playPromise &&
-								typeof playPromise.catch === 'function'
-							) {
-								playPromise.catch((e) => {
-									if (e.name !== 'AbortError') {
-										// eslint-disable-next-line no-console
-										console.warn('Autoplay prevented:', e);
-									}
-								});
-							}
-							media.removeEventListener('canplay', autoPlayHandler);
-						};
-
-						if (media.readyState >= 3) {
-							autoPlayHandler();
-						} else {
-							media.addEventListener('canplay', autoPlayHandler);
-						}
-					}
-
-					if (curOnPlay) {
-						media.addEventListener('play', curOnPlay);
-					}
-				};
-
-				mejsOptions.videoWidth = '100%';
-				mejsOptions.videoHeight = '100%';
-
 				if (!curControls) {
 					mejsOptions.features = [];
 					mejsOptions.controls = false;
 				}
 
 				if (curPlaybackRate) {
-					if (!mejsOptions.features.includes('speed')) {
-						mejsOptions.features.push('speed');
-					}
-					mejsOptions.speeds = ['0.5', '1', '1.25', '1.5', '2'];
+					mejsOptions.features.push('speed');
 				}
 
-				// Final check before constructor.
-				if (isMounted && container.ownerDocument.body.contains(container)) {
-					new MediaElementPlayer(videoElement, mejsOptions);
+				const onPlayHandler = (e) => {
+					if (typeof curOnPlay === 'function') {
+						curOnPlay(e);
+					}
+				};
+
+				const autoPlayHandler = () => {
+					if (curAutoplay && playerRef.current) {
+						try {
+							playerRef.current.play();
+						} catch (e) {
+							// Browser blocked autoplay
+						}
+					}
+				};
+
+				mejsOptions.success = (media, domNode, player) => {
+					if (!isMounted) {
+						return;
+					}
+					playerRef.current = player;
+					media.addEventListener('play', onPlayHandler);
+
+					if (curOnReady) {
+						if (typeof curOnReady === 'function') {
+							curOnReady(player);
+						} else if (curOnReady.current) {
+							curOnReady.current(player);
+						}
+					}
+
+					// Small delay to allow DOM normalization before sizing.
+					setTimeout(() => {
+						const targetPlayer = playerRef.current;
+
+						if (
+							!targetPlayer ||
+							!targetPlayer.media ||
+							!isMounted
+						) {
+							return;
+						}
+
+						// MEJS player instance container can be a jQuery object or a DOM node.
+						// We must ensure it's a raw Node before calling .contains()
+						let containerElement =
+							targetPlayer.container ||
+							targetPlayer.media?.container;
+
+						if (containerElement && containerElement.get) {
+							containerElement = containerElement.get(0);
+						} else if (
+							containerElement &&
+							containerElement.jquery &&
+							containerElement[0]
+						) {
+							containerElement = containerElement[0];
+						}
+
+						const isAttached =
+							containerElement &&
+							container.ownerDocument.body.contains(
+								containerElement
+							);
+
+						if (
+							targetPlayer &&
+							targetPlayer.media && // Stricter guard: instance must have media
+							containerElement &&
+							isAttached &&
+							typeof targetPlayer.setPlayerSize === 'function'
+						) {
+							// Guard against MEJS internal crash if videoWidth/Height are not yet loaded.
+							// mediaelement-and-player.js:4416 accesses videoWidth of undefined in setResponsiveMode.
+							// Note: readyState >= 1 does NOT guarantee videoWidth is populated on the MEJS wrapper.
+							// We check both the renderer wrapper (media) and the native node (domNode).
+							try {
+								const mediaWidth =
+									(media && media.videoWidth) ||
+									(domNode && domNode.videoWidth) ||
+									(media && media.width) ||
+									(domNode && domNode.width) ||
+									0;
+
+								const mediaHeight =
+									(media && media.videoHeight) ||
+									(domNode && domNode.videoHeight) ||
+									(media && media.height) ||
+									(domNode && domNode.height) ||
+									0;
+
+								const isRealSizing =
+									mediaWidth > 0 &&
+									(mediaWidth !== 100 ||
+										mediaHeight !== 100 ||
+										media?.readyState >= 1);
+
+								if (isRealSizing) {
+									try {
+										targetPlayer.setPlayerSize();
+										targetPlayer.setControlsSize();
+
+										const {
+											onMetadataLoaded: curOnMetadataLoaded,
+										} = propsRef.current;
+
+										if (
+											typeof curOnMetadataLoaded ===
+												'function' &&
+											reportedSrcRef.current !==
+												options.src
+										) {
+											reportedSrcRef.current =
+												options.src;
+											curOnMetadataLoaded({
+												width: mediaWidth,
+												height: mediaHeight,
+											});
+										}
+									} catch (e) {
+										targetPlayer.setPlayerSize();
+									}
+								} else {
+									const sizeOnMetadata = () => {
+										try {
+											if (
+												isMounted &&
+												targetPlayer &&
+												targetPlayer.media &&
+												typeof targetPlayer.setPlayerSize ===
+													'function'
+											) {
+												const currentWidth =
+													targetPlayer.media
+														.videoWidth ||
+													(domNode &&
+														domNode.videoWidth) ||
+													targetPlayer.media.width ||
+													(domNode && domNode.width);
+
+
+												const currentHeight =
+													targetPlayer.media
+														.videoHeight ||
+													(domNode &&
+														domNode.videoHeight) ||
+													targetPlayer.media.height ||
+													(domNode && domNode.height);
+
+												const isRealMetadataSizing =
+													currentWidth > 0 &&
+													(currentWidth !== 100 ||
+														currentHeight !== 100 ||
+														targetPlayer.media
+															?.readyState >= 1);
+
+												if (isRealMetadataSizing) {
+													targetPlayer.setPlayerSize();
+													targetPlayer.setControlsSize();
+
+													const {
+														onMetadataLoaded: curOnMetadataLoaded,
+													} = propsRef.current;
+
+													if (
+														typeof curOnMetadataLoaded ===
+															'function' &&
+														reportedSrcRef.current !==
+															options.src
+													) {
+														reportedSrcRef.current =
+															options.src;
+														curOnMetadataLoaded({
+															width: currentWidth,
+															height: currentHeight,
+														});
+													}
+												}
+											}
+										} catch (err) {
+										// Silence metadata errors
+									}
+
+										if (media) {
+											media.removeEventListener(
+												'loadedmetadata',
+												sizeOnMetadata
+											);
+										}
+									};
+									media.addEventListener(
+										'loadedmetadata',
+										sizeOnMetadata
+									);
+								}
+							} catch (outerErr) {
+								// Silence dimension detection errors
+							}
+						}
+					}, 150);
+
+					media.addEventListener('canplay', autoPlayHandler);
+				};
+
+
+				const $videoElement = jQuery(videoElement);
+				// Stricter check before init
+				if (
+					isMounted &&
+					container.ownerDocument.body.contains(container)
+				) {
+					$videoElement.mediaelementplayer(mejsOptions);
 				}
 			} catch (e) {
-				// eslint-disable-next-line no-console
-				console.error('MEJS INIT ERROR:', e);
+				// Silence init errors
 			}
 		}, 100);
 
@@ -252,17 +408,7 @@ const WpMejsPlayer = (props) => {
 			}
 			cleanupPlayer();
 		};
-	}, [
-		options.src,
-		options.poster,
-		options.sources,
-		options.tracks,
-		controls,
-		actualAutoplay,
-		onReady,
-		onPlay,
-		playback_rate,
-	]);
+	}, [uniqueKey]);
 
 	// Reactive updates for volume and muted without recreating the player.
 	useEffect(() => {
@@ -292,8 +438,10 @@ const WpMejsPlayer = (props) => {
 			}`}
 			ref={containerRef}
 			style={{
-				aspectRatio: aspectRatio ? aspectRatio.replace(':', ' / ') : '16 / 9',
 				width: '100%',
+				aspectRatio: aspectRatio
+					? aspectRatio.replace(':', ' / ')
+					: undefined,
 			}}
 		/>
 	);

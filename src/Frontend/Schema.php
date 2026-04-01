@@ -7,6 +7,8 @@
 
 namespace Videopack\Frontend;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Schema
  *
@@ -20,7 +22,30 @@ namespace Videopack\Frontend;
  * @subpackage Videopack/Frontend
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Schema {
+class Schema implements Hook_Subscriber {
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'template_redirect',
+				'callback' => 'init',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array();
+	}
 
 	/**
 	 * Video formats registry.

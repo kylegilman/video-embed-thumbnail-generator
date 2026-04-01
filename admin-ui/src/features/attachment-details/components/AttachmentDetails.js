@@ -8,7 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 import VideoSettings from '../../../components/VideoSettings/VideoSettings.js';
 import Thumbnails from '../../../components/Thumbnails/Thumbnails.js';
 import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalFormats.js';
-import { getSettings } from '../../../utils/utils.js';
+import { getSettings } from '../../../api/settings';
 import useVideoSettings from '../../../hooks/useVideoSettings.js';
 import useVideoProbe from '../../../hooks/useVideoProbe.js';
 

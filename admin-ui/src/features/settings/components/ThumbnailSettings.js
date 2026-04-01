@@ -9,7 +9,7 @@ import {
 	ExternalLink,
 	__experimentalConfirmDialog as ConfirmDialog,
 } from '@wordpress/components';
-import { startBatchProcess, getBatchProgress } from '../../../utils/utils';
+import { startBatchProcess, getBatchProgress } from '../../../api/media';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import SelectFromLibrary from './SelectFromLibrary';
 import WatermarkSettingsPanel from '../../../components/WatermarkSettingsPanel/WatermarkSettingsPanel';
@@ -17,7 +17,7 @@ import VideopackTooltip from './VideopackTooltip';
 
 const config = window.videopack_config || {};
 
-const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
+const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 	const {
 		browser_thumbnails,
 		ffmpeg_exists,
@@ -44,9 +44,9 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 				'Are you sure you want to set all video thumbnails as featured images for their parent posts? This may overwrite existing featured images.',
 				'video-embed-thumbnail-generator'
 			),
-			() => startBatchProcess('featured'),
-			() => getBatchProgress('featured'),
-			__('No videos found to process.', 'video-embed-thumbnail-generator')
+			() => startBatchProcess( 'featured' ),
+			() => getBatchProgress( 'featured' ),
+			__( 'No videos found to process.', 'video-embed-thumbnail-generator' )
 		);
 	};
 
@@ -64,8 +64,8 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 
 		parentsBatch.confirmAndRun(
 			confirmMessage,
-			() => startBatchProcess('parents', { target_parent: thumb_parent }),
-			() => getBatchProgress('parents'),
+			() => startBatchProcess( 'parents', { target_parent: thumb_parent } ),
+			() => getBatchProgress( 'parents' ),
 			__(
 				'No thumbnails found to process.',
 				'video-embed-thumbnail-generator'
@@ -76,16 +76,16 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const executeGenerateAllThumbnails = async () => {
 		try {
 			generationBatch.runPolling(
-				() => startBatchProcess('thumbs'),
-				() => getBatchProgress('thumbs'),
+				() => startBatchProcess( 'thumbs' ),
+				() => getBatchProgress( 'thumbs' ),
 				__(
 					'No videos found to process.',
 					'video-embed-thumbnail-generator'
 				)
 			);
-		} catch (error) {
-			console.error(error);
-			generationBatch.setIsProcessing(false);
+		} catch ( error ) {
+			console.error( error );
+			generationBatch.setIsProcessing( false );
 			generationBatch.showAlert(
 				__(
 					'An error occurred while processing.',
@@ -211,7 +211,7 @@ const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 							onChange={changeHandlerFactory.total_thumbnails}
 						/>
 					</div>
-					{(ffmpeg_exists === true || config.is_pro) ? (
+					{ffmpeg_exists === true || config.is_pro ? (
 						<>
 							<div className="videopack-setting-extra-margin">
 								<span className="videopack-settings-label">

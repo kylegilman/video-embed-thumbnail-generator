@@ -30,8 +30,8 @@ import {
 	deleteJob,
 	retryJob,
 	removeJob,
-	getBatchProgress,
-} from '../../utils/utils';
+} from '../../api/jobs';
+import { getBatchProgress } from '../../api/media';
 
 const defaultLayouts = {
 	table: {

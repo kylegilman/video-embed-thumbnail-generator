@@ -9,22 +9,18 @@ import { useRef, useEffect } from '@wordpress/element';
 /**
  * Video.js React component.
  *
- * Uses setTimeout(fn, 0) to defer initialization to the next event loop tick.
- * This handles both React Strict Mode (cleanup cancels the timer) and the
- * WordPress Block Editor iframe migration (the container is in the correct
- * document by the time the timer fires).
- *
- * @param {Object}   props         Component props.
- * @param {Object}   props.options Video.js player options.
- * @param {string}   props.skin    CSS class name for the player skin.
- * @param {Function} props.onPlay  Callback for the play event.
- * @param {Function} props.onPause Callback for the pause event.
- * @param {Function} props.onReady Callback fired once the player is ready.
+ * @param {Object}   props                  Component props.
+ * @param {Object}   props.options          Video.js player options.
+ * @param {string}   props.skin             CSS class name for the player skin.
+ * @param {Function} props.onPlay           Callback for the play event.
+ * @param {Function} props.onPause          Callback for the pause event.
+ * @param {Function} props.onReady          Callback fired once the player is ready.
+ * @param {Function} props.onMetadataLoaded Callback fired when metadata is loaded.
  */
 export const VideoJS = (props) => {
 	const videoRef = useRef(null);
 	const playerRef = useRef(null);
-	const { options, skin, onPlay, onPause, onReady } = props;
+	const { options, skin, onPlay, onPause, onReady, onMetadataLoaded } = props;
 	const previousSkinRef = useRef(skin);
 	const previousPluginsRef = useRef(options?.plugins);
 
@@ -100,6 +96,14 @@ export const VideoJS = (props) => {
 					}
 					this.on('play', onPlay);
 					this.on('pause', onPause);
+					this.on('loadedmetadata', function () {
+						if (typeof onMetadataLoaded === 'function') {
+							onMetadataLoaded({
+								width: this.videoWidth(),
+								height: this.videoHeight(),
+							});
+						}
+					});
 				});
 			}, 250);
 		} else if (player && !player.isDisposed()) {
@@ -182,7 +186,7 @@ export const VideoJS = (props) => {
 		return () => {
 			clearTimeout(initTimer);
 		};
-	}, [options, skin, onPlay, onPause, onReady]);
+	}, [options, skin, onPlay, onPause, onReady, onMetadataLoaded]);
 
 	// Dispose the player when the component unmounts
 	useEffect(() => {

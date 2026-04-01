@@ -13,6 +13,7 @@ namespace Videopack\Admin\Encode;
 
 use ActionScheduler;
 use Videopack\Common\Debug_Logger;
+use Videopack\Common\Hook_Subscriber;
 
 /**
  * Class Encode_Queue_Controller
@@ -24,7 +25,7 @@ use Videopack\Common\Debug_Logger;
  * @package Videopack
  * @subpackage Videopack/Admin/Encode
  */
-class Encode_Queue_Controller {
+class Encode_Queue_Controller implements Hook_Subscriber {
 
 	/**
 	 * Local options for the current blog.
@@ -81,6 +82,47 @@ class Encode_Queue_Controller {
 		} else {
 			$this->queue_table_name = (string) ( $wpdb->prefix . 'videopack_encoding_queue' );
 		}
+	}
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'rest_api_init',
+				'callback' => 'start_queue',
+			),
+			array(
+				'hook'     => 'videopack_process_pending_jobs',
+				'callback' => 'process_pending_jobs_action',
+			),
+			array(
+				'hook'     => 'videopack_trigger_queue_heartbeat',
+				'callback' => 'schedule_immediate_heartbeat',
+			),
+			array(
+				'hook'     => 'videopack_handle_job',
+				'callback' => 'handle_job_action',
+			),
+			array(
+				'hook'     => 'videopack_cleanup_queue',
+				'callback' => 'clear_completed_queue',
+				'priority' => 10,
+				'accepted_args' => 2,
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array();
 	}
 
 	/**

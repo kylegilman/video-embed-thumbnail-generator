@@ -1,12 +1,11 @@
 @use "@wordpress/base-styles/colors";
 
-// Hide the legacy WordPress media tabs/header when we're inside the Videopack specialized view
-#media-upload-header {
+// These styles are intended for the media-upload.php iframe context.
+body.videopack-is-editing #media-upload-header {
 	display: none;
 }
 
-// Ensure the body fills the space cleanly
-body {
+.videopack-classic-embed {
 	background: #fff;
 }
 

@@ -13,7 +13,7 @@ import AdditionalFormats from '../../../components/AdditionalFormats/AdditionalF
 import useVideoQuery from '../../../hooks/useVideoQuery';
 import { useVideoData } from '../../../hooks/useVideoData';
 import useVideoProbe from '../../../hooks/useVideoProbe';
-import { generateShortcode, normalizeOptions } from '../../../utils/utils';
+import { generateShortcode, normalizeOptions } from '../../../utils/helpers';
 
 /**
  * ClassicEmbed component.
@@ -29,7 +29,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 
 	// Retrieve editAttributes passed from PHP if editing an existing shortcode via TinyMCE
 	const editAttributes = useMemo(() => {
-		const config = window.videopack_classic_embed_config || {};
+		const config = window.videopack_classic_editor_config || {};
 		const attrs = config.editAttributes || {};
 
 		const normalized = { ...attrs };
@@ -77,6 +77,16 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 		return normalized;
 	}, []);
 	const initialVideoUrl = editAttributes.url || '';
+
+	// Toggle a class on the body when in TinyMCE edit mode so we can hide headers/tabs
+	useEffect(() => {
+		if (editAttributes.tinymce_edit) {
+			document.body.classList.add('videopack-is-editing');
+			return () => {
+				document.body.classList.remove('videopack-is-editing');
+			};
+		}
+	}, [editAttributes.tinymce_edit]);
 
 	const [videoUrl, setVideoUrl] = useState(initialVideoUrl);
 	const [debouncedVideoUrl, setDebouncedVideoUrl] = useState(initialVideoUrl);
@@ -273,10 +283,48 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 	const onInsert = useCallback(
 		(type) => {
 			let shortcode = '';
+
+			const filterAttributes = (current, defaults) => {
+				const filtered = {};
+				Object.keys(current).forEach((key) => {
+					let val = current[key];
+					let defaultVal = defaults[key];
+
+					// Normalize booleans/strings for comparison
+					if (typeof val === 'boolean') {
+						val = val ? 'true' : 'false';
+					}
+					if (typeof defaultVal === 'boolean') {
+						defaultVal = defaultVal ? 'true' : 'false';
+					}
+
+					// Skip if it matches the default, unless it's a critical identifying attribute
+					if (
+						val === defaultVal &&
+						key !== 'gallery' &&
+						key !== 'id'
+					) {
+						return;
+					}
+
+					// Special cases
+					if (
+						key === 'gallery_id' &&
+						Number(val) === Number(postId)
+					) {
+						return;
+					}
+
+					filtered[key] = current[key];
+				});
+				return filtered;
+			};
+
 			if (type === 'single') {
 				const finalAttributes = { ...singleAttributes };
 
 				if (resolvedId && videoData) {
+					// Remove attributes that match the attachment's own metadata
 					if (finalAttributes.poster === videoData.poster) {
 						delete finalAttributes.poster;
 					}
@@ -291,15 +339,26 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 					}
 				}
 
-				shortcode = generateShortcode(
+				// Filter against plugin defaults
+				const filtered = filterAttributes(
 					finalAttributes,
-					videoUrl,
-					options
+					normalizedOptions
 				);
+
+				shortcode = generateShortcode('videopack', filtered, videoUrl);
 			} else if (type === 'gallery') {
-				shortcode = generateShortcode(galleryAttributes, '', options);
+				const filtered = filterAttributes(
+					galleryAttributes,
+					normalizedOptions
+				);
+				shortcode = generateShortcode('videopack', filtered);
 			} else {
-				shortcode = generateShortcode(listAttributes, '', options);
+				// List type
+				const filtered = filterAttributes(
+					listAttributes,
+					normalizedOptions
+				);
+				shortcode = generateShortcode('videopack', filtered);
 			}
 
 			if (
@@ -319,10 +378,11 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 			videoUrl,
 			galleryAttributes,
 			listAttributes,
-			options,
-			editAttributes,
-			resolvedId,
 			videoData,
+			normalizedOptions,
+			postId,
+			resolvedId,
+			editAttributes.tinymce_edit,
 		]
 	);
 
@@ -452,6 +512,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 							queryData={queryData}
 							options={normalizedOptions}
 							showGalleryOptions={true}
+							showManualSource={false}
 						/>
 						<div className="videopack-insert-button-wrapper">
 							<Button
@@ -484,6 +545,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 							queryData={queryData}
 							options={normalizedOptions}
 							showGalleryOptions={false}
+							showManualSource={false}
 						/>
 						<div className="videopack-insert-button-wrapper">
 							<Button

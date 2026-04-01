@@ -85,6 +85,36 @@ class Loader {
 	}
 
 	/**
+	 * Registers a component's hooks via the Hook_Subscriber interface.
+	 *
+	 * @since 5.0.0
+	 *
+	 * @param Hook_Subscriber $component The component to register.
+	 * @return void
+	 */
+	public function add_subscriber( Hook_Subscriber $component ) {
+		foreach ( $component->get_actions() as $action ) {
+			$this->add_action(
+				$action['hook'],
+				$component,
+				$action['callback'],
+				$action['priority'] ?? 10,
+				$action['accepted_args'] ?? 1
+			);
+		}
+
+		foreach ( $component->get_filters() as $filter ) {
+			$this->add_filter(
+				$filter['hook'],
+				$component,
+				$filter['callback'],
+				$filter['priority'] ?? 10,
+				$filter['accepted_args'] ?? 1
+			);
+		}
+	}
+
+	/**
 	 * A utility function that is used to register the actions and hooks into a single
 	 * collection.
 	 *

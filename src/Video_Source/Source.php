@@ -1173,6 +1173,15 @@ abstract class Source {
 	}
 
 	/**
+	 * Returns the rotation metadata for the video source.
+	 *
+	 * @return int The rotation in degrees (0, 90, 180, 270).
+	 */
+	public function get_rotate(): int {
+		return (int) ( $this->metadata['rotate'] ?? 0 );
+	}
+
+	/**
 	 * Handles an error.
 	 *
 	 * @param string $error The error message.

@@ -7,6 +7,8 @@
 
 namespace Videopack\Admin;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Options
  *
@@ -22,7 +24,7 @@ namespace Videopack\Admin;
  * @subpackage Videopack/Admin
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Options {
+class Options implements Hook_Subscriber {
 
 	/**
 	 * Default capabilities required for Videopack functions.
@@ -74,6 +76,37 @@ class Options {
 	 * Constructor.
 	 */
 	public function __construct() {}
+
+	/**
+	 * Returns an array of actions to register.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'init',
+				'callback' => 'load_options',
+			),
+			array(
+				'hook'     => 'admin_init',
+				'callback' => 'register_videopack_options',
+			),
+			array(
+				'hook'     => 'rest_api_init',
+				'callback' => 'register_videopack_options',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to register.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array();
+	}
 
 	/**
 	 * Returns default options.

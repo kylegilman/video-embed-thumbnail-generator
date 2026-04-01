@@ -2,11 +2,7 @@
  * Features for integrating Videopack with the TinyMCE editor.
  */
 
-import {
-	createRoot,
-	useState,
-	useEffect,
-} from '@wordpress/element';
+import { createRoot, useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
@@ -17,6 +13,61 @@ import Pagination from '../../components/Pagination/Pagination';
 import './tinymce.scss';
 
 (function () {
+	/**
+	 * Robustly detects the current post ID in various WordPress editor environments.
+	 *
+	 * @return {number|null} The detected post ID or null if not found.
+	 */
+	const detectPostId = () => {
+		const results = {};
+
+		// 1. Explicitly localized config
+		results.config = videopack_config?.postId;
+
+		// 2. WordPress media view settings
+		results.wpMedia = window.wp?.media?.view?.settings?.post?.id;
+
+		// 3. Raw DOM element
+		results.dom = document.getElementById('post_ID')?.value;
+
+		// 4. URL Parameters
+		results.url = new URLSearchParams(window.location.search).get('post');
+
+		// 5. Parent Window (if in iframe like TinyMCE)
+		try {
+			if (window.parent && window.parent !== window) {
+				results.parentDom =
+					window.parent.document.getElementById('post_ID')?.value;
+				results.parentUrl = new URLSearchParams(
+					window.parent.location.search
+				).get('post');
+				results.parentWpMedia =
+					window.parent.wp?.media?.view?.settings?.post?.id;
+			}
+		} catch (e) {
+			// Cross-origin issues, ignore
+		}
+
+		// 6. Gutenberg State (if active)
+		try {
+			const wpData = window.wp?.data || window.parent?.wp?.data;
+			if (wpData) {
+				results.gutenberg = wpData.select('core/editor')?.getCurrentPostId();
+			}
+		} catch (e) {
+			// ignore
+		}
+
+		for (const key in results) {
+			const val = parseInt(results[key], 10);
+			if (val && !isNaN(val)) {
+				return val;
+			}
+		}
+
+		return null;
+	};
+
 	const PlaceHolderWrapper = ({ type, attributes, mountNode }) => {
 		const [fullAttributes, setFullAttributes] = useState(attributes);
 		const [isLoading, setIsLoading] = useState(type === 'Video');
@@ -66,10 +117,18 @@ import './tinymce.scss';
 				).toString()}`,
 			})
 				.then((response) => {
-					setFullAttributes((prev) => ({
-						...prev,
-						...(response.attributes || {}),
-					}));
+					setFullAttributes((prev) => {
+						const next = {
+							...prev,
+							...(response.attributes || {}),
+						};
+						// Preserve the raw state of gallery_pagination from shortcode if present
+						if (attributes.gallery_pagination !== undefined) {
+							next.gallery_pagination =
+								attributes.gallery_pagination;
+						}
+						return next;
+					});
 					setTotalPages(response.max_num_pages || 1);
 				})
 				.finally(() => setIsLoading(false));
@@ -89,14 +148,27 @@ import './tinymce.scss';
 				.then((response) => {
 					if (response.videos && response.videos.length > 0) {
 						const video = response.videos[0];
-						setFullAttributes((prev) => ({
-							...video.player_vars,
-							...prev,
-							title: prev.title || video.title,
-							poster: prev.poster || video.player_vars.poster,
-							// Ensure the URL provided in the shortcode content (if any) takes precedence
-							src: prev.url || prev.src || video.player_vars.src,
-						}));
+						setFullAttributes((prev) => {
+							const videoVars = video.player_vars || {};
+							const defaults = window.videopack_config?.defaults || {};
+							const merged = { ...videoVars, ...prev };
+
+							// If height or width in 'prev' match the global defaults, and metadata provides a different value,
+							// we assume the user hasn't explicitly overridden them in the shortcode text.
+							if (parseInt(prev.width, 10) === parseInt(defaults.width, 10) && videoVars.width) {
+								merged.width = videoVars.width;
+							}
+							if (parseInt(prev.height, 10) === parseInt(defaults.height, 10) && videoVars.height) {
+								merged.height = videoVars.height;
+							}
+
+							return {
+								...merged,
+								title: prev.title || video.title,
+								poster: prev.poster || videoVars.poster,
+								src: prev.url || prev.src || videoVars.src,
+							};
+						});
 					}
 				})
 				.finally(() => setIsLoading(false));
@@ -120,12 +192,32 @@ import './tinymce.scss';
 			Component = VideoList;
 		}
 
+		// Normalize attributes and merging defaults
 		const finalAttributes = {
 			...(videopack_config?.options || {}),
 			...(videopack_config?.defaults || {}),
 			...fullAttributes,
 			autoplay: false, // Never autoplay in TinyMCE preview
 		};
+
+		// Fix for gallery_source="current" in TinyMCE/REST context where get_the_ID() is 0.
+		// If source is current and gallery_id is 0/missing or string "0", use the current postId from config.
+		if (
+			finalAttributes.gallery_source === 'current' &&
+			(!finalAttributes.gallery_id ||
+				finalAttributes.gallery_id === '0' ||
+				parseInt(finalAttributes.gallery_id, 10) === 0)
+		) {
+			const postId = detectPostId();
+			if (postId) {
+				finalAttributes.gallery_id = postId;
+			}
+		}
+
+		// Normalize gallery_pagination to boolean
+		const isPaginated =
+			finalAttributes.gallery_pagination === 'true' ||
+			finalAttributes.gallery_pagination === true;
 
 		// If we only have a URL but no sources array, create a default one for the player
 		if (
@@ -157,7 +249,7 @@ import './tinymce.scss';
 		return (
 			<div className="videopack-tinymce-wrapper">
 				<Component {...commonProps} {...galleryProps} />
-				{fullAttributes.gallery_pagination && totalPages > 1 && (
+				{isPaginated && totalPages > 1 && (
 					<Pagination
 						currentPage={galleryPage}
 						totalPages={totalPages}
@@ -175,16 +267,37 @@ import './tinymce.scss';
 	 * @param {HTMLElement} container The container element (usually a WP View).
 	 * @param {Object}      shortcode The shortcode object.
 	 */
-	function mountReactToNode(container, shortcode) {
+	/**
+	 * Mounts a React component to a specific mount node within a container.
+	 *
+	 * @param {HTMLElement} container     The container element (usually a WP View).
+	 * @param {Object}      shortcodeData The shortcode object or match.
+	 */
+	function mountReactToNode(container, shortcodeData) {
 		if (!container || typeof container.querySelector !== 'function') {
 			return;
 		}
+
+		// Normalize shortcode object
+		const shortcode = shortcodeData.shortcode || shortcodeData;
+
 		const mountNode = container.querySelector('.videopack-tinymce-mount');
-		if (!mountNode || mountNode.dataset.videopackMounted) {
+		if (!mountNode) {
+			// If not ready yet, we'll catch it in the next scan or bind call.
 			return;
 		}
 
-		const attrs = { ...shortcode.attrs.named };
+		if (mountNode.dataset.videopackMounted) {
+			return;
+		}
+
+		// Normalize attributes and tag
+		const attrs = {
+			...( ( shortcode.attrs && shortcode.attrs.named ) ?
+				shortcode.attrs.named :
+				( shortcode.attrs || {} )
+			),
+		};
 		const tag = shortcode.tag;
 
 		// If the shortcode has content (e.g. [videopack]URL[/videopack]), map it to the url attribute
@@ -274,22 +387,41 @@ import './tinymce.scss';
 			);
 
 			views.forEach((container) => {
-				const viewText = container.getAttribute('data-wpview-text');
-				if (!viewText) {
-					return;
-				}
+				try {
+					const viewText = container.getAttribute('data-wpview-text');
+					if (!viewText) {
+						return;
+					}
 
-				const shortcodeText = decodeURIComponent(viewText);
-				const shortcodeMatch =
-					window.wp.shortcode.next('videopack', shortcodeText) ||
-					window.wp.shortcode.next('KGVID', shortcodeText) ||
-					window.wp.shortcode.next('VIDEOPACK', shortcodeText) ||
-					window.wp.shortcode.next('FMP', shortcodeText) ||
-					window.wp.shortcode.next('videopack_gallery', shortcodeText) ||
-					window.wp.shortcode.next('videopack_list', shortcodeText);
+					const shortcodeText = decodeURIComponent(viewText);
+					const tags = [
+						'videopack',
+						'KGVID',
+						'VIDEOPACK',
+						'FMP',
+						'videopack_gallery',
+						'videopack_list',
+					];
 
-				if (shortcodeMatch && shortcodeMatch.shortcode) {
-					mountReactToNode(container, shortcodeMatch.shortcode);
+					let shortcodeMatch = null;
+					for (const tag of tags) {
+						// Using next() on the specific shortcodeText for the view.
+						// This should be clean as shortcodeText is local to this view.
+						const match = window.wp.shortcode.next(
+							tag,
+							shortcodeText
+						);
+						if (match && match.shortcode) {
+							shortcodeMatch = match.shortcode;
+							break;
+						}
+					}
+
+					if (shortcodeMatch) {
+						mountReactToNode(container, shortcodeMatch);
+					}
+				} catch (e) {
+					console.error('Videopack scanAndMountAll error:', e);
 				}
 			});
 		});
@@ -350,7 +482,10 @@ import './tinymce.scss';
 			 * @param {HTMLElement} container The container element.
 			 */
 			unbind(container) {
-				if (!container || typeof container.querySelector !== 'function') {
+				if (
+					!container ||
+					typeof container.querySelector !== 'function'
+				) {
 					return;
 				}
 				const mountNode = container.querySelector(
@@ -483,11 +618,14 @@ import './tinymce.scss';
 						);
 					}
 
-					const urlValue = shortcode
-						? (shortcode.shortcode.content
-							? shortcode.shortcode.content.trim()
-							: '')
-						: '';
+					let urlValue = '';
+					if (
+						shortcode &&
+						shortcode.shortcode &&
+						shortcode.shortcode.content
+					) {
+						urlValue = shortcode.shortcode.content.trim();
+					}
 
 					for (const key in values) {
 						if (Object.prototype.hasOwnProperty.call(values, key)) {
@@ -495,16 +633,21 @@ import './tinymce.scss';
 						}
 					}
 
+					let urlValueToAppend = '';
 					if (values.url) {
-						params.append('videopack_url', values.url);
+						urlValueToAppend = values.url;
 					} else if (
 						urlValue &&
 						values.id &&
 						values.id.indexOf(',') !== -1
 					) {
-						params.append('videopack_id', values.id);
+						urlValueToAppend = values.id;
 					} else if (urlValue && !values.id) {
-						params.append('videopack_url', urlValue);
+						urlValueToAppend = urlValue;
+					}
+
+					if (urlValueToAppend) {
+						params.append('videopack_url', urlValueToAppend);
 					}
 
 					let thickboxTitle = __(
@@ -617,6 +760,14 @@ import './tinymce.scss';
 		}
 
 
+		let videopack_scan_timeout;
+		const debouncedScan = () => {
+			if (videopack_scan_timeout) {
+				clearTimeout(videopack_scan_timeout);
+			}
+			videopack_scan_timeout = setTimeout(scanAndMountAll, 150);
+		};
+
 		const initEditor = (editor) => {
 			editor.on('init', () => {
 				if (videopack_config?.globalStyles) {
@@ -627,7 +778,7 @@ import './tinymce.scss';
 			});
 
 			editor.on('init setContent NodeChange', () => {
-				setTimeout(scanAndMountAll, 100);
+				debouncedScan();
 			});
 
 			// Setup MutationObserver for the editor body
@@ -641,7 +792,7 @@ import './tinymce.scss';
 						}
 					});
 					if (shouldScan) {
-						scanAndMountAll();
+						debouncedScan();
 					}
 				});
 				observer.observe(body, { childList: true, subtree: true });
@@ -658,7 +809,7 @@ import './tinymce.scss';
 		});
 
 		// Initial scan
-		setTimeout(scanAndMountAll, 500);
+		debouncedScan();
 	}
 
 	// Wait for TinyMCE to be fully loaded

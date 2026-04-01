@@ -7,6 +7,8 @@
 
 namespace Videopack\Frontend;
 
+use Videopack\Common\Hook_Subscriber;
+
 /**
  * Class Metadata
  *
@@ -17,7 +19,30 @@ namespace Videopack\Frontend;
  * @subpackage Videopack/Frontend
  * @author     Kyle Gilman <kylegilman@gmail.com>
  */
-class Metadata {
+class Metadata implements Hook_Subscriber {
+
+	/**
+	 * Returns an array of actions to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_actions(): array {
+		return array(
+			array(
+				'hook'     => 'wp_head',
+				'callback' => 'print_scripts',
+			),
+		);
+	}
+
+	/**
+	 * Returns an array of filters to subscribe to.
+	 *
+	 * @return array
+	 */
+	public function get_filters(): array {
+		return array();
+	}
 
 	/**
 	 * Video formats registry.

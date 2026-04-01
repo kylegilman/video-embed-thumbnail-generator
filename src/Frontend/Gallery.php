@@ -33,6 +33,13 @@ class Gallery {
 	protected $options;
 
 	/**
+	 * Static counter for player instances on the page to ensure unique IDs.
+	 *
+	 * @var int $player_instance_counter
+	 */
+	private static $player_instance_counter = 0;
+
+	/**
 	 * Attachment meta handler.
 	 *
 	 * @var \Videopack\Admin\Attachment_Meta $attachment_meta
@@ -228,8 +235,24 @@ class Gallery {
 		$autoplay = (bool) ( $final_atts['autoplay'] ?? false );
 
 		// If this is a gallery, we force autoplay because it will be shown in a modal/popup when clicked.
-		if ( 'gallery' === $layout ) {
+		if ( 'gallery' === $layout && (bool) ( $final_atts['gallery'] ?? false ) === true ) {
 			$autoplay = true;
+		}
+
+		$source = \Videopack\Video_Source\Source_Factory::create( (int) ( $video['id'] ?? 0 ), $this->options, $this->format_registry );
+		if ( ! $source ) {
+			return array();
+		}
+
+		$width  = (int) ( $final_atts['width'] ?? 0 );
+		$height = (int) ( $final_atts['height'] ?? 0 );
+
+		// If dimensions are missing or at their global defaults, use the specific attachment dimensions if available.
+		if ( ( empty( $width ) || $width === (int) ( $this->options['width'] ?? 960 ) ) && (int) $source->get_width() > 0 ) {
+			$width = (int) $source->get_width();
+		}
+		if ( ( empty( $height ) || $height === (int) ( $this->options['height'] ?? 540 ) ) && (int) $source->get_height() > 0 ) {
+			$height = (int) $source->get_height();
 		}
 
 		$data = array(
@@ -239,16 +262,11 @@ class Gallery {
 			'title'       => (string) ( $video['title'] ?? '' ),
 			'caption'     => (string) ( $video['caption'] ?? '' ),
 			'description' => (string) ( $video['description'] ?? '' ),
-			'width'       => (int) ( $final_atts['width'] ?? 0 ),
-			'height'      => (int) ( $final_atts['height'] ?? 0 ),
+			'width'       => $width,
+			'height'      => $height,
 			'autoplay'    => $autoplay,
 			'mute'        => (bool) ( $final_atts['muted'] ?? false ),
 		);
-
-		$source = \Videopack\Video_Source\Source_Factory::create( (int) $data['id'], $this->options, $this->format_registry );
-		if ( ! $source ) {
-			return array();
-		}
 
 		$poster_id = (int) get_post_meta( (int) $data['id'], '_kgflashmediaplayer-poster-id', true );
 		if ( ! $poster_id ) {
@@ -271,14 +289,18 @@ class Gallery {
 		if ( empty( $poster_url ) ) {
 			$poster_url = (string) plugins_url( 'src/images/nothumbnail.jpg', VIDEOPACK_PLUGIN_FILE );
 		}
-		$player = Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
-		$player->set_id( 'gallery_' . (int) $data['id'] );
+		self::$player_instance_counter++;
+		$instance_id = (string) self::$player_instance_counter;
+		$player      = Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
+		$player->set_id( 'gallery_' . (int) $data['id'] . '_' . $instance_id );
 		$player->set_source( $source );
 		$player->set_atts(
 			array_merge(
 				(array) $final_atts,
 				array(
 					'id'            => (int) $data['id'],
+					'width'         => $width,
+					'height'        => $height,
 					'autoplay'      => $autoplay,
 					'controls'      => true,
 					'title'         => $data['title'],
@@ -334,7 +356,7 @@ class Gallery {
 					// Add player vars to the inline script data for the initial page load.
 					if ( ! empty( $video_data['player_vars']['id'] ) ) {
 						$script = (string) sprintf(
-							'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["%1$s"] = %2$s;',
+							'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["videopack_player_%1$s"] = %2$s;',
 							(string) $video_data['player_vars']['id'],
 							(string) wp_json_encode( (array) $video_data['player_vars'] )
 						);
@@ -345,151 +367,7 @@ class Gallery {
 		}
 
 		ob_start();
-
-		$classes    = array( 'videopack-collection-wrapper' );
-		$classes[]  = 'gallery' === $layout ? 'videopack-gallery-wrapper' : 'videopack-list-wrapper';
-		$style_vars = array();
-
-		if ( 'gallery' === $layout && ! empty( $query_atts['gallery_columns'] ) && (int) $query_atts['gallery_columns'] > 0 ) {
-			$style_vars[] = '--gallery-columns: ' . esc_attr( (string) $query_atts['gallery_columns'] );
-		}
-
-		$title_color = ! empty( $query_atts['title_color'] ) ? $query_atts['title_color'] : ( $this->options['title_color'] ?? '' );
-		if ( ! empty( $title_color ) ) {
-			$style_vars[] = '--videopack-title-color: ' . esc_attr( (string) $title_color );
-			$classes[]    = 'videopack-has-title-color';
-		}
-
-		$title_bg_color = ! empty( $query_atts['title_background_color'] ) ? $query_atts['title_background_color'] : ( $this->options['title_background_color'] ?? '' );
-		if ( ! empty( $title_bg_color ) ) {
-			$style_vars[] = '--videopack-title-background-color: ' . esc_attr( (string) $title_bg_color );
-			$classes[]    = 'videopack-has-title-background-color';
-		}
-
-		$play_button_color = ! empty( $query_atts['play_button_color'] ) ? $query_atts['play_button_color'] : ( $this->options['play_button_color'] ?? '' );
-		if ( ! empty( $play_button_color ) ) {
-			$style_vars[] = '--videopack-play-button-color: ' . esc_attr( (string) $play_button_color );
-			$classes[]    = 'videopack-has-play-button-color';
-		}
-
-		$play_button_icon_color = ! empty( $query_atts['play_button_icon_color'] ) ? $query_atts['play_button_icon_color'] : ( $this->options['play_button_icon_color'] ?? '' );
-		if ( ! empty( $play_button_icon_color ) ) {
-			$style_vars[] = '--videopack-play-button-icon-color: ' . esc_attr( (string) $play_button_icon_color );
-			$classes[]    = 'videopack-has-play-button-icon-color';
-		}
-
-		$pagination_color = ! empty( $query_atts['pagination_color'] ) ? $query_atts['pagination_color'] : ( $this->options['pagination_color'] ?? '' );
-		if ( ! empty( $pagination_color ) ) {
-			$style_vars[] = '--videopack-pagination-color: ' . esc_attr( (string) $pagination_color );
-		}
-
-		$pagination_bg_color = ! empty( $query_atts['pagination_background_color'] ) ? $query_atts['pagination_background_color'] : ( $this->options['pagination_background_color'] ?? '' );
-		if ( ! empty( $pagination_bg_color ) ) {
-			$style_vars[] = '--videopack-pagination-bg: ' . esc_attr( (string) $pagination_bg_color );
-		}
-
-		$pagination_active_bg_color = ! empty( $query_atts['pagination_active_bg_color'] ) ? $query_atts['pagination_active_bg_color'] : ( $this->options['pagination_active_bg_color'] ?? '' );
-		if ( ! empty( $pagination_active_bg_color ) ) {
-			$style_vars[] = '--videopack-pagination-active-bg: ' . esc_attr( (string) $pagination_active_bg_color );
-		}
-
-		$pagination_active_color = ! empty( $query_atts['pagination_active_color'] ) ? $query_atts['pagination_active_color'] : ( $this->options['pagination_active_color'] ?? '' );
-		if ( ! empty( $pagination_active_color ) ) {
-			$style_vars[] = '--videopack-pagination-active-color: ' . esc_attr( (string) $pagination_active_color );
-		}
-
-		$style_vars[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
-
-		?>
-		<div class="<?php echo esc_attr( (string) implode( ' ', $classes ) ); ?>"
-			data-videopack-ajax-collection="true"
-			data-layout="<?php echo esc_attr( (string) $layout ); ?>"
-			data-settings="<?php echo esc_attr( (string) wp_json_encode( $query_atts ) ); ?>"
-			data-current-page="<?php echo esc_attr( (string) $page_number ); ?>"
-			data-total-pages="<?php echo esc_attr( (string) $max_num_pages ); ?>"
-			<?php if ( ! empty( $style_vars ) ) : ?>
-				style="<?php echo esc_attr( (string) implode( '; ', $style_vars ) ); ?>"
-			<?php endif; ?>
-		>
-			<?php if ( 'gallery' === $layout ) : ?>
-				<div class="videopack-gallery-items"
-					<?php if ( ! empty( $query_atts['gallery_columns'] ) && (int) $query_atts['gallery_columns'] > 0 ) : ?>
-						style="--gallery-columns: <?php echo esc_attr( (string) $query_atts['gallery_columns'] ); ?>"
-					<?php endif; ?>
-				>
-					<?php foreach ( (array) $videos_data as $video ) : ?>
-						<div class="gallery-thumbnail videopack-gallery-item <?php echo esc_attr( (string) ( $query_atts['skin'] ?? '' ) ); ?>" data-attachment-id="<?php echo esc_attr( (string) $video['attachment_id'] ); ?>">
-							<div class="gallery-item-clickable-area">
-								<img src="<?php echo esc_url( (string) $video['poster_url'] ); ?>"
-									<?php
-									if ( ! empty( $video['poster_srcset'] ) ) {
-										printf( 'srcset="%s"', esc_attr( (string) $video['poster_srcset'] ) );
-									}
-									?>
-									alt="<?php echo esc_attr( (string) $video['title'] ); ?>">
-								<?php if ( 'WordPress Default' === (string) ( $this->options['embed_method'] ?? '' ) ) : ?>
-									<div class="mejs-overlay mejs-layer mejs-overlay-play">
-										<div class="mejs-overlay-button" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Play', 'video-embed-thumbnail-generator' ); ?>" aria-pressed="false"></div>
-									</div>
-								<?php else : ?>
-									<div class="play-button-container video-js <?php echo esc_attr( (string) ( $query_atts['skin'] ?? 'vjs-theme-videopack' ) ); ?> vjs-big-play-centered vjs-paused vjs-controls-enabled">
-										<button class="vjs-big-play-button" type="button" title="<?php esc_attr_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?>" aria-disabled="false">
-											<span class="vjs-icon-placeholder" aria-hidden="true"></span>
-											<span class="vjs-control-text" aria-live="polite"><?php esc_html_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?></span>
-										</button>
-									</div>
-								<?php endif; ?>
-								<?php if ( ! empty( $query_atts['gallery_title'] ) ) : ?>
-									<div class="video-title">
-										<div class="video-title-background"></div>
-										<span class="video-title-text"><?php echo esc_html( (string) $video['title'] ); ?></span>
-									</div>
-								<?php endif; ?>
-							</div>
-						</div>
-					<?php endforeach; ?>
-				</div>
-			<?php else : ?>
-				<div class="videopack-video-list">
-					<?php foreach ( (array) $videos_data as $video ) : ?>
-						<div class="videopack-list-item">
-							<?php echo $video['player_vars']['full_player_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</div>
-					<?php endforeach; ?>
-				</div>
-			<?php endif; ?>
-
-			<?php if ( ! empty( $query_atts['gallery_pagination'] ) && $max_num_pages > 1 ) : ?>
-				<?php echo $this->render_pagination_html( $max_num_pages, $page_number ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			<?php endif; ?>
-
-			<?php if ( 'gallery' === $layout ) : ?>
-				<!-- Gallery Popup Modal -->
-				<div class="videopack-modal-overlay" style="display: none;">
-					<div class="videopack-modal-container">
-						<button type="button" class="modal-navigation modal-close" title="<?php esc_attr_e( 'Close', 'video-embed-thumbnail-generator' ); ?>">
-							<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-								<path d="M13 11.8l6.1-6.1-1.2-1.2-6.1 6.1-6.1-6.1-1.2 1.2 6.1 6.1-6.1 6.1 1.2 1.2 6.1-6.1 6.1 6.1 1.2-1.2-6.1-6.1z"></path>
-							</svg>
-						</button>
-						<button type="button" class="modal-navigation modal-next" title="<?php esc_attr_e( 'Next', 'video-embed-thumbnail-generator' ); ?>">
-							<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-								<path d="M4 11h12.2l-5.6-5.6L12 4l8 8-8 8-1.4-1.4 5.6-5.6H4v-2z"></path>
-							</svg>
-						</button>
-						<button type="button" class="modal-navigation modal-previous" title="<?php esc_attr_e( 'Previous', 'video-embed-thumbnail-generator' ); ?>">
-							<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-								<path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2z"></path>
-							</svg>
-						</button>
-						<div class="modal-content">
-							<!-- Player will be inserted here by JS -->
-						</div>
-					</div>
-				</div>
-			<?php endif; ?>
-		</div>
-		<?php
+		include __DIR__ . '/partials/collection.php';
 		$html = (string) ob_get_clean();
 
 		return array(

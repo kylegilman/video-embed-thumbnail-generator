@@ -9,7 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { decodeEntities } from '@wordpress/html-entities';
 import VideoPlayer from '../../../components/VideoPlayer/VideoPlayer.js';
 import PreviewIframe from '../../../components/PreviewIframe/PreviewIframe.js';
-import { getSettings } from '../../../utils/utils.js';
+import { getSettings } from '../../../api/settings';
 
 /**
  * AttachmentPreview component.
