@@ -1,0 +1,1003 @@
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/Pagination/Pagination.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 1em 0;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.videopack-pagination.is-placeholder, .is-placeholder .videopack-pagination {
+  opacity: 0.4;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+.videopack-pagination .videopack-pagination-button,
+.videopack-pagination .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--videopack-pagination-color, #ddd);
+  border-radius: 4px;
+  background: var(--videopack-pagination-bg, #fff);
+  color: var(--videopack-pagination-color, #1e1e1e);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.videopack-pagination .videopack-pagination-button:hover:not(:disabled),
+.videopack-pagination .page-numbers:hover:not(:disabled) {
+  border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  background: #f0f0f0;
+}
+.videopack-pagination .videopack-pagination-button:disabled, .videopack-pagination .videopack-pagination-button.disabled,
+.videopack-pagination .page-numbers:disabled,
+.videopack-pagination .page-numbers.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+.videopack-pagination .videopack-pagination-button.is-active, .videopack-pagination .videopack-pagination-button.current,
+.videopack-pagination .page-numbers.is-active,
+.videopack-pagination .page-numbers.current {
+  background: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  color: var(--videopack-pagination-active-color, #fff);
+  cursor: default;
+}
+.videopack-pagination .videopack-pagination-button.is-ellipsis, .videopack-pagination .videopack-pagination-button.dots,
+.videopack-pagination .page-numbers.is-ellipsis,
+.videopack-pagination .page-numbers.dots {
+  border: none;
+  background: transparent;
+  cursor: default;
+  min-width: 24px;
+  padding: 0;
+}
+.videopack-pagination .videopack-pagination-button.is-ellipsis:hover, .videopack-pagination .videopack-pagination-button.dots:hover,
+.videopack-pagination .page-numbers.is-ellipsis:hover,
+.videopack-pagination .page-numbers.dots:hover {
+  color: #333;
+  background: transparent;
+}
+.videopack-pagination .videopack-pagination-button.is-hidden, .videopack-pagination .videopack-pagination-button.videopack-hidden,
+.videopack-pagination .page-numbers.is-hidden,
+.videopack-pagination .page-numbers.videopack-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+.videopack-pagination .videopack-pagination-arrow {
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 18px;
+}
+/*!********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoPlayer/VideoPlayer.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+/* Shared Play Button Styles and Alpha Calculations */
+.videopack-wrapper,
+.videopack-gallery-wrapper,
+.gallery-thumbnail {
+  /* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
+  --videopack-play-button-bg-color-alpha: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%);
+  --videopack-play-button-bg-color-alpha-hover: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%);
+  /* Combined Foreground Color: Icon color takes precedence over Accent color for symbols */
+  --videopack-play-button-foreground-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-color));
+}
+/* Video.js Big Play Button and Gallery Overlays */
+/* MEJS Overlay Button Base */
+.mejs-overlay-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  z-index: 2;
+}
+/* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+  /* The symbol (icon) should always use the foreground color (Icon || Accent) */
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-big-play-button::before,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-big-play-button .vjs-icon-placeholder::before, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-big-play-button::before,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-big-play-button .vjs-icon-placeholder::before {
+  color: var(--videopack-play-button-foreground-color);
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+  /* The border should always use the accent color if set */
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-big-play-button {
+  border-color: var(--videopack-play-button-color, inherit);
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+  /* Forest theme special handling (Uses solid mask instead of standard symbol) */
+  /* Increased specificity to override skin defaults in players and galleries without !important */
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-theme-forest .vjs-big-play-button {
+  background: none;
+  background-color: var(--videopack-play-button-foreground-color);
+  mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2788%27 height=%2788%27 fill=%27%23000%27%3E%3Cpath fill-rule=%27evenodd%27 d=%27M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z%27/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2788%27 height=%2788%27 fill=%27%23000%27%3E%3Cpath fill-rule=%27evenodd%27 d=%27M44 88C19.738 88 0 68.262 0 44S19.738 0 44 0s44 19.738 44 44-19.738 44-44 44zm0-85C21.393 3 3 21.393 3 44c0 22.608 18.393 41 41 41s41-18.392 41-41C85 21.393 66.607 3 44 3zm16.063 43.898L39.629 60.741a3.496 3.496 0 01-3.604.194 3.492 3.492 0 01-1.859-3.092V30.158c0-1.299.712-2.483 1.859-3.092a3.487 3.487 0 013.604.194l20.433 13.843a3.497 3.497 0 01.001 5.795zm-1.683-3.311L37.946 29.744a.49.49 0 00-.276-.09.51.51 0 00-.239.062.483.483 0 00-.265.442v27.685c0 .262.166.389.265.442.1.053.299.118.515-.028L58.38 44.414A.489.489 0 0058.6 44a.49.49 0 00-.22-.413z%27/%3E%3C/svg%3E");
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button:hover, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .vjs-theme-forest .vjs-big-play-button:focus, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-theme-forest .vjs-big-play-button:hover, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .vjs-theme-forest .vjs-big-play-button:focus {
+  background-color: var(--videopack-play-button-color);
+  opacity: 0.8;
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+  /* 2. Accent Color Only Logic: Semi-transparent backgrounds for traditional skins */
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button {
+  background-color: var(--videopack-play-button-bg-color-alpha);
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default):hover .vjs-big-play-button,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:hover,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:focus, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default):hover .vjs-big-play-button,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:hover,
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color :is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) .vjs-big-play-button:focus {
+  background-color: var(--videopack-play-button-bg-color-alpha-hover);
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color {
+  /* MEJS Overlay Button Color/Mask */
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .mejs-overlay-button, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .mejs-overlay-button {
+  background-image: none;
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .mejs-overlay-button::after, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .mejs-overlay-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--videopack-play-button-color, transparent);
+  mask-image: var(--videopack-mejs-controls-svg);
+  -webkit-mask-image: var(--videopack-mejs-controls-svg);
+  mask-position: 0 -39px;
+  -webkit-mask-position: 0 -39px;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  pointer-events: none;
+  transition: background-color 0.15s ease;
+}
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-color .mejs-overlay-button:hover::after, :is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail).videopack-has-play-button-icon-color .mejs-overlay-button:hover::after {
+  background-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color)));
+  mask-position: -80px -39px;
+  -webkit-mask-position: -80px -39px;
+}
+/* None Player SVG Play Button */
+.videopack-none-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 5em;
+  height: 5em;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  z-index: 2;
+}
+.videopack-none-play-button .play-button-circle {
+  fill: var(--videopack-play-button-bg-color-alpha, #2f2f2f);
+  fill-opacity: 0.7;
+  transition: fill-opacity 0.15s ease;
+}
+.videopack-none-play-button .play-button-triangle {
+  fill: var(--videopack-play-button-foreground-color, #fff);
+}
+:is(.videopack-wrapper, .gallery-thumbnail):hover .videopack-none-play-button .play-button-circle {
+  fill-opacity: 0.9;
+  fill: var(--videopack-play-button-bg-color-alpha-hover, #2f2f2f);
+}
+/* Main Gutenberg Block Wrapper */
+.wp-block-videopack-videopack-video {
+  width: 100%;
+  max-width: var(--wp--style--global--content-size);
+}
+.wp-block-videopack-videopack-video.alignwide {
+  max-width: var(--wp--style--global--wide-size);
+}
+.wp-block-videopack-videopack-video.alignfull {
+  max-width: none;
+}
+.wp-block-videopack-videopack-video.aligncenter {
+  margin-left: auto;
+  margin-right: auto;
+}
+.wp-block-videopack-videopack-video .videopack-wrapper {
+  margin: 0;
+}
+/* Main Videopack Wrapper Component */
+.videopack-wrapper {
+  margin: 1em 0;
+  position: relative;
+  container-type: inline-size;
+  width: 100%;
+}
+.videopack-wrapper .videopack-player-relative-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: block;
+}
+.videopack-wrapper.videopack-wrapper-auto-left {
+  margin-left: auto;
+}
+.videopack-wrapper.videopack-wrapper-auto-right {
+  margin-right: auto;
+}
+.videopack-wrapper.videopack-wrapper-inline {
+  display: inline-block;
+}
+.videopack-wrapper.videopack-wrapper-inline-left {
+  float: left;
+  margin: 1em 1em 0 0;
+}
+.videopack-wrapper.videopack-wrapper-inline-right {
+  float: right;
+  margin: 1em 0 0 1em;
+}
+.videopack-wrapper.videopack-text-align-left {
+  text-align: left;
+}
+.videopack-wrapper.videopack-text-align-right {
+  text-align: right;
+}
+.videopack-wrapper.videopack-text-align-center {
+  text-align: center;
+}
+.videopack-wrapper.videopack-has-aspect-ratio {
+  width: 100%;
+  max-width: 100%;
+}
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player {
+  width: 100%;
+  position: relative;
+}
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player video,
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player .video-js,
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player .mejs-container,
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player .wp-video {
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+}
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player .video-js.vjs-fluid,
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player .video-js.vjs-16-9,
+.videopack-wrapper.videopack-has-aspect-ratio .videopack-player .video-js.vjs-4-3 {
+  padding-top: 0;
+}
+.videopack-wrapper.videopack-has-aspect-ratio .mejs-poster.mejs-layer {
+  background-size: contain;
+}
+.videopack-wrapper .videopack-player {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.videopack-wrapper.default .videopack-video-title:not(.videopack-has-title-background-color), .videopack-wrapper.vjs-theme-videopack .videopack-video-title:not(.videopack-has-title-background-color) {
+  background-color: #2b333f;
+}
+.videopack-wrapper.vjs-theme-city .videopack-video-title:not(.videopack-has-title-background-color) {
+  background-color: var(--vjs-theme-city--primary);
+}
+.videopack-wrapper.vjs-theme-fantasy .videopack-video-title:not(.videopack-has-title-background-color) {
+  background-color: var(--vjs-theme-fantasy--primary);
+}
+.videopack-wrapper.vjs-theme-forest .videopack-video-title:not(.videopack-has-title-background-color) {
+  background-color: var(--vjs-theme-forest--primary);
+}
+.videopack-wrapper.vjs-theme-sea .videopack-video-title:not(.videopack-has-title-background-color) {
+  background-color: rgb(65, 118, 188);
+}
+.videopack-wrapper.vjs-theme-sea .vjs-menu-button .vjs-menu-content {
+  background-color: hsla(0, 0%, 100%, 0.4);
+}
+.videopack-wrapper.vjs-theme-sea .vjs-button:hover li {
+  color: white;
+}
+.videopack-wrapper.vjs-theme-sea .vjs-button:hover li.vjs-selected {
+  color: rgb(65, 118, 188);
+}
+.videopack-wrapper .videopack-video-title {
+  color: var(--videopack-title-color, #fff);
+  font-size: 15px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  top: 0px;
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0.5em 0.6em;
+  width: 100%;
+  min-height: 2.6em;
+  background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.3s linear, opacity 0.3s linear;
+  line-height: 1.2;
+  position: relative;
+  z-index: 102;
+}
+.is-overlay .videopack-wrapper .videopack-video-title {
+  position: absolute;
+}
+.videopack-wrapper .videopack-video-title.is-overlay {
+  position: absolute;
+  z-index: 102;
+}
+.videopack-wrapper .videopack-video-title.no-title {
+  background: transparent;
+}
+.videopack-wrapper .videopack-video-title.has-no-background {
+  background: transparent !important;
+}
+.videopack-wrapper .videopack-video-title.position-bottom {
+  top: auto;
+  bottom: 0px;
+}
+.videopack-wrapper .videopack-video-title .videopack-title {
+  padding-left: 4px;
+  font-size: inherit;
+  margin: 0;
+  display: block;
+  line-height: inherit;
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.videopack-wrapper .videopack-video-title .videopack-title h1, .videopack-wrapper .videopack-video-title .videopack-title h2, .videopack-wrapper .videopack-video-title .videopack-title h3, .videopack-wrapper .videopack-video-title .videopack-title h4, .videopack-wrapper .videopack-video-title .videopack-title h5, .videopack-wrapper .videopack-video-title .videopack-title h6 {
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+.videopack-wrapper .videopack-video-title .videopack-meta-icons {
+  position: relative;
+  margin: 0 0 0 10px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  flex-shrink: 0;
+}
+.videopack-wrapper .videopack-video-title .videopack-meta-icons button, .videopack-wrapper .videopack-video-title .videopack-meta-icons a {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 3px;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  transition: opacity 0.15s ease;
+  font-size: 1em;
+  flex-shrink: 0;
+}
+.videopack-wrapper .videopack-video-title .videopack-meta-icons button:hover, .videopack-wrapper .videopack-video-title .videopack-meta-icons a:hover {
+  opacity: 0.8;
+}
+.videopack-wrapper .videopack-video-title .videopack-meta-icons button:focus, .videopack-wrapper .videopack-video-title .videopack-meta-icons a:focus {
+  outline: none;
+}
+.videopack-wrapper .videopack-video-title .videopack-meta-icons button, .videopack-wrapper .videopack-video-title .videopack-meta-icons a {
+  max-width: none !important;
+  max-height: none !important;
+}
+.videopack-wrapper .videopack-icon-svg,
+.videopack-wrapper .videopack-icons svg,
+.videopack-wrapper svg {
+  display: block;
+  fill: currentColor;
+  width: 1.5em;
+  height: 1.5em;
+  pointer-events: none;
+}
+.videopack-wrapper .videopack-icons.share .close-icon {
+  display: none !important;
+}
+.videopack-wrapper .videopack-icons.close .share-icon {
+  display: none !important;
+}
+.videopack-wrapper .videopack-share-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2em;
+  color: var(--videopack-title-color, white);
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 3em 2em;
+  width: 100%;
+  z-index: 101;
+  position: absolute;
+  border-radius: 0;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.video-title.position-top ~ .videopack-wrapper .videopack-share-container, .video-title.position-top .videopack-wrapper .videopack-share-container {
+  margin-top: 0;
+}
+.videopack-wrapper .videopack-share-container {
+  background: linear-gradient(to bottom, var(--videopack-title-background-color, #141414) 0%, color-mix(in srgb, var(--videopack-title-background-color, #141414), transparent 40%) 60%, transparent 100%);
+}
+.videopack-wrapper .videopack-share-container.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+.videopack-wrapper .videopack-share-container .videopack-embedcode-container,
+.videopack-wrapper .videopack-share-container .videopack-start-at-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.videopack-wrapper .videopack-share-container .videopack-embedcode-container span,
+.videopack-wrapper .videopack-share-container .videopack-start-at-container span {
+  display: flex;
+  align-items: center;
+}
+.videopack-wrapper .videopack-share-container input {
+  height: 20px;
+  min-height: auto;
+  font-size: 13px;
+  font-family: inherit;
+  background-color: var(--wp--preset--color--white, #fff);
+  border: none;
+  margin: 0;
+  color: #333;
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.videopack-wrapper .videopack-share-container input.videopack-embed-code {
+  width: 15rem;
+}
+.videopack-wrapper .videopack-share-container input.videopack-start-at {
+  width: 3rem;
+  text-align: center;
+}
+.videopack-wrapper .videopack-click-trap {
+  width: 100%;
+  background: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  border: none;
+  padding: 0;
+}
+.videopack-wrapper .videopack-click-trap.is-visible {
+  opacity: 1;
+  visibility: visible;
+  bottom: -100vh;
+}
+.videopack-wrapper.videopack-video-title-visible .videopack-video-title, .videopack-wrapper:hover .videopack-video-title {
+  opacity: 1;
+  visibility: visible;
+}
+.videopack-wrapper .videopack-watermark img {
+  display: block;
+  position: absolute;
+  bottom: 7%;
+  right: 5%;
+  z-index: 1;
+  margin: 0;
+  max-width: 10%;
+}
+.videopack-wrapper .videopack-below-video {
+  margin: 2px 6px 0px 4px;
+  min-height: 20px;
+  clear: both;
+  font-size: medium;
+  color: inherit;
+}
+.videopack-wrapper .videopack-below-video .videopack-viewcount {
+  float: right;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+.videopack-wrapper .videopack-below-video .videopack-caption {
+  font-size: 0.85em;
+  line-height: 150%;
+  font-style: italic;
+}
+.videopack-wrapper .vjs-res-button:before {
+  font-family: VideoJs;
+  content: "\f114";
+}
+.videopack-wrapper .vjs-res-button span.vjs-control-text {
+  display: none;
+}
+.videopack-wrapper .vjs-res-button .vjs-menu .vjs-menu-content {
+  overflow: visible;
+  bottom: 0;
+}
+.videopack-wrapper {
+  /* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
+  --videopack-control-bar-bg-color-alpha: color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%);
+  --videopack-play-button-bg-color-alpha: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%);
+  --videopack-play-button-bg-color-alpha-hover: color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%);
+}
+.videopack-wrapper.videopack-has-title-background-color .videopack-video-title:not(.no-title) {
+  background-color: var(--videopack-title-background-color);
+}
+.videopack-wrapper.videopack-has-title-background-color .videopack-share-container {
+  background: linear-gradient(to bottom, var(--videopack-title-background-color) 0%, color-mix(in srgb, var(--videopack-title-background-color), transparent 50%) 60%, color-mix(in srgb, var(--videopack-title-background-color), transparent 100%) 100%);
+}
+.videopack-wrapper.videopack-has-title-color .videopack-share-container {
+  color: var(--videopack-title-color);
+}
+.videopack-wrapper {
+  /* Video.js Overrides */
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js {
+  color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js .vjs-play-progress, .videopack-wrapper.videopack-has-control-bar-color .video-js .vjs-button:hover .vjs-menu {
+  background-color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js:not(.vjs-theme-city):not(.vjs-theme-forest) .vjs-volume-level {
+  background-color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-city .vjs-volume-level, .videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-forest .vjs-volume-level {
+  background-color: transparent;
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-city .vjs-volume-level::before, .videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-forest .vjs-volume-level::before {
+  border-bottom-color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-forest .vjs-play-control .vjs-icon-placeholder::before {
+  background-color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-fantasy .vjs-play-control .vjs-icon-placeholder::before {
+  border-color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js.vjs-theme-fantasy .vjs-play-progress::before {
+  background-color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .video-js .vjs-load-progress {
+  /* ensure load progress isn't overwritten by the slider-bar rule */
+  background: rgba(115, 133, 159, 0.5);
+}
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js .vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+  background-color: var(--videopack-control-bar-bg-color-alpha);
+}
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-control:not(.vjs-progress-control),
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-time-control,
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-big-play-button,
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-menu-button .vjs-menu-content {
+  background-color: var(--videopack-control-bar-bg-color-alpha);
+}
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-control.vjs-volume-panel-horizontal .vjs-mute-control,
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-videopack .vjs-control.vjs-volume-panel-horizontal .vjs-volume-control {
+  background-color: transparent;
+}
+.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button {
+  background-color: var(--videopack-play-button-bg-color-alpha);
+}
+.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack:hover .vjs-big-play-button,
+.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button:hover,
+.videopack-wrapper.videopack-has-play-button-color .video-js.vjs-theme-videopack .vjs-big-play-button:focus {
+  background-color: var(--videopack-play-button-bg-color-alpha-hover);
+}
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js:not(.vjs-theme-videopack):not(.vjs-theme-city) .vjs-control-bar {
+  background-color: var(--videopack-control-bar-bg-color-alpha);
+}
+.videopack-wrapper.videopack-has-control-bar-bg-color .video-js.vjs-theme-city .vjs-control-bar {
+  background-image: linear-gradient(0deg, var(--videopack-control-bar-bg-color-alpha), transparent);
+}
+.videopack-wrapper .video-js.vjs-theme-videopack .vjs-volume-panel button,
+.videopack-wrapper .video-js.vjs-theme-videopack .vjs-volume-panel .vjs-volume-control,
+.videopack-wrapper .video-js.vjs-theme-videopack .vjs-progress-control,
+.videopack-wrapper .video-js.vjs-theme-videopack .vjs-custom-control-spacer {
+  background-color: transparent;
+}
+.videopack-wrapper {
+  /* MEJS Overrides */
+}
+.videopack-wrapper.videopack-has-control-bar-bg-color .mejs-controls {
+  background-color: var(--videopack-control-bar-bg-color-alpha);
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-button button {
+  background-image: none;
+  background-color: var(--videopack-control-bar-color);
+  mask-image: var(--videopack-mejs-controls-svg);
+  -webkit-mask-image: var(--videopack-mejs-controls-svg);
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-play button {
+  mask-position: 0 0;
+  -webkit-mask-position: 0 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-pause button {
+  mask-position: -20px 0;
+  -webkit-mask-position: -20px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-replay button {
+  mask-position: -160px 0;
+  -webkit-mask-position: -160px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-fullscreen-button button {
+  mask-position: -80px 0;
+  -webkit-mask-position: -80px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-unfullscreen button {
+  mask-position: -100px 0;
+  -webkit-mask-position: -100px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-mute button {
+  mask-position: -60px 0;
+  -webkit-mask-position: -60px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-unmute button {
+  mask-position: -40px 0;
+  -webkit-mask-position: -40px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-captions-button button {
+  mask-position: -140px 0;
+  -webkit-mask-position: -140px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-chapters-button button {
+  mask-position: -180px 0;
+  -webkit-mask-position: -180px 0;
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-time {
+  color: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-time-current,
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-time-handle-content {
+  background: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-horizontal-volume-current {
+  background: var(--videopack-control-bar-color);
+}
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-current,
+.videopack-wrapper.videopack-has-control-bar-color .mejs-controls .mejs-volume-handle {
+  background: var(--videopack-control-bar-color);
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/VideoList/VideoList.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************/
+.videopack-video-list-wrapper .videopack-loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+.videopack-video-list-wrapper .videopack-list-item {
+  margin-bottom: 20px;
+  position: relative;
+}
+.videopack-video-list-wrapper .videopack-list-item .videopack-block-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.videopack-video-list-wrapper .videopack-list-item .videopack-list-item-controls {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 200;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s;
+}
+.videopack-video-list-wrapper .videopack-list-item:hover .videopack-list-item-controls {
+  opacity: 1;
+  visibility: visible;
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/CompactColorPicker/CompactColorPicker.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************/
+.videopack-settings-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #757575;
+  margin: 0 0 12px 0 !important;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 4px;
+}
+
+.videopack-color-section {
+  margin-bottom: 24px;
+}
+
+.videopack-color-section:last-child {
+  margin-bottom: 0;
+}
+
+.videopack-color-flex-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.videopack-color-flex-row.is-pagination {
+  justify-content: space-between;
+}
+
+.videopack-color-flex-row.is-pagination .videopack-color-flex-item {
+  flex: 1;
+  width: auto;
+}
+
+.videopack-color-flex-item {
+  width: 22%;
+}
+
+.videopack-color-picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.videopack-color-picker-label {
+  font-size: 10.5px;
+  color: #1e1e1e;
+  text-align: center;
+  line-height: 1.2;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videopack-color-picker-button {
+  padding: 4px !important;
+  min-width: unset !important;
+  height: auto !important;
+  border-radius: 50% !important;
+}
+
+.videopack-color-picker-palette-wrapper {
+  padding: 12px;
+  width: 280px;
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/InspectorControls/CollectionSettingsPanel.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-sort-control-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.videopack-sort-control-wrapper .components-base-control {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-sort-control-wrapper .components-button.has-icon {
+  margin-bottom: 14px;
+}
+.videopack-excluded-videos {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+.videopack-excluded-videos p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.videopack-excluded-videos .videopack-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.videopack-excluded-videos .videopack-excluded-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail {
+  width: 60px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
+  width: 16px;
+  height: 16px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title {
+  flex-grow: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item {
+  min-width: 24px;
+  padding: 0;
+  color: #949494;
+  background: transparent;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover {
+  color: #cc1818;
+  background: #e0e0e0;
+}
+.components-base-control:has(.components-text-control__input),
+.components-base-control:has(.components-select-control__input),
+.components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/videopack-list/editor.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+/**
+ * SCSS Variables.
+ *
+ * Please use variables from this sheet to ensure consistency across the UI.
+ * Don't add to this sheet unless you're pretty sure the value will be reused in many places.
+ * For example, don't add rules to this sheet that affect block visuals. It's purely for UI.
+ */
+/**
+ * Fonts & basic variables.
+ */
+/**
+ * Typography
+ */
+/**
+ * Grid System.
+ * https://make.wordpress.org/design/2019/10/31/proposal-a-consistent-spacing-system-for-wordpress/
+ */
+/**
+ * Radius scale.
+ */
+/**
+ * Elevation scale.
+ */
+/**
+ * Dimensions.
+ */
+/**
+ * Mobile specific styles
+ */
+/**
+ * Editor styles.
+ */
+/**
+ * Block & Editor UI.
+ */
+/**
+ * Block paddings.
+ */
+/**
+ * React Native specific.
+ * These variables do not appear to be used anywhere else.
+ */
+.wp-block-videopack-videopack-list {
+  position: relative;
+  width: 100%;
+}
+.wp-block-videopack-videopack-list .components-placeholder {
+  min-height: 200px;
+}
+.wp-block-videopack-videopack-list.is-selected .components-placeholder {
+  border-color: var(--wp-admin-theme-color);
+}
+.videopack-video-list-wrapper .videopack-remove-item,
+.videopack-video-list-wrapper .videopack-edit-item,
+.videopack-video-list-wrapper .videopack-drag-handle,
+.videopack-video-list-wrapper .gallery-add-button,
+.videopack-gallery-wrapper .videopack-remove-item,
+.videopack-gallery-wrapper .videopack-edit-item,
+.videopack-gallery-wrapper .videopack-drag-handle,
+.videopack-gallery-wrapper .gallery-add-button {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  border: none;
+  padding: 0;
+}
+.videopack-video-list-wrapper .videopack-remove-item svg,
+.videopack-video-list-wrapper .videopack-edit-item svg,
+.videopack-video-list-wrapper .videopack-drag-handle svg,
+.videopack-video-list-wrapper .gallery-add-button svg,
+.videopack-gallery-wrapper .videopack-remove-item svg,
+.videopack-gallery-wrapper .videopack-edit-item svg,
+.videopack-gallery-wrapper .videopack-drag-handle svg,
+.videopack-gallery-wrapper .gallery-add-button svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+.videopack-video-list-wrapper .videopack-remove-item:hover,
+.videopack-video-list-wrapper .videopack-edit-item:hover,
+.videopack-video-list-wrapper .videopack-drag-handle:hover,
+.videopack-video-list-wrapper .gallery-add-button:hover,
+.videopack-gallery-wrapper .videopack-remove-item:hover,
+.videopack-gallery-wrapper .videopack-edit-item:hover,
+.videopack-gallery-wrapper .videopack-drag-handle:hover,
+.videopack-gallery-wrapper .gallery-add-button:hover {
+  background-color: var(--wp-admin-theme-color, #2271b1);
+}
+.videopack-video-list-wrapper .videopack-remove-item:hover,
+.videopack-gallery-wrapper .videopack-remove-item:hover {
+  background-color: #cc1818;
+}
+.videopack-video-list-wrapper .videopack-drag-handle,
+.videopack-gallery-wrapper .videopack-drag-handle {
+  cursor: move;
+}
+.videopack-block-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: transparent;
+}
+
+/*# sourceMappingURL=index.css.map*/

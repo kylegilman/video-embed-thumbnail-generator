@@ -1,0 +1,156 @@
+/*!******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/Pagination/Pagination.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 1em 0;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.videopack-pagination.is-placeholder, .is-placeholder .videopack-pagination {
+  opacity: 0.4;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+.videopack-pagination .videopack-pagination-button,
+.videopack-pagination .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--videopack-pagination-color, #ddd);
+  border-radius: 4px;
+  background: var(--videopack-pagination-bg, #fff);
+  color: var(--videopack-pagination-color, #1e1e1e);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.videopack-pagination .videopack-pagination-button:hover:not(:disabled),
+.videopack-pagination .page-numbers:hover:not(:disabled) {
+  border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  background: #f0f0f0;
+}
+.videopack-pagination .videopack-pagination-button:disabled, .videopack-pagination .videopack-pagination-button.disabled,
+.videopack-pagination .page-numbers:disabled,
+.videopack-pagination .page-numbers.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+.videopack-pagination .videopack-pagination-button.is-active, .videopack-pagination .videopack-pagination-button.current,
+.videopack-pagination .page-numbers.is-active,
+.videopack-pagination .page-numbers.current {
+  background: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  border-color: var(--videopack-pagination-active-bg, var(--wp--preset--color--accent-2, #949494));
+  color: var(--videopack-pagination-active-color, #fff);
+  cursor: default;
+}
+.videopack-pagination .videopack-pagination-button.is-ellipsis, .videopack-pagination .videopack-pagination-button.dots,
+.videopack-pagination .page-numbers.is-ellipsis,
+.videopack-pagination .page-numbers.dots {
+  border: none;
+  background: transparent;
+  cursor: default;
+  min-width: 24px;
+  padding: 0;
+}
+.videopack-pagination .videopack-pagination-button.is-ellipsis:hover, .videopack-pagination .videopack-pagination-button.dots:hover,
+.videopack-pagination .page-numbers.is-ellipsis:hover,
+.videopack-pagination .page-numbers.dots:hover {
+  color: #333;
+  background: transparent;
+}
+.videopack-pagination .videopack-pagination-button.is-hidden, .videopack-pagination .videopack-pagination-button.videopack-hidden,
+.videopack-pagination .page-numbers.is-hidden,
+.videopack-pagination .page-numbers.videopack-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+.videopack-pagination .videopack-pagination-arrow {
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 18px;
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/CompactColorPicker/CompactColorPicker.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************/
+.videopack-settings-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #757575;
+  margin: 0 0 12px 0 !important;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 4px;
+}
+
+.videopack-color-section {
+  margin-bottom: 24px;
+}
+
+.videopack-color-section:last-child {
+  margin-bottom: 0;
+}
+
+.videopack-color-flex-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.videopack-color-flex-row.is-pagination {
+  justify-content: space-between;
+}
+
+.videopack-color-flex-row.is-pagination .videopack-color-flex-item {
+  flex: 1;
+  width: auto;
+}
+
+.videopack-color-flex-item {
+  width: 22%;
+}
+
+.videopack-color-picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.videopack-color-picker-label {
+  font-size: 10.5px;
+  color: #1e1e1e;
+  text-align: center;
+  line-height: 1.2;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videopack-color-picker-button {
+  padding: 4px !important;
+  min-width: unset !important;
+  height: auto !important;
+  border-radius: 50% !important;
+}
+
+.videopack-color-picker-palette-wrapper {
+  padding: 12px;
+  width: 280px;
+}

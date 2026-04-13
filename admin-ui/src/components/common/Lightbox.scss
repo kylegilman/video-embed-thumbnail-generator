@@ -1,0 +1,112 @@
+@use "sass:color";
+@use "@wordpress/base-styles/colors";
+
+.videopack-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	display: none;
+	justify-content: center;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.45);
+	width: 100vw;
+	height: 100vh;
+	z-index: 100000;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.2s ease-in-out, visibility 0.2s;
+
+	&.is-visible {
+		display: flex;
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.videopack-modal-container {
+		position: relative;
+		background-color: transparent;
+		width: 90vw;
+		max-width: 1200px;
+		max-height: 90vh;
+		display: flex;
+		flex-direction: column;
+
+		.modal-content {
+			position: relative;
+			padding: 0;
+			width: 100%;
+			flex-grow: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.videopack-wrapper {
+				margin: 0 !important;
+				width: 100% !important;
+				max-width: 100% !important;
+			}
+		}
+
+		/* Modern navigation layout: anchored to the sides + top-right close */
+		.modal-navigation {
+			cursor: pointer;
+			z-index: 100005;
+			background: transparent;
+			border: none;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 10px;
+			color: colors.$white;
+			transition: color 0.2s ease, transform 0.2s ease;
+
+			&:hover {
+				color: rgba(255, 255, 255, 0.8);
+				transform: scale(1.1);
+			}
+
+			svg {
+				fill: currentColor;
+				width: 32px;
+				height: 32px;
+				filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+			}
+
+			&.modal-close {
+				position: absolute;
+				top: -45px;
+				right: 0;
+
+				svg {
+					width: 24px;
+					height: 24px;
+				}
+			}
+
+			&.modal-previous,
+			&.modal-next {
+				position: fixed;
+				top: 50%;
+				transform: translateY(-50%);
+				width: 44px;
+				height: 44px;
+
+				&:hover {
+					transform: translateY(-50%) scale(1.15);
+				}
+			}
+
+			&.modal-previous {
+				left: 20px;
+			}
+
+			&.modal-next {
+				right: 20px;
+			}
+
+			&.is-hidden {
+				display: none;
+			}
+		}
+	}
+}

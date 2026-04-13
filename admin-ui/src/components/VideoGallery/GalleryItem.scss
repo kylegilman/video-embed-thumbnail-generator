@@ -1,0 +1,257 @@
+@use "@wordpress/base-styles/colors";
+@use "../common/PlayButton.scss" as *;
+
+.gallery-thumbnail {
+	position: relative;
+	padding: 0;
+	padding-top: 56.25%;
+	/* 16:9 Aspect Ratio */
+	height: 0;
+	/* Important for padding-top trick */
+	cursor: pointer;
+	overflow: hidden;
+	border: none;
+	box-sizing: border-box;
+	background: none;
+	container-type: inline-size;
+
+	img {
+		position: absolute;
+		/* Position image to fill the padded space */
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
+		object-fit: cover;
+	}
+
+	.mejs-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.play-button-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: transparent;
+
+		// Use a highly specific selector to override skin-level defaults
+		& .vjs-big-play-button,
+		& .mejs-overlay-button,
+		& .videopack-none-play-button {
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			margin: 0;
+			aspect-ratio: auto; /* Let skins handle their own ratios */
+			font-size: clamp(12px, 9cqi, 40px);
+		}
+
+		&.kg-video-js-skin svg {
+			position: absolute;
+			max-width: 90px;
+			width: 25%;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -64%);
+
+			.play-button-circle {
+				fill-opacity: 0.75;
+				fill: var(--videopack-play-button-bg-color-alpha, colors.$gray-800);
+				stroke: var(--videopack-play-button-color, colors.$white);
+				stroke-width: 20;
+				stroke-miterlimit: 10;
+				transition: fill-opacity 0.15s ease;
+			}
+
+			.play-button-triangle {
+				fill: var(--videopack-play-button-color, colors.$white);
+			}
+		}
+
+		&.videopack-none {
+			pointer-events: none;
+			z-index: 2;
+		}
+	}
+
+	.video-title {
+		box-sizing: border-box;
+		position: absolute;
+		bottom: 5%;
+		left: 0;
+		width: 100%;
+		padding: 4px;
+		overflow: hidden;
+		text-align: var(--videopack-title-text-align, center);
+		line-height: 18px;
+		z-index: 20;
+
+		&.position-top {
+			top: 5%;
+			bottom: auto;
+		}
+
+		&.position-center {
+			top: 50%;
+			bottom: auto;
+			transform: translateY(-50%);
+		}
+
+		.video-title-text {
+			position: relative;
+			color: var(--videopack-title-color, colors.$white);
+			font-size: 14px;
+			line-height: 1.5em;
+			z-index: 4;
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+			text-align: var(--videopack-title-text-align, center);
+			width: 100%;
+			display: block;
+		}
+
+		.video-title-background::before {
+			content: "";
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			background-color: var(
+				--videopack-title-background-color,
+				colors.$gray-900
+			);
+			opacity: 0.5;
+		}
+	}
+
+	.videopack-video-duration {
+		position: absolute;
+		bottom: 5px;
+		right: 5px;
+		background-color: var(--videopack-title-background-color, colors.$gray-900);
+		color: colors.$white;
+		padding: 2px 6px;
+		font-size: 11px;
+		line-height: 1.4;
+		border-radius: 2px;
+		z-index: 30;
+		opacity: 0.9;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+
+		// If there's a title at the bottom, move the duration badge up to avoid overlap
+	}
+
+	&:has(.video-title.position-bottom) .videopack-video-duration {
+		top: 5px;
+		bottom: auto;
+	}
+
+	&:hover {
+		.video-title-background::before {
+			opacity: 0.8;
+		}
+
+		.play-button-container svg .play-button-circle {
+			fill: var(--videopack-play-button-bg-color-alpha-hover, colors.$gray-800);
+			fill-opacity: 0.4;
+		}
+	}
+}
+
+/* Skin-specific title background styles (only if no custom background color) */
+// This selector might need adjustment if used in a block that doesn't have the Videopack-has-* class
+// but the current structure depends on it. For now keeping it compatible.
+.videopack-gallery-item {
+	position: relative;
+
+	.gallery-item-clickable-area {
+		cursor: pointer;
+	}
+
+	&.is-dragging {
+		opacity: 0.5;
+		border: 2px dashed colors.$gray-400;
+	}
+
+	.gallery-item-remove,
+	.gallery-item-edit,
+	.videopack-drag-handle,
+	.gallery-add-button {
+		position: absolute;
+	}
+
+	.gallery-item-remove,
+	.gallery-item-edit,
+	.videopack-drag-handle {
+		top: 5px;
+		display: none;
+		/* Hidden by default */
+	}
+
+	.gallery-add-button {
+		bottom: 5px;
+		right: 5px;
+	}
+
+	.gallery-item-remove {
+		right: 5px;
+	}
+
+	.gallery-item-edit {
+		right: 35px;
+	}
+
+	.videopack-drag-handle {
+		left: 5px;
+		cursor: move;
+	}
+
+	&:hover .gallery-item-remove,
+	&:hover .gallery-item-edit,
+	&:hover .videopack-drag-handle {
+		display: flex;
+		/* Show on hover of the parent item */
+	}
+}
+
+// Default skin overrides when NOT explicitly customized
+// This checks for the existence of custom colors on the item itself or a parent container.
+.gallery-thumbnail {
+	&:not(.videopack-has-custom-colors) {
+		&.default .video-title-background::before {
+			background-color: colors.$gray-900;
+		}
+
+		&.vjs-theme-city .video-title-background::before {
+			background-color: var(--vjs-theme-city--primary);
+		}
+
+		&.vjs-theme-fantasy .video-title-background::before {
+			background-color: var(--vjs-theme-fantasy--primary);
+		}
+
+		&.vjs-theme-forest .video-title-background::before {
+			background-color: var(--vjs-theme-forest--primary);
+		}
+
+		&.vjs-theme-sea .video-title-background::before {
+			background-color: rgba(65, 118, 188, 0.4); // #4176bc
+		}
+	}
+}
+
+// Special case for the Gallery block which puts the 'has-custom-colors' class on the wrapper
+.videopack-gallery-wrapper.videopack-has-title-background-color .gallery-thumbnail .video-title-background::before {
+	background-color: var(
+		--videopack-title-background-color,
+		var(--wp--preset--color--primary, colors.$gray-900)
+	) !important;
+}

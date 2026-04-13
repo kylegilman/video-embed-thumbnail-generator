@@ -52,7 +52,9 @@ import './tinymce.scss';
 		try {
 			const wpData = window.wp?.data || window.parent?.wp?.data;
 			if (wpData) {
-				results.gutenberg = wpData.select('core/editor')?.getCurrentPostId();
+				results.gutenberg = wpData
+					.select('core/editor')
+					?.getCurrentPostId();
 			}
 		} catch (e) {
 			// ignore
@@ -150,15 +152,24 @@ import './tinymce.scss';
 						const video = response.videos[0];
 						setFullAttributes((prev) => {
 							const videoVars = video.player_vars || {};
-							const defaults = window.videopack_config?.defaults || {};
+							const defaults =
+								window.videopack_config?.defaults || {};
 							const merged = { ...videoVars, ...prev };
 
 							// If height or width in 'prev' match the global defaults, and metadata provides a different value,
 							// we assume the user hasn't explicitly overridden them in the shortcode text.
-							if (parseInt(prev.width, 10) === parseInt(defaults.width, 10) && videoVars.width) {
+							if (
+								parseInt(prev.width, 10) ===
+									parseInt(defaults.width, 10) &&
+								videoVars.width
+							) {
 								merged.width = videoVars.width;
 							}
-							if (parseInt(prev.height, 10) === parseInt(defaults.height, 10) && videoVars.height) {
+							if (
+								parseInt(prev.height, 10) ===
+									parseInt(defaults.height, 10) &&
+								videoVars.height
+							) {
 								merged.height = videoVars.height;
 							}
 
@@ -243,7 +254,7 @@ import './tinymce.scss';
 						setGalleryPage,
 						totalPages,
 						setTotalPages,
-				  }
+					}
 				: {};
 
 		return (
@@ -293,10 +304,9 @@ import './tinymce.scss';
 
 		// Normalize attributes and tag
 		const attrs = {
-			...( ( shortcode.attrs && shortcode.attrs.named ) ?
-				shortcode.attrs.named :
-				( shortcode.attrs || {} )
-			),
+			...(shortcode.attrs && shortcode.attrs.named
+				? shortcode.attrs.named
+				: shortcode.attrs || {}),
 		};
 		const tag = shortcode.tag;
 
@@ -312,7 +322,8 @@ import './tinymce.scss';
 			type = 'List';
 		} else {
 			// [videopack] or legacy aliases
-			const isGallery = attrs.gallery === 'true' || attrs.gallery === true;
+			const isGallery =
+				attrs.gallery === 'true' || attrs.gallery === true;
 			if (isGallery) {
 				type = 'Gallery';
 			} else {
@@ -322,7 +333,8 @@ import './tinymce.scss';
 					attrs.gallery_source ||
 					attrs.gallery_category ||
 					attrs.gallery_tag;
-				const isEmptyAndNotUrl = !attrs.id && !attrs.url && !shortcode.content;
+				const isEmptyAndNotUrl =
+					!attrs.id && !attrs.url && !shortcode.content;
 				const hasGalleryIdOnly =
 					attrs.gallery_id &&
 					!attrs.id &&
@@ -758,7 +770,6 @@ import './tinymce.scss';
 		if (typeof tinymce === 'undefined') {
 			return;
 		}
-
 
 		let videopack_scan_timeout;
 		const debouncedScan = () => {

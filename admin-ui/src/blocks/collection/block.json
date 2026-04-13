@@ -1,0 +1,149 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/collection",
+	"title": "Videopack Collection",
+	"category": "media",
+	"icon": "grid-view",
+	"description": "A composable grid or list layout for displaying videos.",
+	"supports": {
+		"html": false,
+		"align": ["left", "right", "center", "wide", "full"],
+		"color": {
+			"background": true,
+			"text": true,
+			"link": true
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"blockGap": true
+		}
+	},
+	"attributes": {
+		"skin": {
+			"type": "string"
+		},
+		"layout": {
+			"type": "string",
+			"default": "grid"
+		},
+		"columns": {
+			"type": "number",
+			"default": 3
+		},
+		"gallery_source": {
+			"type": "string",
+			"default": "current"
+		},
+		"gallery_id": {
+			"type": "number",
+			"default": 0
+		},
+		"gallery_category": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_tag": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_orderby": {
+			"type": "string"
+		},
+		"gallery_order": {
+			"type": "string"
+		},
+		"gallery_include": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_exclude": {
+			"type": "string",
+			"default": ""
+		},
+		"gallery_pagination": {
+			"type": "boolean"
+		},
+		"gallery_per_page": {
+			"type": "number"
+		},
+		"currentPage": {
+			"type": "number",
+			"default": 1
+		},
+		"totalPages": {
+			"type": "number",
+			"default": 1
+		},
+		"pagination_color": {
+			"type": "string"
+		},
+		"pagination_background_color": {
+			"type": "string"
+		},
+		"pagination_active_bg_color": {
+			"type": "string"
+		},
+		"pagination_active_color": {
+			"type": "string"
+		},
+		"title_color": {
+			"type": "string"
+		},
+		"title_background_color": {
+			"type": "string"
+		},
+		"play_button_color": {
+			"type": "string"
+		},
+		"play_button_icon_color": {
+			"type": "string"
+		},
+		"control_bar_bg_color": {
+			"type": "string"
+		},
+		"control_bar_color": {
+			"type": "string"
+		},
+		"view_count": {
+			"type": "boolean"
+		},
+		"overlay_title": {
+			"type": "boolean"
+		}
+	},
+	"providesContext": {
+		"videopack/skin": "skin",
+		"videopack/layout": "layout",
+		"videopack/columns": "columns",
+		"videopack/gallery_source": "gallery_source",
+		"videopack/gallery_id": "gallery_id",
+		"videopack/gallery_category": "gallery_category",
+		"videopack/gallery_tag": "gallery_tag",
+		"videopack/gallery_orderby": "gallery_orderby",
+		"videopack/gallery_order": "gallery_order",
+		"videopack/gallery_include": "gallery_include",
+		"videopack/gallery_exclude": "gallery_exclude",
+		"videopack/gallery_pagination": "gallery_pagination",
+		"videopack/gallery_per_page": "gallery_per_page",
+		"videopack/currentPage": "currentPage",
+		"videopack/totalPages": "totalPages",
+		"videopack/pagination_color": "pagination_color",
+		"videopack/pagination_background_color": "pagination_background_color",
+		"videopack/pagination_active_bg_color": "pagination_active_bg_color",
+		"videopack/pagination_active_color": "pagination_active_color",
+		"videopack/title_color": "title_color",
+		"videopack/title_background_color": "title_background_color",
+		"videopack/play_button_color": "play_button_color",
+		"videopack/play_button_icon_color": "play_button_icon_color",
+		"videopack/control_bar_bg_color": "control_bar_bg_color",
+		"videopack/control_bar_color": "control_bar_color",
+		"videopack/view_count": "view_count",
+		"videopack/overlay_title": "overlay_title"
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js",
+	"style": "file:./style.scss",
+	"editorStyle": "file:./index.css"
+}

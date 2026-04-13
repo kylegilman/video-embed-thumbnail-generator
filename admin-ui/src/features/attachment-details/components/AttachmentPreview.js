@@ -257,7 +257,12 @@ const AttachmentPreview = ({ attachmentId, model }) => {
 			}`}
 			style={containerStyle}
 		>
-			<PreviewIframe title={__( 'Attachment Preview', 'video-embed-thumbnail-generator' )}>
+			<PreviewIframe
+				title={__(
+					'Attachment Preview',
+					'video-embed-thumbnail-generator'
+				)}
+			>
 				<VideoPlayer attributes={attributes} />
 			</PreviewIframe>
 		</div>

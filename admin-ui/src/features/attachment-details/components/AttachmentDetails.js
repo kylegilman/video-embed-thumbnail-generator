@@ -194,7 +194,6 @@ const AttachmentDetails = ({ attachmentId, model }) => {
 			const nativeCaption = model ? model.get('caption') : '';
 
 			const combinedAttributes = {
-				...options,
 				id: recordId,
 				total_thumbnails:
 					videopackMeta.total_thumbnails || options.total_thumbnails,

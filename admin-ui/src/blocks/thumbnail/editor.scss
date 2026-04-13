@@ -1,0 +1,63 @@
+.videopack-thumbnail-block {
+	position: relative;
+	width: 100%;
+
+	.gallery-thumbnail {
+		// padding-top trick is handled by GalleryItem.scss but we need to ensure local editor visibility
+		position: relative;
+		width: 100%;
+		background: #000;
+
+		img {
+			display: block;
+			width: 100%;
+		}
+
+		.videopack-inner-blocks-container {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 10;
+
+			// Ensure Gutenberg's inner blocks wrapper takes up full space
+			.block-editor-inner-blocks {
+				width: 100%;
+				height: 100%;
+
+				.block-editor-block-list__layout {
+					width: 100%;
+					height: 100%;
+				}
+			}
+
+			// Sub-block wrappers need to be absolute overlays in the editor
+			// to prevent collapsing and ensure proper placement over the thumbnail.
+			.videopack-video-title-block.is-inside-thumbnail,
+			.videopack-video-duration-block.is-inside-thumbnail {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				pointer-events: none; // Let clicks through to the thumbnail
+				z-index: 5;
+
+				// Restore pointer events for the actual visible elements so they can be selected
+				.video-title,
+				.videopack-video-duration {
+					pointer-events: all;
+				}
+			}
+
+			// Make sure the appender is visible
+			.block-list-appender {
+				position: absolute;
+				bottom: 10px;
+				right: 10px;
+				z-index: 20;
+			}
+		}
+	}
+}

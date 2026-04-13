@@ -1,8 +1,6 @@
 export const getColorFallbacks = (settings) => {
-	const {
-		embed_method = 'Video.js',
-		skin = 'vjs-theme-videopack',
-	} = settings || {};
+	const { embed_method = 'Video.js', skin = 'vjs-theme-videopack' } =
+		settings || {};
 
 	const fallbacks = {
 		title_color: settings?.title_color || '#ffffff',

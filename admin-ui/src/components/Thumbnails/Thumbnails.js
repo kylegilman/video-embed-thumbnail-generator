@@ -10,10 +10,10 @@ import {
 	Spinner,
 	ToggleControl,
 } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { useCallback, useRef, useEffect, useState } from '@wordpress/element';
 import { MediaUpload } from '@wordpress/media-utils';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	generateThumbnail,
 	saveAllThumbnails,
@@ -59,6 +59,10 @@ const Thumbnails = ({
 		!!videopack_config.ffmpeg_exists &&
 		videopack_config.ffmpeg_exists !== 'notinstalled';
 	const { editPost } = useDispatch('core/editor') || {};
+	const isEditingAttachment = useSelect(
+		(select) => select('core/editor')?.getCurrentPostType() === 'attachment',
+		[]
+	);
 
 	const featured = (() => {
 		if (attributes.featured !== undefined) {
@@ -230,9 +234,6 @@ const Thumbnails = ({
 						);
 					}
 					if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
-						console.log(
-							'Videopack: Falling back to server-side FFmpeg for thumbnail generation...'
-						);
 						try {
 							const response = await generateThumb(
 								index,
@@ -257,10 +258,7 @@ const Thumbnails = ({
 								setThumbChoices([...newThumbCanvases]);
 							}
 						} catch (ffmpegError) {
-							console.log(
-								'Error in FFmpeg fallback:',
-								ffmpegError
-							);
+							// Silently handle FFmpeg fallback errors
 						}
 					}
 				}
@@ -449,7 +447,7 @@ const Thumbnails = ({
 				await videoData.save();
 			}
 
-			if (featured && parentId && editPost) {
+			if (featured && parentId && editPost && !isEditingAttachment) {
 				editPost({
 					featured_media: new_poster_id
 						? Number(new_poster_id)
@@ -602,9 +600,6 @@ const Thumbnails = ({
 		};
 
 		if (canvasTainted) {
-			console.log(
-				'Canvas detected as tainted, using FFmpeg fallback directly.'
-			);
 			await runFfmpegFallback();
 			return;
 		}
@@ -709,7 +704,7 @@ const Thumbnails = ({
 						"Set as post's featured image",
 						'video-embed-thumbnail-generator'
 					)}
-					checked={featured}
+					checked={!!featured}
 					onChange={(value) => {
 						setAttributes({
 							...attributes,
@@ -798,7 +793,11 @@ const Thumbnails = ({
 							>
 								<img
 									src={thumb.src}
-									alt={`Thumbnail ${index + 1}`}
+									alt={sprintf(
+										/* translators: %d is the thumbnail index */
+										__('Thumbnail %d', 'video-embed-thumbnail-generator'),
+										index + 1
+									)}
 									title={__(
 										'Save and set thumbnail',
 										'video-embed-thumbnail-generator'

@@ -429,7 +429,6 @@ const NetworkSettingsPage = () => {
 					</Button>
 				</PanelRow>
 			</Panel>
-
 		</div>
 	);
 };

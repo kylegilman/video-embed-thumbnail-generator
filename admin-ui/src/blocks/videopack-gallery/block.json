@@ -8,13 +8,7 @@
 	"description": "Display a dynamically-generated pop-up gallery of Videopack videos.",
 	"supports": {
 		"html": false,
-		"align": [
-			"left",
-			"right",
-			"center",
-			"wide",
-			"full"
-		],
+		"align": ["left", "right", "center", "wide", "full"],
 		"filter": {
 			"duotone": true
 		}
@@ -117,14 +111,15 @@
 			"type": "string"
 		}
 	},
-	"usesContext": [
-		"postId"
-	],
+	"usesContext": ["postId"],
 	"example": {
 		"attributes": {
 			"gallery_columns": 2,
 			"gallery_pagination": false
 		}
 	},
-	"textdomain": "video-embed-thumbnail-generator"
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
 }

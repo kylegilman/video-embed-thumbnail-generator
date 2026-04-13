@@ -884,7 +884,18 @@ class REST_Controller extends \WP_REST_Controller {
 		}
 
 		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options, $this->format_registry );
-		if ( ! $source || ! $source->exists() ) {
+		$videopack_data = array(
+			'srcset'        => (string) wp_get_attachment_image_srcset( (int) $attachment_id ),
+			'sources'       => array(),
+			'source_groups' => new \stdClass(),
+			'poster'        => '',
+		);
+
+		if ( ! $source ) {
+			return $videopack_data;
+		}
+
+		if ( ! $source->exists() ) {
 			return new \WP_Error( 'rest_source_not_found', (string) __( 'Video source could not be found.', 'video-embed-thumbnail-generator' ), array( 'status' => 404 ) );
 		}
 
@@ -947,11 +958,12 @@ class REST_Controller extends \WP_REST_Controller {
 		$post_id = (int) $post['id'];
 
 		$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
-		if ( ! $source || ! $source->exists() ) {
+		if ( ! $source ) {
 			return array(
 				'srcset'        => (string) wp_get_attachment_image_srcset( $post_id ),
 				'sources'       => array(),
 				'source_groups' => new \stdClass(),
+				'poster'        => '',
 			);
 		}
 
@@ -962,6 +974,7 @@ class REST_Controller extends \WP_REST_Controller {
 			'srcset'        => (string) wp_get_attachment_image_srcset( $post_id ),
 			'sources'       => (array) $player->get_flat_sources(),
 			'source_groups' => (array) $player->get_sources(),
+			'poster'        => $source->get_poster(),
 		);
 	}
 

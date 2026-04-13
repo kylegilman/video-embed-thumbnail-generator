@@ -6,14 +6,70 @@
   "category": "media",
   "icon": "format-video",
   "description": "Embed a single video with Videopack features.",
+  "usesContext": [
+    "postId",
+    "videopack/skin",
+    "videopack/view_count",
+    "videopack/overlay_title",
+    "videopack/title_color",
+    "videopack/title_background_color",
+    "videopack/overlay_title",
+    "videopack/downloadlink",
+    "videopack/embeddable",
+    "videopack/play_button_color",
+    "videopack/play_button_icon_color",
+    "videopack/control_bar_bg_color",
+    "videopack/control_bar_color"
+  ],
+  "providesContext": {
+    "postId": "id",
+    "videopack/skin": "skin",
+    "videopack/autoplay": "autoplay",
+    "videopack/controls": "controls",
+    "videopack/loop": "loop",
+    "videopack/muted": "muted",
+    "videopack/playsinline": "playsinline",
+    "videopack/poster": "poster",
+    "videopack/preload": "preload",
+    "videopack/src": "src",
+    "videopack/volume": "volume",
+    "videopack/auto_res": "auto_res",
+    "videopack/auto_codec": "auto_codec",
+    "videopack/sources": "sources",
+    "videopack/source_groups": "source_groups",
+    "videopack/text_tracks": "text_tracks",
+    "videopack/playback_rate": "playback_rate",
+    "videopack/watermark": "watermark",
+    "videopack/watermark_styles": "watermark_styles",
+    "videopack/watermark_link_to": "watermark_link_to",
+    "videopack/default_ratio": "default_ratio",
+    "videopack/fixed_aspect": "fixed_aspect",
+    "videopack/fullwidth": "fullwidth",
+    "videopack/play_button_color": "play_button_color",
+    "videopack/play_button_icon_color": "play_button_icon_color",
+    "videopack/control_bar_bg_color": "control_bar_bg_color",
+    "videopack/control_bar_color": "control_bar_color",
+    "videopack/title_color": "title_color",
+    "videopack/title_background_color": "title_background_color",
+    "videopack/overlay_title": "overlay_title",
+    "videopack/view_count": "view_count",
+    "videopack/downloadlink": "downloadlink",
+    "videopack/embeddable": "embeddable",
+    "videopack/showCaption": "showCaption",
+    "videopack/showBackground": "showBackground",
+    "videopack/textAlign": "textAlign",
+    "videopack/embed_method": "embed_method",
+    "videopack/position": "title_position",
+    "videopack/embedlink": "embedlink"
+  },
   "supports": {
     "html": false,
     "align": true,
     "dimensions": {
-      "aspectRatio": true,
-      "height": true,
-      "minHeight": true,
-      "width": true
+      "aspectRatio": false,
+      "height": false,
+      "minHeight": false,
+      "width": false
     },
     "spacing": {
       "margin": true,
@@ -35,5 +91,162 @@
       "overlay_title": true
     }
   },
-  "textdomain": "video-embed-thumbnail-generator"
+  "attributes": {
+    "id": {
+      "type": "number"
+    },
+    "src": {
+      "type": "string"
+    },
+    "poster": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "caption": {
+      "type": "string"
+    },
+    "width": {
+      "type": "number"
+    },
+    "height": {
+      "type": "number"
+    },
+    "skin": {
+      "type": "string"
+    },
+    "autoplay": {
+      "type": "boolean",
+      "default": false
+    },
+    "controls": {
+      "type": "boolean",
+      "default": true
+    },
+    "loop": {
+      "type": "boolean",
+      "default": false
+    },
+    "muted": {
+      "type": "boolean",
+      "default": false
+    },
+    "playsinline": {
+      "type": "boolean",
+      "default": false
+    },
+    "preload": {
+      "type": "string",
+      "default": "metadata"
+    },
+    "volume": {
+      "type": "number",
+      "default": 1
+    },
+    "auto_res": {
+      "type": "string"
+    },
+    "auto_codec": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "default": []
+    },
+    "source_groups": {
+      "type": "object",
+      "default": {}
+    },
+    "text_tracks": {
+      "type": "array",
+      "default": []
+    },
+    "playback_rate": {
+      "type": "boolean",
+      "default": false
+    },
+    "watermark": {
+      "type": "string"
+    },
+    "watermark_styles": {
+      "type": "object"
+    },
+    "watermark_link_to": {
+      "type": "string"
+    },
+    "default_ratio": {
+      "type": "string",
+      "default": "16 / 9"
+    },
+    "fixed_aspect": {
+      "type": "string",
+      "default": "false"
+    },
+    "fullwidth": {
+      "type": "boolean",
+      "default": false
+    },
+    "play_button_color": {
+      "type": "string"
+    },
+    "play_button_icon_color": {
+      "type": "string"
+    },
+    "control_bar_bg_color": {
+      "type": "string"
+    },
+    "control_bar_color": {
+      "type": "string"
+    },
+    "title_color": {
+      "type": "string"
+    },
+    "title_background_color": {
+      "type": "string"
+    },
+    "textAlign": {
+      "type": "string",
+      "default": "left"
+    },
+    "downloadlink": {
+      "type": "boolean",
+      "default": false
+    },
+    "overlay_title": {
+      "type": "boolean",
+      "default": true
+    },
+    "view_count": {
+      "type": "boolean",
+      "default": false
+    },
+    "embeddable": {
+      "type": "boolean",
+      "default": false
+    },
+    "embedlink": {
+      "type": "string"
+    },
+    "embed_method": {
+      "type": "string",
+      "default": "Video.js"
+    },
+    "showCaption": {
+      "type": "boolean",
+      "default": false
+    },
+    "showBackground": {
+      "type": "boolean",
+      "default": true
+    },
+    "title_position": {
+      "type": "string",
+      "default": "top"
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css"
 }

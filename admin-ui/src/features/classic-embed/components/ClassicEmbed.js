@@ -121,7 +121,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 	const [galleryAttributes, setGalleryAttributes] = useState({
 		gallery: true,
 		gallery_orderby: normalizedOptions.gallery_orderby || 'menu_order',
-		gallery_order: normalizedOptions.gallery_order || 'ASC',
+		gallery_order: normalizedOptions.gallery_order || 'asc',
 		gallery_pagination: !!normalizedOptions.gallery_pagination,
 		gallery_per_page: parseInt(normalizedOptions.gallery_per_page, 10) || 6,
 		gallery_columns: parseInt(normalizedOptions.gallery_columns, 10) || 4,
@@ -135,7 +135,7 @@ export default function ClassicEmbed({ options, postId, activeTab }) {
 	const [listAttributes, setListAttributes] = useState({
 		gallery: false,
 		gallery_orderby: normalizedOptions.gallery_orderby || 'menu_order',
-		gallery_order: normalizedOptions.gallery_order || 'ASC',
+		gallery_order: normalizedOptions.gallery_order || 'asc',
 		gallery_pagination: !!normalizedOptions.gallery_pagination,
 		gallery_per_page: parseInt(normalizedOptions.gallery_per_page, 10) || 6,
 		gallery_title: !!normalizedOptions.gallery_title,

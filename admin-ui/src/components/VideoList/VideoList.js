@@ -171,9 +171,6 @@ const VideoList = ({
 			return;
 		}
 
-		// eslint-disable-next-line no-console
-		console.log('Videopack VideoList Query:', args);
-
 		setIsLoading(true);
 		getVideoGallery(args)
 			.then((response) => {

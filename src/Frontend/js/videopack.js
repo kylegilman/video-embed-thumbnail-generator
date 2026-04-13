@@ -29,6 +29,14 @@
 				this.initCollection(element);
 			});
 
+			// Global lightbox listener for modular blocks
+			document.addEventListener('click', (e) => {
+				const lightboxTrigger = e.target.closest('[data-videopack-lightbox="true"]');
+				if (lightboxTrigger) {
+					this.handleGlobalLightboxClick(e, lightboxTrigger);
+				}
+			});
+
 
 			// Fallback for MediaElement.js players initialized by other plugins/themes.
 			if (typeof window.mejs !== 'undefined') {
@@ -76,14 +84,15 @@
 				return;
 			}
 			let playerId = playerWrapper.dataset.id;
-			const videoVars = window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`];
+			const videoVars =
+				window.videopack.player_data && window.videopack.player_data[`videopack_player_${playerId}`];
 
 			if (!videoVars) {
 				return;
 			}
 
 			if (videoVars.embed_method === 'Video.js') {
-				this.loadVideoJS(playerWrapper, videoVars);
+				return this.loadVideoJS(playerWrapper, videoVars);
 			} else if (videoVars.embed_method === 'WordPress Default') {
 				const checkMejs = () => {
 					const container = playerWrapper.querySelector('.mejs-container');
@@ -123,7 +132,8 @@
 			const target = domObject || mediaElement;
 			const playerWrapper = target.closest('.videopack-player');
 			if (playerWrapper && !playerWrapper.dataset.videopackInitialized && window.videopack.player_data) {
-				this.setupVideo(playerWrapper, window.videopack.player_data[`videopack_player_${playerWrapper.dataset.id}`]);
+				const pid = playerWrapper.dataset.id;
+				this.setupVideo(playerWrapper, window.videopack.player_data[`videopack_player_${pid}`]);
 			}
 		},
 
@@ -216,12 +226,15 @@
 
 			if (videojs.getPlayer(videoElementId)) {
 				this.setupVideo(playerWrapper, videoVars);
-				return;
+				return videojs.getPlayer(videoElementId);
 			}
 
-			videojs(videoElement, videojsOptions).ready(() => {
+			// Return the player instance created by videojs()
+			const player = videojs(videoElement, videojsOptions);
+			player.ready(() => {
 				this.setupVideo(playerWrapper, videoVars);
 			});
+			return player;
 		},
 
 		/**
@@ -232,7 +245,6 @@
 		 * @param {object} videoVars The video variables.
 		 */
 		setupVideo: function (playerWrapper, videoVars) {
-
 			if (playerWrapper.dataset.videopackInitialized) {
 				return;
 			}
@@ -247,7 +259,9 @@
 			}
 
 			const meta = document.getElementById(`video_${playerId}_meta`);
+			console.log(`Videopack Debug - Looking for meta: video_${playerId}_meta`, meta);
 			if (meta) {
+				console.log(`Videopack Debug - Moving meta into playerWrapper`, playerWrapper);
 				playerWrapper.prepend(meta);
 				meta.style.display = 'block';
 			}
@@ -268,6 +282,10 @@
 			if (embedWrapper) {
 				embedWrapper.querySelector('.videopack-start-at-enable').addEventListener('change', () => this.setStartAt(playerWrapper));
 				embedWrapper.querySelector('.videopack-start-at').addEventListener('change', () => this.changeStartAt(playerWrapper));
+				const embedInput = embedWrapper.querySelector('.videopack-embed-code');
+				if (embedInput) {
+					embedInput.addEventListener('click', () => embedInput.select());
+				}
 			}
 
 			const downloadLink = playerWrapper.querySelector('.videopack-download-link');
@@ -503,22 +521,20 @@
 				this.resizeVideo(playerId);
 			});
 
-			this.setupMetaBar(playerWrapper, player, videoVars);
+			this.setupVideoTitle(playerWrapper, player, videoVars);
 		},
 
 		/**
-		 * Setup meta bar visibility and hover behavior.
+		 * Setup video title visibility and hover behavior.
 		 *
 		 * @since 5.0.0
 		 * @param {HTMLElement} playerWrapper The player wrapper element.
 		 * @param {object}      player        The player instance (Video.js or MEJS).
 		 * @param {object}      videoVars     The video variables.
 		 */
-		setupMetaBar: function (playerWrapper, player, videoVars) {
+		setupVideoTitle: function (playerWrapper, player, videoVars) {
 			const playerId = playerWrapper.dataset.id;
 			const wrapper = playerWrapper.closest('.videopack-wrapper');
-
-
 
 			if (!wrapper) {
 				return;
@@ -527,13 +543,11 @@
 			const isMejs = 'WordPress Default' === videoVars.embed_method;
 			const video = isMejs ? player.media : player.el().querySelector('video');
 
-
-
 			const showMeta = () => {
-				wrapper.classList.add('videopack-meta-bar-visible');
+				wrapper.classList.add('videopack-video-title-visible');
 			};
 			const hideMeta = () => {
-				wrapper.classList.remove('videopack-meta-bar-visible');
+				wrapper.classList.remove('videopack-video-title-visible');
 			};
 
 			if (isMejs && video) {
@@ -659,7 +673,7 @@
 				}
 			});
 
-			this.setupMetaBar(playerWrapper, player, videoVars);
+			this.setupVideoTitle(playerWrapper, player, videoVars);
 		},
 
 		/**
@@ -879,7 +893,7 @@
 			}
 
 			const viewCountWrapper = playerWrapper.closest('.videopack-wrapper');
-			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector('.videopack-viewcount') : null;
+			const viewCountElement = viewCountWrapper ? viewCountWrapper.querySelector('.videopack-view-count') : null;
 
 			let changed = false;
 			const played = playerWrapper.dataset.played || 'not played';
@@ -931,7 +945,12 @@
 						})
 						.then((data) => {
 							if ('play' === event && data.view_count && viewCountElement) {
-								viewCountElement.innerHTML = data.view_count;
+								const span = viewCountElement.tagName === 'SPAN' ? viewCountElement : viewCountElement.querySelector('span');
+								if (span) {
+									span.innerHTML = data.view_count;
+								} else {
+									viewCountElement.innerHTML = data.view_count;
+								}
 							}
 						})
 						.catch((error) => {
@@ -1217,31 +1236,11 @@
 
 			// Event Listeners
 			collectionWrapper.addEventListener('click', (e) => {
-				if (collectionWrapper.classList.contains('videopack-gallery-wrapper')) {
-					const clickableArea = e.target.closest('.gallery-item-clickable-area');
-					if (clickableArea) {
-						this.handleGalleryThumbnailClick(e, collectionWrapper);
-					}
-				}
-
 				const pageLink = e.target.closest('.videopack-pagination a.page-numbers, .videopack-pagination button');
 				if (pageLink && !pageLink.disabled && !pageLink.classList.contains('current') && !pageLink.classList.contains('current-page')) {
 					this.handleCollectionPaginationClick(e, collectionWrapper, pageLink);
 				}
 			});
-
-			const popup = collectionWrapper.querySelector('.videopack-modal-overlay');
-			if (popup) {
-				popup.addEventListener('click', (e) => {
-					if (e.target.closest('.modal-close') || e.target === popup) {
-						this.closeGalleryPopup(popup);
-					} else if (e.target.closest('.modal-next')) {
-						this.navigateGalleryPopup(1, collectionWrapper);
-					} else if (e.target.closest('.modal-previous')) {
-						this.navigateGalleryPopup(-1, collectionWrapper);
-					}
-				});
-			}
 
 			collectionWrapper.dataset.videopackCollectionInitialized = true;
 		},
@@ -1250,23 +1249,14 @@
 			this.initCollection(galleryWrapper);
 		},
 
-		handleGalleryThumbnailClick: function (e, galleryWrapper) {
-			e.preventDefault();
-			const galleryItem = e.target.closest('.videopack-gallery-item');
-			const attachmentId = galleryItem.dataset.attachmentId;
-			const videoOrderId = galleryItem.dataset.videopackId ? `videopack_player_${galleryItem.dataset.videopackId}` : `videopack_player_gallery_${attachmentId}`;
-			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
-			const videoIndex = videoOrder.indexOf(String(attachmentId));
-
-			const videoData = window.videopack.player_data && window.videopack.player_data[videoOrderId];
-
-			if (videoData) {
-				this.openGalleryPopup(videoData, galleryWrapper, videoIndex);
-			}
+		initList: function (listWrapper) {
+			this.initCollection(listWrapper);
 		},
 
 		openGalleryPopup: function (videoData, galleryWrapper, videoIndex) {
-			const popup = galleryWrapper.querySelector('.videopack-modal-overlay');
+			const popup = galleryWrapper.classList.contains('videopack-modal-overlay')
+				? galleryWrapper
+				: galleryWrapper.querySelector('.videopack-modal-overlay');
 			const playerContainer = popup.querySelector('.modal-content');
 			const gallerySettings = JSON.parse(galleryWrapper.dataset.settingsCache || '{}');
 			let skinClass = gallerySettings.skin || 'vjs-default-skin';
@@ -1278,23 +1268,87 @@
 			this.destroyCurrentGalleryPlayer();
 			playerContainer.innerHTML = '';
 
-			const playerId = videoData.id; // This is 'videopack_player_gallery_XXX'
-			const attachmentId = videoData.attachment_id;
-			const posterAttr = videoData.poster ? `poster="${videoData.poster}"` : '';
+			// Assign fresh navigation listeners.
+			const nextButton = popup.querySelector('.modal-next');
+			const prevButton = popup.querySelector('.modal-previous');
+			const closeButton = popup.querySelector('.modal-close');
 
-			// Force autoplay for gallery popup.
+			if (nextButton) {
+				nextButton.onclick = (e) => {
+					setTimeout(() => {
+						this.navigateGalleryPopup(1, galleryWrapper);
+					}, 0);
+				};
+			}
+			if (prevButton) {
+				prevButton.onclick = (e) => {
+					setTimeout(() => {
+						this.navigateGalleryPopup(-1, galleryWrapper);
+					}, 0);
+				};
+			}
+			if (closeButton) {
+				closeButton.onclick = (e) => {
+					e.stopPropagation();
+					this.closeGalleryPopup(popup);
+				};
+			}
+
+			// Background click for closing.
+			popup.onclick = (e) => {
+				if (e.target === popup) {
+					this.closeGalleryPopup(popup);
+				}
+			};
+
+			const attachmentId = videoData.attachment_id;
+
+			// Force autoplay.
 			videoData.autoplay = true;
 
-			// Use pre-rendered player HTML from PHP to ensure consistency
-			const playerHtml = videoData.full_player_html || videoData.player_html;
+			// Use pre-rendered player HTML.
+			let playerHtml =
+				videoData.player_html ||
+				videoData.full_player_html ||
+				(videoData.player_vars &&
+					(videoData.player_vars.player_html || videoData.player_vars.full_player_html));
+
+			if (!playerHtml) {
+				console.error('Videopack: Could not find player HTML in video data', videoData);
+				return;
+			}
+
 			playerContainer.innerHTML = playerHtml;
 
 			const playerWrapper = playerContainer.querySelector('.videopack-player');
+			if (!playerWrapper) {
+				console.error('Videopack: Could not find .videopack-player in injected HTML');
+				return;
+			}
+
 			const videoElement = playerWrapper.querySelector('video');
-			const videoElementId = videoElement ? videoElement.id : playerId;
+			if (videoElement) {
+				videoElement.setAttribute('autoplay', 'autoplay');
+				if (skinClass && skinClass !== 'default') {
+					videoElement.classList.add(skinClass);
+					playerWrapper.classList.add(skinClass);
+				} else {
+					videoElement.classList.add('vjs-default-skin');
+					playerWrapper.classList.add('vjs-default-skin');
+				}
+			}
+
+			// Preserve the original instance ID that the server provided.
+			const originalId = playerWrapper.dataset.id;
+			const videoElementId = videoElement ? videoElement.id : originalId;
+
+			// Map the configuration data to this specific instance ID so initPlayer can find it.
+			window.videopack.player_data = window.videopack.player_data || {};
+			// Use originalId directly as the server already provided it with the prefix.
+			window.videopack.player_data[originalId] = videoData.player_vars || videoData;
 
 			if (videoData.embed_method && videoData.embed_method.startsWith('Video.js')) {
-				this.initPlayer(playerWrapper);
+				this.currentGalleryPlayer = this.initPlayer(playerWrapper);
 
 				const checkPlayer = setInterval(() => {
 					const player = videojs.getPlayer(videoElementId);
@@ -1302,10 +1356,13 @@
 						clearInterval(checkPlayer);
 						this.currentGalleryPlayer = player;
 						player.ready(() => {
+							if (videoData.autoplay) {
+								player.play();
+							}
 							player.on('ended', () => {
-								if (gallerySettings.gallery_end === 'next') {
-									this.navigateGalleryPopup(1, galleryWrapper);
-								}
+									setTimeout(() => {
+										this.navigateGalleryPopup(1, galleryWrapper);
+									}, 0);
 								if (gallerySettings.gallery_end === 'close') {
 									this.closeGalleryPopup(popup);
 								}
@@ -1322,7 +1379,9 @@
 					}
 					mediaElement.addEventListener('ended', () => {
 						if (gallerySettings.gallery_end === 'next') {
-							this.navigateGalleryPopup(1, galleryWrapper);
+							setTimeout(() => {
+								this.navigateGalleryPopup(1, galleryWrapper);
+							}, 0);
 						}
 						if (gallerySettings.gallery_end === 'close') {
 							this.closeGalleryPopup(popup);
@@ -1336,7 +1395,9 @@
 					this.currentGalleryPlayer = videoElement;
 					videoElement.addEventListener('ended', () => {
 						if (gallerySettings.gallery_end === 'next') {
-							this.navigateGalleryPopup(1, galleryWrapper);
+							setTimeout(() => {
+								this.navigateGalleryPopup(1, galleryWrapper);
+							}, 0);
 						}
 						if (gallerySettings.gallery_end === 'close') {
 							this.closeGalleryPopup(popup);
@@ -1355,9 +1416,6 @@
 			const videoOrder = JSON.parse(galleryWrapper.dataset.currentVideosOrder);
 			const totalPages = parseInt(galleryWrapper.dataset.totalPages, 10);
 			const currentPage = parseInt(galleryWrapper.dataset.currentPage, 10);
-
-			const prevButton = popup.querySelector('.modal-previous');
-			const nextButton = popup.querySelector('.modal-next');
 
 			if (videoIndex > 0 || currentPage > 1) {
 				prevButton.style.display = 'block';
@@ -1383,11 +1441,24 @@
 
 			// For Video.js players
 			if (typeof this.currentGalleryPlayer.dispose === 'function') {
-				// Prevent events from firing during disposal
-				if (typeof this.currentGalleryPlayer.off === 'function') {
-					this.currentGalleryPlayer.off();
+				try {
+					// Prevent events from firing during disposal
+					if (typeof this.currentGalleryPlayer.off === 'function') {
+						this.currentGalleryPlayer.off();
+					}
+
+					// Explicitly disable user activity tracking to prevent "Invalid target" error
+					if (typeof this.currentGalleryPlayer.userActive === 'function') {
+						this.currentGalleryPlayer.userActive(false);
+					}
+
+					// Double-check if already disposed to prevent "classList of null"
+					if (!this.currentGalleryPlayer.isDisposed || !this.currentGalleryPlayer.isDisposed()) {
+						this.currentGalleryPlayer.dispose();
+					}
+				} catch (e) {
+					// Fail silently or handle disposal error
 				}
-				this.currentGalleryPlayer.dispose();
 			} else if (typeof this.currentGalleryPlayer.remove === 'function') {
 				// For MediaElement.js players
 				try {
@@ -1420,7 +1491,15 @@
 		closeGalleryPopup: function (popup) {
 			this.destroyCurrentGalleryPlayer();
 			popup.classList.remove('is-visible');
-			popup.style.display = 'none';
+			popup.onclick = null;
+			const nextButton = popup.querySelector('.modal-next');
+			const prevButton = popup.querySelector('.modal-previous');
+			const closeButton = popup.querySelector('.modal-close');
+
+			if (nextButton) nextButton.onclick = null;
+			if (prevButton) prevButton.onclick = null;
+			if (closeButton) closeButton.onclick = null;
+
 			const content = popup.querySelector('.modal-content');
 			if (content) {
 				content.innerHTML = '';
@@ -1436,15 +1515,13 @@
 			let nextIndex = currentIndex + direction;
 
 			if (nextIndex >= videoOrder.length && currentPage < totalPages) {
-				// Go to next page
 				this.loadGalleryPage(currentPage + 1, galleryWrapper, 0); // Load next page and open first video
 			} else if (nextIndex < 0 && currentPage > 1) {
-				// Go to previous page
 				this.loadGalleryPage(currentPage - 1, galleryWrapper, -1); // Load prev page and open last video
 			} else if (nextIndex >= 0 && nextIndex < videoOrder.length) {
 				// Navigate within the current page
-				const nextAttachmentId = videoOrder[nextIndex];
-				const nextVideoData = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${nextAttachmentId}`];
+				const nextVideoId = videoOrder[nextIndex];
+				const nextVideoData = window.videopack.player_data && window.videopack.player_data[nextVideoId];
 
 				if (nextVideoData) {
 					this.openGalleryPopup(nextVideoData, galleryWrapper, nextIndex);
@@ -1456,11 +1533,83 @@
 				} else if (nextIndex >= videoOrder.length) {
 					nextIndex = 0;
 				}
-				const nextAttachmentId = videoOrder[nextIndex];
-				const nextVideoData = window.videopack.player_data && window.videopack.player_data[`videopack_player_gallery_${nextAttachmentId}`];
+				const nextVideoId = videoOrder[nextIndex];
+				const nextVideoData = window.videopack.player_data && window.videopack.player_data[nextVideoId];
 
 				if (nextVideoData) {
 					this.openGalleryPopup(nextVideoData, galleryWrapper, nextIndex);
+				}
+			}
+		},
+
+		/**
+		 * Handles click on a global lightbox trigger.
+		 *
+		 * @since 5.0.0
+		 * @param {Event}       e       The click event.
+		 * @param {HTMLElement} trigger The trigger element.
+		 */
+		handleGlobalLightboxClick: function (e, trigger) {
+			e.preventDefault();
+			const attachmentId = trigger.dataset.attachmentId;
+			const videopackId = trigger.dataset.videopackId;
+			let videoData = (window.videopack && window.videopack.player_data) ? window.videopack.player_data[videopackId] : null;
+
+			// Fallback: search for data-attachment-id if explicit ID lookup failed.
+			if (!videoData) {
+				const fallbackId = `videopack_player_gallery_${attachmentId}`;
+				videoData = (window.videopack && window.videopack.player_data) ? window.videopack.player_data[fallbackId] : null;
+			}
+
+			if (videoData) {
+				const modal = document.getElementById('videopack-global-modal');
+				if (modal) {
+					// Check if this item belongs to a gallery/collection.
+					const collectionWrapper = trigger.closest('.videopack-collection-wrapper');
+					let videoOrder = [];
+					let clickedIndex = 0;
+
+					if (collectionWrapper) {
+						// Existing gallery logic: respect the collection's order and settings.
+						const siblingThumbnails = Array.from(collectionWrapper.querySelectorAll('.videopack-gallery-item'));
+						siblingThumbnails.forEach((sibling, index) => {
+							const sid = sibling.dataset.attachmentId;
+							// Rely on the server's videopackId; fallback to standard gallery format if missing.
+							const svid = sibling.dataset.videopackId || `videopack_player_gallery_${sid}`;
+							videoOrder.push(svid);
+							if (sibling === trigger) {
+								clickedIndex = index;
+							}
+						});
+
+						modal.dataset.settingsCache = collectionWrapper.dataset.settings || collectionWrapper.dataset.settingsCache || '{}';
+						modal.dataset.totalPages = collectionWrapper.dataset.totalPages || 1;
+						modal.dataset.currentPage = collectionWrapper.dataset.currentPage || 1;
+					} else {
+						// Standalone block logic: look for other top-level blocks as pseudo-gallery.
+						const allTriggers = Array.from(document.querySelectorAll('[data-videopack-lightbox="true"]')).filter(t => !t.closest('.videopack-collection-wrapper'));
+						allTriggers.forEach((sibling, index) => {
+							const sid = sibling.dataset.attachmentId;
+							const svid = sibling.dataset.videopackId || `videopack_player_gallery_${sid}`;
+							videoOrder.push(svid);
+							if (sibling === trigger) {
+								clickedIndex = index;
+							}
+						});
+
+						modal.dataset.settingsCache = JSON.stringify({
+							skin: videoData.skin || 'vjs-theme-videopack',
+							gallery_end: 'next',
+						});
+						modal.dataset.totalPages = 1;
+						modal.dataset.currentPage = 1;
+					}
+
+					modal.dataset.currentVideosOrder = JSON.stringify(videoOrder);
+					modal.dataset.currentGalleryVideoIndex = clickedIndex;
+
+					// Call the standard gallery popup logic.
+					this.openGalleryPopup(videoData, modal, clickedIndex);
 				}
 			}
 		},

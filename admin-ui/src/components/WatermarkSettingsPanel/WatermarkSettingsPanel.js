@@ -7,7 +7,6 @@ import {
 	PanelBody,
 	RangeControl,
 	SelectControl,
-	TextControl,
 } from '@wordpress/components';
 import { captureVideoFrame } from '../../utils/video-capture';
 import SelectFromLibrary from '../../features/settings/components/SelectFromLibrary';
@@ -161,17 +160,18 @@ const WatermarkSettingsPanel = ({
 								/>
 							</FlexItem>
 							<FlexItem className="videopack-offset-control">
-								<TextControl
+								<RangeControl
 									label={__(
 										'Horizontal Offset (%)',
 										'video-embed-thumbnail-generator'
 									)}
-									type="number"
-									step="0.01"
-									value={watermarkSettings.x || 0}
+									value={Number(watermarkSettings.x || 0)}
 									onChange={(value) =>
 										updateSetting('x', value)
 									}
+									min={0}
+									max={100}
+									step={0.01}
 									__nextHasNoMarginBottom
 									disabled={disabled}
 								/>
@@ -222,17 +222,18 @@ const WatermarkSettingsPanel = ({
 								/>
 							</FlexItem>
 							<FlexItem className="videopack-offset-control">
-								<TextControl
+								<RangeControl
 									label={__(
 										'Vertical Offset (%)',
 										'video-embed-thumbnail-generator'
 									)}
-									type="number"
-									step="0.01"
-									value={watermarkSettings.y || 0}
+									value={Number(watermarkSettings.y || 0)}
 									onChange={(value) =>
 										updateSetting('y', value)
 									}
+									min={0}
+									max={100}
+									step={0.01}
 									__nextHasNoMarginBottom
 									disabled={disabled}
 								/>

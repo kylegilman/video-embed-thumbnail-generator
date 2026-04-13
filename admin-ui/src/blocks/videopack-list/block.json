@@ -8,13 +8,7 @@
 	"description": "Display a dynamically-generated list of Videopack video players.",
 	"supports": {
 		"html": false,
-		"align": [
-			"left",
-			"right",
-			"center",
-			"wide",
-			"full"
-		],
+		"align": ["left", "right", "center", "wide", "full"],
 		"filter": {
 			"duotone": true
 		}
@@ -120,9 +114,7 @@
 			"type": "string"
 		}
 	},
-	"usesContext": [
-		"postId"
-	],
+	"usesContext": ["postId"],
 	"example": {
 		"attributes": {
 			"gallery_pagination": false,
@@ -130,5 +122,8 @@
 			"collection_video_limit": 3
 		}
 	},
-	"textdomain": "video-embed-thumbnail-generator"
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
 }

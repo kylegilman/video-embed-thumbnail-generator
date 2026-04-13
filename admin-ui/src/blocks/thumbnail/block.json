@@ -1,0 +1,38 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/thumbnail",
+	"title": "Video Thumbnail",
+	"category": "media",
+	"icon": "format-image",
+	"editorStyle": "file:./index.css",
+	"description": "Displays the video poster image. Can contain the play button and duration overlays.",
+	"attributes": {
+		"linkTo": {
+			"type": "string",
+			"default": "none"
+		}
+	},
+	"usesContext": [
+		"postId",
+		"videopack/skin"
+	],
+	"supports": {
+		"html": false,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"filter": {
+			"duotone": true
+		}
+	},
+	"selectors": {
+		"filter": {
+			"duotone": ".wp-block-videopack-thumbnail img"
+		}
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js"
+}

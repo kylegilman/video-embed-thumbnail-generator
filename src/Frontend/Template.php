@@ -124,8 +124,8 @@ class Template implements Hook_Subscriber {
 
 			if ( ! empty( $first_embedded_video['poster'] ) ) {
 				$data['thumbnail_url']    = (string) $first_embedded_video['poster'];
-				$data['thumbnail_width']  = (int) $width;
-				$data['thumbnail_height'] = (int) $height;
+				$data['thumbnail_width']  = (int) ( $first_embedded_video['width'] ?? $width );
+				$data['thumbnail_height'] = (int) ( $first_embedded_video['height'] ?? $height );
 			}
 
 			$embed_id = $first_embedded_video['id'] ?? ( $post instanceof \WP_Post ? $post->ID : 0 );
@@ -141,11 +141,16 @@ class Template implements Hook_Subscriber {
 				(string) ( $first_embedded_video['title'] ?? ( $post instanceof \WP_Post ? $post->post_title : '' ) )
 			);
 
+			$allow_policy   = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
+			$sandbox_policy = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms';
+
 			$data['html'] = sprintf(
-				'<iframe src="%1$s" width="%2$d" height="%3$d" style="border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="%4$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
+				'<iframe src="%1$s" width="%2$d" height="%3$d" style="border:0;" allow="%4$s" allowfullscreen credentialless sandbox="%5$s" loading="lazy" title="%6$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
 				esc_url( (string) $embed_url ),
 				(int) $width,
 				(int) $height,
+				esc_attr( $allow_policy ),
+				esc_attr( $sandbox_policy ),
 				esc_attr( (string) $iframe_title )
 			);
 		}

@@ -1,41 +1,20 @@
 @use '@wordpress/base-styles/colors';
 @use '@wordpress/base-styles/variables';
 
-.wp-block-create-block-videopack-block {
-	border: 1px dotted #f00;
-}
-
-// Provide special styling for the placeholder.
-// @todo: this particular minimal style of placeholder could be componentized further.
+// Gutenberg-specific placeholder styling
 .wp-block-videopack-videopack-video {
-
-	// Show Placeholder style on-select.
 	&.is-selected .components-placeholder {
-		// Block UI appearance.
 		color: colors.$gray-900;
 		background-color: colors.$white;
 		box-shadow: inset 0 0 0 variables.$border-width colors.$gray-900;
 		border: none;
-
-		// @todo: this should eventually be overridden by a custom border-radius set in the inspector.
 		border-radius: variables.$radius-block-ui;
 
-		>svg {
-			opacity: 0;
-		}
-
-		.components-placeholder__illustration {
-			display: none;
-		}
-
-		&::before {
-			opacity: 0;
-		}
+		>svg { opacity: 0; }
+		.components-placeholder__illustration { display: none; }
+		&::before { opacity: 0; }
 	}
 
-	// Remove the transition while we still have a legacy placeholder style.
-	// Otherwise the content jumps between the 1px placeholder border, and any inherited custom
-	// parent border that may get applied when you deselect.
 	.components-placeholder__label,
 	.components-placeholder__instructions,
 	.components-button {
@@ -43,27 +22,7 @@
 	}
 }
 
-.wp-block[data-align="center"]>.wp-block-video {
-	text-align: center;
-}
-
-.wp-block-video {
-	position: relative;
-
-	&.is-transient video {
-		opacity: 0.3;
-	}
-
-	// Shown while video is being uploaded
-	.components-spinner {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		margin-top: -9px;
-		margin-left: -9px;
-	}
-}
-
+// Special Editor-only overlays for selection
 .videopack-block-overlay {
 	position: absolute;
 	top: 0;
@@ -81,11 +40,22 @@
 	width: 100%;
 	max-width: 300px;
 	margin: 0 auto;
-
-	p {
-		margin: 0;
-		font-weight: 500;
-	}
+	p { margin: 0; font-weight: 500; }
 }
 
 
+
+.videopack-video-title-block {
+	&.is-overlay {
+		pointer-events: auto;
+		&.is-selected, &:focus-within { pointer-events: auto; }
+
+		// Standardize 15px base in editor to match frontend font normalization
+		&.videopack-video-title, &.video-title {
+			font-size: 15px; 
+			visibility: visible !important;
+			opacity: 1 !important;
+			pointer-events: auto;
+		}
+	}
+}

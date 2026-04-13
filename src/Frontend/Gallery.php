@@ -84,7 +84,7 @@ class Gallery {
 		$args = array(
 			'post_type'      => 'attachment',
 			'orderby'        => (string) ( $query_atts['gallery_orderby'] ?? 'post_date' ),
-			'order'          => (string) ( $query_atts['gallery_order'] ?? 'DESC' ),
+			'order'          => (string) ( $query_atts['gallery_order'] ?? 'desc' ),
 			'post_mime_type' => 'video',
 			'posts_per_page' => (int) ( $query_atts['gallery_per_page'] ?? -1 ),
 			'paged'          => (int) $page_number,
@@ -102,6 +102,10 @@ class Gallery {
 
 		if ( ! empty( $query_atts['gallery_id'] ) ) {
 			$args['post_parent'] = (int) $query_atts['gallery_id'];
+		} elseif ( in_array( (string) ( $query_atts['gallery_source'] ?? '' ), array( 'current', 'custom' ), true ) ) {
+			// If source is current or custom but no ID is provided, return empty.
+			$args['post__in'] = array( 0 );
+			unset( $args['post_parent'] );
 		} else {
 			unset( $args['post_parent'] );
 		}
@@ -122,6 +126,10 @@ class Gallery {
 				} elseif ( is_category() ) {
 					$archive_args['cat'] = get_queried_object_id();
 					$has_archive_source  = true;
+				} else {
+					// Category source requested but no category found/provided.
+					$args['post__in'] = array( 0 );
+					return new \WP_Query( $args );
 				}
 			} elseif ( 'tag' === (string) $query_atts['gallery_source'] ) {
 				if ( ! empty( $query_atts['gallery_tag'] ) ) {
@@ -130,6 +138,10 @@ class Gallery {
 				} elseif ( is_tag() ) {
 					$archive_args['tag_id'] = get_queried_object_id();
 					$has_archive_source     = true;
+				} else {
+					// Tag source requested but no tag found/provided.
+					$args['post__in'] = array( 0 );
+					return new \WP_Query( $args );
 				}
 			} elseif ( 'archive' === (string) $query_atts['gallery_source'] ) {
 				if ( is_category() ) {
@@ -317,7 +329,14 @@ class Gallery {
 		$player_vars['sources']          = (array) $player->get_flat_sources();
 		$player_vars['poster']           = $poster_url;
 		$player_vars['attachment']       = (int) $data['id'];
-		$player_vars['starts']           = (int) ( $final_atts['starts'] ?? 0 );
+
+		// Retrieve video statistics from attachment metadata if available.
+		$video_meta = get_post_meta( (int) $data['id'], '_videopack-meta', true );
+		if ( is_array( $video_meta ) && isset( $video_meta['starts'] ) ) {
+			$player_vars['starts'] = (int) $video_meta['starts'];
+		} else {
+			$player_vars['starts'] = (int) ( $final_atts['starts'] ?? 0 );
+		}
 
 		return array(
 			'attachment_id' => (int) $data['id'],
@@ -353,19 +372,11 @@ class Gallery {
 				$video_data = (array) $this->prepare_video_data_for_js( $attachment, $query_atts, $layout );
 				if ( ! empty( $video_data ) ) {
 					$videos_data[] = (array) $video_data;
-					// Add player vars to the inline script data for the initial page load.
-					if ( ! empty( $video_data['player_vars']['id'] ) ) {
-						$script = (string) sprintf(
-							'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["videopack_player_%1$s"] = %2$s;',
-							(string) $video_data['player_vars']['id'],
-							(string) wp_json_encode( (array) $video_data['player_vars'] )
-						);
-						wp_add_inline_script( 'videopack-frontend', $script );
-					}
 				}
 			}
 		}
 
+		wp_enqueue_style( 'videopack-player' );
 		ob_start();
 		include __DIR__ . '/partials/collection.php';
 		$html = (string) ob_get_clean();
@@ -376,20 +387,6 @@ class Gallery {
 			'max_num_pages' => $max_num_pages,
 			'current_page'  => $page_number,
 		);
-	}
-
-	/**
-	 * Renders the gallery HTML for a specific page.
-	 *
-	 * @deprecated Use collection_page instead.
-	 *
-	 * @param int|string $page_number The current page number.
-	 * @param array      $query_atts  The gallery query attributes.
-	 * @return string The rendered HTML.
-	 */
-	public function gallery_page( $page_number, array $query_atts ) {
-		$result = (array) $this->collection_page( $page_number, $query_atts, 'gallery' );
-		return (string) $result['html'];
 	}
 
 	/**

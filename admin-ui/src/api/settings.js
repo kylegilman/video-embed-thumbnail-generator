@@ -6,6 +6,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 
 let cachedSettings = null;
+let settingsPromise = null;
 
 /**
  * Fetches global Videopack settings.
@@ -20,14 +21,23 @@ export const getSettings = async () => {
 		return cachedSettings;
 	}
 
-	try {
-		const allSettings = await apiFetch({ path: '/wp/v2/settings' });
-		cachedSettings = allSettings.videopack_options || {};
-		return applyFilters('videopack.utils.getSettings', cachedSettings);
-	} catch (error) {
-		console.error('Error fetching settings:', error);
-		throw error;
+	if (settingsPromise) {
+		return settingsPromise;
 	}
+
+	settingsPromise = apiFetch({ path: '/wp/v2/settings' })
+		.then((allSettings) => {
+			cachedSettings = allSettings.videopack_options || {};
+			settingsPromise = null;
+			return applyFilters('videopack.utils.getSettings', cachedSettings);
+		})
+		.catch((error) => {
+			settingsPromise = null;
+			console.error('Error fetching settings:', error);
+			throw error;
+		});
+
+	return settingsPromise;
 };
 
 /**

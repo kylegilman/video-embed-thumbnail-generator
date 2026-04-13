@@ -101,8 +101,9 @@ const useVideoSettings = (
 			if (id && autoSave) {
 				const metaToSave = {};
 				metaKeys.forEach((key) => {
-					const value = currentAttrs[key];
-					if (value !== undefined && value !== null) {
+					if (key in currentAttrs) {
+						const value = currentAttrs[key];
+
 						// Skip empty strings for the title key to allow fallback to attachment title.
 						if (key === 'title' && value === '') {
 							metaToSave[key] = null;

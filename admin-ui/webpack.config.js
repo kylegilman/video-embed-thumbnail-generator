@@ -1,18 +1,32 @@
 const defaultConfig = require('@wordpress/scripts/config/webpack.config');
+const { getWebpackEntryPoints } = require('@wordpress/scripts/utils/config');
 const path = require('path');
 
-// Exclude the default entry from the config, we'll define our own.
-const { entry, ...config } = defaultConfig;
+// Execute `getWebpackEntryPoints` safely. Under `@wordpress/scripts`, `getWebpackEntryPoints`
+// returns an object of dynamically discovered entry points from block.json files in `src/`.
+const blockEntries =
+	typeof getWebpackEntryPoints === 'function' ? getWebpackEntryPoints() : {};
 
+// Get the default entry object if it's a function or an object.
+let defaultEntries = {};
+if (typeof defaultConfig.entry === 'function') {
+	defaultEntries = defaultConfig.entry(); // Wait, getting it synchronously might be an issue. Let's merge standard block discovery.
+} else if (typeof defaultConfig.entry === 'object') {
+	defaultEntries = defaultConfig.entry;
+}
+
+// We will explicitly use the discovered blockEntries.
 module.exports = {
-	...config,
+	...defaultConfig,
 	entry: {
-		// Blocks bundle
-		blocks: [
-			path.resolve(process.cwd(), 'src/blocks/videopack-video'),
-			path.resolve(process.cwd(), 'src/blocks/videopack-gallery'),
-			path.resolve(process.cwd(), 'src/blocks/videopack-list'),
-		],
+		...defaultEntries,
+		...blockEntries,
+
+		'videopack-player': path.resolve(
+			process.cwd(),
+			'src/videopack-player.scss'
+		),
+
 		// Admin screens bundle
 		'admin-screens': [
 			path.resolve(process.cwd(), 'src/features/settings/settings.js'),
@@ -42,7 +56,7 @@ module.exports = {
 		videopack: path.resolve(process.cwd(), 'src/videopack-admin.js'),
 	},
 	optimization: {
-		...config.optimization,
-		minimize: false,
+		...defaultConfig.optimization,
+		minimize: false, // Ensure this isn't lost if needed
 	},
 };

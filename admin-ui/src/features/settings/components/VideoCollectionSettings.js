@@ -268,12 +268,12 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 					<FlexItem>
 						<Button
 							icon={
-								gallery_order === 'ASC'
+								gallery_order === 'asc'
 									? sortAscending
 									: sortDescending
 							}
 							label={
-								gallery_order === 'ASC'
+								gallery_order === 'asc'
 									? __(
 											'Ascending',
 											'video-embed-thumbnail-generator'
@@ -285,7 +285,7 @@ const VideoCollectionSettings = ({ settings, changeHandlerFactory }) => {
 							}
 							onClick={() =>
 								changeHandlerFactory.gallery_order(
-									gallery_order === 'ASC' ? 'DESC' : 'ASC'
+									gallery_order === 'asc' ? 'desc' : 'asc'
 								)
 							}
 							showTooltip

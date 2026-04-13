@@ -187,7 +187,7 @@ class Edit_Posts implements Hook_Subscriber {
 					$html .= ' gallery_orderby="' . esc_attr( (string) $videopack_postmeta['gallery_orderby'] ) . '"';
 				}
 				if ( ! empty( $videopack_postmeta['gallery_order'] )
-					&& (string) $videopack_postmeta['gallery_order'] !== 'ASC'
+					&& (string) $videopack_postmeta['gallery_order'] !== 'asc'
 				) {
 					$html .= ' gallery_order="' . esc_attr( (string) $videopack_postmeta['gallery_order'] ) . '"';
 				}

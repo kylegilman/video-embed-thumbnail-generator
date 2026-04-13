@@ -117,7 +117,7 @@ class Shortcode implements Hook_Subscriber {
 			'default_atts'    => array(
 				'id'                            => null,
 				'orderby'                       => 'menu_order ID',
-				'order'                         => 'ASC',
+				'order'                         => 'asc',
 				'videos'                        => $this->options['collection_video_limit'] ?? -1,
 				'start'                         => '',
 				'gallery'                       => 'false',
@@ -125,7 +125,7 @@ class Shortcode implements Hook_Subscriber {
 				'gallery_category'              => '',
 				'gallery_tag'                   => '',
 				'gallery_orderby'               => 'menu_order ID',
-				'gallery_order'                 => 'ASC',
+				'gallery_order'                 => 'asc',
 				'gallery_exclude'               => '',
 				'gallery_include'               => '',
 				'gallery_id'                    => $post_id,
@@ -144,6 +144,7 @@ class Shortcode implements Hook_Subscriber {
 				'grid_metadata'                 => 'thumbnail,duration,title,views,date',
 				'grid_link_to'                  => 'post',
 				'grid_columns'                  => 3,
+				'is_modular_engine'             => false,
 			),
 			'options_atts'    => array(
 				'width',
@@ -209,6 +210,7 @@ class Shortcode implements Hook_Subscriber {
 				'gallery_tag',
 				'collection_video_limit',
 				'skin',
+				'is_modular_engine',
 			),
 			'boolean_convert' => array(
 				'endofvideooverlaysame',
@@ -633,10 +635,63 @@ class Shortcode implements Hook_Subscriber {
 	}
 
 	/**
-	 * Main shortcode handler.
+	 * Prepares the player for rendering.
 	 *
-	 * @param array|string $atts    The shortcode attributes.
-	 * @param string       $content The shortcode content (video URL).
+	 * Handles source resolution, attribute processing, and script enqueuing.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return array{player: \Videopack\Frontend\Video_Players\Player, final_atts: array, source: \Videopack\Video_Source\Source}|null Array containing player instance, final attributes, and source, or null on failure.
+	 */
+	public function prepare_player( $atts ) {
+		$source_input = '';
+		if ( ! empty( $atts['id'] ) ) {
+			$source_input = trim( (string) $atts['id'] );
+		} elseif ( ! empty( $atts['src'] ) ) {
+			$source_input = trim( (string) $atts['src'] );
+		}
+
+		if ( ! $source_input ) {
+			return null;
+		}
+
+		// Create the Source object.
+		$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options );
+
+		if ( ! $source || ! $source->exists() ) {
+			return null;
+		}
+
+		// Get the final, resolved attributes for the video.
+		$final_atts = (array) $this->get_final_atts( $atts, $source );
+
+		// Determine the player type based on shortcode attribute or global option.
+		$player_type = (string) ( $final_atts['embed_method'] ?? ( $this->options['embed_method'] ?? 'Video.js' ) );
+		$player      = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options );
+
+		// Set the source and final attributes on the player instance.
+		$player->set_source( $source );
+		$player->set_atts( $final_atts );
+
+		// Sync Player ID if passed.
+		if ( ! empty( $final_atts['id'] ) ) {
+			$player->set_id( $final_atts['id'] );
+		}
+
+		// Enqueue player-specific scripts and styles.
+		$player->enqueue_scripts();
+
+		return array(
+			'player'     => $player,
+			'final_atts' => $final_atts,
+			'source'     => $source,
+		);
+	}
+
+	/**
+	 * Renders the shortcode output.
+	 *
+	 * @param array  $atts    The shortcode attributes.
+	 * @param string $content The shortcode content (video URL).
 	 * @return string The rendered player or gallery HTML.
 	 */
 	public function do( $atts, $content = '' ) {
@@ -687,58 +742,74 @@ class Shortcode implements Hook_Subscriber {
 
 			$result = (array) $gallery->collection_page( $page, $query_atts, $layout );
 			$code   = (string) $result['html'];
+			$final_atts = $query_atts;
 		} else {
-			$post_id = get_the_ID();
-			if ( ! $post_id && ! is_admin() ) {
-				$post_id = get_queried_object_id();
-			}
+			// VIDEO PART
+			$prepared = $this->prepare_player( $atts );
 
-			// Determine the video source based on shortcode attributes or content.
-			$source_input = '';
-			if ( ! empty( $query_atts['id'] ) ) {
-				$source_input = trim( (string) $query_atts['id'] );
-			} elseif ( ! empty( $content ) ) {
-				$source_input = trim( (string) $content );
-				// Workaround for relative video URL.
-				if ( substr( $source_input, 0, 1 ) === '/' ) {
-					$source_input = (string) get_bloginfo( 'url' ) . $source_input;
-				}
-			}
-
-			// Create the Source object.
-			$source = \Videopack\Video_Source\Source_Factory::create( $source_input, $this->options );
-
-			if ( ! $source || ! $source->exists() ) {
+			if ( ! $prepared ) {
 				return '';
 			}
 
-			// Get the final, resolved attributes for the video.
-			$final_atts = $this->get_final_atts( $atts, $source );
+			$player     = $prepared['player'];
+			$final_atts = $prepared['final_atts'];
+			$source     = $prepared['source'];
 
-			// Determine the player type based on shortcode attribute or global option.
-			$player_type = (string) ( $final_atts['embed_method'] ?? ( $this->options['embed_method'] ?? 'Video.js' ) );
-			$player      = \Videopack\Frontend\Video_Players\Player_Factory::create( $player_type, $this->options );
+			// If it's a modular request (from a block), we just return the player code.
+			if ( ! empty( $final_atts['is_modular_engine'] ) ) {
+				return $player->get_player_code( $final_atts );
+			}
 
-			// Set the source and final attributes on the player instance.
-			$player->set_source( $source );
-			$player->set_atts( $final_atts );
+			// Otherwise, full legacy assembly.
+			$inner_content = '';
 
-			// Enqueue player-specific scripts and styles.
-			$player->enqueue_scripts();
+			if ( empty( $content ) ) {
+				$player_content = '';
 
-			// Get the generated HTML code for the video player.
-			$code = (string) $player->get_player_code( $final_atts );
+				if ( ! empty( $final_atts['overlay_title'] ) || ! empty( $final_atts['downloadlink'] ) ) {
+					$player_content .= Modular_Renderer::render_video_title( $final_atts, $source, $player->get_id() );
+				}
+
+				if ( ! empty( $this->options['watermark'] ) ) {
+					$watermark_atts = array(
+						'url'    => $this->options['watermark_url'] ?? '',
+						'linkTo' => $this->options['watermark_link_to'] ?? '',
+						'scale'  => $this->options['watermark_scale'] ?? 10,
+						'align'  => $this->options['watermark_align'] ?? 'right',
+						'valign' => $this->options['watermark_valign'] ?? 'bottom',
+						'x'      => $this->options['watermark_x'] ?? 5,
+						'y'      => $this->options['watermark_y'] ?? 7,
+						'skin'   => (string) ( $final_atts['skin'] ?? 'default' ),
+					);
+					$player_content .= Modular_Renderer::render_watermark( $watermark_atts );
+				}
+
+				$player_content .= $player->get_player_code( $final_atts );
+
+				$inner_content .= sprintf( '<div class="videopack-player-relative-wrapper">%s</div>', $player_content );
+
+				if ( ! empty( $final_atts['view_count'] ) ) {
+					$inner_content .= Modular_Renderer::render_view_count( $source );
+				}
+
+				if ( ! empty( $final_atts['caption'] ) ) {
+					$inner_content .= Modular_Renderer::render_video_caption( $final_atts['caption'] );
+				}
+			} else {
+				$inner_content = $content;
+			}
+
+			// Wrap the inner content.
+			$code = Modular_Renderer::render_video_container( $final_atts, $inner_content );
 		}
 
 		$code = (string) wp_kses( $code, ( new \Videopack\Common\Validate() )->allowed_html() );
-		/**
-		 * Filter the rendered shortcode output.
-		 *
-		 * @param string $code       The rendered HTML.
-		 * @param array  $query_atts The sanitized attributes.
-		 * @param string $content    The shortcode content.
-		 */
-		return (string) apply_filters( 'videopack_shortcode', $code, $query_atts, $content );
+
+		if ( ! is_admin() ) {
+			wp_enqueue_style( 'videopack-player' );
+		}
+
+		return (string) apply_filters( 'videopack_shortcode', $code, $final_atts, $content );
 	}
 
 	/**

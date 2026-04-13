@@ -1,0 +1,57 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "videopack/video-watermark",
+	"title": "Video Watermark",
+	"category": "media",
+	"icon": "art",
+	"description": "Displays a watermark overlay on the video.",
+	"parent": [ "videopack/videopack-video", "videopack/video-player-engine" ],
+	"usesContext": [
+		"postId",
+		"videopack/watermark",
+		"videopack/watermark_link_to",
+		"videopack/watermark_styles"
+	],
+	"attributes": {
+		"url": {
+			"type": "string"
+		},
+		"linkToType": {
+			"type": "string",
+			"default": "false"
+		},
+		"customLinkUrl": {
+			"type": "string"
+		},
+		"linkTo": {
+			"type": "string"
+		},
+		"align": {
+			"type": "string",
+			"default": "right"
+		},
+		"valign": {
+			"type": "string",
+			"default": "bottom"
+		},
+		"scale": {
+			"type": "number",
+			"default": 10
+		},
+		"x": {
+			"type": "number",
+			"default": 5
+		},
+		"y": {
+			"type": "number",
+			"default": 7
+		}
+	},
+	"supports": {
+		"html": false,
+		"reusable": false
+	},
+	"textdomain": "video-embed-thumbnail-generator",
+	"editorScript": "file:./index.js"
+}
