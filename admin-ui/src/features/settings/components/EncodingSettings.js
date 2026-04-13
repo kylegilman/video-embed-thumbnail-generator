@@ -1,13 +1,8 @@
 /* global videopack_config */
 
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	getUsersWithCapability,
-} from '../../../utils/utils';
-import {
-	startBatchProcess,
-	getBatchProgress,
-} from '../../../api/media';
+import { getUsersWithCapability } from '../../../utils/utils';
+import { startBatchProcess, getBatchProgress } from '../../../api/media';
 import useBatchProcess from '../../../hooks/useBatchProcess';
 import {
 	BaseControl,

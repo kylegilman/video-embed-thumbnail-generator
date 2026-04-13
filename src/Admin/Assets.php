@@ -46,11 +46,6 @@ class Assets implements Hook_Subscriber {
 	 *
 	 * @return array
 	 */
-	/**
-	 * Returns an array of actions to register.
-	 *
-	 * @return array
-	 */
 	public function get_actions(): array {
 		return array(
 			array(
@@ -71,10 +66,9 @@ class Assets implements Hook_Subscriber {
 				'callback' => 'enqueue_media_library_assets',
 			),
 			array(
-				'hook'     => 'enqueue_block_assets',
-				'callback' => 'enqueue_block_frontend_assets',
+				'hook'     => 'enqueue_block_editor_assets',
+				'callback' => 'localize_block_editor_config',
 			),
-
 		);
 	}
 
@@ -95,24 +89,25 @@ class Assets implements Hook_Subscriber {
 		$build_url = (string) plugins_url( 'admin-ui/build/', VIDEOPACK_PLUGIN_FILE );
 
 		$assets = array(
-			'videopack-blocks'         => 'blocks',
 			'videopack-admin-screens'  => 'admin-screens',
 			'videopack-media-library'  => 'media-library',
 			'videopack-classic-editor' => 'classic-editor',
 			'videopack-frontend'       => 'videopack',
+			'videopack-player'         => 'videopack-player',
 		);
+
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
+		$player->register_scripts();
 
 		foreach ( $assets as $handle => $filename ) {
 			$asset_file = (string) $build_dir . (string) $filename . '.asset.php';
 			if ( file_exists( $asset_file ) ) {
 				$asset  = (array) require $asset_file;
-				$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
-				$player->register_scripts();
 
 				$player_script_deps = array();
 				$player_style_deps  = array();
 
-				if ( in_array( (string) $handle, array( 'videopack-blocks', 'videopack-admin-screens', 'videopack-media-library' ), true ) ) {
+				if ( in_array( (string) $handle, array( 'videopack-admin-screens', 'videopack-media-library' ), true ) ) {
 					$player_script_deps = (array) $player->get_player_script_handles();
 					$player_style_deps  = (array) $player->get_player_style_handles();
 				}
@@ -150,8 +145,6 @@ class Assets implements Hook_Subscriber {
 		$config_data = (array) $ui->get_videopack_config_data();
 
 		$handles = array(
-
-			'videopack-blocks',
 			'videopack-admin-screens',
 			'videopack-media-library',
 			'videopack-classic-editor',
@@ -162,6 +155,42 @@ class Assets implements Hook_Subscriber {
 			wp_localize_script( (string) $handle, 'videopack_config', $config_data );
 		}
 	}
+
+	/**
+	 * Localizes the global videopack_config object specifically for the block editor.
+	 */
+	public function localize_block_editor_config() {
+		$ui          = new Ui( $this->options, new Formats\Registry( $this->options ) );
+		$config_data = (array) $ui->get_videopack_config_data();
+
+		// Localize to wp-blocks as it's a safe base handle for all blocks.
+		wp_localize_script( 'wp-blocks', 'videopack_config', $config_data );
+
+		// Enqueue Video.js and all available skins to support live switching in the editor.
+		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( 'Video.js', $this->options, new Formats\Registry( $this->options ) );
+		$player->register_scripts();
+		$player->enqueue_styles();
+		
+		if ( method_exists( $player, 'enqueue_all_skins' ) ) {
+			$player->enqueue_all_skins();
+
+			// Inject into Gutenberg iframe in the correct order:
+			// base video-js styles MUST come before any skin stylesheets,
+			// otherwise skins get overridden by the base styles and produce
+			// doubled icons or incorrect rendering.
+			global $wp_styles;
+			if ( isset( $wp_styles->registered['video-js'] ) ) {
+				add_editor_style( $wp_styles->registered['video-js']->src );
+			}
+			$skins = array( 'vjs-theme-videopack', 'kg-video-js-skin', 'vjs-theme-city', 'vjs-theme-fantasy', 'vjs-theme-forest', 'vjs-theme-sea' );
+			foreach ( $skins as $skin ) {
+				if ( isset( $wp_styles->registered[ $skin ] ) ) {
+					add_editor_style( $wp_styles->registered[ $skin ]->src );
+				}
+			}
+		}
+	}
+
 	/**
 	 * Registers player scripts on the frontend.
 	 */
@@ -169,14 +198,6 @@ class Assets implements Hook_Subscriber {
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, new Formats\Registry( $this->options ) );
 		$player->register_scripts();
 	}
-
-	/**
-	 * Enqueues assets for the blocks on the frontend.
-	 */
-	public function enqueue_block_frontend_assets() {
-		wp_enqueue_style( 'videopack-blocks' );
-	}
-
 
 	/**
 	 * Enqueues assets for various admin screens.

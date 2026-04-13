@@ -8,6 +8,13 @@
 	margin: 1em 0;
 	user-select: none;
 
+	&.is-placeholder,
+	.is-placeholder & {
+		opacity: 0.4;
+		filter: grayscale(1);
+		pointer-events: none;
+	}
+
 	.videopack-pagination-button,
 	.page-numbers {
 		display: inline-flex;

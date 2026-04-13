@@ -20,9 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var array                        $videos_data  Prepared video data for display.
  */
 
-$classes    = array( 'videopack-collection-wrapper' );
-$classes[]  = 'gallery' === $layout ? 'videopack-gallery-wrapper' : 'videopack-list-wrapper';
-$style_vars = array();
+$classes       = array( 'videopack-collection-wrapper' );
+$classes[]     = 'gallery' === $layout ? 'videopack-gallery-wrapper' : 'videopack-list-wrapper';
+$embed_method = $this->options['embed_method'] ?? 'Video.js';
+$style_vars    = array();
 
 if ( 'gallery' === $layout && ! empty( $query_atts['gallery_columns'] ) && (int) $query_atts['gallery_columns'] > 0 ) {
 	$style_vars[] = '--gallery-columns: ' . esc_attr( (string) $query_atts['gallery_columns'] );
@@ -72,7 +73,9 @@ if ( ! empty( $pagination_active_color ) ) {
 	$style_vars[] = '--videopack-pagination-active-color: ' . esc_attr( (string) $pagination_active_color );
 }
 
-$style_vars[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
+if ( 'WordPress Default' === $embed_method ) {
+	$style_vars[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
+}
 
 
 ?>
@@ -93,42 +96,7 @@ $style_vars[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediae
 			<?php endif; ?>
 		>
 			<?php foreach ( (array) $videos_data as $video ) : ?>
-				<div class="gallery-thumbnail videopack-gallery-item <?php echo esc_attr( (string) ( $query_atts['skin'] ?? '' ) ); ?>" data-attachment-id="<?php echo esc_attr( (string) $video['attachment_id'] ); ?>" data-videopack-id="<?php echo esc_attr( (string) $video['player_vars']['id'] ); ?>">
-					<div class="gallery-item-clickable-area">
-						<img src="<?php echo esc_url( (string) $video['poster_url'] ); ?>"
-							<?php
-							if ( ! empty( $video['poster_srcset'] ) ) {
-								printf( 'srcset="%s"', esc_attr( (string) $video['poster_srcset'] ) );
-							}
-							?>
-							alt="<?php echo esc_attr( (string) $video['title'] ); ?>">
-						<?php if ( 'WordPress Default' === (string) ( $this->options['embed_method'] ?? '' ) ) : ?>
-							<div class="mejs-overlay mejs-layer mejs-overlay-play">
-								<div class="mejs-overlay-button" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Play', 'video-embed-thumbnail-generator' ); ?>" aria-pressed="false"></div>
-							</div>
-						<?php elseif ( 'None' === (string) ( $this->options['embed_method'] ?? '' ) ) : ?>
-							<div class="play-button-container videopack-none">
-								<svg class="videopack-none-play-button" viewbox="0 0 100 100" title="<?php esc_attr_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?>">
-									<circle class="play-button-circle" cx="50" cy="50" r="45" />
-									<polygon class="play-button-triangle" points="40,30 70,50 40,70" />
-								</svg>
-							</div>
-						<?php else : ?>
-							<div class="play-button-container video-js <?php echo esc_attr( (string) ( $query_atts['skin'] ?? 'vjs-theme-videopack' ) ); ?> vjs-big-play-centered vjs-paused vjs-controls-enabled">
-								<button class="vjs-big-play-button" type="button" title="<?php esc_attr_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?>" aria-disabled="false">
-									<span class="vjs-icon-placeholder" aria-hidden="true"></span>
-									<span class="vjs-control-text" aria-live="polite"><?php esc_html_e( 'Play Video', 'video-embed-thumbnail-generator' ); ?></span>
-								</button>
-							</div>
-						<?php endif; ?>
-						<?php if ( ! empty( $query_atts['gallery_title'] ) ) : ?>
-							<div class="video-title">
-								<div class="video-title-background"></div>
-								<span class="video-title-text"><?php echo esc_html( (string) $video['title'] ); ?></span>
-							</div>
-						<?php endif; ?>
-					</div>
-				</div>
+				<?php include __DIR__ . '/gallery-item.php'; ?>
 			<?php endforeach; ?>
 		</div>
 	<?php else : ?>

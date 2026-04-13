@@ -122,6 +122,22 @@ const pause = (
 	</svg>
 );
 
+const playOutline = (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		height="24px"
+		viewBox="0 0 24 24"
+		width="24px"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="2"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+	>
+		<path d="M8 5v14l11-7z" fill="none" />
+	</svg>
+);
+
 export {
 	insertImage,
 	save,
@@ -131,5 +147,6 @@ export {
 	sortAscending,
 	sortDescending,
 	play,
+	playOutline,
 	pause,
 };

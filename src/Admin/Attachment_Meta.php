@@ -129,7 +129,7 @@ class Attachment_Meta implements Hook_Subscriber {
 			'gallery_exclude'   => null,
 			'gallery_include'   => null,
 			'gallery_orderby'   => 'menu_order ID',
-			'gallery_order'     => 'ASC',
+			'gallery_order'     => 'asc',
 			'gallery_id'        => null,
 			'duration'          => null,
 			'aspect'            => null,
@@ -337,12 +337,11 @@ class Attachment_Meta implements Hook_Subscriber {
 		$meta_to_persist = array();
 
 		foreach ( $meta_to_save as $key => $value ) {
-			if (
-			! array_key_exists( (string) $key, $defaults )
-			|| ( $value !== $defaults[ (string) $key ] )
-			|| ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ (string) $key ] ) )
-			) {
-				$meta_to_persist[ (string) $key ] = $value;
+			if ( array_key_exists( (string) $key, $defaults ) ) {
+				// Only save if it differs from the default value.
+				if ( ( $value !== $defaults[ (string) $key ] ) || ( is_array( $value ) && ! empty( $value ) && empty( $defaults[ (string) $key ] ) ) ) {
+					$meta_to_persist[ (string) $key ] = $value;
+				}
 			}
 		}
 

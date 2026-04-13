@@ -62,7 +62,6 @@ const GalleryBlock = ({
 		}
 	}, [options]);
 
-
 	const queryData = useVideoQuery(attributes, previewPostId);
 
 	const handleRemoveItem = (attachmentIdToRemove) => {

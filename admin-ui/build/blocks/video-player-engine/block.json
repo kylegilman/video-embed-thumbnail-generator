@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/video-player-engine",
+  "title": "Video Player Overlays",
+  "category": "media",
+  "icon": "format-video",
+  "parent": [
+    "videopack/videopack-video"
+  ],
+  "allowedBlocks": [
+    "videopack/video-watermark",
+    "videopack/video-title"
+  ],
+  "editorStyle": "file:./index.css",
+  "usesContext": [
+    "postId",
+    "videopack/skin",
+    "videopack/autoplay",
+    "videopack/controls",
+    "videopack/loop",
+    "videopack/muted",
+    "videopack/playsinline",
+    "videopack/poster",
+    "videopack/preload",
+    "videopack/src",
+    "videopack/volume",
+    "videopack/auto_res",
+    "videopack/auto_codec",
+    "videopack/sources",
+    "videopack/source_groups",
+    "videopack/text_tracks",
+    "videopack/playback_rate",
+    "videopack/watermark",
+    "videopack/watermark_styles",
+    "videopack/watermark_link_to",
+    "videopack/default_ratio",
+    "videopack/fixed_aspect",
+    "videopack/fullwidth",
+    "videopack/play_button_color",
+    "videopack/play_button_icon_color",
+    "videopack/control_bar_bg_color",
+    "videopack/control_bar_color",
+    "videopack/title_color",
+    "videopack/title_background_color",
+    "videopack/embed_method"
+  ],
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "lock": true
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js"
+}

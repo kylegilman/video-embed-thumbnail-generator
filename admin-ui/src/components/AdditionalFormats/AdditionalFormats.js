@@ -687,7 +687,7 @@ const AdditionalFormats = ({
 					);
 				});
 				return acc;
-		  }, {})
+			}, {})
 		: {};
 
 	return (

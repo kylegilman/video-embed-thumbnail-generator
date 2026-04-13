@@ -4,7 +4,8 @@
 /* Shared Play Button Styles and Alpha Calculations */
 
 .videopack-wrapper,
-.videopack-gallery-wrapper {
+.videopack-gallery-wrapper,
+.gallery-thumbnail {
 	/* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
 	--videopack-play-button-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%)")};
 	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
@@ -20,14 +21,12 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	width: 80px;
-	height: 80px;
 	margin: 0;
 	z-index: 2;
 }
 
 /* 1. Universal Color Logic: Apply to symbols and borders when any color is set */
-:is(.videopack-wrapper, .videopack-gallery-wrapper) {
+:is(.videopack-wrapper, .videopack-gallery-wrapper, .gallery-thumbnail) {
 	&.videopack-has-play-button-color,
 	&.videopack-has-play-button-icon-color {
 		/* The symbol (icon) should always use the foreground color (Icon || Accent) */
@@ -64,7 +63,8 @@
 		}
 	}
 
-	&.videopack-has-play-button-color {
+	&.videopack-has-play-button-color,
+	&.videopack-has-play-button-icon-color {
 		/* 2. Accent Color Only Logic: Semi-transparent backgrounds for traditional skins */
 		:is(.vjs-theme-videopack, .vjs-theme-city, .vjs-theme-sea, .kg-video-js-skin, .vjs-default-skin, .vjs-theme-default) {
 			.vjs-big-play-button {
@@ -101,7 +101,8 @@
 			}
 
 			&:hover::after {
-				background-color: var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color));
+				// Use play-button-icon-color (labeled hover for MEJS) if set, otherwise fallback to derived alpha.
+				background-color: var(--videopack-play-button-icon-color, var(--videopack-play-button-bg-color-alpha-hover, var(--videopack-play-button-color)));
 				mask-position: -80px -39px;
 				-webkit-mask-position: -80px -39px;
 			}
@@ -109,39 +110,6 @@
 	}
 }
 
-/* Common sizing and scaling for all play buttons using container queries */
-.videopack-wrapper,
-.videopack-gallery-wrapper,
-.gallery-thumbnail {
-	@container (max-width: 499px) {
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.9);
-		}
-	}
-
-	@container (max-width: 399px) {
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.8);
-		}
-	}
-
-	@container (max-width: 359px) {
-		.vjs-big-play-button,
-		.mejs-overlay-button {
-			transform: scale(0.7);
-		}
-	}
-
-	@container (max-width: 260px) {
-		.vjs-big-play-button,
-		.mejs-overlay-button,
-		.videopack-none-play-button {
-			transform: translate(-50%, -50%) scale(0.6);
-		}
-	}
-}
 
 /* None Player SVG Play Button */
 .videopack-none-play-button {
@@ -149,8 +117,8 @@
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	width: 80px;
-	height: 80px;
+	width: 5em;
+	height: 5em;
 	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 	transition: transform 0.15s ease, opacity 0.15s ease;
 	z-index: 2;

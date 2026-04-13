@@ -265,8 +265,13 @@ class Public_Controller extends Controller {
 	protected function prepare_data_for_rest_response( $post ) {
 		$post_id = (int) $post['id'];
 		$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options, $this->format_registry );
-		if ( ! $source || ! $source->exists() ) {
-			return array( 'srcset' => (string) wp_get_attachment_image_srcset( $post_id ), 'sources' => array(), 'source_groups' => new \stdClass() );
+		if ( ! $source ) {
+			return array(
+				'srcset'        => (string) wp_get_attachment_image_srcset( $post_id ),
+				'sources'       => array(),
+				'source_groups' => new \stdClass(),
+				'poster'        => '',
+			);
 		}
 
 		$player = \Videopack\Frontend\Video_Players\Player_Factory::create( $this->options['embed_method'] ?? 'Video.js', $this->options, $this->format_registry );
@@ -275,6 +280,7 @@ class Public_Controller extends Controller {
 			'srcset'        => (string) wp_get_attachment_image_srcset( $post_id ),
 			'sources'       => $player->get_flat_sources(),
 			'source_groups' => $player->get_sources(),
+			'poster'        => $source->get_poster(),
 		);
 	}
 

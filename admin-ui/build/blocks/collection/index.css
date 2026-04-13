@@ -1,0 +1,288 @@
+/*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/CompactColorPicker/CompactColorPicker.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************/
+.videopack-settings-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #757575;
+  margin: 0 0 12px 0 !important;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 4px;
+}
+
+.videopack-color-section {
+  margin-bottom: 24px;
+}
+
+.videopack-color-section:last-child {
+  margin-bottom: 0;
+}
+
+.videopack-color-flex-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.videopack-color-flex-row.is-pagination {
+  justify-content: space-between;
+}
+
+.videopack-color-flex-row.is-pagination .videopack-color-flex-item {
+  flex: 1;
+  width: auto;
+}
+
+.videopack-color-flex-item {
+  width: 22%;
+}
+
+.videopack-color-picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.videopack-color-picker-label {
+  font-size: 10.5px;
+  color: #1e1e1e;
+  text-align: center;
+  line-height: 1.2;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videopack-color-picker-button {
+  padding: 4px !important;
+  min-width: unset !important;
+  height: auto !important;
+  border-radius: 50% !important;
+}
+
+.videopack-color-picker-palette-wrapper {
+  padding: 12px;
+  width: 280px;
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/components/InspectorControls/CollectionSettingsPanel.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************/
+/**
+ * Colors
+ */
+.videopack-sort-control-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.videopack-sort-control-wrapper .components-base-control {
+  flex-grow: 1;
+  margin-bottom: 0;
+}
+.videopack-sort-control-wrapper .components-button.has-icon {
+  margin-bottom: 14px;
+}
+.videopack-excluded-videos {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+.videopack-excluded-videos p {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.videopack-excluded-videos .videopack-excluded-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.videopack-excluded-videos .videopack-excluded-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f0f0f0;
+  padding: 5px;
+  border-radius: 4px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail {
+  width: 60px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-thumbnail svg {
+  width: 16px;
+  height: 16px;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-excluded-title {
+  flex-grow: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item {
+  min-width: 24px;
+  padding: 0;
+  color: #949494;
+  background: transparent;
+}
+.videopack-excluded-videos .videopack-excluded-item .videopack-restore-item:hover {
+  color: #cc1818;
+  background: #e0e0e0;
+}
+.components-base-control:has(.components-text-control__input),
+.components-base-control:has(.components-select-control__input),
+.components-base-control.components-toggle-control:where(:not(:last-child)) {
+  margin-bottom: 16px;
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/blocks/collection/editor.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************/
+.videopack-collection {
+  border: 1px dashed #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #fdfdfd;
+}
+.videopack-collection .videopack-collection-grid {
+  display: grid;
+  gap: 20px;
+}
+.videopack-collection.layout-grid.columns-1 .videopack-collection-grid {
+  grid-template-columns: repeat(1, 1fr);
+}
+.videopack-collection.layout-grid.columns-2 .videopack-collection-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+.videopack-collection.layout-grid.columns-3 .videopack-collection-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+.videopack-collection.layout-grid.columns-4 .videopack-collection-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+.videopack-collection.layout-grid.columns-5 .videopack-collection-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+.videopack-collection.layout-grid.columns-6 .videopack-collection-grid {
+  grid-template-columns: repeat(6, 1fr);
+}
+.videopack-collection.layout-list .videopack-collection-grid {
+  grid-template-columns: 1fr;
+}
+.videopack-collection.layout-list .videopack-collection-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-videopack-video,
+.videopack-collection.layout-list .videopack-collection-item .videopack-video-preview,
+.videopack-collection.layout-list .videopack-collection-item .videopack-thumbnail-container,
+.videopack-collection.layout-list .videopack-collection-item .videopack-thumbnail-placeholder,
+.videopack-collection.layout-list .videopack-collection-item .videopack-thumbnail-wrapper {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-video-title,
+.videopack-collection.layout-list .videopack-collection-item .videopack-video-title,
+.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-video-duration,
+.videopack-collection.layout-list .videopack-collection-item .videopack-video-duration,
+.videopack-collection.layout-list .videopack-collection-item .wp-block-videopack-view-count,
+.videopack-collection.layout-list .videopack-collection-item .videopack-view-count {
+  flex: 1 1 200px;
+  margin-top: 0;
+}
+.videopack-collection.layout-list .videopack-collection-item .block-editor-inner-blocks,
+.videopack-collection.layout-list .videopack-collection-item .block-editor-block-list__layout {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  min-width: 0;
+}
+.videopack-collection.layout-list .videopack-collection-item:last-child {
+  border-bottom: none;
+}
+.videopack-collection .videopack-collection-item {
+  position: relative;
+  transition: all 0.2s ease;
+}
+.videopack-collection .videopack-collection-item.is-editable {
+  border: 2px solid #3858e9;
+  padding: 5px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(56, 88, 233, 0.1);
+}
+.videopack-collection .videopack-collection-item.is-editable::before {
+  content: "Template";
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #3858e9;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  z-index: 10;
+}
+.videopack-collection .videopack-collection-item.is-preview {
+  opacity: 0.85;
+  filter: grayscale(0.2);
+  pointer-events: none;
+}
+.videopack-collection .videopack-thumbnail-container,
+.videopack-collection .videopack-thumbnail-placeholder,
+.videopack-collection .videopack-thumbnail-wrapper {
+  max-width: 100%;
+  height: auto;
+}
+.videopack-collection .videopack-thumbnail-container img,
+.videopack-collection .videopack-thumbnail-placeholder img,
+.videopack-collection .videopack-thumbnail-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+.videopack-collection .videopack-video-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+  color: #1e1e1e;
+}
+.videopack-collection .videopack-collection-preview-placeholder,
+.videopack-collection .videopack-collection-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  color: #757575;
+  font-style: italic;
+  text-align: center;
+  width: 100%;
+}
+
+/*# sourceMappingURL=index.css.map*/

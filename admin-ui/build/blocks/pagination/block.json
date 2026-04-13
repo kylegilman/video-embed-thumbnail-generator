@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/pagination",
+  "title": "Pagination",
+  "category": "media",
+  "icon": "ellipsis",
+  "description": "Displays pagination for the video collection.",
+  "attributes": {
+    "pagination_color": {
+      "type": "string"
+    },
+    "pagination_background_color": {
+      "type": "string"
+    },
+    "pagination_active_bg_color": {
+      "type": "string"
+    },
+    "pagination_active_color": {
+      "type": "string"
+    }
+  },
+  "usesContext": [
+    "videopack/gallery_id",
+    "videopack/gallery_source",
+    "videopack/gallery_pagination",
+    "videopack/gallery_per_page",
+    "videopack/currentPage",
+    "videopack/totalPages",
+    "videopack/pagination_color",
+    "videopack/pagination_background_color",
+    "videopack/pagination_active_bg_color",
+    "videopack/pagination_active_color"
+  ],
+  "supports": {
+    "html": false,
+    "color": {
+      "text": true,
+      "background": true,
+      "link": true
+    }
+  },
+  "editorScript": "file:./index.js"
+}

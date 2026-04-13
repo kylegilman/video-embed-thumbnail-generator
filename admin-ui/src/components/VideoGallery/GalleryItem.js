@@ -11,6 +11,7 @@ import { pencil, close, dragHandle, create } from '@wordpress/icons';
 import { decodeEntities } from '@wordpress/html-entities';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import './GalleryItem.scss';
 
 /**
  * GalleryItem component.
@@ -165,6 +166,12 @@ const GalleryItem = ({
 				}}
 				tabIndex="0"
 				role="button"
+				data-videopack-lightbox="true"
+				data-attachment-id={videoRecord.attachment_id}
+				data-videopack-id={
+					videoRecord.player_vars?.id ||
+					`videopack_player_gallery_${videoRecord.attachment_id}`
+				}
 			>
 				<img
 					src={thumbnailUrl}

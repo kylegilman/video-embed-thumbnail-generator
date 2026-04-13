@@ -232,7 +232,7 @@ class Options implements Hook_Subscriber {
 			'gallery_orderby'               => 'menu_order',
 			'enable_collection_video_limit' => false,
 			'collection_video_limit'        => -1,
-			'gallery_order'                 => 'ASC',
+			'gallery_order'                 => 'asc',
 			'gallery_columns'               => 3,
 			'gallery_end'                   => '',
 			'gallery_pagination'            => false,

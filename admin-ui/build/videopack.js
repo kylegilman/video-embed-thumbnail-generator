@@ -568,6 +568,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 let cachedSettings = null;
+let settingsPromise = null;
 
 /**
  * Fetches global Videopack settings.
@@ -580,16 +581,21 @@ const getSettings = async () => {
   if (cachedSettings) {
     return cachedSettings;
   }
-  try {
-    const allSettings = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
-      path: '/wp/v2/settings'
-    });
+  if (settingsPromise) {
+    return settingsPromise;
+  }
+  settingsPromise = _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+    path: '/wp/v2/settings'
+  }).then(allSettings => {
     cachedSettings = allSettings.videopack_options || {};
+    settingsPromise = null;
     return (0,_wordpress_hooks__WEBPACK_IMPORTED_MODULE_1__.applyFilters)('videopack.utils.getSettings', cachedSettings);
-  } catch (error) {
+  }).catch(error => {
+    settingsPromise = null;
     console.error('Error fetching settings:', error);
     throw error;
-  }
+  });
+  return settingsPromise;
 };
 
 /**
@@ -874,6 +880,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   insertImage: () => (/* binding */ insertImage),
 /* harmony export */   pause: () => (/* binding */ pause),
 /* harmony export */   play: () => (/* binding */ play),
+/* harmony export */   playOutline: () => (/* binding */ playOutline),
 /* harmony export */   save: () => (/* binding */ save),
 /* harmony export */   sortAscending: () => (/* binding */ sortAscending),
 /* harmony export */   sortDescending: () => (/* binding */ sortDescending),
@@ -995,6 +1002,21 @@ const pause = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx
   fill: "currentColor",
   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("path", {
     d: "M6 19h4V5H6v14zm8-14v14h4V5h-4z"
+  })
+});
+const playOutline = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  height: "24px",
+  viewBox: "0 0 24 24",
+  width: "24px",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: "2",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("path", {
+    d: "M8 5v14l11-7z",
+    fill: "none"
   })
 });
 
@@ -1141,13 +1163,16 @@ __webpack_require__.r(__webpack_exports__);
 function CollectionSettingsPanel({
   attributes,
   setAttributes,
-  queryData,
+  queryData = {},
   options = {},
   showGalleryOptions = false,
   isSiteEditor = false,
   blockType = 'gallery',
   // 'gallery', 'grid', or 'list'
-  showManualSource = true
+  showManualSource = true,
+  showPaginationToggle = true,
+  showLayoutSettings = true,
+  showPaginationSettings = true
 }) {
   const displayAttributes = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => ({
     ...options,
@@ -1155,13 +1180,9 @@ function CollectionSettingsPanel({
   }), [options, attributes]);
   const colorFallbacks = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_2__.useMemo)(() => (0,_utils_colors__WEBPACK_IMPORTED_MODULE_7__.getColorFallbacks)(displayAttributes), [displayAttributes]);
   const {
-    gallery_orderby,
-    gallery_order,
     gallery_include,
     gallery_exclude,
     gallery_end,
-    gallery_pagination,
-    gallery_per_page,
     gallery_title,
     gallery_columns,
     collection_video_limit,
@@ -1182,14 +1203,14 @@ function CollectionSettingsPanel({
   } = queryData;
   const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
   const baseGalleryOrderbyOptions = [{
+    value: 'post_date',
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Date', 'video-embed-thumbnail-generator')
+  }, {
     value: 'menu_order',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Default', 'video-embed-thumbnail-generator')
   }, {
     value: 'title',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Title', 'video-embed-thumbnail-generator')
-  }, {
-    value: 'post_date',
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Date', 'video-embed-thumbnail-generator')
   }, {
     value: 'rand',
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Random', 'video-embed-thumbnail-generator')
@@ -1242,28 +1263,28 @@ function CollectionSettingsPanel({
         className: "videopack-sort-control-wrapper",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Sort by', 'video-embed-thumbnail-generator'),
-          value: gallery_orderby,
+          value: displayAttributes.gallery_orderby,
           onChange: attributeChangeFactory('gallery_orderby'),
           options: filteredGalleryOrderbyOptions
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Button, {
-          icon: gallery_order === 'asc' ? _assets_icon__WEBPACK_IMPORTED_MODULE_5__.sortAscending : _assets_icon__WEBPACK_IMPORTED_MODULE_5__.sortDescending,
-          label: gallery_order === 'asc' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Ascending', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Descending', 'video-embed-thumbnail-generator'),
+          icon: displayAttributes.gallery_order === 'asc' ? _assets_icon__WEBPACK_IMPORTED_MODULE_5__.sortAscending : _assets_icon__WEBPACK_IMPORTED_MODULE_5__.sortDescending,
+          label: displayAttributes.gallery_order === 'asc' ? (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Ascending', 'video-embed-thumbnail-generator') : (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Descending', 'video-embed-thumbnail-generator'),
           onClick: () => setAttributes({
-            gallery_order: gallery_order === 'asc' ? 'desc' : 'asc'
+            gallery_order: displayAttributes.gallery_order === 'asc' ? 'desc' : 'asc'
           }),
           showTooltip: true
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
+      }), showPaginationToggle && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
         __nextHasNoMarginBottom: true,
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Paginate', 'video-embed-thumbnail-generator'),
-        checked: !!gallery_pagination,
+        checked: !!displayAttributes.gallery_pagination,
         onChange: attributeChangeFactory('gallery_pagination')
-      }), gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.TextControl, {
+      }), displayAttributes.gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.TextControl, {
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Number of videos per page', 'video-embed-thumbnail-generator'),
         type: "number",
-        value: gallery_per_page ?? '',
+        value: displayAttributes.gallery_per_page ?? '',
         onChange: attributeChangeFactory('gallery_per_page', true)
-      }), !gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+      }), !displayAttributes.gallery_pagination && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Limit number of videos', 'video-embed-thumbnail-generator'),
@@ -1290,22 +1311,22 @@ function CollectionSettingsPanel({
           value: Number(collection_video_limit) === -1 ? 12 : collection_video_limit ?? '',
           onChange: attributeChangeFactory('collection_video_limit', true)
         })]
-      }), showGalleryOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+      }), showLayoutSettings && showGalleryOptions && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.TextControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Max Columns', 'video-embed-thumbnail-generator'),
           type: "number",
-          value: gallery_columns ?? '',
+          value: displayAttributes.gallery_columns ?? '',
           onChange: attributeChangeFactory('gallery_columns', true)
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Title', 'video-embed-thumbnail-generator'),
           onChange: attributeChangeFactory('gallery_title'),
-          checked: !!gallery_title
+          checked: !!displayAttributes.gallery_title
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.SelectControl, {
           __nextHasNoMarginBottom: true,
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('When current video ends', 'video-embed-thumbnail-generator'),
-          value: gallery_end,
+          value: displayAttributes.gallery_end,
           onChange: attributeChangeFactory('gallery_end'),
           options: [{
             label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Stop and leave popup window open', 'video-embed-thumbnail-generator'),
@@ -1348,8 +1369,8 @@ function CollectionSettingsPanel({
         })]
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.PanelBody, {
-      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Colors', 'video-embed-thumbnail-generator'),
-      initialOpen: false,
+      title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_1__.__)('Videopack: Gallery Settings', 'video-embed-thumbnail-generator'),
+      initialOpen: true,
       children: [(blockType === 'gallery' || blockType === 'list') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
         className: "videopack-color-section",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
@@ -1434,7 +1455,7 @@ function CollectionSettingsPanel({
             })
           })]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
+      }), showPaginationSettings && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
         className: "videopack-color-section",
         children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
           className: "videopack-settings-section-title",
@@ -1812,6 +1833,7 @@ const Thumbnails = ({
   const {
     editPost
   } = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useDispatch)('core/editor') || {};
+  const isEditingAttachment = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_1__.useSelect)(select => select('core/editor')?.getCurrentPostType() === 'attachment', []);
   const featured = (() => {
     if (attributes.featured !== undefined) {
       return attributes.featured;
@@ -1933,7 +1955,6 @@ const Thumbnails = ({
           console.error('Error generating canvas thumbnail:', error);
         }
         if (!!ffmpegExists && ffmpegExists !== 'notinstalled') {
-          console.log('Videopack: Falling back to server-side FFmpeg for thumbnail generation...');
           try {
             const response = await generateThumb(index, type, workingId, featured);
             if (response?.attachment_id && workingId === 0) {
@@ -1952,7 +1973,7 @@ const Thumbnails = ({
               setThumbChoices([...newThumbCanvases]);
             }
           } catch (ffmpegError) {
-            console.log('Error in FFmpeg fallback:', ffmpegError);
+            // Silently handle FFmpeg fallback errors
           }
         }
       }
@@ -2083,7 +2104,7 @@ const Thumbnails = ({
         });
         await videoData.save();
       }
-      if (featured && parentId && editPost) {
+      if (featured && parentId && editPost && !isEditingAttachment) {
         editPost({
           featured_media: new_poster_id ? Number(new_poster_id) : null
         });
@@ -2204,7 +2225,6 @@ const Thumbnails = ({
       }
     };
     if (canvasTainted) {
-      console.log('Canvas detected as tainted, using FFmpeg fallback directly.');
       await runFfmpegFallback();
       return;
     }
@@ -2270,7 +2290,7 @@ const Thumbnails = ({
         })]
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.ToggleControl, {
         label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)("Set as post's featured image", 'video-embed-thumbnail-generator'),
-        checked: featured,
+        checked: !!featured,
         onChange: value => {
           setAttributes({
             ...attributes,
@@ -2328,7 +2348,8 @@ const Thumbnails = ({
           },
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("img", {
             src: thumb.src,
-            alt: `Thumbnail ${index + 1}`,
+            alt: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.sprintf)(/* translators: %d is the thumbnail index */
+            (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Thumbnail %d', 'video-embed-thumbnail-generator'), index + 1),
             title: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Save and set thumbnail', 'video-embed-thumbnail-generator')
           }), isSaving && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_0__.Spinner, {})]
         }, index))

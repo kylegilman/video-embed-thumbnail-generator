@@ -105,7 +105,7 @@ class Player {
 		$this->format_registry = $format_registry;
 
 		++self::$video_player_id_counter;
-		$this->player_id = self::$video_player_id_counter;
+		$this->player_id = (string) ( $this->options['id'] ?? self::$video_player_id_counter );
 
 		$this->register_hooks();
 	}
@@ -305,8 +305,8 @@ class Player {
 	 *
 	 * @return int|string The player ID.
 	 */
-	public function get_id() {
-		return $this->player_id;
+	public function get_id(): string {
+		return (string) $this->player_id;
 	}
 
 	/**
@@ -534,8 +534,8 @@ class Player {
 			'caption'                     => (string) ( $this->atts['caption'] ?? '' ),
 			'view_count'                  => (bool) ( $this->atts['view_count'] ?? false ),
 			'view_count_text'             => $this->get_source() ? \Videopack\Common\I18n::format_view_count( $this->get_source()->get_views() ) : '',
-			'below_video_html'            => $this->has_below_video() ? $this->get_below_video_code() : '',
 			'rotate'                      => (int) ( $this->get_source() ? $this->get_source()->get_rotate() : 0 ),
+			'skin'                        => (string) ( $this->atts['skin'] ?? ( $this->options['skin'] ?? 'vjs-theme-videopack' ) ),
 		);
 
 		return apply_filters( 'videopack_video_player_data', $video_variables, $this->atts );
@@ -544,38 +544,39 @@ class Player {
 	/**
 	 * Generates the full HTML code for the video player.
 	 *
-	 * @param array $atts The player attributes.
+	 * @param array  $atts          The player attributes.
+	 * @param string $inner_content Optional. Pre-rendered HTML for modular components (InnerBlocks).
 	 * @return string The player HTML.
 	 */
-	public function get_player_code( $atts ): string {
+	public function get_player_code( $atts, $inner_content = '' ): string {
 
 		$this->set_atts( $atts );
 		$this->init_source_from_atts();
 
 		if ( ! $this->get_source() ) {
 			// Return an empty string or an error message if no valid source was found.
-			// This prevents fatal errors if methods are called on a null source object.
 			return '';
 		}
 
 		$video_vars = $this->prepare_video_vars();
-		$script     = sprintf(
-			'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["videopack_player_%1$s"] = %2$s;',
-			$this->get_id(),
-			wp_json_encode( $video_vars )
-		);
 
-		// The 'videopack' script is already registered, so we can add our instance-specific data to it.
-		wp_add_inline_script( 'videopack-frontend', $script );
+		if ( ! is_admin() && ! empty( $video_vars['id'] ) ) {
+			$script = (string) sprintf(
+				'window.videopack = window.videopack || {}; window.videopack.player_data = window.videopack.player_data || {}; window.videopack.player_data["%1$s"] = %2$s;',
+				(string) $video_vars['id'],
+				(string) wp_json_encode( (array) $video_vars )
+			);
+			wp_add_inline_script( 'videopack-frontend', $script );
+		}
 
-		$player_code  = $this->get_wrapper_start_html() . "\n";
+		$player_code  = '';
 		$player_code .= $this->get_player_start_html() . "\n";
 
-		if ( $this->has_meta_bar() ) {
-			$player_code .= $this->get_meta_bar_code() . "\n";
+		if ( ! empty( $inner_content ) ) {
+			$player_code .= $inner_content . "\n";
 		}
+
 		$player_code .= $this->get_video_code() . "\n";
-		$player_code .= $this->get_watermark_code() . "\n";
 
 		if ( ! empty( $this->atts['endofvideooverlay'] ) ) {
 			$player_code .= '<div class="videopack-end-overlay"></div>' . "\n";
@@ -583,197 +584,9 @@ class Player {
 
 		$player_code .= $this->get_player_end_html() . "\n";
 
-		if ( $this->has_below_video() ) {
-			$player_code .= $this->get_below_video_code() . "\n";
-		}
-		$player_code .= $this->get_wrapper_end_html() . "\n";
-
 		return apply_filters( 'videopack_video_player_code', $player_code, $this->atts );
 	}
 
-	/**
-	 * Checks if the player should display the meta bar.
-	 *
-	 * @return bool True if meta bar should be visible, false otherwise.
-	 */
-	protected function has_meta_bar(): bool {
-		return apply_filters(
-			'videopack_video_player_has_meta_bar',
-			(bool) ( $this->atts['overlay_title'] ?? false )
-			|| ( ( $this->atts['embeddable'] ?? false ) && ( $this->atts['embedcode'] ?? false ) !== false )
-			|| ( $this->atts['downloadlink'] ?? false ) === true,
-			$this->atts
-		);
-	}
-
-	/**
-	 * Checks if the player has embed metadata.
-	 *
-	 * @return bool True if embed metadata is available, false otherwise.
-	 */
-	protected function has_embed_meta(): bool {
-		return apply_filters(
-			'videopack_video_player_has_embed_meta',
-			(bool) ( $this->atts['embeddable'] ?? false )
-			&& ( $this->atts['embedcode'] ?? false ) !== false,
-			$this->atts
-		);
-	}
-
-	/**
-	 * Generates the HTML code for the meta bar.
-	 *
-	 * @return string The meta bar HTML.
-	 */
-	protected function get_meta_bar_code(): string {
-		$has_embed      = $this->has_embed_meta();
-		$no_title_class = ( $this->atts['overlay_title'] ?? false ) ? '' : ' no-title';
-
-		$share_svg    = '<svg class="videopack-icon-svg share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 11.8l6.1-4.5c.1.4.4.7.9.7h2c.6 0 1-.4 1-1V5c0-.6-.4-1-1-1h-2c-.6 0-1 .4-1 1v.4l-6.4 4.8c-.2-.1-.4-.2-.6-.2H6c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1h2c.2 0 .4-.1.6-.2l6.4 4.8v.4c0 .6.4 1 1 1h2c.6 0 1-.4 1-1v-2c0-.6-.4-1-1-1h-2c-.5 0-.8.3-.9.7L9 12.2v-.4z" /></svg>';
-		$close_svg    = '<svg class="videopack-icon-svg close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" /></svg>';
-		$download_svg = '<svg class="videopack-icon-svg download-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 11.3l-1-1.1-4 4V3h-1.5v11.3L7 10.2l-1 1.1 6.2 5.8 5.8-5.8zm.5 3.7v3.5h-13V15H4v5h16v-5h-1.5z" /></svg>';
-		$embed_svg    = '<svg class="videopack-icon-svg embed-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 10.7l-4.3-4.3-1.1 1.1 4.3 4.3c.1.1.1.3 0 .4l-4.3 4.3 1.1 1.1 4.3-4.3c.7-.8.7-1.9 0-2.6zM4.2 11.8l4.3-4.3-1-1-4.3 4.3c-.7.7-.7 1.8 0 2.5l4.3 4.3 1.1-1.1-4.3-4.3c-.2-.1-.2-.3-.1-.4z" /></svg>';
-
-		$meta_bar  = '<div class="videopack-meta-bar' . esc_attr( $no_title_class ) . '">' . "\n";
-		$meta_bar .= '<span class="videopack-meta-icons">';
-
-		if ( $has_embed ) {
-			$meta_bar .= '<button type="button" class="videopack-meta-bar-button" title="' . esc_attr__( 'Share', 'video-embed-thumbnail-generator' ) . '">' . "\n";
-			$meta_bar .= '<span class="videopack-icons share">' . "\n" . $share_svg . "\n" . $close_svg . "\n" . '</span>' . "\n";
-			$meta_bar .= '</button>' . "\n";
-		}
-
-		if ( $this->atts['downloadlink'] ) {
-			$download_attributes = 'class="videopack-download-link" href="' . esc_attr( $this->source->get_download_url() ) . '" download title="' . esc_attr__( 'Click to download', 'video-embed-thumbnail-generator' ) . '"';
-
-			if ( ! empty( $this->options['click_download'] ) && $this->source instanceof \Videopack\Video_Source\Source_Attachment_Local && $this->source->exists() ) {
-				$alt_link             = site_url( '/?attachment_id=' . $this->source->get_id() . '&videopack[download]=true' );
-				$download_attributes .= ' data-alt_link="' . esc_attr( $alt_link ) . '"';
-			}
-
-			$meta_bar .= '<a ' . $download_attributes . '>' . "\n";
-			$meta_bar .= '<span class="videopack-icons download">' . "\n" . $download_svg . "\n" . '</span>' . "\n";
-			$meta_bar .= '</a>' . "\n";
-		}
-		$meta_bar .= '</span>' . "\n";
-
-		if ( $this->atts['overlay_title'] ) {
-			$meta_bar .= '<span class="videopack-title">' . esc_html( (string) $this->atts['title'] ) . '</span>' . "\n";
-		}
-		$meta_bar .= '</div>' . "\n";
-
-		if ( $has_embed ) {
-			$meta_bar .= '<button class="videopack-click-trap"></button>' . "\n";
-			$meta_bar .= '<div class="videopack-share-container' . esc_attr( $no_title_class ) . '">' . "\n";
-
-			$embed_id = $this->source->get_id();
-			if ( is_numeric( $embed_id ) ) {
-				$embed_url = add_query_arg( 'videopack[enable]', 'true', get_attachment_link( $embed_id ) );
-			} else {
-				$embed_url = $this->source->get_url();
-			}
-
-			$iframe_title = sprintf(
-				/* translators: %s is the video title */
-				__( 'Video Player - %s', 'video-embed-thumbnail-generator' ),
-				( $this->atts['title'] ?? '' ) ? $this->atts['title'] : $this->source->get_title()
-			);
-
-			$embed_code = sprintf(
-				'<iframe src="%1$s" width="%2$s" height="%3$s" style="border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="%4$s" referrerpolicy="strict-origin-when-cross-origin"></iframe>',
-				esc_url( $embed_url ),
-				esc_attr( (string) $this->atts['width'] ),
-				esc_attr( (string) $this->atts['height'] ),
-				esc_attr( $iframe_title )
-			);
-
-			$meta_bar .= '<span class="videopack-embedcode-container">' . "\n" .
-				'<span class="videopack-icons embed">' . "\n" . $embed_svg . "\n" . '</span>' . "\n" .
-				'<span>' . esc_html__( 'Embed:', 'video-embed-thumbnail-generator' ) . '</span>' . "\n" .
-				'<span><input class="videopack-embed-code" type="text" value="' . esc_attr( $embed_code ) . '" readonly /></span>' . "\n" .
-				'</span>' . "\n";
-
-			$start_at_id = 'videopack-start-at-enable-' . $this->get_id();
-			$meta_bar   .= '<span class="videopack-start-at-container">' . "\n" .
-				'<input type="checkbox" class="videopack-start-at-enable" id="' . esc_attr( $start_at_id ) . '" />' . "\n" .
-				'<label for="' . esc_attr( $start_at_id ) . '">' . esc_html__( 'Start at:', 'video-embed-thumbnail-generator' ) . '</label>' . "\n" .
-				'<input type="text" class="videopack-start-at" value="00:00" />' . "\n" .
-				'</span>' . "\n";
-
-			$meta_bar .= '</div>' . "\n";
-		}
-
-		return apply_filters( 'videopack_video_player_meta_bar', $meta_bar, $this->atts );
-	}
-
-	/**
-	 * Generates the starting HTML for the player wrapper.
-	 *
-	 * @return string The starting wrapper HTML.
-	 */
-	protected function get_wrapper_start_html(): string {
-		$alignclass = '';
-		if ( (bool) ( $this->atts['inline'] ?? false ) ) {
-			$alignclass .= ' videopack-wrapper-inline';
-			$align       = (string) ( $this->atts['align'] ?? '' );
-			if ( in_array( $align, array( 'left', 'right' ), true ) ) {
-				$alignclass .= ' videopack-wrapper-inline-' . $align;
-			} elseif ( 'center' === $align ) {
-				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
-			}
-		} elseif ( 'center' === (string) ( $this->atts['align'] ?? '' ) ) {
-				$alignclass .= ' videopack-wrapper-auto-left videopack-wrapper-auto-right';
-		} elseif ( 'right' === (string) ( $this->atts['align'] ?? '' ) ) {
-			$alignclass .= ' videopack-wrapper-auto-left';
-		}
-
-		$meta_bar_class = $this->has_meta_bar() ? ' videopack-meta-bar-visible' : '';
-		$style_attrs    = array();
-
-		if ( $this->is_fixed_aspect() ) {
-			$alignclass   .= ' videopack-fixed-aspect';
-			$style_attrs[] = 'aspect-ratio: ' . esc_attr( $this->get_fixed_aspect_ratio() );
-		}
-
-		if ( (bool) ( $this->atts['legacy_dimensions'] ?? false ) ) {
-			if ( (bool) ( $this->atts['fullwidth'] ?? false ) ) {
-				$style_attrs[] = 'width: 100%';
-			} elseif ( ! empty( $this->atts['width'] ) ) {
-				$style_attrs[] = 'width: ' . esc_attr( (string) $this->atts['width'] ) . ( is_numeric( $this->atts['width'] ) ? 'px' : '' );
-				$style_attrs[] = 'max-width: 100%';
-			}
-		}
-
-		$colors = array(
-			'title-color'                 => 'title_color',
-			'title-background-color'      => 'title_background_color',
-			'pagination-color'            => 'pagination_color',
-			'pagination-background-color' => 'pagination_background_color',
-			'pagination-active-bg-color'  => 'pagination_active_bg_color',
-			'pagination-active-color'     => 'pagination_active_color',
-			'play-button-color'           => 'play_button_color',
-			'play-button-icon-color'      => 'play_button_icon_color',
-			'control-bar-bg-color'        => 'control_bar_bg_color',
-			'control-bar-color'           => 'control_bar_color',
-		);
-
-		foreach ( $colors as $variable => $attribute ) {
-			if ( ! empty( $this->atts[ $attribute ] ) ) {
-				$style_attrs[] = '--videopack-' . $variable . ': ' . $this->atts[ $attribute ];
-				$alignclass   .= ' videopack-has-' . $variable;
-			}
-		}
-
-		// Inject MEJS controls SVG URL as a CSS variable to avoid SCSS build issues.
-		$style_attrs[] = '--videopack-mejs-controls-svg: url(' . includes_url( 'js/mediaelement/mejs-controls.svg' ) . ')';
-
-		$style = '';
-		if ( ! empty( $style_attrs ) ) {
-			$style = ' style="' . implode( '; ', $style_attrs ) . ';"';
-		}
-
-		return '<div id="videopack_player_' . $this->get_id() . '_wrapper" class="videopack-wrapper' . $alignclass . $meta_bar_class . '"' . $style . '>';
-	}
 
 	/**
 	 * Generates the HTML for the player div start tag.
@@ -782,29 +595,21 @@ class Player {
 	 */
 	protected function get_player_start_html(): string {
 		$player_classes = apply_filters( 'videopack_player_div_classes', array( 'videopack-player' ), $this->atts );
+
 		return '<div class="' . esc_attr( implode( ' ', $player_classes ) ) . '" data-id="' . esc_attr( $this->get_id() ) . '">';
 	}
 
 	/**
-	 * Generates the HTML for the player div end tag.
+	 * Generates the HTML for the player components closing tag.
 	 *
-	 * @return string The player div end HTML.
+	 * @return string The player components closing HTML.
 	 */
 	protected function get_player_end_html(): string {
-		return '</div>';
+		return '</div>' . "\n";
 	}
 
 	/**
-	 * Generates the ending HTML for the player wrapper.
-	 *
-	 * @return string The ending wrapper HTML.
-	 */
-	protected function get_wrapper_end_html(): string {
-		return '</div>';
-	}
-
-	/**
-	 * Generates the HTML code for the video element.
+	 * Generates the HTML for the video element.
 	 *
 	 * @return string The video element HTML.
 	 */
@@ -950,142 +755,7 @@ class Player {
 		return apply_filters( 'videopack_video_player_tracks', $track_elements, $this->atts );
 	}
 
-	/**
-	 * Checks if the player should display content below the video.
-	 *
-	 * @return bool True if content should be visible, false otherwise.
-	 */
-	protected function has_below_video(): bool {
-		return apply_filters(
-			'videopack_video_player_has_below_video',
-			( ! empty( $this->atts['caption'] )
-			|| (bool) ( $this->atts['view_count'] ?? false )
-			),
-			$this->atts
-		);
-	}
 
-	/**
-	 * Generates the HTML code for content below the video.
-	 *
-	 * @return string The below-video HTML.
-	 */
-	protected function get_below_video_code(): string {
-		$below_video = '<div class="videopack-below-video">';
-		if ( $this->atts['view_count'] ) {
-			$source     = $this->get_source();
-			$view_count = $source ? $source->get_views() : '';
-			if ( ! empty( $view_count ) ) {
-				/* translators: %s is the number of times a video has been played */
-				$below_video .= '<span class="videopack-viewcount">' . esc_html( \Videopack\Common\I18n::format_view_count( $view_count ) ) . '</span>';
-			}
-		}
-		if ( ! empty( $this->atts['caption'] ) ) {
-			$below_video .= '<p class="wp-element-caption">' . esc_html( (string) $this->atts['caption'] ) . '</p>';
-		}
-		$below_video .= '</div>';
-		return $below_video;
-	}
-
-	/**
-	 * Generates the HTML code for the watermark.
-	 *
-	 * @return string The watermark HTML.
-	 */
-	protected function get_watermark_code(): string {
-		if ( empty( $this->atts['watermark'] ) ) {
-			return '';
-		}
-
-		$defaults = array(
-			'scale'  => '10',
-			'align'  => 'right',
-			'valign' => 'bottom',
-			'x'      => '5',
-			'y'      => '7',
-		);
-
-		$styles = array_merge( $defaults, $this->options['watermark_styles'] ?? array() );
-		$style  = '';
-
-		// Only apply inline styles if they differ from defaults.
-		if ( (string) $styles['scale'] !== (string) $defaults['scale']
-		|| $styles['align'] !== $defaults['align']
-		|| $styles['valign'] !== $defaults['valign']
-		|| (string) $styles['x'] !== (string) $defaults['x']
-		|| (string) $styles['y'] !== (string) $defaults['y']
-		) {
-			$style = 'max-width: ' . $styles['scale'] . '%; width: 100%; height: auto; position: absolute;';
-
-			if ( 'left' === $styles['align'] ) {
-				$style .= ' left: ' . $styles['x'] . '%;';
-			} elseif ( 'right' === $styles['align'] ) {
-				$style .= ' right: ' . $styles['x'] . '%;';
-			} else {
-				$style .= ' left: 50%; transform: translateX(-50%); margin-left: -' . $styles['x'] . '%;';
-			}
-
-			if ( 'top' === $styles['valign'] ) {
-				$style .= ' top: ' . $styles['y'] . '%;';
-			} elseif ( 'bottom' === $styles['valign'] ) {
-				$style .= ' bottom: ' . $styles['y'] . '%;';
-			} else {
-				if ( 'center' === $styles['align'] ) {
-					// If both are center, combine transform.
-					$style = str_replace( 'transform: translateX(-50%);', 'transform: translate(-50%, -50%);', $style );
-				} else {
-					$style .= ' top: 50%; transform: translateY(-50%);';
-				}
-				$style .= ' margin-top: -' . $styles['y'] . '%;';
-			}
-
-			$style = ' style="' . esc_attr( $style ) . '"';
-		}
-
-		$html = '<div id="video_' . esc_attr( (string) $this->get_id() ) . '_watermark" class="videopack-watermark">';
-
-		$link_to = $this->atts['watermark_link_to'] ?? 'false';
-		$url     = $this->atts['watermark_url'] ?? '';
-
-		if ( 'Custom URL' === $link_to ) {
-			$link_to = 'custom';
-		}
-		if ( 'None' === $link_to ) {
-			$link_to = 'false';
-		}
-
-		if ( 'false' !== $link_to ) {
-			$href = '#';
-			switch ( $link_to ) {
-				case 'home':
-					$href = get_home_url();
-					break;
-				case 'parent':
-					$href = $this->source->get_parent_id() ? get_permalink( $this->source->get_parent_id() ) : get_home_url();
-					break;
-				case 'attachment':
-					$href = is_numeric( $this->source->get_id() ) ? get_permalink( $this->source->get_id() ) : get_home_url();
-					break;
-				case 'download':
-					$href = $this->source->get_download_url();
-					break;
-				case 'custom':
-					$href = $url;
-					break;
-			}
-			$html .= '<a target="_parent" href="' . esc_url( (string) $href ) . '"' . ( 'download' === $link_to ? ' download' : '' ) . '>';
-		}
-
-		$html .= '<img src="' . esc_url( (string) $this->atts['watermark'] ) . '" alt="' . esc_attr__( 'watermark', 'video-embed-thumbnail-generator' ) . '"' . $style . '>';
-
-		if ( 'false' !== $link_to ) {
-			$html .= '</a>';
-		}
-
-		$html .= '</div>';
-
-		return $html;
-	}
 
 	/**
 	 * Checks if the player has a fixed aspect ratio.

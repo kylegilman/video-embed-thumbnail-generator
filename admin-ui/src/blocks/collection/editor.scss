@@ -1,0 +1,139 @@
+.videopack-collection {
+	border: 1px dashed #ccc;
+	padding: 20px;
+	margin-bottom: 20px;
+	background: #fdfdfd;
+
+	.videopack-collection-grid {
+		display: grid;
+		gap: 20px;
+	}
+
+	&.layout-grid {
+		@for $i from 1 through 6 {
+			&.columns-#{$i} .videopack-collection-grid {
+				grid-template-columns: repeat(#{$i}, 1fr);
+			}
+		}
+	}
+
+	&.layout-list {
+		.videopack-collection-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.videopack-collection-item {
+			display: flex;
+			gap: 20px;
+			align-items: flex-start;
+			border-bottom: 1px solid #eee;
+			padding-bottom: 15px;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+
+			// Ensure video and thumbnail blocks have a responsive base size in list view
+			.wp-block-videopack-videopack-video,
+			.videopack-video-preview,
+			.videopack-thumbnail-container,
+			.videopack-thumbnail-placeholder,
+			.videopack-thumbnail-wrapper {
+				flex: 1 1 300px; // Grow to fill container, shrink if needed, 300px base
+				min-width: 0;
+			}
+
+			// Allow text and other blocks to take up remaining space or wrap
+			.wp-block-videopack-video-title,
+			.videopack-video-title,
+			.wp-block-videopack-video-duration,
+			.videopack-video-duration,
+			.wp-block-videopack-view-count,
+			.videopack-view-count {
+				flex: 1 1 200px;
+				margin-top: 0;
+			}
+
+			// Special handling for InnerBlocks wrapper in editor to ensure it fills the width
+			// and its internal layout also behaves as a flex container.
+			.block-editor-inner-blocks,
+			.block-editor-block-list__layout {
+				flex: 1 1 100%;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 20px;
+				min-width: 0;
+			}
+
+			&:last-child {
+				border-bottom: none;
+			}
+		}
+	}
+
+	.videopack-collection-item {
+		position: relative;
+		transition: all 0.2s ease;
+
+		&.is-editable {
+			border: 2px solid #3858e9;
+			padding: 5px;
+			border-radius: 4px;
+			background: #fff;
+			box-shadow: 0 4px 12px rgba(56, 88, 233, 0.1);
+
+			&::before {
+				content: "Template";
+				position: absolute;
+				top: -10px;
+				left: 10px;
+				background: #3858e9;
+				color: #fff;
+				font-size: 10px;
+				padding: 2px 6px;
+				border-radius: 2px;
+				text-transform: uppercase;
+				z-index: 10;
+			}
+		}
+
+		&.is-preview {
+			opacity: 0.85;
+			filter: grayscale(0.2);
+			pointer-events: none; // Prevent accidental editing of fake cards
+		}
+	}
+
+	// Atomic Block Resizing
+	.videopack-thumbnail-container,
+	.videopack-thumbnail-placeholder,
+	.videopack-thumbnail-wrapper {
+		max-width: 100%;
+		height: auto;
+		
+		img {
+			width: 100%;
+			height: auto;
+			display: block;
+			border-radius: 4px;
+		}
+	}
+
+	.videopack-video-title {
+		font-size: 16px;
+		font-weight: 600;
+		margin-top: 10px;
+		color: #1e1e1e;
+	}
+
+	.videopack-collection-preview-placeholder,
+	.videopack-collection-loading {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 150px;
+		color: #757575;
+		font-style: italic;
+		text-align: center;
+		width: 100%;
+	}
+}

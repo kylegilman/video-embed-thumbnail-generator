@@ -9,13 +9,18 @@ import {
 	useCallback,
 	useState,
 } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+import {
+	share as shareIcon,
+	download as downloadIcon,
+	heading as titleIcon,
+} from '@wordpress/icons';
+import { ToolbarButton } from '@wordpress/components';
 import { decodeEntities } from '@wordpress/html-entities';
 import { applyFilters } from '@wordpress/hooks';
-import MetaBar from './MetaBar';
-import GenericPlayer from './GenericPlayer';
-import VideoJS from './VideoJs';
-import WpMejsPlayer from './WpMejsPlayer';
-import BelowVideo from './BelowVideo';
+import GenericPlayer from './GenericPlayer.js';
+import VideoJS from './VideoJs.js';
+import WpMejsPlayer from './WpMejsPlayer.js';
 
 const DEFAULT_PLAYERS = {
 	'Video.js': VideoJS,
@@ -30,12 +35,23 @@ const noop = () => {};
 /**
  * VideoPlayer component.
  *
- * @param {Object}   props            Component props.
- * @param {Object}   props.attributes Block attributes.
- * @param {Function} props.onReady    Callback fired when the player engine is ready.
+ * @param {Object}   props               Component props.
+ * @param {Object}   props.attributes    Block attributes.
+ * @param {Function} props.setAttributes Function to update block attributes.
+ * @param {boolean}  props.isSelected    Whether the block is selected.
+ * @param {boolean}  props.hideStaticOverlays Whether to hide site-wide static overlays (watermark, title).
+ * @param {Function} props.onReady       Callback fired when the player engine is ready.
+ * @param {Object}   props.children      Child components (InnerBlocks).
  * @return {Element|null} The rendered component.
  */
-const VideoPlayer = ({ attributes, onReady = noop }) => {
+const VideoPlayer = ({
+	attributes,
+	setAttributes = noop,
+	onReady = noop,
+	isSelected = false,
+	hideStaticOverlays = false,
+	children,
+}) => {
 	const [detectedDimensions, setDetectedDimensions] = useState({
 		width: null,
 		height: null,
@@ -109,6 +125,9 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		control_bar_color,
 		title_color,
 		title_background_color,
+		overlay_title,
+		embeddable,
+		downloadlink,
 	} = decodedAttributes;
 
 	const players = useMemo(
@@ -136,8 +155,6 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		decodedAttributes.width,
 		decodedAttributes.height,
 		decodedAttributes.rotate,
-		decodedAttributes.fixed_aspect,
-		decodedAttributes.fullwidth,
 	]);
 
 	const isFixedAspect = useMemo(() => {
@@ -226,7 +243,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 	}, [isFixedAspect, default_ratio, aspectRatio]);
 
 	const wrapperClasses = useMemo(() => {
-		const classes = ['videopack-wrapper', 'videopack-meta-bar-visible'];
+		const classes = ['videopack-wrapper', 'videopack-video-title-visible'];
 		if (isFixedAspect || aspectRatio) {
 			classes.push('videopack-has-aspect-ratio');
 			if (isFixedAspect) {
@@ -280,6 +297,16 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		return sources;
 	}, [sources, source_groups]);
 
+	const finalizedSources = useMemo(() => {
+		if (allSources && allSources.length > 0) {
+			return allSources;
+		}
+		if (src) {
+			return [{ src, type: 'video/mp4' }]; // Basic fallback
+		}
+		return [];
+	}, [allSources, src]);
+
 	const genericPlayerOptions = useMemo(
 		() => ({
 			poster,
@@ -289,7 +316,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 			muted,
 			playsInline: playsinline,
 			className: 'videopack-video',
-			sources: allSources,
+			sources: finalizedSources,
 			src,
 			tracks: text_tracks,
 			volume,
@@ -306,7 +333,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 			volume,
 			playsinline,
 			src,
-			allSources,
+			finalizedSources,
 			text_tracks,
 			embed_method,
 		] // eslint-disable-line react-hooks/exhaustive-deps
@@ -336,7 +363,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 			playsinline,
 			volume,
 			playbackRates: playback_rate ? [0.5, 1, 1.25, 1.5, 2] : [],
-			sources: allSources.map((s) => ({
+			sources: finalizedSources.map((s) => ({
 				src: s.src,
 				type: s.type,
 				resolution: s.resolution,
@@ -350,7 +377,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 			})),
 		};
 
-		const hasResolutions = allSources.some((s) => s.resolution);
+		const hasResolutions = finalizedSources.some((s) => s.resolution);
 
 		if (hasResolutions) {
 			options.plugins = {
@@ -378,24 +405,23 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		volume,
 		auto_res,
 		auto_codec,
-		allSources,
+		finalizedSources,
 		source_groups,
 		text_tracks,
 		aspectRatio,
 	]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	const renderReady =
-		allSources && allSources.length > 0 && allSources[0].src;
-
 	const handlePlay = useCallback(() => {
 		if (wrapperRef.current) {
-			wrapperRef.current.classList.remove('videopack-meta-bar-visible');
+			wrapperRef.current.classList.remove(
+				'videopack-video-title-visible'
+			);
 		}
 	}, []);
 
 	const handlePause = useCallback(() => {
 		if (wrapperRef.current) {
-			wrapperRef.current.classList.add('videopack-meta-bar-visible');
+			wrapperRef.current.classList.add('videopack-video-title-visible');
 		}
 	}, []);
 
@@ -429,6 +455,8 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 			onReadyRef.current(player);
 		}
 	}, []);
+
+	const renderReady = src || (finalizedSources && finalizedSources.length > 0);
 
 	if (!renderReady) {
 		return null; // Or a loading spinner
@@ -496,12 +524,9 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 		<div className={wrapperClasses} ref={wrapperRef} style={playerStyles}>
 			<div
 				className={`videopack-player ${skin || ''}`}
-				style={innerPlayerStyles}
+				style={{ ...innerPlayerStyles, position: 'relative' }}
 			>
-				<MetaBar
-					attributes={decodedAttributes}
-					playerRef={playerInstanceRef}
-				/>
+				{/* Overlays and interactive elements move outside player div for better layout control */}
 				{(() => {
 					const PlayerComponent =
 						players[embed_method] || players.None;
@@ -548,11 +573,57 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 					// Fallback for custom players
 					if (PlayerComponent === GenericPlayer) {
 						return (
-							<PlayerComponent
-								key={`${embed_method}-fallback-${src}`}
-								{...genericPlayerOptions}
-								ref={videoRef}
-							/>
+							<>
+								{!isSelected && (
+									<>
+										<ToolbarButton
+											icon={titleIcon}
+											label={__(
+												'Toggle Title Overlay',
+												'video-embed-thumbnail-generator'
+											)}
+											isPressed={overlay_title}
+											onClick={() =>
+												setAttributes({
+													overlay_title:
+														!overlay_title,
+												})
+											}
+										/>
+										<ToolbarButton
+											icon={shareIcon}
+											label={__(
+												'Toggle Share Button',
+												'video-embed-thumbnail-generator'
+											)}
+											isPressed={embeddable}
+											onClick={() =>
+												setAttributes({
+													embeddable: !embeddable,
+												})
+											}
+										/>
+										<ToolbarButton
+											icon={downloadIcon}
+											label={__(
+												'Toggle Download Button',
+												'video-embed-thumbnail-generator'
+											)}
+											isPressed={downloadlink}
+											onClick={() =>
+												setAttributes({
+													downloadlink: !downloadlink,
+												})
+											}
+										/>
+									</>
+								)}
+								<PlayerComponent
+									key={`${embed_method}-fallback-${src}`}
+									{...genericPlayerOptions}
+									ref={videoRef}
+								/>
+							</>
 						);
 					}
 					return (
@@ -568,7 +639,7 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 						/>
 					);
 				})()}
-				{watermark && (
+				{!hideStaticOverlays && watermark && (
 					<div className="videopack-watermark">
 						{watermark_link_to &&
 						watermark_link_to !== 'false' &&
@@ -593,8 +664,8 @@ const VideoPlayer = ({ attributes, onReady = noop }) => {
 						)}
 					</div>
 				)}
+				{children}
 			</div>
-			<BelowVideo attributes={decodedAttributes} />
 		</div>
 	);
 };

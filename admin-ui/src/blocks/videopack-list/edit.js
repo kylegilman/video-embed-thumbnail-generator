@@ -1,4 +1,9 @@
-import { Button, Placeholder, ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import {
+	Button,
+	Placeholder,
+	ToolbarGroup,
+	ToolbarButton,
+} from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
@@ -116,7 +121,8 @@ export default function Edit({
 					return null; // Don't fetch all videos if "Other Post" is selected but empty
 				}
 			} else if (
-				(gallery_source === 'current' || gallery_source === 'archive') &&
+				(gallery_source === 'current' ||
+					gallery_source === 'archive') &&
 				postId &&
 				!isNaN(Number(postId))
 			) {
@@ -243,7 +249,7 @@ export default function Edit({
 					'video-embed-thumbnail-generator'
 				)}
 				instructions={__(
-					"Select from your library or upload new videos to create a list.",
+					'Select from your library or upload new videos to create a list.',
 					'video-embed-thumbnail-generator'
 				)}
 			>
@@ -291,9 +297,7 @@ export default function Edit({
 								multiple="add"
 								value={
 									gallery_include
-										? gallery_include
-												.split(',')
-												.map(Number)
+										? gallery_include.split(',').map(Number)
 										: []
 								}
 								render={({ open }) => (

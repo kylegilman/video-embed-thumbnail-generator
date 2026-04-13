@@ -70,7 +70,8 @@ export const useVideoData = (id, src, isExternal) => {
 					attachment?.title ||
 					'',
 				caption: (() => {
-					const metaCaption = attachment?.meta?.['_videopack-meta']?.caption;
+					const metaCaption =
+						attachment?.meta?.['_videopack-meta']?.caption;
 					if (metaCaption) {
 						return metaCaption;
 					}

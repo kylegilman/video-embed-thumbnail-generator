@@ -21,12 +21,15 @@ import './CollectionSettingsPanel.scss';
 export default function CollectionSettingsPanel({
 	attributes,
 	setAttributes,
-	queryData,
+	queryData = {},
 	options = {},
 	showGalleryOptions = false,
 	isSiteEditor = false,
 	blockType = 'gallery', // 'gallery', 'grid', or 'list'
 	showManualSource = true,
+	showPaginationToggle = true,
+	showLayoutSettings = true,
+	showPaginationSettings = true,
 }) {
 	const displayAttributes = useMemo(
 		() => ({ ...options, ...attributes }),
@@ -39,13 +42,9 @@ export default function CollectionSettingsPanel({
 	);
 
 	const {
-		gallery_orderby,
-		gallery_order,
 		gallery_include,
 		gallery_exclude,
 		gallery_end,
-		gallery_pagination,
-		gallery_per_page,
 		gallery_title,
 		gallery_columns,
 		collection_video_limit,
@@ -66,16 +65,16 @@ export default function CollectionSettingsPanel({
 	const THEME_COLORS = videopack_config?.themeColors || options?.themeColors;
 	const baseGalleryOrderbyOptions = [
 		{
+			value: 'post_date',
+			label: __('Date', 'video-embed-thumbnail-generator'),
+		},
+		{
 			value: 'menu_order',
 			label: __('Default', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'title',
 			label: __('Title', 'video-embed-thumbnail-generator'),
-		},
-		{
-			value: 'post_date',
-			label: __('Date', 'video-embed-thumbnail-generator'),
 		},
 		{
 			value: 'rand',
@@ -158,18 +157,18 @@ export default function CollectionSettingsPanel({
 				<div className="videopack-sort-control-wrapper">
 					<SelectControl
 						label={__('Sort by', 'video-embed-thumbnail-generator')}
-						value={gallery_orderby}
+						value={displayAttributes.gallery_orderby}
 						onChange={attributeChangeFactory('gallery_orderby')}
 						options={filteredGalleryOrderbyOptions}
 					/>
 					<Button
 						icon={
-							gallery_order === 'asc'
+							displayAttributes.gallery_order === 'asc'
 								? sortAscending
 								: sortDescending
 						}
 						label={
-							gallery_order === 'asc'
+							displayAttributes.gallery_order === 'asc'
 								? __(
 										'Ascending',
 										'video-embed-thumbnail-generator'
@@ -182,33 +181,35 @@ export default function CollectionSettingsPanel({
 						onClick={() =>
 							setAttributes({
 								gallery_order:
-									gallery_order === 'asc' ? 'desc' : 'asc',
+									displayAttributes.gallery_order === 'asc' ? 'desc' : 'asc',
 							})
 						}
 						showTooltip
 					/>
 				</div>
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={__('Paginate', 'video-embed-thumbnail-generator')}
-					checked={!!gallery_pagination}
-					onChange={attributeChangeFactory('gallery_pagination')}
-				/>
-				{gallery_pagination && (
+				{showPaginationToggle && (
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={__('Paginate', 'video-embed-thumbnail-generator')}
+						checked={!!displayAttributes.gallery_pagination}
+						onChange={attributeChangeFactory('gallery_pagination')}
+					/>
+				)}
+				{displayAttributes.gallery_pagination && (
 					<TextControl
 						label={__(
 							'Number of videos per page',
 							'video-embed-thumbnail-generator'
 						)}
 						type="number"
-						value={gallery_per_page ?? ''}
+						value={displayAttributes.gallery_per_page ?? ''}
 						onChange={attributeChangeFactory(
 							'gallery_per_page',
 							true
 						)}
 					/>
 				)}
-				{!gallery_pagination && (
+				{!displayAttributes.gallery_pagination && (
 					<>
 						<ToggleControl
 							__nextHasNoMarginBottom
@@ -256,7 +257,7 @@ export default function CollectionSettingsPanel({
 						)}
 					</>
 				)}
-				{showGalleryOptions && (
+				{showLayoutSettings && showGalleryOptions && (
 					<>
 						<TextControl
 							label={__(
@@ -264,7 +265,7 @@ export default function CollectionSettingsPanel({
 								'video-embed-thumbnail-generator'
 							)}
 							type="number"
-							value={gallery_columns ?? ''}
+							value={displayAttributes.gallery_columns ?? ''}
 							onChange={attributeChangeFactory(
 								'gallery_columns',
 								true
@@ -277,7 +278,7 @@ export default function CollectionSettingsPanel({
 								'video-embed-thumbnail-generator'
 							)}
 							onChange={attributeChangeFactory('gallery_title')}
-							checked={!!gallery_title}
+							checked={!!displayAttributes.gallery_title}
 						/>
 						<SelectControl
 							__nextHasNoMarginBottom
@@ -286,7 +287,7 @@ export default function CollectionSettingsPanel({
 								'When current video ends',
 								'video-embed-thumbnail-generator'
 							)}
-							value={gallery_end}
+							value={displayAttributes.gallery_end}
 							onChange={attributeChangeFactory('gallery_end')}
 							options={[
 								{
@@ -367,8 +368,11 @@ export default function CollectionSettingsPanel({
 				)}
 			</PanelBody>
 			<PanelBody
-				title={__('Colors', 'video-embed-thumbnail-generator')}
-				initialOpen={false}
+				title={__(
+					'Videopack: Gallery Settings',
+					'video-embed-thumbnail-generator'
+				)}
+				initialOpen={true}
 			>
 				{(blockType === 'gallery' || blockType === 'list') && (
 					<div className="videopack-color-section">
@@ -494,81 +498,83 @@ export default function CollectionSettingsPanel({
 					</div>
 				)}
 
-				<div className="videopack-color-section">
-					<p className="videopack-settings-section-title">
-						{__('Pagination', 'video-embed-thumbnail-generator')}
-					</p>
-					<div className="videopack-color-flex-row is-pagination">
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={__(
-									'Outline/Text',
-									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_color}
-								onChange={(value) =>
-									setAttributes({ pagination_color: value })
-								}
-								colors={THEME_COLORS}
-								fallbackValue={colorFallbacks.pagination_color}
-							/>
-						</div>
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={__(
-									'Background',
-									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_background_color}
-								onChange={(value) =>
-									setAttributes({
-										pagination_background_color: value,
-									})
-								}
-								colors={THEME_COLORS}
-								fallbackValue={
-									colorFallbacks.pagination_background_color
-								}
-							/>
-						</div>
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={__(
-									'Active Background',
-									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_active_bg_color}
-								onChange={(value) =>
-									setAttributes({
-										pagination_active_bg_color: value,
-									})
-								}
-								colors={THEME_COLORS}
-								fallbackValue={
-									colorFallbacks.pagination_active_bg_color
-								}
-							/>
-						</div>
-						<div className="videopack-color-flex-item">
-							<CompactColorPicker
-								label={__(
-									'Active Text',
-									'video-embed-thumbnail-generator'
-								)}
-								value={pagination_active_color}
-								onChange={(value) =>
-									setAttributes({
-										pagination_active_color: value,
-									})
-								}
-								colors={THEME_COLORS}
-								fallbackValue={
-									colorFallbacks.pagination_active_color
-								}
-							/>
+				{showPaginationSettings && (
+					<div className="videopack-color-section">
+						<p className="videopack-settings-section-title">
+							{__('Pagination', 'video-embed-thumbnail-generator')}
+						</p>
+						<div className="videopack-color-flex-row is-pagination">
+							<div className="videopack-color-flex-item">
+								<CompactColorPicker
+									label={__(
+										'Outline/Text',
+										'video-embed-thumbnail-generator'
+									)}
+									value={pagination_color}
+									onChange={(value) =>
+										setAttributes({ pagination_color: value })
+									}
+									colors={THEME_COLORS}
+									fallbackValue={colorFallbacks.pagination_color}
+								/>
+							</div>
+							<div className="videopack-color-flex-item">
+								<CompactColorPicker
+									label={__(
+										'Background',
+										'video-embed-thumbnail-generator'
+									)}
+									value={pagination_background_color}
+									onChange={(value) =>
+										setAttributes({
+											pagination_background_color: value,
+										})
+									}
+									colors={THEME_COLORS}
+									fallbackValue={
+										colorFallbacks.pagination_background_color
+									}
+								/>
+							</div>
+							<div className="videopack-color-flex-item">
+								<CompactColorPicker
+									label={__(
+										'Active Background',
+										'video-embed-thumbnail-generator'
+									)}
+									value={pagination_active_bg_color}
+									onChange={(value) =>
+										setAttributes({
+											pagination_active_bg_color: value,
+										})
+									}
+									colors={THEME_COLORS}
+									fallbackValue={
+										colorFallbacks.pagination_active_bg_color
+									}
+								/>
+							</div>
+							<div className="videopack-color-flex-item">
+								<CompactColorPicker
+									label={__(
+										'Active Text',
+										'video-embed-thumbnail-generator'
+									)}
+									value={pagination_active_color}
+									onChange={(value) =>
+										setAttributes({
+											pagination_active_color: value,
+										})
+									}
+									colors={THEME_COLORS}
+									fallbackValue={
+										colorFallbacks.pagination_active_color
+									}
+								/>
+							</div>
 						</div>
 					</div>
-				</div>
+				)}
 			</PanelBody>
 		</>
 	);

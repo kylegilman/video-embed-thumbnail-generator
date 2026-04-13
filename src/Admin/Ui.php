@@ -9,6 +9,7 @@
 namespace Videopack\Admin;
 
 use Videopack\Common\Hook_Subscriber;
+use Videopack\Frontend\Modular_Renderer;
 
 /**
  * Class Ui
@@ -139,6 +140,8 @@ class Ui implements Hook_Subscriber {
 		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
 		$block_attributes  = (array) $shortcode_handler->get_block_attributes();
 
+		$shortcode_blocks = array( 'videopack-video', 'videopack-gallery', 'videopack-list' );
+
 		register_block_type(
 			(string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/videopack-video',
 			array(
@@ -166,6 +169,35 @@ class Ui implements Hook_Subscriber {
 				'editor_style'    => 'videopack-blocks',
 			)
 		);
+
+		// Register modular / inner blocks.
+		$modular_blocks = array(
+			'collection',
+			'play-button',
+			'thumbnail',
+			'view-count',
+			'video-duration',
+			'video-title',
+			'video-loop',
+			'pagination',
+			'video-player-engine',
+			'video-watermark',
+		);
+
+		foreach ( $modular_blocks as $block_name ) {
+			$args = array();
+			$name = 'videopack/' . $block_name;
+			if ( 'videopack/video-title' === $name ) {
+				$args['render_callback'] = array( $this, 'render_video_title_block' );
+			} elseif ( 'videopack/view-count' === $name ) {
+				$args['render_callback'] = array( $this, 'render_view_count_block' );
+			} elseif ( 'videopack/video-player-engine' === $name ) {
+				$args['render_callback'] = array( $this, 'render_video_player_engine_block' );
+			} elseif ( 'videopack/video-watermark' === $name ) {
+				$args['render_callback'] = array( $this, 'render_video_watermark_block' );
+			}
+			register_block_type( (string) VIDEOPACK_PLUGIN_DIR . 'admin-ui/build/blocks/' . (string) $block_name, $args );
+		}
 	}
 
 	/**
@@ -176,7 +208,7 @@ class Ui implements Hook_Subscriber {
 	 */
 	public function conditionally_add_assets_to_block_metadata( $metadata ) {
 		if ( isset( $metadata['name'] )
-			&& in_array( (string) $metadata['name'], array( 'videopack/videopack-video', 'videopack/videopack-gallery', 'videopack/videopack-list' ), true )
+			&& in_array( (string) $metadata['name'], array( 'videopack/videopack-video', 'videopack/videopack-gallery', 'videopack/videopack-list', 'videopack/collection', 'videopack/video-player-engine' ), true )
 		) {
 			$player   = \Videopack\Frontend\Video_Players\Player_Factory::create( (string) ( $this->options['embed_method'] ?? 'Video.js' ), $this->options, $this->format_registry );
 			$metadata = (array) $player->filter_block_metadata( (array) $metadata );
@@ -195,17 +227,246 @@ class Ui implements Hook_Subscriber {
 	 * @return string The rendered HTML of the block.
 	 */
 	public function render_videopack_block( $attributes, $content, $block ) {
-		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
 
-		if ( (string) $block->name === 'videopack/videopack-list' ) {
-			$attributes['gallery'] = false;
-		} elseif ( (string) $block->name === 'videopack/videopack-gallery' ) {
-			$attributes['gallery'] = true;
-		} elseif ( (string) $block->name === 'videopack/videopack-video' ) {
-			$attributes['videos'] = 1;
+		// If the block is within a loop (like videopack/video-loop), use the postId from context.
+		if ( empty( $attributes['id'] ) && ! empty( $block->context['postId'] ) ) {
+			$attributes['id'] = $block->context['postId'];
 		}
 
-		return '<div ' . (string) get_block_wrapper_attributes() . ' >' . $shortcode_handler->do( (array) $attributes, (string) $content ) . '</div>';
+		// Context inheritance for styling and settings.
+		$context_map = array(
+			'videopack/skin'                   => 'skin',
+			'videopack/view_count'             => 'view_count',
+			'videopack/overlay_title'          => 'overlay_title',
+			'videopack/title_color'            => 'title_color',
+			'videopack/title_background_color' => 'title_background_color',
+			'videopack/play_button_color'      => 'play_button_color',
+			'videopack/play_button_icon_color' => 'play_button_icon_color',
+			'videopack/control_bar_bg_color'   => 'control_bar_bg_color',
+			'videopack/control_bar_color'      => 'control_bar_color',
+			'videopack/downloadlink'           => 'downloadlink',
+			'videopack/embeddable'             => 'embeddable',
+			'videopack/showBackground'         => 'showBackground',
+		);
+
+		foreach ( $context_map as $context_key => $attr_key ) {
+			if ( ! isset( $attributes[ $attr_key ] ) && isset( $block->context[ $context_key ] ) ) {
+				$attributes[ $attr_key ] = $block->context[ $context_key ];
+			}
+
+			// Normalize boolean-like values for both context-inherited and direct attributes.
+			if ( isset( $attributes[ $attr_key ] ) ) {
+				$val = $attributes[ $attr_key ];
+				if ( 'false' === $val || '0' === $val || '' === $val ) {
+					$val = false;
+				} elseif ( 'true' === $val || '1' === $val ) {
+					$val = true;
+				}
+				$attributes[ $attr_key ] = $val;
+			}
+		}
+
+		$inner_content = $content ?: $this->get_inner_blocks_content( $block );
+
+		return Modular_Renderer::render_video_container( (array) $attributes, $inner_content, true );
+	}
+
+	/**
+	 * Render callback for the Video Player Engine block.
+	 *
+	 * @param array     $atts    Block attributes.
+	 * @param string    $content Block content.
+	 * @param \WP_Block $block   The block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_video_player_engine_block( array $atts, string $content, $block ): string {
+		$atts['is_modular_engine'] = true;
+
+		// Map context to attributes for engine initialization.
+		if ( empty( $atts['id'] ) && ! empty( $block->context['postId'] ) ) {
+			$atts['id'] = $block->context['postId'];
+		}
+
+		$context_map = array(
+			'videopack/src'                   => 'src',
+			'videopack/skin'                  => 'skin',
+			'videopack/autoplay'              => 'autoplay',
+			'videopack/controls'              => 'controls',
+			'videopack/loop'                  => 'loop',
+			'videopack/muted'                 => 'muted',
+			'videopack/playsinline'           => 'playsinline',
+			'videopack/poster'                => 'poster',
+			'videopack/preload'               => 'preload',
+			'videopack/volume'                => 'volume',
+			'videopack/auto_res'              => 'auto_res',
+			'videopack/auto_codec'            => 'auto_codec',
+			'videopack/sources'               => 'sources',
+			'videopack/source_groups'         => 'source_groups',
+			'videopack/text_tracks'           => 'tracks',
+			'videopack/playback_rate'         => 'playback_rate',
+			'videopack/default_ratio'         => 'default_ratio',
+			'videopack/fixed_aspect'          => 'fixed_aspect',
+			'videopack/fullwidth'             => 'fullwidth',
+			'videopack/play_button_color'      => 'play_button_color',
+			'videopack/play_button_icon_color' => 'play_button_icon_color',
+			'videopack/control_bar_bg_color'   => 'control_bar_bg_color',
+			'videopack/control_bar_color'      => 'control_bar_color',
+			'videopack/title_color'            => 'title_color',
+			'videopack/title_background_color' => 'title_background_color',
+			'videopack/embed_method'           => 'embed_method',
+		);
+
+		foreach ( $context_map as $context_key => $attr_key ) {
+			if ( ! isset( $atts[ $attr_key ] ) && isset( $block->context[ $context_key ] ) ) {
+				$atts[ $attr_key ] = $block->context[ $context_key ];
+			}
+		}
+
+		$shortcode_handler = new \Videopack\Frontend\Shortcode( $this->options );
+		$prepared          = $shortcode_handler->prepare_player( $atts );
+
+		if ( ! $prepared ) {
+			return '';
+		}
+
+		return sprintf(
+			'<div class="videopack-player-relative-wrapper">%s%s</div>',
+			$prepared['player']->get_player_code( $prepared['final_atts'] ),
+			$content
+		);
+	}
+
+	/**
+	 * Render callback for the Video Watermark block.
+	 *
+	 * @param array     $atts    Block attributes.
+	 * @param string    $content Block content.
+	 * @param \WP_Block $block   The block instance.
+	 * @return string Rendered HTML.
+	 */
+	public function render_video_watermark_block( array $atts, string $content, $block ): string {
+		$context_map = array(
+			'videopack/watermark'         => 'watermark',
+			'videopack/watermark_styles'  => 'watermark_styles',
+			'videopack/watermark_link_to' => 'watermark_link_to',
+			'videopack/watermark_url'     => 'watermark_url',
+			'videopack/skin'              => 'skin',
+		);
+
+		foreach ( $context_map as $context_key => $attr_key ) {
+			if ( ! isset( $atts[ $attr_key ] ) && isset( $block->context[ $context_key ] ) ) {
+				$atts[ $attr_key ] = $block->context[ $context_key ];
+			}
+		}
+
+		return Modular_Renderer::render_watermark( $atts );
+	}
+
+	/**
+	 * Server-side rendering callback for the videopack/video-title block.
+	 *
+	 * @param array     $attributes The block attributes.
+	 * @param string    $content    The block's inner content.
+	 * @param \WP_Block $block      The block instance.
+	 * @return string The rendered HTML.
+	 */
+	public function render_video_title_block( $attributes, $content, $block ) {
+		$post_id = $attributes['postId'] ?? get_the_ID();
+		$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options );
+
+		// Unique ID for the meta components (share container, etc.).
+		$id = $attributes['id'] ?? ( $block->context['postId'] ?? '' );
+
+		// Normalize boolean context attributes.
+		$normalized_context = array();
+		foreach ( array( 'downloadlink', 'embeddable', 'showBackground', 'overlay_title' ) as $key ) {
+			if ( isset( $block->context[ "videopack/{$key}" ] ) ) {
+				$val = $block->context[ "videopack/{$key}" ];
+				if ( 'false' === $val || '0' === $val || '' === $val ) {
+					$val = false;
+				} elseif ( 'true' === $val || '1' === $val ) {
+					$val = true;
+				}
+				$normalized_context[ $key ] = $val;
+			}
+		}
+
+		// Merge context into attributes for the renderer.
+		$merged_attributes = array_merge(
+			array(
+				'isOverlay'              => ( ! isset( $normalized_context['overlay_title'] ) || false !== $normalized_context['overlay_title'] ),
+				'overlay_title'          => $normalized_context['overlay_title'] ?? true,
+				'title_color'            => $block->context['videopack/title_color'] ?? '',
+				'title_background_color' => $block->context['videopack/title_background_color'] ?? '',
+				'skin'                   => $block->context['videopack/skin'] ?? '',
+				'downloadlink'           => $normalized_context['downloadlink'] ?? false,
+				'embeddable'             => $normalized_context['embeddable'] ?? false,
+				'textAlign'              => ! empty( $block->context['videopack/textAlign'] ) ? $block->context['videopack/textAlign'] : 'left',
+				'showBackground'         => $normalized_context['showBackground'] ?? true,
+			),
+			$attributes
+		);
+
+		// Prioritize context postId over attributes for the actual attachment if needed.
+		if ( ! is_numeric( $post_id ) || (int) $post_id <= 0 ) {
+			if ( ! empty( $block->context['postId'] ) ) {
+				$post_id = $block->context['postId'];
+				$source  = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options );
+			}
+		}
+
+		// If embeddable is on, ensure we have an embedlink.
+		if ( ! empty( $merged_attributes['embeddable'] ) && empty( $merged_attributes['embedlink'] ) ) {
+			if ( is_numeric( $post_id ) && (int) $post_id > 0 ) {
+				$merged_attributes['embedlink'] = (string) add_query_arg( 'videopack[enable]', 'true', (string) get_attachment_link( (int) $post_id ) );
+			}
+		}
+
+		return \Videopack\Frontend\Modular_Renderer::render_video_title( (array) $merged_attributes, $source, $id );
+	}
+
+	/**
+	 * Server-side rendering callback for the videopack/view-count block.
+	 *
+	 * @param array     $attributes The block attributes.
+	 * @param string    $content    The block's inner content.
+	 * @param \WP_Block $block      The block instance.
+	 * @return string The rendered HTML.
+	 */
+	public function render_view_count_block( $attributes, $content, $block ) {
+		$source  = null;
+		$post_id = $block->context['postId'] ?? get_the_ID();
+
+		if ( $post_id ) {
+			$source = \Videopack\Video_Source\Source_Factory::create( $post_id, $this->options );
+		}
+
+		// Merge context into attributes for the renderer.
+		$merged_attributes = array_merge(
+			array(
+				'title_color'            => $block->context['videopack/title_color'] ?? '',
+				'title_background_color' => $block->context['videopack/title_background_color'] ?? '',
+				'skin'                   => $block->context['videopack/skin'] ?? '',
+				'textAlign'              => ! empty( $block->context['videopack/textAlign'] ) ? $block->context['videopack/textAlign'] : 'right', // Default to right for view count
+			),
+			$attributes
+		);
+
+		return \Videopack\Frontend\Modular_Renderer::render_view_count( $source, $merged_attributes );
+	}
+
+	/**
+	 * Gets the inner blocks content for a block.
+	 *
+	 * @param \WP_Block $block The block instance.
+	 * @return string The inner blocks content.
+	 */
+	protected function get_inner_blocks_content( $block ) {
+		$content = '';
+		foreach ( $block->inner_blocks as $inner_block ) {
+			$content .= $inner_block->render();
+		}
+		return $content;
 	}
 
 	/**

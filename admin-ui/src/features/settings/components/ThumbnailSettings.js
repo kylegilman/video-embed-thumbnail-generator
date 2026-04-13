@@ -17,7 +17,7 @@ import VideopackTooltip from './VideopackTooltip';
 
 const config = window.videopack_config || {};
 
-const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
+const ThumbnailSettings = ({ settings, changeHandlerFactory }) => {
 	const {
 		browser_thumbnails,
 		ffmpeg_exists,
@@ -44,9 +44,9 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 				'Are you sure you want to set all video thumbnails as featured images for their parent posts? This may overwrite existing featured images.',
 				'video-embed-thumbnail-generator'
 			),
-			() => startBatchProcess( 'featured' ),
-			() => getBatchProgress( 'featured' ),
-			__( 'No videos found to process.', 'video-embed-thumbnail-generator' )
+			() => startBatchProcess('featured'),
+			() => getBatchProgress('featured'),
+			__('No videos found to process.', 'video-embed-thumbnail-generator')
 		);
 	};
 
@@ -54,18 +54,18 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 		const confirmMessage =
 			thumb_parent === 'video'
 				? __(
-					'Are you sure you want to attach all thumbnails to their parent videos?',
-					'video-embed-thumbnail-generator'
-				)
+						'Are you sure you want to attach all thumbnails to their parent videos?',
+						'video-embed-thumbnail-generator'
+					)
 				: __(
-					'Are you sure you want to attach all thumbnails to the parent posts?',
-					'video-embed-thumbnail-generator'
-				);
+						'Are you sure you want to attach all thumbnails to the parent posts?',
+						'video-embed-thumbnail-generator'
+					);
 
 		parentsBatch.confirmAndRun(
 			confirmMessage,
-			() => startBatchProcess( 'parents', { target_parent: thumb_parent } ),
-			() => getBatchProgress( 'parents' ),
+			() => startBatchProcess('parents', { target_parent: thumb_parent }),
+			() => getBatchProgress('parents'),
 			__(
 				'No thumbnails found to process.',
 				'video-embed-thumbnail-generator'
@@ -76,16 +76,16 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 	const executeGenerateAllThumbnails = async () => {
 		try {
 			generationBatch.runPolling(
-				() => startBatchProcess( 'thumbs' ),
-				() => getBatchProgress( 'thumbs' ),
+				() => startBatchProcess('thumbs'),
+				() => getBatchProgress('thumbs'),
 				__(
 					'No videos found to process.',
 					'video-embed-thumbnail-generator'
 				)
 			);
-		} catch ( error ) {
-			console.error( error );
-			generationBatch.setIsProcessing( false );
+		} catch (error) {
+			console.error(error);
+			generationBatch.setIsProcessing(false);
 			generationBatch.showAlert(
 				__(
 					'An error occurred while processing.',
@@ -238,18 +238,20 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 									>
 										{generationBatch.isProcessing
 											? sprintf(
-												/* translators: %1$d: current count, %2$d: total count */
-												__(
-													'Processing %1$d / %2$d',
-													'video-embed-thumbnail-generator'
-												),
-												generationBatch.progress.current,
-												generationBatch.progress.total
-											)
+													/* translators: %1$d: current count, %2$d: total count */
+													__(
+														'Processing %1$d / %2$d',
+														'video-embed-thumbnail-generator'
+													),
+													generationBatch.progress
+														.current,
+													generationBatch.progress
+														.total
+												)
 											: __(
-												'Generate thumbnails for old videos',
-												'video-embed-thumbnail-generator'
-											)}
+													'Generate thumbnails for old videos',
+													'video-embed-thumbnail-generator'
+												)}
 									</Button>
 									<VideopackTooltip
 										text={__(
@@ -268,7 +270,10 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 									'video-embed-thumbnail-generator'
 								)}{' '}
 								<ExternalLink href="https://www.videopack.video/pro/">
-									{__('Upgrade to Pro', 'video-embed-thumbnail-generator')}
+									{__(
+										'Upgrade to Pro',
+										'video-embed-thumbnail-generator'
+									)}
 								</ExternalLink>
 							</p>
 						</div>
@@ -370,18 +375,18 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 							>
 								{featuredBatch.isProcessing
 									? sprintf(
-										/* translators: 1: current count, 2: total count */
-										__(
-											'Processing %1$d / %2$d',
-											'video-embed-thumbnail-generator'
-										),
-										featuredBatch.progress.current,
-										featuredBatch.progress.total
-									)
+											/* translators: 1: current count, 2: total count */
+											__(
+												'Processing %1$d / %2$d',
+												'video-embed-thumbnail-generator'
+											),
+											featuredBatch.progress.current,
+											featuredBatch.progress.total
+										)
 									: __(
-										'Set all as featured',
-										'video-embed-thumbnail-generator'
-									)}
+											'Set all as featured',
+											'video-embed-thumbnail-generator'
+										)}
 							</Button>
 							<VideopackTooltip
 								text={__(
@@ -421,18 +426,18 @@ const ThumbnailSettings = ( { settings, changeHandlerFactory } ) => {
 							>
 								{parentsBatch.isProcessing
 									? sprintf(
-										/* translators: 1: current count, 2: total count */
-										__(
-											'Processing %1$d / %2$d',
-											'video-embed-thumbnail-generator'
-										),
-										parentsBatch.progress.current,
-										parentsBatch.progress.total
-									)
+											/* translators: 1: current count, 2: total count */
+											__(
+												'Processing %1$d / %2$d',
+												'video-embed-thumbnail-generator'
+											),
+											parentsBatch.progress.current,
+											parentsBatch.progress.total
+										)
 									: __(
-										'Set all parents',
-										'video-embed-thumbnail-generator'
-									)}
+											'Set all parents',
+											'video-embed-thumbnail-generator'
+										)}
 							</Button>
 							<VideopackTooltip
 								text={__(

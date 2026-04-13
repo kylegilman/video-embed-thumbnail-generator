@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/video-title",
+  "title": "Video Title",
+  "category": "media",
+  "parent": [
+    "videopack/videopack-video",
+    "videopack/video-player-engine"
+  ],
+  "icon": "heading",
+  "description": "Overlay title and action buttons for the video player.",
+  "usesContext": [
+    "postId",
+    "videopack/skin",
+    "videopack/title_color",
+    "videopack/title_background_color",
+    "videopack/overlay_title",
+    "videopack/downloadlink",
+    "videopack/embeddable",
+    "videopack/showBackground",
+    "videopack/textAlign",
+    "videopack/position",
+    "videopack/embedlink"
+  ],
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": ""
+    },
+    "tagName": {
+      "type": "string",
+      "default": "h3"
+    },
+    "isOverlay": {
+      "type": "boolean",
+      "default": true
+    },
+    "title_color": {
+      "type": "string"
+    },
+    "title_background_color": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string",
+      "default": "top"
+    },
+    "textAlign": {
+      "type": "string"
+    },
+    "embedlink": {
+      "type": "string"
+    },
+    "embeddable": {
+      "type": "boolean",
+      "default": false
+    },
+    "downloadlink": {
+      "type": "boolean",
+      "default": false
+    },
+    "overlay_title": {
+      "type": "boolean",
+      "default": true
+    },
+    "showTitle": {
+      "type": "boolean",
+      "default": true
+    },
+    "showBackground": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": false,
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js"
+}

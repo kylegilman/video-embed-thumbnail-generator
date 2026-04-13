@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "videopack/video-duration",
+  "title": "Video Duration",
+  "category": "media",
+  "icon": "clock",
+  "description": "Displays the video duration.",
+  "usesContext": [
+    "postId",
+    "videopack/skin"
+  ],
+  "supports": {
+    "html": false,
+    "color": {
+      "text": true,
+      "background": true
+    }
+  },
+  "textdomain": "video-embed-thumbnail-generator",
+  "editorScript": "file:./index.js"
+}

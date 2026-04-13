@@ -2,9 +2,8 @@
 @use "@wordpress/base-styles/colors";
 @use "../common/PlayButton.scss" as *;
 
-
+/* Main Gutenberg Block Wrapper */
 .wp-block-videopack-videopack-video {
-
 	width: 100%;
 	max-width: var(--wp--style--global--content-size);
 
@@ -26,56 +25,40 @@
 	}
 }
 
-/* Main container for the video player */
+/* Main Videopack Wrapper Component */
 .videopack-wrapper {
 	margin: 1em 0;
 	position: relative;
 	container-type: inline-size;
 	width: 100%;
 
-	&.videopack-wrapper-auto-left {
-		margin-left: auto;
+	// Responsive wrapper for player and overlays
+	.videopack-player-relative-wrapper {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		display: block;
 	}
 
-	&.videopack-wrapper-auto-right {
-		margin-right: auto;
-	}
+	// Alignment modifiers
+	&.videopack-wrapper-auto-left { margin-left: auto; }
+	&.videopack-wrapper-auto-right { margin-right: auto; }
+	&.videopack-wrapper-inline { display: inline-block; }
+	&.videopack-wrapper-inline-left { float: left; margin: 1em 1em 0 0; }
+	&.videopack-wrapper-inline-right { float: right; margin: 1em 0 0 1em; }
 
-	&.videopack-wrapper-inline {
-		display: inline-block;
-	}
+	// Text alignment modifiers
+	&.videopack-text-align-left { text-align: left; }
+	&.videopack-text-align-right { text-align: right; }
+	&.videopack-text-align-center { text-align: center; }
 
-	&.videopack-wrapper-inline-left {
-		float: left;
-		margin: 1em 1em 0 0;
-	}
-
-	&.videopack-wrapper-inline-right {
-		float: right;
-		margin: 1em 0 0 1em;
-	}
-
-	/* Text alignment */
-	&.videopack-text-align-left {
-		text-align: left;
-	}
-
-	&.videopack-text-align-right {
-		text-align: right;
-	}
-
-	&.videopack-text-align-center {
-		text-align: center;
-	}
-
-	/* Aspect Ratio Handling */
+	// Aspect Ratio Handling
 	&.videopack-has-aspect-ratio {
 		width: 100%;
 		max-width: 100%;
 
 		.videopack-player {
 			width: 100%;
-			/* height will be determined by aspect-ratio from inline styles */
 			position: relative;
 
 			video,
@@ -84,16 +67,13 @@
 			.wp-video {
 				width: 100%;
 				height: 100%;
+				line-height: 1;
 			}
 
-			/* Override Video.js fluid padding if it gets applied */
-			.video-js {
-
-				&.vjs-fluid,
-				&.vjs-16-9,
-				&.vjs-4-3 {
-					padding-top: 0;
-				}
+			.video-js.vjs-fluid,
+			.video-js.vjs-16-9,
+			.video-js.vjs-4-3 {
+				padding-top: 0;
 			}
 		}
 
@@ -102,762 +82,280 @@
 		}
 	}
 
-	/* Video container */
+	// Player Inner Container
 	.videopack-player {
 		position: relative;
 		width: 100%;
+		height: 100%;
 
-		/* Skin-specific MetaBar styles (only if no custom background color) */
-		@at-root .videopack-wrapper:not(.videopack-has-title-background-color) .videopack-player {
-			&.default .videopack-meta-bar:not(.no-title) {
-				background-color: #2b333f;
+		// Standard Skin Background Colors
+		@at-root .videopack-wrapper {
+			&.default, &.vjs-theme-videopack {
+				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: #2b333f; }
 			}
-
-			&.vjs-theme-city .videopack-meta-bar:not(.no-title) {
-				background-color: var(--vjs-theme-city--primary);
+			&.vjs-theme-city {
+				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: var(--vjs-theme-city--primary); }
 			}
-
-			&.vjs-theme-fantasy .videopack-meta-bar:not(.no-title) {
-				background-color: var(--vjs-theme-fantasy--primary);
+			&.vjs-theme-fantasy {
+				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: var(--vjs-theme-fantasy--primary); }
 			}
-
-			&.vjs-theme-forest .videopack-meta-bar:not(.no-title) {
-				background-color: var(--vjs-theme-forest--primary);
+			&.vjs-theme-forest {
+				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: var(--vjs-theme-forest--primary); }
 			}
-
 			&.vjs-theme-sea {
-				.videopack-meta-bar:not(.no-title) {
-					background-color: rgba(65, 118, 188);
-				}
-
-				.vjs-menu-button .vjs-menu-content {
-					background-color: hsla(0, 0%, 100%, .4);
-				}
-
+				.videopack-video-title:not(.videopack-has-title-background-color) { background-color: rgb(65, 118, 188); }
+				.vjs-menu-button .vjs-menu-content { background-color: hsla(0, 0%, 100%, .4); }
 				.vjs-button:hover li {
 					color: white;
-
-					&.vjs-selected {
-						color: rgba(65, 118, 188);
-					}
+					&.vjs-selected { color: rgba(65, 118, 188); }
 				}
 			}
 		}
 	}
 
-	/* Watermark styles */
-	.videopack-watermark {
-		img {
-			display: block;
-			position: absolute;
-			bottom: 7%;
-			right: 5%;
-			z-index: 1;
-			margin: 0;
-			max-width: 10%;
-			box-shadow: none;
-		}
-
-		a {
-			display: block;
-			position: inherit;
-			/* Maintain link behavior */
-		}
-	}
-
-	/* Ensure controls are above the watermark */
-	.vjs-control-bar,
-	.mejs-controls,
-	video::-webkit-media-controls-panel {
-		z-index: 2;
-	}
-
-	.videopack-no-controls .mejs-controls {
-		display: none;
-	}
-
-	.no-title .videopack-meta-icons span {
-		font-size: 19pt;
-		text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
-	}
-
-	/* Below video section for caption and view count */
-	.videopack-below-video {
-		margin: 2px 6px 0px 4px;
-		min-height: 20px;
-		clear: both;
-		overflow: hidden;
-		font-size: medium;
-		color: inherit;
-
-		.videopack-viewcount {
-			float: right;
-			margin-left: 12px;
-			white-space: nowrap;
-		}
-
-		.videopack-caption {
-			font-size: 0.85em;
-			line-height: 150%;
-			font-style: italic;
-		}
-	}
-
-	/* video-quality-selector Video.js plugin styles */
-
-	.vjs-res-button {
-
-		:before {
-			font-family: VideoJs;
-			content: "\f114";
-			/* Gear icon */
-		}
-
-		span.vjs-control-text {
-			display: none;
-		}
-	}
-
-	.vjs-menu-button-popup .vjs-menu.vjs-lock-showing,
-	.vjs-workinghover .vjs-menu-button-popup.vjs-hover .vjs-menu {
-		bottom: 100%;
-		margin-bottom: 0;
-
-		/* Alignment shifts for player boundaries */
-		&.vjs-menu-align-right {
-			left: auto;
-			right: 0;
-
-			.vjs-menu-content {
-				left: auto;
-				right: 0;
-			}
-		}
-
-		&.vjs-menu-align-left {
-			left: 0;
-
-			.vjs-menu-content {
-				left: 0;
-			}
-		}
-	}
-
-	.vjs-menu-button-popup .vjs-menu .vjs-menu-content {
-		bottom: 0;
-	}
-
-	.vjs-res-button .vjs-menu .vjs-menu-content,
-	.vjs-res-button+.vjs-menu .vjs-menu-content {
-		overflow: visible;
-		bottom: 0;
-	}
-
-	.vjs-res-button .vjs-menu li.vjs-menu-item,
-	.vjs-res-button+.vjs-menu li.vjs-menu-item {
-		text-transform: none;
-
-		&.vjs-has-submenu {
-			position: relative;
-
-			>.vjs-menu {
-				display: none;
-				position: absolute;
-				left: 100%;
-				top: auto;
-				bottom: 0;
-				margin-left: 0.2em;
-				margin-bottom: 0;
-				min-width: 8em;
-				border-radius: 0.3em;
-				height: auto;
-				width: auto;
-
-				&::before {
-					content: "";
-					position: absolute;
-					top: 0;
-					bottom: 0;
-					left: -0.2em;
-					width: 0.2em;
-				}
-
-				.vjs-menu-content {
-					position: static;
-					bottom: auto;
-					padding: 0;
-					margin: 0;
-				}
-
-				li.vjs-menu-item {
-					font-size: 1em;
-				}
-			}
-
-			&:hover>.vjs-menu,
-			&.vjs-submenu-open>.vjs-menu {
-				display: block;
-			}
-
-			>.vjs-menu.vjs-submenu-left {
-				left: auto;
-				right: 100%;
-				margin-left: 0;
-				margin-right: 0.2em;
-
-				&::before {
-					left: auto;
-					right: -0.2em;
-				}
-			}
-		}
-	}
-
-	.vjs-loading-spinner {
-		z-index: 1;
-	}
-
-	/* Don't show hover effects on title */
-	ul li.vjs-menu-title.vjs-res-menu-title:hover {
-		cursor: default;
-		background-color: transparent;
-		box-shadow: none;
-	}
-
-	.videopack_temp_thumb {
-		z-index: 5;
-		position: absolute;
-		top: 0;
-		left: 0;
-		max-width: 100%;
-		max-height: 100%;
-		margin: 0;
-		padding: 0;
-	}
-
-	.wp-video-shortcode,
-	.videopack-video {
-		max-width: 100%;
-		height: auto;
-	}
-
-	.videopack-fixed-aspect {
-		.videopack-video {
-			width: 100%;
-			height: 100%;
-			object-fit: contain;
-			background: black;
-		}
-	}
-
-	/* fix iPhone play button */
-	video::-webkit-media-controls-start-playback-button {
-		display: none;
-	}
-
-	.video-js.vjs-controls-enabled .vjs-big-play-button {
-		display: none;
-	}
-
-	.video-js.vjs-controls-enabled.vjs-paused .vjs-big-play-button {
-		display: block;
-	}
-
-	/* change default styling of captions menu to match other plugins */
-	.mejs-captions-selector-label label,
-	.mejs-captions-selected {
-		background: rgba(255, 255, 255, 0.4);
-	}
-
-	.mejs-captions-selector-list-item {
-		padding: 0px;
-	}
-
-	.mejs-captions-selector-label {
-		padding: 5px;
-		margin: 0px;
-		color: colors.$white;
-		width: 100%;
-	}
-
-	/* mejs-sourcechooser plugin styles */
-
-	.mejs-controls div.mejs-sourcechooser-button button {
-		background: none;
-		color: colors.$white;
-		font-size: 11pt;
-	}
-
-	/* mep-feature-sourcechooser backwards compatible plugin styles */
-	&.videopack-compat-mep {
-		.mejs-container .mejs-controls div.mejs-menu-arrow {
-			display: none;
-			position: absolute;
-			bottom: -7px;
-			left: -8px;
-			width: 0em;
-			height: 0em;
-			margin-bottom: 3em;
-			border-left: 2em solid transparent;
-			border-right: 2em solid transparent;
-			border-top: 1.55em solid #000000;
-			border-top-color: rgba(40, 40, 40, 0.5);
-		}
-
-		div.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector {
-			visibility: inherit;
-			bottom: 17px;
-			right: -28px;
-			width: auto;
-			height: auto;
-			padding: 9px 0 0 0;
-			text-align: center;
-			-webkit-box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
-			-moz-box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
-			box-shadow: -0.2em -0.2em 0.3em rgba(255, 255, 255, 0.2);
-
-			span {
-				color: colors.$white;
-				padding: 0px 10px 5px 10px;
-				display: block;
-				white-space: nowrap;
-			}
-
-			ul li {
-				margin: 3px 0 3px 0;
-				padding: 2px 10px 5px 10px;
-				cursor: pointer;
-
-				&.mejs-sourcechooser-selected {
-					background: rgba(20, 20, 20, 0.8);
-				}
-
-				&:hover {
-					color: #111;
-					background-color: colors.$white;
-					background-color: rgba(255, 255, 255, 0.75);
-				}
-
-				input {
-					display: none;
-				}
-
-				label {
-					width: auto;
-				}
-			}
-		}
-	}
-
-	/* mejs-sourcechooser new plugin styles */
-
-	.mejs__sourcechooser-button,
-	.mejs-sourcechooser-button {
-		overflow: visible;
-	}
-
-	.mejs__sourcechooser-button .mejs__sourcechooser-selector,
-	.mejs-sourcechooser-button .mejs-sourcechooser-selector {
-		background: rgba(50, 50, 50, 0.7);
-		border: solid 1px transparent;
-		border-radius: 0;
-		bottom: 40px;
-		overflow: visible;
-		padding: 0;
-		position: absolute;
-	}
-
-	.mejs__sourcechooser-selector ul,
-	.mejs-sourcechooser-selector ul {
-		display: block;
-		list-style-type: none;
-		margin: 0;
-		overflow: visible;
-		padding: 0;
-	}
-
-	.mejs__sourcechooser-selector li,
-	.mejs-sourcechooser-selector li {
-		color: #fff;
-		display: block;
-		list-style-type: none;
-		margin: 0;
-		overflow: hidden;
-		padding: 5px 10px 5px 0px;
-	}
-
-	.mejs-sourcechooser-selector li.sourcechooser-selected {
-		background-color: rgba(255, 255, 255, 0.2);
-	}
-
-	.mejs__sourcechooser-selector li:hover,
-	.mejs-sourcechooser-selector li:hover {
-		background-color: rgba(255, 255, 255, 0.2);
-		cursor: pointer;
-	}
-
-	.mejs__sourcechooser-selector input,
-	.mejs-sourcechooser-selector input {
-		display: none;
-	}
-
-	.mejs__sourcechooser-selector label,
-	.mejs-sourcechooser-selector label {
-		color: #fff;
-		display: inline-block;
-		float: left;
-		font-size: 10px;
-		line-height: 15px;
-		padding: 4px 5px 0;
-		cursor: pointer;
-	}
-
-	.mejs__sourcechooser-selector .mejs__sourcechooser-codec-item,
-	.mejs-sourcechooser-selector .mejs-sourcechooser-codec-item {
-		position: relative;
-		overflow: visible;
-
-		>span {
-			color: #fff;
-			display: block;
-			padding: 5px 10px 5px 10px;
-			cursor: pointer;
-			font-size: 10px;
-			line-height: 15px;
-		}
-
-		&:hover>.mejs__sourcechooser-submenu,
-		&:hover>.mejs-sourcechooser-submenu,
-		&.mejs-submenu-open>.mejs__sourcechooser-submenu,
-		&.mejs-submenu-open>.mejs-sourcechooser-submenu {
-			display: block;
-		}
-
-		&.mejs-submenu-left>.mejs__sourcechooser-submenu,
-		&.mejs-submenu-left>.mejs-sourcechooser-submenu {
-			left: auto;
-			right: 100%;
-		}
-
-		.mejs__sourcechooser-submenu,
-		.mejs-sourcechooser-submenu {
-			display: none;
-			position: absolute;
-			left: 100%;
-			top: auto;
-			bottom: 0;
-			background: rgba(50, 50, 50, 0.9);
-			border: solid 1px transparent;
-			padding: 0;
-			margin: 0;
-			min-width: 100px;
-			list-style-type: none;
-
-			li {
-				width: 100%;
-				display: block;
-				overflow: hidden;
-				padding: 5px 10px 5px 0px;
-
-				&:hover {
-					background-color: rgba(255, 255, 255, 0.2);
-				}
-
-				label {
-					width: 100%;
-					padding-left: 10px;
-				}
-			}
-		}
-	}
-
-	/* mejs-speed styles */
-	.mejs__speed-button,
-	.mejs-speed-button {
-		position: relative;
-	}
-
-	.mejs__speed-button>button,
-	.mejs-speed-button>button {
-		background: transparent;
-		color: #fff;
-		font-size: 11px;
-		line-height: normal;
-		margin: 11px 0 0;
-		width: 36px;
-	}
-
-	.mejs__speed-selector,
-	.mejs-speed-selector {
-		background: rgba(50, 50, 50, 0.7);
-		border: solid 1px transparent;
-		border-radius: 0;
-		left: -10px;
-		overflow: hidden;
-		padding: 0;
-		position: absolute;
-		top: -100px;
-		visibility: hidden;
-		width: 60px;
-	}
-
-	.mejs__speed-selector,
-	.mejs-speed-selector {
-		visibility: visible;
-	}
-
-	.mejs__speed-selector-list,
-	.mejs-speed-selector-list {
-		display: block;
-		list-style-type: none;
-		margin: 0;
-		overflow: hidden;
-		padding: 0;
-	}
-
-	.mejs__speed-selector-list-item,
-	.mejs-speed-selector-list-item {
-		color: #fff;
-		display: block;
-		list-style-type: none;
-		margin: 0 0 6px;
-		overflow: hidden;
-		padding: 0 10px;
-	}
-
-	.mejs__speed-selector-list-item:hover,
-	.mejs-speed-selector-list-item:hover {
-		background-color: rgb(200, 200, 200);
-		background-color: rgba(255, 255, 255, 0.4);
-	}
-
-	.mejs__speed-selector-input,
-	.mejs-speed-selector-input {
-		clear: both;
-		float: left;
-		left: -1000px;
-		margin: 3px 3px 0 5px;
-		position: absolute;
-	}
-
-	.mejs__speed-selector-label,
-	.mejs-speed-selector-label {
-		color: white;
-		cursor: pointer;
-		float: left;
-		font-size: 10px;
-		line-height: 14px;
-		margin-left: 5px;
-		padding: 4px 0 0;
-		width: 60px;
-	}
-
-	li.mejs-speed-selected {
-		background: rgba(255, 255, 255, 0.4);
-	}
-
-	.mejs__speed-selector,
-	.mejs-speed-selector {
-		visibility: hidden;
-	}
-
-	.mejs__speed-button:hover .mejs__speed-selector,
-	.mejs-speed-button:hover .mejs-speed-selector {
-		visibility: visible;
-	}
-
-	.videopack-share-container {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-wrap: wrap;
-		gap: 2em;
-		color: white;
-		top: 0;
-		padding-top: 3.5em;
-		padding-bottom: 9%;
-		width: 100%;
-		z-index: 102;
-		position: absolute;
-		background: linear-gradient(to bottom, rgba(20, 20, 20, 1) 0%, rgba(20, 20, 20, 0.5) 60%, rgba(20, 20, 20, 0) 100%);
-		opacity: 0;
-		visibility: hidden;
-		transition: opacity 0.3s, visibility 0.3s;
-
-		.videopack-embedcode-container,
-		.videopack-start-at-container {
-			display: inline-flex;
-			align-items: center;
-			gap: 5px;
-
-			span {
-				display: flex;
-				align-items: center;
-			}
-		}
-
-		&.is-visible {
-			opacity: 1;
-			visibility: visible;
-		}
-
-		input {
-			height: 18px;
-			min-height: auto;
-			font-size: 13px;
-			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-			background-color: colors.$white;
-			box-shadow: 0 0 0 transparent;
-			border-radius: 2px;
-			border: none;
-			margin: 0;
-			color: colors.$gray-800;
-		}
-
-		input[type="text"] {
-			padding: 2px;
-		}
-
-		input[type="text"].videopack-embed-code {
-			width: 15rem;
-		}
-
-		input[type="text"].videopack-start-at {
-			width: 3rem;
-			text-align: center;
-		}
-	}
-
-	.videopack-click-trap {
-		width: 100%;
-		height: 100%;
-		background: none;
-		position: absolute;
-		top: 0;
-		z-index: 102;
-		opacity: 0;
-		visibility: hidden;
-		border: none;
-		padding: 0;
-		transition: opacity 0.3s, visibility 0.3s;
-
-		&.is-visible {
-			opacity: 1;
-			visibility: visible;
-		}
-	}
-
-	.videopack-meta-bar {
-		color: var(--videopack-title-color, white);
+	// Meta Bar (Title, Icons)
+	.videopack-video-title {
+		color: var(--videopack-title-color, #fff);
 		font-size: 15px;
-		display: block;
-		position: absolute;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		justify-content: flex-end; // Anchors icons to right when title is hidden
+		align-items: center;
 		top: 0px;
-		z-index: 103;
 		box-sizing: border-box;
 		margin: 0px;
-		padding: 0.2em;
+		padding: 0.5em 0.6em;
 		width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		background-color: var(--videopack-title-background-color, rgba(40, 40, 40, 0.95));
+		min-height: 2.6em;
+		background-color: var(--videopack-title-background-color, rgba(20, 20, 20, 0.9));
 		visibility: hidden;
 		opacity: 0;
 		transition: visibility 0.3s linear, opacity 0.3s linear;
+		line-height: 1.2;
+		position: relative; // Needed for z-index layering
+		z-index: 102; // Sits above Share Container (101)
 
-		&.no-title {
-			background: transparent;
+		.is-overlay & {
+			position: absolute;
+		}
 
-			.videopack-meta-icons {
+		&.is-overlay {
+			position: absolute;
+			z-index: 102;
+		}
 
-				button,
-				a {
-					width: 1.8em;
-					height: 1.8em;
-				}
-
-				.videopack-icons {
-					text-shadow: 1px 1px rgba(20, 20, 20, 0.8);
-				}
-			}
+		&.no-title { background: transparent; }
+		&.has-no-background { background: transparent !important; }
+		
+		&.position-bottom {
+			top: auto;
+			bottom: 0px;
 		}
 
 		.videopack-title {
 			padding-left: 4px;
+			font-size: inherit;
+			margin: 0;
+			display: block;
+			line-height: inherit;
+			flex-grow: 1;
+			flex-shrink: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+
+			h1, h2, h3, h4, h5, h6 {
+				font-size: inherit;
+				margin: 0;
+				padding: 0;
+				line-height: inherit;
+				color: inherit;
+				font-weight: inherit;
+			}
 		}
 
 		.videopack-meta-icons {
 			position: relative;
-			float: right;
-			margin: 0;
+			margin: 0 0 0 10px;
 			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
 			align-items: center;
+			flex-shrink: 0;
 
-			button,
-			a {
+			button, a {
 				background: transparent;
 				border: none;
 				box-shadow: none;
 				padding: 0;
-				margin: 0 0.1em;
+				margin: 0 3px;
 				color: inherit;
 				cursor: pointer;
 				text-decoration: none;
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				width: 1.5em;
-				height: 1.5em;
+				width: 1.6em;
+				height: 1.6em;
 				transition: opacity 0.15s ease;
 				font-size: 1em;
+				flex-shrink: 0;
 
-				&:focus {
-					outline: none;
-				}
+				&:hover { opacity: 0.8; }
+				&:focus { outline: none; }
 
-				&:hover {
-					opacity: 0.8;
-				}
-			}
-
-			.videopack-icons {
-				display: block;
-				width: 100%;
-				height: 100%;
-				text-align: center;
-
-				svg {
-					display: block;
-					fill: currentColor;
-					width: 100%;
-					height: 100%;
-				}
-
-				&.share svg.close-icon,
-				&.close svg.share-icon {
-					display: none;
-				}
-
-				&.embed {
-					margin-right: 5px;
-				}
+				// Avoid any global themes setting height/width
+				max-width: none !important;
+				max-height: none !important;
 			}
 		}
 	}
 
-	&.videopack-meta-bar-visible .videopack-meta-bar,
-	&:hover .videopack-meta-bar {
+	// Global Icon Normalization
+	.videopack-icon-svg,
+	.videopack-icons svg,
+	svg {
+		display: block;
+		fill: currentColor;
+		width: 1.5em;
+		height: 1.5em;
+		pointer-events: none;
+	}
+
+	// Icon Toggles
+	.videopack-icons {
+		&.share .close-icon { display: none !important; }
+		&.close .share-icon { display: none !important; }
+	}
+
+	// Share Container Overlay
+	.videopack-share-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 2em;
+		color: var(--videopack-title-color, white);
+		top: 0;
+		left: 0;
+		right: 0;
+		padding: 3em 2em;
+		width: 100%;
+		z-index: 101; // Sits behind Meta Bar (102)
+		position: absolute;
+		border-radius: 0;
+		margin: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.3s, visibility 0.3s;
+
+		// Allow sitting directly behind Title Bar (utilizing z-index: 101 vs 102)
+		// Targets both frontend (siblings) and block editor (nested)
+		.video-title.position-top ~ &,
+		.video-title.position-top & {
+			margin-top: 0;
+		}
+
+		background: linear-gradient(to bottom,
+			var(--videopack-title-background-color, #141414) 0%,
+			#{string.unquote("color-mix(in srgb, var(--videopack-title-background-color, #141414), transparent 40%)")} 60%,
+			transparent 100%);
+
+		&.is-visible {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		.videopack-embedcode-container,
+		.videopack-start-at-container {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			span { display: flex; align-items: center; }
+		}
+
+		input {
+			height: 20px;
+			min-height: auto;
+			font-size: 13px;
+			font-family: inherit;
+			background-color: var(--wp--preset--color--white, #fff);
+			border: none;
+			margin: 0;
+			color: #333;
+			padding: 2px 5px;
+			border-radius: 2px;
+
+			&.videopack-embed-code { width: 15rem; }
+			&.videopack-start-at { width: 3rem; text-align: center; }
+		}
+	}
+
+	// Click Trap
+	.videopack-click-trap {
+		width: 100%;
+		background: none;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		z-index: 100; // Behind Share Container
+		opacity: 0;
+		visibility: hidden;
+		border: none;
+		padding: 0;
+		&.is-visible {
+			opacity: 1;
+			visibility: visible;
+			bottom: -100vh;
+		}
+	}
+
+	// Visibility Logic (Hover)
+	&.videopack-video-title-visible .videopack-video-title,
+	&:hover .videopack-video-title {
 		opacity: 1;
 		visibility: visible;
 	}
 
-	/* Custom Theming Overrides */
+	// Watermark
+	.videopack-watermark img {
+		display: block;
+		position: absolute;
+		bottom: 7%;
+		right: 5%;
+		z-index: 1;
+		margin: 0;
+		max-width: 10%;
+	}
+
+	// Below video section
+	.videopack-below-video {
+		margin: 2px 6px 0px 4px;
+		min-height: 20px;
+		clear: both;
+		font-size: medium;
+		color: inherit;
+		.videopack-viewcount { float: right; margin-left: 12px; white-space: nowrap; }
+		.videopack-caption { font-size: 0.85em; line-height: 150%; font-style: italic; }
+	}
+
+	// Video.js & Plugins
+	.vjs-res-button {
+		&:before { font-family: VideoJs; content: "\f114"; }
+		span.vjs-control-text { display: none; }
+		.vjs-menu .vjs-menu-content { overflow: visible; bottom: 0; }
+	}
+
+	// Custom Theming Overrides
 	/* Pre-calculate alpha versions if colors are set. Wrap in string.unquote for safe build. */
-	--videopack-control-bar-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color), transparent 30%)")};
+	--videopack-control-bar-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-control-bar-bg-color, transparent), transparent 30%)")};
+	--videopack-play-button-bg-color-alpha: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 30%)")};
+	--videopack-play-button-bg-color-alpha-hover: #{string.unquote("color-mix(in srgb, var(--videopack-play-button-color, transparent), transparent 50%)")};
+
 
 	&.videopack-has-title-background-color {
-		.videopack-meta-bar:not(.no-title) {
+		.videopack-video-title:not(.no-title) {
 			background-color: var(--videopack-title-background-color);
 		}
 
@@ -1051,4 +549,5 @@
 			background: var(--videopack-control-bar-color);
 		}
 	}
+
 }

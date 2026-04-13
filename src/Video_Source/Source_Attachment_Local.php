@@ -221,27 +221,54 @@ class Source_Attachment_Local extends Source {
 	/**
 	 * Get the poster image URL for the video with fallbacks.
 	 *
+	 * Order of priority:
+	 * 1. poster_id in _videopack-meta
+	 * 2. _thumbnail_id (featured image) on the attachment itself
+	 * 3. legacy _kgflashmediaplayer-poster-id
+	 * 4. poster URL in _videopack-meta
+	 * 5. legacy _kgflashmediaplayer-poster URL
+	 *
 	 * @return string The poster image URL.
 	 */
 	public function get_poster(): string {
-		// 1. Check primary metadata (already merged from _videopack-meta).
-		if ( ! empty( $this->metadata['poster'] ) ) {
-			return $this->metadata['poster'];
-		}
+		$poster_url = '';
 
-		// 2. Fallback to legacy field if not already migrated.
-		$legacy_poster = get_post_meta( $this->id, '_kgflashmediaplayer-poster', true );
-		if ( ! empty( $legacy_poster ) ) {
-			return $legacy_poster;
-		}
-
-		// 3. Fallback to featured image (_thumbnail_id).
-		$thumbnail_id = get_post_thumbnail_id( $this->id );
-		if ( $thumbnail_id ) {
-			$thumbnail_url = wp_get_attachment_url( $thumbnail_id );
-			if ( $thumbnail_url ) {
-				return $thumbnail_url;
+		// 1. Check for poster_id in _videopack-meta.
+		$poster_id = $this->metadata['poster_id'] ?? null;
+		if ( ! empty( $poster_id ) ) {
+			$poster_url = wp_get_attachment_url( (int) $poster_id );
+			if ( $poster_url ) {
+				return $poster_url;
 			}
+		}
+
+		// 2. Check for featured image (_thumbnail_id) on the attachment itself.
+		$thumbnail_id = get_post_thumbnail_id( $this->id );
+		if ( ! empty( $thumbnail_id ) ) {
+			$poster_url = wp_get_attachment_url( (int) $thumbnail_id );
+			if ( $poster_url ) {
+				return $poster_url;
+			}
+		}
+
+		// 3. Check for legacy poster ID.
+		$legacy_poster_id = get_post_meta( $this->id, '_kgflashmediaplayer-poster-id', true );
+		if ( ! empty( $legacy_poster_id ) ) {
+			$poster_url = wp_get_attachment_url( (int) $legacy_poster_id );
+			if ( $poster_url ) {
+				return $poster_url;
+			}
+		}
+
+		// 4. Check for poster URL in _videopack-meta.
+		if ( ! empty( $this->metadata['poster'] ) ) {
+			return (string) $this->metadata['poster'];
+		}
+
+		// 5. Fallback to legacy URL field.
+		$legacy_poster_url = get_post_meta( $this->id, '_kgflashmediaplayer-poster', true );
+		if ( ! empty( $legacy_poster_url ) ) {
+			return (string) $legacy_poster_url;
 		}
 
 		return '';

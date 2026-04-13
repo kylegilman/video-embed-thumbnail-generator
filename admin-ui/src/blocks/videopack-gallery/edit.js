@@ -1,4 +1,9 @@
-import { Button, Placeholder, ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import {
+	Button,
+	Placeholder,
+	ToolbarGroup,
+	ToolbarButton,
+} from '@wordpress/components';
 import {
 	BlockControls,
 	BlockIcon,
@@ -110,7 +115,8 @@ export default function Edit({
 					return null; // Don't fetch all videos if "Other Post" is selected but empty
 				}
 			} else if (
-				(gallery_source === 'current' || gallery_source === 'archive') &&
+				(gallery_source === 'current' ||
+					gallery_source === 'archive') &&
 				postId &&
 				!isNaN(Number(postId))
 			) {
@@ -292,7 +298,8 @@ export default function Edit({
 					className="videopack-placeholder-gallery-button"
 					variant="secondary"
 					label={__(
-						'Insert a collection of all videos uploaded to this post'
+						'Insert a collection of all videos uploaded to this post',
+						'video-embed-thumbnail-generator'
 					)}
 					showTooltip
 					onClick={onInsertCollection}
@@ -335,9 +342,7 @@ export default function Edit({
 								multiple="add"
 								value={
 									gallery_include
-										? gallery_include
-												.split(',')
-												.map(Number)
+										? gallery_include.split(',').map(Number)
 										: []
 								}
 								render={({ open }) => (

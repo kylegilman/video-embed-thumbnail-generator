@@ -43,10 +43,16 @@ const WpMejsPlayer = (props) => {
 					if (typeof playerRef.current.remove === 'function') {
 						// Neuter sizing methods before removal to prevent async crashes
 						// during the destruction process (mediaelement-and-player.js:4416).
-						if (typeof playerRef.current.setPlayerSize === 'function') {
+						if (
+							typeof playerRef.current.setPlayerSize ===
+							'function'
+						) {
 							playerRef.current.setPlayerSize = () => {};
 						}
-						if (typeof playerRef.current.setControlsSize === 'function') {
+						if (
+							typeof playerRef.current.setControlsSize ===
+							'function'
+						) {
 							playerRef.current.setControlsSize = () => {};
 						}
 						playerRef.current.remove();
@@ -169,7 +175,8 @@ const WpMejsPlayer = (props) => {
 				mejsOptions.videoHeight = '100%';
 
 				mejsOptions.startVolume =
-					curOptions.volume !== undefined && curOptions.volume !== null
+					curOptions.volume !== undefined &&
+					curOptions.volume !== null
 						? curOptions.volume
 						: 0.8;
 				mejsOptions.startMuted = shouldBeMuted;
@@ -286,7 +293,8 @@ const WpMejsPlayer = (props) => {
 										targetPlayer.setControlsSize();
 
 										const {
-											onMetadataLoaded: curOnMetadataLoaded,
+											onMetadataLoaded:
+												curOnMetadataLoaded,
 										} = propsRef.current;
 
 										if (
@@ -323,7 +331,6 @@ const WpMejsPlayer = (props) => {
 													targetPlayer.media.width ||
 													(domNode && domNode.width);
 
-
 												const currentHeight =
 													targetPlayer.media
 														.videoHeight ||
@@ -344,7 +351,8 @@ const WpMejsPlayer = (props) => {
 													targetPlayer.setControlsSize();
 
 													const {
-														onMetadataLoaded: curOnMetadataLoaded,
+														onMetadataLoaded:
+															curOnMetadataLoaded,
 													} = propsRef.current;
 
 													if (
@@ -363,8 +371,8 @@ const WpMejsPlayer = (props) => {
 												}
 											}
 										} catch (err) {
-										// Silence metadata errors
-									}
+											// Silence metadata errors
+										}
 
 										if (media) {
 											media.removeEventListener(
@@ -386,7 +394,6 @@ const WpMejsPlayer = (props) => {
 
 					media.addEventListener('canplay', autoPlayHandler);
 				};
-
 
 				const $videoElement = jQuery(videoElement);
 				// Stricter check before init
